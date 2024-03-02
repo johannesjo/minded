@@ -1,0 +1,42 @@
+{
+  "name": "minded",
+  "version": "1.0.0",
+  "description": "minded",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "serve": "vite preview",
+    "watch": "vite build --watch",
+    "build": "npm run cpm3 && vite build && npm run pack",
+    "buildV2": "npm run cpm2 && webpack --config webpack/webpack.prod.js && npm run pack",
+    "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
+    "clean": "rimraf dist",
+    "cpm2": "cp src/manifest-v2.json public/manifest.json",
+    "cpm3": "cp src/manifest-v3.json public/manifest.json",
+    "style": "prettier --write \"src/**/*.{ts,tsx}\""
+  },
+  "author": "Johannes Millan",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johannesjo/minded"
+  },
+  "type": "module",
+  "dependencies": {
+    "parse-domain": "^5.0.0",
+    "solid-js": "^1.8.15",
+    "webextension-polyfill": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.262",
+    "@types/webextension-polyfill": "^0.10.7",
+    "prettier": "3.2.5",
+    "rimraf": "^5.0.5",
+    "sass": "^1.70.0",
+    "solid-devtools": "^0.29.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "vite-plugin-solid": "^2.8.2",
+    "vite-plugin-static-copy": "^1.0.1"
+  }
+}
