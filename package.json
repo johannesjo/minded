@@ -4,10 +4,9 @@
   "description": "minded",
   "main": "index.js",
   "scripts": {
-    "start": "vite",
+    "start": "vite build --watch",
     "dev": "vite",
     "serve": "vite preview",
-    "watch": "vite build --watch",
     "build": "npm run cpm3 && vite build && npm run pack",
     "buildV2": "npm run cpm2 && webpack --config webpack/webpack.prod.js && npm run pack",
     "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
