@@ -1,0 +1,12 @@
+@import "shared";
+
+html,
+body {
+  min-width: 440px;
+}
+
+body {
+  /* needed to overwrite bulma */
+  padding: 16px !important;
+}
+
