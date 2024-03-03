@@ -27,9 +27,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
     color: #000;
+    pointer-events: all;
+    user-select: none;
 }
 
 #minded-6622-inp {
+    margin: auto;
     margin-top: 16px;
     color: #000;
     border: none;

@@ -59,4 +59,8 @@ export const QUESTIONS: Question[] = [
     id: QuestionId.GoodToday,
     txt: 'What helps you concentrate',
   },
+  {
+    id: QuestionId.GoodToday,
+    txt: 'What do you consider a good day',
+  },
 ] as const;
