@@ -2,9 +2,19 @@
 import styleAsString from "./content-script.css?inline";
 import { fadeOut } from '@src/util/animation';
 import { QUESTIONS } from '@src/questions';
+import { isOnBlockedUrl } from '@src/util/isOnBlockedUrl';
+import { getCfgSync } from '@src/util/getCfgSync';
 
 
+const CURRENT_URL = window.location.href;
 async function init() {
+  const cfg = await getCfgSync();
+  console.log(cfg);
+
+  if(!isOnBlockedUrl(CURRENT_URL, cfg)) {
+    return;
+  }
+
   if(!document.body) {
     self.setTimeout(() => {
       init();

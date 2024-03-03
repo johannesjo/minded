@@ -15,7 +15,6 @@
     right: 0;
     background: linear-gradient(135deg, #74bddb 0%, #a8d1eb 32%, #cddbf5 56%, #e4e6fb 73%, #f6f4f8 100%);
     background: linear-gradient(90deg, #cfecd0, #ffc5ca);
-    color: #000;
     text-align: center;
 }
 
@@ -26,7 +25,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #000;
+    color: rgba(0,0,0,.8);
     pointer-events: all;
     user-select: none;
 }
