@@ -4,6 +4,7 @@ import * as path from 'path';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 // import devtools from 'solid-devtools/vite';
 import { resolve } from "path";
+import hotReloadExtension from 'hot-reload-extension-vite';
 
 const root = resolve(__dirname, "src");
 const publicDir = resolve(__dirname, "public");
@@ -13,6 +14,10 @@ const isDev = process.env.__DEV__ === "true";
 
 export default defineConfig({
   plugins: [
+    hotReloadExtension({
+      log: true,
+      backgroundPath: 'src/background.ts' // src/pages/background/index.ts
+    }),
     /*
     Uncomment the following line to enable solid-devtools.
     For more info see https://github.com/thetarnav/solid-devtools/tree/main/packages/extension#readme
