@@ -12,7 +12,7 @@ export const MindedWrapper: () => JSX.Element = () => {
     console.log("EFFFECT");
     getSyncData().then((syncData) => {
       console.log("EFFFECT", syncData);
-      if(syncData.answers.length % 20 === 0) {
+      if(syncData.answers.length % 8 === 0) {
         console.log("SHOW DASHBOARD");
         setIsShowDashboard(true);
       }
