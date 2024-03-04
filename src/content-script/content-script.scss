@@ -14,9 +14,14 @@
   top: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(135deg, #74bddb 0%, #a8d1eb 32%, #cddbf5 56%, #e4e6fb 73%, #f6f4f8 100%);
-  background: linear-gradient(90deg, #cfecd0, #ffc5ca);
   text-align: center;
+
+  //background: linear-gradient(135deg, #74bddb 0%, #a8d1eb 32%, #cddbf5 56%, #e4e6fb 73%, #f6f4f8 100%);
+  //background: linear-gradient(90deg, #cfecd0, #ffc5ca);
+  background: linear-gradient(180deg, #cfecd0, #ffc5ca, #e6ea9b);
+  background-size: 200% 200%;
+  animation: minded6622gradient 6s ease-in infinite;
+  box-shadow: inset 0 0 100px #edf1b4;
 }
 
 #minded-6622-msg {
@@ -45,16 +50,28 @@
   min-width: 400px;
   display: block;
   max-width: 100%;
-  animation: fadeInAnimation ease 1s;
+  animation: minded6622fadeInAnimation ease 1s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
 }
 
-@keyframes fadeInAnimation {
+@keyframes minded6622fadeInAnimation {
   0% {
     opacity: 0;
   }
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes minded6622gradient {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 0 100%;
+  }
+  100% {
+    background-position: 0 0;
   }
 }
