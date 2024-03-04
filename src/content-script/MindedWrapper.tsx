@@ -6,12 +6,13 @@ import { MindedDashboard } from "@src/content-script/MindedDashboard";
 
 export const MindedWrapper: () => JSX.Element = () => {
   const [getIsShowDashboard, setIsShowDashboard] = createSignal(false);
+  const [getIsQuestionHidden, setIsQuestionHidden] = createSignal(false);
 
   createEffect((prev) => {
     console.log("EFFFECT");
     getSyncData().then((syncData) => {
       console.log("EFFFECT", syncData);
-      if (syncData.answers.length % 20 === 0) {
+      if(syncData.answers.length % 20 === 0) {
         console.log("SHOW DASHBOARD");
         setIsShowDashboard(true);
       }
@@ -19,5 +20,6 @@ export const MindedWrapper: () => JSX.Element = () => {
     });
   });
 
-  return <>{getIsShowDashboard() ? <MindedDashboard /> : <MindedQuestion />}</>;
+  return <>{getIsShowDashboard() ? <MindedDashboard />
+    : !getIsQuestionHidden() && <MindedQuestion onHide={() => setIsQuestionHidden(true)} />}</>;
 };
