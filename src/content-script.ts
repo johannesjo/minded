@@ -1,17 +1,19 @@
 // @ts-ignore
 import styleAsString from "./content-script.css?inline";
 import { fadeOut } from '@src/util/animation';
-import { QUESTIONS } from '@src/questions';
+import { QUESTIONS } from '@src/data/questions';
 import { isOnBlockedUrl } from '@src/util/isOnBlockedUrl';
-import { getCfgSync } from '@src/util/getCfgSync';
+import { getSyncData, saveAnswer } from '@src/data/dataInterface';
+import { Answer } from '@src/data/sync-data';
 
 
 const CURRENT_URL = window.location.href;
-async function init() {
-  const cfg = await getCfgSync();
-  console.log(cfg);
 
-  if(!isOnBlockedUrl(CURRENT_URL, cfg)) {
+async function init() {
+  const syncData = await getSyncData();
+  console.log(syncData);
+
+  if(!isOnBlockedUrl(CURRENT_URL, syncData)) {
     return;
   }
 
@@ -33,14 +35,20 @@ async function init() {
     wrapperEl?.remove();
   };
 
+  const submitAnswer = async (answer: Answer) => {
+    if(!answer.val || answer.val.length < 2) {
+      return;
+    }
+
+    await saveAnswer(answer);
+    await fadeOut(wrapperEl, 500).promise;
+    teardown();
+  };
+
   const returnToInp = async (ev) => {
     window.cancelAnimationFrame(frameNr);
     wrapperEl.style.opacity = "1";
     wrapperEl.style.transition = `opacity 300ms ease-out`;
-    if(ev.key === 'Enter') {
-      await fadeOut(wrapperEl, 500).promise;
-      teardown();
-    }
   };
 
   // Load styles
@@ -72,7 +80,22 @@ async function init() {
     }
   };
 
-  inp.addEventListener('keydown', returnToInp);
+  inp.addEventListener('keydown', (ev) => {
+    console.log(ev);
+    console.log((ev as any).target.value);
+    console.log(ev.key);
+
+
+    if(ev.key === 'Enter') {
+      submitAnswer({
+        questionId: rndQuestion.category,
+        val: (ev.target as any).value,
+        ts: Date.now(),
+      });
+    } else if(ev.key !== 'Control') {
+      returnToInp(ev);
+    }
+  });
   inp.addEventListener('click', returnToInp);
 
 
