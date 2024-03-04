@@ -1,7 +1,8 @@
-import { CfgSync } from '@src/cfg';
+import { SyncData } from '@src/data/sync-data';
 
-export const isOnBlockedUrl = (currentUrl: string, cfg: CfgSync): boolean => {
+export const isOnBlockedUrl = (currentUrl: string, syncData: SyncData): boolean => {
   const host = cleanHostWWW(new URL(currentUrl).host);
+  const cfg = syncData.cfg;
   return (
     !!cfg.blockedHosts.find((blockedHost) =>
       isMatchingHost(host, blockedHost)
