@@ -11,6 +11,7 @@ export interface Answer {
 }
 
 export interface SyncData {
+  isOnboardingComplete: boolean;
   cfg: UserCfg;
   answers: Answer[];
 }

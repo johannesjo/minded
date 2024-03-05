@@ -1,0 +1,14 @@
+#minded-6622 {
+  .welcome-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 320px;
+  }
+
+  .welcome {
+    font-size: 30px;
+    margin-bottom: 16px;
+  }
+}
