@@ -1,8 +1,8 @@
 /* @refresh reload */
 // @ts-ignore
 import { isOnBlockedUrl } from "@src/util/isOnBlockedUrl";
-import { getSyncData } from "@src/data/dataInterface";
-import { MindedWrapper } from "@src/content-script/MindedWrapper";
+import { getSyncData } from "@src/shared/data/dataInterface";
+import { MindedWrapper } from "@src/pages/content/MindedWrapper";
 // @ts-ignore
 import styleAsString from "./content-script.scss?inline";
 import { render } from "solid-js/web";
@@ -11,7 +11,7 @@ const CURRENT_URL = window.location.href;
 
 (function init() {
   getSyncData().then((syncData) => {
-    console.log(syncData);
+    console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
     if(isOnBlockedUrl(CURRENT_URL, syncData)) {
       async function innerInit() {
         if(!document.body) {

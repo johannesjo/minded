@@ -1,6 +1,6 @@
-import { Answer, SyncData } from '@src/data/sync-data';
+import { Answer, SyncData } from '@src/shared/data/sync-data';
 import { bro } from '@src/util/browser';
-import { DEFAULT_SYNC_DATA } from '@src/data/sync-data.const';
+import { DEFAULT_SYNC_DATA } from '@src/shared/data/sync-data.const';
 
 export const saveAnswer = (answer: Answer): Promise<void> => {
   console.log('saveAnswer', answer);

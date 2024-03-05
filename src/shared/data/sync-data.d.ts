@@ -1,4 +1,4 @@
-import { QuestionCategoryId } from '@src/data/questions';
+import { QuestionCategoryId } from '@src/shared/data/questions';
 
 export interface UserCfg {
   blockedHosts: string[];

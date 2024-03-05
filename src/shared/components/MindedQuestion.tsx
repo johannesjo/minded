@@ -1,8 +1,8 @@
 /* @refresh reload */
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
-import { QUESTIONS } from "@src/data/questions";
-import { Answer } from "@src/data/sync-data";
-import { saveAnswer } from "@src/data/dataInterface";
+import { QUESTIONS } from "@src/shared/data/questions";
+import { Answer } from "@src/shared/data/sync-data";
+import { saveAnswer } from "@src/shared/data/dataInterface";
 import { fadeOut } from '@src/util/animation';
 
 // once on app load
