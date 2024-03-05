@@ -24,7 +24,7 @@ const NewTab = () => {
     <>
       {getIsShowQuestion() ? (
         <Question
-          isSkipAutoHide={true}
+          isUnskippable={true}
           onHide={() => setIsShowQuestion(false)}
         />
       ) : (

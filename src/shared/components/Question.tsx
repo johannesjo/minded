@@ -9,7 +9,7 @@ import { fadeOut } from "@src/util/animation";
 const rndQuestion = Questions[Math.floor(Math.random() * Questions.length)];
 
 export const Question: (props: {
-  isSkipAutoHide?: boolean;
+  isUnskippable?: boolean;
   onHide: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
@@ -18,7 +18,7 @@ export const Question: (props: {
   let frameNr;
 
   onMount(async () => {
-    if (!props.isSkipAutoHide) {
+    if (!props.isUnskippable) {
       const res = fadeOut(wrapperEl, 2000, 1500);
       frameNr = res.frameNr;
     }
@@ -44,8 +44,10 @@ export const Question: (props: {
     wrapperEl.style.transition = `opacity 300ms ease-out`;
   };
 
-  const teardown = () => {
-    props.onHide();
+  const teardown = (isSubmitSuccess: boolean = false) => {
+    if (!props.isUnskippable || isSubmitSuccess) {
+      props.onHide();
+    }
   };
 
   const escapeHandler = (ev: KeyboardEvent) => {
@@ -61,7 +63,7 @@ export const Question: (props: {
     setIsInputDisabled(true);
     await saveAnswer(answer);
     await fadeOut(wrapperEl, 500).promise;
-    teardown();
+    teardown(true);
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
