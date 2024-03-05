@@ -71,6 +71,8 @@ export const MindedQuestion: (props: {
         val: (ev.target as any).value,
         ts: Date.now(),
       });
+    } else if (ev.key === "Escape") {
+      teardown();
     } else if (ev.key !== "Control") {
       returnToInp(ev);
     }
