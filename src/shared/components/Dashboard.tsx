@@ -54,7 +54,10 @@ export const Dashboard: () => JSX.Element = () => {
   return (
     <>
       <div id="minded-6622-coloured-wrapper">
-        <div className="box-wrapper">
+        <div
+          nr-of-items={getDashboardGroups().length}
+          className="box-wrapper"
+        >
           {getDashboardGroups().map((dg) => (
             <div className="box">
               <div className="category-title" title="Show all">
