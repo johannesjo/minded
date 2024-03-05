@@ -47,7 +47,7 @@ const CURRENT_URL = window.location.href;
 // // @ts-ignore
 // import styleAsString from "./content-script.scss?inline";
 // import { fadeOut } from '@src/util/animation';
-// import { QUESTIONS } from '@src/data/questions';
+// import { QUESTION_FOR_PROMPT } from '@src/data/questions';
 // import { isOnBlockedUrl } from '@src/util/isOnBlockedUrl';
 // import { getSyncData, saveAnswer } from '@src/data/dataInterface';
 // import { Answer } from '@src/data/sync-data';
@@ -109,7 +109,7 @@ const CURRENT_URL = window.location.href;
 //   document.body.appendChild(wrapperEl);
 //
 //
-//   const rndQuestion = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+//   const rndQuestion = QUESTION_FOR_PROMPT[Math.floor(Math.random() * QUESTION_FOR_PROMPT.length)];
 //   wrapperEl.innerHTML = `<div id="minded-6622-msg">
 // <div id="minded-6622-question">${rndQuestion.txt}?</div>
 // <input type="text" id="minded-6622-inp" autofocus />
@@ -135,7 +135,7 @@ const CURRENT_URL = window.location.href;
 //
 //     if(ev.key === 'Enter') {
 //       submitAnswer({
-//         questionId: rndQuestion.category,
+//         questionCategoryId: rndQuestion.category,
 //         val: (ev.target as any).value,
 //         ts: Date.now(),
 //       });

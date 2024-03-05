@@ -1,19 +1,21 @@
 /* @refresh reload */
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
-import { QUESTIONS } from "@src/shared/data/questions";
+import { Questions } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { saveAnswer } from "@src/shared/data/dataInterface";
-import { fadeOut } from '@src/util/animation';
+import { fadeOut } from "@src/util/animation";
 
 // once on app load
-const rndQuestion = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+const rndQuestion =
+  Questions[Math.floor(Math.random() * Questions.length)];
 
-export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (props) => {
+export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (
+  props,
+) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   let wrapperEl;
   let inpEl;
   let frameNr;
-
 
   onMount(async () => {
     const res = fadeOut(wrapperEl, 2000, 1500);
@@ -21,6 +23,10 @@ export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (p
 
     inpEl.focus();
     setTimeout(() => inpEl.focus(), 250);
+
+    if (rndQuestion.prompt) {
+      inpEl.value = rndQuestion.prompt + " ";
+    }
   });
 
   onCleanup(() => {
@@ -28,7 +34,7 @@ export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (p
   });
 
   const returnToInp = async (ev) => {
-    if(!frameNr) {
+    if (!frameNr) {
       return;
     }
     window.cancelAnimationFrame(frameNr);
@@ -41,13 +47,13 @@ export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (p
   };
 
   const escapeHandler = (ev: KeyboardEvent) => {
-    if(ev.key === "Escape") {
+    if (ev.key === "Escape") {
       teardown();
     }
   };
 
   const submitAnswer = async (answer: Answer) => {
-    if(!answer.val || answer.val.length < 2) {
+    if (!answer.val || answer.val.length < 2) {
       return;
     }
     setIsInputDisabled(true);
@@ -57,29 +63,33 @@ export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (p
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
-    if(ev.key === "Enter") {
+    if (ev.key === "Enter") {
       submitAnswer({
-        questionId: rndQuestion.category,
+        questionCategoryId: rndQuestion.categoryId,
         val: (ev.target as any).value,
         ts: Date.now(),
       });
-    } else if(ev.key !== "Control") {
+    } else if (ev.key !== "Control") {
       returnToInp(ev);
     }
   };
 
   return (
     <>
-      <div id="minded-6622-coloured-wrapper"
-           onclick={(ev) => {
-             if((ev.target as HTMLElement)?.id === 'minded-6622-coloured-wrapper') {
-               // TODO remove later
-               teardown();
-             }
-           }}
-           ref={wrapperEl}>
+      <div
+        id="minded-6622-coloured-wrapper"
+        onclick={(ev) => {
+          if (
+            (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
+          ) {
+            // TODO remove later
+            teardown();
+          }
+        }}
+        ref={wrapperEl}
+      >
         <div id="minded-6622-msg">
-          <div id="minded-6622-question">{rndQuestion.txt}?</div>
+          <div id="minded-6622-question">{rndQuestion.t}?</div>
           <input
             ref={inpEl}
             type="text"
@@ -95,4 +105,3 @@ export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (p
     </>
   );
 };
-
