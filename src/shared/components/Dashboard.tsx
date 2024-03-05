@@ -1,5 +1,5 @@
 import { createSignal, JSX, onMount } from "solid-js";
-import "./MindedDashboard.scss";
+import "./Dashboard.scss";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { Answer } from "@src/shared/data/sync-data";
 import {
@@ -37,7 +37,7 @@ const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
   return dashboardGroups;
 };
 
-export const MindedDashboard: () => JSX.Element = () => {
+export const Dashboard: () => JSX.Element = () => {
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
