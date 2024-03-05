@@ -1,8 +1,8 @@
 /* @refresh reload */
 import { createEffect, createSignal, JSX } from "solid-js";
-import { MindedQuestion } from "@src/content-script/MindedQuestion";
-import { getSyncData } from "@src/data/dataInterface";
-import { MindedDashboard } from "@src/content-script/MindedDashboard";
+import { MindedQuestion } from "@src/shared/components/MindedQuestion";
+import { getSyncData } from "@src/shared/data/dataInterface";
+import { MindedDashboard } from "@src/shared/components/MindedDashboard";
 
 export const MindedWrapper: () => JSX.Element = () => {
   const [getIsShowDashboard, setIsShowDashboard] = createSignal(false);

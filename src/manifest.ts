@@ -12,45 +12,34 @@ const manifest = defineManifest(async () => ({
   manifest_version: 3,
   name: packageJson.displayName ?? packageJson.name,
   version: `${major}.${minor}.${patch}.${label}`,
-  description: "minded",
+  description: packageJson.description,
   icons: {
-    "128": "public/icon_128x128.png",
+    "128": "icons/icon_128x128.png",
   },
-  options_page: "public/options.html",
+  options_page: "src/pages/options/index.html",
+  background: { service_worker: "src/pages/background/background.ts" },
   action: {
-    default_icon: "public/icon.png",
-    default_popup: "public/popup.html",
+    default_popup: "src/pages/popup/index.html",
+    default_icon: "icons/icon.png",
   },
-  background: { service_worker: "src/background.ts" },
   content_scripts: [
     {
-      run_at: "document_start",
       matches: ["http://*/*", "https://*/*", "<all_urls>"],
-      js: ["src/content-script/content-script.tsx"],
+      js: ["src/pages/content/content-script.tsx"],
     },
   ],
   permissions: ["storage", "tabs"],
   host_permissions: ["<all_urls>"],
   web_accessible_resources: [
     {
-      matches: ["<all_urls>"],
-      resources: [
-        "js/assets/*",
-        "js/*.*",
-        "js/assets/**/*.*",
-        "js/chunks/**/*.*",
-      ],
-    },
-    {
       resources: ["assets/js/*.js", "assets/css/*.css", "assets/img/*"],
       matches: ["*://*/*"],
     },
   ],
   // TODO that might be cool
-  // chrome_url_overrides: {
-  //   newtab: "src/pages/newtab/index.html",
-  // },
-  // devtools_page: "src/pages/devtools/index.html",
+  chrome_url_overrides: {
+    newtab: "src/pages/newtab/index.html",
+  },
 }));
 
 export default manifest;

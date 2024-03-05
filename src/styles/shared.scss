@@ -1,6 +1,8 @@
-/* @refresh reload */
-@import "MindedQuestion";
-@import "MindedDashboard";
+@import "variables";
+
+
+@import "@src/shared/components/MindedQuestion";
+@import "@src/shared/components/MindedDashboard";
 
 #minded-6622-coloured-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -39,6 +41,3 @@
     background-position: 0 0;
   }
 }
-
-
-// ---------------------------------------

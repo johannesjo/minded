@@ -1,8 +1,10 @@
-import { SyncData } from '@src/data/sync-data';
+import { SyncData } from '@src/shared/data/sync-data';
 
 export const isOnBlockedUrl = (currentUrl: string, syncData: SyncData): boolean => {
   const host = cleanHostWWW(new URL(currentUrl).host);
   const cfg = syncData.cfg;
+  console.log(host, cfg.blockedHosts);
+
   return (
     !!cfg.blockedHosts.find((blockedHost) =>
       isMatchingHost(host, blockedHost)
