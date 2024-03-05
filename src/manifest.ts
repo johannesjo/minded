@@ -19,7 +19,8 @@ const manifest = defineManifest(async () => ({
   options_page: "src/pages/options/index.html",
   background: { service_worker: "src/pages/background/background.ts" },
   action: {
-    default_popup: "src/pages/popup/index.html",
+    // default_popup: "src/pages/popup/index.html",
+    // default_popup: "src/pages/popup/index.html",
     default_icon: "icons/icon.png",
   },
   content_scripts: [
