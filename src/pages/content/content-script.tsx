@@ -2,7 +2,7 @@
 // @ts-ignore
 import { isOnBlockedUrl } from "@src/util/isOnBlockedUrl";
 import { getSyncData } from "@src/shared/data/dataInterface";
-import { MindedWrapper } from "@src/pages/content/MindedWrapper";
+import { ContentScriptMain } from "@src/pages/content/ContentScriptMain";
 // @ts-ignore
 import styleAsString from "./content-script.scss?inline";
 import { render } from "solid-js/web";
@@ -34,7 +34,7 @@ const CURRENT_URL = window.location.href;
         document.head.appendChild(styleTag);
         console.log(render);
 
-        render(() => (<MindedWrapper />) as any, wrapperEl);
+        render(() => (<ContentScriptMain />) as any, wrapperEl);
       }
 
       innerInit();
