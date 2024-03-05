@@ -2,13 +2,15 @@ import { createSignal, JSX, onMount } from "solid-js";
 import "./MindedDashboard.scss";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { Answer } from "@src/shared/data/sync-data";
-import { groupBy } from "@src/util/groupBy";
 import {
   QUESTION_CATEGORIES,
   QUESTION_CATEGORIES_ON_DASHBOARD,
-  Questions,
   QuestionCategoryId,
 } from "@src/shared/data/questions";
+import { truncate } from "@src/util/truncate";
+
+const MAX_ANSWERS = 3;
+const MAX_ANSWER_LENGTH = 200;
 
 interface DashboardGroup {
   id: QuestionCategoryId;
@@ -17,7 +19,6 @@ interface DashboardGroup {
 }
 
 const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
-  const entries = groupBy(answers, (q) => q.questionCategoryId);
   const dashboardGroups = [];
   QUESTION_CATEGORIES_ON_DASHBOARD.forEach((catId) => {
     const answersForCat = answers.filter(
@@ -27,11 +28,11 @@ const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
       dashboardGroups.push({
         id: catId,
         dashboardTxt: QUESTION_CATEGORIES[catId].dashboardTxt,
-        answers: answersForCat,
+        // TODO more sophisticated algorithm based on character length
+        answers: answersForCat.slice(-1 * MAX_ANSWERS),
       });
     }
   });
-
 
   return dashboardGroups;
 };
@@ -45,8 +46,6 @@ export const MindedDashboard: () => JSX.Element = () => {
     getSyncData().then((syncData) => {
       if (syncData.answers?.length) {
         const entries = dashboardEntriesFromQuestions(syncData.answers);
-        console.log(entries);
-
         setDashboardGroups(entries);
       }
     });
@@ -62,7 +61,12 @@ export const MindedDashboard: () => JSX.Element = () => {
                 {dg.dashboardTxt}
               </div>
               {dg.answers.map((dga) => (
-                <div className="user-quote">{dga.val}</div>
+                <div
+                  className="user-quote"
+                  title={dga.val.length > MAX_ANSWER_LENGTH ? dga.val : ""}
+                >
+                  {truncate(dga.val, MAX_ANSWER_LENGTH)}
+                </div>
               ))}
             </div>
           ))}
