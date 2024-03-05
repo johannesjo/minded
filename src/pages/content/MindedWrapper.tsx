@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { createEffect, createSignal, JSX } from "solid-js";
+import { createEffect, createSignal, JSX, onMount } from "solid-js";
 import { MindedQuestion } from "@src/shared/components/MindedQuestion";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { MindedDashboard } from "@src/shared/components/MindedDashboard";
@@ -8,11 +8,9 @@ export const MindedWrapper: () => JSX.Element = () => {
   const [getIsShowDashboard, setIsShowDashboard] = createSignal(false);
   const [getIsQuestionHidden, setIsQuestionHidden] = createSignal(false);
 
-  createEffect((prev) => {
-    console.log("EFFFECT");
+  onMount(() => {
     getSyncData().then((syncData) => {
-      console.log("EFFFECT", syncData);
-      if(syncData.answers.length % 8 === 0) {
+      if(syncData.answers.length > 0 && syncData.answers.length % 10 === 0) {
         console.log("SHOW DASHBOARD");
         setIsShowDashboard(true);
       }

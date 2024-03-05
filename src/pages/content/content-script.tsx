@@ -20,7 +20,6 @@ const CURRENT_URL = window.location.href;
           }, 100);
           return;
         }
-        console.log("XXXXXXXXxx");
 
         // If we ever decide to go back to 2 files
         // const src = bro.runtime.getURL("js/content-script-inner.js");
