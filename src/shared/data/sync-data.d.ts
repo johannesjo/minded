@@ -5,7 +5,7 @@ export interface UserCfg {
 }
 
 export interface Answer {
-  questionId: QuestionCategoryId;
+  questionCategoryId: QuestionCategoryId;
   val: string;
   ts: number;
 }

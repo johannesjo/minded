@@ -1,72 +1,91 @@
 export enum QuestionCategoryId {
-  GoodToday = 'GoodToday',
-  WhatYouWantToDo = 'WhatYouWantToDo',
-  LikeAboutMyself = 'LikeAboutMyself',
-  ThingsYouLike = 'ThingsYouLike',
-  ThingsIAmGoodAt = 'ThingsIAmGoodAt',
-  PersonalStrengths = 'PersonalStrengths',
-  PlanForToday = 'PlanForToday',
-  WhatMotivates = 'WhatMotivates',
-  WhatHelpsCurrentSituation = 'WhatHelpsCurrentSituation',
-  WhatHelpsConcentrate = 'WhatHelpsConcentrate',
-  WhatIsAGoodDay = 'WhatIsAGoodDay',
-  Other = 'Other',
+  Motivation = "Motivation",
+  PersonalResources = "PersonalResources",
+  RefocusHelper = "RefocusHelper",
+  SelfCompassion = "SelfCompassion",
+  CalmingThoughts = "CalmingThoughts",
+  HelpfulTools = "HelpfulTools",
+  FlowBreaker = "FlowBreaker",
+  XSpecialWidget = "XSpecialWidget",
+  Other = "Other",
 }
 
-export interface Question {
-  category: QuestionCategoryId;
-  txt: string;
-  txtDashboard?: string;
+export type Question = {
+  t: string;
+  prompt?: string;
+};
+
+export type QuestionForPrompt = {
+  categoryId: QuestionCategoryId;
+  t: string;
+  prompt?: string;
+};
+
+export interface QuestionCategory {
+  dashboardTxt?: string;
+  questions: Question[];
 }
 
-export const QUESTIONS: Question[] = [
-  {
-    category: QuestionCategoryId.GoodToday,
-    txt: 'What is good today'
+export const QUESTION_CATEGORIES: {
+  [key in QuestionCategoryId]: QuestionCategory;
+} = {
+  [QuestionCategoryId.PersonalResources]: {
+    dashboardTxt: "Personal Resources",
+    questions: [
+      { prompt: "I am good at", t: "What are you good at" },
+      {
+        t: "What is a strength of yours",
+      },
+    ],
   },
-  {
-    category: QuestionCategoryId.WhatYouWantToDo,
-    txt: 'What do you want to do',
-    txtDashboard: 'What you wanted to do'
+  [QuestionCategoryId.RefocusHelper]: {
+    dashboardTxt: "Finding Focus",
+    questions: [
+      {
+        prompt: "My most important task is",
+        t: "What is your most important task today",
+      },
+      {
+        prompt: "My plan for today is",
+        t: "What is the plan for today",
+      },
+    ],
   },
-  {
-    category: QuestionCategoryId.LikeAboutMyself,
-    txt: 'What do you like about yourself',
-    txtDashboard: 'I like about myself'
+  [QuestionCategoryId.Motivation]: {
+    dashboardTxt: "Motivation",
+    questions: [{ t: "What motivates you" }],
   },
-  {
-    category: QuestionCategoryId.ThingsIAmGoodAt,
-    txt: 'What are you good at',
-    txtDashboard: 'Things I am good at'
+  [QuestionCategoryId.HelpfulTools]: {
+    dashboardTxt: "Helpful Tools",
+    questions: [{ t: "What helps you concentrate" }],
   },
-  {
-    category: QuestionCategoryId.PersonalStrengths,
-    txt: 'What is a strength of yours',
-    txtDashboard: 'A strength of mine is'
+  [QuestionCategoryId.CalmingThoughts]: {
+    questions: [{ t: "What is good today" }, { t: "What do you like" }],
+    dashboardTxt: "Calming Thoughts",
   },
-  {
-    category: QuestionCategoryId.ThingsYouLike,
-    txt: 'What do you like',
-    txtDashboard: 'Things you like'
+  [QuestionCategoryId.SelfCompassion]: {
+    questions: [],
+    dashboardTxt: "Good Thoughts",
   },
-  {
-    category: QuestionCategoryId.PlanForToday,
-    txt: 'What is the plan for today',
-  },
-  {
-    category: QuestionCategoryId.WhatMotivates,
-    txt: 'What motivates you',
-  },
-  {
-    category: QuestionCategoryId.WhatHelpsCurrentSituation,
-    txt: 'What would help your current situation',
-  },
-  {
-    category: QuestionCategoryId.WhatHelpsConcentrate,
-    txt: 'What helps you concentrate',
-  },
-  {
-    category: QuestionCategoryId.WhatIsAGoodDay,
-    txt: 'What do you consider a good day',
-  },
-] as const;
+  [QuestionCategoryId.FlowBreaker]: { questions: [] },
+  [QuestionCategoryId.XSpecialWidget]: { questions: [] },
+  [QuestionCategoryId.Other]: { questions: [] },
+};
+
+export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
+  QuestionCategoryId.Motivation,
+  QuestionCategoryId.PersonalResources,
+  QuestionCategoryId.RefocusHelper,
+  QuestionCategoryId.SelfCompassion,
+  QuestionCategoryId.XSpecialWidget,
+  QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.HelpfulTools,
+];
+
+export const Questions: QuestionForPrompt[] = [];
+Object.keys(QUESTION_CATEGORIES).forEach((categoryId) => {
+  const entry = QUESTION_CATEGORIES[categoryId];
+  entry.questions.forEach((question) => {
+    Questions.push({ ...question, categoryId });
+  });
+});
