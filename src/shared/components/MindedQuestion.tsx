@@ -6,20 +6,22 @@ import { saveAnswer } from "@src/shared/data/dataInterface";
 import { fadeOut } from "@src/util/animation";
 
 // once on app load
-const rndQuestion =
-  Questions[Math.floor(Math.random() * Questions.length)];
+const rndQuestion = Questions[Math.floor(Math.random() * Questions.length)];
 
-export const MindedQuestion: (props: { onHide: () => void }) => JSX.Element = (
-  props,
-) => {
+export const MindedQuestion: (props: {
+  isSkipAutoHide?: boolean;
+  onHide: () => void;
+}) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   let wrapperEl;
   let inpEl;
   let frameNr;
 
   onMount(async () => {
-    const res = fadeOut(wrapperEl, 2000, 1500);
-    frameNr = res.frameNr;
+    if (!props.isSkipAutoHide) {
+      const res = fadeOut(wrapperEl, 2000, 1500);
+      frameNr = res.frameNr;
+    }
 
     inpEl.focus();
     setTimeout(() => inpEl.focus(), 250);
