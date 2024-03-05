@@ -103,6 +103,7 @@ export const Question: (props: {
             onkeypress={() => undefined}
             onclick={returnToInp}
             onkeydown={onKeyDown}
+            maxlength={500}
             id="minded-6622-inp"
             autoFocus
           />
