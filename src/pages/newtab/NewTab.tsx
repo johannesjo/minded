@@ -1,10 +1,10 @@
-import logo from "@assets/img/logo.svg";
 import { MindedDashboard } from '@src/shared/components/MindedDashboard';
 
-const Popup = () => {
+
+const NewTab = () => {
   return (
     <MindedDashboard />
   );
 };
 
-export default Popup;
+export default NewTab;

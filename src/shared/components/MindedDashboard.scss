@@ -22,8 +22,11 @@
     cursor: wait;
   }
 
-  h2 {
+  .category-title {
     margin-top: 0;
-    cursor: pointer
+    cursor: pointer;
+    font-weight: normal;
+    font-size: 32px;
+    margin-bottom: 32px;
   }
 }

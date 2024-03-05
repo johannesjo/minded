@@ -1,10 +1,10 @@
 import { render } from "solid-js/web";
 import "./new-tab-page.scss";
-import Newtab from "./Newtab";
+import NewTab from "./NewTab";
 
-const appContainer = document.querySelector("#app-container");
+const appContainer = document.querySelector("#minded-6622");
 if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
-render(Newtab, appContainer);
+render(NewTab as any, appContainer);
