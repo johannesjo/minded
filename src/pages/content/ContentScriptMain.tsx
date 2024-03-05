@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-import { MindedQuestion } from "@src/shared/components/MindedQuestion";
-import { MindedDashboard } from "@src/shared/components/MindedDashboard";
+import { Question } from "@src/shared/components/Question";
+import { Dashboard } from "@src/shared/components/Dashboard";
 
 export const ContentScriptMain: () => JSX.Element = () => {
   const [getIsShowDashboard, setIsShowDashboard] = createSignal(false);
@@ -20,10 +20,10 @@ export const ContentScriptMain: () => JSX.Element = () => {
   return (
     <>
       {getIsShowDashboard() ? (
-        <MindedDashboard />
+        <Dashboard />
       ) : (
         !getIsQuestionHidden() && (
-          <MindedQuestion onHide={() => setIsQuestionHidden(true)} />
+          <Question onHide={() => setIsQuestionHidden(true)} />
         )
       )}
     </>

@@ -1,6 +1,6 @@
-import { MindedDashboard } from "@src/shared/components/MindedDashboard";
+import { Dashboard } from "@src/shared/components/Dashboard";
 import { createSignal, onMount } from "solid-js";
-import { MindedQuestion } from "@src/shared/components/MindedQuestion";
+import { Question } from "@src/shared/components/Question";
 import { getSyncData } from "@src/shared/data/dataInterface";
 
 const NewTab = () => {
@@ -17,18 +17,18 @@ const NewTab = () => {
 
   if(!getIsOnboardingComplete()) {
     // TODO add onboarding
-    return <MindedDashboard />;
+    return <Dashboard />;
   }
 
   return (
     <>
       {getIsShowQuestion() ? (
-        <MindedQuestion
+        <Question
           isSkipAutoHide={true}
           onHide={() => setIsShowQuestion(false)}
         />
       ) : (
-        <MindedDashboard />
+        <Dashboard />
       )}
     </>
   );

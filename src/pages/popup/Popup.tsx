@@ -1,9 +1,9 @@
 import logo from "@assets/img/logo.svg";
-import { MindedDashboard } from '@src/shared/components/MindedDashboard';
+import { Dashboard } from '@src/shared/components/Dashboard';
 
 const Popup = () => {
   return (
-    <MindedDashboard />
+    <Dashboard />
   );
 };
 

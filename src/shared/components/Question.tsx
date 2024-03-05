@@ -8,7 +8,7 @@ import { fadeOut } from "@src/util/animation";
 // once on app load
 const rndQuestion = Questions[Math.floor(Math.random() * Questions.length)];
 
-export const MindedQuestion: (props: {
+export const Question: (props: {
   isSkipAutoHide?: boolean;
   onHide: () => void;
 }) => JSX.Element = (props) => {
