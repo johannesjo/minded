@@ -5,14 +5,20 @@ import { getSyncData } from "@src/shared/data/dataInterface";
 
 const NewTab = () => {
   const [getIsShowQuestion, setIsShowQuestion] = createSignal(false);
+  const [getIsOnboardingComplete, setIsOnboardingComplete] = createSignal(true);
 
   onMount(() => {
     getSyncData().then((syncData) => {
-      if (!syncData.answers.length) {
+      if(!syncData.answers.length) {
         setIsShowQuestion(true);
       }
     });
   });
+
+  if(!getIsOnboardingComplete()) {
+    // TODO add onboarding
+    return <MindedDashboard />;
+  }
 
   return (
     <>
