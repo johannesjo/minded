@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 // import devtools from 'solid-devtools/vite';
+import * as path from "path";
 import { resolve } from "path";
 import { crx } from "@crxjs/vite-plugin";
 
@@ -15,15 +16,6 @@ const pagesDir = resolve(root, "pages");
 
 export default defineConfig({
   plugins: [
-    // hotReloadExtension({
-    //   log: true,
-    //   backgroundPath: "src/background.ts", // src/pages/background/index.ts
-    // }),
-    /*
-    Uncomment the following line to enable solid-devtools.
-    For more info see https://github.com/thetarnav/solid-devtools/tree/main/packages/extension#readme
-    */
-    // devtools(),
     solidPlugin(),
     crx({manifest}),
   ],
@@ -35,34 +27,33 @@ export default defineConfig({
     },
   },
   publicDir,
+  // server: {
+  //   watch: {
+  //     usePolling: true,
+  //   },
+  //   hmr: true
+  // },
   build: {
     outDir,
     sourcemap: true,
     rollupOptions: {
-      // input: {
-      //   background: path.resolve(__dirname, "src/background.ts"),
-      //   popup: path.resolve(__dirname, "src/popup.tsx"),
-      //   options: path.resolve(__dirname, "src/options.tsx"),
-      //   "content-script": path.resolve(
-      //     __dirname,
-      //     "src/content-script/content-script.tsx",
-      //   ),
-      //   // 'content-script-inner': path.resolve(__dirname, 'src/content-script/content-script-inner.tsx'),
-      // },
-      // output: {
-      //   manualChunks: {},
-      //   dir: path.resolve(__dirname, "dist/js"),
-      //   format: "esm",
-      //   entryFileNames: "[name].js",
-      //   chunkFileNames: "chunks/[name].js",
-      // },
+      input: {
+        content: resolve(pagesDir, "content", "content-script.tsx"),
+        background: resolve(pagesDir, "background", "background.ts"),
+        popup: resolve(pagesDir, "popup", "index.html"),
+        newtab: resolve(pagesDir, "newtab", "index.html"),
+        options: resolve(pagesDir, "options", "index.html"),
+      },
+      output: {
+        entryFileNames: "src/pages/[name]/index.js",
+        chunkFileNames: isDev
+          ? "assets/js/[name].js"
+          : "assets/js/[name].[hash].js",
+        assetFileNames: (assetInfo) => {
+          const {name} = path.parse(assetInfo.name);
+          return `assets/[ext]/${name}.chunk.[ext]`;
+        },
+      },
     },
   },
-  // css: {
-  //   preprocessorOptions: {
-  //     scss: {
-  //       additionalData: `@import "src/styles/variables.scss";`,
-  //     },
-  //   },
-  // },
 });
