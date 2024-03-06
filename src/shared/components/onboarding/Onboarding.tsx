@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
 import "./Onboarding.scss";
-import { WebsiteList } from "@src/shared/components/WebsiteList";
+import { WebsiteList } from "@src/shared/components/onboarding/WebsiteList";
 import { updateCfg } from "@src/shared/data/dataInterface";
 
 export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
