@@ -6,11 +6,15 @@ import {
   QUESTION_CATEGORIES,
   QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
-import { DashboardGroup } from "@src/shared/components/dashboard/dashboard.model";
-import { AnswerList } from '@src/shared/components/dashboard/AnswerList';
-import { RndQuote } from '@src/shared/components/dashboard/RndQuote';
+import {
+  DashboardGroup,
+  DashboardGroupType,
+} from "@src/shared/components/dashboard/dashboard.model";
+import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
+import { getRndEntries } from "@src/util/getRndEntries";
+import { RndQuote } from "@src/shared/components/dashboard/RndQuote";
 
-const MAX_ANSWERS = 3;
+const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 
 const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
@@ -24,12 +28,20 @@ const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
         id: catId,
         dashboardTxt: QUESTION_CATEGORIES[catId].dashboardTxt,
         // TODO more sophisticated algorithm based on character length
-        answers: answersForCat.slice(-1 * MAX_ANSWERS),
+        answers: getRndEntries(answersForCat, MAX_ANSWERS),
+        type: DashboardGroupType.Standard,
       });
     }
   });
+  console.log(dashboardGroups, getRndEntries(dashboardGroups, MAX_GROUPS));
 
-  return dashboardGroups.slice(-1 * MAX_GROUPS);
+  // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
+  const answerEntries = dashboardGroups.slice(-1 * MAX_GROUPS);
+
+  answerEntries.splice(4, 0, {
+    type: DashboardGroupType.Quote,
+  });
+  return answerEntries;
 };
 
 export const Dashboard: () => JSX.Element = () => {
@@ -49,16 +61,26 @@ export const Dashboard: () => JSX.Element = () => {
   const STATIC_ITEMS = 1;
 
   return (
-      <div nr-of-items={getDashboardGroups().length + STATIC_ITEMS} class={styles.Dashboard}>
-        {getDashboardGroups().map((dg) => (
-          <div class={styles.box}>
-            <AnswerList dashboardGroup={dg} />
-          </div>
-        ))}
-
-        <div className={styles.box}>
-          <RndQuote  />
-        </div>
-      </div>
+    <div
+      nr-of-items={getDashboardGroups().length + STATIC_ITEMS}
+      class={styles.Dashboard}
+    >
+      {getDashboardGroups().map((dg) => {
+        switch (dg.type) {
+          case DashboardGroupType.Quote:
+            return (
+              <div className={styles.box}>
+                <RndQuote />
+              </div>
+            );
+          default:
+            return (
+              <div className={styles.box}>
+                <AnswerList dashboardGroup={dg} />
+              </div>
+            );
+        }
+      })}
+    </div>
   );
 };

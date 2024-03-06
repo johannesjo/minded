@@ -1,8 +1,20 @@
-import { QuestionCategoryId } from '@src/shared/data/questions';
-import { Answer } from '@src/shared/data/sync-data';
+import { QuestionCategoryId } from "@src/shared/data/questions";
+import { Answer } from "@src/shared/data/sync-data";
 
-export interface DashboardGroup {
+export enum DashboardGroupType {
+  Standard,
+  Quote,
+}
+
+export interface DashboardGroupStandard {
   id: QuestionCategoryId;
   dashboardTxt: string;
   answers: Answer[];
+  type: DashboardGroupType;
 }
+
+export interface DashboardGroupQuote {
+  type: DashboardGroupType.Quote;
+}
+
+export type DashboardGroup = DashboardGroupStandard | DashboardGroupQuote;
