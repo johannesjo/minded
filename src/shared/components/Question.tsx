@@ -1,12 +1,13 @@
 /* @refresh reload */
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
-import { Questions } from "@src/shared/data/questions";
+import { QUESTIONS } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { saveAnswer } from "@src/shared/data/dataInterface";
 import { fadeOut } from "@src/util/animation";
+import { getRndEntry } from "@src/util/getRndEntry";
 
 // once on app load
-const rndQuestion = Questions[Math.floor(Math.random() * Questions.length)];
+const rndQuestion = getRndEntry(QUESTIONS);
 
 export const Question: (props: {
   isUnskippable?: boolean;

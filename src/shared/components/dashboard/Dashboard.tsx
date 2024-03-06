@@ -1,22 +1,16 @@
 import { createSignal, JSX, onMount } from "solid-js";
-import "./Dashboard.scss";
+import styles from "./Dashboard.module.scss";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { Answer } from "@src/shared/data/sync-data";
 import {
   QUESTION_CATEGORIES,
   QUESTION_CATEGORIES_ON_DASHBOARD,
-  QuestionCategoryId,
 } from "@src/shared/data/questions";
-import { truncate } from "@src/util/truncate";
+import { DashboardGroup } from "@src/shared/components/dashboard/dashboard.model";
+import { AnswerList } from '@src/shared/components/dashboard/AnswerList';
+import { RndQuote } from '@src/shared/components/dashboard/RndQuote';
 
 const MAX_ANSWERS = 3;
-const MAX_ANSWER_LENGTH = 200;
-
-interface DashboardGroup {
-  id: QuestionCategoryId;
-  dashboardTxt: string;
-  answers: Answer[];
-}
 
 const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
   const dashboardGroups = [];
@@ -52,24 +46,16 @@ export const Dashboard: () => JSX.Element = () => {
   });
 
   return (
-    <>
-      <div nr-of-items={getDashboardGroups().length} className="box-wrapper">
+      <div nr-of-items={getDashboardGroups().length} class={styles.Dashboard}>
         {getDashboardGroups().map((dg) => (
-          <div className="box">
-            <div className="category-title" title="Show all">
-              {dg.dashboardTxt}
-            </div>
-            {dg.answers.map((dga) => (
-              <div
-                className="user-quote"
-                title={dga.val.length > MAX_ANSWER_LENGTH ? dga.val : ""}
-              >
-                {truncate(dga.val, MAX_ANSWER_LENGTH)}
-              </div>
-            ))}
+          <div class={styles.box}>
+            <AnswerList dashboardGroup={dg} />
           </div>
         ))}
+
+        <div className={styles.box}>
+          <RndQuote  />
+        </div>
       </div>
-    </>
   );
 };

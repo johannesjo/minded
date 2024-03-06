@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
 import { Question } from "@src/shared/components/Question";
-import { Dashboard } from "@src/shared/components/Dashboard";
+import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 
 export const ContentScriptMain: () => JSX.Element = () => {
   const [getIsShowDashboard, setIsShowDashboard] = createSignal(false);
