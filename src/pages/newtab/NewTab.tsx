@@ -1,7 +1,7 @@
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, onMount } from "solid-js";
 import { getSyncData } from "@src/shared/data/dataInterface";
-import { Onboarding } from "@src/shared/components/Onboarding";
+import { Onboarding } from "@src/shared/components/onboarding/Onboarding";
 import styles from "./NewTab.module.scss";
 
 const NewTab = () => {
