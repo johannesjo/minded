@@ -28,8 +28,11 @@ const NewTab = () => {
       ) : getIsShowInfo() ? (
         <div class={styles.infoBox}>
           <p>
-            <em>minded</em> is now configured. Whenever you open one of the
-            websites a short interaction prompt will appear.
+            <em>minded</em> is now configured.
+          </p>
+          <p>
+            Whenever you open one of the websites a short interaction prompt
+            will appear.
           </p>
           <p>
             This will help you breaking your automatic patterns to visit those
