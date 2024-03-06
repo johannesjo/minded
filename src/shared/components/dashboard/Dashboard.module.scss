@@ -1,13 +1,26 @@
 .Dashboard {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
   text-align: center;
   position: absolute;
   width: 100%;
   top: 50%;
   left: 0;
+  max-height: 100%;
   transform: translateY(-50%);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  overflow-y: auto;
+  grid-auto-flow: row;
+  grid-auto-rows: 33%;
+
+  @media (max-width: 999px) {
+    grid-template-columns: repeat(2, 1fr) !important;
+    min-height: 100%;
+  }
+  @media (max-width: 799px) {
+    min-height: 100%;
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
 
   &[nr-of-items="1"] {
     grid-template-rows: repeat(1, 1fr);
