@@ -1,0 +1,29 @@
+.WebsiteList {
+}
+
+.WebsiteListItems {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+  margin-bottom: 32px;
+
+  //@media (min-width: var(--bp-l)) {
+  grid-template-columns: repeat(1, 1fr);
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 800px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  > div {
+
+  }
+}
+
+
+.controls {
+  gap: 16px;
+  display: flex;
+  justify-content: center;
+}

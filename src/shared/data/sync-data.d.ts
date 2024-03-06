@@ -1,6 +1,7 @@
 import { QuestionCategoryId } from '@src/shared/data/questions';
 
 export interface UserCfg {
+  isOnboardingComplete: boolean;
   blockedHosts: string[];
 }
 
@@ -11,7 +12,6 @@ export interface Answer {
 }
 
 export interface SyncData {
-  isOnboardingComplete: boolean;
   cfg: UserCfg;
   answers: Answer[];
 }

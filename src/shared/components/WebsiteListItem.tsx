@@ -1,4 +1,5 @@
-import { createEffect, createSignal, JSX, on } from "solid-js";
+import { createSignal, JSX } from "solid-js";
+import styles from "./WebsiteListItem.module.scss";
 
 // List item component
 export const WebsiteListItem: (props: {
@@ -7,7 +8,6 @@ export const WebsiteListItem: (props: {
   remove: () => void;
 }) => JSX.Element = (props) => {
   let [getValue, setValue] = createSignal(props.value);
-
 
   // createEffect(
   //   on(
@@ -20,14 +20,14 @@ export const WebsiteListItem: (props: {
   // );
 
   return (
-    <div>
+    <div class={styles.WebsiteListItem}>
       <input
         type="text"
         value={getValue()}
-        onblur={()=> props.update(getValue())}
+        onblur={() => props.update(getValue())}
         oninput={(e) => setValue((e as any).currentTarget.value as string)}
       />
-      <button onClick={props.remove}>Remove</button>
+      <button className="btn-ico" onClick={props.remove}>✕</button>
     </div>
   );
 };
