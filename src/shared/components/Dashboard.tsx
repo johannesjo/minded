@@ -53,27 +53,22 @@ export const Dashboard: () => JSX.Element = () => {
 
   return (
     <>
-      <div id="minded-6622-coloured-wrapper">
-        <div
-          nr-of-items={getDashboardGroups().length}
-          className="box-wrapper"
-        >
-          {getDashboardGroups().map((dg) => (
-            <div className="box">
-              <div className="category-title" title="Show all">
-                {dg.dashboardTxt}
-              </div>
-              {dg.answers.map((dga) => (
-                <div
-                  className="user-quote"
-                  title={dga.val.length > MAX_ANSWER_LENGTH ? dga.val : ""}
-                >
-                  {truncate(dga.val, MAX_ANSWER_LENGTH)}
-                </div>
-              ))}
+      <div nr-of-items={getDashboardGroups().length} className="box-wrapper">
+        {getDashboardGroups().map((dg) => (
+          <div className="box">
+            <div className="category-title" title="Show all">
+              {dg.dashboardTxt}
             </div>
-          ))}
-        </div>
+            {dg.answers.map((dga) => (
+              <div
+                className="user-quote"
+                title={dga.val.length > MAX_ANSWER_LENGTH ? dga.val : ""}
+              >
+                {truncate(dga.val, MAX_ANSWER_LENGTH)}
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </>
   );

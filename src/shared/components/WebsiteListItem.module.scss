@@ -1,0 +1,22 @@
+.WebsiteListItem {
+  display: flex;
+  gap: 8px;
+
+  input {
+    background: transparent;
+    border: 1px solid;
+    border-radius: var(--border-radius);
+    padding: 4px 12px;
+    transition: 0.1s;
+    font-weight: bold;
+
+    &:focus {
+      transform: scale(1.05);
+      outline: none;
+    }
+  }
+
+  .btn-ico {
+    margin-left: 16px;
+  }
+}

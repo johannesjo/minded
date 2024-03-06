@@ -20,6 +20,8 @@ const isMatchingHost = (
   blockedHost: string
 ): boolean => {
   const index = currentHost.indexOf(blockedHost);
+  console.log(index, currentHost, blockedHost);
+
   return (
     // e.g. tagesschau.de => tagesschau.de
     (index === 0 && currentHost.length === blockedHost.length) ||

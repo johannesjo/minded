@@ -1,0 +1,39 @@
+#minded-6622 {
+  .btn-big,
+  .btn-ico,
+  .btn {
+    cursor: pointer;
+    background: transparent;
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    border-radius: var(--border-radius);
+    font-size: 20px;
+    transition: 0.1s;
+    font-weight: bold;
+    text-transform: lowercase;
+    padding: 4px 8px;
+    color: rgba(0, 0, 0, .8);
+
+    &:hover {
+      transform: scale(1.2);
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .btn-ico {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 20px;
+  }
+
+  .btn-big {
+    font-size: 24px;
+    padding: 6px 10px;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
