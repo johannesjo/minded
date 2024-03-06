@@ -14,15 +14,10 @@ export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
   return (
     <>
       <div className="welcome-wrapper">
-        <div className="welcome">Welcome to Minded</div>
+        <div className="welcome">Welcome to <em>minded</em></div>
         <div className="info-text">
           <p>
-            Minded is a tool that will help you to be more productive and
-            focused on what counts.
-          </p>
-          <p>
-            As a first step please configure the websites that you want to spent{" "}
-            <em>less</em> time on.
+            Which websites do you intent to use less?
           </p>
         </div>
 

@@ -1,7 +1,7 @@
 {
   "name": "minded",
   "version": "1.0.0",
-  "description": "minded",
+  "description": "'minded' is a tool that will help you to be more productive and focused on what counts.",
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=development npm run dev",
