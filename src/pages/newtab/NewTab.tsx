@@ -11,9 +11,8 @@ const NewTab = () => {
   onMount(() => {
     getSyncData().then((syncData) => {
       if (!syncData.answers.length) {
-        if (syncData.cfg.isOnboardingComplete) {
-          setIsShowInfo(true);
-        } else {
+        setIsShowInfo(true);
+        if (!syncData.cfg.isOnboardingComplete) {
           setIsShowOnboarding(true);
         }
       }
@@ -29,8 +28,8 @@ const NewTab = () => {
       ) : getIsShowInfo() ? (
         <div class={styles.infoBox}>
           <p>
-            Minded is now configured. Whenever you open one of the websites a
-            short interaction prompt will appear.
+            <em>minded</em> is now configured. Whenever you open one of the
+            websites a short interaction prompt will appear.
           </p>
           <p>
             This will help you breaking your automatic patterns to visit those
