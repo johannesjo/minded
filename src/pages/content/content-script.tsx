@@ -11,10 +11,10 @@ const CURRENT_URL = window.location.href;
 
 (function init() {
   getSyncData().then((syncData) => {
-    console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
-    if(isOnBlockedUrl(CURRENT_URL, syncData)) {
+    // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
+    if (isOnBlockedUrl(CURRENT_URL, syncData)) {
       async function innerInit() {
-        if(!document.body) {
+        if (!document.body) {
           self.setTimeout(() => {
             innerInit();
           }, 100);
