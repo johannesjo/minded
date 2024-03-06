@@ -20,6 +20,8 @@ const NewTab = () => {
     });
   });
 
+  // return (<Question isUnskippable={true} onHide={()=> undefined} />)
+
   return (
     <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>
       {getIsShowOnboarding() ? (

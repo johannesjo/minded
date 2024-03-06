@@ -3,7 +3,7 @@ import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { saveAnswer } from "@src/shared/data/dataInterface";
-import { fadeOut } from "@src/util/animation";
+import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { getRndEntry } from "@src/util/getRndEntry";
 
 // once on app load
@@ -14,6 +14,7 @@ export const Question: (props: {
   onHide: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
+  const [getIsShowSun, setIsShowSun] = createSignal(false);
   let wrapperEl;
   let inpEl;
   let frameNr;
@@ -62,8 +63,11 @@ export const Question: (props: {
       return;
     }
     setIsInputDisabled(true);
+    setIsShowSun(true);
     await saveAnswer(answer);
-    await fadeOut(wrapperEl, 500).promise;
+    // wait for sun
+    await promiseTimeout(800);
+    await fadeOut(wrapperEl, 800).promise;
     teardown(true);
   };
 
@@ -95,6 +99,7 @@ export const Question: (props: {
         }}
         ref={wrapperEl}
       >
+        {getIsShowSun() && <div id="minded-6622-sun"></div>}
         <div id="minded-6622-msg">
           <div id="minded-6622-question">{rndQuestion.t}?</div>
           <input
