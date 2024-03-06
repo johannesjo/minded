@@ -58,13 +58,8 @@ export const Dashboard: () => JSX.Element = () => {
     });
   });
 
-  const STATIC_ITEMS = 1;
-
   return (
-    <div
-      nr-of-items={getDashboardGroups().length + STATIC_ITEMS}
-      class={styles.Dashboard}
-    >
+    <div nr-of-items={getDashboardGroups().length} class={styles.Dashboard}>
       {getDashboardGroups().map((dg) => {
         switch (dg.type) {
           case DashboardGroupType.Quote:
