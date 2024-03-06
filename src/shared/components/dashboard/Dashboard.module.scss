@@ -2,9 +2,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  width: 100%;
-  height: 100vh;
   text-align: center;
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
 
   &[nr-of-items="1"] {
     grid-template-rows: repeat(1, 1fr);
@@ -12,13 +15,18 @@
   }
 
   &[nr-of-items="2"] {
-    grid-template-rows: repeat(1, 1fr);
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
   }
 
   &[nr-of-items="3"] {
-    grid-template-rows: repeat(1, 1fr);
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+
+    > :last-child {
+      grid-column-start: 1;
+      grid-column-end: 3;
+    }
   }
 
   &[nr-of-items="4"] {

@@ -11,6 +11,7 @@ import { AnswerList } from '@src/shared/components/dashboard/AnswerList';
 import { RndQuote } from '@src/shared/components/dashboard/RndQuote';
 
 const MAX_ANSWERS = 3;
+const MAX_GROUPS = 9;
 
 const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
   const dashboardGroups = [];
@@ -28,7 +29,7 @@ const dashboardEntriesFromQuestions = (answers: Answer[]): DashboardGroup[] => {
     }
   });
 
-  return dashboardGroups;
+  return dashboardGroups.slice(-1 * MAX_GROUPS);
 };
 
 export const Dashboard: () => JSX.Element = () => {
@@ -45,8 +46,10 @@ export const Dashboard: () => JSX.Element = () => {
     });
   });
 
+  const STATIC_ITEMS = 1;
+
   return (
-      <div nr-of-items={getDashboardGroups().length} class={styles.Dashboard}>
+      <div nr-of-items={getDashboardGroups().length + STATIC_ITEMS} class={styles.Dashboard}>
         {getDashboardGroups().map((dg) => (
           <div class={styles.box}>
             <AnswerList dashboardGroup={dg} />
