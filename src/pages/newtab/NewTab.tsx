@@ -1,4 +1,4 @@
-import { Dashboard } from "@src/shared/components/Dashboard";
+import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, onMount } from "solid-js";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { Onboarding } from "@src/shared/components/Onboarding";

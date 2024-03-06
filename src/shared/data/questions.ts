@@ -82,10 +82,10 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.HelpfulTools,
 ];
 
-export const Questions: QuestionForPrompt[] = [];
+export const QUESTIONS: QuestionForPrompt[] = [];
 Object.keys(QUESTION_CATEGORIES).forEach((categoryId) => {
   const entry = QUESTION_CATEGORIES[categoryId];
   entry.questions.forEach((question) => {
-    Questions.push({ ...question, categoryId });
+    QUESTIONS.push({ ...question, categoryId });
   });
 });
