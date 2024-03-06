@@ -17,15 +17,17 @@ const manifest = defineManifest(async () => ({
     "128": "icons/sun-no-rays-more-contrast.png",
   },
   options_page: "src/pages/options/index.html",
-  background: { service_worker: "src/pages/background/background.ts" },
+  background: {service_worker: "src/pages/background/background.ts"},
   action: {
     // default_popup: "src/pages/popup/index.html",
     default_icon: "icons/sun-no-rays-more-contrast.png",
   },
   content_scripts: [
     {
-      matches: ["http://*/*", "https://*/*", "<all_urls>"],
+      matches: ["http://*/*", "https://*/*"],
       js: ["src/pages/content/content-script.tsx"],
+      run_at: "document_start",
+      // ...({world: "main"} as any)
     },
   ],
   permissions: ["storage", "tabs"],
