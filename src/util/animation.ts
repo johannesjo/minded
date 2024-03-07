@@ -22,3 +22,26 @@ export function fadeOut(el: HTMLElement, duration = 200, initialDelay = 0): {
     promise: promiseTimeout(duration + initialDelay),
   };
 }
+
+
+export function changeHeight(el: HTMLElement, newHeight= 300, duration = 200, initialDelay = 0): {
+  promise: Promise<void>,
+  frameNr: number,
+} {
+  el.style.maxHeight = "100%";
+  el.style.transition = `all ${duration}ms ease-in`;
+  el.style.borderRadius = "16px";
+  if(initialDelay) {
+    el.style.transitionDelay = `${initialDelay}ms`;
+  }
+
+  return {
+    frameNr: window.requestAnimationFrame(() => {
+      el.style.maxHeight = newHeight+'px';
+      el.style.maxHeight = "200px";
+      el.style.borderRadius = "16px";
+      el.style.width = "600px";
+    }),
+    promise: promiseTimeout(duration + initialDelay),
+  };
+}

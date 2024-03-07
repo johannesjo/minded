@@ -3,7 +3,7 @@ import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { saveAnswer } from "@src/shared/data/dataInterface";
-import { fadeOut, promiseTimeout } from "@src/util/animation";
+import { changeHeight, fadeOut, promiseTimeout } from "@src/util/animation";
 import { getRndEntry } from "@src/util/getRndEntry";
 
 // once on app load
@@ -22,10 +22,11 @@ export const Question: (props: {
   onMount(async () => {
     if(!props.isUnskippable) {
       const res = fadeOut(wrapperEl, 5000, 2000);
+      // const res = changeHeight(wrapperEl, 300,1000, 2000);
       frameNr = res.frameNr;
       res.promise.then(() => {
         if(wrapperEl.style.opacity < 0.1) {
-          teardown();
+          // teardown();
         }
       });
     }
@@ -47,8 +48,8 @@ export const Question: (props: {
       return;
     }
     window.cancelAnimationFrame(frameNr);
+    wrapperEl.style.transition = `opacity 1000ms ease-out`;
     wrapperEl.style.opacity = "1";
-    wrapperEl.style.transition = `opacity 300ms ease-out`;
   };
 
   const teardown = (isSubmitSuccess: boolean = false) => {
@@ -98,8 +99,9 @@ export const Question: (props: {
           if(
             (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
           ) {
-            // TODO remove later
-            teardown();
+            fadeOut(wrapperEl, 150).promise.then(()=>{
+              teardown();
+            })
           }
         }}
         ref={wrapperEl}
