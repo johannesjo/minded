@@ -1,5 +1,11 @@
 // NOTE: styles for question work differently since we're using them for the content-script
 
+#minded-6622-coloured-wrapper {
+  border-radius: 16px;
+  cursor: sw-resize;
+  cursor: zoom-out;
+}
+
 #minded-6622-msg {
   font-size: 32px;
   position: absolute;
@@ -9,6 +15,7 @@
   color: rgba(0, 0, 0, .8);
   pointer-events: all;
   user-select: none;
+  cursor: auto;
 }
 
 #minded-6622-inp {

@@ -114,6 +114,7 @@ export const Question: (props: {
             type="text"
             disabled={getIsInputDisabled()}
             onkeypress={() => undefined}
+            onmouseenter={returnToInp}
             onclick={returnToInp}
             onkeydown={onKeyDown}
             maxlength={500}
