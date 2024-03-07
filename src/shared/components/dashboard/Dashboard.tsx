@@ -5,7 +5,7 @@ import { DashboardGroup, DashboardGroupType, } from "@src/shared/components/dash
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 import { RndQuote } from "@src/shared/components/dashboard/RndQuote";
 import { dashboardEntriesFromQuestions } from '@src/shared/components/dashboard/dashboardEntriesFromQuestions';
-import { getRandomInt } from '@src/util/getRndInt';
+import { getRndInt } from '@src/util/getRndInt';
 
 
 export const Dashboard: () => JSX.Element = () => {
@@ -18,7 +18,7 @@ export const Dashboard: () => JSX.Element = () => {
     getSyncData().then((syncData) => {
       if(syncData.answers?.length) {
         const entries = dashboardEntriesFromQuestions(syncData.answers);
-        focusElI = getRandomInt(0, entries.length - 1);
+        focusElI = getRndInt(0, entries.length - 1);
         console.log(focusElI);
 
         setDashboardGroups(entries);

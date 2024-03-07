@@ -67,7 +67,7 @@
   opacity: 0;
   animation-delay: .5s;
 
-  &.isFocus {
+  &:nth-child(5) {
     animation-delay: 0s;
   }
 }
