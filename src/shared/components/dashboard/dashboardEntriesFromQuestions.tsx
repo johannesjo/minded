@@ -3,6 +3,8 @@ import { DashboardGroup, DashboardGroupType } from '@src/shared/components/dashb
 import { QUESTION_CATEGORIES, QUESTION_CATEGORIES_ON_DASHBOARD } from '@src/shared/data/questions';
 import { getRndEntries } from '@src/util/getRndEntries';
 import { isToday } from '@src/util/isToday';
+import { getRndInt } from '@src/util/getRndInt';
+import { replaceAt } from '@src/util/replaceAt';
 
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
@@ -23,13 +25,25 @@ export const dashboardEntriesFromQuestions = (answers: Answer[], now = Date.now(
       });
     }
   });
-  console.log(dashboardGroups, getRndEntries(dashboardGroups, MAX_GROUPS));
+  // console.log(dashboardGroups, getRndEntries(dashboardGroups, MAX_GROUPS));
 
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
-  const answerEntries = dashboardGroups.slice(-1 * MAX_GROUPS);
+  let sortedEntries = dashboardGroups;
+  if(sortedEntries.length >= 6) {
+    const rndIndex = getRndInt(0, sortedEntries.length - 1);
+    const rndEntry = {...sortedEntries[rndIndex]};
+    sortedEntries = replaceAt(sortedEntries, rndIndex, {
+      type: DashboardGroupType.Quote,
+    });
+    console.log(sortedEntries);
+    sortedEntries.splice(4, 0, rndEntry);
 
-  answerEntries.splice(4, 0, {
-    type: DashboardGroupType.Quote,
-  });
-  return answerEntries;
+  } else {
+    sortedEntries.splice(4, 0, {
+      type: DashboardGroupType.Quote,
+    });
+  }
+  // finally limit
+  sortedEntries = sortedEntries.slice(-1 * MAX_GROUPS )
+  return sortedEntries;
 };
