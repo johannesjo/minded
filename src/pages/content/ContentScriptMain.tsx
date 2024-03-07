@@ -24,7 +24,7 @@ export const ContentScriptMain: () => JSX.Element = () => {
 
   return (
     <>
-      <Question onHide={() => setIsQuestionHidden(true)} />
+      {!getIsQuestionHidden() && <Question onHide={() => setIsQuestionHidden(true)} />}
     </>
   );
 };
