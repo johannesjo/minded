@@ -26,7 +26,7 @@ export const Question: (props: {
       frameNr = res.frameNr;
       res.promise.then(() => {
         if(wrapperEl.style.opacity < 0.1) {
-          // teardown();
+          teardown();
         }
       });
     }
@@ -54,6 +54,8 @@ export const Question: (props: {
 
   const teardown = (isSubmitSuccess: boolean = false) => {
     if(!props.isUnskippable || isSubmitSuccess) {
+      console.log('ON HIDEEee');
+
       props.onHide();
     }
   };
