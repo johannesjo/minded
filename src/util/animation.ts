@@ -19,6 +19,6 @@ export function fadeOut(el: HTMLElement, duration = 200, initialDelay = 0): {
     frameNr: window.requestAnimationFrame(() => {
       el.style.opacity = "0";
     }),
-    promise: promiseTimeout(duration),
+    promise: promiseTimeout(duration + initialDelay),
   };
 }
