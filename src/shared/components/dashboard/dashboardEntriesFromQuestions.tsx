@@ -32,11 +32,12 @@ export const dashboardEntriesFromQuestions = (answers: Answer[], now = Date.now(
   if(sortedEntries.length >= 6) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
     const rndEntry = {...sortedEntries[rndIndex]};
+
     sortedEntries = replaceAt(sortedEntries, rndIndex, {
       type: DashboardGroupType.Quote,
     });
-    console.log(sortedEntries);
-    sortedEntries.splice(4, 0, rndEntry);
+
+    sortedEntries.splice(5, 0, rndEntry);
 
   } else {
     sortedEntries.splice(4, 0, {
@@ -44,6 +45,6 @@ export const dashboardEntriesFromQuestions = (answers: Answer[], now = Date.now(
     });
   }
   // finally limit
-  sortedEntries = sortedEntries.slice(-1 * MAX_GROUPS )
+  sortedEntries = sortedEntries.slice(-1 * MAX_GROUPS);
   return sortedEntries;
 };
