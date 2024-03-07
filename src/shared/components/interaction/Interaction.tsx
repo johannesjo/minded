@@ -9,7 +9,7 @@ import { ACTION_ADVICES } from '@src/shared/data/actionAdvices';
 
 
 const MODE: 'RATING' | 'ACTION_ADVICE' | undefined = (() => {
-  // return 'ACTION_ADVICE';
+  return 'ACTION_ADVICE';
   const rndInt = getRndInt(0, 100);
   if(rndInt > 90) {
     return 'RATING';
@@ -29,6 +29,17 @@ export const Interaction: (props: {
   let frameNr;
 
   onMount(async () => {
+    // NOTE: timeout makes this much more reliable
+    setTimeout(() => {
+      initFadeOut();
+    }, 100);
+  });
+
+  onCleanup(() => {
+    document.removeEventListener("keypress", escapeHandler);
+  });
+
+  const initFadeOut = () => {
     const res = fadeOut(wrapperEl, 5000, 2000);
     // const res = changeHeight(wrapperEl, 300,1000, 2000);
     frameNr = res.frameNr;
@@ -37,11 +48,7 @@ export const Interaction: (props: {
         teardown();
       }
     });
-  });
-
-  onCleanup(() => {
-    document.removeEventListener("keypress", escapeHandler);
-  });
+  };
 
   const onSuccess = async () => {
     setIsShowSun(true);
