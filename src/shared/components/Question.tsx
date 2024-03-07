@@ -3,7 +3,7 @@ import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { saveAnswer } from "@src/shared/data/dataInterface";
-import { changeHeight, fadeOut, promiseTimeout } from "@src/util/animation";
+import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { getRndEntry } from "@src/util/getRndEntry";
 
 // once on app load
@@ -99,9 +99,9 @@ export const Question: (props: {
           if(
             (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
           ) {
-            fadeOut(wrapperEl, 150).promise.then(()=>{
+            fadeOut(wrapperEl, 150).promise.then(() => {
               teardown();
-            })
+            });
           }
         }}
         ref={wrapperEl}
