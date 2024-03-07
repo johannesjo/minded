@@ -7,8 +7,8 @@ export const getHostFromUrl = (url: string): string => {
       parsedHost.icann.domain + "." + parsedHost.icann.topLevelDomains.join(".")
     );
   }
-  if(parsedHost.type === ParseResultType.Ip) {
-    return parsedHost.hostname;
+  if(parsedHost.type === ParseResultType.Ip || parsedHost.hostname === 'localhost') {
+    return parsedHost.hostname as string;
   }
   console.log(parsedHost);
   console.error("Url could not be parsed");
