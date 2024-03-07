@@ -37,7 +37,7 @@ const NewTab = () => {
             will appear.
           </p>
           <p>
-            This will help you breaking your automatic patterns to visit those
+            This will help you break your automatic patterns to visit those
             websites more often than you like.
           </p>
           <p>Come back here, once you answered a couple of those.</p>
