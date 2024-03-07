@@ -6,6 +6,8 @@ import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 import { RndQuote } from "@src/shared/components/dashboard/RndQuote";
 import { dashboardEntriesFromQuestions } from '@src/shared/components/dashboard/dashboardEntriesFromQuestions';
 import { getRndInt } from '@src/util/getRndInt';
+import { QuestionCategoryId } from '@src/shared/data/questions';
+import Rating from '@src/shared/components/ui/Rating';
 
 
 export const Dashboard: () => JSX.Element = () => {
@@ -33,15 +35,24 @@ export const Dashboard: () => JSX.Element = () => {
         switch (dg.type) {
           case DashboardGroupType.Quote:
             return (
-              <div className={styles.box + ' ' + (index === focusElI ? styles.isFocus : '')}><RndQuote />
-              </div>
+              <div className={styles.box}><RndQuote /></div>
             );
           default:
-            return (
-              <div className={styles.box + ' ' + (index === focusElI ? styles.isFocus : '')}>
-                <AnswerList dashboardGroup={dg} />
-              </div>
-            );
+            switch (dg.id) {
+              case QuestionCategoryId.XEnergyLevel:
+                return (
+                  <div className={styles.box}>
+                    <div className={styles.standardHeading}>Your Energy Level Today</div>
+                    <Rating isShowOnly={true}
+                            value={(dg.answers[0] && dg.answers[0].val) as number} />
+                  </div>
+                );
+
+              default:
+                return (
+                  <div className={styles.box}><AnswerList dashboardGroup={dg} /></div>
+                );
+            }
         }
       })}
     </div>

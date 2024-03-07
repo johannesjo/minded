@@ -1,0 +1,33 @@
+.minded-6622-rating {
+
+  &.showOnly {
+    pointer-events: none;
+  }
+
+  &.showOnly span {
+    margin: 8px;
+
+    &.isFull {
+      color: inherit;
+    }
+  }
+
+
+  span {
+    cursor: pointer;
+    display: inline-block;
+    font-size: 50px;
+    margin: 12px;
+    color: rgba(0, 0, 0, .3);
+    transition: all .3s;
+
+    &:hover {
+      transform: scale(2.2);
+      color: rgba(0, 0, 0, 1);
+    }
+
+    &.isFull {
+      color: black;
+    }
+  }
+}

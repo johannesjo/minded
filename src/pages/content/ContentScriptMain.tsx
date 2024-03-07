@@ -4,8 +4,6 @@ import { updateSyncData } from '@src/shared/data/dataInterface';
 import { Interaction } from '@src/shared/components/interaction/Interaction';
 
 export const ContentScriptMain: () => JSX.Element = () => {
-  console.log(document.getElementById('minded-6622'));
-
   onMount(() => {
     setTimeout(() => {
       updateSyncData({lastBlocked: Date.now(), lastBlockedUrl: window.location.href});
