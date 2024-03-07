@@ -1,10 +1,8 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
 import { Question } from "@src/shared/components/Question";
-import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 
 export const ContentScriptMain: () => JSX.Element = () => {
-  const [getIsShowDashboard, setIsShowDashboard] = createSignal(false);
   const [getIsQuestionHidden, setIsQuestionHidden] = createSignal(false);
 
   onMount(() => {
@@ -17,15 +15,16 @@ export const ContentScriptMain: () => JSX.Element = () => {
     // });
   });
 
+  // return <div style="width: 100%; height: 100vh; position: fixed; left: 0; right: 0; top: 0; background: white;">
+  //   <div>
+  //     <Question onHide={() => setIsQuestionHidden(true)} />
+  //     <Dashboard />
+  //   </div>
+  // </div>;
+
   return (
     <>
-      {getIsShowDashboard() ? (
-        <Dashboard />
-      ) : (
-        !getIsQuestionHidden() && (
-          <Question onHide={() => setIsQuestionHidden(true)} />
-        )
-      )}
+      <Question onHide={() => setIsQuestionHidden(true)} />
     </>
   );
 };
