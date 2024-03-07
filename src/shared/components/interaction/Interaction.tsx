@@ -9,7 +9,7 @@ import { ACTION_ADVICES } from '@src/shared/data/actionAdvices';
 
 
 const MODE: 'RATING' | 'ACTION_ADVICE' | undefined = (() => {
-  return 'ACTION_ADVICE';
+  // return 'ACTION_ADVICE';
   const rndInt = getRndInt(0, 100);
   if(rndInt > 90) {
     return 'RATING';
@@ -19,7 +19,7 @@ const MODE: 'RATING' | 'ACTION_ADVICE' | undefined = (() => {
   }
   return undefined;
 })();
-
+const ADVICE = getRndEntry(ACTION_ADVICES);
 
 export const Interaction: (props: {
   onHideAll: () => void
@@ -96,7 +96,10 @@ export const Interaction: (props: {
         {getIsShowSun() && <div id="minded-6622-sun"></div>}
         <Switch>
           <Match when={(MODE === 'ACTION_ADVICE') as any}>
-            <div id="minded-6622-action-advice">{getRndEntry(ACTION_ADVICES)}</div>
+            <div id="minded-6622-action-advice">
+              <div>{ADVICE.txt}</div>
+              <div>{ADVICE.ico}</div>
+            </div>
           </Match>
           <Match when={(MODE === 'RATING') as any}>
             <RatingInteraction onCancelCountdown={cancelCountdown}
