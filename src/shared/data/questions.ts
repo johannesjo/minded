@@ -1,13 +1,19 @@
 export enum QuestionCategoryId {
   Motivation = "Motivation",
   PersonalResources = "PersonalResources",
-  RefocusHelper = "RefocusHelper",
+  RefocusHelperToday = "RefocusHelperToday",
   SelfCompassion = "SelfCompassion",
   CalmingThoughts = "CalmingThoughts",
   PositiveThoughts = "PositiveThoughts",
   HelpfulTools = "HelpfulTools",
   FlowBreaker = "FlowBreaker",
+  GoodPlans = "GoodPlans",
+  GoodPlansToday = "GoodPlansToday",
   XSpecialWidget = "XSpecialWidget",
+  // XMoodWordCloud = "XMoodWordCloud",
+  // XMoodColorSelector = "XMoodColorSelector",
+  // XEnergyLevel = "XEnergyLevel",
+  // XWeatherSelector = "XWeatherSelector",
   Other = "Other",
 }
 
@@ -24,6 +30,7 @@ export type QuestionForPrompt = {
 
 export interface QuestionCategory {
   dashboardTxt?: string;
+  isTodayOnlyCategory?: boolean;
   questions: Question[];
 }
 
@@ -33,14 +40,15 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.PersonalResources]: {
     dashboardTxt: "Personal Resources",
     questions: [
-      { prompt: "I am good at", t: "What are you good at" },
+      {prompt: "I am good at", t: "What are you good at"},
       {
         t: "What is a strength of yours",
       },
     ],
   },
-  [QuestionCategoryId.RefocusHelper]: {
+  [QuestionCategoryId.RefocusHelperToday]: {
     dashboardTxt: "Finding Focus",
+    isTodayOnlyCategory: true,
     questions: [
       {
         prompt: "My most important task is",
@@ -54,37 +62,48 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Motivation]: {
     dashboardTxt: "Motivation",
-    questions: [{ t: "What motivates you" }],
+    questions: [{t: "What motivates you"}],
   },
   [QuestionCategoryId.HelpfulTools]: {
     dashboardTxt: "Helpful Tools",
-    questions: [{ t: "What helps you concentrate" }],
+    questions: [{t: "What helps you concentrate"}],
   },
   [QuestionCategoryId.CalmingThoughts]: {
-    questions: [{ t: "What is relaxing for you" }],
+    questions: [{t: "What is relaxing for you"}],
     dashboardTxt: "Calming Thoughts",
   },
   [QuestionCategoryId.PositiveThoughts]: {
-    questions: [{ t: "What is good today" }, { t: "What do you like" }],
+    questions: [{t: "What is good today"}, {t: "What do you like"}],
     dashboardTxt: "Positive Thoughts",
   },
   [QuestionCategoryId.SelfCompassion]: {
     questions: [],
-    dashboardTxt: "Good Thoughts",
+    dashboardTxt: "Self Compassion",
   },
-  [QuestionCategoryId.FlowBreaker]: { questions: [] },
-  [QuestionCategoryId.XSpecialWidget]: { questions: [] },
-  [QuestionCategoryId.Other]: { questions: [] },
+  [QuestionCategoryId.GoodPlans]: {
+    questions: [{t: "What is something you always wanted to do"},],
+    dashboardTxt: "Good Plans",
+  },
+  [QuestionCategoryId.GoodPlansToday]: {
+    questions: [{t: "What is a nice thing you can do for yourself today"}],
+    dashboardTxt: "Good Plans Today",
+    isTodayOnlyCategory: true
+  },
+  [QuestionCategoryId.FlowBreaker]: {questions: []},
+  [QuestionCategoryId.XSpecialWidget]: {questions: []},
+  [QuestionCategoryId.Other]: {questions: []},
 };
 
 export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
+  QuestionCategoryId.GoodPlansToday,
   QuestionCategoryId.Motivation,
+  QuestionCategoryId.RefocusHelperToday,
   QuestionCategoryId.PersonalResources,
-  QuestionCategoryId.RefocusHelper,
   QuestionCategoryId.SelfCompassion,
-  QuestionCategoryId.XSpecialWidget,
   QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.GoodPlans,
   QuestionCategoryId.PositiveThoughts,
+  QuestionCategoryId.XSpecialWidget,
   QuestionCategoryId.HelpfulTools,
 ];
 
@@ -92,6 +111,6 @@ export const QUESTIONS: QuestionForPrompt[] = [];
 Object.keys(QUESTION_CATEGORIES).forEach((categoryId) => {
   const entry = QUESTION_CATEGORIES[categoryId];
   entry.questions.forEach((question) => {
-    QUESTIONS.push({ ...question, categoryId });
+    QUESTIONS.push({...question, categoryId});
   });
 });
