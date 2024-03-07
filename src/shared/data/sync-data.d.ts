@@ -13,9 +13,10 @@ export interface Answer {
 
 export interface SyncData {
   cfg: UserCfg;
+  lastBlocked: number;
   answers: Answer[];
 }
 
 export interface StaticCfg {
-  XXX: number;
+  ShowAgainThreshold: number;
 }

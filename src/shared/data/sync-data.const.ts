@@ -20,9 +20,10 @@ export const DEFAULT_SYNC_DATA: SyncData = {
       "localhost:3000",
     ],
   },
+  lastBlocked: 0,
   answers: [],
 };
 
 export const STATIC_CFG: StaticCfg = {
-  XXX: 2,
+  ShowAgainThreshold: 60* 1000,
 };

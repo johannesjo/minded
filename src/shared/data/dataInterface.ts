@@ -25,6 +25,23 @@ export const saveSyncData = (syncData: SyncData): Promise<void> => {
   }
 };
 
+
+export const updateSyncData = async (newSyncData: Partial<SyncData>): Promise<void> => {
+  if (bro.runtime?.id) {
+    const syncData = await getSyncData();
+    return bro.storage.sync.set({
+      ...syncData,
+      ...newSyncData,
+    });
+  } else {
+    throw new Error(
+      "Extension was reloaded, please reload tab for it to work here again",
+    );
+  }
+};
+
+
+
 export const updateCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
   if (bro.runtime?.id) {
     const syncData = await getSyncData();

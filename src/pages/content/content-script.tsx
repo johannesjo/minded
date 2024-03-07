@@ -6,13 +6,14 @@ import { ContentScriptMain } from "@src/pages/content/ContentScriptMain";
 // @ts-ignore
 import styleAsString from "./content-script.scss?inline";
 import { render } from "solid-js/web";
+import { isShowMinder } from '@src/util/isShowMinder';
 
 const CURRENT_URL = window.location.href;
 
 (function init() {
   getSyncData().then((syncData) => {
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
-    if(isOnBlockedUrl(CURRENT_URL, syncData)) {
+    if(isOnBlockedUrl(CURRENT_URL, syncData) && isShowMinder(syncData)) {
       async function innerInit() {
         if(!document.body) {
           self.setTimeout(() => {
