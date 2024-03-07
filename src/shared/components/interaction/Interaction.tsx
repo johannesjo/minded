@@ -1,9 +1,12 @@
 /* @refresh reload */
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
+import { RatingInteraction } from '@src/shared/components/interaction/RatingInteraction';
 import { Question } from '@src/shared/components/interaction/Question';
+import { getRndInt } from '@src/util/getRndInt';
 
-// once on app load
+const isShowRating = getRndInt(0, 10) === 0;
+
 
 export const Interaction: (props: {
   onHideAll: () => void
@@ -32,7 +35,7 @@ export const Interaction: (props: {
     // wait for sun
     await promiseTimeout(800);
     await fadeOut(wrapperEl, 800).promise;
-    teardown(true);
+    teardown();
   };
 
   const cancelCountdown = () => {
@@ -44,7 +47,7 @@ export const Interaction: (props: {
     wrapperEl.style.opacity = "1";
   };
 
-  const teardown = (isSubmitSuccess: boolean = false) => {
+  const teardown = () => {
     document.removeEventListener("keypress", escapeHandler);
     props.onHideAll();
   };
@@ -71,9 +74,15 @@ export const Interaction: (props: {
         ref={wrapperEl}
       >
         {getIsShowSun() && <div id="minded-6622-sun"></div>}
-        <Question onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown} />
+
+        {isShowRating
+          ? (<RatingInteraction onCancelCountdown={cancelCountdown}
+                                onSuccess={onSuccess}
+                                onCancel={teardown} />)
+          : (<Question onCancelCountdown={cancelCountdown}
+                       onSuccess={onSuccess}
+                       onCancel={teardown} />)
+        }
       </div>
     </>
   );

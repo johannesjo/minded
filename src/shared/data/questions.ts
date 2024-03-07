@@ -12,7 +12,7 @@ export enum QuestionCategoryId {
   XSpecialWidget = "XSpecialWidget",
   // XMoodWordCloud = "XMoodWordCloud",
   // XMoodColorSelector = "XMoodColorSelector",
-  // XEnergyLevel = "XEnergyLevel",
+  XEnergyLevel = "XEnergyLevel",
   // XWeatherSelector = "XWeatherSelector",
   Other = "Other",
 }
@@ -90,6 +90,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true
   },
   [QuestionCategoryId.FlowBreaker]: {questions: []},
+  [QuestionCategoryId.XEnergyLevel]: {questions: []},
   [QuestionCategoryId.XSpecialWidget]: {questions: []},
   [QuestionCategoryId.Other]: {questions: []},
 };
@@ -98,6 +99,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodPlansToday,
   QuestionCategoryId.Motivation,
   QuestionCategoryId.RefocusHelperToday,
+  QuestionCategoryId.XEnergyLevel,
   QuestionCategoryId.PersonalResources,
   QuestionCategoryId.SelfCompassion,
   QuestionCategoryId.CalmingThoughts,
