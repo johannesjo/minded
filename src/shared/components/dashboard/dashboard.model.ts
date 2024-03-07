@@ -2,8 +2,8 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 
 export enum DashboardGroupType {
-  Standard,
-  Quote,
+  Standard = 'Standard',
+  Quote = 'Quote',
 }
 
 export interface DashboardGroupStandard {
