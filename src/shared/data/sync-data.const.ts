@@ -21,6 +21,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
     ],
   },
   lastBlocked: 0,
+  lastBlockedUrl: '',
   answers: [],
 };
 

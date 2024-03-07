@@ -13,7 +13,7 @@ const CURRENT_URL = window.location.href;
 (function init() {
   getSyncData().then((syncData) => {
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
-    if(isOnBlockedUrl(CURRENT_URL, syncData) && isShowMinder(syncData)) {
+    if(isOnBlockedUrl(CURRENT_URL, syncData) && isShowMinder(CURRENT_URL,syncData)) {
       async function innerInit() {
         if(!document.body) {
           self.setTimeout(() => {
@@ -33,7 +33,6 @@ const CURRENT_URL = window.location.href;
         const styleTag = document.createElement("style");
         styleTag.textContent = styleAsString;
         document.head.appendChild(styleTag);
-        console.log(render);
 
         render(() => (<ContentScriptMain />) as any, wrapperEl);
       }
