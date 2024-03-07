@@ -4,6 +4,7 @@ export enum QuestionCategoryId {
   RefocusHelper = "RefocusHelper",
   SelfCompassion = "SelfCompassion",
   CalmingThoughts = "CalmingThoughts",
+  PositiveThoughts = "PositiveThoughts",
   HelpfulTools = "HelpfulTools",
   FlowBreaker = "FlowBreaker",
   XSpecialWidget = "XSpecialWidget",
@@ -60,8 +61,12 @@ export const QUESTION_CATEGORIES: {
     questions: [{ t: "What helps you concentrate" }],
   },
   [QuestionCategoryId.CalmingThoughts]: {
-    questions: [{ t: "What is good today" }, { t: "What do you like" }],
+    questions: [{ t: "What is relaxing for you" }],
     dashboardTxt: "Calming Thoughts",
+  },
+  [QuestionCategoryId.PositiveThoughts]: {
+    questions: [{ t: "What is good today" }, { t: "What do you like" }],
+    dashboardTxt: "Positive Thoughts",
   },
   [QuestionCategoryId.SelfCompassion]: {
     questions: [],
@@ -79,6 +84,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.SelfCompassion,
   QuestionCategoryId.XSpecialWidget,
   QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.HelpfulTools,
 ];
 
