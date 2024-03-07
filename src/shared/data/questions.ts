@@ -47,7 +47,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
-    dashboardTxt: "Finding Focus",
+    dashboardTxt: "Finding Focus Today",
     isTodayOnlyCategory: true,
     questions: [
       {
