@@ -61,13 +61,13 @@
   justify-content: center;
   align-items: center;
   padding: 32px;
-  animation: minded6622fadeInAnimation ease 1s;
+  animation: minded6622fadeInAnimation ease 2s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   opacity: 0;
-  animation-delay: .2s;
+  animation-delay: .5s;
 
-  &:nth-child(5) {
+  &.isFocus {
     animation-delay: 0s;
   }
 }
