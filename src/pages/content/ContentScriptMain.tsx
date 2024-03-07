@@ -8,7 +8,7 @@ export const ContentScriptMain: () => JSX.Element = () => {
 
   onMount(() => {
     setTimeout(() => {
-      updateSyncData({lastBlocked: Date.now()});
+      updateSyncData({lastBlocked: Date.now(), lastBlockedUrl: window.location.href});
     }, 8000);
   });
 

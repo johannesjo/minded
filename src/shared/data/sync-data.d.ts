@@ -13,8 +13,9 @@ export interface Answer {
 
 export interface SyncData {
   cfg: UserCfg;
-  lastBlocked: number;
   answers: Answer[];
+  lastBlocked: number;
+  lastBlockedUrl: string;
 }
 
 export interface StaticCfg {
