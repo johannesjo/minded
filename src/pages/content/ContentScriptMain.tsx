@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-import { Question } from "@src/shared/components/Question";
+import { Question } from "@src/shared/components/question/Question";
 import { updateSyncData } from '@src/shared/data/dataInterface';
 
 export const ContentScriptMain: () => JSX.Element = () => {
