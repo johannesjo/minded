@@ -1,11 +1,24 @@
 /* @refresh reload */
-import { createSignal, JSX, onCleanup, onMount } from "solid-js";
+import { createSignal, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
+import { getRndInt } from '@src/util/getRndInt';
 import { RatingInteraction } from '@src/shared/components/interaction/RatingInteraction';
 import { Question } from '@src/shared/components/interaction/Question';
-import { getRndInt } from '@src/util/getRndInt';
+import { getRndEntry } from '@src/util/getRndEntry';
+import { ACTION_ADVICES } from '@src/shared/data/actionAdvices';
 
-const isShowRating = getRndInt(0, 10) === 0;
+
+const MODE: 'RATING' | 'ACTION_ADVICE' | undefined = (() => {
+  // return 'ACTION_ADVICE';
+  const rndInt = getRndInt(0, 100);
+  if(rndInt > 90) {
+    return 'RATING';
+  }
+  if(rndInt > 80) {
+    return 'ACTION_ADVICE';
+  }
+  return undefined;
+})();
 
 
 export const Interaction: (props: {
@@ -74,15 +87,21 @@ export const Interaction: (props: {
         ref={wrapperEl}
       >
         {getIsShowSun() && <div id="minded-6622-sun"></div>}
-
-        {isShowRating
-          ? (<RatingInteraction onCancelCountdown={cancelCountdown}
-                                onSuccess={onSuccess}
-                                onCancel={teardown} />)
-          : (<Question onCancelCountdown={cancelCountdown}
-                       onSuccess={onSuccess}
-                       onCancel={teardown} />)
-        }
+        <Switch>
+          <Match when={(MODE === 'ACTION_ADVICE') as any}>
+            <div id="minded-6622-action-advice">{getRndEntry(ACTION_ADVICES)}</div>
+          </Match>
+          <Match when={(MODE === 'RATING') as any}>
+            <RatingInteraction onCancelCountdown={cancelCountdown}
+                               onSuccess={onSuccess}
+                               onCancel={teardown} />
+          </Match>
+          <Match when={(!MODE) as any}>
+            <Question onCancelCountdown={cancelCountdown}
+                      onSuccess={onSuccess}
+                      onCancel={teardown} />
+          </Match>
+        </Switch>
       </div>
     </>
   );
