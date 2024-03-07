@@ -3,6 +3,7 @@ import { createSignal, onMount } from "solid-js";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { Onboarding } from "@src/shared/components/onboarding/Onboarding";
 import styles from "./NewTab.module.scss";
+import Rating from '@src/shared/components/ui/Rating';
 
 const NewTab = () => {
   const [getIsShowInfo, setIsShowInfo] = createSignal(false);
@@ -10,19 +11,20 @@ const NewTab = () => {
 
   onMount(() => {
     getSyncData().then((syncData) => {
-      if (!syncData.answers.length) {
+      if(!syncData.answers.length) {
         setIsShowInfo(true);
-        if (!syncData.cfg.isOnboardingComplete) {
+        if(!syncData.cfg.isOnboardingComplete) {
           setIsShowOnboarding(true);
         }
       }
     });
   });
-
-  // return (<Question isUnskippable={true} onHide={()=> undefined} />)
+  // return (<Rating />);
+  // return (<Question isUnskippable={true} onSuccess={()=> undefined} />)
 
   return (
-    <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>
+    <div id="minded-6622-coloured-wrapper"
+         class={styles.NewTab}>
       {getIsShowOnboarding() ? (
         <Onboarding onComplete={() => setIsShowOnboarding(false)} />
       ) : getIsShowInfo() ? (
