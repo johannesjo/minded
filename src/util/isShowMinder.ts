@@ -5,6 +5,7 @@ import { getHostFromUrl } from '@src/util/getHostFromUrl';
 
 export const isShowMinder = (currentUrl: string, syncData: SyncData): boolean => {
   const host = getHostFromUrl(currentUrl);
-  // console.log(STATIC_CFG.ShowAgainThreshold ,Date.now() - syncData.lastBlocked , !syncData.lastBlockedUrl , host !== getHostFromUrl(syncData.lastBlockedUrl));
+  // TODO remove
+  console.log('isShowMinder()', STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlocked || !syncData.lastBlockedUrl || host !== getHostFromUrl(syncData.lastBlockedUrl), STATIC_CFG.ShowAgainThreshold, Date.now() - syncData.lastBlocked, !syncData.lastBlockedUrl, host !== getHostFromUrl(syncData.lastBlockedUrl));
   return STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlocked || !syncData.lastBlockedUrl || host !== getHostFromUrl(syncData.lastBlockedUrl);
 };
