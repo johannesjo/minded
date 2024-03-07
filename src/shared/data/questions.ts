@@ -9,6 +9,7 @@ export enum QuestionCategoryId {
   FlowBreaker = "FlowBreaker",
   GoodPlans = "GoodPlans",
   GoodPlansToday = "GoodPlansToday",
+  GoodThingsToday = "GoodThingsToday",
   XSpecialWidget = "XSpecialWidget",
   // XMoodWordCloud = "XMoodWordCloud",
   // XMoodColorSelector = "XMoodColorSelector",
@@ -61,7 +62,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.Motivation]: {
-    dashboardTxt: "Motivation",
+    dashboardTxt: "My Motivation",
     questions: [{t: "What motivates you"}],
   },
   [QuestionCategoryId.HelpfulTools]: {
@@ -73,8 +74,13 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Calming Thoughts",
   },
   [QuestionCategoryId.PositiveThoughts]: {
-    questions: [{t: "What is good today"}, {t: "What do you like"}],
+    questions: [{t: "What do you like"}],
     dashboardTxt: "Positive Thoughts",
+  },
+  [QuestionCategoryId.GoodThingsToday]: {
+    questions: [{t: "What is good today"}],
+    dashboardTxt: "Good Today",
+    isTodayOnlyCategory: true,
   },
   [QuestionCategoryId.SelfCompassion]: {
     questions: [],
@@ -103,6 +109,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.PersonalResources,
   QuestionCategoryId.SelfCompassion,
   QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.GoodThingsToday,
   QuestionCategoryId.GoodPlans,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.XSpecialWidget,
