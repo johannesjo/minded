@@ -1,12 +1,11 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-import { QUESTIONS } from "@src/shared/data/questions";
+import { QUESTION_CATEGORIES, QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
-import { saveAnswer } from "@src/shared/data/dataInterface";
-import { getRndEntry } from "@src/util/getRndEntry";
+import { getSyncData, saveAnswer } from "@src/shared/data/dataInterface";
+import { getRndEntry } from '@src/util/getRndEntry';
+import { getQuestionSmart } from '@src/util/getQuestionSmart';
 
-// once on app load
-const rndQuestion = getRndEntry(QUESTIONS);
 
 export const Question: (props: {
   onSuccess: () => void;
@@ -14,14 +13,20 @@ export const Question: (props: {
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
+  const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>(undefined);
   let inpEl;
 
   onMount(async () => {
-    inpEl.focus();
-    setTimeout(() => inpEl.focus(), 250);
-    if(rndQuestion.prompt) {
-      inpEl.value = rndQuestion.prompt + " ";
-    }
+    getSyncData().then(syncData => {
+      const question = getQuestionSmart(syncData.answers);
+      if(question.prompt) {
+        inpEl.value = question.prompt + " ";
+      }
+      setQuestion(question);
+      inpEl.focus();
+      setTimeout(() => inpEl.focus(), 250);
+    });
+
   });
 
 
@@ -35,9 +40,12 @@ export const Question: (props: {
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
+    const q = getQuestion();
+    if(!q) throw new Error('No question');
+
     if(ev.key === "Enter") {
       submitAnswer({
-        questionCategoryId: rndQuestion.categoryId,
+        questionCategoryId: q.categoryId,
         val: (ev.target as any).value,
         ts: Date.now(),
       });
@@ -50,8 +58,8 @@ export const Question: (props: {
 
   return (
     <>
-      <div id="minded-6622-msg">
-        <div id="minded-6622-question">{rndQuestion.t}?</div>
+      {getQuestion() && <div id="minded-6622-msg">
+        <div id="minded-6622-question">{getQuestion().t}?</div>
         <input
           ref={inpEl}
           type="text"
@@ -64,7 +72,7 @@ export const Question: (props: {
           id="minded-6622-inp"
           autoFocus
         />
-      </div>
+      </div>}
     </>
   );
 };
