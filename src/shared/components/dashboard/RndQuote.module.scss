@@ -1,3 +1,5 @@
+@import "./../../../styles/mixins/_mixins.scss";
+
 .RndQuote {
 
 }
@@ -8,11 +10,11 @@
 }
 
 .author {
-  font-weight: bold;
   margin-top: 16px;
+  font-weight: 200;
 }
 
 .tipH {
-  font-weight: bold;
+  @include h4();
   margin-bottom: 8px;
 }
