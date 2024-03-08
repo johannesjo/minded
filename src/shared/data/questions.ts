@@ -96,7 +96,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true
   },
   [QuestionCategoryId.FlowBreaker]: {questions: []},
-  [QuestionCategoryId.XEnergyLevel]: {questions: []},
+  [QuestionCategoryId.XEnergyLevel]: {questions: [], isTodayOnlyCategory: true},
   [QuestionCategoryId.XSpecialWidget]: {questions: []},
   [QuestionCategoryId.Other]: {questions: []},
 };
