@@ -2,20 +2,22 @@ export enum QuestionCategoryId {
   Motivation = "Motivation",
   PersonalResources = "PersonalResources",
   RefocusHelperToday = "RefocusHelperToday",
-  SelfCompassion = "SelfCompassion",
   CalmingThoughts = "CalmingThoughts",
   PositiveThoughts = "PositiveThoughts",
   HelpfulTools = "HelpfulTools",
-  FlowBreaker = "FlowBreaker",
   GoodPlans = "GoodPlans",
   GoodPlansToday = "GoodPlansToday",
-  GoodThingsToday = "GoodThingsToday",
-  XSpecialWidget = "XSpecialWidget",
+  GoodToday = "GoodToday",
+  XEnergyLevel = "XEnergyLevel",
+  // IDEAS
+  // ---------
+  // XSpecialWidget = "XSpecialWidget",
   // XMoodWordCloud = "XMoodWordCloud",
   // XMoodColorSelector = "XMoodColorSelector",
-  XEnergyLevel = "XEnergyLevel",
   // XWeatherSelector = "XWeatherSelector",
-  Other = "Other",
+  // FlowBreaker = "FlowBreaker",
+  // Other = "Other",
+  // SelfCompassion = "SelfCompassion",
 }
 
 export type Question = {
@@ -77,14 +79,10 @@ export const QUESTION_CATEGORIES: {
     questions: [{t: "What do you like"}],
     dashboardTxt: "Positive Thoughts",
   },
-  [QuestionCategoryId.GoodThingsToday]: {
+  [QuestionCategoryId.GoodToday]: {
     questions: [{t: "What is good today"}],
     dashboardTxt: "Good Today",
     isTodayOnlyCategory: true,
-  },
-  [QuestionCategoryId.SelfCompassion]: {
-    questions: [],
-    dashboardTxt: "Self Compassion",
   },
   [QuestionCategoryId.GoodPlans]: {
     questions: [{t: "What is something you always wanted to do"},],
@@ -95,25 +93,20 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Good Plans Today",
     isTodayOnlyCategory: true
   },
-  [QuestionCategoryId.FlowBreaker]: {questions: []},
   [QuestionCategoryId.XEnergyLevel]: {questions: [], isTodayOnlyCategory: true},
-  [QuestionCategoryId.XSpecialWidget]: {questions: []},
-  [QuestionCategoryId.Other]: {questions: []},
 };
 
 export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodPlansToday,
-  QuestionCategoryId.Motivation,
   QuestionCategoryId.RefocusHelperToday,
-  QuestionCategoryId.XEnergyLevel,
+  QuestionCategoryId.GoodToday,
+  QuestionCategoryId.Motivation,
   QuestionCategoryId.PersonalResources,
-  QuestionCategoryId.SelfCompassion,
+  QuestionCategoryId.XEnergyLevel,
   QuestionCategoryId.CalmingThoughts,
-  QuestionCategoryId.GoodThingsToday,
   QuestionCategoryId.GoodPlans,
-  QuestionCategoryId.PositiveThoughts,
-  QuestionCategoryId.XSpecialWidget,
   QuestionCategoryId.HelpfulTools,
+  QuestionCategoryId.PositiveThoughts,
 ];
 
 export const QUESTIONS: QuestionForPrompt[] = [];
