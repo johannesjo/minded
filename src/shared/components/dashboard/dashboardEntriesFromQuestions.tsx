@@ -45,20 +45,17 @@ export const dashboardEntriesFromQuestions = (
 
   if (sortedEntries.length >= 5) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
-
     const rndEntry = { ...sortedEntries[rndIndex] };
-
     sortedEntries = replaceAt(sortedEntries, rndIndex, {
       type: DashboardGroupType.Quote,
     });
-
-    sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
+   sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
   } else {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
   }
-  // finally limit
-  sortedEntries = sortedEntries.slice(-1 * MAX_GROUPS);
+  // finally limit size
+  sortedEntries.length = MAX_GROUPS
   return sortedEntries;
 };
