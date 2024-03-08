@@ -1,3 +1,5 @@
+@import "./../../../styles/mixins/_mixins.scss";
+
 .AnswerList {
 
 }
@@ -8,12 +10,10 @@
 }
 
 .categoryTitle {
-  margin-top: 0;
+  @include h4();
   cursor: pointer;
-  font-size: 18px;
+  margin-top: 0;
   margin-bottom: 20px;
-  font-weight: 200;
-  font-style: italic;
 }
 
 
