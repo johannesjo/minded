@@ -11,7 +11,7 @@ import { ACTION_ADVICES } from '@src/shared/data/actionAdvices';
 const MODE: 'RATING' | 'ACTION_ADVICE' | undefined = (() => {
   // return 'ACTION_ADVICE';
   const rndInt = getRndInt(0, 100);
-  if(rndInt > 90) {
+  if(rndInt > 95) {
     return 'RATING';
   }
   if(rndInt > 80) {
