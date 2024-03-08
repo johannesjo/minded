@@ -91,7 +91,10 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Good Plans",
   },
   [QuestionCategoryId.GoodPlansToday]: {
-    questions: [{t: "What is a nice thing you can do for yourself today"}],
+    questions: [
+      {t: "What is a nice thing you can do for yourself today"},
+      {t: "What can I do so that today will be a good day", prompt: "I will"},
+    ],
     dashboardTxt: "Good Plans Today",
     isTodayOnlyCategory: true
   },
