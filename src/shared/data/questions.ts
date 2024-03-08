@@ -8,6 +8,7 @@ export enum QuestionCategoryId {
   GoodPlans = "GoodPlans",
   GoodPlansToday = "GoodPlansToday",
   GoodToday = "GoodToday",
+  GoalForTheWeek = "GoalForTheWeek",
   XEnergyLevel = "XEnergyLevel",
   // IDEAS
   // ---------
@@ -34,6 +35,7 @@ export type QuestionForPrompt = {
 export interface QuestionCategory {
   dashboardTxt?: string;
   isTodayOnlyCategory?: boolean;
+  isThisWeekOnlyCategory?: boolean;
   questions: Question[];
 }
 
@@ -93,6 +95,11 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Good Plans Today",
     isTodayOnlyCategory: true
   },
+  [QuestionCategoryId.GoalForTheWeek]: {
+    questions: [{t: "What is a goal you want to achieve this week"}],
+    dashboardTxt: "Your Goal for the Week",
+    isThisWeekOnlyCategory: true
+  },
   [QuestionCategoryId.XEnergyLevel]: {questions: [], isTodayOnlyCategory: true},
 };
 
@@ -101,11 +108,12 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.RefocusHelperToday,
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.Motivation,
-  QuestionCategoryId.PersonalResources,
   QuestionCategoryId.XEnergyLevel,
   QuestionCategoryId.CalmingThoughts,
   QuestionCategoryId.GoodPlans,
   QuestionCategoryId.HelpfulTools,
+  QuestionCategoryId.GoalForTheWeek,
+  QuestionCategoryId.PersonalResources,
   QuestionCategoryId.PositiveThoughts,
 ];
 

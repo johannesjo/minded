@@ -8,7 +8,7 @@ import {
   QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
-import { isToday } from "@src/util/isToday";
+import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { replaceAt } from "@src/util/replaceAt";
 
@@ -26,7 +26,9 @@ export const dashboardEntriesFromQuestions = (
     const answersForCat = answers.filter(
       (answer) =>
         answer.questionCategoryId === catId &&
-        (!category.isTodayOnlyCategory || isToday(answer.ts)),
+        (!category.isTodayOnlyCategory || isToday(answer.ts)) &&
+        (!category.isThisWeekOnlyCategory || isThisWeek(answer.ts))
+      ,
     );
     if (answersForCat?.length) {
       dashboardGroups.push({
