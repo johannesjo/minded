@@ -1,21 +1,34 @@
-import { Answer } from '@src/shared/data/sync-data';
-import { DashboardGroup, DashboardGroupType } from '@src/shared/components/dashboard/dashboard.model';
-import { QUESTION_CATEGORIES, QUESTION_CATEGORIES_ON_DASHBOARD } from '@src/shared/data/questions';
-import { getRndEntries } from '@src/util/getRndEntries';
-import { isToday } from '@src/util/isToday';
-import { getRndInt } from '@src/util/getRndInt';
-import { replaceAt } from '@src/util/replaceAt';
+import { Answer } from "@src/shared/data/sync-data";
+import {
+  DashboardGroup,
+  DashboardGroupType,
+} from "@src/shared/components/dashboard/dashboard.model";
+import {
+  QUESTION_CATEGORIES,
+  QUESTION_CATEGORIES_ON_DASHBOARD,
+} from "@src/shared/data/questions";
+import { getRndEntries } from "@src/util/getRndEntries";
+import { isToday } from "@src/util/isToday";
+import { getRndInt } from "@src/util/getRndInt";
+import { replaceAt } from "@src/util/replaceAt";
 
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
-export const dashboardEntriesFromQuestions = (answers: Answer[], now = Date.now()): DashboardGroup[] => {
+const CENTER_INDEX = 4;
+
+export const dashboardEntriesFromQuestions = (
+  answers: Answer[],
+  now = Date.now(),
+): DashboardGroup[] => {
   const dashboardGroups = [];
   QUESTION_CATEGORIES_ON_DASHBOARD.forEach((catId) => {
     const category = QUESTION_CATEGORIES[catId];
     const answersForCat = answers.filter(
-      (answer) => answer.questionCategoryId === catId && (!category.isTodayOnlyCategory || isToday(answer.ts)),
+      (answer) =>
+        answer.questionCategoryId === catId &&
+        (!category.isTodayOnlyCategory || isToday(answer.ts)),
     );
-    if(answersForCat?.length) {
+    if (answersForCat?.length) {
       dashboardGroups.push({
         id: catId,
         dashboardTxt: QUESTION_CATEGORIES[catId].dashboardTxt,
@@ -29,18 +42,19 @@ export const dashboardEntriesFromQuestions = (answers: Answer[], now = Date.now(
 
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
   let sortedEntries = dashboardGroups;
-  if(sortedEntries.length >= 6) {
+
+  if (sortedEntries.length >= 5) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
-    const rndEntry = {...sortedEntries[rndIndex]};
+
+    const rndEntry = { ...sortedEntries[rndIndex] };
 
     sortedEntries = replaceAt(sortedEntries, rndIndex, {
       type: DashboardGroupType.Quote,
     });
 
-    sortedEntries.splice(5, 0, rndEntry);
-
+    sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
   } else {
-    sortedEntries.splice(4, 0, {
+    sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
   }
