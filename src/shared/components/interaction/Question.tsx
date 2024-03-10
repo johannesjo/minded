@@ -1,9 +1,8 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-import { QUESTION_CATEGORIES, QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
+import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { getSyncData, saveAnswer } from "@src/shared/data/dataInterface";
-import { getRndEntry } from '@src/util/getRndEntry';
 import { getQuestionSmart } from '@src/util/getQuestionSmart';
 
 
@@ -19,8 +18,9 @@ export const Question: (props: {
   onMount(async () => {
     getSyncData().then(syncData => {
       const question = getQuestionSmart(syncData.answers);
-      if(question.prompt) {
-        inpEl.value = question.prompt + " ";
+
+      if(question.prompt && inpEl) {
+        inpEl.value = question.prompt;
       }
       setQuestion(question);
       inpEl.focus();
@@ -58,8 +58,8 @@ export const Question: (props: {
 
   return (
     <>
-      {getQuestion() && <div id="minded-6622-msg">
-        <div id="minded-6622-question">{getQuestion().t}?</div>
+      <div id="minded-6622-msg">
+        <div id="minded-6622-question">{getQuestion()?.t}?</div>
         <input
           ref={inpEl}
           type="text"
@@ -72,7 +72,7 @@ export const Question: (props: {
           id="minded-6622-inp"
           autoFocus
         />
-      </div>}
+      </div>
     </>
   );
 };
