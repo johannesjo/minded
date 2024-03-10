@@ -3,6 +3,10 @@ import { QuestionForPrompt, QUESTIONS } from '@src/shared/data/questions';
 import { getRndEntry } from '@src/util/getRndEntry';
 
 export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
+  if(!answers.length) {
+    return getRndEntry(QUESTIONS);
+  }
+
   const map = {};
   answers.forEach(answer => {
     map[answer.questionCategoryId] = map[answer.questionCategoryId]
