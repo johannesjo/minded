@@ -1,6 +1,7 @@
 import { Answer } from "@src/shared/data/sync-data";
 import {
   QUESTION_CATEGORIES,
+  QuestionCategoryId,
   QuestionForPrompt,
   QUESTIONS,
 } from "@src/shared/data/questions";
@@ -13,14 +14,19 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     return getRndEntry(QUESTIONS);
   }
 
-  const map: { [key: string]: number } = {};
+  const map: { [key in QuestionCategoryId]?: number } = {};
+
+  Object.keys(QuestionCategoryId).forEach((categoryId: QuestionCategoryId) => {
+    const categoryForAnswer = QUESTION_CATEGORIES[categoryId];
+    if (categoryForAnswer?.questions?.length) {
+      map[categoryId] = 0;
+    }
+  });
+
   answers.forEach((answer) => {
     const categoryForAnswer = QUESTION_CATEGORIES[answer.questionCategoryId];
-    if (!categoryForAnswer.questions?.length) {
+    if (!categoryForAnswer?.questions?.length) {
       return;
-    }
-    if (!map[answer.questionCategoryId]) {
-      map[answer.questionCategoryId] = 0;
     }
     if (categoryForAnswer.isTodayOnlyCategory && !isToday(answer.ts)) {
       return;
