@@ -9,7 +9,8 @@ export enum QuestionCategoryId {
   GoodPlansToday = "GoodPlansToday",
   GoodToday = "GoodToday",
   GoalForTheWeek = "GoalForTheWeek",
-  XEnergyLevel = "XEnergyLevel",
+  Gratitude = "Gratitude",
+  XEnergyLevelToday = "XEnergyLevelToday",
   // IDEAS
   // ---------
   // XSpecialWidget = "XSpecialWidget",
@@ -45,15 +46,15 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.PersonalResources]: {
     dashboardTxt: "Personal Resources",
     questions: [
-      { prompt: "I am good at", t: "What are you good at" },
+      { prompt: "I am good at", t: "What is something you are good at" },
       {
         t: "What is a strength of yours",
       },
     ],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
-    dashboardTxt: "Finding Focus Today",
     isTodayOnlyCategory: true,
+    dashboardTxt: "Finding Focus Today",
     questions: [
       {
         prompt: "My most important task is",
@@ -69,12 +70,27 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "My Motivation",
     questions: [{ t: "What motivates you" }],
   },
+  [QuestionCategoryId.Gratitude]: {
+    dashboardTxt: "Gratitude",
+    questions: [
+      {
+        t: "What is something you are grateful for",
+        prompt: "I am grateful for ",
+      },
+    ],
+  },
   [QuestionCategoryId.HelpfulTools]: {
     dashboardTxt: "Helpful Tools",
-    questions: [{ t: "What helps you concentrate" }],
+    questions: [
+      { t: "What might help you concentrate" },
+      { t: "What might boost your productivity" },
+    ],
   },
   [QuestionCategoryId.CalmingThoughts]: {
-    questions: [{ t: "What is relaxing for you" }],
+    questions: [
+      { t: "What makes you feel relaxed" },
+      { t: "Can you describe a calm place you might like" },
+    ],
     dashboardTxt: "Calming Thoughts",
   },
   [QuestionCategoryId.PositiveThoughts]: {
@@ -82,28 +98,37 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Positive Thoughts",
   },
   [QuestionCategoryId.GoodToday]: {
-    questions: [{ t: "What is good today" }],
-    dashboardTxt: "Good Today",
     isTodayOnlyCategory: true,
+    questions: [
+      { t: "What is good today" },
+      { t: "What is a little thing you enjoyed today" },
+    ],
+    dashboardTxt: "Good Today",
   },
   [QuestionCategoryId.GoodPlans]: {
-    questions: [{ t: "What is something you always wanted to do" }],
+    questions: [
+      { t: "What is something you always wanted to do" },
+      {
+        t: "What is a good habit you might want to establish",
+        prompt: "I want to ",
+      },
+    ],
     dashboardTxt: "Good Plans",
   },
   [QuestionCategoryId.GoodPlansToday]: {
+    isTodayOnlyCategory: true,
     questions: [
       { t: "What is a nice thing you can do for yourself today" },
       { t: "What can I do so that today will be a good day", prompt: "I will" },
     ],
     dashboardTxt: "Good Plans Today",
-    isTodayOnlyCategory: true,
   },
   [QuestionCategoryId.GoalForTheWeek]: {
+    isThisWeekOnlyCategory: true,
     questions: [{ t: "What is a goal you want to achieve this week" }],
     dashboardTxt: "Your Goal for the Week",
-    isThisWeekOnlyCategory: true,
   },
-  [QuestionCategoryId.XEnergyLevel]: {
+  [QuestionCategoryId.XEnergyLevelToday]: {
     isTodayOnlyCategory: true,
   },
 };
@@ -113,13 +138,14 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.RefocusHelperToday,
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.Motivation,
-  QuestionCategoryId.XEnergyLevel,
-  QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.XEnergyLevelToday,
   QuestionCategoryId.GoodPlans,
   QuestionCategoryId.HelpfulTools,
   QuestionCategoryId.GoalForTheWeek,
   QuestionCategoryId.PersonalResources,
+  QuestionCategoryId.Gratitude,
   QuestionCategoryId.PositiveThoughts,
+  QuestionCategoryId.CalmingThoughts,
 ];
 
 export const QUESTIONS: QuestionForPrompt[] = [];
