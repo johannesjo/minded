@@ -1,34 +1,38 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
-import { getRndInt } from '@src/util/getRndInt';
-import { RatingInteraction } from '@src/shared/components/interaction/RatingInteraction';
-import { Question } from '@src/shared/components/interaction/Question';
-import { getRndEntry } from '@src/util/getRndEntry';
-import { ACTION_ADVICES } from '@src/shared/data/actionAdvices';
+import { getRndInt } from "@src/util/getRndInt";
+import { RatingInteraction } from "@src/shared/components/interaction/RatingInteraction";
+import { Question } from "@src/shared/components/interaction/Question";
+import { getRndEntry } from "@src/util/getRndEntry";
+import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
+import { stopAllVideos } from "@src/util/stopAllVideos";
 
-
-const MODE: 'RATING' | 'ACTION_ADVICE' | undefined = (() => {
+const MODE: "RATING" | "ACTION_ADVICE" | undefined = (() => {
   // return 'ACTION_ADVICE';
   const rndInt = getRndInt(0, 100);
-  if(rndInt > 95) {
-    return 'RATING';
+  if (rndInt > 95) {
+    return "RATING";
   }
-  if(rndInt > 80) {
-    return 'ACTION_ADVICE';
+  if (rndInt > 80) {
+    return "ACTION_ADVICE";
   }
   return undefined;
 })();
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
-export const Interaction: (props: {
-  onHideAll: () => void
-}) => JSX.Element = (props) => {
+export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
+  props,
+) => {
   const [getIsShowSun, setIsShowSun] = createSignal(false);
   let wrapperEl;
   let frameNr;
 
   onMount(async () => {
+    // give a moment time for rendering
+    setTimeout(() => {
+      stopAllVideos();
+    }, 1000);
     // NOTE: timeout makes this much more reliable
     setTimeout(() => {
       initFadeOut();
@@ -44,7 +48,7 @@ export const Interaction: (props: {
     // const res = changeHeight(wrapperEl, 300,1000, 2000);
     frameNr = res.frameNr;
     res.promise.then(() => {
-      if(wrapperEl.style.opacity < 0.1) {
+      if (wrapperEl.style.opacity < 0.1) {
         teardown();
       }
     });
@@ -59,7 +63,7 @@ export const Interaction: (props: {
   };
 
   const cancelCountdown = () => {
-    if(!frameNr) {
+    if (!frameNr) {
       return;
     }
     window.cancelAnimationFrame(frameNr);
@@ -73,7 +77,7 @@ export const Interaction: (props: {
   };
 
   const escapeHandler = (ev: KeyboardEvent) => {
-    if(ev.key === "Escape") {
+    if (ev.key === "Escape") {
       teardown();
     }
   };
@@ -83,7 +87,7 @@ export const Interaction: (props: {
       <div
         id="minded-6622-coloured-wrapper"
         onclick={(ev) => {
-          if(
+          if (
             (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
           ) {
             fadeOut(wrapperEl, 150).promise.then(() => {
@@ -95,21 +99,25 @@ export const Interaction: (props: {
       >
         {getIsShowSun() && <div id="minded-6622-sun"></div>}
         <Switch>
-          <Match when={(MODE === 'ACTION_ADVICE') as any}>
+          <Match when={(MODE === "ACTION_ADVICE") as any}>
             <div id="minded-6622-action-advice">
               <div>{ADVICE.txt}</div>
               <div>{ADVICE.ico}</div>
             </div>
           </Match>
-          <Match when={(MODE === 'RATING') as any}>
-            <RatingInteraction onCancelCountdown={cancelCountdown}
-                               onSuccess={onSuccess}
-                               onCancel={teardown} />
+          <Match when={(MODE === "RATING") as any}>
+            <RatingInteraction
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onSuccess}
+              onCancel={teardown}
+            />
           </Match>
-          <Match when={(!MODE) as any}>
-            <Question onCancelCountdown={cancelCountdown}
-                      onSuccess={onSuccess}
-                      onCancel={teardown} />
+          <Match when={!MODE as any}>
+            <Question
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onSuccess}
+              onCancel={teardown}
+            />
           </Match>
         </Switch>
       </div>
