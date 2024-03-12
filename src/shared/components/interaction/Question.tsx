@@ -3,8 +3,7 @@ import { createSignal, JSX, onMount } from "solid-js";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { getSyncData, saveAnswer } from "@src/shared/data/dataInterface";
-import { getQuestionSmart } from '@src/util/getQuestionSmart';
-
+import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
 export const Question: (props: {
   onSuccess: () => void;
@@ -16,22 +15,20 @@ export const Question: (props: {
   let inpEl;
 
   onMount(async () => {
-    getSyncData().then(syncData => {
+    getSyncData().then((syncData) => {
       const question = getQuestionSmart(syncData.answers);
 
-      if(question.prompt && inpEl) {
+      if (question.prompt && inpEl) {
         inpEl.value = question.prompt;
       }
       setQuestion(question);
       inpEl.focus();
       setTimeout(() => inpEl.focus(), 250);
     });
-
   });
 
-
   const submitAnswer = async (answer: Answer) => {
-    if(!answer.val || answer.val.length < 2) {
+    if (!answer.val || (answer.val as string).length < 2) {
       return;
     }
     setIsInputDisabled(true);
@@ -41,17 +38,17 @@ export const Question: (props: {
 
   const onKeyDown = (ev: KeyboardEvent): void => {
     const q = getQuestion();
-    if(!q) throw new Error('No question');
+    if (!q) throw new Error("No question");
 
-    if(ev.key === "Enter") {
+    if (ev.key === "Enter") {
       submitAnswer({
         questionCategoryId: q.categoryId,
         val: (ev.target as any).value,
         ts: Date.now(),
       });
-    } else if(ev.key === "Escape") {
+    } else if (ev.key === "Escape") {
       props.onCancel();
-    } else if(ev.key !== "Control") {
+    } else if (ev.key !== "Control") {
       props.onCancelCountdown();
     }
   };
@@ -70,7 +67,7 @@ export const Question: (props: {
           onkeydown={onKeyDown}
           maxlength={500}
           id="minded-6622-inp"
-          autoFocus
+          autofocus={true}
         />
       </div>
     </>
