@@ -16,6 +16,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const map: { [key: string]: number } = {};
   answers.forEach((answer) => {
     const categoryForAnswer = QUESTION_CATEGORIES[answer.questionCategoryId];
+    if (!categoryForAnswer.questions?.length) {
+      return;
+    }
     if (categoryForAnswer.isTodayOnlyCategory && !isToday(answer.ts)) {
       return;
     }
@@ -36,6 +39,14 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const questionsForCategory = QUESTIONS.filter(
     (q) => q.categoryId === categoryToUse,
   );
-  // console.log({sortedEntries, nrOfEntriesForLeastUsed, categoriesLeastUsed, categoryToUse, questionsForCategory});
-  return getRndEntry(questionsForCategory);
+
+  console.log({
+    sortedEntries,
+    nrOfEntriesForLeastUsed,
+    categoriesLeastUsed,
+    categoryToUse,
+    questionsForCategory,
+  });
+  const q = getRndEntry(questionsForCategory);
+  return q;
 };
