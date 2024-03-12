@@ -19,6 +19,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     if (!categoryForAnswer.questions?.length) {
       return;
     }
+    if (!map[answer.questionCategoryId]) {
+      map[answer.questionCategoryId] = 0;
+    }
     if (categoryForAnswer.isTodayOnlyCategory && !isToday(answer.ts)) {
       return;
     }
@@ -26,9 +29,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       return;
     }
 
-    map[answer.questionCategoryId] = map[answer.questionCategoryId]
-      ? map[answer.questionCategoryId] + 1
-      : 1;
+    map[answer.questionCategoryId] = map[answer.questionCategoryId] + 1;
   });
   const sortedEntries = Object.entries(map).sort((a, b) => a[1] - b[1]);
   const nrOfEntriesForLeastUsed = sortedEntries[0][1];
