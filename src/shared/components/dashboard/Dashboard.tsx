@@ -5,7 +5,7 @@ import { QuestionCategoryView } from "@src/shared/components/dashboard/questionC
 
 export const Dashboard: () => JSX.Element = () => {
   const [getSelectedQuestionCategoryId, setSelectedQuestionCategoryId] =
-    createSignal<QuestionCategoryId | null>(QuestionCategoryId.HelpfulTools);
+    createSignal<QuestionCategoryId | null>(null);
 
   return (
     <div>

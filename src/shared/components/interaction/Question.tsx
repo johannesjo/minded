@@ -4,6 +4,7 @@ import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
 import { getSyncData, saveAnswer } from "@src/shared/data/dataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
+import { nanoid } from "nanoid";
 
 export const Question: (props: {
   onSuccess: () => void;
@@ -45,6 +46,7 @@ export const Question: (props: {
         questionCategoryId: q.categoryId,
         val: (ev.target as any).value,
         ts: Date.now(),
+        id: nanoid(),
       });
     } else if (ev.key === "Escape") {
       props.onCancel();

@@ -1,6 +1,9 @@
 @import "./../../../../styles/mixins/_mixins.scss";
 
 .AnswerList {
+  overflow: auto;
+  // leave enough space for btn anis
+  padding-top: 8px;
 }
 
 .answer{}

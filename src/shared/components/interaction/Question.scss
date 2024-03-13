@@ -13,23 +13,16 @@
 }
 
 #minded-6622-inp {
+  @include formInput();
+  padding: 16px;
   margin: auto;
   margin-top: 16px;
-  color: #000;
-  border: none;
-  background: transparent;
-  font-size: 20px;
-  box-shadow: none;
-  padding: 16px;
-  outline: none;
-  border: 1px solid rgba(0, 0, 0, .5);
-  border-radius: 16px;
   min-width: 400px;
   display: block;
-  max-width: 100%;
   animation: minded6622fadeInAnimation ease-in 1s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
+  font-size: 22px;
 }
 
 

@@ -22,7 +22,6 @@ const NewTab = () => {
 
   // return (<Rating />);
   // return (<Question isUnskippable={true} onSuccess={()=> undefined} />)
-  console.log("I am here!");
 
   return (
     <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>
