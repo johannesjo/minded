@@ -5,13 +5,16 @@ import {
 } from "@src/shared/components/dashboard/dashboard.model";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
+// @ts-ignore
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 
-export const DashboardGroups: () => JSX.Element = () => {
+export const DashboardGroups: (props: {
+  onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
+}) => JSX.Element = (props) => {
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
@@ -56,7 +59,10 @@ export const DashboardGroups: () => JSX.Element = () => {
               default:
                 return (
                   <div class={styles.box}>
-                    <AnswerList dashboardGroup={dg} />
+                    <AnswerList
+                      dashboardGroup={dg}
+                      onTitleClick={() => props.onQuestionCategorySelect(dg.id)}
+                    />
                   </div>
                 );
             }
