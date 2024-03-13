@@ -69,6 +69,7 @@ export const QuestionCategoryView: (props: {
       </div>
       <div class={styles.answers}>
         <AnswerListEditable
+          isShowAdd={true}
           questionCategoryId={props.questionCategoryId}
           answers={getAnswersForCategory()}
           onEdit={editAnswer}

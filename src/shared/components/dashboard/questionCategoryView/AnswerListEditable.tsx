@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 
 export const AnswerListEditable: (props: {
+  isShowAdd: boolean;
   questionCategoryId: QuestionCategoryId;
   answers: Answer[];
   onEdit: (upd: Answer) => void;
@@ -26,31 +27,33 @@ export const AnswerListEditable: (props: {
         />
       ))}
 
-      <div class={styles.addItem}>
-        {getIsAddMode() ? (
-          <AnswerEntry
-            isInitialEditMode={true}
-            onBlur={() => setIsAddMode(false)}
-            answer={{
-              id: nanoid(),
-              ts: Date.now(),
-              val: "",
-              questionCategoryId: props.questionCategoryId,
-            }}
-            onEdit={(newAnswer) => {
-              setIsAddMode(false);
-              if (newAnswer.val.toString().trim().length > 1) {
-                props.onAdd(newAnswer);
-              }
-            }}
-            onRemove={() => setIsAddMode(false)}
-          />
-        ) : (
-          <button class="btn-ico" onClick={() => setIsAddMode(true)}>
-            +
-          </button>
-        )}
-      </div>
+      {props.isShowAdd && (
+        <div class={styles.addItem}>
+          {getIsAddMode() ? (
+            <AnswerEntry
+              isInitialEditMode={true}
+              onBlur={() => setIsAddMode(false)}
+              answer={{
+                id: nanoid(),
+                ts: Date.now(),
+                val: "",
+                questionCategoryId: props.questionCategoryId,
+              }}
+              onEdit={(newAnswer) => {
+                setIsAddMode(false);
+                if (newAnswer.val.toString().trim().length > 1) {
+                  props.onAdd(newAnswer);
+                }
+              }}
+              onRemove={() => setIsAddMode(false)}
+            />
+          ) : (
+            <button class="btn-ico" onClick={() => setIsAddMode(true)}>
+              +
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

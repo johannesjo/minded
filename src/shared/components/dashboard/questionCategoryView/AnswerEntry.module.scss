@@ -1,7 +1,11 @@
 @import "./../../../../styles/mixins/_mixins.scss";
 
 .AnswerEntry {
-  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  padding: 8px;
+  min-height: 36px;
+  min-width: 300px;
 
   input {
     @include formInput;
@@ -14,15 +18,27 @@
   animation-fill-mode: forwards;
   opacity: 0;
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
   gap: 16px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  // leave enough space for btn anis
+  padding: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .userQuote {
   font-size: 18px;
 }
-
-
 
 
 @keyframes minded6622fadeInAnimation {
