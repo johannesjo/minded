@@ -1,15 +1,13 @@
 import { createSignal, JSX } from "solid-js";
 // @ts-ignore
-import styles from "./AnswerListForQuestionCategoryView.module.scss";
+import styles from "./AnswerListEditable.module.scss";
 import { Answer } from "@src/shared/data/sync-data";
 
 import { AnswerEntry } from "@src/shared/components/dashboard/questionCategoryView/AnswerEntry";
 import { nanoid } from "nanoid";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 
-const MAX_ANSWER_LENGTH = 200;
-
-export const AnswerListForQuestionCategoryView: (props: {
+export const AnswerListEditable: (props: {
   questionCategoryId: QuestionCategoryId;
   answers: Answer[];
   onEdit: (upd: Answer) => void;
