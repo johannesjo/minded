@@ -42,9 +42,10 @@ export const AnswerEntry: (props: {
                 ev.preventDefault();
                 ev.stopPropagation();
                 abortEdit();
-              } else {
-                setTitle((ev.target as any).value);
               }
+            }}
+            onInput={(ev) => {
+              setTitle((ev.target as any).value);
             }}
             onblur={() => {
               if (getIsEditMode()) {
