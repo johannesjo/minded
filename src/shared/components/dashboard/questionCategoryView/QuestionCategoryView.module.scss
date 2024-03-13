@@ -1,0 +1,39 @@
+@import "../../../../styles/mixins/mixins";
+
+.QuestionCategoryView {
+  animation: minded6622fadeInAnimation ease 2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  opacity: 0;
+  padding-top: 16px;
+}
+
+.categoryTitle {
+  @include h2();
+  margin-top: 32px;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+
+  &:hover {
+    cursor: pointer;
+    &:after {
+      position: absolute;
+      left: 100%;
+      display: block;
+      top: 50%;
+      transform: translate(0,-50%);
+      content:' ↖';
+      opacity: .8;
+    }
+  }
+}
+
+@keyframes minded6622fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

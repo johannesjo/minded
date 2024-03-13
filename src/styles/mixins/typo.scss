@@ -2,5 +2,13 @@
   font-weight: 200;
   margin-bottom: 8px;
   font-size: 18px;
+  user-select: none;
   //font-style: italic;
+}
+
+@mixin h2() {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 28px;
+  user-select: none;
 }

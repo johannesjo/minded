@@ -1,6 +1,24 @@
-import { JSX } from "solid-js";
+import { createSignal, JSX } from "solid-js";
 import { DashboardGroups } from "@src/shared/components/dashboard/DashboardGroups";
+import { QuestionCategoryId } from "@src/shared/data/questions";
+import { QuestionCategoryView } from "@src/shared/components/dashboard/questionCategoryView/QuestionCategoryView";
 
 export const Dashboard: () => JSX.Element = () => {
-  return <DashboardGroups />;
+  const [getSelectedQuestionCategoryId, setSelectedQuestionCategoryId] =
+    createSignal<QuestionCategoryId | null>(QuestionCategoryId.HelpfulTools);
+
+  return (
+    <div>
+      {getSelectedQuestionCategoryId() ? (
+        <QuestionCategoryView
+          questionCategoryId={getSelectedQuestionCategoryId()}
+          onLeave={() => setSelectedQuestionCategoryId(null)}
+        />
+      ) : (
+        <DashboardGroups
+          onQuestionCategorySelect={(id) => setSelectedQuestionCategoryId(id)}
+        />
+      )}
+    </div>
+  );
 };
