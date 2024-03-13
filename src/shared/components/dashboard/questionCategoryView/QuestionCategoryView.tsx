@@ -9,6 +9,7 @@ import { AnswerListForQuestionCategoryView } from "@src/shared/components/dashbo
 import {
   getSyncData,
   removeAnswer,
+  saveAnswer,
   updateAnswer,
 } from "@src/shared/data/dataInterface";
 import { Answer } from "@src/shared/data/sync-data";
@@ -51,6 +52,16 @@ export const QuestionCategoryView: (props: {
     updateAnswer(answerToUpdate);
   };
 
+  const addAnswerI = (answerToAdd: Answer) => {
+    const answerWithNewTs = {
+      ...answerToAdd,
+      ts: Date.now(),
+      title: answerToAdd.val.toString().trim(),
+    };
+    setAnswersForCategory([...getAnswersForCategory(), answerToAdd]);
+    saveAnswer(answerWithNewTs);
+  };
+
   return (
     <div class={styles.QuestionCategoryView}>
       <div class={styles.categoryTitle} onClick={props.onLeave}>
@@ -58,9 +69,11 @@ export const QuestionCategoryView: (props: {
       </div>
       <div class={styles.answers}>
         <AnswerListForQuestionCategoryView
+          questionCategoryId={props.questionCategoryId}
           answers={getAnswersForCategory()}
           onEdit={editAnswer}
           onRemove={removeAnswerI}
+          onAdd={addAnswerI}
         />
       </div>
     </div>

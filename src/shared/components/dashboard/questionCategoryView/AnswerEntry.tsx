@@ -5,17 +5,26 @@ import styles from "@src/shared/components/dashboard/questionCategoryView/Answer
 
 export const AnswerEntry: (props: {
   answer: Answer;
+  isInitialEditMode?: boolean;
   onEdit: (upd: Answer) => void;
+  onBlur?: () => void;
   onRemove: () => void;
 }) => JSX.Element = (props) => {
   let inpEl;
 
   const [getTitle, setTitle] = createSignal<string>(props.answer.val as string);
-  const [getIsEditMode, setIsEditMode] = createSignal<boolean>(false);
+  const [getIsEditMode, setIsEditMode] = createSignal<boolean>(
+    props.isInitialEditMode,
+  );
 
-  const onKeyDown = (ev: KeyboardEvent): void => {
-    console.log((ev.target as any).value);
-    setTitle((ev.target as any).value);
+  if (props.isInitialEditMode) {
+    inpEl?.focus();
+    setTimeout(() => inpEl?.focus());
+  }
+
+  const abortEdit = () => {
+    setIsEditMode(false);
+    setTitle(props.answer.val.toString());
   };
 
   return (
@@ -26,15 +35,27 @@ export const AnswerEntry: (props: {
             ref={inpEl}
             value={getTitle()}
             type="text"
-            onkeypress={() => undefined}
-            onkeydown={onKeyDown}
+            onKeyDown={(ev) => {
+              if (ev.key === "Enter") {
+                inpEl?.blur();
+              } else if (ev.key === "Escape") {
+                ev.preventDefault();
+                ev.stopPropagation();
+                abortEdit();
+              } else {
+                setTitle((ev.target as any).value);
+              }
+            }}
             onblur={() => {
-              setIsEditMode(false);
-              if (getTitle() !== props.answer.val) {
-                props.onEdit({
-                  ...props.answer,
-                  val: getTitle(),
-                });
+              if (getIsEditMode()) {
+                props.onBlur?.();
+                if (getTitle() !== props.answer.val) {
+                  props.onEdit({
+                    ...props.answer,
+                    val: getTitle(),
+                  });
+                }
+                setIsEditMode(false);
               }
             }}
             maxlength={500}
