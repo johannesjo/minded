@@ -31,7 +31,7 @@ export const Dashboard: () => JSX.Element = () => {
         switch (dg.type) {
           case DashboardGroupType.Quote:
             return (
-              <div className={styles.box}>
+              <div class={styles.box}>
                 <RndQuote />
               </div>
             );
@@ -39,8 +39,8 @@ export const Dashboard: () => JSX.Element = () => {
             switch (dg.id) {
               case QuestionCategoryId.XEnergyLevelToday:
                 return (
-                  <div className={styles.box}>
-                    <div className={styles.standardHeading}>
+                  <div class={styles.box}>
+                    <div class={styles.standardHeading}>
                       Your Energy Level Today
                     </div>
                     <Rating
@@ -52,7 +52,7 @@ export const Dashboard: () => JSX.Element = () => {
 
               default:
                 return (
-                  <div className={styles.box}>
+                  <div class={styles.box}>
                     <AnswerList dashboardGroup={dg} />
                   </div>
                 );

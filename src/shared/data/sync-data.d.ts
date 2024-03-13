@@ -1,4 +1,4 @@
-import { QuestionCategoryId } from '@src/shared/data/questions';
+import { QuestionCategoryId } from "@src/shared/data/questions";
 
 export interface UserCfg {
   isOnboardingComplete: boolean;
@@ -7,7 +7,7 @@ export interface UserCfg {
 
 export interface Answer {
   questionCategoryId: QuestionCategoryId;
-  val: string|number;
+  val: string | number;
   ts: number;
 }
 
