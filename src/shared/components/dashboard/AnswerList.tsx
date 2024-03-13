@@ -1,12 +1,12 @@
 import { JSX } from "solid-js";
 import styles from "./AnswerList.module.scss";
 import { truncate } from "@src/util/truncate";
-import { DashboardGroup } from "@src/shared/components/dashboard/dashboard.model";
+import { DashboardGroupStandard } from "@src/shared/components/dashboard/dashboard.model";
 
 const MAX_ANSWER_LENGTH = 200;
 
 export const AnswerList: (props: {
-  dashboardGroup: DashboardGroup;
+  dashboardGroup: DashboardGroupStandard;
 }) => JSX.Element = (props) => {
   return (
     <div class={styles.AnswerList}>
@@ -16,9 +16,13 @@ export const AnswerList: (props: {
       {props.dashboardGroup.answers.map((answer) => (
         <div
           class={styles.userQuote}
-          title={answer.val.length > MAX_ANSWER_LENGTH ? answer.val : ""}
+          title={
+            answer.val.toString().length > MAX_ANSWER_LENGTH
+              ? answer.val.toString()
+              : ""
+          }
         >
-          {truncate(answer.val, MAX_ANSWER_LENGTH)}
+          {truncate(answer.val.toString(), MAX_ANSWER_LENGTH)}
         </div>
       ))}
     </div>
