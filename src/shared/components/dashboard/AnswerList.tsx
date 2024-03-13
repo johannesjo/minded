@@ -1,8 +1,8 @@
 import { JSX } from "solid-js";
 // @ts-ignore
 import styles from "./AnswerList.module.scss";
-import { truncate } from "@src/util/truncate";
 import { DashboardGroupStandard } from "@src/shared/components/dashboard/dashboard.model";
+import { truncate } from "@src/util/truncate";
 
 const MAX_ANSWER_LENGTH = 200;
 
@@ -19,6 +19,16 @@ export const AnswerList: (props: {
       >
         {props.dashboardGroup.dashboardTxt}
       </div>
+
+      {/*<AnswerListEditable*/}
+      {/*  isShowAdd={false}*/}
+      {/*  questionCategoryId={props.dashboardGroup.id}*/}
+      {/*  answers={props.dashboardGroup.answers}*/}
+      {/*  onEdit={() => undefined}*/}
+      {/*  onRemove={() => undefined}*/}
+      {/*  onAdd={() => undefined}*/}
+      {/*/>*/}
+
       {props.dashboardGroup.answers.map((answer) => (
         <div
           class={styles.userQuote}

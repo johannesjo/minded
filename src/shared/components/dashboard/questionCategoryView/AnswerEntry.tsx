@@ -15,6 +15,7 @@ export const AnswerEntry: (props: {
   const [getTitle, setTitle] = createSignal<string>(props.answer.val as string);
   const [getIsEditMode, setIsEditMode] = createSignal<boolean>(
     props.isInitialEditMode,
+    // true,
   );
 
   if (props.isInitialEditMode) {
@@ -29,7 +30,24 @@ export const AnswerEntry: (props: {
 
   return (
     <div class={styles.AnswerEntry}>
-      {!!getIsEditMode() ? (
+      <div
+        onClick={() => {
+          setIsEditMode(true);
+          inpEl?.focus();
+          setTimeout(() => inpEl?.focus());
+        }}
+        style={{ visibility: getIsEditMode() ? "hidden" : "visible" }}
+        class={styles.userQuote}
+        title={
+          "Click to edit! Created on " +
+          new Date(props.answer.ts).toLocaleDateString() +
+          " – " +
+          new Date(props.answer.ts).toLocaleTimeString()
+        }
+      >
+        {props.answer.val.toString()}
+      </div>
+      {!!getIsEditMode() && (
         <div class={styles.editMode}>
           <input
             ref={inpEl}
@@ -73,23 +91,6 @@ export const AnswerEntry: (props: {
           >
             ✕
           </button>
-        </div>
-      ) : (
-        <div
-          onClick={() => {
-            setIsEditMode(true);
-            inpEl?.focus();
-            setTimeout(() => inpEl?.focus());
-          }}
-          class={styles.userQuote}
-          title={
-            "Click to edit! Created on " +
-            new Date(props.answer.ts).toLocaleDateString() +
-            " – " +
-            new Date(props.answer.ts).toLocaleTimeString()
-          }
-        >
-          {props.answer.val.toString()}
         </div>
       )}
       {/*<div class={styles.date}>*/}
