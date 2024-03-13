@@ -5,7 +5,7 @@ import {
 } from "@src/shared/data/questions";
 // @ts-ignore
 import styles from "@src/shared/components/dashboard/questionCategoryView/QuestionCategoryView.module.scss";
-import { AnswerListForQuestionCategoryView } from "@src/shared/components/dashboard/questionCategoryView/AnswerListForQuestionCategoryView";
+import { AnswerListEditable } from "@src/shared/components/dashboard/questionCategoryView/AnswerListEditable";
 import {
   getSyncData,
   removeAnswer,
@@ -68,7 +68,7 @@ export const QuestionCategoryView: (props: {
         {QUESTION_CATEGORY.dashboardTxt}
       </div>
       <div class={styles.answers}>
-        <AnswerListForQuestionCategoryView
+        <AnswerListEditable
           questionCategoryId={props.questionCategoryId}
           answers={getAnswersForCategory()}
           onEdit={editAnswer}
