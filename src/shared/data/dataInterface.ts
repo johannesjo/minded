@@ -15,6 +15,34 @@ export const saveAnswer = (answer: Answer): Promise<void> => {
     });
 };
 
+export const updateAnswer = (answerToUpdate: Answer): Promise<void> => {
+  return getSyncData()
+    .then((syncData) =>
+      saveSyncData({
+        ...syncData,
+        answers: syncData.answers.map((aI) =>
+          aI.id === answerToUpdate.id ? { ...aI, ...answerToUpdate } : aI,
+        ),
+      }),
+    )
+    .then(() => {
+      getSyncData().then(console.log);
+    });
+};
+
+export const removeAnswer = (answerId: string): Promise<void> => {
+  return getSyncData()
+    .then((syncData) =>
+      saveSyncData({
+        ...syncData,
+        answers: syncData.answers.filter((aI) => aI.id !== answerId),
+      }),
+    )
+    .then(() => {
+      getSyncData().then(console.log);
+    });
+};
+
 export const saveSyncData = (syncData: SyncData): Promise<void> => {
   if (bro.runtime?.id) {
     return bro.storage.sync.set(syncData);
@@ -25,8 +53,9 @@ export const saveSyncData = (syncData: SyncData): Promise<void> => {
   }
 };
 
-
-export const updateSyncData = async (newSyncData: Partial<SyncData>): Promise<void> => {
+export const updateSyncData = async (
+  newSyncData: Partial<SyncData>,
+): Promise<void> => {
   if (bro.runtime?.id) {
     const syncData = await getSyncData();
     return bro.storage.sync.set({
@@ -39,8 +68,6 @@ export const updateSyncData = async (newSyncData: Partial<SyncData>): Promise<vo
     );
   }
 };
-
-
 
 export const updateCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
   if (bro.runtime?.id) {

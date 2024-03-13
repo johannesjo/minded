@@ -1,0 +1,35 @@
+@import "./../../../../styles/mixins/_mixins.scss";
+
+.AnswerEntry {
+  margin-bottom: 16px;
+
+  input {
+    @include formInput;
+  }
+}
+
+.editMode {
+  animation: minded6622fadeInAnimation ease .2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  opacity: 0;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.userQuote {
+  font-size: 18px;
+}
+
+
+
+
+@keyframes minded6622fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
