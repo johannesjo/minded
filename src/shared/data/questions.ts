@@ -137,12 +137,16 @@ export const QUESTION_CATEGORIES: {
         t: "What is a nice thing you can do for yourself today",
       },
       {t: "What can I do so that today will be a good day", prompt: "I will"},
+      {t: "Today I will do my best to...", prompt: "Today I will do my best to"},
     ],
     dashboardTxt: "Good Plans Today",
   },
   [QuestionCategoryId.GoalForTheWeek]: {
     isThisWeekOnlyCategory: true,
-    questions: [{t: "What is a goal you want to achieve this week"}],
+    questions: [
+      {t: "What is a goal you want to achieve this week"},
+      {t: "This week I will do my best to...", prompt: "This week I will do my best to"},
+    ],
     dashboardTxt: "Your Goal for the Week",
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
