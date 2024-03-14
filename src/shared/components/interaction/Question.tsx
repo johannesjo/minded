@@ -20,7 +20,7 @@ export const Question: (props: {
       const question = getQuestionSmart(syncData.answers);
 
       if (question.prompt && inpEl) {
-        inpEl.value = question.prompt;
+        inpEl.value = question.prompt + " ";
       }
       setQuestion(question);
       inpEl.focus();

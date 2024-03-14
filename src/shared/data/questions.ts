@@ -46,7 +46,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.PersonalResources]: {
     dashboardTxt: "Personal Resources",
     questions: [
-      { prompt: "I am good at", t: "What is something you are good at" },
+      { t: "What is something you are good at", prompt: "I am good at" },
       {
         t: "What is a strength of yours",
       },
@@ -57,18 +57,18 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
-        prompt: "My most important task is",
         t: "What is your most important task today",
+        prompt: "My most important task is",
       },
       {
-        prompt: "My plan for today is",
         t: "What is the plan for today",
+        prompt: "My plan for today is",
       },
     ],
   },
   [QuestionCategoryId.Motivation]: {
     dashboardTxt: "My Motivation",
-    questions: [{ t: "What motivates you" }],
+    questions: [{ t: "What motivates you", prompt: "I am motivated by" }],
   },
   [QuestionCategoryId.Gratitude]: {
     dashboardTxt: "Gratitude",
@@ -82,26 +82,32 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.HelpfulTools]: {
     dashboardTxt: "Helpful Tools",
     questions: [
-      { t: "What might help you concentrate" },
-      { t: "What might boost your productivity" },
+      {
+        t: "What might help you concentrate",
+        prompt: "I can concentrate better when",
+      },
+      {
+        t: "What might boost your productivity",
+        prompt: "I am more productive when",
+      },
     ],
   },
   [QuestionCategoryId.CalmingThoughts]: {
     questions: [
-      { t: "What makes you feel relaxed" },
+      { t: "What makes you feel relaxed", prompt: "I feel at ease when" },
       { t: "Can you describe a calm place you might like" },
     ],
     dashboardTxt: "Calming Thoughts",
   },
   [QuestionCategoryId.PositiveThoughts]: {
-    questions: [{ t: "What do you like" }],
+    questions: [{ t: "What do you like", prompt: "I like" }],
     dashboardTxt: "Positive Thoughts",
   },
   [QuestionCategoryId.GoodToday]: {
     isTodayOnlyCategory: true,
     questions: [
       { t: "What is good today" },
-      { t: "What is a little thing you enjoyed today" },
+      { t: "What is a little thing you enjoyed today", prompt: "I enjoyed" },
     ],
     dashboardTxt: "Good Today",
   },
@@ -118,7 +124,9 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.GoodPlansToday]: {
     isTodayOnlyCategory: true,
     questions: [
-      { t: "What is a nice thing you can do for yourself today" },
+      {
+        t: "What is a nice thing you can do for yourself today",
+      },
       { t: "What can I do so that today will be a good day", prompt: "I will" },
     ],
     dashboardTxt: "Good Plans Today",
