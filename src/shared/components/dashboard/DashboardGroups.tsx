@@ -25,7 +25,7 @@ export const DashboardGroups: (props: {
   onMount(() => {
     getSyncData().then((syncData) => {
       if (syncData.answers?.length) {
-        const entries = dashboardEntriesFromQuestions(syncData.answers);
+        const entries = dashboardEntriesFromQuestions(syncData);
         console.log(entries);
 
         setDashboardGroups(entries);
@@ -51,23 +51,21 @@ export const DashboardGroups: (props: {
           {(() => {
             switch (dg.type) {
               case DashboardGroupType.Stats:
-                if (getAttemptsToday() || getBlockedToday()) {
-                  return (
-                    <div
-                      class={styles.stats}
-                      title={getAttemptsToday() + " visit attempts"}
-                    >
-                      <div class={styles.timesClosed}>
-                        <div>{getBlockedToday()}</div>
-                        <div>minded decisions today</div>
-                        {/*<div>*/}
-                        {/*  times successfully closed one of the configured*/}
-                        {/*  websites today instead of visiting it*/}
-                        {/*</div>*/}
-                      </div>
+                return (
+                  <div
+                    class={styles.stats}
+                    title={getAttemptsToday() + " visit attempts"}
+                  >
+                    <div class={styles.timesClosed}>
+                      <div>{getBlockedToday()}</div>
+                      <div>minded decisions today</div>
+                      {/*<div>*/}
+                      {/*  times successfully closed one of the configured*/}
+                      {/*  websites today instead of visiting it*/}
+                      {/*</div>*/}
                     </div>
-                  );
-                }
+                  </div>
+                );
               case DashboardGroupType.Quote:
                 return <RndQuote />;
               default:

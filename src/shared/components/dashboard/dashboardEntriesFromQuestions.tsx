@@ -1,4 +1,4 @@
-import { Answer } from "@src/shared/data/sync-data";
+import { SyncData } from "@src/shared/data/sync-data";
 import {
   DashboardGroup,
   DashboardGroupType,
@@ -11,6 +11,7 @@ import { getRndEntries } from "@src/util/getRndEntries";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { replaceAt } from "@src/util/replaceAt";
+import { getIsoDate } from "@src/util/getIsoDate";
 
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
@@ -18,13 +19,14 @@ const CENTER_INDEX = 4;
 const STATS_INDEX = 6;
 
 export const dashboardEntriesFromQuestions = (
-  answers: Answer[],
+  syncData: SyncData,
   now = Date.now(),
 ): DashboardGroup[] => {
+  const ds = getIsoDate();
   const dashboardGroups = [];
   QUESTION_CATEGORIES_ON_DASHBOARD.forEach((catId) => {
     const category = QUESTION_CATEGORIES[catId];
-    const answersForCat = answers.filter(
+    const answersForCat = syncData.answers.filter(
       (answer) =>
         answer.questionCategoryId === catId &&
         (!category.isTodayOnlyCategory || isToday(answer.ts)) &&
@@ -44,9 +46,12 @@ export const dashboardEntriesFromQuestions = (
 
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
   let sortedEntries = dashboardGroups;
-  sortedEntries.splice(STATS_INDEX, 0, {
-    type: DashboardGroupType.Stats,
-  });
+
+  if (syncData.blocked[ds] > 0) {
+    sortedEntries.splice(STATS_INDEX, 0, {
+      type: DashboardGroupType.Stats,
+    });
+  }
 
   if (sortedEntries.length >= 5) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
@@ -62,6 +67,7 @@ export const dashboardEntriesFromQuestions = (
   }
 
   // finally limit size
-  sortedEntries.length = MAX_GROUPS;
+  sortedEntries = sortedEntries.slice(0, MAX_GROUPS);
+
   return sortedEntries;
 };
