@@ -26,7 +26,7 @@ export const DashboardGroups: (props: {
     getSyncData().then((syncData) => {
       if (syncData.answers?.length) {
         const entries = dashboardEntriesFromQuestions(syncData);
-        console.log(entries);
+        console.log(entries, syncData);
 
         setDashboardGroups(entries);
         const ds = getIsoDate();

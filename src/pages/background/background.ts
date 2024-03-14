@@ -14,7 +14,7 @@ bro.runtime.onInstalled.addListener(() => {
 
 bro.runtime.onMessage.addListener((request, sender) => {
   if (request.closeTab) {
-    bro.tabs.remove(sender.tab.id);
     countBlockedAttempt();
+    bro.tabs.remove(sender.tab.id);
   }
 });
