@@ -21,10 +21,12 @@ export const DEFAULT_SYNC_DATA: SyncData = {
     ],
   },
   lastBlocked: 0,
-  lastBlockedUrl: '',
+  lastBlockedUrl: "",
   answers: [],
+  attempts: {},
+  blocked: {},
 };
 
 export const STATIC_CFG: StaticCfg = {
-  ShowAgainThreshold: 60* 1000,
+  ShowAgainThreshold: 60 * 1000,
 };
