@@ -17,6 +17,12 @@ export interface SyncData {
   answers: Answer[];
   lastBlocked: number;
   lastBlockedUrl: string;
+  blocked: {
+    [key: string]: number;
+  };
+  attempts: {
+    [key: string]: number;
+  };
 }
 
 export interface StaticCfg {

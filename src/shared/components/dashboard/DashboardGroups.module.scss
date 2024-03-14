@@ -126,18 +126,16 @@
 
 
 .stats {
-  font-size: 16px;
-
   .timesClosed {
-    font-size: 20px;
-
-    span {
+    div:first-child {
       font-weight: bold;
+      font-size: 28px;
+      margin-bottom: 10px;
     }
   }
 
   .timesAttempted {
-    margin-top: 10px;
+    margin-top: 16px;
 
   }
 }

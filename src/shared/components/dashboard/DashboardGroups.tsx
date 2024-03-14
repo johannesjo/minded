@@ -11,6 +11,7 @@ import { RndQuote } from "@src/shared/components/dashboard/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
+import { getIsoDate } from "@src/util/getIsoDate";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -18,12 +19,19 @@ export const DashboardGroups: (props: {
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
+  const [getBlockedToday, setBlockedToday] = createSignal<number>(0);
+  const [getAttemptsToday, setAttemptsToday] = createSignal<number>(0);
 
   onMount(() => {
     getSyncData().then((syncData) => {
       if (syncData.answers?.length) {
         const entries = dashboardEntriesFromQuestions(syncData.answers);
+        console.log(entries);
+
         setDashboardGroups(entries);
+        const ds = getIsoDate();
+        setAttemptsToday(syncData.attempts[ds] || 0);
+        setBlockedToday(syncData.blocked[ds] || 0);
       }
     });
   });
@@ -43,18 +51,23 @@ export const DashboardGroups: (props: {
           {(() => {
             switch (dg.type) {
               case DashboardGroupType.Stats:
-              //   return (
-              //     <div class={styles.stats}>
-              //       <div class={styles.timesClosed}>
-              //         <span>4</span>
-              //         <br /> closed blocked website today
-              //       </div>
-              //       <div class={styles.timesAttempted}>
-              //         <span>10</span>
-              //         <br /> visit attempts
-              //       </div>
-              //     </div>
-              //   );
+                if (getAttemptsToday() || getBlockedToday()) {
+                  return (
+                    <div
+                      class={styles.stats}
+                      title={getAttemptsToday() + " visit attempts"}
+                    >
+                      <div class={styles.timesClosed}>
+                        <div>{getBlockedToday()}</div>
+                        <div>minded decisions today</div>
+                        {/*<div>*/}
+                        {/*  times successfully closed one of the configured*/}
+                        {/*  websites today instead of visiting it*/}
+                        {/*</div>*/}
+                      </div>
+                    </div>
+                  );
+                }
               case DashboardGroupType.Quote:
                 return <RndQuote />;
               default:

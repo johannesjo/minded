@@ -1,4 +1,5 @@
 import { bro } from "@src/util/browser";
+import { countBlockedAttempt } from "@src/shared/data/dataInterface";
 
 bro.action.onClicked.addListener(function (tab) {
   bro.tabs.create({
@@ -14,5 +15,6 @@ bro.runtime.onInstalled.addListener(() => {
 bro.runtime.onMessage.addListener((request, sender) => {
   if (request.closeTab) {
     bro.tabs.remove(sender.tab.id);
+    countBlockedAttempt();
   }
 });

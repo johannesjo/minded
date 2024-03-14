@@ -102,7 +102,9 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
         {getIsShowSun() && (
           <div
             id="minded-6622-sun"
-            onclick={() => bro.runtime.sendMessage({ closeTab: true })}
+            onclick={() => {
+              bro.runtime.sendMessage({ closeTab: true });
+            }}
           >
             <div></div>
             <div>click to close the website</div>

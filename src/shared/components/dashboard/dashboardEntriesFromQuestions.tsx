@@ -15,6 +15,7 @@ import { replaceAt } from "@src/util/replaceAt";
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
+const STATS_INDEX = 6;
 
 export const dashboardEntriesFromQuestions = (
   answers: Answer[],
@@ -43,7 +44,7 @@ export const dashboardEntriesFromQuestions = (
 
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
   let sortedEntries = dashboardGroups;
-  sortedEntries.splice(8, 0, {
+  sortedEntries.splice(STATS_INDEX, 0, {
     type: DashboardGroupType.Stats,
   });
 
