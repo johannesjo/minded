@@ -8,6 +8,7 @@ export enum QuestionCategoryId {
   GoodPlans = "GoodPlans",
   GoodPlansToday = "GoodPlansToday",
   GoodToday = "GoodToday",
+  TodayILearned = "TodayILearned",
   GoalForTheWeek = "GoalForTheWeek",
   Gratitude = "Gratitude",
   XEnergyLevelToday = "XEnergyLevelToday",
@@ -50,6 +51,13 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What is a strength of yours",
       },
+    ],
+  },
+  [QuestionCategoryId.TodayILearned]: {
+    isTodayOnlyCategory: true,
+    dashboardTxt: "Today I learned",
+    questions: [
+      { t: "Today I learned...", prompt: "I learned" },
     ],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
@@ -145,6 +153,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodPlansToday,
   QuestionCategoryId.RefocusHelperToday,
   QuestionCategoryId.GoodToday,
+  QuestionCategoryId.TodayILearned,
   QuestionCategoryId.Motivation,
   QuestionCategoryId.XEnergyLevelToday,
   QuestionCategoryId.GoodPlans,
