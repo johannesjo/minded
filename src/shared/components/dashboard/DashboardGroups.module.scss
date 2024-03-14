@@ -79,7 +79,6 @@
 .standardHeading {
   @include h4();
   margin-top: 0;
-  cursor: pointer;
 }
 
 @keyframes minded6622fadeInAnimation {
@@ -132,11 +131,14 @@
       font-size: 28px;
       margin-bottom: 10px;
     }
+
+    div:last-child {
+      font-weight: 200;
+    }
   }
 
   .timesAttempted {
     margin-top: 16px;
-
   }
 }
 

@@ -58,7 +58,7 @@ export const DashboardGroups: (props: {
                   >
                     <div class={styles.timesClosed}>
                       <div>{getBlockedToday()}</div>
-                      <div>minded decisions today</div>
+                      <div>Minded Decisions Today</div>
                       {/*<div>*/}
                       {/*  times successfully closed one of the configured*/}
                       {/*  websites today instead of visiting it*/}
