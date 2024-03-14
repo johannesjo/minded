@@ -16,7 +16,6 @@ import { getIsoDate } from "@src/util/getIsoDate";
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
-const STATS_INDEX = 6;
 
 export const dashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -47,17 +46,14 @@ export const dashboardEntriesFromQuestions = (
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
   let sortedEntries = dashboardGroups;
 
-  if (syncData.blocked[ds] > 0) {
-    sortedEntries.splice(STATS_INDEX, 0, {
-      type: DashboardGroupType.Stats,
-    });
-  }
-
   if (sortedEntries.length >= 5) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
     const rndEntry = { ...sortedEntries[rndIndex] };
     sortedEntries = replaceAt(sortedEntries, rndIndex, {
-      type: DashboardGroupType.Quote,
+      type:
+        syncData.blocked[ds] > 0
+          ? DashboardGroupType.Stats
+          : DashboardGroupType.Quote,
     });
     sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
   } else {
