@@ -27,7 +27,10 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   props,
 ) => {
   const [getIsShowSun, setIsShowSun] = createSignal(false);
+  const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
+
   let wrapperEl;
+  let afterSunEl;
   let frameNr;
 
   onMount(async () => {
@@ -46,14 +49,26 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   });
 
   const initFadeOut = () => {
-    const res = fadeOut(wrapperEl, 5000, 2000);
-    // const res = changeHeight(wrapperEl, 300,1000, 2000);
-    frameNr = res.frameNr;
-    res.promise.then(() => {
-      if (wrapperEl.style.opacity < 0.1) {
-        teardown();
-      }
-    });
+    if (MODE === "ACTION_ADVICE") {
+      const res = fadeOut(wrapperEl, 4000, 3000);
+      frameNr = res.frameNr;
+      res.promise.then(() => {
+        if (wrapperEl.style.opacity < 0.1) {
+          afterSun();
+        }
+      });
+      setTimeout(() => {
+        setIsShowSun(true);
+      }, 3000);
+    } else {
+      const res = fadeOut(wrapperEl, 5000, 2000);
+      frameNr = res.frameNr;
+      res.promise.then(() => {
+        if (wrapperEl.style.opacity < 0.1) {
+          afterSun();
+        }
+      });
+    }
   };
 
   const onSuccess = async () => {
@@ -61,7 +76,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     // wait for sun
     await promiseTimeout(SUN_ANI_DURATION);
     await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
-    teardown();
+    afterSun();
   };
 
   const cancelCountdown = () => {
@@ -73,66 +88,98 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     wrapperEl.style.opacity = "1";
   };
 
+  const afterSun = async () => {
+    setIsShowAfterSun(true);
+    await promiseTimeout(10);
+    afterSunEl.addEventListener("animationend", () => {
+      teardown();
+    });
+  };
+
   const teardown = () => {
     document.removeEventListener("keypress", escapeHandler);
     props.onHideAll();
   };
 
+  const fadeOutMainFinal = () => {
+    if (wrapperEl) {
+      fadeOut(wrapperEl, 150).promise.then(() => {
+        afterSun();
+      });
+    } else {
+      afterSun();
+    }
+  };
+
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
-      teardown();
+      fadeOutMainFinal();
     }
   };
 
   return (
     <>
-      <div
-        id="minded-6622-coloured-wrapper"
-        onclick={(ev) => {
-          if (
-            (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
-          ) {
-            fadeOut(wrapperEl, 150).promise.then(() => {
-              teardown();
-            });
-          }
-        }}
-        ref={wrapperEl}
-      >
-        {getIsShowSun() && (
-          <div
-            id="minded-6622-sun"
-            onclick={() => {
-              bro.runtime.sendMessage({ closeTab: true });
-            }}
-          >
-            <div></div>
-            <div>click to close the website</div>
-          </div>
-        )}
-        <Switch>
-          <Match when={(MODE === "ACTION_ADVICE") as any}>
-            <div id="minded-6622-action-advice">
-              <div>{ADVICE.txt}</div>
-              <div>{ADVICE.ico}</div>
+      {getIsShowAfterSun() ? (
+        <div
+          id="minded-6622-after-sun"
+          title="click sun to close website"
+          onclick={() => bro.runtime.sendMessage({ closeTab: true })}
+          onMouseEnter={() => {
+            afterSunEl.style.animationPlayState = "paused";
+          }}
+          onMouseLeave={() => {
+            afterSunEl.style.animationPlayState = "running";
+          }}
+          ref={afterSunEl}
+        />
+      ) : (
+        <div
+          id="minded-6622-coloured-wrapper"
+          onclick={(ev) => {
+            if (
+              (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
+            ) {
+              fadeOutMainFinal();
+            }
+          }}
+          ref={wrapperEl}
+        >
+          {getIsShowSun() && (
+            <div
+              id="minded-6622-sun"
+              title="click sun to close website"
+              onclick={() => {
+                bro.runtime.sendMessage({ closeTab: true });
+              }}
+            >
+              <div></div>
+              <div>click sun to close the website</div>
             </div>
-          </Match>
-          <Match when={(MODE === "RATING") as any}>
-            <RatingInteraction
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onSuccess}
-              onCancel={teardown}
-            />
-          </Match>
-          <Match when={!MODE as any}>
-            <Question
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onSuccess}
-              onCancel={teardown}
-            />
-          </Match>
-        </Switch>
-      </div>
+          )}
+          <Switch>
+            <Match when={(MODE === "ACTION_ADVICE") as any}>
+              <div id="minded-6622-action-advice">
+                <div>{ADVICE.txt}</div>
+                <div>{ADVICE.ico}</div>
+              </div>
+            </Match>
+            <Match when={(MODE === "RATING") as any}>
+              <RatingInteraction
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onSuccess}
+                onCancel={teardown}
+              />
+            </Match>
+            <Match when={!MODE as any}>
+              <Question
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onSuccess}
+                onCancel={teardown}
+              />
+            </Match>
+          </Switch>
+        </div>
+      )}
     </>
   );
 };
