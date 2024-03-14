@@ -33,41 +33,59 @@ export const DashboardGroups: (props: {
       nr-of-items={getDashboardGroups().length}
       class={styles.DashboardGroups}
     >
-      {getDashboardGroups().map((dg, index) => {
-        switch (dg.type) {
-          case DashboardGroupType.Quote:
-            return (
-              <div class={styles.box}>
-                <RndQuote />
-              </div>
-            );
-          default:
-            switch (dg.id) {
-              case QuestionCategoryId.XEnergyLevelToday:
-                return (
-                  <div class={styles.box}>
-                    <div class={styles.standardHeading}>
-                      Your Energy Level Today
-                    </div>
-                    <Rating
-                      isShowOnly={true}
-                      value={(dg.answers[0] && dg.answers[0].val) as number}
-                    />
-                  </div>
-                );
-
+      {getDashboardGroups().map((dg, index) => (
+        <div class={styles.box}>
+          {index === 4 && (
+            <div class={styles.miniSunWrapper}>
+              <div class={styles.miniSun} />
+            </div>
+          )}
+          {(() => {
+            switch (dg.type) {
+              case DashboardGroupType.Stats:
+              //   return (
+              //     <div class={styles.stats}>
+              //       <div class={styles.timesClosed}>
+              //         <span>4</span>
+              //         <br /> closed blocked website today
+              //       </div>
+              //       <div class={styles.timesAttempted}>
+              //         <span>10</span>
+              //         <br /> visit attempts
+              //       </div>
+              //     </div>
+              //   );
+              case DashboardGroupType.Quote:
+                return <RndQuote />;
               default:
-                return (
-                  <div class={styles.box}>
-                    <AnswerList
-                      dashboardGroup={dg}
-                      onTitleClick={() => props.onQuestionCategorySelect(dg.id)}
-                    />
-                  </div>
-                );
+                switch (dg.id) {
+                  case QuestionCategoryId.XEnergyLevelToday:
+                    return (
+                      <div class={styles.box}>
+                        <div class={styles.standardHeading}>
+                          Your Energy Level Today
+                        </div>
+                        <Rating
+                          isShowOnly={true}
+                          value={(dg.answers[0] && dg.answers[0].val) as number}
+                        />
+                      </div>
+                    );
+
+                  default:
+                    return (
+                      <AnswerList
+                        dashboardGroup={dg}
+                        onTitleClick={() =>
+                          props.onQuestionCategorySelect(dg.id)
+                        }
+                      />
+                    );
+                }
             }
-        }
-      })}
+          })()}
+        </div>
+      ))}
     </div>
   );
 };
