@@ -27,8 +27,7 @@ export const dashboardEntriesFromQuestions = (
       (answer) =>
         answer.questionCategoryId === catId &&
         (!category.isTodayOnlyCategory || isToday(answer.ts)) &&
-        (!category.isThisWeekOnlyCategory || isThisWeek(answer.ts))
-      ,
+        (!category.isThisWeekOnlyCategory || isThisWeek(answer.ts)),
     );
     if (answersForCat?.length) {
       dashboardGroups.push({
@@ -44,6 +43,9 @@ export const dashboardEntriesFromQuestions = (
 
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
   let sortedEntries = dashboardGroups;
+  sortedEntries.splice(8, 0, {
+    type: DashboardGroupType.Stats,
+  });
 
   if (sortedEntries.length >= 5) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
@@ -51,13 +53,14 @@ export const dashboardEntriesFromQuestions = (
     sortedEntries = replaceAt(sortedEntries, rndIndex, {
       type: DashboardGroupType.Quote,
     });
-   sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
+    sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
   } else {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
   }
+
   // finally limit size
-  sortedEntries.length = MAX_GROUPS
+  sortedEntries.length = MAX_GROUPS;
   return sortedEntries;
 };

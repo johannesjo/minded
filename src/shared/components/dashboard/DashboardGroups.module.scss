@@ -68,6 +68,7 @@
   animation-fill-mode: forwards;
   opacity: 0;
   animation-delay: .5s;
+  position: relative;
 
   &:nth-child(5) {
     animation-delay: 0s;
@@ -88,4 +89,56 @@
     opacity: 1;
   }
 }
+
+
+.miniSunWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate3d(0, 0, 0);
+
+  .miniSun {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border-radius: 50%;
+    width: 240px;
+    height: 240px;
+    margin-top: -40px;
+    opacity: 0.2;
+    box-shadow: 0 0 30px 5px var(--c-pastel-red),
+    0 0 60px 5px var(--c-pastel-yellow);
+    transition: 2s;
+  }
+}
+
+.box:hover .miniSun {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+
+.stats {
+  font-size: 16px;
+
+  .timesClosed {
+    font-size: 20px;
+
+    span {
+      font-weight: bold;
+    }
+  }
+
+  .timesAttempted {
+    margin-top: 10px;
+
+  }
+}
+
 
