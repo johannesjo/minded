@@ -24,7 +24,8 @@
       display: block;
       top: 50%;
       transform: translate(0,-50%);
-      content:' ↖';
+      content:'↖';
+      margin-left: 8px;
       opacity: .8;
     }
   }
