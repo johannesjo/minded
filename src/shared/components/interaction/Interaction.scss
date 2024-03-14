@@ -1,19 +1,13 @@
 // NOTE: styles for question work differently since we're using them for the content-script
 
-#minded-6622-coloured-wrapper {
-  border-radius: 16px;
-  cursor: sw-resize;
-  cursor: zoom-out;
-}
-
 #minded-6622-coloured-wrapper > * {
   cursor: auto;
 }
 
 #minded-6622-sun {
+  cursor: cell;
 
   div:first-child {
-    cursor: pointer;
     transform-origin: center center;
     width: 50px;
     height: 50px;
@@ -32,7 +26,6 @@
   }
 
   div:last-child {
-    cursor: pointer;
     opacity: .5;
     position: fixed;
     top: 50%;
