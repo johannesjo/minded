@@ -7,6 +7,7 @@ import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
+import { bro } from "@src/util/browser";
 
 const MODE: "RATING" | "ACTION_ADVICE" | undefined = (() => {
   // return 'ACTION_ADVICE';
@@ -20,6 +21,7 @@ const MODE: "RATING" | "ACTION_ADVICE" | undefined = (() => {
   return undefined;
 })();
 const ADVICE = getRndEntry(ACTION_ADVICES);
+const SUN_ANI_DURATION = 1600;
 
 export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   props,
@@ -57,8 +59,8 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   const onSuccess = async () => {
     setIsShowSun(true);
     // wait for sun
-    await promiseTimeout(800);
-    await fadeOut(wrapperEl, 800).promise;
+    await promiseTimeout(SUN_ANI_DURATION);
+    await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
     teardown();
   };
 
@@ -97,7 +99,15 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
         }}
         ref={wrapperEl}
       >
-        {getIsShowSun() && <div id="minded-6622-sun"></div>}
+        {getIsShowSun() && (
+          <div
+            id="minded-6622-sun"
+            onclick={() => bro.runtime.sendMessage({ closeTab: true })}
+          >
+            <div></div>
+            <div>click to close the website</div>
+          </div>
+        )}
         <Switch>
           <Match when={(MODE === "ACTION_ADVICE") as any}>
             <div id="minded-6622-action-advice">

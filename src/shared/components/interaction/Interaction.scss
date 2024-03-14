@@ -11,20 +11,35 @@
 }
 
 #minded-6622-sun {
-  width: 50px;
-  height: 50px;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 0 30px 5px var(--c-pastel-red),
-  0 0 60px 5px var(--c-pastel-yellow);
-  animation: minded6622successSun ease 1s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-  z-index: 30;
+
+  div:first-child {
+    cursor: pointer;
+    transform-origin: center center;
+    width: 50px;
+    height: 50px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 30px 5px var(--c-pastel-red),
+    0 0 60px 5px var(--c-pastel-yellow);
+    animation: minded6622successSun ease 1.6s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    z-index: 30;
+  }
+
+  div:last-child {
+    cursor: pointer;
+    opacity: .5;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 31;
+  }
 }
 
 #minded-6622-action-advice {
@@ -43,10 +58,10 @@
 
 @keyframes minded6622successSun {
   0% {
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
   100% {
     opacity: 1;
-    transform: scale(20);
+    transform: translate(-50%, -50%) scale(20);
   }
 }
