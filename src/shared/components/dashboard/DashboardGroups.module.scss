@@ -105,13 +105,13 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(.8);
     background-color: #fff;
     border-radius: 50%;
     width: 240px;
     height: 240px;
     margin-top: -40px;
-    opacity: 0.2;
+    opacity: 0.1;
     box-shadow: 0 0 30px 5px var(--c-pastel-red),
     0 0 60px 5px var(--c-pastel-yellow);
     transition: 2s;
@@ -120,7 +120,7 @@
 
 .box:hover .miniSun {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: translate(-50%, -50%) scale(1.2);
 }
 
 
