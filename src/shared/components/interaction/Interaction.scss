@@ -48,6 +48,24 @@
   }
 }
 
+#minded-6622-after-sun {
+  cursor: cell;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  background: #fff;
+  transform-origin: center center;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-shadow: 0 0 30px 5px var(--c-pastel-red),
+  0 0 60px 5px var(--c-pastel-yellow);
+  animation: minded6622afterSunInOut 6s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+  z-index: 30;
+}
 
 @keyframes minded6622successSun {
   0% {
@@ -56,5 +74,24 @@
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(20);
+  }
+}
+
+@keyframes minded6622afterSunInOut {
+  0% {
+    transform: translate(-50%, -50%) scale(.4);
+    opacity: 0;
+  }
+  10% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0);
   }
 }
