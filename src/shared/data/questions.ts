@@ -38,6 +38,7 @@ export interface QuestionCategory {
   dashboardTxt?: string;
   isTodayOnlyCategory?: boolean;
   isThisWeekOnlyCategory?: boolean;
+  isQuestionLessWidget?: boolean;
   questions?: Question[];
 }
 
@@ -47,7 +48,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.PersonalResources]: {
     dashboardTxt: "Personal Resources",
     questions: [
-      { t: "What is something you are good at", prompt: "I am good at" },
+      {t: "What is something you are good at", prompt: "I am good at"},
       {
         t: "What is a strength of yours",
       },
@@ -57,7 +58,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     dashboardTxt: "Today I learned",
     questions: [
-      { t: "Today I learned...", prompt: "I learned" },
+      {t: "Today I learned...", prompt: "I learned"},
     ],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
@@ -76,7 +77,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Motivation]: {
     dashboardTxt: "My Motivation",
-    questions: [{ t: "What motivates you", prompt: "I am motivated by" }],
+    questions: [{t: "What motivates you", prompt: "I am motivated by"}],
   },
   [QuestionCategoryId.Gratitude]: {
     dashboardTxt: "Gratitude",
@@ -102,26 +103,26 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.CalmingThoughts]: {
     questions: [
-      { t: "What makes you feel relaxed", prompt: "I feel at ease when" },
-      { t: "Can you describe a calm place you might like" },
+      {t: "What makes you feel relaxed", prompt: "I feel at ease when"},
+      {t: "Can you describe a calm place you might like"},
     ],
     dashboardTxt: "Calming Thoughts",
   },
   [QuestionCategoryId.PositiveThoughts]: {
-    questions: [{ t: "What do you like", prompt: "I like" }],
+    questions: [{t: "What do you like", prompt: "I like"}, {t: "I am happy when...", prompt: "I am happy when"}],
     dashboardTxt: "Positive Thoughts",
   },
   [QuestionCategoryId.GoodToday]: {
     isTodayOnlyCategory: true,
     questions: [
-      { t: "What is good today" },
-      { t: "What is a little thing you enjoyed today", prompt: "I enjoyed" },
+      {t: "What is good today"},
+      {t: "What is a little thing you enjoyed today", prompt: "I enjoyed"},
     ],
     dashboardTxt: "Good Today",
   },
   [QuestionCategoryId.GoodPlans]: {
     questions: [
-      { t: "What is something you always wanted to do" },
+      {t: "What is something you always wanted to do"},
       {
         t: "What is a good habit you might want to establish",
         prompt: "I want to ",
@@ -135,17 +136,18 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What is a nice thing you can do for yourself today",
       },
-      { t: "What can I do so that today will be a good day", prompt: "I will" },
+      {t: "What can I do so that today will be a good day", prompt: "I will"},
     ],
     dashboardTxt: "Good Plans Today",
   },
   [QuestionCategoryId.GoalForTheWeek]: {
     isThisWeekOnlyCategory: true,
-    questions: [{ t: "What is a goal you want to achieve this week" }],
+    questions: [{t: "What is a goal you want to achieve this week"}],
     dashboardTxt: "Your Goal for the Week",
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
     isTodayOnlyCategory: true,
+    isQuestionLessWidget: true,
   },
 };
 
@@ -169,6 +171,6 @@ export const QUESTIONS: QuestionForPrompt[] = [];
 Object.keys(QUESTION_CATEGORIES).forEach((categoryId) => {
   const entry = QUESTION_CATEGORIES[categoryId];
   entry.questions?.forEach((question) => {
-    QUESTIONS.push({ ...question, categoryId });
+    QUESTIONS.push({...question, categoryId});
   });
 });
