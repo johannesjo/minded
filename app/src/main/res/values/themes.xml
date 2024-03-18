@@ -2,4 +2,5 @@
 <resources>
 
     <style name="Theme.Minded" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.MindedAppCompat" parent="Theme.AppCompat.Light.NoActionBar" />
 </resources>
