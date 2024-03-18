@@ -1,7 +1,5 @@
 package com.minded.minded
 
-import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -42,41 +40,43 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (Settings.canDrawOverlays(this)) {
-            Toast.makeText(
-                this,
-                "START SERVICE",
-                Toast.LENGTH_SHORT
-            ).show()
-//            startService(Intent(this, FloatingWidgetService::class.java))
+            if (MyUtil.checkPermission(this, "android.permission.PACKAGE_USAGE_STATS")) {
+                Toast.makeText(
+                    this,
+                    "START SERVICE",
+                    Toast.LENGTH_SHORT
+                ).show()
+                startService(Intent(this, FloatingWidgetService::class.java))
 //            finish()
+            } else {
+                Toast.makeText(
+                    this,
+                    "You need Usage stats Permission to do this",
+                    Toast.LENGTH_SHORT
+                ).show()
+                askPermissionForUsageStats()
+            }
         } else {
             Toast.makeText(
                 this,
                 "You need System Alert Window Permission to do this",
                 Toast.LENGTH_SHORT
             ).show()
-            askPermission()
+            askPermissionForOverlay()
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == SYSTEM_ALERT_WINDOW_PERMISSION) {
-            if (Settings.canDrawOverlays(this)) {
-                startService(Intent(this, FloatingWidgetService::class.java))
-            } else {
-                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    private fun askPermission() {
+    private fun askPermissionForOverlay() {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
             Uri.parse("package:$packageName")
         )
         startActivityForResult(intent, SYSTEM_ALERT_WINDOW_PERMISSION)
+        startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+    }
+
+    private fun askPermissionForUsageStats() {
+        startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
     }
 }
 
