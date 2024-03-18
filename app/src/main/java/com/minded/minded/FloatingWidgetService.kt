@@ -1,13 +1,12 @@
 package com.minded.minded
 
+import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.layout.Box
@@ -29,7 +28,9 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.minded.minded.ui.theme.MindedTheme
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
 
 class FloatingWidgetService : Service(),
     LifecycleOwner,
@@ -53,6 +54,11 @@ class FloatingWidgetService : Service(),
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         showOverlay()
+
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
+            // call service#
+            listAppsRunning(this);
+        }, 0, 1, TimeUnit.SECONDS)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -129,9 +135,25 @@ class FloatingWidgetService : Service(),
         )
     }
 
+
+    // TODO move to a helper class
+    fun listAppsRunning(context: Context) {
+        val activityManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val procInfos = activityManager.runningAppProcesses
+        if (procInfos != null) {
+            for (processInfo in procInfos) {
+                Log.v("MAIN", "procInfos: ${processInfo.processName}")
+            }
+        }
+    }
+
+
     companion object {
-        private const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
-        private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
+        private const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY =
+            "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
+        private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY =
+            "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
+
         internal fun showOverlay(context: Context) {
             val intent = Intent(context, FloatingWidgetService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)

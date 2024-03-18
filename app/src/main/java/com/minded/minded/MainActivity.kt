@@ -1,13 +1,13 @@
 package com.minded.minded
 
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.minded.minded.ui.theme.MindedTheme
+
 
 class MainActivity : AppCompatActivity() {
     private val SYSTEM_ALERT_WINDOW_PERMISSION = 2084
