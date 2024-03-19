@@ -78,7 +78,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
             hideOverlay()
         }
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onDestroy() {
