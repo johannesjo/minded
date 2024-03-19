@@ -1,26 +1,33 @@
 package com.minded.minded
 
-import android.app.ActivityManager
 import android.app.Service
-import android.app.usage.UsageStats
-import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
@@ -32,8 +39,6 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
-import java.util.SortedMap
-import java.util.TreeMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -48,6 +53,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
+    private var lastForeGroundApp: String = "";
 
 
     override fun onCreate() {
@@ -56,15 +62,16 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-//        showOverlay()
+        showOverlay()
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
             Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
-            if (foregroundApp == "com.android.chrome") {
+            if (lastForeGroundApp != foregroundApp && foregroundApp == "com.android.chrome") {
                 Log.v("SVC", "SHOW OVERLAY")
                 FloatingWidgetService.showOverlay(this);
             }
+            lastForeGroundApp = foregroundApp;
         }, 0, 1, TimeUnit.SECONDS)
     }
 
@@ -100,16 +107,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
             setViewTreeLifecycleOwner(this@FloatingWidgetService)
             setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
             setContent {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Column {
-                        Text("Hello, Compose!")
-                        Button(onClick = { /*TODO*/ }) {
-                            Text("Click me")
-                        }
-                    }
-                }
+                OverlayBig(hideOverlay = { hideOverlay() })
             }
         }
         windowManager.addView(overlayView, getLayoutParams())
@@ -132,11 +130,12 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
     }
 
     private fun getLayoutParams(): WindowManager.LayoutParams {
+        @Suppress("DEPRECATION")
         return WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT
         )
     }
@@ -162,20 +161,49 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
 
 
 @Composable
-fun Widget() {
-    Surface(color = Color.Magenta) {
-        Column {
-            // Replace this with your own Compose UI
-            Text("Hello, Compose!")
-            Button(onClick = { /*TODO*/ }) {
+fun OverlayBig(hideOverlay: () -> Unit = { }) {
 
-            }
+    Surface(color = Color.Magenta, onClick = {
+        Log.v("SVC", "click BG")
+        hideOverlay()
+    }) {
+        Column() {
+            // Replace this with your own Compose UI
+            Text("This would be the question?")
+            TextInput()
         }
     }
 }
 
 @Composable
+fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
+    var text by remember { mutableStateOf(initialVal) }
+    val focusRequester = remember { FocusRequester() }
+
+    TextField(
+        singleLine = true,
+        value = text,
+        onValueChange = { newText ->
+            text = newText
+        },
+        label = { Text("") },
+        keyboardActions = KeyboardActions(
+            onDone = {
+                Log.v("SVC", "DONE")
+                focusRequester.requestFocus()
+                onSubmit(text);
+            }
+        ),
+        modifier = Modifier.focusRequester(focusRequester)
+    )
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+}
+
+
+@Composable
 @Preview(showBackground = true)
-fun WidgetPreview() {
-    Widget()
+fun OverlayBigPreview() {
+    OverlayBig()
 }
