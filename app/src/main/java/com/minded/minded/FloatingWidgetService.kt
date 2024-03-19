@@ -9,7 +9,17 @@ import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -42,7 +52,8 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        showOverlay()
+        FloatingWidgetService.showOverlay(this)
+
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
@@ -90,9 +101,10 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
                 OverlayBig(hideOverlay = { hideOverlay() })
-//                }
             }
         }
+
+
         windowManager.addView(overlayView, getLayoutParams())
     }
 
