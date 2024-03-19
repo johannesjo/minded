@@ -29,6 +29,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
+import com.minded.minded.data.QUESTIONS
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -94,13 +95,14 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        val rndQuestion = QUESTIONS.random();
         overlayView = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@FloatingWidgetService)
             setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
-                OverlayBig(hideOverlay = { hideOverlay() })
+                OverlayBig(hideOverlay = { hideOverlay() }, rndQuestion=rndQuestion)
             }
         }
 

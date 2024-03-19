@@ -10,10 +10,10 @@ import androidx.compose.ui.draw.alpha
 
 
 @Composable
-fun FadeInBox(isVisible: Boolean, content: @Composable () -> Unit) {
+fun FadeInBox(isVisible: Boolean, duration: Int = 1000, content: @Composable () -> Unit) {
     val alpha by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0f,
-        animationSpec = tween(durationMillis = 2000) // Increase duration to 2000 milliseconds (2 seconds)
+        animationSpec = tween(durationMillis = duration) // Increase duration to 2000 milliseconds (2 seconds)
     )
     Box(
         modifier = Modifier.alpha(alpha)
