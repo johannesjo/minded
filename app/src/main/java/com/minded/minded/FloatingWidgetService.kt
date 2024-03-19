@@ -31,6 +31,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.minded.minded.MyUtil.getForegroundApp
 import java.util.SortedMap
 import java.util.TreeMap
 import java.util.concurrent.Executors
@@ -57,14 +58,15 @@ class FloatingWidgetService : Service(),
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
-        showOverlay()
+//        showOverlay()
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
-            // call service#
-            listAppsRunning(this);
-            printForegroundTask()
+            val foregroundApp = getForegroundApp(this);
             Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
+            if(foregroundApp== "com.android.chrome"){
+                Log.v("SVC", "SHOW OVERLAY")
+                showOverlay()
+            }
         }, 0, 1, TimeUnit.SECONDS)
     }
 
@@ -140,58 +142,6 @@ class FloatingWidgetService : Service(),
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT
         )
-    }
-
-
-    // TODO move to a helper class
-    fun listAppsRunning(context: Context) {
-        val activityManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val procInfos = activityManager.runningAppProcesses
-        if (procInfos != null) {
-            for (processInfo in procInfos) {
-                Log.v("MAIN", "procInfos: ${processInfo.processName}")
-            }
-        }
-    }
-
-    private fun printForegroundTask(): String {
-        var currentApp = "NULL"
-        val usm = this.getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
-        val time = System.currentTimeMillis()
-        val appList =
-            usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 24*60*60*1000, time)
-        Log.d("list", appList.toString());
-
-        if (appList != null && appList.size > 0) {
-            val mySortedMap: SortedMap<Long, UsageStats> = TreeMap()
-            for (usageStats in appList) {
-                mySortedMap!![usageStats.lastTimeUsed] = usageStats
-            }
-            if (mySortedMap != null && !mySortedMap.isEmpty()) {
-                currentApp = mySortedMap[mySortedMap.lastKey()]!!.packageName
-            }
-        }
-        Log.e("adapter", "Current App in foreground is: $currentApp")
-        return currentApp
-    }
-
-    fun getForegroundApp(context: Context): String {
-        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-
-        val time = System.currentTimeMillis()
-        val usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 3600, time)
-
-        var foregroundApp = ""
-        var lastUsedAppTime = 0L
-
-        for (usageStats in usageStatsList) {
-            if (usageStats.lastTimeUsed > lastUsedAppTime) {
-                foregroundApp = usageStats.packageName
-                lastUsedAppTime = usageStats.lastTimeUsed
-            }
-        }
-
-        return foregroundApp
     }
 
 
