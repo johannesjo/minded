@@ -29,6 +29,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
+import com.minded.minded.data.AnswerDao
 import com.minded.minded.data.QUESTIONS
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -45,6 +46,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
     private var lastForeGroundApp: String = "";
+//    private val answerDao: AnswerDao = AnswerDao(this)
 
 
     override fun onCreate() {
@@ -102,7 +104,13 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
-                OverlayBig(hideOverlay = { hideOverlay() }, rndQuestion=rndQuestion)
+                OverlayBig(
+                    hideOverlay = { hideOverlay() },
+                    rndQuestion = rndQuestion,
+                    onSubmitAnswer = {
+                        Log.v("SVC", "onSubmitAnswer: $it")
+//                        answerDao.insertAnswer(rndQuestion.categoryId, it)
+                    })
             }
         }
 

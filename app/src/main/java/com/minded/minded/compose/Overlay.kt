@@ -37,6 +37,7 @@ import com.minded.minded.ui.theme.PastelYellow
 @Composable
 fun OverlayBig(
     hideOverlay: () -> Unit = { },
+    onSubmitAnswer: (answerTxt: String) -> Unit = { },
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
@@ -77,7 +78,10 @@ fun OverlayBig(
                         modifier = Modifier
                             .padding(16.dp)
                     )
-                    TextInput(initialVal =   "${rndQuestion.prompt ?: ""} ")
+                    TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
+                        onSubmitAnswer(it)
+                        hideOverlay()
+                    })
                 }
             }
         }
