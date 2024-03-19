@@ -21,17 +21,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.compose.FadeInBox
+import com.minded.minded.data.Question
+import com.minded.minded.data.QuestionCategoryId
+import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.ui.theme.PastelGreen
 import com.minded.minded.ui.theme.PastelRed
 import com.minded.minded.ui.theme.PastelYellow
 
 @Composable
-fun OverlayBig(hideOverlay: () -> Unit = { }) {
-    var visible by remember { mutableStateOf(false) }
+fun OverlayBig(
+    hideOverlay: () -> Unit = { },
+    rndQuestion: QuestionForPrompt,
+    initialVisible: Boolean = false
+) {
+    var visible by remember { mutableStateOf(initialVisible) }
     LaunchedEffect(Unit) {
         visible = true
     }
@@ -63,12 +72,12 @@ fun OverlayBig(hideOverlay: () -> Unit = { }) {
                 ) {
                     // Replace this with your own Compose UI
                     Text(
-                        text = "This would be the question?",
+                        text = "${rndQuestion.t}?",
                         fontSize = 22.sp,
                         modifier = Modifier
                             .padding(16.dp)
                     )
-                    TextInput()
+                    TextInput(initialVal =   "${rndQuestion.prompt ?: ""} ")
                 }
             }
         }
@@ -77,36 +86,42 @@ fun OverlayBig(hideOverlay: () -> Unit = { }) {
 
 @Composable
 fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
-    var text by remember { mutableStateOf(initialVal) }
+    var textState by remember { mutableStateOf(TextFieldValue(initialVal)) }
     val focusRequester = remember { FocusRequester() }
 
     TextField(
         singleLine = true,
-        value = text,
-        onValueChange = { newText ->
-            text = newText
+        value = textState,
+        onValueChange = { newTextState ->
+            textState = newTextState.copy(
+                text = newTextState.text,
+                selection = TextRange(newTextState.text.length)
+            )
         },
         label = { Text("") },
         keyboardActions = KeyboardActions(
             onDone = {
                 Log.v("SVC", "DONE")
                 focusRequester.requestFocus()
-                onSubmit(text);
+                onSubmit(textState.text)
             }
         ),
         modifier = Modifier
             .focusRequester(focusRequester)
             .wrapContentHeight(align = Alignment.CenterVertically),
-//            .align(Alignment.CenterVertically) // Center align the TextField vertically
     )
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
 }
 
-
 @Composable
 @Preview(showBackground = true)
 fun OverlayBigPreview() {
-    OverlayBig()
+    val Que = QuestionForPrompt(
+        t = "What is the capital of France?",
+        prompt = "Enter your answer",
+        categoryId = QuestionCategoryId.CalmingThoughts
+    )
+    OverlayBig(rndQuestion = Que, initialVisible = true);
 }
