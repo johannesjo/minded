@@ -1,35 +1,15 @@
 package com.minded.minded
 
+import OverlayBig
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.IBinder
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -72,7 +52,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
                 FloatingWidgetService.showOverlay(this);
             }
             lastForeGroundApp = foregroundApp;
-        }, 0, 1, TimeUnit.SECONDS)
+        }, 0, 200, TimeUnit.MILLISECONDS)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -107,7 +87,10 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
             setViewTreeLifecycleOwner(this@FloatingWidgetService)
             setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
             setContent {
+// NOTE: theme wont work since it's not an activity
+//                MindedTheme {
                 OverlayBig(hideOverlay = { hideOverlay() })
+//                }
             }
         }
         windowManager.addView(overlayView, getLayoutParams())
@@ -159,51 +142,3 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
     }
 }
 
-
-@Composable
-fun OverlayBig(hideOverlay: () -> Unit = { }) {
-
-    Surface(color = Color.Magenta, onClick = {
-        Log.v("SVC", "click BG")
-        hideOverlay()
-    }) {
-        Column() {
-            // Replace this with your own Compose UI
-            Text("This would be the question?")
-            TextInput()
-        }
-    }
-}
-
-@Composable
-fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
-    var text by remember { mutableStateOf(initialVal) }
-    val focusRequester = remember { FocusRequester() }
-
-    TextField(
-        singleLine = true,
-        value = text,
-        onValueChange = { newText ->
-            text = newText
-        },
-        label = { Text("") },
-        keyboardActions = KeyboardActions(
-            onDone = {
-                Log.v("SVC", "DONE")
-                focusRequester.requestFocus()
-                onSubmit(text);
-            }
-        ),
-        modifier = Modifier.focusRequester(focusRequester)
-    )
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
-}
-
-
-@Composable
-@Preview(showBackground = true)
-fun OverlayBigPreview() {
-    OverlayBig()
-}
