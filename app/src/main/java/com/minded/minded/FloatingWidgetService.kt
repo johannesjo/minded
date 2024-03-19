@@ -9,27 +9,19 @@ import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.room.Room
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
 import com.minded.minded.data.AnswerDao
+import com.minded.minded.data.AppDatabase
 import com.minded.minded.data.QUESTIONS
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -38,6 +30,8 @@ import java.util.concurrent.TimeUnit
 class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
     lateinit var windowManager: WindowManager
+    lateinit var db: AppDatabase
+    lateinit var answerDao: AnswerDao
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.create(this)
@@ -51,6 +45,12 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
 
     override fun onCreate() {
         super.onCreate()
+        super.onCreate()
+        db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "minded-db"
+        ).build()
+        answerDao = db.answerDao()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -109,7 +109,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("SVC", "onSubmitAnswer: $it")
-//                        answerDao.insertAnswer(rndQuestion.categoryId, it)
+                        answerDao.createWithTimestamp(it, rndQuestion.categoryId)
                     })
             }
         }

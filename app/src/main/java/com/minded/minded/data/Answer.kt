@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class Answer(
     @PrimaryKey val uid: Int,
     @ColumnInfo(name = "question_category_id") val questionCategoryId: QuestionCategoryId,
-    @ColumnInfo(name = "value") val value: String,
+    @ColumnInfo(name = "txt") val txt: String,
     @ColumnInfo(name = "created_at") var createdAt: Long,
     @ColumnInfo(name = "modified_at") var modifiedAt: Long
 )

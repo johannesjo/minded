@@ -7,21 +7,33 @@ import androidx.room.Update
 
 @Dao
 interface AnswerDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(user: Answer)
+    fun insert(answer: Answer)
 
     @Update
-    fun update(user: Answer)
+    fun update(answer: Answer)
 
-    fun insertWithTimestamp(user: Answer) {
-        insert(user.apply {
+    fun createWithTimestamp(txtIn: String, questionCategoryId: QuestionCategoryId) {
+        val answer = Answer(
+            uid = 0, // Room will auto-generate this
+            questionCategoryId = questionCategoryId,
+            txt = txtIn,
+            createdAt = System.currentTimeMillis(),
+            modifiedAt = System.currentTimeMillis()
+        )
+        insert(answer)
+    }
+
+    fun insertWithTimestamp(answer: Answer) {
+        insert(answer.apply {
             createdAt = System.currentTimeMillis()
             modifiedAt = System.currentTimeMillis()
         })
     }
 
-    fun updateWithTimestamp(user: Answer) {
-        update(user.apply {
+    fun updateWithTimestamp(answer: Answer) {
+        update(answer.apply {
             modifiedAt = System.currentTimeMillis()
         })
     }
