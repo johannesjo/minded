@@ -38,9 +38,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
-class FloatingWidgetService : Service(),
-    LifecycleOwner,
-    SavedStateRegistryOwner {
+class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
     lateinit var windowManager: WindowManager
     private val _lifecycleRegistry = LifecycleRegistry(this)
@@ -63,9 +61,9 @@ class FloatingWidgetService : Service(),
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
             Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
-            if(foregroundApp== "com.android.chrome"){
+            if (foregroundApp == "com.android.chrome") {
                 Log.v("SVC", "SHOW OVERLAY")
-                showOverlay()
+                FloatingWidgetService.showOverlay(this);
             }
         }, 0, 1, TimeUnit.SECONDS)
     }
@@ -103,8 +101,7 @@ class FloatingWidgetService : Service(),
             setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
             setContent {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Column {
                         Text("Hello, Compose!")
@@ -146,10 +143,8 @@ class FloatingWidgetService : Service(),
 
 
     companion object {
-        private const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY =
-            "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
-        private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY =
-            "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
+        private const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
+        private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         internal fun showOverlay(context: Context) {
             val intent = Intent(context, FloatingWidgetService::class.java)
