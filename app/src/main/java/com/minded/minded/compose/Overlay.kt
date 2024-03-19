@@ -21,49 +21,55 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.minded.minded.compose.FadeInBox
 import com.minded.minded.ui.theme.PastelGreen
 import com.minded.minded.ui.theme.PastelRed
 import com.minded.minded.ui.theme.PastelYellow
 
 @Composable
 fun OverlayBig(hideOverlay: () -> Unit = { }) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        visible = true
+    }
 
-    Surface(
-        color = Color.Magenta,
-        onClick = {
-            Log.v("SVC", "click BG")
-            hideOverlay()
-        },
-    ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            PastelYellow,
-                            PastelRed,
-                            PastelGreen,
+    FadeInBox(visible) {
+        Text(text = "asd")
+        Surface(
+            onClick = {
+                Log.v("SVC", "click BG")
+                hideOverlay()
+            },
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                PastelYellow,
+                                PastelRed,
+                                PastelGreen,
+                            )
                         )
                     )
-                )
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Replace this with your own Compose UI
-                Text(
-                    text = "This would be the question?",
-                    fontSize = 22.sp,
-                    modifier = Modifier
-                        .padding(16.dp)
-                )
-                TextInput()
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Replace this with your own Compose UI
+                    Text(
+                        text = "This would be the question?",
+                        fontSize = 22.sp,
+                        modifier = Modifier
+                            .padding(16.dp)
+                    )
+                    TextInput()
+                }
             }
         }
     }
@@ -90,9 +96,8 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
         ),
         modifier = Modifier
             .focusRequester(focusRequester)
-            .wrapContentHeight(align = Alignment.CenterVertically)
+            .wrapContentHeight(align = Alignment.CenterVertically),
 //            .align(Alignment.CenterVertically) // Center align the TextField vertically
-        ,
     )
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
