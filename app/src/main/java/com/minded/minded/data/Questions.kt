@@ -29,13 +29,21 @@ data class QuestionForPrompt(
 
 
 data class QuestionCategory(
-    val dashboardTxt: String?,
+    val dashboardTxt: String,
     val questions: List<QuestionForPrompt>?,
     val isTodayOnlyCategory: Boolean = false,
     val isThisWeekOnlyCategory: Boolean = false,
     val isQuestionLessWidget: Boolean = false,
 )
 
+data class QuestionCategoryForDashboard(
+    val dashboardTxt: String,
+    val categoryId: QuestionCategoryId,
+    val answers: List<Answer>,
+    val isTodayOnlyCategory: Boolean = false,
+    val isThisWeekOnlyCategory: Boolean = false,
+    val isQuestionLessWidget: Boolean = false,
+)
 
 //interface QuestionCategory {
 //    val dashboardTxt: String?
@@ -210,7 +218,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
         true,
     ),
     QuestionCategoryId.XEnergyLevelToday to QuestionCategory(
-        null,
+        "",
         null,
         true,
     )
