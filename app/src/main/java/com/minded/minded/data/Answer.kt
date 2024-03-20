@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Answer(
-    @PrimaryKey val uid: Int,
+    @PrimaryKey(autoGenerate = true) val uid: Int,
     @ColumnInfo(name = "question_category_id") val questionCategoryId: QuestionCategoryId,
     @ColumnInfo(name = "txt") val txt: String,
     @ColumnInfo(name = "created_at") var createdAt: Long,
