@@ -20,7 +20,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
-import com.minded.minded.compose.AnswerRepository
+import com.minded.minded.ui.compose.AnswerRepository
 import com.minded.minded.data.AnswerDao
 import com.minded.minded.data.AppDatabase
 import com.minded.minded.data.QUESTIONS
@@ -52,7 +52,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        FloatingWidgetService.showOverlay(this)
+//        FloatingWidgetService.showOverlay(this)
 
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
