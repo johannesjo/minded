@@ -16,7 +16,7 @@ object MyUtil {
     fun checkUsageStatsPermission(context: Context): Boolean {
         val granted: Boolean
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(
+        @Suppress("DEPRECATION") val mode = appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
             android.os.Process.myUid(),
             context.packageName
@@ -31,11 +31,7 @@ object MyUtil {
     }
 
     fun checkDrawOverlayPermission(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(context)
-        } else {
-            true
-        }
+        return Settings.canDrawOverlays(context)
     }
 
     fun getForegroundApp(context: Context): String {

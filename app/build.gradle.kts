@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.devtoolsKsp)
 }
 
 android {
@@ -40,7 +41,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
     packaging {
         resources {
@@ -50,11 +51,9 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.room.common)
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
