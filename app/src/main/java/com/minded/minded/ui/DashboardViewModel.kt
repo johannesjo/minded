@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class DashboardViewModel(private val answerRepository: AnswerRepository) : ViewModel() {
+open class DashboardViewModel(private val answerRepository: AnswerRepository) : ViewModel() {
     // Game UI state
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
