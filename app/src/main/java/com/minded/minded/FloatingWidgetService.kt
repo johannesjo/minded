@@ -58,7 +58,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
 //            Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
-            if (lastForeGroundApp != foregroundApp && foregroundApp == "com.android.chrome") {
+            if (lastForeGroundApp != foregroundApp && (foregroundApp == "com.android.chrome" || foregroundApp == "com.google.android.youtube")) {
                 Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
                 Log.v("SVC", "SHOW OVERLAY")
                 FloatingWidgetService.showOverlay(this);
