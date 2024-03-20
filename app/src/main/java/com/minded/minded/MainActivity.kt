@@ -15,27 +15,39 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import com.minded.minded.MyUtil.checkUsageStatsPermission
+import com.minded.minded.compose.AnswerRepository
+import com.minded.minded.compose.Dashboard
 import com.minded.minded.ui.theme.MindedTheme
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
+    lateinit var answerRepository: AnswerRepository
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
 
-        startService(Intent(this, FloatingWidgetService::class.java))
+        answerRepository = AnswerRepository(this)
+        lifecycleScope.launch {
+            val answers = answerRepository.getAllAnswers()
+            Log.v("MAIN", "answers: $answers")
 
-        setContent {
-            MindedTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("AndrAAaaaaAoid")
+            setContent {
+                MindedTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        Dashboard(answers)
+                    }
                 }
             }
         }
+
 
         if (MyUtil.checkDrawOverlayPermission(this)) {
             if (MyUtil.checkUsageStatsPermission(this)) {
@@ -80,21 +92,5 @@ class MainActivity : AppCompatActivity() {
                 Uri.parse("package:$packageName")
             )
         );
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MindedTheme {
-        Greeting("Android")
     }
 }

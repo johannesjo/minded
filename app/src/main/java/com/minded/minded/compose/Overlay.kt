@@ -46,13 +46,14 @@ fun OverlayBig(
         visible = true
     }
 
+    // TODO make background click work again
     FadeInBox(visible) {
         Text(text = "asd")
         Surface(
-            onClick = {
-                Log.v("SVC", "click BG")
-                hideOverlay()
-            },
+//            onClick = {
+//                Log.v("SVC", "click BG")
+//                hideOverlay()
+//            },
         ) {
             Box(
                 modifier = Modifier
@@ -81,6 +82,7 @@ fun OverlayBig(
                     TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
                         onSubmitAnswer(it)
                         hideOverlay()
+                        Log.v("Overlay.kt", "submitAnswer")
                     })
                 }
             }

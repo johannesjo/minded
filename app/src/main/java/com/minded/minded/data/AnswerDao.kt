@@ -3,10 +3,14 @@ package com.minded.minded.data
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
 
 @Dao
 interface AnswerDao {
+    @Query("SELECT * FROM Answer")
+    fun getAllAnswers(): List<Answer>
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(answer: Answer)
@@ -23,18 +27,5 @@ interface AnswerDao {
             modifiedAt = System.currentTimeMillis()
         )
         insert(answer)
-    }
-
-    fun insertWithTimestamp(answer: Answer) {
-        insert(answer.apply {
-            createdAt = System.currentTimeMillis()
-            modifiedAt = System.currentTimeMillis()
-        })
-    }
-
-    fun updateWithTimestamp(answer: Answer) {
-        update(answer.apply {
-            modifiedAt = System.currentTimeMillis()
-        })
     }
 }

@@ -20,9 +20,12 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
+import com.minded.minded.compose.AnswerRepository
 import com.minded.minded.data.AnswerDao
 import com.minded.minded.data.AppDatabase
 import com.minded.minded.data.QUESTIONS
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -30,8 +33,7 @@ import java.util.concurrent.TimeUnit
 class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
     lateinit var windowManager: WindowManager
-    lateinit var db: AppDatabase
-    lateinit var answerDao: AnswerDao
+    lateinit var answerRepository: AnswerRepository
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.create(this)
@@ -40,18 +42,13 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
     private var lastForeGroundApp: String = "";
-//    private val answerDao: AnswerDao = AnswerDao(this)
 
 
     override fun onCreate() {
         super.onCreate()
         super.onCreate()
-        db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "minded-db"
-        ).build()
-        answerDao = db.answerDao()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        answerRepository = AnswerRepository(this)
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -60,8 +57,9 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
-            Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
+//            Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
             if (lastForeGroundApp != foregroundApp && foregroundApp == "com.android.chrome") {
+                Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
                 Log.v("SVC", "SHOW OVERLAY")
                 FloatingWidgetService.showOverlay(this);
             }
@@ -109,7 +107,9 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("SVC", "onSubmitAnswer: $it")
-                        answerDao.createWithTimestamp(it, rndQuestion.categoryId)
+                        GlobalScope.launch {
+                            answerRepository.createWithTimestamp(it, rndQuestion.categoryId)
+                        }
                     })
             }
         }
