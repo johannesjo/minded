@@ -30,10 +30,10 @@ data class QuestionForPrompt(
 
 data class QuestionCategory(
     val dashboardTxt: String?,
-    val isTodayOnlyCategory: Boolean?,
-    val isThisWeekOnlyCategory: Boolean?,
-    val isQuestionLessWidget: Boolean?,
     val questions: List<QuestionForPrompt>?,
+    val isTodayOnlyCategory: Boolean = false,
+    val isThisWeekOnlyCategory: Boolean = false,
+    val isQuestionLessWidget: Boolean = false,
 )
 
 
@@ -157,94 +157,62 @@ val QUESTIONS: List<QuestionForPrompt> = listOf(
 val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.PersonalResources to QuestionCategory(
         "Personal Resources",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.PersonalResources }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.PersonalResources },
     ),
     QuestionCategoryId.TodayILearned to QuestionCategory(
         "Today I learned",
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.TodayILearned },
         true,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.TodayILearned }
     ),
     QuestionCategoryId.RefocusHelperToday to QuestionCategory(
         "Finding Focus Today",
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.RefocusHelperToday },
         true,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.RefocusHelperToday }
     ),
     QuestionCategoryId.Motivation to QuestionCategory(
         "My Motivation",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.Motivation }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.Motivation },
     ),
     QuestionCategoryId.Gratitude to QuestionCategory(
         "Gratitude",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.Gratitude }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.Gratitude },
     ),
     QuestionCategoryId.HelpfulTools to QuestionCategory(
         "Helpful Tools",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.HelpfulTools }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.HelpfulTools },
     ),
     QuestionCategoryId.CalmingThoughts to QuestionCategory(
         "Calming Thoughts",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.CalmingThoughts }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.CalmingThoughts },
     ),
     QuestionCategoryId.PositiveThoughts to QuestionCategory(
         "Positive Thoughts",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.PositiveThoughts }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.PositiveThoughts },
     ),
     QuestionCategoryId.GoodToday to QuestionCategory(
         "Good Today",
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodToday },
         true,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodToday }
     ),
     QuestionCategoryId.GoodPlans to QuestionCategory(
         "Good Plans",
-        false,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlans }
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlans },
     ),
     QuestionCategoryId.GoodPlansToday to QuestionCategory(
         "Good Plans Today",
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlansToday },
         true,
-        false,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlansToday }
     ),
     QuestionCategoryId.GoalForTheWeek to QuestionCategory(
         "Your Goal for the Week",
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoalForTheWeek },
         false,
         true,
-        false,
-        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoalForTheWeek }
     ),
     QuestionCategoryId.XEnergyLevelToday to QuestionCategory(
         null,
+        null,
         true,
-        false,
-        true,
-        null
     )
 )
 
