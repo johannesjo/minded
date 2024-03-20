@@ -2,6 +2,7 @@ package com.minded.minded.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.minded.minded.MyUtil
 import com.minded.minded.data.Answer
 import com.minded.minded.data.QUESTIONS
 import com.minded.minded.data.QUESTION_CATEGORIES
@@ -26,18 +27,7 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
     }
 
     private fun mapAnswersToQuestions(allAnswers: List<Answer>): List<QuestionCategoryForDashboard> {
-        return QUESTION_CATEGORIES_ON_DASHBOARD.map { questionCategoryId ->
-            val qc = QUESTION_CATEGORIES[questionCategoryId]
-                ?: error("No question category for $questionCategoryId")
-            QuestionCategoryForDashboard(
-                qc.dashboardTxt,
-                questionCategoryId,
-                answers = allAnswers.filter { answer -> questionCategoryId == answer.questionCategoryId },
-                qc.isTodayOnlyCategory,
-                qc.isThisWeekOnlyCategory,
-                qc.isQuestionLessWidget,
-            )
-        }.filter { it.answers.isNotEmpty() }
+        return MyUtil.mapAnswersToQuestions(allAnswers)
     }
 
     private fun loadAnswers() {

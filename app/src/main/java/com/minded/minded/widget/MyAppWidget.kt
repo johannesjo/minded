@@ -1,52 +1,59 @@
 package com.minded.minded.widget
 
 import android.content.Context
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Text
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.glance.Button
 import androidx.glance.GlanceId
-import androidx.glance.GlanceModifier
-import androidx.glance.action.actionStartActivity
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.provideContent
-import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.padding
-import com.minded.minded.MainActivity
+import androidx.glance.layout.Box
+import androidx.glance.layout.Column
+import androidx.glance.text.Text
+import com.minded.minded.MyUtil
+import com.minded.minded.data.QuestionCategoryForDashboard
+import com.minded.minded.ui.compose.AnswerRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 class MyAppWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Load data needed to render the AppWidget.
-        // Use `withContext` to switch to another thread for long running
-        // operations.
+        val answerRepository = AnswerRepository(context)
+
+        // Use the repository to fetch data
+        val allAnswers = withContext(Dispatchers.IO) {
+            Log.d("MyAppWidget", "Fetching all answers")
+            val answers = answerRepository.getAllAnswers()
+            Log.d("MyAppWidget", "Fetched ${answers.size} answers")
+            answers
+        }
+        val questionDataForDashboard = MyUtil.mapAnswersToQuestions(allAnswers)
 
         provideContent {
             // create your AppWidget here
-            MyContent()
+            Log.d(
+                "MyAppWidget",
+                "Displaying dashboard with ${questionDataForDashboard.size} questions"
+            )
+            QuestionCategoryCmp2(questionDataForDashboard.random())
         }
     }
+}
 
-    @Composable
-    private fun MyContent() {
+
+@Composable
+fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
+    Box(
+    ) {
         Column(
-//            modifier = GlanceModifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            Text(text = "Where to?", modifier = GlanceModifier.padding(12.dp))
-            Row() {
-                Button(
-                    text = "Home",
-                    onClick = actionStartActivity<MainActivity>()
-                )
-                Button(
-                    text = "Work",
-                    onClick = actionStartActivity<MainActivity>()
-                )
+
+            Text(
+                text = question.dashboardTxt ?: "No text",
+            )
+            question.answers.forEach {
+                Text(it.txt)
             }
         }
     }
