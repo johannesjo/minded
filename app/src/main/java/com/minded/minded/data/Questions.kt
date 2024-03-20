@@ -27,43 +27,23 @@ data class QuestionForPrompt(
     val prompt: String? = null
 )
 
-interface QuestionCategory {
-    val dashboardTxt: String?
-    val isTodayOnlyCategory: Boolean?
-    val isThisWeekOnlyCategory: Boolean?
-    val isQuestionLessWidget: Boolean?
-    val questions: List<Question>?
-}
 
-val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
-    QuestionCategoryId.PersonalResources to object : QuestionCategory {
-        override val isQuestionLessWidget = false
-        override val isTodayOnlyCategory = false
-        override val isThisWeekOnlyCategory = false
-        override val dashboardTxt = "Personal Resources"
-        override val questions = listOf(
-            Question("What is something you are good at", "I am good at"),
-            Question("What is a strength of yours")
-        )
-    },
-    // Add the rest of the categories here...
+data class QuestionCategory(
+    val dashboardTxt: String?,
+    val isTodayOnlyCategory: Boolean?,
+    val isThisWeekOnlyCategory: Boolean?,
+    val isQuestionLessWidget: Boolean?,
+    val questions: List<QuestionForPrompt>?,
 )
 
-val QUESTION_CATEGORIES_ON_DASHBOARD: List<QuestionCategoryId> = listOf(
-    QuestionCategoryId.GoodPlansToday,
-    QuestionCategoryId.RefocusHelperToday,
-    QuestionCategoryId.GoodToday,
-    QuestionCategoryId.TodayILearned,
-    QuestionCategoryId.Motivation,
-    QuestionCategoryId.XEnergyLevelToday,
-    QuestionCategoryId.GoodPlans,
-    QuestionCategoryId.HelpfulTools,
-    QuestionCategoryId.GoalForTheWeek,
-    QuestionCategoryId.PersonalResources,
-    QuestionCategoryId.Gratitude,
-    QuestionCategoryId.PositiveThoughts,
-    QuestionCategoryId.CalmingThoughts,
-)
+
+//interface QuestionCategory {
+//    val dashboardTxt: String?
+//    val isTodayOnlyCategory: Boolean?
+//    val isThisWeekOnlyCategory: Boolean?
+//    val isQuestionLessWidget: Boolean?
+//    val questions: List<Question>?
+//}
 
 
 val QUESTIONS: List<QuestionForPrompt> = listOf(
@@ -172,3 +152,115 @@ val QUESTIONS: List<QuestionForPrompt> = listOf(
         categoryId = QuestionCategoryId.GoalForTheWeek
     )
 )
+
+
+val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
+    QuestionCategoryId.PersonalResources to QuestionCategory(
+        "Personal Resources",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.PersonalResources }
+    ),
+    QuestionCategoryId.TodayILearned to QuestionCategory(
+        "Today I learned",
+        true,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.TodayILearned }
+    ),
+    QuestionCategoryId.RefocusHelperToday to QuestionCategory(
+        "Finding Focus Today",
+        true,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.RefocusHelperToday }
+    ),
+    QuestionCategoryId.Motivation to QuestionCategory(
+        "My Motivation",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.Motivation }
+    ),
+    QuestionCategoryId.Gratitude to QuestionCategory(
+        "Gratitude",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.Gratitude }
+    ),
+    QuestionCategoryId.HelpfulTools to QuestionCategory(
+        "Helpful Tools",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.HelpfulTools }
+    ),
+    QuestionCategoryId.CalmingThoughts to QuestionCategory(
+        "Calming Thoughts",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.CalmingThoughts }
+    ),
+    QuestionCategoryId.PositiveThoughts to QuestionCategory(
+        "Positive Thoughts",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.PositiveThoughts }
+    ),
+    QuestionCategoryId.GoodToday to QuestionCategory(
+        "Good Today",
+        true,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodToday }
+    ),
+    QuestionCategoryId.GoodPlans to QuestionCategory(
+        "Good Plans",
+        false,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlans }
+    ),
+    QuestionCategoryId.GoodPlansToday to QuestionCategory(
+        "Good Plans Today",
+        true,
+        false,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlansToday }
+    ),
+    QuestionCategoryId.GoalForTheWeek to QuestionCategory(
+        "Your Goal for the Week",
+        false,
+        true,
+        false,
+        QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoalForTheWeek }
+    ),
+    QuestionCategoryId.XEnergyLevelToday to QuestionCategory(
+        null,
+        true,
+        false,
+        true,
+        null
+    )
+)
+
+val QUESTION_CATEGORIES_ON_DASHBOARD: List<QuestionCategoryId> = listOf(
+    QuestionCategoryId.GoodPlansToday,
+    QuestionCategoryId.RefocusHelperToday,
+    QuestionCategoryId.GoodToday,
+    QuestionCategoryId.TodayILearned,
+    QuestionCategoryId.Motivation,
+    QuestionCategoryId.XEnergyLevelToday,
+    QuestionCategoryId.GoodPlans,
+    QuestionCategoryId.HelpfulTools,
+    QuestionCategoryId.GoalForTheWeek,
+    QuestionCategoryId.PersonalResources,
+    QuestionCategoryId.Gratitude,
+    QuestionCategoryId.PositiveThoughts,
+    QuestionCategoryId.CalmingThoughts,
+)
+

@@ -1,4 +1,4 @@
-package com.minded.minded.compose
+package com.minded.minded.ui.compose
 
 import android.content.Context
 import androidx.room.Room

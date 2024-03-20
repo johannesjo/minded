@@ -1,4 +1,4 @@
-package com.minded.minded.compose
+package com.minded.minded.ui.compose
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

@@ -1,5 +1,6 @@
 package com.minded.minded
 
+import DashboardViewModelFactory
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -15,26 +16,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.MyUtil.checkUsageStatsPermission
-import com.minded.minded.compose.AnswerRepository
-import com.minded.minded.compose.Dashboard
+import com.minded.minded.ui.DashboardViewModel
+import com.minded.minded.ui.compose.AnswerRepository
+import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.theme.MindedTheme
 import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
-    lateinit var answerRepository: AnswerRepository
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
-
-        answerRepository = AnswerRepository(this)
+        val answerRepository = AnswerRepository(this)
+        val viewModelFactory = DashboardViewModelFactory(answerRepository)
+        val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
         lifecycleScope.launch {
-            val answers = answerRepository.getAllAnswers()
-            Log.v("MAIN", "answers: $answers")
 
             setContent {
                 MindedTheme {
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        Dashboard(answers)
+                        Dashboard(viewModel)
                     }
                 }
             }

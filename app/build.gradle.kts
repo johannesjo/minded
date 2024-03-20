@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.androidx.coordinatorlayout)
     implementation(libs.material)
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
