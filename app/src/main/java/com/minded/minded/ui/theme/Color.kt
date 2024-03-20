@@ -13,3 +13,10 @@ val Pink40 = Color(0xFF7D5260)
 val PastelGreen = Color(0xFFB7E4C7)
 val PastelRed = Color(0xFFE4B7B7)
 val PastelYellow = Color(0xFFE4E0B7)
+
+
+val StandardGradient = listOf(
+    PastelYellow,
+    PastelRed,
+    PastelGreen,
+)

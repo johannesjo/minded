@@ -33,6 +33,7 @@ import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.ui.theme.PastelGreen
 import com.minded.minded.ui.theme.PastelRed
 import com.minded.minded.ui.theme.PastelYellow
+import com.minded.minded.ui.theme.StandardGradient
 
 @Composable
 fun OverlayBig(
@@ -59,11 +60,7 @@ fun OverlayBig(
                 modifier = Modifier
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(
-                                PastelYellow,
-                                PastelRed,
-                                PastelGreen,
-                            )
+                            colors = StandardGradient
                         )
                     )
             ) {
