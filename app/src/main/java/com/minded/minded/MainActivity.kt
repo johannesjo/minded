@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.ui.model.DashboardViewModel
-import com.minded.minded.data.AnswerRepository
+import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.theme.MindedTheme
 import kotlinx.coroutines.launch

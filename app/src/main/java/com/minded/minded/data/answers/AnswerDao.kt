@@ -1,24 +1,30 @@
-package com.minded.minded.data
+package com.minded.minded.data.answers
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.minded.minded.data.QuestionCategoryId
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AnswerDao {
     @Query("SELECT * FROM Answer")
     fun getAllAnswers(): List<Answer>
 
+    @Query("SELECT * FROM Answer")
+    fun getAllAnswersFlow(): Flow<List<Answer>>
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(answer: Answer)
+    suspend fun insert(answer: Answer)
 
     @Update
-    fun update(answer: Answer)
+    suspend fun update(answer: Answer)
 
-    fun createWithTimestamp(txtIn: String, questionCategoryId: QuestionCategoryId) {
+    suspend fun createWithTimestamp(txtIn: String, questionCategoryId: QuestionCategoryId) {
         val answer = Answer(
             uid = 0, // Room will auto-generate this
             questionCategoryId = questionCategoryId,
@@ -28,4 +34,7 @@ interface AnswerDao {
         )
         insert(answer)
     }
+
+    @Delete
+    suspend fun remove(answer: Answer)
 }

@@ -19,7 +19,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
-import com.minded.minded.data.AnswerRepository
+import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.data.QUESTIONS
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

@@ -3,7 +3,7 @@ package com.minded.minded.ui.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.minded.minded.data.AnswerRepository
+import com.minded.minded.data.answers.AnswerRepository
 
 class DashboardViewModelFactory(private val answerRepository: AnswerRepository) :
     ViewModelProvider.Factory {

@@ -1,5 +1,7 @@
 package com.minded.minded.data
 
+import com.minded.minded.data.answers.Answer
+
 enum class QuestionCategoryId {
     Motivation,
     PersonalResources,

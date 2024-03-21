@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.ui.model.DashboardViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.minded.minded.data.Answer
+import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.ui.theme.StandardGradient
