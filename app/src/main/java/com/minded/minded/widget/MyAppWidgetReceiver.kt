@@ -7,9 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
+import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import com.minded.minded.MainActivity
 
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
     private val updateInterval = 30 * 60 * 1000L
@@ -70,18 +72,5 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         Log.d("MyAppWidgetReceiver", "onUpdate called")
         Log.v("WR","onUpdate")
-//        glanceAppWidget.update(context, appWidgetIds)
-        // Code to execute when AppWidgetManager.ACTION_APPWIDGET_UPDATE is received goes here
-
-
-//        appWidgetIds.forEach { appWidgetId ->
-//            val views: RemoteViews = RemoteViews(
-//                context.packageName,
-//                R.layout.appwidget_provider_layout
-//            ).apply {
-//                // update the views
-//            }
-//            appWidgetManager.updateAppWidget(appWidgetId, views)
-//        }
     }
 }
