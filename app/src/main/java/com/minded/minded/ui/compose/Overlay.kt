@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -92,7 +97,7 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
     var textState by remember { mutableStateOf(TextFieldValue(initialVal)) }
     val focusRequester = remember { FocusRequester() }
 
-    TextField(
+    OutlinedTextField(
         singleLine = true,
         value = textState,
         onValueChange = { newTextState ->
@@ -109,6 +114,16 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
                 onSubmit(textState.text)
             }
         ),
+        trailingIcon = {
+            IconButton(onClick = { textState = textState.copy(
+                text = "",
+            ) }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Visibility"
+                )
+            }
+        },
         modifier = Modifier
             .focusRequester(focusRequester)
             .wrapContentHeight(align = Alignment.CenterVertically),
