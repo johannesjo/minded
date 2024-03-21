@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
     <uses-permission android:name="com.android.alarm.permission.WAKE_LOCK"/>
 
@@ -31,7 +33,7 @@
         <service
                 android:name="QuestionOverlayService"
                 android:exported="false"
-                android:foregroundServiceType="health"
+                android:foregroundServiceType="specialUse"
                 android:enabled="true" />
 
         <receiver android:name=".widget.MyAppWidgetReceiver"
