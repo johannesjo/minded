@@ -1,15 +1,11 @@
-package com.minded.minded.ui
+package com.minded.minded.ui.model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.minded.minded.MyUtil
 import com.minded.minded.data.Answer
-import com.minded.minded.data.QUESTIONS
-import com.minded.minded.data.QUESTION_CATEGORIES
-import com.minded.minded.data.QUESTION_CATEGORIES_ON_DASHBOARD
-import com.minded.minded.data.QuestionCategory
 import com.minded.minded.data.QuestionCategoryForDashboard
-import com.minded.minded.ui.compose.AnswerRepository
+import com.minded.minded.data.AnswerRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

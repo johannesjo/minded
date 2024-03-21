@@ -1,8 +1,9 @@
+package com.minded.minded.ui.model
+
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.minded.minded.ui.DashboardViewModel
-import com.minded.minded.ui.compose.AnswerRepository
+import com.minded.minded.data.AnswerRepository
 
 class DashboardViewModelFactory(private val answerRepository: AnswerRepository) :
     ViewModelProvider.Factory {

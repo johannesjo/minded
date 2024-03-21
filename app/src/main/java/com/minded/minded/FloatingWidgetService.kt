@@ -14,15 +14,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.room.Room
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
-import com.minded.minded.ui.compose.AnswerRepository
-import com.minded.minded.data.AnswerDao
-import com.minded.minded.data.AppDatabase
+import com.minded.minded.data.AnswerRepository
 import com.minded.minded.data.QUESTIONS
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

@@ -1,11 +1,7 @@
-package com.minded.minded.ui.compose
+package com.minded.minded.data
 
 import android.content.Context
 import androidx.room.Room
-import com.minded.minded.data.Answer
-import com.minded.minded.data.AnswerDao
-import com.minded.minded.data.AppDatabase
-import com.minded.minded.data.QuestionCategoryId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
