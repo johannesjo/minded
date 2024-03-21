@@ -1,6 +1,6 @@
 package com.minded.minded
 
-import DashboardViewModelFactory
+import com.minded.minded.ui.model.DashboardViewModelFactory
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,15 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.minded.minded.MyUtil.checkUsageStatsPermission
-import com.minded.minded.ui.DashboardViewModel
-import com.minded.minded.ui.compose.AnswerRepository
+import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.data.AnswerRepository
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.theme.MindedTheme
 import kotlinx.coroutines.launch

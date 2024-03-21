@@ -1,4 +1,4 @@
-package com.minded.minded.ui
+package com.minded.minded.ui.model
 
 import com.minded.minded.data.QuestionCategory
 import com.minded.minded.data.QuestionCategoryForDashboard

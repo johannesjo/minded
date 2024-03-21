@@ -11,7 +11,7 @@ import androidx.glance.layout.Column
 import androidx.glance.text.Text
 import com.minded.minded.MyUtil
 import com.minded.minded.data.QuestionCategoryForDashboard
-import com.minded.minded.ui.compose.AnswerRepository
+import com.minded.minded.data.AnswerRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
