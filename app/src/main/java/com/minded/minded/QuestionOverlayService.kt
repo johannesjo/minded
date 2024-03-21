@@ -1,36 +1,39 @@
 package com.minded.minded
 
 import OverlayBig
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
-import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.data.QUESTIONS
+import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.model.DashboardViewModel
-import com.minded.minded.ui.model.DashboardViewModelFactory
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
-class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner {
+class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
     lateinit var windowManager: WindowManager
     lateinit var answerRepository: AnswerRepository
@@ -52,11 +55,20 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         answerRepository = AnswerRepository(this)
         dashboardViewModel = DashboardViewModel(answerRepository)
 
+
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 //        FloatingWidgetService.showOverlay(this)
 
+
+        Handler(Looper.getMainLooper()).post(Runnable {
+            Toast.makeText(
+                this@QuestionOverlayService.applicationContext,
+                "START QuestionOverlayService",
+                Toast.LENGTH_SHORT
+            ).show()
+        })
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
@@ -64,7 +76,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
             if (lastForeGroundApp != foregroundApp && (foregroundApp == "com.android.chrome" || foregroundApp == "com.google.android.youtube")) {
                 Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
                 Log.v("SVC", "SHOW OVERLAY")
-                FloatingWidgetService.showOverlay(this);
+                QuestionOverlayService.showOverlay(this);
             }
             lastForeGroundApp = foregroundApp;
         }, 0, 200, TimeUnit.MILLISECONDS)
@@ -88,6 +100,31 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         super.onDestroy()
         hideOverlay()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+
+        Handler(Looper.getMainLooper()).post(Runnable {
+            Toast.makeText(
+                this@QuestionOverlayService.applicationContext,
+                "DESTROY QuestionOverlayService",
+                Toast.LENGTH_SHORT
+            ).show()
+        })
+
+
+        val timeToInvoke = 30 * 1000
+        val intent: Intent = Intent(
+            this@QuestionOverlayService,
+            QuestionOverlayService::class.java
+        )
+        val pendingIntent = PendingIntent.getService(
+            this@QuestionOverlayService, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+        alarm.set(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + timeToInvoke.toLong(),
+            pendingIntent
+        )
     }
 
     private fun showOverlay() {
@@ -100,8 +137,8 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         val rndQuestion = QUESTIONS.random();
         overlayView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@FloatingWidgetService)
-            setViewTreeSavedStateRegistryOwner(this@FloatingWidgetService)
+            setViewTreeLifecycleOwner(this@QuestionOverlayService)
+            setViewTreeSavedStateRegistryOwner(this@QuestionOverlayService)
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
@@ -156,13 +193,13 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         internal fun showOverlay(context: Context) {
-            val intent = Intent(context, FloatingWidgetService::class.java)
+            val intent = Intent(context, QuestionOverlayService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
             context.startService(intent)
         }
 
         internal fun hideOverlay(context: Context) {
-            val intent = Intent(context, FloatingWidgetService::class.java)
+            val intent = Intent(context, QuestionOverlayService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
             context.startService(intent)
         }
