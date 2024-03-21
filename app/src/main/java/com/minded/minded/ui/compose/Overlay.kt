@@ -51,10 +51,10 @@ fun OverlayBig(
     FadeInBox(visible) {
         Text(text = "asd")
         Surface(
-//            onClick = {
-//                Log.v("SVC", "click BG")
-//                hideOverlay()
-//            },
+            onClick = {
+                Log.v("SVC", "click BG")
+                hideOverlay()
+            },
         ) {
             Box(
                 modifier = Modifier
