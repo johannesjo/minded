@@ -5,10 +5,11 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.Settings
-import com.minded.minded.data.answers.Answer
+import android.util.Log
 import com.minded.minded.data.QUESTION_CATEGORIES
 import com.minded.minded.data.QUESTION_CATEGORIES_ON_DASHBOARD
 import com.minded.minded.data.QuestionCategoryForDashboard
+import com.minded.minded.data.answers.Answer
 
 object MyUtil {
     fun checkPermission(context: Context, permission: String): Boolean {
@@ -40,25 +41,29 @@ object MyUtil {
     fun getForegroundApp(context: Context): String {
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val endTimeNow = System.currentTimeMillis()
+        val beginTime = endTimeNow - 1000 * 3600
 
-        val time = System.currentTimeMillis()
-        val usageStatsList = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            time - 1000 * 3600,
-            time
-        )
+        val usageStatsList =
+            usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTimeNow)
 
-        var foregroundApp = ""
-        var lastUsedAppTime = 0L
-
-        for (usageStats in usageStatsList) {
-            if (usageStats.lastTimeUsed > lastUsedAppTime) {
-                foregroundApp = usageStats.packageName
-                lastUsedAppTime = usageStats.lastTimeUsed
+        if (usageStatsList != null && usageStatsList.isNotEmpty()) {
+            var recentStats = usageStatsList[0]
+            for (usageStats in usageStatsList) {
+                if (usageStats.lastTimeUsed > recentStats.lastTimeUsed) {
+                    recentStats = usageStats
+                }
             }
-        }
 
-        return foregroundApp
+            val threshold = endTimeNow - recentStats.lastTimeStamp
+            Log.v("SVC", "Foreground app: $threshold $endTimeNow ${recentStats.lastTimeStamp}")
+            // never show if app was shown more than a second ago
+            if (threshold > 1000) {
+                return "NO_APP_WITHIN_THRESHOLD ${recentStats.packageName}"
+            }
+            return recentStats.packageName
+        }
+        return "UNKNOWN"
     }
 
     fun mapAnswersToQuestions(allAnswers: List<Answer>): List<QuestionCategoryForDashboard> {

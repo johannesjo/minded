@@ -19,7 +19,6 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Lifecycle
@@ -37,6 +36,7 @@ import com.minded.minded.ui.model.DashboardViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 
@@ -52,7 +52,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
     private var lastForeGroundApp: String = "";
+    private var lastBlockedForeGroundApp: String = "";
     private lateinit var dashboardViewModel: DashboardViewModel
+    private lateinit var scheduleFuture: ScheduledFuture<*>
+    private var isPollingPaused = false
 
 
     override fun onCreate() {
@@ -83,16 +86,26 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             ).show()
         })
 
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
+        scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
             val foregroundApp = getForegroundApp(this);
-//            Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
-            if (lastForeGroundApp != foregroundApp && (foregroundApp == "com.android.chrome" || foregroundApp == "com.google.android.youtube")) {
-                Log.v("SVC", "foreground app: ${getForegroundApp(this)}")
-                Log.v("SVC", "SHOW OVERLAY")
+            Log.v("SVC", "foregroundApp: $foregroundApp; isPause: ${isPollingPaused.toString()}")
+            if (
+                !isPollingPaused
+                && lastForeGroundApp != foregroundApp
+                && (foregroundApp == "com.android.chrome" || foregroundApp == "com.google.android.youtube")
+            ) {
+                Log.v("SVC", "SHOW OVERLAY for: $foregroundApp")
+                lastBlockedForeGroundApp = foregroundApp;
                 QuestionOverlayService.showOverlay(this);
+                isPollingPaused = true
+                Executors.newSingleThreadScheduledExecutor()
+                    .schedule({ isPollingPaused = false }, 30, TimeUnit.SECONDS)
             }
-            lastForeGroundApp = foregroundApp;
-        }, 0, 200, TimeUnit.MILLISECONDS)
+
+            if (!isPollingPaused) {
+                lastForeGroundApp = foregroundApp;
+            }
+        }, 0, 500, TimeUnit.MILLISECONDS)
     }
 
 
@@ -137,6 +150,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
     override fun onDestroy() {
         super.onDestroy()
+        scheduleFuture.cancel(true)
         Log.v("SVC", "onDestroy()")
         Handler(Looper.getMainLooper()).post(Runnable {
             Toast.makeText(
