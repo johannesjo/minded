@@ -36,6 +36,10 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.SystemClock
+import androidx.glance.action.Action
+import androidx.glance.action.actionStartActivity
+import androidx.glance.action.clickable
+import com.minded.minded.MainActivity
 
 
 class MyAppWidget : GlanceAppWidget() {
@@ -53,6 +57,7 @@ class MyAppWidget : GlanceAppWidget() {
             answers
         }
         val questionDataForDashboard = MyUtil.mapAnswersToQuestions(allAnswers)
+
 
         provideContent {
             // create your AppWidget here
@@ -77,6 +82,9 @@ fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
             .fillMaxHeight()
             .fillMaxWidth()
             .appWidgetBackground()
+            .clickable(
+                actionStartActivity<MainActivity>()
+            )
     ) {
         Column(
         ) {
@@ -86,7 +94,7 @@ fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
             )
             question.answers.forEach {
-                Text(it.txt, modifier = GlanceModifier.padding(top= 8.dp))
+                Text(it.txt, modifier = GlanceModifier.padding(top = 8.dp))
             }
         }
     }
