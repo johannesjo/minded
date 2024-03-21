@@ -2,11 +2,16 @@ package com.minded.minded
 
 import OverlayBig
 import android.app.AlarmManager
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.PixelFormat
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -14,7 +19,9 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -50,7 +57,13 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
     override fun onCreate() {
         super.onCreate()
-        super.onCreate()
+        Log.v("SVC", "onCreate()")
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) startMyOwnForeground() else startForeground(
+            1,
+            Notification()
+        )
+
+
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         answerRepository = AnswerRepository(this)
         dashboardViewModel = DashboardViewModel(answerRepository)
@@ -82,6 +95,32 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         }, 0, 200, TimeUnit.MILLISECONDS)
     }
 
+
+    private fun startMyOwnForeground() {
+        val NOTIFICATION_CHANNEL_ID = "com.minded.permanence"
+        val channelName = "Minded Foreground Service Channel"
+        val chan = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            channelName,
+            NotificationManager.IMPORTANCE_NONE
+        )
+        chan.lightColor = Color.BLUE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val manager = (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+        manager.createNotificationChannel(chan)
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val notification = notificationBuilder.setOngoing(true)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+//            .setSmallIcon(R.drawable.sun_no_rays_more_contrast)
+            .setSmallIcon(R.drawable.sun_no_rays_bw)
+            .setContentText("Minded is running in the background")
+            .setPriority(NotificationManager.IMPORTANCE_MIN)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .build()
+        startForeground(2, notification)
+    }
+
     override fun onBind(intent: Intent?): IBinder? {
         throw RuntimeException("bound mode not supported")
     }
@@ -98,9 +137,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
     override fun onDestroy() {
         super.onDestroy()
-        hideOverlay()
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-
+        Log.v("SVC", "onDestroy()")
         Handler(Looper.getMainLooper()).post(Runnable {
             Toast.makeText(
                 this@QuestionOverlayService.applicationContext,
@@ -110,7 +147,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         })
 
 
-        val timeToInvoke = 30 * 1000
+        hideOverlay()
+        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+
+        val timeToInvoke = 5 * 1000
         val intent: Intent = Intent(
             this@QuestionOverlayService,
             QuestionOverlayService::class.java
