@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -21,6 +22,8 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.MyUtil.getForegroundApp
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.data.QUESTIONS
+import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.ui.model.DashboardViewModelFactory
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -39,6 +42,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
     private var lastForeGroundApp: String = "";
+    private lateinit var dashboardViewModel: DashboardViewModel
 
 
     override fun onCreate() {
@@ -46,6 +50,8 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         answerRepository = AnswerRepository(this)
+        dashboardViewModel = DashboardViewModel(answerRepository)
+
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -105,7 +111,9 @@ class FloatingWidgetService : Service(), LifecycleOwner, SavedStateRegistryOwner
                     onSubmitAnswer = {
                         Log.v("SVC", "onSubmitAnswer: $it")
                         GlobalScope.launch {
-                            answerRepository.createWithTimestamp(it, rndQuestion.categoryId)
+                            // NOTE this won't update the view model of dashboard since they are separate instances
+                            dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
+                            dashboardViewModel.loadAnswersFlow()
                         }
                     })
             }
