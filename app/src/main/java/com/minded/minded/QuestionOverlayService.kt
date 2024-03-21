@@ -81,7 +81,8 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         Handler(Looper.getMainLooper()).post(Runnable {
             Toast.makeText(
                 this@QuestionOverlayService.applicationContext,
-                "START QuestionOverlayService",
+//                "START QuestionOverlayService",
+                "Minded is now monitoring apps you want to use less.",
                 Toast.LENGTH_SHORT
             ).show()
         })
