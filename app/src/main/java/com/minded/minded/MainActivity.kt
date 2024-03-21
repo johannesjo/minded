@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
                     "START SERVICE",
                     Toast.LENGTH_SHORT
                 ).show()
-                startService(Intent(this, FloatingWidgetService::class.java))
+                startService(Intent(this, QuestionOverlayService::class.java))
 //            finish()
             } else {
                 Toast.makeText(
