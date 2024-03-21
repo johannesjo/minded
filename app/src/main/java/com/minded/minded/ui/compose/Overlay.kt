@@ -28,6 +28,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +79,7 @@ fun OverlayBig(
                     Text(
                         text = "${rndQuestion.t}?",
                         fontSize = 22.sp,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
                             .padding(16.dp)
                     )
