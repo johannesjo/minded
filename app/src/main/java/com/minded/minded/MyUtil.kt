@@ -4,9 +4,8 @@ import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
-import com.minded.minded.data.Answer
+import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.QUESTION_CATEGORIES
 import com.minded.minded.data.QUESTION_CATEGORIES_ON_DASHBOARD
 import com.minded.minded.data.QuestionCategoryForDashboard

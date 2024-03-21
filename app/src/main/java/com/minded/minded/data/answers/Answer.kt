@@ -1,8 +1,9 @@
-package com.minded.minded.data
+package com.minded.minded.data.answers
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.minded.minded.data.QuestionCategoryId
 
 @Entity
 data class Answer(
