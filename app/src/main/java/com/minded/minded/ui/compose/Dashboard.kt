@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,11 +68,16 @@ fun QuestionCategoryCmp(question: QuestionCategoryForDashboard) {
             Text(
                 text = question.dashboardTxt ?: "No text",
                 fontSize = 16.sp,
+                textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Light,
-                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
+                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
             )
             question.answers.forEach {
-                Text(it.txt, fontSize = 18.sp)
+                Text(
+                    it.txt, fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
+                )
             }
         }
     }
@@ -107,7 +113,7 @@ fun DashboardMainPreview() {
                 )
             ),
             QuestionCategoryForDashboard(
-                dashboardTxt = "Mock Category 1",
+                dashboardTxt = "Mock Category 1 a very complicated long category just for the kicks",
                 isTodayOnlyCategory = false,
                 isThisWeekOnlyCategory = false,
                 isQuestionLessWidget = false,
@@ -123,7 +129,7 @@ fun DashboardMainPreview() {
                     ),
                     Answer(
                         uid = 1,
-                        txt = "Mock Answer 2",
+                        txt = "Mock Answer 2 longer longer longer and longer and longer and logner and longer",
                         questionCategoryId = QuestionCategoryId.CalmingThoughts,
                         createdAt = 0,
                         modifiedAt = 0
