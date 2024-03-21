@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.minded.minded.MyUtil
 import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.QuestionCategoryForDashboard
+import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.answers.AnswerRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,9 +55,9 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
      * 2. Dispatchers.IO is used to change the dispatcher of the coroutine to IO, which is optimal for IO operations, and does not block the main thread.
      * 3. answerRepository.add(answer) is used to add the answer to the database.
      */
-    fun addAnswer(title: String, rndQuestion: QuestionCategoryForDashboard) {
+    fun addAnswer(title: String, categoryId: QuestionCategoryId) {
         viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
-            answerRepository.createWithTimestamp(title, rndQuestion.categoryId)
+            answerRepository.createWithTimestamp(title, categoryId)
         }
     }
 

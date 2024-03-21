@@ -23,13 +23,15 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var dashboardViewModel: DashboardViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
         val answerRepository = AnswerRepository(this)
         val viewModelFactory = DashboardViewModelFactory(answerRepository)
-        val viewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
+        dashboardViewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
         lifecycleScope.launch {
 
             setContent {
@@ -38,7 +40,7 @@ class MainActivity : AppCompatActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        Dashboard(viewModel)
+                        Dashboard(dashboardViewModel)
                     }
                 }
             }
@@ -70,6 +72,11 @@ class MainActivity : AppCompatActivity() {
             ).show()
             askPermissionForOverlay()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        dashboardViewModel.loadAnswersFlow()
     }
 
     private fun askPermissionForOverlay() {
