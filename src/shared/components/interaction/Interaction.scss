@@ -1,5 +1,7 @@
 // NOTE: styles for question work differently since we're using them for the content-script
 
+$after-sun-duration: 60s;
+
 #minded-6622-coloured-wrapper > * {
   cursor: auto;
 }
@@ -61,7 +63,7 @@
   border-radius: 50%;
   box-shadow: 0 0 30px 5px var(--c-pastel-red),
   0 0 60px 5px var(--c-pastel-yellow);
-  animation: minded6622afterSunInOut 6s;
+  animation: minded6622afterSunInOut $after-sun-duration;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
   z-index: 30;
@@ -82,11 +84,13 @@
     transform: translate(-50%, -50%) scale(.4);
     opacity: 0;
   }
-  10% {
+  //10% {
+  2% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
-  90% {
+  //90% {
+  98% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
