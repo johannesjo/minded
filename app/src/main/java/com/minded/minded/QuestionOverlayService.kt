@@ -201,8 +201,14 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        val rndQuestion = QUESTIONS.random();
-        overlayView = ComposeView(this).apply {
+
+        answerRepository = AnswerRepository(this)
+
+
+        val context = this;
+        val rndQuestion = getQuestionSmart(emptyList())
+
+        overlayView = ComposeView(context).apply {
             setViewTreeLifecycleOwner(this@QuestionOverlayService)
             setViewTreeSavedStateRegistryOwner(this@QuestionOverlayService)
             setContent {
@@ -221,9 +227,8 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     })
             }
         }
-
-
         windowManager.addView(overlayView, getLayoutParams())
+
     }
 
     private fun hideOverlay() {
