@@ -31,9 +31,9 @@ class MainActivity : AppCompatActivity() {
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
         val answerRepository = AnswerRepository(this)
         val viewModelFactory = DashboardViewModelFactory(answerRepository)
-        dashboardViewModel = ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
+        dashboardViewModel =
+            ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
         lifecycleScope.launch {
-
             setContent {
                 MindedTheme {
                     Surface(
@@ -47,24 +47,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        if (MyUtil.checkDrawOverlayPermission(this)) {
-            if (MyUtil.checkUsageStatsPermission(this)) {
-                Toast.makeText(
-                    this,
-                    "START SERVICE",
-                    Toast.LENGTH_SHORT
-                ).show()
-                startService(Intent(this, QuestionOverlayService::class.java))
-//            finish()
-            } else {
-                Toast.makeText(
-                    this,
-                    "You need Usage stats Permission to do this",
-                    Toast.LENGTH_SHORT
-                ).show()
-//                askPermissionForUsageStats()
-            }
-        } else {
+        if (!MyUtil.checkDrawOverlayPermission(this)) {
             Toast.makeText(
                 this,
                 "You need System Alert Window Permission to do this",
@@ -72,6 +55,32 @@ class MainActivity : AppCompatActivity() {
             ).show()
             askPermissionForOverlay()
         }
+
+        if (!MyUtil.checkUsageStatsPermission(this)) {
+            Toast.makeText(
+                this,
+                "You need Usage stats Permission to do this",
+                Toast.LENGTH_SHORT
+            ).show()
+            askPermissionForUsageStats()
+//            finish()
+        }
+        if (!MyUtil.isAccessibilityServiceEnabled(this)) {
+            Toast.makeText(
+                this,
+                "You need Accessibility Permission to do this",
+                Toast.LENGTH_SHORT
+            ).show()
+            askPermissionForAccessibility()
+//            finish()
+        }
+
+        Toast.makeText(
+            this,
+            "START SERVICE",
+            Toast.LENGTH_SHORT
+        ).show()
+        startService(Intent(this, QuestionOverlayService::class.java))
     }
 
     override fun onResume() {
@@ -93,6 +102,14 @@ class MainActivity : AppCompatActivity() {
             Intent(
                 Settings.ACTION_USAGE_ACCESS_SETTINGS,
                 Uri.parse("package:$packageName")
+            )
+        );
+    }
+
+    private fun askPermissionForAccessibility() {
+        startActivity(
+            Intent(
+                Settings.ACTION_ACCESSIBILITY_SETTINGS
             )
         );
     }

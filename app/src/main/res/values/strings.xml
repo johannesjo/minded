@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Minded</string>
+    <string name="accessibility_service_description">Minded Accessibility Service</string>
 </resources>

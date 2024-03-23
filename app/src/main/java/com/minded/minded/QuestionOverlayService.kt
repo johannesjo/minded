@@ -52,20 +52,55 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
     private var lastForeGroundApp: String = "";
-    private var lastBlockedForeGroundApp: String = "";
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var scheduleFuture: ScheduledFuture<*>
-    private var isPollingPaused = false
+    private var isInGracePeriod = false
 
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
+            showOverlay()
+        }
+        if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
+            hideOverlay()
+        }
+        val currentPackage =
+            intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
+        Log.v("QuestionOverlaySVC", "onStartCommand() $currentPackage")
+        if (currentPackage != null) {
+            checkToShowOverlay(currentPackage)
+        }
+
+
+        return START_STICKY
+    }
+
+    private fun isBlockedPackage(packageName: String): Boolean {
+        return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
+    }
+
+    private fun checkToShowOverlay(currentPackageName: String) {
+        if (currentPackageName != null) {
+            if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
+                Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
+                showOverlay()
+                isInGracePeriod = true
+                Executors.newSingleThreadScheduledExecutor()
+                    .schedule({ isInGracePeriod = false }, 30, TimeUnit.SECONDS)
+            }
+            if (!isInGracePeriod) {
+                lastForeGroundApp = currentPackageName
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
-        Log.v("SVC", "onCreate()")
+        Log.v("QuestionOverlaySVC", "onCreate()")
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) startMyOwnForeground() else startForeground(
             1,
             Notification()
         )
-
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         answerRepository = AnswerRepository(this)
@@ -87,26 +122,11 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             ).show()
         })
 
-        scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
-            val foregroundApp = getForegroundApp(this);
-            Log.v("SVC", "foregroundApp: $foregroundApp; isPause: ${isPollingPaused.toString()}")
-            if (
-                !isPollingPaused
-                && lastForeGroundApp != foregroundApp
-                && (foregroundApp == "com.android.chrome" || foregroundApp == "com.google.android.youtube")
-            ) {
-                Log.v("SVC", "SHOW OVERLAY for: $foregroundApp")
-                lastBlockedForeGroundApp = foregroundApp;
-                QuestionOverlayService.showOverlay(this);
-                isPollingPaused = true
-                Executors.newSingleThreadScheduledExecutor()
-                    .schedule({ isPollingPaused = false }, 30, TimeUnit.SECONDS)
-            }
-
-            if (!isPollingPaused) {
-                lastForeGroundApp = foregroundApp;
-            }
-        }, 0, 500, TimeUnit.MILLISECONDS)
+//         TODO check if we need this
+//        scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
+//            val foregroundApp = getForegroundApp(this);
+//            checkToShowOverlay(foregroundApp)
+//        }, 0, 500, TimeUnit.MILLISECONDS)
     }
 
 
@@ -139,20 +159,11 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         throw RuntimeException("bound mode not supported")
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
-            showOverlay()
-        }
-        if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
-            hideOverlay()
-        }
-        return START_STICKY
-    }
 
     override fun onDestroy() {
         super.onDestroy()
         scheduleFuture.cancel(true)
-        Log.v("SVC", "onDestroy()")
+        Log.v("QuestionOverlaySVC", "onDestroy()")
         Handler(Looper.getMainLooper()).post(Runnable {
             Toast.makeText(
                 this@QuestionOverlayService.applicationContext,
@@ -183,9 +194,9 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     }
 
     private fun showOverlay() {
-        Log.v("SVC", "showOverlay()")
+        Log.v("QuestionOverlaySVC", "showOverlay()")
         if (overlayView != null) {
-            Log.v("SVC", "overlay already shown - aborting")
+            Log.v("QuestionOverlaySVC", "overlay already shown - aborting")
             return
         }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
@@ -201,7 +212,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     hideOverlay = { hideOverlay() },
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
-                        Log.v("SVC", "onSubmitAnswer: $it")
+                        Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
                         GlobalScope.launch {
                             // NOTE this won't update the view model of dashboard since they are separate instances
                             dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
@@ -217,11 +228,11 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
     private fun hideOverlay() {
         Log.v(
-            "SVC", "hideOverlay()"
+            "QuestionOverlaySVC", "hideOverlay()"
         )
         if (overlayView == null) {
             Log.v(
-                "SVC", "overlay not shown - aborting"
+                "QuestionOverlaySVC", "overlay not shown - aborting"
             )
             return
         }
