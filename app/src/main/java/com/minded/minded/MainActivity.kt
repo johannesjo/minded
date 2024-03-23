@@ -33,24 +33,13 @@ class MainActivity : AppCompatActivity() {
         val viewModelFactory = DashboardViewModelFactory(answerRepository)
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
-        lifecycleScope.launch {
-            setContent {
-                MindedTheme {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        Dashboard(dashboardViewModel)
-                    }
-                }
-            }
-        }
 
-
+        var missingCapability = ""
         if (!MyUtil.checkDrawOverlayPermission(this)) {
+            missingCapability ="System Alert Window"
             Toast.makeText(
                 this,
-                "You need System Alert Window Permission to do this",
+                "You need System Alert Window Permission :(",
                 Toast.LENGTH_SHORT
             ).show()
             askPermissionForOverlay()
@@ -59,21 +48,48 @@ class MainActivity : AppCompatActivity() {
         if (!MyUtil.checkUsageStatsPermission(this)) {
             Toast.makeText(
                 this,
-                "You need Usage stats Permission to do this",
+                "You need Usage stats Permission :(",
                 Toast.LENGTH_SHORT
             ).show()
+            missingCapability ="Usage Stats"
             askPermissionForUsageStats()
 //            finish()
         }
         if (!MyUtil.isAccessibilityServiceEnabled(this)) {
             Toast.makeText(
                 this,
-                "You need Accessibility Permission to do this",
+                "You need Accessibility Permission :(",
                 Toast.LENGTH_SHORT
             ).show()
-            askPermissionForAccessibility()
+            // TODO check why this does nothing
+            missingCapability ="Accessibility"
+            dashboardViewModel.setMissingCapability("Accessibility")
+            //            askPermissionForAccessibility()
 //            finish()
         }
+
+
+        lifecycleScope.launch {
+            setContent {
+                MindedTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        Dashboard(dashboardViewModel, missingCapability, onMissingCapabilityClick = {
+                            when (it) {
+                                "Accessibility" -> askPermissionForAccessibility()
+                                "Usage Stats" -> askPermissionForUsageStats()
+                                "System Alert Window" -> askPermissionForOverlay()
+                            }
+                        })
+                    }
+                }
+            }
+        }
+
+
+
 
         Toast.makeText(
             this,

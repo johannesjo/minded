@@ -1,5 +1,6 @@
 package com.minded.minded.ui.model
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.minded.minded.MyUtil
@@ -70,6 +71,13 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
     fun removeAnswer(answer: Answer) {
         viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
             answerRepository.removeAnswer(answer)
+        }
+    }
+
+    fun setMissingCapability(name: String) {
+        Log.v("WAAAAAAAAAAAAAA", name)
+        viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
+            _uiState.update { DashboardUiState(missingCapability = name) }
         }
     }
 }
