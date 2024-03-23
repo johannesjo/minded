@@ -1,5 +1,6 @@
 package com.minded.minded.ui.compose
 
+import android.media.ApplicationMediaCapabilities
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,14 +32,25 @@ import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.ui.theme.StandardGradient
 
 @Composable
-fun Dashboard(dashboardViewModel: DashboardViewModel = viewModel()) {
+fun Dashboard(
+    dashboardViewModel: DashboardViewModel = viewModel(),
+    missingCapability: String = "",
+    onMissingCapabilityClick: (String) -> Unit = {}
+) {
     val uiState by dashboardViewModel.uiState.collectAsState()
     val questions = uiState.questionCategories
-    DashboardMain(questions)
+//    val missingCapability = uiState.missingCapability
+
+
+    DashboardMain(questions, missingCapability, onMissingCapabilityClick)
 }
 
 @Composable
-fun DashboardMain(questions: List<QuestionCategoryForDashboard>) {
+fun DashboardMain(
+    questions: List<QuestionCategoryForDashboard>,
+    missingCapability: String,
+    onMissingCapabilityClick: (String) -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .background(
@@ -43,7 +59,25 @@ fun DashboardMain(questions: List<QuestionCategoryForDashboard>) {
                 )
             )
     ) {
-        Text(text = "Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+        if (questions.isEmpty()) {
+            Text(
+                text = "No questions found",
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Light,
+                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
+            )
+        }
+
+        if (missingCapability.length > 1) {
+            FloatingActionButton(
+                onClick = { onMissingCapabilityClick(missingCapability) },
+            ) {
+                Icon(Icons.Filled.Settings, "Floating action button.")
+            }
+        }
+
+
         LazyColumn {
             items(questions.size) { index ->
                 val question = questions[index]
@@ -137,6 +171,8 @@ fun DashboardMainPreview() {
                     ),
                 )
             ),
-        )
+        ),
+        "Missing capability",
+        onMissingCapabilityClick = { println("Missing capability clicked") }
     )
 }
