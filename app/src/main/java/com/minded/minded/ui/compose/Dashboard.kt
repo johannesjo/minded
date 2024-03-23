@@ -43,6 +43,7 @@ fun DashboardMain(questions: List<QuestionCategoryForDashboard>) {
                 )
             )
     ) {
+        Text(text = "Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
         LazyColumn {
             items(questions.size) { index ->
                 val question = questions[index]

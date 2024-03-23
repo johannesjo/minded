@@ -38,6 +38,25 @@ object MyUtil {
         return Settings.canDrawOverlays(context)
     }
 
+    fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        val contentResolver = context.contentResolver;
+        val serviceName = context.packageName + "/" + MyAccessibilityService::class.java.name
+        val accessibilityEnabled = Settings.Secure.getInt(
+            contentResolver,
+            Settings.Secure.ACCESSIBILITY_ENABLED, 0
+        )
+        if (accessibilityEnabled == 1) {
+            val services = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            )
+            if (services != null) {
+                return services.split(":").contains(serviceName)
+            }
+        }
+        return false
+    }
+
     fun getForegroundApp(context: Context): String {
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -45,7 +64,11 @@ object MyUtil {
         val beginTime = endTimeNow - 1000 * 3600
 
         val usageStatsList =
-            usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, beginTime, endTimeNow)
+            usageStatsManager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                beginTime,
+                endTimeNow
+            )
 
         if (usageStatsList != null && usageStatsList.isNotEmpty()) {
             var recentStats = usageStatsList[0]
