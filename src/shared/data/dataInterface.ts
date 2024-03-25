@@ -3,14 +3,38 @@ import { bro } from "@src/util/browser";
 import { DEFAULT_SYNC_DATA } from "@src/shared/data/sync-data.const";
 import { getIsoDate } from "@src/util/getIsoDate";
 
+const ITEMS_DO_DELETE_IF_OVER_QUOTE = 15;
+
 export const saveAnswer = (answer: Answer): Promise<void> => {
   return getSyncData()
-    .then((syncData) =>
-      saveSyncData({
+    .then((syncData) => {
+      const newAnswers = [...syncData.answers, answer];
+      return saveSyncData({
         ...syncData,
-        answers: [...syncData.answers, answer],
-      }),
-    )
+        // answers: newAnswers.slice(0, ITEMS_DO_DELETE_IF_OVER_QUOTE),
+        answers: newAnswers,
+      }).catch((e) => {
+        console.error(e);
+        if (e.toString().indexOf("QUOTA_BYTES_PER_ITEM") > 0) {
+          const newAnswersSliced = newAnswers
+            .sort((a, b) => b.ts - a.ts)
+            .slice(0, newAnswers.length - ITEMS_DO_DELETE_IF_OVER_QUOTE);
+          console.warn("We are over the quota, since we delete old answers", {
+            newAnswers,
+            newAnswersSliced,
+          });
+          if (window.alert) {
+            window.alert(
+              "Minded Browser Extension: We are over the quota of allowed saved data in chrome extensions. But no problem! We will delete old answers to make room for new ones.",
+            );
+          }
+          return saveSyncData({
+            ...syncData,
+            answers: newAnswersSliced,
+          });
+        }
+      });
+    })
     .then(() => {
       getSyncData().then(console.log);
     });
