@@ -62,21 +62,12 @@ $after-sun-duration: 60s;
   transform-origin: center center;
   z-index: 30;
   transform: translate(50%, -50%);
-  transition: .5s all;
-
-  &:hover {
-    transform: translate(50%, -50%) scale(1.2);
-  }
 
 
   &.minded-6622-bottom {
     transform: translate(-50%, 0);
     top: auto;
     bottom: 60px;
-
-    &:hover {
-      transform: translate(-50%, 0) scale(1.2);
-    }
   }
 
   &.minded-6622-top-right {
@@ -84,11 +75,16 @@ $after-sun-duration: 60s;
     top: 40px;
     right: 40px;
     left: auto;
-
-    &:hover {
-      transform: scale(1.2);
-    }
   }
+}
+
+#minded-6622-after-sun-sun-wrapper {
+  transition: .5s all;
+
+  &:hover {
+    transform: scale(1.5);
+  }
+
 }
 
 #minded-6622-after-sun-sun {
@@ -107,6 +103,7 @@ $after-sun-duration: 60s;
   animation-iteration-count: 1;
   text-align: center;
   font-size: 16px;
+  font-weight: 200;
 }
 
 #minded-6622-after-sun-text {
@@ -126,7 +123,6 @@ $after-sun-duration: 60s;
 #minded-6622-additional-controls {
   display: flex;
   justify-content: center;
-  gap: 8px;
   position: absolute;
   top: 100%;
   opacity: 0;
@@ -141,7 +137,7 @@ $after-sun-duration: 60s;
   }
 
   > * {
-    margin-top: 8px;
+    margin-top: 16px;
     margin-left: 2px;
     text-align: center;
     cursor: pointer;
@@ -187,7 +183,7 @@ $after-sun-duration: 60s;
     opacity: 0;
   }
   //10% {
-  2% {
+  1% {
     transform: scale(1);
     opacity: 1;
   }
