@@ -1,12 +1,15 @@
 /* @refresh reload */
 import { JSX, onMount } from "solid-js";
-import { updateSyncData } from '@src/shared/data/dataInterface';
-import { Interaction } from '@src/shared/components/interaction/Interaction';
+import { updateSyncData } from "@src/shared/data/dataInterface";
+import { Interaction } from "@src/shared/components/interaction/Interaction";
 
 export const ContentScriptMain: () => JSX.Element = () => {
   onMount(() => {
     setTimeout(() => {
-      updateSyncData({lastBlocked: Date.now(), lastBlockedUrl: window.location.href});
+      updateSyncData({
+        lastBlocked: Date.now(),
+        lastBlockedUrl: window.location.href,
+      });
     }, 8000);
   });
 
@@ -19,7 +22,11 @@ export const ContentScriptMain: () => JSX.Element = () => {
 
   return (
     <>
-      {<Interaction onHideAll={() => document.getElementById('minded-6622').remove()} />}
+      {
+        <Interaction
+          onHideAll={() => document.getElementById("minded-6622").remove()}
+        />
+      }
     </>
   );
 };
