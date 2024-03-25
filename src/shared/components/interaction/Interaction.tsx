@@ -137,12 +137,12 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
       if (currentSessionInterval) {
         window.clearInterval(currentSessionInterval);
       }
-      const countdownTimer = window.setInterval(() => {
+      currentSessionInterval = window.setInterval(() => {
         const v = getSessionTimeLimit();
         setSessionTimeLimit(v - 1);
 
         if (v <= 0) {
-          window.clearInterval(countdownTimer);
+          window.clearInterval(currentSessionInterval);
           teardown();
           bro.runtime.sendMessage({ closeTab: true });
         }
@@ -179,13 +179,15 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
             afterSunEl.style.animationPlayState = "running";
           }}
         >
-          <div
-            id="minded-6622-after-sun-sun"
-            title="click sun to close website"
-            onclick={() => bro.runtime.sendMessage({ closeTab: true })}
-            ref={afterSunEl}
-          >
-            {formatSessionTimeLimit(getSessionTimeLimit())}
+          <div id="minded-6622-after-sun-sun-wrapper">
+            <div
+              id="minded-6622-after-sun-sun"
+              title="Close website"
+              onclick={() => bro.runtime.sendMessage({ closeTab: true })}
+              ref={afterSunEl}
+            >
+              {formatSessionTimeLimit(getSessionTimeLimit())}
+            </div>
           </div>
 
           {getAfterSunTxt() && (
