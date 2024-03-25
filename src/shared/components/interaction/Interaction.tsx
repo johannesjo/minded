@@ -16,13 +16,13 @@ import {
 
 const MODE: "RATING" | "PURPOSE" | "ACTION_ADVICE" | undefined = (() => {
   const rndInt = getRndInt(0, 100);
-  if (rndInt > 95) {
+  if (rndInt >= 95) {
     return "PURPOSE";
   }
-  if (rndInt > 90) {
+  if (rndInt >= 90) {
     return "RATING";
   }
-  if (rndInt > 75) {
+  if (rndInt >= 75) {
     return "ACTION_ADVICE";
   }
   return undefined;
@@ -33,7 +33,7 @@ const SUN_ANI_DURATION = 1600;
 export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   props,
 ) => {
-  const [getIsShowSun, setIsShowSun] = createSignal(false);
+  const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
   const [getSessionTimeLimit, setSessionTimeLimit] = createSignal<number>(0);
@@ -68,7 +68,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
         }
       });
       setTimeout(() => {
-        setIsShowSun(true);
+        setIsShowSuccessSun(true);
       }, 3000);
     } else {
       const res = fadeOut(wrapperEl, 5000, 2000);
@@ -82,29 +82,40 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   };
 
   const onSuccess = async (answerOrData?: Answer) => {
-    setIsShowSun(true);
-    if (MODE === "PURPOSE" && typeof answerOrData?.val === "string") {
-      setAfterSunTxt(answerOrData.val);
-    }
-
+    setIsShowSuccessSun(true);
     // wait for sun
     await promiseTimeout(SUN_ANI_DURATION);
     await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
-    afterSun();
+
+    if (MODE === "PURPOSE" && typeof answerOrData?.val === "string") {
+      setAfterSunTxt(answerOrData.val);
+      afterSun(true);
+    } else {
+      afterSun();
+    }
   };
 
   const cancelCountdown = () => {
     if (!frameNr) {
       return;
     }
+    if (getIsShowSuccessSun()) {
+      return;
+    }
+
     window.cancelAnimationFrame(frameNr);
-    wrapperEl.style.transition = `opacity 1000ms ease-out`;
-    wrapperEl.style.opacity = "1";
+    if (wrapperEl) {
+      wrapperEl.style.transition = `opacity 1000ms ease-out`;
+      wrapperEl.style.opacity = "1";
+    }
   };
 
-  const afterSun = async () => {
+  const afterSun = async (isNoCountdownToRemoveAfterSun = false) => {
     setIsShowAfterSun(true);
     await promiseTimeout(10);
+    if (isNoCountdownToRemoveAfterSun) {
+      disableAfterSunRemoveCountdownAni();
+    }
     afterSunEl.addEventListener("animationend", () => {
       teardown();
     });
@@ -130,8 +141,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
       +window.prompt("How many minutes do you want to use this website?") * 60;
 
     if (timeLimit) {
-      afterSunEl.style.animationPlayState = "paused";
-      afterSunEl.style.animation = "none";
+      disableAfterSunRemoveCountdownAni();
       setSessionTimeLimit(timeLimit);
 
       if (currentSessionInterval) {
@@ -148,6 +158,11 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
         }
       }, 1000);
     }
+  };
+
+  const disableAfterSunRemoveCountdownAni = () => {
+    afterSunEl.style.animationPlayState = "paused";
+    afterSunEl.style.animation = "none";
   };
 
   const escapeHandler = (ev: KeyboardEvent) => {
@@ -216,10 +231,10 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
           ref={wrapperEl}
         >
           <div id="minded-6622-box">
-            {getIsShowSun() && (
+            {getIsShowSuccessSun() && (
               <div
-                id="minded-6622-sun"
-                title="click sun to close website"
+                id="minded-6622-success-sun"
+                title="Click sun to close website"
                 onclick={() => {
                   bro.runtime.sendMessage({ closeTab: true });
                 }}

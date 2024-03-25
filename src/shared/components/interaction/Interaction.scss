@@ -6,7 +6,7 @@ $after-sun-duration: 60s;
   cursor: auto;
 }
 
-#minded-6622-sun {
+#minded-6622-success-sun {
   cursor: cell;
 
   div:first-child {
@@ -34,6 +34,7 @@ $after-sun-duration: 60s;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 31;
+    font-weight: 200;
   }
 }
 
@@ -63,18 +64,18 @@ $after-sun-duration: 60s;
   z-index: 30;
   transform: translate(50%, -50%);
 
-
-  &.minded-6622-bottom {
-    transform: translate(-50%, 0);
-    top: auto;
-    bottom: 60px;
-  }
-
   &.minded-6622-top-right {
     transform: translate(0, 0);
     top: 40px;
     right: 40px;
     left: auto;
+  }
+
+  &.minded-6622-bottom {
+    transform: translate(-50%, 0);
+    top: auto;
+    right: 50%;
+    bottom: 60px;
   }
 }
 
@@ -118,6 +119,7 @@ $after-sun-duration: 60s;
   padding: 8px 16px;
   font-size: 16px;
   line-height: 1.5;
+  text-align: center;
 }
 
 #minded-6622-additional-controls {
@@ -169,11 +171,11 @@ $after-sun-duration: 60s;
 
 @keyframes minded6622successSun {
   0% {
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
   100% {
     opacity: 1;
-    transform: scale(20);
+    transform: translate(-50%, -50%) scale(20);
   }
 }
 
