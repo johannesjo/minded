@@ -108,7 +108,7 @@ export const QUESTION_CATEGORIES: {
         prompt: "Instead of visiting this website I",
       },
       {
-        t: "Instead of instant gratification, what might be a better alternative?",
+        t: "Instead of instant gratification, what might be a better alternative",
         prompt: "Instead of visiting these websites I could",
       },
     ],

@@ -38,10 +38,6 @@ $after-sun-duration: 60s;
 }
 
 #minded-6622-action-advice {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   font-size: 32px;
 
   :last-child {
@@ -50,72 +46,158 @@ $after-sun-duration: 60s;
   }
 }
 
+#minded-6622-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: auto;
+}
+
 #minded-6622-after-sun {
   cursor: cell;
   position: fixed;
-  left: 50%;
+  right: 50%;
   top: 50%;
-  background: #fff;
+  transform-origin: center center;
+  z-index: 30;
+  transform: translate(50%, -50%);
+  transition: .5s all;
+
+  &:hover {
+    transform: translate(50%, -50%) scale(1.2);
+  }
+
+
+  &.minded-6622-bottom {
+    transform: translate(-50%, 0);
+    top: auto;
+    bottom: 60px;
+
+    &:hover {
+      transform: translate(-50%, 0) scale(1.2);
+    }
+  }
+
+  &.minded-6622-top-right {
+    transform: translate(0, 0);
+    top: 40px;
+    right: 40px;
+    left: auto;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+}
+
+#minded-6622-after-sun-sun {
+  cursor: cell;
   transform-origin: center center;
   width: 40px;
   height: 40px;
-  transform: translate(-50%, -50%);
+  line-height: 40px;
+  background: #fff;
+  display: block;
   border-radius: 50%;
   box-shadow: 0 0 30px 5px var(--c-pastel-red),
   0 0 60px 5px var(--c-pastel-yellow);
   animation: minded6622afterSunInOut $after-sun-duration;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
-  z-index: 30;
+  text-align: center;
+  font-size: 16px;
+}
 
-  &.minded-6622-bottom {
-    transform: translate(-50%, 0);
-    top: auto;
-    bottom: 0;
+#minded-6622-after-sun-text {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: #fff;
+  min-width: 240px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#minded-6622-additional-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  position: absolute;
+  top: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: .5s opacity;
+  transition-delay: 0s;
+
+  #minded-6622-after-sun:hover & {
+    opacity: 1;
+    pointer-events: all;
+    transition-delay: .5s;
   }
 
-  div {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translate(-50%, 0);
-    background: #fff;
-    min-width: 240px;
-    border-radius: 16px;
-    margin-bottom: 16px;
-    padding: 8px 16px;
-    font-size: 16px;
-    line-height: 1.5;
+  > * {
+    margin-top: 8px;
+    margin-left: 2px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 1);
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    border-radius: var(--border-radius);
+    transition: 0.2s;
+    font-weight: bold;
+    text-transform: lowercase;
+    color: rgba(0, 0, 0, .8);
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0;
+    font-size: 20px;
+    user-select: none;
+    opacity: .8;
+
+    &:hover {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
   }
 }
 
 @keyframes minded6622successSun {
   0% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(20);
+    transform: scale(20);
   }
 }
 
 @keyframes minded6622afterSunInOut {
   0% {
-    transform: translate(-50%, -50%) scale(.4);
+    transform: scale(.4);
     opacity: 0;
   }
   //10% {
   2% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
     opacity: 1;
   }
   //90% {
   98% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(0);
+    transform: scale(0);
   }
 }
