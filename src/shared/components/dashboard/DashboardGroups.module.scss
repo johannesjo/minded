@@ -16,7 +16,7 @@
   overflow-y: auto;
   grid-auto-flow: row;
   grid-auto-rows: 33%;
-  gap: 32px;
+  box-sizing: border-box;
 
   @media (max-width: 999px) {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -71,6 +71,9 @@
   opacity: 0;
   animation-delay: 1.5s;
   position: relative;
+  // NOTE: padding leads to scrollbars
+  margin: 32px;
+  box-sizing: border-box;
 
   &:nth-child(5) {
     animation-delay: 0s;
