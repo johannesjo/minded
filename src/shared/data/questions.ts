@@ -39,6 +39,8 @@ export interface QuestionCategory {
   dashboardTxt?: string;
   isTodayOnlyCategory?: boolean;
   isThisWeekOnlyCategory?: boolean;
+  isMorningCategory?: boolean;
+  isEveningCategory?: boolean;
   isQuestionLessWidget?: boolean;
   questions?: Question[];
 }
@@ -57,11 +59,13 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.TodayILearned]: {
     isTodayOnlyCategory: true,
+    isEveningCategory: true,
     dashboardTxt: "Today I learned",
     questions: [{ t: "Today I learned...", prompt: "I learned" }],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
     isTodayOnlyCategory: true,
+    isMorningCategory: true,
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
@@ -120,6 +124,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.GoodToday]: {
     isTodayOnlyCategory: true,
+    isEveningCategory: true,
     questions: [
       { t: "What is good today" },
       { t: "What is a little thing you enjoyed today", prompt: "I enjoyed" },
@@ -138,6 +143,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.GoodPlansToday]: {
     isTodayOnlyCategory: true,
+    isMorningCategory: true,
     questions: [
       {
         t: "What is a nice thing you can do for yourself today",
@@ -152,6 +158,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.GoalForTheWeek]: {
     isThisWeekOnlyCategory: true,
+    isMorningCategory: true,
     questions: [
       { t: "What is a goal you want to achieve this week" },
       {

@@ -8,8 +8,15 @@ import {
 import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
 
+const THRESHOLD_MORNING_START = 4;
+const THRESHOLD_MORNING_END = 14;
+const THRESHOLD_EVENING_START = 15;
+const FAKE_RULE_OUT_NR = 9999;
+
 export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const now = new Date();
+  const nowHours = now.getHours();
+
   if (!answers.length) {
     return getRndEntry(QUESTIONS);
   }
@@ -20,6 +27,20 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     const categoryForAnswer = QUESTION_CATEGORIES[categoryId];
     if (categoryForAnswer?.questions?.length) {
       map[categoryId] = 0;
+    }
+
+    if (categoryForAnswer.isMorningCategory) {
+      if (
+        nowHours < THRESHOLD_MORNING_START ||
+        nowHours > THRESHOLD_MORNING_END
+      ) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
+      }
+    }
+    if (categoryForAnswer.isEveningCategory) {
+      if (nowHours < THRESHOLD_EVENING_START) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
+      }
     }
   });
 
@@ -37,6 +58,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
 
     map[answer.questionCategoryId] = map[answer.questionCategoryId] + 1;
   });
+
   const sortedEntries = Object.entries(map).sort((a, b) => a[1] - b[1]);
   const nrOfEntriesForLeastUsed = sortedEntries[0][1];
   const categoriesLeastUsed = sortedEntries.filter(
