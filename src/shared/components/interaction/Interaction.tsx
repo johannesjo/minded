@@ -36,10 +36,12 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   const [getIsShowSun, setIsShowSun] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
+  const [getSessionTimeLimit, setSessionTimeLimit] = createSignal<number>(0);
 
   let wrapperEl;
   let afterSunEl;
   let frameNr;
+  let currentSessionInterval;
 
   onMount(async () => {
     // give a moment time for rendering
@@ -123,10 +125,42 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
+  const onSetTimeLimit = () => {
+    const timeLimit =
+      +window.prompt("How many minutes do you want to use this website?") * 60;
+
+    if (timeLimit) {
+      afterSunEl.style.animationPlayState = "paused";
+      afterSunEl.style.animation = "none";
+      setSessionTimeLimit(timeLimit);
+
+      if (currentSessionInterval) {
+        window.clearInterval(currentSessionInterval);
+      }
+      const countdownTimer = window.setInterval(() => {
+        const v = getSessionTimeLimit();
+        setSessionTimeLimit(v - 1);
+
+        if (v <= 0) {
+          window.clearInterval(countdownTimer);
+          teardown();
+          bro.runtime.sendMessage({ closeTab: true });
+        }
+      }, 1000);
+    }
+  };
+
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
       fadeOutMainFinal();
     }
+  };
+
+  const formatSessionTimeLimit = (timeLimit): string => {
+    if (timeLimit > 0) {
+      return timeLimit;
+    }
+    return "";
   };
 
   return (
@@ -134,18 +168,38 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
       {getIsShowAfterSun() ? (
         <div
           id="minded-6622-after-sun"
-          class={getAfterSunTxt() && "minded-6622-bottom"}
-          title="click sun to close website"
-          onclick={() => bro.runtime.sendMessage({ closeTab: true })}
+          classList={{
+            ["minded-6622-bottom"]: !!getAfterSunTxt(),
+            ["minded-6622-top-right"]: !!getSessionTimeLimit(),
+          }}
           onMouseEnter={() => {
             afterSunEl.style.animationPlayState = "paused";
           }}
           onMouseLeave={() => {
             afterSunEl.style.animationPlayState = "running";
           }}
-          ref={afterSunEl}
         >
-          {getAfterSunTxt() && <div>{getAfterSunTxt()}</div>}
+          <div
+            id="minded-6622-after-sun-sun"
+            title="click sun to close website"
+            onclick={() => bro.runtime.sendMessage({ closeTab: true })}
+            ref={afterSunEl}
+          >
+            {formatSessionTimeLimit(getSessionTimeLimit())}
+          </div>
+
+          {getAfterSunTxt() && (
+            <div id="minded-6622-after-sun-text">{getAfterSunTxt()}</div>
+          )}
+
+          <div id="minded-6622-additional-controls">
+            <div
+              title="Set a timelimit for website visit"
+              onclick={onSetTimeLimit}
+            >
+              ⏱
+            </div>
+          </div>
         </div>
       ) : (
         <div
@@ -159,53 +213,55 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
           }}
           ref={wrapperEl}
         >
-          {getIsShowSun() && (
-            <div
-              id="minded-6622-sun"
-              title="click sun to close website"
-              onclick={() => {
-                bro.runtime.sendMessage({ closeTab: true });
-              }}
-            >
-              <div></div>
-              <div>click sun to close the website</div>
-            </div>
-          )}
-          <Switch>
-            <Match when={(MODE === "ACTION_ADVICE") as any}>
-              <div id="minded-6622-action-advice">
-                <div>{ADVICE.txt}</div>
-                <div>{ADVICE.ico}</div>
-              </div>
-            </Match>
-            <Match when={(MODE === "RATING") as any}>
-              <RatingInteraction
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onSuccess}
-                onCancel={teardown}
-              />
-            </Match>
-            <Match when={(MODE === "PURPOSE") as any}>
-              <Question
-                question={{
-                  prompt:
-                    QUESTION_CATEGORIES.XPurposeOfSession.questions[0].prompt,
-                  t: QUESTION_CATEGORIES.XPurposeOfSession.questions[0].t,
-                  categoryId: QuestionCategoryId.XPurposeOfSession,
+          <div id="minded-6622-box">
+            {getIsShowSun() && (
+              <div
+                id="minded-6622-sun"
+                title="click sun to close website"
+                onclick={() => {
+                  bro.runtime.sendMessage({ closeTab: true });
                 }}
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onSuccess}
-                onCancel={teardown}
-              />
-            </Match>
-            <Match when={!MODE as any}>
-              <Question
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onSuccess}
-                onCancel={teardown}
-              />
-            </Match>
-          </Switch>
+              >
+                <div></div>
+                <div>click sun to close the website</div>
+              </div>
+            )}
+            <Switch>
+              <Match when={(MODE === "ACTION_ADVICE") as any}>
+                <div id="minded-6622-action-advice">
+                  <div>{ADVICE.txt}</div>
+                  <div>{ADVICE.ico}</div>
+                </div>
+              </Match>
+              <Match when={(MODE === "RATING") as any}>
+                <RatingInteraction
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+              <Match when={(MODE === "PURPOSE") as any}>
+                <Question
+                  question={{
+                    prompt:
+                      QUESTION_CATEGORIES.XPurposeOfSession.questions[0].prompt,
+                    t: QUESTION_CATEGORIES.XPurposeOfSession.questions[0].t,
+                    categoryId: QuestionCategoryId.XPurposeOfSession,
+                  }}
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+              <Match when={!MODE as any}>
+                <Question
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+            </Switch>
+          </div>
         </div>
       )}
     </>
