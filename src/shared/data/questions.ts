@@ -88,7 +88,7 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         t: "What is something you are grateful for",
-        prompt: "I am grateful for ",
+        prompt: "I am grateful for",
       },
     ],
   },
@@ -106,6 +106,10 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What is a thing you might do instead of visiting this website",
         prompt: "Instead of visiting this website I",
+      },
+      {
+        t: "Instead of instant gratification, what might be a better alternative?",
+        prompt: "Instead of visiting these websites I could",
       },
     ],
   },
@@ -137,7 +141,7 @@ export const QUESTION_CATEGORIES: {
       { t: "What is something you always wanted to do" },
       {
         t: "What is a good habit you might want to establish",
-        prompt: "I want to ",
+        prompt: "I want to",
       },
     ],
     dashboardTxt: "Good Plans",
