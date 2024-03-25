@@ -13,6 +13,7 @@ export enum QuestionCategoryId {
   Gratitude = "Gratitude",
   UnderstandingProcrastination = "UnderstandingProcrastination",
   XEnergyLevelToday = "XEnergyLevelToday",
+  XPurposeOfSession = "XPurposeOfSession",
   // IDEAS
   // ---------
   // XSpecialWidget = "XSpecialWidget",
@@ -103,7 +104,7 @@ export const QUESTION_CATEGORIES: {
         prompt: "I am more productive when",
       },
       {
-        t: "What is a thing you might do instead of visiting this website?",
+        t: "What is a thing you might do instead of visiting this website",
         prompt: "Instead of visiting this website I",
       },
     ],
@@ -170,14 +171,23 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.UnderstandingProcrastination]: {
     questions: [
-      { t: "What do you think is a factor that enables your procrastination?" },
-      { t: "Why do you think are you visiting this website?" },
+      { t: "What do you think is a factor that enables your procrastination" },
+      { t: "Why do you think are you visiting this website" },
     ],
     dashboardTxt: "Understanding Procrastination",
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
     isTodayOnlyCategory: true,
     isQuestionLessWidget: true,
+  },
+  [QuestionCategoryId.XPurposeOfSession]: {
+    isTodayOnlyCategory: true,
+    questions: [
+      {
+        t: "What is the purpose of visiting this website",
+        prompt: "In this session I want to",
+      },
+    ],
   },
 };
 

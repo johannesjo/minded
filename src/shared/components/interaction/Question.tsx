@@ -7,7 +7,8 @@ import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import { nanoid } from "nanoid";
 
 export const Question: (props: {
-  onSuccess: () => void;
+  question?: QuestionForPrompt;
+  onSuccess: (answer: Answer) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
@@ -17,7 +18,7 @@ export const Question: (props: {
 
   onMount(async () => {
     getSyncData().then((syncData) => {
-      const question = getQuestionSmart(syncData.answers);
+      const question = props.question || getQuestionSmart(syncData.answers);
 
       if (question.prompt && inpEl) {
         inpEl.value = question.prompt + " ";
@@ -34,7 +35,7 @@ export const Question: (props: {
     }
     setIsInputDisabled(true);
     await saveAnswer(answer);
-    props.onSuccess();
+    props.onSuccess(answer);
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
