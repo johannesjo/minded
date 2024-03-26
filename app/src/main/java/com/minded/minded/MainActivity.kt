@@ -19,6 +19,9 @@ import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.theme.MindedTheme
+import com.minded.minded.util.checkDrawOverlayPermission
+import com.minded.minded.util.checkUsageStatsPermission
+import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
 
 
@@ -35,7 +38,7 @@ class MainActivity : AppCompatActivity() {
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
         var missingCapability = ""
-        if (!MyUtil.checkDrawOverlayPermission(this)) {
+        if (!checkDrawOverlayPermission(this)) {
             missingCapability ="System Alert Window"
             Toast.makeText(
                 this,
@@ -45,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             askPermissionForOverlay()
         }
 
-        if (!MyUtil.checkUsageStatsPermission(this)) {
+        if (!checkUsageStatsPermission(this)) {
             Toast.makeText(
                 this,
                 "You need Usage stats Permission :(",
@@ -55,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             askPermissionForUsageStats()
 //            finish()
         }
-        if (!MyUtil.isAccessibilityServiceEnabled(this)) {
+        if (!isAccessibilityServiceEnabled(this)) {
             Toast.makeText(
                 this,
                 "You need Accessibility Permission :(",

@@ -1,13 +1,11 @@
-package com.minded.minded
+package com.minded.minded.util
 
-import android.text.format.DateUtils.isToday
+import android.text.format.DateUtils
 import com.minded.minded.data.QUESTIONS
 import com.minded.minded.data.QUESTION_CATEGORIES
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.data.answers.Answer
-import java.util.Calendar
-import java.util.Date
 
 fun getQuestionSmart(answers: List<Answer>): QuestionForPrompt {
     if (answers.isEmpty()) {
@@ -30,7 +28,7 @@ fun getQuestionSmart(answers: List<Answer>): QuestionForPrompt {
         if (categoryForAnswer.questions?.isEmpty() == true) {
             return@forEach
         }
-        if (categoryForAnswer.isTodayOnlyCategory && !isToday(answer.createdAt)) {
+        if (categoryForAnswer.isTodayOnlyCategory && !DateUtils.isToday(answer.createdAt)) {
             return@forEach
         }
         if (categoryForAnswer.isThisWeekOnlyCategory && !isThisWeek(answer.createdAt)) {
@@ -48,18 +46,4 @@ fun getQuestionSmart(answers: List<Answer>): QuestionForPrompt {
     println("sortedEntries: $sortedEntries, nrOfEntriesForLeastUsed: $nrOfEntriesForLeastUsed, categoriesLeastUsed: $categoriesLeastUsed, categoryToUse: $categoryToUse, questionsForCategory: $questionsForCategory")
 
     return questionsForCategory.random()
-}
-
-fun isThisWeek(ts: Long): Boolean {
-    val date = Date(ts)
-    val currentCalendar = Calendar.getInstance()
-    val week = currentCalendar.get(Calendar.WEEK_OF_YEAR)
-    val year = currentCalendar.get(Calendar.YEAR)
-
-    val targetCalendar = Calendar.getInstance()
-    targetCalendar.time = date
-    val targetWeek = targetCalendar.get(Calendar.WEEK_OF_YEAR)
-    val targetYear = targetCalendar.get(Calendar.YEAR)
-
-    return week == targetWeek && year == targetYear
 }
