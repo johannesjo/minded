@@ -10,12 +10,13 @@ fun mapAnswersToQuestions(allAnswers: List<Answer>): List<QuestionCategoryForDas
         val qc = QUESTION_CATEGORIES[questionCategoryId]
             ?: error("No question category for $questionCategoryId")
         QuestionCategoryForDashboard(
-            qc.dashboardTxt,
-            questionCategoryId,
+            dashboardTxt = qc.dashboardTxt,
+            categoryId = questionCategoryId,
             answers = allAnswers.filter { answer -> questionCategoryId == answer.questionCategoryId },
-            qc.isTodayOnlyCategory,
-            qc.isThisWeekOnlyCategory,
-            qc.isQuestionLessWidget,
+            isTodayOnlyCategory = qc.isTodayOnlyCategory,
+            isThisWeekOnlyCategory = qc.isThisWeekOnlyCategory,
+            isMorningCategory = qc.isMorningCategory,
+            isEveningCategory = qc.isEveningCategory,
         )
     }.filter { it.answers.isNotEmpty() }
 }

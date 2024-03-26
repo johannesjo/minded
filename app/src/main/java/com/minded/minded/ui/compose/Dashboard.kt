@@ -100,7 +100,7 @@ fun QuestionCategoryCmp(question: QuestionCategoryForDashboard) {
         ) {
 
             Text(
-                text = question.dashboardTxt ?: "No text",
+                text = question.dashboardTxt,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Light,
@@ -126,7 +126,6 @@ fun DashboardMainPreview() {
                 dashboardTxt = "Mock Category 1",
                 isTodayOnlyCategory = false,
                 isThisWeekOnlyCategory = false,
-                isQuestionLessWidget = false,
                 categoryId = QuestionCategoryId.CalmingThoughts,
                 answers = listOf(
                     // Add your mock Answer objects here
@@ -150,7 +149,6 @@ fun DashboardMainPreview() {
                 dashboardTxt = "Mock Category 1 a very complicated long category just for the kicks",
                 isTodayOnlyCategory = false,
                 isThisWeekOnlyCategory = false,
-                isQuestionLessWidget = false,
                 categoryId = QuestionCategoryId.CalmingThoughts,
                 answers = listOf(
                     // Add your mock Answer objects here
