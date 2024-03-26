@@ -42,7 +42,6 @@ export interface QuestionCategory {
   isThisWeekOnlyCategory?: boolean;
   isMorningCategory?: boolean;
   isEveningCategory?: boolean;
-  isQuestionLessWidget?: boolean;
   questions?: Question[];
 }
 
@@ -182,7 +181,6 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
     isTodayOnlyCategory: true,
-    isQuestionLessWidget: true,
   },
   [QuestionCategoryId.XPurposeOfSession]: {
     isTodayOnlyCategory: true,
