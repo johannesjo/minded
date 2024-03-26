@@ -152,10 +152,17 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What is a nice thing you can do for yourself today",
       },
-      { t: "What can I do so that today will be a good day", prompt: "I will" },
+      {
+        t: "What can you do so that today will be a good day",
+        prompt: "I will",
+      },
       {
         t: "Today I will do my best to...",
         prompt: "Today I will do my best to",
+      },
+      {
+        t: "What is a little thing you can enjoy today",
+        prompt: "Today I will enjoy",
       },
     ],
     dashboardTxt: "Good Plans Today",
