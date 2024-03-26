@@ -20,19 +20,29 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        Log.e("ACCESSIBILITY", "onInterrupt()")
         // Handle interrupts
     }
 
-    override fun onServiceConnected() {
-        super.onServiceConnected()
-        val config = AccessibilityServiceInfo()
-        config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-        config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
-        serviceInfo = config
+    override fun onUnbind(intent: Intent?): Boolean {
+        Log.e("ACCESSIBILITY", "onUnbind()")
+        return super.onUnbind(intent);
+        // Handle interrupts
     }
 
+
+    // NOTE we configure it in accessibility_service_config.xml
+//    override fun onServiceConnected() {
+//        super.onServiceConnected()
+//        val config = AccessibilityServiceInfo()
+//        config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+//        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+//        config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
+//        serviceInfo = config
+//    }
+
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
+        Log.v("ACCESSIBILITY", "onAccessibilityEvent()")
         try {
             val currentPackageName = accessibilityEvent.packageName
             Log.v("ACCESSIBILITY", "Package name: $currentPackageName")

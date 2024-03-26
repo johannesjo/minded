@@ -107,7 +107,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        showOverlay(this)
 
 
         Handler(Looper.getMainLooper()).post(Runnable {
