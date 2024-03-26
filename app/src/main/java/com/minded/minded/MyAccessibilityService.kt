@@ -31,18 +31,20 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
 
-    // NOTE we configure it in accessibility_service_config.xml
-//    override fun onServiceConnected() {
-//        super.onServiceConnected()
-//        val config = AccessibilityServiceInfo()
-//        config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-//        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-//        config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
-//        serviceInfo = config
-//    }
+    override fun onServiceConnected() {
+        // NOTE we also configure it in accessibility_service_config.xml
+        // but it seems service is not working until we configure it here
+        super.onServiceConnected()
+        val config = AccessibilityServiceInfo()
+        config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+        config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
+        serviceInfo = config
+    }
 
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
         Log.v("ACCESSIBILITY", "onAccessibilityEvent()")
+
         try {
             val currentPackageName = accessibilityEvent.packageName
             Log.v("ACCESSIBILITY", "Package name: $currentPackageName")
