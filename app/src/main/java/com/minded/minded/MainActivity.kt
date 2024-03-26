@@ -93,13 +93,13 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-        Toast.makeText(
-            this,
-            "START SERVICE",
-            Toast.LENGTH_SHORT
-        ).show()
-        startService(Intent(this, QuestionOverlayService::class.java))
+//        Toast.makeText(
+//            this,
+//            "START SERVICE",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//        startService(Intent(this, QuestionOverlayService::class.java))
+//        QuestionOverlayService.showOverlay(this)
     }
 
     override fun onResume() {
