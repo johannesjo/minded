@@ -54,7 +54,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var scheduleFuture: ScheduledFuture<*>
     private var isInGracePeriod = false
-    private val GRACE_PERIOD = 0;
+    private val GRACE_PERIOD = 1;
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -76,15 +76,16 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     }
 
     private fun isBlockedPackage(packageName: String): Boolean {
-        return packageName == "XXXXX" || packageName == "XXXX"
+        return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
     }
 
     private fun isNonAppPackage(packageName: String): Boolean {
-        return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
+        return packageName.contains("com.google.android.inputmethod")
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
         if (isNonAppPackage(currentPackageName)) return
+        Log.v("QuestionOverlaySVC", "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} $lastForeGroundApp")
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
             Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
