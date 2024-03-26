@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                         color = MaterialTheme.colorScheme.background
                     ) {
                         Dashboard(dashboardViewModel, missingCapability, onMissingCapabilityClick = {
-                            when (it) {
+                            when (missingCapability) {
                                 "Accessibility" -> askPermissionForAccessibility()
                                 "Usage Stats" -> askPermissionForUsageStats()
                                 "System Alert Window" -> askPermissionForOverlay()
