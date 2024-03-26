@@ -29,10 +29,9 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.minded.minded.MyUtil.getForegroundApp
-import com.minded.minded.data.QUESTIONS
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.util.getQuestionSmart
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors

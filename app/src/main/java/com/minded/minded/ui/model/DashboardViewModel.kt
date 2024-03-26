@@ -3,7 +3,6 @@ package com.minded.minded.ui.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.minded.minded.MyUtil
 import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.data.QuestionCategoryId
@@ -27,7 +26,7 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
     }
 
     private fun mapAnswersToQuestions(allAnswers: List<Answer>): List<QuestionCategoryForDashboard> {
-        return MyUtil.mapAnswersToQuestions(allAnswers)
+        return com.minded.minded.util.mapAnswersToQuestions(allAnswers)
     }
 
 
