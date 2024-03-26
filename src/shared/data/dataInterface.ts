@@ -2,8 +2,13 @@ import { Answer, SyncData, UserCfg } from "@src/shared/data/sync-data";
 import { bro } from "@src/util/browser";
 import { DEFAULT_SYNC_DATA } from "@src/shared/data/sync-data.const";
 import { getIsoDate } from "@src/util/getIsoDate";
+import { QuestionCategoryId } from "@src/shared/data/questions";
 
 const ITEMS_DO_DELETE_IF_OVER_QUOTE = 15;
+const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
+  QuestionCategoryId.XPurposeOfSession,
+  QuestionCategoryId.XEnergyLevelToday,
+];
 
 export const saveAnswer = (answer: Answer): Promise<void> => {
   return getSyncData()
@@ -18,7 +23,13 @@ export const saveAnswer = (answer: Answer): Promise<void> => {
         if (e.toString().indexOf("QUOTA_BYTES_PER_ITEM") > 0) {
           const newAnswersSliced = newAnswers
             .sort((a, b) => b.ts - a.ts)
-            .slice(0, newAnswers.length - ITEMS_DO_DELETE_IF_OVER_QUOTE);
+            .slice(0, newAnswers.length - ITEMS_DO_DELETE_IF_OVER_QUOTE)
+            .filter(
+              (answer) =>
+                !ITEM_CATEGORIES_TO_ALWAYS_DELETE.includes(
+                  answer.questionCategoryId,
+                ),
+            );
           console.warn("We are over the quota, since we delete old answers", {
             newAnswers,
             newAnswersSliced,
