@@ -207,9 +207,9 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoalForTheWeek,
   QuestionCategoryId.PersonalResources,
   QuestionCategoryId.Gratitude,
+  QuestionCategoryId.UnderstandingProcrastination,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.CalmingThoughts,
-  QuestionCategoryId.UnderstandingProcrastination,
 ];
 
 export const QUESTIONS: QuestionForPrompt[] = [];
