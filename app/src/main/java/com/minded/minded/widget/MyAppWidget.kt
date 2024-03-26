@@ -78,7 +78,7 @@ fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
         ) {
 
             Text(
-                text = question.dashboardTxt ?: "No text",
+                text = question.dashboardTxt,
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
             )
             question.answers.forEach {

@@ -35,7 +35,8 @@ data class QuestionCategory(
     val questions: List<QuestionForPrompt>?,
     val isTodayOnlyCategory: Boolean = false,
     val isThisWeekOnlyCategory: Boolean = false,
-    val isQuestionLessWidget: Boolean = false,
+    val isMorningCategory: Boolean = false,
+    val isEveningCategory: Boolean = false,
 )
 
 data class QuestionCategoryForDashboard(
@@ -44,7 +45,8 @@ data class QuestionCategoryForDashboard(
     val answers: List<Answer>,
     val isTodayOnlyCategory: Boolean = false,
     val isThisWeekOnlyCategory: Boolean = false,
-    val isQuestionLessWidget: Boolean = false,
+    val isMorningCategory: Boolean = false,
+    val isEveningCategory: Boolean = false,
 )
 
 //interface QuestionCategory {
@@ -172,12 +174,15 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.TodayILearned to QuestionCategory(
         "Today I learned",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.TodayILearned },
-        true,
+        isTodayOnlyCategory = true,
+        isEveningCategory = true,
+        isMorningCategory = true,
     ),
     QuestionCategoryId.RefocusHelperToday to QuestionCategory(
         "Finding Focus Today",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.RefocusHelperToday },
-        true,
+        isTodayOnlyCategory = true,
+        isMorningCategory = true,
     ),
     QuestionCategoryId.Motivation to QuestionCategory(
         "My Motivation",
@@ -202,7 +207,8 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.GoodToday to QuestionCategory(
         "Good Today",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodToday },
-        true,
+        isTodayOnlyCategory = true,
+        isEveningCategory = true,
     ),
     QuestionCategoryId.GoodPlans to QuestionCategory(
         "Good Plans",
@@ -211,18 +217,19 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.GoodPlansToday to QuestionCategory(
         "Good Plans Today",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoodPlansToday },
-        true,
+        isTodayOnlyCategory = true,
+        isMorningCategory = true,
     ),
     QuestionCategoryId.GoalForTheWeek to QuestionCategory(
         "Your Goal for the Week",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoalForTheWeek },
-        false,
-        true,
+        isThisWeekOnlyCategory = true,
     ),
     QuestionCategoryId.XEnergyLevelToday to QuestionCategory(
         "",
         null,
-        true,
+        isTodayOnlyCategory = true,
+        isMorningCategory = true,
     )
 )
 
