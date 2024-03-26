@@ -220,10 +220,11 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
         </div>
       ) : (
         <div
-          id="minded-6622-coloured-wrapper"
+          id="minded-6622-coloured-wrapper-dynamic"
           onclick={(ev) => {
             if (
-              (ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper"
+              (ev.target as HTMLElement)?.id ===
+              "minded-6622-coloured-wrapper-dynamic"
             ) {
               fadeOutMainFinal();
             }
