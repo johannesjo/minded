@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 
 export const Question: (props: {
   question?: QuestionForPrompt;
+  isDontSave?: boolean;
   onSuccess: (answer: Answer) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
@@ -34,7 +35,9 @@ export const Question: (props: {
       return;
     }
     setIsInputDisabled(true);
-    await saveAnswer(answer);
+    if (!props.isDontSave) {
+      await saveAnswer(answer);
+    }
     props.onSuccess(answer);
   };
 

@@ -265,6 +265,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
                     t: QUESTION_CATEGORIES.XPurposeOfSession.questions[0].t,
                     categoryId: QuestionCategoryId.XPurposeOfSession,
                   }}
+                  isDontSave={true}
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onSuccess}
                   onCancel={teardown}
