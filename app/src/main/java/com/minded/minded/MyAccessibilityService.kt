@@ -20,12 +20,12 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        Log.e("ACCESSIBILITY", "onInterrupt()")
+        Log.v("ACCESSIBILITY", "onInterrupt()")
         // Handle interrupts
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        Log.e("ACCESSIBILITY", "onUnbind()")
+        Log.v("ACCESSIBILITY", "onUnbind()")
         return super.onUnbind(intent);
         // Handle interrupts
     }
