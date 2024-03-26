@@ -50,7 +50,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
-    private var lastForeGroundApp: String = "";
+    private var lastForeGroundApp: String = ""
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var scheduleFuture: ScheduledFuture<*>
     private var isInGracePeriod = false
@@ -79,17 +79,15 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
-        if (currentPackageName != null) {
-            if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
-                Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
-                showOverlay()
-                isInGracePeriod = true
-                Executors.newSingleThreadScheduledExecutor()
-                    .schedule({ isInGracePeriod = false }, 30, TimeUnit.SECONDS)
-            }
-            if (!isInGracePeriod) {
-                lastForeGroundApp = currentPackageName
-            }
+        if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
+            Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
+            showOverlay()
+            isInGracePeriod = true
+            Executors.newSingleThreadScheduledExecutor()
+                .schedule({ isInGracePeriod = false }, 30, TimeUnit.SECONDS)
+        }
+        if (!isInGracePeriod) {
+            lastForeGroundApp = currentPackageName
         }
     }
 
@@ -109,7 +107,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-//        FloatingWidgetService.showOverlay(this)
+        showOverlay(this)
 
 
         Handler(Looper.getMainLooper()).post(Runnable {
@@ -206,21 +204,21 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         answerRepository = AnswerRepository(this)
 
 
-        val context = this;
         val rndQuestion = getQuestionSmart(emptyList())
 
-        overlayView = ComposeView(context).apply {
+        overlayView = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@QuestionOverlayService)
             setViewTreeSavedStateRegistryOwner(this@QuestionOverlayService)
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
                 OverlayBig(
-                    hideOverlay = { hideOverlay() },
+                    removeOverlay = { hideOverlay() },
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
                         GlobalScope.launch {
+                            // TODO improve this
                             // NOTE this won't update the view model of dashboard since they are separate instances
                             dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
                             dashboardViewModel.loadAnswersFlow()

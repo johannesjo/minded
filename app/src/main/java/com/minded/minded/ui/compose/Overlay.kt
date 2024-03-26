@@ -1,4 +1,8 @@
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +18,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,34 +35,48 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.minded.minded.ui.compose.FadeInBox
-import com.minded.minded.data.Question
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
-import com.minded.minded.ui.theme.PastelGreen
-import com.minded.minded.ui.theme.PastelRed
-import com.minded.minded.ui.theme.PastelYellow
 import com.minded.minded.ui.theme.StandardGradient
+import kotlinx.coroutines.delay
+
 
 @Composable
 fun OverlayBig(
-    hideOverlay: () -> Unit = { },
+    removeOverlay: () -> Unit = { },
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
+    val fadeOutDuration = 1000
     var visible by remember { mutableStateOf(initialVisible) }
+    fun fadeOutOverlay() {
+        visible = false
+    }
+
     LaunchedEffect(Unit) {
         visible = true
     }
+    LaunchedEffect(visible) {
+        Log.v("ANI", "visible: $visible")
+        if(!visible) {
+            delay(fadeOutDuration.toLong());
+            removeOverlay()
+        }
+    }
 
     // TODO make background click work again
-    FadeInBox(visible) {
+//    FadeInBox(visible) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(animationSpec = tween(1000)),
+        exit = fadeOut(animationSpec = tween(fadeOutDuration)),
+    ) {
         Text(text = "asd")
         Surface(
             onClick = {
                 Log.v("SVC", "click BG")
-                hideOverlay()
+                fadeOutOverlay()
             },
         ) {
             Box(
@@ -85,7 +102,7 @@ fun OverlayBig(
                     )
                     TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
                         onSubmitAnswer(it)
-                        hideOverlay()
+                        fadeOutOverlay()
                         Log.v("Overlay.kt", "submitAnswer")
                     })
                 }
@@ -117,9 +134,11 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
             }
         ),
         trailingIcon = {
-            IconButton(onClick = { textState = textState.copy(
-                text = "",
-            ) }) {
+            IconButton(onClick = {
+                textState = textState.copy(
+                    text = "",
+                )
+            }) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Visibility"
