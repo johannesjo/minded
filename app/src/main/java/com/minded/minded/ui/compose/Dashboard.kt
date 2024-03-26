@@ -69,19 +69,18 @@ fun DashboardMain(
             )
         }
 
+        LazyColumn {
+            items(questions.size) { index ->
+                val question = questions[index]
+                QuestionCategoryCmp(question);
+            }
+        }
+
         if (missingCapability.length > 1) {
             FloatingActionButton(
                 onClick = { onMissingCapabilityClick(missingCapability) },
             ) {
                 Icon(Icons.Filled.Settings, "Floating action button.")
-            }
-        }
-
-
-        LazyColumn {
-            items(questions.size) { index ->
-                val question = questions[index]
-                QuestionCategoryCmp(question);
             }
         }
     }

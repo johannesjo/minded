@@ -123,10 +123,12 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         })
 
 //         TODO check if we need this
-//        scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
-//            val foregroundApp = getForegroundApp(this);
-//            checkToShowOverlay(foregroundApp)
-//        }, 0, 500, TimeUnit.MILLISECONDS)
+//        if (!MyUtil.isAccessibilityServiceEnabled(this)) {
+//            scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
+//                val foregroundApp = getForegroundApp(this);
+//                checkToShowOverlay(foregroundApp)
+//            }, 0, 500, TimeUnit.MILLISECONDS)
+//        }
     }
 
 
