@@ -24,9 +24,13 @@ import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
 
+enum class MissingCapability {
+    Accessibility, UsageStats, SystemAlertWindow
+}
 
 class MainActivity : AppCompatActivity() {
     private lateinit var dashboardViewModel: DashboardViewModel
+    private var missingCapability: MissingCapability? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,14 +41,14 @@ class MainActivity : AppCompatActivity() {
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        var missingCapability = ""
         if (!checkDrawOverlayPermission(this)) {
-            missingCapability ="System Alert Window"
             Toast.makeText(
                 this,
                 "You need System Alert Window Permission :(",
                 Toast.LENGTH_SHORT
             ).show()
+            missingCapability = MissingCapability.SystemAlertWindow
+            dashboardViewModel.setMissingCapability(missingCapability.toString())
             askPermissionForOverlay()
         }
 
@@ -54,9 +58,9 @@ class MainActivity : AppCompatActivity() {
                 "You need Usage stats Permission :(",
                 Toast.LENGTH_SHORT
             ).show()
-            missingCapability ="Usage Stats"
+            missingCapability = MissingCapability.UsageStats
+            dashboardViewModel.setMissingCapability(missingCapability.toString())
             askPermissionForUsageStats()
-//            finish()
         }
         if (!isAccessibilityServiceEnabled(this)) {
             Toast.makeText(
@@ -64,10 +68,9 @@ class MainActivity : AppCompatActivity() {
                 "You need Accessibility Permission :(",
                 Toast.LENGTH_SHORT
             ).show()
-            // TODO check why this does nothing
-            missingCapability ="Accessibility"
-            dashboardViewModel.setMissingCapability("Accessibility")
-            //            askPermissionForAccessibility()
+            missingCapability = MissingCapability.Accessibility
+            dashboardViewModel.setMissingCapability(missingCapability.toString())
+            askPermissionForAccessibility()
 //            finish()
         }
 
@@ -79,18 +82,21 @@ class MainActivity : AppCompatActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        Dashboard(dashboardViewModel, missingCapability, onMissingCapabilityClick = {
-                            when (missingCapability) {
-                                "Accessibility" -> askPermissionForAccessibility()
-                                "Usage Stats" -> askPermissionForUsageStats()
-                                "System Alert Window" -> askPermissionForOverlay()
-                            }
-                        })
+                        Dashboard(
+                            dashboardViewModel,
+                            missingCapability,
+                            onMissingCapabilityClick = {
+                                when (missingCapability) {
+                                    MissingCapability.Accessibility -> askPermissionForAccessibility()
+                                    MissingCapability.UsageStats -> askPermissionForUsageStats()
+                                    MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
+                                    null -> {}
+                                }
+                            })
                     }
                 }
             }
         }
-
 
 
 //        Toast.makeText(
