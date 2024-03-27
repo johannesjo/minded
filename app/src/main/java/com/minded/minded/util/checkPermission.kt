@@ -1,10 +1,16 @@
 package com.minded.minded.util
 
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.provider.Settings
+import android.util.Log
+import android.view.accessibility.AccessibilityManager
 import com.minded.minded.MyAccessibilityService
+
 
 fun checkPermission(context: Context, permission: String): Boolean {
     val res = context.checkCallingOrSelfPermission(permission)
@@ -33,21 +39,22 @@ fun checkDrawOverlayPermission(context: Context): Boolean {
 }
 
 
-fun isAccessibilityServiceEnabled(context: Context): Boolean {
-    val contentResolver = context.contentResolver;
-    val serviceName = context.packageName + "/" + MyAccessibilityService::class.java.name
-    val accessibilityEnabled = Settings.Secure.getInt(
-        contentResolver,
-        Settings.Secure.ACCESSIBILITY_ENABLED, 0
-    )
-    if (accessibilityEnabled == 1) {
-        val services = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        )
-        if (services != null) {
-            return services.split(":").contains(serviceName)
-        }
+fun isAccessibilityServiceEnabled(
+    context: Context,
+    serviceToCheck: Class<out AccessibilityService?> = MyAccessibilityService::class.java
+): Boolean {
+    val am: AccessibilityManager =
+        context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+    val enabledServices: List<AccessibilityServiceInfo> =
+        am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+    Log.v("ENABLED", "ENABLED SERVICES ${enabledServices.size} ")
+    for (enabledService in enabledServices) {
+        Log.v("ENABLED", enabledService.resolveInfo.serviceInfo.packageName)
+        val enabledServiceInfo: ServiceInfo = enabledService.resolveInfo.serviceInfo
+        if (enabledServiceInfo.packageName.equals(context.packageName) && enabledServiceInfo.name.equals(
+                serviceToCheck.name
+            )
+        ) return true
     }
     return false
 }

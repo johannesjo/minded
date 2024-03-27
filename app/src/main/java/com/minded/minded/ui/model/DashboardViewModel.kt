@@ -1,11 +1,11 @@
 package com.minded.minded.ui.model
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.minded.minded.data.answers.Answer
+import com.minded.minded.MissingCapability
 import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.data.QuestionCategoryId
+import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.answers.AnswerRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,11 +40,11 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
      * 5. each time the flow emits a new value, the collect function will be called with the list of answers.
      */
     fun loadAnswersFlow() {
-        viewModelScope.launch { //this: CoroutineScope
+        viewModelScope.launch {
             answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO)
                 .collect { answers: List<Answer> ->
                     val d = mapAnswersToQuestions(answers);
-                    _uiState.update { DashboardUiState(d) }
+                    _uiState.update { it.copy(questionCategories = d) }
                 }
         }
     }
@@ -56,7 +56,7 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
      * 3. answerRepository.add(answer) is used to add the answer to the database.
      */
     fun addAnswer(title: String, categoryId: QuestionCategoryId) {
-        viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
+        viewModelScope.launch(Dispatchers.IO) {
             answerRepository.createWithTimestamp(title, categoryId)
         }
     }
@@ -68,15 +68,14 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
      * 3. answerRepository.remove(answer) is used to remove the answer from the database.
      */
     fun removeAnswer(answer: Answer) {
-        viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
+        viewModelScope.launch(Dispatchers.IO) {
             answerRepository.removeAnswer(answer)
         }
     }
 
-    fun setMissingCapability(name: String) {
-        Log.v("WAAAAAAAAAAAAAA", name)
-        viewModelScope.launch(Dispatchers.IO) { //this: CoroutineScope
-            _uiState.update { DashboardUiState(missingCapability = name) }
+    fun setMissingCapability(missingCapability: MissingCapability?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(missingCapability = missingCapability) }
         }
     }
 }

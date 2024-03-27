@@ -1,6 +1,5 @@
 package com.minded.minded
 
-import com.minded.minded.ui.model.DashboardViewModelFactory
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -15,9 +14,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.Dashboard
+import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.ui.model.DashboardViewModelFactory
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.checkUsageStatsPermission
@@ -41,41 +41,9 @@ class MainActivity : AppCompatActivity() {
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        if (!checkDrawOverlayPermission(this)) {
-            Toast.makeText(
-                this,
-                "You need System Alert Window Permission :(",
-                Toast.LENGTH_SHORT
-            ).show()
-            missingCapability = MissingCapability.SystemAlertWindow
-            dashboardViewModel.setMissingCapability(missingCapability.toString())
-            askPermissionForOverlay()
-        }
 
-        if (!checkUsageStatsPermission(this)) {
-            Toast.makeText(
-                this,
-                "You need Usage stats Permission :(",
-                Toast.LENGTH_SHORT
-            ).show()
-            missingCapability = MissingCapability.UsageStats
-            dashboardViewModel.setMissingCapability(missingCapability.toString())
-            askPermissionForUsageStats()
-        }
-        if (!isAccessibilityServiceEnabled(this)) {
-            Toast.makeText(
-                this,
-                "You need Accessibility Permission :(",
-                Toast.LENGTH_SHORT
-            ).show()
-            missingCapability = MissingCapability.Accessibility
-            dashboardViewModel.setMissingCapability(missingCapability.toString())
-//            askPermissionForAccessibility()
-//            finish()
-        }
-
-        QuestionOverlayService.showOverlay(this);
-
+//        QuestionOverlayService.showOverlay(this);
+        val context = this
 
 
         lifecycleScope.launch {
@@ -87,7 +55,6 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         Dashboard(
                             dashboardViewModel,
-                            missingCapability,
                             onMissingCapabilityClick = {
                                 when (missingCapability) {
                                     MissingCapability.Accessibility -> askPermissionForAccessibility()
@@ -95,7 +62,11 @@ class MainActivity : AppCompatActivity() {
                                     MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
                                     null -> {}
                                 }
-                            })
+                            },
+                            onShowQuestionOverlay = {
+                                QuestionOverlayService.showOverlay(context)
+                            }
+                        )
                     }
                 }
             }
@@ -113,7 +84,48 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        Log.v("MAIN", "onResume()")
         dashboardViewModel.loadAnswersFlow()
+        checkAndUpdateCapabilities()
+    }
+
+
+    private fun checkAndUpdateCapabilities() {
+        Log.v(
+            "MAIN",
+            "checkAndUpdateCapabilities()  ${isAccessibilityServiceEnabled(this).toString()}"
+        )
+        missingCapability = null
+        if (!checkDrawOverlayPermission(this)) {
+            Toast.makeText(
+                this,
+                "You need System Alert Window Permission :(",
+                Toast.LENGTH_SHORT
+            ).show()
+            missingCapability = MissingCapability.SystemAlertWindow
+            askPermissionForOverlay()
+        }
+
+        if (!checkUsageStatsPermission(this)) {
+            Toast.makeText(
+                this,
+                "You need Usage stats Permission :(",
+                Toast.LENGTH_SHORT
+            ).show()
+            missingCapability = MissingCapability.UsageStats
+            askPermissionForUsageStats()
+        }
+        if (!isAccessibilityServiceEnabled(this)) {
+            Toast.makeText(
+                this,
+                "You need Accessibility Permission :(",
+                Toast.LENGTH_SHORT
+            ).show()
+            missingCapability = MissingCapability.Accessibility
+//            askPermissionForAccessibility()
+//            finish()
+        }
+        dashboardViewModel.setMissingCapability(missingCapability)
     }
 
     private fun askPermissionForOverlay() {

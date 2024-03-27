@@ -1,6 +1,5 @@
 package com.minded.minded.ui.compose
 
-import android.media.ApplicationMediaCapabilities
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -24,33 +24,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.minded.minded.ui.model.DashboardViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.minded.minded.MissingCapability
-import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.data.QuestionCategoryId
+import com.minded.minded.data.answers.Answer
+import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.ui.theme.StandardGradient
 
 @Composable
 fun Dashboard(
     dashboardViewModel: DashboardViewModel = viewModel(),
-    missingCapability: MissingCapability?,
-    onMissingCapabilityClick: (MissingCapability?) -> Unit = {}
+    onMissingCapabilityClick: (MissingCapability?) -> Unit = {},
+    onShowQuestionOverlay: () -> Unit = {}
 ) {
     val uiState by dashboardViewModel.uiState.collectAsState()
     val questions = uiState.questionCategories
-//    val missingCapability = uiState.missingCapability
+    val missingCapability = uiState.missingCapability
 
-
-    DashboardMain(questions, missingCapability, onMissingCapabilityClick)
+    DashboardMain(questions, missingCapability, onMissingCapabilityClick, onShowQuestionOverlay)
 }
 
 @Composable
 fun DashboardMain(
     questions: List<QuestionCategoryForDashboard>,
     missingCapability: MissingCapability?,
-    onMissingCapabilityClick: (MissingCapability?) -> Unit = {}
+    onMissingCapabilityClick: (MissingCapability?) -> Unit = {},
+    onShowQuestionOverlay: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -80,8 +80,20 @@ fun DashboardMain(
         if (missingCapability != null) {
             FloatingActionButton(
                 onClick = { onMissingCapabilityClick(missingCapability) },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(0.dp, 0.dp, 0.dp, 16.dp)
             ) {
                 Icon(Icons.Filled.Settings, "Floating action button.")
+            }
+        } else {
+            FloatingActionButton(
+                onClick = onShowQuestionOverlay,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(0.dp, 0.dp, 0.dp, 16.dp)
+            ) {
+                Icon(Icons.Filled.Add, "Add")
             }
         }
     }
