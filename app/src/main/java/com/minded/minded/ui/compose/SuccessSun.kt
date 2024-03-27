@@ -24,11 +24,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
-fun SuccessSun(modifier: Modifier = Modifier, duration: Int = 1000, onClick: () -> Unit = {}) {
+fun SuccessSun(
+    modifier: Modifier = Modifier,
+    inDuration: Int = 1000,
+    successDuration: Int = 1000,
+    onClick: () -> Unit = {}
+) {
     val initialRadius = 0f
+    var isClickTriggered by remember { mutableStateOf(false) }
     var radius by remember { mutableFloatStateOf(initialRadius) }
     var textAlpha by remember { mutableStateOf(0f) }
     val animatedAlpha by animateFloatAsState(
@@ -42,7 +49,7 @@ fun SuccessSun(modifier: Modifier = Modifier, duration: Int = 1000, onClick: () 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .clickable(onClick = { onClick() })
+            .clickable(onClick = { isClickTriggered = true; onClick() })
             .background(Color.Transparent)
             .drawBehind {
                 drawCircle(
@@ -62,13 +69,24 @@ fun SuccessSun(modifier: Modifier = Modifier, duration: Int = 1000, onClick: () 
     val (width, height) = with(LocalConfiguration.current) {
         with(LocalDensity.current) { screenWidthDp.dp.toPx() to screenHeightDp.dp.toPx() }
     }
-    val maxRadiusPx = hypot(width, height)
+    val minRadiusPx = min(width, height) / 2
+    val maxRadiusPx = max(width, height) / 2
+
     LaunchedEffect(false) {
-        animatedRadius.animateTo(maxRadiusPx, animationSpec = tween(duration)) {
-            radius = value / 2
+        animatedRadius.animateTo(minRadiusPx, animationSpec = tween(inDuration)) {
+            radius = value
         }
-        // reset the initial value after finishing animation
-        animatedRadius.snapTo(initialRadius)
+//        animatedRadius.snapTo(initialRadius)
+    }
+
+    LaunchedEffect(isClickTriggered) {
+        if (isClickTriggered) {
+            textAlpha = 0f
+            animatedRadius.animateTo(maxRadiusPx, animationSpec = tween(successDuration)) {
+                radius = value
+            }
+//            animatedRadius.snapTo(initialRadius)
+        }
     }
 
     // Start the text animation when the composable first appears

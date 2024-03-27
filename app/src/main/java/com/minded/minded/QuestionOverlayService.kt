@@ -174,15 +174,14 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
                         dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
                     },
-                    onTapSun = {
-                        Log.v("QuestionOverlaySVC", "onTapSun")
+                    onBackToMain = {
+                        Log.v("QuestionOverlaySVC", "onBackToMain")
                         // TODO count
                         val intent = Intent(Intent.ACTION_MAIN).apply {
                             addCategory(Intent.CATEGORY_HOME)
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         }
                         startActivity(intent)
-                        hideOverlay()
                     }
                 )
             }
