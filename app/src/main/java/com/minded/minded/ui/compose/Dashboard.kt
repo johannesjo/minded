@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.ui.model.DashboardViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.minded.minded.MissingCapability
 import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.data.QuestionCategoryId
@@ -34,8 +35,8 @@ import com.minded.minded.ui.theme.StandardGradient
 @Composable
 fun Dashboard(
     dashboardViewModel: DashboardViewModel = viewModel(),
-    missingCapability: String = "",
-    onMissingCapabilityClick: (String) -> Unit = {}
+    missingCapability: MissingCapability?,
+    onMissingCapabilityClick: (MissingCapability?) -> Unit = {}
 ) {
     val uiState by dashboardViewModel.uiState.collectAsState()
     val questions = uiState.questionCategories
@@ -48,8 +49,8 @@ fun Dashboard(
 @Composable
 fun DashboardMain(
     questions: List<QuestionCategoryForDashboard>,
-    missingCapability: String,
-    onMissingCapabilityClick: (String) -> Unit = {}
+    missingCapability: MissingCapability?,
+    onMissingCapabilityClick: (MissingCapability?) -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -76,7 +77,7 @@ fun DashboardMain(
             }
         }
 
-        if (missingCapability.length > 1) {
+        if (missingCapability != null) {
             FloatingActionButton(
                 onClick = { onMissingCapabilityClick(missingCapability) },
             ) {
@@ -169,7 +170,7 @@ fun DashboardMainPreview() {
                 )
             ),
         ),
-        "Missing capability",
+        MissingCapability.Accessibility,
         onMissingCapabilityClick = { println("Missing capability clicked") }
     )
 }
