@@ -3,6 +3,8 @@ package com.minded.minded
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 
@@ -42,18 +44,41 @@ class MyAccessibilityService : AccessibilityService() {
         serviceInfo = config
     }
 
-    override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
-        Log.v("ACCESSIBILITY", "onAccessibilityEvent()")
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val MIN_DELAY = 200L
+    private var currentPackageName: CharSequence? = null
+
+    private val runnable = Runnable {
+        Log.v("ACCESSIBILITY", "Runnable() $currentPackageName")
+        val intent = Intent(this, QuestionOverlayService::class.java)
+        intent.putExtra(
+            INTENT_EXTRA_CURRENT_PACKAGE_NAME,
+            currentPackageName
+        )
+        startService(intent)
+    }
+
+    private fun isNonAppPackage(packageName: String): Boolean {
+        // NOTE we exclude minded here too since the overlay otherwise also gets counted :/
+        // TODO better solution
+        return packageName.contains("com.google.android.inputmethod")
+                || packageName == "com.minded.minded"
+                || packageName == "com.android.systemui"
+                || packageName == "com.google.android.googlequicksearchbox"
+    }
+
+    override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
         try {
-            val currentPackageName = accessibilityEvent.packageName
-            Log.v("ACCESSIBILITY", "Package name: $currentPackageName")
-            val intent = Intent(this, QuestionOverlayService::class.java)
-            intent.putExtra(
-                INTENT_EXTRA_CURRENT_PACKAGE_NAME,
-                currentPackageName
-            ) // replace "key" and "value" with your actual key and value
-            startService(intent)
+            Log.v(
+                "ACCESSIBILITY",
+                "onAccessibilityEvent(), Package name: $currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
+            )
+            if (!isNonAppPackage(accessibilityEvent.packageName.toString())) {
+                currentPackageName = accessibilityEvent.packageName
+                handler.removeCallbacks(runnable)
+                handler.postDelayed(runnable, MIN_DELAY)
+            }
         } catch (e: Exception) {
             Log.e("ACCESSIBILITY", "Error in onAccessibilityEvent", e)
         }
