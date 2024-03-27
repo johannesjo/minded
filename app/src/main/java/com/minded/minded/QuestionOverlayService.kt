@@ -103,9 +103,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     override fun onCreate() {
         super.onCreate()
         Log.v("QuestionOverlaySVC", "onCreate()")
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) startMyOwnForeground() else startForeground(
-            1, Notification()
-        )
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         answerRepository = AnswerRepository(this)
@@ -132,28 +129,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 //                checkToShowOverlay(foregroundApp)
 //            }, 0, 500, TimeUnit.MILLISECONDS)
 //        }
-    }
-
-
-    private fun startMyOwnForeground() {
-        val NOTIFICATION_CHANNEL_ID = "com.minded.permanence"
-        val channelName = "Minded Foreground Service Channel"
-        val chan = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE
-        )
-        chan.lightColor = Color.BLUE
-        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val manager = (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
-        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-        val notification =
-            notificationBuilder.setOngoing(true).setOngoing(true).setOnlyAlertOnce(true)
-//            .setSmallIcon(R.drawable.sun_no_rays_more_contrast)
-                .setSmallIcon(R.drawable.sun_no_rays_bw)
-                .setContentText("Minded is running in the background")
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE).build()
-        startForeground(2, notification)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
