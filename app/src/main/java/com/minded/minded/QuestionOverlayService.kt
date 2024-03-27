@@ -1,6 +1,5 @@
 package com.minded.minded
 
-import OverlayBig
 import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -30,6 +29,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.ui.compose.OverlayBig
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
 import kotlinx.coroutines.GlobalScope

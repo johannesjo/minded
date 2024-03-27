@@ -61,7 +61,7 @@ fun OverlayBig(
     }
     LaunchedEffect(visible) {
         Log.v("ANI", "visible: $visible")
-        if(!visible) {
+        if (!visible) {
             delay(fadeOutDuration.toLong())
             removeOverlay()
         }
@@ -117,15 +117,16 @@ fun OverlayBig(
 fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
     var textState by remember { mutableStateOf(TextFieldValue(initialVal)) }
     val focusRequester = remember { FocusRequester() }
-Log.v("OVERLAY", "TextInput ${textState.text}")
+    Log.v("OVERLAY", "TextInput ${textState.text}")
     OutlinedTextField(
         singleLine = true,
         value = textState,
         onValueChange = { newTextState ->
-            textState = newTextState.copy(
-                text = newTextState.text,
-                selection = TextRange(newTextState.text.length)
-            )
+            run {
+                textState = newTextState.copy(
+                    text = newTextState.text,
+                )
+            }
         },
         label = { Text("") },
         keyboardActions = KeyboardActions(
@@ -153,6 +154,10 @@ Log.v("OVERLAY", "TextInput ${textState.text}")
     )
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+        textState = textState.copy(
+            text = textState.text,
+            selection = TextRange(textState.text.length)
+        )
     }
 }
 

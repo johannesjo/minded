@@ -70,9 +70,12 @@ class MainActivity : AppCompatActivity() {
             ).show()
             missingCapability = MissingCapability.Accessibility
             dashboardViewModel.setMissingCapability(missingCapability.toString())
-            askPermissionForAccessibility()
+//            askPermissionForAccessibility()
 //            finish()
         }
+
+//        QuestionOverlayService.showOverlay(this);
+
 
 
         lifecycleScope.launch {
