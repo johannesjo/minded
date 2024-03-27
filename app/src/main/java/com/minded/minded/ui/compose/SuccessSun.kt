@@ -34,7 +34,7 @@ fun SuccessSun(modifier: Modifier = Modifier, duration: Int = 1000, onClick: () 
     val animatedAlpha by animateFloatAsState(
         targetValue = textAlpha,
         animationSpec = tween(
-            durationMillis = 1000,
+            durationMillis = 500,
             easing = LinearEasing
         )
     )
