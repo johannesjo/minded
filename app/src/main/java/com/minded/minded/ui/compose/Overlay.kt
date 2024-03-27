@@ -56,8 +56,9 @@ fun OverlayBig(
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
-    val sunAniInDuration = 2000
-    val sunAniFinalDuration = 2000
+    val sunAniInDuration = 1000
+    val sunJustShowDuration = 2000
+    val sunAniFinalDuration = 1000
     val fadeOutOverlayDuration = 1000
     var isOverlayVisible by remember { mutableStateOf(initialVisible) }
     var isShowSuccessSun by remember { mutableStateOf(initialVisible) }
@@ -79,7 +80,7 @@ fun OverlayBig(
     LaunchedEffect(isShowSuccessSun) {
         Log.v("ANI", "isShowSuccessSun: $isShowSuccessSun")
         if (isShowSuccessSun) {
-            delay(sunAniInDuration.toLong() + 2000)
+            delay(sunAniInDuration.toLong() + sunJustShowDuration.toLong())
             isOverlayVisible = false
         }
     }
@@ -90,13 +91,16 @@ fun OverlayBig(
             if (isUserSunCloseInProgress) {
                 Log.v("ANI", "onBackToMain after SunClick")
                 onBackToMain()
+                delay(500)
                 removeOverlay()
             } else {
                 delay(fadeOutOverlayDuration.toLong())
                 Log.v("ANI", "hideOverlayRegular $isUserSunCloseInProgress")
-                if (!isUserSunCloseInProgress) {
-                    removeOverlay()
+                if (isUserSunCloseInProgress) {
+                    onBackToMain()
+                    delay(500)
                 }
+                removeOverlay()
             }
         }
     }
