@@ -3,12 +3,18 @@ package com.minded.minded.widget
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.appWidgetBackground
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Box
@@ -19,41 +25,33 @@ import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.theme.PastelYellow
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import androidx.glance.action.actionStartActivity
-import androidx.glance.action.clickable
-import com.minded.minded.MainActivity
 import com.minded.minded.util.mapAnswersToQuestions
 
 
 class MyAppWidget : GlanceAppWidget() {
 
+    suspend fun updateAll(context: Context) {
+        Log.d("MyAppWidget", "updateAll")
+        val manager = GlanceAppWidgetManager(context)
+        val glanceIds = manager.getGlanceIds(this.javaClass)
+        glanceIds.forEach { glanceId ->
+            update(context, glanceId)
+        }
+    }
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         Log.v("MyAppWidget", "provideGlance")
-
         val answerRepository = AnswerRepository(context)
-
-        // Use the repository to fetch data
-        val allAnswers = withContext(Dispatchers.IO) {
-            Log.d("MyAppWidget", "Fetching all answers")
-            val answers = answerRepository.getAllAnswers()
-            Log.d("MyAppWidget", "Fetched ${answers.size} answers")
-            answers
-        }
-        val questionDataForDashboard = mapAnswersToQuestions(allAnswers)
-
 
         provideContent {
             // create your AppWidget here
             Log.d(
                 "MyAppWidget",
-                "Displaying dashboard with ${questionDataForDashboard.size} questions"
+                "Displaying dashboard with"
             )
-            QuestionCategoryCmp2(questionDataForDashboard.random())
+            QuestionCategoryCmp2(answerRepository)
         }
     }
 
@@ -61,7 +59,23 @@ class MyAppWidget : GlanceAppWidget() {
 
 
 @Composable
-fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
+fun QuestionCategoryCmp2(
+    answerRepository: AnswerRepository
+) {
+    val repository = remember { answerRepository.getAllAnswersFlow() }
+
+    // Retrieve the cache data everytime the content is refreshed
+    val allAnswers = repository.collectAsState(initial = emptyList())
+    val questionDataForDashboard = mapAnswersToQuestions(allAnswers.value)
+    if (questionDataForDashboard.isEmpty()) {
+        Log.d("MyAppWidget", "No questions found")
+        Text(text = "Nothing yet")
+        return
+    }
+    Log.d("MyAppWidget", "${questionDataForDashboard.size} questions found")
+
+    var question by remember { mutableStateOf(questionDataForDashboard.random()) }
+
     Box(
         modifier = GlanceModifier
             .background(
@@ -69,14 +83,13 @@ fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
             ).padding(16.dp)
             .fillMaxHeight()
             .fillMaxWidth()
-            .appWidgetBackground()
-            .clickable(
-                actionStartActivity<MainActivity>()
-            )
+            .clickable {
+                Log.v("MyAppWidget", "Box clicked")
+                question = questionDataForDashboard.random()
+            }
     ) {
         Column(
         ) {
-
             Text(
                 text = question.dashboardTxt,
                 style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -87,3 +100,27 @@ fun QuestionCategoryCmp2(question: QuestionCategoryForDashboard) {
         }
     }
 }
+
+//class RefreshAction : ActionCallback {
+//    override suspend fun onAction(
+//        context: Context,
+//        glanceId: GlanceId,
+//        parameters: ActionParameters
+//    ) {
+//
+//        Log.v("MyAppWidget", "RefreshAction.onAction")
+//        // TODO implement
+//        MyAppWidget().update(context, glanceId)
+//        MyAppWidget().updateAll(context)
+//
+//        val manager = GlanceAppWidgetManager(context)
+//        val widget = MyAppWidget()
+//        val glanceIds = manager.getGlanceIds(widget.javaClass)
+//        Log.v("MyAppWidget", "glanceIds: $glanceIds")
+//        glanceIds.forEach { glanceId ->
+//            widget.update(context, glanceId)
+//        }
+//    }
+//}
+
+
