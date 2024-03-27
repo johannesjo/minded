@@ -6,13 +6,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -109,15 +106,14 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
 
-        Handler(Looper.getMainLooper()).post(Runnable {
-            Toast.makeText(
-                this@QuestionOverlayService.applicationContext,
-//                "START QuestionOverlayService",
-                "Minded is now monitoring apps you want to use less.", Toast.LENGTH_SHORT
-            ).show()
-        })
-
 //         TODO check if we need this
+//        Handler(Looper.getMainLooper()).post(Runnable {
+//            Toast.makeText(
+//                this@QuestionOverlayService.applicationContext,
+////                "START QuestionOverlayService",
+//                "Minded is now monitoring apps you want to use less.", Toast.LENGTH_SHORT
+//            ).show()
+//        })
 //        if (!MyUtil.isAccessibilityServiceEnabled(this)) {
 //            scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
 //                val foregroundApp = getForegroundApp(this);
@@ -177,7 +173,18 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
                         dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
-                    })
+                    },
+                    onTapSun = {
+                        Log.v("QuestionOverlaySVC", "onTapSun")
+                        // TODO count
+                        val intent = Intent(Intent.ACTION_MAIN).apply {
+                            addCategory(Intent.CATEGORY_HOME)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        startActivity(intent)
+                        hideOverlay()
+                    }
+                )
             }
         }
         windowManager.addView(overlayView, getLayoutParams())
