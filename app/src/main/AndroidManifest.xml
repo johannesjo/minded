@@ -9,8 +9,6 @@
     <uses-permission
             android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
             tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <application
@@ -36,7 +34,6 @@
         <service
                 android:name="QuestionOverlayService"
                 android:exported="false"
-                android:foregroundServiceType="specialUse"
                 android:enabled="true" />
 
         <service
