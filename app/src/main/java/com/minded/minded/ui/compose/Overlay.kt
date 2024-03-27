@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,10 +48,11 @@ import kotlinx.coroutines.delay
 fun OverlayBig(
     removeOverlay: () -> Unit = { },
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
+    onTapSun: () -> Unit = { },
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
-    val fadeOutDuration = 1500
+    var fadeOutDuration by remember { mutableIntStateOf(1500) }
     var visible by remember { mutableStateOf(initialVisible) }
     var isSuccess by remember { mutableStateOf(initialVisible) }
     fun fadeOutOverlay() {
@@ -104,6 +106,7 @@ fun OverlayBig(
                     )
                     TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
                         onSubmitAnswer(it)
+                        fadeOutDuration = 4000
                         isSuccess = true
                         fadeOutOverlay()
                         Log.v("Overlay.kt", "submitAnswer")
@@ -113,7 +116,7 @@ fun OverlayBig(
         }
 
         if (isSuccess) {
-            SuccessSun(duration = fadeOutDuration)
+            SuccessSun(duration = fadeOutDuration, onClick = onTapSun)
         }
     }
 }
