@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,30 +52,44 @@ fun OverlayBig(
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
-    var fadeOutDuration by remember { mutableIntStateOf(1500) }
-    var visible by remember { mutableStateOf(initialVisible) }
-    var isSuccess by remember { mutableStateOf(initialVisible) }
+    val sunAniInDuration = 2000
+    val fadeOutOverlayDuration = 1000
+    var isOverlayVisible by remember { mutableStateOf(initialVisible) }
+    var isShowSuccessSun by remember { mutableStateOf(initialVisible) }
+
     fun fadeOutOverlay() {
-        visible = false
+        isOverlayVisible = false
+    }
+
+    fun startSuccessFlow() {
+        isShowSuccessSun = true
     }
 
     LaunchedEffect(Unit) {
-        visible = true
+        isOverlayVisible = true
     }
-    LaunchedEffect(visible) {
-        Log.v("ANI", "visible: $visible")
-        if (!visible) {
-            delay(fadeOutDuration.toLong())
+
+
+    LaunchedEffect(isShowSuccessSun) {
+        Log.v("ANI", "isShowSuccessSun: $isShowSuccessSun")
+        if (isShowSuccessSun) {
+            delay(sunAniInDuration.toLong())
+            isOverlayVisible = false
+        }
+    }
+
+    LaunchedEffect(isOverlayVisible) {
+        Log.v("ANI", "isVible: $isOverlayVisible")
+        if (!isOverlayVisible) {
+            delay(fadeOutOverlayDuration.toLong())
             removeOverlay()
         }
     }
 
-    // TODO make background click work again
-//    FadeInBox(visible) {
     AnimatedVisibility(
-        visible = visible,
+        visible = isOverlayVisible,
         enter = fadeIn(animationSpec = tween(1000)),
-        exit = fadeOut(animationSpec = tween(fadeOutDuration, easing = LinearEasing)),
+        exit = fadeOut(animationSpec = tween(fadeOutOverlayDuration, easing = LinearEasing)),
     ) {
         Surface(
             onClick = {
@@ -107,17 +120,15 @@ fun OverlayBig(
                     )
                     TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
                         onSubmitAnswer(it)
-                        fadeOutDuration = 3000
-                        isSuccess = true
-                        fadeOutOverlay()
+                        startSuccessFlow();
                         Log.v("Overlay.kt", "submitAnswer")
                     })
                 }
             }
         }
 
-        if (isSuccess) {
-            SuccessSun(duration = fadeOutDuration, onClick = onTapSun)
+        if (isShowSuccessSun) {
+            SuccessSun(duration = sunAniInDuration, onClick = onTapSun)
         }
     }
 }
