@@ -80,7 +80,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     }
 
 
-
     private fun checkToShowOverlay(currentPackageName: String) {
         Log.v(
             "QuestionOverlaySVC",
@@ -176,8 +175,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
-        answerRepository = AnswerRepository(this)
-
 
         val rndQuestion = getQuestionSmart(emptyList())
 
@@ -191,12 +188,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
-                        GlobalScope.launch {
-                            // TODO improve this
-                            // NOTE this won't update the view model of dashboard since they are separate instances
-                            dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
-                            dashboardViewModel.loadAnswersFlow()
-                        }
+                        dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
                     })
             }
         }
