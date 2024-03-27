@@ -75,9 +75,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} $lastForeGroundApp"
         )
 
-        if (!isBlockedPackage(currentPackageName)) {
-            hideOverlay();
-        }
+        // TODO check if needed
+//        if (!isBlockedPackage(currentPackageName)) {
+//            hideOverlay();
+//        }
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
             Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")

@@ -72,36 +72,49 @@ fun OverlayBig(
         isShowSuccessSun = true
     }
 
+    suspend fun superSuccessFlow() {
+        Log.v("ANI", "superSuccessFlow")
+        onBackToMain()
+        delay(500)
+        isOverlayVisible = false
+        delay(fadeOutOverlayDuration.toLong())
+        removeOverlay()
+    }
+
     LaunchedEffect(Unit) {
         isOverlayVisible = true
     }
 
 
+    LaunchedEffect(isUserSunCloseInProgress) {
+        Log.v("ANI", "isUserSunCloseInProgress: $isUserSunCloseInProgress")
+        if (isUserSunCloseInProgress) {
+            superSuccessFlow()
+        }
+    }
+
     LaunchedEffect(isShowSuccessSun) {
         Log.v("ANI", "isShowSuccessSun: $isShowSuccessSun")
         if (isShowSuccessSun) {
-            delay(sunAniInDuration.toLong() + sunJustShowDuration.toLong())
-            isOverlayVisible = false
+            delay(sunAniInDuration.toLong())
+            delay(sunJustShowDuration.toLong())
+            Log.v(
+                "ANI",
+                "isShowSuccessSun INNER after delay $isShowSuccessSun $isUserSunCloseInProgress"
+            )
+            if (isUserSunCloseInProgress) {
+                superSuccessFlow()
+            } else {
+                isOverlayVisible = false
+            }
         }
     }
 
     LaunchedEffect(isOverlayVisible) {
         Log.v("ANI", "isVisible: $isOverlayVisible")
         if (!isOverlayVisible) {
-            if (isUserSunCloseInProgress) {
-                Log.v("ANI", "onBackToMain after SunClick")
-                onBackToMain()
-                delay(500)
-                removeOverlay()
-            } else {
-                delay(fadeOutOverlayDuration.toLong())
-                Log.v("ANI", "hideOverlayRegular $isUserSunCloseInProgress")
-                if (isUserSunCloseInProgress) {
-                    onBackToMain()
-                    delay(500)
-                }
-                removeOverlay()
-            }
+            delay(fadeOutOverlayDuration.toLong())
+            removeOverlay()
         }
     }
 
