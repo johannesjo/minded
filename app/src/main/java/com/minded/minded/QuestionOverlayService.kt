@@ -79,16 +79,17 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
     }
 
-    private fun isNonAppPackage(packageName: String): Boolean {
-        return packageName.contains("com.google.android.inputmethod")
-    }
+
 
     private fun checkToShowOverlay(currentPackageName: String) {
-        if (isNonAppPackage(currentPackageName)) return
-        Log.v("QuestionOverlaySVC", "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} $lastForeGroundApp")
+        Log.v(
+            "QuestionOverlaySVC",
+            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} $lastForeGroundApp"
+        )
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
             Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
+            lastForeGroundApp = currentPackageName
             showOverlay()
             isInGracePeriod = true
             Executors.newSingleThreadScheduledExecutor()
@@ -103,8 +104,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         super.onCreate()
         Log.v("QuestionOverlaySVC", "onCreate()")
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) startMyOwnForeground() else startForeground(
-            1,
-            Notification()
+            1, Notification()
         )
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -121,8 +121,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             Toast.makeText(
                 this@QuestionOverlayService.applicationContext,
 //                "START QuestionOverlayService",
-                "Minded is now monitoring apps you want to use less.",
-                Toast.LENGTH_SHORT
+                "Minded is now monitoring apps you want to use less.", Toast.LENGTH_SHORT
             ).show()
         })
 
@@ -140,24 +139,20 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         val NOTIFICATION_CHANNEL_ID = "com.minded.permanence"
         val channelName = "Minded Foreground Service Channel"
         val chan = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID,
-            channelName,
-            NotificationManager.IMPORTANCE_NONE
+            NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE
         )
         chan.lightColor = Color.BLUE
         chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         val manager = (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
         manager.createNotificationChannel(chan)
         val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-        val notification = notificationBuilder.setOngoing(true)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
+        val notification =
+            notificationBuilder.setOngoing(true).setOngoing(true).setOnlyAlertOnce(true)
 //            .setSmallIcon(R.drawable.sun_no_rays_more_contrast)
-            .setSmallIcon(R.drawable.sun_no_rays_bw)
-            .setContentText("Minded is running in the background")
-            .setPriority(NotificationManager.IMPORTANCE_MIN)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
+                .setSmallIcon(R.drawable.sun_no_rays_bw)
+                .setContentText("Minded is running in the background")
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE).build()
         startForeground(2, notification)
     }
 
@@ -184,12 +179,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
         val timeToInvoke = 5 * 1000
         val intent: Intent = Intent(
-            this@QuestionOverlayService,
-            QuestionOverlayService::class.java
+            this@QuestionOverlayService, QuestionOverlayService::class.java
         )
         val pendingIntent = PendingIntent.getService(
-            this@QuestionOverlayService, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE
+            this@QuestionOverlayService, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
         val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
         alarm.set(
@@ -219,8 +212,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
-                OverlayBig(
-                    removeOverlay = { hideOverlay() },
+                OverlayBig(removeOverlay = { hideOverlay() },
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
@@ -254,8 +246,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     }
 
     private fun getLayoutParams(): WindowManager.LayoutParams {
-        @Suppress("DEPRECATION")
-        return WindowManager.LayoutParams(
+        @Suppress("DEPRECATION") return WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
