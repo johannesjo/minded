@@ -2,6 +2,7 @@ package com.minded.minded.ui.compose
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -75,7 +76,7 @@ fun OverlayBig(
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(animationSpec = tween(1000)),
-        exit = fadeOut(animationSpec = tween(fadeOutDuration)),
+        exit = fadeOut(animationSpec = tween(fadeOutDuration, easing = LinearEasing)),
     ) {
         Surface(
             onClick = {
@@ -106,7 +107,7 @@ fun OverlayBig(
                     )
                     TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
                         onSubmitAnswer(it)
-                        fadeOutDuration = 4000
+                        fadeOutDuration = 3000
                         isSuccess = true
                         fadeOutOverlay()
                         Log.v("Overlay.kt", "submitAnswer")
