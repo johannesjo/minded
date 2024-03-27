@@ -12,6 +12,7 @@ export enum QuestionCategoryId {
   GoalForTheWeek = "GoalForTheWeek",
   Gratitude = "Gratitude",
   UnderstandingProcrastination = "UnderstandingProcrastination",
+  // NOTE: we filter out all questions from categories starting with X
   XEnergyLevelToday = "XEnergyLevelToday",
   XPurposeOfSession = "XPurposeOfSession",
   // IDEAS
@@ -218,12 +219,15 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
 ];
 
 export const QUESTIONS: QuestionForPrompt[] = [];
-Object.keys(QUESTION_CATEGORIES).forEach((categoryId) => {
-  const entry = QUESTION_CATEGORIES[categoryId];
-  entry.questions?.forEach((question) => {
-    QUESTIONS.push({ ...question, categoryId });
+Object.keys(QUESTION_CATEGORIES)
+  // NOTE: we filter out all questions from categories starting with X
+  .filter((categoryId) => categoryId[0] !== "X")
+  .forEach((categoryId) => {
+    const entry = QUESTION_CATEGORIES[categoryId];
+    entry.questions?.forEach((question) => {
+      QUESTIONS.push({ ...question, categoryId });
+    });
   });
-});
 
 /*
 IDEAS:
