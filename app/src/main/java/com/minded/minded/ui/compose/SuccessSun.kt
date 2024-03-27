@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlin.math.max
+import kotlin.math.hypot
 import kotlin.math.min
 
 @Composable
@@ -70,7 +70,9 @@ fun SuccessSun(
         with(LocalDensity.current) { screenWidthDp.dp.toPx() to screenHeightDp.dp.toPx() }
     }
     val minRadiusPx = min(width, height) / 2
-    val maxRadiusPx = max(width, height) / 2
+//    val maxRadiusPx = max(width, height) / 2
+    val maxRadiusPx = hypot(width, height)
+
 
     LaunchedEffect(false) {
         animatedRadius.animateTo(minRadiusPx, animationSpec = tween(inDuration)) {
