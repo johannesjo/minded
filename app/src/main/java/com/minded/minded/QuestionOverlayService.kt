@@ -139,14 +139,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         super.onDestroy()
         scheduleFuture.cancel(true)
         Log.v("QuestionOverlaySVC", "onDestroy()")
-        Handler(Looper.getMainLooper()).post(Runnable {
-            Toast.makeText(
-                this@QuestionOverlayService.applicationContext,
-                "DESTROY QuestionOverlayService",
-                Toast.LENGTH_SHORT
-            ).show()
-        })
-
 
         hideOverlay()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
