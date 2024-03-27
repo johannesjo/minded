@@ -1,3 +1,5 @@
+package com.minded.minded.ui.compose
+
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -60,7 +62,7 @@ fun OverlayBig(
     LaunchedEffect(visible) {
         Log.v("ANI", "visible: $visible")
         if(!visible) {
-            delay(fadeOutDuration.toLong());
+            delay(fadeOutDuration.toLong())
             removeOverlay()
         }
     }
@@ -115,7 +117,7 @@ fun OverlayBig(
 fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
     var textState by remember { mutableStateOf(TextFieldValue(initialVal)) }
     val focusRequester = remember { FocusRequester() }
-
+Log.v("OVERLAY", "TextInput ${textState.text}")
     OutlinedTextField(
         singleLine = true,
         value = textState,
@@ -157,10 +159,10 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
 @Composable
 @Preview(showBackground = true)
 fun OverlayBigPreview() {
-    val Que = QuestionForPrompt(
+    val question = QuestionForPrompt(
         t = "What is the capital of France?",
         prompt = "Enter your answer",
         categoryId = QuestionCategoryId.CalmingThoughts
     )
-    OverlayBig(rndQuestion = Que, initialVisible = true);
+    OverlayBig(rndQuestion = question, initialVisible = true)
 }
