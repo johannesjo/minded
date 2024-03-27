@@ -50,8 +50,9 @@ fun OverlayBig(
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
-    val fadeOutDuration = 1000
+    val fadeOutDuration = 1500
     var visible by remember { mutableStateOf(initialVisible) }
+    var isSuccess by remember { mutableStateOf(initialVisible) }
     fun fadeOutOverlay() {
         visible = false
     }
@@ -74,7 +75,6 @@ fun OverlayBig(
         enter = fadeIn(animationSpec = tween(1000)),
         exit = fadeOut(animationSpec = tween(fadeOutDuration)),
     ) {
-        Text(text = "asd")
         Surface(
             onClick = {
                 Log.v("SVC", "click BG")
@@ -104,11 +104,16 @@ fun OverlayBig(
                     )
                     TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
                         onSubmitAnswer(it)
+                        isSuccess = true
                         fadeOutOverlay()
                         Log.v("Overlay.kt", "submitAnswer")
                     })
                 }
             }
+        }
+
+        if (isSuccess) {
+            SuccessSun(duration = fadeOutDuration)
         }
     }
 }

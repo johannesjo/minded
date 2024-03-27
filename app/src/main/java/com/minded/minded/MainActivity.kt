@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 //            finish()
         }
 
-//        QuestionOverlayService.showOverlay(this);
+        QuestionOverlayService.showOverlay(this);
 
 
 
