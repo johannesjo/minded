@@ -17,7 +17,7 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.v("ACCESSIBILITY", "CREATE SVC")
+        Log.v("ACCESSIBILITY", "onCreate()")
 
     }
 
@@ -28,12 +28,13 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.v("ACCESSIBILITY", "onUnbind()")
-        return super.onUnbind(intent);
+        return super.onUnbind(intent)
         // Handle interrupts
     }
 
 
     override fun onServiceConnected() {
+        Log.v("ACCESSIBILITY", "onServiceConnected()")
         // NOTE we also configure it in accessibility_service_config.xml
         // but it seems service is not working until we configure it here
         super.onServiceConnected()
@@ -46,7 +47,7 @@ class MyAccessibilityService : AccessibilityService() {
 
 
     private val handler = Handler(Looper.getMainLooper())
-    private val MIN_DELAY = 200L
+    private val debounceMinDelay = 200L
     private var currentPackageName: CharSequence? = null
 
     private val runnable = Runnable {
@@ -69,6 +70,7 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
+        Log.v("ACCESSIBILITY", "onAccessibilityEvent()")
         try {
             Log.v(
                 "ACCESSIBILITY",
@@ -77,7 +79,7 @@ class MyAccessibilityService : AccessibilityService() {
             if (!isNonAppPackage(accessibilityEvent.packageName.toString())) {
                 currentPackageName = accessibilityEvent.packageName
                 handler.removeCallbacks(runnable)
-                handler.postDelayed(runnable, MIN_DELAY)
+                handler.postDelayed(runnable, debounceMinDelay)
             }
         } catch (e: Exception) {
             Log.e("ACCESSIBILITY", "Error in onAccessibilityEvent", e)

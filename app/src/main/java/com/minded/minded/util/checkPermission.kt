@@ -47,9 +47,9 @@ fun isAccessibilityServiceEnabled(
         context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
     val enabledServices: List<AccessibilityServiceInfo> =
         am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-    Log.v("ENABLED", "ENABLED SERVICES ${enabledServices.size} ")
+    Log.v("UTIL", "isAccessibilityServiceEnabled ENABLED SERVICES ${enabledServices.size} ")
     for (enabledService in enabledServices) {
-        Log.v("ENABLED", enabledService.resolveInfo.serviceInfo.packageName)
+        Log.v("UTIL", enabledService.resolveInfo.serviceInfo.packageName)
         val enabledServiceInfo: ServiceInfo = enabledService.resolveInfo.serviceInfo
         if (enabledServiceInfo.packageName.equals(context.packageName) && enabledServiceInfo.name.equals(
                 serviceToCheck.name
