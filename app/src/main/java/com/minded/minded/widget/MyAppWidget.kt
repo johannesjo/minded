@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,6 +32,7 @@ import androidx.glance.text.TextStyle
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.theme.PastelYellow
 import com.minded.minded.util.mapAnswersToQuestions
+import kotlin.random.Random
 
 
 class MyAppWidget : GlanceAppWidget() {
@@ -72,12 +74,28 @@ fun QuestionCategoryCmp2(
     val questionDataForDashboard = mapAnswersToQuestions(allAnswers.value)
     if (questionDataForDashboard.isEmpty()) {
         Log.d("MyAppWidget", "No questions found")
-        Text(text = "Nothing yet")
+        Box(
+            modifier = GlanceModifier
+                .background(
+                    color = PastelYellow
+                ).padding(8.dp)
+                .fillMaxHeight()
+                .fillMaxWidth()
+                .appWidgetBackground()
+        ) {
+            Text(text = "Nothing yet")
+        }
         return
     }
-    Log.d("MyAppWidget", "${questionDataForDashboard.size} questions found")
 
-    var question by remember { mutableStateOf(questionDataForDashboard.random()) }
+    Log.d("MyAppWidget", "${questionDataForDashboard.size} questions found")
+    var questionIndex by remember { mutableIntStateOf(Random.nextInt(questionDataForDashboard.size)) }
+    var question by remember { mutableStateOf(questionDataForDashboard[questionIndex]) }
+
+    fun nextQuestion() {
+        questionIndex = (questionIndex + 1) % questionDataForDashboard.size
+        question = questionDataForDashboard[questionIndex]
+    }
 
     Box(
         modifier = GlanceModifier
@@ -89,7 +107,7 @@ fun QuestionCategoryCmp2(
             .appWidgetBackground()
             .clickable {
                 Log.v("MyAppWidget", "Box clicked")
-                question = questionDataForDashboard.random()
+                nextQuestion();
             }
     ) {
         Column() {
@@ -107,7 +125,7 @@ fun QuestionCategoryCmp2(
                         question.answers[index].txt,
                         modifier = GlanceModifier.padding(top = 4.dp).fillMaxWidth().clickable {
                             Log.v("MyAppWidget", "Item clicked")
-                            question = questionDataForDashboard.random()
+                            nextQuestion();
                         },
                         style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal)
                     )
