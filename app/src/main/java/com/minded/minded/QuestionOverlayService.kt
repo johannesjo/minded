@@ -43,7 +43,9 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var scheduleFuture: ScheduledFuture<*>
     private var isInGracePeriod = false
-    private val GRACE_PERIOD = 1;
+    private val GRACE_PERIOD = 1
+    private val SHOW_APP_EVERY_X = 3
+    private var backToHomeScreenCount = 0
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -105,22 +107,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
-
-//         TODO check if we need this
-//        Handler(Looper.getMainLooper()).post(Runnable {
-//            Toast.makeText(
-//                this@QuestionOverlayService.applicationContext,
-////                "START QuestionOverlayService",
-//                "Minded is now monitoring apps you want to use less.", Toast.LENGTH_SHORT
-//            ).show()
-//        })
-//        if (!MyUtil.isAccessibilityServiceEnabled(this)) {
-//            scheduleFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
-//                val foregroundApp = getForegroundApp(this);
-//                checkToShowOverlay(foregroundApp)
-//            }, 0, 500, TimeUnit.MILLISECONDS)
-//        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -130,7 +116,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
     override fun onDestroy() {
         super.onDestroy()
-        scheduleFuture.cancel(true)
         Log.v("QuestionOverlaySVC", "onDestroy()")
 
         hideOverlay()
@@ -178,11 +163,19 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     onBackToMain = {
                         Log.v("QuestionOverlaySVC", "onBackToMain")
                         // TODO count
-                        val intent = Intent(Intent.ACTION_MAIN).apply {
-                            addCategory(Intent.CATEGORY_HOME)
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+                        backToHomeScreenCount++
+                        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
+                            val intent = Intent(context, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(intent)
+                        } else {
+                            val intent = Intent(Intent.ACTION_MAIN).apply {
+                                addCategory(Intent.CATEGORY_HOME)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            startActivity(intent)
                         }
-                        startActivity(intent)
                     }
                 )
             }
