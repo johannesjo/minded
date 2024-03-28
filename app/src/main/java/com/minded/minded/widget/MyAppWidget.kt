@@ -15,6 +15,8 @@ import androidx.glance.GlanceModifier
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.appWidgetBackground
+import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Box
@@ -24,6 +26,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.theme.PastelYellow
@@ -80,23 +83,37 @@ fun QuestionCategoryCmp2(
         modifier = GlanceModifier
             .background(
                 color = PastelYellow
-            ).padding(16.dp)
+            ).padding(8.dp)
             .fillMaxHeight()
             .fillMaxWidth()
+            .appWidgetBackground()
             .clickable {
                 Log.v("MyAppWidget", "Box clicked")
                 question = questionDataForDashboard.random()
             }
     ) {
-        Column(
-        ) {
+        Column() {
             Text(
                 text = question.dashboardTxt,
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                ),
             )
-            question.answers.forEach {
-                Text(it.txt, modifier = GlanceModifier.padding(top = 8.dp))
+            LazyColumn() {
+                items(question.answers.size) { index: Int ->
+                    Text(
+                        question.answers[index].txt,
+                        modifier = GlanceModifier.padding(top = 4.dp).fillMaxWidth().clickable {
+                            Log.v("MyAppWidget", "Item clicked")
+                            question = questionDataForDashboard.random()
+                        },
+                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal)
+                    )
+                }
             }
+
         }
     }
 }
