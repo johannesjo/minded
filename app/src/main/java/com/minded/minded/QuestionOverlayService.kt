@@ -140,6 +140,31 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         )
     }
 
+
+    private fun initSessionEndTimeout(sessionDurationInM: Int) {
+        if (sessionDurationInM > 0) {
+            val sessionApp = lastForeGroundApp
+            Log.v("QuestionOverlaySVC", "initSessionEndTimeout schedule()")
+            scheduleFuture = Executors.newSingleThreadScheduledExecutor()
+                .schedule({
+                    Log.v(
+                        "QuestionOverlaySVC",
+                        "initSessionEndTimeout afterSchedule (${sessionApp} ${lastForeGroundApp})"
+                    )
+                    if (sessionApp === lastForeGroundApp) {
+//                        userDrivenClose()
+                        // SHOW AGAIN
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                    } else {
+                        userDrivenClose()
+                    }
+
+                }, sessionDurationInM.toLong(), TimeUnit.MINUTES)
+        }
+    }
+
     private fun showOverlay() {
         Log.v("QuestionOverlaySVC", "showOverlay()")
         if (overlayView != null) {
@@ -158,7 +183,13 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
-                OverlayBig(removeOverlay = { hideOverlay() },
+                OverlayBig(
+                    endOverlay = {
+                        if (it > 0) {
+                            initSessionEndTimeout(it)
+                        }
+                        hideOverlay()
+                    },
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
@@ -166,26 +197,30 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     },
                     onBackToMain = {
                         Log.v("QuestionOverlaySVC", "onBackToMain")
-                        // TODO count
-
-                        backToHomeScreenCount++
-                        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-                            val intent = Intent(context, MainActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(intent)
-                        } else {
-                            val intent = Intent(Intent.ACTION_MAIN).apply {
-                                addCategory(Intent.CATEGORY_HOME)
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            startActivity(intent)
-                        }
+                        userDrivenClose();
                     }
                 )
             }
         }
         windowManager.addView(overlayView, getLayoutParams())
 
+    }
+
+    private fun userDrivenClose() {
+        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        // TODO count to DB
+        backToHomeScreenCount++
+        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        } else {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+        }
     }
 
     private fun hideOverlay() {
