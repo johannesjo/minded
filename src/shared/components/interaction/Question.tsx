@@ -19,7 +19,9 @@ export const Question: (props: {
 
   onMount(async () => {
     getSyncData().then((syncData) => {
-      const question = props.question || getQuestionSmart(syncData.answers);
+      const question = !!props.question
+        ? props.question
+        : getQuestionSmart(syncData.answers);
 
       if (question.prompt && inpEl) {
         inpEl.value = question.prompt + " ";

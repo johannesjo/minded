@@ -1,5 +1,6 @@
 import { Answer } from "@src/shared/data/sync-data";
 import {
+  filterSpecialWidgets,
   QUESTION_CATEGORIES,
   QuestionCategoryId,
   QuestionForPrompt,
@@ -23,26 +24,28 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
 
   const map: { [key in QuestionCategoryId]?: number } = {};
 
-  Object.keys(QuestionCategoryId).forEach((categoryId: QuestionCategoryId) => {
-    const categoryForAnswer = QUESTION_CATEGORIES[categoryId];
-    if (categoryForAnswer?.questions?.length) {
-      map[categoryId] = 0;
-    }
+  Object.keys(QuestionCategoryId)
+    .filter(filterSpecialWidgets)
+    .forEach((categoryId: QuestionCategoryId) => {
+      const categoryForAnswer = QUESTION_CATEGORIES[categoryId];
+      if (categoryForAnswer?.questions?.length > 0) {
+        map[categoryId] = 0;
+      }
 
-    if (categoryForAnswer.isMorningCategory) {
-      if (
-        nowHours < THRESHOLD_MORNING_START ||
-        nowHours > THRESHOLD_MORNING_END
-      ) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
+      if (categoryForAnswer.isMorningCategory) {
+        if (
+          nowHours < THRESHOLD_MORNING_START ||
+          nowHours > THRESHOLD_MORNING_END
+        ) {
+          map[categoryId] = FAKE_RULE_OUT_NR;
+        }
       }
-    }
-    if (categoryForAnswer.isEveningCategory) {
-      if (nowHours < THRESHOLD_EVENING_START) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
+      if (categoryForAnswer.isEveningCategory) {
+        if (nowHours < THRESHOLD_EVENING_START) {
+          map[categoryId] = FAKE_RULE_OUT_NR;
+        }
       }
-    }
-  });
+    });
 
   answers.forEach((answer) => {
     const categoryForAnswer = QUESTION_CATEGORIES[answer.questionCategoryId];

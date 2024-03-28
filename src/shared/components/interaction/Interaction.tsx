@@ -262,8 +262,10 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
                 <Question
                   question={{
                     prompt:
-                      QUESTION_CATEGORIES.XPurposeOfSession.questions[0].prompt,
-                    t: QUESTION_CATEGORIES.XPurposeOfSession.questions[0].t,
+                      QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0]
+                        .prompt,
+                    t: QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0]
+                      .t,
                     categoryId: QuestionCategoryId.XPurposeOfSession,
                   }}
                   isDontSave={true}
