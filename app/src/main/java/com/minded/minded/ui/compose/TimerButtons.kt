@@ -28,11 +28,16 @@ import com.minded.minded.R
 
 
 @Composable
-fun TimerButtons(isShowTimeSelection: Boolean = false, onTimeSelected: (Int) -> Unit = {}) {
-    var isShowTimeSelectionI by remember { mutableStateOf(isShowTimeSelection) }
-    var timeSelected by remember { mutableStateOf(0) }
+fun TimerButtons(
+    selectedSessionTime: Int,
+    isShowTimeSelectionInitially: Boolean = false,
+    onTimeSelected: (Int) -> Unit = {}
+) {
+    var isShowTimeSelection by remember { mutableStateOf(isShowTimeSelectionInitially) }
+    var timeSelected by remember { mutableStateOf(selectedSessionTime) }
+
     fun timeSelect(v: Int) {
-        isShowTimeSelectionI = false
+        isShowTimeSelection = false
         timeSelected = v;
         onTimeSelected(v)
     }
@@ -40,7 +45,7 @@ fun TimerButtons(isShowTimeSelection: Boolean = false, onTimeSelected: (Int) -> 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if (isShowTimeSelectionI) {
+        if (isShowTimeSelection) {
 
             Row {
                 TimeSelectButton(1, onClick = { timeSelect(it) })
@@ -55,10 +60,10 @@ fun TimerButtons(isShowTimeSelection: Boolean = false, onTimeSelected: (Int) -> 
             }
         } else {
             if (timeSelected > 0) {
-                TimeSelectButton(timeSelected, onClick = { isShowTimeSelectionI = true })
+                TimeSelectButton(timeSelected, onClick = { isShowTimeSelection = true })
             } else {
                 IconButton(
-                    onClick = { isShowTimeSelectionI = true },
+                    onClick = { isShowTimeSelection = true },
                     modifier = Modifier
                         .clip(CircleShape) // Clip to a circle shape
                         .border(2.dp, Color(0, 0, 0, 20), CircleShape) // Add a border
@@ -71,10 +76,9 @@ fun TimerButtons(isShowTimeSelection: Boolean = false, onTimeSelected: (Int) -> 
             }
         }
         Text(
-            "Select Session Limit",
+            text = if (timeSelected === 0 || isShowTimeSelection) "Select Session Limit" else "Session Limit",
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(8.dp),
+            modifier = Modifier.padding(8.dp),
             color = Color.Black.copy(alpha = 0.5f) // 50% opacity
         )
     }
@@ -108,11 +112,17 @@ fun TimeSelectButton(
 @Composable
 @Preview(showBackground = true)
 fun TimerButtonsPreview() {
-    TimerButtons(false)
+    TimerButtons(0)
 }
 
 @Composable
 @Preview(showBackground = true)
 fun TimerButtonsPreview2() {
-    TimerButtons(true)
+    TimerButtons(15)
+}
+
+@Composable
+@Preview(showBackground = true)
+fun TimerButtonsPreview3() {
+    TimerButtons(0, isShowTimeSelectionInitially = true)
 }

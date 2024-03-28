@@ -70,7 +70,6 @@ fun OverlayBig(
     val sunAniFinalDuration = 1000
     val fadeOutOverlayDuration = 500
     var isOverlayVisible by remember { mutableStateOf(initialVisible) }
-    var isShowTimerButtons by remember { mutableStateOf(false) }
     var isShowSuccessSun by remember { mutableStateOf(initialVisible) }
     var isUserSunCloseInProgress by remember { mutableStateOf(initialVisible) }
     var selectedSessionTime by remember { mutableStateOf(0) }
@@ -172,7 +171,7 @@ fun OverlayBig(
                         )
                         Spacer(modifier = Modifier.height(32.dp)) // Add a spacer for margin
 
-                        TimerButtons(isShowTimerButtons, onTimeSelected = {
+                        TimerButtons(selectedSessionTime, onTimeSelected = {
                             selectedSessionTime = it
 //                            isShowTimerButtons = false
                         })
@@ -194,6 +193,7 @@ fun OverlayBig(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
     var textState by remember { mutableStateOf(TextFieldValue(initialVal)) }
