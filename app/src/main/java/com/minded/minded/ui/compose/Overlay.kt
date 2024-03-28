@@ -57,6 +57,26 @@ import kotlinx.coroutines.delay
 
 
 @Composable
+fun Overlay(
+    endOverlay: (selectedSessionDuration: Int) -> Unit = { },
+    onSubmitAnswer: (answerTxt: String) -> Unit = { },
+    onBackToMain: () -> Unit = { },
+    rndQuestion: QuestionForPrompt,
+    initialVisible: Boolean = false
+) {
+
+//    LittleSun()
+
+    OverlayBig(
+        endOverlay = endOverlay,
+        onSubmitAnswer = onSubmitAnswer,
+        onBackToMain = onBackToMain,
+        rndQuestion = rndQuestion,
+        initialVisible = initialVisible
+    )
+}
+
+@Composable
 fun OverlayBig(
     endOverlay: (selectedSessionDuration: Int) -> Unit = { },
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
@@ -253,6 +273,18 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
         )
     }
 }
+
+@Composable
+@Preview(showBackground = true)
+fun OverlayPreview() {
+    val question = QuestionForPrompt(
+        t = "What is the capital of France?",
+        prompt = "Enter your answer",
+        categoryId = QuestionCategoryId.CalmingThoughts
+    )
+    Overlay(rndQuestion = question, initialVisible = true)
+}
+
 
 @Composable
 @Preview(showBackground = true)

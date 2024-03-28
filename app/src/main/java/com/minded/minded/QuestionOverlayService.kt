@@ -20,7 +20,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.data.answers.AnswerRepository
-import com.minded.minded.ui.compose.OverlayBig
+import com.minded.minded.ui.compose.Overlay
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
 import java.util.concurrent.Executors
@@ -183,7 +183,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
-                OverlayBig(
+                Overlay(
                     endOverlay = {
                         if (it > 0) {
                             initSessionEndTimeout(it)
