@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
@@ -52,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.ui.theme.Pink40
+import com.minded.minded.ui.theme.PurpleGrey40
 import com.minded.minded.ui.theme.StandardGradient
 import kotlinx.coroutines.delay
 
@@ -238,9 +238,9 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
             .focusRequester(focusRequester)
             .wrapContentHeight(align = Alignment.CenterVertically),
         colors = TextFieldDefaults.outlinedTextFieldColors(
-//            focusedBorderColor = PurpleGrey40,
+            focusedBorderColor = PurpleGrey40,
 //            focusedBorderColor = Color(0x1A000000),
-            focusedBorderColor = Color(0x00000000),
+//            focusedBorderColor = Color(0x00000000),
             unfocusedBorderColor = Pink40
         )
     )

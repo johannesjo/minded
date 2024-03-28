@@ -33,10 +33,13 @@ fun TimerButtons(
     isShowTimeSelectionInitially: Boolean = false,
     onTimeSelected: (Int) -> Unit = {}
 ) {
+
     var isShowTimeSelection by remember { mutableStateOf(isShowTimeSelectionInitially) }
     var timeSelected by remember { mutableStateOf(selectedSessionTime) }
+    var isTextHidden by remember { mutableStateOf(!isShowTimeSelectionInitially && selectedSessionTime == 0) }
 
     fun timeSelect(v: Int) {
+        isTextHidden = false
         isShowTimeSelection = false
         timeSelected = v;
         onTimeSelected(v)
@@ -63,23 +66,24 @@ fun TimerButtons(
                 TimeSelectButton(timeSelected, onClick = { isShowTimeSelection = true })
             } else {
                 IconButton(
-                    onClick = { isShowTimeSelection = true },
+                    onClick = { isShowTimeSelection = true; isTextHidden = false },
                     modifier = Modifier
                         .clip(CircleShape) // Clip to a circle shape
                         .border(2.dp, Color(0, 0, 0, 20), CircleShape) // Add a border
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_timer_24),
-                        contentDescription = "Timer"
+                        contentDescription = "Timer",
+                        tint = Color.Black.copy(alpha = 0.5f) // 50% opacity
                     )
                 }
             }
         }
         Text(
-            text = if (timeSelected === 0 || isShowTimeSelection) "Select Session Limit" else "Session Limit",
+            text = if (timeSelected == 0 || isShowTimeSelection) "Select Session Limit" else "Session Limit",
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(8.dp),
-            color = Color.Black.copy(alpha = 0.5f) // 50% opacity
+            color = Color.Black.copy(alpha = if (isTextHidden) 0f else 0.5f) // 50% opacity
         )
     }
 }
