@@ -56,10 +56,11 @@ fun OverlayBig(
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
+    val initialFadeInDuration = 500
     val sunAniInDuration = 1000
     val sunJustShowDuration = 2000
     val sunAniFinalDuration = 1000
-    val fadeOutOverlayDuration = 1000
+    val fadeOutOverlayDuration = 500
     var isOverlayVisible by remember { mutableStateOf(initialVisible) }
     var isShowSuccessSun by remember { mutableStateOf(initialVisible) }
     var isUserSunCloseInProgress by remember { mutableStateOf(initialVisible) }
@@ -120,7 +121,7 @@ fun OverlayBig(
 
     AnimatedVisibility(
         visible = isOverlayVisible,
-        enter = fadeIn(animationSpec = tween(1000)),
+        enter = fadeIn(animationSpec = tween(initialFadeInDuration)),
         exit = fadeOut(animationSpec = tween(fadeOutOverlayDuration, easing = LinearEasing)),
     ) {
         Surface(
