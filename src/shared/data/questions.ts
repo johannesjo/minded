@@ -26,6 +26,10 @@ export enum QuestionCategoryId {
   // SelfCompassion = "SelfCompassion",
 }
 
+export const SPECIAL_WIDGET_LETTER = "X";
+export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
+  categoryId[0] !== SPECIAL_WIDGET_LETTER;
+
 export type Question = {
   t: string;
   prompt?: string;
@@ -44,6 +48,7 @@ export interface QuestionCategory {
   isMorningCategory?: boolean;
   isEveningCategory?: boolean;
   questions?: Question[];
+  specialQuestions?: Question[];
 }
 
 export const QUESTION_CATEGORIES: {
@@ -192,7 +197,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.XPurposeOfSession]: {
     isTodayOnlyCategory: true,
-    questions: [
+    specialQuestions: [
       {
         t: "What is the purpose of visiting this website",
         prompt: "In this session I want to",
@@ -221,7 +226,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
 export const QUESTIONS: QuestionForPrompt[] = [];
 Object.keys(QUESTION_CATEGORIES)
   // NOTE: we filter out all questions from categories starting with X
-  .filter((categoryId) => categoryId[0] !== "X")
+  .filter(filterSpecialWidgets)
   .forEach((categoryId) => {
     const entry = QUESTION_CATEGORIES[categoryId];
     entry.questions?.forEach((question) => {
