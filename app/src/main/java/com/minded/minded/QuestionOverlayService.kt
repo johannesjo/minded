@@ -82,6 +82,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 //            hideOverlay();
 //        }
 
+        if (currentPackageName == "com.google.android.apps.nexuslauncher") {
+            hideOverlay();
+        }
+
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
             Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
             lastForeGroundApp = currentPackageName
