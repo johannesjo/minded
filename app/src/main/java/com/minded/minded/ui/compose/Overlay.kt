@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.minded.minded.ui.compose
 
 import android.util.Log
@@ -17,11 +19,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.ui.theme.Pink40
+import com.minded.minded.ui.theme.PurpleGrey40
 import com.minded.minded.ui.theme.StandardGradient
 import kotlinx.coroutines.delay
 
@@ -218,6 +224,10 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
         modifier = Modifier
             .focusRequester(focusRequester)
             .wrapContentHeight(align = Alignment.CenterVertically),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = PurpleGrey40,
+            unfocusedBorderColor = Pink40
+        )
     )
     LaunchedEffect(Unit) {
         Log.v("Overlay.kt", "focusRequester.requestFocus()")
