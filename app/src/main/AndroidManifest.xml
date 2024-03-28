@@ -37,6 +37,7 @@
                 android:enabled="true" />
 
         <service
+                android:label="@string/accessibility_service_description"
                 android:name=".MyAccessibilityService"
                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
                 android:exported="false">

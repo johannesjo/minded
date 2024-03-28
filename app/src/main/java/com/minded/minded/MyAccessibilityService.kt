@@ -10,6 +10,8 @@ import android.view.accessibility.AccessibilityEvent
 
 
 class MyAccessibilityService : AccessibilityService() {
+
+
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
     }
@@ -36,12 +38,16 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         Log.v("ACCESSIBILITY", "onServiceConnected()")
         // NOTE we also configure it in accessibility_service_config.xml
-        // but it seems service is not working until we configure it here
+        // but it seems service is not working until we configure TYPE_WINDOW_STATE_CHANGED (and more?) here
         super.onServiceConnected()
         val config = AccessibilityServiceInfo()
         config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+        // Not sure if needed :(
+        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_VISUAL
+        config.notificationTimeout = 100
+        config.packageNames = arrayOf<String>()
         config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
+
         serviceInfo = config
     }
 

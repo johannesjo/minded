@@ -1,10 +1,11 @@
-<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-        android:accessibilityEventTypes="typeWindowStateChanged"
-        android:accessibilityFeedbackType="feedbackGeneric"
-        android:accessibilityFlags="flagIncludeNotImportantViews"
-        android:canRetrieveWindowContent="false"
-        android:description="@string/accessibility_service_description"
-        android:notificationTimeout="100"
-        android:settingsActivity="com.minded.minded.AccessibilityConfigActivity"
-        android:packageNames="com.minded.minded" />
+<?xml version="1.0" encoding="utf-8"?>
 
+<!--- NOTE android:packageNames="" should not be set or with no value in order to work with all apps -->
+<!--- maybe the same applies to  android:settingsActivity="com.minded.minded.AccessibilityConfigActivity" -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+        android:description="@string/accessibility_service_description"
+        android:label="@string/accessibility_service_description"
+        android:logo="@drawable/ic_launcher_foreground"
+        android:accessibilityEventTypes="typeWindowStateChanged"
+        android:accessibilityFeedbackType="feedbackVisual"
+        android:notificationTimeout="100" />
