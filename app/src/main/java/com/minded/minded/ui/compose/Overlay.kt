@@ -12,7 +12,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.KeyboardActions
@@ -56,7 +58,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun OverlayBig(
-    removeOverlay: () -> Unit = { },
+    endOverlay: (selectedSessionDuration: Int) -> Unit = { },
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
     onBackToMain: () -> Unit = { },
     rndQuestion: QuestionForPrompt,
@@ -68,8 +70,10 @@ fun OverlayBig(
     val sunAniFinalDuration = 1000
     val fadeOutOverlayDuration = 500
     var isOverlayVisible by remember { mutableStateOf(initialVisible) }
+    var isShowTimerButtons by remember { mutableStateOf(false) }
     var isShowSuccessSun by remember { mutableStateOf(initialVisible) }
     var isUserSunCloseInProgress by remember { mutableStateOf(initialVisible) }
+    var selectedSessionTime by remember { mutableStateOf(0) }
 
     fun fadeOutOverlay() {
         isOverlayVisible = false
@@ -85,7 +89,7 @@ fun OverlayBig(
         delay(500)
         isOverlayVisible = false
         delay(fadeOutOverlayDuration.toLong())
-        removeOverlay()
+        endOverlay(selectedSessionTime)
     }
 
     LaunchedEffect(Unit) {
@@ -121,7 +125,7 @@ fun OverlayBig(
         Log.v("ANI", "isVisible: $isOverlayVisible")
         if (!isOverlayVisible) {
             delay(fadeOutOverlayDuration.toLong())
-            removeOverlay()
+            endOverlay(selectedSessionTime)
         }
     }
 
@@ -158,25 +162,34 @@ fun OverlayBig(
                             modifier = Modifier
                                 .padding(16.dp)
                         )
-                        TextInput(initialVal = "${rndQuestion.prompt ?: ""} ", onSubmit = {
-                            onSubmitAnswer(it)
-                            startSuccessFlow();
-                            Log.v("Overlay.kt", "submitAnswer")
+                        TextInput(
+                            initialVal = "${rndQuestion.prompt ?: ""} ",
+                            onSubmit = {
+                                onSubmitAnswer(it)
+                                startSuccessFlow();
+                                Log.v("Overlay.kt", "submitAnswer")
+                            },
+                        )
+                        Spacer(modifier = Modifier.height(32.dp)) // Add a spacer for margin
+
+                        TimerButtons(isShowTimerButtons, onTimeSelected = {
+                            selectedSessionTime = it
+//                            isShowTimerButtons = false
                         })
                     }
                 }
             }
         }
+    }
 
-        if (isShowSuccessSun) {
-            SuccessSun(
-                inDuration = sunAniInDuration,
-                onClick = {
-                    isUserSunCloseInProgress = true
-                },
-                successDuration = sunAniFinalDuration,
-            )
-        }
+    if (isShowSuccessSun) {
+        SuccessSun(
+            inDuration = sunAniInDuration,
+            onClick = {
+                isUserSunCloseInProgress = true
+            },
+            successDuration = sunAniFinalDuration,
+        )
     }
 }
 
@@ -226,7 +239,8 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
             .wrapContentHeight(align = Alignment.CenterVertically),
         colors = TextFieldDefaults.outlinedTextFieldColors(
 //            focusedBorderColor = PurpleGrey40,
-            focusedBorderColor = Color(0x1A000000),
+//            focusedBorderColor = Color(0x1A000000),
+            focusedBorderColor = Color(0x00000000),
             unfocusedBorderColor = Pink40
         )
     )
