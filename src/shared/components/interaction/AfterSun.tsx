@@ -2,7 +2,7 @@ import { createSignal, JSX, onMount } from "solid-js";
 import { bro } from "@src/util/browser";
 
 export const AfterSunComponent: (props: {
-  bubbleTxt: string;
+  bubbleTxt?: string;
   teardown: () => void;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
