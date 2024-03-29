@@ -36,7 +36,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
-  const [getSessionTimeLimit, setSessionTimeLimit] = createSignal<number>(0);
+  const [getSessionTime, setSessionTime] = createSignal<number>(0);
 
   let wrapperEl;
   let afterSunEl;
@@ -89,7 +89,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
 
     if (MODE === "PURPOSE" && typeof answerOrData?.val === "string") {
       setAfterSunTxt(answerOrData.val);
-      afterSun(true);
+      afterSun();
     } else {
       afterSun();
     }
@@ -110,15 +110,9 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
-  const afterSun = async (isNoCountdownToRemoveAfterSun = false) => {
+  const afterSun = async () => {
     setIsShowAfterSun(true);
-    await promiseTimeout(10);
-    if (isNoCountdownToRemoveAfterSun) {
-      disableAfterSunRemoveCountdownAni();
-    }
-    afterSunEl.addEventListener("animationend", () => {
-      teardown();
-    });
+    initCounter();
   };
 
   const teardown = () => {
@@ -136,33 +130,14 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
-  const onSetTimeLimit = () => {
-    const timeLimit =
-      +window.prompt("How many minutes do you want to use this website?") * 60;
-
-    if (timeLimit) {
-      disableAfterSunRemoveCountdownAni();
-      setSessionTimeLimit(timeLimit);
-
-      if (currentSessionInterval) {
-        window.clearInterval(currentSessionInterval);
-      }
-      currentSessionInterval = window.setInterval(() => {
-        const v = getSessionTimeLimit();
-        setSessionTimeLimit(v - 1);
-
-        if (v <= 0) {
-          window.clearInterval(currentSessionInterval);
-          teardown();
-          bro.runtime.sendMessage({ closeTab: true });
-        }
-      }, 1000);
+  const initCounter = () => {
+    if (currentSessionInterval) {
+      window.clearInterval(currentSessionInterval);
     }
-  };
-
-  const disableAfterSunRemoveCountdownAni = () => {
-    afterSunEl.style.animationPlayState = "paused";
-    afterSunEl.style.animation = "none";
+    currentSessionInterval = window.setInterval(() => {
+      const v = getSessionTime();
+      setSessionTime(v + 1);
+    }, 1000);
   };
 
   const escapeHandler = (ev: KeyboardEvent) => {
@@ -171,9 +146,14 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
-  const formatSessionTimeLimit = (timeLimit): string => {
-    if (timeLimit > 0) {
-      return timeLimit;
+  const formatSessionTime = (seconds: number): string => {
+    if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+    }
+    if (seconds >= 30) {
+      return "" + seconds;
     }
     return "";
   };
@@ -185,7 +165,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
           id="minded-6622-after-sun"
           classList={{
             ["minded-6622-bottom"]: !!getAfterSunTxt(),
-            ["minded-6622-top-right"]: !!getSessionTimeLimit(),
+            ["minded-6622-top-right"]: !!getSessionTime(),
           }}
           onMouseEnter={() => {
             afterSunEl.style.animationPlayState = "paused";
@@ -201,7 +181,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
               onclick={() => bro.runtime.sendMessage({ closeTab: true })}
               ref={afterSunEl}
             >
-              {formatSessionTimeLimit(getSessionTimeLimit())}
+              {formatSessionTime(getSessionTime())}
             </div>
           </div>
 
@@ -210,11 +190,8 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
           )}
 
           <div id="minded-6622-additional-controls">
-            <div
-              title="Set a timelimit for website visit"
-              onclick={onSetTimeLimit}
-            >
-              ⏱
+            <div title="Hide sun" onclick={() => teardown()}>
+              ✕
             </div>
           </div>
         </div>
