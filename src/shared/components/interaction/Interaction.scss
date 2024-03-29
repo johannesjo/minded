@@ -1,6 +1,5 @@
 // NOTE: styles for question work differently since we're using them for the content-script
 
-$after-sun-duration: 60s;
 
 #minded-6622-coloured-wrapper > * {
   cursor: auto;
@@ -92,21 +91,21 @@ $after-sun-duration: 60s;
 #minded-6622-after-sun-sun {
   cursor: cell;
   transform-origin: center center;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
   background: #fff;
   display: block;
   border-radius: 50%;
   box-shadow: 0 0 30px 5px var(--c-pastel-red),
   0 0 60px 5px var(--c-pastel-yellow);
-  animation: minded6622afterSunInOut $after-sun-duration;
+  animation: minded6622afterSunIn .5s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
   text-align: center;
-  font-size: 16px;
+  font-size: 14px;
   color: #956969;
-  font-weight: 200;
+  font-weight: 300;
 }
 
 #minded-6622-after-sun-text {
@@ -142,7 +141,7 @@ $after-sun-duration: 60s;
 
   > * {
     margin-top: 16px;
-    margin-left: 2px;
+    margin-left: -2px;
     text-align: center;
     cursor: pointer;
     background: rgba(255, 255, 255, 1);
@@ -181,23 +180,14 @@ $after-sun-duration: 60s;
   }
 }
 
-@keyframes minded6622afterSunInOut {
+@keyframes minded6622afterSunIn {
   0% {
     transform: scale(.4);
     opacity: 0;
   }
   //10% {
-  1% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  //90% {
-  98% {
-    opacity: 1;
-    transform: scale(1);
-  }
   100% {
+    transform: scale(1);
     opacity: 1;
-    transform: scale(0);
   }
 }
