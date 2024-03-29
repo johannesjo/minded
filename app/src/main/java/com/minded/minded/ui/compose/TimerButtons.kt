@@ -1,13 +1,11 @@
 package com.minded.minded.ui.compose
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -18,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -68,8 +65,6 @@ fun TimerButtons(
                 IconButton(
                     onClick = { isShowTimeSelection = true; isTextHidden = false },
                     modifier = Modifier
-                        .clip(CircleShape) // Clip to a circle shape
-                        .border(2.dp, Color(0, 0, 0, 20), CircleShape) // Add a border
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_timer_24),
@@ -96,12 +91,7 @@ fun TimeSelectButton(
     IconButton(
         onClick = { onClick(timeVal) },
         modifier = Modifier
-            .clip(CircleShape) // Clip to a circle shape
-            .border(
-                2.dp,
-                Color(0, 0, 0, 20),
-                CircleShape
-            ) // Add a border
+
     ) {
         Text(text = "${timeVal}m")
         Icon(
