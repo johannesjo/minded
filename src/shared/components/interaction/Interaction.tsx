@@ -13,6 +13,8 @@ import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
 } from "@src/shared/data/questions";
+import React from "react";
+import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
 
 const MODE: "RATING" | "PURPOSE" | "ACTION_ADVICE" | undefined = (() => {
   const rndInt = getRndInt(0, 100);
@@ -34,16 +36,11 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   props,
 ) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
-  const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
-  const [getSessionTime, setSessionTime] = createSignal<number>(0);
 
   let wrapperEl;
-  let afterSunEl;
-  let afterSunSuccessSunEl;
   let frameNr;
-  let currentSessionInterval;
 
   onMount(async () => {
     // give a moment time for rendering
@@ -115,13 +112,6 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   const afterSun = () => {
     setIsShowSuccessSun(false);
     setIsShowAfterSun(true);
-    initCounter();
-  };
-  const afterSunClose = async () => {
-    setIsAfterSunSuccess(true);
-    afterSunSuccessSunEl.addEventListener("animationend", () => {
-      bro.runtime.sendMessage({ closeTab: true });
-    });
   };
 
   const teardown = () => {
@@ -139,76 +129,16 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
-  const initCounter = () => {
-    if (currentSessionInterval) {
-      window.clearInterval(currentSessionInterval);
-    }
-    currentSessionInterval = window.setInterval(() => {
-      const v = getSessionTime();
-      setSessionTime(v + 1);
-    }, 1000);
-  };
-
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
       fadeOutMainFinal();
     }
   };
 
-  const formatSessionTime = (seconds: number): string => {
-    if (seconds >= 60) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
-    }
-    if (seconds >= 30) {
-      return "" + seconds;
-    }
-    return "";
-  };
-
   return (
     <>
       {getIsShowAfterSun() ? (
-        getIsAfterSunSuccess() ? (
-          <div
-            id="minded-6622-after-sun-success-sun"
-            ref={afterSunSuccessSunEl}
-            style="animation-duration: 22s"
-          >
-            <div></div>
-            <div>This is something to be proud of!</div>
-          </div>
-        ) : (
-          <div
-            id="minded-6622-after-sun"
-            classList={{
-              ["minded-6622-bottom"]: !!getAfterSunTxt(),
-              ["minded-6622-top-right"]: !!getSessionTime(),
-            }}
-          >
-            <div id="minded-6622-after-sun-sun-wrapper">
-              <div
-                id="minded-6622-after-sun-sun"
-                title="Close website"
-                onclick={() => afterSunClose()}
-                ref={afterSunEl}
-              >
-                {formatSessionTime(getSessionTime())}
-              </div>
-            </div>
-
-            {getAfterSunTxt() && (
-              <div id="minded-6622-after-sun-text">{getAfterSunTxt()}</div>
-            )}
-
-            <div id="minded-6622-additional-controls">
-              <div title="Hide sun" onclick={() => teardown()}>
-                ✕
-              </div>
-            </div>
-          </div>
-        )
+        <AfterSunComponent bubbleTxt={getAfterSunTxt()} teardown={teardown} />
       ) : (
         <div
           id="minded-6622-coloured-wrapper-dynamic"
