@@ -36,13 +36,12 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
-  const [getIsShowInteractionBox, setIsShowInteractionBox] = createSignal(true);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
 
-  let questionWrapperEl;
+  let wrapperEl;
   let afterSunEl;
-  let successSunEl;
+  let afterSunSuccessSunEl;
   let frameNr;
   let currentSessionInterval;
 
@@ -63,10 +62,10 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
 
   const initFadeOut = () => {
     if (MODE === "ACTION_ADVICE") {
-      const res = fadeOut(questionWrapperEl, 4000, 3000);
+      const res = fadeOut(wrapperEl, 4000, 3000);
       frameNr = res.frameNr;
       res.promise.then(() => {
-        if (questionWrapperEl.style.opacity < 0.1) {
+        if (wrapperEl.style.opacity < 0.1) {
           afterSun();
         }
       });
@@ -74,10 +73,10 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
         setIsShowSuccessSun(true);
       }, 3000);
     } else {
-      const res = fadeOut(questionWrapperEl, 5000, 2000);
+      const res = fadeOut(wrapperEl, 5000, 2000);
       frameNr = res.frameNr;
       res.promise.then(() => {
-        if (questionWrapperEl.style.opacity < 0.1) {
+        if (wrapperEl.style.opacity < 0.1) {
           afterSun();
         }
       });
@@ -88,13 +87,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     setIsShowSuccessSun(true);
     // wait for sun
     await promiseTimeout(SUN_ANI_DURATION);
-    setIsShowInteractionBox(false);
-    await Promise.all([
-      fadeOut(questionWrapperEl, SUN_ANI_DURATION).promise,
-      fadeOut(successSunEl, SUN_ANI_DURATION).promise,
-    ]);
-    setIsShowSuccessSun(false);
-    questionWrapperEl.remove();
+    await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
 
     if (MODE === "PURPOSE" && typeof answerOrData?.val === "string") {
       setAfterSunTxt(answerOrData.val);
@@ -104,7 +97,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
-  const cancelFadeoutCountdown = () => {
+  const cancelCountdown = () => {
     if (!frameNr) {
       return;
     }
@@ -113,9 +106,9 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
 
     window.cancelAnimationFrame(frameNr);
-    if (questionWrapperEl) {
-      questionWrapperEl.style.transition = `opacity 1000ms ease-out`;
-      questionWrapperEl.style.opacity = "1";
+    if (wrapperEl) {
+      wrapperEl.style.transition = `opacity 1000ms ease-out`;
+      wrapperEl.style.opacity = "1";
     }
   };
 
@@ -125,9 +118,8 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     initCounter();
   };
   const afterSunClose = async () => {
-    setIsShowSuccessSun(true);
     setIsAfterSunSuccess(true);
-    successSunEl.addEventListener("animationend", () => {
+    afterSunSuccessSunEl.addEventListener("animationend", () => {
       bro.runtime.sendMessage({ closeTab: true });
     });
   };
@@ -137,9 +129,9 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     props.onHideAll();
   };
 
-  const fadeOutMainOnSkip = () => {
-    if (questionWrapperEl) {
-      fadeOut(questionWrapperEl, 150).promise.then(() => {
+  const fadeOutMainFinal = () => {
+    if (wrapperEl) {
+      fadeOut(wrapperEl, 150).promise.then(() => {
         afterSun();
       });
     } else {
@@ -159,7 +151,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
 
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
-      fadeOutMainOnSkip();
+      fadeOutMainFinal();
     }
   };
 
@@ -178,35 +170,45 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   return (
     <>
       {getIsShowAfterSun() ? (
-        <div
-          id="minded-6622-after-sun"
-          classList={{
-            ["minded-6622-bottom"]: !!getAfterSunTxt(),
-            ["minded-6622-top-right"]: !!getSessionTime(),
-            ["minded-6622-is-after-sun-success"]: !!getIsAfterSunSuccess(),
-          }}
-        >
-          <div id="minded-6622-after-sun-sun-wrapper">
-            <div
-              id="minded-6622-after-sun-sun"
-              title="Close website"
-              onclick={() => afterSunClose()}
-              ref={afterSunEl}
-            >
-              {formatSessionTime(getSessionTime())}
+        getIsAfterSunSuccess() ? (
+          <div
+            id="minded-6622-after-sun-success-sun"
+            ref={afterSunSuccessSunEl}
+            style="animation-duration: 22s"
+          >
+            <div></div>
+            <div>This is something to be proud of!</div>
+          </div>
+        ) : (
+          <div
+            id="minded-6622-after-sun"
+            classList={{
+              ["minded-6622-bottom"]: !!getAfterSunTxt(),
+              ["minded-6622-top-right"]: !!getSessionTime(),
+            }}
+          >
+            <div id="minded-6622-after-sun-sun-wrapper">
+              <div
+                id="minded-6622-after-sun-sun"
+                title="Close website"
+                onclick={() => afterSunClose()}
+                ref={afterSunEl}
+              >
+                {formatSessionTime(getSessionTime())}
+              </div>
+            </div>
+
+            {getAfterSunTxt() && (
+              <div id="minded-6622-after-sun-text">{getAfterSunTxt()}</div>
+            )}
+
+            <div id="minded-6622-additional-controls">
+              <div title="Hide sun" onclick={() => teardown()}>
+                ✕
+              </div>
             </div>
           </div>
-
-          {getAfterSunTxt() && (
-            <div id="minded-6622-after-sun-text">{getAfterSunTxt()}</div>
-          )}
-
-          <div id="minded-6622-additional-controls">
-            <div title="Hide sun" onClick={() => teardown()}>
-              ✕
-            </div>
-          </div>
-        </div>
+        )
       ) : (
         <div
           id="minded-6622-coloured-wrapper-dynamic"
@@ -215,71 +217,62 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
               (ev.target as HTMLElement)?.id ===
               "minded-6622-coloured-wrapper-dynamic"
             ) {
-              fadeOutMainOnSkip();
+              fadeOutMainFinal();
             }
           }}
-          ref={questionWrapperEl}
+          ref={wrapperEl}
         >
-          {getIsShowInteractionBox() && (
-            <div id="minded-6622-box">
-              <Switch>
-                <Match when={(MODE === "ACTION_ADVICE") as any}>
-                  <div id="minded-6622-action-advice">
-                    <div>{ADVICE.txt}</div>
-                    <div>{ADVICE.ico}</div>
-                  </div>
-                </Match>
-                <Match when={(MODE === "RATING") as any}>
-                  <RatingInteraction
-                    onCancelCountdown={cancelFadeoutCountdown}
-                    onSuccess={onSuccess}
-                    onCancel={teardown}
-                  />
-                </Match>
-                <Match when={(MODE === "PURPOSE") as any}>
-                  <Question
-                    question={{
-                      prompt:
-                        QUESTION_CATEGORIES.XPurposeOfSession
-                          .specialQuestions[0].prompt,
-                      t: QUESTION_CATEGORIES.XPurposeOfSession
-                        .specialQuestions[0].t,
-                      categoryId: QuestionCategoryId.XPurposeOfSession,
-                    }}
-                    isDontSave={true}
-                    onCancelCountdown={cancelFadeoutCountdown}
-                    onSuccess={onSuccess}
-                    onCancel={teardown}
-                  />
-                </Match>
-                <Match when={!MODE as any}>
-                  <Question
-                    onCancelCountdown={cancelFadeoutCountdown}
-                    onSuccess={onSuccess}
-                    onCancel={teardown}
-                  />
-                </Match>
-              </Switch>
-            </div>
-          )}
-        </div>
-      )}
-
-      {getIsShowSuccessSun() && (
-        <div
-          id="minded-6622-success-sun"
-          title="Click sun to close website"
-          ref={successSunEl}
-          onclick={() => {
-            bro.runtime.sendMessage({ closeTab: true });
-          }}
-          classList={{
-            ["minded-6622-is-after-sun-success"]: !!getIsAfterSunSuccess(),
-          }}
-        >
-          <div></div>
-          <div>
-            {!getIsAfterSunSuccess() && "click sun to close the website"}
+          <div id="minded-6622-box">
+            {getIsShowSuccessSun() && (
+              <div
+                id="minded-6622-success-sun"
+                title="Click sun to close website"
+                onclick={() => {
+                  bro.runtime.sendMessage({ closeTab: true });
+                }}
+              >
+                <div></div>
+                <div>click sun to close the website</div>
+              </div>
+            )}
+            <Switch>
+              <Match when={(MODE === "ACTION_ADVICE") as any}>
+                <div id="minded-6622-action-advice">
+                  <div>{ADVICE.txt}</div>
+                  <div>{ADVICE.ico}</div>
+                </div>
+              </Match>
+              <Match when={(MODE === "RATING") as any}>
+                <RatingInteraction
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+              <Match when={(MODE === "PURPOSE") as any}>
+                <Question
+                  question={{
+                    prompt:
+                      QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0]
+                        .prompt,
+                    t: QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0]
+                      .t,
+                    categoryId: QuestionCategoryId.XPurposeOfSession,
+                  }}
+                  isDontSave={true}
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+              <Match when={!MODE as any}>
+                <Question
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+            </Switch>
           </div>
         </div>
       )}

@@ -5,11 +5,10 @@
   cursor: auto;
 }
 
+
+#minded-6622-after-sun-success-sun,
 #minded-6622-success-sun {
   cursor: cell;
-  position: relative;
-  z-index: 2147483647;
-  z-index: 9999999999999999;
 
   div:first-child {
     transform-origin: center center;
@@ -38,10 +37,11 @@
     z-index: 31;
     font-weight: 200;
   }
+}
 
-  &.minded-6622-is-after-sun-success {
-    animation: minded6622successSun ease 5.6s;
-
+#minded-6622-after-sun-success-sun{
+  div:first-child {
+    animation: minded6622successSun ease 2s;
   }
 }
 
@@ -72,42 +72,19 @@
   transform: translate(50%, -50%);
   transition: 1s all;
 
-  &.minded-6622-is-after-sun-success {
-    opacity: 0;
-    transition-duration: .2s;
-
-    &.minded-6622-is-after-sun-success {
-      transform: translate(50%, -50%) scale(0);
-    }
-
-    #minded-6622-additional-controls {
-      display: none;
-    }
-  }
-
   &.minded-6622-top-right {
     transform: translate(0, 0);
     top: 40px;
     right: 40px;
     left: auto;
-
-    &.minded-6622-is-after-sun-success {
-      transform: translate(0, 0) scale(0);
-    }
   }
 
   &.minded-6622-bottom {
-    transform: translate(0, 0);
+    transform: translate(-50%, 0);
     top: auto;
     right: 50%;
     bottom: 60px;
-
-    &.minded-6622-is-after-sun-success {
-      transform: translate(0, 0) scale(0);
-    }
   }
-
-
 }
 
 #minded-6622-after-sun-sun-wrapper {
@@ -116,6 +93,7 @@
   &:hover {
     transform: scale(1.5);
   }
+
 }
 
 #minded-6622-after-sun-sun {
@@ -135,7 +113,6 @@
   text-align: center;
   font-size: 14px;
   color: #956969;
-  white-space: nowrap;
   font-weight: 300;
 }
 
@@ -206,6 +183,7 @@
     transform: translate(-50%, -50%) scale(1);
   }
   100% {
+    opacity: 1;
     transform: translate(-50%, -50%) scale(20);
   }
 }
