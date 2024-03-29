@@ -49,7 +49,7 @@ export const AfterSunComponent: (props: {
       {getIsAfterSunSuccess() ? (
         <div id="minded-6622-after-sun-success-sun" ref={afterSunSuccessSunEl}>
           <div></div>
-          <div>This is something to be proud of!</div>
+          <div>Welcome back!</div>
         </div>
       ) : (
         <div
