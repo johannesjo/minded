@@ -12,9 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -152,26 +150,30 @@ fun OverlayBig(
                 if (!isShowSuccessSun) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.SpaceAround,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Replace this with your own Compose UI
-                        Text(
-                            text = "${rndQuestion.t}?",
-                            fontSize = 22.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .padding(16.dp)
-                        )
-                        TextInput(
-                            initialVal = "${rndQuestion.prompt ?: ""} ",
-                            onSubmit = {
-                                onSubmitAnswer(it)
-                                startSuccessFlow();
-                                Log.v("Overlay.kt", "submitAnswer")
-                            },
-                        )
-                        Spacer(modifier = Modifier.height(32.dp)) // Add a spacer for margin
+
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "${rndQuestion.t}?",
+                                fontSize = 22.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            )
+                            TextInput(
+                                initialVal = "${rndQuestion.prompt ?: ""} ",
+                                onSubmit = {
+                                    onSubmitAnswer(it)
+                                    startSuccessFlow();
+                                    Log.v("Overlay.kt", "submitAnswer")
+                                },
+                            )
+                        }
 
                         TimerButtons(selectedSessionTime, onTimeSelected = {
                             selectedSessionTime = it
@@ -203,7 +205,13 @@ fun OverlayPreview() {
         prompt = "Enter your answer",
         categoryId = QuestionCategoryId.CalmingThoughts
     )
-    Overlay(rndQuestion = question, initialVisible = true)
+    Overlay(
+        endOverlay = {},
+        onSubmitAnswer = {},
+        onBackToMain = {},
+        rndQuestion = question,
+        initialVisible = true
+    )
 }
 
 
