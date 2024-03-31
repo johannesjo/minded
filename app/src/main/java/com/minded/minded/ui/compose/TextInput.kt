@@ -61,15 +61,17 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
             imeAction = ImeAction.Done,
         ),
         trailingIcon = {
-            IconButton(onClick = {
-                textState = textState.copy(
-                    text = "",
-                )
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Visibility"
-                )
+            if (textState.text.isNotEmpty()) {
+                IconButton(onClick = {
+                    textState = textState.copy(
+                        text = "",
+                    )
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Visibility"
+                    )
+                }
             }
         },
         modifier = Modifier
