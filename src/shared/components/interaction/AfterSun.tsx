@@ -7,12 +7,16 @@ export const AfterSunComponent: (props: {
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
+  const [getIsMoveToTopRight, setIsMoveToTopRight] = createSignal(false);
 
   let currentSessionInterval: number;
   let afterSunSuccessSunEl;
 
   onMount(async () => {
     initCounter();
+    setTimeout(() => {
+      setIsMoveToTopRight(true);
+    }, 200);
   });
 
   const formatSessionTime = (seconds: number): string => {
@@ -56,7 +60,7 @@ export const AfterSunComponent: (props: {
           id="minded-6622-after-sun"
           classList={{
             ["minded-6622-bottom"]: !!props.bubbleTxt,
-            ["minded-6622-top-right"]: !!getSessionTime(),
+            ["minded-6622-top-right"]: getIsMoveToTopRight(),
           }}
         >
           <div id="minded-6622-after-sun-sun-wrapper">
