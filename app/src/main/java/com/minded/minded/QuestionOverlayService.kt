@@ -167,10 +167,6 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     endOverlay = {
                         hideOverlay()
                     },
-                    onShowAfterSun = {
-                        Log.v("QuestionOverlaySVC", "onShowAfterSun")
-                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService)
-                    },
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
@@ -179,6 +175,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     onBackToMain = {
                         Log.v("QuestionOverlaySVC", "onBackToMain")
                         userDrivenClose();
+                    },
+                    onShowAfterSun = {
+                        Log.v("QuestionOverlaySVC", "onShowAfterSun")
+                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService)
                     }
                 )
             }
