@@ -36,31 +36,13 @@ import com.minded.minded.ui.theme.StandardGradient
 import kotlinx.coroutines.delay
 
 
-@Composable
-fun Overlay(
-    endOverlay: (selectedSessionDuration: Int) -> Unit = { },
-    onSubmitAnswer: (answerTxt: String) -> Unit = { },
-    onBackToMain: () -> Unit = { },
-    rndQuestion: QuestionForPrompt,
-    initialVisible: Boolean = false
-) {
-
-    AfterSun()
-
-//    OverlayBig(
-//        endOverlay = endOverlay,
-//        onSubmitAnswer = onSubmitAnswer,
-//        onBackToMain = onBackToMain,
-//        rndQuestion = rndQuestion,
-//        initialVisible = initialVisible
-//    )
-}
 
 @Composable
 fun OverlayBig(
-    endOverlay: (selectedSessionDuration: Int) -> Unit = { },
+    endOverlay: () -> Unit = { },
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
     onBackToMain: () -> Unit = { },
+    onShowAfterSun: () -> Unit = { },
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
 ) {
@@ -72,7 +54,6 @@ fun OverlayBig(
     var isOverlayVisible by remember { mutableStateOf(initialVisible) }
     var isShowSuccessSun by remember { mutableStateOf(initialVisible) }
     var isUserSunCloseInProgress by remember { mutableStateOf(initialVisible) }
-    var selectedSessionTime by remember { mutableStateOf(0) }
 
     fun fadeOutOverlay() {
         isOverlayVisible = false
@@ -88,7 +69,7 @@ fun OverlayBig(
         delay(500)
         isOverlayVisible = false
         delay(fadeOutOverlayDuration.toLong())
-        endOverlay(selectedSessionTime)
+        endOverlay()
     }
 
     LaunchedEffect(Unit) {
@@ -124,7 +105,7 @@ fun OverlayBig(
         Log.v("ANI", "isVisible: $isOverlayVisible")
         if (!isOverlayVisible) {
             delay(fadeOutOverlayDuration.toLong())
-            endOverlay(selectedSessionTime)
+            endOverlay()
         }
     }
 
@@ -136,6 +117,7 @@ fun OverlayBig(
         Surface(
             onClick = {
                 Log.v("SVC", "click BG")
+                onShowAfterSun()
                 fadeOutOverlay()
             },
         ) {
@@ -174,11 +156,6 @@ fun OverlayBig(
                                 },
                             )
                         }
-
-                        TimerButtons(selectedSessionTime, onTimeSelected = {
-                            selectedSessionTime = it
-//                            isShowTimerButtons = false
-                        })
                     }
                 }
             }
@@ -194,24 +171,6 @@ fun OverlayBig(
             successDuration = sunAniFinalDuration,
         )
     }
-}
-
-
-@Composable
-@Preview(showBackground = true)
-fun OverlayPreview() {
-    val question = QuestionForPrompt(
-        t = "What is the capital of France?",
-        prompt = "Enter your answer",
-        categoryId = QuestionCategoryId.CalmingThoughts
-    )
-    Overlay(
-        endOverlay = {},
-        onSubmitAnswer = {},
-        onBackToMain = {},
-        rndQuestion = question,
-        initialVisible = true
-    )
 }
 
 

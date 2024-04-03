@@ -51,6 +51,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
             showOverlay()
+            AfterSunOverlayService.hideOverlay(this)
         }
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
             hideOverlay()
@@ -84,6 +85,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher") {
             hideOverlay();
+            AfterSunOverlayService.hideOverlay(this)
         }
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
@@ -141,32 +143,10 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     }
 
 
-    private fun initSessionEndTimeout(sessionDurationInM: Int) {
-        if (sessionDurationInM > 0) {
-            val sessionApp = lastForeGroundApp
-            Log.v("QuestionOverlaySVC", "initSessionEndTimeout schedule()")
-            scheduleFuture = Executors.newSingleThreadScheduledExecutor()
-                .schedule({
-                    Log.v(
-                        "QuestionOverlaySVC",
-                        "initSessionEndTimeout afterSchedule (${sessionApp} ${lastForeGroundApp})"
-                    )
-                    if (sessionApp === lastForeGroundApp) {
-//                        userDrivenClose()
-                        // SHOW AGAIN
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(intent)
-                    } else {
-                        userDrivenClose()
-                    }
-
-                }, sessionDurationInM.toLong(), TimeUnit.MINUTES)
-        }
-    }
 
     private fun showOverlay() {
         Log.v("QuestionOverlaySVC", "showOverlay()")
+        AfterSunOverlayService.hideOverlay(this)
         if (overlayView != null) {
             Log.v("QuestionOverlaySVC", "overlay already shown - aborting")
             return
@@ -185,10 +165,11 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 //                MindedTheme {
                 OverlayBig(
                     endOverlay = {
-                        if (it > 0) {
-                            initSessionEndTimeout(it)
-                        }
                         hideOverlay()
+                    },
+                    onShowAfterSun = {
+                        Log.v("QuestionOverlaySVC", "onShowAfterSun")
+                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService)
                     },
                     rndQuestion = rndQuestion,
                     onSubmitAnswer = {
