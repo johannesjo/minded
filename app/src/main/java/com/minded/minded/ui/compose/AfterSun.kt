@@ -1,5 +1,6 @@
 package com.minded.minded.ui.compose
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -16,7 +17,11 @@ import androidx.compose.ui.unit.dp
 
 @Preview
 @Composable
-fun AfterSun() {
+fun AfterSun(elapsedSeconds: Int = 0, onSunTap: () -> Unit = {}) {
+    val minutes = elapsedSeconds / 60
+    val remainingSeconds = elapsedSeconds % 60
+    val clockString = String.format("%2d:%02d", minutes, remainingSeconds)
+
     Box(
         modifier = Modifier
 //            .background(Color.Green)
@@ -24,7 +29,9 @@ fun AfterSun() {
         contentAlignment = Alignment.Center // This will center the inner Box
 
     ) {
-        Box(modifier = Modifier.size(32.dp)) {
+        Box(modifier = Modifier
+            .size(32.dp)
+            .clickable(onClick = onSunTap)) {
             Surface(
                 shape = CircleShape,
                 color = Color.White,
@@ -34,7 +41,7 @@ fun AfterSun() {
 
             ) {
                 Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
-                    Text(text = "9:56")
+                    Text(text = clockString)
                 }
             }
         }
