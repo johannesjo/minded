@@ -45,15 +45,15 @@ fun Overlay(
     initialVisible: Boolean = false
 ) {
 
-//    LittleSun()
+    AfterSun()
 
-    OverlayBig(
-        endOverlay = endOverlay,
-        onSubmitAnswer = onSubmitAnswer,
-        onBackToMain = onBackToMain,
-        rndQuestion = rndQuestion,
-        initialVisible = initialVisible
-    )
+//    OverlayBig(
+//        endOverlay = endOverlay,
+//        onSubmitAnswer = onSubmitAnswer,
+//        onBackToMain = onBackToMain,
+//        rndQuestion = rndQuestion,
+//        initialVisible = initialVisible
+//    )
 }
 
 @Composable
