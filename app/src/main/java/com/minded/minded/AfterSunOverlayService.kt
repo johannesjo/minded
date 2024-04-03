@@ -168,7 +168,7 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     private val handler = Handler(Looper.getMainLooper())
     private val runnable = object : Runnable {
         override fun run() {
-            Log.v("AfterSunOverlaySVC", "elapsedSeconds: $elapsedSeconds")
+//            Log.v("AfterSunOverlaySVC", "elapsedSeconds: $elapsedSeconds")
             elapsedSeconds++
             handler.postDelayed(this, 1000)
         }
@@ -178,6 +178,7 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
     private fun startTimer() {
         Log.v("AfterSunOverlaySVC", "startTimer()")
+        elapsedSeconds = 0
         handler.post(runnable)
     }
 

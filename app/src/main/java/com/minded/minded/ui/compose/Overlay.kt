@@ -97,6 +97,7 @@ fun OverlayBig(
                 superSuccessFlow()
             } else {
                 isOverlayVisible = false
+                onShowAfterSun()
             }
         }
     }
@@ -117,8 +118,8 @@ fun OverlayBig(
         Surface(
             onClick = {
                 Log.v("SVC", "click BG")
-                onShowAfterSun()
                 fadeOutOverlay()
+                onShowAfterSun()
             },
         ) {
             Box(
