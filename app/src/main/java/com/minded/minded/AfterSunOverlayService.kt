@@ -12,6 +12,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -142,6 +143,7 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     private fun userDrivenClose() {
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
         stopTimer()
+        Toast.makeText(applicationContext, "Welcome back! \uD83C\uDF1E", Toast.LENGTH_SHORT).show()
         hideOverlay()
         // TODO count to DB
         val intent = Intent(Intent.ACTION_MAIN).apply {
