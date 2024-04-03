@@ -6,10 +6,15 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -89,13 +94,13 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         )
     }
 
-
     private fun showOverlay() {
         Log.v("AfterSunOverlaySVC", "showOverlay()")
         if (overlayView != null) {
             Log.v("AfterSunOverlaySVC", "overlay already shown - aborting")
             return
         }
+        startTimer()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
@@ -106,30 +111,15 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
             setContent {
 // NOTE: theme wont work since it's not an activity
 //                MindedTheme {
-                AfterSun(
+                AfterSun(elapsedSeconds, {
+                    Log.v("AfterSunOverlaySVC", "onSunTap()")
 
-                )
+                    userDrivenClose();
+                })
             }
         }
         windowManager.addView(overlayView, getLayoutParams())
 
-    }
-
-    private fun userDrivenClose() {
-//        Log.v("AfterSunOverlaySVC", "userDrivenClose()")
-//        // TODO count to DB
-//        backToHomeScreenCount++
-//        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-//            val intent = Intent(this, MainActivity::class.java)
-//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//            startActivity(intent)
-//        } else {
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        startActivity(intent)
-//        }
     }
 
     private fun hideOverlay() {
@@ -148,6 +138,18 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
     }
 
+    private fun userDrivenClose() {
+        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        stopTimer()
+        hideOverlay()
+        // TODO count to DB
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(intent)
+    }
+
     private fun getLayoutParams(): WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -158,6 +160,28 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         )
         params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
         return params;
+    }
+
+
+    private var elapsedSeconds by mutableStateOf(0)
+    private val handler = Handler(Looper.getMainLooper())
+    private val runnable = object : Runnable {
+        override fun run() {
+            Log.v("AfterSunOverlaySVC", "elapsedSeconds: $elapsedSeconds")
+            elapsedSeconds++
+            handler.postDelayed(this, 1000)
+        }
+    }
+
+    // ...
+
+    private fun startTimer() {
+        Log.v("AfterSunOverlaySVC", "startTimer()")
+        handler.post(runnable)
+    }
+
+    private fun stopTimer() {
+        handler.removeCallbacks(runnable)
     }
 
 
