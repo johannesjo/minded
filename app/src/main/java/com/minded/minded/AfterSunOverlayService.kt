@@ -126,6 +126,7 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         Log.v(
             "AfterSunOverlaySVC", "hideOverlay()"
         )
+        stopTimer()
         if (overlayView == null) {
             Log.v(
                 "AfterSunOverlaySVC", "overlay not shown - aborting"
