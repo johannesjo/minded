@@ -12,9 +12,12 @@ import { Answer } from "@src/shared/data/sync-data";
 import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
+  QuestionForPrompt,
 } from "@src/shared/data/questions";
 import React from "react";
 import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
+import { getSyncData } from "@src/shared/data/dataInterface";
+import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
 const MODE: "RATING" | "PURPOSE" | "ACTION_ADVICE" | undefined = (() => {
   const rndInt = getRndInt(0, 100);
@@ -35,9 +38,13 @@ const SUN_ANI_DURATION = 1600;
 export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   props,
 ) => {
+  const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
+  const [getRndQuestion, setRndQuestion] = createSignal<
+    QuestionForPrompt | undefined
+  >();
 
   let wrapperEl;
   let frameNr;
@@ -51,6 +58,27 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     setTimeout(() => {
       initFadeOut();
     }, 100);
+
+    getSyncData().then((syncData) => {
+      const rndQuestion = getQuestionSmart(syncData.answers);
+      setRndQuestion(rndQuestion);
+
+      switch (MODE) {
+        case "ACTION_ADVICE":
+          setAfterSunTxt(ADVICE.txt);
+          return;
+        case "PURPOSE":
+          setAfterSunTxt(
+            QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0].t + "?",
+          );
+          return;
+        case "RATING":
+          setAfterSunTxt("How would you rate your energy level today?");
+          return;
+        default:
+          setAfterSunTxt(rndQuestion.t + "?");
+      }
+    });
   });
 
   onCleanup(() => {
@@ -81,6 +109,10 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   };
 
   const onSuccess = async (answerOrData?: Answer) => {
+    setAfterSunTxt(
+      typeof answerOrData?.val === "string" ? answerOrData.val : "",
+    );
+    setWasAnswerGiven(true);
     setIsShowSuccessSun(true);
     // wait for sun
     await promiseTimeout(SUN_ANI_DURATION);
@@ -138,7 +170,15 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
   return (
     <>
       {getIsShowAfterSun() ? (
-        <AfterSunComponent bubbleTxt={getAfterSunTxt()} teardown={teardown} />
+        <AfterSunComponent
+          wasAnswerGiven={getWasAnswerGiven()}
+          bubbleTxt={getAfterSunTxt()}
+          teardown={teardown}
+          onShowQuestionAgain={() => {
+            setIsShowAfterSun(false);
+            setIsShowSuccessSun(false);
+          }}
+        />
       ) : (
         <div
           id="minded-6622-coloured-wrapper-dynamic"
@@ -196,11 +236,14 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
                 />
               </Match>
               <Match when={!MODE as any}>
-                <Question
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
+                {getRndQuestion() && (
+                  <Question
+                    question={getRndQuestion()}
+                    onCancelCountdown={cancelCountdown}
+                    onSuccess={onSuccess}
+                    onCancel={teardown}
+                  />
+                )}
               </Match>
             </Switch>
           </div>

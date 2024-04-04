@@ -3,7 +3,9 @@ import { bro } from "@src/util/browser";
 
 export const AfterSunComponent: (props: {
   bubbleTxt?: string;
+  wasAnswerGiven: boolean;
   teardown: () => void;
+  onShowQuestionAgain: () => void;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
@@ -41,7 +43,7 @@ export const AfterSunComponent: (props: {
     }, 1000);
   };
 
-  const afterSunClose = async () => {
+  const afterSunClose = () => {
     setIsAfterSunSuccess(true);
     afterSunSuccessSunEl.addEventListener("animationend", () => {
       bro.runtime.sendMessage({ closeTab: true });
@@ -59,26 +61,42 @@ export const AfterSunComponent: (props: {
         <div
           id="minded-6622-after-sun"
           classList={{
-            ["minded-6622-bottom"]: !!props.bubbleTxt,
             ["minded-6622-top-right"]: getIsMoveToTopRight(),
           }}
         >
+          {props.bubbleTxt && (
+            <div
+              id="minded-6622-after-sun-text"
+              title={props.wasAnswerGiven ? "close website" : "click to answer"}
+              onclick={() => {
+                if (props.wasAnswerGiven) {
+                  afterSunClose();
+                } else {
+                  props.onShowQuestionAgain();
+                }
+              }}
+              classList={{
+                ["minded-6622-was-NO-answer-given"]: !props.wasAnswerGiven,
+                ["minded-6622-long-text"]: props.bubbleTxt?.length > 144,
+                ["minded-6622-very-long-text"]: props.bubbleTxt?.length > 288,
+              }}
+            >
+              {props.bubbleTxt}
+            </div>
+          )}
+
           <div id="minded-6622-after-sun-sun-wrapper">
             <div
               id="minded-6622-after-sun-sun"
               title="Close website"
-              onclick={() => afterSunClose()}
+              onClick={() => afterSunClose()}
             >
               {formatSessionTime(getSessionTime())}
             </div>
           </div>
 
-          {props.bubbleTxt && (
-            <div id="minded-6622-after-sun-text">{props.bubbleTxt}</div>
-          )}
-
           <div id="minded-6622-additional-controls">
-            <div title="Hide sun" onclick={() => props.teardown()}>
+            <div title="Hide sun" onClick={() => props.teardown()}>
               ✕
             </div>
           </div>
