@@ -12,6 +12,7 @@ export enum QuestionCategoryId {
   GoalForTheWeek = "GoalForTheWeek",
   Gratitude = "Gratitude",
   UnderstandingProcrastination = "UnderstandingProcrastination",
+  SelfDiscovery = "SelfDiscovery",
   // NOTE: we filter out all questions from categories starting with X
   XEnergyLevelToday = "XEnergyLevelToday",
   XPurposeOfSession = "XPurposeOfSession",
@@ -79,6 +80,10 @@ export const QUESTION_CATEGORIES: {
         prompt: "My most important task is",
       },
       {
+        t: "What is most important today for you",
+        prompt: "Most important is",
+      },
+      {
         t: "What is the plan for today",
         prompt: "My plan for today is",
       },
@@ -96,6 +101,14 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What do you want to achieve today",
         prompt: "Today I want to",
+      },
+      {
+        t: "What is the most easy and smallest task you could be working on now",
+        prompt: "Right now, I can work on",
+      },
+      {
+        t: "What exactly needs to be done in your current task",
+        prompt: "First I",
       },
     ],
   },
@@ -226,11 +239,21 @@ export const QUESTION_CATEGORIES: {
         t: "In what situations do I reach a Flow state? And what contributes to it",
         prompt: "I reach the Flow state when",
       },
+      {
+        t: "What emotions are evoked by your current task",
+      },
     ],
     dashboardTxt: "Understanding Procrastination",
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
     isTodayOnlyCategory: true,
+  },
+  [QuestionCategoryId.SelfDiscovery]: {
+    questions: [
+      { t: "Am I using my time wisely" },
+      { t: "What do I want in life" },
+      { t: "Is where I am today making me happy" },
+    ],
   },
   [QuestionCategoryId.XPurposeOfSession]: {
     isTodayOnlyCategory: true,
@@ -256,6 +279,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.PersonalResources,
   QuestionCategoryId.Gratitude,
   QuestionCategoryId.UnderstandingProcrastination,
+  QuestionCategoryId.SelfDiscovery,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.CalmingThoughts,
 ];
