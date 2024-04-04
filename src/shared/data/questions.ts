@@ -228,7 +228,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.UnderstandingProcrastination]: {
     questions: [
       { t: "What do you think is a factor that enables your procrastination" },
-      { t: "Why do you think are you visiting this website" },
+      { t: "Why are you visiting this website" },
       { t: "Where and how do I waste time" },
       { t: "What is hurting your focus" },
       {
