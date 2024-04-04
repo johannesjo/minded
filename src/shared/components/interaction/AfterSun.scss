@@ -78,6 +78,10 @@
   font-size: 13px;
   line-height: 16px;
   text-align: center;
+  animation: minded6622afterSunTextIn .15s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+
 
   &.minded-6622-long-text {
     min-width: 320px;
@@ -155,9 +159,19 @@
     transform: scale(.4);
     opacity: 0;
   }
-  //10% {
   100% {
     transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes minded6622afterSunTextIn {
+  0% {
+    transform: scale(.5) translateY(-50%);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1)  translateY(-50%);
     opacity: 1;
   }
 }
