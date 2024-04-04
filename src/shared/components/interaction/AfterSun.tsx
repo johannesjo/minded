@@ -10,6 +10,7 @@ export const AfterSunComponent: (props: {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
   const [getIsMoveToTopRight, setIsMoveToTopRight] = createSignal(false);
+  const [getIsShowBubbleTxt, setIsShowBubbleTxt] = createSignal(false);
 
   let currentSessionInterval: number;
   let afterSunSuccessSunEl;
@@ -19,6 +20,10 @@ export const AfterSunComponent: (props: {
     setTimeout(() => {
       setIsMoveToTopRight(true);
     }, 200);
+
+    setTimeout(() => {
+      setIsShowBubbleTxt(true);
+    }, 1200);
   });
 
   const formatSessionTime = (seconds: number): string => {
@@ -64,7 +69,7 @@ export const AfterSunComponent: (props: {
             ["minded-6622-top-right"]: getIsMoveToTopRight(),
           }}
         >
-          {props.bubbleTxt && (
+          {props.bubbleTxt && getIsShowBubbleTxt() && (
             <div
               id="minded-6622-after-sun-text"
               title={props.wasAnswerGiven ? "Close website" : "Click to answer"}
