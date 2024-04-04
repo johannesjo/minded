@@ -82,6 +82,21 @@ export const QUESTION_CATEGORIES: {
         t: "What is the plan for today",
         prompt: "My plan for today is",
       },
+      {
+        t: "If there was only one task I could do today, which one would it be",
+        prompt: "My task for today would be",
+      },
+      {
+        t: "What would make me proud today, if it would finally be done",
+        prompt: "I would be proud to",
+      },
+      {
+        t: "What small task can I do today, that will pave the way for other tasks",
+      },
+      {
+        t: "What do you want to achieve today",
+        prompt: "Today I want to",
+      },
     ],
   },
   [QuestionCategoryId.Motivation]: {
@@ -116,6 +131,14 @@ export const QUESTION_CATEGORIES: {
         t: "Instead of instant gratification, what might be a better alternative",
         prompt: "Instead of visiting these websites I could",
       },
+      {
+        t: "At what time of the day can you concentrate best",
+        prompt: "I can concentrate best",
+      },
+      {
+        t: "What do I need to work well in terms of light, view, order, temperature, social and physical environment",
+        prompt: "I need",
+      },
     ],
   },
   [QuestionCategoryId.CalmingThoughts]: {
@@ -147,6 +170,10 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What is a good habit you might want to establish",
         prompt: "I want to",
+      },
+      {
+        t: "What do you want to stop doing? And what can you do instead",
+        prompt: "I want to stop",
       },
     ],
     dashboardTxt: "Good Plans",
@@ -189,6 +216,16 @@ export const QUESTION_CATEGORIES: {
     questions: [
       { t: "What do you think is a factor that enables your procrastination" },
       { t: "Why do you think are you visiting this website" },
+      { t: "Where and how do I waste time" },
+      { t: "What is hurting your focus" },
+      {
+        t: "In what situations do you have a hard time focussing and what contributes to it",
+        prompt: "I'm having a hard time focussing when",
+      },
+      {
+        t: "In what situations do I reach a Flow state? And what contributes to it",
+        prompt: "I reach the Flow state when",
+      },
     ],
     dashboardTxt: "Understanding Procrastination",
   },
