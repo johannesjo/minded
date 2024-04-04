@@ -66,6 +66,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
       switch (MODE) {
         case "ACTION_ADVICE":
           setAfterSunTxt(ADVICE.txt);
+          setWasAnswerGiven(true);
           return;
         case "PURPOSE":
           setAfterSunTxt(

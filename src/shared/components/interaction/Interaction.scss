@@ -46,6 +46,19 @@
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: auto;
+  animation: minded6622fadeIn ease .4s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+
+@keyframes minded6622fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 

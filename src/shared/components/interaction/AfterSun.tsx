@@ -67,7 +67,7 @@ export const AfterSunComponent: (props: {
           {props.bubbleTxt && (
             <div
               id="minded-6622-after-sun-text"
-              title={props.wasAnswerGiven ? "close website" : "click to answer"}
+              title={props.wasAnswerGiven ? "Close website" : "Click to answer"}
               onclick={() => {
                 if (props.wasAnswerGiven) {
                   afterSunClose();
