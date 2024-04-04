@@ -7,29 +7,21 @@ import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import { nanoid } from "nanoid";
 
 export const Question: (props: {
-  question?: QuestionForPrompt;
+  question: QuestionForPrompt;
   isDontSave?: boolean;
   onSuccess: (answer: Answer) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
-  const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>(undefined);
   let inpEl;
 
   onMount(async () => {
-    getSyncData().then((syncData) => {
-      const question = !!props.question
-        ? props.question
-        : getQuestionSmart(syncData.answers);
-
-      if (question.prompt && inpEl) {
-        inpEl.value = question.prompt + " ";
-      }
-      setQuestion(question);
-      inpEl.focus();
-      setTimeout(() => inpEl.focus(), 250);
-    });
+    if (props.question.prompt && inpEl) {
+      inpEl.value = props.question.prompt + " ";
+    }
+    inpEl.focus();
+    setTimeout(() => inpEl.focus(), 250);
   });
 
   const submitAnswer = async (answer: Answer) => {
@@ -44,7 +36,7 @@ export const Question: (props: {
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
-    const q = getQuestion();
+    const q = props.question;
     if (!q) throw new Error("No question");
 
     if (ev.key === "Enter") {
@@ -64,7 +56,7 @@ export const Question: (props: {
   return (
     <>
       <div id="minded-6622-msg">
-        <div id="minded-6622-question">{getQuestion()?.t}?</div>
+        <div id="minded-6622-question">{props.question.t}?</div>
         <input
           ref={inpEl}
           type="text"
