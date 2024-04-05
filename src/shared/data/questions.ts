@@ -48,6 +48,7 @@ export interface QuestionCategory {
   isThisWeekOnlyCategory?: boolean;
   isMorningCategory?: boolean;
   isEveningCategory?: boolean;
+  isDontSaveQuestion?: boolean;
   questions?: Question[];
   specialQuestions?: Question[];
 }
@@ -257,7 +258,8 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.XPurposeOfSession]: {
     isTodayOnlyCategory: true,
-    specialQuestions: [
+    isDontSaveQuestion: true,
+    questions: [
       {
         t: "What is the purpose of visiting this website",
         prompt: "In this session I want to",

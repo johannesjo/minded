@@ -1,14 +1,15 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-import { QuestionForPrompt } from "@src/shared/data/questions";
+import {
+  QUESTION_CATEGORIES,
+  QuestionForPrompt,
+} from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/sync-data";
-import { getSyncData, saveAnswer } from "@src/shared/data/dataInterface";
-import { getQuestionSmart } from "@src/util/getQuestionSmart";
+import { saveAnswer } from "@src/shared/data/dataInterface";
 import { nanoid } from "nanoid";
 
 export const Question: (props: {
   question: QuestionForPrompt;
-  isDontSave?: boolean;
   onSuccess: (answer: Answer) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
@@ -29,7 +30,8 @@ export const Question: (props: {
       return;
     }
     setIsInputDisabled(true);
-    if (!props.isDontSave) {
+    const cat = QUESTION_CATEGORIES[props.question.categoryId];
+    if (!cat.isDontSaveQuestion) {
       await saveAnswer(answer);
     }
     props.onSuccess(answer);
