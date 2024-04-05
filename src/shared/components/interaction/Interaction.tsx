@@ -9,28 +9,21 @@ import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { bro } from "@src/util/browser";
 import { Answer } from "@src/shared/data/sync-data";
-import {
-  QUESTION_CATEGORIES,
-  QuestionCategoryId,
-  QuestionForPrompt,
-} from "@src/shared/data/questions";
+import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import React from "react";
 import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
 import { getSyncData } from "@src/shared/data/dataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
-const MODE: "RATING" | "PURPOSE" | "ACTION_ADVICE" | undefined = (() => {
+const MODE: "RATING" | "ACTION_ADVICE" | "QUESTION" = (() => {
   const rndInt = getRndInt(0, 100);
   if (rndInt >= 95) {
-    return "PURPOSE";
-  }
-  if (rndInt >= 90) {
     return "RATING";
   }
-  if (rndInt >= 75) {
+  if (rndInt >= 80) {
     return "ACTION_ADVICE";
   }
-  return undefined;
+  return "QUESTION";
 })();
 const ADVICE = getRndEntry(ACTION_ADVICES);
 const SUN_ANI_DURATION = 1600;
@@ -48,6 +41,8 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
 
   let wrapperEl;
   let frameNr;
+  let syncData;
+  let questionUpdateCount = 0;
 
   onMount(async () => {
     // give a moment time for rendering
@@ -59,19 +54,15 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
       initFadeOut();
     }, 100);
 
-    getSyncData().then((syncData) => {
-      const rndQuestion = getQuestionSmart(syncData.answers);
+    getSyncData().then((syncDataI) => {
+      syncData = syncDataI;
+      const rndQuestion = getQuestionSmart(syncDataI.answers);
       setRndQuestion(rndQuestion);
 
       switch (MODE) {
         case "ACTION_ADVICE":
           setAfterSunTxt(ADVICE.txt);
           setWasAnswerGiven(true);
-          return;
-        case "PURPOSE":
-          setAfterSunTxt(
-            QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0].t + "?",
-          );
           return;
         case "RATING":
           setAfterSunTxt("How would you rate your energy level today?");
@@ -109,6 +100,19 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     }
   };
 
+  const updateQuestion = () => {
+    if (syncData) {
+      const rndQuestion =
+        questionUpdateCount >= 3
+          ? getRndEntry(QUESTIONS)
+          : getQuestionSmart(syncData.answers);
+      setRndQuestion(rndQuestion);
+      setAfterSunTxt(rndQuestion.t + "?");
+      setWasAnswerGiven(false);
+      questionUpdateCount++;
+    }
+  };
+
   const onSuccess = async (answerOrData?: Answer) => {
     setAfterSunTxt(
       typeof answerOrData?.val === "string" ? answerOrData.val : "",
@@ -119,12 +123,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     await promiseTimeout(SUN_ANI_DURATION);
     await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
 
-    if (MODE === "PURPOSE" && typeof answerOrData?.val === "string") {
-      setAfterSunTxt(answerOrData.val);
-      afterSun();
-    } else {
-      afterSun();
-    }
+    afterSun();
   };
 
   const cancelCountdown = () => {
@@ -175,10 +174,12 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
           wasAnswerGiven={getWasAnswerGiven()}
           bubbleTxt={getAfterSunTxt()}
           teardown={teardown}
+          mode={MODE}
           onShowQuestionAgain={() => {
             setIsShowAfterSun(false);
             setIsShowSuccessSun(false);
           }}
+          onChangeQuestion={() => updateQuestion()}
         />
       ) : (
         <div
@@ -207,36 +208,20 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
               </div>
             )}
             <Switch>
-              <Match when={(MODE === "ACTION_ADVICE") as any}>
+              <Match when={MODE === "ACTION_ADVICE"}>
                 <div id="minded-6622-action-advice">
                   <div>{ADVICE.txt}</div>
                   <div>{ADVICE.ico}</div>
                 </div>
               </Match>
-              <Match when={(MODE === "RATING") as any}>
+              <Match when={MODE === "RATING"}>
                 <RatingInteraction
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onSuccess}
                   onCancel={teardown}
                 />
               </Match>
-              <Match when={(MODE === "PURPOSE") as any}>
-                <Question
-                  question={{
-                    prompt:
-                      QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0]
-                        .prompt,
-                    t: QUESTION_CATEGORIES.XPurposeOfSession.specialQuestions[0]
-                      .t,
-                    categoryId: QuestionCategoryId.XPurposeOfSession,
-                  }}
-                  isDontSave={true}
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
-              </Match>
-              <Match when={!MODE as any}>
+              <Match when={MODE === "QUESTION"}>
                 {getRndQuestion() && (
                   <Question
                     question={getRndQuestion()}

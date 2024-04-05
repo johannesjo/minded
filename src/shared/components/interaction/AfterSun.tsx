@@ -2,10 +2,12 @@ import { createSignal, JSX, onMount } from "solid-js";
 import { bro } from "@src/util/browser";
 
 export const AfterSunComponent: (props: {
+  mode: "RATING" | "ACTION_ADVICE" | "QUESTION";
   bubbleTxt?: string;
   wasAnswerGiven: boolean;
   teardown: () => void;
   onShowQuestionAgain: () => void;
+  onChangeQuestion: () => void;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
@@ -101,6 +103,14 @@ export const AfterSunComponent: (props: {
           </div>
 
           <div id="minded-6622-additional-controls">
+            {props.mode === "QUESTION" && (
+              <div
+                title="Change question"
+                onClick={() => props.onChangeQuestion()}
+              >
+                ⇅
+              </div>
+            )}
             <div title="Hide sun" onClick={() => props.teardown()}>
               ✕
             </div>

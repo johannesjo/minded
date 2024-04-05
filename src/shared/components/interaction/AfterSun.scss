@@ -108,6 +108,7 @@ $sun-size: 40px;
   pointer-events: none;
   transition: .5s opacity;
   transition-delay: 0s;
+  gap: 4px;
 
   #minded-6622-after-sun:hover & {
     opacity: 1;
