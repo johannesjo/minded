@@ -29,7 +29,7 @@ import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.AfterSun
 import com.minded.minded.ui.model.DashboardViewModel
 
-val AFTER_SUN_CYCLE_DURATION_IN_S = 10
+val AFTER_SUN_CYCLE_DURATION_IN_S = 60
 
 class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     lateinit var windowManager: WindowManager

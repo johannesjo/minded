@@ -43,7 +43,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var scheduleFuture: ScheduledFuture<*>
     private var isInGracePeriod = false
-    private val GRACE_PERIOD = 1
+    private val GRACE_PERIOD = 30
     private val SHOW_APP_EVERY_X = 3
     private var backToHomeScreenCount = 0
 
