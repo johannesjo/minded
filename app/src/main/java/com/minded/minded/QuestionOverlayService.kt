@@ -173,7 +173,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
                         dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
-                        answerTxt = it
+                        answerTxt = if (it.length > 0) it else null
                     },
                     onBackToMain = {
                         Log.v("QuestionOverlaySVC", "onBackToMain")
