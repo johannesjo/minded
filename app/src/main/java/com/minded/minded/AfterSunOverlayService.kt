@@ -29,9 +29,9 @@ import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.AfterSun
 import com.minded.minded.ui.model.DashboardViewModel
 
+val AFTER_SUN_CYCLE_DURATION_IN_S = 10
 
 class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
-
     lateinit var windowManager: WindowManager
     lateinit var answerRepository: AnswerRepository
     private val _lifecycleRegistry = LifecycleRegistry(this)
@@ -41,12 +41,16 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
     private var overlayView: View? = null
+    private var lastQuestionTxt: String = ""
     private lateinit var dashboardViewModel: DashboardViewModel
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
             showOverlay()
+        }
+        if (intent.hasExtra(INTENT_EXTRA_TOAST_TXT)) {
+            lastQuestionTxt = intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: ""
         }
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
             hideOverlay()
@@ -80,6 +84,7 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         hideOverlay()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
 
+        // restart on destroy
         val timeToInvoke = 5 * 1000
         val intent: Intent = Intent(
             this@AfterSunOverlayService, AfterSunOverlayService::class.java
@@ -140,6 +145,10 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
     }
 
+    private fun isOverlayShown(): Boolean {
+        return overlayView != null
+    }
+
     private fun userDrivenClose() {
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
         stopTimer()
@@ -173,6 +182,14 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 //            Log.v("AfterSunOverlaySVC", "elapsedSeconds: $elapsedSeconds")
             elapsedSeconds++
             handler.postDelayed(this, 1000)
+            if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isOverlayShown() && elapsedSeconds > 0) {
+
+                Toast.makeText(
+                    this@AfterSunOverlayService,
+                    lastQuestionTxt + "?",
+                    Toast.LENGTH_LONG
+                ).show();
+            }
         }
     }
 
@@ -192,10 +209,13 @@ class AfterSunOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
     companion object {
         private const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
         private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
+        private const val INTENT_EXTRA_TOAST_TXT = "INTENT_EXTRA_TOAST_TXT"
 
-        internal fun showOverlay(context: Context) {
+
+        internal fun showOverlay(context: Context, toastTxt: String) {
             val intent = Intent(context, AfterSunOverlayService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+            intent.putExtra(INTENT_EXTRA_TOAST_TXT, toastTxt)
             context.startService(intent)
         }
 

@@ -1,6 +1,5 @@
 package com.minded.minded.ui.compose
 
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.StartOffset
 import androidx.compose.animation.core.animateFloat
@@ -26,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.minded.minded.AFTER_SUN_CYCLE_DURATION_IN_S
 
 
 @Composable
@@ -35,7 +35,7 @@ fun AfterSun(elapsedSeconds: Int = 0, onSunTap: () -> Unit = {}) {
     val clockString = String.format("%2d:%02d", minutes, remainingSeconds)
     val pulseAniDuration = 1000
     val pulseColorChangeAniDuration = 2000
-    val cycleDuration = 4000
+    val cycleDuration = 1000 * AFTER_SUN_CYCLE_DURATION_IN_S
 
     val infiniteTransition = rememberInfiniteTransition()
 
@@ -48,20 +48,18 @@ fun AfterSun(elapsedSeconds: Int = 0, onSunTap: () -> Unit = {}) {
             StartOffset(pulseColorChangeAniDuration / 2)
         )
     )
-    val color by infiniteTransition.animateColor(
-        initialValue = Color.White,
-        targetValue = Color(0xFFFFEDCA),
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                pulseColorChangeAniDuration,
-                cycleDuration - pulseColorChangeAniDuration
-            ),
-            repeatMode = RepeatMode.Reverse,
-        )
-    )
-
-
-
+    val color = Color.White
+//    val color by infiniteTransition.animateColor(
+//        initialValue = Color.White,
+//        targetValue = Color(0xFFFFEDCA),
+//        animationSpec = infiniteRepeatable(
+//            animation = tween(
+//                pulseColorChangeAniDuration,
+//                cycleDuration - pulseColorChangeAniDuration
+//            ),
+//            repeatMode = RepeatMode.Reverse,
+//        )
+//    )
 
 
     Box(
