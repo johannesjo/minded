@@ -127,6 +127,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         hideOverlay()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
 
+        // restart on destroay
         val timeToInvoke = 5 * 1000
         val intent: Intent = Intent(
             this@QuestionOverlayService, QuestionOverlayService::class.java
@@ -156,6 +157,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
 
         val rndQuestion = getQuestionSmart(emptyList())
+        var answerTxt: String? = null
 
         overlayView = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@QuestionOverlayService)
@@ -171,6 +173,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     onSubmitAnswer = {
                         Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
                         dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
+                        answerTxt = it
                     },
                     onBackToMain = {
                         Log.v("QuestionOverlaySVC", "onBackToMain")
@@ -178,7 +181,8 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
                     },
                     onShowAfterSun = {
                         Log.v("QuestionOverlaySVC", "onShowAfterSun")
-                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService)
+                        val txt = answerTxt ?: rndQuestion.t
+                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService, txt)
                     }
                 )
             }
