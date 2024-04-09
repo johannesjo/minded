@@ -75,7 +75,7 @@ $sun-size: 40px;
   background: #fff;
   min-width: 200px;
   border-radius: 8px;
-  padding: 8px (($sun-size/2) + 4px) 8px 8px;
+  padding: 8px (($sun-size*0.5) + 4px) 8px 8px;
   font-size: 13px;
   line-height: 16px;
   text-align: center;
