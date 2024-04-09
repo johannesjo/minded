@@ -2,11 +2,9 @@ package com.minded.minded
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.PixelFormat
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,14 +13,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.minded.minded.ui.compose.AfterSun
 
-val AFTER_SUN_CYCLE_DURATION_IN_S = 60
+val AFTER_SUN_CYCLE_DURATION_IN_S = 10
 
 class AfterSunOverlayService : CommonOverlayService() {
     private var lastQuestionTxt: String = ""
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.v(tag, intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: "")
+        Log.v(logTag, intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: "")
         if (intent.hasExtra(INTENT_EXTRA_TOAST_TXT)) {
             lastQuestionTxt = intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: ""
         }
@@ -37,13 +35,26 @@ class AfterSunOverlayService : CommonOverlayService() {
         }
 
         AfterSun(elapsedSeconds, {
-            Log.v("AfterSunOverlaySVC", "onSunTap()")
+            Log.v(logTag, "onSunTap()")
             userDrivenClose();
         })
     }
 
+    private var elapsedSeconds by mutableStateOf(0)
+    private val handler = Handler(Looper.getMainLooper())
+    private val runnable = object : Runnable {
+        override fun run() {
+//            Log.v(logTag, "elapsedSeconds: $elapsedSeconds")
+            elapsedSeconds++
+            handler.postDelayed(this, 1000)
+            if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isOverlayShown() && elapsedSeconds > 0) {
+                ReMinderMsgOverlayService.showOverlay(applicationContext, lastQuestionTxt)
+            }
+        }
+    }
+
     private fun userDrivenClose() {
-        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        Log.v(logTag, "userDrivenClose()")
         stopTimer()
         Toast.makeText(applicationContext, "Welcome back! \uD83C\uDF1E", Toast.LENGTH_SHORT).show()
         hideOverlay()
@@ -55,41 +66,9 @@ class AfterSunOverlayService : CommonOverlayService() {
         startActivity(intent)
     }
 
-    override fun getLayoutParams(): WindowManager.LayoutParams {
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_BLUR_BEHIND, // Add FLAG_NOT_FOCUSABLE
-            PixelFormat.TRANSLUCENT
-        )
-        params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
-        return params;
-    }
-
-
-    private var elapsedSeconds by mutableStateOf(0)
-    private val handler = Handler(Looper.getMainLooper())
-    private val runnable = object : Runnable {
-        override fun run() {
-//            Log.v("AfterSunOverlaySVC", "elapsedSeconds: $elapsedSeconds")
-            elapsedSeconds++
-            handler.postDelayed(this, 1000)
-            if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isOverlayShown() && elapsedSeconds > 0) {
-
-                Toast.makeText(
-                    this@AfterSunOverlayService,
-                    lastQuestionTxt + "?",
-                    Toast.LENGTH_LONG
-                ).show();
-            }
-        }
-    }
-
-    // ...
 
     private fun startTimer() {
-        Log.v("AfterSunOverlaySVC", "startTimer()")
+        Log.v(logTag, "startTimer()")
         elapsedSeconds = 0
         handler.post(runnable)
     }
