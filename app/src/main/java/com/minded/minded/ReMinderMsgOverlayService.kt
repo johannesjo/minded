@@ -34,7 +34,6 @@ class ReMinderMsgOverlayService : CommonOverlayService() {
         }, onCountdownComplete = {
             Log.v(logTag, "onCountdownComplete()")
             hideOverlay(context)
-            userDrivenClose()
         })
     }
 
