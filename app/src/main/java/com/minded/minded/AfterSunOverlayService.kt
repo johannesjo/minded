@@ -10,19 +10,28 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.ui.compose.AfterSun
 
-val AFTER_SUN_CYCLE_DURATION_IN_S = 10
+val AFTER_SUN_CYCLE_DURATION_IN_S = 60
 
+@Suppress("DEPRECATION")
 class AfterSunOverlayService : CommonOverlayService() {
-    private var lastQuestionTxt: String = ""
+    private var questionForPrompt: QuestionForPrompt? = null
+    private var answerTxt: String? = null
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.v(logTag, intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: "")
-        if (intent.hasExtra(INTENT_EXTRA_TOAST_TXT)) {
-            lastQuestionTxt = intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: ""
+        if (intent.hasExtra(INTENT_EXTRA_QUESTION)) {
+            questionForPrompt =
+                intent.getSerializableExtra(INTENT_EXTRA_QUESTION) as QuestionForPrompt
+            answerTxt = null
         }
+        if (intent.hasExtra(INTENT_EXTRA_ANSWER_TXT)) {
+            questionForPrompt = null
+            answerTxt = intent.getStringExtra(INTENT_EXTRA_ANSWER_TXT)
+        }
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -47,7 +56,11 @@ class AfterSunOverlayService : CommonOverlayService() {
             elapsedSeconds++
             handler.postDelayed(this, 1000)
             if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isOverlayShown() && elapsedSeconds > 0) {
-                ReMinderMsgOverlayService.showOverlay(applicationContext, lastQuestionTxt)
+                ReMinderMsgOverlayService.showOverlay(
+                    applicationContext,
+                    questionForPrompt,
+                    answerTxt
+                )
             }
         }
     }
@@ -64,12 +77,23 @@ class AfterSunOverlayService : CommonOverlayService() {
 
 
     companion object {
-        private const val INTENT_EXTRA_TOAST_TXT = "INTENT_EXTRA_TOAST_TXT"
+        private const val INTENT_EXTRA_ANSWER_TXT = "INTENT_EXTRA_ANSWER_TXT"
+        private const val INTENT_EXTRA_QUESTION = "INTENT_EXTRA_QUESTION"
 
-        internal fun showOverlay(context: Context, toastTxt: String) {
+        internal fun showOverlay(
+            context: Context,
+            questionForPrompt: QuestionForPrompt? = null,
+            answerTxt: String? = null
+        ) {
             val intent = Intent(context, AfterSunOverlayService::class.java)
-            intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
-            intent.putExtra(INTENT_EXTRA_TOAST_TXT, toastTxt)
+            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+
+            if (questionForPrompt != null) {
+                intent.putExtra(INTENT_EXTRA_QUESTION, questionForPrompt)
+            }
+            if (answerTxt != null) {
+                intent.putExtra(INTENT_EXTRA_ANSWER_TXT, answerTxt)
+            }
             context.startService(intent)
         }
 

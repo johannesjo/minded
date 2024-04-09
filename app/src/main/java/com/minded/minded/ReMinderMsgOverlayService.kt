@@ -7,18 +7,31 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.ui.compose.ReminderMsg
 
 
 class ReMinderMsgOverlayService : CommonOverlayService() {
-    private var lastQuestionTxt: String = ""
+    private var questionForPrompt: QuestionForPrompt? = null
+    private var answerTxt: String? = null
 
+
+    private fun isQuestion(): Boolean {
+        return answerTxt == null
+    }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.v(logTag, intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: "")
-        if (intent.hasExtra(INTENT_EXTRA_TOAST_TXT)) {
-            lastQuestionTxt = intent.getStringExtra(INTENT_EXTRA_TOAST_TXT) ?: ""
+        if (intent.hasExtra(INTENT_EXTRA_QUESTION)) {
+            questionForPrompt =
+                intent.getSerializableExtra(INTENT_EXTRA_QUESTION) as QuestionForPrompt
+            answerTxt = null
         }
+        if (intent.hasExtra(INTENT_EXTRA_ANSWER_TXT)) {
+            questionForPrompt = null
+            answerTxt = intent.getStringExtra(INTENT_EXTRA_ANSWER_TXT)
+        }
+        if (isQuestion()) (questionForPrompt?.t + '?') else answerTxt ?: ""
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -26,11 +39,18 @@ class ReMinderMsgOverlayService : CommonOverlayService() {
     @Composable
     override fun Cmp() {
         val context = LocalContext.current
+        val reminderTxt = if (isQuestion()) (questionForPrompt?.t + '?') else answerTxt ?: ""
+        Log.v(logTag, "onMsgTap() isQuestion()")
 
-        ReminderMsg(msg = lastQuestionTxt, onMsgTap = {
-            Log.v(logTag, "onMsgTap()")
+
+        ReminderMsg(msg = reminderTxt, onMsgTap = {
+            Log.v(logTag, "onMsgTap() ${isQuestion()}")
+            if (isQuestion()) {
+                QuestionOverlayService.showOverlay(context, questionForPrompt = questionForPrompt)
+            } else {
+                userDrivenClose()
+            }
             hideOverlay(context)
-            userDrivenClose()
         }, onCountdownComplete = {
             Log.v(logTag, "onCountdownComplete()")
             hideOverlay(context)
@@ -51,15 +71,27 @@ class ReMinderMsgOverlayService : CommonOverlayService() {
 
 
     companion object {
-        private const val INTENT_EXTRA_TOAST_TXT = "INTENT_EXTRA_TOAST_TXT"
+        private const val INTENT_EXTRA_ANSWER_TXT = "INTENT_EXTRA_ANSWER_TXT"
+        private const val INTENT_EXTRA_QUESTION = "INTENT_EXTRA_QUESTION"
 
-        internal fun showOverlay(context: Context, toastTxt: String) {
-            Log.v("ReMinderMsgOverlaySVC", "showOverlay() $toastTxt")
+
+        internal fun showOverlay(
+            context: Context,
+            questionForPrompt: QuestionForPrompt? = null,
+            answerTxt: String? = null
+        ) {
             val intent = Intent(context, ReMinderMsgOverlayService::class.java)
-            intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
-            intent.putExtra(INTENT_EXTRA_TOAST_TXT, toastTxt)
+            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+
+            if (questionForPrompt != null) {
+                intent.putExtra(INTENT_EXTRA_QUESTION, questionForPrompt)
+            }
+            if (answerTxt != null) {
+                intent.putExtra(INTENT_EXTRA_ANSWER_TXT, answerTxt)
+            }
             context.startService(intent)
         }
+
 
         internal fun hideOverlay(context: Context) {
             val intent = Intent(context, ReMinderMsgOverlayService::class.java)
