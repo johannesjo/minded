@@ -25,8 +25,6 @@ class QuestionOverlayService : CommonOverlayService() {
     private lateinit var dashboardViewModel: DashboardViewModel
     private var isInGracePeriod = false
     private val GRACE_PERIOD = 30
-    private val SHOW_APP_EVERY_X = 3
-    private var backToHomeScreenCount = 0
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -111,22 +109,6 @@ class QuestionOverlayService : CommonOverlayService() {
         }
     }
 
-    private fun userDrivenClose() {
-        Log.v("QuestionOverlaySVC", "userDrivenClose()")
-        // TODO count to DB
-        backToHomeScreenCount++
-        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-        } else {
-            val intent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            startActivity(intent)
-        }
-    }
 
     override fun getLayoutParams(): WindowManager.LayoutParams {
         @Suppress("DEPRECATION") return WindowManager.LayoutParams(

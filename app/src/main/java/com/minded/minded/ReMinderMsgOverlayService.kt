@@ -6,13 +6,9 @@ import android.graphics.PixelFormat
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import com.minded.minded.ui.compose.ReminderMsg
-import kotlinx.coroutines.delay
 
-
-val SHOW_REMINDER_DURATION_IN_S = 10
 
 class ReMinderMsgOverlayService : CommonOverlayService() {
     private var lastQuestionTxt: String = ""
@@ -30,11 +26,16 @@ class ReMinderMsgOverlayService : CommonOverlayService() {
     @Composable
     override fun Cmp() {
         val context = LocalContext.current
-        LaunchedEffect(Unit) {
-            delay(5000) // delay for 10 seconds
+
+        ReminderMsg(msg = lastQuestionTxt, onMsgTap = {
+            Log.v(logTag, "onMsgTap()")
             hideOverlay(context)
-        }
-        ReminderMsg(msg = lastQuestionTxt)
+            userDrivenClose()
+        }, onCountdownComplete = {
+            Log.v(logTag, "onCountdownComplete()")
+            hideOverlay(context)
+            userDrivenClose()
+        })
     }
 
     override fun getLayoutParams(): WindowManager.LayoutParams {
