@@ -1,47 +1,28 @@
 package com.minded.minded
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.os.IBinder
 import android.util.Log
-import android.view.View
 import android.view.WindowManager
-import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.minded.minded.data.answers.AnswerRepository
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.ui.compose.OverlayBig
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 
-class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
+class QuestionOverlayService : CommonOverlayService() {
 
-    lateinit var windowManager: WindowManager
-    lateinit var answerRepository: AnswerRepository
-    private val _lifecycleRegistry = LifecycleRegistry(this)
-    private val _savedStateRegistryController: SavedStateRegistryController =
-        SavedStateRegistryController.create(this)
-    override val savedStateRegistry: SavedStateRegistry =
-        _savedStateRegistryController.savedStateRegistry
-    override val lifecycle: Lifecycle = _lifecycleRegistry
-    private var overlayView: View? = null
     private var lastForeGroundApp: String = ""
     private lateinit var dashboardViewModel: DashboardViewModel
-    private lateinit var scheduleFuture: ScheduledFuture<*>
     private var isInGracePeriod = false
     private val GRACE_PERIOD = 30
     private val SHOW_APP_EVERY_X = 3
@@ -49,12 +30,9 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
-            showOverlay()
             AfterSunOverlayService.hideOverlay(this)
-        }
-        if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
-            hideOverlay()
         }
         val currentPackage =
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
@@ -62,9 +40,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         if (currentPackage != null) {
             checkToShowOverlay(currentPackage)
         }
-
-
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun isBlockedPackage(packageName: String): Boolean {
@@ -101,94 +77,38 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         }
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        Log.v("QuestionOverlaySVC", "onCreate()")
 
-        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        answerRepository = AnswerRepository(this)
-        dashboardViewModel = DashboardViewModel(answerRepository)
-
-
-        _savedStateRegistryController.performAttach()
-        _savedStateRegistryController.performRestore(null)
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        throw RuntimeException("bound mode not supported")
-    }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.v("QuestionOverlaySVC", "onDestroy()")
-
-        hideOverlay()
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-
-        // restart on destroay
-        val timeToInvoke = 5 * 1000
-        val intent: Intent = Intent(
-            this@QuestionOverlayService, QuestionOverlayService::class.java
-        )
-        val pendingIntent = PendingIntent.getService(
-            this@QuestionOverlayService, 0, intent, PendingIntent.FLAG_IMMUTABLE
-        )
-        val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
-        alarm.set(
-            AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + timeToInvoke.toLong(),
-            pendingIntent
-        )
-    }
-
-
-
-    private fun showOverlay() {
-        Log.v("QuestionOverlaySVC", "showOverlay()")
-        AfterSunOverlayService.hideOverlay(this)
-        if (overlayView != null) {
-            Log.v("QuestionOverlaySVC", "overlay already shown - aborting")
-            return
-        }
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
-
-        val rndQuestion = getQuestionSmart(emptyList())
+    @Composable
+    override fun Cmp() {
         var answerTxt: String? = null
+        var rndQuestion by remember { mutableStateOf<QuestionForPrompt?>(null) }
 
-        overlayView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@QuestionOverlayService)
-            setViewTreeSavedStateRegistryOwner(this@QuestionOverlayService)
-            setContent {
-// NOTE: theme wont work since it's not an activity
-//                MindedTheme {
-                OverlayBig(
-                    endOverlay = {
-                        hideOverlay()
-                    },
-                    rndQuestion = rndQuestion,
-                    onSubmitAnswer = {
-                        Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
-                        dashboardViewModel.addAnswer(it, rndQuestion.categoryId)
-                        answerTxt = if (it.length > 0) it else null
-                    },
-                    onBackToMain = {
-                        Log.v("QuestionOverlaySVC", "onBackToMain")
-                        userDrivenClose();
-                    },
-                    onShowAfterSun = {
-                        Log.v("QuestionOverlaySVC", "onShowAfterSun")
-                        val txt = answerTxt ?: rndQuestion.t
-                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService, txt)
-                    }
-                )
-            }
+        LaunchedEffect(Unit) {
+            rndQuestion = getQuestionSmart(emptyList())
         }
-        windowManager.addView(overlayView, getLayoutParams())
 
+        rndQuestion?.let { question ->
+            OverlayBig(
+                endOverlay = {
+                    hideOverlay()
+                },
+                rndQuestion = question,
+                onSubmitAnswer = {
+                    Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
+                    dashboardViewModel.addAnswer(it, question.categoryId)
+                    answerTxt = if (it.length > 0) it else null
+                },
+                onBackToMain = {
+                    Log.v("QuestionOverlaySVC", "onBackToMain")
+                    userDrivenClose();
+                },
+                onShowAfterSun = {
+                    Log.v("QuestionOverlaySVC", "onShowAfterSun")
+                    val txt = answerTxt ?: question.t
+                    AfterSunOverlayService.showOverlay(this@QuestionOverlayService, txt)
+                }
+            )
+        }
     }
 
     private fun userDrivenClose() {
@@ -208,23 +128,7 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         }
     }
 
-    private fun hideOverlay() {
-        Log.v(
-            "QuestionOverlaySVC", "hideOverlay()"
-        )
-        if (overlayView == null) {
-            Log.v(
-                "QuestionOverlaySVC", "overlay not shown - aborting"
-            )
-            return
-        }
-        windowManager.removeView(overlayView)
-        overlayView = null
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-        _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-    }
-
-    private fun getLayoutParams(): WindowManager.LayoutParams {
+    override fun getLayoutParams(): WindowManager.LayoutParams {
         @Suppress("DEPRECATION") return WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -234,20 +138,17 @@ class QuestionOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwne
         )
     }
 
-
     companion object {
-        private const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
-        private const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
-
         internal fun showOverlay(context: Context) {
             val intent = Intent(context, QuestionOverlayService::class.java)
-            intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
             context.startService(intent)
+            AfterSunOverlayService.hideOverlay(context)
         }
 
         internal fun hideOverlay(context: Context) {
             val intent = Intent(context, QuestionOverlayService::class.java)
-            intent.putExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
+            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
             context.startService(intent)
         }
     }
