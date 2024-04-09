@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,20 +51,6 @@ class AfterSunOverlayService : CommonOverlayService() {
             }
         }
     }
-
-    private fun userDrivenClose() {
-        Log.v(logTag, "userDrivenClose()")
-        stopTimer()
-        Toast.makeText(applicationContext, "Welcome back! \uD83C\uDF1E", Toast.LENGTH_SHORT).show()
-        hideOverlay()
-        // TODO count to DB
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        startActivity(intent)
-    }
-
 
     private fun startTimer() {
         Log.v(logTag, "startTimer()")

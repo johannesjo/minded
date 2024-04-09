@@ -22,6 +22,9 @@ import com.minded.minded.data.answers.AnswerRepository
 
 
 open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
+    // TODO move to db
+    var backToHomeScreenCount = 0
+    private val SHOW_APP_EVERY_X = 3
 
 
     val logTag = javaClass.simpleName
@@ -143,6 +146,23 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
         )
         params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
         return params;
+    }
+
+    fun userDrivenClose() {
+        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        // TODO count to DB
+        backToHomeScreenCount++
+        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        } else {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+        }
     }
 
     companion object {
