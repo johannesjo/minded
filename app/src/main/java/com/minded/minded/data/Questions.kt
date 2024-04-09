@@ -1,6 +1,7 @@
 package com.minded.minded.data
 
 import com.minded.minded.data.answers.Answer
+import java.io.Serializable
 
 enum class QuestionCategoryId {
     Motivation,
@@ -27,7 +28,7 @@ data class QuestionForPrompt(
     val categoryId: QuestionCategoryId,
     val t: String,
     val prompt: String? = null
-)
+) : Serializable
 
 
 data class QuestionCategory(

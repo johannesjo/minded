@@ -42,10 +42,9 @@ class MainActivity : AppCompatActivity() {
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-//        QuestionOverlayService.showOverlay(this)
-//        AfterSunOverlayService.showOverlay(this, "Hello, World!")
-        Log.v("MAIN", "ON_CREATE MAIN ACTIVITY 2")
-        ReMinderMsgOverlayService.showOverlay(this, "Hello, World!")
+        QuestionOverlayService.showOverlay(this)
+//        AfterSunOverlayService.showOverlay(this, answerTxt = "Hello, World!")
+//        ReMinderMsgOverlayService.showOverlay(this, answerTxt = "Hello, World!")
 
 
         lifecycleScope.launch {

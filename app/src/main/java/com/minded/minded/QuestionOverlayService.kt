@@ -25,20 +25,24 @@ class QuestionOverlayService : CommonOverlayService() {
     private lateinit var dashboardViewModel: DashboardViewModel
     private var isInGracePeriod = false
     private val GRACE_PERIOD = 30
-
+    private var questionToShow: QuestionForPrompt? = null
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
             AfterSunOverlayService.hideOverlay(this)
+            ReMinderMsgOverlayService.hideOverlay(this)
+        }
+        if (intent.hasExtra(INTENT_EXTRA_QUESTION)) {
+            questionToShow =
+                intent.getSerializableExtra(INTENT_EXTRA_QUESTION) as? QuestionForPrompt
         }
         val currentPackage =
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
-        Log.v("QuestionOverlaySVC", "onStartCommand() $currentPackage")
+        Log.v(logTag, "onStartCommand() $currentPackage")
         if (currentPackage != null) {
             checkToShowOverlay(currentPackage)
         }
-        return START_NOT_STICKY
+        return super.onStartCommand(intent, flags, startId)
     }
 
     private fun isBlockedPackage(packageName: String): Boolean {
@@ -48,14 +52,14 @@ class QuestionOverlayService : CommonOverlayService() {
 
     private fun checkToShowOverlay(currentPackageName: String) {
         Log.v(
-            "QuestionOverlaySVC",
+            logTag,
             "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} $lastForeGroundApp"
         )
 
         // TODO check if needed
-//        if (!isBlockedPackage(currentPackageName)) {
-//            hideOverlay();
-//        }
+        if (!isBlockedPackage(currentPackageName)) {
+            hideOverlay();
+        }
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher") {
             hideOverlay();
@@ -63,7 +67,7 @@ class QuestionOverlayService : CommonOverlayService() {
         }
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
-            Log.v("QuestionOverlaySVC", "SHOW OVERLAY for: $currentPackageName")
+            Log.v(logTag, "SHOW OVERLAY for: $currentPackageName")
             lastForeGroundApp = currentPackageName
             showOverlay()
             isInGracePeriod = true
@@ -82,7 +86,12 @@ class QuestionOverlayService : CommonOverlayService() {
         var rndQuestion by remember { mutableStateOf<QuestionForPrompt?>(null) }
 
         LaunchedEffect(Unit) {
-            rndQuestion = getQuestionSmart(emptyList())
+            Log.v(logTag, "Cmp() ${questionToShow?.t}")
+            if (questionToShow != null) {
+                rndQuestion = questionToShow
+            } else {
+                rndQuestion = getQuestionSmart(emptyList())
+            }
         }
 
         rndQuestion?.let { question ->
@@ -92,18 +101,25 @@ class QuestionOverlayService : CommonOverlayService() {
                 },
                 rndQuestion = question,
                 onSubmitAnswer = {
-                    Log.v("QuestionOverlaySVC", "onSubmitAnswer: $it")
+                    Log.v(logTag, "onSubmitAnswer: $it")
                     dashboardViewModel.addAnswer(it, question.categoryId)
                     answerTxt = if (it.length > 0) it else null
                 },
                 onBackToMain = {
-                    Log.v("QuestionOverlaySVC", "onBackToMain")
+                    Log.v(logTag, "onBackToMain")
                     userDrivenClose();
                 },
                 onShowAfterSun = {
-                    Log.v("QuestionOverlaySVC", "onShowAfterSun")
-                    val txt = answerTxt ?: question.t
-                    AfterSunOverlayService.showOverlay(this@QuestionOverlayService, txt)
+                    Log.v(logTag, "onShowAfterSun")
+
+                    if (answerTxt != null) {
+                        AfterSunOverlayService.showOverlay(
+                            this@QuestionOverlayService,
+                            answerTxt = answerTxt
+                        )
+                    } else {
+                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService, question)
+                    }
                 }
             )
         }
@@ -121,9 +137,17 @@ class QuestionOverlayService : CommonOverlayService() {
     }
 
     companion object {
-        internal fun showOverlay(context: Context) {
+        const val INTENT_EXTRA_QUESTION = "INTENT_EXTRA_QUESTION"
+
+        internal fun showOverlay(
+            context: Context,
+            questionForPrompt: QuestionForPrompt? = null,
+        ) {
             val intent = Intent(context, QuestionOverlayService::class.java)
             intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+            if (questionForPrompt != null) {
+                intent.putExtra(INTENT_EXTRA_QUESTION, questionForPrompt)
+            }
             context.startService(intent)
             AfterSunOverlayService.hideOverlay(context)
         }
