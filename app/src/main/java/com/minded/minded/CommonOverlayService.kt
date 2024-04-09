@@ -24,7 +24,7 @@ import com.minded.minded.data.answers.AnswerRepository
 open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
 
-    val tag = javaClass.simpleName
+    val logTag = javaClass.simpleName
     lateinit var windowManager: WindowManager
     lateinit var answerRepository: AnswerRepository
     private val _lifecycleRegistry = LifecycleRegistry(this)
@@ -37,7 +37,7 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.v(tag, "onStartCommand()")
+        Log.v(logTag, "onStartCommand()")
         if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
             showOverlay()
         }
@@ -55,7 +55,7 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
 
     override fun onCreate() {
         super.onCreate()
-        Log.v(tag, "onCreate()")
+        Log.v(logTag, "onCreate()")
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         answerRepository = AnswerRepository(this)
@@ -98,7 +98,7 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
 
     fun showOverlay() {
         if (overlayView != null) {
-            Log.v(tag, "overlay already shown - aborting")
+            Log.v(logTag, "overlay already shown - aborting")
             return
         }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
@@ -119,11 +119,11 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
 
     fun hideOverlay() {
         Log.v(
-            tag, "hideOverlay()"
+            logTag, "hideOverlay()"
         )
         if (overlayView == null) {
             Log.v(
-                tag, "overlay not shown - aborting"
+                logTag, "overlay not shown - aborting"
             )
             return
         }

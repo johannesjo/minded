@@ -36,14 +36,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
+        val context = this
         val answerRepository = AnswerRepository(this)
         val viewModelFactory = DashboardViewModelFactory(answerRepository)
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-
-//        QuestionOverlayService.showOverlay(this);
-        val context = this
+//        QuestionOverlayService.showOverlay(this)
+        AfterSunOverlayService.showOverlay(this, "Hello, World!")
+        Log.v("MAIN", "ON_CREATE MAIN ACTIVITY 2")
+        ReMinderMsgOverlayService.showOverlay(this, "Hello, World!")
 
 
         lifecycleScope.launch {
@@ -71,15 +73,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-
-//        Toast.makeText(
-//            this,
-//            "START SERVICE",
-//            Toast.LENGTH_SHORT
-//        ).show()
-//        startService(Intent(this, QuestionOverlayService::class.java))
-//        QuestionOverlayService.showOverlay(this)
     }
 
     override fun onResume() {
