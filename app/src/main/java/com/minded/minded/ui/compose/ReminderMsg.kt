@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -21,7 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -65,46 +64,29 @@ fun ReminderMsg(
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
-            val brush = Brush.radialGradient(listOf(Color.Red, Color.Transparent))
-            Canvas(
-                modifier = Modifier
-//                    .border(3.dp, Color.Red, CircleShape)
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                onDraw = {
-                    drawCircle(brush)
-                }
-            )
             Box(
                 modifier = Modifier
-                    .padding(8.dp)
+                    .shadow(4.dp, CircleShape, true, Color.Red, Color.Red)
                     .fillMaxHeight()
                     .fillMaxWidth()
+                    .clickable(onClick = onMsgTap)
             ) {
 
-                Box(
+
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth()
-                        .clickable(onClick = onMsgTap)
+                        .matchParentSize()
                 ) {
-
-
-                    Surface(
-                        shape = CircleShape,
-                        color = Color.White,
-                        modifier = Modifier
-                            .matchParentSize()
-                    ) {
-                        Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
-                            Text(
-                                text = msg,
-                                fontSize = 15.sp,
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Normal,
-                                maxLines = 1
-                            )
-                        }
+                    Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        Text(
+                            text = msg,
+                            fontSize = 15.sp,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Normal,
+                            maxLines = 1
+                        )
                     }
                 }
             }
