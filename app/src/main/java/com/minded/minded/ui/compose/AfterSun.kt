@@ -1,11 +1,5 @@
 package com.minded.minded.ui.compose
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.StartOffset
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -14,10 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -25,7 +17,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.minded.minded.AFTER_SUN_CYCLE_DURATION_IN_S
 
 
 @Composable
@@ -33,34 +24,7 @@ fun AfterSun(elapsedSeconds: Int = 0, onSunTap: () -> Unit = {}) {
     val minutes = elapsedSeconds / 60
     val remainingSeconds = elapsedSeconds % 60
     val clockString = String.format("%2d:%02d", minutes, remainingSeconds)
-    val pulseAniDuration = 1000
-    val pulseColorChangeAniDuration = 2000
-    val cycleDuration = 1000 * AFTER_SUN_CYCLE_DURATION_IN_S
-
-    val infiniteTransition = rememberInfiniteTransition()
-
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(pulseAniDuration, cycleDuration - pulseAniDuration),
-            repeatMode = RepeatMode.Reverse,
-            StartOffset(pulseColorChangeAniDuration / 2)
-        )
-    )
     val color = Color.White
-//    val color by infiniteTransition.animateColor(
-//        initialValue = Color.White,
-//        targetValue = Color(0xFFFFEDCA),
-//        animationSpec = infiniteRepeatable(
-//            animation = tween(
-//                pulseColorChangeAniDuration,
-//                cycleDuration - pulseColorChangeAniDuration
-//            ),
-//            repeatMode = RepeatMode.Reverse,
-//        )
-//    )
-
 
     Box(
         modifier = Modifier
@@ -86,7 +50,6 @@ fun AfterSun(elapsedSeconds: Int = 0, onSunTap: () -> Unit = {}) {
 
             Box(
                 modifier = Modifier
-                    .scale(scale)
                     .size(36.dp)
                     .clickable(onClick = onSunTap)
             ) {
