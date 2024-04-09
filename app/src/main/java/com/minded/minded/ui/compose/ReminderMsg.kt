@@ -79,13 +79,15 @@ fun ReminderMsg(
                     modifier = Modifier
                         .matchParentSize()
                 ) {
-                    Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    Box(
+                        contentAlignment = androidx.compose.ui.Alignment.Center,
+                        modifier = Modifier.padding(12.dp)
+                    ) {
                         Text(
                             text = msg,
                             fontSize = 15.sp,
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Normal,
-                            maxLines = 1
                         )
                     }
                 }
@@ -130,6 +132,21 @@ fun ReminderMsgPreview() {
     ) {
         Box(modifier = Modifier.size(500.dp)) {
             ReminderMsg(msg = "Hello, World!", isInitiallyVisible = true)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ReminderMsgPreview2() {
+    Surface(
+        color = Color.White
+    ) {
+        Box(modifier = Modifier.size(500.dp)) {
+            ReminderMsg(
+                msg = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+                isInitiallyVisible = true
+            )
         }
     }
 }
