@@ -38,7 +38,7 @@ fun ReminderMsg(
     isInitiallyVisible: Boolean = false
 ) {
     var isVisible = remember { mutableStateOf(isInitiallyVisible) }
-    val height = 60.dp
+    val height = 70.dp
 
     LaunchedEffect(Unit) {
         isVisible.value = true
@@ -59,7 +59,8 @@ fun ReminderMsg(
             modifier = Modifier
 //                .border(1.dp, Color.Red, CircleShape)
                 .fillMaxWidth()
-                .padding(8.dp)
+//                .padding(start = 16.dp, bottom = 16.dp, top = 16.dp, end = 16.dp)
+                .padding(all = 26.dp)
                 .height(height),
             contentAlignment = Alignment.Center // This will center the inner Box
 
