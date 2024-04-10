@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
         QuestionOverlayService.showOverlay(this)
+//        SuccessSunOverlayService.showOverlay(this)
 //        AfterSunOverlayService.showOverlay(this, answerTxt = "Hello, World!")
 //        ReMinderMsgOverlayService.showOverlay(this, answerTxt = "Hello, World!")
 

@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.OverlayBig
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
@@ -80,6 +81,12 @@ class QuestionOverlayService : CommonOverlayService() {
     }
 
 
+    override fun onCreate() {
+        val answerRepository = AnswerRepository(this)
+        dashboardViewModel = DashboardViewModel(answerRepository)
+        super.onCreate()
+    }
+
     @Composable
     override fun Cmp() {
         var answerTxt: String? = null
@@ -96,30 +103,21 @@ class QuestionOverlayService : CommonOverlayService() {
 
         rndQuestion?.let { question ->
             OverlayBig(
-                endOverlay = {
-                    hideOverlay()
-                },
                 rndQuestion = question,
                 onSubmitAnswer = {
                     Log.v(logTag, "onSubmitAnswer: $it")
                     dashboardViewModel.addAnswer(it, question.categoryId)
                     answerTxt = if (it.length > 0) it else null
+                    SuccessSunOverlayService.showOverlay(
+                        this@QuestionOverlayService,
+                        isShowAfterSunAfter = true,
+                        answerTxt = answerTxt
+                    )
+                    hideOverlay()
                 },
-                onBackToMain = {
-                    Log.v(logTag, "onBackToMain")
-                    userDrivenClose();
-                },
-                onShowAfterSun = {
-                    Log.v(logTag, "onShowAfterSun")
-
-                    if (answerTxt != null) {
-                        AfterSunOverlayService.showOverlay(
-                            this@QuestionOverlayService,
-                            answerTxt = answerTxt
-                        )
-                    } else {
-                        AfterSunOverlayService.showOverlay(this@QuestionOverlayService, question)
-                    }
+                onSkip = {
+                    AfterSunOverlayService.showOverlay(this@QuestionOverlayService, question)
+                    hideOverlay()
                 }
             )
         }

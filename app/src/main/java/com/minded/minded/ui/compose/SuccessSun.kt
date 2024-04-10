@@ -1,5 +1,6 @@
 package com.minded.minded.ui.compose
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -18,39 +19,58 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.minded.minded.ui.theme.StandardGradient
+import kotlinx.coroutines.delay
 import kotlin.math.hypot
 import kotlin.math.min
 
 @Composable
 fun SuccessSun(
-    modifier: Modifier = Modifier,
+    text: String = "tap sun to close app",
     inDuration: Int = 1000,
     successDuration: Int = 1000,
-    onClick: () -> Unit = {}
+    fadeOutDuration: Int = 500,
+    onAfterTapSun: () -> Unit = {},
+    onAfterShow: () -> Unit = {},
 ) {
     val initialRadius = 0f
     var isClickTriggered by remember { mutableStateOf(false) }
     var radius by remember { mutableFloatStateOf(initialRadius) }
     var textAlpha by remember { mutableStateOf(0f) }
-    val animatedAlpha by animateFloatAsState(
+    val animatedTextAlpha by animateFloatAsState(
         targetValue = textAlpha,
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing
         )
     )
+    var boxAlpha by remember { mutableStateOf(1f) }
+    val animatedBoxAlpha by animateFloatAsState(
+        targetValue = boxAlpha,
+        animationSpec = tween(
+            durationMillis = fadeOutDuration,
+            easing = LinearEasing
+        )
+    )
 
     Box(
-        modifier = modifier
+        modifier = Modifier
+            .alpha(animatedBoxAlpha)
             .fillMaxSize()
-            .clickable(onClick = { isClickTriggered = true; onClick() })
-            .background(Color.Transparent)
+            .clickable(onClick = { isClickTriggered = true; })
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = StandardGradient
+                )
+            )
             .drawBehind {
                 drawCircle(
                     color = Color.White,
@@ -61,8 +81,8 @@ fun SuccessSun(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "tap sun to close app",
-            color = Color.Black.copy(alpha = animatedAlpha)
+            text = text,
+            color = Color.Black.copy(alpha = animatedTextAlpha)
         )
     }
     val animatedRadius = remember { Animatable(initialRadius) }
@@ -78,7 +98,13 @@ fun SuccessSun(
         animatedRadius.animateTo(minRadiusPx, animationSpec = tween(inDuration)) {
             radius = value
         }
-//        animatedRadius.snapTo(initialRadius)
+        boxAlpha = 0f
+        delay(fadeOutDuration.toLong())
+        Log.v("SuccessSun", "onAfterShow() ${isClickTriggered}")
+
+        if (!isClickTriggered) {
+            onAfterShow()
+        }
     }
 
     LaunchedEffect(isClickTriggered) {
@@ -87,7 +113,8 @@ fun SuccessSun(
             animatedRadius.animateTo(maxRadiusPx, animationSpec = tween(successDuration)) {
                 radius = value
             }
-//            animatedRadius.snapTo(initialRadius)
+            boxAlpha = 0f
+            onAfterTapSun()
         }
     }
 

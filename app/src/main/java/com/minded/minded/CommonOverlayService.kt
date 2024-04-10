@@ -120,7 +120,7 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
     }
 
 
-    fun hideOverlay() {
+    open fun hideOverlay() {
         Log.v(
             logTag, "hideOverlay()"
         )
@@ -163,6 +163,7 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
             }
             startActivity(intent)
         }
+        hideOverlay()
     }
 
     companion object {
