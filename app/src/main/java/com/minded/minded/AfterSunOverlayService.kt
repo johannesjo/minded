@@ -45,6 +45,11 @@ class AfterSunOverlayService : CommonOverlayService() {
         AfterSun(elapsedSeconds, {
             Log.v(logTag, "onSunTap()")
             userDrivenClose();
+            SuccessSunOverlayService.showOverlay(
+                applicationContext,
+                isShowAfterSunAfter = false,
+                sunTxt = "Welcome back!"
+            )
         })
     }
 
