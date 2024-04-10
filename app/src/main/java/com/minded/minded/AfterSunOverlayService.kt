@@ -72,6 +72,7 @@ class AfterSunOverlayService : CommonOverlayService() {
 
     override fun hideOverlay() {
         super.hideOverlay()
+        ReMinderMsgOverlayService.hideOverlay(this)
         stopTimer()
     }
 
