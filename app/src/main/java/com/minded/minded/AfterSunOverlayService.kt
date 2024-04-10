@@ -65,8 +65,14 @@ class AfterSunOverlayService : CommonOverlayService() {
         }
     }
 
+    override fun hideOverlay() {
+        super.hideOverlay()
+        stopTimer()
+    }
+
     private fun startTimer() {
         Log.v(logTag, "startTimer()")
+        stopTimer()
         elapsedSeconds = 0
         handler.post(runnable)
     }
