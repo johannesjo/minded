@@ -40,6 +40,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
 
+    private lateinit var answerRepository: AnswerRepository
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var sharedOverlayViewModel: SharedOverlayViewModel
 
@@ -51,10 +52,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     override fun onCreate() {
-        val answerRepository = AnswerRepository(this)
+        answerRepository = AnswerRepository(this)
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         dashboardViewModel = DashboardViewModel(answerRepository)
-        sharedOverlayViewModel = SharedOverlayViewModel();
+        sharedOverlayViewModel = SharedOverlayViewModel(answerRepository);
 
         questionOverlayWindow =
             QuestionWindow(this, sharedOverlayViewModel, windowManager, dashboardViewModel)
