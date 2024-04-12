@@ -4,32 +4,34 @@ import android.graphics.PixelFormat
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.ReminderMsg
 
 
 class ReMinderMsgWindow(
     private val ctrlSvc: OverlayControllerService,
+    private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
-) : CommonWindow(ctrlSvc, windowManager) {
+) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
     override val logTag = javaClass.simpleName
 
-    private var questionForPrompt: QuestionForPrompt? = null
-    private var answerTxt: String? = null
-
 
     private fun isQuestion(): Boolean {
-        return answerTxt == null
+        return sharedOverlayViewModel.sharedData.value.answerTxt == null
     }
-
 
 
     @Composable
     override fun Cmp() {
+        val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
         val context = LocalContext.current
-        val reminderTxt = if (isQuestion()) (questionForPrompt?.t + '?') else answerTxt ?: ""
+        val reminderTxt =
+            if (isQuestion()) (sharedData.questionForPrompt?.t + '?') else sharedData.answerTxt
+                ?: ""
         Log.v(logTag, "onMsgTap() isQuestion()")
 
 

@@ -8,9 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.minded.minded.overlay.data.SharedOverlayViewModel
 
 open class CommonWindow(
     private val ctrlSvc: OverlayControllerService,
+    private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager
 ) {
 
