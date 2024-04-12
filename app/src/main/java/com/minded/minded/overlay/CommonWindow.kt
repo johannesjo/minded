@@ -15,10 +15,8 @@ open class CommonWindow(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager
 ) {
-
     open val logTag = javaClass.simpleName
     var window: View? = null
-
 
     fun isWindowShown(): Boolean {
         return window != null
@@ -72,23 +70,5 @@ open class CommonWindow(
         )
         params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
         return params;
-    }
-
-    fun userDrivenClose() {
-        Log.v("QuestionOverlaySVC", "userDrivenClose()")
-        // TODO count to DB
-//        backToHomeScreenCount++
-//        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-//            val intent = Intent(this, MainActivity::class.java)
-//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//            startActivity(intent)
-//        } else {
-//            val intent = Intent(Intent.ACTION_MAIN).apply {
-//                addCategory(Intent.CATEGORY_HOME)
-//                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//            }
-//            startActivity(intent)
-//        }
-//        hideOverlay()
     }
 }

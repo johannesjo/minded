@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
@@ -29,6 +30,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private var numberOfWindowsShown = 0
 
+    private var backToHomeScreenCount = 0
+    private val SHOW_APP_EVERY_X = 3
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
@@ -113,6 +116,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 sharedOverlayViewModel.reset()
                 questionOverlayWindow.showWindow()
             }
+
             OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.showWindow()
             OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.showWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.showWindow()
@@ -193,6 +197,23 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 //            System.currentTimeMillis() + timeToInvoke.toLong(),
 //            pendingIntent
 //        )
+    }
+
+    fun userDrivenClose() {
+        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        // TODO count to DB
+        backToHomeScreenCount++
+        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        } else {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
+        }
     }
 
 

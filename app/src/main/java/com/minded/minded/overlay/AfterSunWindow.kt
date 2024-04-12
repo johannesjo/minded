@@ -31,7 +31,7 @@ class AfterSunWindow(
 
         AfterSun(elapsedSeconds, onSunTap = {
             Log.v(logTag, "onSunTap()")
-            userDrivenClose();
+            ctrlSvc.userDrivenClose();
             hideWindow()
             sharedOverlayViewModel.updateSharedData(
                 sunTxt = "Welcome back!",
