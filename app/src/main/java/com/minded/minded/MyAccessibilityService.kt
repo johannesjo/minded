@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.minded.minded.overlay.QuestionOverlayService
 
 
 class MyAccessibilityService : AccessibilityService() {

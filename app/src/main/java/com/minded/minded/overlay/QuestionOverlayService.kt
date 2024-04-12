@@ -1,4 +1,4 @@
-package com.minded.minded
+package com.minded.minded.overlay
 
 import android.content.Context
 import android.content.Intent
@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.minded.minded.MyAccessibilityService
 import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.OverlayBig
@@ -142,7 +143,7 @@ class QuestionOverlayService : CommonOverlayService() {
             questionForPrompt: QuestionForPrompt? = null,
         ) {
             val intent = Intent(context, QuestionOverlayService::class.java)
-            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+            intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
             if (questionForPrompt != null) {
                 intent.putExtra(INTENT_EXTRA_QUESTION, questionForPrompt)
             }
@@ -152,7 +153,7 @@ class QuestionOverlayService : CommonOverlayService() {
 
         internal fun hideOverlay(context: Context) {
             val intent = Intent(context, QuestionOverlayService::class.java)
-            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
+            intent.putExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
             context.startService(intent)
         }
     }
