@@ -1,4 +1,4 @@
-package com.minded.minded
+package com.minded.minded.overlay
 
 import android.content.Context
 import android.content.Intent
@@ -79,7 +79,7 @@ class SuccessSunOverlayService : CommonOverlayService() {
             sunTxt: String? = null,
         ) {
             val intent = Intent(context, SuccessSunOverlayService::class.java)
-            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+            intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
             intent.putExtra(INTENT_SHOW_AFTER_SUN_AFTER, isShowAfterSunAfter)
             intent.putExtra(INTENT_EXTRA_ANSWER_TXT, answerTxt)
             intent.putExtra(INTENT_EXTRA_TEXT, sunTxt)
@@ -88,7 +88,7 @@ class SuccessSunOverlayService : CommonOverlayService() {
 
         internal fun hideOverlay(context: Context) {
             val intent = Intent(context, SuccessSunOverlayService::class.java)
-            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
+            intent.putExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
             context.startService(intent)
         }
     }

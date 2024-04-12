@@ -1,4 +1,4 @@
-package com.minded.minded
+package com.minded.minded.overlay
 
 import android.app.Service
 import android.content.Context
@@ -18,7 +18,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.MainActivity
 
 
 open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwner {
@@ -29,7 +29,6 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
 
     val logTag = javaClass.simpleName
     lateinit var windowManager: WindowManager
-    lateinit var answerRepository: AnswerRepository
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.create(this)
@@ -61,7 +60,6 @@ open class CommonOverlayService : Service(), LifecycleOwner, SavedStateRegistryO
         Log.v(logTag, "onCreate()")
 
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        answerRepository = AnswerRepository(this)
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)

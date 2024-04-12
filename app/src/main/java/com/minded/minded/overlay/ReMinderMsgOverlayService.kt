@@ -1,4 +1,4 @@
-package com.minded.minded
+package com.minded.minded.overlay
 
 import android.content.Context
 import android.content.Intent
@@ -81,7 +81,7 @@ class ReMinderMsgOverlayService : CommonOverlayService() {
             answerTxt: String? = null
         ) {
             val intent = Intent(context, ReMinderMsgOverlayService::class.java)
-            intent.putExtra(CommonOverlayService.Companion.INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
+            intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
 
             if (questionForPrompt != null) {
                 intent.putExtra(INTENT_EXTRA_QUESTION, questionForPrompt)

@@ -32,22 +32,22 @@
         </activity>
 
         <service
-                android:name="QuestionOverlayService"
+                android:name=".overlay.QuestionOverlayService"
                 android:exported="false"
                 android:enabled="true" />
 
         <service
-                android:name=".AfterSunOverlayService"
+                android:name=".overlay.AfterSunOverlayService"
                 android:exported="false"
                 android:enabled="true" />
 
         <service
-                android:name=".ReMinderMsgOverlayService"
+                android:name=".overlay.ReMinderMsgOverlayService"
                 android:exported="false"
                 android:enabled="true" />
 
         <service
-                android:name=".SuccessSunOverlayService"
+                android:name=".overlay.SuccessSunOverlayService"
                 android:exported="false"
                 android:enabled="true" />
 
