@@ -21,8 +21,6 @@ open class SuccessSunWindow(
 
     private val defaultSunTxt = "tap sun to close"
 
-    private var isShowAfterSunAfter: Boolean = true
-
 
     @Composable
     override fun Cmp() {
@@ -37,14 +35,14 @@ open class SuccessSunWindow(
             },
             onAfterShow = {
                 Log.v(logTag, "onAfterShow()")
-                if (isShowAfterSunAfter) {
+                if (sharedData.isShowAfterSunAfterSuccess) {
                     OverlayControllerService.showOverlay(
-                        window!!.context,
+                        ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
                     )
 //                } else {
 //                    OverlayControllerService.hideOverlay(
-//                        window!!.context,
+//                        ctrlSvc,
 //                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
 //                    )
                 }

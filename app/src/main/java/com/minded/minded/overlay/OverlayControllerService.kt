@@ -103,7 +103,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         } else {
 //                    OverlayControllerService.hideOverlay(
-//                        window!!.context,
+//                        ctrlSvc,
 //                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
 //
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
