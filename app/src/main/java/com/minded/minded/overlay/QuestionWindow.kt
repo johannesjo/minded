@@ -52,14 +52,14 @@ class QuestionWindow(
                     sharedOverlayViewModel.updateSharedData(answerTxt = it)
 
                     OverlayControllerService.showOverlay(
-                        window!!.context,
+                        ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
                     )
                     hideWindow()
                 },
                 onSkip = {
                     OverlayControllerService.showOverlay(
-                        window!!.context,
+                        ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
                     )
                     hideWindow()

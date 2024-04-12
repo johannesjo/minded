@@ -31,16 +31,16 @@ class AfterSunWindow(
 
         AfterSun(elapsedSeconds, onSunTap = {
             Log.v(logTag, "onSunTap()")
-            ctrlSvc.userDrivenClose();
-            hideWindow()
             sharedOverlayViewModel.updateSharedData(
                 sunTxt = "Welcome back!",
                 isShowAfterSunAfterSuccess = false
             )
+            ctrlSvc.userDrivenClose();
             OverlayControllerService.showOverlay(
-                window!!.context,
+                ctrlSvc,
                 OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
             )
+            hideWindow()
         })
     }
 
@@ -53,7 +53,7 @@ class AfterSunWindow(
             handler.postDelayed(this, 1000)
             if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                 OverlayControllerService.showOverlay(
-                    window!!.context,
+                    ctrlSvc,
                     OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY
                 )
             }
