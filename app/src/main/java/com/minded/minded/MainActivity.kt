@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.data.answers.AnswerRepository
-import com.minded.minded.overlay.QuestionOverlayService
+import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.ui.model.DashboardViewModelFactory
@@ -43,7 +43,18 @@ class MainActivity : AppCompatActivity() {
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        QuestionOverlayService.showOverlay(this)
+        OverlayControllerService.showOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+        )
+        OverlayControllerService.hideOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+        )
+        OverlayControllerService.showOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+        )
 //        SuccessSunOverlayService.showOverlay(this)
 //        AfterSunOverlayService.showOverlay(this, answerTxt = "Hello, World!")
 //        ReMinderMsgOverlayService.showOverlay(this, answerTxt = "Hello, World!")
@@ -67,7 +78,10 @@ class MainActivity : AppCompatActivity() {
                                 }
                             },
                             onShowQuestionOverlay = {
-                                QuestionOverlayService.showOverlay(context)
+                                OverlayControllerService.showOverlay(
+                                    context,
+                                    OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+                                )
                             }
                         )
                     }

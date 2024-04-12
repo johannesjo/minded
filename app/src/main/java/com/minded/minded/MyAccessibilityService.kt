@@ -7,7 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import com.minded.minded.overlay.QuestionOverlayService
+import com.minded.minded.overlay.QuestionOverlayWindow
 
 
 class MyAccessibilityService : AccessibilityService() {
@@ -59,7 +59,7 @@ class MyAccessibilityService : AccessibilityService() {
 
     private val runnable = Runnable {
         Log.v("ACCESSIBILITY", "Runnable() $currentPackageName")
-        val intent = Intent(this, QuestionOverlayService::class.java)
+        val intent = Intent(this, QuestionOverlayWindow::class.java)
         intent.putExtra(
             INTENT_EXTRA_CURRENT_PACKAGE_NAME,
             currentPackageName
