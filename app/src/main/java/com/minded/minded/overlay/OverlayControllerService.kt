@@ -98,19 +98,23 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
 
+    private fun isAnyWindowShown(): Boolean {
+        return questionOverlayWindow.isWindowShown() || afterSunOverlayWindow.isWindowShown() || reMinderMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
+    }
+
+    private fun isNoWindowShown(): Boolean {
+        return !questionOverlayWindow.isWindowShown() && !afterSunOverlayWindow.isWindowShown() && !reMinderMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
+    }
+
     private fun showOverlay(overlayName: OverlayName) {
         Log.v(logTag, "showOverlay() ${overlayName}")
-        if (numberOfWindowsShown == 0) {
-            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-        } else {
-//                    OverlayControllerService.hideOverlay(
-//                        ctrlSvc,
-//                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-//
+        if (isAnyWindowShown()) {
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        } else {
+            Log.v(logTag, "showOverlay() - ON_START")
+            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         }
 
-        numberOfWindowsShown++
 
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> {
@@ -125,18 +129,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private fun hideOverlay(overlayName: OverlayName) {
-        numberOfWindowsShown--
-
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.hideWindow()
             OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.hideWindow()
             OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.hideWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
         }
-
-        if (numberOfWindowsShown == 0) {
-            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        if (isNoWindowShown()) {
+            Log.v(logTag, "hideOverlay() - ON_STOP")
+            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
         }
     }
 
@@ -231,15 +233,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         public enum class OverlayName {
-            QUESTION_OVERLAY,
-            AFTER_SUN_OVERLAY,
-            REMINDER_MSG_OVERLAY,
-            SUCCESS_SUN_OVERLAY
+            QUESTION_OVERLAY, AFTER_SUN_OVERLAY, REMINDER_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
         }
 
         internal fun showOverlay(
-            context: Context,
-            overlayName: OverlayName
+            context: Context, overlayName: OverlayName
         ) {
             val intent = Intent(context, OverlayControllerService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
@@ -249,8 +247,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         internal fun hideOverlay(
-            context: Context,
-            overlayName: OverlayName
+            context: Context, overlayName: OverlayName
         ) {
             val intent = Intent(context, OverlayControllerService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
