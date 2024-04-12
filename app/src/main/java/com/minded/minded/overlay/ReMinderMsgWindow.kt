@@ -43,7 +43,7 @@ class ReMinderMsgWindow(
                     OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
                 )
             } else {
-                userDrivenClose()
+                ctrlSvc.userDrivenClose()
             }
             hideWindow()
         }, onCountdownComplete = {
