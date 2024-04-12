@@ -46,7 +46,10 @@ class ReMinderMsgOverlayService : CommonOverlayService() {
         ReminderMsg(msg = reminderTxt, onMsgTap = {
             Log.v(logTag, "onMsgTap() ${isQuestion()}")
             if (isQuestion()) {
-                QuestionOverlayService.showOverlay(context, questionForPrompt = questionForPrompt)
+                OverlayControllerService.showOverlay(
+                    context,
+                    OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+                )
             } else {
                 userDrivenClose()
             }

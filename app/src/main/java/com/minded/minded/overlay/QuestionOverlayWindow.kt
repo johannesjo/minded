@@ -1,0 +1,78 @@
+package com.minded.minded.overlay
+
+import android.graphics.PixelFormat
+import android.util.Log
+import android.view.WindowManager
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.ui.compose.OverlayBig
+import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.util.getQuestionSmart
+
+
+class QuestionOverlayWindow(
+    private val ctrlSvc: OverlayControllerService,
+    private val windowManager: WindowManager,
+    private val dashboardViewModel: DashboardViewModel,
+) : CommonWindowController(ctrlSvc, windowManager) {
+    private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+
+    override val logTag = javaClass.simpleName
+    private var questionToShow: QuestionForPrompt? = null
+
+
+    @Composable
+    override fun Cmp() {
+        var answerTxt: String? = null
+        var rndQuestion by remember { mutableStateOf<QuestionForPrompt?>(null) }
+
+        LaunchedEffect(Unit) {
+            Log.v(logTag, "Cmp() ${questionToShow?.t}")
+            if (questionToShow != null) {
+                rndQuestion = questionToShow
+            } else {
+                rndQuestion = getQuestionSmart(emptyList())
+            }
+        }
+
+        rndQuestion?.let { question ->
+            OverlayBig(
+                rndQuestion = question,
+                onSubmitAnswer = {
+                    Log.v(logTag, "onSubmitAnswer: $it")
+                    dashboardViewModel.addAnswer(it, question.categoryId)
+                    answerTxt = if (it.length > 0) it else null
+                    OverlayControllerService.showOverlay(
+                        window!!.context,
+                        OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
+                    )
+                    hideWindow()
+                },
+                onSkip = {
+                    OverlayControllerService.showOverlay(
+                        window!!.context,
+                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+                    )
+                    hideWindow()
+                }
+            )
+        }
+    }
+
+
+    override fun getLayoutParams(): WindowManager.LayoutParams {
+        @Suppress("DEPRECATION") return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            PixelFormat.TRANSLUCENT
+        )
+    }
+}
+

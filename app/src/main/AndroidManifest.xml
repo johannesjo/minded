@@ -32,7 +32,7 @@
         </activity>
 
         <service
-                android:name=".overlay.QuestionOverlayService"
+                android:name=".overlay.OverlayControllerService"
                 android:exported="false"
                 android:enabled="true" />
 
