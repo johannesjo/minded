@@ -47,12 +47,9 @@ open class CommonWindow(
 
     open fun hideWindow() {
         Log.v(
-            logTag, "hideOverlay()"
+            logTag, "hideWindow() wasWindowShown ${window != null}"
         )
         if (window == null) {
-            Log.v(
-                logTag, "overlay not shown - aborting"
-            )
             return
         }
         windowManager.removeView(window)

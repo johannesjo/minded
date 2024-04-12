@@ -28,7 +28,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private var isInGracePeriod = false
     private val GRACE_PERIOD = 30
 
-    private var numberOfWindowsShown = 0
+
+    private var wasNoOverlaysBefore = false
 
     private var backToHomeScreenCount = 0
     private val SHOW_APP_EVERY_X = 3
@@ -108,13 +109,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private fun showOverlay(overlayName: OverlayName) {
         Log.v(logTag, "showOverlay() ${overlayName}")
+        wasNoOverlaysBefore = false
         if (isAnyWindowShown()) {
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         } else {
             Log.v(logTag, "showOverlay() - ON_START")
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         }
-
 
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> {
@@ -135,10 +136,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.hideWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
         }
-        if (isNoWindowShown()) {
+        if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+            wasNoOverlaysBefore = true
         }
     }
 
@@ -150,16 +152,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun checkToShowOverlay(currentPackageName: String) {
         Log.v(
             logTag,
-            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} $lastForeGroundApp"
+            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName} $lastForeGroundApp"
         )
 
-        // TODO check if needed
         if (!isBlockedPackage(currentPackageName)) {
-//            QuestionOverlayService.hideOverlay();
+            hideAll()
+            return;
         }
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher") {
             hideAll()
+            return;
         }
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
@@ -180,7 +183,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         hideOverlay(OverlayName.QUESTION_OVERLAY);
         hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
         hideOverlay(OverlayName.REMINDER_MSG_OVERLAY);
-        hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
+        hideOverlay(OverlayName.AFTER_SUN_OVERLAY);
     }
 
 
