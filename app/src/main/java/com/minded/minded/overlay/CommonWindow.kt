@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 
-open class CommonWindowController(
+open class CommonWindow(
     private val ctrlSvc: OverlayControllerService,
     private val windowManager: WindowManager
 ) {
@@ -70,5 +70,23 @@ open class CommonWindowController(
         )
         params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
         return params;
+    }
+
+    fun userDrivenClose() {
+        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        // TODO count to DB
+//        backToHomeScreenCount++
+//        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
+//            val intent = Intent(this, MainActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            startActivity(intent)
+//        } else {
+//            val intent = Intent(Intent.ACTION_MAIN).apply {
+//                addCategory(Intent.CATEGORY_HOME)
+//                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            }
+//            startActivity(intent)
+//        }
+//        hideOverlay()
     }
 }

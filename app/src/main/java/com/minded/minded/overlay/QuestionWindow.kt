@@ -15,11 +15,11 @@ import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
 
 
-class QuestionOverlayWindow(
+class QuestionWindow(
     private val ctrlSvc: OverlayControllerService,
     private val windowManager: WindowManager,
     private val dashboardViewModel: DashboardViewModel,
-) : CommonWindowController(ctrlSvc, windowManager) {
+) : CommonWindow(ctrlSvc, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
 
     override val logTag = javaClass.simpleName
