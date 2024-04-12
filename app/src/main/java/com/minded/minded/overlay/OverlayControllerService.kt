@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import com.minded.minded.MyAccessibilityService
 import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.model.DashboardViewModel
@@ -41,9 +42,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private lateinit var dashboardViewModel: DashboardViewModel
-    private lateinit var questionOverlayService: QuestionOverlayWindow
-    private lateinit var afterSunOverlayService: AfterSunOverlayService
-    private lateinit var reMinderMsgOverlayService: ReMinderMsgOverlayService
+
+    private lateinit var questionOverlayWindow: QuestionWindow
+    private lateinit var afterSunOverlayWindow: AfterSunWindow
+    private lateinit var reMinderMsgOverlayWindow: ReMinderMsgWindow
+    private lateinit var successSunOverlayWindow: SuccessSunWindow
 
 
     override fun onCreate() {
@@ -51,11 +54,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         dashboardViewModel = DashboardViewModel(answerRepository)
 
-        questionOverlayService = QuestionOverlayWindow(
-            this, windowManager, dashboardViewModel
-        )
-        afterSunOverlayService = AfterSunOverlayService()
-        reMinderMsgOverlayService = ReMinderMsgOverlayService()
+        questionOverlayWindow = QuestionWindow(this, windowManager, dashboardViewModel)
+        afterSunOverlayWindow = AfterSunWindow(this, windowManager)
+        reMinderMsgOverlayWindow = ReMinderMsgWindow(this, windowManager)
+        successSunOverlayWindow = SuccessSunWindow(this, windowManager)
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -66,21 +68,25 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.v(logTag, "onStartCommand()")
+        val currentPackage =
+            intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
+        Log.v(logTag, "onStartCommand() $currentPackage")
+        if (currentPackage != null) {
+            checkToShowOverlay(currentPackage)
+        } else {
+            val overlayNameString = intent.getStringExtra(INTENT_EXTRA_OVERLAY_NAME)
+            if (overlayNameString.isNullOrEmpty()) {
+                throw RuntimeException("missing overlay name")
+            }
+            val overlayName = OverlayName.valueOf(overlayNameString)
 
-        val overlayNameString = intent.getStringExtra(INTENT_EXTRA_OVERLAY_NAME)
+            if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
+                showOverlay(overlayName)
+            }
 
-        if (overlayNameString.isNullOrEmpty()) {
-            throw RuntimeException("missing overlay name")
-        }
-        val overlayName = OverlayName.valueOf(overlayNameString)
-
-        if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
-            showOverlay(overlayName)
-        }
-
-        if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
-            hideOverlay(overlayName)
+            if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
+                hideOverlay(overlayName)
+            }
         }
 
 
@@ -96,30 +102,29 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         numberOfWindowsShown++
-        questionOverlayService.showWindow()
 
-        // TODO show overlay
-//        when (overlayName) {
-//            OverlayName.QUESTION_OVERLAY -> questionOverlayService.showWindow()
-//            OverlayName.AFTER_SUN_OVERLAY -> TODO()
-//            OverlayName.REMINDER_MSG_OVERLAY -> TODO()
-//        }
+        when (overlayName) {
+            OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.showWindow()
+            OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.showWindow()
+            OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.showWindow()
+            OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.showWindow()
+        }
     }
 
     private fun hideOverlay(overlayName: OverlayName) {
         numberOfWindowsShown--
-        questionOverlayService.hideWindow()
+
+        when (overlayName) {
+            OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.hideWindow()
+            OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.hideWindow()
+            OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.hideWindow()
+            OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
+        }
 
         if (numberOfWindowsShown == 0) {
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         }
-
-//        when (overlayName) {
-//            OverlayName.QUESTION_OVERLAY -> questionOverlayService.show()
-//            OverlayName.AFTER_SUN_OVERLAY -> TODO()
-//            OverlayName.REMINDER_MSG_OVERLAY -> TODO()
-//        }
     }
 
 

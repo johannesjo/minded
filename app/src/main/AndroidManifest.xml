@@ -36,20 +36,6 @@
                 android:exported="false"
                 android:enabled="true" />
 
-        <service
-                android:name=".overlay.AfterSunOverlayService"
-                android:exported="false"
-                android:enabled="true" />
-
-        <service
-                android:name=".overlay.ReMinderMsgOverlayService"
-                android:exported="false"
-                android:enabled="true" />
-
-        <service
-                android:name=".overlay.SuccessSunOverlayService"
-                android:exported="false"
-                android:enabled="true" />
 
         <service
                 android:label="@string/accessibility_service_description"
