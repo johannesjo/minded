@@ -156,14 +156,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher") {
-//            QuestionOverlayService.hideOverlay();
-//            AfterSunOverlayService.hideOverlay(this)
+            hideAll()
         }
 
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
             Log.v(logTag, "SHOW OVERLAY for: $currentPackageName")
             lastForeGroundApp = currentPackageName
-//            QuestionOverlayService.showOverlay()
+            showOverlay(OverlayName.QUESTION_OVERLAY)
             isInGracePeriod = true
             Executors.newSingleThreadScheduledExecutor()
                 .schedule({ isInGracePeriod = false }, GRACE_PERIOD.toLong(), TimeUnit.SECONDS)
@@ -171,6 +170,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (!isInGracePeriod) {
             lastForeGroundApp = currentPackageName
         }
+    }
+
+
+    private fun hideAll() {
+        hideOverlay(OverlayName.QUESTION_OVERLAY);
+        hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
+        hideOverlay(OverlayName.REMINDER_MSG_OVERLAY);
+        hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
     }
 
 

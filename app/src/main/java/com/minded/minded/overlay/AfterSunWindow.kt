@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.AfterSun
 
-val AFTER_SUN_CYCLE_DURATION_IN_S = 7
+val AFTER_SUN_CYCLE_DURATION_IN_S = 120
 
 @Suppress("DEPRECATION")
 class AfterSunWindow(
