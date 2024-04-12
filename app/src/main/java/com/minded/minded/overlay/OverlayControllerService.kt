@@ -13,8 +13,8 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MyAccessibilityService
-import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.model.DashboardViewModel
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -27,9 +27,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private var isInGracePeriod = false
     private val GRACE_PERIOD = 30
 
-    private var questionToShow: QuestionForPrompt? = null
-    private var questionForPrompt: QuestionForPrompt? = null
-    private var answerTxt: String? = null
     private var numberOfWindowsShown = 0
 
 
@@ -40,8 +37,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
 
-
     private lateinit var dashboardViewModel: DashboardViewModel
+    private lateinit var sharedOverlayViewModel: SharedOverlayViewModel
+
 
     private lateinit var questionOverlayWindow: QuestionWindow
     private lateinit var afterSunOverlayWindow: AfterSunWindow
@@ -53,11 +51,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val answerRepository = AnswerRepository(this)
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         dashboardViewModel = DashboardViewModel(answerRepository)
+        sharedOverlayViewModel = SharedOverlayViewModel();
 
-        questionOverlayWindow = QuestionWindow(this, windowManager, dashboardViewModel)
-        afterSunOverlayWindow = AfterSunWindow(this, windowManager)
-        reMinderMsgOverlayWindow = ReMinderMsgWindow(this, windowManager)
-        successSunOverlayWindow = SuccessSunWindow(this, windowManager)
+        questionOverlayWindow =
+            QuestionWindow(this, sharedOverlayViewModel, windowManager, dashboardViewModel)
+        afterSunOverlayWindow = AfterSunWindow(this, sharedOverlayViewModel, windowManager)
+        reMinderMsgOverlayWindow = ReMinderMsgWindow(this, sharedOverlayViewModel, windowManager)
+        successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -98,13 +98,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         Log.v(logTag, "showOverlay() ${overlayName}")
         if (numberOfWindowsShown == 0) {
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        } else {
+//                    OverlayControllerService.hideOverlay(
+//                        window!!.context,
+//                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+//
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         }
 
         numberOfWindowsShown++
 
         when (overlayName) {
-            OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.showWindow()
+            OverlayName.QUESTION_OVERLAY -> {
+                sharedOverlayViewModel.reset()
+                questionOverlayWindow.showWindow()
+            }
             OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.showWindow()
             OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.showWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.showWindow()

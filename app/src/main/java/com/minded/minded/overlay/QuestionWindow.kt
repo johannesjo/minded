@@ -5,11 +5,13 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.OverlayBig
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
@@ -17,24 +19,25 @@ import com.minded.minded.util.getQuestionSmart
 
 class QuestionWindow(
     private val ctrlSvc: OverlayControllerService,
+    private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
     private val dashboardViewModel: DashboardViewModel,
-) : CommonWindow(ctrlSvc, windowManager) {
+) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
 
     override val logTag = javaClass.simpleName
-    private var questionToShow: QuestionForPrompt? = null
+
 
 
     @Composable
     override fun Cmp() {
-        var answerTxt: String? = null
+        val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
         var rndQuestion by remember { mutableStateOf<QuestionForPrompt?>(null) }
 
         LaunchedEffect(Unit) {
-            Log.v(logTag, "Cmp() ${questionToShow?.t}")
-            if (questionToShow != null) {
-                rndQuestion = questionToShow
+            Log.v(logTag, "Cmp() ${sharedData.questionForPrompt?.t}")
+            if (sharedData.questionForPrompt != null) {
+                rndQuestion = sharedData.questionForPrompt
             } else {
                 rndQuestion = getQuestionSmart(emptyList())
             }
@@ -46,7 +49,8 @@ class QuestionWindow(
                 onSubmitAnswer = {
                     Log.v(logTag, "onSubmitAnswer: $it")
                     dashboardViewModel.addAnswer(it, question.categoryId)
-                    answerTxt = if (it.length > 0) it else null
+                    sharedOverlayViewModel.updateSharedData(answerTxt = it)
+
                     OverlayControllerService.showOverlay(
                         window!!.context,
                         OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
