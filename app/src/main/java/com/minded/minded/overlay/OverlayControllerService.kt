@@ -156,11 +156,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         )
 
         if (!isBlockedPackage(currentPackageName)) {
+            lastForeGroundApp = ""
             hideAll()
             return;
         }
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher") {
+            lastForeGroundApp = ""
             hideAll()
             return;
         }
