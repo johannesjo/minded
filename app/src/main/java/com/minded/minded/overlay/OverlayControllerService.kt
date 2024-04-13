@@ -86,7 +86,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             val overlayName = OverlayName.valueOf(overlayNameString)
 
             if (intent.hasExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY)) {
-                showOverlay(overlayName)
+                val overlayModeString = intent.getStringExtra(INTENT_EXTRA_OVERLAY_MODE)
+                val overlayMode =
+                    if (overlayModeString != null) OverlayMode.valueOf(overlayModeString) else null
+                showOverlay(overlayName, overlayMode)
             }
 
             if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
@@ -107,8 +110,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         return !questionOverlayWindow.isWindowShown() && !afterSunOverlayWindow.isWindowShown() && !reMinderMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
     }
 
-    private fun showOverlay(overlayName: OverlayName) {
-        Log.v(logTag, "showOverlay() ${overlayName}")
+    private fun showOverlay(overlayName: OverlayName, overlayMode: OverlayMode? = null) {
+        Log.v(logTag, "showOverlay() ${overlayName} ${overlayMode}")
         wasNoOverlaysBefore = false
         if (isAnyWindowShown()) {
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -119,22 +122,43 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> {
-                sharedOverlayViewModel.reset()
+                if (overlayMode == OverlayMode.QUESTION_OVERLAY__FRESH) {
+                    sharedOverlayViewModel.reset()
+                }
                 questionOverlayWindow.showWindow()
             }
 
-            OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.showWindow()
-            OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.showWindow()
-            OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.showWindow()
+            OverlayName.SUCCESS_SUN_OVERLAY -> {
+                if (overlayMode === OverlayMode.SUCCESS_SUN_OVERLAY__FINAL) {
+                    sharedOverlayViewModel.updateSharedData(
+                        sunTxt = "Welcome back!",
+                        isShowAfterSunAfterSuccess = false
+                    )
+                } else {
+                    sharedOverlayViewModel.updateSharedData(
+                        sunTxt = "tap sun to close",
+                        isShowAfterSunAfterSuccess = true
+                    )
+                }
+                successSunOverlayWindow.showWindow()
+            }
+
+            OverlayName.AFTER_SUN_OVERLAY -> {
+                afterSunOverlayWindow.showWindow()
+            }
+
+            OverlayName.REMINDER_MSG_OVERLAY -> {
+                reMinderMsgOverlayWindow.showWindow()
+            }
         }
     }
 
     private fun hideOverlay(overlayName: OverlayName) {
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.hideWindow()
+            OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
             OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.hideWindow()
             OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.hideWindow()
-            OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
@@ -170,7 +194,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
             Log.v(logTag, "SHOW OVERLAY for: $currentPackageName")
             lastForeGroundApp = currentPackageName
-            showOverlay(OverlayName.QUESTION_OVERLAY)
+            showOverlay(OverlayName.QUESTION_OVERLAY, OverlayMode.QUESTION_OVERLAY__FRESH)
             isInGracePeriod = true
             Executors.newSingleThreadScheduledExecutor()
                 .schedule({ isInGracePeriod = false }, GRACE_PERIOD.toLong(), TimeUnit.SECONDS)
@@ -216,6 +240,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     fun userDrivenClose() {
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        hideAll()
         // TODO count to DB
         backToHomeScreenCount++
         if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
@@ -234,6 +259,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     companion object {
         const val INTENT_EXTRA_OVERLAY_NAME = "INTENT_EXTRA_OVERLAY_NAME"
+        const val INTENT_EXTRA_OVERLAY_MODE = "INTENT_EXTRA_OVERLAY_MODE"
         const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
@@ -241,12 +267,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             QUESTION_OVERLAY, AFTER_SUN_OVERLAY, REMINDER_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
         }
 
+        public enum class OverlayMode {
+            QUESTION_OVERLAY__FRESH, SUCCESS_SUN_OVERLAY__FINAL
+        }
+
         internal fun showOverlay(
-            context: Context, overlayName: OverlayName
+            context: Context, overlayName: OverlayName, overlayMode: OverlayMode? = null
         ) {
             val intent = Intent(context, OverlayControllerService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
             intent.putExtra(INTENT_EXTRA_OVERLAY_NAME, overlayName.name)
+            intent.putExtra(INTENT_EXTRA_OVERLAY_MODE, overlayMode?.name)
             context.startService(intent)
             Log.v("OverlayControllerService", "showOverlay() ${overlayName}")
         }

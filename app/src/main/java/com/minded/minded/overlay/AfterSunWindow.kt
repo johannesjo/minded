@@ -12,7 +12,8 @@ import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.AfterSun
 
-val AFTER_SUN_CYCLE_DURATION_IN_S = 120
+//val AFTER_SUN_CYCLE_DURATION_IN_S = 120
+val AFTER_SUN_CYCLE_DURATION_IN_S = 7
 
 @Suppress("DEPRECATION")
 class AfterSunWindow(
@@ -35,12 +36,11 @@ class AfterSunWindow(
                 sunTxt = "Welcome back!",
                 isShowAfterSunAfterSuccess = false
             )
-            ctrlSvc.userDrivenClose();
             OverlayControllerService.showOverlay(
                 ctrlSvc,
                 OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
             )
-            hideWindow()
+            ctrlSvc.userDrivenClose();
         })
     }
 

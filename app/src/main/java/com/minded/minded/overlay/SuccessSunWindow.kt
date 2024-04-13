@@ -31,7 +31,6 @@ open class SuccessSunWindow(
             onAfterTapSun = {
                 Log.v(logTag, "onTapSun()")
                 ctrlSvc.userDrivenClose();
-                hideWindow()
             },
             onAfterShow = {
                 Log.v(logTag, "onAfterShow()")
@@ -40,11 +39,8 @@ open class SuccessSunWindow(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
                     )
-//                } else {
-//                    OverlayControllerService.hideOverlay(
-//                        ctrlSvc,
-//                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-//                    )
+                } else {
+                    ctrlSvc.userDrivenClose()
                 }
                 hideWindow()
             })
