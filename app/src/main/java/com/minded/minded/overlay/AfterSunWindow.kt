@@ -32,14 +32,6 @@ class AfterSunWindow(
 
         AfterSun(elapsedSeconds, onSunTap = {
             Log.v(logTag, "onSunTap()")
-            sharedOverlayViewModel.updateSharedData(
-                sunTxt = "Welcome back!",
-                isShowAfterSunAfterSuccess = false
-            )
-            OverlayControllerService.showOverlay(
-                ctrlSvc,
-                OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
-            )
             ctrlSvc.userDrivenClose();
         })
     }

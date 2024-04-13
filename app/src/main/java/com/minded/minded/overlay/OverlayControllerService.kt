@@ -238,9 +238,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 //        )
     }
 
-    fun userDrivenClose() {
+    fun userDrivenClose(isSkipShowWelcomeBackSunAfter: Boolean = false) {
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
-        hideAll()
+        // we do this to let the sun animation finish, sun is supposed to close itself after
+        if (isSkipShowWelcomeBackSunAfter) {
+            hideOverlay(OverlayName.AFTER_SUN_OVERLAY)
+            hideOverlay(OverlayName.QUESTION_OVERLAY)
+            hideOverlay(OverlayName.REMINDER_MSG_OVERLAY)
+        } else {
+            hideAll()
+        }
         // TODO count to DB
         backToHomeScreenCount++
         if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
@@ -253,6 +260,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(intent)
+        }
+
+        if (!isSkipShowWelcomeBackSunAfter) {
+            showOverlay(
+                this,
+                OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY,
+                OverlayControllerService.Companion.OverlayMode.SUCCESS_SUN_OVERLAY__FINAL
+            )
         }
     }
 
@@ -279,7 +294,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             intent.putExtra(INTENT_EXTRA_OVERLAY_NAME, overlayName.name)
             intent.putExtra(INTENT_EXTRA_OVERLAY_MODE, overlayMode?.name)
             context.startService(intent)
-            Log.v("OverlayControllerService", "showOverlay() ${overlayName}")
         }
 
         internal fun hideOverlay(

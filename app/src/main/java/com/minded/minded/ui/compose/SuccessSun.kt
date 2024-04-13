@@ -38,6 +38,7 @@ fun SuccessSun(
     inDuration: Int = 1000,
     successDuration: Int = 1000,
     fadeOutDuration: Int = 500,
+    onSunTap: () -> Unit = {},
     onAfterTapSun: () -> Unit = {},
     onAfterShow: () -> Unit = {},
 ) {
@@ -65,7 +66,7 @@ fun SuccessSun(
         modifier = Modifier
             .alpha(animatedBoxAlpha)
             .fillMaxSize()
-            .clickable(onClick = { isClickTriggered = true; })
+            .clickable(onClick = { onSunTap(); isClickTriggered = true; })
             .background(
                 brush = Brush.verticalGradient(
                     colors = StandardGradient
