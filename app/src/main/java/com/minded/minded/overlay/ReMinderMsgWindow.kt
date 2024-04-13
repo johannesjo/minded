@@ -36,16 +36,19 @@ class ReMinderMsgWindow(
 
 
         ReminderMsg(msg = reminderTxt, onMsgTap = {
-            Log.v(logTag, "onMsgTap() ${isQuestion()}")
+            Log.v(logTag, "onMsgTap() isQuestion:${isQuestion()}")
             if (isQuestion()) {
                 OverlayControllerService.showOverlay(
                     context,
                     OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
                 )
             } else {
-                ctrlSvc.userDrivenClose()
+                OverlayControllerService.showOverlay(
+                    context,
+                    OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY,
+                    OverlayControllerService.Companion.OverlayMode.SUCCESS_SUN_OVERLAY__FINAL,
+                )
             }
-            hideWindow()
         }, onCountdownComplete = {
             Log.v(logTag, "onCountdownComplete()")
             hideWindow()

@@ -45,16 +45,10 @@ class MainActivity : AppCompatActivity() {
 
         OverlayControllerService.showOverlay(
             this,
-            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
+            OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
         )
-        OverlayControllerService.hideOverlay(
-            this,
-            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
-        )
-        OverlayControllerService.showOverlay(
-            this,
-            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
-        )
+
 //        SuccessSunOverlayService.showOverlay(this)
 //        AfterSunOverlayService.showOverlay(this, answerTxt = "Hello, World!")
 //        ReMinderMsgOverlayService.showOverlay(this, answerTxt = "Hello, World!")
