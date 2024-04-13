@@ -27,12 +27,14 @@ class AfterSunWindow(
     @Composable
     override fun Cmp() {
         LaunchedEffect(Unit) {
-            startTimer()
+            val initialTime = sharedOverlayViewModel.getCurrentAppDuration()
+            startTimer(initialTime)
         }
 
         AfterSun(elapsedSeconds, onSunTap = {
             Log.v(logTag, "onSunTap()")
             ctrlSvc.userDrivenClose();
+            hideWindow()
         })
     }
 
@@ -42,6 +44,8 @@ class AfterSunWindow(
         override fun run() {
 //            Log.v(logTag, "elapsedSeconds: $elapsedSeconds")
             elapsedSeconds++
+            sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
+
             handler.postDelayed(this, 1000)
             if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                 OverlayControllerService.showOverlay(
@@ -52,22 +56,20 @@ class AfterSunWindow(
         }
     }
 
-//    override fun hideOverlay() {
-//        super.hideOverlay()
-//        ReMinderMsgWindow.hideOverlay(this)
-//        stopTimer()
-//    }
-
-    private fun startTimer() {
-        Log.v(logTag, "startTimer()")
+    override fun hideWindow() {
+        super.hideWindow()
         stopTimer()
-        elapsedSeconds = 0
+    }
+
+    private fun startTimer(initialTime: Int = 0) {
+        Log.v(logTag, "startTimer(${initialTime})")
+        stopTimer()
+        elapsedSeconds = initialTime
         handler.post(runnable)
     }
 
     private fun stopTimer() {
         handler.removeCallbacks(runnable)
     }
-
 }
 
