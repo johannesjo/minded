@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             this,
             OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
             OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
+            "com.minded.minded"
         )
 
 //        SuccessSunOverlayService.showOverlay(this)

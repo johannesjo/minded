@@ -17,16 +17,13 @@ import com.minded.minded.MyAccessibilityService
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.model.DashboardViewModel
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     private val logTag = javaClass.simpleName
 
     private var lastForeGroundApp: String = ""
-    private var isInGracePeriod = false
-    private val GRACE_PERIOD = 30
+    private val GRACE_PERIOD_IN_S = 30
 
 
     private var wasNoOverlaysBefore = false
@@ -89,7 +86,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 val overlayModeString = intent.getStringExtra(INTENT_EXTRA_OVERLAY_MODE)
                 val overlayMode =
                     if (overlayModeString != null) OverlayMode.valueOf(overlayModeString) else null
-                showOverlay(overlayName, overlayMode)
+                val appName = intent.getStringExtra(INTENT_EXTRA_APP_NAME)
+
+                showOverlay(overlayName, overlayMode, appName)
             }
 
             if (intent.hasExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY)) {
@@ -110,9 +109,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         return !questionOverlayWindow.isWindowShown() && !afterSunOverlayWindow.isWindowShown() && !reMinderMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
     }
 
-    private fun showOverlay(overlayName: OverlayName, overlayMode: OverlayMode? = null) {
-        Log.v(logTag, "showOverlay() ${overlayName} ${overlayMode}")
+    private fun showOverlay(
+        overlayName: OverlayName,
+        overlayMode: OverlayMode? = null,
+        appName: String? = null
+    ) {
+        Log.v(logTag, "showOverlay() ${overlayName} ${overlayMode} ${appName}")
         wasNoOverlaysBefore = false
+
+        if (appName != null) {
+            sharedOverlayViewModel.updateSharedData(
+                appName
+            )
+        }
+
         if (isAnyWindowShown()) {
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         } else {
@@ -123,7 +133,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> {
                 if (overlayMode == OverlayMode.QUESTION_OVERLAY__FRESH) {
-                    sharedOverlayViewModel.reset()
+                    if (appName == null) {
+                        throw RuntimeException("appName is null")
+                    }
+                    sharedOverlayViewModel.reset(appName)
                 }
                 questionOverlayWindow.showWindow()
             }
@@ -174,6 +187,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
+        val isInGracePeriod = true
+
         Log.v(
             logTag,
             "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName} $lastForeGroundApp"
@@ -185,23 +200,36 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return;
         }
 
-        if (currentPackageName == "com.google.android.apps.nexuslauncher") {
+        // all google packages apart from keyboard (e.g. "com.google.android.inputmethod.latin")
+        if (currentPackageName.contains("com.google.android") && !currentPackageName.contains("com.google.android.input")) {
             lastForeGroundApp = ""
             hideAll()
             return;
         }
 
-        if (!isInGracePeriod && isBlockedPackage(currentPackageName) && lastForeGroundApp != currentPackageName) {
-            Log.v(logTag, "SHOW OVERLAY for: $currentPackageName")
-            lastForeGroundApp = currentPackageName
-            showOverlay(OverlayName.QUESTION_OVERLAY, OverlayMode.QUESTION_OVERLAY__FRESH)
-            isInGracePeriod = true
-            Executors.newSingleThreadScheduledExecutor()
-                .schedule({ isInGracePeriod = false }, GRACE_PERIOD.toLong(), TimeUnit.SECONDS)
+        if (isBlockedPackage(currentPackageName)) {
+            if (isInGracePeriod) {
+                Log.v(logTag, "isInGracePeriod")
+                if (!afterSunOverlayWindow.isWindowShown()) {
+                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
+                }
+            } else if (lastForeGroundApp == currentPackageName) {
+                Log.v(logTag, "lastForeGroundApp == currentPackageName => true")
+                if (!afterSunOverlayWindow.isWindowShown()) {
+                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
+                }
+            } else {
+                Log.v(logTag, "SHOW FRESH QUESTION OVERLAY for: $currentPackageName")
+                lastForeGroundApp = currentPackageName
+                showOverlay(
+                    OverlayName.QUESTION_OVERLAY,
+                    OverlayMode.QUESTION_OVERLAY__FRESH,
+                    currentPackageName
+                )
+            }
+            sharedOverlayViewModel.updateLastAppUsage()
         }
-        if (!isInGracePeriod) {
-            lastForeGroundApp = currentPackageName
-        }
+        lastForeGroundApp = currentPackageName
     }
 
 
@@ -275,6 +303,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     companion object {
         const val INTENT_EXTRA_OVERLAY_NAME = "INTENT_EXTRA_OVERLAY_NAME"
         const val INTENT_EXTRA_OVERLAY_MODE = "INTENT_EXTRA_OVERLAY_MODE"
+        const val INTENT_EXTRA_APP_NAME = "INTENT_EXTRA_APP_NAME"
         const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
@@ -287,12 +316,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         internal fun showOverlay(
-            context: Context, overlayName: OverlayName, overlayMode: OverlayMode? = null
+            context: Context,
+            overlayName: OverlayName,
+            overlayMode: OverlayMode? = null,
+            manualAppName: String? = null
         ) {
             val intent = Intent(context, OverlayControllerService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_SHOW_OVERLAY, true)
             intent.putExtra(INTENT_EXTRA_OVERLAY_NAME, overlayName.name)
             intent.putExtra(INTENT_EXTRA_OVERLAY_MODE, overlayMode?.name)
+            intent.putExtra(INTENT_EXTRA_APP_NAME, manualAppName)
             context.startService(intent)
         }
 

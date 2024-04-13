@@ -14,13 +14,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 
+
+data class AppEntry(
+    val lastUsed: Instant = Instant.now(),
+    var lastClosed: Instant? = null,
+    var sessionDurationInS: Int = 0
+)
+
+typealias AppMap = Map<String, AppEntry>
 
 data class SharedOverlayData(
+    var currentApp: String? = null,
     var questionForPrompt: QuestionForPrompt? = null,
     var answerTxt: String? = null,
     var sunTxt: String? = null,
     var isShowAfterSunAfterSuccess: Boolean = true,
+    var appMap: AppMap = emptyMap()
 )
 
 class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : ViewModel() {
@@ -28,7 +39,18 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
     val sharedData: StateFlow<SharedOverlayData> = _sharedData.asStateFlow()
 
 
+    fun getCurrentAppDuration(): Int {
+        val appName =
+            sharedData.value.currentApp ?: throw IllegalStateException("currentApp is null")
+        val appEntry = sharedData.value.appMap[appName]
+        if (appEntry == null) {
+            return 0;
+        }
+        return appEntry.sessionDurationInS
+    }
+
     fun updateSharedData(
+        currentApp: String? = null,
         questionForPrompt: QuestionForPrompt? = null,
         answerTxt: String? = null,
         sunTxt: String? = null,
@@ -36,6 +58,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
     ) {
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
+            currentApp = currentApp ?: currentData.currentApp,
             questionForPrompt = questionForPrompt ?: currentData.questionForPrompt,
             answerTxt = answerTxt ?: currentData.answerTxt,
             sunTxt = sunTxt ?: currentData.sunTxt,
@@ -57,9 +80,36 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         }
     }
 
-    fun reset() {
+    fun updateLastAppUsage() {
+        val appName =
+            sharedData.value.currentApp ?: throw IllegalStateException("currentApp is null")
+        val currentData = sharedData.value ?: SharedOverlayData()
+        val newAppMap = currentData.appMap.toMutableMap()
+        val appEntry = newAppMap[appName] ?: AppEntry()
+        Log.v("SharedOverlayViewModel", "updateLastAppUsage() ${appName} ${appEntry}")
+        newAppMap[appName] = appEntry.copy(lastUsed = Instant.now())
+        _sharedData.update { currentData.copy(appMap = newAppMap) }
+    }
+
+    fun updateCurrentAppSessionDuration(durationInS: Int) {
+        val appName =
+            sharedData.value.currentApp ?: throw IllegalStateException("currentApp is null")
+        val currentData = sharedData.value
+        val newAppMap = currentData.appMap.toMutableMap()
+        val appEntry = newAppMap[appName] ?: AppEntry()
+        newAppMap[appName] = appEntry.copy(
+            lastUsed = Instant.now(),
+            sessionDurationInS = durationInS
+        )
+        Log.v("SharedOverlayViewModel", "updateCurrentAppSessionDuration() ${appName} ${appEntry}")
+        _sharedData.update { currentData.copy(appMap = newAppMap) }
+    }
+
+
+    fun reset(currentApp: String) {
         _sharedData.update {
             SharedOverlayData(
+                currentApp = currentApp,
                 isShowAfterSunAfterSuccess = true,
                 answerTxt = null,
                 questionForPrompt = getQuestionSmart(emptyList()),
