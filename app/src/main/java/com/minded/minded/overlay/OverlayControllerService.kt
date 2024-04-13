@@ -17,6 +17,7 @@ import com.minded.minded.MyAccessibilityService
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.model.DashboardViewModel
+import java.time.Instant
 
 
 class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOwner {
@@ -187,7 +188,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
-        val isInGracePeriod = true
+        val entryForCurrentApp = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
+        val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
+            it > Instant.now().minusSeconds(GRACE_PERIOD_IN_S.toLong())
+        } ?: false
 
         Log.v(
             logTag,

@@ -20,7 +20,7 @@ import java.time.Instant
 data class AppEntry(
     val lastUsed: Instant = Instant.now(),
     var lastClosed: Instant? = null,
-    var sessionDurationInS: Int = 0
+    var sessionDurationInS: Int = -1
 )
 
 typealias AppMap = Map<String, AppEntry>
@@ -59,12 +59,14 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
             currentApp = currentApp ?: currentData.currentApp,
+            appMap = currentData.appMap,
             questionForPrompt = questionForPrompt ?: currentData.questionForPrompt,
             answerTxt = answerTxt ?: currentData.answerTxt,
             sunTxt = sunTxt ?: currentData.sunTxt,
             isShowAfterSunAfterSuccess = isShowAfterSunAfterSuccess
                 ?: currentData.isShowAfterSunAfterSuccess
         )
+        Log.v("SharedOverlayViewModel", "updateSharedData() ${newSharedData}")
         _sharedData.update { newSharedData }
     }
 
@@ -86,7 +88,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         val currentData = sharedData.value ?: SharedOverlayData()
         val newAppMap = currentData.appMap.toMutableMap()
         val appEntry = newAppMap[appName] ?: AppEntry()
-        Log.v("SharedOverlayViewModel", "updateLastAppUsage() ${appName} ${appEntry}")
+        Log.v("SharedOverlayViewModel", "updateLastAppUsage() ${appName} ${appEntry} ${newAppMap}")
         newAppMap[appName] = appEntry.copy(lastUsed = Instant.now())
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
@@ -107,15 +109,13 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
 
 
     fun reset(currentApp: String) {
-        _sharedData.update {
-            SharedOverlayData(
-                currentApp = currentApp,
-                isShowAfterSunAfterSuccess = true,
-                answerTxt = null,
-                questionForPrompt = getQuestionSmart(emptyList()),
-                sunTxt = null,
-            )
-        }
+        updateSharedData(
+            currentApp = currentApp,
+            isShowAfterSunAfterSuccess = true,
+            answerTxt = null,
+            questionForPrompt = getQuestionSmart(emptyList()),
+            sunTxt = null,
+        )
         setRndQuestion()
     }
 }
