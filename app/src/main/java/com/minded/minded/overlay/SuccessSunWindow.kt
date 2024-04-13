@@ -28,9 +28,13 @@ open class SuccessSunWindow(
 
         SuccessSun(
             sharedData.sunTxt ?: defaultSunTxt,
+            onSunTap = {
+                Log.v(logTag, "onSunTap()")
+                ctrlSvc.userDrivenClose(isSkipShowWelcomeBackSunAfter = true);
+            },
             onAfterTapSun = {
-                Log.v(logTag, "onTapSun()")
-                ctrlSvc.userDrivenClose();
+                Log.v(logTag, "onAfterTapSun()")
+                hideWindow()
             },
             onAfterShow = {
                 Log.v(logTag, "onAfterShow()")
@@ -39,8 +43,6 @@ open class SuccessSunWindow(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
                     )
-                } else {
-                    ctrlSvc.userDrivenClose()
                 }
                 hideWindow()
             })
