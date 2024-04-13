@@ -78,18 +78,15 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
         Log.v("ACCESSIBILITY", "onAccessibilityEvent()")
-        try {
-            Log.v(
-                "ACCESSIBILITY",
-                "onAccessibilityEvent(), Package name: $currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
-            )
-            if (!isNonAppPackage(accessibilityEvent.packageName.toString())) {
-                currentPackageName = accessibilityEvent.packageName
-                handler.removeCallbacks(runnable)
-                handler.postDelayed(runnable, debounceMinDelay)
-            }
-        } catch (e: Exception) {
-            Log.e("ACCESSIBILITY", "Error in onAccessibilityEvent", e)
+        Log.v(
+            "ACCESSIBILITY",
+            "onAccessibilityEvent(), Package name: ${accessibilityEvent.packageName}  L:$currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
+        )
+        if (accessibilityEvent.packageName != null && !isNonAppPackage(accessibilityEvent.packageName.toString())) {
+            currentPackageName = accessibilityEvent.packageName
+            handler.removeCallbacks(runnable)
+            handler.postDelayed(runnable, debounceMinDelay)
         }
+
     }
 }
