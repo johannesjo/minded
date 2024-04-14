@@ -1,4 +1,4 @@
-import { StaticCfg, SyncData } from "./sync-data";
+import { StaticCfg, SyncData } from "./syncData";
 
 export const DEFAULT_SYNC_DATA: SyncData = {
   cfg: {

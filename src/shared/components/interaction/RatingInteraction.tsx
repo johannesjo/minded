@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { JSX } from "solid-js";
 import Rating from "@src/shared/components/ui/Rating";
-import { saveAnswer } from "@src/shared/data/dataInterface";
+import { saveAnswer } from "@src/shared/data/syncDataInterface";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { nanoid } from "nanoid";
 
