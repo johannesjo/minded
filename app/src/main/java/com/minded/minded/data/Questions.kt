@@ -224,6 +224,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.GoalForTheWeek to QuestionCategory(
         "Your Goal for the Week",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoalForTheWeek },
+        isMorningCategory = true,
         isThisWeekOnlyCategory = true,
     ),
     QuestionCategoryId.XEnergyLevelToday to QuestionCategory(
