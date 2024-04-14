@@ -25,6 +25,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private var lastForeGroundApp: String = ""
     private val GRACE_PERIOD_IN_S = 30
+    private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
 
 
     private var wasNoOverlaysBefore = false
@@ -230,6 +231,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     OverlayMode.QUESTION_OVERLAY__FRESH,
                     currentPackageName
                 )
+            }
+            val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
+            if (currentAppData != null && currentAppData.lastUsed.isBefore(
+                    Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
+                )
+            ) {
+                Log.v(logTag, "reset sessionDurationInS to 0")
+                sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
             }
             sharedOverlayViewModel.updateLastAppUsage()
         }
