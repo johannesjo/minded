@@ -35,6 +35,7 @@ data class SharedOverlayData(
 )
 
 class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : ViewModel() {
+    private val lt = javaClass.simpleName
     private val _sharedData = MutableStateFlow(SharedOverlayData())
     val sharedData: StateFlow<SharedOverlayData> = _sharedData.asStateFlow()
 
@@ -46,6 +47,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         if (appEntry == null) {
             return 0;
         }
+
         return appEntry.sessionDurationInS
     }
 
@@ -66,7 +68,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
             isShowAfterSunAfterSuccess = isShowAfterSunAfterSuccess
                 ?: currentData.isShowAfterSunAfterSuccess
         )
-        Log.v("SharedOverlayViewModel", "updateSharedData() ${newSharedData}")
+        Log.v(lt, "updateSharedData() ${newSharedData}")
         _sharedData.update { newSharedData }
     }
 
@@ -74,9 +76,9 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         viewModelScope.launch {
             answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO)
                 .collect { answers: List<Answer> ->
-                    Log.v("SharedOverlayViewModel", "answers: $answers ${answers.size}")
+                    Log.v(lt, "answers: $answers ${answers.size}")
                     val q = getQuestionSmart(answers)
-                    Log.v("SharedOverlayViewModel", "question: $q ${q.t}")
+                    Log.v(lt, "question: $q ${q.t}")
                     updateSharedData(questionForPrompt = q)
                 }
         }
@@ -88,7 +90,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         val currentData = sharedData.value ?: SharedOverlayData()
         val newAppMap = currentData.appMap.toMutableMap()
         val appEntry = newAppMap[appName] ?: AppEntry()
-        Log.v("SharedOverlayViewModel", "updateLastAppUsage() ${appName} ${appEntry} ${newAppMap}")
+        Log.v(lt, "updateLastAppUsage() ${appName} ${appEntry} ${newAppMap}")
         newAppMap[appName] = appEntry.copy(lastUsed = Instant.now())
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
@@ -103,7 +105,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
             lastUsed = Instant.now(),
             sessionDurationInS = durationInS
         )
-        Log.v("SharedOverlayViewModel", "updateCurrentAppSessionDuration() ${appName} ${appEntry}")
+        Log.v(lt, "updateCurrentAppSessionDuration() ${appName} ${appEntry}")
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
 
