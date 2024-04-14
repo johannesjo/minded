@@ -115,7 +115,13 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Motivation]: {
     dashboardTxt: "My Motivation",
-    questions: [{ t: "What motivates you", prompt: "I am motivated by" }],
+    questions: [
+      { t: "What motivates you", prompt: "I am motivated by" },
+      {
+        t: "What motivates me to make progress",
+        prompt: "I am motivated by",
+      },
+    ],
   },
   [QuestionCategoryId.Gratitude]: {
     dashboardTxt: "Gratitude",
@@ -152,6 +158,10 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What do I need to work well in terms of light, view, order, temperature, social and physical environment",
         prompt: "I need",
+      },
+      {
+        t: "How do I stay grounded when I feel overwhelmed",
+        prompt: "I am able to stay grounded, when",
       },
     ],
   },
@@ -267,6 +277,9 @@ export const QUESTION_CATEGORIES: {
       { t: "My favorite way to spend the day is..." },
       { t: "The words I’d like to live by are..." },
       { t: "If my body could talk, it would say..." },
+      {
+        t: "What actions, if taken, would make me proud of myself, regardless of the outcome?",
+      },
       { t: "What is the biggest “What if” in your mind" },
       {
         t: "If I could talk to my teenage self, the one thing I would say is...",
@@ -320,6 +333,18 @@ IDEAS:
         t: "Why do you want to complete your current task",
         prompt: "Completing my current task, will allow me to",
       },
+
+
+ */
+
+/*
+FOR LATER:
+What kind of person do I want to be today?
+What situations make me feel terrible, and what do they have in common?
+When am I at my best?
+If I change nothing, what will your life look like three months from now? How does this make me feel?
+What actions, if taken, would make me proud of myself, regardless of the outcome?
+When negative thoughts arise, how do I deal with them?
 
 
  */
