@@ -4,8 +4,8 @@ import {
   QUESTION_CATEGORIES,
   QuestionForPrompt,
 } from "@src/shared/data/questions";
-import { Answer } from "@src/shared/data/sync-data";
-import { saveAnswer } from "@src/shared/data/dataInterface";
+import { Answer } from "@src/shared/data/syncData";
+import { saveAnswer } from "@src/shared/data/syncDataInterface";
 import { nanoid } from "nanoid";
 
 export const Question: (props: {

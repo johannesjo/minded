@@ -1,5 +1,5 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { Answer } from "@src/shared/data/sync-data";
+import { Answer } from "@src/shared/data/syncData";
 
 export enum DashboardGroupType {
   Standard = "Standard",

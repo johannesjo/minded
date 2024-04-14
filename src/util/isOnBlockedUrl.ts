@@ -1,23 +1,21 @@
-import { SyncData } from '@src/shared/data/sync-data';
+import { SyncData } from "@src/shared/data/syncData";
 
-export const isOnBlockedUrl = (currentUrl: string, syncData: SyncData): boolean => {
+export const isOnBlockedUrl = (
+  currentUrl: string,
+  syncData: SyncData,
+): boolean => {
   const host = cleanHostWWW(new URL(currentUrl).host);
   const cfg = syncData.cfg;
 
-  return (
-    !!cfg.blockedHosts.find((blockedHost) =>
-      isMatchingHost(host, blockedHost)
-    )
+  return !!cfg.blockedHosts.find((blockedHost) =>
+    isMatchingHost(host, blockedHost),
   );
 };
 const cleanHostWWW = (host: string): string => {
   return host.replace(/^www\./, "");
 };
 
-const isMatchingHost = (
-  currentHost: string,
-  blockedHost: string
-): boolean => {
+const isMatchingHost = (currentHost: string, blockedHost: string): boolean => {
   const index = currentHost.indexOf(blockedHost);
 
   return (

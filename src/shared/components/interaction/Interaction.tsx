@@ -8,11 +8,11 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { bro } from "@src/util/browser";
-import { Answer } from "@src/shared/data/sync-data";
+import { Answer } from "@src/shared/data/syncData";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import React from "react";
 import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
-import { getSyncData } from "@src/shared/data/dataInterface";
+import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
 const MODE: "RATING" | "ACTION_ADVICE" | "QUESTION" = (() => {

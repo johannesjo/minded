@@ -3,7 +3,7 @@ import {
   DashboardGroup,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
-import { getSyncData } from "@src/shared/data/dataInterface";
+import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
 // @ts-ignore
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";

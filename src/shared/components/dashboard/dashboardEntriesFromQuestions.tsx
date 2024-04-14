@@ -1,4 +1,4 @@
-import { SyncData } from "@src/shared/data/sync-data";
+import { SyncData } from "@src/shared/data/syncData";
 import {
   DashboardGroup,
   DashboardGroupType,

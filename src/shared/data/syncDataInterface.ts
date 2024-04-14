@@ -1,6 +1,6 @@
-import { Answer, SyncData, UserCfg } from "@src/shared/data/sync-data";
+import { Answer, SyncData, UserCfg } from "@src/shared/data/syncData";
 import { bro } from "@src/util/browser";
-import { DEFAULT_SYNC_DATA } from "@src/shared/data/sync-data.const";
+import { DEFAULT_SYNC_DATA } from "@src/shared/data/syncData.const";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 

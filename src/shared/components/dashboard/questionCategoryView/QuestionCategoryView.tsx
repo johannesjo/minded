@@ -11,8 +11,8 @@ import {
   removeAnswer,
   saveAnswer,
   updateAnswer,
-} from "@src/shared/data/dataInterface";
-import { Answer } from "@src/shared/data/sync-data";
+} from "@src/shared/data/syncDataInterface";
+import { Answer } from "@src/shared/data/syncData";
 
 export const QuestionCategoryView: (props: {
   questionCategoryId: QuestionCategoryId;

@@ -1,8 +1,8 @@
 import { createSignal, JSX } from "solid-js";
 import { WebsiteListItem } from "@src/shared/components/onboarding/WebsiteListItem";
-import { DEFAULT_SYNC_DATA } from "@src/shared/data/sync-data.const";
+import { DEFAULT_SYNC_DATA } from "@src/shared/data/syncData.const";
 import styles from "./WebsiteList.module.scss";
-import { updateCfg } from "@src/shared/data/dataInterface";
+import { updateCfg } from "@src/shared/data/syncDataInterface";
 
 export const WebsiteList: (props: { onSave: () => void }) => JSX.Element = (
   props,
@@ -17,7 +17,9 @@ export const WebsiteList: (props: { onSave: () => void }) => JSX.Element = (
   const removeItem = (index: number) =>
     setItems(items().filter((_, i) => i !== index));
   const saveAndContinue = async () => {
-    const cleanedItems = items().filter((item) => item.length > 2).map(item=> item.trim());
+    const cleanedItems = items()
+      .filter((item) => item.length > 2)
+      .map((item) => item.trim());
     await updateCfg({ blockedHosts: cleanedItems });
     props.onSave();
   };

@@ -1,7 +1,7 @@
 import { createSignal, JSX } from "solid-js";
 // @ts-ignore
 import styles from "./AnswerListEditable.module.scss";
-import { Answer } from "@src/shared/data/sync-data";
+import { Answer } from "@src/shared/data/syncData";
 
 import { AnswerEntry } from "@src/shared/components/dashboard/questionCategoryView/AnswerEntry";
 import { nanoid } from "nanoid";

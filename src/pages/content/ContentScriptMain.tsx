@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { JSX, onMount } from "solid-js";
-import { updateSyncData } from "@src/shared/data/dataInterface";
+import { updateSyncData } from "@src/shared/data/syncDataInterface";
 import { Interaction } from "@src/shared/components/interaction/Interaction";
 import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
 
