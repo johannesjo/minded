@@ -19,7 +19,6 @@ import java.time.Instant
 
 data class AppEntry(
     val lastUsed: Instant = Instant.now(),
-    var lastClosed: Instant? = null,
     var sessionDurationInS: Int = -1
 )
 
