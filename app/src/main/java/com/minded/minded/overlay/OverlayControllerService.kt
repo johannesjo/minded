@@ -204,8 +204,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return;
         }
 
-        // all google packages apart from keyboard (e.g. "com.google.android.inputmethod.latin")
-        if (currentPackageName.contains("com.google.android") && !currentPackageName.contains("com.google.android.input")) {
+        if (currentPackageName.contains("com.google.android.apps.nexuslauncher")) {
             lastForeGroundApp = ""
             hideAll()
             return;
