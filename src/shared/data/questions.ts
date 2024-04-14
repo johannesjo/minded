@@ -165,7 +165,13 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.PositiveThoughts]: {
     questions: [
       { t: "What do you like", prompt: "I like" },
+      { t: "What do you love about life", prompt: "I love" },
+      { t: "What do you love about yourself", prompt: "I love" },
       { t: "I am happy when...", prompt: "I am happy when" },
+      {
+        t: "What accomplishments are you most proud of",
+        prompt: "I am proud of",
+      },
     ],
     dashboardTxt: "Positive Thoughts",
   },
@@ -253,7 +259,18 @@ export const QUESTION_CATEGORIES: {
     questions: [
       { t: "Am I using my time wisely" },
       { t: "What do I want in life" },
+      { t: "I feel most energized when" },
+      { t: "Am I employing a healthy perspective" },
+      { t: "What skills do you want to learn in the next five years" },
+      { t: "Am I letting matters that are out of my control stress me out" },
       { t: "Is where I am today making me happy" },
+      { t: "My favorite way to spend the day is..." },
+      { t: "The words I’d like to live by are..." },
+      { t: "If my body could talk, it would say..." },
+      { t: "What is the biggest “What if” in your mind" },
+      {
+        t: "If I could talk to my teenage self, the one thing I would say is...",
+      },
     ],
   },
   [QuestionCategoryId.XPurposeOfSession]: {
