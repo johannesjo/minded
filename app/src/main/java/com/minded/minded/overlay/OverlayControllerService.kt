@@ -204,7 +204,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return;
         }
 
-        if (currentPackageName.contains("com.google.android.apps.nexuslauncher")) {
+        if (currentPackageName == "com.google.android.apps.nexuslauncher" || currentPackageName == "com.google.android.googlequicksearchbox") {
             lastForeGroundApp = ""
             hideAll()
             return;
@@ -216,6 +216,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (!afterSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
                 }
+                // unlikely but just in case
             } else if (lastForeGroundApp == currentPackageName) {
                 Log.v(logTag, "lastForeGroundApp == currentPackageName => true")
                 if (!afterSunOverlayWindow.isWindowShown()) {
