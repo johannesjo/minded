@@ -12,6 +12,9 @@ import { isThisWeek, isToday } from "@src/util/isToday";
 const THRESHOLD_MORNING_START = 4;
 const THRESHOLD_MORNING_END = 14;
 const THRESHOLD_EVENING_START = 15;
+const THRESHOLD_LATE_NIGHT_START = 0;
+const THRESHOLD_LATE_NIGHT_END = 4;
+
 const FAKE_RULE_OUT_NR = 9999;
 
 export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
@@ -42,6 +45,14 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       }
       if (categoryForAnswer.isEveningCategory) {
         if (nowHours < THRESHOLD_EVENING_START) {
+          map[categoryId] = FAKE_RULE_OUT_NR;
+        }
+      }
+      if (categoryForAnswer.isLateNightCategory) {
+        if (
+          nowHours < THRESHOLD_LATE_NIGHT_START ||
+          nowHours > THRESHOLD_LATE_NIGHT_END
+        ) {
           map[categoryId] = FAKE_RULE_OUT_NR;
         }
       }
