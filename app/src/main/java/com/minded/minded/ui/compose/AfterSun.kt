@@ -1,5 +1,8 @@
 package com.minded.minded.ui.compose
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -8,6 +11,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -20,56 +28,72 @@ import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun AfterSun(elapsedSeconds: Int = 0, onSunTap: () -> Unit = {}) {
+fun AfterSun(
+    elapsedSeconds: Int = 0,
+    onSunTap: () -> Unit = {},
+    isInitiallyVisible: Boolean = false
+) {
     val minutes = elapsedSeconds / 60
     val remainingSeconds = elapsedSeconds % 60
     val clockString = String.format("%2d:%02d", minutes, remainingSeconds)
     val color = Color.White
 
-    Box(
-        modifier = Modifier
-//            .border(1.dp, Color.Black, CircleShape  )
-            .size(52.dp),
-        contentAlignment = Alignment.Center // This will center the inner Box
+    var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
+    LaunchedEffect(Unit) {
+        isOverlayVisible = true
+    }
+
+    AnimatedVisibility(
+        visible = isOverlayVisible,
+        enter = scaleIn(),
+        exit = fadeOut(),
     ) {
         Box(
             modifier = Modifier
-//                .border(1.dp, Color.Red, CircleShape  )
-                .size(44.dp),
+//            .border(1.dp, Color.Black, CircleShape  )
+                .size(52.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
-            val brush = Brush.radialGradient(listOf(Color.Red, Color.Transparent))
-            Canvas(
-                modifier = Modifier.size(100.dp),
-                onDraw = {
-                    drawCircle(brush)
-                }
-            )
-
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clickable(onClick = onSunTap)
+//                .border(1.dp, Color.Red, CircleShape  )
+                    .size(44.dp),
+                contentAlignment = Alignment.Center // This will center the inner Box
+
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = color,
+                val brush = Brush.radialGradient(listOf(Color.Red, Color.Transparent))
+                Canvas(
+                    modifier = Modifier.size(100.dp),
+                    onDraw = {
+                        drawCircle(brush)
+                    }
+                )
+
+                Box(
                     modifier = Modifier
-                        .matchParentSize()
+                        .size(36.dp)
+                        .clickable(onClick = onSunTap)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = color,
+                        modifier = Modifier
+                            .matchParentSize()
 //                    .shadow(elevation = 4.dp, shape = CircleShape) // Add shadow here
 
-                ) {
+                    ) {
 
-                    Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
-                        Text(
-                            text = clockString,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Normal,
-                            maxLines = 1
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = clockString,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Normal,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }
@@ -84,7 +108,7 @@ fun AfterSunPreview() {
     Surface(
         color = Color.White
     ) {
-        AfterSun(elapsedSeconds = 1000)
+        AfterSun(elapsedSeconds = 1000, isInitiallyVisible = true)
     }
 }
 
@@ -94,7 +118,7 @@ fun AfterSunPreview2() {
     Surface(
         color = Color.White
     ) {
-        AfterSun(elapsedSeconds = 9090)
+        AfterSun(elapsedSeconds = 9090, isInitiallyVisible = true)
     }
 }
 
@@ -104,7 +128,7 @@ fun AfterSunPreview3() {
     Surface(
         color = Color.White
     ) {
-        AfterSun(elapsedSeconds = 9)
+        AfterSun(elapsedSeconds = 9, isInitiallyVisible = true)
     }
 }
 

@@ -54,7 +54,7 @@ class MyAccessibilityService : AccessibilityService() {
 
 
     private val handler = Handler(Looper.getMainLooper())
-    private val debounceMinDelay = 200L
+    private val debounceMinDelay = 50L
     private var currentPackageName: CharSequence? = null
 
     private val runnable = Runnable {
