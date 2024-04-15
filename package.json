@@ -22,7 +22,7 @@
   "type": "module",
   "dependencies": {
     "nanoid": "^5.0.6",
-    "parse-domain": "^5.0.0",
+    "parse-domain": "^8.0.2",
     "solid-js": "^1.8.15",
     "webextension-polyfill": "^0.10.0"
   },

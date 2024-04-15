@@ -28,9 +28,10 @@ const MODE: "RATING" | "ACTION_ADVICE" | "QUESTION" = (() => {
 const ADVICE = getRndEntry(ACTION_ADVICES);
 const SUN_ANI_DURATION = 1600;
 
-export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
-  props,
-) => {
+export const Interaction: (props: {
+  host: string;
+  onHideAll: () => void;
+}) => JSX.Element = (props) => {
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
@@ -171,6 +172,7 @@ export const Interaction: (props: { onHideAll: () => void }) => JSX.Element = (
     <>
       {getIsShowAfterSun() ? (
         <AfterSunComponent
+          host={props.host}
           wasAnswerGiven={getWasAnswerGiven()}
           bubbleTxt={getAfterSunTxt()}
           teardown={teardown}
