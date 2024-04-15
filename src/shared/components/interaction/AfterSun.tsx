@@ -1,13 +1,18 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import { bro } from "@src/util/browser";
+import {
+  loadDataForHost,
+  updateHostsEntry,
+} from "@src/shared/data/localDataInterface";
 
 export const AfterSunComponent: (props: {
-  mode: "RATING" | "ACTION_ADVICE" | "QUESTION";
+  mode: "RATING" | "ACTION_ADVICE" | "QUESTION" | "SINGLE_SUN";
   bubbleTxt?: string;
   wasAnswerGiven: boolean;
   teardown: () => void;
   onShowQuestionAgain: () => void;
   onChangeQuestion: () => void;
+  host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
@@ -18,7 +23,10 @@ export const AfterSunComponent: (props: {
   let afterSunSuccessSunEl;
 
   onMount(async () => {
-    initCounter();
+    const d = await loadDataForHost(props.host);
+
+    initCounter(d?.sessionDurationInS ?? 0);
+
     setTimeout(() => {
       setIsMoveToTopRight(true);
     }, 200);
@@ -40,13 +48,20 @@ export const AfterSunComponent: (props: {
     return "";
   };
 
-  const initCounter = () => {
+  const initCounter = (initialValue: number) => {
+    if (initialValue) {
+      setSessionTime(initialValue);
+    }
     if (currentSessionInterval) {
       window.clearInterval(currentSessionInterval);
     }
     currentSessionInterval = window.setInterval(() => {
-      const v = getSessionTime();
-      setSessionTime(v + 1);
+      const v = getSessionTime() + 1;
+      updateHostsEntry(props.host, {
+        lastUsedTS: Date.now(),
+        sessionDurationInS: v,
+      });
+      setSessionTime(v);
     }, 1000);
   };
 
