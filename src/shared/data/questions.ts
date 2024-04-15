@@ -11,6 +11,7 @@ export enum QuestionCategoryId {
   TodayILearned = "TodayILearned",
   GoalForTheWeek = "GoalForTheWeek",
   Gratitude = "Gratitude",
+  Insomnia = "Insomnia",
   UnderstandingProcrastination = "UnderstandingProcrastination",
   SelfDiscovery = "SelfDiscovery",
   // NOTE: we filter out all questions from categories starting with X
@@ -48,6 +49,7 @@ export interface QuestionCategory {
   isThisWeekOnlyCategory?: boolean;
   isMorningCategory?: boolean;
   isEveningCategory?: boolean;
+  isLateNightCategory?: boolean;
   isDontSaveQuestion?: boolean;
   questions?: Question[];
   specialQuestions?: Question[];
@@ -262,6 +264,23 @@ export const QUESTION_CATEGORIES: {
     ],
     dashboardTxt: "Understanding Procrastination",
   },
+  [QuestionCategoryId.Insomnia]: {
+    questions: [
+      { t: "What are you feeling right now", prompt: "I feel" },
+      {
+        t: "Is there something specific on your mind that you need to address or resolve before trying to sleep",
+      },
+      {
+        t: "Are there any unresolved tasks or worries that you can address tomorrow, rather than ruminating on them tonight",
+      },
+      {
+        t: "What can you do to make yourself more comfortable in this moment",
+      },
+    ],
+    isLateNightCategory: true,
+    isTodayOnlyCategory: true,
+    dashboardTxt: "Insomnia",
+  },
   [QuestionCategoryId.XEnergyLevelToday]: {
     isTodayOnlyCategory: true,
   },
@@ -312,6 +331,7 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.Gratitude,
   QuestionCategoryId.UnderstandingProcrastination,
   QuestionCategoryId.SelfDiscovery,
+  QuestionCategoryId.Insomnia,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.CalmingThoughts,
 ];
