@@ -20,6 +20,7 @@ const FAKE_RULE_OUT_NR = 9999;
 
 export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const now = new Date();
+  const isWorkDayToday = isWorkDay(now);
   const nowHours = now.getHours();
 
   if (!answers.length) {
@@ -57,10 +58,8 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = FAKE_RULE_OUT_NR;
         }
       }
-      if (categoryForAnswer.isWorkDayCategory) {
-        if (isWorkDay(now)) {
-          map[categoryId] = FAKE_RULE_OUT_NR;
-        }
+      if (categoryForAnswer.isWorkDayCategory && isWorkDayToday) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
       }
     });
 
