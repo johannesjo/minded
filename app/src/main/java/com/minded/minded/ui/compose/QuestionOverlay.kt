@@ -36,7 +36,7 @@ import com.minded.minded.ui.theme.StandardGradient
 
 
 @Composable
-fun OverlayBig(
+fun QuestionOverlayBig(
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
     onSkip: () -> Unit = { },
     rndQuestion: QuestionForPrompt,
@@ -110,5 +110,5 @@ fun OverlayBigPreview() {
         prompt = "Enter your answer",
         categoryId = QuestionCategoryId.CalmingThoughts
     )
-    OverlayBig(rndQuestion = question, initialVisible = true)
+    QuestionOverlayBig(rndQuestion = question, initialVisible = true)
 }
