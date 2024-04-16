@@ -207,6 +207,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.Motivation to QuestionCategory(
         "My Motivation",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.Motivation },
+        isMorningCategory = true,
     ),
     QuestionCategoryId.Gratitude to QuestionCategory(
         "Gratitude",
@@ -215,6 +216,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.HelpfulTools to QuestionCategory(
         "Helpful Tools",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.HelpfulTools },
+        isMorningCategory = true,
     ),
     QuestionCategoryId.CalmingThoughts to QuestionCategory(
         "Calming Thoughts",
@@ -249,6 +251,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.UnderstandingProcrastination to QuestionCategory(
         "Understanding Procrastination",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.UnderstandingProcrastination },
+        isMorningCategory = true,
     ),
     QuestionCategoryId.SelfDiscovery to QuestionCategory(
         dashboardTxt = "Self Discovery",
