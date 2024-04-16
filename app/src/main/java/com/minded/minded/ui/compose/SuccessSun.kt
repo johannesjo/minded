@@ -99,7 +99,9 @@ fun SuccessSun(
         animatedRadius.animateTo(minRadiusPx, animationSpec = tween(inDuration)) {
             radius = value
         }
-        boxAlpha = 0f
+        if (!isClickTriggered) {
+            boxAlpha = 0f
+        }
         delay(fadeOutDuration.toLong())
         Log.v("SuccessSun", "onAfterShow() ${isClickTriggered}")
 
@@ -111,6 +113,7 @@ fun SuccessSun(
     LaunchedEffect(isClickTriggered) {
         if (isClickTriggered) {
             textAlpha = 0f
+            boxAlpha = 1f
             animatedRadius.animateTo(maxRadiusPx, animationSpec = tween(successDuration)) {
                 radius = value
             }
