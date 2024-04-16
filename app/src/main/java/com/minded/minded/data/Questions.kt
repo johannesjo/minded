@@ -44,6 +44,7 @@ data class QuestionCategory(
     val isMorningCategory: Boolean = false,
     val isEveningCategory: Boolean = false,
     val isLateNightCategory: Boolean = false,
+    val isWorkDayCategory: Boolean = false,
 )
 
 data class QuestionCategoryForDashboard(
@@ -55,6 +56,7 @@ data class QuestionCategoryForDashboard(
     val isMorningCategory: Boolean = false,
     val isEveningCategory: Boolean = false,
     val isLateNightCategory: Boolean = false,
+    val isWorkDayCategory: Boolean = false,
 )
 
 //interface QuestionCategory {
@@ -203,6 +205,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.RefocusHelperToday },
         isTodayOnlyCategory = true,
         isMorningCategory = true,
+        isWorkDayCategory = true,
     ),
     QuestionCategoryId.Motivation to QuestionCategory(
         "My Motivation",
@@ -217,6 +220,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
         "Helpful Tools",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.HelpfulTools },
         isMorningCategory = true,
+        isWorkDayCategory = true,
     ),
     QuestionCategoryId.CalmingThoughts to QuestionCategory(
         "Calming Thoughts",
@@ -247,11 +251,13 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.GoalForTheWeek },
         isMorningCategory = true,
         isThisWeekOnlyCategory = true,
+        isWorkDayCategory = true,
     ),
     QuestionCategoryId.UnderstandingProcrastination to QuestionCategory(
         "Understanding Procrastination",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.UnderstandingProcrastination },
         isMorningCategory = true,
+        isWorkDayCategory = true,
     ),
     QuestionCategoryId.SelfDiscovery to QuestionCategory(
         dashboardTxt = "Self Discovery",
