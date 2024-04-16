@@ -43,12 +43,6 @@ class MainActivity : AppCompatActivity() {
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        OverlayControllerService.showOverlay(
-            this,
-            OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
-            OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
-            "com.minded.minded"
-        )
 
 //        SuccessSunOverlayService.showOverlay(this)
 //        AfterSunOverlayService.showOverlay(this, answerTxt = "Hello, World!")
