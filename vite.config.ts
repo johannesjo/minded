@@ -15,10 +15,7 @@ const publicDir = resolve(__dirname, "public");
 const pagesDir = resolve(root, "pages");
 
 export default defineConfig({
-  plugins: [
-    solidPlugin(),
-    crx({manifest}),
-  ],
+  plugins: [solidPlugin(), crx({ manifest })],
   resolve: {
     alias: {
       "@src": root,
@@ -50,7 +47,7 @@ export default defineConfig({
           ? "assets/js/[name].js"
           : "assets/js/[name].[hash].js",
         assetFileNames: (assetInfo) => {
-          const {name} = path.parse(assetInfo.name);
+          const { name } = path.parse(assetInfo.name);
           return `assets/[ext]/${name}.chunk.[ext]`;
         },
       },
