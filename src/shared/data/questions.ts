@@ -50,6 +50,7 @@ export interface QuestionCategory {
   isMorningCategory?: boolean;
   isEveningCategory?: boolean;
   isLateNightCategory?: boolean;
+  isWorkDayCategory?: boolean;
   isDontSaveQuestion?: boolean;
   questions?: Question[];
   specialQuestions?: Question[];
@@ -76,6 +77,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.RefocusHelperToday]: {
     isTodayOnlyCategory: true,
     isMorningCategory: true,
+    isWorkDayCategory: true,
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
@@ -138,6 +140,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.HelpfulTools]: {
     dashboardTxt: "Helpful Tools",
     isMorningCategory: true,
+    isWorkDayCategory: true,
     questions: [
       {
         t: "What might help you concentrate",
@@ -237,6 +240,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.GoalForTheWeek]: {
     isThisWeekOnlyCategory: true,
     isMorningCategory: true,
+    isWorkDayCategory: true,
     questions: [
       { t: "What is a goal you want to achieve this week" },
       {
