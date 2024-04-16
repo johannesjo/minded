@@ -50,7 +50,7 @@ jobs:
         run: npm run pack
 
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: minded
+          name: minded-download
           path: minded.zip
