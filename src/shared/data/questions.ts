@@ -44,7 +44,7 @@ export type QuestionForPrompt = {
 };
 
 export interface QuestionCategory {
-  dashboardTxt?: string;
+  dashboardTxt: string;
   isTodayOnlyCategory?: boolean;
   isThisWeekOnlyCategory?: boolean;
   isMorningCategory?: boolean;
@@ -289,9 +289,11 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Insomnia",
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
+    dashboardTxt: "XXX",
     isTodayOnlyCategory: true,
   },
   [QuestionCategoryId.SelfDiscovery]: {
+    dashboardTxt: "Self Discovery",
     questions: [
       { t: "Am I using my time wisely" },
       { t: "What do I want in life" },
@@ -313,6 +315,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.XPurposeOfSession]: {
+    dashboardTxt: "XXX",
     isTodayOnlyCategory: true,
     isDontSaveQuestion: true,
     questions: [
