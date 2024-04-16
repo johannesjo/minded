@@ -1,7 +1,7 @@
 import { bro } from "@src/util/browser";
 import { countBlockedAttempt } from "@src/shared/data/syncDataInterface";
 
-bro.action.onClicked.addListener(function (tab) {
+bro.action.onClicked.addListener(function () {
   bro.tabs.create({
     url: bro.runtime.getURL("src/pages/newtab/index.html"),
   });

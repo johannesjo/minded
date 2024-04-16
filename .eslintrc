@@ -23,10 +23,7 @@
     "@typescript-eslint"
   ],
   "rules": {
-    "indent": [
-      "error",
-      2
-    ]
+
   },
   "globals": {
     "chrome": "readonly"
