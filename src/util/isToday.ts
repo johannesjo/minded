@@ -1,8 +1,8 @@
 export const isToday = (date: number | Date): boolean => {
   const d = new Date(date);
   const isValid = d.getTime() > 0;
-  if(!isValid) {
-    throw new Error('Invalid date passed');
+  if (!isValid) {
+    throw new Error("Invalid date passed");
   }
   const today = new Date();
   // return (today.toDateString() === d.toDateString());
@@ -14,12 +14,11 @@ export const isToday = (date: number | Date): boolean => {
   );
 };
 
-
 export const isYesterday = (date: number): boolean => {
   const d = new Date(date);
   const isValid = d.getTime() > 0;
-  if(!isValid) {
-    throw new Error('Invalid date passed');
+  if (!isValid) {
+    throw new Error("Invalid date passed");
   }
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -33,18 +32,18 @@ export const isYesterday = (date: number): boolean => {
   );
 };
 
-
 const getWeekNumber = (d: Date): number => {
   const start = new Date(d.getFullYear(), 0, 1);
-  const dayOfYear = ((d.getTime() - start.getTime() + /* ms per day = */ 86400000) / 86400000);
+  const dayOfYear =
+    (d.getTime() - start.getTime() + /* ms per day = */ 86400000) / 86400000;
   return Math.ceil((dayOfYear - d.getDay() + 1) / 7);
 };
 
 export const isThisWeek = (date: number | Date): boolean => {
   const d = new Date(date);
   const isValid = d.getTime() > 0;
-  if(!isValid) {
-    throw new Error('Invalid date passed');
+  if (!isValid) {
+    throw new Error("Invalid date passed");
   }
   const today = new Date();
   return getWeekNumber(d) === getWeekNumber(today);

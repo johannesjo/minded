@@ -2,12 +2,15 @@ import { fromUrl, parseDomain, ParseResultType } from "parse-domain";
 
 export const getHostFromUrl = (url: string): string => {
   const parsedHost = parseDomain(fromUrl(url));
-  if(parsedHost.type === ParseResultType.Listed) {
+  if (parsedHost.type === ParseResultType.Listed) {
     return (
       parsedHost.icann.domain + "." + parsedHost.icann.topLevelDomains.join(".")
     );
   }
-  if(parsedHost.type === ParseResultType.Ip || parsedHost.hostname === 'localhost') {
+  if (
+    parsedHost.type === ParseResultType.Ip ||
+    parsedHost.hostname === "localhost"
+  ) {
     return parsedHost.hostname as string;
   }
   console.log(parsedHost);

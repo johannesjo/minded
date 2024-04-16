@@ -17,7 +17,7 @@ const manifest = defineManifest(async () => ({
     "128": "icons/sun-no-rays-more-contrast.png",
   },
   options_page: "src/pages/options/index.html",
-  background: {service_worker: "src/pages/background/background.ts"},
+  background: { service_worker: "src/pages/background/background.ts" },
   action: {
     // default_popup: "src/pages/popup/index.html",
     default_icon: "icons/sun-no-rays-more-contrast.png",
