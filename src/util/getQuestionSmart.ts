@@ -8,6 +8,7 @@ import {
 } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
+import { isWorkDay } from "@src/util/isWorkDay";
 
 const THRESHOLD_MORNING_START = 4;
 const THRESHOLD_MORNING_END = 14;
@@ -53,6 +54,11 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_LATE_NIGHT_START ||
           nowHours > THRESHOLD_LATE_NIGHT_END
         ) {
+          map[categoryId] = FAKE_RULE_OUT_NR;
+        }
+      }
+      if (categoryForAnswer.isWorkDayCategory) {
+        if (isWorkDay(now)) {
           map[categoryId] = FAKE_RULE_OUT_NR;
         }
       }
