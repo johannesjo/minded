@@ -117,6 +117,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Motivation]: {
     dashboardTxt: "My Motivation",
+    isMorningCategory: true,
     questions: [
       { t: "What motivates you", prompt: "I am motivated by" },
       {
@@ -136,6 +137,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.HelpfulTools]: {
     dashboardTxt: "Helpful Tools",
+    isMorningCategory: true,
     questions: [
       {
         t: "What might help you concentrate",
@@ -262,6 +264,7 @@ export const QUESTION_CATEGORIES: {
         t: "What emotions are evoked by your current task",
       },
     ],
+    isMorningCategory: true,
     dashboardTxt: "Understanding Procrastination",
   },
   [QuestionCategoryId.Insomnia]: {
