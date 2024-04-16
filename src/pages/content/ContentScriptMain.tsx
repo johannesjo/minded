@@ -9,36 +9,36 @@ import {
 } from "@src/shared/data/localDataInterface";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
-const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 60 * 1000;
+const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 
 export const ContentScriptMain: (props: {
   isShowFullMinder: boolean;
 }) => JSX.Element = (props) => {
   const host = getHostFromUrl(window.location.href);
 
-  onMount(() => {
+  onMount(async () => {
     if (props.isShowFullMinder) {
-      setTimeout(async () => {
+      setTimeout(() => {
         updateSyncData({
           lastBlocked: Date.now(),
           lastBlockedUrl: window.location.href,
         });
-
-        const dataForHost = await loadDataForHost(host);
-
-        if (
-          dataForHost &&
-          Date.now() - RESET_WEBSITE_USAGE_DURATION_THRESHOLD >
-            dataForHost.lastUsedTS
-        ) {
-          updateHostsEntry(host, {
-            lastUsedTS: Date.now(),
-            sessionDurationInS: 0,
-          });
-        } else {
-          updateHostsEntry(host, { lastUsedTS: Date.now() });
-        }
       }, 8000);
+    }
+
+    const dataForHost = await loadDataForHost(host);
+
+    if (
+      dataForHost &&
+      Date.now() - RESET_WEBSITE_USAGE_DURATION_THRESHOLD >
+        dataForHost.lastUsedTS
+    ) {
+      updateHostsEntry(host, {
+        lastUsedTS: Date.now(),
+        sessionDurationInS: 0,
+      });
+    } else {
+      updateHostsEntry(host, { lastUsedTS: Date.now() });
     }
   });
 
