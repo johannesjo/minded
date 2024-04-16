@@ -17,6 +17,7 @@ val THRESHOLD_LATE_NIGHT_END = 4
 
 fun getQuestionSmart(answers: List<Answer>): QuestionForPrompt {
     val now = Calendar.getInstance()
+    val isWeekDayToday = isWorkDay(now)
     val nowHours = now.get(Calendar.HOUR_OF_DAY)
 
     if (answers.isEmpty()) {
@@ -47,6 +48,9 @@ fun getQuestionSmart(answers: List<Answer>): QuestionForPrompt {
             if (nowHours < THRESHOLD_LATE_NIGHT_START || nowHours > THRESHOLD_LATE_NIGHT_END) {
                 map[categoryId] = FAKE_RULE_OUT_NR
             }
+        }
+        if (categoryForAnswer.isWorkDayCategory && isWeekDayToday) {
+            map[categoryId] = FAKE_RULE_OUT_NR
         }
     }
 
