@@ -232,6 +232,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     currentPackageName
                 )
             }
+
+            // NOTE needs to be at the end to only update lastUsage after this
             val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
             if (currentAppData != null && currentAppData.lastUsed.isBefore(
                     Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
