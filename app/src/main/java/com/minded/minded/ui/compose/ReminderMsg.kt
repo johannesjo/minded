@@ -38,7 +38,7 @@ fun ReminderMsg(
     isInitiallyVisible: Boolean = false
 ) {
     var isVisible = remember { mutableStateOf(isInitiallyVisible) }
-    val height = 70.dp
+    val height = if (msg.length > 32) 78.dp else 44.dp
 
     LaunchedEffect(Unit) {
         isVisible.value = true
@@ -146,6 +146,21 @@ fun ReminderMsgPreview2() {
         Box(modifier = Modifier.size(500.dp)) {
             ReminderMsg(
                 msg = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+                isInitiallyVisible = true
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ReminderMsgPreview3() {
+    Surface(
+        color = Color.White
+    ) {
+        Box(modifier = Modifier.size(500.dp)) {
+            ReminderMsg(
+                msg = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
                 isInitiallyVisible = true
             )
         }
