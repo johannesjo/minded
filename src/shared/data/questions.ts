@@ -283,6 +283,9 @@ export const QUESTION_CATEGORIES: {
       {
         t: "What can you do to make yourself more comfortable in this moment",
       },
+      {
+        t: "What other things could you do to wind down before sleep",
+      },
     ],
     isLateNightCategory: true,
     isTodayOnlyCategory: true,
@@ -311,6 +314,9 @@ export const QUESTION_CATEGORIES: {
       { t: "What is the biggest “What if” in your mind" },
       {
         t: "If I could talk to my teenage self, the one thing I would say is...",
+      },
+      {
+        t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
       },
     ],
   },
