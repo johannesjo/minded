@@ -12,3 +12,9 @@
   font-size: 28px;
   user-select: none;
 }
+
+
+@mixin txtBig(){
+  font-size: 32px;
+  line-height: 1.2;
+}
