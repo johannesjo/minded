@@ -55,6 +55,8 @@ class AfterSunWindow(
 
             if (!powerManager.isScreenOn || !powerManager.isInteractive) {
                 hideWindow()
+                // go to homescreen directly to prevent showing the overlay after screen is turned on
+                ctrlSvc.goToHomeScreen()
             } else {
                 if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
