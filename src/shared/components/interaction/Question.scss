@@ -15,9 +15,10 @@
   padding: 16px;
   margin: auto;
   margin-top: 32px;
-  min-width: 400px;
+  width: 540px;
+  max-width: 100%;
   display: block;
-  font-size: 22px;
+  font-size: var(--fz-m);
 }
 
 

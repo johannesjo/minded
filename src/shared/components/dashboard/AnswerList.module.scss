@@ -6,7 +6,7 @@
 
 .userQuote {
   margin-top: 16px;
-  font-size: 22px;
+  @include usrQuote();
 }
 
 .categoryTitle {
