@@ -1,15 +1,25 @@
-import { createSignal, JSX } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 import { WebsiteListItem } from "@src/shared/components/onboarding/WebsiteListItem";
 import { DEFAULT_SYNC_DATA } from "@src/shared/data/syncData.const";
 import styles from "./WebsiteList.module.scss";
-import { updateCfg } from "@src/shared/data/syncDataInterface";
+import { getSyncData, updateCfg } from "@src/shared/data/syncDataInterface";
+import { getRndEntry } from "@src/util/getRndEntry";
 
-export const WebsiteList: (props: { onSave: () => void }) => JSX.Element = (
-  props,
-) => {
-  let [items, setItems] = createSignal<string[]>(
-    DEFAULT_SYNC_DATA.cfg.blockedHosts,
-  );
+export const WebsiteList: (props: {
+  onAfterSave: () => void;
+}) => JSX.Element = (props) => {
+  let [items, setItems] = createSignal<string[]>([]);
+
+  onMount(() => {
+    getSyncData().then((syncData) => {
+      if (syncData.cfg.blockedHosts?.length) {
+        setItems(syncData.cfg.blockedHosts);
+      } else {
+        setItems(DEFAULT_SYNC_DATA.cfg.blockedHosts);
+      }
+    });
+  });
+
   const addItem = () => {
     setItems([...items(), ""]);
     setTimeout(() => {
@@ -28,7 +38,7 @@ export const WebsiteList: (props: { onSave: () => void }) => JSX.Element = (
       .filter((item) => item.length > 2)
       .map((item) => item.trim());
     await updateCfg({ blockedHosts: cleanedItems });
-    props.onSave();
+    props.onAfterSave();
   };
 
   return (
@@ -45,11 +55,11 @@ export const WebsiteList: (props: { onSave: () => void }) => JSX.Element = (
       </div>
 
       <div class={styles.controls}>
-        <button className="btn-big" onClick={addItem}>
+        <button class="btn-big" onClick={addItem}>
           + Add item
         </button>
 
-        <button className="btn-big" onClick={saveAndContinue}>
+        <button class="btn-big" onClick={saveAndContinue}>
           Save & Continue
         </button>
       </div>
