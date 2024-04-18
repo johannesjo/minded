@@ -163,7 +163,7 @@ export const QUESTION_CATEGORIES: {
         prompt: "I can concentrate best",
       },
       {
-        t: "What do I need to work well in terms of light, view, order, temperature, social and physical environment",
+        t: "What do I need to work well in terms of light, order, temperature, social and physical environment",
         prompt: "I need",
       },
       {
@@ -308,9 +308,7 @@ export const QUESTION_CATEGORIES: {
       { t: "My favorite way to spend the day is..." },
       { t: "The words I’d like to live by are..." },
       { t: "If my body could talk, it would say..." },
-      {
-        t: "What actions, if taken, would make me proud of myself, regardless of the outcome?",
-      },
+      { t: "What actions would make me proud of myself?" },
       { t: "What is the biggest “What if” in your mind" },
       {
         t: "If I could talk to my teenage self, the one thing I would say is...",

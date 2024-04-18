@@ -200,7 +200,7 @@ export const Interaction: (props: {
             {getIsShowSuccessSun() && (
               <div
                 id="minded-6622-success-sun"
-                title="Click sun to close website"
+                title="Click sun to close tab"
                 onclick={() => {
                   bro.runtime.sendMessage({ closeTab: true });
                 }}
