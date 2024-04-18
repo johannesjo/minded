@@ -141,6 +141,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     sharedOverlayViewModel.reset(appName)
                 }
                 questionOverlayWindow.showWindow()
+                // we hide others only after to avoid lifecycle complications
+                hideAllBut(OverlayName.QUESTION_OVERLAY)
+                // when whe show the question, we likely want to update the current app usage
+                sharedOverlayViewModel.updateLastAppUsage()
             }
 
             OverlayName.SUCCESS_SUN_OVERLAY -> {
@@ -201,13 +205,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         if (!isBlockedPackage(currentPackageName)) {
             lastForeGroundApp = ""
-            hideAll()
+            hideAllBut()
             return;
         }
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher" || currentPackageName == "com.google.android.googlequicksearchbox") {
             lastForeGroundApp = ""
-            hideAll()
+            hideAllBut()
             return;
         }
 
@@ -217,12 +221,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (!afterSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
                 }
-                // unlikely but just in case
-            } else if (lastForeGroundApp == currentPackageName) {
-                Log.v(logTag, "lastForeGroundApp == currentPackageName => true")
-                if (!afterSunOverlayWindow.isWindowShown()) {
-                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
-                }
+                // since we also want to show the question overlay after the lock screen, we DON'T do this check
+//            } else if (lastForeGroundApp == currentPackageName) {
+//                Log.v(logTag, "lastForeGroundApp == currentPackageName => true")
+//                if (!afterSunOverlayWindow.isWindowShown()) {
+//                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
+//                }
             } else {
                 Log.v(logTag, "SHOW FRESH QUESTION OVERLAY for: $currentPackageName")
                 lastForeGroundApp = currentPackageName
@@ -242,17 +246,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 Log.v(logTag, "reset sessionDurationInS to 0")
                 sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
             }
-            sharedOverlayViewModel.updateLastAppUsage()
         }
         lastForeGroundApp = currentPackageName
     }
 
 
-    private fun hideAll() {
-        hideOverlay(OverlayName.QUESTION_OVERLAY);
-        hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
-        hideOverlay(OverlayName.REMINDER_MSG_OVERLAY);
-        hideOverlay(OverlayName.AFTER_SUN_OVERLAY);
+    private fun hideAllBut(exclude: OverlayName? = null) {
+        if (exclude != OverlayName.QUESTION_OVERLAY) hideOverlay(OverlayName.QUESTION_OVERLAY);
+        if (exclude != OverlayName.SUCCESS_SUN_OVERLAY) hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
+        if (exclude != OverlayName.REMINDER_MSG_OVERLAY) hideOverlay(OverlayName.REMINDER_MSG_OVERLAY);
+        if (exclude != OverlayName.AFTER_SUN_OVERLAY) hideOverlay(OverlayName.AFTER_SUN_OVERLAY);
     }
 
 
@@ -289,7 +292,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             hideOverlay(OverlayName.QUESTION_OVERLAY)
             hideOverlay(OverlayName.REMINDER_MSG_OVERLAY)
         } else {
-            hideAll()
+            hideAllBut()
         }
         // TODO count to DB
         backToHomeScreenCount++
