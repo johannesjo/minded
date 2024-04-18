@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,23 +14,20 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.data.answers.AnswerRepository
-import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.ui.model.DashboardViewModelFactory
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.checkDrawOverlayPermission
-import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
 
 enum class MissingCapability {
-    Accessibility, UsageStats, SystemAlertWindow
+    Accessibility, SystemAlertWindow;
 }
 
 class MainActivity : AppCompatActivity() {
     private lateinit var dashboardViewModel: DashboardViewModel
-    private var missingCapability: MissingCapability? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,19 +55,12 @@ class MainActivity : AppCompatActivity() {
                         Dashboard(
                             dashboardViewModel,
                             onMissingCapabilityClick = {
-                                when (missingCapability) {
+                                Log.v("MAIN", "onMissingCapabilityClick() $it")
+                                when (it) {
                                     MissingCapability.Accessibility -> askPermissionForAccessibility()
-                                    MissingCapability.UsageStats -> askPermissionForUsageStats()
                                     MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
-                                    null -> {}
                                 }
                             },
-                            onShowQuestionOverlay = {
-                                OverlayControllerService.showOverlay(
-                                    context,
-                                    OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
-                                )
-                            }
                         )
                     }
                 }
@@ -92,37 +81,17 @@ class MainActivity : AppCompatActivity() {
             "MAIN",
             "checkAndUpdateCapabilities()  ${isAccessibilityServiceEnabled(this).toString()}"
         )
-        missingCapability = null
         if (!checkDrawOverlayPermission(this)) {
-            Toast.makeText(
-                this,
-                "You need System Alert Window Permission :(",
-                Toast.LENGTH_SHORT
-            ).show()
-            missingCapability = MissingCapability.SystemAlertWindow
-            askPermissionForOverlay()
+            dashboardViewModel.addMissingCapability(MissingCapability.SystemAlertWindow)
         }
 
-        if (!checkUsageStatsPermission(this)) {
-            Toast.makeText(
-                this,
-                "You need Usage stats Permission :(",
-                Toast.LENGTH_SHORT
-            ).show()
-            missingCapability = MissingCapability.UsageStats
-            askPermissionForUsageStats()
-        }
+
         if (!isAccessibilityServiceEnabled(this)) {
-            Toast.makeText(
-                this,
-                "You need Accessibility Permission :(",
-                Toast.LENGTH_SHORT
-            ).show()
-            missingCapability = MissingCapability.Accessibility
+            dashboardViewModel.addMissingCapability(
+                MissingCapability.Accessibility
+            )
 //            askPermissionForAccessibility()
-//            finish()
         }
-        dashboardViewModel.setMissingCapability(missingCapability)
     }
 
     private fun askPermissionForOverlay() {
@@ -134,14 +103,6 @@ class MainActivity : AppCompatActivity() {
         );
     }
 
-    private fun askPermissionForUsageStats() {
-        startActivity(
-            Intent(
-                Settings.ACTION_USAGE_ACCESS_SETTINGS,
-                Uri.parse("package:$packageName")
-            )
-        );
-    }
 
     private fun askPermissionForAccessibility() {
         startActivity(

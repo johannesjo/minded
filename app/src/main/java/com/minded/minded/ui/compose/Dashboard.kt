@@ -4,17 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,22 +30,20 @@ import com.minded.minded.ui.theme.StandardGradient
 @Composable
 fun Dashboard(
     dashboardViewModel: DashboardViewModel = viewModel(),
-    onMissingCapabilityClick: (MissingCapability?) -> Unit = {},
-    onShowQuestionOverlay: () -> Unit = {}
+    onMissingCapabilityClick: (MissingCapability) -> Unit = {},
 ) {
     val uiState by dashboardViewModel.uiState.collectAsState()
     val questions = uiState.questionCategories
-    val missingCapability = uiState.missingCapability
+    val missingCapability = uiState.missingCapabilities
 
-    DashboardMain(questions, missingCapability, onMissingCapabilityClick, onShowQuestionOverlay)
+    DashboardMain(questions, missingCapability, onMissingCapabilityClick)
 }
 
 @Composable
 fun DashboardMain(
     questions: List<QuestionCategoryForDashboard>,
-    missingCapability: MissingCapability?,
-    onMissingCapabilityClick: (MissingCapability?) -> Unit = {},
-    onShowQuestionOverlay: () -> Unit = {}
+    missingCapabilities: List<MissingCapability>,
+    onMissingCapabilityClick: (MissingCapability) -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -63,7 +53,9 @@ fun DashboardMain(
                 )
             )
     ) {
-        if (questions.isEmpty()) {
+        if (missingCapabilities.isNotEmpty()) {
+            MissingCapabilityView(missingCapabilities, onMissingCapabilityClick)
+        } else if (questions.isEmpty()) {
             Text(
                 text = "No questions found",
                 fontSize = 16.sp,
@@ -71,36 +63,12 @@ fun DashboardMain(
                 fontWeight = FontWeight.Light,
                 modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
             )
-        }
-
-        LazyColumn {
-            items(questions.size) { index ->
-                val question = questions[index]
-                QuestionCategoryCmp(question);
-            }
-        }
-
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.BottomCenter)
-
-        ) {
-            if (missingCapability != null) {
-                FloatingActionButton(
-                    onClick = { onMissingCapabilityClick(missingCapability) },
-                ) {
-                    Icon(Icons.Filled.Settings, "Settings")
+        } else {
+            LazyColumn {
+                items(questions.size) { index ->
+                    val question = questions[index]
+                    QuestionCategoryCmp(question);
                 }
-                Spacer(modifier = Modifier.width(8.dp)) // Add this line
-            }
-            FloatingActionButton(
-                onClick = onShowQuestionOverlay,
-            ) {
-                Icon(Icons.Filled.Add, "Add")
             }
         }
     }
@@ -120,7 +88,7 @@ fun QuestionCategoryCmp(question: QuestionCategoryForDashboard) {
         ) {
 
             Text(
-                text = question.dashboardTxt,
+                text = question.dashboardTxt.lowercase(),
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Light,
@@ -193,7 +161,28 @@ fun DashboardMainPreview() {
                 )
             ),
         ),
-        MissingCapability.Accessibility,
-        onMissingCapabilityClick = { println("Missing capability clicked") }
+        emptyList(),
+        onMissingCapabilityClick = { }
+    )
+}
+
+
+@Composable
+@Preview
+fun DashboardMainPreview2() {
+    DashboardMain(
+        emptyList(),
+        emptyList(),
+        onMissingCapabilityClick = { }
+    )
+}
+
+@Composable
+@Preview
+fun DashboardMainPreview3() {
+    DashboardMain(
+        emptyList(),
+        listOf(MissingCapability.Accessibility),
+        onMissingCapabilityClick = { }
     )
 }
