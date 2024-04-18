@@ -1,5 +1,5 @@
 #minded-6622-rating-interaction {
-  font-size: 32px;
+  @include txtBig();
 
   > div:first-child {
     margin-bottom: 30px;

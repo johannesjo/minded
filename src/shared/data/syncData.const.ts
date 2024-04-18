@@ -10,6 +10,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
       "instagram.com",
       "tiktok.com",
       "netflix.com",
+      "amazon.com",
       // TODO remove other urls
       "tagesschau.de",
       "spiegel.de",

@@ -148,7 +148,7 @@ $sun-size: 40px;
 
 
 #minded-6622-action-advice {
-  font-size: 32px;
+  @include txtBig();
 
   :last-child {
     font-size: 48px;
