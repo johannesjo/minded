@@ -5,5 +5,5 @@ import com.minded.minded.data.QuestionCategoryForDashboard
 
 data class DashboardUiState(
     val questionCategories: List<QuestionCategoryForDashboard> = emptyList(),
-    val missingCapability: MissingCapability? = null
+    val missingCapabilities: List<MissingCapability> = emptyList()
 ) {}
