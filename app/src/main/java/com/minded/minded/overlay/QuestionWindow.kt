@@ -28,7 +28,6 @@ class QuestionWindow(
     override val logTag = javaClass.simpleName
 
 
-
     @Composable
     override fun Cmp() {
         val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
@@ -48,7 +47,7 @@ class QuestionWindow(
                 rndQuestion = question,
                 onSubmitAnswer = {
                     Log.v(logTag, "onSubmitAnswer: $it")
-                    dashboardViewModel.addAnswer(it, question.categoryId)
+                    dashboardViewModel.addAnswer(it, question.categoryId, question.id)
                     sharedOverlayViewModel.updateSharedData(answerTxt = it)
 
                     OverlayControllerService.showOverlay(

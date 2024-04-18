@@ -24,11 +24,16 @@ interface AnswerDao {
     @Update
     suspend fun update(answer: Answer)
 
-    suspend fun createWithTimestamp(txtIn: String, questionCategoryId: QuestionCategoryId) {
+    suspend fun createWithTimestamp(
+        txtIn: String,
+        questionCategoryId: QuestionCategoryId,
+        questionId: String
+    ) {
         val answer = Answer(
             uid = 0, // Room will auto-generate this
             questionCategoryId = questionCategoryId,
             txt = txtIn,
+            questionId = questionId,
             createdAt = System.currentTimeMillis(),
             modifiedAt = System.currentTimeMillis()
         )

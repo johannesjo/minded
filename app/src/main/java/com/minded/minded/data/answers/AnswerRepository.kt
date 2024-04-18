@@ -12,7 +12,10 @@ class AnswerRepository(context: Context) {
     private val answerDao: AnswerDao
 
     init {
-        val database = Room.databaseBuilder(context, AppDatabase::class.java, "minded-db").build()
+        val database = Room.databaseBuilder(context, AppDatabase::class.java, "minded-db")
+            // TODO remove for production
+            .fallbackToDestructiveMigration()
+            .build()
         answerDao = database.answerDao()
     }
 
@@ -26,8 +29,12 @@ class AnswerRepository(context: Context) {
         return answerDao.getAllAnswersFlow()
     }
 
-    suspend fun createWithTimestamp(txtIn: String, questionCategoryId: QuestionCategoryId) {
-        return answerDao.createWithTimestamp(txtIn, questionCategoryId)
+    suspend fun createWithTimestamp(
+        txtIn: String,
+        questionCategoryId: QuestionCategoryId,
+        questionId: String
+    ) {
+        return answerDao.createWithTimestamp(txtIn, questionCategoryId, questionId)
     }
 
     suspend fun removeAnswer(answer: Answer) {

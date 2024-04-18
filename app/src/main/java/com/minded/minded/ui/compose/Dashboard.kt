@@ -154,14 +154,16 @@ fun DashboardMainPreview() {
                         txt = "Mock Answer 1",
                         questionCategoryId = QuestionCategoryId.CalmingThoughts,
                         createdAt = 0,
-                        modifiedAt = 0
+                        modifiedAt = 0,
+                        questionId = "Q1"
                     ),
                     Answer(
                         uid = 1,
                         txt = "Mock Answer 2",
                         questionCategoryId = QuestionCategoryId.CalmingThoughts,
                         createdAt = 0,
-                        modifiedAt = 0
+                        modifiedAt = 0,
+                        questionId = "Q2"
                     ),
                 )
             ),
@@ -177,14 +179,16 @@ fun DashboardMainPreview() {
                         txt = "Mock Answer 1",
                         questionCategoryId = QuestionCategoryId.CalmingThoughts,
                         createdAt = 0,
-                        modifiedAt = 0
+                        modifiedAt = 0,
+                        questionId = "Q1"
                     ),
                     Answer(
                         uid = 1,
                         txt = "Mock Answer 2 longer longer longer and longer and longer and logner and longer",
                         questionCategoryId = QuestionCategoryId.CalmingThoughts,
                         createdAt = 0,
-                        modifiedAt = 0
+                        modifiedAt = 0,
+                        questionId = "Q2"
                     ),
                 )
             ),

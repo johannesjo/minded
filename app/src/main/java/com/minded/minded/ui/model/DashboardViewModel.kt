@@ -55,9 +55,9 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
      * 2. Dispatchers.IO is used to change the dispatcher of the coroutine to IO, which is optimal for IO operations, and does not block the main thread.
      * 3. answerRepository.add(answer) is used to add the answer to the database.
      */
-    fun addAnswer(title: String, categoryId: QuestionCategoryId) {
+    fun addAnswer(title: String, categoryId: QuestionCategoryId, questionId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            answerRepository.createWithTimestamp(title, categoryId)
+            answerRepository.createWithTimestamp(title, categoryId, questionId)
         }
     }
 
