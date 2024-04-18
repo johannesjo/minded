@@ -13,7 +13,6 @@ export const getHostFromUrl = (url: string): string => {
   ) {
     return parsedHost.hostname as string;
   }
-  console.log(parsedHost);
-  console.error("Url could not be parsed");
+  console.log("Url could not be parsed", parsedHost);
   return url.replace("http://", "").replace("https://", "");
 };
