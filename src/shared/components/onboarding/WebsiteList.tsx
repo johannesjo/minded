@@ -10,8 +10,15 @@ export const WebsiteList: (props: { onSave: () => void }) => JSX.Element = (
   let [items, setItems] = createSignal<string[]>(
     DEFAULT_SYNC_DATA.cfg.blockedHosts,
   );
-
-  const addItem = () => setItems([...items(), ""]);
+  const addItem = () => {
+    setItems([...items(), ""]);
+    setTimeout(() => {
+      const allInputs = document.getElementsByTagName("input");
+      if (allInputs.length) {
+        allInputs[allInputs.length - 1].focus();
+      }
+    });
+  };
   const updateItem = (index: number, value: string) =>
     setItems(items().map((item, i) => (i === index ? value : item)));
   const removeItem = (index: number) =>
