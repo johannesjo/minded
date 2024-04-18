@@ -25,11 +25,13 @@ enum class QuestionCategoryId {
 }
 
 data class Question(
+    val id: String,
     val t: String,
     val prompt: String? = null
 )
 
 data class QuestionForPrompt(
+    val id: String,
     val categoryId: QuestionCategoryId,
     val t: String,
     val prompt: String? = null
@@ -59,122 +61,6 @@ data class QuestionCategoryForDashboard(
     val isWorkDayCategory: Boolean = false,
 )
 
-//interface QuestionCategory {
-//    val dashboardTxt: String?
-//    val isTodayOnlyCategory: Boolean?
-//    val isThisWeekOnlyCategory: Boolean?
-//    val isQuestionLessWidget: Boolean?
-//    val questions: List<Question>?
-//}
-
-//
-//val QUESTIONS: List<QuestionForPrompt> = listOf(
-//    QuestionForPrompt(
-//        t = "What is something you are good at",
-//        prompt = "I am good at",
-//        categoryId = QuestionCategoryId.PersonalResources
-//    ),
-//    QuestionForPrompt(
-//        t = "What is a strength of yours",
-//        categoryId = QuestionCategoryId.PersonalResources
-//    ),
-//    QuestionForPrompt(
-//        t = "Today I learned...",
-//        prompt = "I learned",
-//        categoryId = QuestionCategoryId.TodayILearned
-//    ),
-//    QuestionForPrompt(
-//        t = "What is your most important task today",
-//        prompt = "My most important task is",
-//        categoryId = QuestionCategoryId.RefocusHelperToday
-//    ),
-//    QuestionForPrompt(
-//        t = "What is the plan for today",
-//        prompt = "My plan for today is",
-//        categoryId = QuestionCategoryId.RefocusHelperToday
-//    ),
-//    QuestionForPrompt(
-//        t = "What motivates you",
-//        prompt = "I am motivated by",
-//        categoryId = QuestionCategoryId.Motivation
-//    ),
-//    QuestionForPrompt(
-//        t = "What is something you are grateful for",
-//        prompt = "I am grateful for ",
-//        categoryId = QuestionCategoryId.Gratitude
-//    ),
-//    QuestionForPrompt(
-//        t = "What might help you concentrate",
-//        prompt = "I can concentrate better when",
-//        categoryId = QuestionCategoryId.HelpfulTools
-//    ),
-//    QuestionForPrompt(
-//        t = "What might boost your productivity",
-//        prompt = "I am more productive when",
-//        categoryId = QuestionCategoryId.HelpfulTools
-//    ),
-//    QuestionForPrompt(
-//        t = "What makes you feel relaxed",
-//        prompt = "I feel at ease when",
-//        categoryId = QuestionCategoryId.CalmingThoughts
-//    ),
-//    QuestionForPrompt(
-//        t = "Can you describe a calm place you might like",
-//        categoryId = QuestionCategoryId.CalmingThoughts
-//    ),
-//    QuestionForPrompt(
-//        t = "What do you like",
-//        prompt = "I like",
-//        categoryId = QuestionCategoryId.PositiveThoughts
-//    ),
-//    QuestionForPrompt(
-//        t = "I am happy when...",
-//        prompt = "I am happy when",
-//        categoryId = QuestionCategoryId.PositiveThoughts
-//    ),
-//    QuestionForPrompt(
-//        t = "What is good today",
-//        categoryId = QuestionCategoryId.GoodToday
-//    ),
-//    QuestionForPrompt(
-//        t = "What is a little thing you enjoyed today",
-//        prompt = "I enjoyed",
-//        categoryId = QuestionCategoryId.GoodToday
-//    ),
-//    QuestionForPrompt(
-//        t = "What is something you always wanted to do",
-//        categoryId = QuestionCategoryId.GoodPlans
-//    ),
-//    QuestionForPrompt(
-//        t = "What is a good habit you might want to establish",
-//        prompt = "I want to ",
-//        categoryId = QuestionCategoryId.GoodPlans
-//    ),
-//    QuestionForPrompt(
-//        t = "What is a nice thing you can do for yourself today",
-//        categoryId = QuestionCategoryId.GoodPlansToday
-//    ),
-//    QuestionForPrompt(
-//        t = "What can I do so that today will be a good day",
-//        prompt = "I will",
-//        categoryId = QuestionCategoryId.GoodPlansToday
-//    ),
-//    QuestionForPrompt(
-//        t = "Today I will do my best to...",
-//        prompt = "Today I will do my best to",
-//        categoryId = QuestionCategoryId.GoodPlansToday
-//    ),
-//    QuestionForPrompt(
-//        t = "What is a goal you want to achieve this week",
-//        categoryId = QuestionCategoryId.GoalForTheWeek
-//    ),
-//    QuestionForPrompt(
-//        t = "This week I will do my best to...",
-//        prompt = "This week I will do my best to",
-//        categoryId = QuestionCategoryId.GoalForTheWeek
-//    )
-//)
-
 
 val jsonString =
     """[{"id":"PR1","t":"What is something you are good at","prompt":"I am good at","categoryId":"PersonalResources"},{"id":"PR2","t":"What is a strength of yours","categoryId":"PersonalResources"},{"id":"TIL1","t":"Today I learned...","prompt":"I learned","categoryId":"TodayILearned"},{"id":"RFHT1","t":"What is your most important task today","prompt":"My most important task is","categoryId":"RefocusHelperToday"},{"id":"RFHT2","t":"What is most important today for you","prompt":"Most important is","categoryId":"RefocusHelperToday"},{"id":"RFHT3","t":"What is the plan for today","prompt":"My plan for today is","categoryId":"RefocusHelperToday"},{"id":"RFHT4","t":"If there was only one task I could do today, which one would it be","prompt":"Most important is","categoryId":"RefocusHelperToday"},{"id":"RFHT5","t":"What would make me proud today, if it would finally be done","prompt":"I would be proud to","categoryId":"RefocusHelperToday"},{"id":"RFHT6","t":"What small task can I do today, that will pave the way for other tasks","categoryId":"RefocusHelperToday"},{"id":"RFHT7","t":"What do you want to achieve today","prompt":"Today I want to","categoryId":"RefocusHelperToday"},{"id":"RFHT8","t":"What is the most easy and smallest task you could be working on now","prompt":"Right now, I can work on","categoryId":"RefocusHelperToday"},{"id":"RFHT9","t":"What exactly needs to be done in your current task","prompt":"First I","categoryId":"RefocusHelperToday"},{"id":"MO1","t":"What motivates you","prompt":"I am motivated by","categoryId":"Motivation"},{"id":"MO2","t":"What motivates me to make progress","prompt":"I am motivated by","categoryId":"Motivation"},{"id":"GR1","t":"What is something you are grateful for","prompt":"I am grateful for","categoryId":"Gratitude"},{"id":"HT1","t":"What might help you concentrate","prompt":"I can concentrate better when","categoryId":"HelpfulTools"},{"id":"HT2","t":"What might boost your productivity","prompt":"I am more productive when","categoryId":"HelpfulTools"},{"id":"HT3","t":"What is a thing you might do instead of visiting this website","prompt":"Instead of visiting this website I","categoryId":"HelpfulTools"},{"id":"HT4","t":"Instead of instant gratification, what might be a better alternative","prompt":"Instead of visiting these websites I could","categoryId":"HelpfulTools"},{"id":"HT5","t":"At what time of the day can you concentrate best","prompt":"I can concentrate best","categoryId":"HelpfulTools"},{"id":"HT6","t":"What do I need to work well in terms of light, order, temperature, social and physical environment","prompt":"I need","categoryId":"HelpfulTools"},{"id":"HT7","t":"How do I stay grounded when I feel overwhelmed","prompt":"I am able to stay grounded, when","categoryId":"HelpfulTools"},{"id":"CT1","t":"What makes you feel relaxed","prompt":"I feel at ease when","categoryId":"CalmingThoughts"},{"id":"CT2","t":"Can you describe a calm place you might like","categoryId":"CalmingThoughts"},{"id":"PT1","t":"What do you like","prompt":"I like","categoryId":"PositiveThoughts"},{"id":"PT2","t":"What do you love about life","prompt":"I love","categoryId":"PositiveThoughts"},{"id":"PT3","t":"What do you love about yourself","prompt":"I love","categoryId":"PositiveThoughts"},{"id":"PT4","t":"I am happy when...","prompt":"I am happy when","categoryId":"PositiveThoughts"},{"id":"PT5","t":"What accomplishments are you most proud of","prompt":"I am proud of","categoryId":"PositiveThoughts"},{"id":"GT1","t":"What is good today","categoryId":"GoodToday"},{"id":"GT2","t":"What is a little thing you enjoyed today","prompt":"I enjoyed","categoryId":"GoodToday"},{"id":"GP1","t":"What is something you always wanted to do","categoryId":"GoodPlans"},{"id":"GP2","t":"What is a good habit you might want to establish","prompt":"I want to","categoryId":"GoodPlans"},{"id":"GP3","t":"What do you want to stop doing? And what can you do instead","prompt":"I want to stop","categoryId":"GoodPlans"},{"id":"GPT1","t":"What is a nice thing you can do for yourself today","categoryId":"GoodPlansToday"},{"id":"GPT2","t":"What can you do so that today will be a good day","prompt":"I will","categoryId":"GoodPlansToday"},{"id":"GPT3","t":"Today I will do my best to...","prompt":"Today I will do my best to","categoryId":"GoodPlansToday"},{"id":"GPT4","t":"What is a little thing you can enjoy today","prompt":"Today I will enjoy","categoryId":"GoodPlansToday"},{"id":"GPT5","t":"What kind of person do I want to be today","prompt":"Today I will enjoy","categoryId":"GoodPlansToday"},{"id":"GW1","t":"What is a goal you want to achieve this week","categoryId":"GoalForTheWeek"},{"id":"GW2","t":"This week I will do my best to...","prompt":"This week I will do my best to","categoryId":"GoalForTheWeek"},{"id":"UP1","t":"What do you think is a factor that enables your procrastination","categoryId":"UnderstandingProcrastination"},{"id":"UP2","t":"Why are you visiting this website","categoryId":"UnderstandingProcrastination"},{"id":"UP3","t":"Where and how do I waste time","categoryId":"UnderstandingProcrastination"},{"id":"UP4","t":"What is hurting your focus","categoryId":"UnderstandingProcrastination"},{"id":"UP5","t":"In what situations do you have a hard time focussing and what contributes to it","prompt":"I find it hard to focus, when","categoryId":"UnderstandingProcrastination"},{"id":"UP6","t":"In what situations do I reach a Flow state? And what contributes to it","prompt":"I reach the Flow state when","categoryId":"UnderstandingProcrastination"},{"id":"UP7","t":"What emotions are evoked by your current task","categoryId":"UnderstandingProcrastination"},{"id":"IN1","t":"What are you feeling right now","prompt":"I feel","categoryId":"Insomnia"},{"id":"IN2","t":"Is there something specific on your mind that you need to address or resolve before trying to sleep","categoryId":"Insomnia"},{"id":"IN3","t":"Are there any unresolved tasks or worries that you can address tomorrow, rather than ruminating on them tonight","categoryId":"Insomnia"},{"id":"IN4","t":"What can you do to make yourself more comfortable in this moment","categoryId":"Insomnia"},{"id":"IN5","t":"What other things could you do to wind down before sleep","categoryId":"Insomnia"},{"id":"SD1","t":"Am I using my time wisely","categoryId":"SelfDiscovery"},{"id":"SD2","t":"What do I want in life","categoryId":"SelfDiscovery"},{"id":"SD3","t":"I feel most energized when","categoryId":"SelfDiscovery"},{"id":"SD4","t":"Am I employing a healthy perspective","categoryId":"SelfDiscovery"},{"id":"SD5","t":"What skills do you want to learn in the next five years","categoryId":"SelfDiscovery"},{"id":"SD6","t":"Am I letting matters that are out of my control stress me out","categoryId":"SelfDiscovery"},{"id":"SD7","t":"Is where I am today making me happy","categoryId":"SelfDiscovery"},{"id":"SD8","t":"My favorite way to spend the day is...","categoryId":"SelfDiscovery"},{"id":"SD9","t":"The words I’d like to live by are...","categoryId":"SelfDiscovery"},{"id":"SD10","t":"If my body could talk, it would say...","categoryId":"SelfDiscovery"},{"id":"SD11","t":"What actions would make me proud of myself","categoryId":"SelfDiscovery"},{"id":"SD12","t":"What is the biggest “What if” in your mind","categoryId":"SelfDiscovery"},{"id":"SD13","t":"If I could talk to my teenage self, the one thing I would say is...","categoryId":"SelfDiscovery"},{"id":"SD14","t":"Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have","categoryId":"SelfDiscovery"}]"""
@@ -185,7 +71,8 @@ val QUESTIONS = List(jsonArray.length()) { i ->
     val t = jsonObject.getString("t")
     val prompt = jsonObject.optString("prompt", null)
     val categoryId = QuestionCategoryId.valueOf(jsonObject.getString("categoryId"))
-    QuestionForPrompt(categoryId, t, prompt)
+    val questionID = jsonObject.getString("id")
+    QuestionForPrompt(questionID, categoryId, t, prompt)
 }
 
 val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(

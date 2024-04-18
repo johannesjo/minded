@@ -9,6 +9,7 @@ import com.minded.minded.data.QuestionCategoryId
 data class Answer(
     @PrimaryKey(autoGenerate = true) val uid: Int,
     @ColumnInfo(name = "question_category_id") val questionCategoryId: QuestionCategoryId,
+    @ColumnInfo(name = "qid") val questionId: String? = null,
     @ColumnInfo(name = "txt") val txt: String,
     @ColumnInfo(name = "created_at") var createdAt: Long,
     @ColumnInfo(name = "modified_at") var modifiedAt: Long

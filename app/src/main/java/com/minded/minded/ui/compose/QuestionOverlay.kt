@@ -108,6 +108,7 @@ fun OverlayBigPreview() {
     val question = QuestionForPrompt(
         t = "What is the capital of France?",
         prompt = "Enter your answer",
+        id = "Q1",
         categoryId = QuestionCategoryId.CalmingThoughts
     )
     QuestionOverlayBig(rndQuestion = question, initialVisible = true)
