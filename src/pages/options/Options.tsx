@@ -1,23 +1,15 @@
-import logo from "@assets/img/logo.svg";
+import { WebsiteList } from "@src/shared/components/onboarding/WebsiteList";
 
 const Options = () => {
+  const onAfterSave = () => {
+    alert("The settings have been saved!");
+  };
   return (
-    <div>
-      <header>
-        <img src={logo}
-             alt="logo" />
-        <p class="font-bold">
-          Edit <code>src/pages/options/Options.tsx</code> and save to reload.
-        </p>
-        <a
-
-          href="https://github.com/solidjs/solid"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Solid
-        </a>
-      </header>
+    <div id="minded-6622-coloured-wrapper">
+      <h2>minded – Settings</h2>
+      <br />
+      <h3>list of websites to handle</h3>
+      <WebsiteList onAfterSave={onAfterSave}></WebsiteList>
     </div>
   );
 };

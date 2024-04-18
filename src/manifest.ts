@@ -38,7 +38,6 @@ const manifest = defineManifest(async () => ({
       matches: ["*://*/*"],
     },
   ],
-  // TODO that might be cool
   chrome_url_overrides: {
     newtab: "src/pages/newtab/index.html",
   },

@@ -6,11 +6,10 @@ import { updateCfg } from "@src/shared/data/syncDataInterface";
 export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
   props,
 ) => {
-  const onSaveWebsites = async () => {
+  const onAfterSaveWebsites = async () => {
     await updateCfg({ isOnboardingComplete: true });
     props.onComplete();
   };
-
   return (
     <>
       <div class={styles.welcomeWrapper}>
@@ -21,7 +20,7 @@ export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
           <p>Which websites do you intent to use less?</p>
         </div>
 
-        <WebsiteList onSave={onSaveWebsites} />
+        <WebsiteList onAfterSave={onAfterSaveWebsites} />
       </div>
     </>
   );
