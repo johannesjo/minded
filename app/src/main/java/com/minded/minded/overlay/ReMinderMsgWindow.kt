@@ -43,11 +43,7 @@ class ReMinderMsgWindow(
                     OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
                 )
             } else {
-                OverlayControllerService.showOverlay(
-                    context,
-                    OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY,
-                    OverlayControllerService.Companion.OverlayMode.SUCCESS_SUN_OVERLAY__FINAL,
-                )
+                ctrlSvc.userDrivenClose()
             }
         }, onCountdownComplete = {
             Log.v(logTag, "onCountdownComplete()")
