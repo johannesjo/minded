@@ -1,3 +1,5 @@
+import { QID } from "@src/shared/data/questionId";
+
 export enum QuestionCategoryId {
   Motivation = "Motivation",
   PersonalResources = "PersonalResources",
@@ -34,11 +36,13 @@ export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
 
 export type Question = {
   t: string;
+  id: QID;
   prompt?: string;
 };
 
 export type QuestionForPrompt = {
   categoryId: QuestionCategoryId;
+  id: QID;
   t: string;
   prompt?: string;
 };
@@ -62,8 +66,13 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.PersonalResources]: {
     dashboardTxt: "Personal Resources",
     questions: [
-      { t: "What is something you are good at", prompt: "I am good at" },
       {
+        id: QID.PR1,
+        t: "What is something you are good at",
+        prompt: "I am good at",
+      },
+      {
+        id: QID.PR2,
         t: "What is a strength of yours",
       },
     ],
@@ -72,7 +81,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isEveningCategory: true,
     dashboardTxt: "Today I learned",
-    questions: [{ t: "Today I learned...", prompt: "I learned" }],
+    questions: [{ id: QID.TIL1, t: "Today I learned...", prompt: "I learned" }],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
     isTodayOnlyCategory: true,
@@ -81,37 +90,46 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
+        id: QID.RFHT1,
         t: "What is your most important task today",
         prompt: "My most important task is",
       },
       {
+        id: QID.RFHT2,
         t: "What is most important today for you",
         prompt: "Most important is",
       },
       {
+        id: QID.RFHT3,
         t: "What is the plan for today",
         prompt: "My plan for today is",
       },
       {
+        id: QID.RFHT4,
         t: "If there was only one task I could do today, which one would it be",
         prompt: "Most important is",
       },
       {
+        id: QID.RFHT5,
         t: "What would make me proud today, if it would finally be done",
         prompt: "I would be proud to",
       },
       {
+        id: QID.RFHT6,
         t: "What small task can I do today, that will pave the way for other tasks",
       },
       {
+        id: QID.RFHT7,
         t: "What do you want to achieve today",
         prompt: "Today I want to",
       },
       {
+        id: QID.RFHT8,
         t: "What is the most easy and smallest task you could be working on now",
         prompt: "Right now, I can work on",
       },
       {
+        id: QID.RFHT9,
         t: "What exactly needs to be done in your current task",
         prompt: "First I",
       },
@@ -121,8 +139,9 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Motivation",
     isMorningCategory: true,
     questions: [
-      { t: "What motivates you", prompt: "I am motivated by" },
+      { id: QID.MO1, t: "What motivates you", prompt: "I am motivated by" },
       {
+        id: QID.MO2,
         t: "What motivates me to make progress",
         prompt: "I am motivated by",
       },
@@ -132,6 +151,7 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Gratitude",
     questions: [
       {
+        id: QID.GR1,
         t: "What is something you are grateful for",
         prompt: "I am grateful for",
       },
@@ -143,30 +163,37 @@ export const QUESTION_CATEGORIES: {
     isWorkDayCategory: true,
     questions: [
       {
+        id: QID.HT1,
         t: "What might help you concentrate",
         prompt: "I can concentrate better when",
       },
       {
+        id: QID.HT2,
         t: "What might boost your productivity",
         prompt: "I am more productive when",
       },
       {
+        id: QID.HT3,
         t: "What is a thing you might do instead of visiting this website",
         prompt: "Instead of visiting this website I",
       },
       {
+        id: QID.HT4,
         t: "Instead of instant gratification, what might be a better alternative",
         prompt: "Instead of visiting these websites I could",
       },
       {
+        id: QID.HT5,
         t: "At what time of the day can you concentrate best",
         prompt: "I can concentrate best",
       },
       {
+        id: QID.HT6,
         t: "What do I need to work well in terms of light, order, temperature, social and physical environment",
         prompt: "I need",
       },
       {
+        id: QID.HT7,
         t: "How do I stay grounded when I feel overwhelmed",
         prompt: "I am able to stay grounded, when",
       },
@@ -174,18 +201,23 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.CalmingThoughts]: {
     questions: [
-      { t: "What makes you feel relaxed", prompt: "I feel at ease when" },
-      { t: "Can you describe a calm place you might like" },
+      {
+        id: QID.CT1,
+        t: "What makes you feel relaxed",
+        prompt: "I feel at ease when",
+      },
+      { id: QID.CT2, t: "Can you describe a calm place you might like" },
     ],
     dashboardTxt: "Calming Thoughts",
   },
   [QuestionCategoryId.PositiveThoughts]: {
     questions: [
-      { t: "What do you like", prompt: "I like" },
-      { t: "What do you love about life", prompt: "I love" },
-      { t: "What do you love about yourself", prompt: "I love" },
-      { t: "I am happy when...", prompt: "I am happy when" },
+      { id: QID.PT1, t: "What do you like", prompt: "I like" },
+      { id: QID.PT2, t: "What do you love about life", prompt: "I love" },
+      { id: QID.PT3, t: "What do you love about yourself", prompt: "I love" },
+      { id: QID.PT4, t: "I am happy when...", prompt: "I am happy when" },
       {
+        id: QID.PT5,
         t: "What accomplishments are you most proud of",
         prompt: "I am proud of",
       },
@@ -196,19 +228,25 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isEveningCategory: true,
     questions: [
-      { t: "What is good today" },
-      { t: "What is a little thing you enjoyed today", prompt: "I enjoyed" },
+      { id: QID.GT1, t: "What is good today" },
+      {
+        id: QID.GT2,
+        t: "What is a little thing you enjoyed today",
+        prompt: "I enjoyed",
+      },
     ],
     dashboardTxt: "Good Today",
   },
   [QuestionCategoryId.GoodPlans]: {
     questions: [
-      { t: "What is something you always wanted to do" },
+      { id: QID.GP1, t: "What is something you always wanted to do" },
       {
+        id: QID.GP2,
         t: "What is a good habit you might want to establish",
         prompt: "I want to",
       },
       {
+        id: QID.GP3,
         t: "What do you want to stop doing? And what can you do instead",
         prompt: "I want to stop",
       },
@@ -220,21 +258,26 @@ export const QUESTION_CATEGORIES: {
     isMorningCategory: true,
     questions: [
       {
+        id: QID.GPT1,
         t: "What is a nice thing you can do for yourself today",
       },
       {
+        id: QID.GPT2,
         t: "What can you do so that today will be a good day",
         prompt: "I will",
       },
       {
+        id: QID.GPT3,
         t: "Today I will do my best to...",
         prompt: "Today I will do my best to",
       },
       {
+        id: QID.GPT4,
         t: "What is a little thing you can enjoy today",
         prompt: "Today I will enjoy",
       },
       {
+        id: QID.GPT5,
         t: "What kind of person do I want to be today",
         prompt: "Today I will enjoy",
       },
@@ -246,8 +289,9 @@ export const QUESTION_CATEGORIES: {
     isMorningCategory: true,
     isWorkDayCategory: true,
     questions: [
-      { t: "What is a goal you want to achieve this week" },
+      { id: QID.GW1, t: "What is a goal you want to achieve this week" },
       {
+        id: QID.GW2,
         t: "This week I will do my best to...",
         prompt: "This week I will do my best to",
       },
@@ -256,19 +300,25 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.UnderstandingProcrastination]: {
     questions: [
-      { t: "What do you think is a factor that enables your procrastination" },
-      { t: "Why are you visiting this website" },
-      { t: "Where and how do I waste time" },
-      { t: "What is hurting your focus" },
       {
+        id: QID.UP1,
+        t: "What do you think is a factor that enables your procrastination",
+      },
+      { id: QID.UP2, t: "Why are you visiting this website" },
+      { id: QID.UP3, t: "Where and how do I waste time" },
+      { id: QID.UP4, t: "What is hurting your focus" },
+      {
+        id: QID.UP5,
         t: "In what situations do you have a hard time focussing and what contributes to it",
         prompt: "I find it hard to focus, when",
       },
       {
+        id: QID.UP6,
         t: "In what situations do I reach a Flow state? And what contributes to it",
         prompt: "I reach the Flow state when",
       },
       {
+        id: QID.UP7,
         t: "What emotions are evoked by your current task",
       },
     ],
@@ -277,17 +327,21 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Insomnia]: {
     questions: [
-      { t: "What are you feeling right now", prompt: "I feel" },
+      { id: QID.IN1, t: "What are you feeling right now", prompt: "I feel" },
       {
+        id: QID.IN2,
         t: "Is there something specific on your mind that you need to address or resolve before trying to sleep",
       },
       {
+        id: QID.IN3,
         t: "Are there any unresolved tasks or worries that you can address tomorrow, rather than ruminating on them tonight",
       },
       {
+        id: QID.IN4,
         t: "What can you do to make yourself more comfortable in this moment",
       },
       {
+        id: QID.IN5,
         t: "What other things could you do to wind down before sleep",
       },
     ],
@@ -302,22 +356,30 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.SelfDiscovery]: {
     dashboardTxt: "Self Discovery",
     questions: [
-      { t: "Am I using my time wisely" },
-      { t: "What do I want in life" },
-      { t: "I feel most energized when" },
-      { t: "Am I employing a healthy perspective" },
-      { t: "What skills do you want to learn in the next five years" },
-      { t: "Am I letting matters that are out of my control stress me out" },
-      { t: "Is where I am today making me happy" },
-      { t: "My favorite way to spend the day is..." },
-      { t: "The words I’d like to live by are..." },
-      { t: "If my body could talk, it would say..." },
-      { t: "What actions would make me proud of myself" },
-      { t: "What is the biggest “What if” in your mind" },
+      { id: QID.SD1, t: "Am I using my time wisely" },
+      { id: QID.SD2, t: "What do I want in life" },
+      { id: QID.SD3, t: "I feel most energized when" },
+      { id: QID.SD4, t: "Am I employing a healthy perspective" },
       {
+        id: QID.SD5,
+        t: "What skills do you want to learn in the next five years",
+      },
+      {
+        id: QID.SD6,
+        t: "Am I letting matters that are out of my control stress me out",
+      },
+      { id: QID.SD7, t: "Is where I am today making me happy" },
+      { id: QID.SD8, t: "My favorite way to spend the day is..." },
+      { id: QID.SD9, t: "The words I’d like to live by are..." },
+      { id: QID.SD10, t: "If my body could talk, it would say..." },
+      { id: QID.SD11, t: "What actions would make me proud of myself" },
+      { id: QID.SD12, t: "What is the biggest “What if” in your mind" },
+      {
+        id: QID.SD13,
         t: "If I could talk to my teenage self, the one thing I would say is...",
       },
       {
+        id: QID.SD14,
         t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
       },
     ],
@@ -328,6 +390,7 @@ export const QUESTION_CATEGORIES: {
     isDontSaveQuestion: true,
     questions: [
       {
+        id: QID.XP1,
         t: "What is the purpose of visiting this website",
         prompt: "In this session I want to",
       },
@@ -354,6 +417,8 @@ export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.CalmingThoughts,
 ];
 
+const qids = {};
+
 export const QUESTIONS: QuestionForPrompt[] = [];
 Object.keys(QUESTION_CATEGORIES)
   // NOTE: we filter out all questions from categories starting with X
@@ -361,6 +426,13 @@ Object.keys(QUESTION_CATEGORIES)
   .forEach((categoryId) => {
     const entry = QUESTION_CATEGORIES[categoryId];
     entry.questions?.forEach((question) => {
+      if (qids[question.id]) {
+        console.log(qids, question, qids[question.id]);
+        throw new Error(`"${question.id}" was used for other question already`);
+      }
+
+      qids[question.id] = question;
+
       QUESTIONS.push({ ...question, categoryId });
     });
   });
@@ -370,7 +442,7 @@ Object.keys(QUESTION_CATEGORIES)
 /*
 IDEAS:
       {
-        t: "Why do you want to complete your current task",
+       id: QID.PR1, t: "Why do you want to complete your current task",
         prompt: "Completing my current task, will allow me to",
       },
 
