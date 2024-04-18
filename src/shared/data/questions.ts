@@ -349,10 +349,6 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     dashboardTxt: "Insomnia",
   },
-  [QuestionCategoryId.XEnergyLevelToday]: {
-    dashboardTxt: "XXX",
-    isTodayOnlyCategory: true,
-  },
   [QuestionCategoryId.SelfDiscovery]: {
     dashboardTxt: "Self Discovery",
     questions: [
@@ -396,6 +392,10 @@ export const QUESTION_CATEGORIES: {
       },
     ],
   },
+  [QuestionCategoryId.XEnergyLevelToday]: {
+    dashboardTxt: "XXX",
+    isTodayOnlyCategory: true,
+  },
 };
 
 export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
@@ -437,7 +437,7 @@ Object.keys(QUESTION_CATEGORIES)
     });
   });
 
-// console.log(JSON.stringify(QUESTIONS));
+console.log(JSON.stringify(QUESTIONS));
 
 /*
 IDEAS:
