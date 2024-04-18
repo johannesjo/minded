@@ -4,11 +4,13 @@
   position: relative;
   overflow: hidden;
   padding: 8px;
-  min-height: 36px;
+  min-height: 56px;
   min-width: 300px;
 
   input {
-    @include formInput;
+    @include formInput(40px);
+    flex: 1;
+    min-width: 0 !important;
   }
 }
 
@@ -18,6 +20,7 @@
   animation-fill-mode: forwards;
   opacity: 0;
   display: flex;
+  align-items: center;
   justify-content: stretch;
   gap: 16px;
   position: absolute;
@@ -29,11 +32,6 @@
   max-width: 100%;
   box-sizing: border-box;
   width: 100%;
-
-  input {
-    flex: 1;
-    min-width: 0;
-  }
 }
 
 .userQuote {
