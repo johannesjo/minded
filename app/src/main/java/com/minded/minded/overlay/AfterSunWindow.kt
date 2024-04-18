@@ -1,7 +1,9 @@
 package com.minded.minded.overlay
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
@@ -23,6 +25,8 @@ class AfterSunWindow(
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
     override val logTag = javaClass.simpleName
+    private val powerManager: PowerManager =
+        ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
     @Composable
     override fun Cmp() {
@@ -42,16 +46,24 @@ class AfterSunWindow(
     private val handler = Handler(Looper.getMainLooper())
     private val runnable = object : Runnable {
         override fun run() {
-//            Log.v(logTag, "elapsedSeconds: $elapsedSeconds")
+            Log.v(
+                logTag,
+                "elapsedSeconds: $elapsedSeconds ${powerManager.isScreenOn} ${powerManager.isInteractive}"
+            )
             elapsedSeconds++
             sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
 
-            handler.postDelayed(this, 1000)
-            if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
-                OverlayControllerService.showOverlay(
-                    ctrlSvc,
-                    OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY
-                )
+            if (!powerManager.isScreenOn || !powerManager.isInteractive) {
+                hideWindow()
+            } else {
+                if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
+                    OverlayControllerService.showOverlay(
+                        ctrlSvc,
+                        OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY
+                    )
+                }
+                // restart timer
+                handler.postDelayed(this, 1000)
             }
         }
     }
