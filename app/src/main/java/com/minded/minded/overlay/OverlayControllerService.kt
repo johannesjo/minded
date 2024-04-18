@@ -297,15 +297,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         // TODO count to DB
         backToHomeScreenCount++
         if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
+            goToHomeScreen()
         } else {
-            val intent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            startActivity(intent)
+            goToApp()
         }
 
         if (!isSkipShowWelcomeBackSunAfter) {
@@ -315,6 +309,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 OverlayControllerService.Companion.OverlayMode.SUCCESS_SUN_OVERLAY__FINAL
             )
         }
+    }
+
+    fun goToHomeScreen() {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(intent)
+    }
+
+    fun goToApp() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
     }
 
 
