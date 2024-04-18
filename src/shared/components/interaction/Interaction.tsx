@@ -9,7 +9,11 @@ import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { bro } from "@src/util/browser";
 import { Answer } from "@src/shared/data/syncData";
-import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
+import {
+  QuestionCategoryId,
+  QuestionForPrompt,
+  QUESTIONS,
+} from "@src/shared/data/questions";
 import React from "react";
 import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
 import { getSyncData } from "@src/shared/data/syncDataInterface";
@@ -218,6 +222,7 @@ export const Interaction: (props: {
               </Match>
               <Match when={MODE === "RATING"}>
                 <RatingInteraction
+                  questionCategoryId={QuestionCategoryId.XEnergyLevelToday}
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onSuccess}
                   onCancel={teardown}

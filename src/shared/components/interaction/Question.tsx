@@ -44,6 +44,7 @@ export const Question: (props: {
     if (ev.key === "Enter") {
       submitAnswer({
         questionCategoryId: q.categoryId,
+        qid: q.id,
         val: (ev.target as any).value,
         ts: Date.now(),
         id: nanoid(),
