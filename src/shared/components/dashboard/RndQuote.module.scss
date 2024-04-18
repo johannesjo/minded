@@ -6,8 +6,8 @@
 
 
 .txt {
+  @include usrQuote();
   font-style: italic;
-  font-size: 22px;
 }
 
 .author {

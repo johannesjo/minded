@@ -1,7 +1,7 @@
 @mixin h4() {
   font-weight: 200;
   margin-bottom: 8px;
-  font-size: 18px;
+  font-size: var(--fz-s);
   user-select: none;
   //font-style: italic;
 }
@@ -15,6 +15,12 @@
 
 
 @mixin txtBig(){
-  font-size: 32px;
+  font-size: var(--fz-l);
   line-height: 1.2;
+}
+
+@mixin usrQuote(){
+  font-size: var(--fz-m);
+  line-height: 1.2;
+  font-weight: 300;
 }

@@ -118,7 +118,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.Motivation]: {
-    dashboardTxt: "My Motivation",
+    dashboardTxt: "Motivation",
     isMorningCategory: true,
     questions: [
       { t: "What motivates you", prompt: "I am motivated by" },

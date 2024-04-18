@@ -13,7 +13,7 @@
 
 .userQuote {
   margin-top: 16px;
-  font-size: 18px;
+  @include usrQuote();
 }
 
 
