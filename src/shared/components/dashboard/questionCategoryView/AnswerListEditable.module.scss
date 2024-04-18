@@ -9,12 +9,17 @@
   align-items: center;
 }
 
-.answer{}
+.answer {
+}
 
 .userQuote {
   margin-top: 16px;
   @include usrQuote();
 }
 
+
+.addItem {
+  margin-top: 24px;
+}
 
 

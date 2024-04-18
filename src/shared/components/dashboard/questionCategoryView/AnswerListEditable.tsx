@@ -48,8 +48,8 @@ export const AnswerListEditable: (props: {
               onRemove={() => setIsAddMode(false)}
             />
           ) : (
-            <button class="btn-ico" onClick={() => setIsAddMode(true)}>
-              +
+            <button class="btn-big" onClick={() => setIsAddMode(true)}>
+              + Add
             </button>
           )}
         </div>
