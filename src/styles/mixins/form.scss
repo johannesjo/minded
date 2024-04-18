@@ -1,11 +1,15 @@
 @mixin formInput() {
-  color: #000;
-  background: transparent;
-  box-shadow: none;
-  padding: 8px;
-  outline: none;
-  border: 1px solid rgba(0, 0, 0, .5);
-  border-radius: 16px;
-  display: block;
-  max-width: 100%;
+  color: #000 !important;
+  background: rgba(255, 255, 255, .5) !important;
+  box-shadow: none !important;
+  padding: 0 24px !important;
+  outline: none !important;
+  border: none !important;
+  border-radius: 8px !important;
+  display: block !important;
+  max-width: 100% !important;
+  line-height: 20px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  box-sizing: border-box !important;
 }
