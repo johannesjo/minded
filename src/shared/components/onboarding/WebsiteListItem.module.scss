@@ -12,7 +12,8 @@
     padding: 4px 12px;
     transition: 0.1s;
     font-weight: bold;
-    @include formInput;
+    @include formInput(40px);
+
 
     &:focus {
       transform: scale(1.05);
