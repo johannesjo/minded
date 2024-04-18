@@ -94,7 +94,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         t: "If there was only one task I could do today, which one would it be",
-        prompt: "My task for today would be",
+        prompt: "Most important is",
       },
       {
         t: "What would make me proud today, if it would finally be done",
@@ -234,6 +234,10 @@ export const QUESTION_CATEGORIES: {
         t: "What is a little thing you can enjoy today",
         prompt: "Today I will enjoy",
       },
+      {
+        t: "What kind of person do I want to be today",
+        prompt: "Today I will enjoy",
+      },
     ],
     dashboardTxt: "Good Plans Today",
   },
@@ -258,7 +262,7 @@ export const QUESTION_CATEGORIES: {
       { t: "What is hurting your focus" },
       {
         t: "In what situations do you have a hard time focussing and what contributes to it",
-        prompt: "I'm having a hard time focussing when",
+        prompt: "I find it hard to focus, when",
       },
       {
         t: "In what situations do I reach a Flow state? And what contributes to it",
@@ -308,7 +312,7 @@ export const QUESTION_CATEGORIES: {
       { t: "My favorite way to spend the day is..." },
       { t: "The words I’d like to live by are..." },
       { t: "If my body could talk, it would say..." },
-      { t: "What actions would make me proud of myself?" },
+      { t: "What actions would make me proud of myself" },
       { t: "What is the biggest “What if” in your mind" },
       {
         t: "If I could talk to my teenage self, the one thing I would say is...",
