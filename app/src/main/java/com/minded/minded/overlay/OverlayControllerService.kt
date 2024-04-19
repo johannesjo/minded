@@ -140,6 +140,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                     sharedOverlayViewModel.reset(appName)
                 }
+                sharedOverlayViewModel.updateSharedData(answerTxt = null, sunTxt = null)
                 questionOverlayWindow.showWindow()
                 // we hide others only after to avoid lifecycle complications
                 hideAllBut(OverlayName.QUESTION_OVERLAY)
