@@ -40,7 +40,9 @@ class ReMinderMsgWindow(
             if (isQuestion()) {
                 OverlayControllerService.showOverlay(
                     context,
-                    OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+                    OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
+                    null,
+                    sharedData.currentApp
                 )
             } else {
                 ctrlSvc.userDrivenClose()

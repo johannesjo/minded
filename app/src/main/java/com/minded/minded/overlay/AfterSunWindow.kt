@@ -14,8 +14,9 @@ import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.AfterSun
 
-val AFTER_SUN_CYCLE_DURATION_IN_S = 120
-//val AFTER_SUN_CYCLE_DURATION_IN_S = 7
+//val AFTER_SUN_CYCLE_DURATION_IN_S = 6
+val AFTER_SUN_CYCLE_DURATION_IN_S = 240
+val RE_MIND_CYCLE_DURATION = AFTER_SUN_CYCLE_DURATION_IN_S * 4
 
 @Suppress("DEPRECATION")
 class AfterSunWindow(
@@ -58,7 +59,15 @@ class AfterSunWindow(
                 // go to homescreen directly to prevent showing the overlay after screen is turned on
                 ctrlSvc.goToHomeScreen()
             } else {
-                if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
+                if (elapsedSeconds % RE_MIND_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+                    hideWindow()
+                    OverlayControllerService.showOverlay(
+                        ctrlSvc,
+                        OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
+                        OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
+                        sharedOverlayViewModel.sharedData.value.currentApp
+                    )
+                } else if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY

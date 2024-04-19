@@ -109,7 +109,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
     }
 
 
-    fun reset(currentApp: String) {
+    fun resetToFreshRndQuestion(currentApp: String) {
         updateSharedData(
             currentApp = currentApp,
             isShowAfterSunAfterSuccess = true,

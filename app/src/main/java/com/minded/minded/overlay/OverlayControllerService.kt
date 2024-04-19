@@ -134,11 +134,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> {
+                if (appName == null) {
+                    throw RuntimeException("appName is null")
+                }
                 if (overlayMode == OverlayMode.QUESTION_OVERLAY__FRESH) {
-                    if (appName == null) {
-                        throw RuntimeException("appName is null")
-                    }
-                    sharedOverlayViewModel.reset(appName)
+                    sharedOverlayViewModel.resetToFreshRndQuestion(appName)
                 }
                 sharedOverlayViewModel.updateSharedData(answerTxt = null, sunTxt = null)
                 questionOverlayWindow.showWindow()
