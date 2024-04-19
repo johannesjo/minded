@@ -20,6 +20,8 @@
   background: linear-gradient(180deg, #cfecd0, #ffc5ca, #e6ea9b);
   background-size: 100% 250%;
   animation: minded6622gradient 8s ease-in infinite;
+  // NOTE currently conflicting with slow fadeout
+  //animation: minded6622gradient 8s ease-in infinite, minded6622fadeIn 1s ease ;
 }
 
 
@@ -34,3 +36,13 @@
     background-position: 0 0;
   }
 }
+
+
+//@keyframes minded6622fadeIn {
+//  0% {
+//    opacity: 0;
+//  }
+//  100% {
+//    opacity: 1;
+//  }
+//}

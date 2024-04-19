@@ -44,7 +44,10 @@ const CURRENT_URL = window.location.href;
           () =>
             (
               <ContentScriptMain
-                isShowFullMinder={isShowFullMinder(CURRENT_URL, syncData)}
+                isShowFullMinderInitially={isShowFullMinder(
+                  CURRENT_URL,
+                  syncData,
+                )}
               />
             ) as any,
           wrapperEl,
