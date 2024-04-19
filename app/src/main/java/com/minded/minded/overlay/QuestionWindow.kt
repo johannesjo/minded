@@ -15,6 +15,9 @@ import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.QuestionOverlayBig
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class QuestionWindow(
@@ -54,7 +57,11 @@ class QuestionWindow(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
                     )
-                    hideWindow()
+//                    hideWindow()
+                    GlobalScope.launch {
+                        delay(1000)  // delay for 1000 milliseconds (1 second)
+                        hideWindow()
+                    }
                 },
                 onSkip = {
                     OverlayControllerService.showOverlay(
