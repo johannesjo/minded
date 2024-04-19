@@ -3,7 +3,9 @@ package com.minded.minded.ui.compose
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -34,49 +36,49 @@ fun MissingCapabilityView(
         ) {
 
             Text(
-                text = "Before you can use the app, you need to give the following permissions:",
+                text = "Before you can use the app, you need to give the following permissions. Remember: minded does not collect any data. Everything stays on your device.",
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
             )
-            if (missingCapabilities.contains(MissingCapability.Accessibility)) {
+
+            if (missingCapabilities.contains(MissingCapability.SystemAlertWindow)) {
+                Spacer(modifier = Modifier.height(32.dp))
                 Text(
-                    text = "You need to enable the minded accessibility service. This service is used to detect app starts on your device, so minded can display the interaction overlay.",
+                    text = "Minded displays an overlay to interrupt your visits to apps you want to use less. For this to work, minded needs the overlay permission.",
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { onMissingCapabilityClick(MissingCapability.SystemAlertWindow) }) {
+                    Text("Enable Overlay Permission")
+                }
+            }
 
+            if (missingCapabilities.contains(MissingCapability.Accessibility)) {
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "The minded accessibility service is required to detect app starts on your device, so minded knows when to display the interaction overlay.",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { onMissingCapabilityClick(MissingCapability.Accessibility) }) {
                     Text("Enable Accessibility Service")
                 }
-
-
-                Text(
-                    text = "If the button above does not work, you can enable the service manually in your device settings.",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 8.dp)
-                )
-                Text(
-                    text = "In case there are problems after enabling the service, disabling and then enabling the service again will likely help.",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
-                )
-
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            if (missingCapabilities.contains(MissingCapability.SystemAlertWindow)) {
-                Text(
-                    text = "You need to give permission to display minded over other apps. minded uses this to display overlays.",
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
-                )
-                Button(onClick = { onMissingCapabilityClick(MissingCapability.SystemAlertWindow) }) {
-                    Text("Enable Permission")
-                }
-            }
+
+            Text(
+                text = "If the buttons above does not work, you can enable the accessibility service and the permission manually in your device settings.",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "In case there are problems with the accessibility service, enabling, disabling and then enabling the service again will likely help.",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
@@ -84,13 +86,25 @@ fun MissingCapabilityView(
 
 @Composable
 @Preview
-fun MissingCapabilityViewPreview() {
+fun MissingCapabilityViewPreview1() {
+    MissingCapabilityView(
+        listOf(
+            MissingCapability.SystemAlertWindow,
+            MissingCapability.Accessibility
+        )
+    )
+}
+
+
+@Composable
+@Preview
+fun MissingCapabilityViewPreview2() {
     MissingCapabilityView(listOf(MissingCapability.Accessibility))
 }
 
 @Composable
 @Preview
-fun MissingCapabilityViewPreview2() {
+fun MissingCapabilityViewPreview3() {
     MissingCapabilityView(listOf(MissingCapability.SystemAlertWindow))
 }
 
