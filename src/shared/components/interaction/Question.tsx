@@ -18,7 +18,14 @@ export const Question: (props: {
   let inpEl;
   let t0;
 
+  console.log("Question Component Function");
+
+  if (props.question.prompt && inpEl) {
+    inpEl.value = props.question.prompt + " ";
+  }
+
   onMount(async () => {
+    console.log("Question Component Function onMount()");
     if (props.question.prompt && inpEl) {
       inpEl.value = props.question.prompt + " ";
     }
