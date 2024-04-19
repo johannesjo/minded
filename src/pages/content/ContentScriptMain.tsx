@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { JSX, onMount } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 import { updateSyncData } from "@src/shared/data/syncDataInterface";
 import { Interaction } from "@src/shared/components/interaction/Interaction";
 import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
@@ -12,12 +12,15 @@ import { getHostFromUrl } from "@src/util/getHostFromUrl";
 const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 
 export const ContentScriptMain: (props: {
-  isShowFullMinder: boolean;
+  isShowFullMinderInitially: boolean;
 }) => JSX.Element = (props) => {
   const host = getHostFromUrl(window.location.href);
+  const [getIsShowFullMinder, setIsShowFullMinder] = createSignal(
+    props.isShowFullMinderInitially,
+  );
 
   onMount(async () => {
-    if (props.isShowFullMinder) {
+    if (props.isShowFullMinderInitially) {
       setTimeout(() => {
         updateSyncData({
           lastBlocked: Date.now(),
@@ -44,7 +47,7 @@ export const ContentScriptMain: (props: {
 
   return (
     <>
-      {props.isShowFullMinder ? (
+      {getIsShowFullMinder() ? (
         <Interaction
           host={host}
           onHideAll={() => document.getElementById("minded-6622").remove()}
@@ -56,6 +59,7 @@ export const ContentScriptMain: (props: {
           wasAnswerGiven={false}
           onShowQuestionAgain={() => undefined}
           onChangeQuestion={() => undefined}
+          onShowFreshQuestion={() => setIsShowFullMinder(true)}
           teardown={() => document.getElementById("minded-6622").remove()}
         ></AfterSunComponent>
       )}

@@ -19,7 +19,8 @@ import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
 import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
-const MODE: "RATING" | "ACTION_ADVICE" | "QUESTION" = (() => {
+type InteractionMode = "RATING" | "ACTION_ADVICE" | "QUESTION";
+const INITIAL_MODE: InteractionMode = (() => {
   const rndInt = getRndInt(0, 100);
   if (rndInt >= 95) {
     return "RATING";
@@ -37,6 +38,7 @@ export const Interaction: (props: {
   onHideAll: () => void;
 }) => JSX.Element = (props) => {
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
+  const [getMode, setMode] = createSignal<InteractionMode>(INITIAL_MODE);
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
   const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
@@ -64,7 +66,7 @@ export const Interaction: (props: {
       const rndQuestion = getQuestionSmart(syncDataI.answers);
       setRndQuestion(rndQuestion);
 
-      switch (MODE) {
+      switch (getMode()) {
         case "ACTION_ADVICE":
           setAfterSunTxt(ADVICE.txt);
           setWasAnswerGiven(true);
@@ -83,7 +85,7 @@ export const Interaction: (props: {
   });
 
   const initFadeOut = () => {
-    if (MODE === "ACTION_ADVICE") {
+    if (getMode() === "ACTION_ADVICE") {
       const res = fadeOut(wrapperEl, 4000, 3000);
       frameNr = res.frameNr;
       res.promise.then(() => {
@@ -106,6 +108,7 @@ export const Interaction: (props: {
   };
 
   const updateQuestion = () => {
+    setMode("QUESTION");
     if (syncData) {
       const rndQuestion =
         questionUpdateCount >= 3
@@ -180,7 +183,13 @@ export const Interaction: (props: {
           wasAnswerGiven={getWasAnswerGiven()}
           bubbleTxt={getAfterSunTxt()}
           teardown={teardown}
-          mode={MODE}
+          mode={getMode()}
+          onShowFreshQuestion={() => {
+            updateQuestion();
+            setIsShowAfterSun(false);
+            setIsShowSuccessSun(false);
+            initFadeOut();
+          }}
           onShowQuestionAgain={() => {
             setIsShowAfterSun(false);
             setIsShowSuccessSun(false);
@@ -214,13 +223,13 @@ export const Interaction: (props: {
               </div>
             )}
             <Switch>
-              <Match when={MODE === "ACTION_ADVICE"}>
+              <Match when={getMode() === "ACTION_ADVICE"}>
                 <div id="minded-6622-action-advice">
                   <div>{ADVICE.txt}</div>
                   <div>{ADVICE.ico}</div>
                 </div>
               </Match>
-              <Match when={MODE === "RATING"}>
+              <Match when={getMode() === "RATING"}>
                 <RatingInteraction
                   questionCategoryId={QuestionCategoryId.XEnergyLevelToday}
                   onCancelCountdown={cancelCountdown}
@@ -228,7 +237,7 @@ export const Interaction: (props: {
                   onCancel={teardown}
                 />
               </Match>
-              <Match when={MODE === "QUESTION"}>
+              <Match when={getMode() === "QUESTION"}>
                 {getRndQuestion() && (
                   <Question
                     question={getRndQuestion()}

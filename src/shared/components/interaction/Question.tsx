@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import {
   QUESTION_CATEGORIES,
   QuestionForPrompt,
@@ -16,13 +16,17 @@ export const Question: (props: {
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   let inpEl;
+  let t0;
 
   onMount(async () => {
     if (props.question.prompt && inpEl) {
       inpEl.value = props.question.prompt + " ";
     }
     inpEl.focus();
-    setTimeout(() => inpEl.focus(), 250);
+    t0 = setTimeout(() => inpEl.focus(), 250);
+  });
+  onCleanup(() => {
+    window.clearTimeout(t0);
   });
 
   const submitAnswer = async (answer: Answer) => {

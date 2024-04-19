@@ -1,9 +1,12 @@
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { bro } from "@src/util/browser";
 import {
   loadDataForHost,
   updateHostsEntry,
 } from "@src/shared/data/localDataInterface";
+
+const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
+// const RE_QUESTION_INTERVAL_IN_S = 8;
 
 export const AfterSunComponent: (props: {
   mode: "RATING" | "ACTION_ADVICE" | "QUESTION" | "SINGLE_SUN";
@@ -11,6 +14,7 @@ export const AfterSunComponent: (props: {
   wasAnswerGiven: boolean;
   teardown: () => void;
   onShowQuestionAgain: () => void;
+  onShowFreshQuestion: () => void;
   onChangeQuestion: () => void;
   host: string;
 }) => JSX.Element = (props) => {
@@ -21,19 +25,27 @@ export const AfterSunComponent: (props: {
 
   let currentSessionInterval: number;
   let afterSunSuccessSunEl;
+  let t0;
+  let t1;
 
   onMount(async () => {
     const d = await loadDataForHost(props.host);
 
     initCounter(d?.sessionDurationInS ?? 0);
 
-    setTimeout(() => {
+    t0 = setTimeout(() => {
       setIsMoveToTopRight(true);
     }, 200);
 
-    setTimeout(() => {
+    t1 = setTimeout(() => {
       setIsShowBubbleTxt(true);
     }, 1200);
+  });
+
+  onCleanup(() => {
+    window.clearTimeout(t0);
+    window.clearTimeout(t1);
+    window.clearInterval(currentSessionInterval);
   });
 
   const formatSessionTime = (seconds: number): string => {
@@ -62,6 +74,11 @@ export const AfterSunComponent: (props: {
         sessionDurationInS: v,
       });
       setSessionTime(v);
+      console.log(v % RE_QUESTION_INTERVAL_IN_S);
+
+      if (v > 0 && v % RE_QUESTION_INTERVAL_IN_S === 0) {
+        props.onShowFreshQuestion();
+      }
     }, 1000);
   };
 
