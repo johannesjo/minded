@@ -82,4 +82,12 @@ open class DashboardViewModel(private val answerRepository: AnswerRepository) : 
             }
         }
     }
+
+    fun setMissingCapabilities(missingCapabilities: List<MissingCapability>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update {
+                it.copy(missingCapabilities = missingCapabilities)
+            }
+        }
+    }
 }

@@ -47,16 +47,23 @@ fun MissingCapabilityView(
                     modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
                 )
 
-                Text(
-                    text = "If the button below does not work, you can enable the service manually in your device settings.",
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
-                )
-
                 Button(onClick = { onMissingCapabilityClick(MissingCapability.Accessibility) }) {
                     Text("Enable Accessibility Service")
                 }
+
+
+                Text(
+                    text = "If the button above does not work, you can enable the service manually in your device settings.",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 8.dp)
+                )
+                Text(
+                    text = "In case there are problems after enabling the service, disabling and then enabling the service again will likely help.",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
+                )
 
             }
             if (missingCapabilities.contains(MissingCapability.SystemAlertWindow)) {

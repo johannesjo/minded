@@ -81,17 +81,17 @@ class MainActivity : AppCompatActivity() {
             "MAIN",
             "checkAndUpdateCapabilities()  ${isAccessibilityServiceEnabled(this).toString()}"
         )
+        var missingCapabilities = emptyList<MissingCapability>()
+
         if (!checkDrawOverlayPermission(this)) {
-            dashboardViewModel.addMissingCapability(MissingCapability.SystemAlertWindow)
+            missingCapabilities += MissingCapability.SystemAlertWindow
         }
 
 
         if (!isAccessibilityServiceEnabled(this)) {
-            dashboardViewModel.addMissingCapability(
-                MissingCapability.Accessibility
-            )
-//            askPermissionForAccessibility()
+            missingCapabilities += MissingCapability.Accessibility
         }
+        dashboardViewModel.setMissingCapabilities(missingCapabilities)
     }
 
     private fun askPermissionForOverlay() {
