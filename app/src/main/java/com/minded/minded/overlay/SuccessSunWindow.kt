@@ -30,7 +30,7 @@ open class SuccessSunWindow(
             sharedData.sunTxt ?: defaultSunTxt,
             onSunTap = {
                 Log.v(logTag, "onSunTap()")
-                ctrlSvc.userDrivenClose(isSkipShowWelcomeBackSunAfter = true);
+                ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
             },
             onAfterTapSun = {
                 Log.v(logTag, "onAfterTapSun()")

@@ -14,9 +14,9 @@ import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
 
-val SMALL_MSG_CYCLE_DURATION = 6
+//val SMALL_MSG_CYCLE_DURATION = 6
 
-//val SMALL_MSG_CYCLE_DURATION = 240
+val SMALL_MSG_CYCLE_DURATION = 240
 val REQUESTION_CYCLE_DURATION_IN_S = SMALL_MSG_CYCLE_DURATION * 4
 
 @Suppress("DEPRECATION")
