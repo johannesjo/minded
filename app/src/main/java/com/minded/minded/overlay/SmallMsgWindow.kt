@@ -8,10 +8,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import com.minded.minded.overlay.data.SharedOverlayViewModel
-import com.minded.minded.ui.compose.ReminderMsg
+import com.minded.minded.ui.compose.SmallMsg
 
 
-class ReMinderMsgWindow(
+class SmallMsgWindow(
     private val ctrlSvc: OverlayControllerService,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
@@ -35,7 +35,7 @@ class ReMinderMsgWindow(
         Log.v(logTag, "onMsgTap() isQuestion()")
 
 
-        ReminderMsg(msg = reminderTxt, onMsgTap = {
+        SmallMsg(msg = reminderTxt, onMsgTap = {
             Log.v(logTag, "onMsgTap() isQuestion:${isQuestion()}")
             if (isQuestion()) {
                 OverlayControllerService.showOverlay(

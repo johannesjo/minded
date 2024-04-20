@@ -47,7 +47,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private lateinit var questionOverlayWindow: QuestionWindow
     private lateinit var littleSunOverlayWindow: LittleSunWindow
-    private lateinit var reMinderMsgOverlayWindow: ReMinderMsgWindow
+    private lateinit var smallMsgOverlayWindow: SmallMsgWindow
     private lateinit var successSunOverlayWindow: SuccessSunWindow
 
 
@@ -60,7 +60,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         questionOverlayWindow =
             QuestionWindow(this, sharedOverlayViewModel, windowManager, dashboardViewModel)
         littleSunOverlayWindow = LittleSunWindow(this, sharedOverlayViewModel, windowManager)
-        reMinderMsgOverlayWindow = ReMinderMsgWindow(this, sharedOverlayViewModel, windowManager)
+        smallMsgOverlayWindow = SmallMsgWindow(this, sharedOverlayViewModel, windowManager)
         successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)
 
         _savedStateRegistryController.performAttach()
@@ -104,11 +104,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun isAnyWindowShown(): Boolean {
-        return questionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || reMinderMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
+        return questionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
     }
 
     private fun isNoWindowShown(): Boolean {
-        return !questionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !reMinderMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
+        return !questionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
     }
 
     private fun showOverlay(
@@ -167,8 +167,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 littleSunOverlayWindow.showWindow()
             }
 
-            OverlayName.REMINDER_MSG_OVERLAY -> {
-                reMinderMsgOverlayWindow.showWindow()
+            OverlayName.SMALL_MSG_OVERLAY -> {
+                smallMsgOverlayWindow.showWindow()
             }
         }
     }
@@ -178,7 +178,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.hideWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
             OverlayName.AFTER_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
-            OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.hideWindow()
+            OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
@@ -218,7 +218,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         if (isBlockedPackage(currentPackageName)) {
 
-            if (littleSunOverlayWindow.isWindowShown() || questionOverlayWindow.isWindowShown() || reMinderMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
+            if (littleSunOverlayWindow.isWindowShown() || questionOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
                 Log.v(
                     logTag,
                     "checkToShowOverlay() skip because one of the overlays is already shown"
@@ -261,7 +261,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun hideAllBut(exclude: OverlayName? = null) {
         if (exclude != OverlayName.QUESTION_OVERLAY) hideOverlay(OverlayName.QUESTION_OVERLAY);
         if (exclude != OverlayName.SUCCESS_SUN_OVERLAY) hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
-        if (exclude != OverlayName.REMINDER_MSG_OVERLAY) hideOverlay(OverlayName.REMINDER_MSG_OVERLAY);
+        if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);
         if (exclude != OverlayName.AFTER_SUN_OVERLAY) hideOverlay(OverlayName.AFTER_SUN_OVERLAY);
     }
 
@@ -297,7 +297,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (isSkipShowWelcomeBackSunAfter) {
             hideOverlay(OverlayName.AFTER_SUN_OVERLAY)
             hideOverlay(OverlayName.QUESTION_OVERLAY)
-            hideOverlay(OverlayName.REMINDER_MSG_OVERLAY)
+            hideOverlay(OverlayName.SMALL_MSG_OVERLAY)
         } else {
             hideAllBut()
         }
@@ -341,7 +341,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         public enum class OverlayName {
-            QUESTION_OVERLAY, AFTER_SUN_OVERLAY, REMINDER_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
+            QUESTION_OVERLAY, AFTER_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
         }
 
         public enum class OverlayMode {
