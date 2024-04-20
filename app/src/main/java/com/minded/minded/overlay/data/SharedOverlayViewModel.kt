@@ -78,7 +78,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
                     Log.v(lt, "answers: $answers ${answers.size}")
                     val q = getQuestionSmart(answers)
                     Log.v(lt, "question: $q ${q.t}")
-                    updateSharedData(questionForPrompt = q)
+                    updateSharedData(questionForPrompt = q, answerTxt = null)
                 }
         }
     }
