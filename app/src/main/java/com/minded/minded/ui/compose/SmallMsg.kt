@@ -60,7 +60,7 @@ fun SmallMsg(
 //                .border(1.dp, Color.Red, CircleShape)
                 .fillMaxWidth()
 //                .padding(start = 16.dp, bottom = 16.dp, top = 16.dp, end = 16.dp)
-                .padding(all = 26.dp)
+                .padding(all = 28.dp)
                 .height(height),
             contentAlignment = Alignment.Center // This will center the inner Box
 
