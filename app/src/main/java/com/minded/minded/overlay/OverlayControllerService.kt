@@ -46,7 +46,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private lateinit var questionOverlayWindow: QuestionWindow
-    private lateinit var afterSunOverlayWindow: AfterSunWindow
+    private lateinit var littleSunOverlayWindow: LittleSunWindow
     private lateinit var reMinderMsgOverlayWindow: ReMinderMsgWindow
     private lateinit var successSunOverlayWindow: SuccessSunWindow
 
@@ -59,7 +59,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         questionOverlayWindow =
             QuestionWindow(this, sharedOverlayViewModel, windowManager, dashboardViewModel)
-        afterSunOverlayWindow = AfterSunWindow(this, sharedOverlayViewModel, windowManager)
+        littleSunOverlayWindow = LittleSunWindow(this, sharedOverlayViewModel, windowManager)
         reMinderMsgOverlayWindow = ReMinderMsgWindow(this, sharedOverlayViewModel, windowManager)
         successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)
 
@@ -104,11 +104,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun isAnyWindowShown(): Boolean {
-        return questionOverlayWindow.isWindowShown() || afterSunOverlayWindow.isWindowShown() || reMinderMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
+        return questionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || reMinderMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
     }
 
     private fun isNoWindowShown(): Boolean {
-        return !questionOverlayWindow.isWindowShown() && !afterSunOverlayWindow.isWindowShown() && !reMinderMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
+        return !questionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !reMinderMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
     }
 
     private fun showOverlay(
@@ -152,19 +152,19 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (overlayMode === OverlayMode.SUCCESS_SUN_OVERLAY__FINAL) {
                     sharedOverlayViewModel.updateSharedData(
                         sunTxt = "That's a good decision!",
-                        isShowAfterSunAfterSuccess = false
+                        isShowLittleSunAfterSuccess = false
                     )
                 } else {
                     sharedOverlayViewModel.updateSharedData(
                         sunTxt = "tap sun to close",
-                        isShowAfterSunAfterSuccess = true
+                        isShowLittleSunAfterSuccess = true
                     )
                 }
                 successSunOverlayWindow.showWindow()
             }
 
             OverlayName.AFTER_SUN_OVERLAY -> {
-                afterSunOverlayWindow.showWindow()
+                littleSunOverlayWindow.showWindow()
             }
 
             OverlayName.REMINDER_MSG_OVERLAY -> {
@@ -177,7 +177,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         when (overlayName) {
             OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.hideWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
-            OverlayName.AFTER_SUN_OVERLAY -> afterSunOverlayWindow.hideWindow()
+            OverlayName.AFTER_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.REMINDER_MSG_OVERLAY -> reMinderMsgOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
@@ -219,13 +219,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (isBlockedPackage(currentPackageName)) {
             if (isInGracePeriod) {
                 Log.v(logTag, "isInGracePeriod")
-                if (!afterSunOverlayWindow.isWindowShown()) {
+                if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
                 }
                 // since we also want to show the question overlay after the lock screen, we DON'T do this check
 //            } else if (lastForeGroundApp == currentPackageName) {
 //                Log.v(logTag, "lastForeGroundApp == currentPackageName => true")
-//                if (!afterSunOverlayWindow.isWindowShown()) {
+//                if (!littleSunOverlayWindow.isWindowShown()) {
 //                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
 //                }
             } else {

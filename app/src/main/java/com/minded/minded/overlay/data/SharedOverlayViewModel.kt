@@ -29,7 +29,7 @@ data class SharedOverlayData(
     var questionForPrompt: QuestionForPrompt? = null,
     var answerTxt: String? = null,
     var sunTxt: String? = null,
-    var isShowAfterSunAfterSuccess: Boolean = true,
+    var isShowLittleSunAfterSuccess: Boolean = true,
     var appMap: AppMap = emptyMap()
 )
 
@@ -55,7 +55,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         questionForPrompt: QuestionForPrompt? = null,
         answerTxt: String? = null,
         sunTxt: String? = null,
-        isShowAfterSunAfterSuccess: Boolean? = null
+        isShowLittleSunAfterSuccess: Boolean? = null
     ) {
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
@@ -64,8 +64,8 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
             questionForPrompt = questionForPrompt ?: currentData.questionForPrompt,
             answerTxt = answerTxt ?: currentData.answerTxt,
             sunTxt = sunTxt ?: currentData.sunTxt,
-            isShowAfterSunAfterSuccess = isShowAfterSunAfterSuccess
-                ?: currentData.isShowAfterSunAfterSuccess
+            isShowLittleSunAfterSuccess = isShowLittleSunAfterSuccess
+                ?: currentData.isShowLittleSunAfterSuccess
         )
         Log.v(lt, "updateSharedData() ${newSharedData}")
         _sharedData.update { newSharedData }
@@ -112,7 +112,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
     fun resetToFreshRndQuestion(currentApp: String) {
         updateSharedData(
             currentApp = currentApp,
-            isShowAfterSunAfterSuccess = true,
+            isShowLittleSunAfterSuccess = true,
             answerTxt = null,
             questionForPrompt = getQuestionSmart(emptyList()),
             sunTxt = null,

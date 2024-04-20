@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun AfterSun(
+fun LittleSun(
     elapsedSeconds: Int = 0,
     onSunTap: () -> Unit = {},
     isInitiallyVisible: Boolean = false
@@ -104,31 +104,31 @@ fun AfterSun(
 
 @Preview
 @Composable
-fun AfterSunPreview() {
+fun LittleSunPreview() {
     Surface(
         color = Color.White
     ) {
-        AfterSun(elapsedSeconds = 1000, isInitiallyVisible = true)
+        LittleSun(elapsedSeconds = 1000, isInitiallyVisible = true)
     }
 }
 
 @Preview
 @Composable
-fun AfterSunPreview2() {
+fun LittleSunPreview2() {
     Surface(
         color = Color.White
     ) {
-        AfterSun(elapsedSeconds = 9090, isInitiallyVisible = true)
+        LittleSun(elapsedSeconds = 9090, isInitiallyVisible = true)
     }
 }
 
 @Preview
 @Composable
-fun AfterSunPreview3() {
+fun LittleSunPreview3() {
     Surface(
         color = Color.White
     ) {
-        AfterSun(elapsedSeconds = 9, isInitiallyVisible = true)
+        LittleSun(elapsedSeconds = 9, isInitiallyVisible = true)
     }
 }
 
