@@ -140,12 +140,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (overlayMode == OverlayMode.QUESTION_OVERLAY__FRESH) {
                     sharedOverlayViewModel.resetToFreshRndQuestion(appName)
                 }
+                // when whe show the question, we likely want to update the current app usage
+                sharedOverlayViewModel.updateLastAppUsage()
                 sharedOverlayViewModel.updateSharedData(answerTxt = null, sunTxt = null)
                 questionOverlayWindow.showWindow()
                 // we hide others only after to avoid lifecycle complications
                 hideAllBut(OverlayName.QUESTION_OVERLAY)
-                // when whe show the question, we likely want to update the current app usage
-                sharedOverlayViewModel.updateLastAppUsage()
             }
 
             OverlayName.SUCCESS_SUN_OVERLAY -> {
@@ -217,7 +217,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         if (isBlockedPackage(currentPackageName)) {
-            if (isInGracePeriod) {
+
+            if (littleSunOverlayWindow.isWindowShown() || questionOverlayWindow.isWindowShown() || reMinderMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
+                Log.v(
+                    logTag,
+                    "checkToShowOverlay() skip because one of the overlays is already shown"
+                )
+            } else if (isInGracePeriod) {
                 Log.v(logTag, "isInGracePeriod")
                 if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)

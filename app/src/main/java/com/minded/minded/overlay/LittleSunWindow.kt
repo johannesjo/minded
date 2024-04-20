@@ -14,9 +14,9 @@ import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
 
-//val AFTER_SUN_CYCLE_DURATION_IN_S = 6
-val LITTLE_SUN_CYCLE_DURATION_IN_S = 240
-val RE_MIND_CYCLE_DURATION = LITTLE_SUN_CYCLE_DURATION_IN_S * 4
+//val REMINDER_MSG_CYCLE_DURATION = 6
+val REMINDER_MSG_CYCLE_DURATION = 240
+val REQUESTION_CYCLE_DURATION_IN_S = REMINDER_MSG_CYCLE_DURATION * 4
 
 @Suppress("DEPRECATION")
 class LittleSunWindow(
@@ -60,7 +60,11 @@ class LittleSunWindow(
                 // go to homescreen directly to prevent showing the overlay after screen is turned on
                 ctrlSvc.goToHomeScreen()
             } else {
-                if ((elapsedSeconds + initialTime) % RE_MIND_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+                Log.v(
+                    logTag,
+                    "elapsedSeconds: $elapsedSeconds + $initialTime) % $REQUESTION_CYCLE_DURATION_IN_S == 0 ${(elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0}"
+                )
+                if ((elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                     hideWindow()
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
@@ -68,7 +72,7 @@ class LittleSunWindow(
                         OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
-                } else if ((elapsedSeconds + initialTime) % LITTLE_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
+                } else if ((elapsedSeconds + initialTime) % REMINDER_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY
@@ -87,7 +91,7 @@ class LittleSunWindow(
 
     private fun startTimer(initialTimeI: Int = 0) {
         Log.v(logTag, "startTimer(${initialTimeI})")
-        initialTime = initialTimeI
+        initialTime = if (initialTimeI > 0) initialTimeI else 0
         stopTimer()
         elapsedSeconds = initialTime
         handler.post(runnable)
