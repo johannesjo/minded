@@ -31,7 +31,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun ReminderMsg(
+fun SmallMsg(
     msg: String,
     onMsgTap: () -> Unit = {},
     onCountdownComplete: () -> Unit = {},
@@ -99,7 +99,7 @@ fun ReminderMsg(
 
 
 //@Composable
-//fun ReminderMsg(msg: String, onSunTap: () -> Unit = {}) {
+//fun SmallMsg(msg: String, onSunTap: () -> Unit = {}) {
 //    val snackbarHostState = remember { SnackbarHostState() }
 //
 //    LaunchedEffect(Unit) {
@@ -127,24 +127,24 @@ fun ReminderMsg(
 
 @Preview(showBackground = true)
 @Composable
-fun ReminderMsgPreview() {
+fun SmallMsgPreview() {
     Surface(
         color = Color.White
     ) {
         Box(modifier = Modifier.size(500.dp)) {
-            ReminderMsg(msg = "Hello, World!", isInitiallyVisible = true)
+            SmallMsg(msg = "Hello, World!", isInitiallyVisible = true)
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ReminderMsgPreview2() {
+fun SmallMsgPreview2() {
     Surface(
         color = Color.White
     ) {
         Box(modifier = Modifier.size(500.dp)) {
-            ReminderMsg(
+            SmallMsg(
                 msg = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
                 isInitiallyVisible = true
             )
@@ -154,12 +154,12 @@ fun ReminderMsgPreview2() {
 
 @Preview(showBackground = true)
 @Composable
-fun ReminderMsgPreview3() {
+fun SmallMsgPreview3() {
     Surface(
         color = Color.White
     ) {
         Box(modifier = Modifier.size(500.dp)) {
-            ReminderMsg(
+            SmallMsg(
                 msg = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
                 isInitiallyVisible = true
             )

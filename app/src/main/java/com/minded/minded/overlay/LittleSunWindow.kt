@@ -14,9 +14,9 @@ import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
 
-//val REMINDER_MSG_CYCLE_DURATION = 6
-val REMINDER_MSG_CYCLE_DURATION = 240
-val REQUESTION_CYCLE_DURATION_IN_S = REMINDER_MSG_CYCLE_DURATION * 4
+//val SMALL_MSG_CYCLE_DURATION = 6
+val SMALL_MSG_CYCLE_DURATION = 240
+val REQUESTION_CYCLE_DURATION_IN_S = SMALL_MSG_CYCLE_DURATION * 4
 
 @Suppress("DEPRECATION")
 class LittleSunWindow(
@@ -72,10 +72,10 @@ class LittleSunWindow(
                         OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
-                } else if ((elapsedSeconds + initialTime) % REMINDER_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+                } else if ((elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY
+                        OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
                     )
                 }
                 // restart timer
