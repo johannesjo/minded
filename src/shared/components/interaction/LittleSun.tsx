@@ -74,9 +74,13 @@ export const LittleSunComponent: (props: {
         sessionDurationInS: v,
       });
       setSessionTime(v);
-      console.log(v % RE_QUESTION_INTERVAL_IN_S);
+      console.log(
+        v,
+        initialValue,
+        (v + initialValue) % RE_QUESTION_INTERVAL_IN_S,
+      );
 
-      if (v > 0 && v % RE_QUESTION_INTERVAL_IN_S === 0) {
+      if (v > 0 && (v + initialValue) % RE_QUESTION_INTERVAL_IN_S === 0) {
         props.onShowFreshQuestion();
       }
     }, 1000);
