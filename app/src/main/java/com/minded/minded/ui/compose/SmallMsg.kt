@@ -86,7 +86,7 @@ fun SmallMsg(
                     ) {
                         Text(
                             text = msg,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Normal,
                         )
