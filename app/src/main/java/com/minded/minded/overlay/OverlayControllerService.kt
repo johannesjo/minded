@@ -291,10 +291,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 //        )
     }
 
-    fun userDrivenClose(isSkipShowWelcomeBackSunAfter: Boolean = false) {
+    fun userDrivenClose(isSkipShowSuccessSunAfter: Boolean = false) {
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
         // we do this to let the sun animation finish, sun is supposed to close itself after
-        if (isSkipShowWelcomeBackSunAfter) {
+        if (isSkipShowSuccessSunAfter) {
             hideOverlay(OverlayName.AFTER_SUN_OVERLAY)
             hideOverlay(OverlayName.QUESTION_OVERLAY)
             hideOverlay(OverlayName.SMALL_MSG_OVERLAY)
@@ -302,14 +302,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             hideAllBut()
         }
         // TODO count to DB
-        backToHomeScreenCount++
-        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-            goToHomeScreen()
-        } else {
-            goToApp()
-        }
+//        backToHomeScreenCount++
+//        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
+//            goToHomeScreen()
+//        } else {
+        goToApp()
+//        }
 
-        if (!isSkipShowWelcomeBackSunAfter) {
+        if (!isSkipShowSuccessSunAfter) {
             showOverlay(
                 this,
                 OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY,
