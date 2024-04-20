@@ -15,7 +15,7 @@ import {
   QUESTIONS,
 } from "@src/shared/data/questions";
 import React from "react";
-import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
+import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
@@ -40,8 +40,8 @@ export const Interaction: (props: {
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
   const [getMode, setMode] = createSignal<InteractionMode>(INITIAL_MODE);
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
-  const [getIsShowAfterSun, setIsShowAfterSun] = createSignal(false);
-  const [getAfterSunTxt, setAfterSunTxt] = createSignal<string>("");
+  const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
+  const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
   const [getRndQuestion, setRndQuestion] = createSignal<
     QuestionForPrompt | undefined
   >();
@@ -68,14 +68,14 @@ export const Interaction: (props: {
 
       switch (getMode()) {
         case "ACTION_ADVICE":
-          setAfterSunTxt(ADVICE.txt);
+          setLittleSunTxt(ADVICE.txt);
           setWasAnswerGiven(true);
           return;
         case "RATING":
-          setAfterSunTxt("How would you rate your energy level today?");
+          setLittleSunTxt("How would you rate your energy level today?");
           return;
         default:
-          setAfterSunTxt(rndQuestion.t + "?");
+          setLittleSunTxt(rndQuestion.t + "?");
       }
     });
   });
@@ -90,7 +90,7 @@ export const Interaction: (props: {
       frameNr = res.frameNr;
       res.promise.then(() => {
         if (wrapperEl.style.opacity < 0.1) {
-          afterSun();
+          littleSun();
         }
       });
       setTimeout(() => {
@@ -101,7 +101,7 @@ export const Interaction: (props: {
       frameNr = res.frameNr;
       res.promise.then(() => {
         if (wrapperEl.style.opacity < 0.1) {
-          afterSun();
+          littleSun();
         }
       });
     }
@@ -115,14 +115,14 @@ export const Interaction: (props: {
           ? getRndEntry(QUESTIONS)
           : getQuestionSmart(syncData.answers);
       setRndQuestion(rndQuestion);
-      setAfterSunTxt(rndQuestion.t + "?");
+      setLittleSunTxt(rndQuestion.t + "?");
       setWasAnswerGiven(false);
       questionUpdateCount++;
     }
   };
 
   const onSuccess = async (answerOrData?: Answer) => {
-    setAfterSunTxt(
+    setLittleSunTxt(
       typeof answerOrData?.val === "string" ? answerOrData.val : "",
     );
     setWasAnswerGiven(true);
@@ -131,7 +131,7 @@ export const Interaction: (props: {
     await promiseTimeout(SUN_ANI_DURATION);
     await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
 
-    afterSun();
+    littleSun();
   };
 
   const cancelCountdown = () => {
@@ -149,9 +149,9 @@ export const Interaction: (props: {
     }
   };
 
-  const afterSun = () => {
+  const littleSun = () => {
     setIsShowSuccessSun(false);
-    setIsShowAfterSun(true);
+    setIsShowLittleSun(true);
   };
 
   const teardown = () => {
@@ -162,10 +162,10 @@ export const Interaction: (props: {
   const fadeOutMainFinal = () => {
     if (wrapperEl) {
       fadeOut(wrapperEl, 150).promise.then(() => {
-        afterSun();
+        littleSun();
       });
     } else {
-      afterSun();
+      littleSun();
     }
   };
 
@@ -177,21 +177,21 @@ export const Interaction: (props: {
 
   return (
     <>
-      {getIsShowAfterSun() ? (
-        <AfterSunComponent
+      {getIsShowLittleSun() ? (
+        <LittleSunComponent
           host={props.host}
           wasAnswerGiven={getWasAnswerGiven()}
-          bubbleTxt={getAfterSunTxt()}
+          bubbleTxt={getLittleSunTxt()}
           teardown={teardown}
           mode={getMode()}
           onShowFreshQuestion={() => {
             updateQuestion();
-            setIsShowAfterSun(false);
+            setIsShowLittleSun(false);
             setIsShowSuccessSun(false);
             initFadeOut();
           }}
           onShowQuestionAgain={() => {
-            setIsShowAfterSun(false);
+            setIsShowLittleSun(false);
             setIsShowSuccessSun(false);
           }}
           onChangeQuestion={() => updateQuestion()}

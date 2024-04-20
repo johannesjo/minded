@@ -1,5 +1,5 @@
 // NOTE: this is styled in Interaction.scss
-#minded-6622-after-sun-success-sun {
+#minded-6622-little-sun-success-sun {
   div:first-child {
     animation: minded6622successSun ease 0.8s;
     animation-iteration-count: 1;
@@ -8,7 +8,7 @@
 }
 
 
-#minded-6622-after-sun {
+#minded-6622-little-sun {
   cursor: cell;
   position: fixed;
   right: 50%;
@@ -17,7 +17,7 @@
   z-index: 30;
   transform: translate(50%, -50%);
   transition: 1s all;
-  animation: minded6622afterSunIn .5s;
+  animation: minded6622littleSunIn .5s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 
@@ -31,7 +31,7 @@
 }
 
 
-#minded-6622-after-sun-sun-wrapper {
+#minded-6622-little-sun-sun-wrapper {
   transition: .5s all;
   position: relative;
   z-index: 3;
@@ -44,7 +44,7 @@
 }
 
 $sun-size: 40px;
-#minded-6622-after-sun-sun {
+#minded-6622-little-sun-sun {
   cursor: cell;
   transform-origin: center center;
   width: $sun-size;
@@ -63,7 +63,7 @@ $sun-size: 40px;
   font-weight: 400;
 }
 
-#minded-6622-after-sun-text {
+#minded-6622-little-sun-text {
   margin-right: -0.5* $sun-size;
   box-shadow: 0 0 4px 0 var(--c-pastel-red),
   0 0 8px 0 var(--c-pastel-yellow);
@@ -79,7 +79,7 @@ $sun-size: 40px;
   font-size: 13px;
   line-height: 16px;
   text-align: center;
-  animation: minded6622afterSunTextIn .15s;
+  animation: minded6622littleSunTextIn .15s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 
@@ -110,7 +110,7 @@ $sun-size: 40px;
   transition-delay: 0s;
   gap: 4px;
 
-  #minded-6622-after-sun:hover & {
+  #minded-6622-little-sun:hover & {
     opacity: 1;
     pointer-events: all;
     transition-delay: 1s;
@@ -157,7 +157,7 @@ $sun-size: 40px;
 }
 
 
-@keyframes minded6622afterSunIn {
+@keyframes minded6622littleSunIn {
   0% {
     transform: scale(.4);
     opacity: 0;
@@ -168,7 +168,7 @@ $sun-size: 40px;
   }
 }
 
-@keyframes minded6622afterSunTextIn {
+@keyframes minded6622littleSunTextIn {
   0% {
     transform: scale(.5) translateY(-50%);
     opacity: 0;

@@ -8,7 +8,7 @@ import {
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 // const RE_QUESTION_INTERVAL_IN_S = 8;
 
-export const AfterSunComponent: (props: {
+export const LittleSunComponent: (props: {
   mode: "RATING" | "ACTION_ADVICE" | "QUESTION" | "SINGLE_SUN";
   bubbleTxt?: string;
   wasAnswerGiven: boolean;
@@ -19,12 +19,12 @@ export const AfterSunComponent: (props: {
   host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
-  const [getIsAfterSunSuccess, setIsAfterSunSuccess] = createSignal(false);
+  const [getIsLittleSunSuccess, setIsLittleSunSuccess] = createSignal(false);
   const [getIsMoveToTopRight, setIsMoveToTopRight] = createSignal(false);
   const [getIsShowBubbleTxt, setIsShowBubbleTxt] = createSignal(false);
 
   let currentSessionInterval: number;
-  let afterSunSuccessSunEl;
+  let littleSunSuccessSunEl;
   let t0;
   let t1;
 
@@ -82,34 +82,37 @@ export const AfterSunComponent: (props: {
     }, 1000);
   };
 
-  const afterSunClose = () => {
-    setIsAfterSunSuccess(true);
-    afterSunSuccessSunEl.addEventListener("animationend", () => {
+  const littleSunClose = () => {
+    setIsLittleSunSuccess(true);
+    littleSunSuccessSunEl.addEventListener("animationend", () => {
       bro.runtime.sendMessage({ closeTab: true });
     });
   };
 
   return (
     <>
-      {getIsAfterSunSuccess() ? (
-        <div id="minded-6622-after-sun-success-sun" ref={afterSunSuccessSunEl}>
+      {getIsLittleSunSuccess() ? (
+        <div
+          id="minded-6622-little-sun-success-sun"
+          ref={littleSunSuccessSunEl}
+        >
           <div></div>
           <div>That is a good decision!</div>
         </div>
       ) : (
         <div
-          id="minded-6622-after-sun"
+          id="minded-6622-little-sun"
           classList={{
             ["minded-6622-top-right"]: getIsMoveToTopRight(),
           }}
         >
           {props.bubbleTxt && getIsShowBubbleTxt() && (
             <div
-              id="minded-6622-after-sun-text"
+              id="minded-6622-little-sun-text"
               title={props.wasAnswerGiven ? "Close website" : "Click to answer"}
               onclick={() => {
                 if (props.wasAnswerGiven) {
-                  afterSunClose();
+                  littleSunClose();
                 } else {
                   props.onShowQuestionAgain();
                 }
@@ -124,11 +127,11 @@ export const AfterSunComponent: (props: {
             </div>
           )}
 
-          <div id="minded-6622-after-sun-sun-wrapper">
+          <div id="minded-6622-little-sun-sun-wrapper">
             <div
-              id="minded-6622-after-sun-sun"
+              id="minded-6622-little-sun-sun"
               title="Close website"
-              onClick={() => afterSunClose()}
+              onClick={() => littleSunClose()}
             >
               {formatSessionTime(getSessionTime())}
             </div>
