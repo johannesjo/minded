@@ -12,14 +12,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
-import com.minded.minded.ui.compose.AfterSun
+import com.minded.minded.ui.compose.LittleSun
 
 //val AFTER_SUN_CYCLE_DURATION_IN_S = 6
-val AFTER_SUN_CYCLE_DURATION_IN_S = 240
-val RE_MIND_CYCLE_DURATION = AFTER_SUN_CYCLE_DURATION_IN_S * 4
+val LITTLE_SUN_CYCLE_DURATION_IN_S = 240
+val RE_MIND_CYCLE_DURATION = LITTLE_SUN_CYCLE_DURATION_IN_S * 4
 
 @Suppress("DEPRECATION")
-class AfterSunWindow(
+class LittleSunWindow(
     private val ctrlSvc: OverlayControllerService,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
@@ -36,7 +36,7 @@ class AfterSunWindow(
             startTimer(initialTime)
         }
 
-        AfterSun(elapsedSeconds, onSunTap = {
+        LittleSun(elapsedSeconds, onSunTap = {
             Log.v(logTag, "onSunTap()")
             ctrlSvc.userDrivenClose();
             hideWindow()
@@ -67,7 +67,7 @@ class AfterSunWindow(
                         OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
-                } else if (elapsedSeconds % AFTER_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
+                } else if (elapsedSeconds % LITTLE_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY

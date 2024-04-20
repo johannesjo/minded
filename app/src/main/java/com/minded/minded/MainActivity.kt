@@ -33,16 +33,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
-        val context = this
         val answerRepository = AnswerRepository(this)
         val viewModelFactory = DashboardViewModelFactory(answerRepository)
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
-
-
-//        SuccessSunOverlayService.showOverlay(this)
-//        AfterSunOverlayService.showOverlay(this, answerTxt = "Hello, World!")
-//        ReMinderMsgOverlayService.showOverlay(this, answerTxt = "Hello, World!")
 
 
         lifecycleScope.launch {

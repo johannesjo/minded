@@ -38,7 +38,7 @@ open class SuccessSunWindow(
             },
             onAfterShow = {
                 Log.v(logTag, "onAfterShow()")
-                if (sharedData.isShowAfterSunAfterSuccess) {
+                if (sharedData.isShowLittleSunAfterSuccess) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
