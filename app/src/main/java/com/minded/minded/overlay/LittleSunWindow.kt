@@ -26,6 +26,7 @@ class LittleSunWindow(
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
     override val logTag = javaClass.simpleName
+    private var initialTime = 0
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
@@ -59,7 +60,7 @@ class LittleSunWindow(
                 // go to homescreen directly to prevent showing the overlay after screen is turned on
                 ctrlSvc.goToHomeScreen()
             } else {
-                if (elapsedSeconds % RE_MIND_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+                if ((elapsedSeconds + initialTime) % RE_MIND_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
                     hideWindow()
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
@@ -67,7 +68,7 @@ class LittleSunWindow(
                         OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
-                } else if (elapsedSeconds % LITTLE_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
+                } else if ((elapsedSeconds + initialTime) % LITTLE_SUN_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.REMINDER_MSG_OVERLAY
@@ -84,8 +85,9 @@ class LittleSunWindow(
         stopTimer()
     }
 
-    private fun startTimer(initialTime: Int = 0) {
-        Log.v(logTag, "startTimer(${initialTime})")
+    private fun startTimer(initialTimeI: Int = 0) {
+        Log.v(logTag, "startTimer(${initialTimeI})")
+        initialTime = initialTimeI
         stopTimer()
         elapsedSeconds = initialTime
         handler.post(runnable)
