@@ -2,7 +2,7 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import { updateSyncData } from "@src/shared/data/syncDataInterface";
 import { Interaction } from "@src/shared/components/interaction/Interaction";
-import { AfterSunComponent } from "@src/shared/components/interaction/AfterSun";
+import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import {
   loadDataForHost,
   updateHostsEntry,
@@ -53,7 +53,7 @@ export const ContentScriptMain: (props: {
           onHideAll={() => document.getElementById("minded-6622").remove()}
         />
       ) : (
-        <AfterSunComponent
+        <LittleSunComponent
           host={host}
           mode="SINGLE_SUN"
           wasAnswerGiven={false}
@@ -61,7 +61,7 @@ export const ContentScriptMain: (props: {
           onChangeQuestion={() => undefined}
           onShowFreshQuestion={() => setIsShowFullMinder(true)}
           teardown={() => document.getElementById("minded-6622").remove()}
-        ></AfterSunComponent>
+        ></LittleSunComponent>
       )}
     </>
   );
