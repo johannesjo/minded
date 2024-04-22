@@ -141,7 +141,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 }
                 // when whe show the question, we likely want to update the current app usage
                 sharedOverlayViewModel.updateLastAppUsage()
-                sharedOverlayViewModel.updateSharedData(answerTxt = null, sunTxt = null)
+                sharedOverlayViewModel.resetAnswerTxt()
+                sharedOverlayViewModel.resetSunTxt()
                 questionOverlayWindow.showWindow()
                 // we hide others only after to avoid lifecycle complications
                 hideAllBut(OverlayName.QUESTION_OVERLAY)

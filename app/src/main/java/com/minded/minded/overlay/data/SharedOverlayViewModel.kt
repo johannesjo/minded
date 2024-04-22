@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.minded.minded.data.QuestionForPrompt
-import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.util.getQuestionSmart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,6 +50,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         return appEntry.sessionDurationInS
     }
 
+    // NOTE resetting values to null is not possible
     fun updateSharedData(
         currentApp: String? = null,
         questionForPrompt: QuestionForPrompt? = null,
@@ -71,16 +72,34 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
         _sharedData.update { newSharedData }
     }
 
-    fun setRndQuestion() {
+    private fun setRndQuestion() {
         viewModelScope.launch {
-            answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO)
-                .collect { answers: List<Answer> ->
-                    Log.v(lt, "answers: $answers ${answers.size}")
-                    val q = getQuestionSmart(answers)
-                    Log.v(lt, "question: $q ${q.t}")
-                    updateSharedData(questionForPrompt = q, answerTxt = null)
-                }
+            val answers = answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO).first()
+            Log.v(lt, "answers: $answers ${answers.size}")
+            val q = getQuestionSmart(answers)
+            Log.v(lt, "question: $q ${q.t}")
+
+            val currentData = sharedData.value ?: SharedOverlayData()
+            val newSharedData = currentData.copy(
+                questionForPrompt = q, answerTxt = null
+            )
+            _sharedData.update { newSharedData }
+            Log.v(lt, "setRndQuestion() ${newSharedData}")
         }
+    }
+
+    fun resetToFreshRndQuestion(currentApp: String) {
+        val currentData = sharedData.value ?: SharedOverlayData()
+        val newSharedData = currentData.copy(
+            currentApp = currentApp,
+            isShowLittleSunAfterSuccess = true,
+            answerTxt = null,
+            questionForPrompt = getQuestionSmart(emptyList()),
+            sunTxt = null,
+        )
+        _sharedData.update { newSharedData }
+        Log.v(lt, "resetToFreshRndQuestion() ${newSharedData}")
+        setRndQuestion()
     }
 
     fun updateLastAppUsage() {
@@ -109,14 +128,17 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
     }
 
 
-    fun resetToFreshRndQuestion(currentApp: String) {
-        updateSharedData(
-            currentApp = currentApp,
-            isShowLittleSunAfterSuccess = true,
-            answerTxt = null,
-            questionForPrompt = getQuestionSmart(emptyList()),
-            sunTxt = null,
-        )
-        setRndQuestion()
+    fun resetAnswerTxt() {
+        val currentData = sharedData.value ?: SharedOverlayData()
+        val newSharedData = currentData.copy(answerTxt = null)
+        _sharedData.update { newSharedData }
+        Log.v(lt, "resetAnswerTxt() ${newSharedData}")
+    }
+
+    fun resetSunTxt() {
+        val currentData = sharedData.value ?: SharedOverlayData()
+        val newSharedData = currentData.copy(sunTxt = null)
+        _sharedData.update { newSharedData }
+        Log.v(lt, "resetSunTxt() ${newSharedData}")
     }
 }

@@ -64,6 +64,7 @@ class QuestionWindow(
                     }
                 },
                 onSkip = {
+                    sharedOverlayViewModel.resetAnswerTxt()
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
