@@ -49,6 +49,7 @@ export type QuestionForPrompt = {
 
 export interface QuestionCategory {
   dashboardTxt: string;
+  frequencyModifier?: number;
   isTodayOnlyCategory?: boolean;
   isThisWeekOnlyCategory?: boolean;
   isMorningCategory?: boolean;
@@ -158,6 +159,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.HelpfulTools]: {
+    frequencyModifier: 1,
     dashboardTxt: "Helpful Tools",
     isMorningCategory: true,
     isWorkDayCategory: true,
@@ -350,6 +352,7 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Insomnia",
   },
   [QuestionCategoryId.SelfDiscovery]: {
+    frequencyModifier: 2,
     dashboardTxt: "Self Discovery",
     questions: [
       { id: QID.SD1, t: "Am I using my time wisely" },
@@ -437,7 +440,7 @@ Object.keys(QUESTION_CATEGORIES)
     });
   });
 
-console.log(JSON.stringify(QUESTIONS));
+// console.log(JSON.stringify(QUESTIONS));
 
 /*
 IDEAS:
