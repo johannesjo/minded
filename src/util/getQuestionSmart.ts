@@ -36,6 +36,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       if (categoryForAnswer?.questions?.length > 0) {
         map[categoryId] = 0;
       }
+      if (categoryForAnswer?.frequencyModifier > 0) {
+        map[categoryId] = -1 * categoryForAnswer.frequencyModifier;
+      }
 
       if (categoryForAnswer.isMorningCategory) {
         if (
@@ -78,12 +81,17 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     map[answer.questionCategoryId] = map[answer.questionCategoryId] + 1;
   });
 
-  const sortedEntries = Object.entries(map).sort((a, b) => a[1] - b[1]);
-  const nrOfEntriesForLeastUsed = sortedEntries[0][1];
+  // we
+  const sortedEntries = Object.entries(map)
+    .map(([catId, val]) => ({ catId, val }))
+    .sort((a, b) => a.val - b.val);
+
+  // effectively translates to random categories between all categories with 1 answer or less, if any
+  const nrOfEntriesForLeastUsed = Math.max(sortedEntries[0].val, 1);
   const categoriesLeastUsed = sortedEntries.filter(
-    (se) => se[1] === nrOfEntriesForLeastUsed,
+    (se) => se.val <= nrOfEntriesForLeastUsed,
   );
-  const categoryToUse = getRndEntry(categoriesLeastUsed)[0];
+  const categoryToUse = getRndEntry(categoriesLeastUsed).catId;
   const questionsForCategory = QUESTIONS.filter(
     (q) => q.categoryId === categoryToUse,
   );
