@@ -1,4 +1,8 @@
-export const ACTION_ADVICES: { ico?: string; txt: string }[] = [
+export const ACTION_ADVICES_MAX_HOUR = 22;
+export const ACTION_ADVICES: {
+  ico?: string;
+  txt: string;
+}[] = [
   { ico: "✿", txt: "How about looking out the window for a minute?" },
   { ico: "☕", txt: "How about a short break?" },
   { ico: "🏅", txt: "How about a little stretch?" },

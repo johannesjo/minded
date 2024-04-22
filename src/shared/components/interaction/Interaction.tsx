@@ -5,7 +5,10 @@ import { getRndInt } from "@src/util/getRndInt";
 import { RatingInteraction } from "@src/shared/components/interaction/RatingInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
-import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
+import {
+  ACTION_ADVICES,
+  ACTION_ADVICES_MAX_HOUR,
+} from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { bro } from "@src/util/browser";
 import { Answer } from "@src/shared/data/syncData";
@@ -21,11 +24,14 @@ import { getQuestionSmart } from "@src/util/getQuestionSmart";
 
 type InteractionMode = "RATING" | "ACTION_ADVICE" | "QUESTION";
 const INITIAL_MODE: InteractionMode = (() => {
+  const now = new Date();
+  const nowHours = now.getHours();
+
   const rndInt = getRndInt(0, 100);
   if (rndInt >= 95) {
     return "RATING";
   }
-  if (rndInt >= 80) {
+  if (rndInt >= 80 && nowHours < ACTION_ADVICES_MAX_HOUR) {
     return "ACTION_ADVICE";
   }
   return "QUESTION";
