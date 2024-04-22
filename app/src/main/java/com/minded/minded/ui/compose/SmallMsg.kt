@@ -6,9 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -22,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +37,6 @@ fun SmallMsg(
     isInitiallyVisible: Boolean = false
 ) {
     var isVisible = remember { mutableStateOf(isInitiallyVisible) }
-    val height = if (msg.length > 32) 78.dp else 44.dp
 
     LaunchedEffect(Unit) {
         isVisible.value = true
@@ -59,36 +57,43 @@ fun SmallMsg(
             modifier = Modifier
 //                .border(1.dp, Color.Red, CircleShape)
                 .fillMaxWidth()
-//                .padding(start = 16.dp, bottom = 16.dp, top = 16.dp, end = 16.dp)
-                .padding(all = 28.dp)
-                .height(height),
+                .padding(start = 48.dp, bottom = 6.dp, end = 28.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
             Box(
                 modifier = Modifier
+//                    .border(1.dp, Color.Red, CircleShape)
                     .shadow(4.dp, CircleShape, true, Color.Red, Color.Red)
-                    .fillMaxHeight()
-                    .fillMaxWidth()
                     .clickable(onClick = onMsgTap)
+                    .fillMaxWidth()
             ) {
-
-
                 Surface(
                     shape = CircleShape,
                     color = Color.White,
-                    modifier = Modifier
-                        .matchParentSize()
-                ) {
+
+                    ) {
                     Box(
                         contentAlignment = androidx.compose.ui.Alignment.Center,
                         modifier = Modifier.padding(12.dp)
                     ) {
-                        Text(
-                            text = msg,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Normal,
+                        Layout(
+                            content = {
+                                Text(
+                                    text = msg,
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Normal,
+                                )
+                            },
+                            measurePolicy = { measurables, constraints ->
+                                val placeable = measurables.first().measure(constraints)
+
+                                // Set the height of the box based on the height of the text
+                                layout(constraints.maxWidth, placeable.height) {
+                                    placeable.placeRelative(0, 0)
+                                }
+                            }
                         )
                     }
                 }
