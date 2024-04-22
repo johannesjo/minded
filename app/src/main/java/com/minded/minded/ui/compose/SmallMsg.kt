@@ -52,11 +52,9 @@ fun SmallMsg(
         enter = fadeIn(animationSpec = tween(1000)),
         exit = fadeOut(animationSpec = tween(3000))
     ) {
-        // Your existing code...
         Box(
             modifier = Modifier
 //                .border(1.dp, Color.Red, CircleShape)
-                .fillMaxWidth()
                 .padding(start = 48.dp, bottom = 6.dp, end = 28.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
@@ -66,16 +64,14 @@ fun SmallMsg(
 //                    .border(1.dp, Color.Red, CircleShape)
                     .shadow(4.dp, CircleShape, true, Color.Red, Color.Red)
                     .clickable(onClick = onMsgTap)
-                    .fillMaxWidth()
             ) {
                 Surface(
                     shape = CircleShape,
                     color = Color.White,
-
-                    ) {
+                ) {
                     Box(
                         contentAlignment = androidx.compose.ui.Alignment.Center,
-                        modifier = Modifier.padding(12.dp)
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp)
                     ) {
                         Layout(
                             content = {
@@ -84,6 +80,8 @@ fun SmallMsg(
                                     fontSize = 14.sp,
                                     textAlign = TextAlign.Center,
                                     fontWeight = FontWeight.Normal,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
                                 )
                             },
                             measurePolicy = { measurables, constraints ->
@@ -101,33 +99,6 @@ fun SmallMsg(
         }
     }
 }
-
-
-//@Composable
-//fun SmallMsg(msg: String, onSunTap: () -> Unit = {}) {
-//    val snackbarHostState = remember { SnackbarHostState() }
-//
-//    LaunchedEffect(Unit) {
-//        snackbarHostState.showSnackbar(
-//            message = msg,
-//            actionLabel = "Answer",
-//            duration = SnackbarDuration.Short
-//        )
-//
-//    }
-//
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(222.dp),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        SnackbarHost(
-//            hostState = snackbarHostState,
-//            modifier = Modifier.align(Alignment.BottomCenter)
-//        )
-//    }
-//}
 
 
 @Preview(showBackground = true)
