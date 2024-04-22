@@ -3,15 +3,15 @@ package com.minded.minded
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.minded.minded.overlay.OverlayControllerService
 
 
 class MyAccessibilityService : AccessibilityService() {
-
+    private var lastEventTs: Long = 0
+    private val minDelayForNewEvents = 500L
+    private var currentPackageName: CharSequence? = null
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -52,21 +52,6 @@ class MyAccessibilityService : AccessibilityService() {
         serviceInfo = config
     }
 
-
-    private val handler = Handler(Looper.getMainLooper())
-    private val debounceMinDelay = 50L
-    private var currentPackageName: CharSequence? = null
-
-    private val runnable = Runnable {
-        Log.v("ACCESSIBILITY", "Runnable() $currentPackageName")
-        val intent = Intent(this, OverlayControllerService::class.java)
-        intent.putExtra(
-            INTENT_EXTRA_CURRENT_PACKAGE_NAME,
-            currentPackageName
-        )
-        startService(intent)
-    }
-
     private fun isNonAppPackage(packageName: String): Boolean {
         // NOTE we exclude minded here too since the overlay otherwise also gets counted :/
         // TODO better solution
@@ -76,17 +61,29 @@ class MyAccessibilityService : AccessibilityService() {
                 || packageName == "com.google.android.googlequicksearchbox"
     }
 
+
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
-        Log.v("ACCESSIBILITY", "onAccessibilityEvent()")
+        Log.v("ACCESSIBILITY", "onAccessibilityEvent() ${System.currentTimeMillis() - lastEventTs}")
+        // NOTE: when using the nexuslauncher to swipe in between app, the nexuslauncher is recorded again shortly after refocusing
+        // the app that is actually focused afterwards. To counter this we use the magic 500ms and don't fire the service again if the
+        // last start is not at least 500ms away
+        val isStartService = (System.currentTimeMillis() - lastEventTs > minDelayForNewEvents)
+                && accessibilityEvent.packageName != null
+                && !isNonAppPackage(accessibilityEvent.packageName.toString())
+        lastEventTs = System.currentTimeMillis()
         Log.v(
             "ACCESSIBILITY",
-            "onAccessibilityEvent(), Package name: ${accessibilityEvent.packageName}  L:$currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
+            "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
         )
-        if (accessibilityEvent.packageName != null && !isNonAppPackage(accessibilityEvent.packageName.toString())) {
+        if (isStartService) {
             currentPackageName = accessibilityEvent.packageName
-            handler.removeCallbacks(runnable)
-            handler.postDelayed(runnable, debounceMinDelay)
-        }
+            val intent = Intent(this, OverlayControllerService::class.java)
+            intent.putExtra(
+                INTENT_EXTRA_CURRENT_PACKAGE_NAME,
+                currentPackageName
+            )
+            startService(intent)
 
+        }
     }
 }
