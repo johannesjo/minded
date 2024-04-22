@@ -33,6 +33,8 @@ export const saveAnswer = (answer: Answer): Promise<void> => {
           console.warn("We are over the quota, since we delete old answers", {
             newAnswers,
             newAnswersSliced,
+            sizeBefore: JSON.stringify(newAnswers).length,
+            sizeAfter: JSON.stringify(newAnswersSliced).length,
           });
           if (window.alert) {
             window.alert(
