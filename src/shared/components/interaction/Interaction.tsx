@@ -111,7 +111,7 @@ export const Interaction: (props: {
     setMode("QUESTION");
     if (syncData) {
       const rndQuestion =
-        questionUpdateCount >= 3
+        questionUpdateCount >= 5
           ? getRndEntry(QUESTIONS)
           : getQuestionSmart(syncData.answers);
       setRndQuestion(rndQuestion);
@@ -194,7 +194,6 @@ export const Interaction: (props: {
             setIsShowLittleSun(false);
             setIsShowSuccessSun(false);
           }}
-          onChangeQuestion={() => updateQuestion()}
         />
       ) : (
         <div
@@ -243,6 +242,7 @@ export const Interaction: (props: {
                     question={getRndQuestion()}
                     onCancelCountdown={cancelCountdown}
                     onSuccess={onSuccess}
+                    onChangeQuestion={() => updateQuestion()}
                     onCancel={teardown}
                   />
                 )}

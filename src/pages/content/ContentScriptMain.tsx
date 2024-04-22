@@ -58,7 +58,6 @@ export const ContentScriptMain: (props: {
           mode="SINGLE_SUN"
           wasAnswerGiven={false}
           onShowQuestionAgain={() => undefined}
-          onChangeQuestion={() => undefined}
           onShowFreshQuestion={() => setIsShowFullMinder(true)}
           teardown={() => document.getElementById("minded-6622").remove()}
         ></LittleSunComponent>

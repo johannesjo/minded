@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { createSignal, JSX, onCleanup, onMount } from "solid-js";
+import { createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
 import {
   QUESTION_CATEGORIES,
   QuestionForPrompt,
@@ -13,16 +13,17 @@ export const Question: (props: {
   onSuccess: (answer: Answer) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
+  onChangeQuestion: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   let inpEl;
   let t0;
 
-  console.log("Question Component Function");
-
-  if (props.question.prompt && inpEl) {
-    inpEl.value = props.question.prompt + " ";
-  }
+  createEffect(() => {
+    if (inpEl) {
+      inpEl.value = props.question.prompt ? props.question.prompt + " " : "";
+    }
+  });
 
   onMount(async () => {
     console.log("Question Component Function onMount()");
@@ -32,6 +33,7 @@ export const Question: (props: {
     inpEl.focus();
     t0 = setTimeout(() => inpEl.focus(), 250);
   });
+
   onCleanup(() => {
     window.clearTimeout(t0);
   });
@@ -83,6 +85,16 @@ export const Question: (props: {
           id="minded-6622-inp"
           autofocus={true}
         />
+        <div
+          id="minded-6622-change-question-btn"
+          onmouseenter={props.onCancelCountdown}
+          onclick={() => {
+            props.onCancelCountdown();
+            props.onChangeQuestion();
+          }}
+        >
+          ⇄
+        </div>
       </div>
     </>
   );

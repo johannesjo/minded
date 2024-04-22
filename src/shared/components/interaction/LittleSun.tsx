@@ -15,7 +15,6 @@ export const LittleSunComponent: (props: {
   teardown: () => void;
   onShowQuestionAgain: () => void;
   onShowFreshQuestion: () => void;
-  onChangeQuestion: () => void;
   host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
@@ -142,14 +141,6 @@ export const LittleSunComponent: (props: {
           </div>
 
           <div id="minded-6622-additional-controls">
-            {props.mode === "QUESTION" && (
-              <div
-                title="Change question"
-                onClick={() => props.onChangeQuestion()}
-              >
-                ⇅
-              </div>
-            )}
             <div title="Hide sun" onClick={() => props.teardown()}>
               ✕
             </div>
