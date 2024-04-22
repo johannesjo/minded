@@ -29,5 +29,5 @@ export const DEFAULT_SYNC_DATA: SyncData = {
 };
 
 export const STATIC_CFG: StaticCfg = {
-  ShowAgainThreshold: 60 * 1000,
+  ShowAgainThreshold: 5 * 60 * 1000,
 };
