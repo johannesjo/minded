@@ -1,19 +1,22 @@
 [versions]
-agp = "8.3.0"
+agp = "8.3.2"
 kotlin = "1.9.0"
 ksp = "1.9.22-1.0.17"
-coreKtx = "1.12.0"
+coreKtx = "1.13.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
 lifecycleRuntimeKtx = "2.7.0"
-activityCompose = "1.8.2"
-composeBom = "2024.02.02"
+activityCompose = "1.9.0"
+composeBom = "2024.04.01"
 coordinatorlayout = "1.2.0"
 material = "1.11.0"
 workRuntimeKtx = "2.9.0"
 roomCommon = "2.6.1"
 glanceAppwidget = "1.0.0"
+appcompat = "1.6.1"
+preference = "1.2.1"
+preferenceKtx = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +42,9 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCommon" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCommon" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glanceAppwidget" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
