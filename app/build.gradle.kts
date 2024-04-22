@@ -54,6 +54,9 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.preference)
+    implementation(libs.androidx.preference.ktx)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)

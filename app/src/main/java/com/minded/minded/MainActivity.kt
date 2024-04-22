@@ -1,6 +1,8 @@
 package com.minded.minded
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -37,6 +39,8 @@ class MainActivity : AppCompatActivity() {
         val viewModelFactory = DashboardViewModelFactory(answerRepository)
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
+
+        startActivity(Intent(this, AppPickerActivity::class.java));
 
 
         lifecycleScope.launch {
@@ -104,5 +108,9 @@ class MainActivity : AppCompatActivity() {
                 Settings.ACTION_ACCESSIBILITY_SETTINGS
             )
         );
+    }
+
+    private fun getInstalledApps(packageManager: PackageManager): List<ApplicationInfo> {
+        return packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
     }
 }
