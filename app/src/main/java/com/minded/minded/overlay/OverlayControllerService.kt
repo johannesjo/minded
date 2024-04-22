@@ -23,7 +23,6 @@ import java.time.Instant
 class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     private val logTag = javaClass.simpleName
 
-    private var lastForeGroundApp: String = ""
     private val GRACE_PERIOD_IN_S = 30
     private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
 
@@ -201,22 +200,29 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         Log.v(
             logTag,
-            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName} $lastForeGroundApp"
+            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName}"
         )
 
         if (!isBlockedPackage(currentPackageName)) {
-            lastForeGroundApp = ""
             hideAllBut()
             return;
         }
 
         if (currentPackageName == "com.google.android.apps.nexuslauncher" || currentPackageName == "com.google.android.googlequicksearchbox") {
-            lastForeGroundApp = ""
             hideAllBut()
             return;
         }
 
         if (isBlockedPackage(currentPackageName)) {
+            // NOTE needs to be at the end to only update lastUsage after this
+            val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
+            if (currentAppData != null && currentAppData.lastUsed.isBefore(
+                    Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
+                )
+            ) {
+                Log.v(logTag, "reset sessionDurationInS to 0")
+                sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
+            }
 
             if (littleSunOverlayWindow.isWindowShown() || questionOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
                 Log.v(
@@ -236,25 +242,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 //                }
             } else {
                 Log.v(logTag, "SHOW FRESH QUESTION OVERLAY for: $currentPackageName")
-                lastForeGroundApp = currentPackageName
                 showOverlay(
                     OverlayName.QUESTION_OVERLAY,
                     OverlayMode.QUESTION_OVERLAY__FRESH,
                     currentPackageName
                 )
             }
-
-            // NOTE needs to be at the end to only update lastUsage after this
-            val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
-            if (currentAppData != null && currentAppData.lastUsed.isBefore(
-                    Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
-                )
-            ) {
-                Log.v(logTag, "reset sessionDurationInS to 0")
-                sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
-            }
         }
-        lastForeGroundApp = currentPackageName
     }
 
 
