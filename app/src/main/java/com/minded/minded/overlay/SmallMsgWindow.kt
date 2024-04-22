@@ -20,24 +20,22 @@ class SmallMsgWindow(
     override val logTag = javaClass.simpleName
 
 
-    private fun isQuestion(): Boolean {
-        return sharedOverlayViewModel.sharedData.value.answerTxt == null
-    }
 
 
     @Composable
     override fun Cmp() {
         val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
         val context = LocalContext.current
+        val isQuestion: Boolean = sharedData.answerTxt == null
         val reminderTxt =
-            if (isQuestion()) (sharedData.questionForPrompt?.t + '?') else sharedData.answerTxt
+            if (isQuestion) (sharedData.questionForPrompt?.t + '?') else sharedData.answerTxt
                 ?: ""
-        Log.v(logTag, "onMsgTap() isQuestion()")
+        Log.v(logTag, "Cmp() isQuestion ${isQuestion} reminderTxt:${sharedData.answerTxt}")
 
 
         SmallMsg(msg = reminderTxt, onMsgTap = {
-            Log.v(logTag, "onMsgTap() isQuestion:${isQuestion()}")
-            if (isQuestion()) {
+            Log.v(logTag, "onMsgTap() isQuestion:${isQuestion}")
+            if (isQuestion) {
                 OverlayControllerService.showOverlay(
                     context,
                     OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
