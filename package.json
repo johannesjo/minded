@@ -1,7 +1,7 @@
 {
   "name": "minded",
   "version": "1.0.0",
-  "description": "'minded' will help you fight social media addiction, doom-scrolling and procrastination. It will help you to be more productive and to focus on what really counts. \n\n'minded' does this by offering positive alternatives that break the automatic behavior patterns associated. This is achieved by presenting users with various interaction prompts when they attempt to open websites, the user wants to use less.",
+  "description": "'minded' will help you fight social media addiction, doom-scrolling and procrastination and to focus on what really counts.",
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=development npm run dev",
