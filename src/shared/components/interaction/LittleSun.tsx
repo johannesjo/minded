@@ -6,6 +6,7 @@ import {
 } from "@src/shared/data/localDataInterface";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
+const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 // const RE_QUESTION_INTERVAL_IN_S = 8;
 
 export const LittleSunComponent: (props: {
@@ -74,12 +75,14 @@ export const LittleSunComponent: (props: {
       });
       setSessionTime(v);
       console.log(
-        v,
-        initialValue,
-        (v - initialValue) % RE_QUESTION_INTERVAL_IN_S,
+        `${v % RE_QUESTION_INTERVAL_IN_S === 0}: ${v} % ${RE_QUESTION_INTERVAL_IN_S} === 0`,
+        `||||| ${v - initialValue > MIN_RE_QUESTION_ELAPSED_TIME_S}: ${v} - ${initialValue} > ${MIN_RE_QUESTION_ELAPSED_TIME_S}`,
       );
 
-      if (v > 0 && (v - initialValue) % RE_QUESTION_INTERVAL_IN_S === 0) {
+      if (
+        v - initialValue > MIN_RE_QUESTION_ELAPSED_TIME_S &&
+        v % RE_QUESTION_INTERVAL_IN_S === 0
+      ) {
         props.onShowFreshQuestion();
       }
     }, 1000);
