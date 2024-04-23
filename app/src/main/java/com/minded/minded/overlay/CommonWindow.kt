@@ -27,7 +27,7 @@ open class CommonWindow(
     open fun Cmp() {
     }
 
-    fun showWindow() {
+    open fun showWindow() {
         if (window != null) {
             Log.v(logTag, "overlay already shown - aborting")
             return
