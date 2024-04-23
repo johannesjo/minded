@@ -76,10 +76,10 @@ export const LittleSunComponent: (props: {
       console.log(
         v,
         initialValue,
-        (v + initialValue) % RE_QUESTION_INTERVAL_IN_S,
+        (v - initialValue) % RE_QUESTION_INTERVAL_IN_S,
       );
 
-      if (v > 0 && (v + initialValue) % RE_QUESTION_INTERVAL_IN_S === 0) {
+      if (v > 0 && (v - initialValue) % RE_QUESTION_INTERVAL_IN_S === 0) {
         props.onShowFreshQuestion();
       }
     }, 1000);
