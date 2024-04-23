@@ -10,7 +10,6 @@ const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 // const RE_QUESTION_INTERVAL_IN_S = 8;
 
 export const LittleSunComponent: (props: {
-  mode: "RATING" | "ACTION_ADVICE" | "QUESTION" | "SINGLE_SUN";
   bubbleTxt?: string;
   wasAnswerGiven: boolean;
   teardown: () => void;
