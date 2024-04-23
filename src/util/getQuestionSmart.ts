@@ -93,8 +93,8 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     .map(([catId, val]) => ({ catId, val }))
     .sort((a, b) => a.val - b.val);
 
-  // effectively translates to random categories between all categories with 1 answer or less, if any
-  const nrOfEntriesForLeastUsed = Math.max(sortedEntries[0].val, 1);
+  // effectively translates to random categories between all categories with 0 answer or less
+  const nrOfEntriesForLeastUsed = Math.max(sortedEntries[0].val, 0);
   const categoriesLeastUsed = sortedEntries.filter(
     (se) => se.val <= nrOfEntriesForLeastUsed,
   );
