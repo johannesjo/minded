@@ -69,10 +69,6 @@ class QuestionWindow(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
                     )
-                    OverlayControllerService.showOverlay(
-                        ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-                    )
                     hideWindow()
                 }
             )

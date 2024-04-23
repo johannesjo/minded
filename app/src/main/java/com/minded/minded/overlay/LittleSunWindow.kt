@@ -85,6 +85,14 @@ class LittleSunWindow(
         }
     }
 
+    override fun showWindow() {
+        super.showWindow()
+        OverlayControllerService.showOverlay(
+            ctrlSvc,
+            OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
+        )
+    }
+
     override fun hideWindow() {
         super.hideWindow()
         stopTimer()

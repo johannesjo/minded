@@ -55,8 +55,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.preference)
-    implementation(libs.androidx.preference.ktx)
+
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)
@@ -73,6 +72,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.datastore:datastore-core:1.1.0")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
