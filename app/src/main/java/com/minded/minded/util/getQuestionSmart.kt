@@ -49,7 +49,7 @@ fun getQuestionSmart(answers: List<Answer>): QuestionForPrompt {
                 map[categoryId] = FAKE_RULE_OUT_NR
             }
         }
-        if (categoryForAnswer.isWorkDayCategory && isWeekDayToday) {
+        if (categoryForAnswer.isWorkDayCategory && !isWeekDayToday) {
             map[categoryId] = FAKE_RULE_OUT_NR
         }
     }
