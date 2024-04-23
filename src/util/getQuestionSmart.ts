@@ -45,11 +45,13 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_MORNING_START ||
           nowHours > THRESHOLD_MORNING_END
         ) {
+          console.log("getQuestionSmart(): SKIP MORNING", categoryForAnswer);
           map[categoryId] = FAKE_RULE_OUT_NR;
         }
       }
       if (categoryForAnswer.isEveningCategory) {
         if (nowHours < THRESHOLD_EVENING_START) {
+          console.log("getQuestionSmart(): SKIP EVENING", categoryForAnswer);
           map[categoryId] = FAKE_RULE_OUT_NR;
         }
       }
@@ -58,10 +60,15 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_LATE_NIGHT_START ||
           nowHours > THRESHOLD_LATE_NIGHT_END
         ) {
+          console.log("getQuestionSmart(): SKIP LATE_NIGHT", categoryForAnswer);
           map[categoryId] = FAKE_RULE_OUT_NR;
         }
       }
-      if (categoryForAnswer.isWorkDayCategory && isWorkDayToday) {
+      if (categoryForAnswer.isWorkDayCategory && !isWorkDayToday) {
+        console.log(
+          "getQuestionSmart(): SKIP IS_WORK_DAY_CATEGORY",
+          categoryForAnswer,
+        );
         map[categoryId] = FAKE_RULE_OUT_NR;
       }
     });
@@ -96,12 +103,13 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     (q) => q.categoryId === categoryToUse,
   );
 
-  console.log({
+  console.log("getQuestionSmart():", {
     sortedEntries,
     nrOfEntriesForLeastUsed,
     categoriesLeastUsed,
     categoryToUse,
     questionsForCategory,
+    isWorkDayToday,
   });
   const q = getRndEntry(questionsForCategory);
   return q;
