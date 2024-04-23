@@ -21,9 +21,16 @@ import React from "react";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
+import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
 
-type InteractionMode = "RATING" | "ACTION_ADVICE" | "QUESTION";
+export type InteractionMode =
+  | "RATING"
+  | "ACTION_ADVICE"
+  | "QUESTION"
+  | "EMOJI_CHECKIN";
 const INITIAL_MODE: InteractionMode = (() => {
+  // return "EMOJI_CHECKIN";
+
   const now = new Date();
   const nowHours = now.getHours();
 
@@ -189,7 +196,6 @@ export const Interaction: (props: {
           wasAnswerGiven={getWasAnswerGiven()}
           bubbleTxt={getLittleSunTxt()}
           teardown={teardown}
-          mode={getMode()}
           onShowFreshQuestion={() => {
             updateQuestion();
             setIsShowLittleSun(false);
@@ -228,6 +234,13 @@ export const Interaction: (props: {
               </div>
             )}
             <Switch>
+              <Match when={getMode() === "EMOJI_CHECKIN"}>
+                <EmojiCheckin
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
               <Match when={getMode() === "ACTION_ADVICE"}>
                 <div id="minded-6622-action-advice">
                   <div>{ADVICE.txt}</div>
