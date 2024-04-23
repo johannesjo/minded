@@ -8,6 +8,7 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import {
   ACTION_ADVICES,
   ACTION_ADVICES_MAX_HOUR,
+  ACTION_ADVICES_MIN_HOUR,
 } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { bro } from "@src/util/browser";
@@ -38,7 +39,11 @@ const INITIAL_MODE: InteractionMode = (() => {
   if (rndInt >= 95) {
     return "RATING";
   }
-  if (rndInt >= 80 && nowHours < ACTION_ADVICES_MAX_HOUR) {
+  if (
+    rndInt >= 80 &&
+    nowHours < ACTION_ADVICES_MAX_HOUR &&
+    nowHours >= ACTION_ADVICES_MIN_HOUR
+  ) {
     return "ACTION_ADVICE";
   }
   return "QUESTION";
