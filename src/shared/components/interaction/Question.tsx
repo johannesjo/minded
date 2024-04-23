@@ -91,6 +91,7 @@ export const Question: (props: {
           onclick={() => {
             props.onCancelCountdown();
             props.onChangeQuestion();
+            inpEl?.focus();
           }}
         >
           ⇄
