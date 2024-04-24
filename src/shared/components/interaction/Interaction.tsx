@@ -206,6 +206,7 @@ export const Interaction: (props: {
             setIsShowLittleSun(false);
             setIsShowSuccessSun(false);
             initFadeOut();
+            stopAllVideos();
           }}
           onShowQuestionAgain={() => {
             setIsShowLittleSun(false);
