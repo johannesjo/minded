@@ -134,6 +134,11 @@ export const QUESTION_CATEGORIES: {
         t: "What exactly needs to be done in your current task",
         prompt: "First I",
       },
+      {
+        id: QID.RFHT10,
+        t: "Instead of instant gratification, what might be a better alternative",
+        prompt: "Instead of visiting these websites I could",
+      },
     ],
   },
   [QuestionCategoryId.Motivation]: {
@@ -181,21 +186,16 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT4,
-        t: "Instead of instant gratification, what might be a better alternative",
-        prompt: "Instead of visiting these websites I could",
-      },
-      {
-        id: QID.HT5,
         t: "At what time of the day can you concentrate best",
         prompt: "I can concentrate best",
       },
       {
-        id: QID.HT6,
+        id: QID.HT5,
         t: "What do I need to work well in terms of light, order, temperature, social and physical environment",
         prompt: "I need",
       },
       {
-        id: QID.HT7,
+        id: QID.HT6,
         t: "How do I stay grounded when I feel overwhelmed",
         prompt: "I am able to stay grounded, when",
       },
@@ -358,7 +358,10 @@ export const QUESTION_CATEGORIES: {
       { id: QID.SD1, t: "Am I using my time wisely" },
       { id: QID.SD2, t: "What do I want in life" },
       { id: QID.SD3, t: "I feel most energized when" },
-      // { id: QID.SD4, t: "Am I employing a healthy perspective" },
+      {
+        id: QID.SD4,
+        t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
+      },
       {
         id: QID.SD5,
         t: "What skills do you want to learn in the next five years",
@@ -376,10 +379,6 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.SD13,
         t: "If I could talk to my teenage self, the one thing I would say is...",
-      },
-      {
-        id: QID.SD14,
-        t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
       },
     ],
   },
