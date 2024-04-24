@@ -358,7 +358,7 @@ export const QUESTION_CATEGORIES: {
       { id: QID.SD1, t: "Am I using my time wisely" },
       { id: QID.SD2, t: "What do I want in life" },
       { id: QID.SD3, t: "I feel most energized when" },
-      { id: QID.SD4, t: "Am I employing a healthy perspective" },
+      // { id: QID.SD4, t: "Am I employing a healthy perspective" },
       {
         id: QID.SD5,
         t: "What skills do you want to learn in the next five years",
