@@ -14,4 +14,8 @@ export const ACTION_ADVICES: {
     ico: "🤔",
     txt: "Sometimes procrastination is an indicator that you actually should be doing something else than the task you are avoiding...",
   },
+  {
+    ico: "🎯",
+    txt: "If you have a task to finish, try to think about the smallest possible step you can do right now!",
+  },
 ] as const;
