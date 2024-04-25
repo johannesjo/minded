@@ -22,15 +22,14 @@ import React from "react";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
-import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
 import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
 
 export type InteractionMode =
   | "RATING"
   | "ACTION_ADVICE"
   | "QUESTION"
-  | "MOOD_CHECKIN"
-  | "EMOJI_CHECKIN";
+  | "MOOD_CHECKIN";
+// | "EMOJI_CHECKIN";
 const INITIAL_MODE: InteractionMode = (() => {
   // return "MOOD_CHECKIN";
 
@@ -40,6 +39,9 @@ const INITIAL_MODE: InteractionMode = (() => {
   const rndInt = getRndInt(0, 100);
   if (rndInt >= 95) {
     return "RATING";
+  }
+  if (rndInt >= 85) {
+    return "MOOD_CHECKIN";
   }
   if (
     rndInt >= 80 &&
@@ -252,13 +254,13 @@ export const Interaction: (props: {
                   onCancel={teardown}
                 />
               </Match>
-              <Match when={getMode() === "EMOJI_CHECKIN"}>
-                <EmojiCheckin
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
-              </Match>
+              {/*<Match when={getMode() === "EMOJI_CHECKIN"}>*/}
+              {/*  <EmojiCheckin*/}
+              {/*    onCancelCountdown={cancelCountdown}*/}
+              {/*    onSuccess={onSuccess}*/}
+              {/*    onCancel={teardown}*/}
+              {/*  />*/}
+              {/*</Match>*/}
               <Match when={getMode() === "ACTION_ADVICE"}>
                 <div id="minded-6622-action-advice">
                   <div>{ADVICE.txt}</div>

@@ -12,7 +12,7 @@ export const MoodCheckin: (props: {
   const [getSelectedMood, setSelectedMood] =
     createSignal<MoodCheckinVal | null>(null);
 
-  const onSetRating = async (val: number) => {
+  const onSaveMood = () => {
     // await saveAnswer({
     //   id: nanoid(),
     //   val,
@@ -20,7 +20,6 @@ export const MoodCheckin: (props: {
     //   ts: Date.now(),
     //   questionCategoryId: props.questionCategoryId,
     // });
-
     props.onSuccess();
   };
 
@@ -62,7 +61,9 @@ export const MoodCheckin: (props: {
         }
         style="margin-top: 64px;"
       >
-        <div class="minded-6622-nxt-btn">Next</div>
+        <div class="minded-6622-nxt-btn" onclick={onSaveMood}>
+          save
+        </div>
       </div>
     </div>
   );
