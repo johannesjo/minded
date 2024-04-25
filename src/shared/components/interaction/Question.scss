@@ -30,14 +30,16 @@
   }
 
   div {
-    @include btn();
+    @include btnIco();
+    margin: auto;
     margin-left: 4px;
     border-radius: 0 8px 8px 0;
   }
 }
 
 #minded-6622-change-question-btn {
-  @include btn();
+  @include btnIco();
+  margin: auto;
   margin-top: 32px;
   border-radius: 50%;
 }
