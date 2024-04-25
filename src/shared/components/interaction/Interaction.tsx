@@ -112,7 +112,10 @@ export const Interaction: (props: {
         }
       });
       setTimeout(() => {
-        setIsShowSuccessSun(true);
+        // prevent weird state when opening and directly switching to a new tab
+        if (!document.hidden) {
+          setIsShowSuccessSun(true);
+        }
       }, 3000);
     } else {
       const res = fadeOut(wrapperEl, 5000, 2000);
