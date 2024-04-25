@@ -27,11 +27,11 @@
     min-width: 100px;
 
 
-
     &.isSelected {
       border: 2px solid black;
       font-weight: 700;
       opacity: 1;
+      border-radius: 50% !important;
     }
   }
 
