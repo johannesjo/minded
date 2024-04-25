@@ -39,7 +39,6 @@ export const Question: (props: {
   });
 
   const submitAnswer = async (answerTxt: string) => {
-    alert(answerTxt);
     const q = props.question;
     const answer = {
       questionCategoryId: q.categoryId,
