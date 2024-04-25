@@ -30,41 +30,16 @@
   }
 
   div {
+    @include btn();
     margin-left: 4px;
-    cursor: pointer;
-    line-height: 56px;
-    width: 56px;
-    height: 56px;
     border-radius: 0 8px 8px 0;
-    background: rgba(255, 255, 255, .5);
-    opacity: .8;
-    font-size: 28px;
-    color: rgb(20, 20, 20);
-
-    &:hover {
-      opacity: 1;
-    }
   }
 }
 
 #minded-6622-change-question-btn {
-  cursor: pointer;
-  opacity: 0.4;
-  display: inline-block;
-  margin: auto;
+  @include btn();
   margin-top: 32px;
-  height: 52px;
-  width: 52px;
-  text-align: center;
-  line-height: 52px;
-  font-size: 20px;
-  border: 1px solid black;
   border-radius: 50%;
-
-
-  &:hover {
-    opacity: 1;
-  }
 }
 
 

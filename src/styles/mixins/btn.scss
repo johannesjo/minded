@@ -1,0 +1,16 @@
+@mixin btn($height: 56px) {
+  display: inline-block;
+  cursor: pointer;
+  margin: auto;
+  height: 56px;
+  width: 56px;
+  text-align: center;
+  opacity: 0.5;
+  line-height: 56px;
+  font-size: 24px;
+  background: rgba(255, 255, 255, .5);
+
+  &:hover {
+    opacity: 1;
+  }
+}
