@@ -38,7 +38,17 @@ export const Question: (props: {
     window.clearTimeout(t0);
   });
 
-  const submitAnswer = async (answer: Answer) => {
+  const submitAnswer = async (answerTxt: string) => {
+    alert(answerTxt);
+    const q = props.question;
+    const answer = {
+      questionCategoryId: q.categoryId,
+      qid: q.id,
+      val: answerTxt,
+      ts: Date.now(),
+      id: nanoid(),
+    };
+
     if (!answer.val || (answer.val as string).length < 2) {
       return;
     }
@@ -55,13 +65,7 @@ export const Question: (props: {
     if (!q) throw new Error("No question");
 
     if (ev.key === "Enter") {
-      submitAnswer({
-        questionCategoryId: q.categoryId,
-        qid: q.id,
-        val: (ev.target as any).value,
-        ts: Date.now(),
-        id: nanoid(),
-      });
+      submitAnswer((ev.target as any).value);
     } else if (ev.key === "Escape") {
       props.onCancel();
     } else if (ev.key !== "Control") {
@@ -73,18 +77,27 @@ export const Question: (props: {
     <>
       <div id="minded-6622-msg">
         <div id="minded-6622-question">{props.question.t}?</div>
-        <input
-          ref={inpEl}
-          type="text"
-          disabled={getIsInputDisabled()}
-          onkeypress={() => undefined}
-          onmouseenter={props.onCancelCountdown}
-          onclick={props.onCancelCountdown}
-          onkeydown={onKeyDown}
-          maxlength={500}
-          id="minded-6622-inp"
-          autofocus={true}
-        />
+
+        <div id="minded-6622-inp">
+          <input
+            ref={inpEl}
+            type="text"
+            disabled={getIsInputDisabled()}
+            onkeypress={() => undefined}
+            onmouseenter={props.onCancelCountdown}
+            onclick={props.onCancelCountdown}
+            onkeydown={onKeyDown}
+            maxlength={500}
+            autofocus={true}
+          />
+          <div
+            onclick={() => {
+              submitAnswer(inpEl?.value);
+            }}
+          >
+            ➤
+          </div>
+        </div>
         <div
           id="minded-6622-change-question-btn"
           onmouseenter={props.onCancelCountdown}
