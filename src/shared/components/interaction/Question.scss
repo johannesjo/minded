@@ -11,14 +11,40 @@
 }
 
 #minded-6622-inp {
-  @include formInput();
-  padding: 16px;
-  margin: auto;
-  margin-top: 32px;
+  display: flex;
   width: 540px;
   max-width: 100%;
-  display: block;
-  font-size: var(--fz-m);
+  margin: auto;
+  margin-top: 32px;
+
+  input {
+    @include formInput();
+    flex: 1;
+    border: 1px solid red;
+    padding: 16px;
+    margin: auto;
+    display: block;
+    font-size: var(--fz-m);
+    border-bottom-right-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+  }
+
+  div {
+    margin-left: 4px;
+    cursor: pointer;
+    line-height: 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 0 8px 8px 0;
+    background: rgba(255, 255, 255, .5);
+    opacity: .8;
+    font-size: 28px;
+    color: rgb(20, 20, 20);
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 }
 
 #minded-6622-change-question-btn {
