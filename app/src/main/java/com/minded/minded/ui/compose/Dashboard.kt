@@ -1,6 +1,5 @@
 package com.minded.minded.ui.compose
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -74,13 +72,10 @@ fun DashboardMain(
         } else {
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(top = 160.dp, bottom = 160.dp)
+                contentPadding = PaddingValues(top = 64.dp, bottom = 64.dp)
             ) {
                 itemsIndexed(questions) { index, question ->
-                    val zoomFactor = animateFloatAsState(
-                        targetValue = if (index >= listState.firstVisibleItemIndex + 1 && index <= listState.firstVisibleItemIndex + 2) 1.1f else 0.9f
-                    )
-                    QuestionCategoryCmp(question, zoomFactor.value);
+                    QuestionCategoryCmp(question);
                 }
             }
         }
@@ -89,11 +84,10 @@ fun DashboardMain(
 
 
 @Composable
-fun QuestionCategoryCmp(question: QuestionCategoryForDashboard, zoomFactor: Float = 1.0f) {
+fun QuestionCategoryCmp(question: QuestionCategoryForDashboard) {
     Box(
         modifier = Modifier
-            .scale(zoomFactor)
-            .padding(16.dp)
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 48.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
