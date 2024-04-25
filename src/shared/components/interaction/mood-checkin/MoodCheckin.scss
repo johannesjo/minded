@@ -1,0 +1,64 @@
+
+#minded-6622-mood-checkin {
+  .minded-6622-txt-big {
+    @include txtBig;
+  }
+
+  .minded-6622-txt-smaller {
+    @include txtSmaller;
+  }
+
+
+  .minded-6622-mood-checkin-btns {
+    margin-top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    user-select: none;
+  }
+
+
+  .minded-6622-mood-checkin-btn {
+    @include btnTxt();
+    user-select: none;
+    text-transform: lowercase;
+    border: 2px solid transparent;
+    min-width: 100px;
+
+
+
+    &.isSelected {
+      border: 2px solid black;
+      font-weight: 700;
+      opacity: 1;
+    }
+  }
+
+  textarea {
+    display: block;
+    @include formInput();
+    margin: auto;
+    margin-top: 16px;
+    min-width: 320px;
+    width: 400px;
+    padding: 12px 24px !important;
+    height: 90px !important;
+  }
+
+  .minded-6622-textarea-block,
+  .minded-6622-btns {
+    opacity: 0;
+    transition: all 1s;
+
+    &.isVisible {
+      opacity: 1;
+    }
+  }
+
+  .minded-6622-nxt-btn {
+    @include btnTxt();
+    font-size: 40px;
+    text-transform: lowercase;
+  }
+}

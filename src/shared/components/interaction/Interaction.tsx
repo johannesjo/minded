@@ -23,14 +23,16 @@ import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun
 import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
+import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
 
 export type InteractionMode =
   | "RATING"
   | "ACTION_ADVICE"
   | "QUESTION"
+  | "MOOD_CHECKIN"
   | "EMOJI_CHECKIN";
 const INITIAL_MODE: InteractionMode = (() => {
-  // return "EMOJI_CHECKIN";
+  // return "MOOD_CHECKIN";
 
   const now = new Date();
   const nowHours = now.getHours();
@@ -243,6 +245,13 @@ export const Interaction: (props: {
               </div>
             )}
             <Switch>
+              <Match when={getMode() === "MOOD_CHECKIN"}>
+                <MoodCheckin
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
               <Match when={getMode() === "EMOJI_CHECKIN"}>
                 <EmojiCheckin
                   onCancelCountdown={cancelCountdown}
