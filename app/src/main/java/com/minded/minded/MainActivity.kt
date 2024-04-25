@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
-        startActivity(Intent(this, AppPickerActivity::class.java));
+//        startActivity(Intent(this, AppPickerActivity::class.java));
 
 
         lifecycleScope.launch {
