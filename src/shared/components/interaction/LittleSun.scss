@@ -50,13 +50,12 @@ $sun-size: 40px;
   width: $sun-size;
   height: $sun-size;
   line-height: $sun-size;
-  background: #fff;
+  background: var(--little-sun-bg);
   display: block;
   border-radius: 50%;
   //box-shadow: 0 0 30px 5px var(--c-pastel-red),
   //0 0 60px 5px var(--c-pastel-yellow);
-  box-shadow: 0 0 4px 0 var(--c-pastel-red),
-  0 0 8px 0 var(--c-pastel-yellow);
+  box-shadow: var(--little-sun-shadow);
   text-align: center;
   font-size: 14px;
   color: #956969;
@@ -65,14 +64,13 @@ $sun-size: 40px;
 
 #minded-6622-little-sun-text {
   margin-right: -0.5* $sun-size;
-  box-shadow: 0 0 4px 0 var(--c-pastel-red),
-  0 0 8px 0 var(--c-pastel-yellow);
+  box-shadow: var(--little-sun-shadow);
   position: absolute;
   top: 50%;
   right: 100%;
   transform: translateY(-50%);
   /* transform: translate(-50%); */
-  background: #fff;
+  background: var(--little-sun-bg);
   min-width: 200px;
   border-radius: 8px;
   padding: 8px (($sun-size*0.5) + 4px) 8px 8px;
@@ -120,13 +118,13 @@ $sun-size: 40px;
     margin-top: 16px;
     text-align: center;
     cursor: pointer;
-    background: rgba(255, 255, 255, 1);
+    background: var(--little-sun-bg);
     border: 2px solid rgba(0, 0, 0, 0.6);
     border-radius: var(--border-radius);
     transition: 0.2s;
     font-weight: bold;
     text-transform: lowercase;
-    color: rgba(0, 0, 0, .8);
+    color: var(--little-sun-txt-c);
     width: 28px;
     height: 28px;
     line-height: 28px;

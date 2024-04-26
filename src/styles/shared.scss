@@ -9,7 +9,7 @@
   position: relative;
   z-index: 2147483646;
   z-index: 9999999999999999;
-  color: rgba(0, 0, 0, .8);
+  color: var(--c-fg);
 
   a {
     color: var(--c-link-color);

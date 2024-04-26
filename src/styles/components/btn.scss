@@ -1,17 +1,20 @@
+@import "@src/styles/mixins/mixins";
+
 #minded-6622 {
   .btn-big,
-  .btn-ico,
+  .btn-ico-small,
   .btn {
-    cursor: pointer;
-    background: transparent;
-    border: 2px solid rgba(0, 0, 0, 0.6);
-    border-radius: var(--border-radius);
-    font-size: var(--fz-m);
-    transition: 0.1s;
-    font-weight: bold;
-    text-transform: lowercase;
-    padding: 4px 8px;
-    color: rgba(0, 0, 0, .8);
+    //cursor: pointer;
+    //background: transparent;
+    //border: 2px solid rgba(0, 0, 0, 0.6);
+    //border-radius: var(--border-radius);
+    //font-size: var(--fz-m);
+    //transition: 0.1s;
+    //font-weight: bold;
+    //padding: 4px 8px;
+    //color: var(--c-fg-txt);
+    @include btn;
+
 
     &:hover {
       transform: scale(1.2);
@@ -21,16 +24,23 @@
     }
   }
 
-  .btn-ico {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    font-size: 20px;
+  .btn {
+    //@include btn;
+    text-transform: lowercase;
+  }
+
+  .btn-ico-small {
+    //width: 36px;
+    //height: 36px;
+    //padding: 0;
+    //font-size: 20px;
+    @include btnIco(36px);
+
   }
 
   .btn-big {
     font-size: 24px;
-    padding: 6px 10px;
+    padding: 0 10px;
 
     &:hover {
       transform: scale(1.1);
