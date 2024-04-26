@@ -2,7 +2,7 @@
 
 #minded-6622-msg {
   @include txtBig();
-  color: rgba(0, 0, 0, .8);
+  color: var(--c-fg);
   pointer-events: all;
   user-select: none;
   animation: minded6622fadeInAnimation ease-in 1s;
@@ -20,7 +20,6 @@
   input {
     @include formInput();
     flex: 1;
-    border: 1px solid red;
     padding: 16px;
     margin: auto;
     display: block;

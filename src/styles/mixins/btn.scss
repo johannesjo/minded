@@ -1,13 +1,16 @@
-@mixin btn {
+@mixin btn($height: 56px) {
+  border: none;
   border-radius: 8px;
   display: inline-block;
   cursor: pointer;
-  height: 56px;
+  height: $height;
   text-align: center;
   opacity: 0.5;
-  line-height: 56px;
+  line-height: $height;
   font-size: 24px;
-  background: rgba(255, 255, 255, .5);
+  background: var(--btn-bg);
+  text-transform: lowercase;
+  box-sizing: border-box;
 
   &:hover {
     opacity: 1;
@@ -15,9 +18,10 @@
 }
 
 @mixin btnIco($height: 56px) {
-  @include btn;
-  width: 56px;
+  @include btn($height);
+  width: $height;
 }
+
 
 @mixin btnTxt() {
   @include btn;

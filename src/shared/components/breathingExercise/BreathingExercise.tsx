@@ -5,9 +5,9 @@ const BreathingExercise = () => {
   const [timeLeft, setTimeLeft] = createSignal(0);
 
   const stages = [
-    {name: "Breathing in", duration: 4},
-    {name: "Hold", duration: 7},
-    {name: "Breathing out", duration: 8},
+    { name: "Breathing in", duration: 4 },
+    { name: "Hold", duration: 7 },
+    { name: "Breathing out", duration: 8 },
   ];
 
   let currentStageIndex = -1;
@@ -23,13 +23,13 @@ const BreathingExercise = () => {
   };
 
   onCleanup(() => {
-    if(intervalId) {
+    if (intervalId) {
       clearInterval(intervalId);
     }
   });
 
   createEffect(() => {
-    if(timeLeft() === 0 && currentStageIndex !== -1) {
+    if (timeLeft() === 0 && currentStageIndex !== -1) {
       currentStageIndex = (currentStageIndex + 1) % stages.length;
       setStage(stages[currentStageIndex].name);
       setTimeLeft(stages[currentStageIndex].duration);
@@ -37,11 +37,12 @@ const BreathingExercise = () => {
   });
 
   return (
-    <div
-      id="minded-6622-coloured-wrapper">
+    <div id="minded-6622-coloured-wrapper">
       <h1>{stage()}</h1>
       <p>{timeLeft()} seconds left</p>
-      <button onClick={startExercise} className="btn">Start</button>
+      <button onClick={startExercise} class="btn">
+        Start
+      </button>
     </div>
   );
 };
