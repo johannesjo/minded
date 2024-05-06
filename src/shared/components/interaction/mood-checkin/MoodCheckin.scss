@@ -23,15 +23,15 @@
     @include btnTxt();
     user-select: none;
     text-transform: lowercase;
-    border: 2px solid transparent;
     min-width: 100px;
-
+    transition: .2s all;
 
     &.isSelected {
-      border: 2px solid black;
-      font-weight: 700;
+      background: var(--btn-bg-selected);
       opacity: 1;
-      border-radius: 50% !important;
+      font-weight: 500;
+      border-radius: 16px;
+      transform: scale(1.1);
     }
   }
 
