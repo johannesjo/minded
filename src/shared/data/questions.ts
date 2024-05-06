@@ -380,6 +380,9 @@ export const QUESTION_CATEGORIES: {
         id: QID.SD13,
         t: "If I could talk to my teenage self, the one thing I would say is...",
       },
+      { id: QID.SD14, t: "Do you live a fulfilling life?" },
+      { id: QID.SD15, t: "What is my purpose?" },
+      { id: QID.SD16, t: "Why am I here?" },
     ],
   },
   [QuestionCategoryId.XPurposeOfSession]: {
