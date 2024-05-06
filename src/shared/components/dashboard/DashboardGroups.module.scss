@@ -129,21 +129,40 @@
 
 
 .stats {
-  .timesClosed {
-    div:first-child {
-      font-weight: bold;
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-
-    div:last-child {
-      font-weight: 200;
-    }
+  div:first-child {
+    font-weight: bold;
+    font-size: 28px;
+    margin-bottom: 10px;
   }
 
-  .timesAttempted {
-    margin-top: 16px;
+  div:last-child {
+    font-weight: 200;
   }
 }
 
 
+.moodCheckinWidget {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+
+  div:first-child {
+    margin-bottom: 10px;
+    font-weight: 200;
+
+    span {
+      font-size:  var(--fz-l);
+      font-weight: bold;
+      margin-left: 4px;
+      margin-right: 4px;
+      text-transform: lowercase;
+    }
+  }
+
+  div:last-child {
+    @include usrQuote();
+  }
+}

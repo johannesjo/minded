@@ -1,9 +1,11 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { Answer } from "@src/shared/data/syncData";
+import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 
 export enum DashboardGroupType {
   Standard = "Standard",
   Quote = "Quote",
+  MoodCheckin = "MoodCheckin",
   Stats = "Stats",
 }
 
@@ -18,4 +20,18 @@ export interface DashboardGroupQuote {
   type: DashboardGroupType.Quote;
 }
 
-export type DashboardGroup = DashboardGroupStandard | DashboardGroupQuote;
+export interface DashboardGroupStats {
+  type: DashboardGroupType.Stats;
+}
+
+export interface DashboardGroupMood {
+  type: DashboardGroupType.MoodCheckin;
+  mood: MoodCheckinVal;
+  additionalTxt?: string;
+}
+
+export type DashboardGroup =
+  | DashboardGroupStandard
+  | DashboardGroupStats
+  | DashboardGroupQuote
+  | DashboardGroupMood;

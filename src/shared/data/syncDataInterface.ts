@@ -3,6 +3,7 @@ import { bro } from "@src/util/browser";
 import { DEFAULT_SYNC_DATA } from "@src/shared/data/syncData.const";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { QuestionCategoryId } from "@src/shared/data/questions";
+import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 
 const ITEMS_DO_DELETE_IF_OVER_QUOTE = 15;
 const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
@@ -51,6 +52,20 @@ export const saveAnswer = (answer: Answer): Promise<void> => {
     .then(() => {
       getSyncData().then(console.log);
     });
+};
+
+export const saveMoodCheckIn = (
+  mood: MoodCheckinVal,
+  additional?: string,
+): Promise<void> => {
+  return getSyncData().then((syncData) => {
+    return saveSyncData({
+      ...syncData,
+      lastMoodCheckTS: Date.now(),
+      lastMoodCheckVal: mood,
+      lastMoodCheckAdditional: additional,
+    });
+  });
 };
 
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> => {

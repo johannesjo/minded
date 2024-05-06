@@ -1,6 +1,9 @@
 import { SyncData } from "@src/shared/data/syncData";
 import {
   DashboardGroup,
+  DashboardGroupMood,
+  DashboardGroupQuote,
+  DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import {
@@ -16,6 +19,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
+const MOOD_INDEX = 5;
 
 export const dashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -44,7 +48,7 @@ export const dashboardEntriesFromQuestions = (
   // console.log(dashboardGroups, getRndEntries(dashboardGroups, MAX_GROUPS));
 
   // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
-  let sortedEntries = dashboardGroups;
+  let sortedEntries: DashboardGroup[] = dashboardGroups;
 
   if (sortedEntries.length >= 5) {
     const rndIndex = getRndInt(0, sortedEntries.length - 1);
@@ -54,12 +58,19 @@ export const dashboardEntriesFromQuestions = (
         syncData.blocked[ds] > 0
           ? DashboardGroupType.Stats
           : DashboardGroupType.Quote,
-    });
+    } as DashboardGroupStats | DashboardGroupQuote);
     sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
   } else {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
+  }
+  if (isToday(syncData.lastMoodCheckTS)) {
+    sortedEntries.splice(MOOD_INDEX, 0, {
+      type: DashboardGroupType.MoodCheckin,
+      mood: syncData.lastMoodCheckVal,
+      additionalTxt: syncData.lastMoodCheckAdditional,
+    } as DashboardGroupMood);
   }
 
   // finally limit size

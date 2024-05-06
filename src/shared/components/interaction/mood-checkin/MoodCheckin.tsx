@@ -3,6 +3,7 @@ import {
   MOOD_CHECKIN_OPTIONS,
   MoodCheckinVal,
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+import { saveMoodCheckIn } from "@src/shared/data/syncDataInterface";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;
@@ -11,15 +12,12 @@ export const MoodCheckin: (props: {
 }) => JSX.Element = (props) => {
   const [getSelectedMood, setSelectedMood] =
     createSignal<MoodCheckinVal | null>(null);
+  const [getAdditionalTxt, setAdditionalTxt] = createSignal<string | null>(
+    null,
+  );
 
-  const onSaveMood = () => {
-    // await saveAnswer({
-    //   id: nanoid(),
-    //   val,
-    //   qid: null,
-    //   ts: Date.now(),
-    //   questionCategoryId: props.questionCategoryId,
-    // });
+  const onSaveMood = async () => {
+    await saveMoodCheckIn(getSelectedMood(), getAdditionalTxt());
     props.onSuccess();
   };
 
@@ -52,7 +50,10 @@ export const MoodCheckin: (props: {
         <div style="margin-bottom: 16px" class="minded-6622-txt-smaller">
           Anything you'd like to add?
         </div>
-        <textarea></textarea>
+        <textarea
+          maxlength="200"
+          onKeyDown={(ev) => setAdditionalTxt((ev.target as any).value)}
+        ></textarea>
       </div>
 
       <div

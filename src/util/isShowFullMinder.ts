@@ -10,16 +10,16 @@ export const isShowFullMinder = (
   // TODO remove
   console.log(
     "isShowFullMinder()",
-    STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlocked ||
+    STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlockedTS ||
       !syncData.lastBlockedUrl ||
       host !== getHostFromUrl(syncData.lastBlockedUrl),
     STATIC_CFG.ShowAgainThreshold,
-    Date.now() - syncData.lastBlocked,
+    Date.now() - syncData.lastBlockedTS,
     !syncData.lastBlockedUrl,
     host !== getHostFromUrl(syncData.lastBlockedUrl),
   );
   return (
-    STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlocked ||
+    STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlockedTS ||
     !syncData.lastBlockedUrl ||
     host !== getHostFromUrl(syncData.lastBlockedUrl)
   );
