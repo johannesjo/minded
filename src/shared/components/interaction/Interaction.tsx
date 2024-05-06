@@ -72,6 +72,7 @@ export const Interaction: (props: {
   let frameNr;
   let syncData;
   let questionUpdateCount = 0;
+  let questionIdBefore;
 
   onMount(async () => {
     // give a moment time for rendering
@@ -87,6 +88,7 @@ export const Interaction: (props: {
       syncData = syncDataI;
       const rndQuestion = getQuestionSmart(syncDataI.answers);
       setRndQuestion(rndQuestion);
+      questionIdBefore = rndQuestion.id;
 
       switch (getMode()) {
         case "ACTION_ADVICE":
@@ -139,10 +141,17 @@ export const Interaction: (props: {
         questionUpdateCount >= 5
           ? getRndEntry(QUESTIONS)
           : getQuestionSmart(syncData.answers);
-      setRndQuestion(rndQuestion);
-      setLittleSunTxt(rndQuestion.t + "?");
-      setWasAnswerGiven(false);
-      questionUpdateCount++;
+
+      if (questionIdBefore === rndQuestion.id) {
+        questionUpdateCount++;
+        updateQuestion();
+      } else {
+        questionIdBefore = rndQuestion.id;
+        setRndQuestion(rndQuestion);
+        setLittleSunTxt(rndQuestion.t + "?");
+        setWasAnswerGiven(false);
+        questionUpdateCount++;
+      }
     }
   };
 
