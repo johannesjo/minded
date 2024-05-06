@@ -1,6 +1,7 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import {
   DashboardGroup,
+  DashboardGroupMood,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import { getSyncData } from "@src/shared/data/syncDataInterface";
@@ -12,6 +13,7 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 import { getIsoDate } from "@src/util/getIsoDate";
+import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -56,14 +58,23 @@ export const DashboardGroups: (props: {
                     class={styles.stats}
                     title={getAttemptsToday() + " visit attempts"}
                   >
-                    <div class={styles.timesClosed}>
-                      <div>{getBlockedToday()}</div>
-                      <div>Minded Decisions Today</div>
-                      {/*<div>*/}
-                      {/*  times successfully closed one of the configured*/}
-                      {/*  websites today instead of visiting it*/}
-                      {/*</div>*/}
+                    <div>{getBlockedToday()}</div>
+                    <div>Minded Decisions Today</div>
+                  </div>
+                );
+              case DashboardGroupType.MoodCheckin:
+                const dgm = dg as DashboardGroupMood;
+                return (
+                  <div class={styles.moodCheckinWidget}>
+                    <div>
+                      you feel <span>{dgm.mood}</span> today!
                     </div>
+                    {dgm.additionalTxt && <div>{dgm.additionalTxt}</div>}
+                    {!dgm.additionalTxt &&
+                      (dgm.mood === MoodCheckinVal.Awful ||
+                        dgm.mood === MoodCheckinVal.Bad) && (
+                        <div>Be very kind to yourself!</div>
+                      )}
                   </div>
                 );
               case DashboardGroupType.Quote:

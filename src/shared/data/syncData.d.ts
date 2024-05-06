@@ -1,5 +1,6 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
+import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 
 export interface UserCfg {
   isOnboardingComplete: boolean;
@@ -17,8 +18,12 @@ export interface Answer {
 export interface SyncData {
   cfg: UserCfg;
   answers: Answer[];
-  lastBlocked: number;
+  lastBlockedTS: number;
   lastBlockedUrl: string;
+  lastMoodCheckTS: number;
+  lastMoodCheckVal?: MoodCheckinVal;
+  lastMoodCheckAdditional: string;
+
   blocked: {
     [key: string]: number;
   };

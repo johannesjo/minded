@@ -23,7 +23,7 @@ export const ContentScriptMain: (props: {
     if (props.isShowFullMinderInitially) {
       setTimeout(() => {
         updateSyncData({
-          lastBlocked: Date.now(),
+          lastBlockedTS: Date.now(),
           lastBlockedUrl: window.location.href,
         });
       }, 8000);
