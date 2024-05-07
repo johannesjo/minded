@@ -22,9 +22,9 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   const nowHours = now.getHours();
 
   if (
-    (Date.now() - syncData.lastMoodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP &&
+    (Date.now() - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP &&
       isXIn1(0.1)) ||
-    (!isToday(syncData.lastMoodCheckTS || 99) && isXIn1(0.4))
+    (!isToday(syncData.moodCheckTS) && isXIn1(0.4))
   ) {
     return "MOOD_CHECKIN";
   }

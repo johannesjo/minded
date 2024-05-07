@@ -1,27 +1,19 @@
 /* @refresh reload */
 import { JSX } from "solid-js";
 import Rating from "@src/shared/components/ui/Rating";
-import { saveAnswer } from "@src/shared/data/syncDataInterface";
+import { saveEnergyLvl } from "@src/shared/data/syncDataInterface";
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { nanoid } from "nanoid";
-import { QID } from "@src/shared/data/questionId";
 
 // once on app load
 
-export const RatingInteraction: (props: {
+export const EnergyLvlInteraction: (props: {
   onSuccess: () => void;
   onCancel: () => void;
   questionCategoryId: QuestionCategoryId;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const onSetRating = async (val: number) => {
-    await saveAnswer({
-      id: nanoid(),
-      val,
-      qid: null,
-      ts: Date.now(),
-      questionCategoryId: props.questionCategoryId,
-    });
+    await saveEnergyLvl(val);
     props.onSuccess();
   };
 

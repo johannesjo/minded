@@ -20,9 +20,11 @@ export interface SyncData {
   answers: Answer[];
   lastBlockedTS: number;
   lastBlockedUrl: string;
-  lastMoodCheckTS: number;
-  lastMoodCheckVal?: MoodCheckinVal;
-  lastMoodCheckAdditional: string;
+  moodCheckTS: number;
+  moodCheckVal?: MoodCheckinVal;
+  moodCheckAdditional: string;
+  energyLvlTS: number;
+  energyLvlVal: number;
 
   blocked: {
     [key: string]: number;

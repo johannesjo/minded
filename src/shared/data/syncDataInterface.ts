@@ -61,9 +61,19 @@ export const saveMoodCheckIn = (
   return getSyncData().then((syncData) => {
     return saveSyncData({
       ...syncData,
-      lastMoodCheckTS: Date.now(),
-      lastMoodCheckVal: mood,
-      lastMoodCheckAdditional: additional,
+      moodCheckTS: Date.now(),
+      moodCheckVal: mood,
+      moodCheckAdditional: additional,
+    });
+  });
+};
+
+export const saveEnergyLvl = (energyLvlVal: number): Promise<void> => {
+  return getSyncData().then((syncData) => {
+    return saveSyncData({
+      ...syncData,
+      energyLvlTS: Date.now(),
+      energyLvlVal,
     });
   });
 };

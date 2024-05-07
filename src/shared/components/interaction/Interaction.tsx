@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
-import { RatingInteraction } from "@src/shared/components/interaction/RatingInteraction";
+import { EnergyLvlInteraction } from "@src/shared/components/interaction/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
@@ -262,7 +262,7 @@ export const Interaction: (props: {
                 </div>
               </Match>
               <Match when={getMode() === "RATING"}>
-                <RatingInteraction
+                <EnergyLvlInteraction
                   questionCategoryId={QuestionCategoryId.XEnergyLevelToday}
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onSuccess}

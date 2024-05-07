@@ -1,6 +1,7 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import {
   DashboardGroup,
+  DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
@@ -79,31 +80,25 @@ export const DashboardGroups: (props: {
                 );
               case DashboardGroupType.Quote:
                 return <RndQuote />;
-              default:
-                switch (dg.id) {
-                  case QuestionCategoryId.XEnergyLevelToday:
-                    return (
-                      <div class={styles.energyLvl}>
-                        <div class={styles.standardHeading}>
-                          Your Energy Level Today
-                        </div>
-                        <Rating
-                          isShowOnly={true}
-                          value={(dg.answers[0] && dg.answers[0].val) as number}
-                        />
-                      </div>
-                    );
 
-                  default:
-                    return (
-                      <AnswerList
-                        dashboardGroup={dg}
-                        onTitleClick={() =>
-                          props.onQuestionCategorySelect(dg.id)
-                        }
-                      />
-                    );
-                }
+              case DashboardGroupType.EnergyLvl:
+                const dge = dg as DashboardGroupEnergyLvl;
+                return (
+                  <div class={styles.energyLvl}>
+                    <div class={styles.standardHeading}>
+                      Your Energy Level Today
+                    </div>
+                    <Rating isShowOnly={true} value={dge.energyLvl} />
+                  </div>
+                );
+
+              default:
+                return (
+                  <AnswerList
+                    dashboardGroup={dg}
+                    onTitleClick={() => props.onQuestionCategorySelect(dg.id)}
+                  />
+                );
             }
           })()}
         </div>

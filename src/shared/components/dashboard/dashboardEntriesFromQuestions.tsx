@@ -1,6 +1,7 @@
 import { SyncData } from "@src/shared/data/syncData";
 import {
   DashboardGroup,
+  DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupQuote,
   DashboardGroupStats,
@@ -21,6 +22,7 @@ const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
 const MOOD_INDEX = 7;
+const ENERGY_LVL_INDEX = 8;
 
 export const dashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -74,12 +76,18 @@ export const dashboardEntriesFromQuestions = (
       type: DashboardGroupType.Quote,
     });
   }
-  if (isToday(syncData.lastMoodCheckTS)) {
+  if (isToday(syncData.moodCheckTS)) {
     sortedEntries.splice(MOOD_INDEX, 0, {
       type: DashboardGroupType.MoodCheckin,
-      mood: syncData.lastMoodCheckVal,
-      additionalTxt: syncData.lastMoodCheckAdditional,
+      mood: syncData.moodCheckVal,
+      additionalTxt: syncData.moodCheckAdditional,
     } as DashboardGroupMood);
+  }
+  if (isToday(syncData.energyLvlTS)) {
+    sortedEntries.splice(ENERGY_LVL_INDEX, 0, {
+      type: DashboardGroupType.EnergyLvl,
+      energyLvl: syncData.energyLvlVal,
+    } as DashboardGroupEnergyLvl);
   }
 
   // finally limit size
