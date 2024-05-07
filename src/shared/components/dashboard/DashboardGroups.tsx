@@ -83,7 +83,7 @@ export const DashboardGroups: (props: {
                 switch (dg.id) {
                   case QuestionCategoryId.XEnergyLevelToday:
                     return (
-                      <div class={styles.box}>
+                      <div class={styles.energyLvl}>
                         <div class={styles.standardHeading}>
                           Your Energy Level Today
                         </div>

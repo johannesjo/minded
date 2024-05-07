@@ -127,6 +127,16 @@
 //  transform: translate(-50%, -50%) scale(1.2);
 //}
 
+.stats,
+.moodCheckinWidget,
+.energyLvl {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
 
 .stats {
   div:first-child {
@@ -142,19 +152,12 @@
 
 
 .moodCheckinWidget {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-
-
   div:first-child {
     margin-bottom: 10px;
     font-weight: 200;
 
     span {
-      font-size:  var(--fz-l);
+      font-size: var(--fz-l);
       font-weight: bold;
       margin-left: 4px;
       margin-right: 4px;
