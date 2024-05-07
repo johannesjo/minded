@@ -76,7 +76,7 @@ export const Interaction: (props: {
           setLittleSunTxt(ADVICE.txt);
           setWasAnswerGiven(true);
           return;
-        case "RATING":
+        case "ENERGY_LVL":
           setLittleSunTxt("How would you rate your energy level today?");
           return;
         default:
@@ -262,7 +262,7 @@ export const Interaction: (props: {
                   <div>{ADVICE.ico}</div>
                 </div>
               </Match>
-              <Match when={getMode() === "RATING"}>
+              <Match when={getMode() === "ENERGY_LVL"}>
                 <EnergyLvlInteraction
                   questionCategoryId={QuestionCategoryId.XEnergyLevelToday}
                   onCancelCountdown={cancelCountdown}
