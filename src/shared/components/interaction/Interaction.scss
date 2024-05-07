@@ -22,9 +22,10 @@
     border-radius: 50%;
     box-shadow: 0 0 30px 5px var(--c-pastel-red),
     0 0 60px 5px var(--c-pastel-yellow);
-    animation: minded6622successSun ease 1.6s;
+    animation: minded6622successSun ease;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
+    animation-duration: 1600ms;
     z-index: 30;
   }
 
