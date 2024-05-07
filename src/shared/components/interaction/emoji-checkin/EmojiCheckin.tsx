@@ -34,8 +34,9 @@ export const EmojiCheckin: (props: {
           <div style="margin-bottom: 16px">
             {EMOIJI_CATEGORIES[catid].map((entry) => (
               <div
-                style="display: inline-block; font-size: 40px; padding: 4px;"
+                style="display: inline-block; font-size: 40px; padding: 4px; cursor: pointer;"
                 title={entry.d}
+                onclick={props.onSuccess}
               >
                 {entry.i}
               </div>
@@ -43,10 +44,10 @@ export const EmojiCheckin: (props: {
           </div>
         ))}
       </div>
-      <div style="margin-top: 32px;">
-        <div style="margin-bottom: 16px">Anything else you'd like to add?</div>
-        <textarea style="min-width: 400px; min-height: 100px"></textarea>
-      </div>
+      {/*<div style="margin-top: 32px;">*/}
+      {/*  <div style="margin-bottom: 16px">Anything else you'd like to add?</div>*/}
+      {/*  <textarea style="min-width: 400px; min-height: 100px"></textarea>*/}
+      {/*</div>*/}
     </div>
   );
 };

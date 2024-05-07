@@ -22,6 +22,7 @@ import {
   getInteractionMode,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
+import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 const SUCCESS_SUN_ANI_IN_DURATION = 1600;
@@ -248,13 +249,13 @@ export const Interaction: (props: {
                   onCancel={teardown}
                 />
               </Match>
-              {/*<Match when={getMode() === "EMOJI_CHECKIN"}>*/}
-              {/*  <EmojiCheckin*/}
-              {/*    onCancelCountdown={cancelCountdown}*/}
-              {/*    onSuccess={onSuccess}*/}
-              {/*    onCancel={teardown}*/}
-              {/*  />*/}
-              {/*</Match>*/}
+              <Match when={getMode() === "EMOJI_CHECKIN"}>
+                <EmojiCheckin
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
               <Match when={getMode() === "ACTION_ADVICE"}>
                 <div id="minded-6622-action-advice">
                   <div>{ADVICE.txt}</div>
