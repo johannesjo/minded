@@ -7,7 +7,7 @@ import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/
 
 const ITEMS_DO_DELETE_IF_OVER_QUOTE = 15;
 const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
-  QuestionCategoryId.XPurposeOfSession,
+  QuestionCategoryId.XXPurposeOfSession,
   QuestionCategoryId.XEnergyLevelToday,
 ];
 

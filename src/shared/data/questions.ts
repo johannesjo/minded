@@ -18,7 +18,8 @@ export enum QuestionCategoryId {
   SelfDiscovery = "SelfDiscovery",
   // NOTE: we filter out all questions from categories starting with X
   XEnergyLevelToday = "XEnergyLevelToday",
-  XPurposeOfSession = "XPurposeOfSession",
+  // NO save questions
+  XXPurposeOfSession = "XXPurposeOfSession",
   // IDEAS
   // ---------
   // XSpecialWidget = "XSpecialWidget",
@@ -355,9 +356,9 @@ export const QUESTION_CATEGORIES: {
     frequencyModifier: 2,
     dashboardTxt: "Self Discovery",
     questions: [
-      { id: QID.SD1, t: "Am I using my time wisely" },
-      { id: QID.SD2, t: "What do I want in life" },
-      { id: QID.SD3, t: "I feel most energized when" },
+      { id: QID.SD1, t: "Are you using my time wisely" },
+      { id: QID.SD2, t: "What do you want in life" },
+      { id: QID.SD3, t: "You feel most energized when..." },
       {
         id: QID.SD4,
         t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
@@ -368,9 +369,9 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.SD6,
-        t: "Am I letting matters that are out of my control stress me out",
+        t: "Are you letting matters that are out of your control stress me out",
       },
-      { id: QID.SD7, t: "Is where I am today making me happy" },
+      { id: QID.SD7, t: "Is where you are today making you happy" },
       { id: QID.SD8, t: "My favorite way to spend the day is..." },
       { id: QID.SD9, t: "The words I’d like to live by are..." },
       { id: QID.SD10, t: "If my body could talk, it would say..." },
@@ -378,14 +379,14 @@ export const QUESTION_CATEGORIES: {
       { id: QID.SD12, t: "What is the biggest “What if” in your mind" },
       {
         id: QID.SD13,
-        t: "If I could talk to my teenage self, the one thing I would say is...",
+        t: "If you could talk to your teenage self, the one thing you would say is...",
       },
       { id: QID.SD14, t: "Do you live a fulfilling life" },
-      { id: QID.SD15, t: "What is my purpose" },
-      { id: QID.SD16, t: "Why am I here" },
+      { id: QID.SD15, t: "What is your purpose" },
+      { id: QID.SD16, t: "Why are you here" },
     ],
   },
-  [QuestionCategoryId.XPurposeOfSession]: {
+  [QuestionCategoryId.XXPurposeOfSession]: {
     dashboardTxt: "XXX",
     isTodayOnlyCategory: true,
     isDontSaveQuestion: true,
