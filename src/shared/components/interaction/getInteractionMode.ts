@@ -23,7 +23,10 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   if (rndInt >= 95) {
     return "RATING";
   }
-  if (rndInt >= 85 || (!isToday(syncData.lastMoodCheckTS) && rndInt >= 55)) {
+  if (
+    rndInt >= 85 ||
+    (!isToday(syncData.lastMoodCheckTS || 99) && rndInt >= 55)
+  ) {
     return "MOOD_CHECKIN";
   }
   if (

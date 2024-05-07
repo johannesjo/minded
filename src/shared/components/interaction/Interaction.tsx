@@ -24,7 +24,9 @@ import {
 } from "@src/shared/components/interaction/getInteractionMode";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
-const SUN_ANI_DURATION = 1600;
+const SUCCESS_SUN_ANI_IN_DURATION = 1600;
+const SUCCESS_SUN_STAY_DURATION = 3200;
+const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
 
 export const Interaction: (props: {
   host: string;
@@ -40,6 +42,7 @@ export const Interaction: (props: {
   >();
 
   let wrapperEl;
+  let successSunEl;
   let frameNr;
   let syncData;
   let questionUpdateCount = 0;
@@ -139,11 +142,12 @@ export const Interaction: (props: {
     setWasAnswerGiven(true);
     setIsShowSuccessSun(true);
     // wait for sun
-    await promiseTimeout(SUN_ANI_DURATION);
-    bro.runtime.sendMessage({ closeTab: true });
+    await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
+    await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
+    // bro.runtime.sendMessage({ closeTab: true });
 
-    // await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
-    // littleSun();
+    await fadeOut(wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
+    littleSun();
   };
 
   const cancelCountdown = () => {
@@ -224,6 +228,7 @@ export const Interaction: (props: {
             {getIsShowSuccessSun() && (
               <div
                 id="minded-6622-success-sun"
+                ref={successSunEl}
                 title="Click sun to close tab"
                 onclick={() => {
                   bro.runtime.sendMessage({ closeTab: true });
