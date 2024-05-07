@@ -20,7 +20,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
-const MOOD_INDEX = 5;
+const MOOD_INDEX = 7;
 
 export const dashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -55,7 +55,7 @@ export const dashboardEntriesFromQuestions = (
       });
     }
   });
-  console.log(dashboardGroups);
+  // console.log(dashboardGroups);
 
   let sortedEntries: DashboardGroup[] = dashboardGroups;
 
