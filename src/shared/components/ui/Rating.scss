@@ -5,7 +5,11 @@
   }
 
   &.showOnly span {
-    margin: 8px;
+    display: inline-block;
+    font-size: 50px;
+    width: 50px;
+    line-height: 50px;
+    margin: 0;
 
     &.isFull {
       color: inherit;
