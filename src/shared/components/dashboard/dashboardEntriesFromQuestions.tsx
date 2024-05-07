@@ -3,7 +3,6 @@ import {
   DashboardGroup,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
-  DashboardGroupQuote,
   DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
@@ -15,14 +14,14 @@ import {
 import { getRndEntries } from "@src/util/getRndEntries";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
-import { replaceAt } from "@src/util/replaceAt";
 import { getIsoDate } from "@src/util/getIsoDate";
 
+const STATS_INDEX = 0;
+const MOOD_INDEX = 1;
+const ENERGY_LVL_INDEX = 2;
 const MAX_ANSWERS = 4;
 const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
-const MOOD_INDEX = 7;
-const ENERGY_LVL_INDEX = 8;
 
 export const dashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -60,34 +59,42 @@ export const dashboardEntriesFromQuestions = (
   // console.log(dashboardGroups);
 
   let sortedEntries: DashboardGroup[] = dashboardGroups;
+  let fixedEntries = 0;
 
-  if (sortedEntries.length >= 5) {
-    const rndIndex = getRndInt(0, sortedEntries.length - 1);
-    const rndEntry = { ...sortedEntries[rndIndex] };
-    sortedEntries = replaceAt(sortedEntries, rndIndex, {
-      type:
-        syncData.blocked[ds] > 0
-          ? DashboardGroupType.Stats
-          : DashboardGroupType.Quote,
-    } as DashboardGroupStats | DashboardGroupQuote);
-    sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
-  } else {
-    sortedEntries.splice(CENTER_INDEX, 0, {
-      type: DashboardGroupType.Quote,
-    });
+  if (syncData.blocked[ds] > 0) {
+    fixedEntries++;
+    sortedEntries.splice(STATS_INDEX, 0, {
+      type: DashboardGroupType.Stats,
+    } as DashboardGroupStats);
   }
+
   if (isToday(syncData.moodCheckTS)) {
+    fixedEntries++;
     sortedEntries.splice(MOOD_INDEX, 0, {
       type: DashboardGroupType.MoodCheckin,
       mood: syncData.moodCheckVal,
       additionalTxt: syncData.moodCheckAdditional,
     } as DashboardGroupMood);
   }
+
   if (isToday(syncData.energyLvlTS)) {
+    fixedEntries++;
     sortedEntries.splice(ENERGY_LVL_INDEX, 0, {
       type: DashboardGroupType.EnergyLvl,
       energyLvl: syncData.energyLvlVal,
     } as DashboardGroupEnergyLvl);
+  }
+
+  // center one rnd entry
+  if (sortedEntries.length >= 5) {
+    // NOTE: start val needs to be bigger than the fixed added entries
+    const rndIndex = getRndInt(fixedEntries, sortedEntries.length - 1);
+    const rndEntry = { ...sortedEntries[rndIndex] };
+    sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
+  } else {
+    sortedEntries.splice(CENTER_INDEX, 0, {
+      type: DashboardGroupType.Quote,
+    });
   }
 
   // finally limit size
