@@ -1,9 +1,9 @@
 export const isToday = (date: number | Date): boolean => {
   const d = new Date(date);
   const isValid = d.getTime() > 0;
-  if (!isValid) {
-    throw new Error("Invalid date passed");
-  }
+  // if (!isValid) {
+  //   throw new Error("Invalid date passed " + date);
+  // }
   const today = new Date();
   // return (today.toDateString() === d.toDateString());
   // return  today.setHours(0, 0, 0, 0) === d.setHours(0, 0, 0, 0);

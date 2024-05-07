@@ -6,6 +6,7 @@ export enum DashboardGroupType {
   Standard = "Standard",
   Quote = "Quote",
   MoodCheckin = "MoodCheckin",
+  EnergyLvl = "EnergyLvl",
   Stats = "Stats",
 }
 
@@ -30,8 +31,14 @@ export interface DashboardGroupMood {
   additionalTxt?: string;
 }
 
+export interface DashboardGroupEnergyLvl {
+  type: DashboardGroupType.EnergyLvl;
+  energyLvl: number;
+}
+
 export type DashboardGroup =
   | DashboardGroupStandard
   | DashboardGroupStats
   | DashboardGroupQuote
+  | DashboardGroupEnergyLvl
   | DashboardGroupMood;
