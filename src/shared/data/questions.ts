@@ -409,7 +409,6 @@ export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.TodayILearned,
   QuestionCategoryId.GoalForTheWeek,
-  QuestionCategoryId.XEnergyLevelToday,
 ];
 
 export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
