@@ -7,8 +7,9 @@ import {
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import {
+  FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
   QUESTION_CATEGORIES,
-  QUESTION_CATEGORIES_ON_DASHBOARD,
+  RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
 import { isThisWeek, isToday } from "@src/util/isToday";
@@ -27,7 +28,16 @@ export const dashboardEntriesFromQuestions = (
 ): DashboardGroup[] => {
   const ds = getIsoDate();
   const dashboardGroups = [];
-  QUESTION_CATEGORIES_ON_DASHBOARD.forEach((catId) => {
+  const groupsToCheck = [
+    ...FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
+    ...getRndEntries(
+      RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
+      RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD.length,
+    ),
+  ];
+  console.log(groupsToCheck);
+
+  groupsToCheck.forEach((catId) => {
     const category = QUESTION_CATEGORIES[catId];
     const answersForCat = syncData.answers.filter(
       (answer) =>
@@ -45,9 +55,8 @@ export const dashboardEntriesFromQuestions = (
       });
     }
   });
-  // console.log(dashboardGroups, getRndEntries(dashboardGroups, MAX_GROUPS));
+  console.log(dashboardGroups);
 
-  // const answerEntries = getRndEntries(dashboardGroups, MAX_GROUPS);
   let sortedEntries: DashboardGroup[] = dashboardGroups;
 
   if (sortedEntries.length >= 5) {

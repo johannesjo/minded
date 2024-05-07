@@ -403,16 +403,19 @@ export const QUESTION_CATEGORIES: {
   },
 };
 
-export const QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
+export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodPlansToday,
   QuestionCategoryId.RefocusHelperToday,
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.TodayILearned,
-  QuestionCategoryId.Motivation,
-  QuestionCategoryId.XEnergyLevelToday,
-  QuestionCategoryId.GoodPlans,
-  QuestionCategoryId.HelpfulTools,
   QuestionCategoryId.GoalForTheWeek,
+  QuestionCategoryId.XEnergyLevelToday,
+];
+
+export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
+  QuestionCategoryId.GoodPlans,
+  QuestionCategoryId.Motivation,
+  QuestionCategoryId.HelpfulTools,
   QuestionCategoryId.PersonalResources,
   QuestionCategoryId.Gratitude,
   QuestionCategoryId.UnderstandingProcrastination,
