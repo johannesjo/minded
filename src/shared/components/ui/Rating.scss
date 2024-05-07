@@ -23,7 +23,7 @@
     font-size: 50px;
     margin: 12px;
     color: var(--rating-inactive);
-    transition: all .3s;
+    transition: all ease-in .1s;
 
     &:hover {
       transform: scale(2.2);
@@ -33,5 +33,17 @@
     &.isFull {
       color: var(--c-fg-full-emphasis);
     }
+
+    img {
+      opacity: .3;
+      width: 50px;
+      height: 50px;
+    }
+
+    &.isFull img,
+    &:hover img {
+      opacity: 1;
+    }
+
   }
 }

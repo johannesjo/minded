@@ -1,4 +1,5 @@
 import { createSignal, JSX } from "solid-js";
+import lightningSvg from "@assets/img/lightning.svg";
 
 export const Rating: (props: {
   value?: number;
@@ -7,7 +8,7 @@ export const Rating: (props: {
 }) => JSX.Element = (props) => {
   const [rating, setRating] = createSignal(props.value);
   const [hoveredRating, setHoveredRating] = createSignal(0);
-
+  rating;
   return (
     <div class={"minded-6622-rating " + (props.isShowOnly ? "showOnly" : "")}>
       {Array.from({ length: 5 }, (_, i) => i + 1).map((value) => (
@@ -23,7 +24,7 @@ export const Rating: (props: {
             setRating(value);
           }}
         >
-          ♥
+          <img src={lightningSvg} />
         </span>
       ))}
     </div>

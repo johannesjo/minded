@@ -17,6 +17,7 @@ export type InteractionMode =
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // | "EMOJI_CHECKIN";
   // return "MOOD_CHECKIN";
+  // return "RATING";
 
   const now = new Date();
   const nowHours = now.getHours();
