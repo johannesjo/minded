@@ -1,10 +1,12 @@
-import { getRndInt } from "@src/util/getRndInt";
 import {
   ACTION_ADVICES_MAX_HOUR,
   ACTION_ADVICES_MIN_HOUR,
 } from "@src/shared/data/actionAdvices";
 import { SyncData } from "@src/shared/data/syncData";
 import { isToday } from "@src/util/isToday";
+import { isXIn1 } from "@src/util/isXIn1";
+
+const LAST_MOOD_CHECKIN_MIN_GAP = 30 * 60 * 1000;
 
 export type InteractionMode =
   | "RATING"
@@ -19,20 +21,22 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   const now = new Date();
   const nowHours = now.getHours();
 
-  const rndInt = getRndInt(0, 100);
-  if (rndInt >= 95) {
-    return "RATING";
-  }
   if (
-    rndInt >= 85 ||
-    (!isToday(syncData.lastMoodCheckTS || 99) && rndInt >= 55)
+    (Date.now() - syncData.lastMoodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP &&
+      isXIn1(0.1)) ||
+    (!isToday(syncData.lastMoodCheckTS || 99) && isXIn1(0.4))
   ) {
     return "MOOD_CHECKIN";
   }
+
+  if (isXIn1(0.05)) {
+    return "RATING";
+  }
+
   if (
-    rndInt >= 80 &&
     nowHours < ACTION_ADVICES_MAX_HOUR &&
-    nowHours >= ACTION_ADVICES_MIN_HOUR
+    nowHours >= ACTION_ADVICES_MIN_HOUR &&
+    isXIn1(0.1)
   ) {
     return "ACTION_ADVICE";
   }
