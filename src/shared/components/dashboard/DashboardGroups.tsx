@@ -55,12 +55,18 @@ export const DashboardGroups: (props: {
             switch (dg.type) {
               case DashboardGroupType.Stats:
                 return (
-                  <div
-                    class={styles.stats}
-                    title={getAttemptsToday() + " visit attempts"}
-                  >
-                    <div>{getBlockedToday()}</div>
-                    <div>Minded Decisions Today</div>
+                  <div class={styles.stats}>
+                    <div
+                      title={
+                        getAttemptsToday() +
+                        " website visit attempts today in total"
+                      }
+                    >
+                      {getBlockedToday()}
+                    </div>
+                    <div title="'minded' decisions are counted every time when you leave a website by clicking the sun.">
+                      <em>minded</em> decisions today
+                    </div>
                   </div>
                 );
               case DashboardGroupType.MoodCheckin:
@@ -86,7 +92,7 @@ export const DashboardGroups: (props: {
                 return (
                   <div class={styles.energyLvl}>
                     <div class={styles.standardHeading}>
-                      Your Energy Level Today
+                      your energy level today
                     </div>
                     <Rating isShowOnly={true} value={dge.energyLvl} />
                   </div>
