@@ -7,9 +7,10 @@ import { isToday } from "@src/util/isToday";
 import { isXIn1 } from "@src/util/isXIn1";
 
 const LAST_MOOD_CHECKIN_MIN_GAP = 30 * 60 * 1000;
+const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 30 * 60 * 1000;
 
 export type InteractionMode =
-  | "RATING"
+  | "ENERGY_LVL"
   | "ACTION_ADVICE"
   | "EMOJI_CHECKIN"
   | "QUESTION"
@@ -17,22 +18,25 @@ export type InteractionMode =
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "MOOD_CHECKIN";
-  // return "RATING";
+  // return "ENERGY_LVL";
   // return "EMOJI_CHECKIN";
 
   const now = new Date();
   const nowHours = now.getHours();
 
   if (
+    (!isToday(syncData.moodCheckTS) && isXIn1(0.4)) ||
     (Date.now() - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP &&
-      isXIn1(0.1)) ||
-    (!isToday(syncData.moodCheckTS) && isXIn1(0.4))
+      isXIn1(0.1))
   ) {
     return "MOOD_CHECKIN";
   }
 
-  if (isXIn1(0.05)) {
-    return "RATING";
+  if (
+    Date.now() - syncData.moodCheckTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
+    isXIn1(0.05)
+  ) {
+    return "ENERGY_LVL";
   }
 
   if (
