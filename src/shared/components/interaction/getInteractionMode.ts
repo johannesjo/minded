@@ -11,13 +11,14 @@ const LAST_MOOD_CHECKIN_MIN_GAP = 30 * 60 * 1000;
 export type InteractionMode =
   | "RATING"
   | "ACTION_ADVICE"
+  | "EMOJI_CHECKIN"
   | "QUESTION"
   | "MOOD_CHECKIN";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
-  // | "EMOJI_CHECKIN";
   // return "MOOD_CHECKIN";
   // return "RATING";
+  // return "EMOJI_CHECKIN";
 
   const now = new Date();
   const nowHours = now.getHours();
@@ -40,6 +41,9 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
     isXIn1(0.1)
   ) {
     return "ACTION_ADVICE";
+  }
+  if (isXIn1(0.01)) {
+    return "EMOJI_CHECKIN";
   }
   return "QUESTION";
 };
