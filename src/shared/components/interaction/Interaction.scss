@@ -24,19 +24,20 @@
     0 0 60px 5px var(--c-pastel-yellow);
     animation: minded6622successSun ease;
     animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-    animation-duration: 1600ms;
+    animation-duration: 800ms;
     z-index: 30;
   }
 
   div:last-child {
-    opacity: .5;
+    animation: minded6622fadeIn ease 1s;
+    animation-fill-mode: forwards;
+    opacity: 1;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 31;
-    font-weight: 200;
+    font-weight: 500;
   }
 }
 
@@ -65,14 +66,40 @@
   }
 }
 
+@keyframes minded6622fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 
 @keyframes minded6622successSun {
   0% {
+    opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(20);
+    transform: translate(-50%, -50%) scale(16);
   }
 }
+
+@keyframes minded6622successSunStay {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(16);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(26);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(16);
+  }
+}
+
 

@@ -25,8 +25,9 @@ import {
 import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
-const SUCCESS_SUN_ANI_IN_DURATION = 1600;
-const SUCCESS_SUN_STAY_DURATION = 3200;
+// NOTE: val also needs to be set in css
+const SUCCESS_SUN_ANI_IN_DURATION = 800;
+const SUCCESS_SUN_STAY_DURATION = 3600;
 const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
 
 export const Interaction: (props: {
@@ -44,6 +45,7 @@ export const Interaction: (props: {
 
   let wrapperEl;
   let successSunEl;
+  let successSunSunEl;
   let frameNr;
   let syncData;
   let questionUpdateCount = 0;
@@ -54,6 +56,11 @@ export const Interaction: (props: {
     setTimeout(() => {
       stopAllVideos();
     }, 1000);
+
+    // setTimeout(() => {
+    //   onSuccess();
+    // }, 1000);
+
     setTimeout(() => {
       stopAllVideos();
     }, 5000);
@@ -145,9 +152,15 @@ export const Interaction: (props: {
     setWasAnswerGiven(true);
     setIsShowSuccessSun(true);
     // wait for sun
+    successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
     await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
+    successSunSunEl.style.animation = `${SUCCESS_SUN_STAY_DURATION}ms minded6622successSunStay ease-in-out`;
+    successSunSunEl.style.animationFillMode = `forwards`;
+
     await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
-    // bro.runtime.sendMessage({ closeTab: true });
+    successSunSunEl.style.animationDuration = `0s`;
+    successSunSunEl.style.animationFillMode = `forwards`;
+    await promiseTimeout(SUCCESS_SUN_ANI_FADE_OUT_DURATION);
 
     await fadeOut(wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
     littleSun();
@@ -237,7 +250,7 @@ export const Interaction: (props: {
                   bro.runtime.sendMessage({ closeTab: true });
                 }}
               >
-                <div></div>
+                <div ref={successSunSunEl}></div>
                 <div>click sun to close the website</div>
               </div>
             )}
