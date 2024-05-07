@@ -136,6 +136,8 @@ export const Interaction: (props: {
   };
 
   const onSuccess = async (answerOrData?: Answer) => {
+    cancelCountdown();
+
     setLittleSunTxt(
       typeof answerOrData?.val === "string" ? answerOrData.val : "",
     );
