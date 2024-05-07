@@ -137,6 +137,11 @@
   flex-direction: column;
 }
 
+.energyLvl {
+  div:first-child {
+    margin-bottom: 16px;
+  }
+}
 
 .stats {
   div:first-child {
