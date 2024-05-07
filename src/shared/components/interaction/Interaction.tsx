@@ -1,15 +1,10 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
-import { getRndInt } from "@src/util/getRndInt";
 import { RatingInteraction } from "@src/shared/components/interaction/RatingInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
-import {
-  ACTION_ADVICES,
-  ACTION_ADVICES_MAX_HOUR,
-  ACTION_ADVICES_MIN_HOUR,
-} from "@src/shared/data/actionAdvices";
+import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { bro } from "@src/util/browser";
 import { Answer } from "@src/shared/data/syncData";
@@ -23,35 +18,11 @@ import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun
 import { getSyncData } from "@src/shared/data/syncDataInterface";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
+import {
+  getInteractionMode,
+  InteractionMode,
+} from "@src/shared/components/interaction/getInteractionMode";
 
-export type InteractionMode =
-  | "RATING"
-  | "ACTION_ADVICE"
-  | "QUESTION"
-  | "MOOD_CHECKIN";
-// | "EMOJI_CHECKIN";
-const INITIAL_MODE: InteractionMode = (() => {
-  // return "MOOD_CHECKIN";
-
-  const now = new Date();
-  const nowHours = now.getHours();
-
-  const rndInt = getRndInt(0, 100);
-  if (rndInt >= 95) {
-    return "RATING";
-  }
-  if (rndInt >= 85) {
-    return "MOOD_CHECKIN";
-  }
-  if (
-    rndInt >= 80 &&
-    nowHours < ACTION_ADVICES_MAX_HOUR &&
-    nowHours >= ACTION_ADVICES_MIN_HOUR
-  ) {
-    return "ACTION_ADVICE";
-  }
-  return "QUESTION";
-})();
 const ADVICE = getRndEntry(ACTION_ADVICES);
 const SUN_ANI_DURATION = 1600;
 
@@ -60,7 +31,7 @@ export const Interaction: (props: {
   onHideAll: () => void;
 }) => JSX.Element = (props) => {
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
-  const [getMode, setMode] = createSignal<InteractionMode>(INITIAL_MODE);
+  const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
   const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
@@ -79,13 +50,19 @@ export const Interaction: (props: {
     setTimeout(() => {
       stopAllVideos();
     }, 1000);
-    // NOTE: timeout makes this much more reliable
     setTimeout(() => {
-      initFadeOut();
-    }, 100);
+      stopAllVideos();
+    }, 5000);
 
     getSyncData().then((syncDataI) => {
       syncData = syncDataI;
+      setMode(getInteractionMode(syncData));
+
+      // NOTE: timeout makes this much more reliable
+      setTimeout(() => {
+        initFadeOut();
+      }, 100);
+
       const rndQuestion = getQuestionSmart(syncDataI.answers);
       setRndQuestion(rndQuestion);
       questionIdBefore = rndQuestion.id;
@@ -163,9 +140,10 @@ export const Interaction: (props: {
     setIsShowSuccessSun(true);
     // wait for sun
     await promiseTimeout(SUN_ANI_DURATION);
-    await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
+    bro.runtime.sendMessage({ closeTab: true });
 
-    littleSun();
+    // await fadeOut(wrapperEl, SUN_ANI_DURATION).promise;
+    // littleSun();
   };
 
   const cancelCountdown = () => {
