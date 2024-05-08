@@ -29,3 +29,8 @@
   line-height: 1.2;
   font-weight: 300;
 }
+
+@mixin fatTxt(){
+  font-size: var(--fz-l);
+  font-weight: 500;
+}
