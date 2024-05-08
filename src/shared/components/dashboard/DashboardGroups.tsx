@@ -56,6 +56,9 @@ export const DashboardGroups: (props: {
               case DashboardGroupType.Stats:
                 return (
                   <div class={styles.stats}>
+                    <div title="'minded' decisions are counted every time when you leave a website by clicking the sun.">
+                      minded decisions today
+                    </div>
                     <div
                       title={
                         getAttemptsToday() +
@@ -64,24 +67,22 @@ export const DashboardGroups: (props: {
                     >
                       {getBlockedToday()}
                     </div>
-                    <div title="'minded' decisions are counted every time when you leave a website by clicking the sun.">
-                      <em>minded</em> decisions today
-                    </div>
                   </div>
                 );
               case DashboardGroupType.MoodCheckin:
                 const dgm = dg as DashboardGroupMood;
                 return (
                   <div class={styles.moodCheckinWidget}>
-                    <div>
+                    <div class={styles.moodCheckinWidgetTxt}>
                       you feel <span>{dgm.mood}</span> today!
                     </div>
-                    {dgm.additionalTxt && <div>{dgm.additionalTxt}</div>}
-                    {!dgm.additionalTxt &&
-                      (dgm.mood === MoodCheckinVal.Awful ||
-                        dgm.mood === MoodCheckinVal.Bad) && (
-                        <div>Be very kind to yourself!</div>
-                      )}
+                    <div>
+                      {dgm.additionalTxt}
+                      {!dgm.additionalTxt &&
+                        (dgm.mood === MoodCheckinVal.Awful ||
+                          dgm.mood === MoodCheckinVal.Bad) &&
+                        "Be very kind to yourself!"}
+                    </div>
                   </div>
                 );
               case DashboardGroupType.Quote:

@@ -135,6 +135,10 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+
+  div:first-child {
+    @include h4();
+  }
 }
 
 .energyLvl {
@@ -144,28 +148,20 @@
 }
 
 .stats {
-  div:first-child {
-    font-weight: bold;
-    font-size: 28px;
-    margin-bottom: 10px;
-  }
-
   div:last-child {
-    //@include h4();
-    font-size: 22px;
-    font-weight: 200;
+    @include fatTxt();
+    margin-bottom: 10px;
   }
 }
 
 
 .moodCheckinWidget {
   div:first-child {
+    @include h4();
     margin-bottom: 10px;
-    font-weight: 200;
 
     span {
-      font-size: var(--fz-l);
-      font-weight: bold;
+      @include fatTxt();
       margin-left: 4px;
       margin-right: 4px;
       text-transform: lowercase;
