@@ -35,8 +35,9 @@ export const MOOD_CHECKIN_OPTIONS = [
 ] as const;
 
 export const MOOD_CHECKIN_FEEL_BETTER_OPTIONS = [
-  "Take a short walk",
-  "Take a short break",
-  "Do a short meditation",
-  "Call a friend",
+  "Take a short walk!",
+  "Take a short break!",
+  "Do a short meditation!",
+  "Just be kind to yourself!",
+  "Call a friend!",
 ] as const;
