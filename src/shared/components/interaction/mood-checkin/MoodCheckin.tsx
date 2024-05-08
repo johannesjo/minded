@@ -70,6 +70,7 @@ export const MoodCheckin: (props: {
           autocomplete="true"
           autofocus={true}
           maxlength="200"
+          onInput={(ev) => setAdditionalTxt((ev.target as any).value)}
           onKeyDown={(ev) => setAdditionalTxt((ev.target as any).value)}
         />
         <datalist id="auto-suggestions-for-mood-checkin">
