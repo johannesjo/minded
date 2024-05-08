@@ -1,5 +1,6 @@
 import { createSignal, JSX } from "solid-js";
 import {
+  MOOD_CHECKIN_FEEL_BETTER_OPTIONS,
   MOOD_CHECKIN_OPTIONS,
   MoodCheckinVal,
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
@@ -54,12 +55,28 @@ export const MoodCheckin: (props: {
             : "Anything you'd like to add?"}
         </div>
         <input
-          id="minded-6622-feel-better-suggestions"
+          id={
+            getSelectedMood() === MoodCheckinVal.Awful ||
+            getSelectedMood() === MoodCheckinVal.Bad
+              ? "minded-6622-feel-better-suggestions"
+              : "minded-6622-checkin-notes"
+          }
+          list={
+            getSelectedMood() === MoodCheckinVal.Awful ||
+            getSelectedMood() === MoodCheckinVal.Bad
+              ? "auto-suggestions-for-mood-checkin"
+              : ""
+          }
           autocomplete="true"
           autofocus={true}
           maxlength="200"
           onKeyDown={(ev) => setAdditionalTxt((ev.target as any).value)}
         />
+        <datalist id="auto-suggestions-for-mood-checkin">
+          {MOOD_CHECKIN_FEEL_BETTER_OPTIONS.map((opt) => (
+            <option value={opt} />
+          ))}
+        </datalist>
       </div>
 
       <div

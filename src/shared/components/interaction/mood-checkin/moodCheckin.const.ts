@@ -32,4 +32,11 @@ export const MOOD_CHECKIN_OPTIONS = [
     id: MoodCheckinVal.Awful,
     txt: "Awful",
   },
-];
+] as const;
+
+export const MOOD_CHECKIN_FEEL_BETTER_OPTIONS = [
+  "Take a short walk",
+  "Take a short break",
+  "Do a short meditation",
+  "Call a friend",
+] as const;
