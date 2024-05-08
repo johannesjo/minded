@@ -6,6 +6,7 @@ import { Answer } from "@src/shared/data/syncData";
 import { AnswerEntry } from "@src/shared/components/dashboard/questionCategoryView/AnswerEntry";
 import { nanoid } from "nanoid";
 import { QuestionCategoryId } from "@src/shared/data/questions";
+import { QID } from "@src/shared/data/questionId";
 
 export const AnswerListEditable: (props: {
   isShowAdd: boolean;
@@ -36,6 +37,7 @@ export const AnswerListEditable: (props: {
               answer={{
                 id: nanoid(),
                 ts: Date.now(),
+                qid: QID.ADDED_FROM_DASHBOARD,
                 val: "",
                 questionCategoryId: props.questionCategoryId,
               }}
