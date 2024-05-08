@@ -98,19 +98,20 @@ export const Interaction: (props: {
 
   const initFadeOut = () => {
     if (getMode() === "ACTION_ADVICE") {
-      const res = fadeOut(wrapperEl, 4000, 3000);
-      frameNr = res.frameNr;
-      res.promise.then(() => {
-        if (wrapperEl.style.opacity < 0.1) {
-          littleSun();
-        }
-      });
       setTimeout(() => {
         // prevent weird state when opening and directly switching to a new tab
         if (!document.hidden) {
-          setIsShowSuccessSun(true);
+          showSuccessSunAniFlow();
+        } else {
+          window.addEventListener(
+            "visibilitychange",
+            () => {
+              showSuccessSunAniFlow();
+            },
+            { once: true },
+          );
         }
-      }, 3000);
+      }, 5000);
     } else {
       const res = fadeOut(wrapperEl, 5000, 2000);
       frameNr = res.frameNr;
@@ -143,13 +144,17 @@ export const Interaction: (props: {
     }
   };
 
-  const onSuccess = async (answerOrData?: Answer) => {
+  const onSuccess = (answerOrData?: Answer) => {
     cancelCountdown();
-
     setLittleSunTxt(
       typeof answerOrData?.val === "string" ? answerOrData.val : "",
     );
     setWasAnswerGiven(true);
+    setIsShowSuccessSun(true);
+    showSuccessSunAniFlow();
+  };
+
+  const showSuccessSunAniFlow = async () => {
     setIsShowSuccessSun(true);
     // wait for sun
     successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
