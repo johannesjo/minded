@@ -18,7 +18,7 @@ export type InteractionMode =
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "ACTION_ADVICE";
-  // return "MOOD_CHECKIN";
+  return "MOOD_CHECKIN";
   // return "ENERGY_LVL";
   // return "EMOJI_CHECKIN";
 

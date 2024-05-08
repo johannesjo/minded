@@ -35,15 +35,13 @@
     }
   }
 
-  textarea {
-    display: block;
+  input {
     @include formInput();
     margin: auto;
     margin-top: 16px;
     min-width: 320px;
-    width: 400px;
-    padding: 12px 24px !important;
-    height: 90px !important;
+    width: 600px;
+    //padding: 12px 24px !important;
   }
 
   .minded-6622-textarea-block,
