@@ -31,9 +31,9 @@ export const AnswerList: (props: {
       {/*/>*/}
 
       {props.dashboardGroup.answers.map((answer) => {
-        const questionTxt = answer.qid
-          ? `Question: ${QUESTIONS.find((q) => q.id === answer.qid).t}?`
-          : "";
+        const question = QUESTIONS.find((q) => q.id === answer.qid);
+        const questionTxt =
+          answer.qid && question ? `Question: ${question.t}?` : "";
         const titleTxt =
           answer.val.toString().length > MAX_ANSWER_LENGTH
             ? answer.qid
