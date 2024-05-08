@@ -2,14 +2,18 @@
   color: var(--c-fg-full-emphasis) !important;
   background: var(--form-inputs-bg) !important;
   box-shadow: none !important;
-  padding: 0 24px !important;
   outline: none !important;
   border: none !important;
   border-radius: var(--border-radius) !important;
   display: block !important;
-  max-width: 100% !important;
   line-height: 20px !important;
   height: $height !important;
   min-height: $height !important;
   box-sizing: border-box !important;
+  font-size: var(--fz-m) !important;
+  //padding: 0 24px !important;
+  padding: 16px !important;
+  width: 540px;
+  max-width: 100%;
+  margin: auto;
 }

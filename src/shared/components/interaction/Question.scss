@@ -20,10 +20,8 @@
   input {
     @include formInput();
     flex: 1;
-    padding: 16px;
     margin: auto;
     display: block;
-    font-size: var(--fz-m);
     border-bottom-right-radius: 0 !important;
     border-top-right-radius: 0 !important;
   }

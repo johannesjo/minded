@@ -48,12 +48,18 @@ export const MoodCheckin: (props: {
         }
       >
         <div style="margin-bottom: 16px" class="minded-6622-txt-smaller">
-          Anything you'd like to add?
+          {getSelectedMood() === MoodCheckinVal.Awful ||
+          getSelectedMood() === MoodCheckinVal.Bad
+            ? "What might help to make you feel better?"
+            : "Anything you'd like to add?"}
         </div>
-        <textarea
+        <input
+          id="minded-6622-feel-better-suggestions"
+          autocomplete="true"
+          autofocus={true}
           maxlength="200"
           onKeyDown={(ev) => setAdditionalTxt((ev.target as any).value)}
-        ></textarea>
+        />
       </div>
 
       <div
