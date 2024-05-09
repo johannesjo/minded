@@ -3,6 +3,7 @@ package com.minded.minded.ui.compose
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -29,8 +30,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
-import com.minded.minded.ui.theme.Pink40
-import com.minded.minded.ui.theme.PurpleGrey40
+import androidx.compose.ui.unit.dp
+import com.minded.minded.ui.theme.TextInputBgAlpha
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,11 +78,13 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
         modifier = Modifier
             .focusRequester(focusRequester)
             .wrapContentHeight(align = Alignment.CenterVertically)
-//            .background(Color.White.copy(alpha = 0f)),
-            .background(Color.White.copy(alpha = 0.3f)),
+            .background(
+                Color.White.copy(alpha = TextInputBgAlpha),
+                shape = RoundedCornerShape(12.dp)
+            ), // Add shape here
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = PurpleGrey40,
-            unfocusedBorderColor = Pink40
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent
         )
     )
     LaunchedEffect(Unit) {
@@ -94,7 +97,7 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
 }
 
 @Composable
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0x0000000)
 fun TextFieldPreview() {
     TextInput(
         initialVal = "Enter your answer",

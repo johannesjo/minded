@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.ui.compose.cmp.RoundIconButton
 import com.minded.minded.ui.theme.StandardGradient
 
 
@@ -94,6 +94,7 @@ fun QuestionOverlayBig(
                             modifier = Modifier
                                 .padding(16.dp)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
                         TextInput(
                             initialVal = "${rndQuestion.prompt ?: ""} ",
                             onSubmit = {
@@ -101,11 +102,9 @@ fun QuestionOverlayBig(
                                 Log.v("Overlay.kt", "submitAnswer")
                             },
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        IconButton(
-                            onClick = onChangeQuestion,
-//                            modifier = Modifier.background(color = WhiteBG)
-                        ) {
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        RoundIconButton(onClick = onChangeQuestion) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Change Question"
