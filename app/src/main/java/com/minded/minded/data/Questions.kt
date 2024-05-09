@@ -47,6 +47,7 @@ data class QuestionCategory(
     val isEveningCategory: Boolean = false,
     val isLateNightCategory: Boolean = false,
     val isWorkDayCategory: Boolean = false,
+    val frequencyModifier: Int = 0
 )
 
 data class QuestionCategoryForDashboard(
@@ -59,6 +60,7 @@ data class QuestionCategoryForDashboard(
     val isEveningCategory: Boolean = false,
     val isLateNightCategory: Boolean = false,
     val isWorkDayCategory: Boolean = false,
+    val frequencyModifier: Int = 0
 )
 
 
@@ -109,6 +111,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.HelpfulTools },
         isMorningCategory = true,
         isWorkDayCategory = true,
+        frequencyModifier = 1,
     ),
     QuestionCategoryId.CalmingThoughts to QuestionCategory(
         "Calming Thoughts",
@@ -150,6 +153,7 @@ val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
     QuestionCategoryId.SelfDiscovery to QuestionCategory(
         dashboardTxt = "Self Discovery",
         QUESTIONS.filter { it.categoryId == QuestionCategoryId.SelfDiscovery },
+        frequencyModifier = 2,
     ),
     QuestionCategoryId.Insomnia to QuestionCategory(
         dashboardTxt = "Insomnia",
