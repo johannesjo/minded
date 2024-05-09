@@ -16,7 +16,7 @@ class SmallMsgWindow(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
     override val logTag = javaClass.simpleName
 
 
@@ -38,7 +38,7 @@ class SmallMsgWindow(
             if (isQuestion) {
                 OverlayControllerService.showOverlay(
                     context,
-                    OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
+                    OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
                     null,
                     sharedData.currentApp
                 )

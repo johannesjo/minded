@@ -25,7 +25,7 @@ class LittleSunWindow(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
     override val logTag = javaClass.simpleName
     private var initialTime = 0
     private val powerManager: PowerManager =
@@ -69,8 +69,8 @@ class LittleSunWindow(
                     hideWindow()
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY,
-                        OverlayControllerService.Companion.OverlayMode.QUESTION_OVERLAY__FRESH,
+                        OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
+                        OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
                 } else if ((elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
