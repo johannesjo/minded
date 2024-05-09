@@ -63,6 +63,16 @@ class QuestionWindow(
                         hideWindow()
                     }
                 },
+                onChangeQuestion = {
+                    Log.v(logTag, "onChangeQuestion")
+                    // TODO consider answers here as well
+                    val rndQuestionBefore = rndQuestion;
+                    rndQuestion = getQuestionSmart(emptyList())
+                    if (rndQuestionBefore == rndQuestion) {
+                        Log.v(logTag, "onChangeQuestion: same question")
+                        rndQuestion = getQuestionSmart(emptyList())
+                    }
+                },
                 onSkip = {
                     sharedOverlayViewModel.resetAnswerTxt()
                     OverlayControllerService.showOverlay(
