@@ -356,9 +356,13 @@ export const QUESTION_CATEGORIES: {
     frequencyModifier: 2,
     dashboardTxt: "Self Discovery",
     questions: [
-      { id: QID.SD1, t: "Are you using my time wisely" },
+      { id: QID.SD1, t: "Are you using your time wisely" },
       { id: QID.SD2, t: "What do you want in life" },
-      { id: QID.SD3, t: "You feel most energized when..." },
+      {
+        id: QID.SD3,
+        t: "You feel most energized when...",
+        prompt: "I feel energized when",
+      },
       {
         id: QID.SD4,
         t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
@@ -369,13 +373,17 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.SD6,
-        t: "Are you letting matters that are out of your control stress me out",
+        t: "Are you letting matters that are out of your control stress you out",
       },
       { id: QID.SD7, t: "Is where you are today making you happy" },
-      { id: QID.SD8, t: "My favorite way to spend the day is..." },
-      { id: QID.SD9, t: "The words I’d like to live by are..." },
-      { id: QID.SD10, t: "If my body could talk, it would say..." },
-      { id: QID.SD11, t: "What actions would make me proud of myself" },
+      { id: QID.SD8, t: "Your favorite way to spend the day is..." },
+      { id: QID.SD9, t: "The words you’d like to live by are..." },
+      { id: QID.SD10, t: "If your body could talk, it would say..." },
+      {
+        id: QID.SD11,
+        t: "What actions would make you proud of yourself",
+        prompt: "I would be proud if",
+      },
       { id: QID.SD12, t: "What is the biggest “What if” in your mind" },
       {
         id: QID.SD13,
