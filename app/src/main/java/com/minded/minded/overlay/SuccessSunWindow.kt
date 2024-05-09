@@ -15,7 +15,7 @@ open class SuccessSunWindow(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
 
     override val logTag = javaClass.simpleName
 

@@ -44,7 +44,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private lateinit var sharedOverlayViewModel: SharedOverlayViewModel
 
 
-    private lateinit var questionOverlayWindow: QuestionWindow
+    private lateinit var interactionOverlayWindow: InteractionWindow
     private lateinit var littleSunOverlayWindow: LittleSunWindow
     private lateinit var smallMsgOverlayWindow: SmallMsgWindow
     private lateinit var successSunOverlayWindow: SuccessSunWindow
@@ -56,8 +56,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         dashboardViewModel = DashboardViewModel(answerRepository)
         sharedOverlayViewModel = SharedOverlayViewModel(answerRepository);
 
-        questionOverlayWindow =
-            QuestionWindow(this, sharedOverlayViewModel, windowManager, dashboardViewModel)
+        interactionOverlayWindow =
+            InteractionWindow(this, sharedOverlayViewModel, windowManager, dashboardViewModel)
         littleSunOverlayWindow = LittleSunWindow(this, sharedOverlayViewModel, windowManager)
         smallMsgOverlayWindow = SmallMsgWindow(this, sharedOverlayViewModel, windowManager)
         successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)
@@ -103,11 +103,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun isAnyWindowShown(): Boolean {
-        return questionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
+        return interactionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
     }
 
     private fun isNoWindowShown(): Boolean {
-        return !questionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
+        return !interactionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
     }
 
     private fun showOverlay(
@@ -132,20 +132,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         when (overlayName) {
-            OverlayName.QUESTION_OVERLAY -> {
+            OverlayName.INTERACTION_OVERLAY -> {
                 if (appName == null) {
                     throw RuntimeException("appName is null")
                 }
-                if (overlayMode == OverlayMode.QUESTION_OVERLAY__FRESH) {
+                if (overlayMode == OverlayMode.INTERACTION_OVERLAY__FRESH) {
                     sharedOverlayViewModel.resetToFreshRndQuestion(appName)
                 }
                 // when whe show the question, we likely want to update the current app usage
                 sharedOverlayViewModel.updateLastAppUsage()
                 sharedOverlayViewModel.resetAnswerTxt()
                 sharedOverlayViewModel.resetSunTxt()
-                questionOverlayWindow.showWindow()
+                interactionOverlayWindow.showWindow()
                 // we hide others only after to avoid lifecycle complications
-                hideAllBut(OverlayName.QUESTION_OVERLAY)
+                hideAllBut(OverlayName.INTERACTION_OVERLAY)
             }
 
             OverlayName.SUCCESS_SUN_OVERLAY -> {
@@ -175,7 +175,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private fun hideOverlay(overlayName: OverlayName) {
         when (overlayName) {
-            OverlayName.QUESTION_OVERLAY -> questionOverlayWindow.hideWindow()
+            OverlayName.INTERACTION_OVERLAY -> interactionOverlayWindow.hideWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
             OverlayName.AFTER_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
@@ -225,7 +225,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
             }
 
-            if (littleSunOverlayWindow.isWindowShown() || questionOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
+            if (littleSunOverlayWindow.isWindowShown() || interactionOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
                 Log.v(
                     logTag,
                     "checkToShowOverlay() skip because one of the overlays is already shown"
@@ -242,10 +242,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 //                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
 //                }
             } else {
-                Log.v(logTag, "SHOW FRESH QUESTION OVERLAY for: $currentPackageName")
+                Log.v(logTag, "SHOW FRESH INTERACTION OVERLAY for: $currentPackageName")
                 showOverlay(
-                    OverlayName.QUESTION_OVERLAY,
-                    OverlayMode.QUESTION_OVERLAY__FRESH,
+                    OverlayName.INTERACTION_OVERLAY,
+                    OverlayMode.INTERACTION_OVERLAY__FRESH,
                     currentPackageName
                 )
             }
@@ -254,7 +254,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun hideAllBut(exclude: OverlayName? = null) {
-        if (exclude != OverlayName.QUESTION_OVERLAY) hideOverlay(OverlayName.QUESTION_OVERLAY);
+        if (exclude != OverlayName.INTERACTION_OVERLAY) hideOverlay(OverlayName.INTERACTION_OVERLAY);
         if (exclude != OverlayName.SUCCESS_SUN_OVERLAY) hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
         if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);
         if (exclude != OverlayName.AFTER_SUN_OVERLAY) hideOverlay(OverlayName.AFTER_SUN_OVERLAY);
@@ -291,7 +291,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         // we do this to let the sun animation finish, sun is supposed to close itself after
         if (isSkipShowSuccessSunAfter) {
             hideOverlay(OverlayName.AFTER_SUN_OVERLAY)
-            hideOverlay(OverlayName.QUESTION_OVERLAY)
+            hideOverlay(OverlayName.INTERACTION_OVERLAY)
             hideOverlay(OverlayName.SMALL_MSG_OVERLAY)
         } else {
             hideAllBut()
@@ -336,11 +336,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         public enum class OverlayName {
-            QUESTION_OVERLAY, AFTER_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
+            INTERACTION_OVERLAY, AFTER_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
         }
 
         public enum class OverlayMode {
-            QUESTION_OVERLAY__FRESH, SUCCESS_SUN_OVERLAY__FINAL
+            INTERACTION_OVERLAY__FRESH, SUCCESS_SUN_OVERLAY__FINAL
         }
 
         internal fun showOverlay(

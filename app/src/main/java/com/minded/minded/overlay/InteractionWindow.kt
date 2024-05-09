@@ -20,13 +20,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-class QuestionWindow(
+class InteractionWindow(
     private val ctrlSvc: OverlayControllerService,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
     private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.QUESTION_OVERLAY
+    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
 
     override val logTag = javaClass.simpleName
 
