@@ -57,13 +57,17 @@ export const Interaction: (props: {
       stopAllVideos();
     }, 1000);
 
-    // setTimeout(() => {
-    //   onSuccess();
-    // }, 1000);
+    setTimeout(() => {
+      stopAllVideos();
+    }, 2000);
 
     setTimeout(() => {
       stopAllVideos();
     }, 5000);
+
+    // setTimeout(() => {
+    //   onSuccess();
+    // }, 1000);
 
     getSyncData().then((syncDataI) => {
       syncData = syncDataI;
