@@ -36,11 +36,16 @@ import com.minded.minded.ui.theme.TextInputBgAlpha
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
-    var textState by remember { mutableStateOf(TextFieldValue(initialVal)) }
+fun TextInput(value: String = "", onSubmit: (String) -> Unit = {}) {
+    var textState by remember { mutableStateOf(TextFieldValue(value)) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(value) {
+        textState = TextFieldValue(value).copy(selection = TextRange(value.length))
+    }
+
     TextField(
         singleLine = true,
         value = textState,
@@ -100,7 +105,7 @@ fun TextInput(initialVal: String = "", onSubmit: (String) -> Unit = {}) {
 @Preview(showBackground = true, backgroundColor = 0x0000000)
 fun TextFieldPreview() {
     TextInput(
-        initialVal = "Enter your answer",
+        value = "Enter your answer",
         onSubmit = { Log.v("Overlay.kt", "submitAnswer") }
     )
 }

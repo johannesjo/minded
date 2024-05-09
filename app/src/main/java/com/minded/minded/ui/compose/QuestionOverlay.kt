@@ -96,7 +96,7 @@ fun QuestionOverlayBig(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextInput(
-                            initialVal = "${rndQuestion.prompt ?: ""} ",
+                            value = "${rndQuestion.prompt ?: ""} ",
                             onSubmit = {
                                 onSubmitAnswer(it)
                                 Log.v("Overlay.kt", "submitAnswer")
