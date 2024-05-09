@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.overlay.data.SharedOverlayViewModel
-import com.minded.minded.ui.compose.QuestionOverlayBig
+import com.minded.minded.ui.compose.InteractionOverlayBig
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.getQuestionSmart
 import kotlinx.coroutines.GlobalScope
@@ -46,7 +46,7 @@ class InteractionWindow(
         }
 
         rndQuestion?.let { question ->
-            QuestionOverlayBig(
+            InteractionOverlayBig(
                 rndQuestion = question,
                 onSubmitAnswer = {
                     Log.v(logTag, "onSubmitAnswer: $it")

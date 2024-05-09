@@ -1,4 +1,4 @@
-package com.minded.minded.ui.compose.cmp
+package com.minded.minded.ui.compose.uiCmp
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
