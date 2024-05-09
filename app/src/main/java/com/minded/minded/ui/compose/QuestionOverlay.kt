@@ -12,9 +12,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +44,7 @@ import com.minded.minded.ui.theme.StandardGradient
 @Composable
 fun QuestionOverlayBig(
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
+    onChangeQuestion: () -> Unit = { },
     onSkip: () -> Unit = { },
     rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false
@@ -94,6 +101,16 @@ fun QuestionOverlayBig(
                                 Log.v("Overlay.kt", "submitAnswer")
                             },
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        IconButton(
+                            onClick = onChangeQuestion,
+//                            modifier = Modifier.background(color = WhiteBG)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Change Question"
+                            )
+                        }
                     }
                 }
             }

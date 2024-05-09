@@ -14,6 +14,8 @@ val PastelGreen = Color(0xFFB7E4C7)
 val PastelRed = Color(0xFFE4B7B7)
 val PastelYellow = Color(0xFFE4E0B7)
 
+val WhiteBG = Color(0xFFFFFFFF)
+
 
 val StandardGradient = listOf(
     PastelYellow,
