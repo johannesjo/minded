@@ -147,7 +147,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : 
         Log.v(lt, "resetSunTxt() ${newSharedData}")
     }
 
-    suspend fun createWithTimestamp(
+    suspend fun createQuestionWithTimestamp(
         txtIn: String,
         questionCategoryId: QuestionCategoryId,
         questionId: String
@@ -157,5 +157,12 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : 
         }
 
         return answerRepository.createWithTimestamp(txtIn, questionCategoryId, questionId)
+    }
+
+    fun setMood(mood: String) {
+        val currentData = sharedData.value ?: SharedOverlayData()
+        val newSharedData = currentData.copy(answerTxt = null, questionForPrompt = null)
+        _sharedData.update { newSharedData }
+        Log.v(lt, "setMood() ${mood} NOT IMPLEMENTED")
     }
 }

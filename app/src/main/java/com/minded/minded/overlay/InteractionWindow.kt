@@ -23,13 +23,10 @@ class InteractionWindow(
 
     @Composable
     override fun Cmp() {
-//                    dashboardViewModel.addAnswer(it, question.categoryId, question.id)
         InteractionOverlayBig(
             mode = "MOOD",
             sharedOverlayViewModel = sharedOverlayViewModel,
             onSuccess = {
-                // Maybe refresh if needed
-//                dashboardViewModel.addAnswer(it, question.categoryId, question.id)
                 OverlayControllerService.showOverlay(
                     ctrlSvc,
                     OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
