@@ -23,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
+import com.minded.minded.overlay.data.InteractionMode
+import com.minded.minded.overlay.data.SharedOverlayData
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.interactions.MoodSelectorCmp
 import com.minded.minded.ui.compose.interactions.QuestionCmp
@@ -35,8 +37,6 @@ fun InteractionOverlayBig(
     onSuccess: (answerTxt: String) -> Unit = { },
     onSkip: () -> Unit = { },
     initialVisible: Boolean = false,
-    // TODO enum
-    mode: String = "QUESTION",
 ) {
     val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
     val initialFadeInDuration = 500
@@ -77,18 +77,22 @@ fun InteractionOverlayBig(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (mode == "QUESTION") {
-                            QuestionCmp(
-                                sharedData = sharedData,
-                                sharedOverlayViewModel = sharedOverlayViewModel,
-                                onSubmitAnswer = onSuccess,
-                            )
-                        } else {
-                            MoodSelectorCmp(
-                                sharedData = sharedData,
-                                sharedOverlayViewModel = sharedOverlayViewModel,
-                                onSubmitMood = onSuccess,
-                            )
+                        when (sharedData.interactionMode) {
+                            InteractionMode.Question -> {
+                                QuestionCmp(
+                                    sharedData = sharedData,
+                                    sharedOverlayViewModel = sharedOverlayViewModel,
+                                    onSubmitAnswer = onSuccess,
+                                )
+                            }
+
+                            InteractionMode.MoodSelector -> {
+                                MoodSelectorCmp(
+                                    sharedData = sharedData,
+                                    sharedOverlayViewModel = sharedOverlayViewModel,
+                                    onSubmitMood = onSuccess,
+                                )
+                            }
                         }
                     }
                 }
@@ -100,23 +104,28 @@ fun InteractionOverlayBig(
 
 @Composable
 @Preview(showBackground = true)
-fun InteractionOverlayBigPreviewMoodSelector2() {
+fun InteractionOverlayBigPreviewMoodSelector1() {
     InteractionOverlayBig(
-        initialVisible = true, sharedOverlayViewModel = SharedOverlayViewModel(
-            answerRepository = null
+        initialVisible = true,
+        sharedOverlayViewModel = SharedOverlayViewModel(
+            answerRepository = null,
+            initialData = SharedOverlayData(
+                interactionMode = InteractionMode.Question
+            )
         ),
-        mode = "MOOD_SELECTOR"
     )
 }
 
-
 @Composable
 @Preview(showBackground = true)
-fun InteractionOverlayBigPreview() {
+fun InteractionOverlayBigPreviewMoodSelector2() {
     InteractionOverlayBig(
         initialVisible = true, sharedOverlayViewModel = SharedOverlayViewModel(
-            answerRepository = null
-        )
+            answerRepository = null,
+            initialData = SharedOverlayData(
+                interactionMode = InteractionMode.MoodSelector
+            )
+        ),
     )
 }
 
