@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.data.answers.Answer
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayData
 import com.minded.minded.overlay.data.SharedOverlayViewModel
@@ -44,12 +46,27 @@ fun QuestionCmp(
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
 ) {
     val logTag = "QuestionCmp"
+    var answers by remember { mutableStateOf(listOf<Answer>()) }
     var rndQuestion by remember {
         mutableStateOf(
             sharedData.questionForPrompt ?: getQuestionSmart(emptyList())
         )
     }
+
+    Log.v(logTag, "rndQuestion: $rndQuestion")
+    Log.v(logTag, "rndQuestion: $sharedData")
+
     val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(key1 = answerRepository) {
+        if (sharedData.questionForPrompt == null) {
+            sharedOverlayViewModel.setRndQuestion()
+            coroutineScope.launch {
+                answers = answerRepository?.getAllAnswers() ?: emptyList()
+                rndQuestion = getQuestionSmart(answers)
+            }
+        }
+    }
+
 
     Log.v(logTag, "${sharedData.questionForPrompt?.t}")
 
