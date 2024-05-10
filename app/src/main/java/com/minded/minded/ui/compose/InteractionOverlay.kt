@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
-import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.interactions.QuestionCmp
 import com.minded.minded.ui.theme.StandardGradient
@@ -34,7 +33,6 @@ import com.minded.minded.ui.theme.StandardGradient
 fun InteractionOverlayBig(
     sharedOverlayViewModel: SharedOverlayViewModel,
     onSuccess: (answerTxt: String) -> Unit = { },
-    answerRepository: AnswerRepository? = null,
     onSkip: () -> Unit = { },
     initialVisible: Boolean = false,
     // TODO enum
@@ -82,7 +80,6 @@ fun InteractionOverlayBig(
                         if (mode == "QUESTION") {
                             QuestionCmp(
                                 sharedData = sharedData,
-                                answerRepository = answerRepository,
                                 sharedOverlayViewModel = sharedOverlayViewModel,
                                 onSubmitAnswer = onSuccess,
                             )
