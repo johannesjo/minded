@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.overlay.data.SharedOverlayData
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.ui.compose.TextInput
 
 
 @Composable
@@ -35,10 +37,11 @@ fun MoodSelectorCmp(
     sharedData: SharedOverlayData,
     sharedOverlayViewModel: SharedOverlayViewModel,
     onSubmitMood: (moodVal: String) -> Unit = { },
+    initialSelectedMood: String = ""
 ) {
     val logTag = "MoodSelectorCmp"
     val coroutineScope = rememberCoroutineScope()
-    var moodSelected by remember { mutableStateOf("") }
+    var moodSelected by remember { mutableStateOf(initialSelectedMood) }
 
     Log.v(logTag, "sharedData: $sharedData")
 
@@ -50,15 +53,13 @@ fun MoodSelectorCmp(
     }
 
     Column(
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "How do you feel?",
             fontSize = 22.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -75,25 +76,51 @@ fun MoodSelectorCmp(
             Spacer(modifier = Modifier.width(8.dp))
             MoodSelectButton("Awful", selectedMoodVal = moodSelected, onClick = { timeSelect(it) })
         }
+
+        if (moodSelected.isNotEmpty()) {
+            val isBadMood: Boolean = moodSelected == "Awful" || moodSelected == "Bad";
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = if (isBadMood) "What might help to make you feel better?" else "Anything you'd like to add?",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                TextInput(
+                    value = "${sharedData.questionForPrompt?.prompt ?: ""} ",
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Row {
+                Button(onClick = {
+
+                }) {
+                    Text(text = "Save")
+                }
+            }
+        }
     }
 }
 
 
 @Composable
 fun MoodSelectButton(
-    moodVal: String = "",
-    selectedMoodVal: String = "",
-    onClick: (String) -> Unit
+    moodVal: String = "", selectedMoodVal: String = "", onClick: (String) -> Unit
 ) {
     if (selectedMoodVal == moodVal) {
-        Button(
+        FilledTonalButton(
             onClick = { onClick(moodVal) },
             modifier = Modifier,
         ) {
             Text(text = "${moodVal}")
         }
     } else {
-        FilledTonalButton(
+        OutlinedButton(
             onClick = { onClick(moodVal) },
             modifier = Modifier,
         ) {
@@ -112,7 +139,7 @@ fun MoodSelectButtonPreview() {
 @Composable
 @Preview(showBackground = true, backgroundColor = 0xFFE4B7B7)
 fun MoodSelectButtonPreview2() {
-    MoodSelectButton("Great", selectedMoodVal = "X", onClick = { })
+    MoodSelectButton("Okay", selectedMoodVal = "X", onClick = { })
 }
 
 @Composable
@@ -122,6 +149,6 @@ fun MoodSelectorCmpPreview() {
     MoodSelectorCmp(
         sharedData = sharedData, sharedOverlayViewModel = SharedOverlayViewModel(
             answerRepository = null
-        )
+        ), initialSelectedMood = "Great"
     )
 }
