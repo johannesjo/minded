@@ -57,7 +57,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         sharedOverlayViewModel = SharedOverlayViewModel(answerRepository);
 
         interactionOverlayWindow =
-            InteractionWindow(this, sharedOverlayViewModel, windowManager, answerRepository)
+            InteractionWindow(this, sharedOverlayViewModel, windowManager)
         littleSunOverlayWindow = LittleSunWindow(this, sharedOverlayViewModel, windowManager)
         smallMsgOverlayWindow = SmallMsgWindow(this, sharedOverlayViewModel, windowManager)
         successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)

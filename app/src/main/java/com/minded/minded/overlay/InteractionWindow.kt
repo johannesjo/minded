@@ -3,7 +3,6 @@ package com.minded.minded.overlay
 import android.graphics.PixelFormat
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
-import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.InteractionOverlayBig
 import kotlinx.coroutines.GlobalScope
@@ -15,7 +14,6 @@ class InteractionWindow(
     private val ctrlSvc: OverlayControllerService,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
-    private val answerRepository: AnswerRepository,
 //    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
@@ -28,7 +26,6 @@ class InteractionWindow(
 //                    dashboardViewModel.addAnswer(it, question.categoryId, question.id)
         InteractionOverlayBig(
             sharedOverlayViewModel = sharedOverlayViewModel,
-            answerRepository = answerRepository,
             onSuccess = {
                 // Maybe refresh if needed
 //                dashboardViewModel.addAnswer(it, question.categoryId, question.id)

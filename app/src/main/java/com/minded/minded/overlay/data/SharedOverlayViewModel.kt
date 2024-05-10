@@ -3,6 +3,7 @@ package com.minded.minded.overlay.data
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.util.getQuestionSmart
@@ -144,5 +145,17 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : 
         val newSharedData = currentData.copy(sunTxt = null)
         _sharedData.update { newSharedData }
         Log.v(lt, "resetSunTxt() ${newSharedData}")
+    }
+
+    suspend fun createWithTimestamp(
+        txtIn: String,
+        questionCategoryId: QuestionCategoryId,
+        questionId: String
+    ) {
+        if (answerRepository == null) {
+            throw IllegalStateException("answerRepository is null")
+        }
+
+        return answerRepository.createWithTimestamp(txtIn, questionCategoryId, questionId)
     }
 }
