@@ -72,7 +72,7 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : 
         _sharedData.update { newSharedData }
     }
 
-    private fun setRndQuestion() {
+    fun setRndQuestion() {
         if (answerRepository == null) {
             throw IllegalStateException("answerRepository is null")
         }
