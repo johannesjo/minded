@@ -14,6 +14,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -22,16 +27,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.overlay.data.SharedOverlayData
+import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.TextInput
 import com.minded.minded.ui.compose.uiCmp.RoundIconButton
+import com.minded.minded.util.getQuestionSmart
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun QuestionCmp(
+    sharedData: SharedOverlayData,
+    sharedOverlayViewModel: SharedOverlayViewModel,
+    answerRepository: AnswerRepository? = null,
     onSubmitAnswer: (answerTxt: String) -> Unit = { },
-    onChangeQuestion: () -> Unit = { },
-    rndQuestion: QuestionForPrompt,
 ) {
+    val logTag = "QuestionCmp"
+    var rndQuestion by remember {
+        mutableStateOf(
+            sharedData.questionForPrompt ?: getQuestionSmart(emptyList())
+        )
+    }
+    val coroutineScope = rememberCoroutineScope()
+
+    Log.v(logTag, "${sharedData.questionForPrompt?.t}")
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -47,13 +68,33 @@ fun QuestionCmp(
         TextInput(
             value = "${rndQuestion.prompt ?: ""} ",
             onSubmit = {
+                Log.v(logTag, "onSubmitAnswer: $it")
+                if (answerRepository == null) {
+                    throw IllegalStateException("answerRepository is null")
+                }
+                coroutineScope.launch {
+                    answerRepository?.createWithTimestamp(
+                        it,
+                        rndQuestion.categoryId,
+                        rndQuestion.id
+                    )
+                }
+                sharedOverlayViewModel.updateSharedData(answerTxt = it)
                 onSubmitAnswer(it)
-                Log.v("Overlay.kt", "submitAnswer")
             },
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        RoundIconButton(onClick = onChangeQuestion) {
+        RoundIconButton(onClick = {
+            Log.v(logTag, "onChangeQuestion")
+            // TODO consider answers here as well
+            val rndQuestionBefore = rndQuestion;
+            rndQuestion = getQuestionSmart(emptyList())
+            if (rndQuestionBefore == rndQuestion) {
+                Log.v(logTag, "onChangeQuestion: same question")
+                rndQuestion = getQuestionSmart(emptyList())
+            }
+        }) {
             Icon(
                 imageVector = Icons.Default.Refresh,
                 contentDescription = "Change Question"
@@ -64,7 +105,7 @@ fun QuestionCmp(
 
 
 @Composable
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFFE4B7B7)
 fun QuestionCmpPreview() {
     val question = QuestionForPrompt(
         t = "What is the capital of France?",
@@ -72,5 +113,10 @@ fun QuestionCmpPreview() {
         id = "Q1",
         categoryId = QuestionCategoryId.CalmingThoughts
     )
-    QuestionCmp(rndQuestion = question)
+    val sharedData = SharedOverlayData(questionForPrompt = question)
+    QuestionCmp(
+        sharedData = sharedData, sharedOverlayViewModel = SharedOverlayViewModel(
+            answerRepository = null
+        )
+    )
 }
