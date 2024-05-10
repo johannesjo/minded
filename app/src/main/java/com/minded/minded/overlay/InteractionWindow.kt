@@ -24,7 +24,6 @@ class InteractionWindow(
     @Composable
     override fun Cmp() {
         InteractionOverlayBig(
-            mode = "MOOD",
             sharedOverlayViewModel = sharedOverlayViewModel,
             onSuccess = {
                 OverlayControllerService.showOverlay(

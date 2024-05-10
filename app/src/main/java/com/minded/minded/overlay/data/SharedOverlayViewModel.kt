@@ -18,6 +18,11 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 
 
+enum class InteractionMode {
+    Question, MoodSelector;
+}
+
+
 data class AppEntry(
     val lastUsed: Instant = Instant.now(),
     var sessionDurationInS: Int = -1
@@ -31,12 +36,16 @@ data class SharedOverlayData(
     var answerTxt: String? = null,
     var sunTxt: String? = null,
     var isShowLittleSunAfterSuccess: Boolean = true,
+    var interactionMode: InteractionMode = InteractionMode.Question,
     var appMap: AppMap = emptyMap()
 )
 
-class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : ViewModel() {
+class SharedOverlayViewModel(
+    private val answerRepository: AnswerRepository?,
+    initialData: SharedOverlayData = SharedOverlayData()
+) : ViewModel() {
     private val lt = javaClass.simpleName
-    private val _sharedData = MutableStateFlow(SharedOverlayData())
+    private val _sharedData = MutableStateFlow(initialData)
     val sharedData: StateFlow<SharedOverlayData> = _sharedData.asStateFlow()
 
 
@@ -93,13 +102,14 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : 
         }
     }
 
-    fun resetToFreshRndQuestion(currentApp: String) {
+    fun resetToFreshRndQuestionAndMode(currentApp: String) {
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
             currentApp = currentApp,
             isShowLittleSunAfterSuccess = true,
             answerTxt = null,
             questionForPrompt = getQuestionSmart(emptyList()),
+            interactionMode = if (Math.random() > 0.75) InteractionMode.Question else InteractionMode.MoodSelector,
             sunTxt = null,
         )
         _sharedData.update { newSharedData }
