@@ -26,11 +26,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val GRACE_PERIOD_IN_S = 30
     private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
 
-
     private var wasNoOverlaysBefore = false
-
-    private var backToHomeScreenCount = 0
-    private val SHOW_APP_EVERY_X = 3
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =

@@ -65,6 +65,10 @@ class LittleSunWindow(
                     logTag,
                     "elapsedSeconds: $elapsedSeconds + $initialTime) % $REQUESTION_CYCLE_DURATION_IN_S == 0 ${(elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0}"
                 )
+                Log.v(
+                    logTag,
+                    "${sharedOverlayViewModel.sharedData.value}"
+                )
                 if ((elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
                     hideWindow()
                     OverlayControllerService.showOverlay(
@@ -73,7 +77,7 @@ class LittleSunWindow(
                         OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
-                } else if ((elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+                } else if (sharedOverlayViewModel.sharedData.value.questionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
@@ -87,10 +91,13 @@ class LittleSunWindow(
 
     override fun showWindow() {
         super.showWindow()
-        OverlayControllerService.showOverlay(
-            ctrlSvc,
-            OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-        )
+        // show small msg overlay initially if there is a question or answer
+        if (sharedOverlayViewModel.sharedData.value.questionForPrompt != null || sharedOverlayViewModel.sharedData.value.answerTxt != null) {
+            OverlayControllerService.showOverlay(
+                ctrlSvc,
+                OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
+            )
+        }
     }
 
     override fun hideWindow() {

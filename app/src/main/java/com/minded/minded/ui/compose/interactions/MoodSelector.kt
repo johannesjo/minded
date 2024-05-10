@@ -91,14 +91,15 @@ fun MoodSelectorCmp(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 TextInput(
-                    value = "${sharedData.questionForPrompt?.prompt ?: ""} ",
+                    value = "",
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
 
             Row {
                 Button(onClick = {
-
+                    sharedOverlayViewModel.setMood(moodSelected)
+                    onSubmitMood(moodSelected)
                 }) {
                     Text(text = "Save")
                 }

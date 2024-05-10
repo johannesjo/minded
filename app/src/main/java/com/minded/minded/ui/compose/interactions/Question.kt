@@ -71,7 +71,7 @@ fun QuestionCmp(
                 }
 
                 coroutineScope.launch {
-                    sharedOverlayViewModel.createWithTimestamp(
+                    sharedOverlayViewModel.createQuestionWithTimestamp(
                         it,
                         sharedData.questionForPrompt!!.categoryId,
                         sharedData.questionForPrompt!!.id
