@@ -1,20 +1,11 @@
 package com.minded.minded.overlay
 
 import android.graphics.PixelFormat
-import android.util.Log
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.InteractionOverlayBig
-import com.minded.minded.ui.model.DashboardViewModel
-import com.minded.minded.util.getQuestionSmart
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,7 +15,8 @@ class InteractionWindow(
     private val ctrlSvc: OverlayControllerService,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
-    private val dashboardViewModel: DashboardViewModel,
+    private val answerRepository: AnswerRepository,
+//    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
 
@@ -33,56 +25,32 @@ class InteractionWindow(
 
     @Composable
     override fun Cmp() {
-        val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
-        var rndQuestion by remember { mutableStateOf<QuestionForPrompt?>(null) }
-
-        LaunchedEffect(Unit) {
-            Log.v(logTag, "Cmp() ${sharedData.questionForPrompt?.t}")
-            if (sharedData.questionForPrompt != null) {
-                rndQuestion = sharedData.questionForPrompt
-            } else {
-                rndQuestion = getQuestionSmart(emptyList())
-            }
-        }
-
-        rndQuestion?.let { question ->
-            InteractionOverlayBig(
-                rndQuestion = question,
-                onSubmitAnswer = {
-                    Log.v(logTag, "onSubmitAnswer: $it")
-                    dashboardViewModel.addAnswer(it, question.categoryId, question.id)
-                    sharedOverlayViewModel.updateSharedData(answerTxt = it)
-
-                    OverlayControllerService.showOverlay(
-                        ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
-                    )
-//                    hideWindow()
-                    GlobalScope.launch {
-                        delay(1000)  // delay for 1000 milliseconds (1 second)
-                        hideWindow()
-                    }
-                },
-                onChangeQuestion = {
-                    Log.v(logTag, "onChangeQuestion")
-                    // TODO consider answers here as well
-                    val rndQuestionBefore = rndQuestion;
-                    rndQuestion = getQuestionSmart(emptyList())
-                    if (rndQuestionBefore == rndQuestion) {
-                        Log.v(logTag, "onChangeQuestion: same question")
-                        rndQuestion = getQuestionSmart(emptyList())
-                    }
-                },
-                onSkip = {
-                    sharedOverlayViewModel.resetAnswerTxt()
-                    OverlayControllerService.showOverlay(
-                        ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-                    )
+//                    dashboardViewModel.addAnswer(it, question.categoryId, question.id)
+        InteractionOverlayBig(
+            sharedOverlayViewModel = sharedOverlayViewModel,
+            answerRepository = answerRepository,
+            onSuccess = {
+                // Maybe refresh if needed
+//                dashboardViewModel.addAnswer(it, question.categoryId, question.id)
+                OverlayControllerService.showOverlay(
+                    ctrlSvc,
+                    OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
+                )
+                hideWindow()
+                GlobalScope.launch {
+                    delay(1000)  // delay for 1000 milliseconds (1 second)
                     hideWindow()
                 }
-            )
-        }
+            },
+            onSkip = {
+                sharedOverlayViewModel.resetAnswerTxt()
+                OverlayControllerService.showOverlay(
+                    ctrlSvc,
+                    OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+                )
+                hideWindow()
+            }
+        )
     }
 
 

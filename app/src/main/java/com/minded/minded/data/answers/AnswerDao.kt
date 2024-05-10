@@ -1,5 +1,6 @@
 package com.minded.minded.data.answers
 
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -29,6 +30,7 @@ interface AnswerDao {
         questionCategoryId: QuestionCategoryId,
         questionId: String
     ) {
+        Log.v("aa", txtIn)
         val answer = Answer(
             uid = 0, // Room will auto-generate this
             questionCategoryId = questionCategoryId,

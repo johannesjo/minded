@@ -33,7 +33,7 @@ data class SharedOverlayData(
     var appMap: AppMap = emptyMap()
 )
 
-class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : ViewModel() {
+class SharedOverlayViewModel(private val answerRepository: AnswerRepository?) : ViewModel() {
     private val lt = javaClass.simpleName
     private val _sharedData = MutableStateFlow(SharedOverlayData())
     val sharedData: StateFlow<SharedOverlayData> = _sharedData.asStateFlow()
@@ -73,6 +73,10 @@ class SharedOverlayViewModel(private val answerRepository: AnswerRepository) : V
     }
 
     private fun setRndQuestion() {
+        if (answerRepository == null) {
+            throw IllegalStateException("answerRepository is null")
+        }
+
         viewModelScope.launch {
             val answers = answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO).first()
             Log.v(lt, "answers: $answers ${answers.size}")

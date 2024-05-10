@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,22 +24,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
-import com.minded.minded.data.QuestionCategoryId
-import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.interactions.QuestionCmp
 import com.minded.minded.ui.theme.StandardGradient
 
 
 @Composable
 fun InteractionOverlayBig(
-    onSubmitAnswer: (answerTxt: String) -> Unit = { },
-    onChangeQuestion: () -> Unit = { },
+    sharedOverlayViewModel: SharedOverlayViewModel,
+    onSuccess: (answerTxt: String) -> Unit = { },
+    answerRepository: AnswerRepository? = null,
     onSkip: () -> Unit = { },
-    rndQuestion: QuestionForPrompt,
     initialVisible: Boolean = false,
     // TODO enum
     mode: String = "QUESTION",
 ) {
+    val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
     val initialFadeInDuration = 500
     val fadeOutOverlayDuration = 500
     var isOverlayVisible by remember { mutableStateOf(initialVisible) }
@@ -79,9 +81,10 @@ fun InteractionOverlayBig(
                     ) {
                         if (mode == "QUESTION") {
                             QuestionCmp(
-                                rndQuestion = rndQuestion,
-                                onSubmitAnswer = onSubmitAnswer,
-                                onChangeQuestion = onChangeQuestion
+                                sharedData = sharedData,
+                                answerRepository = answerRepository,
+                                sharedOverlayViewModel = sharedOverlayViewModel,
+                                onSubmitAnswer = onSuccess,
                             )
                         } else {
                             Text(text = "MOOD SELECTOR")
@@ -97,11 +100,9 @@ fun InteractionOverlayBig(
 @Composable
 @Preview(showBackground = true)
 fun InteractionOverlayBigPreview() {
-    val question = QuestionForPrompt(
-        t = "What is the capital of France?",
-        prompt = "Enter your answer",
-        id = "Q1",
-        categoryId = QuestionCategoryId.CalmingThoughts
+    InteractionOverlayBig(
+        initialVisible = true, sharedOverlayViewModel = SharedOverlayViewModel(
+            answerRepository = null
+        )
     )
-    InteractionOverlayBig(rndQuestion = question, initialVisible = true)
 }
