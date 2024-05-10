@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.minded.minded.ui.theme.StandardGradient
 import kotlinx.coroutines.delay
@@ -35,9 +36,9 @@ import kotlin.math.min
 @Composable
 fun SuccessSun(
     text: String = "tap sun to close app",
-    inDuration: Int = 1000,
+    inDuration: Int = 4000,
     successDuration: Int = 1000,
-    fadeOutDuration: Int = 500,
+    fadeOutDuration: Int = 1000,
     onSunTap: () -> Unit = {},
     onAfterTapSun: () -> Unit = {},
     onAfterShow: () -> Unit = {},
@@ -128,4 +129,9 @@ fun SuccessSun(
     }
 }
 
+@Composable
+@Preview(showBackground = true, backgroundColor = 0xFFE4B7B7)
+fun SuccessSunPreview() {
+    SuccessSun()
+}
 
