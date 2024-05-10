@@ -25,6 +25,7 @@ class InteractionWindow(
     override fun Cmp() {
 //                    dashboardViewModel.addAnswer(it, question.categoryId, question.id)
         InteractionOverlayBig(
+            mode = "MOOD",
             sharedOverlayViewModel = sharedOverlayViewModel,
             onSuccess = {
                 // Maybe refresh if needed
