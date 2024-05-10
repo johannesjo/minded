@@ -83,19 +83,22 @@ class SharedOverlayViewModel(
     }
 
     fun setRndQuestion() {
+        Log.v(lt, "setRndQuestion()")
         if (answerRepository == null) {
             throw IllegalStateException("answerRepository is null")
         }
 
         viewModelScope.launch {
             val answers = answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO).first()
-            Log.v(lt, "answers: $answers ${answers.size}")
+            Log.v(lt, "setRndQuestion() answers: $answers ${answers.size}")
             val q = getQuestionSmart(answers)
-            Log.v(lt, "question: $q ${q.t}")
+            Log.v(lt, "setRndQuestion() question: $q ${q.t}")
 
             val currentData = sharedData.value ?: SharedOverlayData()
             val newSharedData = currentData.copy(
-                questionForPrompt = q, answerTxt = null
+                questionForPrompt = q,
+                answerTxt = null,
+                interactionMode = InteractionMode.Question
             )
             _sharedData.update { newSharedData }
             Log.v(lt, "setRndQuestion() ${newSharedData}")
@@ -103,18 +106,22 @@ class SharedOverlayViewModel(
     }
 
     fun resetToFreshRndQuestionAndMode(currentApp: String) {
+        val interactionMode =
+            if (Math.random() > 0.33) InteractionMode.Question else InteractionMode.MoodSelector
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
             currentApp = currentApp,
             isShowLittleSunAfterSuccess = true,
             answerTxt = null,
-            questionForPrompt = getQuestionSmart(emptyList()),
-            interactionMode = if (Math.random() > 0.75) InteractionMode.Question else InteractionMode.MoodSelector,
+            questionForPrompt = null,
+            interactionMode = interactionMode,
             sunTxt = null,
         )
         _sharedData.update { newSharedData }
         Log.v(lt, "resetToFreshRndQuestion() ${newSharedData}")
-        setRndQuestion()
+        if (interactionMode == InteractionMode.Question) {
+            setRndQuestion()
+        }
     }
 
     fun updateLastAppUsage() {
