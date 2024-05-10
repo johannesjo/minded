@@ -66,19 +66,20 @@ fun QuestionCmp(
             value = "${sharedData.questionForPrompt?.prompt ?: ""} ",
             onSubmit = {
                 Log.v(logTag, "onSubmitAnswer: $it")
-                if (sharedData.questionForPrompt == null) {
-                    throw IllegalStateException("sharedData.questionForPrompt is null")
+                if (it.isNotEmpty()) {
+                    if (sharedData.questionForPrompt == null) {
+                        throw IllegalStateException("sharedData.questionForPrompt is null")
+                    }
+                    coroutineScope.launch {
+                        sharedOverlayViewModel.createQuestionWithTimestamp(
+                            it,
+                            sharedData.questionForPrompt!!.categoryId,
+                            sharedData.questionForPrompt!!.id
+                        )
+                    }
+                    sharedOverlayViewModel.updateSharedData(answerTxt = it)
+                    onSubmitAnswer(it)
                 }
-
-                coroutineScope.launch {
-                    sharedOverlayViewModel.createQuestionWithTimestamp(
-                        it,
-                        sharedData.questionForPrompt!!.categoryId,
-                        sharedData.questionForPrompt!!.id
-                    )
-                }
-                sharedOverlayViewModel.updateSharedData(answerTxt = it)
-                onSubmitAnswer(it)
             },
         )
         Spacer(modifier = Modifier.height(32.dp))
