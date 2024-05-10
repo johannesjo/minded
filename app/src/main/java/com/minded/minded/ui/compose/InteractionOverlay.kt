@@ -77,20 +77,21 @@ fun InteractionOverlayBig(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+//                        Text(text = sharedData.interactionMode.toString())
                         when (sharedData.interactionMode) {
-                            InteractionMode.Question -> {
-                                QuestionCmp(
-                                    sharedData = sharedData,
-                                    sharedOverlayViewModel = sharedOverlayViewModel,
-                                    onSubmitAnswer = onSuccess,
-                                )
-                            }
-
                             InteractionMode.MoodSelector -> {
                                 MoodSelectorCmp(
                                     sharedData = sharedData,
                                     sharedOverlayViewModel = sharedOverlayViewModel,
                                     onSubmitMood = onSuccess,
+                                )
+                            }
+
+                            InteractionMode.Question -> {
+                                QuestionCmp(
+                                    sharedData = sharedData,
+                                    sharedOverlayViewModel = sharedOverlayViewModel,
+                                    onSubmitAnswer = onSuccess,
                                 )
                             }
                         }
