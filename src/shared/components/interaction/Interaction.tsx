@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
-import { EnergyLvlInteraction } from "@src/shared/components/interaction/EnergyLvlInteraction";
+import { EnergyLvlInteraction } from "@src/shared/components/interaction/energy-lvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
