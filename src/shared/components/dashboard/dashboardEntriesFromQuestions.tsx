@@ -90,6 +90,7 @@ export const dashboardEntriesFromQuestions = (
     // NOTE: start val needs to be bigger than the fixed added entries
     const rndIndex = getRndInt(fixedEntries, sortedEntries.length - 1);
     const rndEntry = { ...sortedEntries[rndIndex] };
+    sortedEntries.splice(rndIndex, 1);
     sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
   } else {
     sortedEntries.splice(CENTER_INDEX, 0, {
