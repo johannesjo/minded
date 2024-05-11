@@ -1,4 +1,5 @@
 import { createSignal, JSX } from "solid-js";
+// @ts-ignore
 import lightningSvg from "@assets/img/lightning.svg";
 
 export const Rating: (props: {

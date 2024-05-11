@@ -19,7 +19,7 @@ export const EnergyLvlInteraction: (props: {
 
   return (
     <div
-      id="minded-6622-rating-interaction"
+      id="minded-6622-energy-lvl-interaction"
       onmouseenter={props.onCancelCountdown}
     >
       <div>How would you rate your energy level today?</div>

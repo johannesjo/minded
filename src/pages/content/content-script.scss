@@ -1,10 +1,10 @@
-@import "@src/styles/shared.scss";
-@import "@src/shared/components/interaction/Question.scss";
-@import "@src/shared/components/interaction/Interaction.scss";
+@import "@src/styles/shared";
+@import "@src/shared/components/interaction/Question";
+@import "@src/shared/components/interaction/Interaction";
 @import "@src/shared/components/interaction/LittleSun";
-@import "@src/shared/components/interaction/RatingInteraction.scss";
+@import "@src/shared/components/interaction/energy-lvl/EnergyLvlInteraction";
 @import "@src/shared/components/interaction/mood-checkin/MoodCheckin";
-@import "@src/shared/components/ui/Rating.scss";
+@import "@src/shared/components/ui/Rating";
 
 
 #minded-6622 {

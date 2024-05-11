@@ -198,3 +198,24 @@ export const countBlockedAttempt = async (): Promise<void> => {
     );
   }
 };
+
+export const rateCurrentBrowsingBehavior = async (
+  val: number,
+  date = new Date(),
+): Promise<void> => {
+  const ds = getIsoDate(date);
+  if (bro.runtime?.id) {
+    const syncData = await getSyncData();
+    return bro.storage.sync.set({
+      ...syncData,
+      browsingBehaviorRating: {
+        ...syncData.browsingBehaviorRating,
+        [ds]: val,
+      },
+    });
+  } else {
+    throw new Error(
+      "Extension was reloaded, please reload tab for it to work here again",
+    );
+  }
+};

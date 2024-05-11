@@ -19,6 +19,7 @@ export enum QuestionCategoryId {
   SelfDiscovery = "SelfDiscovery",
   // NOTE: we filter out all questions from categories starting with X
   XEnergyLevelToday = "XEnergyLevelToday",
+  XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
   // NO save questions
   XXPurposeOfSession = "XXPurposeOfSession",
   // IDEAS
@@ -82,7 +83,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.BBH3,
-        t: "What might help you changing your browsing behavior",
+        t: "What might help you change your negative browsing behavior",
       },
       {
         id: QID.BBH4,
@@ -435,6 +436,10 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.XEnergyLevelToday]: {
     dashboardTxt: "XXX",
     isTodayOnlyCategory: true,
+  },
+  [QuestionCategoryId.XBrowsingBehaviorHappiness]: {
+    dashboardTxt: "XXX",
+    isThisWeekOnlyCategory: true,
   },
 };
 

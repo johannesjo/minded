@@ -32,6 +32,9 @@ export interface SyncData {
   attempts: {
     [key: string]: number;
   };
+  browsingBehaviorRating: {
+    [key: string]: number;
+  };
 }
 
 export interface StaticCfg {

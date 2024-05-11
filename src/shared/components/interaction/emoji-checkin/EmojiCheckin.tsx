@@ -24,7 +24,7 @@ export const EmojiCheckin: (props: {
 
   return (
     <div
-      id="minded-6622-rating-interaction"
+      id="minded-6622-energy-lvl-interaction"
       onmouseenter={props.onCancelCountdown}
     >
       <div>How do you feel?</div>
