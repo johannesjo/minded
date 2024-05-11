@@ -1,6 +1,7 @@
 import { QID } from "@src/shared/data/questionId";
 
 export enum QuestionCategoryId {
+  BetterBrowsingHabits = "BetterBrowsingHabits",
   Motivation = "Motivation",
   PersonalResources = "PersonalResources",
   RefocusHelperToday = "RefocusHelperToday",
@@ -65,6 +66,31 @@ export interface QuestionCategory {
 export const QUESTION_CATEGORIES: {
   [key in QuestionCategoryId]: QuestionCategory;
 } = {
+  [QuestionCategoryId.BetterBrowsingHabits]: {
+    dashboardTxt: "Better Browsing Habits",
+    frequencyModifier: 3,
+    questions: [
+      {
+        id: QID.BBH1,
+        t: "What is the one thing you find most problematic in your current browsing behavior",
+        prompt: "The biggest challenge is",
+      },
+      {
+        id: QID.BBH2,
+        t: "What would you like to change in your browsing behavior",
+        prompt: "I want to change",
+      },
+      {
+        id: QID.BBH3,
+        t: "What might help you changing your browsing behavior",
+      },
+      {
+        id: QID.BBH4,
+        t: "What specific first step could you take right now to develop a better browsing behavior",
+        prompt: "",
+      },
+    ],
+  },
   [QuestionCategoryId.PersonalResources]: {
     dashboardTxt: "Personal Resources",
     questions: [
@@ -418,6 +444,7 @@ export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.TodayILearned,
   QuestionCategoryId.GoalForTheWeek,
+  QuestionCategoryId.BetterBrowsingHabits,
 ];
 
 export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
