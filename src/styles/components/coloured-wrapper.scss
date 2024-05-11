@@ -13,13 +13,13 @@
   //background: linear-gradient(90deg, #cfecd0, #ffc5ca, #e6ea9b);
   background: linear-gradient(180deg, #cfecd0, #ffc5ca, #e6ea9b);
   //background: linear-gradient(180deg, #b1dae7, #ffc5ca, #e6ea9b);
-  background: linear-gradient(180deg, var(--c-pastel-green), var(--c-pastel-red), var(--c-pastel-yellow));
+  background: linear-gradient(180deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
 
   background-size: 100% 130%;
 }
 
 #minded-6622-coloured-wrapper-dynamic {
-  background: linear-gradient(180deg, var(--c-pastel-green), var(--c-pastel-red), var(--c-pastel-yellow));
+  background: linear-gradient(180deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
   background-size: 100% 250%;
   animation: minded6622gradient 8s ease-in infinite;
   // NOTE currently conflicting with slow fadeout
