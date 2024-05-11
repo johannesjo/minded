@@ -1,6 +1,7 @@
 import { SyncData } from "@src/shared/data/syncData";
 import {
   DashboardGroup,
+  DashboardGroupBrowsingBehavior,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupStats,
@@ -83,6 +84,13 @@ export const dashboardEntriesFromQuestions = (
       type: DashboardGroupType.EnergyLvl,
       energyLvl: syncData.energyLvlVal,
     } as DashboardGroupEnergyLvl);
+  }
+
+  if (Object.keys(syncData.browsingBehaviorRating).length >= 3) {
+    sortedEntries.push({
+      type: DashboardGroupType.BrowsingBehaviorRating,
+      data: syncData.browsingBehaviorRating,
+    } as DashboardGroupBrowsingBehavior);
   }
 
   // center one rnd entry

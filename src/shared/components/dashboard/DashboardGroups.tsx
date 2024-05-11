@@ -1,6 +1,7 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import {
   DashboardGroup,
+  DashboardGroupBrowsingBehavior,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupType,
@@ -15,6 +16,8 @@ import Rating from "@src/shared/components/ui/Rating";
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+import Chart from "@src/shared/components/ui/Chart";
+import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -53,6 +56,14 @@ export const DashboardGroups: (props: {
           )}
           {(() => {
             switch (dg.type) {
+              case DashboardGroupType.BrowsingBehaviorRating:
+                const rd = (dg as DashboardGroupBrowsingBehavior).data;
+                return (
+                  <div class={styles.browsingBehaviorGraph}>
+                    <div>browsing behavior over time</div>
+                    <Chart chartData={getBrowsingBehaviorChartData(rd)} />
+                  </div>
+                );
               case DashboardGroupType.Stats:
                 return (
                   <div class={styles.stats}>
