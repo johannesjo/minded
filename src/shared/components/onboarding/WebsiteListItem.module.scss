@@ -4,16 +4,19 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
 
   input {
+    @include formInput(40px);
     background: transparent;
-    border: 1px solid;
     border-radius: var(--border-radius);
     padding: 4px 12px;
     transition: 0.1s;
     font-weight: bold;
-    @include formInput(40px);
-
+    flex: 1;
+    flex-shrink: 1;
 
     &:focus {
       transform: scale(1.05);
@@ -22,6 +25,7 @@
   }
 
   .btn-ico-small {
+    flex-shrink: 1; // Add this line
     margin-left: 16px;
   }
 }

@@ -8,6 +8,9 @@
   gap: 16px;
   margin-top: 32px;
   margin-bottom: 32px;
+  margin: 32px;
+  min-height: 0;
+  min-width: 0;
 
   //@media (min-width: var(--bp-l)) {
   grid-template-columns: repeat(1, 1fr);
@@ -19,7 +22,6 @@
   }
 
   > div {
-
   }
 }
 

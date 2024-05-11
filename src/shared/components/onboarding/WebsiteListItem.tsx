@@ -1,4 +1,5 @@
 import { createSignal, JSX } from "solid-js";
+// @ts-ignore
 import styles from "./WebsiteListItem.module.scss";
 
 // List item component
@@ -27,7 +28,7 @@ export const WebsiteListItem: (props: {
         onblur={() => props.update(getValue())}
         oninput={(e) => setValue((e as any).currentTarget.value as string)}
       />
-      <button className="btn-ico-small" onClick={props.remove}>
+      <button class="btn-ico-small" onClick={props.remove}>
         ✕
       </button>
     </div>
