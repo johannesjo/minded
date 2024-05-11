@@ -32,6 +32,7 @@ export interface SyncData {
   attempts: {
     [key: string]: number;
   };
+  lastBrowsingBehaviorRatingTS: number;
   browsingBehaviorRating: {
     [key: string]: number;
   };

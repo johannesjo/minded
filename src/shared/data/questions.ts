@@ -69,7 +69,7 @@ export const QUESTION_CATEGORIES: {
 } = {
   [QuestionCategoryId.BetterBrowsingHabits]: {
     dashboardTxt: "Better Browsing Habits",
-    frequencyModifier: 3,
+    frequencyModifier: 2,
     questions: [
       {
         id: QID.BBH1,
