@@ -1,9 +1,9 @@
 @mixin h4() {
   font-weight: 200;
   margin-bottom: 8px;
-  font-size: var(--fz-s);
+  font-size: var(--fz-m);
   user-select: none;
-  //font-style: italic;
+  color: var(--h4-c);
 }
 
 @mixin h2() {
