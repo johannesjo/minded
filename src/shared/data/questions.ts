@@ -73,7 +73,7 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.BBH1,
-        t: "What is the one thing you find most problematic in your current browsing behavior",
+        t: "What is the one thing you find most problematic in your recent browsing behavior",
         prompt: "The biggest challenge is",
       },
       {

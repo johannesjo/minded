@@ -13,7 +13,7 @@ export const Question: (props: {
   onSuccess: (answer: Answer) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
-  onChangeQuestion: () => void;
+  onChangeQuestion?: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   let inpEl;
@@ -97,17 +97,19 @@ export const Question: (props: {
             ➤
           </div>
         </div>
-        <div
-          id="minded-6622-change-question-btn"
-          onmouseenter={props.onCancelCountdown}
-          onclick={() => {
-            props.onCancelCountdown();
-            props.onChangeQuestion();
-            inpEl?.focus();
-          }}
-        >
-          ⇄
-        </div>
+        {props.onChangeQuestion && (
+          <div
+            id="minded-6622-change-question-btn"
+            onmouseenter={props.onCancelCountdown}
+            onclick={() => {
+              props.onCancelCountdown();
+              props.onChangeQuestion();
+              inpEl?.focus();
+            }}
+          >
+            ⇄
+          </div>
+        )}
       </div>
     </>
   );

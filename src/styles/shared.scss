@@ -24,4 +24,13 @@
     sans-serif !important;
     box-sizing: border-box;
   }
+
+  .minded-6622-txt-big {
+    @include txtBig;
+  }
+
+  .minded-6622-txt-smaller {
+    @include txtSmaller;
+  }
+
 }

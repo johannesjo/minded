@@ -23,6 +23,7 @@ import {
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
 import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
+import { BrowsingBehaviorRatingInteraction } from "@src/shared/components/interaction/browsing-behavior-rating/BrowsingBehaviorRating";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 // NOTE: val also needs to be set in css
@@ -283,7 +284,13 @@ export const Interaction: (props: {
               </Match>
               <Match when={getMode() === "ENERGY_LVL"}>
                 <EnergyLvlInteraction
-                  questionCategoryId={QuestionCategoryId.XEnergyLevelToday}
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onSuccess}
+                  onCancel={teardown}
+                />
+              </Match>
+              <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
+                <BrowsingBehaviorRatingInteraction
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onSuccess}
                   onCancel={teardown}
