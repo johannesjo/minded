@@ -1,29 +1,112 @@
 /* @refresh reload */
-import { JSX } from "solid-js";
-import Rating from "@src/shared/components/ui/Rating";
-import { saveEnergyLvl } from "@src/shared/data/syncDataInterface";
-import { QuestionCategoryId } from "@src/shared/data/questions";
+import { createSignal, JSX, Match, Switch } from "solid-js";
+import { rateCurrentBrowsingBehavior } from "@src/shared/data/syncDataInterface";
+import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
+import { Question } from "@src/shared/components/interaction/Question";
+import { QUESTIONS } from "@src/shared/data/questions";
+import { QID } from "@src/shared/data/questionId";
+import { getRndEntry } from "@src/util/getRndEntry"; // once on app load
 
 // once on app load
 
 export const BrowsingBehaviorRatingInteraction: (props: {
   onSuccess: () => void;
   onCancel: () => void;
-  questionCategoryId: QuestionCategoryId;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
-  const onSetRating = async (val: number) => {
-    await saveEnergyLvl(val);
-    props.onSuccess();
+  const [getStep, setStep] = createSignal<number>(0);
+
+  const [getBrowsingBehaviorRating, setBrowsingBehaviorRating] = createSignal<
+    number | null
+  >(null);
+
+  const onSaveRating = async (rating: number) => {
+    await rateCurrentBrowsingBehavior(rating);
+    if (rating >= 4) {
+      props.onSuccess();
+    } else {
+      setStep(1);
+    }
   };
+  const rndQuestion = getRndEntry(
+    QUESTIONS.filter((q) =>
+      [QID.BBH1, QID.BBH2, QID.BBH3, QID.BBH4, QID.BBH5].includes(q.id),
+    ),
+  );
 
   return (
     <div
-      id="minded-6622-browsing-behavior-rating-interaction"
-      onmouseenter={props.onCancelCountdown}
+      id="minded-6622-browsing-behavior-rating"
+      onmousemove={props.onCancelCountdown}
     >
-      <div>How would you rate your energy level today?</div>
-      <Rating onSetRating={onSetRating} />
+      <Switch>
+        <Match when={getStep() === 0}>
+          <div>
+            <div class="minded-6622-txt-big">
+              How would you rate your recent browsing behavior?
+            </div>
+
+            <div class="minded-6622-browsing-behavior-rating-btns">
+              {BROWSING_BEHAVIOR_OPTIONS.map((opt) => (
+                <div
+                  class={
+                    getBrowsingBehaviorRating() === opt.val
+                      ? "minded-6622-browsing-behavior-rating-btn isSelected"
+                      : "minded-6622-browsing-behavior-rating-btn"
+                  }
+                  onclick={() => {
+                    setBrowsingBehaviorRating(opt.val);
+                    onSaveRating(opt.val);
+                  }}
+                >
+                  {opt.txt}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Match>
+        <Match when={getStep() === 1}>
+          <Question
+            question={rndQuestion}
+            onCancelCountdown={props.onCancelCountdown}
+            onSuccess={() => props.onSuccess()}
+            onCancel={() => undefined}
+          />
+        </Match>
+
+        {/*<Match when={getStep() === 1}>*/}
+        {/*  <Question*/}
+        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH1)}*/}
+        {/*    onCancelCountdown={props.onCancelCountdown}*/}
+        {/*    onSuccess={() => setStep(2)}*/}
+        {/*    onCancel={() => undefined}*/}
+        {/*  />*/}
+        {/*</Match>*/}
+        {/*<Match when={getStep() === 2}>*/}
+        {/*  <Question*/}
+        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH2)}*/}
+        {/*    onCancelCountdown={props.onCancelCountdown}*/}
+        {/*    onSuccess={() => setStep(3)}*/}
+        {/*    onCancel={() => undefined}*/}
+        {/*  />*/}
+        {/*</Match>*/}
+        {/*<Match when={getStep() === 3}>*/}
+        {/*  <Question*/}
+        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH3)}*/}
+        {/*    onCancelCountdown={props.onCancelCountdown}*/}
+        {/*    onSuccess={() => setStep(4)}*/}
+        {/*    onCancel={() => undefined}*/}
+        {/*  />*/}
+        {/*</Match>*/}
+        {/*<Match when={getStep() === 4}>*/}
+        {/*  <Question*/}
+        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH4)}*/}
+        {/*    onCancelCountdown={props.onCancelCountdown}*/}
+        {/*    onSuccess={() => props.onSuccess()}*/}
+        {/*    onCancel={() => undefined}*/}
+        {/*  />*/}
+        {/*</Match>*/}
+      </Switch>
     </div>
   );
 };

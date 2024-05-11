@@ -11,12 +11,14 @@ const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 30 * 60 * 1000;
 
 export type InteractionMode =
   | "ENERGY_LVL"
+  | "BROWSING_BEHAVIOR_RATING"
   | "ACTION_ADVICE"
   | "EMOJI_CHECKIN"
   | "QUESTION"
   | "MOOD_CHECKIN";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
+  return "BROWSING_BEHAVIOR_RATING";
   // return "ACTION_ADVICE";
   // return "MOOD_CHECKIN";
   // return "ENERGY_LVL";

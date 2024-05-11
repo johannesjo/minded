@@ -1,7 +1,28 @@
-#minded-6622-browsing-behavior-rating-interaction {
-  @include txtBig();
+#minded-6622-browsing-behavior-rating {
 
-  > div:first-child {
-    margin-bottom: 30px;
+  .minded-6622-browsing-behavior-rating-btns {
+    margin-top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    user-select: none;
+  }
+
+
+  .minded-6622-browsing-behavior-rating-btn {
+    @include btnTxt();
+    user-select: none;
+    text-transform: lowercase;
+    min-width: 100px;
+    transition: .2s all;
+
+    &.isSelected {
+      background: var(--btn-bg-selected);
+      opacity: 1;
+      font-weight: 500;
+      border-radius: 16px;
+      transform: scale(1.1);
+    }
   }
 }
