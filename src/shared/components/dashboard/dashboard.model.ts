@@ -8,6 +8,7 @@ export enum DashboardGroupType {
   MoodCheckin = "MoodCheckin",
   EnergyLvl = "EnergyLvl",
   Stats = "Stats",
+  BrowsingBehaviorRating = "BrowsingBehaviorRating",
 }
 
 export interface DashboardGroupStandard {
@@ -36,8 +37,14 @@ export interface DashboardGroupEnergyLvl {
   energyLvl: number;
 }
 
+export interface DashboardGroupBrowsingBehavior {
+  type: DashboardGroupType.BrowsingBehaviorRating;
+  data: { [key: string]: number };
+}
+
 export type DashboardGroup =
   | DashboardGroupStandard
+  | DashboardGroupBrowsingBehavior
   | DashboardGroupStats
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
