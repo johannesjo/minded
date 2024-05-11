@@ -1,5 +1,6 @@
 // NOTE: this is styled in Interaction.scss
 #minded-6622-little-sun-success-sun {
+
   div:first-child {
     animation: minded6622successSun ease 0.8s;
     animation-iteration-count: 1;
@@ -64,6 +65,7 @@ $sun-size: 40px;
 }
 
 #minded-6622-little-sun-text {
+  color: var(--little-sun-txt-c);
   margin-right: -0.5* $sun-size;
   box-shadow: var(--little-sun-shadow);
   position: absolute;
