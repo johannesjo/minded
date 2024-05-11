@@ -32,6 +32,15 @@ export const isYesterday = (date: number): boolean => {
   );
 };
 
+export const hasHappenedInLastXDay = (
+  date: number,
+  daysAgo: number,
+): boolean => {
+  const now = new Date();
+  const xDaysAgo = new Date(now.setDate(now.getDate() - daysAgo));
+  return new Date(date) >= xDaysAgo;
+};
+
 const getWeekNumber = (d: Date): number => {
   const start = new Date(d.getFullYear(), 0, 1);
   const dayOfYear =
