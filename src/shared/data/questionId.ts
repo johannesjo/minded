@@ -1,6 +1,12 @@
 export enum QID {
   ADDED_FROM_DASHBOARD = "DASH",
 
+  BBH1 = "BBH1",
+  BBH2 = "BBH2",
+  BBH3 = "BBH3",
+  BBH4 = "BBH4",
+  BBH5 = "BBH5",
+
   PR1 = "PR1",
   PR2 = "PR2",
 
