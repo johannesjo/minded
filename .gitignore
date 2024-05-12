@@ -1,6 +1,7 @@
 npm-debug.log
 node_modules/
 dist/
+distDroid/
 tmp/
 /.idea
 minded.zip
