@@ -44,7 +44,7 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
-    fun setQuestion(question: QuestionForPrompt) {
+    fun setQuestion(question: QuestionForPrompt?) {
         Log.v(logTag, "setQuestion() $question")
 //        sharedOverlayViewModel.resetAnswerTxt()
 //        OverlayControllerService.showOverlay(

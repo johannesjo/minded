@@ -1,6 +1,9 @@
 package com.minded.minded.ui.compose
 
+import MainActivityJavaScriptInterface
+import android.os.Build
 import android.view.ViewGroup
+import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -82,6 +85,13 @@ fun DashboardMain(
                     settings.allowFileAccessFromFileURLs = true
                     settings.allowUniversalAccessFromFileURLs = true
                     settings.allowContentAccess = true
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        settings.forceDark = WebSettings.FORCE_DARK_ON
+                    }
+                    addJavascriptInterface(
+                        MainActivityJavaScriptInterface(context),
+                        "android"
+                    )
                     loadUrl("file:///android_asset/web/src/android/main/index.html")
                 }
             })
