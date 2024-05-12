@@ -73,6 +73,7 @@ dependencies {
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.datastore:datastore-core:1.1.0")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 
 
     testImplementation(libs.junit)

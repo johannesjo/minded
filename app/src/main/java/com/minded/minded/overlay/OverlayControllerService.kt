@@ -84,7 +84,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 val overlayMode =
                     if (overlayModeString != null) OverlayMode.valueOf(overlayModeString) else null
                 val appName = intent.getStringExtra(INTENT_EXTRA_APP_NAME)
-
                 showOverlay(overlayName, overlayMode, appName)
             }
 
