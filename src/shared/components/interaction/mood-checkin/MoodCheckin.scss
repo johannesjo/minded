@@ -13,7 +13,6 @@
     margin-top: 32px;
     display: flex;
     flex-wrap: wrap;
-    gap: 32px;
     justify-content: center;
     user-select: none;
   }
@@ -21,10 +20,17 @@
 
   .minded-6622-mood-checkin-btn {
     @include btnTxt();
+
+
+    margin: 16px;
     user-select: none;
     text-transform: lowercase;
     min-width: 100px;
     transition: .2s all;
+
+    @media (max-width: var(--max-width-mobile)) {
+      margin: 8px;
+    }
 
     &.isSelected {
       background: var(--btn-bg-selected);

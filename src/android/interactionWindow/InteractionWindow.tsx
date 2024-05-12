@@ -151,53 +151,55 @@ const InteractionWindow = () => {
   // TODO add app name
   return (
     <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>
-      <Switch>
-        <Match when={getMode() === "MOOD_CHECKIN"}>
-          <MoodCheckin
-            onCancelCountdown={cancelCountdown}
-            onSuccess={onSuccess}
-            onCancel={teardown}
-          />
-        </Match>
-        <Match when={getMode() === "EMOJI_CHECKIN"}>
-          <EmojiCheckin
-            onCancelCountdown={cancelCountdown}
-            onSuccess={onSuccess}
-            onCancel={teardown}
-          />
-        </Match>
-        <Match when={getMode() === "ACTION_ADVICE"}>
-          <div id="minded-6622-action-advice">
-            <div>{ADVICE.txt}</div>
-            <div>{ADVICE.ico}</div>
-          </div>
-        </Match>
-        <Match when={getMode() === "ENERGY_LVL"}>
-          <EnergyLvlInteraction
-            onCancelCountdown={cancelCountdown}
-            onSuccess={onSuccess}
-            onCancel={teardown}
-          />
-        </Match>
-        <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
-          <BrowsingBehaviorRatingInteraction
-            onCancelCountdown={cancelCountdown}
-            onSuccess={onSuccess}
-            onCancel={teardown}
-          />
-        </Match>
-        <Match when={getMode() === "QUESTION"}>
-          {getRndQuestion() && (
-            <Question
-              question={getRndQuestion()}
+      <div id="minded-6622-box">
+        <Switch>
+          <Match when={getMode() === "MOOD_CHECKIN"}>
+            <MoodCheckin
               onCancelCountdown={cancelCountdown}
               onSuccess={onSuccess}
-              onChangeQuestion={() => updateQuestion()}
               onCancel={teardown}
             />
-          )}
-        </Match>
-      </Switch>
+          </Match>
+          <Match when={getMode() === "EMOJI_CHECKIN"}>
+            <EmojiCheckin
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onSuccess}
+              onCancel={teardown}
+            />
+          </Match>
+          <Match when={getMode() === "ACTION_ADVICE"}>
+            <div id="minded-6622-action-advice">
+              <div>{ADVICE.txt}</div>
+              <div>{ADVICE.ico}</div>
+            </div>
+          </Match>
+          <Match when={getMode() === "ENERGY_LVL"}>
+            <EnergyLvlInteraction
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onSuccess}
+              onCancel={teardown}
+            />
+          </Match>
+          <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
+            <BrowsingBehaviorRatingInteraction
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onSuccess}
+              onCancel={teardown}
+            />
+          </Match>
+          <Match when={getMode() === "QUESTION"}>
+            {getRndQuestion() && (
+              <Question
+                question={getRndQuestion()}
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onSuccess}
+                onChangeQuestion={() => updateQuestion()}
+                onCancel={teardown}
+              />
+            )}
+          </Match>
+        </Switch>
+      </div>
     </div>
   );
 };

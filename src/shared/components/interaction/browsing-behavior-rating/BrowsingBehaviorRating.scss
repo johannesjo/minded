@@ -4,7 +4,6 @@
     margin-top: 32px;
     display: flex;
     flex-wrap: wrap;
-    gap: 32px;
     justify-content: center;
     user-select: none;
   }
@@ -12,6 +11,7 @@
 
   .minded-6622-browsing-behavior-rating-btn {
     @include btnTxt();
+    margin: 16px;
     user-select: none;
     text-transform: lowercase;
     min-width: 100px;

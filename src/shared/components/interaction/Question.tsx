@@ -5,6 +5,7 @@ import {
   QuestionForPrompt,
 } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
+// @ts-ignore
 import { saveAnswer } from "@dataInterface/syncDataInterface";
 import { nanoid } from "nanoid";
 
