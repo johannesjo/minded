@@ -19,6 +19,7 @@ export const Question: (props: {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   let inpEl;
   let t0;
+  let t1;
 
   createEffect(() => {
     if (inpEl) {
@@ -33,10 +34,12 @@ export const Question: (props: {
     }
     inpEl.focus();
     t0 = setTimeout(() => inpEl.focus(), 250);
+    t1 = setTimeout(() => inpEl.focus(), 400);
   });
 
   onCleanup(() => {
     window.clearTimeout(t0);
+    window.clearTimeout(t1);
   });
 
   const submitAnswer = async (answerTxt: string) => {
