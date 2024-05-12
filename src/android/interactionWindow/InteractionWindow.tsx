@@ -9,7 +9,6 @@ import { Question } from "@src/shared/components/interaction/Question";
 // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
 // @ts-ignore
-import { closeTabOrApp } from "@dataInterface/system";
 import { BrowsingBehaviorRatingInteraction } from "@src/shared/components/interaction/browsing-behavior-rating/BrowsingBehaviorRating";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
@@ -20,45 +19,23 @@ import {
   getInteractionMode,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
-import { fadeOut } from "@src/util/animation";
-import { stopAllVideos } from "@src/util/stopAllVideos";
+import { androidInterface } from "@src/dataInterface/android/system";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
 const InteractionWindow = () => {
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
-  const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
-  const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
-  const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
+
   const [getRndQuestion, setRndQuestion] = createSignal<
     QuestionForPrompt | undefined
   >();
 
-  let wrapperEl;
-  let frameNr;
   let syncData;
   let questionUpdateCount = 0;
   let questionIdBefore;
 
   onMount(async () => {
-    // give a moment time for rendering
-    setTimeout(() => {
-      stopAllVideos();
-    }, 1000);
-
-    setTimeout(() => {
-      stopAllVideos();
-    }, 2000);
-
-    setTimeout(() => {
-      stopAllVideos();
-    }, 5000);
-
-    // setTimeout(() => {
-    //   onSuccess();
-    // }, 1000);
-
     getSyncData().then((syncDataI) => {
       syncData = syncDataI;
       setMode(getInteractionMode(syncData));
@@ -69,41 +46,31 @@ const InteractionWindow = () => {
 
       switch (getMode()) {
         case "ACTION_ADVICE":
-          setLittleSunTxt(ADVICE.txt);
+          androidInterface.setLittleSunTxt(ADVICE.txt);
           setWasAnswerGiven(true);
           return;
         case "ENERGY_LVL":
-          setLittleSunTxt("How would you rate your energy level today?");
+          androidInterface.setLittleSunTxt(
+            "How would you rate your energy level today?",
+          );
           return;
         default:
-          setLittleSunTxt(rndQuestion.t + "?");
+          androidInterface.setLittleSunTxt(rndQuestion.t + "?");
       }
     });
   });
 
-  const cancelCountdown = () => {
-    if (!frameNr) {
-      return;
-    }
-    if (getIsShowSuccessSun()) {
-      return;
-    }
-
-    window.cancelAnimationFrame(frameNr);
-    if (wrapperEl) {
-      wrapperEl.style.transition = `opacity 1000ms ease-out`;
-      wrapperEl.style.opacity = "1";
-    }
-  };
+  const cancelCountdown = () => {};
 
   const onSuccess = (answerOrData?: Answer) => {
     cancelCountdown();
-    setLittleSunTxt(
-      typeof answerOrData?.val === "string" ? answerOrData.val : "",
-    );
-    setWasAnswerGiven(true);
-    setIsShowSuccessSun(true);
+    // androidInterface.setLittleSunTxt(
+    //   typeof answerOrData?.val === "string" ? answerOrData.val : "",
+    // );
+    // setWasAnswerGiven(true);
+    // setIsShowSuccessSun(true);
     // showSuccessSunAniFlow();
+    androidInterface.onSuccess();
   };
 
   const updateQuestion = () => {
@@ -113,6 +80,7 @@ const InteractionWindow = () => {
         questionUpdateCount >= 5
           ? getRndEntry(QUESTIONS)
           : getQuestionSmart(syncData.answers);
+      androidInterface.setQuestion(rndQuestion);
 
       if (questionIdBefore === rndQuestion.id) {
         questionUpdateCount++;
@@ -120,51 +88,44 @@ const InteractionWindow = () => {
       } else {
         questionIdBefore = rndQuestion.id;
         setRndQuestion(rndQuestion);
-        setLittleSunTxt(rndQuestion.t + "?");
+        androidInterface.setLittleSunTxt(rndQuestion.t + "?");
         setWasAnswerGiven(false);
         questionUpdateCount++;
       }
     }
   };
 
-  const teardown = () => {
-    document.removeEventListener("keypress", escapeHandler);
-    // props.onHideAll();
-  };
-
-  const escapeHandler = (ev: KeyboardEvent) => {
-    if (ev.key === "Escape") {
-      fadeOutMainFinal();
-    }
-  };
-
-  const fadeOutMainFinal = () => {
-    if (wrapperEl) {
-      fadeOut(wrapperEl, 150).promise.then(() => {
-        // littleSun();
-      });
-    } else {
-      // littleSun();
-    }
+  const okSkip = () => {
+    androidInterface.onSkip();
   };
 
   // TODO add app name
   return (
-    <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>
+    <div
+      id="minded-6622-coloured-wrapper-dynamic"
+      onClick={(ev) => {
+        if (
+          (ev.target as HTMLElement)?.id ===
+          "minded-6622-coloured-wrapper-dynamic"
+        ) {
+          androidInterface.fadeOutMainFinal();
+        }
+      }}
+    >
       <div id="minded-6622-box">
         <Switch>
           <Match when={getMode() === "MOOD_CHECKIN"}>
             <MoodCheckin
               onCancelCountdown={cancelCountdown}
               onSuccess={onSuccess}
-              onCancel={teardown}
+              onCancel={okSkip}
             />
           </Match>
           <Match when={getMode() === "EMOJI_CHECKIN"}>
             <EmojiCheckin
               onCancelCountdown={cancelCountdown}
               onSuccess={onSuccess}
-              onCancel={teardown}
+              onCancel={okSkip}
             />
           </Match>
           <Match when={getMode() === "ACTION_ADVICE"}>
@@ -177,14 +138,14 @@ const InteractionWindow = () => {
             <EnergyLvlInteraction
               onCancelCountdown={cancelCountdown}
               onSuccess={onSuccess}
-              onCancel={teardown}
+              onCancel={okSkip}
             />
           </Match>
           <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
             <BrowsingBehaviorRatingInteraction
               onCancelCountdown={cancelCountdown}
               onSuccess={onSuccess}
-              onCancel={teardown}
+              onCancel={okSkip}
             />
           </Match>
           <Match when={getMode() === "QUESTION"}>
@@ -194,7 +155,7 @@ const InteractionWindow = () => {
                 onCancelCountdown={cancelCountdown}
                 onSuccess={onSuccess}
                 onChangeQuestion={() => updateQuestion()}
-                onCancel={teardown}
+                onCancel={okSkip}
               />
             )}
           </Match>

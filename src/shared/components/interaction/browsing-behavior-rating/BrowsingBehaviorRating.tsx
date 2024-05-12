@@ -1,5 +1,6 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, Switch } from "solid-js";
+// @ts-ignore
 import { rateCurrentBrowsingBehavior } from "@dataInterface/syncDataInterface";
 import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
 import { Question } from "@src/shared/components/interaction/Question";
