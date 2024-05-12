@@ -34,7 +34,7 @@ data class SharedOverlayData(
     var currentApp: String? = null,
     var questionForPrompt: QuestionForPrompt? = null,
     var answerTxt: String? = null,
-    var sunTxt: String? = null,
+    var successSunTxt: String? = null,
     var isShowLittleSunAfterSuccess: Boolean = true,
     var interactionMode: InteractionMode = InteractionMode.Question,
     var appMap: AppMap = emptyMap()
@@ -65,7 +65,7 @@ class SharedOverlayViewModel(
         currentApp: String? = null,
         questionForPrompt: QuestionForPrompt? = null,
         answerTxt: String? = null,
-        sunTxt: String? = null,
+        successSunTxt: String? = null,
         isShowLittleSunAfterSuccess: Boolean? = null
     ) {
         val currentData = sharedData.value ?: SharedOverlayData()
@@ -74,7 +74,7 @@ class SharedOverlayViewModel(
             appMap = currentData.appMap,
             questionForPrompt = questionForPrompt ?: currentData.questionForPrompt,
             answerTxt = answerTxt ?: currentData.answerTxt,
-            sunTxt = sunTxt ?: currentData.sunTxt,
+            successSunTxt = successSunTxt ?: currentData.successSunTxt,
             isShowLittleSunAfterSuccess = isShowLittleSunAfterSuccess
                 ?: currentData.isShowLittleSunAfterSuccess
         )
@@ -115,7 +115,7 @@ class SharedOverlayViewModel(
             answerTxt = null,
             questionForPrompt = null,
             interactionMode = interactionMode,
-            sunTxt = null,
+            successSunTxt = null,
         )
         _sharedData.update { newSharedData }
         Log.v(lt, "resetToFreshRndQuestion() ${newSharedData}")
@@ -159,7 +159,7 @@ class SharedOverlayViewModel(
 
     fun resetSunTxt() {
         val currentData = sharedData.value ?: SharedOverlayData()
-        val newSharedData = currentData.copy(sunTxt = null)
+        val newSharedData = currentData.copy(successSunTxt = null)
         _sharedData.update { newSharedData }
         Log.v(lt, "resetSunTxt() ${newSharedData}")
     }

@@ -27,7 +27,7 @@ open class SuccessSunWindow(
         val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
 
         SuccessSun(
-            sharedData.sunTxt ?: defaultSunTxt,
+            sharedData.successSunTxt ?: defaultSunTxt,
             onSunTap = {
                 Log.v(logTag, "onSunTap()")
                 ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);

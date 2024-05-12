@@ -147,12 +147,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.SUCCESS_SUN_OVERLAY -> {
                 if (overlayMode === OverlayMode.SUCCESS_SUN_OVERLAY__FINAL) {
                     sharedOverlayViewModel.updateSharedData(
-                        sunTxt = "That's a good decision!",
+                        successSunTxt = "That's a good decision!",
                         isShowLittleSunAfterSuccess = false
                     )
                 } else {
                     sharedOverlayViewModel.updateSharedData(
-                        sunTxt = "tap sun to close",
+                        successSunTxt = "tap sun to close",
                         isShowLittleSunAfterSuccess = true
                     )
                 }
