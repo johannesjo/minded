@@ -1,13 +1,12 @@
 package com.minded.minded.overlay
 
 import android.graphics.PixelFormat
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebView
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
-import com.minded.minded.ui.compose.InteractionOverlayBig
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 class InteractionWindow(
@@ -23,28 +22,38 @@ class InteractionWindow(
 
     @Composable
     override fun Cmp() {
-        InteractionOverlayBig(
-            sharedOverlayViewModel = sharedOverlayViewModel,
-            onSuccess = {
-                OverlayControllerService.showOverlay(
-                    ctrlSvc,
-                    OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
+        AndroidView(factory = { context ->
+            WebView(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                hideWindow()
-                GlobalScope.launch {
-                    delay(1000)  // delay for 1000 milliseconds (1 second)
-                    hideWindow()
-                }
-            },
-            onSkip = {
-                sharedOverlayViewModel.resetAnswerTxt()
-                OverlayControllerService.showOverlay(
-                    ctrlSvc,
-                    OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-                )
-                hideWindow()
+                loadUrl("https://www.google.com")
             }
-        )
+        })
+
+//        InteractionOverlayBig(
+//            sharedOverlayViewModel = sharedOverlayViewModel,
+//            onSuccess = {
+//                OverlayControllerService.showOverlay(
+//                    ctrlSvc,
+//                    OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
+//                )
+//                hideWindow()
+//                GlobalScope.launch {
+//                    delay(1000)  // delay for 1000 milliseconds (1 second)
+//                    hideWindow()
+//                }
+//            },
+//            onSkip = {
+//                sharedOverlayViewModel.resetAnswerTxt()
+//                OverlayControllerService.showOverlay(
+//                    ctrlSvc,
+//                    OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+//                )
+//                hideWindow()
+//            }
+//        )
     }
 
 
