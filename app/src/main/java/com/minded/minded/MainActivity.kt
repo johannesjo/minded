@@ -7,14 +7,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.ViewGroup
-import android.webkit.WebView
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.ui.model.DashboardViewModelFactory
 import com.minded.minded.util.checkDrawOverlayPermission
@@ -42,39 +40,16 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             setContent {
-                AndroidView(factory = { context ->
-                    WebView(context).apply {
-
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        settings.javaScriptEnabled = true
-                        settings.allowFileAccess = true
-                        settings.allowFileAccessFromFileURLs = true
-                        settings.allowUniversalAccessFromFileURLs = true
-                        settings.allowContentAccess = true
-                        loadUrl("file:///android_asset/web/src/android/main/index.html")
-                    }
-                })
-
-//                MindedTheme {
-//                    Surface(
-//                        modifier = Modifier.fillMaxSize(),
-//                        color = MaterialTheme.colorScheme.background
-//                    ) {
-//                        Dashboard(
-//                            dashboardViewModel,
-//                            onMissingCapabilityClick = {
-//                                Log.v("MAIN", "onMissingCapabilityClick() $it")
-//                                when (it) {
-//                                    MissingCapability.Accessibility -> askPermissionForAccessibility()
-//                                    MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
-//                                }
-//                            },
-//                        )
-//                    }
-//                }
+                Dashboard(
+                    dashboardViewModel,
+                    onMissingCapabilityClick = {
+                        Log.v("MAIN", "onMissingCapabilityClick() $it")
+                        when (it) {
+                            MissingCapability.Accessibility -> askPermissionForAccessibility()
+                            MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
+                        }
+                    },
+                )
             }
         }
     }

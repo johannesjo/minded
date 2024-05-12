@@ -1,14 +1,13 @@
 package com.minded.minded.ui.compose
 
+import android.view.ViewGroup
+import android.webkit.WebView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.minded.minded.MissingCapability
 import com.minded.minded.data.QuestionCategoryForDashboard
@@ -70,14 +70,29 @@ fun DashboardMain(
                 modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
             )
         } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(top = 64.dp, bottom = 64.dp)
-            ) {
-                itemsIndexed(questions) { index, question ->
-                    QuestionCategoryCmp(question);
+            AndroidView(factory = { context ->
+                WebView(context).apply {
+
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    settings.javaScriptEnabled = true
+                    settings.allowFileAccess = true
+                    settings.allowFileAccessFromFileURLs = true
+                    settings.allowUniversalAccessFromFileURLs = true
+                    settings.allowContentAccess = true
+                    loadUrl("file:///android_asset/web/src/android/main/index.html")
                 }
-            }
+            })
+//            LazyColumn(
+//                state = listState,
+//                contentPadding = PaddingValues(top = 64.dp, bottom = 64.dp)
+//            ) {
+//                itemsIndexed(questions) { index, question ->
+//                    QuestionCategoryCmp(question);
+//                }
+//            }
         }
     }
 }
