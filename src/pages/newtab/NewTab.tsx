@@ -1,6 +1,7 @@
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, onMount } from "solid-js";
-import { getSyncData } from "@src/shared/data/syncDataInterface";
+// @ts-ignore
+import { getSyncData } from "@dataInterface/syncDataInterface";
 import { Onboarding } from "@src/shared/components/onboarding/Onboarding";
 // @ts-ignore
 import styles from "./NewTab.module.scss";

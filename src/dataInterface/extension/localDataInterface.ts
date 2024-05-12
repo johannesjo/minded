@@ -1,5 +1,5 @@
 import { bro } from "@src/util/browser";
-import { EntryForHost, LocalData } from "@src/shared/data/localData";
+import { EntryForHost, LocalData } from "@src/dataInterface/localData";
 
 export const updateHostsEntry = async (
   host: string,

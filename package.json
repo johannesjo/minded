@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=development npm run dev",
+    "startDroid": "NODE_ENV=development vite build -w --mode android",
     "dev": "vite build -w",
     "serve": "vite preview",
     "lint": "eslint . --fix -c .eslintrc --ext js,ts --ignore-pattern='!.*'",
     "build": "vite build && npm run pack",
-    "buildDroid": "vite build --mode android",
+    "buildDroid": "vite build --mode android && /bin/rm -rf ../../AndroidStudioProjects/Minded/app/src/main/assets/web/*;  /bin/cp -r distDroid/* ../../AndroidStudioProjects/Minded/app/src/main/assets/web",
     "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
     "clean": "rimraf dist",
     "test": "jest",

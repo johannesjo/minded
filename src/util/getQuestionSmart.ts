@@ -1,4 +1,4 @@
-import { Answer } from "@src/shared/data/syncData";
+import { Answer } from "@src/dataInterface/syncData";
 import {
   filterSpecialWidgets,
   QUESTION_CATEGORIES,

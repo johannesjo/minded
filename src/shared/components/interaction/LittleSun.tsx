@@ -1,9 +1,11 @@
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
-import { bro } from "@src/util/browser";
 import {
   loadDataForHost,
   updateHostsEntry,
-} from "@src/shared/data/localDataInterface";
+  // @ts-ignore
+} from "@dataInterface/localDataInterface";
+// @ts-ignore
+import { closeTabOrApp } from "@dataInterface/system";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -90,7 +92,7 @@ export const LittleSunComponent: (props: {
   const littleSunClose = () => {
     setIsLittleSunSuccess(true);
     littleSunSuccessSunEl.addEventListener("animationend", () => {
-      bro.runtime.sendMessage({ closeTab: true });
+      closeTabOrApp();
     });
   };
 

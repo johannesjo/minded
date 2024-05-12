@@ -1,9 +1,9 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import { WebsiteListItem } from "@src/shared/components/onboarding/WebsiteListItem";
-import { DEFAULT_SYNC_DATA } from "@src/shared/data/syncData.const";
+import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 // @ts-ignore
 import styles from "./WebsiteList.module.scss";
-import { getSyncData, updateCfg } from "@src/shared/data/syncDataInterface";
+import { getSyncData, updateCfg } from "@dataInterface/syncDataInterface";
 
 export const WebsiteList: (props: {
   onAfterSave: () => void;

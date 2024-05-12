@@ -2,7 +2,7 @@ import {
   ACTION_ADVICES_MAX_HOUR,
   ACTION_ADVICES_MIN_HOUR,
 } from "@src/shared/data/actionAdvices";
-import { SyncData } from "@src/shared/data/syncData";
+import { SyncData } from "@src/dataInterface/syncData";
 import { hasHappenedInLastXDay, isToday } from "@src/util/isToday";
 import { isXIn1 } from "@src/util/isXIn1";
 

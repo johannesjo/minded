@@ -13,7 +13,12 @@ const assetsDir = resolve(root, "assets");
 const isDev = process.env.__DEV__ === "true";
 const publicDir = resolve(__dirname, "public");
 const pagesDir = resolve(root, "pages");
-const outDirDroid = resolve(__dirname, "distDroid");
+// const outDirDroid = resolve(__dirname, "distDroid");
+const outDirDroid = resolve(
+  "../../AndroidStudioProjects/Minded/app/src/main/assets/web/",
+);
+const dataInterfaceExtension = resolve(root, "dataInterface", "extension");
+const dataInterfaceDroid = resolve(root, "dataInterface", "android");
 
 export default defineConfig(({ mode }) => {
   return mode === "android"
@@ -24,6 +29,7 @@ export default defineConfig(({ mode }) => {
           alias: {
             "@src": root,
             "@assets": assetsDir,
+            "@dataInterface": dataInterfaceDroid,
           },
         },
         build: {
@@ -35,7 +41,7 @@ export default defineConfig(({ mode }) => {
               interaction: resolve(
                 root,
                 "android",
-                "interaction",
+                "interactionWindow",
                 "index.html",
               ),
             },
@@ -59,6 +65,7 @@ export default defineConfig(({ mode }) => {
             "@src": root,
             "@assets": assetsDir,
             "@pages": pagesDir,
+            "@dataInterface": dataInterfaceExtension,
           },
         },
         publicDir,

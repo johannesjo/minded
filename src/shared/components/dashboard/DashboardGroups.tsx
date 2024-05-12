@@ -6,7 +6,7 @@ import {
   DashboardGroupMood,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
-import { getSyncData } from "@src/shared/data/syncDataInterface";
+import { getSyncData } from "@dataInterface/syncDataInterface";
 import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
 // @ts-ignore
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";

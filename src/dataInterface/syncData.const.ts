@@ -27,6 +27,8 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   moodCheckTS: 99,
   moodCheckVal: undefined,
   moodCheckAdditional: "",
+  browsingBehaviorRating: {},
+  lastBrowsingBehaviorRatingTS: 99,
   energyLvlVal: 0,
   energyLvlTS: 99,
   answers: [],

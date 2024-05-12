@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strict": false,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "module": "commonjs",
     "target": "es6",
     "esModuleInterop": true,
@@ -20,6 +20,12 @@
       ],
       "@assets/*": [
         "src/assets/*"
+      ],
+      "@pages/*": [
+        "src/pages/*"
+      ],
+      "@dataInterface/*": [
+        "src/dataInterface/web/*"
       ]
     }
   }

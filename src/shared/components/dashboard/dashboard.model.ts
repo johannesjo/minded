@@ -1,5 +1,5 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { Answer } from "@src/shared/data/syncData";
+import { Answer } from "@src/dataInterface/syncData";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 
 export enum DashboardGroupType {

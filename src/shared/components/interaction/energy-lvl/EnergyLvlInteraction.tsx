@@ -1,7 +1,8 @@
 /* @refresh reload */
 import { JSX } from "solid-js";
 import Rating from "@src/shared/components/ui/Rating";
-import { saveEnergyLvl } from "@src/shared/data/syncDataInterface";
+// @ts-ignore
+import { saveEnergyLvl } from "@dataInterface/syncDataInterface";
 
 // once on app load
 

@@ -1,7 +1,9 @@
 import { JSX } from "solid-js";
+// @ts-ignore
 import styles from "./Onboarding.module.scss";
 import { WebsiteList } from "@src/shared/components/onboarding/WebsiteList";
-import { updateCfg } from "@src/shared/data/syncDataInterface";
+// @ts-ignore
+import { updateCfg } from "@dataInterface/syncDataInterface";
 
 export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
   props,
