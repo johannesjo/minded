@@ -1,3 +1,4 @@
+import android.content.Context
 import android.util.Log
 import android.webkit.JavascriptInterface
 import com.minded.minded.data.QuestionForPrompt
@@ -13,6 +14,8 @@ class InteractionWindowJavaScriptInterface(
     private val win: InteractionWindow,
     private val ctrlSvc: OverlayControllerService,
 ) {
+    private val sharedPreferences = ctrlSvc.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
+
     val logTag = "InteractionWindowJavaScriptInterface"
 
     @JavascriptInterface
@@ -25,6 +28,19 @@ class InteractionWindowJavaScriptInterface(
             delay(1000)
             win.hideWindow()
         }
+    }
+
+    @JavascriptInterface
+    fun saveString(key: String, value: String) {
+        with(sharedPreferences.edit()) {
+            putString(key, value)
+            apply()
+        }
+    }
+
+    @JavascriptInterface
+    fun retrieveString(key: String): String? {
+        return sharedPreferences.getString(key, null)
     }
 
     @JavascriptInterface
