@@ -94,9 +94,11 @@
     --btn-bg-selected: rgba(0, 0, 0, 1);
   }
 
-  --max-width-mobile: 400px;
+  --max-width-mobile: 600px;
+}
 
-  @media (max-width: var(--max-width-mobile)) {
+@media (max-width: 500px) {
+  #minded-6622 {
     --fz-l: 22px;
     --fz-m: 15px;
   }

@@ -104,10 +104,15 @@ export const updateCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
 //
 export const getSyncData = async (): Promise<SyncData> => {
   const str = androidInterface.retrieveString(DB_KEY);
-  return {
-    ...DEFAULT_SYNC_DATA,
-    ...JSON.parse(str),
-  };
+  try {
+    return {
+      ...DEFAULT_SYNC_DATA,
+      ...JSON.parse(str),
+    };
+  } catch (e) {
+    console.error(e);
+    return DEFAULT_SYNC_DATA;
+  }
 };
 
 export const countOpeningAttempt = async (): Promise<void> => {
