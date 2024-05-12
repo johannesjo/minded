@@ -9,6 +9,7 @@
     "serve": "vite preview",
     "lint": "eslint . --fix -c .eslintrc --ext js,ts --ignore-pattern='!.*'",
     "build": "vite build && npm run pack",
+    "buildDroid": "vite build --mode android",
     "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
     "clean": "rimraf dist",
     "test": "jest",
