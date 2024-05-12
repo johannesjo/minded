@@ -4,7 +4,7 @@
 
   --fz-l: 32px;
   --fz-m: 19px;
-  --fz-s: 18px;
+  //--fz-s: 18px;
 
   --c-fg-full-emphasis: #000;
   --c-fg: rgba(0, 0, 0, .8);
@@ -85,7 +85,6 @@
     --c-gradient-3: #873400;
 
 
-
     --c-fg: rgba(255, 255, 255, .9);
     --c-fg-full-emphasis: #fff;
     --c-bg: #444a5b;
@@ -94,6 +93,14 @@
     --btn-bg: rgba(0, 0, 0, .5);
     --btn-bg-selected: rgba(0, 0, 0, 1);
   }
+
+  --max-width-mobile: 400px;
+
+  @media (max-width: var(--max-width-mobile)) {
+    --fz-l: 22px;
+    --fz-m: 15px;
+  }
 }
+
 
 

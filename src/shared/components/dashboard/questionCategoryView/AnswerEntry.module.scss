@@ -11,6 +11,7 @@
     @include formInput(40px);
     flex: 1;
     min-width: 0 !important;
+    margin-right: 8px;
   }
 }
 
@@ -22,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: stretch;
-  gap: 16px;
+
   position: absolute;
   top: 0;
   left: 50%;

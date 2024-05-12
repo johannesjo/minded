@@ -2,7 +2,6 @@
 
 .WebsiteListItem {
   display: flex;
-  gap: 8px;
   align-items: center;
   max-width: 100%;
   min-height: 0;
@@ -17,11 +16,14 @@
     font-weight: bold;
     flex: 1;
     flex-shrink: 1;
+    margin-right: 8px;
 
     &:focus {
       transform: scale(1.05);
       outline: none;
     }
+
+
   }
 
   .btn-ico-small {
