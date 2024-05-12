@@ -5,7 +5,6 @@ export const updateHostsEntry = async (
   dataForHost: Partial<EntryForHost>,
 ): Promise<void> => {
   console.log("XXX");
-
   // if (bro.runtime?.id) {
   //   const d = await loadLocalData();
   //   return bro.storage.local.set({
