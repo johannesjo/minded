@@ -1,4 +1,4 @@
-import { Answer } from "@src/shared/data/syncData";
+import { Answer } from "@src/dataInterface/syncData";
 import { createSignal, JSX } from "solid-js";
 // @ts-ignore
 import styles from "@src/shared/components/dashboard/questionCategoryView/AnswerEntry.module.scss";

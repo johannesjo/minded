@@ -1,5 +1,6 @@
 import { bro } from "@src/util/browser";
-import { countBlockedAttempt } from "@src/shared/data/syncDataInterface";
+// @ts-ignore
+import { countBlockedAttempt } from "@dataInterface/syncDataInterface.ts";
 
 bro.action.onClicked.addListener(function () {
   bro.tabs.create({

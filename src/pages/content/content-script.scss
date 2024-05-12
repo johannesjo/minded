@@ -1,12 +1,5 @@
 @import "@src/styles/shared.scss";
-@import "@src/shared/components/interaction/Question.scss";
-@import "@src/shared/components/interaction/Interaction.scss";
-@import "@src/shared/components/interaction/LittleSun.scss";
-@import "@src/shared/components/interaction/energy-lvl/EnergyLvlInteraction.scss";
-@import "@src/shared/components/interaction/browsing-behavior-rating/BrowsingBehaviorRating.scss";
-@import "@src/shared/components/interaction/mood-checkin/MoodCheckin.scss";
-@import "@src/shared/components/ui/Rating.scss";
-
+@import "@src/styles/sharedForInteraction.scss";
 
 #minded-6622 {
   animation: minded6622fadeInAnimation ease .5s;

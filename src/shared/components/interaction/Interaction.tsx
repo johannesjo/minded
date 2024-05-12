@@ -6,16 +6,13 @@ import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
-import { bro } from "@src/util/browser";
-import { Answer } from "@src/shared/data/syncData";
-import {
-  QuestionCategoryId,
-  QuestionForPrompt,
-  QUESTIONS,
-} from "@src/shared/data/questions";
-import React from "react";
+import { Answer } from "@src/dataInterface/syncData";
+import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
-import { getSyncData } from "@src/shared/data/syncDataInterface";
+// @ts-ignore
+import { getSyncData } from "@dataInterface/syncDataInterface";
+// @ts-ignore
+import { closeTabOrApp } from "@dataInterface/system";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
 import {
@@ -254,7 +251,7 @@ export const Interaction: (props: {
                 ref={successSunEl}
                 title="Click sun to close tab"
                 onclick={() => {
-                  bro.runtime.sendMessage({ closeTab: true });
+                  closeTabOrApp();
                 }}
               >
                 <div ref={successSunSunEl}></div>

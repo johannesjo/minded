@@ -1,4 +1,4 @@
-import { SyncData } from "@src/shared/data/syncData";
+import { SyncData } from "@src/dataInterface/syncData";
 
 export const isOnBlockedUrl = (
   currentUrl: string,

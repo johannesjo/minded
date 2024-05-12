@@ -4,7 +4,8 @@ import { isOnBlockedUrl } from "@src/util/isOnBlockedUrl";
 import {
   countOpeningAttempt,
   getSyncData,
-} from "@src/shared/data/syncDataInterface";
+  // @ts-ignore
+} from "@dataInterface/syncDataInterface";
 import { ContentScriptMain } from "@src/pages/content/ContentScriptMain";
 // @ts-ignore
 import styleAsString from "./content-script.scss?inline";

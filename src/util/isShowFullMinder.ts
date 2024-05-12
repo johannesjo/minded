@@ -1,5 +1,5 @@
-import { SyncData } from "@src/shared/data/syncData";
-import { STATIC_CFG } from "@src/shared/data/syncData.const";
+import { SyncData } from "@src/dataInterface/syncData";
+import { STATIC_CFG } from "@src/dataInterface/syncData.const";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
 export const isShowFullMinder = (

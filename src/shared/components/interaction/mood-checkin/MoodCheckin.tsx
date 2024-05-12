@@ -4,7 +4,7 @@ import {
   MOOD_CHECKIN_OPTIONS,
   MoodCheckinVal,
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
-import { saveMoodCheckIn } from "@src/shared/data/syncDataInterface";
+import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;

@@ -1,12 +1,14 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-import { updateSyncData } from "@src/shared/data/syncDataInterface";
+// @ts-ignore
+import { updateSyncData } from "@dataInterface/syncDataInterface";
 import { Interaction } from "@src/shared/components/interaction/Interaction";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import {
   loadDataForHost,
   updateHostsEntry,
-} from "@src/shared/data/localDataInterface";
+  // @ts-ignore
+} from "@dataInterface/localDataInterface";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
 const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
@@ -55,7 +57,6 @@ export const ContentScriptMain: (props: {
       ) : (
         <LittleSunComponent
           host={host}
-          mode="SINGLE_SUN"
           wasAnswerGiven={false}
           onShowQuestionAgain={() => undefined}
           onShowFreshQuestion={() => setIsShowFullMinder(true)}
