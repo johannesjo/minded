@@ -28,7 +28,12 @@ class InteractionWindow(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                loadUrl("https://www.google.com")
+                settings.javaScriptEnabled = true
+                settings.allowFileAccess = true
+                settings.allowFileAccessFromFileURLs = true
+                settings.allowUniversalAccessFromFileURLs = true
+                settings.allowContentAccess = true
+                loadUrl("file:///android_asset/web/src/android/interaction/index.html")
             }
         })
 
