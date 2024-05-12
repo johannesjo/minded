@@ -1,5 +1,6 @@
 package com.minded.minded.overlay
 
+import InteractionWindowJavaScriptInterface
 import android.graphics.PixelFormat
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -22,6 +23,8 @@ class InteractionWindow(
 
     @Composable
     override fun Cmp() {
+        val win = this;
+
         AndroidView(factory = { context ->
             WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -33,6 +36,11 @@ class InteractionWindow(
                 settings.allowFileAccessFromFileURLs = true
                 settings.allowUniversalAccessFromFileURLs = true
                 settings.allowContentAccess = true
+                addJavascriptInterface(
+                    InteractionWindowJavaScriptInterface(sharedOverlayViewModel, win, ctrlSvc),
+                    "android"
+                )
+
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html")
             }
         })
