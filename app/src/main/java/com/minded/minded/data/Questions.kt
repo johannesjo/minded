@@ -15,22 +15,29 @@ data class Answer(
 )
 
 enum class QuestionCategoryId {
+    BetterBrowsingHabits,
     Motivation,
     PersonalResources,
     RefocusHelperToday,
     CalmingThoughts,
     PositiveThoughts,
-    UnderstandingProcrastination,
-    SelfDiscovery,
     HelpfulTools,
     GoodPlans,
     GoodPlansToday,
     GoodToday,
     TodayILearned,
-    Insomnia,
     GoalForTheWeek,
     Gratitude,
-    XEnergyLevelToday
+    Insomnia,
+    UnderstandingProcrastination,
+    SelfDiscovery,
+
+    // NOTE: we filter out all questions from categories starting with X
+    XEnergyLevelToday,
+    XBrowsingBehaviorHappiness,
+
+    // NO save questions
+    XXPurposeOfSession,
 }
 
 data class Question(

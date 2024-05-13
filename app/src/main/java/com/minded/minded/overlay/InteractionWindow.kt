@@ -36,6 +36,8 @@ class InteractionWindow(
                 settings.allowFileAccessFromFileURLs = true
                 settings.allowUniversalAccessFromFileURLs = true
                 settings.allowContentAccess = true
+                settings.setNeedInitialFocus(true)
+                this.focusable = focusable
                 this.setBackgroundColor(0x00000000)
                 addJavascriptInterface(
                     InteractionWindowJavaScriptInterface(sharedOverlayViewModel, win, ctrlSvc),

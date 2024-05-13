@@ -17,6 +17,7 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun onSuccessSunTap() {
+        Log.v(logTag, "onSuccessSunTap() XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         Log.v(logTag, "onSuccessSunTap()")
 //        OverlayControllerService.showOverlay(
 //            ctrlSvc,
@@ -68,10 +69,14 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
-    fun omQuestionSet(jsonString: String?) {
+    fun setQuestion(jsonString: String?) {
         Log.v(logTag, "omQuestionSet() $jsonString")
         val questionForPrompt = parseJSONQuestion(jsonString!!)
         Log.v(logTag, "omQuestionSet() $questionForPrompt")
+        sharedOverlayViewModel.updateSharedData(
+            questionForPrompt = questionForPrompt,
+            answerTxt = null
+        )
 
 //        OverlayControllerService.showOverlay(
 //            ctrlSvc,
@@ -81,9 +86,9 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
-    fun setLittleSunTxt(txt: String) {
-        Log.v(logTag, "setLittleSunTxt() $txt")
-//        sharedOverlayViewModel.resetAnswerTxt()
+    fun setAnswerTxt(txt: String) {
+        Log.v(logTag, "setAnswerTxt() $txt")
+        sharedOverlayViewModel.updateSharedData(answerTxt = txt)
 //        OverlayControllerService.showOverlay(
 //            ctrlSvc,
 //            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
