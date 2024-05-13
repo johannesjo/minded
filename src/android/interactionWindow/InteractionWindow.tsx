@@ -21,6 +21,7 @@ import {
 } from "@src/shared/components/interaction/getInteractionMode";
 import { androidInterface } from "@src/dataInterface/android/system";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
+import { fadeOut } from "@src/util/animation";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
@@ -35,6 +36,7 @@ const InteractionWindow = () => {
   let syncData;
   let questionUpdateCount = 0;
   let questionIdBefore;
+  let wrapperEl;
 
   onMount(async () => {
     addDayTimeDependentClass();
@@ -45,6 +47,7 @@ const InteractionWindow = () => {
 
       const rndQuestion = getQuestionSmart(syncDataI.answers);
       setRndQuestion(rndQuestion);
+      androidInterface.setQuestion(JSON.stringify(rndQuestion));
       questionIdBefore = rndQuestion.id;
 
       switch (getMode()) {
@@ -83,7 +86,7 @@ const InteractionWindow = () => {
         questionUpdateCount >= 5
           ? getRndEntry(QUESTIONS)
           : getQuestionSmart(syncData.answers);
-      androidInterface.setQuestion(rndQuestion);
+      androidInterface.setQuestion(JSON.stringify(rndQuestion));
 
       if (questionIdBefore === rndQuestion.id) {
         questionUpdateCount++;
@@ -105,12 +108,14 @@ const InteractionWindow = () => {
   // TODO add app name
   return (
     <div
+      ref={wrapperEl}
       id="minded-6622-coloured-wrapper-dynamic"
-      onClick={(ev) => {
+      onClick={async (ev) => {
         if (
           (ev.target as HTMLElement)?.id ===
           "minded-6622-coloured-wrapper-dynamic"
         ) {
+          await fadeOut(wrapperEl, 400).promise;
           androidInterface.fadeOutMainFinal();
         }
       }}
