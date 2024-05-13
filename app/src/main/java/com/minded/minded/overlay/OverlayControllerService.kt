@@ -3,7 +3,9 @@ package com.minded.minded.overlay
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.view.WindowManager
 import androidx.lifecycle.Lifecycle
@@ -174,8 +176,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
-            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-            _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+            Handler(Looper.getMainLooper()).post {
+                _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+                _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+            }
             wasNoOverlaysBefore = true
         }
     }
@@ -288,13 +292,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         } else {
             hideAllBut()
         }
-        // TODO count to DB
-//        backToHomeScreenCount++
-//        if (backToHomeScreenCount % SHOW_APP_EVERY_X == 0) {
-//            goToHomeScreen()
-//        } else {
         goToApp()
-//        }
 
         if (!isSkipShowSuccessSunAfter) {
             showOverlay(

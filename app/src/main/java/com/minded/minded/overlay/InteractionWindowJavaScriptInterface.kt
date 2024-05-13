@@ -5,9 +5,6 @@ import com.minded.minded.overlay.InteractionWindow
 import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseJSONQuestion
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class InteractionWindowJavaScriptInterface(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
@@ -19,19 +16,25 @@ class InteractionWindowJavaScriptInterface(
     val logTag = "InteractionWindowJavaScriptInterface"
 
     @JavascriptInterface
-    fun onSuccess() {
-        OverlayControllerService.showOverlay(
-            ctrlSvc,
-            OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
-        )
-        GlobalScope.launch {
-            delay(1000)
-            win.hideWindow()
-        }
+    fun onSuccessSunTap() {
+        Log.v(logTag, "onSuccessSunTap()")
+//        OverlayControllerService.showOverlay(
+//            ctrlSvc,
+//            OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
+//        )
+        ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
+        win.hideWindow()
+    }
+
+    @JavascriptInterface
+    fun onBeforeSuccessAni() {
+        Log.v(logTag, "onBeforeSuccessAni()")
+//        ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
     }
 
     @JavascriptInterface
     fun onSkip() {
+        Log.v(logTag, "onSkip()")
         sharedOverlayViewModel.resetAnswerTxt()
         OverlayControllerService.showOverlay(
             ctrlSvc,
@@ -42,6 +45,7 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun saveString(key: String, value: String) {
+        Log.v(logTag, "saveString() $value")
         with(sharedPreferences.edit()) {
             putString(key, value)
             apply()
@@ -50,6 +54,7 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun retrieveString(key: String): String? {
+        Log.v(logTag, "retrieveString() $key")
         return sharedPreferences.getString(key, null)
     }
 
@@ -79,12 +84,21 @@ class InteractionWindowJavaScriptInterface(
 
 
     @JavascriptInterface
+    fun hideWindow() {
+        Log.v(logTag, "hideWindow()")
+        win.hideWindow()
+    }
+
+
+    @JavascriptInterface
     fun closeTabOrApp() {
+        Log.v(logTag, "closeTabOrApp()")
         win.hideWindow()
     }
 
     @JavascriptInterface
     fun fadeOutMainFinal() {
+        Log.v(logTag, "fadeOutMainFinal()")
         win.hideWindow()
     }
 }
