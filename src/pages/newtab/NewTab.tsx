@@ -6,6 +6,7 @@ import { Onboarding } from "@src/shared/components/onboarding/Onboarding";
 // @ts-ignore
 import styles from "./NewTab.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";
+import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 
 const NewTab = () => {
   const [getIsShowInfo, setIsShowInfo] = createSignal(false);
@@ -13,6 +14,8 @@ const NewTab = () => {
   const [getTestWebsite, setTestWebsite] = createSignal<string | null>(null);
 
   onMount(() => {
+    addDayTimeDependentClass();
+
     getSyncData().then((syncData) => {
       if (syncData.cfg.blockedHosts[0]) {
         setTestWebsite(getRndEntry(syncData.cfg.blockedHosts));
