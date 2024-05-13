@@ -77,7 +77,7 @@ class LittleSunWindow(
                         OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
                         sharedOverlayViewModel.sharedData.value.currentApp
                     )
-                } else if (sharedOverlayViewModel.sharedData.value.questionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+                } else if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
@@ -92,7 +92,7 @@ class LittleSunWindow(
     override fun showWindow() {
         super.showWindow()
         // show small msg overlay initially if there is a question or answer
-        if (sharedOverlayViewModel.sharedData.value.questionForPrompt != null || sharedOverlayViewModel.sharedData.value.answerTxt != null) {
+        if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null || sharedOverlayViewModel.sharedData.value.answerTxt != null) {
             OverlayControllerService.showOverlay(
                 ctrlSvc,
                 OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY

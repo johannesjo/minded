@@ -51,12 +51,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.appcompat)
-
-    ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -70,11 +66,7 @@ dependencies {
     implementation(libs.material)
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    implementation("androidx.datastore:datastore-core:1.1.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

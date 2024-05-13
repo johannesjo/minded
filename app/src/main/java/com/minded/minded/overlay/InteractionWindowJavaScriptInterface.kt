@@ -1,10 +1,10 @@
 import android.content.Context
 import android.util.Log
 import android.webkit.JavascriptInterface
-import com.minded.minded.data.QuestionForPrompt
 import com.minded.minded.overlay.InteractionWindow
 import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.util.parseJSONQuestion
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,9 +54,11 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
-    fun setQuestion(question: QuestionForPrompt?) {
-        Log.v(logTag, "setQuestion() $question")
-//        sharedOverlayViewModel.resetAnswerTxt()
+    fun omQuestionSet(jsonString: String?) {
+        Log.v(logTag, "omQuestionSet() $jsonString")
+        val questionForPrompt = parseJSONQuestion(jsonString!!)
+        Log.v(logTag, "omQuestionSet() $questionForPrompt")
+
 //        OverlayControllerService.showOverlay(
 //            ctrlSvc,
 //            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY

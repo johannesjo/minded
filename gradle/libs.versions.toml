@@ -12,7 +12,6 @@ composeBom = "2024.04.01"
 coordinatorlayout = "1.2.0"
 material = "1.11.0"
 workRuntimeKtx = "2.9.0"
-roomCommon = "2.6.1"
 glanceAppwidget = "1.0.0"
 appcompat = "1.6.1"
 preference = "1.2.1"
@@ -37,10 +36,6 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCommon" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCommon" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCommon" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glanceAppwidget" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }

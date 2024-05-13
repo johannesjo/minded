@@ -7,11 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
-import android.widget.RemoteViews
-import android.widget.Toast
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import com.minded.minded.MainActivity
 
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
     private val updateInterval = 30 * 60 * 1000L

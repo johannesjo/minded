@@ -1,9 +1,18 @@
 package com.minded.minded.data
 
-import com.minded.minded.data.answers.Answer
+import com.minded.minded.util.parseQuestionFromJSONObject
 import org.json.JSONArray
 import java.io.Serializable
 
+
+data class Answer(
+    val id: Int,
+    val questionCategoryId: QuestionCategoryId,
+    val questionId: String? = null,
+    val txt: String,
+    var createdAt: Long,
+    var modifiedAt: Long
+)
 
 enum class QuestionCategoryId {
     Motivation,
@@ -71,11 +80,7 @@ val jsonArray = JSONArray(jsonString)
 
 val QUESTIONS = List(jsonArray.length()) { i ->
     val jsonObject = jsonArray.getJSONObject(i)
-    val t = jsonObject.getString("t")
-    val prompt = jsonObject.optString("prompt", null)
-    val categoryId = QuestionCategoryId.valueOf(jsonObject.getString("categoryId"))
-    val questionID = jsonObject.getString("id")
-    QuestionForPrompt(questionID, categoryId, t, prompt)
+    parseQuestionFromJSONObject(jsonObject)
 }
 
 val QUESTION_CATEGORIES: Map<QuestionCategoryId, QuestionCategory> = mapOf(
