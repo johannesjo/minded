@@ -1,11 +1,11 @@
 import { render } from "solid-js/web";
-import "./interactionWindow.scss";
+import "./interactionAndroid.scss";
 // @ts-ignore
-import InteractionWindow from "@src/android/interactionWindow/InteractionWindow.tsx";
+import InteractionAndroid from "@src/android/interaction/InteractionAndroid.tsx";
 
 const appContainer = document.querySelector("#minded-6622");
 if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
-render(InteractionWindow as any, appContainer);
+render(InteractionAndroid as any, appContainer);

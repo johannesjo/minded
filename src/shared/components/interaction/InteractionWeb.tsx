@@ -96,7 +96,7 @@ export const InteractionWeb: (props: {
             questionForPrompt={getQuestion()}
             isInitFadeout={true}
             wrapperEl={wrapperEl}
-            onUpdateLittleSunTxt={setLittleSunTxt}
+            onSetAnswer={setLittleSunTxt}
             onModeSet={(mode) => {
               if (mode !== "QUESTION") {
                 setLittleSunTxt("");
@@ -111,7 +111,6 @@ export const InteractionWeb: (props: {
             onSuccessSunTap={onSuccessSunTap}
             onSkip={() => setIsShowLittleSun(true)}
             onUpdateQuestion={(question) => {
-              console.log(question);
               setQuestion(question);
               setLittleSunTxt(question?.t + "?");
             }}

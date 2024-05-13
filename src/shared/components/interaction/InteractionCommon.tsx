@@ -30,7 +30,7 @@ interface InteractionCommonProps {
   onSuccessSunTap: () => void;
   onAfterSuccessSunFadeout: () => void;
   onAfterInteractionFadeout: () => void;
-  onUpdateLittleSunTxt: (txt: string) => void;
+  onSetAnswer: (txt: string) => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
   onModeSet: (mode: InteractionMode) => void;
   onSkip: () => void;
@@ -92,6 +92,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     cancelCountdown();
     showSuccessSunAniFlow(answerOrData);
+    if (answerOrData) {
+      props.onSetAnswer(answerOrData.val.toString());
+    }
   };
 
   const cancelCountdown = () => {

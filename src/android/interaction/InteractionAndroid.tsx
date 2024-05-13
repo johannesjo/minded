@@ -6,7 +6,7 @@ import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 
-const InteractionWindow = () => {
+const InteractionAndroid = () => {
   let wrapperEl;
 
   onMount(async () => {
@@ -15,7 +15,7 @@ const InteractionWindow = () => {
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {
     androidInterface.setQuestion(JSON.stringify(rndQuestion));
-    androidInterface.setLittleSunTxt(rndQuestion.t + "?");
+    androidInterface.setAnswerTxt(rndQuestion.t + "?");
   };
 
   const onSkip = () => {
@@ -41,10 +41,14 @@ const InteractionWindow = () => {
         isInitFadeout={false}
         wrapperEl={wrapperEl}
         onModeSet={() => undefined}
-        onSuccessSunTap={androidInterface.onSuccessSunTap}
-        onAfterInteractionFadeout={androidInterface.showAfterSun}
-        onUpdateLittleSunTxt={androidInterface.setLittleSunTxt}
-        onAfterSuccessSunFadeout={androidInterface.showAfterSun}
+        questionForPrompt={undefined}
+        onSuccessSunTap={() => {
+          console.log("XXXXXXXXXXXXXXXXXXX");
+          androidInterface.onSuccessSunTap();
+        }}
+        onAfterInteractionFadeout={() => androidInterface.showAfterSun()}
+        onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
+        onAfterSuccessSunFadeout={() => androidInterface.showAfterSun()}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
       />
@@ -52,4 +56,4 @@ const InteractionWindow = () => {
   );
 };
 
-export default InteractionWindow;
+export default InteractionAndroid;
