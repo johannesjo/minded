@@ -24,9 +24,12 @@ import { getQuestionSmart } from "@src/util/getQuestionSmart"; // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
 
 interface InteractionCommonProps {
+  questionForPrompt?: QuestionForPrompt;
+  isInitFadeout: boolean;
   wrapperEl: HTMLElement;
   onSuccessSunTap: () => void;
   onAfterSuccessSunFadeout: () => void;
+  onAfterInteractionFadeout: () => void;
   onUpdateLittleSunTxt: (txt: string) => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
   onModeSet: (mode: InteractionMode) => void;
@@ -54,22 +57,36 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let questionIdBefore;
 
   onMount(async () => {
+    if (props.isInitFadeout) {
+      initFadeOut();
+    }
+
     getSyncData().then((syncDataI) => {
       syncData = syncDataI;
-      setMode(getInteractionMode(syncData));
-      const rndQuestion = getQuestionSmart(syncDataI.answers);
-      setRndQuestion(rndQuestion);
-      questionIdBefore = rndQuestion.id;
+      if (props.questionForPrompt) {
+        setRndQuestion(props.questionForPrompt);
+        questionIdBefore = props.questionForPrompt.id;
+        setMode("QUESTION");
+      } else {
+        const rndQuestion = getQuestionSmart(syncDataI.answers);
+        setRndQuestion(rndQuestion);
+        setMode(getInteractionMode(syncData));
+        questionIdBefore = rndQuestion.id;
+      }
     });
   });
 
   createEffect(() => {
-    console.log("props.onModeSet");
-    props.onModeSet(getMode());
+    console.log("props.onModeSet", getMode());
+    if (getMode()) {
+      props.onModeSet(getMode());
+    }
   });
   createEffect(() => {
-    console.log("props.onUpdateQuestion");
-    props.onUpdateQuestion(getRndQuestion());
+    console.log("props.onUpdateQuestion", getRndQuestion());
+    if (getRndQuestion()) {
+      props.onUpdateQuestion(getRndQuestion());
+    }
   });
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
@@ -122,6 +139,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         questionUpdateCount++;
       }
     }
+  };
+
+  const initFadeOut = () => {
+    const res = fadeOut(props.wrapperEl, 5000, 2000);
+    frameNr = res.frameNr;
+    res.promise.then(() => {
+      if (+props.wrapperEl.style.opacity < 0.1) {
+        props.onAfterInteractionFadeout();
+      }
+    });
   };
 
   return (

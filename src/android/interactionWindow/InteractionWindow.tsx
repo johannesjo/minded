@@ -13,10 +13,6 @@ const InteractionWindow = () => {
     addDayTimeDependentClass();
   });
 
-  const onSuccessSunTap = () => {
-    androidInterface.onSuccessSunTap();
-  };
-
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {
     androidInterface.setQuestion(JSON.stringify(rndQuestion));
     androidInterface.setLittleSunTxt(rndQuestion.t + "?");
@@ -42,11 +38,13 @@ const InteractionWindow = () => {
       }}
     >
       <InteractionCommon
+        isInitFadeout={false}
         wrapperEl={wrapperEl}
         onModeSet={() => undefined}
-        onSuccessSunTap={onSuccessSunTap}
+        onSuccessSunTap={androidInterface.onSuccessSunTap}
+        onAfterInteractionFadeout={androidInterface.showAfterSun}
         onUpdateLittleSunTxt={androidInterface.setLittleSunTxt}
-        onAfterSuccessSunFadeout={androidInterface.hideWindow}
+        onAfterSuccessSunFadeout={androidInterface.showAfterSun}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
       />

@@ -62,7 +62,7 @@ export const ContentScriptMain: (props: {
           host={host}
           wasAnswerGiven={false}
           onShowQuestionAgain={() => undefined}
-          onShowFreshQuestion={() => setIsShowFullMinder(true)}
+          onShowFreshInteraction={() => setIsShowFullMinder(true)}
           teardown={() => document.getElementById("minded-6622").remove()}
         ></LittleSunComponent>
       )}
