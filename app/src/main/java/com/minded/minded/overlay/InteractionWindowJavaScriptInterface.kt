@@ -33,6 +33,15 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
+    fun showAfterSun() {
+        Log.v(logTag, "onShowAfterSun()")
+        OverlayControllerService.showOverlay(
+            ctrlSvc,
+            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+        )
+    }
+
+    @JavascriptInterface
     fun onSkip() {
         Log.v(logTag, "onSkip()")
         sharedOverlayViewModel.resetAnswerTxt()
