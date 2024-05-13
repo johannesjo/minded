@@ -4,7 +4,7 @@ interface InteractionWindowJavaScriptInterface {
   onSuccess: () => void;
   saveString: (key: string, value: string) => void;
   retrieveString: (key: string) => string | null;
-  setQuestion: (question: Question) => void;
+  setQuestion: (questionAsString: string) => void;
   setLittleSunTxt: (txt: string) => void;
   onSkip: () => void;
   closeTabOrApp: () => void;
