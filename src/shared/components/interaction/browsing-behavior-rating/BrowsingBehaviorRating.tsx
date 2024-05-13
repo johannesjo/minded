@@ -79,7 +79,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*  <Question*/}
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH1)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
-        {/*    onSuccess={() => setStep(2)}*/}
+        {/*    onSuccessSunTap={() => setStep(2)}*/}
         {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
@@ -87,7 +87,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*  <Question*/}
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH2)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
-        {/*    onSuccess={() => setStep(3)}*/}
+        {/*    onSuccessSunTap={() => setStep(3)}*/}
         {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
@@ -95,7 +95,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*  <Question*/}
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH3)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
-        {/*    onSuccess={() => setStep(4)}*/}
+        {/*    onSuccessSunTap={() => setStep(4)}*/}
         {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
@@ -103,7 +103,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*  <Question*/}
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH4)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
-        {/*    onSuccess={() => props.onSuccess()}*/}
+        {/*    onSuccessSunTap={() => props.onSuccessSunTap()}*/}
         {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}

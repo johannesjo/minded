@@ -30,7 +30,7 @@ const Main = () => {
   });
 
   // return (<Rating />);
-  // return (<Question isUnskippable={true} onSuccess={()=> undefined} />)
+  // return (<Question isUnskippable={true} onSuccessSunTap={()=> undefined} />)
 
   return (
     <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>

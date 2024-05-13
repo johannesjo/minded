@@ -4,8 +4,7 @@ import {
   updateHostsEntry,
   // @ts-ignore
 } from "@dataInterface/localDataInterface";
-// @ts-ignore
-import { closeTabOrApp } from "@dataInterface/system";
+import { closeTab } from "@src/dataInterface/extension/system";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -92,7 +91,7 @@ export const LittleSunComponent: (props: {
   const littleSunClose = () => {
     setIsLittleSunSuccess(true);
     littleSunSuccessSunEl.addEventListener("animationend", () => {
-      closeTabOrApp();
+      closeTab();
     });
   };
 
