@@ -3,7 +3,6 @@ package com.minded.minded.widget
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -29,9 +28,8 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
-import com.minded.minded.data.answers.AnswerRepository
+import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.ui.theme.PastelYellow
-import com.minded.minded.util.mapAnswersToQuestions
 import kotlin.random.Random
 
 
@@ -46,9 +44,11 @@ class MyAppWidget : GlanceAppWidget() {
         }
     }
 
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         Log.v("MyAppWidget", "provideGlance")
-        val answerRepository = AnswerRepository(context)
+        val sharedPreferences = context.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
+        // TODO get questionsForDashboard from sharedPreferences
 
         provideContent {
             // create your AppWidget here
@@ -56,7 +56,7 @@ class MyAppWidget : GlanceAppWidget() {
                 "MyAppWidget",
                 "Displaying dashboard with"
             )
-            QuestionCategoryCmp2(answerRepository)
+            QuestionCategoryCmp2()
         }
     }
 
@@ -65,13 +65,10 @@ class MyAppWidget : GlanceAppWidget() {
 
 @Composable
 fun QuestionCategoryCmp2(
-    answerRepository: AnswerRepository
+    questionDataForDashboard: List<QuestionCategoryForDashboard> = emptyList()
 ) {
-    val repository = remember { answerRepository.getAllAnswersFlow() }
-
     // Retrieve the cache data everytime the content is refreshed
-    val allAnswers = repository.collectAsState(initial = emptyList())
-    val questionDataForDashboard = mapAnswersToQuestions(allAnswers.value)
+
     if (questionDataForDashboard.isEmpty()) {
         Log.d("MyAppWidget", "No questions found")
         Box(

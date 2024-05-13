@@ -14,7 +14,6 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
-import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.model.DashboardViewModel
 import java.time.Instant
@@ -35,7 +34,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
 
-    private lateinit var answerRepository: AnswerRepository
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var sharedOverlayViewModel: SharedOverlayViewModel
 
@@ -47,10 +45,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     override fun onCreate() {
-        answerRepository = AnswerRepository(this)
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        dashboardViewModel = DashboardViewModel(answerRepository)
-        sharedOverlayViewModel = SharedOverlayViewModel(answerRepository);
+        dashboardViewModel = DashboardViewModel()
+        sharedOverlayViewModel = SharedOverlayViewModel();
 
         interactionOverlayWindow =
             InteractionWindow(this, sharedOverlayViewModel, windowManager)

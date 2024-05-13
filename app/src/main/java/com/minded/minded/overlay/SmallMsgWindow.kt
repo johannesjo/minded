@@ -28,7 +28,7 @@ class SmallMsgWindow(
         val context = LocalContext.current
         val isQuestion: Boolean = sharedData.answerTxt == null
         val reminderTxt =
-            if (isQuestion) (sharedData.questionForPrompt?.t + '?') else sharedData.answerTxt
+            if (isQuestion) (sharedData.lastQuestionForPrompt?.t + '?') else sharedData.answerTxt
                 ?: ""
         Log.v(logTag, "Cmp() isQuestion ${isQuestion} reminderTxt:${sharedData.answerTxt}")
 

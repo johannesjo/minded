@@ -11,7 +11,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.minded.minded.data.answers.AnswerRepository
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.ui.model.DashboardViewModelFactory
@@ -30,13 +29,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
-        val answerRepository = AnswerRepository(this)
-        val viewModelFactory = DashboardViewModelFactory(answerRepository)
+        val viewModelFactory = DashboardViewModelFactory()
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 
 //        startActivity(Intent(this, AppPickerActivity::class.java));
-
 
         lifecycleScope.launch {
             setContent {
@@ -57,7 +54,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.v("MAIN", "onResume()")
-        dashboardViewModel.loadAnswersFlow()
+        // TODO refresh web view
         checkAndUpdateCapabilities()
     }
 

@@ -2,19 +2,11 @@ package com.minded.minded.overlay.data
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.minded.minded.data.QuestionCategoryId
 import com.minded.minded.data.QuestionForPrompt
-import com.minded.minded.data.answers.AnswerRepository
-import com.minded.minded.util.getQuestionSmart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import java.time.Instant
 
 
@@ -32,16 +24,14 @@ typealias AppMap = Map<String, AppEntry>
 
 data class SharedOverlayData(
     var currentApp: String? = null,
-    var questionForPrompt: QuestionForPrompt? = null,
+    var lastQuestionForPrompt: QuestionForPrompt? = null,
     var answerTxt: String? = null,
     var successSunTxt: String? = null,
     var isShowLittleSunAfterSuccess: Boolean = true,
-    var interactionMode: InteractionMode = InteractionMode.Question,
     var appMap: AppMap = emptyMap()
 )
 
 class SharedOverlayViewModel(
-    private val answerRepository: AnswerRepository?,
     initialData: SharedOverlayData = SharedOverlayData()
 ) : ViewModel() {
     private val lt = javaClass.simpleName
@@ -72,7 +62,7 @@ class SharedOverlayViewModel(
         val newSharedData = currentData.copy(
             currentApp = currentApp ?: currentData.currentApp,
             appMap = currentData.appMap,
-            questionForPrompt = questionForPrompt ?: currentData.questionForPrompt,
+            lastQuestionForPrompt = questionForPrompt ?: currentData.lastQuestionForPrompt,
             answerTxt = answerTxt ?: currentData.answerTxt,
             successSunTxt = successSunTxt ?: currentData.successSunTxt,
             isShowLittleSunAfterSuccess = isShowLittleSunAfterSuccess
@@ -82,46 +72,17 @@ class SharedOverlayViewModel(
         _sharedData.update { newSharedData }
     }
 
-    fun setRndQuestion() {
-        Log.v(lt, "setRndQuestion()")
-        if (answerRepository == null) {
-            throw IllegalStateException("answerRepository is null")
-        }
-
-        viewModelScope.launch {
-            val answers = answerRepository.getAllAnswersFlow().flowOn(Dispatchers.IO).first()
-            Log.v(lt, "setRndQuestion() answers: $answers ${answers.size}")
-            val q = getQuestionSmart(answers)
-            Log.v(lt, "setRndQuestion() question: $q ${q.t}")
-
-            val currentData = sharedData.value ?: SharedOverlayData()
-            val newSharedData = currentData.copy(
-                questionForPrompt = q,
-                answerTxt = null,
-                interactionMode = InteractionMode.Question
-            )
-            _sharedData.update { newSharedData }
-            Log.v(lt, "setRndQuestion() ${newSharedData}")
-        }
-    }
-
     fun resetToFreshRndQuestionAndMode(currentApp: String) {
-        val interactionMode =
-            if (Math.random() > 0.33) InteractionMode.Question else InteractionMode.MoodSelector
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
             currentApp = currentApp,
             isShowLittleSunAfterSuccess = true,
             answerTxt = null,
-            questionForPrompt = null,
-            interactionMode = interactionMode,
+            lastQuestionForPrompt = null,
             successSunTxt = null,
         )
         _sharedData.update { newSharedData }
         Log.v(lt, "resetToFreshRndQuestion() ${newSharedData}")
-        if (interactionMode == InteractionMode.Question) {
-            setRndQuestion()
-        }
     }
 
     fun updateLastAppUsage() {
@@ -162,24 +123,5 @@ class SharedOverlayViewModel(
         val newSharedData = currentData.copy(successSunTxt = null)
         _sharedData.update { newSharedData }
         Log.v(lt, "resetSunTxt() ${newSharedData}")
-    }
-
-    suspend fun createQuestionWithTimestamp(
-        txtIn: String,
-        questionCategoryId: QuestionCategoryId,
-        questionId: String
-    ) {
-        if (answerRepository == null) {
-            throw IllegalStateException("answerRepository is null")
-        }
-
-        return answerRepository.createWithTimestamp(txtIn, questionCategoryId, questionId)
-    }
-
-    fun setMood(mood: String) {
-        val currentData = sharedData.value ?: SharedOverlayData()
-        val newSharedData = currentData.copy(answerTxt = null, questionForPrompt = null)
-        _sharedData.update { newSharedData }
-        Log.v(lt, "setMood() ${mood} NOT IMPLEMENTED")
     }
 }
