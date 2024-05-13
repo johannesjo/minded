@@ -1,10 +1,13 @@
 package com.minded.minded.overlay
 
 import InteractionWindowJavaScriptInterface
+import android.content.Context
 import android.graphics.PixelFormat
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
@@ -43,6 +46,20 @@ class InteractionWindow(
                     InteractionWindowJavaScriptInterface(sharedOverlayViewModel, win, ctrlSvc),
                     "android"
                 )
+                this.requestFocus()
+//                Handler(Looper.getMainLooper()).postDelayed({
+//                    this.requestFocus()
+//                }, 4000) // Delay of 1 second
+
+                // TODO only show the keyboard when there is an input on the page
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView, url: String) {
+                        this@apply.requestFocus()
+                        val imm =
+                            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.showSoftInput(this@apply, InputMethodManager.SHOW_IMPLICIT)
+                    }
+                }
 
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html")
             }
