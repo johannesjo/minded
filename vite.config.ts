@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
-// import devtools from 'solid-devtools/vite';
 import * as path from "path";
 import { resolve } from "path";
 import { crx } from "@crxjs/vite-plugin";
@@ -41,7 +40,7 @@ export default defineConfig(({ mode }) => {
               interaction: resolve(
                 root,
                 "android",
-                "interactionWindow",
+                "interaction",
                 "index.html",
               ),
             },

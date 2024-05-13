@@ -20,6 +20,8 @@
   --little-sun-shadow: 0 0 4px 0 var(--c-pastel-red), 0 0 8px 0 var(--c-pastel-yellow);
   --little-sun-txt-c: rgba(0, 0, 0, .6);
   --success-sun-txt-c: rgba(0, 0, 0, .6);
+  --success-sun-ani-scale-1: 16;
+  --success-sun-ani-scale-2: 26;
   --rating-inactive: rgba(0, 0, 0, .3);
   --h4-c: rgba(0, 0, 0, .7);
 
@@ -93,6 +95,7 @@
     --c-bg-btns: rgba(0, 0, 0, .5);
     --btn-bg: rgba(0, 0, 0, .5);
     --btn-bg-selected: rgba(0, 0, 0, 1);
+
   }
 
   --max-width-mobile: 600px;
@@ -102,6 +105,9 @@
   #minded-6622 {
     --fz-l: 22px;
     --fz-m: 15px;
+
+    --success-sun-ani-scale-1: 11;
+    --success-sun-ani-scale-2: 18;
   }
 }
 

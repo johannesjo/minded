@@ -1,5 +1,6 @@
 // NOTE: styles for question work differently since we're using them for the content-script
 
+// TODO move all this to common
 
 #minded-6622-coloured-wrapper > * {
   cursor: auto;
@@ -84,22 +85,22 @@
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(16);
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-1));
   }
 }
 
 @keyframes minded6622successSunStay {
   0% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(16);
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-1));
   }
   50% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(26);
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-2));
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(16);
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-1));
   }
 }
 

@@ -20,6 +20,7 @@ export const Question: (props: {
   let inpEl;
   let t0;
   let t1;
+  let t2;
 
   createEffect(() => {
     if (inpEl) {
@@ -35,11 +36,13 @@ export const Question: (props: {
     inpEl.focus();
     t0 = setTimeout(() => inpEl.focus(), 250);
     t1 = setTimeout(() => inpEl.focus(), 400);
+    t2 = setTimeout(() => inpEl.focus(), 1000);
   });
 
   onCleanup(() => {
     window.clearTimeout(t0);
     window.clearTimeout(t1);
+    window.clearTimeout(t2);
   });
 
   const submitAnswer = async (answerTxt: string) => {
