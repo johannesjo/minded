@@ -31,6 +31,16 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
+    fun onSkip() {
+        sharedOverlayViewModel.resetAnswerTxt()
+        OverlayControllerService.showOverlay(
+            ctrlSvc,
+            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+        )
+        win.hideWindow()
+    }
+
+    @JavascriptInterface
     fun saveString(key: String, value: String) {
         with(sharedPreferences.edit()) {
             putString(key, value)
@@ -65,15 +75,6 @@ class InteractionWindowJavaScriptInterface(
 //        win.hideWindow()
     }
 
-    @JavascriptInterface
-    fun onSkip() {
-        sharedOverlayViewModel.resetAnswerTxt()
-        OverlayControllerService.showOverlay(
-            ctrlSvc,
-            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-        )
-        win.hideWindow()
-    }
 
     @JavascriptInterface
     fun closeTabOrApp() {
