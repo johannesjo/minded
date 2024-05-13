@@ -20,6 +20,7 @@ import {
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
 import { androidInterface } from "@src/dataInterface/android/system";
+import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
@@ -36,6 +37,8 @@ const InteractionWindow = () => {
   let questionIdBefore;
 
   onMount(async () => {
+    addDayTimeDependentClass();
+
     getSyncData().then((syncDataI) => {
       syncData = syncDataI;
       setMode(getInteractionMode(syncData));

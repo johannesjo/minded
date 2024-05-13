@@ -10,6 +10,7 @@ import {
   // @ts-ignore
 } from "@dataInterface/localDataInterface";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
+import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 
 const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 
@@ -22,6 +23,8 @@ export const ContentScriptMain: (props: {
   );
 
   onMount(async () => {
+    addDayTimeDependentClass();
+
     if (props.isShowFullMinderInitially) {
       setTimeout(() => {
         updateSyncData({
