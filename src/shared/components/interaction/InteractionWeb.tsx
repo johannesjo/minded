@@ -23,6 +23,8 @@ export const InteractionWeb: (props: {
   let wrapperEl;
 
   onMount(async () => {
+    console.log("InteractionWeb onMount()");
+
     // give a moment time for rendering
     setTimeout(() => {
       stopAllVideos();
@@ -86,6 +88,7 @@ export const InteractionWeb: (props: {
               "minded-6622-coloured-wrapper-dynamic"
             ) {
               fadeOutInteractionWrapper().then(() => {
+                alert("AA");
                 setIsShowLittleSun(true);
               });
             }
@@ -103,13 +106,17 @@ export const InteractionWeb: (props: {
               }
             }}
             onAfterSuccessSunFadeout={() =>
-              fadeOut(wrapperEl, 150).promise.then(() =>
-                setIsShowLittleSun(true),
-              )
+              fadeOut(wrapperEl, 150).promise.then(() => {
+                setIsShowLittleSun(true);
+              })
             }
-            onAfterInteractionFadeout={() => setIsShowLittleSun(true)}
+            onAfterInteractionFadeout={() => {
+              setIsShowLittleSun(true);
+            }}
             onSuccessSunTap={onSuccessSunTap}
-            onSkip={() => setIsShowLittleSun(true)}
+            onSkip={() => {
+              setIsShowLittleSun(true);
+            }}
             onUpdateQuestion={(question) => {
               setQuestion(question);
               setLittleSunTxt(question?.t + "?");

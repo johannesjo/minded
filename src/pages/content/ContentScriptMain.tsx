@@ -23,6 +23,8 @@ export const ContentScriptMain: (props: {
   );
 
   onMount(async () => {
+    console.log("ContentScriptMain onMount()");
+
     addDayTimeDependentClass();
 
     if (props.isShowFullMinderInitially) {
