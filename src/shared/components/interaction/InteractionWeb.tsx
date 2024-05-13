@@ -1,18 +1,12 @@
 /* @refresh reload */
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { fadeOut } from "@src/util/animation";
-import { getRndEntry } from "@src/util/getRndEntry";
-import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
-// @ts-ignore
-import { getSyncData } from "@dataInterface/syncDataInterface";
-// @ts-ignore
-import { closeTabOrApp } from "@dataInterface/system";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { androidInterface } from "@src/dataInterface/android/system";
+import { closeTab } from "@src/dataInterface/extension/system";
+import { QuestionForPrompt } from "@src/shared/data/questions";
 
-const ADVICE = getRndEntry(ACTION_ADVICES);
 // NOTE: val also needs to be set in css
 
 export const InteractionWeb: (props: {
@@ -21,6 +15,7 @@ export const InteractionWeb: (props: {
 }) => JSX.Element = (props) => {
   // const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
+  const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
   const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
@@ -40,57 +35,14 @@ export const InteractionWeb: (props: {
     setTimeout(() => {
       stopAllVideos();
     }, 5000);
-
-    // NOTE: timeout makes this much more reliable
-    setTimeout(() => {
-      initFadeOut();
-    }, 100);
   });
 
   onCleanup(() => {
     document.removeEventListener("keypress", escapeHandler);
   });
 
-  // TODO move as optional param to child
-
-  const initFadeOut = () => {
-    // if (getMode() === "ACTION_ADVICE") {
-    //   setTimeout(() => {
-    //     // prevent weird state when opening and directly switching to a new tab
-    //     // TODO FIX
-    //     // if (!document.hidden) {
-    //     //   showSuccessSunAniFlow();
-    //     // } else {
-    //     //   window.addEventListener(
-    //     //     "visibilitychange",
-    //     //     () => {
-    //     //       showSuccessSunAniFlow();
-    //     //     },
-    //     //     { once: true },
-    //     //   );
-    //     // }
-    //     const res = fadeOut(wrapperEl, 5000, 2000);
-    //     frameNr = res.frameNr;
-    //     res.promise.then(() => {
-    //       if (wrapperEl.style.opacity < 0.1) {
-    //         littleSun();
-    //       }
-    //     });
-    //   }, 5000);
-    // } else {
-    //   const res = fadeOut(wrapperEl, 5000, 2000);
-    //   frameNr = res.frameNr;
-    //   res.promise.then(() => {
-    //     if (wrapperEl.style.opacity < 0.1) {
-    //       littleSun();
-    //     }
-    //   });
-    // }
-  };
-
   const onSuccessSunTap = () => {
-    setWasAnswerGiven(true);
-    setIsShowLittleSun(true);
+    closeTab();
   };
 
   const teardown = () => {
@@ -98,43 +50,15 @@ export const InteractionWeb: (props: {
     props.onHideAll();
   };
 
-  const fadeOutMainFinal = () => {
-    if (wrapperEl) {
-      fadeOut(wrapperEl, 150).promise.then(() => {
-        setIsShowLittleSun(true);
-      });
-    } else {
-      setIsShowLittleSun(true);
-    }
+  const fadeOutInteractionWrapper = (): Promise<void> => {
+    return fadeOut(wrapperEl, 150).promise;
   };
 
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
-      fadeOutMainFinal();
+      fadeOut(wrapperEl, 150);
     }
   };
-
-  // const updateQuestion = () => {
-  //   setMode("QUESTION");
-  //   if (syncData) {
-  //     const rndQuestion =
-  //       questionUpdateCount >= 5
-  //         ? getRndEntry(QUESTIONS)
-  //         : getQuestionSmart(syncData.answers);
-  //
-  //     if (questionIdBefore === rndQuestion.id) {
-  //       questionUpdateCount++;
-  //       updateQuestion();
-  //     } else {
-  //       questionIdBefore = rndQuestion.id;
-  //       setRndQuestion(rndQuestion);
-  //       // TODO implement
-  //       // setLittleSunTxt(rndQuestion.t + "?");
-  //       // setWasAnswerGiven(false);
-  //       questionUpdateCount++;
-  //     }
-  //   }
-  // };
 
   return (
     <>
@@ -144,10 +68,9 @@ export const InteractionWeb: (props: {
           wasAnswerGiven={getWasAnswerGiven()}
           bubbleTxt={getLittleSunTxt()}
           teardown={teardown}
-          onShowFreshQuestion={() => {
-            // updateQuestion();
+          onShowFreshInteraction={() => {
             setIsShowLittleSun(false);
-            initFadeOut();
+            setQuestion(undefined);
             stopAllVideos();
           }}
           onShowQuestionAgain={() => {
@@ -162,20 +85,35 @@ export const InteractionWeb: (props: {
               (ev.target as HTMLElement)?.id ===
               "minded-6622-coloured-wrapper-dynamic"
             ) {
-              fadeOutMainFinal();
+              fadeOutInteractionWrapper().then(() => {
+                setIsShowLittleSun(true);
+              });
             }
           }}
           ref={wrapperEl}
         >
           <InteractionCommon
+            questionForPrompt={getQuestion()}
+            isInitFadeout={true}
             wrapperEl={wrapperEl}
-            onModeSet={(mode) => undefined}
             onUpdateLittleSunTxt={setLittleSunTxt}
-            onAfterSuccessSunFadeout={fadeOutMainFinal}
+            onModeSet={(mode) => {
+              if (mode !== "QUESTION") {
+                setLittleSunTxt("");
+              }
+            }}
+            onAfterSuccessSunFadeout={() =>
+              fadeOut(wrapperEl, 150).promise.then(() =>
+                setIsShowLittleSun(true),
+              )
+            }
+            onAfterInteractionFadeout={() => setIsShowLittleSun(true)}
             onSuccessSunTap={onSuccessSunTap}
-            onSkip={teardown}
+            onSkip={() => setIsShowLittleSun(true)}
             onUpdateQuestion={(question) => {
-              setLittleSunTxt(question.t);
+              console.log(question);
+              setQuestion(question);
+              setLittleSunTxt(question?.t + "?");
             }}
           />
         </div>

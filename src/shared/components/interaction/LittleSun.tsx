@@ -15,7 +15,7 @@ export const LittleSunComponent: (props: {
   wasAnswerGiven: boolean;
   teardown: () => void;
   onShowQuestionAgain: () => void;
-  onShowFreshQuestion: () => void;
+  onShowFreshInteraction: () => void;
   host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
@@ -32,6 +32,11 @@ export const LittleSunComponent: (props: {
     const d = await loadDataForHost(props.host);
 
     initCounter(d?.sessionDurationInS ?? 0);
+
+    // FOR TESTING
+    // setTimeout(() => {
+    //   props.onShowFreshInteraction();
+    // }, 8000);
 
     t0 = setTimeout(() => {
       setIsMoveToTopRight(true);
@@ -83,7 +88,7 @@ export const LittleSunComponent: (props: {
         v - initialValue > MIN_RE_QUESTION_ELAPSED_TIME_S &&
         v % RE_QUESTION_INTERVAL_IN_S === 0
       ) {
-        props.onShowFreshQuestion();
+        props.onShowFreshInteraction();
       }
     }, 1000);
   };
