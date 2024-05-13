@@ -36,6 +36,7 @@ class InteractionWindow(
                 settings.allowFileAccessFromFileURLs = true
                 settings.allowUniversalAccessFromFileURLs = true
                 settings.allowContentAccess = true
+                this.setBackgroundColor(0x00000000)
                 addJavascriptInterface(
                     InteractionWindowJavaScriptInterface(sharedOverlayViewModel, win, ctrlSvc),
                     "android"
@@ -44,29 +45,6 @@ class InteractionWindow(
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html")
             }
         })
-
-//        InteractionOverlayBig(
-//            sharedOverlayViewModel = sharedOverlayViewModel,
-//            onSuccess = {
-//                OverlayControllerService.showOverlay(
-//                    ctrlSvc,
-//                    OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
-//                )
-//                hideWindow()
-//                GlobalScope.launch {
-//                    delay(1000)  // delay for 1000 milliseconds (1 second)
-//                    hideWindow()
-//                }
-//            },
-//            onSkip = {
-//                sharedOverlayViewModel.resetAnswerTxt()
-//                OverlayControllerService.showOverlay(
-//                    ctrlSvc,
-//                    OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-//                )
-//                hideWindow()
-//            }
-//        )
     }
 
 
