@@ -28,7 +28,7 @@ const SUCCESS_SUN_ANI_IN_DURATION = 800;
 const SUCCESS_SUN_STAY_DURATION = 3600;
 const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
 
-export const Interaction: (props: {
+export const InteractionWeb: (props: {
   host: string;
   onHideAll: () => void;
 }) => JSX.Element = (props) => {

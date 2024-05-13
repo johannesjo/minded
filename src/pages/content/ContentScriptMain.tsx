@@ -2,7 +2,7 @@
 import { createSignal, JSX, onMount } from "solid-js";
 // @ts-ignore
 import { updateSyncData } from "@dataInterface/syncDataInterface";
-import { Interaction } from "@src/shared/components/interaction/Interaction";
+import { InteractionWeb } from "@src/shared/components/interaction/InteractionWeb";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import {
   loadDataForHost,
@@ -53,7 +53,7 @@ export const ContentScriptMain: (props: {
   return (
     <>
       {getIsShowFullMinder() ? (
-        <Interaction
+        <InteractionWeb
           host={host}
           onHideAll={() => document.getElementById("minded-6622").remove()}
         />
