@@ -95,6 +95,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     cancelCountdown();
     showSuccessSunAniFlow(answerOrData);
+
+    console.log("answerOrData", answerOrData);
     if (answerOrData) {
       props.onSetAnswer(answerOrData.val.toString());
     }
