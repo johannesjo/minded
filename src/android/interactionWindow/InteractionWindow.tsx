@@ -1,11 +1,7 @@
 // @ts-ignore
 import styles from "./InteractionWindow.module.scss";
 /* @refresh reload */
-import { createSignal, Match, onMount, Switch } from "solid-js";
-import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
-import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
-import { EnergyLvlInteraction } from "@src/shared/components/interaction/energy-lvl/EnergyLvlInteraction";
-import { Question } from "@src/shared/components/interaction/Question";
+import { createSignal, onMount } from "solid-js";
 // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
 // @ts-ignore
@@ -22,6 +18,7 @@ import {
 import { androidInterface } from "@src/dataInterface/android/system";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { fadeOut } from "@src/util/animation";
+import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
@@ -101,7 +98,7 @@ const InteractionWindow = () => {
     }
   };
 
-  const okSkip = () => {
+  const onSkip = () => {
     androidInterface.onSkip();
   };
 
@@ -120,55 +117,14 @@ const InteractionWindow = () => {
         }
       }}
     >
-      <div id="minded-6622-box">
-        <Switch>
-          <Match when={getMode() === "MOOD_CHECKIN"}>
-            <MoodCheckin
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onSuccess}
-              onCancel={okSkip}
-            />
-          </Match>
-          <Match when={getMode() === "EMOJI_CHECKIN"}>
-            <EmojiCheckin
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onSuccess}
-              onCancel={okSkip}
-            />
-          </Match>
-          <Match when={getMode() === "ACTION_ADVICE"}>
-            <div id="minded-6622-action-advice">
-              <div>{ADVICE.txt}</div>
-              <div>{ADVICE.ico}</div>
-            </div>
-          </Match>
-          <Match when={getMode() === "ENERGY_LVL"}>
-            <EnergyLvlInteraction
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onSuccess}
-              onCancel={okSkip}
-            />
-          </Match>
-          <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
-            <BrowsingBehaviorRatingInteraction
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onSuccess}
-              onCancel={okSkip}
-            />
-          </Match>
-          <Match when={getMode() === "QUESTION"}>
-            {getRndQuestion() && (
-              <Question
-                question={getRndQuestion()}
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onSuccess}
-                onChangeQuestion={() => updateQuestion()}
-                onCancel={okSkip}
-              />
-            )}
-          </Match>
-        </Switch>
-      </div>
+      <InteractionCommon
+        mode={getMode()}
+        onCancelCountdown={cancelCountdown}
+        onSuccess={onSuccess}
+        onSkip={onSkip}
+        updateQuestion={updateQuestion}
+        rndQuestion={getRndQuestion()}
+      />
     </div>
   );
 };

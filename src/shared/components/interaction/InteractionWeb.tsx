@@ -1,8 +1,6 @@
 /* @refresh reload */
-import { createSignal, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
-import { EnergyLvlInteraction } from "@src/shared/components/interaction/energy-lvl/EnergyLvlInteraction";
-import { Question } from "@src/shared/components/interaction/Question";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
@@ -14,13 +12,11 @@ import { getSyncData } from "@dataInterface/syncDataInterface";
 // @ts-ignore
 import { closeTabOrApp } from "@dataInterface/system";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
-import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
 import {
   getInteractionMode,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
-import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
-import { BrowsingBehaviorRatingInteraction } from "@src/shared/components/interaction/browsing-behavior-rating/BrowsingBehaviorRating";
+import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 // NOTE: val also needs to be set in css
@@ -244,68 +240,27 @@ export const InteractionWeb: (props: {
           }}
           ref={wrapperEl}
         >
-          <div id="minded-6622-box">
-            {getIsShowSuccessSun() && (
-              <div
-                id="minded-6622-success-sun"
-                ref={successSunEl}
-                title="Click sun to close tab"
-                onclick={() => {
-                  closeTabOrApp();
-                }}
-              >
-                <div ref={successSunSunEl}></div>
-                <div>click sun to close the website</div>
-              </div>
-            )}
-            <Switch>
-              <Match when={getMode() === "MOOD_CHECKIN"}>
-                <MoodCheckin
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
-              </Match>
-              <Match when={getMode() === "EMOJI_CHECKIN"}>
-                <EmojiCheckin
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
-              </Match>
-              <Match when={getMode() === "ACTION_ADVICE"}>
-                <div id="minded-6622-action-advice">
-                  <div>{ADVICE.txt}</div>
-                  <div>{ADVICE.ico}</div>
-                </div>
-              </Match>
-              <Match when={getMode() === "ENERGY_LVL"}>
-                <EnergyLvlInteraction
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
-              </Match>
-              <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
-                <BrowsingBehaviorRatingInteraction
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onSuccess}
-                  onCancel={teardown}
-                />
-              </Match>
-              <Match when={getMode() === "QUESTION"}>
-                {getRndQuestion() && (
-                  <Question
-                    question={getRndQuestion()}
-                    onCancelCountdown={cancelCountdown}
-                    onSuccess={onSuccess}
-                    onChangeQuestion={() => updateQuestion()}
-                    onCancel={teardown}
-                  />
-                )}
-              </Match>
-            </Switch>
-          </div>
+          {getIsShowSuccessSun() && (
+            <div
+              id="minded-6622-success-sun"
+              ref={successSunEl}
+              title="Click sun to close tab"
+              onclick={() => {
+                closeTabOrApp();
+              }}
+            >
+              <div ref={successSunSunEl}></div>
+              <div>click sun to close the website</div>
+            </div>
+          )}
+          <InteractionCommon
+            mode={getMode()}
+            onCancelCountdown={cancelCountdown}
+            onSuccess={onSuccess}
+            onSkip={teardown}
+            updateQuestion={updateQuestion}
+            rndQuestion={getRndQuestion()}
+          />
         </div>
       )}
     </>

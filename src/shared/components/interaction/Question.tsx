@@ -12,7 +12,7 @@ import { nanoid } from "nanoid";
 export const Question: (props: {
   question: QuestionForPrompt;
   onSuccess: (answer: Answer) => void;
-  onCancel: () => void;
+  onSkip: () => void;
   onCancelCountdown: () => void;
   onChangeQuestion?: () => void;
 }) => JSX.Element = (props) => {
@@ -70,7 +70,7 @@ export const Question: (props: {
     if (ev.key === "Enter") {
       submitAnswer((ev.target as any).value);
     } else if (ev.key === "Escape") {
-      props.onCancel();
+      props.onSkip();
     } else if (ev.key !== "Control") {
       props.onCancelCountdown();
     }

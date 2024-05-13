@@ -8,7 +8,7 @@ import { saveEnergyLvl } from "@dataInterface/syncDataInterface";
 
 export const EnergyLvlInteraction: (props: {
   onSuccess: () => void;
-  onCancel: () => void;
+  onSkip: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const onSetRating = async (val: number) => {

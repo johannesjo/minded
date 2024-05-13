@@ -7,7 +7,7 @@ import { JSX } from "solid-js";
 
 export const EmojiCheckin: (props: {
   onSuccess: () => void;
-  onCancel: () => void;
+  onSkip: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const onSetRating = async (val: number) => {

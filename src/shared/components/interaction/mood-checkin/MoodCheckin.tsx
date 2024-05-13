@@ -8,7 +8,7 @@ import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;
-  onCancel: () => void;
+  onSKip: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const [getSelectedMood, setSelectedMood] =

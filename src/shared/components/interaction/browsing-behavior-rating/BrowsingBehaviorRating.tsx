@@ -12,7 +12,7 @@ import { getRndEntry } from "@src/util/getRndEntry"; // once on app load
 
 export const BrowsingBehaviorRatingInteraction: (props: {
   onSuccess: () => void;
-  onCancel: () => void;
+  onSkip: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const [getStep, setStep] = createSignal<number>(0);
@@ -71,7 +71,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
             question={rndQuestion}
             onCancelCountdown={props.onCancelCountdown}
             onSuccess={() => props.onSuccess()}
-            onCancel={() => undefined}
+            onSkip={() => undefined}
           />
         </Match>
 
@@ -80,7 +80,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH1)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccess={() => setStep(2)}*/}
-        {/*    onCancel={() => undefined}*/}
+        {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
         {/*<Match when={getStep() === 2}>*/}
@@ -88,7 +88,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH2)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccess={() => setStep(3)}*/}
-        {/*    onCancel={() => undefined}*/}
+        {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
         {/*<Match when={getStep() === 3}>*/}
@@ -96,7 +96,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH3)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccess={() => setStep(4)}*/}
-        {/*    onCancel={() => undefined}*/}
+        {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
         {/*<Match when={getStep() === 4}>*/}
@@ -104,7 +104,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*    question={QUESTIONS.find((q) => q.id === QID.BBH4)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccess={() => props.onSuccess()}*/}
-        {/*    onCancel={() => undefined}*/}
+        {/*    onSkip={() => undefined}*/}
         {/*  />*/}
         {/*</Match>*/}
       </Switch>
