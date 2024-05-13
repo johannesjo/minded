@@ -15,7 +15,6 @@ const InteractionAndroid = () => {
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {
     androidInterface.setQuestion(JSON.stringify(rndQuestion));
-    androidInterface.setAnswerTxt(rndQuestion.t + "?");
   };
 
   const onSkip = () => {
@@ -43,7 +42,6 @@ const InteractionAndroid = () => {
         onModeSet={() => undefined}
         questionForPrompt={undefined}
         onSuccessSunTap={() => {
-          console.log("XXXXXXXXXXXXXXXXXXX");
           androidInterface.onSuccessSunTap();
         }}
         onAfterInteractionFadeout={() => androidInterface.showAfterSun()}
