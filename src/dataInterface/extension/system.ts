@@ -1,5 +1,5 @@
 import { bro } from "@src/util/browser";
 
-export const closeTabOrApp = () => {
+export const closeTab = () => {
   bro.runtime.sendMessage({ closeTab: true });
 };

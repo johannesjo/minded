@@ -1,49 +1,31 @@
 /* @refresh reload */
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
-import { fadeOut, promiseTimeout } from "@src/util/animation";
+import { fadeOut } from "@src/util/animation";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { stopAllVideos } from "@src/util/stopAllVideos";
-import { Answer } from "@src/dataInterface/syncData";
-import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
 // @ts-ignore
 import { closeTabOrApp } from "@dataInterface/system";
-import { getQuestionSmart } from "@src/util/getQuestionSmart";
-import {
-  getInteractionMode,
-  InteractionMode,
-} from "@src/shared/components/interaction/getInteractionMode";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
+import { androidInterface } from "@src/dataInterface/android/system";
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 // NOTE: val also needs to be set in css
-const SUCCESS_SUN_ANI_IN_DURATION = 800;
-const SUCCESS_SUN_STAY_DURATION = 3600;
-const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
 
 export const InteractionWeb: (props: {
   host: string;
   onHideAll: () => void;
 }) => JSX.Element = (props) => {
+  // const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
-  const [getMode, setMode] = createSignal<InteractionMode | undefined>();
-  const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
+
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
   const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
-  const [getRndQuestion, setRndQuestion] = createSignal<
-    QuestionForPrompt | undefined
-  >();
 
   let wrapperEl;
-  let successSunEl;
-  let successSunSunEl;
-  let frameNr;
-  let syncData;
-  let questionUpdateCount = 0;
-  let questionIdBefore;
 
   onMount(async () => {
     // give a moment time for rendering
@@ -59,130 +41,55 @@ export const InteractionWeb: (props: {
       stopAllVideos();
     }, 5000);
 
-    // setTimeout(() => {
-    //   onSuccess();
-    // }, 1000);
-
-    getSyncData().then((syncDataI) => {
-      syncData = syncDataI;
-      setMode(getInteractionMode(syncData));
-
-      // NOTE: timeout makes this much more reliable
-      setTimeout(() => {
-        initFadeOut();
-      }, 100);
-
-      const rndQuestion = getQuestionSmart(syncDataI.answers);
-      setRndQuestion(rndQuestion);
-      questionIdBefore = rndQuestion.id;
-
-      switch (getMode()) {
-        case "ACTION_ADVICE":
-          setLittleSunTxt(ADVICE.txt);
-          setWasAnswerGiven(true);
-          return;
-        case "ENERGY_LVL":
-          setLittleSunTxt("How would you rate your energy level today?");
-          return;
-        default:
-          setLittleSunTxt(rndQuestion.t + "?");
-      }
-    });
+    // NOTE: timeout makes this much more reliable
+    setTimeout(() => {
+      initFadeOut();
+    }, 100);
   });
 
   onCleanup(() => {
     document.removeEventListener("keypress", escapeHandler);
   });
 
+  // TODO move as optional param to child
+
   const initFadeOut = () => {
-    if (getMode() === "ACTION_ADVICE") {
-      setTimeout(() => {
-        // prevent weird state when opening and directly switching to a new tab
-        if (!document.hidden) {
-          showSuccessSunAniFlow();
-        } else {
-          window.addEventListener(
-            "visibilitychange",
-            () => {
-              showSuccessSunAniFlow();
-            },
-            { once: true },
-          );
-        }
-      }, 5000);
-    } else {
-      const res = fadeOut(wrapperEl, 5000, 2000);
-      frameNr = res.frameNr;
-      res.promise.then(() => {
-        if (wrapperEl.style.opacity < 0.1) {
-          littleSun();
-        }
-      });
-    }
+    // if (getMode() === "ACTION_ADVICE") {
+    //   setTimeout(() => {
+    //     // prevent weird state when opening and directly switching to a new tab
+    //     // TODO FIX
+    //     // if (!document.hidden) {
+    //     //   showSuccessSunAniFlow();
+    //     // } else {
+    //     //   window.addEventListener(
+    //     //     "visibilitychange",
+    //     //     () => {
+    //     //       showSuccessSunAniFlow();
+    //     //     },
+    //     //     { once: true },
+    //     //   );
+    //     // }
+    //     const res = fadeOut(wrapperEl, 5000, 2000);
+    //     frameNr = res.frameNr;
+    //     res.promise.then(() => {
+    //       if (wrapperEl.style.opacity < 0.1) {
+    //         littleSun();
+    //       }
+    //     });
+    //   }, 5000);
+    // } else {
+    //   const res = fadeOut(wrapperEl, 5000, 2000);
+    //   frameNr = res.frameNr;
+    //   res.promise.then(() => {
+    //     if (wrapperEl.style.opacity < 0.1) {
+    //       littleSun();
+    //     }
+    //   });
+    // }
   };
 
-  const updateQuestion = () => {
-    setMode("QUESTION");
-    if (syncData) {
-      const rndQuestion =
-        questionUpdateCount >= 5
-          ? getRndEntry(QUESTIONS)
-          : getQuestionSmart(syncData.answers);
-
-      if (questionIdBefore === rndQuestion.id) {
-        questionUpdateCount++;
-        updateQuestion();
-      } else {
-        questionIdBefore = rndQuestion.id;
-        setRndQuestion(rndQuestion);
-        setLittleSunTxt(rndQuestion.t + "?");
-        setWasAnswerGiven(false);
-        questionUpdateCount++;
-      }
-    }
-  };
-
-  const onSuccess = (answerOrData?: Answer) => {
-    cancelCountdown();
-    setLittleSunTxt(
-      typeof answerOrData?.val === "string" ? answerOrData.val : "",
-    );
+  const onSuccessSunTap = () => {
     setWasAnswerGiven(true);
-    setIsShowSuccessSun(true);
-    showSuccessSunAniFlow();
-  };
-
-  const showSuccessSunAniFlow = async () => {
-    setIsShowSuccessSun(true);
-    // wait for sun
-    successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
-    await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
-    successSunSunEl.style.animation = `${SUCCESS_SUN_STAY_DURATION}ms minded6622successSunStay ease-in-out`;
-    successSunSunEl.style.animationFillMode = `forwards`;
-    await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
-    successSunSunEl.style.animationDuration = `0s`;
-    successSunSunEl.style.animationFillMode = `forwards`;
-    await fadeOut(wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
-    littleSun();
-  };
-
-  const cancelCountdown = () => {
-    if (!frameNr) {
-      return;
-    }
-    if (getIsShowSuccessSun()) {
-      return;
-    }
-
-    window.cancelAnimationFrame(frameNr);
-    if (wrapperEl) {
-      wrapperEl.style.transition = `opacity 1000ms ease-out`;
-      wrapperEl.style.opacity = "1";
-    }
-  };
-
-  const littleSun = () => {
-    setIsShowSuccessSun(false);
     setIsShowLittleSun(true);
   };
 
@@ -194,10 +101,10 @@ export const InteractionWeb: (props: {
   const fadeOutMainFinal = () => {
     if (wrapperEl) {
       fadeOut(wrapperEl, 150).promise.then(() => {
-        littleSun();
+        setIsShowLittleSun(true);
       });
     } else {
-      littleSun();
+      setIsShowLittleSun(true);
     }
   };
 
@@ -206,6 +113,28 @@ export const InteractionWeb: (props: {
       fadeOutMainFinal();
     }
   };
+
+  // const updateQuestion = () => {
+  //   setMode("QUESTION");
+  //   if (syncData) {
+  //     const rndQuestion =
+  //       questionUpdateCount >= 5
+  //         ? getRndEntry(QUESTIONS)
+  //         : getQuestionSmart(syncData.answers);
+  //
+  //     if (questionIdBefore === rndQuestion.id) {
+  //       questionUpdateCount++;
+  //       updateQuestion();
+  //     } else {
+  //       questionIdBefore = rndQuestion.id;
+  //       setRndQuestion(rndQuestion);
+  //       // TODO implement
+  //       // setLittleSunTxt(rndQuestion.t + "?");
+  //       // setWasAnswerGiven(false);
+  //       questionUpdateCount++;
+  //     }
+  //   }
+  // };
 
   return (
     <>
@@ -216,15 +145,13 @@ export const InteractionWeb: (props: {
           bubbleTxt={getLittleSunTxt()}
           teardown={teardown}
           onShowFreshQuestion={() => {
-            updateQuestion();
+            // updateQuestion();
             setIsShowLittleSun(false);
-            setIsShowSuccessSun(false);
             initFadeOut();
             stopAllVideos();
           }}
           onShowQuestionAgain={() => {
             setIsShowLittleSun(false);
-            setIsShowSuccessSun(false);
           }}
         />
       ) : (
@@ -240,26 +167,16 @@ export const InteractionWeb: (props: {
           }}
           ref={wrapperEl}
         >
-          {getIsShowSuccessSun() && (
-            <div
-              id="minded-6622-success-sun"
-              ref={successSunEl}
-              title="Click sun to close tab"
-              onclick={() => {
-                closeTabOrApp();
-              }}
-            >
-              <div ref={successSunSunEl}></div>
-              <div>click sun to close the website</div>
-            </div>
-          )}
           <InteractionCommon
-            mode={getMode()}
-            onCancelCountdown={cancelCountdown}
-            onSuccess={onSuccess}
+            wrapperEl={wrapperEl}
+            onModeSet={(mode) => undefined}
+            onUpdateLittleSunTxt={setLittleSunTxt}
+            onAfterSuccessSunFadeout={fadeOutMainFinal}
+            onSuccessSunTap={onSuccessSunTap}
             onSkip={teardown}
-            updateQuestion={updateQuestion}
-            rndQuestion={getRndQuestion()}
+            onUpdateQuestion={(question) => {
+              setLittleSunTxt(question.t);
+            }}
           />
         </div>
       )}
