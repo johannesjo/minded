@@ -88,7 +88,6 @@ export const InteractionWeb: (props: {
               "minded-6622-coloured-wrapper-dynamic"
             ) {
               fadeOutInteractionWrapper().then(() => {
-                alert("AA");
                 setIsShowLittleSun(true);
               });
             }

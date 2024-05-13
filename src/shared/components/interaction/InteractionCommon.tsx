@@ -58,7 +58,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   onMount(async () => {
     if (props.isInitFadeout) {
-      initFadeOut();
+      // timeout needed otherwise it won't work probably because props.wrapperEl is passed yet?
+      setTimeout(() => {
+        initFadeOut();
+      }, 200);
     }
 
     getSyncData().then((syncDataI) => {
