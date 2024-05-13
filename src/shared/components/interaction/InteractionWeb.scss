@@ -50,9 +50,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: auto;
-  animation: minded6622fadeIn ease .4s;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
   padding: 32px;
   width: 990px;
   max-width: 100%;
@@ -65,15 +62,6 @@
   }
   100% {
     opacity: 1;
-  }
-}
-
-@keyframes minded6622fadeOut {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
   }
 }
 
