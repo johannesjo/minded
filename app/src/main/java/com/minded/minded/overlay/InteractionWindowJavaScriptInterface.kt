@@ -20,12 +20,7 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun onSuccessSunTap() {
-        Log.v(logTag, "onSuccessSunTap() XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
         Log.v(logTag, "onSuccessSunTap()")
-//        OverlayControllerService.showOverlay(
-//            ctrlSvc,
-//            OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
-//        )
         ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
         win.hideWindow()
     }
@@ -38,15 +33,10 @@ class InteractionWindowJavaScriptInterface(
         imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT)
     }
 
-    @JavascriptInterface
-    fun onBeforeSuccessAni() {
-        Log.v(logTag, "onBeforeSuccessAni()")
-//        ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
-    }
 
     @JavascriptInterface
-    fun showAfterSun() {
-        Log.v(logTag, "onShowAfterSun()")
+    fun showLittleSun() {
+        Log.v(logTag, "showLittleSun()")
         OverlayControllerService.showOverlay(
             ctrlSvc,
             OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
@@ -56,7 +46,6 @@ class InteractionWindowJavaScriptInterface(
     @JavascriptInterface
     fun onSkip() {
         Log.v(logTag, "onSkip()")
-        sharedOverlayViewModel.resetAnswerTxt()
         OverlayControllerService.showOverlay(
             ctrlSvc,
             OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
@@ -88,42 +77,18 @@ class InteractionWindowJavaScriptInterface(
             questionForPrompt = questionForPrompt,
             answerTxt = null
         )
-
-//        OverlayControllerService.showOverlay(
-//            ctrlSvc,
-//            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-//        )
-//        win.hideWindow()
     }
 
     @JavascriptInterface
     fun setAnswerTxt(txt: String) {
         Log.v(logTag, "setAnswerTxt() $txt")
         sharedOverlayViewModel.updateSharedData(answerTxt = txt)
-//        OverlayControllerService.showOverlay(
-//            ctrlSvc,
-//            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
-//        )
-//        win.hideWindow()
     }
 
 
     @JavascriptInterface
     fun hideWindow() {
         Log.v(logTag, "hideWindow()")
-        win.hideWindow()
-    }
-
-
-    @JavascriptInterface
-    fun closeTabOrApp() {
-        Log.v(logTag, "closeTabOrApp()")
-        win.hideWindow()
-    }
-
-    @JavascriptInterface
-    fun fadeOutMainFinal() {
-        Log.v(logTag, "fadeOutMainFinal()")
         win.hideWindow()
     }
 }
