@@ -12,9 +12,9 @@ interface InteractionWindowJavaScriptInterface {
   requestFocusAndShowKeyboard: () => void;
 }
 
-declare const android: InteractionWindowJavaScriptInterface;
+declare const androidMinded: InteractionWindowJavaScriptInterface;
 
-export const androidInterface = android;
+export const androidInterface = androidMinded;
 
 export const requestFocusAndShowKeyboard = () => {
   androidInterface.requestFocusAndShowKeyboard();
