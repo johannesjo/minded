@@ -1,14 +1,12 @@
 interface InteractionWindowJavaScriptInterface {
   onSuccessSunTap: () => void;
-  showAfterSun: () => void;
+  showLittleSun: () => void;
   saveString: (key: string, value: string) => void;
   retrieveString: (key: string) => string | null;
   setQuestion: (questionAsString: string) => void;
   setAnswerTxt: (txt: string) => void;
   onSkip: () => void;
   hideWindow: () => void;
-  closeTabOrApp: () => void;
-  fadeOutMainFinal: () => void;
   requestFocusAndShowKeyboard: () => void;
 }
 
