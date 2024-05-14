@@ -1,5 +1,3 @@
-import { Question } from "@src/shared/data/questions";
-
 interface InteractionWindowJavaScriptInterface {
   onSuccessSunTap: () => void;
   showAfterSun: () => void;
@@ -11,8 +9,13 @@ interface InteractionWindowJavaScriptInterface {
   hideWindow: () => void;
   closeTabOrApp: () => void;
   fadeOutMainFinal: () => void;
+  requestFocusAndShowKeyboard: () => void;
 }
 
 declare const android: InteractionWindowJavaScriptInterface;
 
 export const androidInterface = android;
+
+export const requestFocusAndShowKeyboard = () => {
+  androidInterface.requestFocusAndShowKeyboard();
+};
