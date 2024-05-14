@@ -1,12 +1,15 @@
 package com.minded.minded.overlay
 
+import android.content.Context
 import android.graphics.PixelFormat
 import android.util.Log
+import android.util.TypedValue
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.SmallMsg
 
@@ -53,14 +56,24 @@ class SmallMsgWindow(
 
     override fun getLayoutParams(): WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_BLUR_BEHIND, // Add FLAG_NOT_FOCUSABLE
             PixelFormat.TRANSLUCENT
         )
         params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
+        // size of LittleSun somehow units don't match
+        params.x = dpToPx(ctrlSvc, 52.dp.value)
         return params;
+    }
+
+    private fun dpToPx(context: Context, dp: Float): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            context.resources.displayMetrics
+        ).toInt()
     }
 }
 

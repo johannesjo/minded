@@ -36,13 +36,13 @@ fun SmallMsg(
     onCountdownComplete: () -> Unit = {},
     isInitiallyVisible: Boolean = false
 ) {
+    val leaveDuration: Int = 3000;
     var isVisible = remember { mutableStateOf(isInitiallyVisible) }
-
     LaunchedEffect(Unit) {
         isVisible.value = true
         delay(5000)
         isVisible.value = false
-        delay(3000)
+        delay(leaveDuration.toLong())
         onCountdownComplete()
     }
 
@@ -50,7 +50,7 @@ fun SmallMsg(
     AnimatedVisibility(
         visible = isVisible.value,
         enter = fadeIn(animationSpec = tween(1000)),
-        exit = fadeOut(animationSpec = tween(3000))
+        exit = fadeOut(animationSpec = tween(leaveDuration))
     ) {
         Box(
             modifier = Modifier
