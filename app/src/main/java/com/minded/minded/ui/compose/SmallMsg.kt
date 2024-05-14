@@ -55,7 +55,7 @@ fun SmallMsg(
         Box(
             modifier = Modifier
 //                .border(1.dp, Color.Red, CircleShape)
-                .padding(start = 48.dp, bottom = 6.dp, end = 28.dp),
+                .padding(start = 6.dp, bottom = 6.dp, end = 6.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
