@@ -1,4 +1,4 @@
-@mixin btn($height: 56px) {
+@mixin btn($height: var(--btn-height)) {
   border: none;
   border-radius: 8px;
   display: inline-block;
@@ -32,7 +32,7 @@
 }
 
 @mixin btnTxtBigger() {
-  @include btn(64px);
+  @include btn(var(--btn-height-bigger));
   padding: 0 20px;
   font-size: var(--btn-bigger-fz);
 }
