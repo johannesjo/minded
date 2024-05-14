@@ -69,14 +69,19 @@
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   opacity: 0;
-  animation-delay: 1.5s;
   position: relative;
   // NOTE: padding leads to scrollbars
   margin: 32px;
   box-sizing: border-box;
+  animation-delay: 1.5s;
 
   &:nth-child(5) {
     animation-delay: 0s;
+  }
+
+  @include onSmallScreens() {
+    animation-delay: 0s;
+    animation-duration: .3s;
   }
 }
 
