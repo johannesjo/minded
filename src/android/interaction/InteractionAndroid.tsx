@@ -44,9 +44,9 @@ const InteractionAndroid = () => {
         onSuccessSunTap={() => {
           androidInterface.onSuccessSunTap();
         }}
-        onAfterInteractionFadeout={() => androidInterface.showAfterSun()}
+        onAfterInteractionFadeout={() => androidInterface.showLittleSun()}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
-        onAfterSuccessSunFadeout={() => androidInterface.showAfterSun()}
+        onAfterSuccessSunFadeout={() => androidInterface.showLittleSun()}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
       />
