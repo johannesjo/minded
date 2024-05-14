@@ -7,6 +7,8 @@ import {
 import { Answer } from "@src/dataInterface/syncData";
 // @ts-ignore
 import { saveAnswer } from "@dataInterface/syncDataInterface";
+// @ts-ignore
+import { requestFocusAndShowKeyboard } from "@dataInterface/system";
 import { nanoid } from "nanoid";
 
 export const Question: (props: {
@@ -20,7 +22,6 @@ export const Question: (props: {
   let inpEl;
   let t0;
   let t1;
-  let t2;
 
   createEffect(() => {
     if (inpEl) {
@@ -28,21 +29,22 @@ export const Question: (props: {
     }
   });
 
+  const focusInp = () => {
+    inpEl.focus();
+    requestFocusAndShowKeyboard();
+  };
+
   onMount(async () => {
-    console.log("Question Component Function onMount()");
     if (props.question.prompt && inpEl) {
       inpEl.value = props.question.prompt + " ";
     }
-    inpEl.focus();
-    t0 = setTimeout(() => inpEl.focus(), 250);
-    t1 = setTimeout(() => inpEl.focus(), 400);
-    t2 = setTimeout(() => inpEl.focus(), 1000);
+    t0 = setTimeout(() => focusInp(), 50);
+    t1 = setTimeout(() => focusInp(), 400);
   });
 
   onCleanup(() => {
     window.clearTimeout(t0);
     window.clearTimeout(t1);
-    window.clearTimeout(t2);
   });
 
   const submitAnswer = async (answerTxt: string) => {
