@@ -309,7 +309,6 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.GPT5,
         t: "What kind of person do I want to be today",
-        prompt: "Today I will enjoy",
       },
     ],
     dashboardTxt: "Good Plans Today",
