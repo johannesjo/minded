@@ -11,19 +11,6 @@
 
 
   .minded-6622-browsing-behavior-rating-btn {
-    @include btnTxt();
-    margin: 16px;
-    user-select: none;
-    text-transform: lowercase;
-    min-width: 100px;
-    transition: .2s all;
-
-    &.isSelected {
-      background: var(--btn-bg-selected);
-      opacity: 1;
-      font-weight: 500;
-      border-radius: 16px;
-      transform: scale(1.1);
-    }
+    @include btnToggleSelect();
   }
 }
