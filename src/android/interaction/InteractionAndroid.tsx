@@ -32,7 +32,11 @@ const InteractionAndroid = () => {
           "minded-6622-coloured-wrapper-dynamic"
         ) {
           await fadeOut(wrapperEl, 400).promise;
-          androidInterface.hideWindow();
+          // MOTE: we need to wait just a little extra otherwise android throws an error that we are still drawing
+          setTimeout(() => {
+            androidInterface.hideWindow();
+            androidInterface.showLittleSun();
+          }, 100);
         }
       }}
     >
