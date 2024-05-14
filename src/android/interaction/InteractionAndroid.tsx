@@ -21,6 +21,14 @@ const InteractionAndroid = () => {
     androidInterface.onSkip();
   };
 
+  const showLittleSunAfter = () => {
+    // MOTE: we need to wait just a little extra otherwise android throws an error that we are still drawing
+    setTimeout(() => {
+      androidInterface.hideWindow();
+      androidInterface.showLittleSun();
+    }, 100);
+  };
+
   // TODO add app name
   return (
     <div
@@ -32,11 +40,7 @@ const InteractionAndroid = () => {
           "minded-6622-coloured-wrapper-dynamic"
         ) {
           await fadeOut(wrapperEl, 400).promise;
-          // MOTE: we need to wait just a little extra otherwise android throws an error that we are still drawing
-          setTimeout(() => {
-            androidInterface.hideWindow();
-            androidInterface.showLittleSun();
-          }, 100);
+          showLittleSunAfter();
         }
       }}
     >
@@ -48,9 +52,9 @@ const InteractionAndroid = () => {
         onSuccessSunTap={() => {
           androidInterface.onSuccessSunTap();
         }}
-        onAfterInteractionFadeout={() => androidInterface.showLittleSun()}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
-        onAfterSuccessSunFadeout={() => androidInterface.showLittleSun()}
+        onAfterInteractionFadeout={() => showLittleSunAfter()}
+        onAfterSuccessSunFadeout={() => showLittleSunAfter()}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
       />
