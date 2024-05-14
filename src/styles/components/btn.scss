@@ -38,8 +38,8 @@
 
   }
 
-  .btn-big {
-    font-size: 24px;
+  .btn-add {
+    @include btnTxt();
     padding: 0 10px;
 
     &:hover {
