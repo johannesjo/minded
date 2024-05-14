@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.minded.minded.ui.theme.StandardGradient
+import com.minded.minded.ui.theme.StandardGradientLight
 import kotlinx.coroutines.delay
 import kotlin.math.hypot
 import kotlin.math.min
@@ -70,7 +70,7 @@ fun SuccessSun(
             .clickable(onClick = { onSunTap(); isClickTriggered = true; })
             .background(
                 brush = Brush.verticalGradient(
-                    colors = StandardGradient
+                    colors = StandardGradientLight
                 )
             )
             .drawBehind {

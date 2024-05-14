@@ -17,7 +17,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.minded.minded.MissingCapability
 import com.minded.minded.ui.model.DashboardViewModel
-import com.minded.minded.ui.theme.StandardGradient
+import com.minded.minded.ui.theme.StandardGradientLight
 
 @Composable
 fun Dashboard(
@@ -39,7 +39,7 @@ fun DashboardMain(
             modifier = Modifier
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = StandardGradient
+                        colors = StandardGradientLight
                     )
                 )
         ) {

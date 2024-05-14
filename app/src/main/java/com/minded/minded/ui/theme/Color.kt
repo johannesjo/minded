@@ -1,5 +1,4 @@
 package com.minded.minded.ui.theme
-
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -14,13 +13,22 @@ val PastelGreen = Color(0xFFB7E4C7)
 val PastelRed = Color(0xFFE4B7B7)
 val PastelYellow = Color(0xFFE4E0B7)
 
-val WhiteBtnBG = Color(0x80FFFFFF)
-val TextInputBgAlpha = .7f
+val LightGradColor1 = Color(0xFFA5DEE5)
+val LightGradColor2 = Color(0xFFFFCFDF)
+val LightGradColor3 = Color(0xFFFEFDCA)
 
+val DarkGradColor1 = Color(0xFF080c3a)
+val DarkGradColor2 = Color(0xFF611177)
+val DarkGradColor3 = Color(0xFF873400)
 
+val StandardGradientLight = listOf(
+    LightGradColor1,
+    LightGradColor2,
+    LightGradColor3,
+)
 
-val StandardGradient = listOf(
-    PastelYellow,
-    PastelRed,
-    PastelGreen,
+val StandardGradientDark = listOf(
+    DarkGradColor1,
+    DarkGradColor2,
+    DarkGradColor3,
 )
