@@ -62,7 +62,7 @@ fun DashboardMain(
                 }
                 addJavascriptInterface(
                     MainActivityJavaScriptInterface(context),
-                    "android"
+                    "androidMinded"
                 )
                 loadUrl("file:///android_asset/web/src/android/main/index.html")
             }

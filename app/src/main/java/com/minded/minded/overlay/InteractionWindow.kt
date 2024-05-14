@@ -46,7 +46,7 @@ class InteractionWindow(
                         ctrlSvc,
                         this
                     ),
-                    "android"
+                    "androidMinded"
                 )
 //                this.requestFocus()
 //                Handler(Looper.getMainLooper()).postDelayed({
