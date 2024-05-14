@@ -75,8 +75,7 @@ $one-col-bp: 800px;
   animation-delay: 0s;
   animation-duration: .3s;
   // NOTE: padding leads to scrollbars
-  margin: 32px;
-  margin-bottom: 96px;
+  margin: 64px 32px;
 
 
   @media (min-width: $one-col-bp) {
@@ -85,7 +84,7 @@ $one-col-bp: 800px;
     animation-delay: 1.5s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
-    margin-bottom: 32px;
+    margin: 32px;
   }
 
   &:nth-child(5) {
