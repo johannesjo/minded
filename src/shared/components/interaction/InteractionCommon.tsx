@@ -192,7 +192,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             />
           </Match>
           <Match when={getMode() === "ACTION_ADVICE"}>
-            <div id="minded-6622-action-advice">
+            <div id="minded-6622-action-advice" onclick={props.onSkip}>
               <div>{ADVICE.txt}</div>
               <div>{ADVICE.ico}</div>
             </div>
