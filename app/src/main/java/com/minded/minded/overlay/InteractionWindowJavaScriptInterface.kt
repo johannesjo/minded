@@ -1,6 +1,8 @@
 import android.content.Context
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import com.minded.minded.overlay.InteractionWindow
 import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
@@ -10,6 +12,7 @@ class InteractionWindowJavaScriptInterface(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val win: InteractionWindow,
     private val ctrlSvc: OverlayControllerService,
+    private val webView: WebView
 ) {
     private val sharedPreferences = ctrlSvc.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
 
@@ -25,6 +28,14 @@ class InteractionWindowJavaScriptInterface(
 //        )
         ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
         win.hideWindow()
+    }
+
+    @JavascriptInterface
+    fun requestFocusAndShowKeyboard() {
+        Log.v(logTag, "requestFocusAndShowKeyboard()")
+        webView.requestFocus()
+        val imm = ctrlSvc.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT)
     }
 
     @JavascriptInterface
