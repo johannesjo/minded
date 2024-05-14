@@ -179,7 +179,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         </div>
       )}
 
-      <div id="minded-6622-box">
+      <div id="minded-6622-interaction-wrapper-box">
         <Switch>
           <Match when={getMode() === "MOOD_CHECKIN"}>
             <MoodCheckin
@@ -196,7 +196,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             />
           </Match>
           <Match when={getMode() === "ACTION_ADVICE"}>
-            <div id="minded-6622-action-advice" onclick={props.onSkip}>
+            <div id="minded-6622-action-advice" style="pointer-events:none;">
               <div>{ADVICE.txt}</div>
               <div>{ADVICE.ico}</div>
             </div>

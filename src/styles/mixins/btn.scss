@@ -12,6 +12,7 @@
   text-transform: lowercase;
   box-sizing: border-box;
   color: var(--c-fg);
+  pointer-events: all;
 
   &:hover {
     opacity: 1;
