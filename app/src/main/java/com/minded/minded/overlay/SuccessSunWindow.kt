@@ -28,6 +28,7 @@ open class SuccessSunWindow(
 
         SuccessSun(
             sharedData.successSunTxt ?: defaultSunTxt,
+            inDuration = 1000,
             onSunTap = {
                 Log.v(logTag, "onSunTap()")
                 ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
