@@ -12,12 +12,16 @@
   // global components
   --form-inputs-bg: var(--btn-bg);
   --btn-fz: 24px;
+  --btn-height: 56px;
+  --btn-height-bigger: 64px;
   --btn-bigger-fz: 40px;
   --btn-bg: rgba(255, 255, 255, .5);
   --btn-bg-selected: rgba(255, 255, 255, 1);
 
   // components
   --sun-bg: #fff;
+
+  --rating-size: 50px;
 
   --little-sun-bg: #fff;
   --litle-sun-txt-fz: 13px;
@@ -110,11 +114,15 @@
 
 @media (max-width: 600px) {
   #minded-6622 {
-    --fz-l: 22px;
+    --fz-l: 21px;
     --fz-m: 15px;
 
-    --btn-fz: 24px;
-    --btn-bigger-fz: 40px;
+    --btn-fz: 21px;
+    --btn-bigger-fz: 32px;
+    --btn-height: 48px;
+    --btn-height-bigger: 54px;
+
+    --rating-size: 48px;
 
     --success-sun-ani-scale-1: 10;
     --success-sun-ani-scale-2: 16;
