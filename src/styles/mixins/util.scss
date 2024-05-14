@@ -1,0 +1,11 @@
+@mixin onAndroid() {
+  :global(body.android) & {
+    @content
+  }
+}
+
+@mixin onSmallScreens() {
+  @media (max-width: 600px) {
+    @content
+  }
+}
