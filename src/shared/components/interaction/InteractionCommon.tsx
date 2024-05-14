@@ -22,6 +22,7 @@ import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut, promiseTimeout } from "@src/util/animation"; // @ts-ignore
 import { getQuestionSmart } from "@src/util/getQuestionSmart"; // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
+import { IS_ANDROID, IS_TOUCH_PRIMARY } from "@src/util/touch";
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
@@ -171,7 +172,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           }}
         >
           <div ref={successSunSunEl}></div>
-          <div>click sun to close the website</div>
+          <div>
+            {IS_TOUCH_PRIMARY ? "tap" : "click"} sun to close{" "}
+            {IS_ANDROID ? "app" : "the website"}
+          </div>
         </div>
       )}
 
