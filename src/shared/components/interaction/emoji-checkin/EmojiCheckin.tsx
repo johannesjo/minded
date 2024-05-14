@@ -27,14 +27,14 @@ export const EmojiCheckin: (props: {
       id="minded-6622-energy-lvl-interaction"
       onmouseenter={props.onCancelCountdown}
     >
-      <div>How do you feel?</div>
+      <div style="pointer-events: all;">How do you feel?</div>
 
       <div>
         {EMOIJI_CATEGORIES_SORTED.map((catid) => (
-          <div style="margin-bottom: 16px">
+          <div style="margin-bottom: 16px; pointer-events: all;">
             {EMOIJI_CATEGORIES[catid].map((entry) => (
               <div
-                style="display: inline-block; font-size: 40px; padding: 4px; cursor: pointer;"
+                style="display: inline-block; font-size: 40px; padding: 4px; cursor: pointer; "
                 title={entry.d}
                 onclick={props.onSuccess}
               >
