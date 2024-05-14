@@ -7,7 +7,7 @@
   text-align: center;
   opacity: 0.5;
   line-height: $height;
-  font-size: 24px;
+  font-size: var(--btn-fz);
   background: var(--btn-bg);
   text-transform: lowercase;
   box-sizing: border-box;
@@ -29,5 +29,10 @@
   @include btn;
   padding: 0 16px;
   font-weight: 300;
+}
 
+@mixin btnTxtBigger() {
+  @include btn(64px);
+  padding: 0 20px;
+  font-size: var(--btn-bigger-fz);
 }

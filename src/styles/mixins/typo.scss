@@ -10,7 +10,7 @@
 @mixin h2() {
   font-weight: 700;
   margin-bottom: 8px;
-  font-size: 28px;
+  font-size: var(--fz-l);
   user-select: none;
   pointer-events: all;
 }

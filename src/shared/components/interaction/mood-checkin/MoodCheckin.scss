@@ -61,8 +61,6 @@
   }
 
   .minded-6622-nxt-btn {
-    @include btnTxt();
-    font-size: 40px;
-    text-transform: lowercase;
+    @include btnTxtBigger();
   }
 }
