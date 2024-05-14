@@ -91,6 +91,10 @@ export const dashboardEntriesFromQuestions = (
       type: DashboardGroupType.BrowsingBehaviorRating,
       data: syncData.browsingBehaviorRating,
     } as DashboardGroupBrowsingBehavior);
+    // sortedEntries.splice(ENERGY_LVL_INDEX, 0, {
+    //   type: DashboardGroupType.BrowsingBehaviorRating,
+    //   data: syncData.browsingBehaviorRating,
+    // } as DashboardGroupBrowsingBehavior);
   }
 
   // center one rnd entry

@@ -8,7 +8,7 @@ function Chart(props: { chartData: ChartData }) {
   const [chartData] = createSignal<ChartData>(props.chartData);
   const [chartConfig] = createStore({
     width: 400,
-    height: 200,
+    height: 300,
   });
 
   const fallback = () => {
@@ -29,7 +29,7 @@ function Chart(props: { chartData: ChartData }) {
           data={chartData()}
           options={{
             responsive: true,
-            maintainAspectRatio: false,
+            // maintainAspectRatio: true,
             scales: {
               y: {
                 ticks: {

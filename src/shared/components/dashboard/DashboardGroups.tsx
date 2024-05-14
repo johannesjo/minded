@@ -6,6 +6,7 @@ import {
   DashboardGroupMood,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
+// @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
 import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
 // @ts-ignore
@@ -48,7 +49,14 @@ export const DashboardGroups: (props: {
       class={styles.DashboardGroups}
     >
       {getDashboardGroups().map((dg, index) => (
-        <div class={styles.box}>
+        <div
+          class={`${styles.box} ${
+            dg.type !== DashboardGroupType.Standard &&
+            dg.type !== DashboardGroupType.BrowsingBehaviorRating
+              ? styles.flexCenter
+              : ""
+          }`}
+        >
           {index === 4 && (
             <div class={styles.miniSunWrapper}>
               <div class={styles.miniSun} />
