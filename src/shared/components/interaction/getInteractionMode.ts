@@ -8,6 +8,7 @@ import { isXIn1 } from "@src/util/isXIn1";
 
 const LAST_MOOD_CHECKIN_MIN_GAP = 30 * 60 * 1000;
 const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 30 * 60 * 1000;
+const LAST_ENERGY_LVL_CHECKIN_BOOST_GAP = 12 * 60 * 60 * 1000;
 const LAST_BROWSING_RATING_MIN_GAP = 8 * 60 * 1000;
 
 export type InteractionMode =
@@ -37,8 +38,10 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   }
 
   if (
-    nowTS - syncData.moodCheckTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
-    isXIn1(0.05)
+    (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_BOOST_GAP &&
+      isXIn1(0.3)) ||
+    (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
+      isXIn1(0.05))
   ) {
     return "ENERGY_LVL";
   }
