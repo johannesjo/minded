@@ -3,7 +3,8 @@ import { WebsiteListItem } from "@src/shared/components/onboarding/WebsiteListIt
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 // @ts-ignore
 import styles from "./WebsiteList.module.scss";
-import { getSyncData, updateCfg } from "@dataInterface/syncDataInterface";
+// @ts-ignore
+import { getSyncData, updateUserCfg } from "@dataInterface/syncDataInterface";
 
 export const WebsiteList: (props: {
   onAfterSave: () => void;
@@ -37,7 +38,7 @@ export const WebsiteList: (props: {
     const cleanedItems = items()
       .filter((item) => item.length > 2)
       .map((item) => item.trim());
-    await updateCfg({ blockedHosts: cleanedItems });
+    await updateUserCfg({ blockedHosts: cleanedItems });
     props.onAfterSave();
   };
 

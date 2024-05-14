@@ -3,13 +3,13 @@ import { JSX } from "solid-js";
 import styles from "./Onboarding.module.scss";
 import { WebsiteList } from "@src/shared/components/onboarding/WebsiteList";
 // @ts-ignore
-import { updateCfg } from "@dataInterface/syncDataInterface";
+import { updateUserCfg } from "@dataInterface/syncDataInterface";
 
 export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
   props,
 ) => {
   const onAfterSaveWebsites = async () => {
-    await updateCfg({ isOnboardingComplete: true });
+    await updateUserCfg({ isOnboardingComplete: true });
     props.onComplete();
   };
   return (

@@ -5,6 +5,7 @@ import { androidInterface } from "@src/dataInterface/android/system";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
+import { countBlockedAttempt } from "@src/dataInterface/android/syncDataInterface";
 
 const InteractionAndroid = () => {
   let wrapperEl;
@@ -50,6 +51,7 @@ const InteractionAndroid = () => {
         onModeSet={() => undefined}
         questionForPrompt={undefined}
         onSuccessSunTap={() => {
+          countBlockedAttempt();
           androidInterface.onSuccessSunTap();
         }}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
