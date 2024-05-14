@@ -132,7 +132,7 @@ export const updateSyncData = async (
   }
 };
 
-export const updateCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
+export const updateUserCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
   if (bro.runtime?.id) {
     const syncData = await getSyncData();
     return bro.storage.sync.set({

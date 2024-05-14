@@ -87,7 +87,7 @@ export const updateSyncData = async (
   );
 };
 
-export const updateCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
+export const updateUserCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
   const syncData = await getSyncData();
   return androidInterface.saveString(
     DB_KEY,
@@ -134,23 +134,15 @@ export const countOpeningAttempt = async (): Promise<void> => {
 };
 
 export const countBlockedAttempt = async (): Promise<void> => {
-  return "XXX " as any;
-
-  // const ds = getIsoDate();
-  // if (bro.runtime?.id) {
-  //   const syncData = await getSyncData();
-  //   return bro.storage.sync.set({
-  //     ...syncData,
-  //     blocked: {
-  //       ...syncData.blocked,
-  //       [ds]: syncData.blocked[ds] ? syncData.blocked[ds] + 1 : 1,
-  //     },
-  //   });
-  // } else {
-  //   throw new Error(
-  //     "Extension was reloaded, please reload tab for it to work here again",
-  //   );
-  // }
+  const ds = getIsoDate();
+  const syncData = await getSyncData();
+  return updateSyncData({
+    ...syncData,
+    blocked: {
+      ...syncData.blocked,
+      [ds]: syncData.blocked[ds] ? syncData.blocked[ds] + 1 : 1,
+    },
+  });
 };
 
 export const rateCurrentBrowsingBehavior = async (
@@ -159,15 +151,12 @@ export const rateCurrentBrowsingBehavior = async (
 ): Promise<void> => {
   const ds = getIsoDate(new Date(dateTS));
   const syncData = await getSyncData();
-  return androidInterface.saveString(
-    DB_KEY,
-    JSON.stringify({
-      ...syncData,
-      lastBrowsingBehaviorRatingTS: dateTS,
-      browsingBehaviorRating: {
-        ...syncData.browsingBehaviorRating,
-        [ds]: val,
-      },
-    }),
-  );
+  return updateSyncData({
+    ...syncData,
+    lastBrowsingBehaviorRatingTS: dateTS,
+    browsingBehaviorRating: {
+      ...syncData.browsingBehaviorRating,
+      [ds]: val,
+    },
+  });
 };
