@@ -22,7 +22,8 @@ import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut, promiseTimeout } from "@src/util/animation"; // @ts-ignore
 import { getQuestionSmart } from "@src/util/getQuestionSmart"; // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
-import { IS_ANDROID, IS_TOUCH_PRIMARY } from "@src/util/touch";
+import { IS_TOUCH_PRIMARY } from "@src/util/touch";
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
