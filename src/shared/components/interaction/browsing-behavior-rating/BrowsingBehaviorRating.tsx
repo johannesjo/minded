@@ -22,9 +22,9 @@ export const BrowsingBehaviorRatingInteraction: (props: {
     number | null
   >(null);
 
-  const onSaveRating = async (rating: number) => {
-    await rateCurrentBrowsingBehavior(rating);
-    if (rating >= 4) {
+  const onNext = async () => {
+    await rateCurrentBrowsingBehavior(getBrowsingBehaviorRating());
+    if (getBrowsingBehaviorRating() >= 4) {
       props.onSuccess();
     } else {
       setStep(1);
@@ -49,7 +49,6 @@ export const BrowsingBehaviorRatingInteraction: (props: {
                 ? "How would you rate your recent usage of the apps you blocked"
                 : "How would you rate your recent browsing behavior?"}
             </div>
-
             <div class="minded-6622-browsing-behavior-rating-btns">
               {BROWSING_BEHAVIOR_OPTIONS.map((opt) => (
                 <div
@@ -58,24 +57,32 @@ export const BrowsingBehaviorRatingInteraction: (props: {
                       ? "minded-6622-browsing-behavior-rating-btn isSelected"
                       : "minded-6622-browsing-behavior-rating-btn"
                   }
-                  onclick={() => {
+                  onClick={() => {
                     setBrowsingBehaviorRating(opt.val);
-                    onSaveRating(opt.val);
                   }}
                 >
                   {opt.txt}
                 </div>
               ))}
             </div>
+            <div
+              class="btn-big"
+              style={`margin-top: 32px; ${!getBrowsingBehaviorRating() ? "visibility: hidden" : ""}`}
+              onclick={() => onNext()}
+            >
+              save
+            </div>
           </div>
         </Match>
         <Match when={getStep() === 1}>
-          <Question
-            question={rndQuestion}
-            onCancelCountdown={props.onCancelCountdown}
-            onSuccess={() => props.onSuccess()}
-            onSkip={() => undefined}
-          />
+          <div class="fadeIn">
+            <Question
+              question={rndQuestion}
+              onCancelCountdown={props.onCancelCountdown}
+              onSuccess={() => props.onSuccess()}
+              onSkip={() => undefined}
+            />
+          </div>
         </Match>
 
         {/*<Match when={getStep() === 1}>*/}

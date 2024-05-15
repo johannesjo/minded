@@ -33,7 +33,7 @@ $extraClickArea: 4px;
   }
 }
 
-@mixin btnIco($height: 56px) {
+@mixin btnIco($height: var(--btn-height)) {
   @include btn($height);
   width: $height;
 }

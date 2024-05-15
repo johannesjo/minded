@@ -43,4 +43,17 @@
     }
   }
 
+  .fadeIn {
+    animation: minded6622fadeIn ease 1s;
+  }
+}
+
+
+@keyframes minded6622fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

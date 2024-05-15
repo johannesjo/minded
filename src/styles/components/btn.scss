@@ -1,11 +1,8 @@
 @import "@src/styles/mixins/mixins";
 
 #minded-6622 {
-  .btn-big,
-  .btn-ico-small,
   .btn {
     @include btn;
-
 
     &:hover {
       transform: scale(1.2);
@@ -21,7 +18,10 @@
 
   .btn-ico-small {
     @include btnIco(36px);
+  }
 
+  .btn-big {
+     @include btnTxtBigger()
   }
 
   .btn-add {
