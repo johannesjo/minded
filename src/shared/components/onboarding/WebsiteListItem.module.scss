@@ -8,7 +8,7 @@
   min-width: 0;
 
   input {
-    @include formInput(40px);
+    @include formInput(var(--form-inputs-height-smaller));
     background: transparent;
     border-radius: var(--border-radius);
     padding: 4px 12px;

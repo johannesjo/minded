@@ -8,7 +8,7 @@
   min-width: 300px;
 
   input {
-    @include formInput(40px);
+    @include formInput();
     flex: 1;
     min-width: 0 !important;
     margin-right: 8px;

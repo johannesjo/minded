@@ -6,6 +6,7 @@ import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { closeTab } from "@src/dataInterface/extension/extensionApi";
 import { QuestionForPrompt } from "@src/shared/data/questions";
+import { IS_MOUSE_PRIMARY } from "@src/util/touch";
 
 // NOTE: val also needs to be set in css
 
@@ -104,7 +105,7 @@ export const InteractionWeb: (props: {
         >
           <InteractionCommon
             questionForPrompt={getQuestion()}
-            isInitFadeout={true}
+            isInitFadeout={IS_MOUSE_PRIMARY}
             wrapperEl={wrapperEl}
             onSetAnswer={setLittleSunTxt}
             onModeSet={(mode) => {
