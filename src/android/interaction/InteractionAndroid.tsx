@@ -57,7 +57,11 @@ const InteractionAndroid = () => {
       <InteractionCommon
         isInitFadeout={false}
         wrapperEl={wrapperEl}
-        onModeSet={() => undefined}
+        onModeSet={(mode) => {
+          if (mode !== "QUESTION") {
+            androidInterface.unsetQuestion();
+          }
+        }}
         questionForPrompt={getQuestion()}
         onSuccessSunTap={() => {
           countBlockedAttempt();
