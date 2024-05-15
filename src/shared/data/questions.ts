@@ -167,6 +167,14 @@ export const QUESTION_CATEGORIES: {
         t: "Instead of instant gratification, what might be a better alternative",
         prompt: "Instead of visiting these websites I could",
       },
+      {
+        id: QID.RFHT11,
+        t: "Are you setting realistic goals and deadlines",
+      },
+      {
+        id: QID.RFHT12,
+        t: "How can you eliminate or reduce distractions",
+      },
     ],
   },
   [QuestionCategoryId.Motivation]: {
@@ -418,6 +426,10 @@ export const QUESTION_CATEGORIES: {
       { id: QID.SD14, t: "Do you live a fulfilling life" },
       { id: QID.SD15, t: "What is your purpose" },
       { id: QID.SD16, t: "Why are you here" },
+      {
+        id: QID.SD17,
+        t: "Are you taking care of your physical and mental well-being",
+      },
     ],
   },
   [QuestionCategoryId.XXPurposeOfSession]: {
