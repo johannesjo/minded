@@ -18,6 +18,7 @@ import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.util.parseSyncData
 import java.time.Instant
 
 
@@ -300,6 +301,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY,
                 OverlayControllerService.Companion.OverlayMode.SUCCESS_SUN_OVERLAY__FINAL
             )
+        }
+    }
+
+    fun countUserDrivenClose() {
+        val sharedPreferences = this.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
+        val str = sharedPreferences.getString("mindedAll", null);
+        if (str != null) {
+            val syncData = parseSyncData(str)
+            Log.v(logTag, "syncData: $syncData")
         }
     }
 
