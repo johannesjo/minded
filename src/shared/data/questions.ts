@@ -391,7 +391,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.SD4,
-        t: "Imagine you’ve discovered a hidden door in your home that leads to an alternate dimension. What would you write on a message you’d leave for yourself before stepping through, detailing what you hope to find and any concerns you have",
+        t: "What are my core values, and how do they influence my decisions and actions",
       },
       {
         id: QID.SD5,
