@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
         );
         OverlayControllerService.hideOverlay(
             this,
-            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
         );
     }
 

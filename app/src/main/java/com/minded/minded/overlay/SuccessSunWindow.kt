@@ -42,7 +42,7 @@ open class SuccessSunWindow(
                 if (sharedData.isShowLittleSunAfterSuccess) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+                        OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
                     )
                 }
                 hideWindow()

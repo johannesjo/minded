@@ -158,7 +158,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 successSunOverlayWindow.showWindow()
             }
 
-            OverlayName.AFTER_SUN_OVERLAY -> {
+            OverlayName.LITTLE_SUN_OVERLAY -> {
                 littleSunOverlayWindow.showWindow()
             }
 
@@ -172,7 +172,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         when (overlayName) {
             OverlayName.INTERACTION_OVERLAY -> interactionOverlayWindow.hideWindow()
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
-            OverlayName.AFTER_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
+            OverlayName.LITTLE_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
@@ -230,7 +230,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             } else if (isInGracePeriod) {
                 Log.v(logTag, "isInGracePeriod")
                 if (!littleSunOverlayWindow.isWindowShown()) {
-                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
+                    showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
                 }
                 // since we also want to show the question overlay after the lock screen, we DON'T do this check
 //            } else if (lastForeGroundApp == currentPackageName) {
@@ -254,7 +254,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (exclude != OverlayName.INTERACTION_OVERLAY) hideOverlay(OverlayName.INTERACTION_OVERLAY);
         if (exclude != OverlayName.SUCCESS_SUN_OVERLAY) hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
         if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);
-        if (exclude != OverlayName.AFTER_SUN_OVERLAY) hideOverlay(OverlayName.AFTER_SUN_OVERLAY);
+        if (exclude != OverlayName.LITTLE_SUN_OVERLAY) hideOverlay(OverlayName.LITTLE_SUN_OVERLAY);
     }
 
 
@@ -287,7 +287,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
         // we do this to let the sun animation finish, sun is supposed to close itself after
         if (isSkipShowSuccessSunAfter) {
-            hideOverlay(OverlayName.AFTER_SUN_OVERLAY)
+            hideOverlay(OverlayName.LITTLE_SUN_OVERLAY)
             hideOverlay(OverlayName.INTERACTION_OVERLAY)
             hideOverlay(OverlayName.SMALL_MSG_OVERLAY)
         } else {
@@ -336,7 +336,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         public enum class OverlayName {
-            INTERACTION_OVERLAY, AFTER_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
+            INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
         }
 
         public enum class OverlayMode {

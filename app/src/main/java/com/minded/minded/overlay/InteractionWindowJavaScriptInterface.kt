@@ -39,7 +39,7 @@ class InteractionWindowJavaScriptInterface(
         Log.v(logTag, "showLittleSun()")
         OverlayControllerService.showOverlay(
             ctrlSvc,
-            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
         )
     }
 
@@ -48,7 +48,7 @@ class InteractionWindowJavaScriptInterface(
         Log.v(logTag, "onSkip()")
         OverlayControllerService.showOverlay(
             ctrlSvc,
-            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
         )
         win.hideWindow()
     }
