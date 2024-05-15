@@ -23,7 +23,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "BROWSING_BEHAVIOR_RATING";
   // return "ACTION_ADVICE";
   // return "MOOD_CHECKIN";
-  return "ENERGY_LVL";
+  // return "ENERGY_LVL";
   // return "EMOJI_CHECKIN";
 
   const now = new Date();
