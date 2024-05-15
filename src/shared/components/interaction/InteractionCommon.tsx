@@ -57,6 +57,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let syncData;
   let questionUpdateCount = 0;
   let questionIdBefore;
+  let isSuccessSunTapped = false;
 
   onMount(async () => {
     if (props.isInitFadeout) {
@@ -135,7 +136,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     successSunSunEl.style.animationDuration = `0s`;
     successSunSunEl.style.animationFillMode = `forwards`;
     await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
-    props.onAfterSuccessSunFadeout();
+
+    if (!isSuccessSunTapped) {
+      props.onAfterSuccessSunFadeout();
+    }
   };
 
   const updateQuestion = () => {
@@ -167,6 +171,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     });
   };
 
+  const onSuccessSunTap = () => {
+    isSuccessSunTapped = true;
+    props.onSuccessSunTap();
+  };
+
   return (
     <>
       {getIsShowSuccessSun() && (
@@ -174,9 +183,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           id="minded-6622-success-sun"
           ref={successSunEl}
           title="Click sun to close tab"
-          onclick={() => {
-            props.onSuccessSunTap();
-          }}
+          onclick={onSuccessSunTap}
         >
           <div ref={successSunSunEl}></div>
           <div>
