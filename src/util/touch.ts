@@ -83,3 +83,5 @@ export const primaryInput: "mouse" | "touch" =
 export const IS_MOUSE_PRIMARY = primaryInput === "mouse";
 export const IS_TOUCH_ONLY = deviceType === "touchOnly";
 export const IS_TOUCH_PRIMARY = IS_TOUCH_ONLY || primaryInput === "touch";
+
+// console.log({ IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY });

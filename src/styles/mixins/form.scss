@@ -1,4 +1,4 @@
-@mixin formInput($height: 56px) {
+@mixin formInput($height: var(--form-inputs-height)) {
   color: var(--c-fg-full-emphasis) !important;
   background: var(--form-inputs-bg) !important;
   box-shadow: none !important;

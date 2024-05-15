@@ -13,6 +13,9 @@
 
   // global components
   --form-inputs-bg: var(--btn-bg);
+  --form-inputs-height: var(--btn-height);
+  --form-inputs-height-smaller: 40px;
+
   --btn-fz: 24px;
   --btn-height: 56px;
   --btn-height-bigger: 64px;
@@ -80,8 +83,8 @@
 
     --btn-fz: 21px;
     --btn-bigger-fz: 32px;
-    --btn-height: 48px;
-    --btn-height-bigger: 54px;
+    --btn-height: 54px;
+    --btn-height-bigger: 60px;
 
     --rating-size: 48px;
 
