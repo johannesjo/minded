@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.compose.Dashboard
 import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.ui.model.DashboardViewModelFactory
@@ -111,6 +112,24 @@ class MainActivity : AppCompatActivity() {
             webView.evaluateJavascript("(function() { window.dispatchEvent(new Event('${webAppResumeEVName}')); })();",
                 ValueCallback<String?> { })
         }
+
+        // always hide all overlays on resume
+        OverlayControllerService.hideOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
+        );
+        OverlayControllerService.hideOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
+        );
+        OverlayControllerService.hideOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
+        );
+        OverlayControllerService.hideOverlay(
+            this,
+            OverlayControllerService.Companion.OverlayName.AFTER_SUN_OVERLAY
+        );
     }
 
 
