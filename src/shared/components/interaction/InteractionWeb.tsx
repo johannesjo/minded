@@ -96,15 +96,15 @@ export const InteractionWeb: (props: {
                 setTimeout(() => {
                   setIsShowBlackScreen(false);
                   setIsShowLittleSun(true);
-                }, 400);
-              }, 400);
+                }, 300);
+              }, 300);
             }
           }}
           ref={wrapperEl}
         >
           <InteractionCommon
             questionForPrompt={getQuestion()}
-            isInitFadeout={false}
+            isInitFadeout={true}
             wrapperEl={wrapperEl}
             onSetAnswer={setLittleSunTxt}
             onModeSet={(mode) => {
