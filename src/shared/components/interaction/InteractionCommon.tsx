@@ -96,7 +96,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
     cancelCountdown();
-    showSuccessSunAniFlow(answerOrData);
+    showSuccessSunAniFlow();
 
     console.log("answerOrData", answerOrData);
     if (answerOrData) {
@@ -118,8 +118,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
-  const showSuccessSunAniFlow = async (answerOrData?: Answer) => {
+  const showSuccessSunAniFlow = async () => {
+    // wait for keyboard to close on android
+    if (IS_ANDROID) {
+      window.focus();
+      await promiseTimeout(100);
+    }
     setIsShowSuccessSun(true);
+
     // wait for sun
     successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
     await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
