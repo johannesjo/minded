@@ -22,6 +22,8 @@ export enum QID {
   RFHT8 = "RFHT8",
   RFHT9 = "RFHT9",
   RFHT10 = "RFHT10",
+  RFHT11 = "RFHT11",
+  RFHT12 = "RFHT12",
 
   MO1 = "MO1",
   MO2 = "MO2",
@@ -96,6 +98,7 @@ export enum QID {
   SD14 = "SD14",
   SD15 = "SD15",
   SD16 = "SD16",
+  SD17 = "SD17",
 
   XP1 = "XP1",
 }
