@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { onMount } from "solid-js";
 import { QuestionForPrompt } from "@src/shared/data/questions";
-import { androidInterface } from "@src/dataInterface/android/system";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
