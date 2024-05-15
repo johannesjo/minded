@@ -29,7 +29,7 @@ export const DashboardGroups: (props: {
   const [getBlockedToday, setBlockedToday] = createSignal<number>(0);
   const [getAttemptsToday, setAttemptsToday] = createSignal<number>(0);
 
-  onMount(() => {
+  const refresh = () => {
     getSyncData().then((syncData) => {
       if (syncData.answers?.length) {
         const entries = dashboardEntriesFromQuestions(syncData);
@@ -41,6 +41,10 @@ export const DashboardGroups: (props: {
         setBlockedToday(syncData.blocked[ds] || 0);
       }
     });
+  };
+
+  onMount(() => {
+    refresh();
   });
 
   return (
