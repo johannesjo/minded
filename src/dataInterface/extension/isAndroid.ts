@@ -1,3 +1,2 @@
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
-
-export const IS_ANDROID = !!androidInterface;
+export const IS_ANDROID: boolean = false;
+// export const IS_ANDROID: boolean = "androidMinded" in window;

@@ -14,8 +14,4 @@ declare const androidMinded: InteractionWindowJavaScriptInterface;
 
 export const androidInterface = androidMinded;
 
-export const requestFocusAndShowKeyboard = () => {
-  androidInterface.requestFocusAndShowKeyboard();
-};
-
 export const ANDROID_EV_RESUME = "androidAppResume";
