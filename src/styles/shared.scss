@@ -37,4 +37,10 @@
     @include txtSmaller;
   }
 
+  .hideOnXS {
+    @include onNonMobileScreens {
+      display: none !important;
+    }
+  }
+
 }
