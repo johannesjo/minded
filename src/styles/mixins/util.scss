@@ -7,7 +7,7 @@
 }
 
 @mixin onSmallScreens() {
-  @media (max-width: $bpMobile -1) {
+  @media (max-width: $bpMobileMax) {
     @content
   }
 }
