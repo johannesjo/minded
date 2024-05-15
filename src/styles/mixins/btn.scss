@@ -1,3 +1,5 @@
+@import "../variablesSCSS";
+
 @mixin btn($height: var(--btn-height)) {
   border: none;
   border-radius: 8px;
@@ -39,15 +41,15 @@
 
 @mixin btnToggleSelect() {
   @include btnTxt;
-  margin: 16px;
+  margin: 8px;
   user-select: none;
   text-transform: lowercase;
   min-width: 100px;
   transition: .2s all;
   background: var(--btn-bg-not-selected);
 
-  @media (max-width: var(--max-width-mobile)) {
-    margin: 8px;
+  @include onNonMobileScreens(){
+    margin: 16px;
   }
 
   &.isSelected {
