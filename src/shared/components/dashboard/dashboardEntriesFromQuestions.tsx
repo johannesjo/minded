@@ -21,7 +21,6 @@ const STATS_INDEX = 0;
 const MOOD_INDEX = 1;
 const ENERGY_LVL_INDEX = 2;
 const MAX_ANSWERS = 4;
-const MAX_GROUPS = 9;
 const CENTER_INDEX = 4;
 
 export const dashboardEntriesFromQuestions = (
@@ -109,9 +108,6 @@ export const dashboardEntriesFromQuestions = (
       type: DashboardGroupType.Quote,
     });
   }
-
-  // finally limit size
-  sortedEntries = sortedEntries.slice(0, MAX_GROUPS);
 
   return sortedEntries;
 };
