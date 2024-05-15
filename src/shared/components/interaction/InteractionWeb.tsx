@@ -19,6 +19,7 @@ export const InteractionWeb: (props: {
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
   const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
+  const [getIsShowBlackScreen, setIsShowBlackScreen] = createSignal(false);
 
   let wrapperEl;
 
@@ -87,9 +88,16 @@ export const InteractionWeb: (props: {
               (ev.target as HTMLElement)?.id ===
               "minded-6622-coloured-wrapper-dynamic"
             ) {
-              fadeOutInteractionWrapper().then(() => {
-                setIsShowLittleSun(true);
-              });
+              setIsShowBlackScreen(true);
+
+              setTimeout(() => {
+                // fadeOutInteractionWrapper();
+                wrapperEl.style.display = "none";
+                setTimeout(() => {
+                  setIsShowBlackScreen(false);
+                  setIsShowLittleSun(true);
+                }, 400);
+              }, 400);
             }
           }}
           ref={wrapperEl}
@@ -123,6 +131,8 @@ export const InteractionWeb: (props: {
           />
         </div>
       )}
+
+      {getIsShowBlackScreen() && <div id="minded-6622-black-screen"></div>}
     </>
   );
 };
