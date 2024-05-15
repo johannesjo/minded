@@ -91,8 +91,8 @@ class LittleSunWindow(
 
     override fun showWindow() {
         super.showWindow()
-        // show small msg overlay initially if there is a question or answer
-        if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null || sharedOverlayViewModel.sharedData.value.answerTxt != null) {
+        // show small msg overlay initially if there is a question (possibly with answer)
+        if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null) {
             OverlayControllerService.showOverlay(
                 ctrlSvc,
                 OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
