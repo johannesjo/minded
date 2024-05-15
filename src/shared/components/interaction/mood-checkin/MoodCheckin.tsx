@@ -4,6 +4,7 @@ import {
   MOOD_CHECKIN_OPTIONS,
   MoodCheckinVal,
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+// @ts-ignore
 import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
 
 export const MoodCheckin: (props: {
@@ -41,7 +42,6 @@ export const MoodCheckin: (props: {
         ))}
       </div>
       <div
-        style="margin-top: 64px;"
         class={
           getSelectedMood()
             ? "minded-6622-textarea-block isVisible"
@@ -84,7 +84,6 @@ export const MoodCheckin: (props: {
         class={
           getSelectedMood() ? "minded-6622-btns isVisible" : "minded-6622-btns"
         }
-        style="margin-top: 64px;"
       >
         <div class="minded-6622-nxt-btn" onclick={onSaveMood}>
           save

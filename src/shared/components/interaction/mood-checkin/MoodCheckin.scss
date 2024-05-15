@@ -10,15 +10,22 @@
 
 
   .minded-6622-mood-checkin-btns {
-    margin-top: 32px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     user-select: none;
     pointer-events: all;
     // more space on mobile for buttons
-    margin-left: -16px;
-    margin-right: -16px;
+    margin-left: -32px;
+    margin-right: -32px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+
+    @include onNonMobileScreens() {
+      margin-top: 32px;
+      margin-bottom: 64px;
+    }
+
   }
 
 
@@ -47,5 +54,10 @@
 
   .minded-6622-nxt-btn {
     @include btnTxtBigger();
+
+    margin-top: 16px;
+    @include onNonMobileScreens() {
+      margin-top: 64px;
+    }
   }
 }
