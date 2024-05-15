@@ -1,13 +1,22 @@
 /* @refresh reload */
-import { onMount } from "solid-js";
-import { QuestionForPrompt } from "@src/shared/data/questions";
+import { createSignal, onMount } from "solid-js";
+import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countBlockedAttempt } from "@src/dataInterface/android/syncDataInterface";
 
+const questionId = window.location.hash.replace("#", "");
+if (questionId) {
+  console.log("QUESTION ID FOUND", questionId);
+}
+
 const InteractionAndroid = () => {
+  const [getQuestion, setQuestion] = createSignal<QuestionForPrompt | null>(
+    questionId?.length ? QUESTIONS.find((q) => q.id === questionId) : null,
+  );
+
   let wrapperEl;
 
   onMount(async () => {
@@ -49,7 +58,7 @@ const InteractionAndroid = () => {
         isInitFadeout={false}
         wrapperEl={wrapperEl}
         onModeSet={() => undefined}
-        questionForPrompt={undefined}
+        questionForPrompt={getQuestion()}
         onSuccessSunTap={() => {
           countBlockedAttempt();
           androidInterface.onSuccessSunTap();
