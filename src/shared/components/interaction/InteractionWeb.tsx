@@ -4,7 +4,7 @@ import { fadeOut } from "@src/util/animation";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { closeTab } from "@src/dataInterface/extension/system";
+import { closeTab } from "@src/dataInterface/extension/extensionApi";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 
 // NOTE: val also needs to be set in css

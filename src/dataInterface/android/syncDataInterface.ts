@@ -1,7 +1,7 @@
 import { Answer, SyncData, UserCfg } from "@src/dataInterface/syncData";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
-import { androidInterface } from "@src/dataInterface/android/system";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { getIsoDate } from "@src/util/getIsoDate";
 
 const DB_KEY = "mindedAll";

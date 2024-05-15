@@ -7,9 +7,9 @@ import {
 import { Answer } from "@src/dataInterface/syncData";
 // @ts-ignore
 import { saveAnswer } from "@dataInterface/syncDataInterface";
-// @ts-ignore
-import { requestFocusAndShowKeyboard } from "@dataInterface/system";
+import { requestFocusAndShowKeyboard } from "@src/dataInterface/android/androidInterface";
 import { nanoid } from "nanoid";
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
 
 export const Question: (props: {
   question: QuestionForPrompt;
@@ -31,7 +31,9 @@ export const Question: (props: {
 
   const focusInp = () => {
     inpEl.focus();
-    requestFocusAndShowKeyboard();
+    if (IS_ANDROID) {
+      requestFocusAndShowKeyboard();
+    }
   };
 
   onMount(async () => {

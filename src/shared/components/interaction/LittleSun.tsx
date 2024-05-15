@@ -4,7 +4,7 @@ import {
   updateHostsEntry,
   // @ts-ignore
 } from "@dataInterface/localDataInterface";
-import { closeTab } from "@src/dataInterface/extension/system";
+import { closeTab } from "@src/dataInterface/extension/extensionApi";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
