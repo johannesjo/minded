@@ -6,6 +6,19 @@
   cursor: auto;
 }
 
+#minded-6622-black-screen {
+  background: #000;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  animation: minded6622fadeInOut 1s;
+  animation-fill-mode: forwards;
+  opacity: 0;
+  z-index: 2147483647;
+  z-index: 9999999999999999;
+}
 
 #minded-6622-little-sun-success-sun,
 #minded-6622-success-sun {
@@ -28,6 +41,7 @@
     animation-duration: 800ms;
     z-index: 30;
   }
+
 
   div:last-child {
     animation: minded6622fadeIn ease 1s;
@@ -63,6 +77,18 @@
   }
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes minded6622fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
