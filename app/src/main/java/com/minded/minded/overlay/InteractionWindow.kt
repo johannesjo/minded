@@ -1,7 +1,9 @@
 package com.minded.minded.overlay
 
 import InteractionWindowJavaScriptInterface
+import android.annotation.SuppressLint
 import android.graphics.PixelFormat
+import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
@@ -21,9 +23,12 @@ class InteractionWindow(
     override val logTag = javaClass.simpleName
 
 
+    @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
     override fun Cmp() {
         val win = this;
+        val questionId = sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt?.id;
+        Log.v(logTag, "questionId: $questionId")
 
         AndroidView(factory = { context ->
             WebView(context).apply {
@@ -48,22 +53,7 @@ class InteractionWindow(
                     ),
                     "androidMinded"
                 )
-//                this.requestFocus()
-//                Handler(Looper.getMainLooper()).postDelayed({
-//                    this.requestFocus()
-//                }, 4000) // Delay of 1 second
-
-                // TODO only show the keyboard when there is an input on the page
-//                webViewClient = object : WebViewClient() {
-//                    override fun onPageFinished(view: WebView, url: String) {
-//                        this@apply.requestFocus()
-//                        val imm =
-//                            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//                        imm.showSoftInput(this@apply, InputMethodManager.SHOW_IMPLICIT)
-//                    }
-//                }
-
-                loadUrl("file:///android_asset/web/src/android/interaction/index.html")
+                loadUrl("file:///android_asset/web/src/android/interaction/index.html#${questionId}")
             }
         })
     }
