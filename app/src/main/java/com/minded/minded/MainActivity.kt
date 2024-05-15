@@ -120,10 +120,6 @@ class MainActivity : AppCompatActivity() {
         );
         OverlayControllerService.hideOverlay(
             this,
-            OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY
-        );
-        OverlayControllerService.hideOverlay(
-            this,
             OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
         );
         OverlayControllerService.hideOverlay(
