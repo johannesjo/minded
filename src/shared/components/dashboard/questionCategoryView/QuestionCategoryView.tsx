@@ -63,6 +63,7 @@ export const QuestionCategoryView: (props: {
     saveAnswer(answerWithNewTs);
   };
 
+  // TODO maybe remove click handler for title
   return (
     <div class={styles.QuestionCategoryView}>
       <div class={styles.categoryTitle} onClick={props.onLeave}>
@@ -76,6 +77,7 @@ export const QuestionCategoryView: (props: {
           onEdit={editAnswer}
           onRemove={removeAnswerI}
           onAdd={addAnswerI}
+          onBack={props.onLeave}
         />
       </div>
     </div>

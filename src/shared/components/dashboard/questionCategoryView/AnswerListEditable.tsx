@@ -14,6 +14,7 @@ export const AnswerListEditable: (props: {
   answers: Answer[];
   onEdit: (upd: Answer) => void;
   onRemove: (id: string) => void;
+  onBack: () => void;
   onAdd: (newAnswer: Answer) => void;
 }) => JSX.Element = (props) => {
   const [getIsAddMode, setIsAddMode] = createSignal(false);
@@ -50,9 +51,18 @@ export const AnswerListEditable: (props: {
               onRemove={() => setIsAddMode(false)}
             />
           ) : (
-            <button class="btn-add" onClick={() => setIsAddMode(true)}>
-              + Add
-            </button>
+            <div>
+              <button class="btn-add" onClick={() => props.onBack()}>
+                ↖ Back
+              </button>
+              <button
+                class="btn-add"
+                style="margin-left: 16px"
+                onClick={() => setIsAddMode(true)}
+              >
+                + Add
+              </button>
+            </div>
           )}
         </div>
       )}
