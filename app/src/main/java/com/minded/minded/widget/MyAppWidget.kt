@@ -30,6 +30,7 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.minded.minded.data.QuestionCategoryForDashboard
 import com.minded.minded.ui.theme.PastelYellow
+import com.minded.minded.util.parseSyncData
 import kotlin.random.Random
 
 
@@ -48,15 +49,19 @@ class MyAppWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         Log.v("MyAppWidget", "provideGlance")
         val sharedPreferences = context.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
+        Log.v("MyAppWidget", "sharedPreferences: $sharedPreferences")
         // TODO get questionsForDashboard from sharedPreferences
-
-        provideContent {
-            // create your AppWidget here
-            Log.d(
-                "MyAppWidget",
-                "Displaying dashboard with"
-            )
-            QuestionCategoryCmp2()
+        var str = sharedPreferences.getString("mindedAll", null);
+        if (str != null) {
+            val syncData = parseSyncData(str)
+            provideContent {
+                // create your AppWidget here
+                Log.d(
+                    "MyAppWidget",
+                    "Displaying dashboard with"
+                )
+                QuestionCategoryCmp2()
+            }
         }
     }
 
