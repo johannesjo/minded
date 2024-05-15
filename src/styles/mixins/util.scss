@@ -1,3 +1,5 @@
+@import "../variablesSCSS";
+
 @mixin onAndroid() {
   :global(body.android) & {
     @content
@@ -5,13 +7,13 @@
 }
 
 @mixin onSmallScreens() {
-  @media (max-width: 599px) {
+  @media (max-width: $bpMobile -1) {
     @content
   }
 }
 
 @mixin onNonMobileScreens() {
-  @media (min-width: 600px) {
+  @media (min-width: $bpMobile) {
     @content
   }
 }

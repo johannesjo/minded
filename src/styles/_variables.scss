@@ -1,3 +1,5 @@
+@import "variablesSCSS";
+
 #minded-6622 {
   --border-radius: 8px;
   --c-link-color: rgb(153, 23, 166);
@@ -69,11 +71,9 @@
     --btn-bg-selected: rgba(0, 0, 0, 1);
 
   }
-
-  --max-width-mobile: 600px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: $bpMobile -1) {
   #minded-6622 {
     --fz-l: 21px;
     --fz-m: 15px;

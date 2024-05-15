@@ -15,6 +15,10 @@
     flex-wrap: wrap;
     justify-content: center;
     user-select: none;
+    pointer-events: all;
+    // more space on mobile for buttons
+    margin-left: -16px;
+    margin-right: -16px;
   }
 
 
