@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { JSX } from "solid-js";
+import { createSignal, JSX } from "solid-js";
 import Rating from "@src/shared/components/ui/Rating";
 // @ts-ignore
 import { saveEnergyLvl } from "@dataInterface/syncDataInterface";
@@ -11,10 +11,12 @@ export const EnergyLvlInteraction: (props: {
   onSkip: () => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
-  const onSetRating = async (val: number) => {
+  const onSave = async (val: number) => {
     await saveEnergyLvl(val);
     props.onSuccess();
   };
+
+  const [getEnergyLvl, setEnergyLvl] = createSignal<number | null>(null);
 
   return (
     <div
@@ -22,7 +24,15 @@ export const EnergyLvlInteraction: (props: {
       onmouseenter={props.onCancelCountdown}
     >
       <div>How would you rate your energy level today?</div>
-      <Rating onSetRating={onSetRating} />
+      <Rating onSetRating={setEnergyLvl} />
+
+      <div
+        class="btn-big"
+        style={`margin-top: 48px; ${!getEnergyLvl() ? "visibility: hidden" : ""}`}
+        onClick={() => onSave(getEnergyLvl())}
+      >
+        save
+      </div>
     </div>
   );
 };

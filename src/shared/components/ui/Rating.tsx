@@ -9,12 +9,12 @@ export const Rating: (props: {
 }) => JSX.Element = (props) => {
   const [rating, setRating] = createSignal(props.value);
   const [hoveredRating, setHoveredRating] = createSignal(0);
-  rating;
+
   return (
     <div class={"minded-6622-rating " + (props.isShowOnly ? "showOnly" : "")}>
       {Array.from({ length: 5 }, (_, i) => i + 1).map((value) => (
         <span
-          class={value <= rating() ? "isFull" : ""}
+          class={value <= rating() || value <= hoveredRating() ? "isFull" : ""}
           onClick={() => {
             if (props.isShowOnly) return;
             setRating(value);
@@ -22,8 +22,9 @@ export const Rating: (props: {
           }}
           onmouseenter={() => {
             if (props.isShowOnly) return;
-            setRating(value);
+            setHoveredRating(value);
           }}
+          onmouseleave={() => setHoveredRating(0)}
         >
           <img src={lightningSvg} />
         </span>
