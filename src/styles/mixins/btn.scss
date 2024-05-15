@@ -1,5 +1,7 @@
 @import "../variablesSCSS";
 
+$extraClickArea: 4px;
+
 @mixin btn($height: var(--btn-height)) {
   border: none;
   border-radius: 8px;
@@ -15,9 +17,19 @@
   box-sizing: border-box;
   color: var(--c-fg);
   pointer-events: all;
+  position: relative;
 
   &:hover {
     opacity: 1;
+  }
+
+  &:after {
+    content:"";
+    position: absolute;
+    right: -1 * $extraClickArea;
+    top: -1 * $extraClickArea;
+    left: -1 * $extraClickArea;
+    bottom: -1 * $extraClickArea;
   }
 }
 
