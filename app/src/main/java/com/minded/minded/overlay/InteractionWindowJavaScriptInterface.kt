@@ -75,8 +75,15 @@ class InteractionWindowJavaScriptInterface(
         Log.v(logTag, "omQuestionSet() $questionForPrompt")
         sharedOverlayViewModel.updateSharedData(
             questionForPrompt = questionForPrompt,
-            answerTxt = null
+            // NOTE: that does not work :/
         )
+        sharedOverlayViewModel.resetAnswerTxt()
+    }
+
+    @JavascriptInterface
+    fun unsetQuestion() {
+        Log.v(logTag, "unsetQuestion()")
+        sharedOverlayViewModel.unsetQuestion()
     }
 
     @JavascriptInterface
