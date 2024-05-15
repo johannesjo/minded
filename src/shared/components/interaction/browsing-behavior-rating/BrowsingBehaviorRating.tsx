@@ -6,7 +6,8 @@ import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/br
 import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
-import { getRndEntry } from "@src/util/getRndEntry"; // once on app load
+import { getRndEntry } from "@src/util/getRndEntry";
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid"; // once on app load
 
 // once on app load
 
@@ -44,7 +45,9 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         <Match when={getStep() === 0}>
           <div>
             <div class="minded-6622-txt-big">
-              How would you rate your recent browsing behavior?
+              {IS_ANDROID
+                ? "How would you rate your recent usage of the apps you blocked"
+                : "How would you rate your recent browsing behavior?"}
             </div>
 
             <div class="minded-6622-browsing-behavior-rating-btns">

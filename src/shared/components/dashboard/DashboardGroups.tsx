@@ -19,6 +19,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
 import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -72,7 +73,11 @@ export const DashboardGroups: (props: {
                 const rd = (dg as DashboardGroupBrowsingBehavior).data;
                 return (
                   <div class={styles.browsingBehaviorGraph}>
-                    <div>browsing behavior over time</div>
+                    <div>
+                      {IS_ANDROID
+                        ? "bad app usage rating over time"
+                        : "browsing behavior over time"}
+                    </div>
                     <Chart chartData={getBrowsingBehaviorChartData(rd)} />
                   </div>
                 );
