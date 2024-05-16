@@ -1,6 +1,7 @@
 @import "variables";
 @import "components/components";
 @import "mixins/mixins";
+@import "@src/styles/sharedForInteraction.scss";
 
 #minded-6622 {
   font-size: var(--fz-m);

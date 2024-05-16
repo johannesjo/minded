@@ -24,7 +24,7 @@ $extraClickArea: 4px;
   }
 
   &:after {
-    content:"";
+    content: "";
     position: absolute;
     right: -1 * $extraClickArea;
     top: -1 * $extraClickArea;
@@ -36,6 +36,14 @@ $extraClickArea: 4px;
 @mixin btnIco($height: var(--btn-height)) {
   @include btn($height);
   width: $height;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  > img {
+    margin: 8px;
+    flex: 1
+  }
 }
 
 
@@ -60,7 +68,7 @@ $extraClickArea: 4px;
   transition: .2s all;
   background: var(--btn-bg-not-selected);
 
-  @include onNonMobileScreens(){
+  @include onNonMobileScreens() {
     margin: 16px;
   }
 
