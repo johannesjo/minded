@@ -38,8 +38,9 @@ export const Question: (props: {
     if (props.question.prompt && inpEl) {
       inpEl.value = props.question.prompt + " ";
     }
-    t0 = setTimeout(() => focusInp(), 50);
-    t1 = setTimeout(() => focusInp(), 400);
+    focusInp();
+    t0 = setTimeout(() => focusInp(), 200);
+    t1 = setTimeout(() => focusInp(), 600);
   });
 
   onCleanup(() => {
