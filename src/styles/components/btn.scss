@@ -4,9 +4,11 @@
   .btn {
     @include btn;
 
+
     &:hover {
       transform: scale(1.2);
     }
+
     &:active {
       transform: scale(0.95);
     }
@@ -20,8 +22,13 @@
     @include btnIco(36px);
   }
 
+  .btn-ico {
+    @include btnIco(var(--btn-height));
+  }
+
+
   .btn-big {
-     @include btnTxtBigger()
+    @include btnTxtBigger()
   }
 
   .btn-add {
