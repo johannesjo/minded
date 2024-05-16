@@ -17,9 +17,6 @@ import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
 
-const STATS_INDEX = 0;
-const MOOD_INDEX = 1;
-const ENERGY_LVL_INDEX = 2;
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
 
@@ -59,30 +56,30 @@ export const dashboardEntriesFromQuestions = (
   // console.log(dashboardGroups);
 
   let sortedEntries: DashboardGroup[] = dashboardGroups;
-  let fixedEntries = 0;
+  let fixedEntriesIndexAndNr = 0;
 
   if (syncData.blocked[ds] > 0) {
-    fixedEntries++;
-    sortedEntries.splice(STATS_INDEX, 0, {
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
       type: DashboardGroupType.Stats,
     } as DashboardGroupStats);
+    fixedEntriesIndexAndNr++;
   }
 
   if (isToday(syncData.moodCheckTS)) {
-    fixedEntries++;
-    sortedEntries.splice(MOOD_INDEX, 0, {
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
       type: DashboardGroupType.MoodCheckin,
       mood: syncData.moodCheckVal,
       additionalTxt: syncData.moodCheckAdditional,
     } as DashboardGroupMood);
+    fixedEntriesIndexAndNr++;
   }
 
   if (isToday(syncData.energyLvlTS)) {
-    fixedEntries++;
-    sortedEntries.splice(ENERGY_LVL_INDEX, 0, {
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
       type: DashboardGroupType.EnergyLvl,
       energyLvl: syncData.energyLvlVal,
     } as DashboardGroupEnergyLvl);
+    fixedEntriesIndexAndNr++;
   }
 
   if (Object.keys(syncData.browsingBehaviorRating).length >= 3) {
@@ -99,7 +96,10 @@ export const dashboardEntriesFromQuestions = (
   // center one rnd entry
   if (sortedEntries.length >= 5) {
     // NOTE: start val needs to be bigger than the fixed added entries
-    const rndIndex = getRndInt(fixedEntries, sortedEntries.length - 1);
+    const rndIndex = getRndInt(
+      fixedEntriesIndexAndNr,
+      sortedEntries.length - 1,
+    );
     const rndEntry = { ...sortedEntries[rndIndex] };
     sortedEntries.splice(rndIndex, 1);
     sortedEntries.splice(CENTER_INDEX, 0, rndEntry);
