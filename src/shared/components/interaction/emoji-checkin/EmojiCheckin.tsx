@@ -1,7 +1,6 @@
 import {
   EMOIJI_CATEGORIES,
   EMOIJI_CATEGORIES_SORTED,
-  EmojiCategory,
 } from "@src/shared/components/interaction/emoji-checkin/emojis.const";
 import { JSX } from "solid-js";
 
@@ -24,17 +23,17 @@ export const EmojiCheckin: (props: {
 
   return (
     <div
-      id="minded-6622-energy-lvl-interaction"
+      class="minded-6622-emoji-checkin-wrapper"
       onmouseenter={props.onCancelCountdown}
     >
-      <div style="pointer-events: all;">How do you feel?</div>
+      <div class="minded-6622-txt-big">How do you feel?</div>
 
       <div>
         {EMOIJI_CATEGORIES_SORTED.map((catid) => (
-          <div style="padding-bottom: 16px; pointer-events: all; display: inline-block;">
+          <div class="minded-6622-emoji-category">
             {EMOIJI_CATEGORIES[catid].map((entry) => (
               <div
-                style="display: inline-block; font-size: 40px; padding: 4px; cursor: pointer; pointer-events: all;"
+                class="minded-6622-emoji"
                 title={entry.d}
                 onclick={props.onSuccess}
               >
