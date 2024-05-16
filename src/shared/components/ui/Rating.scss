@@ -20,6 +20,7 @@
 
   span {
     cursor: pointer;
+    pointer-events: all;
     display: inline-block;
     font-size: var(--rating-size);
     color: var(--rating-inactive);
