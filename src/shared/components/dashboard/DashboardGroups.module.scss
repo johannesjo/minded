@@ -184,6 +184,7 @@
 
   div:first-child {
     @include h4();
+    margin-bottom: 0;
   }
 }
 
@@ -200,7 +201,6 @@
 .stats {
   div:last-child {
     @include fatTxt();
-    margin-bottom: 10px;
   }
 }
 
