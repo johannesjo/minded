@@ -133,7 +133,11 @@ export const InteractionWeb: (props: {
         </div>
       )}
 
-      {getIsShowBlackScreen() && <div id="minded-6622-black-screen"></div>}
+      {getIsShowBlackScreen() && (
+        <div id="minded-6622-black-screen">
+          <div>Next time you'll make it!</div>
+        </div>
+      )}
     </>
   );
 };
