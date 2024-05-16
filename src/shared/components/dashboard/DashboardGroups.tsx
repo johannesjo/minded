@@ -58,7 +58,7 @@ export const DashboardGroups: (props: {
           class={`${styles.box} ${
             dg.type !== DashboardGroupType.Standard &&
             dg.type !== DashboardGroupType.BrowsingBehaviorRating
-              ? styles.flexCenter
+              ? styles.centerItem
               : ""
           }`}
         >
