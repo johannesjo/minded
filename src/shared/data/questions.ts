@@ -288,6 +288,11 @@ export const QUESTION_CATEGORIES: {
         t: "What do you want to stop doing? And what can you do instead",
         prompt: "I want to stop",
       },
+      {
+        id: QID.GP4,
+        t: "What is something new you could try",
+        prompt: "I want to try",
+      },
     ],
     dashboardTxt: "Good Plans",
   },
@@ -317,6 +322,10 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.GPT5,
         t: "What kind of person do I want to be today",
+      },
+      {
+        id: QID.GPT6,
+        t: "What is something you are looking forward to today",
       },
     ],
     dashboardTxt: "Good Plans Today",
@@ -429,6 +438,15 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.SD17,
         t: "Are you taking care of your physical and mental well-being",
+      },
+      {
+        id: QID.SD18,
+        t: "What makes you happy",
+      },
+      {
+        id: QID.SD19,
+        t: "What is something you want",
+        prompt: "I want",
       },
     ],
   },
