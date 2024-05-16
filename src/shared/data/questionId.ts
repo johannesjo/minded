@@ -54,12 +54,14 @@ export enum QID {
   GP1 = "GP1",
   GP2 = "GP2",
   GP3 = "GP3",
+  GP4 = "GP4",
 
   GPT1 = "GPT1",
   GPT2 = "GPT2",
   GPT3 = "GPT3",
   GPT4 = "GPT4",
   GPT5 = "GPT5",
+  GPT6 = "GPT6",
 
   GW1 = "GW1",
   GW2 = "GW2",
@@ -99,6 +101,10 @@ export enum QID {
   SD15 = "SD15",
   SD16 = "SD16",
   SD17 = "SD17",
+  SD18 = "SD18",
+  SD19 = "SD19",
+  SD20 = "SD20",
+  SD21 = "SD21",
 
   XP1 = "XP1",
 }
