@@ -54,10 +54,6 @@ export const InteractionWeb: (props: {
     props.onHideAll();
   };
 
-  const fadeOutInteractionWrapper = (): Promise<void> => {
-    return fadeOut(wrapperEl, 150).promise;
-  };
-
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
       fadeOut(wrapperEl, 150);
@@ -133,11 +129,7 @@ export const InteractionWeb: (props: {
         </div>
       )}
 
-      {getIsShowBlackScreen() && (
-        <div id="minded-6622-black-screen">
-          <div>Next time you'll make it!</div>
-        </div>
-      )}
+      {getIsShowBlackScreen() && <div id="minded-6622-black-screen"></div>}
     </>
   );
 };
