@@ -1,10 +1,21 @@
-import { createSignal } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 import { Line } from "solid-chartjs";
 import { createStore } from "solid-js/store";
-import { ChartData } from "chart.js";
+import { Chart as ChartJSChart, ChartData } from "chart.js";
 import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
+import { isDarkModeNow } from "@src/shared/addDayTimeDependentClass";
 
 function Chart(props: { chartData: ChartData }) {
+  onMount(() => {
+    const style = getComputedStyle(document.getElementById("minded-6622"));
+    const primCol = style.getPropertyValue("--c-graph-fg-full");
+    const mutedColor = style.getPropertyValue("--c-graph-fg-less");
+
+    ChartJSChart.defaults.backgroundColor = "transparent";
+    ChartJSChart.defaults.borderColor = mutedColor;
+    ChartJSChart.defaults.color = primCol;
+  });
+
   const [chartData] = createSignal<ChartData>(props.chartData);
   const [chartConfig] = createStore({
     width: 400,
@@ -29,10 +40,14 @@ function Chart(props: { chartData: ChartData }) {
           data={chartData()}
           options={{
             responsive: true,
+
             // maintainAspectRatio: true,
             scales: {
               y: {
                 ticks: {
+                  // color: "#000",
+                  // borderColor: "#000",
+                  // backdropColor: "#000",
                   callback: function (value, index, values) {
                     // Replace this with your custom logic
                     return BROWSING_BEHAVIOR_OPTIONS.find(

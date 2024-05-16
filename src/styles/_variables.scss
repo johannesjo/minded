@@ -30,6 +30,9 @@
   // components
   --sun-bg: #fff;
 
+  --c-graph-fg-full: rgba(0, 0, 0, .5);
+  --c-graph-fg-less: rgba(0, 0, 0, .3);
+
   --rating-size: 50px;
 
   --little-sun-bg: #fff;
@@ -67,6 +70,10 @@
 
     --c-fg: rgba(255, 255, 255, .9);
     --c-fg-full-emphasis: #fff;
+
+    --c-graph-fg-full: rgba(255, 255, 255, .7);
+    --c-graph-fg-less: rgba(255, 255, 255, .5);
+
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, .7);
     --c-bg-btns: rgba(0, 0, 0, .5);
