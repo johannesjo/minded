@@ -11,7 +11,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.minded.minded.MissingCapability
 import com.minded.minded.ui.model.DashboardViewModel
+import com.minded.minded.ui.theme.StandardGradientDark
 import com.minded.minded.ui.theme.StandardGradientLight
+import com.minded.minded.util.isDarkModeNow
 
 @Composable
 fun Dashboard(
@@ -28,16 +30,18 @@ fun DashboardMain(
     missingCapabilities: List<MissingCapability>,
     onMissingCapabilityClick: (MissingCapability) -> Unit = {},
 ) {
+    val isDarkModeNow = isDarkModeNow()
+
     if (missingCapabilities.isNotEmpty()) {
         Box(
             modifier = Modifier
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = StandardGradientLight
+                        colors = if (isDarkModeNow) StandardGradientDark else StandardGradientLight
                     )
                 )
         ) {
-            MissingCapabilityView(missingCapabilities, onMissingCapabilityClick)
+            MissingCapabilityView(missingCapabilities, onMissingCapabilityClick, isDarkModeNow)
         }
     }
 }

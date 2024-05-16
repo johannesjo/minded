@@ -21,7 +21,8 @@ import com.minded.minded.MissingCapability
 @Composable
 fun MissingCapabilityView(
     missingCapabilities: List<MissingCapability>,
-    onMissingCapabilityClick: (MissingCapability) -> Unit = {}
+    onMissingCapabilityClick: (MissingCapability) -> Unit = {},
+    isDarkModeNow: Boolean = false
 ) {
 //    Text(text = "Missing capability: $missingCapability")
 
@@ -39,6 +40,7 @@ fun MissingCapabilityView(
                 text = "Before you can use the app, you need to give the following permissions. Remember: minded does not collect any data. Everything stays on your device.",
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
+                color = if (isDarkModeNow) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black
             )
 
             if (missingCapabilities.contains(MissingCapability.SystemAlertWindow)) {
@@ -47,10 +49,13 @@ fun MissingCapabilityView(
                     text = "Minded displays an overlay to interrupt your visits to apps you want to use less. For this to work, minded needs the overlay permission.",
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
+                    color = if (isDarkModeNow) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { onMissingCapabilityClick(MissingCapability.SystemAlertWindow) }) {
-                    Text("Enable Overlay Permission")
+                    Text(
+                        "Enable Overlay Permission",
+                    )
                 }
             }
 
@@ -60,10 +65,13 @@ fun MissingCapabilityView(
                     text = "The minded accessibility service is required to detect app starts on your device, so minded knows when to display the interaction overlay.",
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
+                    color = if (isDarkModeNow) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { onMissingCapabilityClick(MissingCapability.Accessibility) }) {
-                    Text("Enable Accessibility Service")
+                    Text(
+                        "Enable Accessibility Service",
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -72,12 +80,14 @@ fun MissingCapabilityView(
                 text = "If the buttons above does not work, you can enable the accessibility service and the permission manually in your device settings.",
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
+                color = if (isDarkModeNow) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "In case there are problems with the accessibility service, enabling, disabling and then enabling the service again will likely help.",
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
+                color = if (isDarkModeNow) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black
             )
         }
     }
@@ -106,5 +116,12 @@ fun MissingCapabilityViewPreview2() {
 @Preview
 fun MissingCapabilityViewPreview3() {
     MissingCapabilityView(listOf(MissingCapability.SystemAlertWindow))
+}
+
+
+@Composable
+@Preview
+fun MissingCapabilityViewPreview4() {
+    MissingCapabilityView(listOf(MissingCapability.SystemAlertWindow), isDarkModeNow = true)
 }
 
