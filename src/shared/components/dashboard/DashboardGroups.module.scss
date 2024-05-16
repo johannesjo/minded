@@ -90,7 +90,6 @@
     animation-delay: 0s;
   }
 
-
   &:nth-child(n+7) {
     @media (min-width: $bpDashboardMoreThan1Col) {
       display: none;
@@ -106,13 +105,25 @@
     }
   }
 
-  &.flexCenter {
-    @media (min-width: $bpDashboardMoreThan1Col) {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 0;
+  @mixin centerItem() {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0;
+  }
+
+  @media (min-width: $bpDashboardMoreThan1Col) {
+    &.centerItem,
+    &:nth-child(1),
+    &:nth-child(2) {
+      @include centerItem()
+    }
+  }
+
+  @media (min-width: $bpDashboardMoreThan2Col) {
+    &:nth-child(3) {
+      @include centerItem()
     }
   }
 }
