@@ -58,7 +58,7 @@ class MyAccessibilityService : AccessibilityService() {
         return packageName.contains("com.google.android.inputmethod")
                 || packageName == "com.minded.minded"
                 || packageName == "com.android.systemui"
-                || packageName == "com.google.android.googlequicksearchbox"
+//                || packageName == "com.google.android.googlequicksearchbox"
     }
 
 
