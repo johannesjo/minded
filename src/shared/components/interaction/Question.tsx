@@ -83,7 +83,7 @@ export const Question: (props: {
 
   return (
     <>
-      <div id="minded-6622-msg">
+      <div id="minded-6622-question-wrapper">
         <div id="minded-6622-question">{props.question.t}?</div>
 
         <div id="minded-6622-inp">

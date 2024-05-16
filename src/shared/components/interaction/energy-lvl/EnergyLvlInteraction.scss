@@ -1,7 +1,6 @@
 #minded-6622-energy-lvl-interaction {
-  @include txtBig();
-
   > div:first-child {
+    @include txtBig();
     margin-bottom: 30px;
   }
 }
