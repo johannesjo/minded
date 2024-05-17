@@ -83,19 +83,7 @@ class SharedOverlayViewModel(
         _sharedData.update { newSharedData }
     }
 
-// TODO maybe remove
-//    fun resetToFreshRndQuestionAndMode(currentApp: String) {
-//        val currentData = sharedData.value ?: SharedOverlayData()
-//        val newSharedData = currentData.copy(
-//            currentApp = currentApp,
-//            isShowLittleSunAfterSuccess = true,
-//            answerTxt = null,
-//            lastQuestionForPrompt = null,
-//            successSunTxt = null,
-//        )
-//        _sharedData.update { newSharedData }
-//        Log.v(lt, "resetToFreshRndQuestion() ${newSharedData}")
-//    }
+
 
     fun updateLastAppUsage() {
         val appName =
@@ -135,5 +123,18 @@ class SharedOverlayViewModel(
         val newSharedData = currentData.copy(successSunTxt = null)
         _sharedData.update { newSharedData }
         Log.v(lt, "resetSunTxt() ${newSharedData}")
+    }
+
+    fun resetAll(currentApp: String) {
+        val currentData = sharedData.value ?: SharedOverlayData()
+        val newSharedData = currentData.copy(
+            currentApp = currentApp,
+            isShowLittleSunAfterSuccess = true,
+            answerTxt = null,
+            lastQuestionForPrompt = null,
+            successSunTxt = null,
+        )
+        _sharedData.update { newSharedData }
+        Log.v(lt, "resetAll() ${newSharedData}")
     }
 }
