@@ -19,9 +19,11 @@ export const Question: (props: {
   onChangeQuestion?: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
+  const [getIsChangingQuestion, setIsChangingQuestion] = createSignal(false);
   let inpEl;
   let t0;
   let t1;
+  let tChangeQuestion;
 
   createEffect(() => {
     if (inpEl) {
@@ -84,7 +86,10 @@ export const Question: (props: {
 
   return (
     <>
-      <div id="minded-6622-question-wrapper">
+      <div
+        id="minded-6622-question-wrapper"
+        class={`${getIsChangingQuestion() ? "isChangingQuestion" : ""}`}
+      >
         <div id="minded-6622-question">{props.question.t}?</div>
 
         <div id="minded-6622-inp">
@@ -113,8 +118,12 @@ export const Question: (props: {
             onmouseenter={props.onCancelCountdown}
             onclick={() => {
               props.onCancelCountdown();
-              props.onChangeQuestion();
-              inpEl?.focus();
+              setIsChangingQuestion(true);
+              tChangeQuestion = window.setTimeout(() => {
+                props.onChangeQuestion();
+                inpEl?.focus();
+                setIsChangingQuestion(false);
+              }, 100);
             }}
           >
             ⇄
