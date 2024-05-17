@@ -26,6 +26,7 @@ import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
 
 interface InteractionCommonProps {
+  isReducedSuccessSun?: boolean;
   questionForPrompt?: QuestionForPrompt;
   isInitFadeout: boolean;
   wrapperEl: HTMLElement;
@@ -127,15 +128,24 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
     setIsShowSuccessSun(true);
 
-    // wait for sun
-    successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
-    await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
-    successSunSunEl.style.animation = `${SUCCESS_SUN_STAY_DURATION}ms minded6622successSunStay ease-in-out`;
-    successSunSunEl.style.animationFillMode = `forwards`;
-    await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
-    successSunSunEl.style.animationDuration = `0s`;
-    successSunSunEl.style.animationFillMode = `forwards`;
-    await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
+    if (props.isReducedSuccessSun) {
+      successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
+      await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
+      successSunSunEl.style.animationDuration = `0s`;
+      successSunSunEl.style.animationFillMode = `forwards`;
+      await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION * 0.2)
+        .promise;
+    } else {
+      // wait for sun
+      successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
+      await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
+      successSunSunEl.style.animation = `${SUCCESS_SUN_STAY_DURATION}ms minded6622successSunStay ease-in-out`;
+      successSunSunEl.style.animationFillMode = `forwards`;
+      await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
+      successSunSunEl.style.animationDuration = `0s`;
+      successSunSunEl.style.animationFillMode = `forwards`;
+      await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
+    }
 
     if (!isSuccessSunTapped) {
       props.onAfterSuccessSunFadeout();
@@ -187,8 +197,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         >
           <div ref={successSunSunEl}></div>
           <div>
-            {IS_TOUCH_PRIMARY ? "tap" : "click"} sun to close{" "}
-            {IS_ANDROID ? "app" : "the website"}
+            {!props.isReducedSuccessSun && (
+              <>
+                {IS_TOUCH_PRIMARY ? "tap" : "click"} sun to close{" "}
+                {IS_ANDROID ? "app" : "the website"}
+              </>
+            )}
           </div>
         </div>
       )}
