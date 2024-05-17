@@ -88,7 +88,15 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.BBH4,
         t: "What specific first step could you take right now to develop a better browsing behavior",
-        prompt: "",
+      },
+      {
+        id: QID.BBH5,
+        t: "How would your ideal media consumption behavior look like?",
+      },
+      {
+        id: QID.BBH6,
+        t: "Instead of instant gratification, what might be a better alternative",
+        prompt: "Instead of using these websites and apps I could",
       },
     ],
   },
@@ -116,6 +124,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isMorningCategory: true,
     isWorkDayCategory: true,
+    frequencyModifier: 1,
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
@@ -161,11 +170,6 @@ export const QUESTION_CATEGORIES: {
         id: QID.RFHT9,
         t: "What exactly needs to be done in your current task",
         prompt: "First I",
-      },
-      {
-        id: QID.RFHT10,
-        t: "Instead of instant gratification, what might be a better alternative",
-        prompt: "Instead of visiting these websites I could",
       },
       {
         id: QID.RFHT11,
@@ -217,7 +221,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT3,
-        t: "What is a thing you might do instead of visiting this website",
+        t: "What is a thing you might do instead of using this website",
         prompt: "Instead of visiting this website I",
       },
       {
