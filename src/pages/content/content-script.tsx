@@ -38,10 +38,6 @@ const CURRENT_URL = window.location.href;
         const styleTag = document.createElement("style");
         styleTag.textContent = styleAsString;
         document.head.appendChild(styleTag);
-        console.log(
-          "isShowFullMinder()",
-          isShowFullMinder(CURRENT_URL, syncData),
-        );
 
         render(
           () =>
