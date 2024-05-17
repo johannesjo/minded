@@ -16,6 +16,8 @@ const THRESHOLD_EVENING_START = 15;
 const THRESHOLD_LATE_NIGHT_START = 0;
 const THRESHOLD_LATE_NIGHT_END = 4;
 
+const BOOST_FACTOR = 1;
+
 const FAKE_RULE_OUT_NR = 9999;
 
 export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
@@ -45,14 +47,38 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_MORNING_START ||
           nowHours > THRESHOLD_MORNING_END
         ) {
-          console.log("getQuestionSmart(): SKIP MORNING", categoryForAnswer);
+          console.log(
+            "getQuestionSmart(): SKIP MORNING",
+            categoryForAnswer.dashboardTxt,
+            categoryForAnswer,
+          );
           map[categoryId] = FAKE_RULE_OUT_NR;
+        } else {
+          // boost when applicable
+          console.log(
+            // "getQuestionSmart(): BOOST  MORNING",
+            categoryForAnswer.dashboardTxt,
+            categoryForAnswer,
+          );
+          map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
       if (categoryForAnswer.isEveningCategory) {
         if (nowHours < THRESHOLD_EVENING_START) {
-          console.log("getQuestionSmart(): SKIP EVENING", categoryForAnswer);
+          console.log(
+            "getQuestionSmart(): SKIP EVENING",
+            categoryForAnswer.dashboardTxt,
+            categoryForAnswer,
+          );
           map[categoryId] = FAKE_RULE_OUT_NR;
+        } else {
+          // boost when applicable
+          console.log(
+            // "getQuestionSmart(): BOOST  EVENING",
+            categoryForAnswer.dashboardTxt,
+            categoryForAnswer,
+          );
+          map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
       if (categoryForAnswer.isLateNightCategory) {
@@ -60,13 +86,26 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_LATE_NIGHT_START ||
           nowHours > THRESHOLD_LATE_NIGHT_END
         ) {
-          console.log("getQuestionSmart(): SKIP LATE_NIGHT", categoryForAnswer);
+          console.log(
+            "getQuestionSmart(): SKIP LATE_NIGHT",
+            categoryForAnswer.dashboardTxt,
+            categoryForAnswer,
+          );
           map[categoryId] = FAKE_RULE_OUT_NR;
+        } else {
+          // boost when applicable
+          console.log(
+            // "getQuestionSmart(): BOOST  LATE_NIGHT",
+            categoryForAnswer.dashboardTxt,
+            categoryForAnswer,
+          );
+          map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
       if (categoryForAnswer.isWorkDayCategory && !isWorkDayToday) {
         console.log(
           "getQuestionSmart(): SKIP IS_WORK_DAY_CATEGORY",
+          categoryForAnswer.dashboardTxt,
           categoryForAnswer,
         );
         map[categoryId] = FAKE_RULE_OUT_NR;
@@ -104,6 +143,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   );
 
   console.log("getQuestionSmart():", {
+    map,
     sortedEntries,
     nrOfEntriesForLeastUsed,
     categoriesLeastUsed,
