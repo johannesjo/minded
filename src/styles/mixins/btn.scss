@@ -42,7 +42,11 @@ $extraClickArea: 4px;
 
   > img {
     margin: 8px;
-    flex: 1
+    flex: 1;
+
+    @include inDarkMode() {
+      filter: invert(1);
+    }
   }
 }
 
