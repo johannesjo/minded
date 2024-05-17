@@ -131,15 +131,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (appName == null) {
                     throw RuntimeException("appName is null")
                 }
-                // TODO maybe remove
-//                if (overlayMode == OverlayMode.INTERACTION_OVERLAY__FRESH) {
-//                    sharedOverlayViewModel.resetToFreshRndQuestionAndMode(appName)
-//                }
+                if (overlayMode == OverlayMode.INTERACTION_OVERLAY__FRESH) {
+                    sharedOverlayViewModel.resetAll(appName)
+                } else {
+                    sharedOverlayViewModel.resetAnswerTxt()
+                    sharedOverlayViewModel.resetSunTxt()
+                }
                 // when whe show the question, we likely want to update the current app usage
                 sharedOverlayViewModel.updateLastAppUsage()
-                sharedOverlayViewModel.resetAnswerTxt()
-                sharedOverlayViewModel.resetSunTxt()
                 interactionOverlayWindow.showWindow()
+
                 // we hide others only after to avoid lifecycle complications
                 hideAllBut(OverlayName.INTERACTION_OVERLAY)
             }
