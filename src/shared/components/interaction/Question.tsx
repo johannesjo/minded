@@ -121,6 +121,7 @@ export const Question: (props: {
             onclick={() => {
               props.onCancelCountdown();
               setIsChangingQuestion(true);
+              inpEl?.focus();
               tChangeQuestion = window.setTimeout(() => {
                 props.onChangeQuestion();
                 inpEl?.focus();
