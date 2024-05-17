@@ -3,7 +3,7 @@ import { DashboardGroups } from "@src/shared/components/dashboard/DashboardGroup
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QuestionCategoryView } from "@src/shared/components/dashboard/questionCategoryView/QuestionCategoryView";
 import BottomBar from "@src/shared/components/dashboard/BottomBar";
-import QuestionOverlay from "@src/shared/components/dashboard/questionOverlay/QuestionOverlay";
+import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 
 export const Dashboard: () => JSX.Element = () => {
   const [getSelectedQuestionCategoryId, setSelectedQuestionCategoryId] =
@@ -26,9 +26,10 @@ export const Dashboard: () => JSX.Element = () => {
           <BottomBar onShowQuestion={() => setIsShowQuestionOverlay(true)} />
         </>
       )}
+
       {getIsShowQuestionOverlay() && (
-        <QuestionOverlay
-          onHideQuestion={() => setIsShowQuestionOverlay(false)}
+        <InteractionOverlay
+          onHideInteraction={() => setIsShowQuestionOverlay(false)}
         />
       )}
     </div>
