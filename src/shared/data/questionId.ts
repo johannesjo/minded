@@ -6,6 +6,7 @@ export enum QID {
   BBH3 = "BBH3",
   BBH4 = "BBH4",
   BBH5 = "BBH5",
+  BBH6 = "BBH6",
 
   PR1 = "PR1",
   PR2 = "PR2",
