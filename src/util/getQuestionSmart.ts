@@ -47,37 +47,17 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_MORNING_START ||
           nowHours > THRESHOLD_MORNING_END
         ) {
-          console.log(
-            "getQuestionSmart(): SKIP MORNING",
-            categoryForAnswer.dashboardTxt,
-            categoryForAnswer,
-          );
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
           // boost when applicable
-          console.log(
-            // "getQuestionSmart(): BOOST  MORNING",
-            categoryForAnswer.dashboardTxt,
-            categoryForAnswer,
-          );
           map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
       if (categoryForAnswer.isEveningCategory) {
         if (nowHours < THRESHOLD_EVENING_START) {
-          console.log(
-            "getQuestionSmart(): SKIP EVENING",
-            categoryForAnswer.dashboardTxt,
-            categoryForAnswer,
-          );
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
           // boost when applicable
-          console.log(
-            // "getQuestionSmart(): BOOST  EVENING",
-            categoryForAnswer.dashboardTxt,
-            categoryForAnswer,
-          );
           map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
@@ -86,28 +66,13 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           nowHours < THRESHOLD_LATE_NIGHT_START ||
           nowHours > THRESHOLD_LATE_NIGHT_END
         ) {
-          console.log(
-            "getQuestionSmart(): SKIP LATE_NIGHT",
-            categoryForAnswer.dashboardTxt,
-            categoryForAnswer,
-          );
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
           // boost when applicable
-          console.log(
-            // "getQuestionSmart(): BOOST  LATE_NIGHT",
-            categoryForAnswer.dashboardTxt,
-            categoryForAnswer,
-          );
           map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
       if (categoryForAnswer.isWorkDayCategory && !isWorkDayToday) {
-        console.log(
-          "getQuestionSmart(): SKIP IS_WORK_DAY_CATEGORY",
-          categoryForAnswer.dashboardTxt,
-          categoryForAnswer,
-        );
         map[categoryId] = FAKE_RULE_OUT_NR;
       }
     });
@@ -142,8 +107,8 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     (q) => q.categoryId === categoryToUse,
   );
 
+  console.log("getQuestionSmart() map:", map);
   console.log("getQuestionSmart():", {
-    map,
     sortedEntries,
     nrOfEntriesForLeastUsed,
     categoriesLeastUsed,
