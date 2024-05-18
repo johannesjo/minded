@@ -23,6 +23,10 @@ $extraClickArea: 8px;
   &:hover {
     opacity: 1;
   }
+  &:active {
+    opacity: 1;
+    transform: scale(.9);
+  }
 
   &:after {
     content: "";
@@ -42,7 +46,7 @@ $extraClickArea: 8px;
   align-items: center;
 
   > img {
-    margin: 8px;
+    margin: 12px;
     flex: 1;
 
     @include inDarkMode() {
