@@ -50,9 +50,5 @@
   #minded-6622 & {
     @include btnTxt();
     padding: 0 10px;
-
-    &:hover {
-      transform: scale(1.1);
-    }
   }
 }
