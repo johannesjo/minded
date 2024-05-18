@@ -6,7 +6,9 @@
   animation-fill-mode: forwards;
   opacity: 0;
   padding-top: 16px;
+  padding-bottom: 16px;
   max-height: 100vh;
+  overflow: auto;
 }
 
 .categoryTitle {

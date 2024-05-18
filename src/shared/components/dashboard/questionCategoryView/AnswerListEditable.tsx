@@ -20,7 +20,7 @@ export const AnswerListEditable: (props: {
   const [getIsAddMode, setIsAddMode] = createSignal(false);
 
   return (
-    <div class={styles.AnswerList}>
+    <div class={styles.AnswerListEditable}>
       {props.answers.map((answer, i) => (
         <AnswerEntry
           answer={answer}
