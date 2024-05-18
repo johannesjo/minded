@@ -46,8 +46,10 @@
   .minded-6622-btns {
     opacity: 0;
     transition: all 1s;
+    visibility: hidden;
 
     &.isVisible {
+      visibility: visible;
       opacity: 1;
     }
   }
