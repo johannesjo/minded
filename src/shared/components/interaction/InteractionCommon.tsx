@@ -213,7 +213,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <MoodCheckin
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
-              onSKip={props.onSkip}
+              onSkip={props.onSkip}
             />
           </Match>
           <Match when={getMode() === "EMOJI_CHECKIN"}>
