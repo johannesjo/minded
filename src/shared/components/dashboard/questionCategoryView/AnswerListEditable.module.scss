@@ -1,12 +1,7 @@
 @import "./../../../../styles/mixins/_mixins.scss";
 
-.AnswerList {
-  overflow: auto;
+.AnswerListEditable {
   padding: 8px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
 .answer {
