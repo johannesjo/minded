@@ -27,9 +27,15 @@
     transition: all ease-in .1s;
     margin: 4px;
 
-    &:hover {
-      transform: scale(2.2);
-      color: var(--c-fg-full-emphasis);
+    @include onNonMobileScreens {
+      &:hover {
+        transform: scale(1.6);
+        color: var(--c-fg-full-emphasis);
+      }
+      &:active {
+        transform: scale(3.2);
+        color: var(--c-fg-full-emphasis);
+      }
     }
 
     &.isFull {
