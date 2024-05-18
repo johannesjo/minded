@@ -18,9 +18,12 @@ export const MoodCheckin: (props: {
     null,
   );
 
-  const onSaveMood = async () => {
-    await saveMoodCheckIn(getSelectedMood(), getAdditionalTxt());
-    props.onSuccess();
+  const onSaveAll = async () => {
+    const mood = getSelectedMood();
+    if (mood) {
+      await saveMoodCheckIn(mood, getAdditionalTxt());
+      props.onSuccess();
+    }
   };
 
   return (
@@ -85,7 +88,7 @@ export const MoodCheckin: (props: {
           getSelectedMood() ? "minded-6622-btns isVisible" : "minded-6622-btns"
         }
       >
-        <div class="minded-6622-nxt-btn" onclick={onSaveMood}>
+        <div class="minded-6622-nxt-btn" onclick={onSaveAll}>
           save
         </div>
       </div>
