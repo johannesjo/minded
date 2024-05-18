@@ -12,10 +12,16 @@
   #minded-6622-question {
     //-webkit-mask:linear-gradient(-60deg,#000 30%, rgba(0, 0, 0, 0.15),#000 70%) right/300% 100%;
     //animation: shimmer 2s;
-    min-height: 76px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
+
+    // NOTE: 2 rows on desktop, 3 on mobile
+    min-height: 81px;
+    @include onNonMobileScreens {
+      min-height: 76px;
+    }
+
 
     > span {
       transition: all .1s;
