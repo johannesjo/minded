@@ -4,15 +4,10 @@ import styles from "./BottomBar.module.scss";
 import settingsSvg from "@assets/img/settings.svg";
 // @ts-ignore
 import askQuestionSvg from "@assets/img/ask-question.svg";
-import { QuestionCategoryId } from "@src/shared/data/questions";
-import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+// @ts-ignore
+import { goSettings } from "@dataInterface/system";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
-  const goSettings = () => {
-    if (!IS_ANDROID) {
-    }
-  };
-
   return (
     <div class={styles.bottomBarWrapper}>
       <div
