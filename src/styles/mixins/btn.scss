@@ -19,13 +19,14 @@ $extraClickArea: 8px;
   pointer-events: all;
   position: relative;
   user-select: none;
-  transition: all .1s;
+  transition: all 50ms;
 
   &:hover {
     opacity: 1;
   }
   &:active {
-    opacity: 1;
+    transition: all 20ms;
+    opacity: .8;
     transform: scale(.9);
   }
 
