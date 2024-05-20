@@ -5,7 +5,6 @@ import { OnboardingWeb } from "@src/shared/components/onboardingWeb/OnboardingWe
 // @ts-ignore
 import styles from "./NewTab.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";
-import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import RoutesCmp from "@src/shared/RouteCmp";
 
 const NewTab = () => {
@@ -29,35 +28,39 @@ const NewTab = () => {
   });
 
   return (
-    <div id="minded-6622-coloured-wrapper">
+    <>
       {getIsShowOnboarding() ? (
-        <OnboardingWeb onComplete={() => setIsShowOnboarding(false)} />
+        <div id="minded-6622-coloured-wrapper">
+          <OnboardingWeb onComplete={() => setIsShowOnboarding(false)} />
+        </div>
       ) : getIsShowInfo() ? (
-        <div class={styles.infoBox}>
-          <p>
-            <em>minded</em> is now configured.
-          </p>
-          <p>
-            Whenever you open one of the websites a short interaction prompt
-            will appear.
-          </p>
-          <p>
-            This will help you break your automatic patterns to visit those
-            websites more often than you like.
-          </p>
-          {getTestWebsite() ? (
+        <div id="minded-6622-coloured-wrapper">
+          <div class={styles.infoBox}>
             <p>
-              Try it now by visiting{" "}
-              <a href={"https://" + getTestWebsite()}>{getTestWebsite()}</a>!
+              <em>minded</em> is now configured.
             </p>
-          ) : (
-            <p>Come back here, once you answered a couple of those.</p>
-          )}
+            <p>
+              Whenever you open one of the websites a short interaction prompt
+              will appear.
+            </p>
+            <p>
+              This will help you break your automatic patterns to visit those
+              websites more often than you like.
+            </p>
+            {getTestWebsite() ? (
+              <p>
+                Try it now by visiting{" "}
+                <a href={"https://" + getTestWebsite()}>{getTestWebsite()}</a>!
+              </p>
+            ) : (
+              <p>Come back here, once you answered a couple of those.</p>
+            )}
+          </div>
         </div>
       ) : (
         <RoutesCmp />
       )}
-    </div>
+    </>
   );
 };
 
