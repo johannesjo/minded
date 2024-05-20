@@ -51,9 +51,11 @@
   width: 540px;
   max-width: 100%;
   margin: auto;
-  margin-top: 32px;
   pointer-events: all;
   padding: 8px;
+  // use padding rather than margin to avoid taping in between leading to close the overlay
+  padding-top: 32px;
+  padding-bottom: 32px;
 
   input {
     @include formInput();
@@ -75,7 +77,7 @@
 #minded-6622-change-question-btn {
   @include btnIco();
   margin: auto;
-  margin-top: 32px;
+  // use padding rather than margin to avoid taping in between leading to close the overlay
   border-radius: 50%;
 }
 
