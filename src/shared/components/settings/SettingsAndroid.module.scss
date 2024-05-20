@@ -1,0 +1,18 @@
+.appEntry {
+  cursor: pointer;
+  font-size: var(--fz-m);
+  padding: 8px 32px;
+  border-radius: var(--border-radius);
+  text-align: left;
+  margin: 2px 4px;
+  user-select: none;
+}
+
+.appList {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.appEntry.selected {
+  background-color: var(--btn-bg);
+}

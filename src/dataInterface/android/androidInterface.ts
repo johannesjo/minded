@@ -1,3 +1,5 @@
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+
 interface InteractionWindowJavaScriptInterface {
   onSuccessSunTap: () => void;
   showLittleSun: () => void;
@@ -14,8 +16,6 @@ interface InteractionWindowJavaScriptInterface {
 
 declare const androidMinded: InteractionWindowJavaScriptInterface;
 
-export const androidInterface = androidMinded;
+export const androidInterface = IS_ANDROID ? androidMinded : ({} as any);
 
 export const ANDROID_EV_RESUME = "androidAppResume";
-
-console.log(androidInterface.getAllApps());

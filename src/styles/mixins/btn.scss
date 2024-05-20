@@ -21,6 +21,10 @@ $extraClickArea: 8px;
   user-select: none;
   transition: all 50ms;
 
+  &:focus {
+    outline: 0;
+  }
+
   &:hover {
     opacity: 1;
   }
@@ -38,6 +42,17 @@ $extraClickArea: 8px;
     top: -1 * $extraClickArea;
     left: -1 * $extraClickArea;
     bottom: -1 * $extraClickArea;
+  }
+
+  &:disabled {
+    &,
+    &:hover,
+    &:active {
+      transition: none;
+      cursor: not-allowed;
+      opacity: .3;
+      transform: scale(1);
+    }
   }
 }
 

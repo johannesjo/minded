@@ -5,6 +5,7 @@ import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/
 export interface UserCfg {
   isOnboardingComplete: boolean;
   blockedHosts: string[];
+  blockedApps: string[];
 }
 
 export interface Answer {
