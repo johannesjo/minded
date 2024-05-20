@@ -44,10 +44,10 @@ open class MainActivityJavaScriptInterface(
         val packageManager = context.packageManager
         val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         return allApps.filter { app ->
-            (app.flags and ApplicationInfo.FLAG_SYSTEM == 0) || app.packageName in listOf(
+            ((app.flags and ApplicationInfo.FLAG_SYSTEM == 0) || app.packageName in listOf(
                 "com.android.chrome",
                 "com.google.android.youtube"
-            )
+            )) && app.packageName != context.packageName
         }
     }
 }
