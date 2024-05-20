@@ -68,8 +68,8 @@ export const SettingsAndroid = (props: SettingsAndroidProps) => {
             onClick={() => handleSelect(app)}
             class={`${styles.appEntry} ${getSelectedApps().includes(app.packageName) ? styles.selected : ""}`}
           >
+            {getSelectedApps().includes(app.packageName) && <span>✓ </span>}
             {app.name}
-            {getSelectedApps().includes(app.packageName) && <span> ✓</span>}
           </div>
         ))}
       </div>
