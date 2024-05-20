@@ -5,6 +5,7 @@ import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 const Options = () => {
   const onAfterSave = () => {
     alert("The settings have been saved!");
+    window?.history?.back();
   };
   onMount(() => {
     addDayTimeDependentClass();

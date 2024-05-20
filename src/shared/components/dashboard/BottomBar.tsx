@@ -6,8 +6,11 @@ import settingsSvg from "@assets/img/settings.svg";
 import askQuestionSvg from "@assets/img/ask-question.svg";
 // @ts-ignore
 import { goSettings } from "@dataInterface/system";
+import { useNavigate } from "@solidjs/router";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
+  const navigate = useNavigate();
+
   return (
     <div class={styles.bottomBarWrapper}>
       <div
@@ -18,7 +21,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
       >
         <img src={askQuestionSvg} />
       </div>
-      <div class="btn-ico" onClick={goSettings}>
+      <div class="btn-ico" onClick={() => navigate("/settings")}>
         <img src={settingsSvg} />
       </div>
     </div>

@@ -1,18 +1,12 @@
-import { HashRouter, Route, useNavigate } from "@solidjs/router";
+import { HashRouter, Route } from "@solidjs/router";
 import React from "react";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { onMount } from "solid-js";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
-
-const TetsCmp = () => {
-  return (
-    <h1>
-      TESTSSS<a href="/a">/a</a>
-      <a href="#/a">#/a</a>
-    </h1>
-  );
-};
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+import { SettingsAndroid } from "@src/shared/components/settings/SettingsAndroid";
+import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
 
 const RoutesCmp = () => {
   onMount(() => {
@@ -20,31 +14,17 @@ const RoutesCmp = () => {
   });
 
   return (
-    <>
-      {/*<h1>RXOUTES</h1>*/}
-      {/*<div style="position:relative; z-index: 9999999999999999999999">*/}
-      {/*  <div>*/}
-      {/*    <a href="/a">/a</a>*/}
-      {/*  </div>*/}
-      {/*  <div>*/}
-      {/*    <a href="/">/</a>*/}
-      {/*  </div>*/}
-      {/*  <div>*/}
-      {/*    <a href="#/">#/</a>*/}
-      {/*  </div>*/}
-      {/*  <div>*/}
-      {/*    <a href="#/a">#/a</a>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
+    <div id="minded-6622-coloured-wrapper">
       <HashRouter>
         <Route path="*" component={Dashboard} />
         <Route
           path="/questionCategory/:questionCategoryId"
           component={QuestionCategoryView}
         />
-        <Route path="/a" component={TetsCmp} />
+        {IS_ANDROID && <Route path="/settings" component={SettingsAndroid} />}
+        {!IS_ANDROID && <Route path="/settings" component={SettingsWeb} />}
       </HashRouter>
-    </>
+    </div>
   );
 };
 
