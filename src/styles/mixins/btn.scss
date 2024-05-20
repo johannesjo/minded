@@ -24,10 +24,11 @@ $extraClickArea: 8px;
   &:hover {
     opacity: 1;
   }
+
   &:active {
-    transition: all 20ms;
+    transition: all 10ms;
     opacity: .8;
-    transform: scale(.9);
+    transform: scale(.95);
   }
 
   &:after {
