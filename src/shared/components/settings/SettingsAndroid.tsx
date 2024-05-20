@@ -30,7 +30,11 @@ export const SettingsAndroid = (props: SettingsAndroidProps) => {
   const navigate = useNavigate();
   const [getAvailableApps, setAvailableApps] = createSignal<
     { packageName: string; name: string }[]
-  >(JSON.parse(androidInterface.getAllApps()));
+  >(
+    JSON.parse(androidInterface.getAllApps()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    ),
+  );
 
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
