@@ -1,8 +1,10 @@
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.minded.minded.util.parseSyncData
 
 class SharedPreferenceService(context: Context) {
+    private val logTag = "SharedPreferenceService"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
 
@@ -18,8 +20,14 @@ class SharedPreferenceService(context: Context) {
     }
 
     fun getBlockedApps(): List<String> {
-        val allStr = retrieveString("mindedAll")
-        val syncData = parseSyncData(allStr!!)
-        return syncData.cfg.blockedApps
+        return try {
+            val allStr = retrieveString("mindedAll")
+            val syncData = parseSyncData(allStr!!)
+            syncData.cfg.blockedApps
+        } catch (e: Exception) {
+            // Log the exception if necessary
+            Log.e(logTag, "Error getting blocked apps", e)
+            emptyList()
+        }
     }
 }
