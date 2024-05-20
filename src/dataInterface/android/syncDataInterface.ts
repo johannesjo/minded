@@ -87,6 +87,14 @@ export const updateSyncData = async (
   );
 };
 
+export const updateBlockedApps = async (
+  blockedApps: string[],
+): Promise<void> => {
+  return updateUserCfg({
+    blockedApps,
+  });
+};
+
 export const updateUserCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
   const syncData = await getSyncData();
   return androidInterface.saveString(

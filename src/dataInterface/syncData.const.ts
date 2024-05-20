@@ -3,6 +3,7 @@ import { StaticCfg, SyncData } from "./syncData";
 export const DEFAULT_SYNC_DATA: SyncData = {
   cfg: {
     isOnboardingComplete: false,
+    blockedApps: [],
     blockedHosts: [
       "reddit.com",
       "facebook.com",
