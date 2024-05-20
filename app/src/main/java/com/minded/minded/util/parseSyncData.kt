@@ -5,7 +5,8 @@ import org.json.JSONObject
 
 data class UserCfg(
     val isOnboardingComplete: Boolean,
-    val blockedHosts: List<String>
+    val blockedHosts: List<String>,
+    val blockedApps: List<String>
 )
 
 data class Answer(
@@ -43,7 +44,10 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val blockedHosts = cfg.getJSONArray("blockedHosts").let { array ->
         List(array.length()) { array.getString(it) }
     }
-    val userCfg = UserCfg(isOnboardingComplete, blockedHosts)
+    val blockedApps = cfg.getJSONArray("blockedApps").let { array ->
+        List(array.length()) { array.getString(it) }
+    }
+    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps)
 
     val answers = jsonObject.getJSONArray("answers").let { array ->
         List(array.length()) { i ->

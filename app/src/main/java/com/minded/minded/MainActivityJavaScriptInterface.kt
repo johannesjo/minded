@@ -9,22 +9,19 @@ import org.json.JSONObject
 open class MainActivityJavaScriptInterface(
     protected val context: Context,
 ) {
-    private val sharedPreferences = context.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
+    private val sharedPreferenceService = SharedPreferenceService(context)
     var logTag = "MainActivityJavaScriptInterface"
 
     @JavascriptInterface
     fun saveString(key: String, value: String) {
         Log.v(logTag, "saveString() $value")
-        with(sharedPreferences.edit()) {
-            putString(key, value)
-            apply()
-        }
+        sharedPreferenceService.saveString(key, value)
     }
 
     @JavascriptInterface
     fun retrieveString(key: String): String? {
         Log.v(logTag, "retrieveString() $key")
-        return sharedPreferences.getString(key, null)
+        return sharedPreferenceService.retrieveString(key)
     }
 
     @JavascriptInterface

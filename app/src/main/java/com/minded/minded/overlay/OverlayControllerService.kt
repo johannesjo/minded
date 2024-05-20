@@ -1,5 +1,6 @@
 package com.minded.minded.overlay
 
+import SharedPreferenceService
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -28,6 +29,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val GRACE_PERIOD_IN_S = 30
     private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
 
+
     private var wasNoOverlaysBefore = false
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
@@ -45,12 +47,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private lateinit var littleSunOverlayWindow: LittleSunWindow
     private lateinit var smallMsgOverlayWindow: SmallMsgWindow
     private lateinit var successSunOverlayWindow: SuccessSunWindow
+    private lateinit var sharedPreferenceService: SharedPreferenceService
 
 
     override fun onCreate() {
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         dashboardViewModel = DashboardViewModel()
         sharedOverlayViewModel = SharedOverlayViewModel();
+        sharedPreferenceService = SharedPreferenceService(this)
 
         interactionOverlayWindow =
             InteractionWindow(this, sharedOverlayViewModel, windowManager)
@@ -189,7 +193,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun isBlockedPackage(packageName: String): Boolean {
-        return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
+        val blockedApps = sharedPreferenceService.getBlockedApps()
+        return blockedApps.contains(packageName)
+//        return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
