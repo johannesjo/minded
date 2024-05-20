@@ -23,6 +23,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@solidjs/router": "^0.13.3",
     "chart.js": "^4.4.2",
     "nanoid": "^5.0.6",
     "parse-domain": "^8.0.2",

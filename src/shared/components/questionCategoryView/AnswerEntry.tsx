@@ -1,7 +1,7 @@
 import { Answer } from "@src/dataInterface/syncData";
 import { createSignal, JSX } from "solid-js";
 // @ts-ignore
-import styles from "@src/shared/components/dashboard/questionCategoryView/AnswerEntry.module.scss";
+import styles from "@src/shared/components/questionCategoryView/AnswerEntry.module.scss";
 
 export const AnswerEntry: (props: {
   answer: Answer;

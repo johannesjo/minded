@@ -7,4 +7,4 @@ if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
-render(NewTab as any, appContainer);
+render(() => <NewTab />, appContainer);

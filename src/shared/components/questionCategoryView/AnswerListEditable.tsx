@@ -3,7 +3,7 @@ import { createSignal, JSX } from "solid-js";
 import styles from "./AnswerListEditable.module.scss";
 import { Answer } from "@src/dataInterface/syncData";
 
-import { AnswerEntry } from "@src/shared/components/dashboard/questionCategoryView/AnswerEntry";
+import { AnswerEntry } from "@src/shared/components/questionCategoryView/AnswerEntry";
 import { nanoid } from "nanoid";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";

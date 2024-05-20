@@ -9,6 +9,7 @@ interface InteractionWindowJavaScriptInterface {
   onSkip: () => void;
   hideWindow: () => void;
   requestFocusAndShowKeyboard: () => void;
+  getAllApps: () => string;
 }
 
 declare const androidMinded: InteractionWindowJavaScriptInterface;
@@ -16,3 +17,5 @@ declare const androidMinded: InteractionWindowJavaScriptInterface;
 export const androidInterface = androidMinded;
 
 export const ANDROID_EV_RESUME = "androidAppResume";
+
+console.log(androidInterface.getAllApps());

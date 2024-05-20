@@ -1,4 +1,4 @@
-import { WebsiteList } from "@src/shared/components/onboarding/WebsiteList";
+import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
 import { onMount } from "solid-js";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 

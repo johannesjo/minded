@@ -1,13 +1,13 @@
 import { JSX } from "solid-js";
 // @ts-ignore
-import styles from "./Onboarding.module.scss";
-import { WebsiteList } from "@src/shared/components/onboarding/WebsiteList";
+import styles from "./OnboardingWeb.module.scss";
+import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
 // @ts-ignore
 import { updateUserCfg } from "@dataInterface/syncDataInterface";
 
-export const Onboarding: (props: { onComplete: () => void }) => JSX.Element = (
-  props,
-) => {
+export const OnboardingWeb: (props: {
+  onComplete: () => void;
+}) => JSX.Element = (props) => {
   const onAfterSaveWebsites = async () => {
     await updateUserCfg({ isOnboardingComplete: true });
     props.onComplete();
