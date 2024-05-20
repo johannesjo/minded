@@ -11,6 +11,9 @@
             tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission
+            android:name="android.permission.QUERY_ALL_PACKAGES"
+            tools:ignore="QueryAllPackagesPermission" />
 
     <application
             android:allowBackup="true"

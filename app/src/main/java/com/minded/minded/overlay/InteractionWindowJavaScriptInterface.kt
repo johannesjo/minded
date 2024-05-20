@@ -13,10 +13,9 @@ class InteractionWindowJavaScriptInterface(
     private val win: InteractionWindow,
     private val ctrlSvc: OverlayControllerService,
     private val webView: WebView
-) {
+) : MainActivityJavaScriptInterface(ctrlSvc) {
     private val sharedPreferences = ctrlSvc.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
 
-    val logTag = "InteractionWindowJavaScriptInterface"
 
     @JavascriptInterface
     fun onSuccessSunTap() {
@@ -53,20 +52,7 @@ class InteractionWindowJavaScriptInterface(
         win.hideWindow()
     }
 
-    @JavascriptInterface
-    fun saveString(key: String, value: String) {
-        Log.v(logTag, "saveString() $value")
-        with(sharedPreferences.edit()) {
-            putString(key, value)
-            apply()
-        }
-    }
 
-    @JavascriptInterface
-    fun retrieveString(key: String): String? {
-        Log.v(logTag, "retrieveString() $key")
-        return sharedPreferences.getString(key, null)
-    }
 
     @JavascriptInterface
     fun setQuestion(jsonString: String?) {
