@@ -29,7 +29,6 @@ open class MainActivityJavaScriptInterface(
 
     @JavascriptInterface
     fun getAllApps(): String {
-        val packageManager = context.packageManager
         val allApps = getInstalledApps()
         val jsonArray = JSONArray()
         for (app in allApps) {
