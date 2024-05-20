@@ -1,12 +1,12 @@
-import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, onMount } from "solid-js";
 // @ts-ignore
 import { getSyncData } from "@dataInterface/syncDataInterface";
-import { Onboarding } from "@src/shared/components/onboarding/Onboarding";
+import { OnboardingWeb } from "@src/shared/components/onboardingWeb/OnboardingWeb";
 // @ts-ignore
 import styles from "./NewTab.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
+import RoutesCmp from "@src/shared/RouteCmp";
 
 const NewTab = () => {
   const [getIsShowInfo, setIsShowInfo] = createSignal(false);
@@ -14,8 +14,6 @@ const NewTab = () => {
   const [getTestWebsite, setTestWebsite] = createSignal<string | null>(null);
 
   onMount(() => {
-    addDayTimeDependentClass();
-
     getSyncData().then((syncData) => {
       if (syncData.cfg.blockedHosts[0]) {
         setTestWebsite(getRndEntry(syncData.cfg.blockedHosts));
@@ -30,13 +28,10 @@ const NewTab = () => {
     });
   });
 
-  // return (<Rating />);
-  // return (<Question isUnskippable={true} onSuccessSunTap={()=> undefined} />)
-
   return (
-    <div id="minded-6622-coloured-wrapper" class={styles.NewTab}>
+    <div id="minded-6622-coloured-wrapper">
       {getIsShowOnboarding() ? (
-        <Onboarding onComplete={() => setIsShowOnboarding(false)} />
+        <OnboardingWeb onComplete={() => setIsShowOnboarding(false)} />
       ) : getIsShowInfo() ? (
         <div class={styles.infoBox}>
           <p>
@@ -60,7 +55,7 @@ const NewTab = () => {
           )}
         </div>
       ) : (
-        <Dashboard />
+        <RoutesCmp />
       )}
     </div>
   );

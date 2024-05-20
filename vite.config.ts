@@ -37,7 +37,6 @@ export default defineConfig(({ mode }) => {
           rollupOptions: {
             input: {
               main: resolve(root, "android", "main", "index.html"),
-              settings: resolve(root, "android", "settings", "index.html"),
               interaction: resolve(
                 root,
                 "android",

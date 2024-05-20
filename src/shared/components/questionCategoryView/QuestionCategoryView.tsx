@@ -4,8 +4,8 @@ import {
   QuestionCategoryId,
 } from "@src/shared/data/questions";
 // @ts-ignore
-import styles from "@src/shared/components/dashboard/questionCategoryView/QuestionCategoryView.module.scss";
-import { AnswerListEditable } from "@src/shared/components/dashboard/questionCategoryView/AnswerListEditable";
+import styles from "@src/shared/components/questionCategoryView/QuestionCategoryView.module.scss";
+import { AnswerListEditable } from "@src/shared/components/questionCategoryView/AnswerListEditable";
 import {
   getSyncData,
   removeAnswer,
@@ -14,13 +14,26 @@ import {
   // @ts-ignore
 } from "@dataInterface/syncDataInterface";
 import { Answer } from "@src/dataInterface/syncData";
+import { Location, Params } from "@solidjs/router/dist/types";
+import { useNavigate } from "@solidjs/router";
 
 export const QuestionCategoryView: (props: {
-  questionCategoryId: QuestionCategoryId;
-  onLeave: () => void;
+  params: Params;
+  location: Location;
+  children?: JSX.Element;
+  // questionCategoryId: QuestionCategoryId;
+  // onLeave: () => void;
 }) => JSX.Element = (props) => {
   const [getAnswersForCategory, setAnswersForCategory] = createSignal([]);
-  const QUESTION_CATEGORY = QUESTION_CATEGORIES[props.questionCategoryId];
+  const navigate = useNavigate();
+  const questionCategoryId = props.params
+    .questionCategoryId as QuestionCategoryId;
+
+  if (!Object.values(QuestionCategoryId).includes(questionCategoryId)) {
+    console.error("illegal route param");
+  }
+
+  const QUESTION_CATEGORY = QUESTION_CATEGORIES[questionCategoryId];
 
   onMount(() => {
     getSyncData().then((syncData) => {
@@ -28,8 +41,7 @@ export const QuestionCategoryView: (props: {
         setAnswersForCategory(
           syncData.answers
             .filter(
-              (answer) =>
-                answer.questionCategoryId === props.questionCategoryId,
+              (answer) => answer.questionCategoryId === questionCategoryId,
             )
             .sort((a, b) => b.ts - a.ts),
         );
@@ -63,21 +75,25 @@ export const QuestionCategoryView: (props: {
     saveAnswer(answerWithNewTs);
   };
 
+  const goBackToDashboard = () => {
+    navigate("/");
+  };
+
   // TODO maybe remove click handler for title
   return (
     <div class={styles.QuestionCategoryView}>
-      <div class={styles.categoryTitle} onClick={props.onLeave}>
+      <div class={styles.categoryTitle} onClick={goBackToDashboard}>
         {QUESTION_CATEGORY.dashboardTxt}
       </div>
       <div class={styles.answers}>
         <AnswerListEditable
           isShowAdd={true}
-          questionCategoryId={props.questionCategoryId}
+          questionCategoryId={questionCategoryId}
           answers={getAnswersForCategory()}
           onEdit={editAnswer}
           onRemove={removeAnswerI}
           onAdd={addAnswerI}
-          onBack={props.onLeave}
+          onBack={goBackToDashboard}
         />
       </div>
     </div>
