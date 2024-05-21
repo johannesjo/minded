@@ -3,6 +3,7 @@ import { DashboardGroups } from "@src/shared/components/dashboard/DashboardGroup
 import BottomBar from "@src/shared/components/dashboard/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { useNavigate } from "@solidjs/router";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 
 export const Dashboard: () => JSX.Element = () => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -23,7 +24,14 @@ export const Dashboard: () => JSX.Element = () => {
 
       {getIsShowQuestionOverlay() && (
         <InteractionOverlay
-          onHideInteraction={() => setIsShowQuestionOverlay(false)}
+          onPossibleNewData={() => {
+            console.log("AAAAAAAAAAAAAAAAaonPossibleNewData");
+            window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
+          }}
+          onHideInteraction={() => {
+            console.log("IHIIIIIDE");
+            setIsShowQuestionOverlay(false);
+          }}
         />
       )}
     </div>

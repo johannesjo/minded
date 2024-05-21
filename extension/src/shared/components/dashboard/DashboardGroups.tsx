@@ -1,4 +1,4 @@
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import {
   DashboardGroup,
   DashboardGroupBrowsingBehavior,
@@ -18,11 +18,12 @@ import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuo
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
-import { getIsoDate } from "@src/util/getIsoDate";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
 import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
 import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -30,27 +31,31 @@ export const DashboardGroups: (props: {
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
-  const [getSunTapsToday, setSunTapsToday] = createSignal<number>(0);
-  const [getAttemptsToday, setAttemptsToday] = createSignal<number>(0);
 
   const refresh = () => {
     getSyncData().then((syncData) => {
-      console.log(syncData);
-
-      if (syncData.answers?.length) {
+      const existingDashboardGroups = getDashboardGroups();
+      if (existingDashboardGroups) {
         const entries = getDashboardEntriesFromQuestions(syncData);
-        console.log(entries, syncData);
-
         setDashboardGroups(entries);
-        const ds = getIsoDate();
-        setAttemptsToday(syncData.attempts[ds] || 0);
-        setSunTapsToday(syncData.blocked[ds] || 0);
+      } else {
+        setDashboardGroups(
+          updateDashboardEntriesFromQuestions(
+            syncData,
+            existingDashboardGroups,
+          ),
+        );
       }
     });
   };
 
   onMount(() => {
     refresh();
+    window.addEventListener(REFRESH_DASHBOARD_EV, refresh);
+  });
+
+  onCleanup(() => {
+    window.removeEventListener(REFRESH_DASHBOARD_EV, refresh);
   });
 
   return (
