@@ -13,15 +13,15 @@ open class MainActivityJavaScriptInterface(
     var logTag = "MainActivityJavaScriptInterface"
 
     @JavascriptInterface
-    fun saveString(key: String, value: String) {
+    fun saveDataString(key: String, value: String) {
         Log.v(logTag, "saveString() $value")
-        sharedPreferenceService.saveString(key, value)
+        sharedPreferenceService.saveDataString(value)
     }
 
     @JavascriptInterface
-    fun retrieveString(key: String): String? {
-        Log.v(logTag, "retrieveString() $key")
-        return sharedPreferenceService.retrieveString(key)
+    fun retrieveDataString(): String? {
+        Log.v(logTag, "retrieveString()")
+        return sharedPreferenceService.retrieveDataString()
     }
 
     @JavascriptInterface

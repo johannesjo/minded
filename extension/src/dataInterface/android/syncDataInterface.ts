@@ -4,8 +4,6 @@ import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { getIsoDate } from "@src/util/getIsoDate";
 
-const DB_KEY = "mindedAll";
-
 export const saveAnswer = (answer: Answer): Promise<void> => {
   return getSyncData().then((syncData) => {
     const newAnswers = [...syncData.answers, answer];
@@ -71,15 +69,14 @@ export const removeAnswer = (answerId: string): Promise<void> => {
 };
 
 export const saveSyncData = async (syncData: SyncData): Promise<void> => {
-  androidInterface.saveString(DB_KEY, JSON.stringify(syncData));
+  androidInterface.saveDataString(JSON.stringify(syncData));
 };
 
 export const updateSyncData = async (
   newSyncData: Partial<SyncData>,
 ): Promise<void> => {
   const syncData = await getSyncData();
-  return androidInterface.saveString(
-    DB_KEY,
+  return androidInterface.saveDataString(
     JSON.stringify({
       ...syncData,
       ...newSyncData,
@@ -97,8 +94,7 @@ export const updateBlockedApps = async (
 
 export const updateUserCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
   const syncData = await getSyncData();
-  return androidInterface.saveString(
-    DB_KEY,
+  return androidInterface.saveDataString(
     JSON.stringify({
       ...syncData,
       cfg: {
@@ -111,7 +107,7 @@ export const updateUserCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
 
 //
 export const getSyncData = async (): Promise<SyncData> => {
-  const str = androidInterface.retrieveString(DB_KEY);
+  const str = androidInterface.retrieveDataString();
   try {
     return {
       ...DEFAULT_SYNC_DATA,
