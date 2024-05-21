@@ -22,9 +22,9 @@ const CENTER_INDEX = 4;
 
 export const dashboardEntriesFromQuestions = (
   syncData: SyncData,
-  now = Date.now(),
+  now = new Date(),
 ): DashboardGroup[] => {
-  const ds = getIsoDate();
+  const ds = getIsoDate(now);
   const dashboardGroups = [];
   const groupsToCheck = [
     ...FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
@@ -55,12 +55,14 @@ export const dashboardEntriesFromQuestions = (
   });
   // console.log(dashboardGroups);
 
-  let sortedEntries: DashboardGroup[] = dashboardGroups;
+  const sortedEntries: DashboardGroup[] = dashboardGroups;
   let fixedEntriesIndexAndNr = 0;
 
-  if (syncData.blocked[ds] > 0) {
+  if (syncData.sunTaps[ds] > 0) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
       type: DashboardGroupType.Stats,
+      attempts: syncData.attempts[ds] || 0,
+      sunTaps: syncData.sunTaps[ds] || 0,
     } as DashboardGroupStats);
     fixedEntriesIndexAndNr++;
   }

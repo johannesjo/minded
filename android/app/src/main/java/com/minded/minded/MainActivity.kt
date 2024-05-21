@@ -1,6 +1,7 @@
 package com.minded.minded
 
 import MainActivityJavaScriptInterface
+import SharedPreferenceService
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -41,7 +42,7 @@ enum class MissingCapability {
 class MainActivity : AppCompatActivity() {
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var webView: WebView
-
+    private lateinit var sharedPreferenceService: SharedPreferenceService
     private val webAppResumeEVName = "androidAppResume"
 
 
@@ -49,6 +50,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
         val viewModelFactory = DashboardViewModelFactory()
+        sharedPreferenceService = SharedPreferenceService(this)
+
+        if(sharedPreferenceService.hasNoData()){
+
+        }
+
+        if(sharedPreferenceService.retrieveString("mindedAll") == null) {
+            sharedPreferenceService.saveString("mindedAll", "{}")
+        }
+
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
 

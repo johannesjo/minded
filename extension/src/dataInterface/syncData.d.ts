@@ -27,7 +27,7 @@ export interface SyncData {
   energyLvlTS: number;
   energyLvlVal: number;
 
-  blocked: {
+  sunTaps: {
     [key: string]: number;
   };
   attempts: {

@@ -4,12 +4,15 @@ import {
   DashboardGroupBrowsingBehavior,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
+  DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { getSyncData } from "@dataInterface/syncDataInterface";
 import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
@@ -27,11 +30,13 @@ export const DashboardGroups: (props: {
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
-  const [getBlockedToday, setBlockedToday] = createSignal<number>(0);
+  const [getSunTapsToday, setSunTapsToday] = createSignal<number>(0);
   const [getAttemptsToday, setAttemptsToday] = createSignal<number>(0);
 
   const refresh = () => {
     getSyncData().then((syncData) => {
+      console.log(syncData);
+
       if (syncData.answers?.length) {
         const entries = dashboardEntriesFromQuestions(syncData);
         console.log(entries, syncData);
@@ -39,7 +44,7 @@ export const DashboardGroups: (props: {
         setDashboardGroups(entries);
         const ds = getIsoDate();
         setAttemptsToday(syncData.attempts[ds] || 0);
-        setBlockedToday(syncData.blocked[ds] || 0);
+        setSunTapsToday(syncData.blocked[ds] || 0);
       }
     });
   };
@@ -70,6 +75,7 @@ export const DashboardGroups: (props: {
           {(() => {
             switch (dg.type) {
               case DashboardGroupType.BrowsingBehaviorRating:
+                // eslint-disable-next-line no-case-declarations
                 const rd = (dg as DashboardGroupBrowsingBehavior).data;
                 return (
                   <div class={styles.browsingBehaviorGraph}>
@@ -82,6 +88,8 @@ export const DashboardGroups: (props: {
                   </div>
                 );
               case DashboardGroupType.Stats:
+                // eslint-disable-next-line no-case-declarations
+                const dgs = dg as DashboardGroupStats;
                 return (
                   <div class={styles.stats}>
                     <div title="'minded' decisions are counted every time when you leave a website by clicking the sun.">
@@ -89,15 +97,15 @@ export const DashboardGroups: (props: {
                     </div>
                     <div
                       title={
-                        getAttemptsToday() +
-                        " website visit attempts today in total"
+                        dgs.attempts + " website visit attempts today in total"
                       }
                     >
-                      {getBlockedToday()}
+                      {dgs.sunTaps}
                     </div>
                   </div>
                 );
               case DashboardGroupType.MoodCheckin:
+                // eslint-disable-next-line no-case-declarations
                 const dgm = dg as DashboardGroupMood;
                 return (
                   <div class={styles.moodCheckinWidget}>
@@ -117,6 +125,7 @@ export const DashboardGroups: (props: {
                 return <RndQuote />;
 
               case DashboardGroupType.EnergyLvl:
+                // eslint-disable-next-line no-case-declarations
                 const dge = dg as DashboardGroupEnergyLvl;
                 return (
                   <div class={styles.energyLvl}>

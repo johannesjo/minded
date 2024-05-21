@@ -1,26 +1,29 @@
 import { StaticCfg, SyncData } from "./syncData";
+import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
 
 export const DEFAULT_SYNC_DATA: SyncData = {
   cfg: {
     isOnboardingComplete: false,
     blockedApps: [],
-    blockedHosts: [
-      "reddit.com",
-      "facebook.com",
-      "youtube.com",
-      "instagram.com",
-      "tiktok.com",
-      "netflix.com",
-      "amazon.com",
-      // TODO remove other urls
-      // "tagesschau.de",
-      // "spiegel.de",
-      // "golem.de",
-      // "zeit.de",
-      // "wikipedia.org",
-      // "localhost",
-      // "localhost:3000",
-    ],
+    blockedHosts: IS_ANDROID
+      ? []
+      : [
+          "reddit.com",
+          "facebook.com",
+          "youtube.com",
+          "instagram.com",
+          "tiktok.com",
+          "netflix.com",
+          "amazon.com",
+          // TODO remove other urls
+          // "tagesschau.de",
+          // "spiegel.de",
+          // "golem.de",
+          // "zeit.de",
+          // "wikipedia.org",
+          // "localhost",
+          // "localhost:3000",
+        ],
   },
   // NOTE: 99 is set to pass isToday check
   lastBlockedTS: 99,
@@ -34,7 +37,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   energyLvlTS: 99,
   answers: [],
   attempts: {},
-  blocked: {},
+  sunTaps: {},
 };
 
 export const STATIC_CFG: StaticCfg = {

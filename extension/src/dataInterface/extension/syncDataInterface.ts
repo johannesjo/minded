@@ -188,8 +188,8 @@ export const countBlockedAttempt = async (): Promise<void> => {
     return bro.storage.sync.set({
       ...syncData,
       blocked: {
-        ...syncData.blocked,
-        [ds]: syncData.blocked[ds] ? syncData.blocked[ds] + 1 : 1,
+        ...syncData.sunTaps,
+        [ds]: syncData.sunTaps[ds] ? syncData.sunTaps[ds] + 1 : 1,
       },
     });
   } else {

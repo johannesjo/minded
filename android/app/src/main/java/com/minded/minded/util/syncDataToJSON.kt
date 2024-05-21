@@ -32,11 +32,11 @@ fun syncDataToJson(syncData: SyncData): String {
     jsonObject.put("energyLvlTS", syncData.energyLvlTS)
     jsonObject.put("energyLvlVal", syncData.energyLvlVal)
 
-    val blockedObject = JSONObject()
-    syncData.blocked.forEach { (key, value) ->
-        blockedObject.put(key, value)
+    val sunTapsObject = JSONObject()
+    syncData.sunTaps.forEach { (key, value) ->
+        sunTapsObject.put(key, value)
     }
-    jsonObject.put("blocked", blockedObject)
+    jsonObject.put("sunTaps", sunTapsObject)
 
     val attemptsObject = JSONObject()
     syncData.attempts.forEach { (key, value) ->
