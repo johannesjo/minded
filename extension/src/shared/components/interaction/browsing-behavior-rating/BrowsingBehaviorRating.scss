@@ -1,0 +1,19 @@
+#minded-6622-browsing-behavior-rating {
+
+  .minded-6622-browsing-behavior-rating-btns {
+    margin-top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    user-select: none;
+    pointer-events: all;
+    // more space on mobile for buttons
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+
+
+  .minded-6622-browsing-behavior-rating-btn {
+    @include btnToggleSelect();
+  }
+}

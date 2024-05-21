@@ -1,0 +1,29 @@
+import { JSX } from "solid-js";
+// @ts-ignore
+import styles from "./OnboardingWeb.module.scss";
+import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
+// @ts-ignore
+import { updateUserCfg } from "@dataInterface/syncDataInterface";
+
+export const OnboardingWeb: (props: {
+  onComplete: () => void;
+}) => JSX.Element = (props) => {
+  const onAfterSaveWebsites = async () => {
+    await updateUserCfg({ isOnboardingComplete: true });
+    props.onComplete();
+  };
+  return (
+    <>
+      <div class={styles.welcomeWrapper}>
+        <div class={styles.welcome}>
+          Welcome to <em>minded</em>
+        </div>
+        <div class={styles.infoText}>
+          <p>Which websites do you intent to use less?</p>
+        </div>
+
+        <WebsiteList onAfterSave={onAfterSaveWebsites} />
+      </div>
+    </>
+  );
+};

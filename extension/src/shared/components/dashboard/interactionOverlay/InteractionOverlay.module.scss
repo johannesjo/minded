@@ -1,0 +1,26 @@
+.interactionOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: minded6622fadeInAnimation ease .5s !important;
+  cursor: crosshair;
+}
+
+.interactionWrapper {
+  padding: 32px;
+  max-width: 100%;
+}
+
+@keyframes minded6622fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

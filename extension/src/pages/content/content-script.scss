@@ -1,0 +1,23 @@
+@import "@src/styles/shared.scss";
+@import "@src/styles/sharedForInteraction.scss";
+
+#minded-6622 {
+  animation: minded6622fadeInAnimation ease .2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  cursor: crosshair;
+}
+
+#minded-6622-coloured-wrapper {
+  cursor: zoom-out;
+  cursor: crosshair;
+}
+
+@keyframes minded6622fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

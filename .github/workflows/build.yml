@@ -1,0 +1,60 @@
+name: Build & Release
+on:
+  workflow_dispatch:
+    inputs: null
+  push:
+    branches: [main]
+#    tags:
+#      - v*
+
+defaults:
+  run:
+    working-directory: ./extension
+
+jobs:
+  build-on-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 21
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v4
+        id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm Packages
+        #  if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm i
+
+#      - name: Lint
+#        run: npm run lint
+#
+#      - name: Test Unit
+#        run: npm run test
+
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack
+        run: npm run pack
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: minded-download
+          path: minded.zip

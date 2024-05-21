@@ -1,0 +1,93 @@
+// NOTE: styles for question work differently since we're using them for the content-script
+
+#minded-6622-question-wrapper {
+  user-select: none;
+  margin-top: -38px;
+
+  //animation: minded6622fadeInAnimation ease-in 1s;
+  //animation-iteration-count: 1;
+  //animation-fill-mode: forwards;
+
+
+  #minded-6622-question {
+    //-webkit-mask:linear-gradient(-60deg,#000 30%, rgba(0, 0, 0, 0.15),#000 70%) right/300% 100%;
+    //animation: shimmer 2s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    // NOTE: 2 rows on desktop, 3 on mobile
+    min-height: 81px;
+    @include onNonMobileScreens {
+      min-height: 76px;
+    }
+
+
+    > span {
+      transition: all .1s;
+    }
+  }
+
+  &.isChangingQuestion {
+    #minded-6622-question > span {
+      opacity: .0;
+      transform: scale(0);
+      animation: none;
+    }
+  }
+}
+
+//@keyframes shimmer {
+//  100% {-webkit-mask-position:left}
+//}
+
+#minded-6622-question {
+  display: inline-block;
+  @include txtBig();
+}
+
+#minded-6622-inp {
+  display: flex;
+  width: 540px;
+  max-width: 100%;
+  margin: auto;
+  pointer-events: all;
+  padding: 8px;
+  // use padding rather than margin to avoid taping in between leading to close the overlay
+  padding-top: 32px;
+  padding-bottom: 32px;
+
+  input {
+    @include formInput();
+    flex: 1;
+    margin: auto;
+    display: block;
+    border-bottom-right-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+  }
+
+  div {
+    @include btnIco();
+    margin: auto;
+    margin-left: 4px;
+    border-radius: 0 8px 8px 0;
+  }
+}
+
+#minded-6622-change-question-btn {
+  @include btnIco();
+  margin: auto;
+  // use padding rather than margin to avoid taping in between leading to close the overlay
+  border-radius: 50%;
+}
+
+
+@keyframes minded6622fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
