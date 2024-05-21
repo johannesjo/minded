@@ -82,17 +82,20 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         <Match when={getStep() === 1}>
           <div class="fadeIn">
             <Question
-              question={rndQuestion}
+              initialQuestion={rndQuestion}
+              isChangeQuestion={false}
+              answers={[]}
               onCancelCountdown={props.onCancelCountdown}
               onSuccess={() => props.onSuccess()}
               onSkip={() => undefined}
+              onUpdateQuestion={() => undefined}
             />
           </div>
         </Match>
 
         {/*<Match when={getStep() === 1}>*/}
         {/*  <Question*/}
-        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH1)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH1)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => setStep(2)}*/}
         {/*    onSkip={() => undefined}*/}
@@ -100,7 +103,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*</Match>*/}
         {/*<Match when={getStep() === 2}>*/}
         {/*  <Question*/}
-        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH2)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH2)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => setStep(3)}*/}
         {/*    onSkip={() => undefined}*/}
@@ -108,7 +111,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*</Match>*/}
         {/*<Match when={getStep() === 3}>*/}
         {/*  <Question*/}
-        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH3)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH3)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => setStep(4)}*/}
         {/*    onSkip={() => undefined}*/}
@@ -116,7 +119,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*</Match>*/}
         {/*<Match when={getStep() === 4}>*/}
         {/*  <Question*/}
-        {/*    question={QUESTIONS.find((q) => q.id === QID.BBH4)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH4)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => props.onSuccessSunTap()}*/}
         {/*    onSkip={() => undefined}*/}

@@ -20,16 +20,22 @@ export const QuestionsForToday: Component<any> = (props) => {
         onSkip={() => undefined}
       />
       <Question
-        question={QUESTIONS[10]}
+        initialQuestion={QUESTIONS[10]}
         onSuccess={() => undefined}
         onSkip={() => undefined}
         onCancelCountdown={() => undefined}
+        isChangeQuestion={false}
+        answers={[]}
+        onUpdateQuestion={() => undefined}
       />
       <Question
-        question={QUESTIONS[14]}
+        initialQuestion={QUESTIONS[14]}
         onSuccess={() => undefined}
         onSkip={() => undefined}
         onCancelCountdown={() => undefined}
+        isChangeQuestion={false}
+        answers={[]}
+        onUpdateQuestion={() => undefined}
       />
     </div>
   );
