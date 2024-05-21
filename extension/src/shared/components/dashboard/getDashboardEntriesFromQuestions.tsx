@@ -20,7 +20,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
 
-export const dashboardEntriesFromQuestions = (
+export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
 ): DashboardGroup[] => {

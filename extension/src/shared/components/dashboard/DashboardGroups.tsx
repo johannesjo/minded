@@ -10,7 +10,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { getSyncData } from "@dataInterface/syncDataInterface";
-import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
+import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
@@ -38,7 +38,7 @@ export const DashboardGroups: (props: {
       console.log(syncData);
 
       if (syncData.answers?.length) {
-        const entries = dashboardEntriesFromQuestions(syncData);
+        const entries = getDashboardEntriesFromQuestions(syncData);
         console.log(entries, syncData);
 
         setDashboardGroups(entries);
