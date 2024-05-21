@@ -1,6 +1,7 @@
 // SettingsAndroid.tsx
-import { createSignal, onMount } from "solid-js";
-// @ts-ignore
+import { createSignal, For, onMount } from "solid-js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import styles from "./SettingsAndroid.module.scss";
 import {
   getSyncData,
@@ -9,36 +10,16 @@ import {
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { useNavigate } from "@solidjs/router"; // Import the styles
 
-interface SettingsAndroidProps {
-  // Define any props that you need for this component
-}
-
-export const SettingsAndroid = (props: SettingsAndroidProps) => {
-  // const [getAvailableApps, setAvailableApps] = createSignal<
-  //   { packageName: string; name: string }[]
-  // >([
-  //   {
-  //     packageName: "asd",
-  //     name: "Some app",
-  //   },
-  //   {
-  //     packageName: "Soooome ",
-  //     name: "Some app other hhi",
-  //   },
-  // ]);
-
+export const SettingsAndroid = () => {
   const navigate = useNavigate();
   const [getAvailableApps, setAvailableApps] = createSignal<
     { packageName: string; name: string }[]
-  >(
-    JSON.parse(androidInterface.getAllApps()).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    ),
-  );
+  >([]);
 
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
   onMount(() => {
+    setAvailableApps(JSON.parse(androidInterface.getAllApps()));
     getSyncData().then((syncData) => {
       setSelectedApps(syncData.cfg.blockedApps || []);
     });
@@ -65,23 +46,23 @@ export const SettingsAndroid = (props: SettingsAndroidProps) => {
       </div>
 
       <div class={styles.appList}>
-        {getAvailableApps().map((app) => (
-          <div
-            // @ts-ignore
-            key={app.packageName}
-            onClick={() => handleSelect(app)}
-            class={`${styles.appEntry} ${getSelectedApps().includes(app.packageName) ? styles.selected : ""}`}
-          >
-            {getSelectedApps().includes(app.packageName) && <span>✓ </span>}
-            {app.name}
-          </div>
-        ))}
+        <For each={getAvailableApps()}>
+          {(app) => (
+            <div
+              onClick={() => handleSelect(app)}
+              class={`${styles.appEntry} ${getSelectedApps().includes(app.packageName) ? styles.selected : ""}`}
+            >
+              {getSelectedApps().includes(app.packageName) && <span>✓ </span>}
+              {app.name}
+            </div>
+          )}
+        </For>
       </div>
 
-      <div style="display: flXex;">
+      <div>
         <button
           class="btn-big"
-          style="margint-right: 16px;"
+          style="margin-right: 16px;"
           onClick={() => navigate("/")}
         >
           Back
