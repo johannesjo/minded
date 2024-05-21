@@ -33,7 +33,6 @@ export const getDashboardEntriesFromQuestions = (
       RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD.length,
     ),
   ];
-  console.log(groupsToCheck);
 
   groupsToCheck.forEach((catId) => {
     const category = QUESTION_CATEGORIES[catId];
@@ -53,7 +52,6 @@ export const getDashboardEntriesFromQuestions = (
       });
     }
   });
-  // console.log(dashboardGroups);
 
   const sortedEntries: DashboardGroup[] = dashboardGroups;
   let fixedEntriesIndexAndNr = 0;
@@ -110,6 +108,8 @@ export const getDashboardEntriesFromQuestions = (
       type: DashboardGroupType.Quote,
     });
   }
+
+  console.log(sortedEntries, syncData);
 
   return sortedEntries;
 };
