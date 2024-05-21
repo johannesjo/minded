@@ -1,6 +1,6 @@
 import { JSX } from "solid-js";
 // @ts-ignore
-import styles from "@src/shared/components/dashboard/RndQuote.module.scss";
+import styles from "@src/shared/components/dashboard/dashboardCards/RndQuote.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { QUOTES } from "@src/shared/data/quotes";
 

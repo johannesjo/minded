@@ -29,26 +29,26 @@
     max-height: 100%;
     min-height: 50%;
     transform: translate(-50%, -50%);
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
     overflow-y: auto;
     grid-auto-flow: row;
     grid-auto-rows: 33%;
     box-sizing: border-box;
 
     &[nr-of-items="1"] {
-      grid-template-rows: repeat(1, 1fr);
-      grid-template-columns: repeat(1, 1fr);
+      grid-template-rows: repeat(1, minmax(0, 1fr));
+      grid-template-columns: repeat(1, minmax(0, 1fr));
     }
 
     &[nr-of-items="2"] {
-      grid-template-rows: repeat(2, 1fr);
-      grid-template-columns: repeat(1, 1fr);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(1, minmax(0, 1fr));
     }
 
     &[nr-of-items="3"] {
-      grid-template-rows: repeat(2, 1fr);
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
 
       > :last-child {
         grid-column-start: 1;

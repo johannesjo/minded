@@ -11,7 +11,7 @@ import { getSyncData } from "@dataInterface/syncDataInterface";
 import { dashboardEntriesFromQuestions } from "@src/shared/components/dashboard/dashboardEntriesFromQuestions";
 // @ts-ignore
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
-import { RndQuote } from "@src/shared/components/dashboard/RndQuote";
+import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
