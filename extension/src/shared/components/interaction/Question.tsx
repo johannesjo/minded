@@ -12,24 +12,38 @@ import { saveAnswer } from "@dataInterface/syncDataInterface";
 // @ts-expect-error
 import { requestFocusAndShowKeyboard } from "@dataInterface/system";
 import { nanoid } from "nanoid";
+import {
+  getQuestionSemiSmart,
+  getQuestionSmart,
+} from "@src/util/getQuestionSmart";
+
+const MAX_SMART_QUESTION_ATTEMPTS = 3;
 
 export const Question: (props: {
-  question: QuestionForPrompt;
+  isChangeQuestion?: boolean;
+  initialQuestion: QuestionForPrompt;
+  answers: Answer[];
   onSuccess: (answer: Answer) => void;
   onSkip: () => void;
+  onUpdateQuestion: (question: QuestionForPrompt) => void;
   onCancelCountdown: () => void;
-  onChangeQuestion?: () => void;
 }) => JSX.Element = (props) => {
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
+  const [getQuestion, setQuestion] = createSignal(props.initialQuestion);
   const [getIsChangingQuestion, setIsChangingQuestion] = createSignal(false);
   let inpEl;
   let t0;
   let t1;
   let tChangeQuestion;
 
+  let questionUpdateCount = 0;
+  let questionIdBefore = props.initialQuestion.id;
+
   createEffect(() => {
     if (inpEl) {
-      inpEl.value = props.question.prompt ? props.question.prompt + " " : "";
+      inpEl.value = props.initialQuestion.prompt
+        ? props.initialQuestion.prompt + " "
+        : "";
     }
   });
 
@@ -39,8 +53,8 @@ export const Question: (props: {
   };
 
   onMount(async () => {
-    if (props.question.prompt && inpEl) {
-      inpEl.value = props.question.prompt + " ";
+    if (props.initialQuestion.prompt && inpEl) {
+      inpEl.value = props.initialQuestion.prompt + " ";
     }
     focusInp();
     t0 = setTimeout(() => focusInp(), 200);
@@ -50,10 +64,11 @@ export const Question: (props: {
   onCleanup(() => {
     window.clearTimeout(t0);
     window.clearTimeout(t1);
+    window.clearTimeout(tChangeQuestion);
   });
 
   const submitAnswer = async (answerTxt: string) => {
-    const q = props.question;
+    const q = getQuestion();
     const answer = {
       questionCategoryId: q.categoryId,
       qid: q.id,
@@ -66,7 +81,7 @@ export const Question: (props: {
       return;
     }
     setIsInputDisabled(true);
-    const cat = QUESTION_CATEGORIES[props.question.categoryId];
+    const cat = QUESTION_CATEGORIES[props.initialQuestion.categoryId];
     if (!cat.isDontSaveQuestion) {
       await saveAnswer(answer);
     }
@@ -74,15 +89,32 @@ export const Question: (props: {
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
-    const q = props.question;
-    if (!q) throw new Error("No question");
+    const q = props.initialQuestion;
+    if (!q) throw new Error("No initialQuestion");
 
     if (ev.key === "Enter") {
-      submitAnswer((ev.target as any).value);
+      submitAnswer((ev.target as HTMLInputElement).value);
     } else if (ev.key === "Escape") {
       props.onSkip();
     } else if (ev.key !== "Control") {
       props.onCancelCountdown();
+    }
+  };
+
+  const updateQuestion = () => {
+    const newQuestion =
+      questionUpdateCount > MAX_SMART_QUESTION_ATTEMPTS
+        ? getQuestionSemiSmart()
+        : getQuestionSmart(props.answers);
+
+    if (questionIdBefore === newQuestion.id) {
+      questionUpdateCount++;
+      updateQuestion();
+    } else {
+      questionIdBefore = newQuestion.id;
+      questionUpdateCount++;
+      setQuestion(newQuestion);
+      props.onUpdateQuestion(newQuestion);
     }
   };
 
@@ -93,7 +125,7 @@ export const Question: (props: {
         class={`${getIsChangingQuestion() ? "isChangingQuestion" : ""}`}
       >
         <div id="minded-6622-question">
-          <span>{props.question.t}?</span>
+          <span>{getQuestion().t}?</span>
         </div>
 
         <div id="minded-6622-inp">
@@ -116,7 +148,7 @@ export const Question: (props: {
             ➤
           </div>
         </div>
-        {props.onChangeQuestion && (
+        {props.isChangeQuestion && (
           <div
             id="minded-6622-change-question-btn"
             onmouseenter={props.onCancelCountdown}
@@ -125,7 +157,7 @@ export const Question: (props: {
               setIsChangingQuestion(true);
               inpEl?.focus();
               tChangeQuestion = window.setTimeout(() => {
-                props.onChangeQuestion();
+                updateQuestion();
                 inpEl?.focus();
                 setIsChangingQuestion(false);
               }, 100);

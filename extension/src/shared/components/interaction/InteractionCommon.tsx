@@ -16,7 +16,7 @@ import {
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
 import { Answer } from "@src/dataInterface/syncData";
-import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
+import { QuestionForPrompt } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
@@ -52,17 +52,16 @@ const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
+  const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
-  const [getRndQuestion, setRndQuestion] = createSignal<
+  const [getInitialQuestion, setInitialQuestion] = createSignal<
     QuestionForPrompt | undefined
   >();
 
   let successSunEl;
   let successSunSunEl;
   let frameNr;
-  let syncData;
-  let questionUpdateCount = 0;
-  let questionIdBefore;
+
   let isSuccessSunTapped = false;
 
   onMount(async () => {
@@ -73,17 +72,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       }, 200);
     }
 
-    getSyncData().then((syncDataI) => {
-      syncData = syncDataI;
+    getSyncData().then((syncData) => {
+      setAnswers(syncData.answers);
       if (props.questionForPrompt) {
-        setRndQuestion(props.questionForPrompt);
-        questionIdBefore = props.questionForPrompt.id;
+        setInitialQuestion(props.questionForPrompt);
         setMode("QUESTION");
       } else {
-        const rndQuestion = getQuestionSmart(syncDataI.answers);
-        setRndQuestion(rndQuestion);
+        setInitialQuestion(getQuestionSmart(syncData.answers));
         setMode(getInteractionMode(syncData));
-        questionIdBefore = rndQuestion.id;
       }
     });
   });
@@ -94,10 +90,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       props.onModeSet(getMode());
     }
   });
+
   createEffect(() => {
-    console.log("props.onUpdateQuestion", getRndQuestion());
-    if (getRndQuestion()) {
-      props.onUpdateQuestion(getRndQuestion());
+    console.log("props.onUpdateQuestion", getInitialQuestion());
+    if (getInitialQuestion()) {
+      props.onUpdateQuestion(getInitialQuestion());
     }
   });
 
@@ -155,25 +152,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     if (!isSuccessSunTapped) {
       props.onAfterSuccessSunFadeout();
-    }
-  };
-
-  const updateQuestion = () => {
-    setMode("QUESTION");
-    if (syncData) {
-      const rndQuestion =
-        questionUpdateCount >= 5
-          ? getRndEntry(QUESTIONS)
-          : getQuestionSmart(syncData.answers);
-
-      if (questionIdBefore === rndQuestion.id) {
-        questionUpdateCount++;
-        updateQuestion();
-      } else {
-        questionIdBefore = rndQuestion.id;
-        setRndQuestion(rndQuestion);
-        questionUpdateCount++;
-      }
     }
   };
 
@@ -250,12 +228,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             />
           </Match>
           <Match when={getMode() === "QUESTION"}>
-            {getRndQuestion() && (
+            {getInitialQuestion() && (
               <Question
-                question={getRndQuestion()}
+                isChangeQuestion={true}
+                initialQuestion={getInitialQuestion()}
+                answers={getAnswers()}
                 onCancelCountdown={cancelCountdown}
                 onSuccess={onInteractionSuccess}
-                onChangeQuestion={updateQuestion}
+                onUpdateQuestion={(question) =>
+                  props.onUpdateQuestion(question)
+                }
                 onSkip={props.onSkip}
               />
             )}

@@ -119,3 +119,38 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const q = getRndEntry(questionsForCategory);
   return q;
 };
+
+export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
+  const isWorkDayToday = isWorkDay(now);
+  const nowHours = now.getHours();
+
+  const questionsToUse = QUESTIONS.filter((q) => {
+    const categoryForQuestion = QUESTION_CATEGORIES[q.categoryId];
+    if (categoryForQuestion.isMorningCategory) {
+      if (
+        nowHours < THRESHOLD_MORNING_START ||
+        nowHours > THRESHOLD_MORNING_END
+      ) {
+        return false;
+      }
+    }
+    if (categoryForQuestion.isEveningCategory) {
+      if (nowHours < THRESHOLD_EVENING_START) {
+        return false;
+      }
+    }
+    if (categoryForQuestion.isLateNightCategory) {
+      if (
+        nowHours < THRESHOLD_LATE_NIGHT_START ||
+        nowHours > THRESHOLD_LATE_NIGHT_END
+      ) {
+        return false;
+      }
+    }
+    if (categoryForQuestion.isWorkDayCategory && !isWorkDayToday) {
+      return false;
+    }
+    return true;
+  });
+  return getRndEntry(questionsToUse);
+};
