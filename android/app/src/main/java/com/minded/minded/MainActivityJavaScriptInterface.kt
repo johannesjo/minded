@@ -2,7 +2,9 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import androidx.lifecycle.viewModelScope
 import com.minded.minded.MissingCapability
 import com.minded.minded.util.checkDrawOverlayPermission
@@ -14,6 +16,7 @@ import org.json.JSONObject
 
 open class MainActivityJavaScriptInterface(
     protected val context: Context,
+    protected open val webView: WebView,
     protected val onMissingCapabilityClickI: (MissingCapability) -> Unit = {},
     protected val getMissingCapabilitiesI: () -> List<MissingCapability> = { emptyList<MissingCapability>() },
 ) {
@@ -32,6 +35,14 @@ open class MainActivityJavaScriptInterface(
     fun retrieveDataString(): String? {
         Log.v(logTag, "retrieveString()")
         return sharedPreferenceService.retrieveDataString()
+    }
+
+    @JavascriptInterface
+    fun requestFocusAndShowKeyboard() {
+        Log.v(logTag, "requestFocusAndShowKeyboard()")
+        webView.requestFocus()
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT)
     }
 
     @JavascriptInterface

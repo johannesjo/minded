@@ -5,9 +5,11 @@ import {
   QuestionForPrompt,
 } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { saveAnswer } from "@dataInterface/syncDataInterface";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { requestFocusAndShowKeyboard } from "@dataInterface/system";
 import { nanoid } from "nanoid";
 

@@ -9,27 +9,16 @@ import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseJSONQuestion
 
 class InteractionWindowJavaScriptInterface(
+    override val webView: WebView,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val win: InteractionWindow,
-    private val ctrlSvc: OverlayControllerService,
-    private val webView: WebView
-) : MainActivityJavaScriptInterface(ctrlSvc) {
-    private val sharedPreferences = ctrlSvc.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
-
-
+    private val ctrlSvc: OverlayControllerService
+) : MainActivityJavaScriptInterface(ctrlSvc, webView) {
     @JavascriptInterface
     fun onSuccessSunTap() {
         Log.v(logTag, "onSuccessSunTap()")
         ctrlSvc.userDrivenClose(isSkipShowSuccessSunAfter = true);
         win.hideWindow()
-    }
-
-    @JavascriptInterface
-    fun requestFocusAndShowKeyboard() {
-        Log.v(logTag, "requestFocusAndShowKeyboard()")
-        webView.requestFocus()
-        val imm = ctrlSvc.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT)
     }
 
 
@@ -51,7 +40,6 @@ class InteractionWindowJavaScriptInterface(
         )
         win.hideWindow()
     }
-
 
 
     @JavascriptInterface
