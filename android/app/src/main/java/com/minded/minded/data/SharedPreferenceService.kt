@@ -24,26 +24,26 @@ class SharedPreferenceService(context: Context) {
         }
     }
 
-    fun saveString(key: String, value: String) {
+    fun saveDataString(value: String) {
         with(sharedPreferences.edit()) {
-            putString(key, value)
+            putString(DB_KEY, value)
             apply()
         }
     }
 
-    fun retrieveString(key: String): String? {
-        return sharedPreferences.getString(key, null)
+    fun retrieveDataString(): String? {
+        return sharedPreferences.getString(DB_KEY, null)
     }
 
     fun hasNoData(): Boolean {
-        val res = sharedPreferences.getString(DB_KEY, null);
+        val res = retrieveDataString();
         Log.v(logTag, "hasNoData() $res")
         return res == null || res == "{}"
     }
 
     fun getSyncData(): SyncData {
         return try {
-            val allStr = retrieveString(DB_KEY)
+            val allStr = retrieveDataString()
             Log.v(logTag, "getSyncData() allStr $allStr ")
             parseSyncData(allStr!!)
         } catch (e: Exception) {
@@ -54,7 +54,7 @@ class SharedPreferenceService(context: Context) {
     }
 
     fun saveSyncData(syncData: SyncData) {
-        saveString(DB_KEY, syncDataToJson(syncData))
+        saveDataString(syncDataToJson(syncData))
     }
 
     fun updateSyncData(update: SyncData.() -> Unit) {
@@ -90,6 +90,7 @@ class SharedPreferenceService(context: Context) {
         saveSyncData(updatedSyncData)
     }
 
+    // TODO
     fun countAppUsageAttempt() {
         val syncData = getSyncData()
         val isoDateToday = getIsoDate()

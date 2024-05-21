@@ -5,8 +5,8 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 interface InteractionWindowJavaScriptInterface {
   onSuccessSunTap: () => void;
   showLittleSun: () => void;
-  saveString: (key: string, value: string) => void;
-  retrieveString: (key: string) => string | null;
+  saveDataString: (value: string) => void;
+  retrieveDataString: () => string | null;
   setQuestion: (questionAsString: string) => void;
   unsetQuestion: () => void;
   setAnswerTxt: (txt: string) => void;
