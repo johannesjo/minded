@@ -46,10 +46,10 @@ class InteractionWindow(
                 this.setBackgroundColor(0x00000000)
                 addJavascriptInterface(
                     InteractionWindowJavaScriptInterface(
+                        this,
                         sharedOverlayViewModel,
                         win,
-                        ctrlSvc,
-                        this
+                        ctrlSvc
                     ),
                     "androidMinded"
                 )

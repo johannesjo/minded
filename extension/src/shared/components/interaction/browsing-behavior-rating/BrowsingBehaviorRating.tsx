@@ -1,6 +1,7 @@
 /* @refresh reload */
-import { createSignal, JSX, Match, Switch } from "solid-js";
-// @ts-ignore
+import { createSignal, For, JSX, Match, Switch } from "solid-js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { rateCurrentBrowsingBehavior } from "@dataInterface/syncDataInterface";
 import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
 import { Question } from "@src/shared/components/interaction/Question";
@@ -48,24 +49,26 @@ export const BrowsingBehaviorRatingInteraction: (props: {
           <div>
             <div class="minded-6622-txt-big">
               {IS_ANDROID
-                ? "How would you rate your recent usage of the apps you sunTaps"
+                ? "How would you rate your recent usage of the apps you configured to use less?"
                 : "How would you rate your recent browsing behavior?"}
             </div>
             <div class="minded-6622-browsing-behavior-rating-btns">
-              {BROWSING_BEHAVIOR_OPTIONS.map((opt) => (
-                <div
-                  class={
-                    getBrowsingBehaviorRating() === opt.val
-                      ? "minded-6622-browsing-behavior-rating-btn isSelected"
-                      : "minded-6622-browsing-behavior-rating-btn"
-                  }
-                  onClick={() => {
-                    setBrowsingBehaviorRating(opt.val);
-                  }}
-                >
-                  {opt.txt}
-                </div>
-              ))}
+              <For each={BROWSING_BEHAVIOR_OPTIONS}>
+                {(opt) => (
+                  <div
+                    class={
+                      getBrowsingBehaviorRating() === opt.val
+                        ? "minded-6622-browsing-behavior-rating-btn isSelected"
+                        : "minded-6622-browsing-behavior-rating-btn"
+                    }
+                    onClick={() => {
+                      setBrowsingBehaviorRating(opt.val);
+                    }}
+                  >
+                    {opt.txt}
+                  </div>
+                )}
+              </For>
             </div>
             <div
               class="btn-big"

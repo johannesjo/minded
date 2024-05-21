@@ -19,8 +19,10 @@ import { Answer } from "@src/dataInterface/syncData";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
-import { fadeOut, promiseTimeout } from "@src/util/animation"; // @ts-ignore
-import { getQuestionSmart } from "@src/util/getQuestionSmart"; // @ts-ignore
+import { fadeOut, promiseTimeout } from "@src/util/animation";
+import { getQuestionSmart } from "@src/util/getQuestionSmart";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { getSyncData } from "@dataInterface/syncDataInterface";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

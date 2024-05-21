@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                                 addJavascriptInterface(
                                     MainActivityJavaScriptInterface(
                                         context,
+                                        this,
                                         ::onMissingCapabilityTap,
                                         ::getMissingCapabilities,
                                     ),
