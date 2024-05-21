@@ -7,7 +7,9 @@ import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { getRndEntry } from "@src/util/getRndEntry";
-import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid"; // once on app load
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 // once on app load
 

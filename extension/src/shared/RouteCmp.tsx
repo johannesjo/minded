@@ -4,7 +4,9 @@ import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { onMount } from "solid-js";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
-import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { SettingsAndroid } from "@src/shared/components/settings/SettingsAndroid";
 import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
 

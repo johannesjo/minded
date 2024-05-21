@@ -1,5 +1,7 @@
 import { StaticCfg, SyncData } from "./syncData";
-import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 export const DEFAULT_TS_VAL = 99;
 

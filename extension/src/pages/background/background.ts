@@ -1,6 +1,7 @@
 import { bro } from "@src/util/browser";
-// @ts-ignore
-import { countBlockedAttempt } from "@dataInterface/syncDataInterface.ts";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { countBlockedAttempt } from "@src/dataInterface/extension/syncDataInterface.ts";
 
 bro.action.onClicked.addListener(function () {
   bro.tabs.create({

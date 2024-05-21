@@ -37,7 +37,7 @@ export const saveAnswer = (answer: Answer): Promise<void> => {
             sizeBefore: JSON.stringify(newAnswers).length,
             sizeAfter: JSON.stringify(newAnswersSliced).length,
           });
-          if (window.alert) {
+          if (window?.alert) {
             window.alert(
               "Minded Browser Extension: We are over the quota of allowed saved data in chrome extensions. But no problem! We will delete old answers to make room for new ones.",
             );

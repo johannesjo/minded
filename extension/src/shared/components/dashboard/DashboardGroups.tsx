@@ -21,7 +21,9 @@ import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
 import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
-import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 
