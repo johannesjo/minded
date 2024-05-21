@@ -1,0 +1,42 @@
+@mixin h4() {
+  font-weight: 200;
+  margin-bottom: 8px;
+  font-size: var(--fz-m);
+  user-select: none;
+  color: var(--h4-c);
+  pointer-events: all;
+}
+
+@mixin h2() {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: var(--fz-l);
+  user-select: none;
+  pointer-events: all;
+}
+
+
+@mixin txtBig(){
+  font-size: var(--fz-l);
+  line-height: 1.2;
+  pointer-events: all;
+}
+
+@mixin txtSmaller(){
+  font-size: var(--fz-m);
+  line-height: 1.2;
+  pointer-events: all;
+}
+
+@mixin usrQuote(){
+  font-size: var(--fz-m);
+  line-height: 1.2;
+  font-weight: 300;
+  pointer-events: all;
+}
+
+@mixin fatTxt(){
+  font-size: var(--fz-l);
+  font-weight: 500;
+  pointer-events: all;
+}

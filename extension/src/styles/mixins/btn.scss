@@ -1,0 +1,110 @@
+@import "../variablesSCSS";
+
+$extraClickArea: 8px;
+
+@mixin btn($height: var(--btn-height)) {
+  border: none;
+  border-radius: 8px;
+  display: inline-block;
+  cursor: pointer;
+  height: $height;
+  text-align: center;
+  opacity: var(--btn-opacity);
+  line-height: $height;
+  font-size: var(--btn-fz);
+  background: var(--btn-bg);
+  text-transform: lowercase;
+  box-sizing: border-box;
+  color: var(--c-fg);
+  pointer-events: all;
+  position: relative;
+  user-select: none;
+  transition: all 50ms;
+
+  &:focus {
+    outline: 0;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &:active {
+    transition: all 10ms;
+    opacity: .8;
+    transform: scale(.95);
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    right: -1 * $extraClickArea;
+    top: -1 * $extraClickArea;
+    left: -1 * $extraClickArea;
+    bottom: -1 * $extraClickArea;
+  }
+
+  &:disabled {
+    &,
+    &:hover,
+    &:active {
+      transition: none;
+      cursor: not-allowed;
+      opacity: .3;
+      transform: scale(1);
+    }
+  }
+}
+
+@mixin btnIco($height: var(--btn-height)) {
+  @include btn($height);
+  width: $height;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  > img {
+    margin: 12px;
+    flex: 1;
+
+    @include inDarkMode() {
+      filter: invert(1);
+    }
+  }
+}
+
+
+@mixin btnTxt() {
+  @include btn;
+  padding: 0 16px;
+  font-weight: 300;
+}
+
+@mixin btnTxtBigger() {
+  @include btn(var(--btn-height-bigger));
+  padding: 0 20px;
+  font-size: var(--btn-bigger-fz);
+}
+
+@mixin btnToggleSelect() {
+  @include btnTxt;
+  margin: 8px;
+  user-select: none;
+  text-transform: lowercase;
+  min-width: 100px;
+  transition: .2s all;
+  background: var(--btn-bg-not-selected);
+
+  @include onNonMobileScreens() {
+    margin: 16px;
+  }
+
+  &.isSelected {
+    background: var(--btn-bg-selected);
+    opacity: 1;
+    font-weight: 500;
+    border-radius: 16px;
+    transform: scale(var(--btn-selected-scale));
+  }
+}
+

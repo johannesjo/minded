@@ -1,0 +1,122 @@
+// NOTE: styles for question work differently since we're using them for the content-script
+
+// TODO move all this to common
+
+#minded-6622-coloured-wrapper > * {
+  cursor: auto;
+}
+
+#minded-6622-black-screen {
+  background: #000;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  animation: minded6622fadeInOut 600ms;
+  animation-fill-mode: forwards;
+  opacity: 0;
+  z-index: 2147483647;
+  z-index: 9999999999999999;
+}
+
+#minded-6622-little-sun-success-sun,
+#minded-6622-success-sun {
+  cursor: cell;
+
+  div:first-child {
+    transform-origin: center center;
+    width: 50px;
+    height: 50px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--sun-bg);
+    border-radius: 50%;
+    box-shadow: 0 0 30px 5px var(--c-pastel-red),
+    0 0 60px 5px var(--c-pastel-yellow);
+    animation: minded6622successSun ease;
+    animation-iteration-count: 1;
+    animation-duration: 800ms;
+    z-index: 30;
+  }
+
+
+  div:last-child {
+    animation: minded6622fadeIn ease 1s;
+    animation-fill-mode: forwards;
+    opacity: 1;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 31;
+    font-weight: 500;
+    color: var(--success-sun-txt-c);
+  }
+}
+
+
+#minded-6622-interaction-wrapper-box {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: auto;
+  padding: 32px;
+  width: 990px;
+  max-width: 100%;
+}
+
+
+@keyframes minded6622fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes minded6622fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+
+@keyframes minded6622successSun {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-1));
+  }
+}
+
+@keyframes minded6622successSunStay {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-1));
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-2));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--success-sun-ani-scale-1));
+  }
+}
+
+

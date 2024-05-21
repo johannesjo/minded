@@ -1,0 +1,17 @@
+@import "../../../../styles/mixins/mixins";
+
+.RndQuote {
+
+}
+
+
+.txt {
+  @include usrQuote();
+  font-style: italic;
+}
+
+.author {
+  margin-top: 16px;
+  font-weight: 200;
+}
+

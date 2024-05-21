@@ -1,0 +1,22 @@
+.welcomeWrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 320px;
+  width: 900px;
+  max-width: 100%;
+
+  p {
+    text-align: center;
+  }
+}
+
+
+.welcome {
+  font-size: var(--fz-l);
+  margin-bottom: 16px;
+}
+
+.infoText {
+}

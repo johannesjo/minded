@@ -1,0 +1,47 @@
+@import "@src/styles/mixins/mixins";
+
+
+.btn {
+  &,
+  #minded-6622 & {
+    @include btn;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+.btn-ico-small {
+  &,
+  #minded-6622 & {
+    @include btnIco(36px);
+  }
+}
+
+.btn-ico {
+  &,
+  #minded-6622 & {
+    @include btnIco(var(--btn-height));
+  }
+}
+
+
+.btn-big {
+  &,
+  #minded-6622 & {
+    @include btnTxtBigger()
+  }
+}
+
+.btn-add {
+  &,
+  #minded-6622 & {
+    @include btnTxt();
+    padding: 0 10px;
+  }
+}

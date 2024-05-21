@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "strict": false,
+    "baseUrl": "./",
+    "module": "commonjs",
+    "target": "es6",
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "rootDir": "src",
+    "outDir": "dist/js",
+    "noEmitOnError": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "paths": {
+      "@src/*": [
+        "src/*"
+      ],
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@pages/*": [
+        "src/pages/*"
+      ],
+      "@dataInterface/*": [
+        "src/dataInterface/web/*"
+      ]
+    }
+  }
+}

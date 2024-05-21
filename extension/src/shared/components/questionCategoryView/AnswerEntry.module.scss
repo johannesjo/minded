@@ -1,0 +1,50 @@
+@import "../../../styles/mixins/mixins";
+
+.AnswerEntry {
+  position: relative;
+  overflow: hidden;
+  padding: 8px;
+  min-height: 56px;
+  min-width: 300px;
+
+  input {
+    @include formInput();
+    flex: 1;
+    min-width: 0 !important;
+    margin-right: 8px;
+  }
+}
+
+.editMode {
+  animation: minded6622fadeInAnimation ease .2s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  // leave enough space for btn anis
+  padding: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.userQuote {
+  font-size: var(--fz-m);
+}
+
+
+@keyframes minded6622fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

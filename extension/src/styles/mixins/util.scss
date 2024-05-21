@@ -1,0 +1,29 @@
+@import "../variablesSCSS";
+
+@mixin onAndroid() {
+  :global(body.android) & {
+    @content
+  }
+}
+
+@mixin onSmallScreens() {
+  @media (max-width: $bpMobileMax) {
+    @content
+  }
+}
+
+@mixin onNonMobileScreens() {
+  @media (min-width: $bpMobile) {
+    @content
+  }
+}
+
+
+@mixin inDarkMode($childSelector:  false) {
+  :global(#minded-6622.minded-6622-dark) & {
+    @content
+  }
+  #minded-6622.minded-6622-dark & {
+    @content
+  }
+}
