@@ -36,6 +36,7 @@ interface InteractionCommonProps {
   onSetAnswer: (txt: string) => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
   onModeSet: (mode: InteractionMode) => void;
+  onInteractionSubmitted?: () => void;
   onSkip: () => void;
 }
 
@@ -97,6 +98,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
+    props.onInteractionSubmitted?.();
     cancelCountdown();
     showSuccessSunAniFlow();
 

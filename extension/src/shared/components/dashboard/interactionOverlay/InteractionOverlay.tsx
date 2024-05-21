@@ -1,15 +1,13 @@
 import { JSX } from "solid-js";
-// @ts-ignore
-import { Question } from "@src/shared/components/interaction/Question";
-// @ts-ignore
-import { getSyncData } from "@dataInterface/android/syncDataInterface";
 import { fadeOut } from "@src/util/animation";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import styles from "./InteractionOverlay.module.scss";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 
 export const InteractionOverlay: (props: {
   onHideInteraction: () => void;
+  onPossibleNewData: () => void;
 }) => JSX.Element = (props) => {
   let wrapperEl;
 
@@ -34,8 +32,15 @@ export const InteractionOverlay: (props: {
           questionForPrompt={undefined}
           isInitFadeout={false}
           wrapperEl={wrapperEl}
-          onSuccessSunTap={() => props.onHideInteraction()}
-          onAfterSuccessSunFadeout={() => props.onHideInteraction()}
+          onInteractionSubmitted={() => {
+            props.onPossibleNewData();
+          }}
+          onSuccessSunTap={() => {
+            props.onHideInteraction();
+          }}
+          onAfterSuccessSunFadeout={() => {
+            props.onHideInteraction();
+          }}
           onAfterInteractionFadeout={() => props.onHideInteraction()}
           onSetAnswer={() => undefined}
           onUpdateQuestion={() => undefined}
