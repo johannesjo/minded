@@ -10,7 +10,7 @@ import com.minded.minded.overlay.OverlayControllerService
 
 class MyAccessibilityService : AccessibilityService() {
     private var lastEventTs: Long = 0
-    private val minDelayForNewEvents = 500L
+    private val minDelayForNewEvents = 100L
     private var currentPackageName: CharSequence? = null
 
     companion object {
