@@ -1,6 +1,8 @@
 import { StaticCfg, SyncData } from "./syncData";
 import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
 
+export const DEFAULT_TS_VAL = 99;
+
 export const DEFAULT_SYNC_DATA: SyncData = {
   cfg: {
     isOnboardingComplete: false,
@@ -26,15 +28,15 @@ export const DEFAULT_SYNC_DATA: SyncData = {
         ],
   },
   // NOTE: 99 is set to pass isToday check
-  lastBlockedTS: 99,
+  lastBlockedTS: DEFAULT_TS_VAL,
   lastBlockedUrl: "",
-  moodCheckTS: 99,
+  moodCheckTS: DEFAULT_TS_VAL,
   moodCheckVal: undefined,
   moodCheckAdditional: "",
   browsingBehaviorRating: {},
-  lastBrowsingBehaviorRatingTS: 99,
+  lastBrowsingBehaviorRatingTS: DEFAULT_TS_VAL,
   energyLvlVal: 0,
-  energyLvlTS: 99,
+  energyLvlTS: DEFAULT_TS_VAL,
   answers: [],
   attempts: {},
   sunTaps: {},

@@ -1,11 +1,15 @@
 import { createSignal, onMount } from "solid-js";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { getSyncData } from "@dataInterface/syncDataInterface";
 import { OnboardingWeb } from "@src/shared/components/onboardingWeb/OnboardingWeb";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import styles from "./NewTab.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";
 import RoutesCmp from "@src/shared/RouteCmp";
+import { DEFAULT_TS_VAL } from "@src/dataInterface/syncData.const";
+import { SyncData } from "@src/dataInterface/syncData";
 
 const NewTab = () => {
   const [getIsShowInfo, setIsShowInfo] = createSignal(false);
@@ -13,12 +17,16 @@ const NewTab = () => {
   const [getTestWebsite, setTestWebsite] = createSignal<string | null>(null);
 
   onMount(() => {
-    getSyncData().then((syncData) => {
+    getSyncData().then((syncData: SyncData) => {
       if (syncData.cfg.blockedHosts[0]) {
         setTestWebsite(getRndEntry(syncData.cfg.blockedHosts));
       }
-
-      if (!syncData.answers.length) {
+      if (
+        !syncData.answers.length &&
+        syncData.energyLvlTS <= DEFAULT_TS_VAL &&
+        syncData.moodCheckTS <= DEFAULT_TS_VAL &&
+        syncData.lastBrowsingBehaviorRatingTS <= DEFAULT_TS_VAL
+      ) {
         setIsShowInfo(true);
         if (!syncData.cfg.isOnboardingComplete) {
           setIsShowOnboarding(true);
