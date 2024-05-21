@@ -1,19 +1,25 @@
-import { createSignal } from "solid-js";
-// @ts-ignore
+import { createSignal, onCleanup } from "solid-js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import styles from "./MissingCapabilities.module.scss";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 
 export const MissingCapabilityView = ({ missingCapabilities }) => {
   const [getIsShowManualInstructions, setIsShowManualInstructions] =
     createSignal<boolean>(false);
+  let t0;
 
   const onMissingCapabilityClick = (capability: string) => {
     console.log(capability);
-    setTimeout(() => {
+    t0 = setTimeout(() => {
       setIsShowManualInstructions(true);
-    });
+    }, 1000);
     androidInterface.onMissingCapabilityClick(capability);
   };
+
+  onCleanup(() => {
+    window.clearTimeout(t0);
+  });
 
   return (
     <div class={styles.container}>
