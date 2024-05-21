@@ -1,39 +1,42 @@
-export const MissingCapabilityView = ({
-  missingCapabilities,
-  onMissingCapabilityClick,
-}) => {
+import { createSignal } from "solid-js";
+// @ts-ignore
+import styles from "./MissingCapabilities.module.scss";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
+
+export const MissingCapabilityView = ({ missingCapabilities }) => {
+  const [getIsShowManualInstructions, setIsShowManualInstructions] =
+    createSignal<boolean>(false);
+
+  const onMissingCapabilityClick = (capability: string) => {
+    console.log(capability);
+    setTimeout(() => {
+      setIsShowManualInstructions(true);
+    });
+    androidInterface.onMissingCapabilityClick(capability);
+  };
+
   return (
-    <div style={{ padding: "16px" }}>
-      <div
-        style={{
-          display: "flex",
-          "flex-direction": "column",
-          "justify-content": "center",
-          "align-items": "center",
-          height: "100%",
-        }}
-      >
-        <p style={{ "font-size": "18px", "text-align": "center" }}>
-          Before you can use the app, you need to give the following
-          permissions. Remember: minded does not collect any data. Everything
-          stays on your device.
+    <div class={styles.container}>
+      <div class={styles.innerContainer}>
+        <p>
+          Before you can use the app, you need to give minded permission on your
+          device.
+        </p>
+
+        <p>
+          Remember: <strong>minded does not collect any data</strong>.
+          Everything stays on your device.
         </p>
 
         {missingCapabilities.includes("SystemAlertWindow") && (
           <>
-            <p
-              style={{
-                "font-size": "18px",
-                "text-align": "center",
-                "margin-top": "32px",
-              }}
-            >
+            <p class={styles.permissionText}>
               Minded displays an overlay to interrupt your visits to apps you
               want to use less. For this to work, minded needs the overlay
               permission.
             </p>
             <button
-              style={{ "margin-top": "16px" }}
+              class="btn-txt"
               onClick={() => onMissingCapabilityClick("SystemAlertWindow")}
             >
               Enable Overlay Permission
@@ -43,19 +46,13 @@ export const MissingCapabilityView = ({
 
         {missingCapabilities.includes("Accessibility") && (
           <>
-            <p
-              style={{
-                "font-size": "18px",
-                "text-align": "center",
-                "margin-top": "32px",
-              }}
-            >
+            <p class={styles.permissionText}>
               The minded accessibility service is required to detect app starts
               on your device, so minded knows when to display the interaction
               overlay.
             </p>
             <button
-              style={{ "margin-top": "16px" }}
+              class="btn-txt"
               onClick={() => onMissingCapabilityClick("Accessibility")}
             >
               Enable Accessibility Service
@@ -63,26 +60,20 @@ export const MissingCapabilityView = ({
           </>
         )}
 
-        <p
-          style={{
-            "font-size": "14px",
-            "text-align": "center",
-            "margin-top": "16px",
-          }}
-        >
-          If the buttons above does not work, you can enable the accessibility
-          service and the permission manually in your device settings.
-        </p>
-        <p
-          style={{
-            "font-size": "14px",
-            "text-align": "center",
-            "margin-top": "8px",
-          }}
-        >
-          In case there are problems with the accessibility service, enabling,
-          disabling and then enabling the service again will likely help.
-        </p>
+        {getIsShowManualInstructions() && (
+          <>
+            <p class={styles.smallText}>
+              If the buttons above does not work, you can enable the
+              accessibility service and the permission manually in your device
+              settings.
+            </p>
+            <p class={styles.smallText}>
+              In case there are problems with the accessibility service,
+              enabling, disabling and then enabling the service again will
+              likely help.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

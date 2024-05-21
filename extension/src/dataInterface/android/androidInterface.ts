@@ -14,6 +14,8 @@ interface InteractionWindowJavaScriptInterface {
   hideWindow: () => void;
   requestFocusAndShowKeyboard: () => void;
   getAllApps: () => string;
+  getMissingCapabilities: () => string;
+  onMissingCapabilityClick: (capability: string) => void;
 }
 
 declare const androidMinded: InteractionWindowJavaScriptInterface;

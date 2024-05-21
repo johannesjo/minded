@@ -3,13 +3,23 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.util.Log
 import android.webkit.JavascriptInterface
+import androidx.lifecycle.viewModelScope
+import com.minded.minded.MissingCapability
+import com.minded.minded.util.checkDrawOverlayPermission
+import com.minded.minded.util.isAccessibilityServiceEnabled
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
 open class MainActivityJavaScriptInterface(
     protected val context: Context,
+    protected val onMissingCapabilityClickI: (MissingCapability) -> Unit = {},
+    protected val getMissingCapabilitiesI: () -> List<MissingCapability> = { emptyList<MissingCapability>() },
 ) {
     private val sharedPreferenceService = SharedPreferenceService(context)
+    private var missingCapabilities = emptyList<MissingCapability>()
+
     var logTag = "MainActivityJavaScriptInterface"
 
     @JavascriptInterface
@@ -22,6 +32,20 @@ open class MainActivityJavaScriptInterface(
     fun retrieveDataString(): String? {
         Log.v(logTag, "retrieveString()")
         return sharedPreferenceService.retrieveDataString()
+    }
+
+    @JavascriptInterface
+    fun onMissingCapabilityClick(capability: String) {
+        Log.v(logTag, "onMissingCapabilityClick()")
+        onMissingCapabilityClickI(MissingCapability.valueOf(capability))
+    }
+
+    @JavascriptInterface
+    fun getMissingCapabilities(): String {
+        Log.v(logTag, "getMissingCapabilities()")
+        val jsonArray = JSONArray()
+        getMissingCapabilitiesI().map { it.name }.forEach { jsonArray.put(it) }
+        return jsonArray.toString()
     }
 
     @JavascriptInterface
