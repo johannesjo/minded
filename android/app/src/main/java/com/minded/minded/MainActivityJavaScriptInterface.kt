@@ -80,6 +80,8 @@ open class MainActivityJavaScriptInterface(
                 "com.android.chrome",
                 "com.google.android.youtube"
             )) && app.packageName != context.packageName
+        }.sortedBy { app ->
+            app.loadLabel(packageManager).toString()
         }
     }
 }
