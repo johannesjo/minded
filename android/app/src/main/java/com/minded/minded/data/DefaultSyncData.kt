@@ -10,15 +10,16 @@ val defaultSyncData = SyncData(
         blockedApps = emptyList()
     ),
     answers = emptyList(),
-    lastBlockedTS = 0L,
+    // NOTE: 99 is set to pass isToday check
+    lastBlockedTS = 99L,
     lastBlockedUrl = "",
-    moodCheckTS = 0L,
+    moodCheckTS = 99L,
     moodCheckVal = "",
     moodCheckAdditional = "",
-    energyLvlTS = 0L,
+    energyLvlTS = 99L,
     energyLvlVal = 0,
-    blocked = emptyMap(),
+    sunTaps = emptyMap(),
     attempts = emptyMap(),
-    lastBrowsingBehaviorRatingTS = 0L,
+    lastBrowsingBehaviorRatingTS = 99L,
     browsingBehaviorRating = emptyMap()
 )

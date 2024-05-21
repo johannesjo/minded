@@ -15,6 +15,15 @@ class SharedPreferenceService(context: Context) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
 
+    fun writeDefaultDataIfNecessary() {
+        val hasNoData = hasNoData();
+        Log.v(logTag, "writeDefaultDataIfNecessary() $hasNoData")
+        if (hasNoData) {
+            Log.v(logTag, "writeDefaultDataIfNecessary(): No data found, saving default data")
+            saveSyncData(defaultSyncData)
+        }
+    }
+
     fun saveString(key: String, value: String) {
         with(sharedPreferences.edit()) {
             putString(key, value)
@@ -26,9 +35,16 @@ class SharedPreferenceService(context: Context) {
         return sharedPreferences.getString(key, null)
     }
 
+    fun hasNoData(): Boolean {
+        val res = sharedPreferences.getString(DB_KEY, null);
+        Log.v(logTag, "hasNoData() $res")
+        return res == null || res == "{}"
+    }
+
     fun getSyncData(): SyncData {
         return try {
             val allStr = retrieveString(DB_KEY)
+            Log.v(logTag, "getSyncData() allStr $allStr ")
             parseSyncData(allStr!!)
         } catch (e: Exception) {
             // Log the exception if necessary
@@ -60,14 +76,30 @@ class SharedPreferenceService(context: Context) {
         return syncData.cfg.blockedApps
     }
 
-    fun countLittleSunTap() {
+    fun countUserDrivenClose() {
+        val syncData = getSyncData()
+        val isoDateToday = getIsoDate()
+
+        val updatedSunTaps = syncData.sunTaps.toMutableMap().apply {
+            this[isoDateToday] = this.getOrDefault(isoDateToday, 0) + 1
+        }
+        Log.v(logTag, "countUserDrivenClose() updatedSunTaps: $updatedSunTaps")
+        Log.v(logTag, "countUserDrivenClose() isoDateToday: $isoDateToday")
+        Log.v(logTag, "countUserDrivenClose() syncData: $syncData")
+        val updatedSyncData = syncData.copy(sunTaps = updatedSunTaps)
+        saveSyncData(updatedSyncData)
+    }
+
+    fun countAppUsageAttempt() {
         val syncData = getSyncData()
         val isoDateToday = getIsoDate()
 
         val updatedAttempts = syncData.attempts.toMutableMap().apply {
             this[isoDateToday] = this.getOrDefault(isoDateToday, 0) + 1
         }
-
+        Log.v(logTag, "countAttempt() updatedAttempts: $updatedAttempts")
+        Log.v(logTag, "countAttempt() isoDateToday: $isoDateToday")
+        Log.v(logTag, "countAttempt() syncData: $syncData")
         val updatedSyncData = syncData.copy(attempts = updatedAttempts)
         saveSyncData(updatedSyncData)
     }

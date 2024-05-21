@@ -24,6 +24,8 @@ export interface DashboardGroupQuote {
 
 export interface DashboardGroupStats {
   type: DashboardGroupType.Stats;
+  attempts: number;
+  sunTaps: number;
 }
 
 export interface DashboardGroupMood {

@@ -146,9 +146,9 @@ export const countBlockedAttempt = async (): Promise<void> => {
   const syncData = await getSyncData();
   return updateSyncData({
     ...syncData,
-    blocked: {
-      ...syncData.blocked,
-      [ds]: syncData.blocked[ds] ? syncData.blocked[ds] + 1 : 1,
+    sunTaps: {
+      ...syncData.sunTaps,
+      [ds]: syncData.sunTaps[ds] ? syncData.sunTaps[ds] + 1 : 1,
     },
   });
 };

@@ -54,7 +54,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         dashboardViewModel = DashboardViewModel()
         sharedOverlayViewModel = SharedOverlayViewModel();
+        // NOTE: initialization should be enough to write data
         sharedPreferenceService = SharedPreferenceService(this)
+        sharedPreferenceService.writeDefaultDataIfNecessary();
 
         interactionOverlayWindow =
             InteractionWindow(this, sharedOverlayViewModel, windowManager)
@@ -293,6 +295,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     fun userDrivenClose(isSkipShowSuccessSunAfter: Boolean = false) {
         Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        sharedPreferenceService.countUserDrivenClose()
         // we do this to let the sun animation finish, sun is supposed to close itself after
         if (isSkipShowSuccessSunAfter) {
             hideOverlay(OverlayName.LITTLE_SUN_OVERLAY)

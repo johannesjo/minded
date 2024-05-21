@@ -27,7 +27,7 @@ data class SyncData(
     val moodCheckAdditional: String,
     val energyLvlTS: Long,
     val energyLvlVal: Int,
-    val blocked: Map<String, Int>,
+    val sunTaps: Map<String, Int>,
     val attempts: Map<String, Int>,
     val lastBrowsingBehaviorRatingTS: Long,
     val browsingBehaviorRating: Map<String, Int>
@@ -69,8 +69,8 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val energyLvlTS = jsonObject.getLong("energyLvlTS")
     val energyLvlVal = jsonObject.getInt("energyLvlVal")
 
-    val blocked = jsonObject.getJSONObject("blocked").let { blockedObject ->
-        blockedObject.keys().asSequence().associateWith { blockedObject.getInt(it) }
+    val sunTaps = jsonObject.getJSONObject("sunTaps").let { sunTapsObject ->
+        sunTapsObject.keys().asSequence().associateWith { sunTapsObject.getInt(it) }
     }
 
     val attempts = jsonObject.getJSONObject("attempts").let { attemptsObject ->
@@ -94,7 +94,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         moodCheckAdditional,
         energyLvlTS,
         energyLvlVal,
-        blocked,
+        sunTaps,
         attempts,
         lastBrowsingBehaviorRatingTS,
         browsingBehaviorRating

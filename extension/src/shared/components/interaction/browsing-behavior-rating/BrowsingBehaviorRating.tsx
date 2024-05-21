@@ -46,7 +46,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
           <div>
             <div class="minded-6622-txt-big">
               {IS_ANDROID
-                ? "How would you rate your recent usage of the apps you blocked"
+                ? "How would you rate your recent usage of the apps you sunTaps"
                 : "How would you rate your recent browsing behavior?"}
             </div>
             <div class="minded-6622-browsing-behavior-rating-btns">
