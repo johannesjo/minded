@@ -26,7 +26,7 @@ open class MainActivityJavaScriptInterface(
     var logTag = "MainActivityJavaScriptInterface"
 
     @JavascriptInterface
-    fun saveDataString(key: String, value: String) {
+    fun saveDataString(value: String) {
         Log.v(logTag, "saveString() $value")
         sharedPreferenceService.saveDataString(value)
     }

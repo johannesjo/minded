@@ -73,6 +73,7 @@ class SharedPreferenceService(context: Context) {
 
     fun getBlockedApps(): List<String> {
         val syncData = getSyncData()
+        Log.v(logTag, "getBlockedApps() syncData.cfg.blockedApps: ${syncData.cfg.blockedApps}")
         return syncData.cfg.blockedApps
     }
 
