@@ -51,14 +51,8 @@ class MainActivity : AppCompatActivity() {
         Log.v("MAIN", "ON_CREATE MAIN ACTIVITY")
         val viewModelFactory = DashboardViewModelFactory()
         sharedPreferenceService = SharedPreferenceService(this)
+        sharedPreferenceService.writeDefaultDataIfNecessary()
 
-        if(sharedPreferenceService.hasNoData()){
-
-        }
-
-        if(sharedPreferenceService.retrieveString("mindedAll") == null) {
-            sharedPreferenceService.saveString("mindedAll", "{}")
-        }
 
         dashboardViewModel =
             ViewModelProvider(this, viewModelFactory)[DashboardViewModel::class.java]
