@@ -13,9 +13,7 @@ const isDev = process.env.__DEV__ === "true";
 const publicDir = resolve(__dirname, "public");
 const pagesDir = resolve(root, "pages");
 // const outDirDroid = resolve(__dirname, "distDroid");
-const outDirDroid = resolve(
-  "../android/app/src/main/assets/web/",
-);
+const outDirDroid = resolve("../android/app/src/main/assets/web/");
 const dataInterfaceExtension = resolve(root, "dataInterface", "extension");
 const dataInterfaceDroid = resolve(root, "dataInterface", "android");
 
