@@ -1,4 +1,4 @@
-import { createSignal, JSX } from "solid-js";
+import { createSignal, For, JSX } from "solid-js";
 // @ts-ignore
 import styles from "./AnswerListEditable.module.scss";
 import { Answer } from "@src/dataInterface/syncData";
@@ -21,13 +21,15 @@ export const AnswerListEditable: (props: {
 
   return (
     <div class={styles.AnswerListEditable}>
-      {props.answers.map((answer, i) => (
-        <AnswerEntry
-          answer={answer}
-          onEdit={(upd) => props.onEdit(upd)}
-          onRemove={() => props.onRemove(answer.id)}
-        />
-      ))}
+      <For each={props.answers}>
+        {(answer, i) => (
+          <AnswerEntry
+            answer={answer}
+            onEdit={(upd) => props.onEdit(upd)}
+            onRemove={() => props.onRemove(answer.id)}
+          />
+        )}
+      </For>
 
       {props.isShowAdd && (
         <div class={styles.addItem}>
