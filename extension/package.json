@@ -1,6 +1,6 @@
 {
   "name": "minded",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "'minded' will help you fight social media addiction, doom-scrolling and procrastination and to focus on what really counts.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "lint": "eslint .. --fix -c .eslintrc --ext js,ts --ignore-pattern='!.*'",
     "build": "vite build && npm run pack",
     "buildDroid": "vite build --mode android && /bin/rm -rf ../android/app/src/main/assets/web/*;  /bin/cp -r distDroid/* ../../AndroidStudioProjects/Minded/app/src/main/assets/web",
-    "pack": "rm minded.zip; cd dist && zip -r ../minded.zip ..",
+    "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
     "clean": "rimraf dist",
     "test": "jest",
     "dev:nodemon": "nodemon"
