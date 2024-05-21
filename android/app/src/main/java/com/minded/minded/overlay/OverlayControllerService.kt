@@ -18,7 +18,6 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
-import com.minded.minded.ui.model.DashboardViewModel
 import com.minded.minded.util.parseSyncData
 import java.time.Instant
 
@@ -39,7 +38,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         _savedStateRegistryController.savedStateRegistry
     override val lifecycle: Lifecycle = _lifecycleRegistry
 
-    private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var sharedOverlayViewModel: SharedOverlayViewModel
 
 
@@ -52,7 +50,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     override fun onCreate() {
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        dashboardViewModel = DashboardViewModel()
         sharedOverlayViewModel = SharedOverlayViewModel();
         // NOTE: initialization should be enough to write data
         sharedPreferenceService = SharedPreferenceService(this)

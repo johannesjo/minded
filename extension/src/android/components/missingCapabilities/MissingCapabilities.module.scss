@@ -1,0 +1,30 @@
+.container {
+  padding: 16px;
+  text-align: center;
+  font-size: var(--fz-l);
+}
+
+.innerContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.introText {
+}
+
+.permissionText {
+  font-size: var(--fz-l);
+  margin-top: 32px;
+}
+
+.permissionButton {
+  margin-top: 16px;
+}
+
+.smallText {
+  font-size: var(--fz-s);
+  margin-top: 16px;
+}

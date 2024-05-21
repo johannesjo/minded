@@ -36,10 +36,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-                android:name=".AppPickerActivity"
-                android:exported="false"
-                android:label="@string/title_activity_app_picker" />
 
         <service
                 android:name=".overlay.OverlayControllerService"
