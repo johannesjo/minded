@@ -1,4 +1,6 @@
-import { IS_ANDROID } from "@src/dataInterface/extension/isAndroid";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 interface InteractionWindowJavaScriptInterface {
   onSuccessSunTap: () => void;
@@ -16,6 +18,6 @@ interface InteractionWindowJavaScriptInterface {
 
 declare const androidMinded: InteractionWindowJavaScriptInterface;
 
-export const androidInterface = IS_ANDROID ? androidMinded : ({} as any);
+export const androidInterface = IS_ANDROID ? androidMinded : ({} as never);
 
 export const ANDROID_EV_RESUME = "androidAppResume";
