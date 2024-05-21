@@ -6,8 +6,8 @@ import { SyncData } from "@src/dataInterface/syncData";
 import { hasHappenedInLastXDay, isToday } from "@src/util/isToday";
 import { isXIn1 } from "@src/util/isXIn1";
 
-const LAST_MOOD_CHECKIN_MIN_GAP = 30 * 60 * 1000;
-const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 30 * 60 * 1000;
+const LAST_MOOD_CHECKIN_MIN_GAP = 60 * 60 * 1000;
+const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 60 * 60 * 1000;
 const LAST_ENERGY_LVL_CHECKIN_BOOST_GAP = 12 * 60 * 60 * 1000;
 const LAST_BROWSING_RATING_MIN_GAP = 8 * 60 * 1000;
 
@@ -32,7 +32,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
 
   if (
     (!isToday(syncData.moodCheckTS) && isXIn1(0.4)) ||
-    (nowTS - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP && isXIn1(0.1))
+    (nowTS - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP && isXIn1(0.05))
   ) {
     return "MOOD_CHECKIN";
   }
@@ -62,7 +62,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
       isXIn1(0.5)) ||
     (nowTS - syncData.lastBrowsingBehaviorRatingTS >
       LAST_BROWSING_RATING_MIN_GAP &&
-      isXIn1(0.1))
+      isXIn1(0.05))
   ) {
     return "BROWSING_BEHAVIOR_RATING";
   }
