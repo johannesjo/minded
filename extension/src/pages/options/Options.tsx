@@ -1,18 +1,13 @@
 import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
-import { onMount } from "solid-js";
-import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 
 const Options = () => {
   const onAfterSave = () => {
     alert("The settings have been saved!");
     window?.history?.back();
   };
-  onMount(() => {
-    addDayTimeDependentClass();
-  });
 
   return (
-    <div id="minded-6622-coloured-wrapper">
+    <div>
       <h2>minded – Settings</h2>
       <br />
       <h3>list of websites to handle</h3>

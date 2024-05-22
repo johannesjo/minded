@@ -83,6 +83,11 @@
   &:hover {
     background: var(--btn-bg);
   }
+
+  &.active {
+    opacity: .8;
+    background: var(--btn-bg);
+  }
 }
 
 

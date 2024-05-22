@@ -1,9 +1,9 @@
-import { useNavigate } from "@solidjs/router";
-
-import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onMount } from "solid-js";
+// @ts-ignore
+import styles from "./Feedback.module.scss";
 
 const Feedback = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [mailtoLink, setMailtoLink] = createSignal("");
 
   onMount(() => {
@@ -29,7 +29,7 @@ Other comments:
   });
 
   return (
-    <div>
+    <div class={styles.wrapper}>
       <p class="txt-big">
         <em>minded</em> is very young, so we'd appreciate some feedback!
       </p>
@@ -39,11 +39,11 @@ Other comments:
           Send us a quick email
         </a>
       </div>
-      <div style="margin-top: 16px">
-        <button class="btn-txt" onClick={() => navigate("/")}>
-          back
-        </button>
-      </div>
+      {/*<div style="margin-top: 16px">*/}
+      {/*  <button class="btn-txt" onClick={() => navigate("/")}>*/}
+      {/*    back*/}
+      {/*  </button>*/}
+      {/*</div>*/}
     </div>
   );
 };
