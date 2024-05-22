@@ -12,13 +12,17 @@ const LAST_ENERGY_LVL_CHECKIN_BOOST_GAP = 12 * 60 * 60 * 1000;
 const LAST_BROWSING_RATING_MIN_GAP = 8 * 60 * 1000;
 const ENERGY_LVL_MAX_HOURS = 19;
 
+const SMALL_CHANCE = 0.1;
+const TINY_CHANCE = 0.01;
+
 export type InteractionMode =
   | "ENERGY_LVL"
   | "BROWSING_BEHAVIOR_RATING"
   | "ACTION_ADVICE"
   | "EMOJI_CHECKIN"
   | "QUESTION"
-  | "MOOD_CHECKIN";
+  | "MOOD_CHECKIN"
+  | "SELF_REFLECTION_RATING";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "BROWSING_BEHAVIOR_RATING";
@@ -26,14 +30,20 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "MOOD_CHECKIN";
   // return "ENERGY_LVL";
   // return "EMOJI_CHECKIN";
+  // return "SELF_REFLECTION_RATING";
 
   const now = new Date();
   const nowTS = Date.now();
   const nowHours = now.getHours();
 
+  if (isXIn1(SMALL_CHANCE)) {
+    return "SELF_REFLECTION_RATING";
+  }
+
   if (
     (!isToday(syncData.moodCheckTS) && isXIn1(0.4)) ||
-    (nowTS - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP && isXIn1(0.05))
+    (nowTS - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP &&
+      isXIn1(TINY_CHANCE))
   ) {
     return "MOOD_CHECKIN";
   }
@@ -43,7 +53,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
     ((nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_BOOST_GAP &&
       isXIn1(0.3)) ||
       (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
-        isXIn1(0.05)))
+        isXIn1(TINY_CHANCE)))
   ) {
     return "ENERGY_LVL";
   }
@@ -64,7 +74,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
       isXIn1(0.5)) ||
     (nowTS - syncData.lastBrowsingBehaviorRatingTS >
       LAST_BROWSING_RATING_MIN_GAP &&
-      isXIn1(0.05))
+      isXIn1(TINY_CHANCE))
   ) {
     return "BROWSING_BEHAVIOR_RATING";
   }
