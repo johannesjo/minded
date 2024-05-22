@@ -1,7 +1,7 @@
 import { HashRouter, Route } from "@solidjs/router";
 import React from "react";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
-import { onMount } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -10,15 +10,42 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { SettingsAndroid } from "@src/shared/components/settings/SettingsAndroid";
 import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
 import Feedback from "@src/shared/components/feedback/Feedback";
+import BottomBar from "@src/shared/components/dashboard/BottomBar";
+import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 
-const RoutesCmp = () => {
+const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
+  const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
+    createSignal<boolean>(false);
+
   onMount(() => {
     addDayTimeDependentClass();
   });
 
   return (
+    <>
+      {props.children}
+
+      <BottomBar onShowQuestion={() => setIsShowQuestionOverlay(true)} />
+
+      {getIsShowQuestionOverlay() && (
+        <InteractionOverlay
+          onPossibleNewData={() => {
+            window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
+          }}
+          onHideInteraction={() => {
+            setIsShowQuestionOverlay(false);
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+const RoutesCmp = () => {
+  return (
     <div id="minded-6622-coloured-wrapper">
-      <HashRouter>
+      <HashRouter root={MainWrapper as any}>
         <Route path="*" component={Dashboard} />
         <Route
           path="/questionCategory/:questionCategoryId"
