@@ -2,7 +2,7 @@
 @import "@src/styles/sharedForInteraction.scss";
 
 #minded-6622 {
-  animation: minded6622fadeInAnimation ease .2s;
+  animation: minded6622fadeIn ease .2s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   cursor: crosshair;
@@ -13,11 +13,4 @@
   cursor: crosshair;
 }
 
-@keyframes minded6622fadeInAnimation {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
+

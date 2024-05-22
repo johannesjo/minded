@@ -80,11 +80,15 @@
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     opacity: 0;
-    animation: minded6622fadeInAnimation ease 2s;
+    animation: minded6622fadeIn ease 2s;
     animation-delay: 1.5s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
     margin: 32px;
+
+    :global {
+      animation-name: minded6622fadeIn;
+    }
   }
 
   &:nth-child(5) {
@@ -133,15 +137,6 @@
 .standardHeading {
   @include h4();
   margin-top: 0;
-}
-
-@keyframes minded6622fadeInAnimation {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
 }
 
 
