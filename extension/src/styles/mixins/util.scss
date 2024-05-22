@@ -20,10 +20,10 @@
 
 
 @mixin inDarkMode($childSelector:  false) {
-  :global(#minded-6622.dark) & {
+  :global(#minded-6622.minded-6622-dark) & {
     @content
   }
-  #minded-6622.dark & {
+  #minded-6622.minded-6622-dark & {
     @content
   }
 }
