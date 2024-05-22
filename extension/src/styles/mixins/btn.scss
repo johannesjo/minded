@@ -75,6 +75,15 @@ $extraClickArea: 8px;
   }
 }
 
+@mixin btnIcoOnly($height: var(--btn-height)) {
+  @include btnIco($height);
+  background: none;
+
+  &:hover {
+    background: var(--btn-bg);
+  }
+}
+
 
 @mixin btnTxt() {
   @include btn;

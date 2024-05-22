@@ -30,6 +30,13 @@
   }
 }
 
+.btn-ico-only {
+  &,
+  #minded-6622 & {
+    @include btnIcoOnly(var(--btn-height));
+  }
+}
+
 
 .btn-big {
   &,

@@ -14,7 +14,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
   return (
     <div class={styles.bottomBarWrapper}>
       <div
-        class="btn-ico"
+        class="btn-ico-only"
         title="Get asked a question"
         onClick={() => {
           props.onShowQuestion();
@@ -24,14 +24,14 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
       </div>
       <div
         title="Go to settings page"
-        class="btn-ico"
+        class="btn-ico-only"
         onClick={() => navigate("/settings")}
       >
         <img src={settingsSvg} />
       </div>
       <div
         title="Give us somet feedback"
-        class="btn-ico"
+        class="btn-ico-only"
         onClick={() => navigate("/feedback")}
       >
         <img src={feedbackSvg} />
