@@ -9,6 +9,7 @@ import { QuestionCategoryView } from "@src/shared/components/questionCategoryVie
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { SettingsAndroid } from "@src/shared/components/settings/SettingsAndroid";
 import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
+import Feedback from "@src/shared/components/feedback/Feedback";
 
 const RoutesCmp = () => {
   onMount(() => {
@@ -25,6 +26,7 @@ const RoutesCmp = () => {
         />
         {IS_ANDROID && <Route path="/settings" component={SettingsAndroid} />}
         {!IS_ANDROID && <Route path="/settings" component={SettingsWeb} />}
+        <Route path="/feedback" component={Feedback} />
       </HashRouter>
     </div>
   );
