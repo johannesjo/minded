@@ -20,6 +20,8 @@ $extraClickArea: 8px;
   position: relative;
   user-select: none;
   transition: all 50ms;
+  font-weight: normal;
+  text-decoration: none;
 
   &:focus {
     outline: 0;

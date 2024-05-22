@@ -23,7 +23,7 @@
     "@typescript-eslint"
   ],
   "rules": {
-
+    "ban-ts-comment": false
   },
   "globals": {
     "chrome": "readonly"
