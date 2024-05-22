@@ -7,29 +7,29 @@ export enum MoodCheckinVal {
 }
 
 export interface MoodCheckinOption {
-  id: MoodCheckinVal;
+  val: MoodCheckinVal;
   txt: string;
 }
 
-export const MOOD_CHECKIN_OPTIONS = [
+export const MOOD_CHECKIN_OPTIONS: MoodCheckinOption[] = [
   {
-    id: MoodCheckinVal.Great,
+    val: MoodCheckinVal.Great,
     txt: "Great",
   },
   {
-    id: MoodCheckinVal.Good,
+    val: MoodCheckinVal.Good,
     txt: "Good",
   },
   {
-    id: MoodCheckinVal.Okay,
+    val: MoodCheckinVal.Okay,
     txt: "Okay",
   },
   {
-    id: MoodCheckinVal.Bad,
+    val: MoodCheckinVal.Bad,
     txt: "Bad",
   },
   {
-    id: MoodCheckinVal.Awful,
+    val: MoodCheckinVal.Awful,
     txt: "Awful",
   },
 ] as const;

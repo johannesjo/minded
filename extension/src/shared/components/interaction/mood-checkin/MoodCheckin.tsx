@@ -8,6 +8,7 @@ import {
 // @ts-expect-error
 import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
+import TglBtns from "@src/shared/components/ui/TglBtns";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;
@@ -30,32 +31,21 @@ export const MoodCheckin: (props: {
 
   return (
     <div id="minded-6622-mood-checkin" onmousemove={props.onCancelCountdown}>
-      <div class="minded-6622-txt-big">How do you feel?</div>
-
-      <div class="minded-6622-mood-checkin-btns">
-        <For each={MOOD_CHECKIN_OPTIONS}>
-          {(opt) => (
-            <div
-              class={
-                getSelectedMood() === opt.id
-                  ? "btn-toggle-select  isSelected"
-                  : "btn-toggle-select"
-              }
-              onclick={() => setSelectedMood(opt.id)}
-            >
-              {opt.txt}
-            </div>
-          )}
-        </For>
+      <div class="txt-big" style="padding-bottom:32px">
+        How do you feel?
       </div>
+
+      <TglBtns
+        options={MOOD_CHECKIN_OPTIONS}
+        onSelect={(v) => setSelectedMood(v)}
+      />
+
       <div
         class={
-          getSelectedMood()
-            ? "minded-6622-textarea-block isVisible"
-            : "minded-6622-textarea-block"
+          getSelectedMood() ? "additional-block isVisible" : "additional-block"
         }
       >
-        <div style="margin-bottom: 16px" class="minded-6622-txt-smaller">
+        <div class="txt-smaller">
           {getSelectedMood() === MoodCheckinVal.Awful ||
           getSelectedMood() === MoodCheckinVal.Bad
             ? "What might help to make you feel better?"

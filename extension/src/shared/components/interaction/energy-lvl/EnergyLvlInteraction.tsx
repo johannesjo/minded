@@ -20,11 +20,10 @@ export const EnergyLvlInteraction: (props: {
   const [getEnergyLvl, setEnergyLvl] = createSignal<number | null>(null);
 
   return (
-    <div
-      id="minded-6622-energy-lvl-interaction"
-      onmouseenter={props.onCancelCountdown}
-    >
-      <div>How would you rate your energy level today?</div>
+    <div onmouseenter={props.onCancelCountdown}>
+      <div class="txt-big" style="padding-bottom:32px;">
+        How would you rate your energy level today?
+      </div>
       <Rating onSetRating={setEnergyLvl} />
 
       <SaveBtn

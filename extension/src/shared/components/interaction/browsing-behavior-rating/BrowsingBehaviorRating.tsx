@@ -11,7 +11,6 @@ import { getRndEntry } from "@src/util/getRndEntry";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 
 // once on app load
@@ -49,12 +48,12 @@ export const BrowsingBehaviorRatingInteraction: (props: {
       <Switch>
         <Match when={getStep() === 0}>
           <div>
-            <div class="minded-6622-txt-big">
+            <div class="txt-big" style="padding-bottom:32px;">
               {IS_ANDROID
                 ? "How would you rate your recent usage of the apps you configured to use less?"
                 : "How would you rate your recent browsing behavior?"}
             </div>
-            <div class="minded-6622-browsing-behavior-rating-btns">
+            <div class="browsing-behavior-rating-btns">
               <For each={BROWSING_BEHAVIOR_OPTIONS}>
                 {(opt) => (
                   <div
@@ -95,7 +94,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
 
         {/*<Match when={getStep() === 1}>*/}
         {/*  <Question*/}
-        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH1)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.val === QID.BBH1)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => setStep(2)}*/}
         {/*    onSkip={() => undefined}*/}
@@ -103,7 +102,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*</Match>*/}
         {/*<Match when={getStep() === 2}>*/}
         {/*  <Question*/}
-        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH2)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.val === QID.BBH2)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => setStep(3)}*/}
         {/*    onSkip={() => undefined}*/}
@@ -111,7 +110,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*</Match>*/}
         {/*<Match when={getStep() === 3}>*/}
         {/*  <Question*/}
-        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH3)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.val === QID.BBH3)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => setStep(4)}*/}
         {/*    onSkip={() => undefined}*/}
@@ -119,7 +118,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
         {/*</Match>*/}
         {/*<Match when={getStep() === 4}>*/}
         {/*  <Question*/}
-        {/*    initialQuestion={QUESTIONS.find((q) => q.id === QID.BBH4)}*/}
+        {/*    initialQuestion={QUESTIONS.find((q) => q.val === QID.BBH4)}*/}
         {/*    onCancelCountdown={props.onCancelCountdown}*/}
         {/*    onSuccessSunTap={() => props.onSuccessSunTap()}*/}
         {/*    onSkip={() => undefined}*/}

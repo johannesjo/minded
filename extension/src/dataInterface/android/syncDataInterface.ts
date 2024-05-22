@@ -121,7 +121,7 @@ export const getSyncData = async (): Promise<SyncData> => {
 
 export const countOpeningAttempt = async (): Promise<void> => {
   // const ds = getIsoDate();
-  // if (bro.runtime?.id) {
+  // if (bro.runtime?.val) {
   //   const syncData = await getSyncData();
   //   return bro.storage.sync.set({
   //     ...syncData,

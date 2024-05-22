@@ -5,7 +5,7 @@ export const updateHostsEntry = async (
   dataForHost: Partial<EntryForHost>,
 ): Promise<void> => {
   console.log("XXX");
-  // if (bro.runtime?.id) {
+  // if (bro.runtime?.val) {
   //   const d = await loadLocalData();
   //   return bro.storage.local.set({
   //     ...d,
@@ -27,7 +27,7 @@ export const updateHostsEntry = async (
 export const saveLocalData = async (localData: LocalData): Promise<void> => {
   console.log("XXX");
 
-  // if (bro.runtime?.id) {
+  // if (bro.runtime?.val) {
   //   return bro.storage.local.set(localData);
   // } else {
   //   throw new Error(
@@ -48,7 +48,7 @@ export const loadDataForHost = async (
 export const loadLocalData = async (): Promise<LocalData> => {
   console.log("XXX");
   return "XXX " as any;
-  // if (bro.runtime?.id) {
+  // if (bro.runtime?.val) {
   //   const d = await bro.storage.local.get();
   //   if (d.hostsData) {
   //     return d as LocalData;

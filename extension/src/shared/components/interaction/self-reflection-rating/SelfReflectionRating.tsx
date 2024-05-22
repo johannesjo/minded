@@ -1,11 +1,11 @@
-import { createSignal, For, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 import {
   SELF_REFLECTION_ANSWERS,
   SELF_REFLECTION_QUESTIONS,
-  SelfReflectionAnswer,
   SelfReflectionAnswerVal,
 } from "./selfReflection.model";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
+import TglBtns from "@src/shared/components/ui/TglBtns";
 
 const SelfReflectionRating = (props: {
   onSuccess: () => void;
@@ -25,10 +25,6 @@ const SelfReflectionRating = (props: {
     setSelectedQuestion(SELF_REFLECTION_QUESTIONS[randomIndex]);
   });
 
-  const handleAnswerClick = (answer: SelfReflectionAnswer) => {
-    setSelectedAnswerVal(answer.val);
-  };
-
   const handleSaveClick = () => {
     if (getSelectedAnswerVal()) {
       // Reset the selected question and answer
@@ -43,24 +39,14 @@ const SelfReflectionRating = (props: {
 
   return (
     <div onmousemove={props.onCancelCountdown}>
-      <div class="minded-6622-txt-big" style="padding-bottom: 32px;">
+      <div class="txt-big" style="padding-bottom: 32px;">
         Recently {getSelectedQuestion().question}
       </div>
 
-      <For each={SELF_REFLECTION_ANSWERS}>
-        {(answer) => (
-          <button
-            class={
-              getSelectedAnswerVal() === answer.val
-                ? "btn-toggle-select  isSelected"
-                : "btn-toggle-select"
-            }
-            onClick={() => handleAnswerClick(answer)}
-          >
-            {answer.txt}
-          </button>
-        )}
-      </For>
+      <TglBtns
+        options={SELF_REFLECTION_ANSWERS}
+        onSelect={(v) => setSelectedAnswerVal(v)}
+      />
 
       <SaveBtn onSave={handleSaveClick} isVisible={!!getSelectedAnswerVal()} />
     </div>
