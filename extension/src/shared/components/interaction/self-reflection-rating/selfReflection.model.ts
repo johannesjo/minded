@@ -58,7 +58,7 @@ export const SELF_REFLECTION_QUESTIONS: SelfReflectionQuestion[] = [
   { id: SelfReflectionQuestionId.ENJOYED_LIFE, question: "I enjoyed life" },
 ];
 
-type SelfReflectionAnswerVal = 1 | 2 | 3 | 4;
+export type SelfReflectionAnswerVal = 1 | 2 | 3 | 4;
 
 export interface SelfReflectionAnswer {
   txt: string;
@@ -66,8 +66,8 @@ export interface SelfReflectionAnswer {
 }
 
 export const SELF_REFLECTION_ANSWERS: SelfReflectionAnswer[] = [
-  { txt: "never or almost never", val: 1 },
+  { txt: "(almost) never", val: 1 },
   { txt: "sometimes", val: 2 },
   { txt: "often", val: 3 },
-  { txt: "always or almost always", val: 4 },
+  { txt: "(almost) always", val: 4 },
 ];
