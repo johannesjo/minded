@@ -47,6 +47,10 @@
   .fadeIn {
     animation: minded6622fadeIn ease 1s;
   }
+
+  .pageTransitionIn {
+    @include standardPageTransitionIn();
+  }
 }
 
 

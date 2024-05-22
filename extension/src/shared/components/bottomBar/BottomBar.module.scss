@@ -9,8 +9,16 @@
 
   background: rgba(255, 255, 255, 0.6);
 
-  > div {
+
+  > a,
+  > div,
+  > button {
     margin-left: 8px;
+    animation: minded6622fadeIn ease 200ms;
+
+    :global {
+      animation-name: minded6622fadeIn;
+    }
 
     &:first-child {
       margin-left: 0;

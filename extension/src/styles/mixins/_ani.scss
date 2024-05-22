@@ -1,0 +1,7 @@
+@mixin standardPageTransitionIn (){
+  animation: minded6622fadeIn ease 1000ms;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
+}

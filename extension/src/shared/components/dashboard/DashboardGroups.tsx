@@ -65,6 +65,8 @@ export const DashboardGroups: (props: {
       nr-of-items={getDashboardGroups().length}
       class={styles.DashboardGroups}
     >
+      {/* TODO refactor */}
+      {/* eslint-disable-next-line solid/prefer-for */}
       {getDashboardGroups().map((dg, index) => (
         <div
           class={`${styles.box} ${

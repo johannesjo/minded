@@ -10,7 +10,7 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { SettingsAndroid } from "@src/shared/components/settings/SettingsAndroid";
 import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
 import Feedback from "@src/shared/components/feedback/Feedback";
-import BottomBar from "@src/shared/components/dashboard/BottomBar";
+import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 
