@@ -1,5 +1,20 @@
 
 #minded-6622-mood-checkin {
+
+  .txt-big {
+    padding-bottom: 32px;
+
+    @include onSmallScreens() {
+      padding-bottom: 16px !important;
+    }
+  }
+
+  .btn-wrapper > div {
+    @include onSmallScreens() {
+      padding-top: 20px !important;
+    }
+  }
+
   input {
     @include formInput();
     margin: auto;

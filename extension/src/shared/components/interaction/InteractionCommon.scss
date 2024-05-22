@@ -70,9 +70,13 @@
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: auto;
-  padding: 32px;
   width: 990px;
   max-width: 100%;
+  padding: 32px;
+
+  @include onSmallScreens() {
+    padding: 16px;
+  }
 }
 
 

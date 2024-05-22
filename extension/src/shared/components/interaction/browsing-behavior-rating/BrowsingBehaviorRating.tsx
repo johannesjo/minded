@@ -40,6 +40,7 @@ export const BrowsingBehaviorRatingInteraction: (props: {
     ),
   );
 
+  // TODO REPLACE WITH BTN TOGGLE COMPONENT
   return (
     <div
       id="minded-6622-browsing-behavior-rating"
