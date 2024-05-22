@@ -113,7 +113,7 @@ $extraClickArea: 8px;
   &.isSelected {
     background: var(--btn-bg-selected);
     opacity: 1;
-    font-weight: 500;
+    //font-weight: 500;
     border-radius: 16px;
     transform: scale(var(--btn-selected-scale));
   }

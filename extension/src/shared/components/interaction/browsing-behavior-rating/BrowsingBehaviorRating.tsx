@@ -58,8 +58,8 @@ export const BrowsingBehaviorRatingInteraction: (props: {
                   <div
                     class={
                       getBrowsingBehaviorRating() === opt.val
-                        ? "minded-6622-browsing-behavior-rating-btn isSelected"
-                        : "minded-6622-browsing-behavior-rating-btn"
+                        ? "btn-toggle-select isSelected"
+                        : "btn-toggle-select"
                     }
                     onClick={() => {
                       setBrowsingBehaviorRating(opt.val);

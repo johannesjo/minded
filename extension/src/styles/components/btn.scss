@@ -52,3 +52,7 @@
     padding: 0 10px;
   }
 }
+
+.btn-toggle-select {
+  @include btnToggleSelect();
+}

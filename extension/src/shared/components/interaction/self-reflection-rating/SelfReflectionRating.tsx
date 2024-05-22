@@ -3,6 +3,7 @@ import {
   SELF_REFLECTION_ANSWERS,
   SELF_REFLECTION_QUESTIONS,
   SelfReflectionAnswer,
+  SelfReflectionAnswerVal,
 } from "./selfReflection.model";
 
 const SelfReflectionRating = (props: {
@@ -10,11 +11,11 @@ const SelfReflectionRating = (props: {
   onSkip: () => void;
   onCancelCountdown: () => void;
 }): JSX.Element => {
-  const [selectedQuestion, setSelectedQuestion] = createSignal(
+  const [getSelectedQuestion, setSelectedQuestion] = createSignal(
     SELF_REFLECTION_QUESTIONS[0],
   );
-  const [selectedAnswer, setSelectedAnswer] =
-    createSignal<SelfReflectionAnswer | null>(null);
+  const [getSelectedAnswerVal, setSelectedAnswerVal] =
+    createSignal<SelfReflectionAnswerVal | null>(null);
 
   onMount(() => {
     const randomIndex = Math.floor(
@@ -24,34 +25,56 @@ const SelfReflectionRating = (props: {
   });
 
   const handleAnswerClick = (answer: SelfReflectionAnswer) => {
-    setSelectedAnswer(answer);
+    setSelectedAnswerVal(answer.val);
   };
 
   const handleSaveClick = () => {
-    if (selectedAnswer()) {
-      // Submit the selected answer here
-      console.log(
-        `Question: ${selectedQuestion().question}, Answer: ${selectedAnswer().txt}`,
-      );
-
+    if (getSelectedAnswerVal()) {
       // Reset the selected question and answer
-      const randomIndex = Math.floor(
-        Math.random() * SELF_REFLECTION_QUESTIONS.length,
-      );
-      setSelectedQuestion(SELF_REFLECTION_QUESTIONS[randomIndex]);
-      setSelectedAnswer(null);
+      // const randomIndex = Math.floor(
+      //   Math.random() * SELF_REFLECTION_QUESTIONS.length,
+      // );
+      // setSelectedQuestion(SELF_REFLECTION_QUESTIONS[randomIndex]);
+      setSelectedAnswerVal(null);
+      props.onSuccess();
     }
   };
 
   return (
-    <div>
-      <h2>{selectedQuestion().question}</h2>
+    <div onmousemove={props.onCancelCountdown}>
+      <div class="minded-6622-txt-big" style="padding-bottom: 32px;">
+        Recently {getSelectedQuestion().question}
+      </div>
+
       {SELF_REFLECTION_ANSWERS.map((answer) => (
-        <button onClick={() => handleAnswerClick(answer)}>{answer.txt}</button>
+        <button
+          class={
+            getSelectedAnswerVal() === answer.val
+              ? "btn-toggle-select  isSelected"
+              : "btn-toggle-select"
+          }
+          onClick={() => handleAnswerClick(answer)}
+        >
+          {answer.txt}
+        </button>
       ))}
-      <button onClick={handleSaveClick} disabled={!selectedAnswer()}>
-        Save
-      </button>
+
+      <div
+        style="padding-top: 32px; pointer-events: all;"
+        class={
+          getSelectedAnswerVal()
+            ? "save-btn-wrapper isVisible"
+            : "save-btn-wrapper"
+        }
+      >
+        <button
+          class="btn-big"
+          onClick={handleSaveClick}
+          disabled={!getSelectedAnswerVal()}
+        >
+          Save
+        </button>
+      </div>
     </div>
   );
 };

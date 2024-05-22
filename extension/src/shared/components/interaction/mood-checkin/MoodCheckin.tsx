@@ -35,8 +35,8 @@ export const MoodCheckin: (props: {
           <div
             class={
               getSelectedMood() === opt.id
-                ? "minded-6622-mood-checkin-btn isSelected"
-                : "minded-6622-mood-checkin-btn"
+                ? "btn-toggle-select  isSelected"
+                : "btn-toggle-select"
             }
             onclick={() => setSelectedMood(opt.id)}
           >
