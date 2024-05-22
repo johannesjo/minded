@@ -28,6 +28,7 @@ import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
+import SelfReflectionRating from "@src/shared/components/interaction/self-reflection-rating/SelfReflectionRating";
 
 interface InteractionCommonProps {
   isReducedSuccessSun?: boolean;
@@ -197,6 +198,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       <div id="minded-6622-interaction-wrapper-box">
         <Switch>
+          <Match when={getMode() === "SELF_REFLECTION_RATING"}>
+            <SelfReflectionRating
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onInteractionSuccess}
+              onSkip={props.onSkip}
+            />
+          </Match>
           <Match when={getMode() === "MOOD_CHECKIN"}>
             <MoodCheckin
               onCancelCountdown={cancelCountdown}
