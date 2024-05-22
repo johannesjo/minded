@@ -57,6 +57,11 @@
   }
 }
 
+#minded-6622-success-sun.reducedSuccessSun div:first-child {
+  --success-sun-ani-scale-1: var(--success-sun-reduced-ani-scale-1);
+  animation-duration: 400ms;
+}
+
 
 #minded-6622-interaction-wrapper-box {
   pointer-events: none;

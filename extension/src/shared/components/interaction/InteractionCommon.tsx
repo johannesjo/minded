@@ -46,9 +46,12 @@ interface InteractionCommonProps {
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
+// NOTE: ani in needs to match css value for smoothness
 const SUCCESS_SUN_ANI_IN_DURATION = 800;
 const SUCCESS_SUN_STAY_DURATION = 3600;
 const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
+const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 400;
+const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 200;
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
@@ -132,11 +135,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setIsShowSuccessSun(true);
 
     if (props.isReducedSuccessSun) {
-      successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
-      await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
+      successSunEl.style.animationDuration = `${SUCCESS_SUN_REDUCED_ANI_IN_DURATION}ms`;
+      await promiseTimeout(SUCCESS_SUN_REDUCED_ANI_IN_DURATION);
       successSunSunEl.style.animationDuration = `0s`;
       successSunSunEl.style.animationFillMode = `forwards`;
-      await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION * 0.2)
+      await fadeOut(props.wrapperEl, SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION)
         .promise;
     } else {
       // wait for sun
@@ -175,6 +178,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       {getIsShowSuccessSun() && (
         <div
           id="minded-6622-success-sun"
+          class={props.isReducedSuccessSun ? "reducedSuccessSun" : ""}
           ref={successSunEl}
           title="Click sun to close tab"
           onclick={onSuccessSunTap}
