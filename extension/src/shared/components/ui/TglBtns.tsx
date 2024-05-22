@@ -12,7 +12,7 @@ const TglBtns = <T,>(props: {
   const [getSelectedVal, setSelectedVal] = createSignal<T | null>(null);
 
   return (
-    <div>
+    <div style="margin-right: -8px; margin-left: -8px;">
       <For each={props.options}>
         {(option) => (
           <div
