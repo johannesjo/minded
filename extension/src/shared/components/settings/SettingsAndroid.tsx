@@ -61,7 +61,7 @@ export const SettingsAndroid = () => {
 
       <div>
         <button
-          class="btn-big"
+          class="btnTxtBig"
           style="margin-right: 16px;"
           onClick={() => navigate("/")}
         >
@@ -69,7 +69,7 @@ export const SettingsAndroid = () => {
         </button>
 
         <button
-          class="btn-big"
+          class="btnTxtBig"
           disabled={!getSelectedApps()?.length}
           onClick={handleSave}
         >

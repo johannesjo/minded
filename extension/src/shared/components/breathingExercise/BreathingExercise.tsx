@@ -40,7 +40,7 @@ const BreathingExercise = () => {
     <div id="minded-6622-coloured-wrapper">
       <h1>{stage()}</h1>
       <p>{timeLeft()} seconds left</p>
-      <button onClick={startExercise} class="btn">
+      <button onClick={startExercise} class="btnTxt">
         Start
       </button>
     </div>

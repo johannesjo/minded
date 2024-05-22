@@ -81,7 +81,7 @@ export const AnswerEntry: (props: {
             autofocus={true}
           />
           <button
-            class="btn-ico-small"
+            class="btnIcoSmall"
             title="Remove"
             onMouseDown={(ev) => {
               // NOTE we use mousedown since it is fired before blur
