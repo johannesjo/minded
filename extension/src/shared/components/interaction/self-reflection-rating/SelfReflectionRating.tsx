@@ -5,6 +5,7 @@ import {
   SelfReflectionAnswer,
   SelfReflectionAnswerVal,
 } from "./selfReflection.model";
+import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 
 const SelfReflectionRating = (props: {
   onSuccess: () => void;
@@ -59,21 +60,25 @@ const SelfReflectionRating = (props: {
         </button>
       ))}
 
-      <div
-        style="padding-top: 32px; pointer-events: all;"
-        class={
-          getSelectedAnswerVal()
-            ? "save-btn-wrapper isVisible"
-            : "save-btn-wrapper"
-        }
-      >
-        <button
-          class="btn-big"
-          onClick={handleSaveClick}
-          disabled={!getSelectedAnswerVal()}
-        >
-          Save
-        </button>
+      <div>
+        <ButtonWrapper isVisible={!!getSelectedAnswerVal()}>
+          <button
+            class="btn-big"
+            onClick={handleSaveClick}
+            disabled={!getSelectedAnswerVal()}
+          >
+            ➤ Save
+          </button>
+        </ButtonWrapper>
+
+        <div
+          style={`padding-top: 48px; pointer-events:all; display: inline-block; ${!getSelectedAnswerVal() ? "visibility: hidden" : ""}`}
+          class={
+            getSelectedAnswerVal()
+              ? "save-btn-wrapper isVisible"
+              : "save-btn-wrapper"
+          }
+        ></div>
       </div>
     </div>
   );
