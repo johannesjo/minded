@@ -47,16 +47,21 @@ export const Question: (props: {
     }
   });
 
+  createEffect(() => {
+    const q = getQuestion();
+    if (inpEl) {
+      inpEl.value = q.prompt ? q.prompt + " " : "";
+    }
+  });
+
   const focusInp = () => {
     inpEl.focus();
     requestFocusAndShowKeyboard();
   };
 
   onMount(async () => {
-    if (props.initialQuestion.prompt && inpEl) {
-      inpEl.value = props.initialQuestion.prompt + " ";
-    }
     focusInp();
+    // updatePrompt();
     t0 = setTimeout(() => focusInp(), 200);
     t1 = setTimeout(() => focusInp(), 600);
   });
