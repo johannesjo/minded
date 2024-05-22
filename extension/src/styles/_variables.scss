@@ -18,7 +18,7 @@
   --form-inputs-height-smaller: 40px;
 
   --bottom-bar-height: var(--btn-height);
-  --bottom-bar-bg: var(rgba(255, 255, 255, 1));
+  --bottom-bar-bg: rgba(255, 255, 255, 0.6);
 
   --btn-fz: 24px;
   --btn-height: 56px;
@@ -78,6 +78,8 @@
     --c-graph-fg-full: rgba(255, 255, 255, .7);
     --c-graph-fg-less: rgba(255, 255, 255, .5);
 
+    --bottom-bar-bg: rgba(0, 0, 0, .2);
+
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, .7);
     --c-bg-btns: rgba(0, 0, 0, .5);
@@ -92,8 +94,6 @@
     --fz-l: 22px;
     --fz-m: 15px;
 
-    --bottom-bar-bg: var(rgba(255, 255, 255, 1));
-
     --btn-fz: 20px;
     --btn-bigger-fz: 26px;
     --btn-height: 52px;
@@ -106,9 +106,6 @@
     --success-sun-ani-scale-2: 16;
     --success-sun-reduced-ani-scale-1: 5;
 
-    &.minded-6622-dark {
-      --bottom-bar-bg: var(rgba(0, 0, 0, 1));
-    }
   }
 }
 
