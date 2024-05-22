@@ -20,7 +20,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
     <div class={styles.bottomBarWrapper}>
       {location.pathname === "/" ? (
         <>
-          <div
+          <button
             class="btnIcoOnly"
             title="Get asked a question"
             onClick={() => {
@@ -28,7 +28,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
             }}
           >
             <img src={askQuestionSvg} />
-          </div>
+          </button>
           <A
             title="Go to settings page"
             class="btnIcoOnly"

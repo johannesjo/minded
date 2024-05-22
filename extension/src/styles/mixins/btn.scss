@@ -65,7 +65,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
+  margin: 0;
+  padding: 0;
+  
   > img {
     margin: 12px;
     flex: 1;
@@ -79,6 +81,7 @@
 @mixin btnIcoOnly($height: var(--btn-height)) {
   @include btnIco($height);
   background: none;
+
 
   &:hover {
     background: var(--btn-bg);

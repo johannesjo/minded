@@ -1,3 +1,6 @@
+@import "../../../../styles/mixins/mixins";
+
+
 .interactionOverlay {
   position: fixed;
   top: 0;
@@ -7,11 +10,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: minded6622fadeIn ease .5s;
-  cursor: crosshair;
+  cursor: crosshair !important;
 
+  @include standardPageTransitionIn();
+
+  animation: minded6622fadeIn ease .5s !important;
   :global {
-    animation-name: minded6622fadeIn;
+    animation-name: minded6622fadeIn !important;
   }
 }
 

@@ -1,16 +1,13 @@
 @import "../../../styles/mixins/mixins";
 
 .QuestionCategoryView {
-  animation: minded6622fadeIn ease 2s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
-  opacity: 0;
   padding-top: 16px;
   padding-bottom: 16px;
 
-  :global {
-    animation-name: minded6622fadeIn;
-  }
+  @include standardPageTransitionIn();
+
 }
 
 .categoryTitle {

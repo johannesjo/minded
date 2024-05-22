@@ -7,7 +7,7 @@ const Options = () => {
   };
 
   return (
-    <div>
+    <div class="pageTransitionIn">
       <h2>minded – Settings</h2>
       <br />
       <h3>list of websites to handle</h3>
