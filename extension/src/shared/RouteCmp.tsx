@@ -24,8 +24,9 @@ const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
 
   return (
     <>
-      {props.children}
-
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom:  var(--bottom-bar-height); overflow: auto;">
+        {props.children}
+      </div>
       <BottomBar onShowQuestion={() => setIsShowQuestionOverlay(true)} />
 
       {getIsShowQuestionOverlay() && (

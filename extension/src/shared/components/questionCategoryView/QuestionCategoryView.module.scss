@@ -1,14 +1,16 @@
 @import "../../../styles/mixins/mixins";
 
 .QuestionCategoryView {
-  animation: minded6622fadeInAnimation ease 2s;
+  animation: minded6622fadeIn ease 2s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   opacity: 0;
   padding-top: 16px;
   padding-bottom: 16px;
-  max-height: 100vh;
-  overflow: auto;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }
 
 .categoryTitle {
@@ -21,13 +23,14 @@
 
   &:hover {
     cursor: pointer;
+
     &:after {
       position: absolute;
       left: 100%;
       display: block;
       top: 50%;
-      transform: translate(0,-50%);
-      content:'↖';
+      transform: translate(0, -50%);
+      content: '↖';
       margin-left: 8px;
       opacity: .8;
     }
@@ -35,11 +38,3 @@
 }
 
 
-@keyframes minded6622fadeInAnimation {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
