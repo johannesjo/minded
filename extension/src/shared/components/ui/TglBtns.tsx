@@ -18,8 +18,8 @@ const TglBtns = <T,>(props: {
           <div
             class={
               getSelectedVal() === option.val
-                ? "btn-toggle-select  isSelected"
-                : "btn-toggle-select"
+                ? "btnToggleSelect  isSelected"
+                : "btnToggleSelect"
             }
             onClick={() => {
               // TODO find out why any is needed

@@ -42,7 +42,7 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
               permission.
             </p>
             <button
-              class="btn-txt"
+              class="btnTxt"
               onClick={() => onMissingCapabilityClick("SystemAlertWindow")}
             >
               Enable Overlay Permission
@@ -58,7 +58,7 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
               overlay.
             </p>
             <button
-              class="btn-txt"
+              class="btnTxt"
               onClick={() => onMissingCapabilityClick("Accessibility")}
             >
               Enable Accessibility Service

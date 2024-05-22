@@ -1,36 +1,22 @@
 @import "@src/styles/mixins/mixins";
 
 
-.btn {
-  &,
-  #minded-6622 & {
-    @include btn;
 
-    &:hover {
-      transform: scale(1.2);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
-  }
-}
-
-.btn-ico-small {
+.btnIcoSmall {
   &,
   #minded-6622 & {
     @include btnIco(36px);
   }
 }
 
-.btn-ico {
+.btnIco {
   &,
   #minded-6622 & {
     @include btnIco(var(--btn-height));
   }
 }
 
-.btn-ico-only {
+.btnIcoOnly {
   &,
   #minded-6622 & {
     @include btnIcoOnly(var(--btn-height));
@@ -38,14 +24,14 @@
 }
 
 
-.btn-big {
+.btnTxtBig {
   &,
   #minded-6622 & {
     @include btnTxtBigger()
   }
 }
 
-.btn-txt {
+.btnTxt {
   &,
   #minded-6622 & {
     @include btnTxt();
@@ -53,6 +39,6 @@
   }
 }
 
-.btn-toggle-select {
+.btnToggleSelect {
   @include btnToggleSelect();
 }

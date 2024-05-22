@@ -54,11 +54,11 @@ export const AnswerListEditable: (props: {
             />
           ) : (
             <div>
-              <button class="btn-txt" onClick={() => props.onBack()}>
+              <button class="btnTxt" onClick={() => props.onBack()}>
                 ↖ Back
               </button>
               <button
-                class="btn-txt"
+                class="btnTxt"
                 style="margin-left: 16px"
                 onClick={() => setIsAddMode(true)}
               >

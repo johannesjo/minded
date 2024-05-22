@@ -21,7 +21,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
       {location.pathname === "/" ? (
         <>
           <div
-            class="btn-ico-only"
+            class="btnIcoOnly"
             title="Get asked a question"
             onClick={() => {
               props.onShowQuestion();
@@ -31,7 +31,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           </div>
           <A
             title="Go to settings page"
-            class="btn-ico-only"
+            class="btnIcoOnly"
             href="/settings"
             activeClass="active"
           >
@@ -39,7 +39,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           </A>
           <A
             title="Give us somet feedback"
-            class="btn-ico-only"
+            class="btnIcoOnly"
             href="/feedback"
             activeClass="active"
           >
@@ -49,7 +49,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
       ) : (
         <A
           title="Go to dashboard"
-          class="btn-ico-only"
+          class="btnIcoOnly"
           href="/"
           activeClass="xxx"
         >

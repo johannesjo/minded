@@ -1,13 +1,17 @@
 import { createSignal, onMount } from "solid-js";
 // @ts-ignore
 import styles from "./Feedback.module.scss";
+// @ts-ignore
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 const Feedback = () => {
   // const navigate = useNavigate();
   const [mailtoLink, setMailtoLink] = createSignal("");
 
   onMount(() => {
-    const encodedSubject = encodeURIComponent("Feedback for minded");
+    const encodedSubject = encodeURIComponent(
+      `Feedback for minded ${IS_ANDROID ? "on Android" : "WebExtension"}`,
+    );
     const encodedBody = encodeURIComponent(`Things, I like:
 
 
@@ -31,11 +35,11 @@ Other comments:
   return (
     <div class={styles.wrapper}>
       <p class="txt-big">
-        <em>minded</em> is very young, so we'd appreciate some feedback!
+        <em>minded</em> is very young, so we'd really appreciate some feedback!
       </p>
 
       <div>
-        <a href={mailtoLink()} class="btn-big" target="_blank">
+        <a href={mailtoLink()} class="btnTxtBig" target="_blank">
           Send us a quick email
         </a>
       </div>

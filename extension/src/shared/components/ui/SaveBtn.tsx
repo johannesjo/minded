@@ -13,7 +13,7 @@ export const SaveBtn = (props: {
 
   return (
     <ButtonWrapper isVisible={getIsVisible()}>
-      <div class="btn-big" onClick={() => props.onSave()}>
+      <div class="btnTxtBig" onClick={() => props.onSave()}>
         ➤ save
       </div>
     </ButtonWrapper>

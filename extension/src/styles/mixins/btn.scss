@@ -1,7 +1,7 @@
 @import "../variablesSCSS";
 
 
-@mixin btn($height: var(--btn-height)) {
+@mixin btnBase($height: var(--btn-height)) {
   border: none;
   border-radius: 8px;
   display: inline-block;
@@ -60,7 +60,7 @@
 }
 
 @mixin btnIco($height: var(--btn-height)) {
-  @include btn($height);
+  @include btnBase($height);
   width: $height;
   display: flex;
   justify-content: center;
@@ -92,13 +92,13 @@
 
 
 @mixin btnTxt() {
-  @include btn;
+  @include btnBase;
   padding: 0 16px;
   font-weight: 300;
 }
 
 @mixin btnTxtBigger() {
-  @include btn(var(--btn-height-bigger));
+  @include btnBase(var(--btn-height-bigger));
   padding: 0 20px;
   font-size: var(--btn-bigger-fz);
 }
