@@ -6,6 +6,7 @@ import {
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 // @ts-ignore
 import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
+import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;
@@ -83,15 +84,11 @@ export const MoodCheckin: (props: {
         </datalist>
       </div>
 
-      <div
-        class={
-          getSelectedMood() ? "minded-6622-btns isVisible" : "minded-6622-btns"
-        }
-      >
-        <div class="minded-6622-nxt-btn" onclick={onSaveAll}>
-          save
+      <ButtonWrapper isVisible={!!getSelectedMood()}>
+        <div class="btn-big" onclick={onSaveAll}>
+          ➤ save
         </div>
-      </div>
+      </ButtonWrapper>
     </div>
   );
 };

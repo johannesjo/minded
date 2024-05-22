@@ -11,6 +11,7 @@ import { getRndEntry } from "@src/util/getRndEntry";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
+import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 
 // once on app load
 
@@ -70,13 +71,11 @@ export const BrowsingBehaviorRatingInteraction: (props: {
                 )}
               </For>
             </div>
-            <div
-              class="btn-big"
-              style={`margin-top: 32px; ${!getBrowsingBehaviorRating() ? "visibility: hidden" : ""}`}
-              onclick={() => onNext()}
-            >
-              save
-            </div>
+            <ButtonWrapper isVisible={!!getBrowsingBehaviorRating()}>
+              <div class="btn-big" onclick={() => onNext()}>
+                ➤ save
+              </div>
+            </ButtonWrapper>
           </div>
         </Match>
         <Match when={getStep() === 1}>
