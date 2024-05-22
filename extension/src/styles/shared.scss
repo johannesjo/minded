@@ -30,11 +30,11 @@
     box-sizing: border-box;
   }
 
-  .minded-6622-txt-big {
+  .txt-big {
     @include txtBig;
   }
 
-  .minded-6622-txt-smaller {
+  .txt-smaller {
     @include txtSmaller;
   }
 

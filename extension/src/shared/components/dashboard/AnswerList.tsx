@@ -23,7 +23,7 @@ export const AnswerList: (props: {
 
       {/*<AnswerListEditable*/}
       {/*  isShowAdd={false}*/}
-      {/*  questionCategoryId={props.dashboardGroup.id}*/}
+      {/*  questionCategoryId={props.dashboardGroup.val}*/}
       {/*  answers={props.dashboardGroup.answers}*/}
       {/*  onEdit={() => undefined}*/}
       {/*  onRemove={() => undefined}*/}

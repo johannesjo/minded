@@ -11,7 +11,7 @@ export const EmojiCheckin: (props: {
 }) => JSX.Element = (props) => {
   const onSetRating = async (val: number) => {
     // await saveAnswer({
-    //   id: nanoid(),
+    //   val: nanoid(),
     //   val,
     //   qid: null,
     //   ts: Date.now(),
@@ -22,21 +22,14 @@ export const EmojiCheckin: (props: {
   };
 
   return (
-    <div
-      class="minded-6622-emoji-checkin-wrapper"
-      onmouseenter={props.onCancelCountdown}
-    >
-      <div class="minded-6622-txt-big">How do you feel?</div>
+    <div class="emoji-checkin-wrapper" onmouseenter={props.onCancelCountdown}>
+      <div class="txt-big">How do you feel?</div>
 
       <div>
         {EMOIJI_CATEGORIES_SORTED.map((catid) => (
-          <div class="minded-6622-emoji-category">
+          <div class="emoji-category">
             {EMOIJI_CATEGORIES[catid].map((entry) => (
-              <div
-                class="minded-6622-emoji"
-                title={entry.d}
-                onclick={props.onSuccess}
-              >
+              <div class="emoji" title={entry.d} onclick={props.onSuccess}>
                 {entry.i}
               </div>
             ))}

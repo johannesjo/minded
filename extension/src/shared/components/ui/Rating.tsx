@@ -11,7 +11,7 @@ export const Rating: (props: {
   const [hoveredRating, setHoveredRating] = createSignal(0);
 
   return (
-    <div class={"minded-6622-rating " + (props.isShowOnly ? "showOnly" : "")}>
+    <div class={"rating " + (props.isShowOnly ? "showOnly" : "")}>
       {Array.from({ length: 5 }, (_, i) => i + 1).map((value) => (
         <span
           class={value <= rating() || value <= hoveredRating() ? "isFull" : ""}

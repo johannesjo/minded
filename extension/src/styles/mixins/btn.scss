@@ -1,6 +1,5 @@
 @import "../variablesSCSS";
 
-$extraClickArea: 8px;
 
 @mixin btn($height: var(--btn-height)) {
   border: none;
@@ -22,6 +21,7 @@ $extraClickArea: 8px;
   transition: all 50ms;
   font-weight: normal;
   text-decoration: none;
+  --extraClickArea: -8px;
 
   &:focus {
     outline: 0;
@@ -40,10 +40,11 @@ $extraClickArea: 8px;
   &:after {
     content: "";
     position: absolute;
-    right: -1 * $extraClickArea;
-    top: -1 * $extraClickArea;
-    left: -1 * $extraClickArea;
-    bottom: -1 * $extraClickArea;
+    pointer-events: all;
+    right: var(--extraClickArea);
+    top: var(--extraClickArea);
+    left: var(--extraClickArea);
+    bottom: var(--extraClickArea);
   }
 
   &:disabled {
@@ -108,6 +109,7 @@ $extraClickArea: 8px;
 
   @include onNonMobileScreens() {
     margin: 16px;
+    --extraClickArea: -16px;
   }
 
   &.isSelected {

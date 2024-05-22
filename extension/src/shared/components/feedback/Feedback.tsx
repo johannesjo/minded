@@ -30,7 +30,7 @@ Other comments:
 
   return (
     <div>
-      <p class="minded-6622-txt-big">
+      <p class="txt-big">
         <em>minded</em> is very young, so we'd appreciate some feedback!
       </p>
 

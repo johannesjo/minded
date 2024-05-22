@@ -1,32 +1,5 @@
 
 #minded-6622-mood-checkin {
-  .minded-6622-txt-big {
-    @include txtBig;
-  }
-
-  .minded-6622-txt-smaller {
-    @include txtSmaller;
-  }
-
-
-  .minded-6622-mood-checkin-btns {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    user-select: none;
-    pointer-events: all;
-    // more space on mobile for buttons
-    margin-left: -32px;
-    margin-right: -32px;
-    margin-top: 16px;
-    margin-bottom: 16px;
-
-    @include onNonMobileScreens() {
-      margin-top: 32px;
-      margin-bottom: 64px;
-    }
-  }
-
   input {
     @include formInput();
     margin: auto;
@@ -36,10 +9,11 @@
     //padding: 12px 24px !important;
   }
 
-  .minded-6622-textarea-block {
+  .additional-block {
     opacity: 0;
     transition: all 200ms;
     visibility: hidden;
+    padding-top: 16px;
 
     &.isVisible {
       visibility: visible;

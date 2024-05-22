@@ -23,7 +23,7 @@
   animation-iteration-count: 1;
 
 
-  &.minded-6622-top-right {
+  &.top-right {
     transform: translate(0, 0);
     top: 40px;
     right: 40px;
@@ -85,15 +85,15 @@ $sun-size: 40px;
   animation-iteration-count: 1;
 
 
-  &.minded-6622-long-text {
+  &.long-text {
     min-width: 320px;
   }
 
-  &.minded-6622-very-long-text {
+  &.very-long-text {
     min-width: 520px;
   }
 
-  &.minded-6622-was-NO-answer-given {
+  &.was-NO-answer-given {
     cursor: pointer;
   }
 }

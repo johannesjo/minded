@@ -522,7 +522,7 @@ Object.keys(QUESTION_CATEGORIES)
 /*
 IDEAS:
       {
-       id: QID.PR1, t: "Why do you want to complete your current task",
+       val: QID.PR1, t: "Why do you want to complete your current task",
         prompt: "Completing my current task, will allow me to",
       },
 
