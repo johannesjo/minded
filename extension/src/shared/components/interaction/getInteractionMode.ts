@@ -10,6 +10,7 @@ const LAST_MOOD_CHECKIN_MIN_GAP = 60 * 60 * 1000;
 const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 60 * 60 * 1000;
 const LAST_ENERGY_LVL_CHECKIN_BOOST_GAP = 12 * 60 * 60 * 1000;
 const LAST_BROWSING_RATING_MIN_GAP = 8 * 60 * 1000;
+const ENERGY_LVL_MAX_HOURS = 19;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -38,10 +39,11 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   }
 
   if (
-    (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_BOOST_GAP &&
+    nowHours < ENERGY_LVL_MAX_HOURS &&
+    ((nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_BOOST_GAP &&
       isXIn1(0.3)) ||
-    (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
-      isXIn1(0.05))
+      (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
+        isXIn1(0.05)))
   ) {
     return "ENERGY_LVL";
   }
