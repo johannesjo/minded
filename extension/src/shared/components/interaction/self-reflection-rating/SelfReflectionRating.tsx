@@ -1,11 +1,11 @@
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, For, JSX, onMount } from "solid-js";
 import {
   SELF_REFLECTION_ANSWERS,
   SELF_REFLECTION_QUESTIONS,
   SelfReflectionAnswer,
   SelfReflectionAnswerVal,
 } from "./selfReflection.model";
-import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 
 const SelfReflectionRating = (props: {
   onSuccess: () => void;
@@ -47,39 +47,22 @@ const SelfReflectionRating = (props: {
         Recently {getSelectedQuestion().question}
       </div>
 
-      {SELF_REFLECTION_ANSWERS.map((answer) => (
-        <button
-          class={
-            getSelectedAnswerVal() === answer.val
-              ? "btn-toggle-select  isSelected"
-              : "btn-toggle-select"
-          }
-          onClick={() => handleAnswerClick(answer)}
-        >
-          {answer.txt}
-        </button>
-      ))}
-
-      <div>
-        <ButtonWrapper isVisible={!!getSelectedAnswerVal()}>
+      <For each={SELF_REFLECTION_ANSWERS}>
+        {(answer) => (
           <button
-            class="btn-big"
-            onClick={handleSaveClick}
-            disabled={!getSelectedAnswerVal()}
+            class={
+              getSelectedAnswerVal() === answer.val
+                ? "btn-toggle-select  isSelected"
+                : "btn-toggle-select"
+            }
+            onClick={() => handleAnswerClick(answer)}
           >
-            ➤ Save
+            {answer.txt}
           </button>
-        </ButtonWrapper>
+        )}
+      </For>
 
-        <div
-          style={`padding-top: 48px; pointer-events:all; display: inline-block; ${!getSelectedAnswerVal() ? "visibility: hidden" : ""}`}
-          class={
-            getSelectedAnswerVal()
-              ? "save-btn-wrapper isVisible"
-              : "save-btn-wrapper"
-          }
-        ></div>
-      </div>
+      <SaveBtn onSave={handleSaveClick} isVisible={!!getSelectedAnswerVal()} />
     </div>
   );
 };

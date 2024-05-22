@@ -1,9 +1,9 @@
 /* @refresh reload */
 import { createSignal, JSX } from "solid-js";
 import Rating from "@src/shared/components/ui/Rating";
-// @ts-ignore
+// @ts-expect-error
 import { saveEnergyLvl } from "@dataInterface/syncDataInterface";
-import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 
 // once on app load
 
@@ -27,11 +27,10 @@ export const EnergyLvlInteraction: (props: {
       <div>How would you rate your energy level today?</div>
       <Rating onSetRating={setEnergyLvl} />
 
-      <ButtonWrapper isVisible={!!getEnergyLvl()}>
-        <div class="btn-big" onClick={() => onSave(getEnergyLvl())}>
-          ➤ save
-        </div>
-      </ButtonWrapper>
+      <SaveBtn
+        onSave={() => onSave(getEnergyLvl())}
+        isVisible={!!getEnergyLvl()}
+      />
     </div>
   );
 };
