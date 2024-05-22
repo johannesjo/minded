@@ -1,12 +1,13 @@
-import { createSignal, JSX } from "solid-js";
+import { createSignal, For, JSX } from "solid-js";
 import {
   MOOD_CHECKIN_FEEL_BETTER_OPTIONS,
   MOOD_CHECKIN_OPTIONS,
   MoodCheckinVal,
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
-import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;
@@ -32,18 +33,20 @@ export const MoodCheckin: (props: {
       <div class="minded-6622-txt-big">How do you feel?</div>
 
       <div class="minded-6622-mood-checkin-btns">
-        {MOOD_CHECKIN_OPTIONS.map((opt) => (
-          <div
-            class={
-              getSelectedMood() === opt.id
-                ? "btn-toggle-select  isSelected"
-                : "btn-toggle-select"
-            }
-            onclick={() => setSelectedMood(opt.id)}
-          >
-            {opt.txt}
-          </div>
-        ))}
+        <For each={MOOD_CHECKIN_OPTIONS}>
+          {(opt) => (
+            <div
+              class={
+                getSelectedMood() === opt.id
+                  ? "btn-toggle-select  isSelected"
+                  : "btn-toggle-select"
+              }
+              onclick={() => setSelectedMood(opt.id)}
+            >
+              {opt.txt}
+            </div>
+          )}
+        </For>
       </div>
       <div
         class={
@@ -78,17 +81,13 @@ export const MoodCheckin: (props: {
           onKeyDown={(ev) => setAdditionalTxt((ev.target as any).value)}
         />
         <datalist id="auto-suggestions-for-mood-checkin">
-          {MOOD_CHECKIN_FEEL_BETTER_OPTIONS.map((opt) => (
-            <option value={opt} />
-          ))}
+          <For each={MOOD_CHECKIN_FEEL_BETTER_OPTIONS}>
+            {(opt) => <option value={opt} />}
+          </For>
         </datalist>
       </div>
 
-      <ButtonWrapper isVisible={!!getSelectedMood()}>
-        <div class="btn-big" onclick={onSaveAll}>
-          ➤ save
-        </div>
-      </ButtonWrapper>
+      <SaveBtn onSave={onSaveAll} isVisible={!!getSelectedMood()} />
     </div>
   );
 };

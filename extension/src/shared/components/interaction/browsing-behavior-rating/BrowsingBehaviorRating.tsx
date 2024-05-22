@@ -12,6 +12,7 @@ import { getRndEntry } from "@src/util/getRndEntry";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 
 // once on app load
 
@@ -71,11 +72,11 @@ export const BrowsingBehaviorRatingInteraction: (props: {
                 )}
               </For>
             </div>
-            <ButtonWrapper isVisible={!!getBrowsingBehaviorRating()}>
-              <div class="btn-big" onclick={() => onNext()}>
-                ➤ save
-              </div>
-            </ButtonWrapper>
+
+            <SaveBtn
+              onSave={onNext}
+              isVisible={!!getBrowsingBehaviorRating()}
+            />
           </div>
         </Match>
         <Match when={getStep() === 1}>

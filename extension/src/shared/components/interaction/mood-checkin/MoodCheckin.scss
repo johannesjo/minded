@@ -36,24 +36,14 @@
     //padding: 12px 24px !important;
   }
 
-  .minded-6622-textarea-block,
-  .minded-6622-btn-wrapper {
+  .minded-6622-textarea-block {
     opacity: 0;
-    transition: all 1s;
+    transition: all 200ms;
     visibility: hidden;
 
     &.isVisible {
       visibility: visible;
       opacity: 1;
-    }
-  }
-
-  .minded-6622-nxt-btn {
-    @include btnTxtBigger();
-
-    margin-top: 16px;
-    @include onNonMobileScreens() {
-      margin-top: 64px;
     }
   }
 }
