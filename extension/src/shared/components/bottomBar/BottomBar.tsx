@@ -10,15 +10,21 @@ import feedbackSvg from "@assets/img/feedback.svg";
 import closeSvg from "@assets/img/close.svg";
 
 import { A, useLocation } from "@solidjs/router";
+import { createEffect, createSignal } from "solid-js";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
-  // const navigate = (v: string) => undefined;
-  // const navigate = (v: string) => undefined;
+  const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
   const location = useLocation();
 
+  createEffect(() => {
+    setIsOnDashboard(location.pathname === "/");
+  });
+
   return (
-    <div class={styles.bottomBarWrapper}>
-      {location.pathname === "/" ? (
+    <div
+      class={`${styles.bottomBarWrapper}  ${getIsOnDashboard() && styles.isOnDashboard} `}
+    >
+      {getIsOnDashboard() ? (
         <>
           <button
             class="btnIcoOnly"
