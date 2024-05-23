@@ -16,10 +16,9 @@
 }
 
 .editMode {
-  animation: minded6622fadeIn ease .2s;
+  animation: minded6622fadeIn ease .3s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
-  opacity: 0;
   display: flex;
   align-items: center;
   justify-content: stretch;
@@ -33,6 +32,10 @@
   max-width: 100%;
   box-sizing: border-box;
   width: 100%;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }
 
 .userQuote {

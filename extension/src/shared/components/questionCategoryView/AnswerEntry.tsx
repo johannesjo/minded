@@ -47,6 +47,7 @@ export const AnswerEntry: (props: {
       >
         {props.answer.val.toString()}
       </div>
+
       {!!getIsEditMode() && (
         <div class={styles.editMode}>
           <input

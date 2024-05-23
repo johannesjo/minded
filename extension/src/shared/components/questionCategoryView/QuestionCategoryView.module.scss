@@ -1,13 +1,10 @@
 @import "../../../styles/mixins/mixins";
 
 .QuestionCategoryView {
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
   padding-top: 16px;
   padding-bottom: 16px;
 
   @include standardPageTransitionIn();
-
 }
 
 .categoryTitle {
@@ -17,21 +14,6 @@
   position: relative;
   display: inline-block;
   text-transform: lowercase;
-
-  &:hover {
-    cursor: pointer;
-
-    &:after {
-      position: absolute;
-      left: 100%;
-      display: block;
-      top: 50%;
-      transform: translate(0, -50%);
-      content: '↖';
-      margin-left: 8px;
-      opacity: .8;
-    }
-  }
 }
 
 
