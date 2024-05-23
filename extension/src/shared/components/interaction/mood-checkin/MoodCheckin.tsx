@@ -31,7 +31,7 @@ export const MoodCheckin: (props: {
 
   return (
     <div id="minded-6622-mood-checkin" onmousemove={props.onCancelCountdown}>
-      <div class="txt-big">How do you feel?</div>
+      <div class="txtBig">How do you feel?</div>
 
       <TglBtns
         options={MOOD_CHECKIN_OPTIONS}
@@ -43,7 +43,7 @@ export const MoodCheckin: (props: {
           getSelectedMood() ? "additional-block isVisible" : "additional-block"
         }
       >
-        <div class="txt-smaller">
+        <div class="txtSmaller">
           {getSelectedMood() === MoodCheckinVal.Awful ||
           getSelectedMood() === MoodCheckinVal.Bad
             ? "What might help to make you feel better?"

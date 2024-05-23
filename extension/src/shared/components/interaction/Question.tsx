@@ -129,7 +129,7 @@ export const Question: (props: {
         id="minded-6622-question-wrapper"
         class={`${getIsChangingQuestion() ? "isChangingQuestion" : ""}`}
       >
-        <div id="minded-6622-question">
+        <div id="minded-6622-question" class="txtBig">
           <span>{getQuestion().t}?</span>
         </div>
 

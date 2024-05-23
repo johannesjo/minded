@@ -39,7 +39,7 @@ const SelfReflectionRating = (props: {
 
   return (
     <div onmousemove={props.onCancelCountdown}>
-      <div class="txt-big" style="padding-bottom: 32px;">
+      <div class="txtBig" style="padding-bottom: 32px;">
         Recently {getSelectedQuestion().question}
       </div>
 

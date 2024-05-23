@@ -34,7 +34,7 @@ Other comments:
 
   return (
     <div class={styles.wrapper}>
-      <p class="txt-big">
+      <p class="txtBig">
         <em>minded</em> is very young, so we'd really appreciate some feedback!
       </p>
 

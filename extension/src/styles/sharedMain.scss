@@ -1,0 +1,7 @@
+@import "sharedAll";
+@import "componentsMainOnly/componentsMainOnly";
+
+
+.pageTransitionIn {
+  @include standardPageTransitionIn();
+}

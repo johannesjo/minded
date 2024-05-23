@@ -41,7 +41,7 @@ export const SettingsAndroid = () => {
 
   return (
     <div>
-      <div class="txt-big" style="margin: 16px;">
+      <div class="txtBig" style="margin: 16px;">
         Please select at least one app that you want to use less.
       </div>
 

@@ -21,7 +21,7 @@ export const EnergyLvlInteraction: (props: {
 
   return (
     <div onmouseenter={props.onCancelCountdown}>
-      <div class="txt-big" style="padding-bottom:32px;">
+      <div class="txtBig" style="padding-bottom:32px;">
         How would you rate your energy level today?
       </div>
       <Rating onSetRating={setEnergyLvl} />

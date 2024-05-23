@@ -15,7 +15,12 @@ export const OnboardingWeb: (props: {
   return (
     <>
       <div class={styles.welcomeWrapper}>
-        <div class={styles.welcome}>
+        <div
+          classList={{
+            ["h2"]: true,
+            [styles.welcomeText]: true,
+          }}
+        >
           Welcome to <em>minded</em>
         </div>
         <div class={styles.infoText}>

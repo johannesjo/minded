@@ -81,8 +81,19 @@ export const QuestionCategoryView: (props: {
 
   // TODO maybe remove click handler for title
   return (
-    <div class={styles.QuestionCategoryView}>
-      <div class={styles.categoryTitle}>{QUESTION_CATEGORY.dashboardTxt}</div>
+    <div
+      classList={{
+        [styles.QuestionCategoryView]: true,
+      }}
+    >
+      <div
+        classList={{
+          [styles.categoryTitle]: true,
+          ["h2"]: true,
+        }}
+      >
+        {QUESTION_CATEGORY.dashboardTxt}
+      </div>
       <div class={styles.answers}>
         <AnswerListEditable
           isShowAdd={true}

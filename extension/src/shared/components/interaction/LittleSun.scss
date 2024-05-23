@@ -172,16 +172,6 @@ $sun-size: 40px;
 }
 
 
-#minded-6622-action-advice {
-  @include txtBig();
-
-  :last-child {
-    font-size: 48px;
-    margin-top: 16px;
-  }
-}
-
-
 @keyframes minded6622littleSunIn {
   0% {
     transform: scale(.4);

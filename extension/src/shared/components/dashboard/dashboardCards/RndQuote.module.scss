@@ -1,13 +1,9 @@
 @import "../../../../styles/mixins/mixins";
 
 .RndQuote {
-
-}
-
-
-.txt {
-  @include usrQuote();
-  font-style: italic;
+  :global .userQuote {
+    font-style: italic;
+  }
 }
 
 .author {
