@@ -22,6 +22,12 @@
     pointer-events: all;
   }
 
+  .txtSlightlyBigger {
+    font-size: var(--fz-l);
+    line-height: 1.2;
+    pointer-events: all;
+  }
+
   .txtSmaller {
     font-size: var(--fz-m);
     line-height: 1.2;
