@@ -1,9 +1,8 @@
 .container {
-  padding: 16px;
   text-align: center;
   font-size: var(--fz-xl);
-  padding-top: 32px;
-  padding-bottom: 32px;
+  padding-top: 16px;
+  padding-bottom: 16px;
 
   :global .card {
     margin-top: 16px;

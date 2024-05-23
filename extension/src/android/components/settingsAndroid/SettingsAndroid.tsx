@@ -8,14 +8,18 @@ import {
   updateBlockedApps,
 } from "@src/dataInterface/android/syncDataInterface";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
-import { useNavigate } from "@solidjs/router"; // Import the styles
+import { useNavigate } from "@solidjs/router";
 
-export const SettingsAndroid = () => {
-  const navigate = useNavigate();
+export const SettingsAndroid = (props: {
+  isRouting?: boolean;
+  onSave?: () => void;
+}) => {
+  // const navigate = useNavigate();
   const [getAvailableApps, setAvailableApps] = createSignal<
     { packageName: string; name: string }[]
   >([]);
 
+  const navigate = props.isRouting ? useNavigate() : () => undefined;
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
   onMount(() => {
@@ -34,9 +38,9 @@ export const SettingsAndroid = () => {
   };
 
   const handleSave = () => {
-    console.log(getSelectedApps());
     updateBlockedApps(getSelectedApps());
     navigate("/");
+    props.onSave?.();
   };
 
   return (
@@ -60,13 +64,15 @@ export const SettingsAndroid = () => {
       </div>
 
       <div>
-        <button
-          class="btnTxtBig"
-          style="margin-right: 16px;"
-          onClick={() => navigate("/")}
-        >
-          Back
-        </button>
+        {props.isRouting && (
+          <button
+            class="btnTxtBig"
+            style="margin-right: 16px;"
+            onClick={() => navigate("/")}
+          >
+            Back
+          </button>
+        )}
 
         <button
           class="btnTxtBig"
