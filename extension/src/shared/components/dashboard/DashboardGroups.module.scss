@@ -37,6 +37,14 @@
     box-sizing: border-box;
     padding: 16px;
 
+    @media (min-width: #{$bpDashboardMoreThan2Col +32px}) {
+      padding: 32px;
+    }
+
+    @media (min-width: #{$bpDashboardMoreThan2Col +128px}) {
+      padding: 64px;
+    }
+
     &[nr-of-items="1"] {
       grid-template-rows: repeat(1, minmax(0, 1fr));
       grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -103,10 +111,9 @@
   background: var(--dashboard-card-bg);
   border-radius: var(--dashboard-card-border-radius);
 
- @include onNonMobileScreens() {
-   padding: 32px;
- }
-
+  @include onNonMobileScreens() {
+    padding: 32px;
+  }
 
 
   @media (min-width: $bpDashboardMoreThan1Col) {
