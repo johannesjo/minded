@@ -30,6 +30,10 @@
     box-sizing: border-box;
   }
 
+  .h2 {
+    @include h2;
+  }
+
   .txt-big {
     @include txtBig;
   }

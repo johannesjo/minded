@@ -1,0 +1,10 @@
+.card {
+  background: var(--dashboard-card-bg);
+  border-radius: var(--dashboard-card-border-radius);
+  padding: 16px;
+
+  @include onNonMobileScreens() {
+    padding: 32px;
+  }
+
+}

@@ -34,9 +34,6 @@ const MainAndroid = () => {
 
   return (
     <>
-      <h1>JOO</h1>
-      {getMissingCapabilities().toString()}
-
       {getMissingCapabilities().length > 0 ? (
         <div id="minded-6622-coloured-wrapper">
           <MissingCapabilityView

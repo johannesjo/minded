@@ -72,6 +72,7 @@ export const DashboardGroups: (props: {
             props.onQuestionCategorySelect((dg as DashboardGroupTxtQuestion).id)
           }
           classList={{
+            card: true,
             [styles.box]: true,
             [styles.interactive]: dg.type === DashboardGroupType.TxtQuestion,
             [styles.centerItem]:

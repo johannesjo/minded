@@ -2,6 +2,17 @@
   padding: 16px;
   text-align: center;
   font-size: var(--fz-l);
+  padding-top: 32px;
+  padding-bottom: 32px;
+
+  :global .card {
+    margin-top: 16px;
+  }
+
+  :global .h2 {
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
 }
 
 .innerContainer {
@@ -12,12 +23,8 @@
   height: 100%;
 }
 
-.introText {
-}
-
 .permissionText {
-  font-size: var(--fz-l);
-  margin-top: 32px;
+  font-size: var(--fz-m);
 }
 
 .permissionButton {

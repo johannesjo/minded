@@ -107,13 +107,8 @@
   // NOTE: padding leads to scrollbars
   @include standardPageTransitionIn();
   margin: 16px;
-  padding: 16px;
-  background: var(--dashboard-card-bg);
-  border-radius: var(--dashboard-card-border-radius);
 
-  @include onNonMobileScreens() {
-    padding: 32px;
-  }
+
 
 
   @media (min-width: $bpDashboardMoreThan1Col) {
