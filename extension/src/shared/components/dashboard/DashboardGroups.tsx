@@ -67,7 +67,7 @@ export const DashboardGroups: (props: {
     >
       {/* TODO refactor */}
       {/* eslint-disable-next-line solid/prefer-for */}
-      {getDashboardGroups().map((dg, index) => (
+      {getDashboardGroups().map((dg) => (
         <div
           class={`${styles.box} ${
             dg.type !== DashboardGroupType.Standard &&
@@ -76,11 +76,6 @@ export const DashboardGroups: (props: {
               : ""
           }`}
         >
-          {index === 4 && (
-            <div class={styles.miniSunWrapper}>
-              <div class={styles.miniSun} />
-            </div>
-          )}
           {(() => {
             switch (dg.type) {
               case DashboardGroupType.BrowsingBehaviorRating:

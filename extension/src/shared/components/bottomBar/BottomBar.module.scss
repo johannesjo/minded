@@ -33,6 +33,8 @@
   > div,
   > button {
     margin-left: 16px !important;
+    position: relative;
+    z-index: 1;
     animation: minded6622fadeIn ease 200ms;
 
     :global {
@@ -44,3 +46,21 @@
     }
   }
 }
+
+//.bottomBarWrapper::after {
+//  pointer-events: none;
+//  content: "";
+//  position: absolute;
+//  left: 50%;
+//  bottom: -50%;
+//  transform: translate(-50%, 50%) ;
+//  background-color: var(--little-sun-bg);
+//  border-radius: 50%;
+//  width: 320px;
+//  height: 320px;
+//  opacity: 0.1;
+//  box-shadow: 0 0 30px 5px var(--c-pastel-red),
+//  0 0 60px 5px var(--c-pastel-yellow);
+//  transition: 2s;
+//}
+

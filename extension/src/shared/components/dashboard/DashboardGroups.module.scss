@@ -30,11 +30,12 @@
     min-height: 50%;
     transform: translate(-50%, -50%);
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, fit-content(100%));
     overflow-y: auto;
     grid-auto-flow: row;
     grid-auto-rows: 33%;
     box-sizing: border-box;
+    padding: 16px;
 
     &[nr-of-items="1"] {
       grid-template-rows: repeat(1, minmax(0, 1fr));
@@ -96,8 +97,19 @@
   box-sizing: border-box;
   animation-duration: .3s;
   // NOTE: padding leads to scrollbars
-  margin: 64px 32px;
   @include standardPageTransitionIn();
+  margin: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, .35);
+  border-radius: 8px;
+
+ @include onNonMobileScreens() {
+   padding: 32px;
+ }
+
+  @include inDarkMode(){
+    background: rgba(0, 0, 0, .25);
+  }
 
 
   @media (min-width: $bpDashboardMoreThan1Col) {
@@ -105,7 +117,7 @@
     animation: minded6622fadeIn ease 2s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
-    margin: 32px;
+    margin: 16px;
 
     :global {
       animation-name: minded6622fadeIn;
@@ -139,7 +151,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 0;
   }
 
   @media (min-width: $bpDashboardMoreThan1Col) {
@@ -162,39 +173,6 @@
   @include h4();
   margin-top: 0;
 }
-
-
-.miniSunWrapper {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: translate3d(0, 0, 0);
-
-  .miniSun {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(.8);
-    background-color: var(--little-sun-bg);
-    border-radius: 50%;
-    width: 240px;
-    height: 240px;
-    margin-top: -40px;
-    opacity: 0.1;
-    box-shadow: 0 0 30px 5px var(--c-pastel-red),
-    0 0 60px 5px var(--c-pastel-yellow);
-    transition: 2s;
-  }
-}
-
-//.box:hover .miniSun {
-//  opacity: 1;
-//  transform: translate(-50%, -50%) scale(1.2);
-//}
 
 .browsingBehaviorGraph,
 .stats,
