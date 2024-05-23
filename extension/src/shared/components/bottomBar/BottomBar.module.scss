@@ -11,10 +11,20 @@
   background: var(--bottom-bar-bg);
 
   //@include onNonMobileScreens {
-  @media (min-width: $bpDashboardMoreThan1Col) {
-
-    &.isOnDashboard {
+  &.isOnDashboard {
+    @media (min-width: $bpDashboardMoreThan1Col) {
       background: transparent;
+      opacity: 0;
+      animation: minded6622fadeIn ease 2s;
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+
+      :global {
+        animation-name: minded6622fadeIn;
+      }
+    }
+    @media (min-width: $bpDashboardMoreThan2Col) {
+      animation-delay: 1.5s;
     }
   }
 
