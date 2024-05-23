@@ -47,7 +47,7 @@ export const OnboardingAndroid = () => {
             <div class="pageTransitionIn">
               <SettingsAndroid
                 isRouting={false}
-                saveBtnTxt="save & continue"
+                saveBtnTxt="➤ save & continue"
                 onSave={() => setStep(2)}
               />
             </div>

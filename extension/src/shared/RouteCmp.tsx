@@ -5,7 +5,6 @@ import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import { SettingsAndroid } from "@src/android/components/settingsAndroid/SettingsAndroid";
 import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
@@ -14,6 +13,7 @@ import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 // @ts-expect-error
 import { getSyncData } from "@dataInterface/syncDataInterface";
 import { SyncData } from "@src/dataInterface/syncData";
+import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 
 const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -73,7 +73,9 @@ const RoutesCmp = () => {
           path="/questionCategory/:questionCategoryId"
           component={QuestionCategoryView}
         />
-        {IS_ANDROID && <Route path="/settings" component={SettingsAndroid} />}
+        {IS_ANDROID && (
+          <Route path="/settings" component={SettingsAndroidRoute} />
+        )}
         {!IS_ANDROID && <Route path="/settings" component={SettingsWeb} />}
         <Route path="/feedback" component={Feedback} />
       </HashRouter>
