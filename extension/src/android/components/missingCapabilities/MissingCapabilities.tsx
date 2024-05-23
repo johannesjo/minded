@@ -28,13 +28,13 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
           Welcome to <em>minded</em>! 😊
         </div>
 
-        <div>
-          Before you can use the app, you need to give <em>minded</em>{" "}
-          permission on your device.
+        <div class="txtBig">
+          <em>minded</em> displays an overlay to interrupt your visits to apps
+          you want to use less. Before you can use the app as intended, you need
+          to give it permission to allow this.
         </div>
 
-        <div style="margin-top: 16px;">
-          Remember:{" "}
+        <div class="txtBig" style="margin-top: 16px; margin-bottom: 16px;">
           <strong>
             <em>minded</em> does not collect any data! Everything stays on your
             device!
@@ -43,10 +43,8 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
 
         {missingCapabilities.includes("SystemAlertWindow") && (
           <div class="card">
-            <p class={styles.permissionText}>
-              <em>minded</em> displays an overlay to interrupt your visits to
-              apps you want to use less. For this to work, minded needs the
-              overlay permission.
+            <p class={styles.permissionText + "  txtSlightlyBigger"}>
+              To display overlays, <em>minded </em>needs the overlay permission.
             </p>
             <button
               class="btnTxt"
@@ -59,10 +57,10 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
 
         {missingCapabilities.includes("Accessibility") && (
           <div class="card">
-            <p class={styles.permissionText}>
+            <p class={styles.permissionText + "  txtSlightlyBigger"}>
               The <em>minded</em> accessibility service is required to detect
-              app starts on your device, so minded knows when to display the
-              interaction overlay.
+              app starts on your device, so <em>minded</em> knows when to
+              display the interaction overlay.
             </p>
             <button
               class="btnTxt"
