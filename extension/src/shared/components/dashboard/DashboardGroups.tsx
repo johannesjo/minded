@@ -5,13 +5,12 @@ import {
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupStats,
+  DashboardGroupTxtQuestion,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { getSyncData } from "@dataInterface/syncDataInterface";
 import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
@@ -21,7 +20,6 @@ import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
 import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
@@ -69,12 +67,17 @@ export const DashboardGroups: (props: {
       {/* eslint-disable-next-line solid/prefer-for */}
       {getDashboardGroups().map((dg) => (
         <div
-          class={`${styles.box} ${
-            dg.type !== DashboardGroupType.Standard &&
-            dg.type !== DashboardGroupType.BrowsingBehaviorRating
-              ? styles.centerItem
-              : ""
-          }`}
+          onClick={() =>
+            (dg as DashboardGroupTxtQuestion).id &&
+            props.onQuestionCategorySelect((dg as DashboardGroupTxtQuestion).id)
+          }
+          classList={{
+            [styles.box]: true,
+            [styles.interactive]: dg.type === DashboardGroupType.TxtQuestion,
+            [styles.centerItem]:
+              dg.type !== DashboardGroupType.TxtQuestion &&
+              dg.type !== DashboardGroupType.BrowsingBehaviorRating,
+          }}
         >
           {(() => {
             switch (dg.type) {
@@ -141,12 +144,7 @@ export const DashboardGroups: (props: {
                 );
 
               default:
-                return (
-                  <AnswerList
-                    dashboardGroup={dg}
-                    onTitleClick={() => props.onQuestionCategorySelect(dg.id)}
-                  />
-                );
+                return <AnswerList dashboardGroup={dg} />;
             }
           })()}
         </div>

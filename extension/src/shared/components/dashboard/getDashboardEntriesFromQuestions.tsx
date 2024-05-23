@@ -48,7 +48,7 @@ export const getDashboardEntriesFromQuestions = (
         dashboardTxt: QUESTION_CATEGORIES[catId].dashboardTxt,
         // TODO more sophisticated algorithm based on character length
         answers: getRndEntries(answersForCat, MAX_ANSWERS),
-        type: DashboardGroupType.Standard,
+        type: DashboardGroupType.TxtQuestion,
       });
     }
   });

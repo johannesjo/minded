@@ -3,7 +3,7 @@ import { Answer } from "@src/dataInterface/syncData";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 
 export enum DashboardGroupType {
-  Standard = "Standard",
+  TxtQuestion = "TxtQuestion",
   Quote = "Quote",
   MoodCheckin = "MoodCheckin",
   EnergyLvl = "EnergyLvl",
@@ -11,7 +11,7 @@ export enum DashboardGroupType {
   BrowsingBehaviorRating = "BrowsingBehaviorRating",
 }
 
-export interface DashboardGroupStandard {
+export interface DashboardGroupTxtQuestion {
   id: QuestionCategoryId;
   dashboardTxt: string;
   answers: Answer[];
@@ -45,7 +45,7 @@ export interface DashboardGroupBrowsingBehavior {
 }
 
 export type DashboardGroup =
-  | DashboardGroupStandard
+  | DashboardGroupTxtQuestion
   | DashboardGroupBrowsingBehavior
   | DashboardGroupStats
   | DashboardGroupQuote

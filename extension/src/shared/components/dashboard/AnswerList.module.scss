@@ -11,28 +11,12 @@
 
 .categoryTitle {
   @include h4();
-  cursor: pointer;
   margin-top: 0;
   user-select: none;
   margin-bottom: 20px;
   position: relative;
   display: inline-block;
   text-transform: lowercase;
-
-  &:hover {
-    cursor: pointer;
-
-    &:after {
-      position: absolute;
-      left: 100%;
-      margin-left: 4px;
-      display: block;
-      top: 50%;
-      transform: translate(0, -50%);
-      content: '⎆';
-      opacity: .8;
-    }
-  }
 }
 
 
