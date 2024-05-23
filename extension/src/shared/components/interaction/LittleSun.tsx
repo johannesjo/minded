@@ -130,9 +130,9 @@ export const LittleSunComponent: (props: {
                 }
               }}
               classList={{
-                ["minded-6622-was-NO-answer-given"]: !props.wasAnswerGiven,
-                ["minded-6622-long-text"]: props.bubbleTxt?.length > 144,
-                ["minded-6622-very-long-text"]: props.bubbleTxt?.length > 288,
+                ["was-NO-answer-given"]: !props.wasAnswerGiven,
+                ["long-text"]: props.bubbleTxt?.length > 144,
+                ["very-long-text"]: props.bubbleTxt?.length > 288,
               }}
             >
               {props.bubbleTxt}
