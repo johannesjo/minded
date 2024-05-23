@@ -170,6 +170,15 @@
       @include centerItem()
     }
   }
+
+  &.interactive {
+    cursor: pointer;
+    transition: all .2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, .7);
+    }
+  }
 }
 
 

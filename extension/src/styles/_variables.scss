@@ -32,6 +32,7 @@
   --bottom-bar-bg: rgba(255, 255, 255, 0.6);
 
   --dashboard-card-bg: rgba(255, 255, 255, .35);
+  --dashboard-card-bg-hover: rgba(255, 255, 255, .7);
   --dashboard-card-border-radius: 16px;
 
   --sun-bg: #fff;
@@ -84,6 +85,7 @@
     --bottom-bar-bg: rgba(0, 0, 0, .2);
 
     --dashboard-card-bg: rgba(0, 0, 0, .25);
+    --dashboard-card-bg-hover: rgba(0, 0, 0, .6);
 
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, .7);
@@ -104,6 +106,7 @@
     --btn-height: 52px;
     --btn-height-bigger: 58px;
 
+    --dashboard-card-border-radius: 8px;
 
     --rating-size: 48px;
 
