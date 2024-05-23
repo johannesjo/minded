@@ -2,7 +2,7 @@
 import { createSignal, onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
-import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
+import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countBlockedAttempt } from "@src/dataInterface/android/syncDataInterface";
@@ -20,7 +20,7 @@ const InteractionAndroid = () => {
   let wrapperEl;
 
   onMount(async () => {
-    addDayTimeDependentClass();
+    addWrapperClasses();
   });
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {
