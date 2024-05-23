@@ -173,11 +173,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT11,
-        t: "Are you setting realistic goals and deadlines",
-      },
-      {
-        id: QID.RFHT12,
-        t: "How can you eliminate or reduce distractions",
+        t: "Are you setting realistic goals and deadlines and if not how can you improve",
       },
     ],
   },
@@ -237,6 +233,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.HT6,
         t: "How do I stay grounded when I feel overwhelmed",
         prompt: "I am able to stay grounded, when",
+      },
+      {
+        id: QID.HT7,
+        t: "How can you eliminate or reduce distractions",
       },
     ],
   },
