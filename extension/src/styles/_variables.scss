@@ -17,9 +17,6 @@
   --form-inputs-height: var(--btn-height);
   --form-inputs-height-smaller: 40px;
 
-  --bottom-bar-height: var(--btn-height);
-  --bottom-bar-bg: rgba(255, 255, 255, 0.6);
-
   --btn-fz: 24px;
   --btn-height: 56px;
   --btn-height-bigger: 64px;
@@ -31,6 +28,12 @@
   --btn-selected-scale: 1.1;
 
   // components
+  --bottom-bar-height: var(--btn-height);
+  --bottom-bar-bg: rgba(255, 255, 255, 0.6);
+
+  --dashboard-card-bg: rgba(255, 255, 255, .35);
+  --dashboard-card-border-radius: 16px;
+
   --sun-bg: #fff;
 
   --c-graph-fg-full: rgba(0, 0, 0, .5);
@@ -79,6 +82,8 @@
     --c-graph-fg-less: rgba(255, 255, 255, .5);
 
     --bottom-bar-bg: rgba(0, 0, 0, .2);
+
+    --dashboard-card-bg: rgba(0, 0, 0, .25);
 
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, .7);
