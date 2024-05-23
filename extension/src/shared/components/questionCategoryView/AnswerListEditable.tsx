@@ -22,7 +22,7 @@ export const AnswerListEditable: (props: {
   return (
     <div class={styles.AnswerListEditable}>
       <For each={props.answers}>
-        {(answer, i) => (
+        {(answer) => (
           <AnswerEntry
             answer={answer}
             onEdit={(upd) => props.onEdit(upd)}
