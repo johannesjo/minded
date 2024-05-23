@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
         sharedPreferenceService = SharedPreferenceService(this)
         sharedPreferenceService.writeDefaultDataIfNecessary()
-
+        WebView.setWebContentsDebuggingEnabled(true)
 
         lifecycleScope.launch {
             setContent {
