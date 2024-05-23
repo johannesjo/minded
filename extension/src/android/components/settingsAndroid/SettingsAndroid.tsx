@@ -12,6 +12,7 @@ import { useNavigate } from "@solidjs/router";
 
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
+  saveBtnTxt?: string;
   onSave?: () => void;
 }) => {
   // const navigate = useNavigate();
@@ -23,7 +24,38 @@ export const SettingsAndroid = (props: {
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
   onMount(() => {
-    setAvailableApps(JSON.parse(androidInterface.getAllApps()));
+    // setAvailableApps(JSON.parse(androidInterface.getAllApps()));
+    setAvailableApps([
+      ...JSON.parse(androidInterface.getAllApps()),
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+      "Aasd",
+    ]);
     getSyncData().then((syncData) => {
       setSelectedApps(syncData.cfg.blockedApps || []);
     });
@@ -79,7 +111,7 @@ export const SettingsAndroid = (props: {
           disabled={!getSelectedApps()?.length}
           onClick={handleSave}
         >
-          Save
+          {props.saveBtnTxt || "Save"}
         </button>
       </div>
     </div>

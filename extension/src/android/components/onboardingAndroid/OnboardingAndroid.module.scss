@@ -23,7 +23,8 @@
 .stepper {
   --spacing-medium: 16px;
   --step-size: 52px;
-  --color-inactive: var(--bottom-bar-bg);
+  --color-inactive: var(--btn-bg-not-selected);
+  --color-inactive: var(--btn-bg-selected);
   --color-active: var(--btn-bg-selected);
   --transition-speed: 0.3s;
   --line-height: 2px;
@@ -37,6 +38,7 @@
 }
 
 .step {
+  color: var(--c-fg);
   width: var(--step-size);
   height: var(--step-size);
   background-color: var(--color-inactive);
@@ -46,9 +48,11 @@
   justify-content: center;
   transition: background-color var(--transition-speed);
   position: relative;
+  opacity: .5;
 
   &.active {
     background-color: var(--color-active);
+    opacity: 1;
   }
 
   &:not(:last-child) {

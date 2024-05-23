@@ -1,16 +1,19 @@
-import { createSignal, For, Match, onMount, Switch } from "solid-js";
-import {
-  ANDROID_EV_RESUME,
-  androidInterface,
-} from "@src/dataInterface/android/androidInterface";
+import { createEffect, createSignal, For, Match, Switch } from "solid-js";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { SettingsAndroid } from "@src/android/components/settingsAndroid/SettingsAndroid";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 // @ts-ignore
 import styles from "./OnboardingAndroid.module.scss";
+import { updateUserCfg } from "@src/dataInterface/android/syncDataInterface";
 
 export const OnboardingAndroid = () => {
   const [getStep, setStep] = createSignal<number>(0);
+
+  createEffect(() => {
+    if (getStep() === 3) {
+      updateUserCfg({ isOnboardingComplete: true });
+    }
+  });
 
   return (
     <div class={`${styles.wrapper}`}>
@@ -34,37 +37,43 @@ export const OnboardingAndroid = () => {
 
               <ButtonWrapper isVisible={true}>
                 <div class="btnTxtBig" onClick={() => setStep(1)}>
-                  Next
+                  let's start
                 </div>
               </ButtonWrapper>
             </div>
           </Match>
 
           <Match when={getStep() === 1}>
-            <SettingsAndroid isRouting={false} onSave={() => setStep(2)} />
+            <SettingsAndroid
+              isRouting={false}
+              saveBtnTxt="save & continue"
+              onSave={() => setStep(2)}
+            />
           </Match>
           <Match when={getStep() === 2}>
             <div class="pageWrapper">
-              <MissingCapabilityView />
+              <MissingCapabilityView onAllConfigured={() => setStep(3)} />
             </div>
           </Match>
           <Match when={getStep() >= 3}>
-            <div id="minded-6622-coloured-wrapper">
-              <div class="card" style="margin: 32px;">
-                <div class="h2">
-                  <em>minded</em> is now successfully configured.
-                </div>
-                <p>
-                  Whenever you open one of the apps you configured a short
-                  interaction prompt will appear.
-                </p>
-                <p>
-                  This will help you break your automatic patterns to use those
-                  apps more often than you like.
-                </p>
-
-                <p>Come back here, once you answered a couple of those.</p>
+            <div class="card" style="margin: 32px;">
+              <div class="h2">
+                <em>minded</em> is now successfully configured! 🎉
               </div>
+              <p>
+                Whenever you open one of the apps you configured a short
+                interaction prompt will appear.
+              </p>
+              <p>
+                This will help you break your automatic patterns to use those
+                apps more often than you like.
+              </p>
+
+              <p>Come back here, once you answered a couple of those.</p>
+              {/*<ButtonWrapper isVisible={true}>*/}
+              {/*  <div class="btnTxtBig"*/}
+              {/*       onClick={() => setStep(0)}>Let's start!</div>*/}
+              {/*</ButtonWrapper>*/}
             </div>
           </Match>
         </Switch>
@@ -77,7 +86,10 @@ export const OnboardingAndroid = () => {
               class={`${styles.step} ${
                 step === getStep() ? styles.active : ""
               }`}
-            ></div>
+            >
+              {step <= 2 && step + 1}
+              {step === 3 && "☀"}
+            </div>
           )}
         </For>
       </div>
