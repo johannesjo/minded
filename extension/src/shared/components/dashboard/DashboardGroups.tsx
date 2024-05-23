@@ -87,7 +87,7 @@ export const DashboardGroups: (props: {
                 const rd = (dg as DashboardGroupBrowsingBehavior).data;
                 return (
                   <div class={styles.browsingBehaviorGraph}>
-                    <div>
+                    <div class="h4">
                       {IS_ANDROID
                         ? "bad app usage rating over time"
                         : "browsing behavior over time"}
