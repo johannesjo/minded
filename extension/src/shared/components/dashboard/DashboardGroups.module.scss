@@ -100,16 +100,13 @@
   @include standardPageTransitionIn();
   margin: 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, .35);
-  border-radius: 8px;
+  background: var(--dashboard-card-bg);
+  border-radius: var(--dashboard-card-border-radius);
 
  @include onNonMobileScreens() {
    padding: 32px;
  }
 
-  @include inDarkMode(){
-    background: rgba(0, 0, 0, .25);
-  }
 
 
   @media (min-width: $bpDashboardMoreThan1Col) {
