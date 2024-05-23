@@ -35,7 +35,7 @@ Other comments:
   return (
     <div class={styles.wrapper}>
       <p class="txtBig">
-        <em>minded</em> is very young, so we'd really appreciate some feedback!
+        <em>minded</em> is very young, so we'd really appreciate your feedback!
       </p>
 
       <div>
