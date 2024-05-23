@@ -1,13 +1,42 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import styles from "./MissingCapabilities.module.scss";
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
+import {
+  ANDROID_EV_RESUME,
+  androidInterface,
+} from "@src/dataInterface/android/androidInterface";
 
-export const MissingCapabilityView = ({ missingCapabilities }) => {
+export const MissingCapabilityView = (props: {
+  onAllConfigured?: () => void;
+}) => {
   const [getIsShowManualInstructions, setIsShowManualInstructions] =
     createSignal<boolean>(false);
+
+  const [getMissingCapabilities, setMissingCapabilities] = createSignal<
+    string[]
+  >([]);
   let t0;
+
+  const refreshMissingCapabilities = () => {
+    const mc = JSON.parse(androidInterface.getMissingCapabilities());
+    setMissingCapabilities(mc);
+    console.log("XXXXXXXXXXXXXXXXXXXX");
+
+    console.log(mc);
+
+    if (mc.length === 0) {
+      props.onAllConfigured?.();
+    }
+  };
+
+  onMount(() => {
+    refreshMissingCapabilities();
+
+    window.addEventListener(ANDROID_EV_RESUME, () => {
+      refreshMissingCapabilities();
+    });
+  });
 
   const onMissingCapabilityClick = (capability: string) => {
     console.log(capability);
@@ -24,14 +53,10 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
   return (
     <div class={styles.container}>
       <div class={styles.innerContainer}>
-        <div class="h2">
-          Welcome to <em>minded</em>! 😊
-        </div>
-
         <div class="txtBig">
-          <em>minded</em> displays an overlay to interrupt your visits to apps
-          you want to use less. Before you can use the app as intended, you need
-          to give it permission to allow this.
+          <em>minded</em> displays an overlay when you open an app you
+          configured to use less. For this to work you need to give permission
+          to the app.
         </div>
 
         <div class="txtBig" style="margin-top: 16px; margin-bottom: 16px;">
@@ -41,7 +66,7 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
           </strong>
         </div>
 
-        {missingCapabilities.includes("SystemAlertWindow") && (
+        {getMissingCapabilities().includes("SystemAlertWindow") && (
           <div class="card">
             <p class={styles.permissionText + "  txtSlightlyBigger"}>
               To display overlays, <em>minded </em>needs the overlay permission.
@@ -55,7 +80,7 @@ export const MissingCapabilityView = ({ missingCapabilities }) => {
           </div>
         )}
 
-        {missingCapabilities.includes("Accessibility") && (
+        {getMissingCapabilities().includes("Accessibility") && (
           <div class="card">
             <p class={styles.permissionText + "  txtSlightlyBigger"}>
               The <em>minded</em> accessibility service is required to detect

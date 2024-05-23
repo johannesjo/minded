@@ -5,40 +5,60 @@ import {
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
-import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
+import { SyncData } from "@src/dataInterface/syncData";
+import { getSyncData } from "@src/dataInterface/android/syncDataInterface";
+import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
+import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
+  const [getIsShowOnboarding, setIsShowOnboarding] = createSignal(false);
 
   onMount(() => {
     addWrapperClasses();
   });
 
-  const refreshMissingCapabilities = () => {
-    setMissingCapabilities(
-      JSON.parse(androidInterface.getMissingCapabilities()),
-    );
+  const refresh = () => {
+    getSyncData().then((syncData: SyncData) => {
+      setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
+      // if (
+      //   !syncData.answers.length &&
+      //   syncData.energyLvlTS <= DEFAULT_TS_VAL &&
+      //   syncData.moodCheckTS <= DEFAULT_TS_VAL &&
+      //   syncData.lastBrowsingBehaviorRatingTS <= DEFAULT_TS_VAL
+      // ) {
+      //   setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
+      // }
+    });
+
+    setTimeout(() => {
+      setMissingCapabilities(
+        JSON.parse(androidInterface.getMissingCapabilities()),
+      );
+    });
   };
 
   onMount(() => {
-    refreshMissingCapabilities();
+    refresh();
 
     window.addEventListener(ANDROID_EV_RESUME, () => {
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
-      refreshMissingCapabilities();
+      refresh();
     });
   });
 
   return (
     <>
-      {getMissingCapabilities().length > 0 ? (
-        <div id="minded-6622-coloured-wrapper">
-          <MissingCapabilityView
-            missingCapabilities={getMissingCapabilities()}
-          />
+      {getIsShowOnboarding() ? (
+        <div id="minded-6622-coloured-wrapper" class="pageWrapper">
+          <OnboardingAndroid />
+        </div>
+      ) : getMissingCapabilities().length > 0 ? (
+        <div id="minded-6622-coloured-wrapper" class="pageWrapper">
+          <MissingCapabilityView />
         </div>
       ) : (
         <RoutesCmp />

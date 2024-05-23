@@ -9,7 +9,7 @@ import { getSyncData, updateUserCfg } from "@dataInterface/syncDataInterface";
 export const WebsiteList: (props: {
   onAfterSave: () => void;
 }) => JSX.Element = (props) => {
-  let [items, setItems] = createSignal<string[]>([]);
+  const [items, setItems] = createSignal<string[]>([]);
 
   onMount(() => {
     getSyncData().then((syncData) => {

@@ -5,3 +5,11 @@
 .pageTransitionIn {
   @include standardPageTransitionIn();
 }
+
+.pageWrapper {
+  padding: 16px;
+
+  @include onNonMobileScreens(){
+    padding: 32px;
+  }
+}
