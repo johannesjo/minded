@@ -21,8 +21,6 @@ export const MissingCapabilityView = (props: {
   const refreshMissingCapabilities = () => {
     const mc = JSON.parse(androidInterface.getMissingCapabilities());
     setMissingCapabilities(mc);
-    console.log("XXXXXXXXXXXXXXXXXXXX");
-
     console.log(mc);
 
     if (mc.length === 0) {
@@ -53,13 +51,16 @@ export const MissingCapabilityView = (props: {
   return (
     <div class={styles.container}>
       <div class={styles.innerContainer}>
-        <div class="txtBig">
-          <em>minded</em> displays an overlay when you open an app you
-          configured to use less. For this to work you need to give permission
-          to the app.
+        <div class="txtSlightlyBigger">
+          <em>minded</em> displays an overlay when you open one of the
+          configured apps. For this to work you need to give permission to{" "}
+          <em>minded</em>.
         </div>
 
-        <div class="txtBig" style="margin-top: 16px; margin-bottom: 16px;">
+        <div
+          class="txtSlightlyBigger"
+          style="margin-top: 16px; margin-bottom: 32px;"
+        >
           <strong>
             <em>minded</em> does not collect any data! Everything stays on your
             device!
@@ -68,7 +69,7 @@ export const MissingCapabilityView = (props: {
 
         {getMissingCapabilities().includes("SystemAlertWindow") && (
           <div class="card">
-            <p class={styles.permissionText + "  txtSlightlyBigger"}>
+            <p class={styles.permissionText + "  noRealClassMM"}>
               To display overlays, <em>minded </em>needs the overlay permission.
             </p>
             <button
@@ -82,10 +83,11 @@ export const MissingCapabilityView = (props: {
 
         {getMissingCapabilities().includes("Accessibility") && (
           <div class="card">
-            <p class={styles.permissionText + "  txtSlightlyBigger"}>
+            <p class={styles.permissionText + "  noRealClassMM"}>
               The <em>minded</em> accessibility service is required to detect
               app starts on your device, so <em>minded</em> knows when to
-              display the interaction overlay.
+              display the interaction overlay. Enabling the shortcut is{" "}
+              <strong>not</strong> required.
             </p>
             <button
               class="btnTxt"

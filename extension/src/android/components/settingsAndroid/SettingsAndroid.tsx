@@ -25,6 +25,7 @@ export const SettingsAndroid = (props: {
 
   onMount(() => {
     setAvailableApps(JSON.parse(androidInterface.getAllApps()));
+
     getSyncData().then((syncData) => {
       setSelectedApps(syncData.cfg.blockedApps || []);
     });
@@ -45,7 +46,7 @@ export const SettingsAndroid = (props: {
   };
 
   return (
-    <div>
+    <div class="pageTransitionIn">
       <div class="txtBig" style="margin: 16px;">
         Please select at least one app that you want to use less.
       </div>
