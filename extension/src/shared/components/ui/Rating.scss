@@ -1,6 +1,7 @@
 @import "@src/styles/mixins/mixins";
 
 .rating {
+  white-space: nowrap;
 
   &.showOnly {
     &,
