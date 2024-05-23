@@ -114,7 +114,7 @@ export const LittleSunComponent: (props: {
         <div
           id="minded-6622-little-sun"
           classList={{
-            ["minded-6622-top-right"]: getIsMoveToTopRight(),
+            ["top-right"]: getIsMoveToTopRight(),
           }}
         >
           {props.bubbleTxt && getIsShowBubbleTxt() && (
