@@ -21,7 +21,6 @@ open class MainActivityJavaScriptInterface(
     protected val getMissingCapabilitiesI: () -> List<MissingCapability> = { emptyList<MissingCapability>() },
 ) {
     private val sharedPreferenceService = SharedPreferenceService(context)
-    private var missingCapabilities = emptyList<MissingCapability>()
 
     var logTag = "MainActivityJavaScriptInterface"
 
