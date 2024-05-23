@@ -1,7 +1,9 @@
+@import "variablesSCSS";
 @import "variables";
-@import "components/components";
 @import "mixins/mixins";
-@import "@src/styles/sharedForInteraction.scss";
+@import "componentsShared/componentsShared";
+@import "misc/sharedAnis";
+@import "sharedGlobalInteraction";
 
 #minded-6622 {
   font-size: var(--fz-m);
@@ -14,7 +16,6 @@
   // deactivate blue stuff on android
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-tap-highlight-color: transparent;
-
 
   a {
     color: var(--c-link-color);
@@ -30,31 +31,9 @@
     box-sizing: border-box;
   }
 
-  .h2 {
-    @include h2;
-  }
-
-  .txt-big {
-    @include txtBig;
-  }
-
-  .txt-smaller {
-    @include txtSmaller;
-  }
-
   .hideOnXS {
     @include onNonMobileScreens {
       display: none !important;
     }
   }
-
-  .fadeIn {
-    animation: minded6622fadeIn ease 1s;
-  }
-
-  .pageTransitionIn {
-    @include standardPageTransitionIn();
-  }
 }
-
-

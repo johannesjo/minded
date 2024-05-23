@@ -109,8 +109,6 @@
   margin: 16px;
 
 
-
-
   @media (min-width: $bpDashboardMoreThan1Col) {
     opacity: 0;
     animation: minded6622fadeIn ease 1.5s;
@@ -179,11 +177,6 @@
 }
 
 
-.standardHeading {
-  @include h4();
-  margin-top: 0;
-}
-
 .browsingBehaviorGraph,
 .stats,
 .moodCheckinWidget,
@@ -191,7 +184,6 @@
   margin: auto;
 
   div:first-child {
-    @include h4();
     margin-bottom: 0;
   }
 }
@@ -203,30 +195,22 @@
 .energyLvl {
   div:first-child {
     margin-bottom: 16px;
+    margin-top: 0;
   }
 }
 
 .stats {
-  div:last-child {
-    @include fatTxt();
-  }
 }
 
 
 .moodCheckinWidget {
   div:first-child {
-    @include h4();
     margin-bottom: 10px;
 
     span {
-      @include fatTxt();
       margin-left: 4px;
       margin-right: 4px;
       text-transform: lowercase;
     }
-  }
-
-  div:last-child {
-    @include usrQuote();
   }
 }

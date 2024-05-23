@@ -2,15 +2,15 @@
 
 .AnswerList {
 
+
+ :global  .userQuote {
+    margin-top: 16px;
+  }
+
 }
 
-.userQuote {
-  margin-top: 16px;
-  @include usrQuote();
-}
 
 .categoryTitle {
-  @include h4();
   margin-top: 0;
   margin-bottom: 4px;
   user-select: none;

@@ -12,7 +12,12 @@ export const AnswerList: (props: {
 }) => JSX.Element = (props) => {
   return (
     <div class={styles.AnswerList}>
-      <div class={styles.categoryTitle}>
+      <div
+        classList={{
+          [styles.categoryTitle]: true,
+          ["h4"]: true,
+        }}
+      >
         {props.dashboardGroup.dashboardTxt}
       </div>
 
@@ -29,7 +34,7 @@ export const AnswerList: (props: {
               : questionTxt;
 
           return (
-            <div class={styles.userQuote} title={titleTxt}>
+            <div class="userQuote" title={titleTxt}>
               {truncate(answer.val.toString(), MAX_ANSWER_LENGTH)}
             </div>
           );

@@ -4,7 +4,7 @@
   --border-radius: 8px;
   --c-link-color: rgb(153, 23, 166);
 
-  --fz-l: 32px;
+  --fz-xl: 32px;
   --fz-m: 19px;
   --fz-s: 14px;
   //--fz-s: 18px;
@@ -28,6 +28,8 @@
   --btn-selected-scale: 1.1;
 
   // components
+  --interaction-txt-size: var(--fz-xl);
+
   --bottom-bar-height: var(--btn-height);
   --bottom-bar-bg: rgba(255, 255, 255, 0.6);
 
@@ -98,7 +100,7 @@
 
 @media (max-width: $bpMobileMax) {
   #minded-6622 {
-    --fz-l: 22px;
+    --fz-xl: 22px;
     --fz-m: 15px;
 
     --btn-fz: 20px;

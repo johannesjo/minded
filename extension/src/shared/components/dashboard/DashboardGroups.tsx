@@ -100,10 +100,14 @@ export const DashboardGroups: (props: {
                 const dgs = dg as DashboardGroupStats;
                 return (
                   <div class={styles.stats}>
-                    <div title="'minded' decisions are counted every time when you leave a website by clicking the sun.">
+                    <div
+                      class="h4"
+                      title="'minded' decisions are counted every time when you leave a website by clicking the sun."
+                    >
                       minded decisions today
                     </div>
                     <div
+                      class="fatTxt"
                       title={
                         dgs.attempts + " website visit attempts today in total"
                       }
@@ -117,10 +121,10 @@ export const DashboardGroups: (props: {
                 const dgm = dg as DashboardGroupMood;
                 return (
                   <div class={styles.moodCheckinWidget}>
-                    <div class={styles.moodCheckinWidgetTxt}>
-                      you feel <span>{dgm.mood}</span> today!
+                    <div class="h4">
+                      you feel <span class="fatTxt">{dgm.mood}</span> today!
                     </div>
-                    <div>
+                    <div class="userQuote">
                       {dgm.additionalTxt}
                       {!dgm.additionalTxt &&
                         (dgm.mood === MoodCheckinVal.Awful ||
@@ -137,9 +141,7 @@ export const DashboardGroups: (props: {
                 const dge = dg as DashboardGroupEnergyLvl;
                 return (
                   <div class={styles.energyLvl}>
-                    <div class={styles.standardHeading}>
-                      your energy level today
-                    </div>
+                    <div class="h4">your energy level today</div>
                     <Rating isShowOnly={true} value={dge.energyLvl} />
                   </div>
                 );

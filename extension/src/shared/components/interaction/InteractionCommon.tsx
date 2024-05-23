@@ -220,7 +220,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             />
           </Match>
           <Match when={getMode() === "ACTION_ADVICE"}>
-            <div id="minded-6622-action-advice" style="pointer-events:none;">
+            <div
+              id="minded-6622-action-advice"
+              class="txtBig"
+              style="pointer-events:none;"
+            >
               <div>{ADVICE.txt}</div>
               <div>{ADVICE.ico}</div>
             </div>

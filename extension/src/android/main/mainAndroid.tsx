@@ -1,5 +1,5 @@
 import { render } from "solid-js/web";
-import "./main.scss";
+import "./mainAndroid.scss";
 import MainAndroid from "@src/android/main/MainAndroid";
 
 const appContainer = document.querySelector("#minded-6622");

@@ -8,7 +8,7 @@ export const RndQuote: () => JSX.Element = () => {
   const quote = getRndEntry(QUOTES);
   return (
     <div class={styles.RndQuote}>
-      <div class={styles.txt}>“{quote.txt}”</div>
+      <div class="userQuote">“{quote.txt}”</div>
       {quote.author && <div class={styles.author}>{quote.author}</div>}
     </div>
   );

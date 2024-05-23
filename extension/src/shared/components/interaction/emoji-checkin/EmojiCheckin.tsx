@@ -23,7 +23,7 @@ export const EmojiCheckin: (props: {
 
   return (
     <div class="emoji-checkin-wrapper" onmouseenter={props.onCancelCountdown}>
-      <div class="txt-big">How do you feel?</div>
+      <div class="txtBig">How do you feel?</div>
 
       <div>
         {EMOIJI_CATEGORIES_SORTED.map((catid) => (
