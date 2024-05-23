@@ -67,21 +67,42 @@
       grid-template-columns: repeat(3, 1fr);
     }
   }
+
+
+  @media (min-width: $bpDashboardMoreThan2Col) {
+    &[nr-of-items="6"],
+    &[nr-of-items="7"],
+    &[nr-of-items="8"],
+    &[nr-of-items="9"],
+    &[nr-of-items="10"],
+    &[nr-of-items="11"],
+    &[nr-of-items="12"],
+    &[nr-of-items="13"],
+    &[nr-of-items="14"],
+    &[nr-of-items="15"],
+    &[nr-of-items="16"],
+    &[nr-of-items="17"],
+    &[nr-of-items="18"] {
+      .box {
+        animation-delay: 1.5s;
+      }
+    }
+  }
 }
+
 
 .box {
   position: relative;
   box-sizing: border-box;
-  animation-delay: 0s;
   animation-duration: .3s;
   // NOTE: padding leads to scrollbars
   margin: 64px 32px;
-  @include  standardPageTransitionIn();
+  @include standardPageTransitionIn();
+
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     opacity: 0;
     animation: minded6622fadeIn ease 2s;
-    animation-delay: 1.5s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
     margin: 32px;
@@ -91,8 +112,9 @@
     }
   }
 
+
   &:nth-child(5) {
-    animation-delay: 0s;
+    animation-delay: 0s !important;
   }
 
   &:nth-child(n+7) {
@@ -110,6 +132,8 @@
     }
   }
 
+
+  // center logic
   @mixin centerItem() {
     display: flex;
     flex-direction: column;
