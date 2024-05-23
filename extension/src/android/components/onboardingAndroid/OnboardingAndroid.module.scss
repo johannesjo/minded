@@ -16,8 +16,16 @@
 
 .contentWrapper {
   flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   overflow: auto;
-  //border: 1px solid red;
+
+  > *{
+    max-height: 100%;
+    overflow: auto;
+    margin: auto;
+  }
 }
 
 .stepper {
