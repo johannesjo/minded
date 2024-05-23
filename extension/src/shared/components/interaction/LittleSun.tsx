@@ -20,7 +20,7 @@ export const LittleSunComponent: (props: {
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsLittleSunSuccess, setIsLittleSunSuccess] = createSignal(false);
-  const [getIsMoveToTopRight, setIsMoveToTopRight] = createSignal(false);
+  const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
   const [getIsShowBubbleTxt, setIsShowBubbleTxt] = createSignal(false);
 
   let currentSessionInterval: number;
@@ -39,7 +39,7 @@ export const LittleSunComponent: (props: {
     // }, 8000);
 
     t0 = setTimeout(() => {
-      setIsMoveToTopRight(true);
+      setIsMoveOutOfTheWay(true);
     }, 200);
 
     t1 = setTimeout(() => {
@@ -114,7 +114,8 @@ export const LittleSunComponent: (props: {
         <div
           id="minded-6622-little-sun"
           classList={{
-            ["top-right"]: getIsMoveToTopRight(),
+            ["topRight"]: true,
+            ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
           }}
         >
           {props.bubbleTxt && getIsShowBubbleTxt() && (

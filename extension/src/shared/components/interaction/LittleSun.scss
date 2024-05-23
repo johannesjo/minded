@@ -12,8 +12,6 @@
 #minded-6622-little-sun {
   cursor: cell;
   position: fixed;
-  right: 50%;
-  top: 50%;
   transform-origin: center center;
   z-index: 30;
   transform: translate(50%, -50%);
@@ -22,12 +20,28 @@
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 
+  &.topRight {
+    top: 50%;
+    right: 50%;
 
-  &.top-right {
-    transform: translate(0, 0);
-    top: 40px;
-    right: 40px;
-    left: auto;
+    &.isOutOfTheWay {
+      transform: translate(0, 0);
+      top: 40px;
+      right: 40px;
+      left: auto;
+    }
+  }
+
+  &.bottomLeft {
+    left: 50%;
+    bottom: 50%;
+
+    &.isOutOfTheWay {
+      transform: translate(0, 0);
+      bottom: 40px;
+      left: 40px;
+      right: auto;
+    }
   }
 }
 
@@ -66,17 +80,15 @@ $sun-size: 40px;
 
 #minded-6622-little-sun-text {
   color: var(--little-sun-txt-c);
-  margin-right: -0.5* $sun-size;
   box-shadow: var(--little-sun-shadow);
   position: absolute;
   top: 50%;
-  right: 100%;
   transform: translateY(-50%);
   /* transform: translate(-50%); */
   background: var(--little-sun-bg);
   min-width: 200px;
   border-radius: 8px;
-  padding: 8px (($sun-size*0.5) + 4px) 8px 8px;
+  padding: 8px;
   font-size: var(--litle-sun-txt-fz);
   line-height: 16px;
   text-align: center;
@@ -95,6 +107,18 @@ $sun-size: 40px;
 
   &.was-NO-answer-given {
     cursor: pointer;
+  }
+
+  .topRight & {
+    padding-right: (($sun-size*0.5) + 4px);
+    margin-right: -0.5* $sun-size;
+    right: 100%;
+  }
+
+  .bottomLeft & {
+    padding-left: (($sun-size*0.5) + 4px);
+    margin-left: -0.5* $sun-size;
+    left: 100%;
   }
 }
 
