@@ -12,8 +12,8 @@
 .categoryTitle {
   @include h4();
   margin-top: 0;
+  margin-bottom: 4px;
   user-select: none;
-  margin-bottom: 20px;
   position: relative;
   display: inline-block;
   text-transform: lowercase;
