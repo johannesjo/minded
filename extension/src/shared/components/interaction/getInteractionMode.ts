@@ -36,6 +36,11 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   const nowTS = Date.now();
   const nowHours = now.getHours();
 
+  // always return question if never answered any
+  if (syncData.answers.length <= 1) {
+    return "QUESTION";
+  }
+
   if (isXIn1(SMALL_CHANCE)) {
     return "SELF_REFLECTION_RATING";
   }
