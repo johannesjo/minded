@@ -171,7 +171,7 @@
 
     @include onMousePrimary() {
       &:hover {
-        background: rgba(255, 255, 255, .7);
+        background: var(--dashboard-card-bg-hover);
       }
     }
   }
