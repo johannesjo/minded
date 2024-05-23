@@ -3,7 +3,10 @@
 .rating {
 
   &.showOnly {
-    pointer-events: none;
+    &,
+    & * {
+      pointer-events: none;
+    }
   }
 
   &.showOnly span {
