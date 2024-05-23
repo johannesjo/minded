@@ -37,11 +37,11 @@
     box-sizing: border-box;
     padding: 16px;
 
-    @media (min-width: #{$bpDashboardMoreThan2Col +32px}) {
+    @media (min-width: #{$bpDashboardMoreThan2Col + 32px}) {
       padding: 32px;
     }
 
-    @media (min-width: #{$bpDashboardMoreThan2Col +128px}) {
+    @media (min-width: #{$bpDashboardMoreThan2Col + 128px}) {
       padding: 64px;
     }
 
