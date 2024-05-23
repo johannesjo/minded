@@ -6,7 +6,7 @@ import {
 } from "@src/dataInterface/android/androidInterface";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
-import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
+import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -14,7 +14,7 @@ const MainAndroid = () => {
   >([]);
 
   onMount(() => {
-    addDayTimeDependentClass();
+    addWrapperClasses();
   });
 
   const refreshMissingCapabilities = () => {

@@ -1,10 +1,10 @@
 import { onMount } from "solid-js";
-import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
+import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import Options from "@pages/options/Options";
 
 const OptionsPage = () => {
   onMount(() => {
-    addDayTimeDependentClass();
+    addWrapperClasses();
   });
 
   return (

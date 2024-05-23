@@ -2,7 +2,7 @@ import { HashRouter, Route } from "@solidjs/router";
 import React from "react";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, JSX, onMount } from "solid-js";
-import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
+import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -19,7 +19,7 @@ const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
     createSignal<boolean>(false);
 
   onMount(() => {
-    addDayTimeDependentClass();
+    addWrapperClasses();
   });
 
   return (
