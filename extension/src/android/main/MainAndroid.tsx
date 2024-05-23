@@ -1,7 +1,3 @@
-// @ts-ignore
-import styles from "./MainAndroid.module.scss";
-// @ts-ignore
-import { getSyncData } from "@dataInterface/syncDataInterface";
 import RoutesCmp from "@src/shared/RouteCmp";
 import { createSignal, onMount } from "solid-js";
 import {
@@ -10,18 +6,18 @@ import {
 } from "@src/dataInterface/android/androidInterface";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
+import { addDayTimeDependentClass } from "@src/shared/addDayTimeDependentClass";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
 
+  onMount(() => {
+    addDayTimeDependentClass();
+  });
+
   const refreshMissingCapabilities = () => {
-    console.log("____________________________________________________-");
-    console.log(androidInterface.getMissingCapabilities());
-
-    console.log(JSON.parse(androidInterface.getMissingCapabilities()));
-
     setMissingCapabilities(
       JSON.parse(androidInterface.getMissingCapabilities()),
     );
