@@ -24,7 +24,7 @@ const MainAndroid = () => {
   const refresh = () => {
     getSyncData().then((syncData: SyncData) => {
       setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
-      setIsShowOnboarding(true);
+      // setIsShowOnboarding(true);
       // if (
       //   !syncData.answers.length &&
       //   syncData.energyLvlTS <= DEFAULT_TS_VAL &&

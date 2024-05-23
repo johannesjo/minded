@@ -20,11 +20,11 @@ export const OnboardingAndroid = () => {
       <div class={styles.contentWrapper}>
         <Switch>
           <Match when={getStep() === 0}>
-            <div class="pageWrapper">
+            <div class="pageWrapper pageTransitionIn">
               <div class="h2">
                 Welcome to <em>minded</em>! 😊
               </div>
-              <div class="txtBig">
+              <div class="txtSlightlyBigger">
                 <p>
                   <em>minded</em> will help you to reduce your usage of apps you
                   intend to use less, but have a hard time doing so.
@@ -44,19 +44,21 @@ export const OnboardingAndroid = () => {
           </Match>
 
           <Match when={getStep() === 1}>
-            <SettingsAndroid
-              isRouting={false}
-              saveBtnTxt="save & continue"
-              onSave={() => setStep(2)}
-            />
+            <div class="pageTransitionIn">
+              <SettingsAndroid
+                isRouting={false}
+                saveBtnTxt="save & continue"
+                onSave={() => setStep(2)}
+              />
+            </div>
           </Match>
           <Match when={getStep() === 2}>
-            <div class="pageWrapper">
+            <div class="pageWrapper pageTransitionIn">
               <MissingCapabilityView onAllConfigured={() => setStep(3)} />
             </div>
           </Match>
           <Match when={getStep() >= 3}>
-            <div class="card" style="margin: 32px;">
+            <div class="card pageTransitionIn" style="margin: 32px;">
               <div class="h2">
                 <em>minded</em> is now successfully configured! 🎉
               </div>

@@ -24,38 +24,7 @@ export const SettingsAndroid = (props: {
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
   onMount(() => {
-    // setAvailableApps(JSON.parse(androidInterface.getAllApps()));
-    setAvailableApps([
-      ...JSON.parse(androidInterface.getAllApps()),
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-      "Aasd",
-    ]);
+    setAvailableApps(JSON.parse(androidInterface.getAllApps()));
     getSyncData().then((syncData) => {
       setSelectedApps(syncData.cfg.blockedApps || []);
     });
