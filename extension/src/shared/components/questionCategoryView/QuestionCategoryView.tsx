@@ -109,7 +109,9 @@ export const QuestionCategoryView: (props: {
 
       <div class={" " + styles.infoTxt}>
         <div class="h3">Why should I care?</div>
-        <p>{QUESTION_CATEGORY_ADDITIONAL_INFO[questionCategoryId]}</p>
+        <p class="txt">
+          {QUESTION_CATEGORY_ADDITIONAL_INFO[questionCategoryId]}
+        </p>
       </div>
     </div>
   );
