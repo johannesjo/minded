@@ -472,7 +472,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
   },
   [QuestionCategoryId.XBrowsingBehaviorHappiness]: {
-    dashboardTxt: "Browsing Behavior Happiness",
+    dashboardTxt: "Browsing Behavior",
     isThisWeekOnlyCategory: true,
   },
   [QuestionCategoryId.XMoodCheckin]: {
