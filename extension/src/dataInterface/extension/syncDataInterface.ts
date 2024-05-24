@@ -11,6 +11,46 @@ const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
   QuestionCategoryId.XEnergyLevelToday,
 ];
 
+export const getSyncData = (): Promise<SyncData> => {
+  if (bro.runtime?.id) {
+    return bro.storage.sync.get().then((syncData) => ({
+      ...DEFAULT_SYNC_DATA,
+      ...syncData,
+    }));
+  } else {
+    throw new Error(
+      "Extension was reloaded, please reload tab for it to work here again",
+    );
+  }
+};
+
+export const saveSyncData = (syncData: SyncData): Promise<void> => {
+  if (bro.runtime?.id) {
+    return bro.storage.sync.set(syncData);
+  } else {
+    throw new Error(
+      "Extension was reloaded, please reload tab for it to work here again",
+    );
+  }
+};
+
+export const updateSyncData = async (
+  newSyncData: Partial<SyncData>,
+): Promise<void> => {
+  if (bro.runtime?.id) {
+    const syncData = await getSyncData();
+    const updatedSyncData: SyncData = {
+      ...syncData,
+      ...newSyncData,
+    };
+    return bro.storage.sync.set(updatedSyncData);
+  } else {
+    throw new Error(
+      "Extension was reloaded, please reload tab for it to work here again",
+    );
+  }
+};
+
 export const saveAnswer = (answer: Answer): Promise<void> => {
   return getSyncData()
     .then((syncData) => {
@@ -106,97 +146,44 @@ export const removeAnswer = (answerId: string): Promise<void> => {
     });
 };
 
-export const saveSyncData = (syncData: SyncData): Promise<void> => {
-  if (bro.runtime?.id) {
-    return bro.storage.sync.set(syncData);
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
-};
-
-export const updateSyncData = async (
-  newSyncData: Partial<SyncData>,
-): Promise<void> => {
-  if (bro.runtime?.id) {
-    const syncData = await getSyncData();
-    return bro.storage.sync.set({
-      ...syncData,
-      ...newSyncData,
-    });
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
-};
-
 export const updateUserCfg = async (cfg: Partial<UserCfg>): Promise<void> => {
-  if (bro.runtime?.id) {
-    const syncData = await getSyncData();
-    return bro.storage.sync.set({
-      ...syncData,
-      cfg: {
-        ...syncData.cfg,
-        ...cfg,
-      },
-    });
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    cfg: {
+      ...syncData.cfg,
+      ...cfg,
+    },
+  };
+  return saveSyncData(newSyncData);
 };
 
 //
-export const getSyncData = (): Promise<SyncData> => {
-  if (bro.runtime?.id) {
-    return bro.storage.sync.get().then((syncData) => ({
-      ...DEFAULT_SYNC_DATA,
-      ...syncData,
-    }));
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
-};
 
 export const countOpeningAttempt = async (): Promise<void> => {
   const ds = getIsoDate();
-  if (bro.runtime?.id) {
-    const syncData = await getSyncData();
-    return bro.storage.sync.set({
-      ...syncData,
-      attempts: {
-        ...syncData.attempts,
-        [ds]: syncData.attempts[ds] ? syncData.attempts[ds] + 1 : 1,
-      },
-    });
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    attempts: {
+      ...syncData.attempts,
+      [ds]: syncData.attempts[ds] ? syncData.attempts[ds] + 1 : 1,
+    },
+  };
+  return saveSyncData(newSyncData);
 };
 
 export const countBlockedAttempt = async (): Promise<void> => {
   const ds = getIsoDate();
-  if (bro.runtime?.id) {
-    const syncData = await getSyncData();
-    return bro.storage.sync.set({
-      ...syncData,
-      blocked: {
-        ...syncData.sunTaps,
-        [ds]: syncData.sunTaps[ds] ? syncData.sunTaps[ds] + 1 : 1,
-      },
-    });
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    sunTaps: {
+      ...syncData.sunTaps,
+      [ds]: syncData.sunTaps[ds] ? syncData.sunTaps[ds] + 1 : 1,
+    },
+  };
+  return saveSyncData(newSyncData);
 };
 
 export const rateCurrentBrowsingBehavior = async (
@@ -204,19 +191,14 @@ export const rateCurrentBrowsingBehavior = async (
   dateTS = Date.now(),
 ): Promise<void> => {
   const ds = getIsoDate(new Date(dateTS));
-  if (bro.runtime?.id) {
-    const syncData = await getSyncData();
-    return bro.storage.sync.set({
-      ...syncData,
-      lastBrowsingBehaviorRatingTS: dateTS,
-      browsingBehaviorRating: {
-        ...syncData.browsingBehaviorRating,
-        [ds]: val,
-      },
-    });
-  } else {
-    throw new Error(
-      "Extension was reloaded, please reload tab for it to work here again",
-    );
-  }
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    lastBrowsingBehaviorRatingTS: dateTS,
+    browsingBehaviorRating: {
+      ...syncData.browsingBehaviorRating,
+      [ds]: val,
+    },
+  };
+  return saveSyncData(newSyncData);
 };
