@@ -4,7 +4,7 @@ import { SettingsAndroid } from "@src/android/components/settingsAndroid/Setting
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 // @ts-ignore
 import styles from "./OnboardingAndroid.module.scss";
-import { updateUserCfg } from "@src/dataInterface/android/syncDataInterface";
+import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 
 export const OnboardingAndroid = () => {
   const [getStep, setStep] = createSignal<number>(0);

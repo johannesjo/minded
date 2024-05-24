@@ -11,7 +11,7 @@ import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 // @ts-expect-error
-import { getSyncData } from "@dataInterface/syncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { SyncData } from "@src/dataInterface/syncData";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 

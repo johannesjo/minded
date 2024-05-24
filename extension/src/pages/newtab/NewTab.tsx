@@ -1,7 +1,7 @@
 import { createSignal, onMount } from "solid-js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import { getSyncData } from "@dataInterface/syncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingWeb } from "@src/shared/components/onboardingWeb/OnboardingWeb";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error

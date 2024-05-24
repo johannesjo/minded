@@ -1,7 +1,6 @@
 import { bro } from "@src/util/browser";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { countBlockedAttempt } from "@src/dataInterface/extension/syncDataInterface.ts";
+import { countBlockedAttempt } from "@src/dataInterface/commonSyncDataInterface";
+import { SettingsAndroid } from "@src/android/components/settingsAndroid/SettingsAndroid";
 
 bro.action.onClicked.addListener(function () {
   bro.tabs.create({
@@ -20,3 +19,4 @@ bro.runtime.onMessage.addListener((request, sender) => {
     bro.tabs.remove(sender.tab.id);
   }
 });
+SettingsAndroid;

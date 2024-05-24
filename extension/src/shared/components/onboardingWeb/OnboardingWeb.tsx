@@ -3,7 +3,7 @@ import { JSX } from "solid-js";
 import styles from "./OnboardingWeb.module.scss";
 import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
 // @ts-ignore
-import { updateUserCfg } from "@dataInterface/syncDataInterface";
+import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 
 export const OnboardingWeb: (props: {
   onComplete: () => void;

@@ -5,10 +5,7 @@ import {
   QuestionForPrompt,
 } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { saveAnswer } from "@dataInterface/syncDataInterface";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+import { saveAnswer } from "@src/dataInterface/commonSyncDataInterface";
 // @ts-expect-error
 import { requestFocusAndShowKeyboard } from "@dataInterface/system";
 import { nanoid } from "nanoid";

@@ -7,7 +7,7 @@ import {
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { SyncData } from "@src/dataInterface/syncData";
-import { getSyncData } from "@src/dataInterface/android/syncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 

@@ -4,7 +4,10 @@ import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 // @ts-ignore
 import styles from "./WebsiteList.module.scss";
 // @ts-ignore
-import { getSyncData, updateUserCfg } from "@dataInterface/syncDataInterface";
+import {
+  getSyncData,
+  updateUserCfg,
+} from "@src/dataInterface/commonSyncDataInterface";
 import { Ico } from "@src/shared/components/ui/Ico";
 
 export const WebsiteList: (props: {

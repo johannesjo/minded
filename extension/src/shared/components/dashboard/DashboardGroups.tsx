@@ -9,7 +9,7 @@ import {
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 // @ts-expect-error
-import { getSyncData } from "@dataInterface/syncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 // @ts-expect-error
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
