@@ -9,3 +9,16 @@
 body {
   background: #000;
 }
+
+
+.missingCapabilitiesMsg {
+  background: #8f1616;
+  color: #fff;
+  padding: 16px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  z-index: 9999999999999999;
+}

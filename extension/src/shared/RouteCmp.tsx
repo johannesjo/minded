@@ -1,4 +1,4 @@
-import { HashRouter, Route, useNavigate } from "@solidjs/router";
+import { HashRouter, Route } from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, JSX, onMount } from "solid-js";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
@@ -10,44 +10,33 @@ import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
-// @ts-expect-error
-import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import { SyncData } from "@src/dataInterface/syncData";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
+// @ts-ignore
+import styles from "./RouteCmp.module.scss";
 
 const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
     createSignal<boolean>(false);
-  const [getIsOnboardingActive, setIsOnboardingActive] =
-    createSignal<boolean>(false);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   onMount(() => {
     addWrapperClasses();
-    getSyncData().then((syncData: SyncData) => {
-      setIsOnboardingActive(!syncData.cfg.isOnboardingComplete);
-
-      if (
-        !syncData || IS_ANDROID
-          ? !syncData.cfg.blockedApps.length
-          : !syncData.cfg.blockedHosts.length
-      ) {
-        navigate("/settings");
-      }
-    });
+    // getSyncData().then((syncData: SyncData) => {
+    //   if (
+    //     !syncData || IS_ANDROID
+    //       ? !syncData.cfg.blockedApps.length
+    //       : !syncData.cfg.blockedHosts.length
+    //   ) {
+    //     navigate("/settings");
+    //   }
+    // });
   });
 
   return (
     <>
-      <div style="position: absolute; top: 0; left: 0; right: 0; bottom:  var(--bottom-bar-height); overflow: auto;">
-        {props.children}
-        {getIsOnboardingActive() && (
-          <>
-            <h1>XXXXXXXX</h1>
-          </>
-        )}
-      </div>
+      <main class={styles.contentWrapper}>{props.children}</main>
+
       <BottomBar onShowQuestion={() => setIsShowQuestionOverlay(true)} />
 
       {getIsShowQuestionOverlay() && (
@@ -66,7 +55,7 @@ const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
 
 const RoutesCmp = () => {
   return (
-    <div id="minded-6622-coloured-wrapper">
+    <div id="minded-6622-coloured-wrapper" class={styles.mainWrapper}>
       <HashRouter root={MainWrapper as any}>
         <Route path="*" component={Dashboard} />
         <Route

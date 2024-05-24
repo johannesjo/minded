@@ -1,0 +1,12 @@
+.mainWrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+
+.contentWrapper {
+  display: block;
+  flex: 1;
+  position: relative;
+  overflow: auto;
+}
