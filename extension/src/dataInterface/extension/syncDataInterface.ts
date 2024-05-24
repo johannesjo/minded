@@ -156,7 +156,7 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
 //   return saveSyncData(newSyncData);
 // };
 //
-// export const countBlockedAttempt = async (): Promise<void> => {
+// export const countSunTap = async (): Promise<void> => {
 //   const ds = getIsoDate();
 //   const syncData = await getSyncData();
 //   const newSyncData: SyncData = {

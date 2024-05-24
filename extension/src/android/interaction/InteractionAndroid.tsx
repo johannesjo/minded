@@ -5,7 +5,7 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { countBlockedAttempt } from "@src/dataInterface/commonSyncDataInterface";
+import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {
@@ -64,7 +64,7 @@ const InteractionAndroid = () => {
         }}
         questionForPrompt={getQuestion()}
         onSuccessSunTap={() => {
-          countBlockedAttempt();
+          countSunTap();
           androidInterface.onSuccessSunTap();
         }}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
