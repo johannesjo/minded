@@ -3,6 +3,7 @@ import { createSignal, JSX } from "solid-js";
 // @ts-ignore
 import styles from "@src/shared/components/questionCategoryView/AnswerEntry.module.scss";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { QUESTIONS } from "@src/shared/data/questions";
 
 export const AnswerEntry: (props: {
   answer: Answer;
@@ -18,6 +19,9 @@ export const AnswerEntry: (props: {
     props.isInitialEditMode,
     // true,
   );
+  const question = props.answer.qid
+    ? QUESTIONS.find((q) => q.id === props.answer.qid)
+    : null;
 
   if (props.isInitialEditMode) {
     inpEl?.focus();
@@ -30,27 +34,33 @@ export const AnswerEntry: (props: {
   };
 
   return (
-    <div class={styles.AnswerEntry}>
-      <div
-        onClick={() => {
-          setIsEditMode(true);
-          inpEl?.focus();
-          setTimeout(() => inpEl?.focus());
-        }}
-        style={{ visibility: getIsEditMode() ? "hidden" : "visible" }}
-        class={styles.userQuote}
-        title={
-          "Click to edit! Created on " +
-          new Date(props.answer.ts).toLocaleDateString() +
-          " – " +
-          new Date(props.answer.ts).toLocaleTimeString()
-        }
-      >
-        {props.answer.val.toString()}
-      </div>
+    <div
+      class={styles.AnswerEntry + " card"}
+      onClick={() => {
+        setIsEditMode(true);
+        inpEl?.focus();
+        setTimeout(() => inpEl?.focus());
+      }}
+    >
+      {question && <div class={styles.question}>{question.t}?</div>}
+
+      {!getIsEditMode() && (
+        <div
+          style={{ visibility: getIsEditMode() ? "hidden" : "visible" }}
+          class={styles.answer}
+          title={
+            "Click to edit! Created on " +
+            new Date(props.answer.ts).toLocaleDateString() +
+            " – " +
+            new Date(props.answer.ts).toLocaleTimeString()
+          }
+        >
+          {props.answer.val.toString()}
+        </div>
+      )}
 
       {!!getIsEditMode() && (
-        <div class={styles.editMode}>
+        <div class={styles.editModeWrapper}>
           <input
             ref={inpEl}
             value={getTitle()}
@@ -95,11 +105,6 @@ export const AnswerEntry: (props: {
           </button>
         </div>
       )}
-      {/*<div class={styles.date}>*/}
-      {/*  {new Date(answer.ts).toLocaleDateString()}*/}
-      {/*  {" / "}*/}
-      {/*  {new Date(answer.ts).toLocaleTimeString()}*/}
-      {/*</div>*/}
     </div>
   );
 };
