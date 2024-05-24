@@ -10,6 +10,7 @@ import {
 import {
   FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
   QUESTION_CATEGORIES,
+  QuestionCategoryId,
   RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
@@ -67,6 +68,7 @@ export const getDashboardEntriesFromQuestions = (
 
   if (isToday(syncData.moodCheckTS)) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      id: QuestionCategoryId.XMoodCheckin,
       type: DashboardGroupType.MoodCheckin,
       mood: syncData.moodCheckVal,
       additionalTxt: syncData.moodCheckAdditional,
@@ -76,6 +78,7 @@ export const getDashboardEntriesFromQuestions = (
 
   if (isToday(syncData.energyLvlTS)) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      id: QuestionCategoryId.XEnergyLevelToday,
       type: DashboardGroupType.EnergyLvl,
       energyLvl: syncData.energyLvlVal,
     } as DashboardGroupEnergyLvl);
@@ -84,6 +87,7 @@ export const getDashboardEntriesFromQuestions = (
 
   if (Object.keys(syncData.browsingBehaviorRating).length >= 3) {
     sortedEntries.push({
+      id: QuestionCategoryId.XBrowsingBehaviorHappiness,
       type: DashboardGroupType.BrowsingBehaviorRating,
       data: syncData.browsingBehaviorRating,
     } as DashboardGroupBrowsingBehavior);

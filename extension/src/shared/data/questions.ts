@@ -18,6 +18,8 @@ export enum QuestionCategoryId {
   UnderstandingProcrastination = "UnderstandingProcrastination",
   SelfDiscovery = "SelfDiscovery",
   // NOTE: we filter out all questions from categories starting with X
+
+  XMoodCheckin = "XMoodCheckin",
   XEnergyLevelToday = "XEnergyLevelToday",
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
   // NO save questions
@@ -466,12 +468,16 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
-    dashboardTxt: "XXX",
+    dashboardTxt: "Energy Level",
     isTodayOnlyCategory: true,
   },
   [QuestionCategoryId.XBrowsingBehaviorHappiness]: {
-    dashboardTxt: "XXX",
+    dashboardTxt: "Browsing Behavior Happiness",
     isThisWeekOnlyCategory: true,
+  },
+  [QuestionCategoryId.XMoodCheckin]: {
+    dashboardTxt: "Mood Checkin",
+    isTodayOnlyCategory: true,
   },
 };
 

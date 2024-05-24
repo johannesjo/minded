@@ -1,5 +1,6 @@
 .cardDashboard,
 .card {
+  user-select: none;
   background: var(--dashboard-card-bg);
   border-radius: var(--dashboard-card-border-radius);
   padding: 16px;

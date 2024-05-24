@@ -15,7 +15,6 @@ export const AnswerListEditable: (props: {
   answers: Answer[];
   onEdit: (upd: Answer) => void;
   onRemove: (id: string) => void;
-  onBack: () => void;
   onAdd: (newAnswer: Answer) => void;
 }) => JSX.Element = (props) => {
   const [getIsAddMode, setIsAddMode] = createSignal(false);
@@ -55,9 +54,6 @@ export const AnswerListEditable: (props: {
             />
           ) : (
             <div>
-              <button class="btnTxt" onClick={() => props.onBack()}>
-                <Ico name="arrowBack" /> Back
-              </button>
               <button
                 class="btnTxt"
                 style="margin-left: 16px"

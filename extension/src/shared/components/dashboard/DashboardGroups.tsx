@@ -67,14 +67,11 @@ export const DashboardGroups: (props: {
       {/* eslint-disable-next-line solid/prefer-for */}
       {getDashboardGroups().map((dg) => (
         <div
-          onClick={() =>
-            (dg as DashboardGroupTxtQuestion).id &&
-            props.onQuestionCategorySelect((dg as DashboardGroupTxtQuestion).id)
-          }
+          onClick={() => "id" in dg && props.onQuestionCategorySelect(dg.id)}
           classList={{
             ["cardDashboard"]: true,
             [styles.box]: true,
-            [styles.interactive]: dg.type === DashboardGroupType.TxtQuestion,
+            [styles.interactive]: "id" in dg,
             [styles.centerItem]:
               dg.type !== DashboardGroupType.TxtQuestion &&
               dg.type !== DashboardGroupType.BrowsingBehaviorRating,

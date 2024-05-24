@@ -7,6 +7,14 @@
     pointer-events: all;
   }
 
+  .h3 {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: var(--fz-l);
+    user-select: none;
+    pointer-events: all;
+  }
+
   .txtBig {
     font-size: var(--fz-xl);
     line-height: 1.5;
