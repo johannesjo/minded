@@ -12,7 +12,7 @@
 
   //@include onNonMobileScreens {
   &.isOnDashboard {
-    @media (min-width: $bpDashboardMoreThan1Col) {
+    @media (min-width: $bpMobile) {
       background: transparent;
       opacity: 0;
       animation: minded6622fadeIn ease 2s;
