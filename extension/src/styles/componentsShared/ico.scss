@@ -1,3 +1,6 @@
 .minded-6622-ico {
 
+  @include inDarkMode() {
+    filter: invert(1);
+  }
 }

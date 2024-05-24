@@ -7,6 +7,7 @@ import { AnswerEntry } from "@src/shared/components/questionCategoryView/AnswerE
 import { nanoid } from "nanoid";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const AnswerListEditable: (props: {
   isShowAdd: boolean;
@@ -55,14 +56,14 @@ export const AnswerListEditable: (props: {
           ) : (
             <div>
               <button class="btnTxt" onClick={() => props.onBack()}>
-                ↖ Back
+                <Ico name="arrowBack" /> Back
               </button>
               <button
                 class="btnTxt"
                 style="margin-left: 16px"
                 onClick={() => setIsAddMode(true)}
               >
-                + Add
+                <Ico name="add" /> Add
               </button>
             </div>
           )}

@@ -11,6 +11,7 @@ import closeSvg from "@assets/img/close.svg";
 
 import { A, useLocation } from "@solidjs/router";
 import { createEffect, createSignal } from "solid-js";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
@@ -33,7 +34,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
               props.onShowQuestion();
             }}
           >
-            <img src={askQuestionSvg} />
+            <Ico name="askQuestion" />
           </button>
           <A
             title="Go to settings page"
@@ -41,7 +42,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
             href="/settings"
             activeClass="active"
           >
-            <img src={settingsSvg} />
+            <Ico name="settings" />
           </A>
           <A
             title="Give us somet feedback"
@@ -49,7 +50,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
             href="/feedback"
             activeClass="active"
           >
-            <img src={feedbackSvg} />
+            <Ico name="feedback" />
           </A>
         </>
       ) : (
@@ -59,7 +60,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           href="/"
           activeClass="xxx"
         >
-          <img src={closeSvg} />
+          <Ico name="close" />
         </A>
       )}
     </div>

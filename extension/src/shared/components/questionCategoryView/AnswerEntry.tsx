@@ -2,6 +2,7 @@ import { Answer } from "@src/dataInterface/syncData";
 import { createSignal, JSX } from "solid-js";
 // @ts-ignore
 import styles from "@src/shared/components/questionCategoryView/AnswerEntry.module.scss";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const AnswerEntry: (props: {
   answer: Answer;
@@ -90,7 +91,7 @@ export const AnswerEntry: (props: {
               props.onRemove();
             }}
           >
-            ✕
+            <Ico name="close" />
           </button>
         </div>
       )}
