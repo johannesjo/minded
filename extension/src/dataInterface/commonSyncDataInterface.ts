@@ -12,7 +12,7 @@ import {
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
   saveSyncDataN;
-export const saveAnswer = (answer: Answer) => (Promise<void> = saveAnswerN);
+export const saveAnswer: (answer: Answer) => Promise<void> = saveAnswerN;
 
 export const updateSyncData = async (
   newSyncData: Partial<SyncData>,
@@ -104,7 +104,7 @@ export const countOpeningAttempt = async (): Promise<void> => {
   return saveSyncData(newSyncData);
 };
 
-export const countBlockedAttempt = async (): Promise<void> => {
+export const countSunTap = async (): Promise<void> => {
   const ds = getIsoDate();
   const syncData = await getSyncData();
   const newSyncData: SyncData = {
@@ -114,6 +114,8 @@ export const countBlockedAttempt = async (): Promise<void> => {
       [ds]: syncData.sunTaps[ds] ? syncData.sunTaps[ds] + 1 : 1,
     },
   };
+  console.log({ newSyncData });
+
   return saveSyncData(newSyncData);
 };
 

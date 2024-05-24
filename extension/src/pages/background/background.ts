@@ -1,6 +1,5 @@
 import { bro } from "@src/util/browser";
-import { countBlockedAttempt } from "@src/dataInterface/commonSyncDataInterface";
-import { SettingsAndroid } from "@src/android/components/settingsAndroid/SettingsAndroid";
+import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 
 bro.action.onClicked.addListener(function () {
   bro.tabs.create({
@@ -15,8 +14,7 @@ bro.runtime.onInstalled.addListener(() => {
 
 bro.runtime.onMessage.addListener((request, sender) => {
   if (request.closeTab) {
-    countBlockedAttempt();
+    countSunTap();
     bro.tabs.remove(sender.tab.id);
   }
 });
-SettingsAndroid;
