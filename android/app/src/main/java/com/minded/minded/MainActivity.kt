@@ -80,6 +80,8 @@ class MainActivity : AppCompatActivity() {
                                 )
                                 loadUrl("file:///android_asset/web/src/android/main/index.html")
                             }
+                            webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+                            webView.setScrollbarFadingEnabled(false);
                             webView
                         })
                     }
