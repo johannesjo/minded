@@ -1,6 +1,4 @@
 // @ts-expect-error
-import styles from "./BottomBar.module.scss";
-// @ts-expect-error
 import settingsSvg from "@assets/img/settings.svg";
 // @ts-expect-error
 import askQuestionSvg from "@assets/img/ask-question.svg";
@@ -12,6 +10,10 @@ import closeSvg from "@assets/img/close.svg";
 import sendSvg from "@assets/img/send.svg";
 // @ts-expect-error
 import questionExchangeSvg from "@assets/img/question-exchange.svg";
+// @ts-expect-error
+import addSvg from "@assets/img/add.svg";
+// @ts-expect-error
+import arrowBackSvg from "@assets/img/arrow-back.svg";
 import { JSXElement } from "solid-js";
 
 const ICO_MAP = {
@@ -21,6 +23,8 @@ const ICO_MAP = {
   close: closeSvg,
   send: sendSvg,
   questionExchange: questionExchangeSvg,
+  add: addSvg,
+  arrowBack: arrowBackSvg,
 } as const;
 
 export const Ico = (props: {
