@@ -4,7 +4,7 @@
 
 
   :global .dashboardContent {
-    margin-top: 8px;
+    margin-top: 10px;
 
     @include onNonMobileScreens {
       margin-top: 16px;
