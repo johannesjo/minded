@@ -1,6 +1,7 @@
 import { createSignal, JSX } from "solid-js";
 // @ts-ignore
 import styles from "./WebsiteListItem.module.scss";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 // List item component
 export const WebsiteListItem: (props: {
@@ -29,7 +30,7 @@ export const WebsiteListItem: (props: {
         oninput={(e) => setValue((e as any).currentTarget.value as string)}
       />
       <button class="btnIcoSmall" onClick={props.remove}>
-        ✕
+        <Ico name="close" />
       </button>
     </div>
   );

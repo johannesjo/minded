@@ -107,7 +107,6 @@
 
   .minded-6622-ico {
     opacity: var(--btn-opacity);
-    // somehow not centered :(
     margin-bottom: 2px;
   }
 }
@@ -116,6 +115,11 @@
   @include btnBase(var(--btn-height-bigger));
   padding: 0 20px;
   font-size: var(--btn-bigger-fz);
+
+  .minded-6622-ico {
+    opacity: var(--btn-opacity);
+    margin-bottom: 2px;
+  }
 }
 
 @mixin btnToggleSelect() {

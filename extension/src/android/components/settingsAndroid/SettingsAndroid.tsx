@@ -9,6 +9,7 @@ import {
 } from "@src/dataInterface/android/syncDataInterface";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { useNavigate } from "@solidjs/router";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
@@ -83,7 +84,7 @@ export const SettingsAndroid = (props: {
             style="margin-right: 16px;"
             onClick={() => navigate("/")}
           >
-            Back
+            <Ico name="arrowBack" /> Back
           </button>
         )}
 
@@ -92,7 +93,7 @@ export const SettingsAndroid = (props: {
           disabled={!getSelectedApps()?.length}
           onClick={handleSave}
         >
-          {props.saveBtnTxt || "Save"}
+          <Ico name="send" /> {props.saveBtnTxt || "Save"}
         </button>
       </div>
     </div>
