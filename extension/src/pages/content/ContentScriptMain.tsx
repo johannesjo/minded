@@ -1,7 +1,5 @@
 /* @refresh reload */
 import { createSignal, JSX, onMount } from "solid-js";
-// @ts-ignore
-import { updateSyncData } from "@dataInterface/syncDataInterface";
 import { InteractionWeb } from "@src/shared/components/interaction/InteractionWeb";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import {
@@ -11,6 +9,7 @@ import {
 } from "@dataInterface/localDataInterface";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
+import { updateSyncData } from "@src/dataInterface/commonSyncDataInterface";
 
 const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 

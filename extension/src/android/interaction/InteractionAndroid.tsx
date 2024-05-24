@@ -5,7 +5,7 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { countBlockedAttempt } from "@src/dataInterface/android/syncDataInterface";
+import { countBlockedAttempt } from "@src/dataInterface/commonSyncDataInterface";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {

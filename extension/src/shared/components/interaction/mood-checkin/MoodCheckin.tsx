@@ -6,7 +6,7 @@ import {
 } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import { saveMoodCheckIn } from "@dataInterface/syncDataInterface";
+import { saveMoodCheckIn } from "@src/dataInterface/commonSyncDataInterface";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
 

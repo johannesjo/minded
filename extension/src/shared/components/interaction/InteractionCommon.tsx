@@ -23,7 +23,7 @@ import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import { getSyncData } from "@dataInterface/syncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error

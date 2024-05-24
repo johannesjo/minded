@@ -113,7 +113,9 @@ export const getDashboardEntriesFromQuestions = (
     });
   }
 
-  console.log(sortedEntries, syncData);
+  console.log("sunTaps", syncData.sunTaps);
+
+  console.log({ syncData, sortedEntries });
 
   return sortedEntries;
 };

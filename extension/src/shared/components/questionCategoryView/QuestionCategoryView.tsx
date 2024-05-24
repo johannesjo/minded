@@ -12,7 +12,7 @@ import {
   saveAnswer,
   updateAnswer,
   // @ts-ignore
-} from "@dataInterface/syncDataInterface";
+} from "@src/dataInterface/commonSyncDataInterface";
 import { Answer } from "@src/dataInterface/syncData";
 import { Location, Params } from "@solidjs/router/dist/types";
 import { useNavigate } from "@solidjs/router";

@@ -6,7 +6,7 @@ import styles from "./SettingsAndroid.module.scss";
 import {
   getSyncData,
   updateBlockedApps,
-} from "@src/dataInterface/android/syncDataInterface";
+} from "@src/dataInterface/commonSyncDataInterface";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";

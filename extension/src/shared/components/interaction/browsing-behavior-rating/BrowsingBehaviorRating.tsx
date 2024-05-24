@@ -2,7 +2,7 @@
 import { createSignal, For, JSX, Match, Switch } from "solid-js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
-import { rateCurrentBrowsingBehavior } from "@dataInterface/syncDataInterface";
+import { rateCurrentBrowsingBehavior } from "@src/dataInterface/commonSyncDataInterface";
 import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
 import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
