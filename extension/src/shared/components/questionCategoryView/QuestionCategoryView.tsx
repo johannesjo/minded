@@ -16,6 +16,8 @@ import {
 import { Answer } from "@src/dataInterface/syncData";
 import { Location, Params } from "@solidjs/router/dist/types";
 import { useNavigate } from "@solidjs/router";
+import { QUESTION_CATEGORY_ADDITIONAL_INFO } from "@src/shared/data/questionCategoryAdditional.const";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const QuestionCategoryView: (props: {
   params: Params;
@@ -84,6 +86,8 @@ export const QuestionCategoryView: (props: {
     <div
       classList={{
         [styles.QuestionCategoryView]: true,
+        ["pageWrapper"]: true,
+        ["mw"]: true,
       }}
     >
       <div
@@ -94,17 +98,29 @@ export const QuestionCategoryView: (props: {
       >
         {QUESTION_CATEGORY.dashboardTxt}
       </div>
-      <div class={styles.answers}>
-        <AnswerListEditable
-          isShowAdd={true}
-          questionCategoryId={questionCategoryId}
-          answers={getAnswersForCategory()}
-          onEdit={editAnswer}
-          onRemove={removeAnswerI}
-          onAdd={addAnswerI}
-          onBack={goBackToDashboard}
-        />
+
+      {QUESTION_CATEGORY.questions?.length && (
+        <div class={styles.answers}>
+          <div class="h3">Questions and Answers</div>
+          <AnswerListEditable
+            isShowAdd={true}
+            questionCategoryId={questionCategoryId}
+            answers={getAnswersForCategory()}
+            onEdit={editAnswer}
+            onRemove={removeAnswerI}
+            onAdd={addAnswerI}
+          />
+        </div>
+      )}
+
+      <div class={"card " + styles.infoTxt}>
+        <div class="h3">Why should I care?</div>
+        <p>{QUESTION_CATEGORY_ADDITIONAL_INFO[questionCategoryId]}</p>
       </div>
+
+      <button class="btnTxt" onClick={() => goBackToDashboard()}>
+        <Ico name="arrowBack" /> Back
+      </button>
     </div>
   );
 };

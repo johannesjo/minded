@@ -13,3 +13,8 @@
     padding: 32px;
   }
 }
+
+.mw {
+  max-width: $pageWrapperMaxWidth;
+  margin: 0 auto;
+}

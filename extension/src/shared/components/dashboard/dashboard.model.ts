@@ -29,17 +29,20 @@ export interface DashboardGroupStats {
 }
 
 export interface DashboardGroupMood {
+  id: QuestionCategoryId.XMoodCheckin;
   type: DashboardGroupType.MoodCheckin;
   mood: MoodCheckinVal;
   additionalTxt?: string;
 }
 
 export interface DashboardGroupEnergyLvl {
+  id: QuestionCategoryId.XEnergyLevelToday;
   type: DashboardGroupType.EnergyLvl;
   energyLvl: number;
 }
 
 export interface DashboardGroupBrowsingBehavior {
+  id: QuestionCategoryId.XBrowsingBehaviorHappiness;
   type: DashboardGroupType.BrowsingBehaviorRating;
   data: { [key: string]: number };
 }
