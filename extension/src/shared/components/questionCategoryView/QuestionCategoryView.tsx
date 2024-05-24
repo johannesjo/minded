@@ -11,7 +11,6 @@ import {
   removeAnswer,
   saveAnswer,
   updateAnswer,
-  // @ts-ignore
 } from "@src/dataInterface/commonSyncDataInterface";
 import { Answer } from "@src/dataInterface/syncData";
 import { Location, Params } from "@solidjs/router/dist/types";

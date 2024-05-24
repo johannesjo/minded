@@ -21,15 +21,17 @@ export const AnswerListEditable: (props: {
 
   return (
     <div class={styles.AnswerListEditable}>
-      <For each={props.answers}>
-        {(answer) => (
-          <AnswerEntry
-            answer={answer}
-            onEdit={(upd) => props.onEdit(upd)}
-            onRemove={() => props.onRemove(answer.id)}
-          />
-        )}
-      </For>
+      <div class={styles.answerList}>
+        <For each={props.answers}>
+          {(answer) => (
+            <AnswerEntry
+              answer={answer}
+              onEdit={(upd) => props.onEdit(upd)}
+              onRemove={() => props.onRemove(answer.id)}
+            />
+          )}
+        </For>
+      </div>
 
       {props.isShowAdd && (
         <div class={styles.addItem}>

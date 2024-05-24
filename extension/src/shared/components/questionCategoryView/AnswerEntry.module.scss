@@ -3,9 +3,16 @@
 .AnswerEntry {
   position: relative;
   overflow: hidden;
-  padding: 8px;
-  min-height: 56px;
-  min-width: 300px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 16px;
+
+  @media (min-width: $bpMobile) {
+    margin: 16px;
+  }
 
   input {
     @include formInput();
@@ -15,7 +22,22 @@
   }
 }
 
-.editMode {
+.answer {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.question {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.editModeWrapper {
   animation: minded6622fadeIn ease .3s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
@@ -23,22 +45,17 @@
   align-items: center;
   justify-content: stretch;
 
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  // leave enough space for btn anis
-  padding: 8px;
-  max-width: 100%;
-  box-sizing: border-box;
+  //position: absolute;
+  //top: 0;
+  //left: 50%;
+  //transform: translateX(-50%);
+  //// leave enough space for btn anis
+  //padding: 8px;
+  //max-width: 100%;
+  //box-sizing: border-box;
   width: 100%;
 
   :global {
     animation-name: minded6622fadeIn;
   }
 }
-
-.userQuote {
-  font-size: var(--fz-m);
-}
-
