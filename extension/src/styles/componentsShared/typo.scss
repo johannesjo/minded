@@ -33,6 +33,11 @@
     pointer-events: all;
   }
 
+  // TODO replace with p instead
+  .txt {
+    line-height: 1.5;
+  }
+
   .fatTxt {
     font-size: var(--fz-xl);
     font-weight: 500;
