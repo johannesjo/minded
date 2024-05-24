@@ -16,6 +16,7 @@ import {
   getQuestionSemiSmart,
   getQuestionSmart,
 } from "@src/util/getQuestionSmart";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 const MAX_SMART_QUESTION_ATTEMPTS = 3;
 
@@ -150,7 +151,7 @@ export const Question: (props: {
               submitAnswer(inpEl?.value);
             }}
           >
-            ➤
+            <Ico name="send" />
           </div>
         </div>
         {props.isChangeQuestion && (
@@ -168,7 +169,7 @@ export const Question: (props: {
               }, 100);
             }}
           >
-            ⇄
+            <Ico name="questionExchange" />
           </div>
         )}
       </div>
