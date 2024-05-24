@@ -1,13 +1,13 @@
 import { For, JSX } from "solid-js";
 // @ts-ignore
-import styles from "./AnswerList.module.scss";
+import styles from "./DashboardAnswerList.module.scss";
 import { DashboardGroupTxtQuestion } from "@src/shared/components/dashboard/dashboard.model";
 import { truncate } from "@src/util/truncate";
 import { QUESTIONS } from "@src/shared/data/questions";
 
 const MAX_ANSWER_LENGTH = 200;
 
-export const AnswerList: (props: {
+export const DashboardAnswerList: (props: {
   dashboardGroup: DashboardGroupTxtQuestion;
 }) => JSX.Element = (props) => {
   return (
@@ -15,7 +15,7 @@ export const AnswerList: (props: {
       <div
         classList={{
           [styles.categoryTitle]: true,
-          ["h4"]: true,
+          ["dashboardHeading"]: true,
         }}
       >
         {props.dashboardGroup.dashboardTxt}
@@ -34,7 +34,7 @@ export const AnswerList: (props: {
               : questionTxt;
 
           return (
-            <div class="userQuote" title={titleTxt}>
+            <div class="dashboardContent" title={titleTxt}>
               {truncate(answer.val.toString(), MAX_ANSWER_LENGTH)}
             </div>
           );
