@@ -10,10 +10,7 @@
     }
   }
 
-  &.showOnly span {
-    display: inline-block;
-    width: var(--rating-size);
-    line-height: var(--rating-size);
+  &.showOnly img {
     margin: 0;
 
     &.isFull {
@@ -22,11 +19,17 @@
   }
 
 
-  span {
+  img {
+    opacity: .12;
+    width: var(--rating-size);
+    height: var(--rating-size);
+
     cursor: pointer;
     pointer-events: all;
     display: inline-block;
     font-size: var(--rating-size);
+    width: var(--rating-size);
+    line-height: var(--rating-size);
     color: var(--rating-inactive);
     transition: all ease-in .1s;
     margin: 4px;
@@ -44,22 +47,11 @@
 
     &.isFull {
       color: var(--c-fg-full-emphasis);
-    }
-
-    img {
-      opacity: .12;
-      width: var(--rating-size);
-      height: var(--rating-size);
-
-      @include inDarkMode() {
-        filter: invert(1);
-      }
-    }
-
-    &.isFull img,
-    &:hover img {
       opacity: 1;
     }
 
+    @include inDarkMode() {
+      filter: invert(1);
+    }
   }
 }

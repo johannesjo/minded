@@ -7,15 +7,6 @@
     pointer-events: all;
   }
 
-  .h4 {
-    font-weight: 200;
-    margin-bottom: 8px;
-    font-size: var(--fz-m);
-    user-select: none;
-    color: var(--h4-c);
-    pointer-events: all;
-  }
-
   .txtBig {
     font-size: var(--fz-xl);
     line-height: 1.2;
@@ -34,6 +25,26 @@
     pointer-events: all;
   }
 
+  .fatTxt {
+    font-size: var(--fz-xl);
+    font-weight: 500;
+    pointer-events: all;
+  }
+
+  .dashboardHeading {
+    font-weight: 200;
+    margin-bottom: 8px;
+    font-size: var(--fz-s);
+    user-select: none;
+    color: var(--h4-c);
+    pointer-events: all;
+
+    @include onNonMobileScreens {
+      font-size: var(--fz-m);
+    }
+  }
+
+  .dashboardContent,
   .userQuote {
     font-size: var(--fz-m);
     line-height: 1.2;
@@ -41,10 +52,11 @@
     pointer-events: all;
   }
 
-  .fatTxt {
-    font-size: var(--fz-xl);
-    font-weight: 500;
-    pointer-events: all;
+  .dashboardContent {
+    @include onNonMobileScreens {
+      font-size: var(--fz-m);
+    }
   }
+
 }
 

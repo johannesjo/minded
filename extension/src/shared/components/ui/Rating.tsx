@@ -14,7 +14,7 @@ export const Rating: (props: {
     <div class={"rating " + (props.isShowOnly ? "showOnly" : "")}>
       <For each={Array.from({ length: 5 }, (_, i) => i + 1)}>
         {(value) => (
-          <span
+          <img
             class={
               value <= rating() || value <= hoveredRating() ? "isFull" : ""
             }
@@ -28,9 +28,8 @@ export const Rating: (props: {
               setHoveredRating(value);
             }}
             onmouseleave={() => setHoveredRating(0)}
-          >
-            <img src={lightningSvg} />
-          </span>
+            src={lightningSvg}
+          />
         )}
       </For>
     </div>

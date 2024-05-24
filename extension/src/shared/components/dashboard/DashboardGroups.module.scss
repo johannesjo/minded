@@ -35,16 +35,22 @@
     grid-auto-flow: row;
     //grid-auto-rows: 33%;
     box-sizing: border-box;
+    padding: 4px;
+  }
+
+  @media (min-width: $bpMobile) {
     padding: 16px;
+  }
 
-    @media (min-width: #{$bpDashboardMoreThan2Col + 32px}) {
-      padding: 32px;
-    }
+  @media (min-width: #{$bpDashboardMoreThan2Col + 32px}) {
+    padding: 32px;
+  }
 
-    @media (min-width: #{$bpDashboardMoreThan2Col + 128px}) {
-      padding: 64px;
-    }
+  @media (min-width: #{$bpDashboardMoreThan2Col + 128px}) {
+    padding: 64px;
+  }
 
+  @media (min-width: $bpDashboardMoreThan1Col) {
     &[nr-of-items="1"] {
       grid-template-rows: repeat(1, minmax(0, 1fr));
       grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -105,8 +111,19 @@
   animation-duration: .3s;
   // NOTE: padding leads to scrollbars
   @include standardPageTransitionIn();
-  margin: 16px;
-  min-width: 280px;
+  min-width: 0;
+  margin: 4px;
+  //overflow: auto;
+  //text-overflow: ellipsis;
+
+  &:global(.card) {
+    padding: 8px 6px;
+  }
+
+
+  @media (min-width: $bpMobile) {
+    margin: 16px;
+  }
 
 
   @media (min-width: $bpDashboardMoreThan1Col) {
@@ -114,7 +131,6 @@
     animation: minded6622fadeIn ease 1.5s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
-    margin: 16px;
 
     :global {
       animation-name: minded6622fadeIn;
@@ -127,7 +143,7 @@
   }
 
   &:nth-child(n+7) {
-    @media (min-width: $bpDashboardMoreThan1Col) {
+    @media (min-width: $bpMobile) {
       display: none;
     }
     @media (min-width: $bpDashboardMoreThan2Col) {
@@ -194,8 +210,17 @@
 
 .energyLvl {
   div:first-child {
-    margin-bottom: 16px;
+    margin-bottom: 16px !important;
     margin-top: 0;
+  }
+
+  :global .rating {
+    img {
+      @include onSmallScreens() {
+        width: var(--rating-size-small);
+        height: var(--rating-size-small);
+      }
+    }
   }
 }
 

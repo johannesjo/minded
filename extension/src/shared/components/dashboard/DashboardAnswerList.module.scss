@@ -3,8 +3,12 @@
 .AnswerList {
 
 
- :global  .userQuote {
-    margin-top: 16px;
+  :global .dashboardContent {
+    margin-top: 8px;
+
+    @include onNonMobileScreens {
+      margin-top: 16px;
+    }
   }
 
 }

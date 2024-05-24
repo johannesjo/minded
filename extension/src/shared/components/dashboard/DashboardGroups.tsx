@@ -16,7 +16,7 @@ import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
-import { AnswerList } from "@src/shared/components/dashboard/AnswerList";
+import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
 import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
@@ -72,7 +72,7 @@ export const DashboardGroups: (props: {
             props.onQuestionCategorySelect((dg as DashboardGroupTxtQuestion).id)
           }
           classList={{
-            card: true,
+            ["cardDashboard"]: true,
             [styles.box]: true,
             [styles.interactive]: dg.type === DashboardGroupType.TxtQuestion,
             [styles.centerItem]:
@@ -87,7 +87,7 @@ export const DashboardGroups: (props: {
                 const rd = (dg as DashboardGroupBrowsingBehavior).data;
                 return (
                   <div class={styles.browsingBehaviorGraph}>
-                    <div class="h4">
+                    <div class="dashboardHeading">
                       {IS_ANDROID
                         ? "bad app usage rating over time"
                         : "browsing behavior over time"}
@@ -101,7 +101,7 @@ export const DashboardGroups: (props: {
                 return (
                   <div class={styles.stats}>
                     <div
-                      class="h4"
+                      class="dashboardHeading"
                       title="'minded' decisions are counted every time when you leave a website by clicking the sun."
                     >
                       minded decisions today
@@ -121,10 +121,10 @@ export const DashboardGroups: (props: {
                 const dgm = dg as DashboardGroupMood;
                 return (
                   <div class={styles.moodCheckinWidget}>
-                    <div class="h4">
+                    <div class="dashboardHeading">
                       you feel <span class="fatTxt">{dgm.mood}</span> today!
                     </div>
-                    <div class="userQuote">
+                    <div class="dashboardContent">
                       {dgm.additionalTxt}
                       {!dgm.additionalTxt &&
                         (dgm.mood === MoodCheckinVal.Awful ||
@@ -141,13 +141,13 @@ export const DashboardGroups: (props: {
                 const dge = dg as DashboardGroupEnergyLvl;
                 return (
                   <div class={styles.energyLvl}>
-                    <div class="h4">your energy level today</div>
+                    <div class="dashboardHeading">your energy level today</div>
                     <Rating isShowOnly={true} value={dge.energyLvl} />
                   </div>
                 );
 
               default:
-                return <AnswerList dashboardGroup={dg} />;
+                return <DashboardAnswerList dashboardGroup={dg} />;
             }
           })()}
         </div>
