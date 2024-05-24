@@ -10,7 +10,8 @@
 }
 
 .cardDashboard {
-  padding: 8px;
+  padding: 32px 8px;
+  //padding: 8px;
 
   @include onNonMobileScreens() {
     padding: 32px;
