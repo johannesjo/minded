@@ -17,6 +17,9 @@ const MainAndroid = () => {
   >([]);
   const [getIsShowOnboarding, setIsShowOnboarding] = createSignal(false);
 
+  const [getIsShowMissingCapabilitiesPage, setIsShowMissingCapabilitiesPage] =
+    createSignal(false);
+
   onMount(() => {
     addWrapperClasses();
   });
@@ -57,12 +60,27 @@ const MainAndroid = () => {
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
           <OnboardingAndroid />
         </div>
-      ) : getMissingCapabilities().length > 0 ? (
+      ) : getIsShowMissingCapabilitiesPage() &&
+        getMissingCapabilities().length > 0 ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
-          <MissingCapabilityView />
+          <MissingCapabilityView
+            onAllConfigured={() => setIsShowMissingCapabilitiesPage(false)}
+          />
         </div>
       ) : (
-        <RoutesCmp />
+        <>
+          <RoutesCmp></RoutesCmp>
+
+          {getMissingCapabilities().length > 0 && (
+            <div
+              onClick={() => setIsShowMissingCapabilitiesPage(true)}
+              class="missingCapabilitiesMsg"
+            >
+              <em>minded</em> is missing permissions for overlay. Click here to
+              resolve!
+            </div>
+          )}
+        </>
       )}
     </>
   );
