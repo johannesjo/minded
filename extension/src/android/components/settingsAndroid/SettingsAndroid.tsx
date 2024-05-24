@@ -1,5 +1,5 @@
 // SettingsAndroid.tsx
-import { createSignal, For, onMount } from "solid-js";
+import { createSignal, For, onCleanup, onMount } from "solid-js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import styles from "./SettingsAndroid.module.scss";
@@ -15,6 +15,7 @@ export const SettingsAndroid = (props: {
   saveBtnTxt?: string;
   onSave?: () => void;
 }) => {
+  let t0;
   // const navigate = useNavigate();
   const [getAvailableApps, setAvailableApps] = createSignal<
     { packageName: string; name: string }[]
@@ -24,11 +25,17 @@ export const SettingsAndroid = (props: {
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
   onMount(() => {
-    setAvailableApps(JSON.parse(androidInterface.getAllApps()));
+    t0 = setTimeout(() => {
+      setAvailableApps(JSON.parse(androidInterface.getAllApps()));
+    });
 
     getSyncData().then((syncData) => {
       setSelectedApps(syncData.cfg.blockedApps || []);
     });
+  });
+
+  onCleanup(() => {
+    window.clearTimeout(t0);
   });
 
   const handleSelect = (app: { packageName: string; name: string }) => {
@@ -50,6 +57,10 @@ export const SettingsAndroid = (props: {
       <div class="txtBig" style="margin: 16px;">
         Please select at least one app that you want to use less.
       </div>
+
+      {getAvailableApps().length === 0 && (
+        <div style="margin: 16px;">Loading apps...</div>
+      )}
 
       <div class={styles.appList}>
         <For each={getAvailableApps()}>
