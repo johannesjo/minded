@@ -9,19 +9,19 @@
 
   .txtBig {
     font-size: var(--fz-xl);
-    line-height: 1.2;
+    line-height: 1.5;
     pointer-events: all;
   }
 
   .txtSlightlyBigger {
     font-size: var(--fz-l);
-    line-height: 1.2;
+    line-height: 1.5;
     pointer-events: all;
   }
 
   .txtSmaller {
     font-size: var(--fz-m);
-    line-height: 1.2;
+    line-height: 1.5;
     pointer-events: all;
   }
 
@@ -47,7 +47,7 @@
   .dashboardContent,
   .userQuote {
     font-size: var(--fz-m);
-    line-height: 1.2;
+    line-height: 1.5;
     font-weight: 300;
     pointer-events: all;
   }

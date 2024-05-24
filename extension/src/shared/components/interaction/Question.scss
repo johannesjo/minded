@@ -13,9 +13,9 @@
     justify-content: center;
 
     // NOTE: 2 rows on desktop, 3 on mobile
-    min-height: 81px;
+    min-height: 99px;
     @include onNonMobileScreens {
-      min-height: 76px;
+      min-height: 96px;
     }
 
 
