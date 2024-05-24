@@ -1,3 +1,4 @@
+import { JSXElement } from "solid-js";
 // @ts-expect-error
 import settingsSvg from "@assets/img/settings.svg";
 // @ts-expect-error
@@ -14,7 +15,12 @@ import questionExchangeSvg from "@assets/img/question-exchange.svg";
 import addSvg from "@assets/img/add.svg";
 // @ts-expect-error
 import arrowBackSvg from "@assets/img/arrow-back.svg";
-import { JSXElement } from "solid-js";
+// @ts-expect-error
+import deleteSvg from "@assets/img/delete.svg";
+// @ts-expect-error
+import deleteForeverSvg from "@assets/img/delete-forever.svg";
+// @ts-expect-error
+import editSvg from "@assets/img/edit.svg";
 
 const ICO_MAP = {
   settings: settingsSvg,
@@ -25,6 +31,9 @@ const ICO_MAP = {
   questionExchange: questionExchangeSvg,
   add: addSvg,
   arrowBack: arrowBackSvg,
+  delete: deleteSvg,
+  deleteForever: deleteForeverSvg,
+  edit: editSvg,
 } as const;
 
 export const Ico = (props: {

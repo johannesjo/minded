@@ -26,7 +26,6 @@ export const QuestionCategoryView: (props: {
   // onLeave: () => void;
 }) => JSX.Element = (props) => {
   const [getAnswersForCategory, setAnswersForCategory] = createSignal([]);
-  const navigate = useNavigate();
   const questionCategoryId = props.params
     .questionCategoryId as QuestionCategoryId;
 
@@ -76,10 +75,6 @@ export const QuestionCategoryView: (props: {
     saveAnswer(answerWithNewTs);
   };
 
-  const goBackToDashboard = () => {
-    navigate("/");
-  };
-
   // TODO maybe remove click handler for title
   return (
     <div
@@ -112,14 +107,10 @@ export const QuestionCategoryView: (props: {
         </div>
       )}
 
-      <div class={"card " + styles.infoTxt}>
+      <div class={" " + styles.infoTxt}>
         <div class="h3">Why should I care?</div>
         <p>{QUESTION_CATEGORY_ADDITIONAL_INFO[questionCategoryId]}</p>
       </div>
-
-      <button class="btnTxt" onClick={() => goBackToDashboard()}>
-        <Ico name="arrowBack" /> Back
-      </button>
     </div>
   );
 };

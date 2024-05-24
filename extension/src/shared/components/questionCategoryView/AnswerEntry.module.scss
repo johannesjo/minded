@@ -9,6 +9,7 @@
   align-items: center;
   flex-direction: column;
   margin-top: 16px;
+  cursor: pointer;
 
   @media (min-width: $bpMobile) {
     margin: 16px;
@@ -36,6 +37,34 @@
   font-weight: bold;
   margin-bottom: 8px;
 }
+
+.editBar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  animation: minded6622fadeIn ease 400ms;
+  border-radius: var(--border-radius);
+  flex-direction: column;
+  justify-content: space-evenly;
+  z-index: 1;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
+
+  > * {
+    background: var(--btn-bg-selected) !important;
+    opacity: 1 !important;
+    //margin-left: 8px !important;
+
+    &:first-child {
+      margin-left: 0 !important;
+    }
+  }
+}
+
 
 .editModeWrapper {
   animation: minded6622fadeIn ease .3s;

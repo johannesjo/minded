@@ -13,12 +13,14 @@ export const AnswerEntry: (props: {
   onRemove: () => void;
 }) => JSX.Element = (props) => {
   let inpEl;
+  let cardEl;
 
   const [getTitle, setTitle] = createSignal<string>(props.answer.val as string);
   const [getIsEditMode, setIsEditMode] = createSignal<boolean>(
     props.isInitialEditMode,
     // true,
   );
+  const [getIsShowEditBar, setIsShowEditBar] = createSignal<boolean>(false);
   const question = props.answer.qid
     ? QUESTIONS.find((q) => q.id === props.answer.qid)
     : null;
@@ -33,29 +35,44 @@ export const AnswerEntry: (props: {
     setTitle(props.answer.val.toString());
   };
 
+  const triggerEdit = () => {
+    setIsEditMode(true);
+    inpEl?.focus();
+    setTimeout(() => inpEl?.focus());
+  };
+
   return (
     <div
       class={styles.AnswerEntry + " card"}
+      ref={cardEl}
       onClick={() => {
-        setIsEditMode(true);
-        inpEl?.focus();
-        setTimeout(() => inpEl?.focus());
+        setIsShowEditBar(!getIsShowEditBar());
       }}
     >
       {question && <div class={styles.question}>{question.t}?</div>}
 
       {!getIsEditMode() && (
         <div
-          style={{ visibility: getIsEditMode() ? "hidden" : "visible" }}
           class={styles.answer}
           title={
-            "Click to edit! Created on " +
+            "Created on " +
             new Date(props.answer.ts).toLocaleDateString() +
             " – " +
             new Date(props.answer.ts).toLocaleTimeString()
           }
         >
           {props.answer.val.toString()}
+        </div>
+      )}
+
+      {getIsShowEditBar() && !getIsEditMode() && (
+        <div class={styles.editBar}>
+          <button class="btnIco" onClick={triggerEdit}>
+            <Ico name="edit" />
+          </button>
+          <button class="btnIco" onClick={props.onRemove}>
+            <Ico name="deleteForever" />
+          </button>
         </div>
       )}
 
@@ -92,17 +109,6 @@ export const AnswerEntry: (props: {
             maxlength={500}
             autofocus={true}
           />
-          <button
-            class="btnIcoSmall"
-            title="Remove"
-            onMouseDown={(ev) => {
-              // NOTE we use mousedown since it is fired before blur
-              ev.preventDefault();
-              props.onRemove();
-            }}
-          >
-            <Ico name="close" />
-          </button>
         </div>
       )}
     </div>
