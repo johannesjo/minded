@@ -1,5 +1,6 @@
 import { createEffect, createSignal, JSX } from "solid-js";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const SaveBtn = (props: {
   onSave: () => void;
@@ -14,7 +15,7 @@ export const SaveBtn = (props: {
   return (
     <ButtonWrapper isVisible={getIsVisible()}>
       <div class="btnTxtBig" onClick={() => props.onSave()}>
-        ➤ save
+        <Ico name="send" /> save
       </div>
     </ButtonWrapper>
   );

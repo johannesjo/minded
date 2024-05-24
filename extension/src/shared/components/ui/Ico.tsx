@@ -38,6 +38,7 @@ export const Ico = (props: {
     <img
       class="minded-6622-ico"
       src={ICO_MAP[props.name]}
+      alt={props.name}
       style={size ? { width: size + "px", height: size + "px" } : {}}
     />
   );

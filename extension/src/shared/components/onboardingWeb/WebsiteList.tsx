@@ -5,6 +5,7 @@ import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import styles from "./WebsiteList.module.scss";
 // @ts-ignore
 import { getSyncData, updateUserCfg } from "@dataInterface/syncDataInterface";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const WebsiteList: (props: {
   onAfterSave: () => void;
@@ -57,11 +58,11 @@ export const WebsiteList: (props: {
 
       <div class={styles.controls}>
         <button class="btnTxtBig" onClick={addItem}>
-          + Add item
+          <Ico name="add" /> Add item
         </button>
 
         <button class="btnTxtBig" onClick={saveAndContinue}>
-          Save & Continue
+          <Ico name="send" /> Save & Continue
         </button>
       </div>
     </div>

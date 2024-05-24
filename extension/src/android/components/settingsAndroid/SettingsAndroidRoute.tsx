@@ -2,6 +2,6 @@ import { SettingsAndroid } from "@src/android/components/settingsAndroid/Setting
 
 export const SettingsAndroidRoute = () => {
   return (
-    <SettingsAndroid isRouting={true} saveBtnTxt="➤ save" onSave={() => {}} />
+    <SettingsAndroid isRouting={true} saveBtnTxt="save" onSave={() => {}} />
   );
 };
