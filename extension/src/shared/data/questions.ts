@@ -181,6 +181,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Motivation]: {
     dashboardTxt: "Motivation",
+    frequencyModifier: -1,
     questions: [
       { id: QID.MO1, t: "What motivates you", prompt: "I am motivated by" },
       {
