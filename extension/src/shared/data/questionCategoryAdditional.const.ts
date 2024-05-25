@@ -36,11 +36,11 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.Insomnia]:
     "Understanding and addressing insomnia is crucial for your physical health and mental well-being. Good sleep is essential for cognitive function, mood regulation, and overall health.",
   [QuestionCategoryId.XEnergyLevelToday]:
-    "Monitoring your personal energy level is beneficial as it allows you to understand your body's natural rhythms and optimize your productivity. By identifying when you are most energetic, you can schedule demanding tasks for those times. Additionally, it can help you recognize factors that drain your energy, enabling you to make necessary lifestyle adjustments.",
+    "Monitoring your personal energy level is beneficial as it allows you to understand your body's natural rhythms and optimize your productivity. Additionally, it can help you recognize factors that drain your energy, enabling you to make necessary lifestyle adjustments.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:
     "Monitoring your browsing behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your online habits, leading to better productivity and time management.",
   // NO save questions
   [QuestionCategoryId.XMoodCheckin]:
-    "Mood tracking can be beneficial as it provides insights into emotional patterns and triggers, helping you better manage your mental health. By understanding your mood fluctuations, you can implement strategies to enhance positive emotions and mitigate negative ones. Additionally, it can facilitate communication with healthcare professionals by providing concrete data about your emotional state over time.",
+    "Mood tracking can be beneficial as it provides insights into emotional patterns and triggers, helping you better manage your mental health. By understanding your mood fluctuations, you can implement strategies to enhance positive emotions and mitigate negative ones.",
   [QuestionCategoryId.XXPurposeOfSession]: "",
 };

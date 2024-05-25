@@ -1,14 +1,15 @@
+@import "../../../styles/variablesSCSS";
 @import "../../../styles/mixins/mixins";
 
 .QuestionCategoryView {
   padding-top: 16px;
   padding-bottom: 16px;
+  text-align: left;
 
   @include standardPageTransitionIn();
 }
 
 .answers {
-  margin-top: 32px;
   margin-bottom: 64px;
 }
 
@@ -22,7 +23,15 @@
 }
 
 
-.infoTxt{
+.infoTxt {
+  text-align: center;
+  padding: 0 16px;
+  margin: auto;
   margin-top: 32px;
   margin-bottom: 32px;
+  max-width: $txtMaxWidth;
+
+  p {
+    text-align: center;
+  }
 }

@@ -3,11 +3,7 @@
 .AnswerEntry {
   position: relative;
   overflow: hidden;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  text-align: left;
   margin-top: 16px;
   cursor: pointer;
 
@@ -26,16 +22,19 @@
 .answer {
   position: relative;
   width: 100%;
-  min-height: 56px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  min-height: 40px;
+  //display: flex;
+  //justify-content: center;
+  //align-items: center;
+  //flex-direction: column;
+  text-align: left;
+
 }
 
 .question {
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  text-align: left;
 }
 
 .editBar {
@@ -61,6 +60,10 @@
     background: var(--btn-bg-selected) !important;
     opacity: 1 !important;
     margin-left: 8px !important;
+
+    img {
+      opacity: .8 !important;
+    }
 
     &:first-child {
       margin-left: 0 !important;

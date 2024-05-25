@@ -55,12 +55,8 @@ export const AnswerListEditable: (props: {
               onRemove={() => setIsAddMode(false)}
             />
           ) : (
-            <div>
-              <button
-                class="btnTxt"
-                style="margin-left: 16px"
-                onClick={() => setIsAddMode(true)}
-              >
+            <div style="text-align:center;">
+              <button class="btnTxt" onClick={() => setIsAddMode(true)}>
                 <Ico name="add" /> Add
               </button>
             </div>
