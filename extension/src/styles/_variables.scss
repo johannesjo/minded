@@ -4,6 +4,7 @@
   --border-radius: 8px;
   --c-link-color: rgb(153, 23, 166);
 
+  --fz-xxl: 40px;
   --fz-xl: 32px;
   --fz-l: 24px;
   --fz-m: 19px;
@@ -110,6 +111,7 @@
 
 @media (max-width: $bpMobileMax) {
   #minded-6622 {
+    --fz-xxl: 28px;
     --fz-xl: 22px;
     --fz-l: 19px;
     --fz-m: 15px;
