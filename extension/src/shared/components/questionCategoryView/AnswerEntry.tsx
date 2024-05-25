@@ -65,12 +65,12 @@ export const AnswerEntry: (props: {
         </div>
       )}
 
-      {getIsShowEditBar() && !getIsEditMode() && (
+      {true && !getIsEditMode() && (
         <div class={styles.editBar}>
-          <button class="btnIco" onClick={triggerEdit}>
+          <button class="btnIcoSmall" onClick={triggerEdit}>
             <Ico name="edit" />
           </button>
-          <button class="btnIco" onClick={props.onRemove}>
+          <button class="btnIcoSmall" onClick={props.onRemove}>
             <Ico name="deleteForever" />
           </button>
         </div>

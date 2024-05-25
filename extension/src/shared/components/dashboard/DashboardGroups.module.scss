@@ -184,7 +184,8 @@
     cursor: pointer;
     transition: all .2s;
 
-    @include onMousePrimary() {
+    //@include onMousePrimary() {
+    @media (hover: hover) {
       &:hover {
         background: var(--dashboard-card-bg-hover);
       }
