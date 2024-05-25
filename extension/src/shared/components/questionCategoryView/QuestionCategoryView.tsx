@@ -14,7 +14,6 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { Answer } from "@src/dataInterface/syncData";
 import { Location, Params } from "@solidjs/router/dist/types";
-import { useNavigate } from "@solidjs/router";
 import { QUESTION_CATEGORY_ADDITIONAL_INFO } from "@src/shared/data/questionCategoryAdditional.const";
 import { Ico } from "@src/shared/components/ui/Ico";
 
@@ -109,6 +108,7 @@ export const QuestionCategoryView: (props: {
 
       <div class={" " + styles.infoTxt}>
         <div class="h3">Why should I care?</div>
+        {/*<Ico name="info" size={24} />*/}
         <p class="txt">
           {QUESTION_CATEGORY_ADDITIONAL_INFO[questionCategoryId]}
         </p>
