@@ -95,7 +95,7 @@ export const QuestionCategoryView: (props: {
 
       {QUESTION_CATEGORY.questions?.length && (
         <div class={styles.answers}>
-          <div class="h3">Questions and Answers</div>
+          {/*<div class="h3">Your Answers</div>*/}
           <AnswerListEditable
             isShowAdd={true}
             questionCategoryId={questionCategoryId}

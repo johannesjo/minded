@@ -1,10 +1,11 @@
 @mixin allTypo () {
   .h2 {
-    font-weight: 700;
+    font-weight: 200;
     margin-bottom: 8px;
     font-size: var(--fz-xl);
     user-select: none;
     pointer-events: all;
+    text-transform: uppercase;
   }
 
   .h3 {
