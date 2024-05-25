@@ -1,6 +1,7 @@
 @import "sharedAll";
 @import "componentsMainOnly/componentsMainOnly";
 
+@include allTypo();
 
 .pageTransitionIn {
   @include standardPageTransitionIn();
