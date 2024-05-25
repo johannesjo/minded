@@ -60,7 +60,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           href="/"
           activeClass="xxx"
         >
-          <Ico name="close" />
+          <Ico name="arrowBack" />
         </A>
       )}
     </div>
