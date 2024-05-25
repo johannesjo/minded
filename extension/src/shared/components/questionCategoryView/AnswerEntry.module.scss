@@ -40,24 +40,27 @@
 
 .editBar {
   position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  right: 8px;
+  bottom: 8px;
   display: flex;
-  animation: minded6622fadeIn ease 400ms;
   border-radius: var(--border-radius);
-  flex-direction: column;
-  justify-content: space-evenly;
+  flex-direction: row;
+  //justify-content: space-evenly;
+  justify-content: center;
   z-index: 1;
+  visibility: hidden;
+  opacity: 0;
+  transition: 0.2s all ease-in-out;
 
-  :global {
-    animation-name: minded6622fadeIn;
+  .AnswerEntry:hover & {
+    visibility: visible;
+    opacity: 1;
   }
 
   > * {
     background: var(--btn-bg-selected) !important;
     opacity: 1 !important;
-    //margin-left: 8px !important;
+    margin-left: 8px !important;
 
     &:first-child {
       margin-left: 0 !important;

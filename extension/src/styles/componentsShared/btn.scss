@@ -5,7 +5,7 @@
 .btnIcoSmall {
   &,
   #minded-6622 & {
-    @include btnIco(36px);
+    @include btnIco(var(--btn-small));
   }
 }
 
