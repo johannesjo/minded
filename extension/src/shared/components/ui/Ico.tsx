@@ -21,6 +21,8 @@ import deleteSvg from "@assets/img/delete.svg";
 import deleteForeverSvg from "@assets/img/delete-forever.svg";
 // @ts-expect-error
 import editSvg from "@assets/img/edit.svg";
+// @ts-expect-error
+import infoSvg from "@assets/img/info.svg";
 
 const ICO_MAP = {
   settings: settingsSvg,
@@ -34,6 +36,7 @@ const ICO_MAP = {
   delete: deleteSvg,
   deleteForever: deleteForeverSvg,
   edit: editSvg,
+  info: infoSvg,
 } as const;
 
 export const Ico = (props: {
