@@ -15,7 +15,7 @@
   --c-fg: rgba(0, 0, 0, .8);
 
   // global components
-  --form-inputs-bg: var(--btn-bg);
+  --form-inputs-bg: rgba(255, 255, 255, .7);
   --form-inputs-height: var(--btn-height);
   --form-inputs-height-smaller: 40px;
 
@@ -24,12 +24,12 @@
   --btn-height-bigger: 64px;
   --btn-small: 40px;
   --btn-bigger-fz: 30px;
-  --btn-opacity: 0.7;
   --btn-bg: rgba(255, 255, 255, 1);
   --btn-bg-not-selected: rgba(255, 255, 255, .25);
   --btn-bg-selected: rgba(255, 255, 255, 1);
+  --btn-bg-selectable-hover: rgba(255, 255, 255, .7);
   --btn-selected-scale: 1.1;
-
+  --btn-box-shadow: 0 0 30px 10px  rgba(255, 255, 255, .9);
   // components
   --interaction-txt-size: var(--fz-xl);
 
@@ -103,9 +103,13 @@
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, .7);
     --c-bg-btns: rgba(0, 0, 0, .5);
-    --btn-bg: rgba(0, 0, 0, .5);
+    --form-inputs-bg: rgba(0, 0, 0, .4);
+    --btn-bg: rgba(0, 0, 0, .6);
     --btn-bg-selected: rgba(0, 0, 0, 1);
+    --btn-bg-selectable-hover: rgba(0, 0, 0, .2);
     --btn-bg-not-selected: rgba(0, 0, 0, .25);
+    //--btn-box-shadow: 0 0 10px 1px  rgba(255, 255, 255, .8);
+    --btn-box-shadow: 0 0 10px 1px rgba(250, 104, 203, 0.8);
   }
 }
 
