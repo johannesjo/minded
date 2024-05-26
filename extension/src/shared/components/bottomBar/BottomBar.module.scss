@@ -10,6 +10,7 @@
   //padding-bottom: 8px;
   background: var(--bottom-bar-bg);
 
+
   :global(.androidKeyboardOpen) & {
     display: none !important;
   }
@@ -40,6 +41,7 @@
     position: relative;
     z-index: 1;
     animation: minded6622fadeIn ease 200ms;
+    border-radius: 50% !important;
 
     :global {
       animation-name: minded6622fadeIn;
