@@ -9,7 +9,7 @@ export const WebsiteListItem: (props: {
   update: (value: string) => void;
   remove: () => void;
 }) => JSX.Element = (props) => {
-  let [getValue, setValue] = createSignal(props.value);
+  const [getValue, setValue] = createSignal(props.value);
 
   // createEffect(
   //   on(

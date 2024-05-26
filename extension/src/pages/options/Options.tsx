@@ -8,9 +8,11 @@ const Options = () => {
 
   return (
     <div class="pageTransitionIn">
-      <h2>minded – Settings</h2>
+      <h2 class="h2">minded – Settings</h2>
       <br />
-      <h3>list of websites to handle</h3>
+      <h3 class="h3">
+        list of websites where <em>minded</em> is shown
+      </h3>
       <WebsiteList onAfterSave={onAfterSave}></WebsiteList>
     </div>
   );

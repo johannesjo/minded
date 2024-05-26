@@ -60,11 +60,11 @@ export const WebsiteList: (props: {
       </div>
 
       <div class={styles.controls}>
-        <button class="btnTxtBig" onClick={addItem}>
+        <button class="btnTxt" onClick={addItem}>
           <Ico name="add" /> Add item
         </button>
 
-        <button class="btnTxtBig" onClick={saveAndContinue}>
+        <button class="btnTxt" onClick={saveAndContinue}>
           <Ico name="send" /> Save & Continue
         </button>
       </div>
