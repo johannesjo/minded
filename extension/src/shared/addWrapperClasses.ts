@@ -2,7 +2,7 @@
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
 
-const DARK_MODE_START_HOUR = 11;
+const DARK_MODE_START_HOUR = 19;
 const DARK_MODE_END_HOUR = 6;
 
 export const addWrapperClasses = () => {
