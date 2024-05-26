@@ -1,4 +1,4 @@
-@mixin allTypo () {
+@mixin allTypo() {
   .h2 {
     font-weight: 200;
     margin-bottom: 8px;
@@ -58,15 +58,12 @@
     }
   }
 
-  .dashboardContent,
-  .userQuote {
+  .dashboardContent {
     font-size: var(--fz-s);
     line-height: 1.3;
     font-weight: 300;
     pointer-events: all;
-  }
 
-  .dashboardContent {
     @include onNonMobileScreens {
       font-size: var(--fz-m);
     }
