@@ -93,7 +93,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.BBH5,
-        t: "How would your ideal media consumption behavior look like?",
+        t: "How would your ideal media consumption behavior look like",
       },
       {
         id: QID.BBH6,
