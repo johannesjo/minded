@@ -2,7 +2,7 @@ import { createSignal, onMount } from "solid-js";
 import { Line } from "solid-chartjs";
 import { createStore } from "solid-js/store";
 import { Chart as ChartJSChart, ChartData } from "chart.js";
-import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
+import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsingBehaviorRating/browsingBehaviorRating.const";
 
 function Chart(props: { chartData: ChartData }) {
   onMount(() => {

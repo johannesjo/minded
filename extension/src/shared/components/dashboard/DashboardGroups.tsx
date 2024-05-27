@@ -15,9 +15,9 @@ import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuo
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
-import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
-import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsing-behavior-rating/getBrowsingBehaviorChartData";
+import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsingBehaviorRating/getBrowsingBehaviorChartData";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";

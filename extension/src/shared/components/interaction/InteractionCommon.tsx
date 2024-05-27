@@ -6,11 +6,11 @@ import {
   onMount,
   Switch,
 } from "solid-js";
-import { MoodCheckin } from "@src/shared/components/interaction/mood-checkin/MoodCheckin";
-import { EmojiCheckin } from "@src/shared/components/interaction/emoji-checkin/EmojiCheckin";
-import { EnergyLvlInteraction } from "@src/shared/components/interaction/energy-lvl/EnergyLvlInteraction";
+import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
+import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
+import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
-import { BrowsingBehaviorRatingInteraction } from "@src/shared/components/interaction/browsing-behavior-rating/BrowsingBehaviorRating";
+import { BrowsingBehaviorRatingInteraction } from "@src/shared/components/interaction/browsingBehaviorRating/BrowsingBehaviorRating";
 import {
   getInteractionMode,
   InteractionMode,
@@ -28,7 +28,7 @@ import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import SelfReflectionRating from "@src/shared/components/interaction/self-reflection-rating/SelfReflectionRating";
+import SelfReflectionRating from "@src/shared/components/interaction/selfReflectionRating/SelfReflectionRating";
 
 interface InteractionCommonProps {
   isReducedSuccessSun?: boolean;

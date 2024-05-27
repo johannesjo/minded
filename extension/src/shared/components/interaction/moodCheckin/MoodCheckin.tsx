@@ -3,7 +3,7 @@ import {
   MOOD_CHECKIN_FEEL_BETTER_OPTIONS,
   MOOD_CHECKIN_OPTIONS,
   MoodCheckinVal,
-} from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+} from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { saveMoodCheckIn } from "@src/dataInterface/commonSyncDataInterface";
