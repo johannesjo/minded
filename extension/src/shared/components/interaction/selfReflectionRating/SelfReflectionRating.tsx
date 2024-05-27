@@ -27,11 +27,6 @@ const SelfReflectionRating = (props: {
 
   const handleSaveClick = () => {
     if (getSelectedAnswerVal()) {
-      // Reset the selected question and answer
-      // const randomIndex = Math.floor(
-      //   Math.random() * SELF_REFLECTION_QUESTIONS.length,
-      // );
-      // setSelectedQuestion(SELF_REFLECTION_QUESTIONS[randomIndex]);
       setSelectedAnswerVal(null);
       props.onSuccess();
     }
