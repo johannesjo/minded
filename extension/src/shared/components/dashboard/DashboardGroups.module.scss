@@ -1,6 +1,10 @@
 @import "./../../../styles/mixins/_mixins.scss";
 @import "./../../../styles/variablesSCSS.scss";
 
+$aniDur: 1.5s;
+$aniDelay: 1.5s;
+
+
 .DashboardGroups {
   max-width: 1600px;
   position: absolute;
@@ -84,6 +88,7 @@
   }
 
 
+  // fade in one entry if there is enough stuff to show and space for three columns
   @media (min-width: $bpDashboardMoreThan2Col) {
     &[nr-of-items="7"],
     &[nr-of-items="8"],
@@ -98,7 +103,15 @@
     &[nr-of-items="17"],
     &[nr-of-items="18"] {
       .box {
-        animation-delay: 1.5s;
+        animation-delay: $aniDelay;
+
+        @media (min-width: $bpDashboardMoreThan2Col) {
+          &:nth-child(5) {
+            animation-delay: 0s !important;
+            animation-duration: $aniDelay + $aniDur;
+            animation-name: minded6622fadeInWithBackgroundForCard;
+          }
+        }
       }
     }
   }
@@ -128,18 +141,13 @@
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     opacity: 0;
-    animation: minded6622fadeIn ease 1.5s;
+    animation: minded6622fadeIn ease $aniDur;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
 
     :global {
       animation-name: minded6622fadeIn;
     }
-  }
-
-
-  &:nth-child(5) {
-    animation-delay: 0s !important;
   }
 
   &:nth-child(n+7) {
@@ -238,5 +246,20 @@
       margin-right: 4px;
       text-transform: lowercase;
     }
+  }
+}
+
+
+@keyframes minded6622fadeInWithBackgroundForCard {
+  0% {
+    opacity: 0;
+    background: transparent;
+  }
+  50% {
+    opacity: 1;
+    background: transparent;
+  }
+  100% {
+    opacity: 1;
   }
 }
