@@ -23,19 +23,22 @@
   vertical-align: middle;
   --extraClickArea: -8px;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  touch-action: none;
 
   &:focus {
     outline: 0;
   }
 
-  &:hover {
-    box-shadow: var(--btn-box-shadow);
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: var(--btn-box-shadow);
+    }
   }
 
   &:active {
-    transition: all 10ms;
     opacity: .8;
     transform: scale(.95);
+    box-shadow: var(--btn-box-shadow);
   }
 
   &:after {
