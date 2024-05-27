@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,7 +37,8 @@ fun SmallMsg(
     onCountdownComplete: () -> Unit = {},
     isInitiallyVisible: Boolean = false
 ) {
-    val leaveDuration: Int = 3000;
+    val leaveDuration: Int = 3000
+    val shape = RoundedCornerShape(16.dp)
     var isVisible = remember { mutableStateOf(isInitiallyVisible) }
     LaunchedEffect(Unit) {
         isVisible.value = true
@@ -62,11 +64,11 @@ fun SmallMsg(
             Box(
                 modifier = Modifier
 //                    .border(1.dp, Color.Red, CircleShape)
-                    .shadow(4.dp, CircleShape, true, Color.Red, Color.Red)
+                    .shadow(6.dp, shape, true, Color.Yellow, Color.Red)
                     .clickable(onClick = onMsgTap)
             ) {
                 Surface(
-                    shape = CircleShape,
+                    shape = shape,
                     color = Color.White,
                 ) {
                     Box(
