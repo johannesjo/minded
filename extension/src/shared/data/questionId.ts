@@ -1,12 +1,19 @@
 export enum QID {
   ADDED_FROM_DASHBOARD = "DASH",
 
-  BBH1 = "BBH1",
-  BBH2 = "BBH2",
-  BBH3 = "BBH3",
-  BBH4 = "BBH4",
-  BBH5 = "BBH5",
-  BBH6 = "BBH6",
+  HBH1 = "HBH1",
+  HBH2 = "HBH2",
+  HBH3 = "HBH3",
+  HBH4 = "HBH4",
+  HBH5 = "HBH5",
+  HBH6 = "HBH6",
+
+  HAU1 = "HAU1",
+  HAU2 = "HAU2",
+  HAU3 = "HAU3",
+  HAU4 = "HAU4",
+  HAU5 = "HAU5",
+  HAU6 = "HAU6",
 
   PR1 = "PR1",
   PR2 = "PR2",
