@@ -41,6 +41,10 @@ const ICO_MAP = {
 
 export type IcoName = keyof typeof ICO_MAP;
 
+const STYLE = {
+  "vertical-align": "middle",
+};
+
 export const Ico = (props: { name: IcoName; size?: number }): JSXElement => {
   // const size = props.size || 24;
   const size = props.size || 24;
@@ -50,7 +54,9 @@ export const Ico = (props: { name: IcoName; size?: number }): JSXElement => {
       class="minded-6622-ico"
       src={ICO_MAP[props.name]}
       alt={props.name}
-      style={size ? { width: size + "px", height: size + "px" } : {}}
+      style={
+        size ? { ...STYLE, width: size + "px", height: size + "px" } : STYLE
+      }
     />
   );
 };
