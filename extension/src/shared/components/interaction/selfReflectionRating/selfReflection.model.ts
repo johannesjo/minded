@@ -1,6 +1,7 @@
 // export const SELF_REF
 
 import { TglBtnOption } from "@src/shared/components/ui/TglBtns";
+import { IcoName } from "@src/shared/components/ui/Ico";
 
 export enum SelfReflectionQuestionId {
   CARE_OF_NEEDS = "CARE_OF_NEEDS",
@@ -21,43 +22,75 @@ export enum SelfReflectionQuestionId {
 interface SelfReflectionQuestion {
   id: SelfReflectionQuestionId;
   question: string;
+  ico: IcoName;
 }
 
 export const SELF_REFLECTION_QUESTIONS: SelfReflectionQuestion[] = [
   {
     id: SelfReflectionQuestionId.CARE_OF_NEEDS,
     question: "I took care of my needs",
+    ico: "info",
   },
   {
     id: SelfReflectionQuestionId.SOCIAL_CONTACTS,
     question: "I had enough social contacts",
+    ico: "info",
   },
   {
     id: SelfReflectionQuestionId.HAPPY_WITH_ACHIEVEMENTS,
     question: "I am happy with what I achieved",
+    ico: "info",
   },
-  { id: SelfReflectionQuestionId.WAS_OPTIMISTIC, question: "I was optimistic" },
+  {
+    id: SelfReflectionQuestionId.WAS_OPTIMISTIC,
+    question: "I was optimistic",
+    ico: "info",
+  },
   {
     id: SelfReflectionQuestionId.TRIED_NEW_THINGS,
     question: "I tried new things",
+    ico: "info",
   },
-  { id: SelfReflectionQuestionId.COULD_RELAX, question: "I could relax" },
+  {
+    id: SelfReflectionQuestionId.COULD_RELAX,
+    question: "I could relax",
+    ico: "info",
+  },
   {
     id: SelfReflectionQuestionId.TRIED_TO_SEE_THE_GOOD,
     question: "I tried to see the good",
+    ico: "info",
   },
-  { id: SelfReflectionQuestionId.WAS_HAPPY, question: "I was happy" },
-  { id: SelfReflectionQuestionId.WAS_COURAGEOUS, question: "I was courageous" },
+  {
+    id: SelfReflectionQuestionId.WAS_HAPPY,
+    question: "I was happy",
+    ico: "info",
+  },
+  {
+    id: SelfReflectionQuestionId.WAS_COURAGEOUS,
+    question: "I was courageous",
+    ico: "info",
+  },
   {
     id: SelfReflectionQuestionId.ABLE_TO_DROP_NEGATIVE_THOUGHTS,
     question: "I was able to drop negative thoughts",
+    ico: "info",
   },
   {
     id: SelfReflectionQuestionId.HAD_ENOUGH_ENERGY,
     question: "I had enough energy",
+    ico: "info",
   },
-  { id: SelfReflectionQuestionId.SLEPT_WELL, question: "I slept well" },
-  { id: SelfReflectionQuestionId.ENJOYED_LIFE, question: "I enjoyed life" },
+  {
+    id: SelfReflectionQuestionId.SLEPT_WELL,
+    question: "I slept well",
+    ico: "info",
+  },
+  {
+    id: SelfReflectionQuestionId.ENJOYED_LIFE,
+    question: "I enjoyed life",
+    ico: "info",
+  },
 ];
 
 export type SelfReflectionAnswerVal = 1 | 2 | 3 | 4;
