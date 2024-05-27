@@ -1,5 +1,5 @@
 import { createSignal, JSX, onMount } from "solid-js";
-import { WebsiteListItem } from "@src/shared/components/onboardingWeb/WebsiteListItem";
+import { WebsiteListItem } from "@pages/newtab/components/onboardingWeb/WebsiteListItem";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 // @ts-ignore
 import styles from "./WebsiteList.module.scss";

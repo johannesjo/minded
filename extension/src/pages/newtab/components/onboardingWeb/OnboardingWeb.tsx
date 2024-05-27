@@ -1,7 +1,7 @@
 import { JSX } from "solid-js";
 // @ts-ignore
 import styles from "./OnboardingWeb.module.scss";
-import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
+import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
 // @ts-ignore
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 

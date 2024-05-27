@@ -26,6 +26,7 @@ export default defineConfig(({ mode }) => {
           alias: {
             "@src": root,
             "@assets": assetsDir,
+            "@pages": pagesDir,
             "@dataInterface": dataInterfaceDroid,
           },
         },

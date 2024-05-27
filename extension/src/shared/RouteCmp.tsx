@@ -5,12 +5,12 @@ import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import { SettingsWeb } from "@src/shared/components/settings/SettingsWeb";
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
+import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
 
@@ -65,7 +65,7 @@ const RoutesCmp = () => {
         {IS_ANDROID && (
           <Route path="/settings" component={SettingsAndroidRoute} />
         )}
-        {!IS_ANDROID && <Route path="/settings" component={SettingsWeb} />}
+        {!IS_ANDROID && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
       </HashRouter>
     </div>
