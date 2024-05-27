@@ -30,7 +30,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "MOOD_CHECKIN";
   // return "ENERGY_LVL";
   // return "EMOJI_CHECKIN";
-  return "SELF_REFLECTION_RATING";
+  // return "SELF_REFLECTION_RATING";
 
   const now = new Date();
   const nowTS = Date.now();
