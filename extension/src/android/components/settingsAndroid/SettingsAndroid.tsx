@@ -80,7 +80,7 @@ export const SettingsAndroid = (props: {
       <div>
         {props.isRouting && (
           <button
-            class="btnTxtBig"
+            class="btnTxt"
             style="margin-right: 16px;"
             onClick={() => navigate("/")}
           >
@@ -89,7 +89,7 @@ export const SettingsAndroid = (props: {
         )}
 
         <button
-          class="btnTxtBig"
+          class="btnTxt"
           disabled={!getSelectedApps()?.length}
           onClick={handleSave}
         >
