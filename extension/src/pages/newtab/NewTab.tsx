@@ -1,9 +1,8 @@
+// @ts-ignore
+
 import { createSignal, onMount } from "solid-js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import { OnboardingWeb } from "@src/shared/components/onboardingWeb/OnboardingWeb";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+import { OnboardingWeb } from "@pages/newtab/components/onboardingWeb/OnboardingWeb";
 // @ts-expect-error
 import styles from "./NewTab.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";

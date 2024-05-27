@@ -1,4 +1,4 @@
-import { WebsiteList } from "@src/shared/components/onboardingWeb/WebsiteList";
+import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
 
 const Options = () => {
   const onAfterSave = () => {
