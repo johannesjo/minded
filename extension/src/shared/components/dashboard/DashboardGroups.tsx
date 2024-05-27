@@ -5,7 +5,7 @@ import {
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupStats,
-  DashboardGroupType,
+  DashboardGroupType
 } from "@src/shared/components/dashboard/dashboard.model";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
@@ -17,7 +17,9 @@ import Rating from "@src/shared/components/ui/Rating";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
-import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
+import {
+  getAppUsageOrBrowsingBehaviorChartData
+} from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
@@ -33,16 +35,16 @@ export const DashboardGroups: (props: {
   const refresh = () => {
     getSyncData().then((syncData) => {
       const existingDashboardGroups = getDashboardGroups();
-      if (existingDashboardGroups) {
-        const entries = getDashboardEntriesFromQuestions(syncData);
-        setDashboardGroups(entries);
-      } else {
+      if(existingDashboardGroups) {
         setDashboardGroups(
           updateDashboardEntriesFromQuestions(
             syncData,
-            existingDashboardGroups,
-          ),
+            existingDashboardGroups
+          )
         );
+      } else {
+        const entries = getDashboardEntriesFromQuestions(syncData);
+        setDashboardGroups(entries);
       }
     });
   };
@@ -63,92 +65,96 @@ export const DashboardGroups: (props: {
     >
       {/* TODO refactor */}
       {/* eslint-disable-next-line solid/prefer-for */}
-      {getDashboardGroups().map((dg) => (
-        <div
-          onClick={() => "id" in dg && props.onQuestionCategorySelect(dg.id)}
-          classList={{
-            ["cardDashboard"]: true,
-            [styles.box]: true,
-            [styles.interactive]: "id" in dg,
-            [styles.centerItem]:
+
+      <For each={getDashboardGroups()}>
+        {(dg) => (
+          <div
+            onClick={() => "id" in dg && props.onQuestionCategorySelect(dg.id)}
+            classList={{
+              ["cardDashboard"]: true,
+              [styles.box]: true,
+              [styles.interactive]: "id" in dg,
+              [styles.centerItem]:
               dg.type !== DashboardGroupType.TxtQuestion &&
-              dg.type !== DashboardGroupType.BrowsingBehaviorRating,
-          }}
-        >
-          {(() => {
-            switch (dg.type) {
-              case DashboardGroupType.BrowsingBehaviorRating:
-                // eslint-disable-next-line no-case-declarations
-                const rd = (dg as DashboardGroupBrowsingBehavior).data;
-                return (
-                  <div class={styles.browsingBehaviorGraph}>
-                    <div class="dashboardHeading">
-                      {IS_ANDROID
-                        ? "bad app usage rating over time"
-                        : "browsing behavior over time"}
+              dg.type !== DashboardGroupType.BrowsingBehaviorRating
+            }}
+          >
+            {(() => {
+              switch (dg.type) {
+                case DashboardGroupType.BrowsingBehaviorRating:
+                  // eslint-disable-next-line no-case-declarations
+                  const rd = (dg as DashboardGroupBrowsingBehavior).data;
+                  return (
+                    <div class={styles.browsingBehaviorGraph}>
+                      <div class="dashboardHeading">
+                        {IS_ANDROID
+                          ? "bad app usage rating over time"
+                          : "browsing behavior over time"}
+                      </div>
+                      <Chart
+                        chartData={getAppUsageOrBrowsingBehaviorChartData(rd)}
+                      />
                     </div>
-                    <Chart
-                      chartData={getAppUsageOrBrowsingBehaviorChartData(rd)}
-                    />
-                  </div>
-                );
-              case DashboardGroupType.Stats:
-                // eslint-disable-next-line no-case-declarations
-                const dgs = dg as DashboardGroupStats;
-                return (
-                  <div class={styles.stats}>
-                    <div
-                      class="dashboardHeading"
-                      title="'minded' decisions are counted every time when you leave a website by clicking the sun."
-                    >
-                      minded decisions today
+                  );
+                case DashboardGroupType.Stats:
+                  // eslint-disable-next-line no-case-declarations
+                  const dgs = dg as DashboardGroupStats;
+                  return (
+                    <div class={styles.stats}>
+                      <div
+                        class="dashboardHeading"
+                        title="'minded' decisions are counted every time when you leave a website by clicking the sun."
+                      >
+                        minded decisions today
+                      </div>
+                      <div
+                        class="fatTxt"
+                        title={
+                          dgs.attempts + " website visit attempts today in total"
+                        }
+                      >
+                        {dgs.sunTaps}
+                      </div>
                     </div>
-                    <div
-                      class="fatTxt"
-                      title={
-                        dgs.attempts + " website visit attempts today in total"
-                      }
-                    >
-                      {dgs.sunTaps}
+                  );
+                case DashboardGroupType.MoodCheckin:
+                  // eslint-disable-next-line no-case-declarations
+                  const dgm = dg as DashboardGroupMood;
+                  return (
+                    <div class={styles.moodCheckinWidget}>
+                      <div class="dashboardHeading">
+                        you feel <span class="fatTxt">{dgm.mood}</span> today!
+                      </div>
+                      <div class="dashboardContent">
+                        {dgm.additionalTxt}
+                        {!dgm.additionalTxt &&
+                          (dgm.mood === MoodCheckinVal.Awful ||
+                            dgm.mood === MoodCheckinVal.Bad) &&
+                          "Be very kind to yourself!"}
+                      </div>
                     </div>
-                  </div>
-                );
-              case DashboardGroupType.MoodCheckin:
-                // eslint-disable-next-line no-case-declarations
-                const dgm = dg as DashboardGroupMood;
-                return (
-                  <div class={styles.moodCheckinWidget}>
-                    <div class="dashboardHeading">
-                      you feel <span class="fatTxt">{dgm.mood}</span> today!
-                    </div>
-                    <div class="dashboardContent">
-                      {dgm.additionalTxt}
-                      {!dgm.additionalTxt &&
-                        (dgm.mood === MoodCheckinVal.Awful ||
-                          dgm.mood === MoodCheckinVal.Bad) &&
-                        "Be very kind to yourself!"}
-                    </div>
-                  </div>
-                );
-              case DashboardGroupType.Quote:
-                return <RndQuote />;
+                  );
+                case DashboardGroupType.Quote:
+                  return <RndQuote />;
 
-              case DashboardGroupType.EnergyLvl:
-                // eslint-disable-next-line no-case-declarations
-                const dge = dg as DashboardGroupEnergyLvl;
-                return (
-                  <div class={styles.energyLvl}>
-                    <div class="dashboardHeading">your energy level today</div>
-                    <Rating isShowOnly={true} value={dge.energyLvl} />
-                  </div>
-                );
+                case DashboardGroupType.EnergyLvl:
+                  // eslint-disable-next-line no-case-declarations
+                  const dge = dg as DashboardGroupEnergyLvl;
+                  return (
+                    <div class={styles.energyLvl}>
+                      <div class="dashboardHeading">your energy level today</div>
+                      <Rating isShowOnly={true}
+                              value={dge.energyLvl} />
+                    </div>
+                  );
 
-              default:
-                return <DashboardAnswerList dashboardGroup={dg} />;
-            }
-          })()}
-        </div>
-      ))}
+                default:
+                  return <DashboardAnswerList dashboardGroup={dg} />;
+              }
+            })()}
+          </div>
+        )}
+      </For>
     </div>
   );
 };
