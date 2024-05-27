@@ -1,11 +1,11 @@
-import { createSignal, JSX, onCleanup, onMount } from "solid-js";
+import { createSignal, For, JSX, onCleanup, onMount } from "solid-js";
 import {
   DashboardGroup,
   DashboardGroupBrowsingBehavior,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupStats,
-  DashboardGroupType
+  DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
@@ -17,9 +17,7 @@ import Rating from "@src/shared/components/ui/Rating";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
-import {
-  getAppUsageOrBrowsingBehaviorChartData
-} from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
+import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
@@ -35,12 +33,12 @@ export const DashboardGroups: (props: {
   const refresh = () => {
     getSyncData().then((syncData) => {
       const existingDashboardGroups = getDashboardGroups();
-      if(existingDashboardGroups) {
+      if (existingDashboardGroups) {
         setDashboardGroups(
           updateDashboardEntriesFromQuestions(
             syncData,
-            existingDashboardGroups
-          )
+            existingDashboardGroups,
+          ),
         );
       } else {
         const entries = getDashboardEntriesFromQuestions(syncData);
@@ -75,8 +73,8 @@ export const DashboardGroups: (props: {
               [styles.box]: true,
               [styles.interactive]: "id" in dg,
               [styles.centerItem]:
-              dg.type !== DashboardGroupType.TxtQuestion &&
-              dg.type !== DashboardGroupType.BrowsingBehaviorRating
+                dg.type !== DashboardGroupType.TxtQuestion &&
+                dg.type !== DashboardGroupType.BrowsingBehaviorRating,
             }}
           >
             {(() => {
@@ -110,7 +108,8 @@ export const DashboardGroups: (props: {
                       <div
                         class="fatTxt"
                         title={
-                          dgs.attempts + " website visit attempts today in total"
+                          dgs.attempts +
+                          " website visit attempts today in total"
                         }
                       >
                         {dgs.sunTaps}
@@ -142,9 +141,10 @@ export const DashboardGroups: (props: {
                   const dge = dg as DashboardGroupEnergyLvl;
                   return (
                     <div class={styles.energyLvl}>
-                      <div class="dashboardHeading">your energy level today</div>
-                      <Rating isShowOnly={true}
-                              value={dge.energyLvl} />
+                      <div class="dashboardHeading">
+                        your energy level today
+                      </div>
+                      <Rating isShowOnly={true} value={dge.energyLvl} />
                     </div>
                   );
 

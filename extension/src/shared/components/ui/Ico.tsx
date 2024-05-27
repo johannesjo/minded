@@ -39,10 +39,9 @@ const ICO_MAP = {
   info: infoSvg,
 } as const;
 
-export const Ico = (props: {
-  name: keyof typeof ICO_MAP;
-  size?: number;
-}): JSXElement => {
+export type IcoName = keyof typeof ICO_MAP;
+
+export const Ico = (props: { name: IcoName; size?: number }): JSXElement => {
   // const size = props.size || 24;
   const size = props.size || 24;
   // Component's render function
