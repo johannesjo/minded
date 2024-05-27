@@ -49,7 +49,7 @@ export const MissingCapabilityView = (props: {
   });
 
   return (
-    <div class={styles.container}>
+    <div class={styles.container + " pageTransitionIn"}>
       <div class={styles.innerContainer}>
         <div class="txtSlightlyBigger">
           <em>minded</em> displays an overlay when you open one of the
