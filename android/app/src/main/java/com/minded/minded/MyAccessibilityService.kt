@@ -10,7 +10,6 @@ import com.minded.minded.overlay.OverlayControllerService
 
 class MyAccessibilityService : AccessibilityService() {
     private var lastEventTs: Long = 0
-    private val minDelayForNewEvents = 100L
     private var currentPackageName: CharSequence? = null
 
     companion object {
@@ -64,10 +63,8 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
         Log.v("ACCESSIBILITY", "onAccessibilityEvent() ${System.currentTimeMillis() - lastEventTs}")
-        // NOTE: when using the nexuslauncher to swipe in between app, the nexuslauncher is recorded again shortly after refocusing
-        // the app that is actually focused afterwards. To counter this we use the magic 500ms and don't fire the service again if the
-        // last start is not at least 500ms away
-        val isStartService = (System.currentTimeMillis() - lastEventTs > minDelayForNewEvents)
+        // NOTE: we only check if the new event was fired after the last event. NOT sure if this is necessary
+        val isStartService = (System.currentTimeMillis() - lastEventTs > 0)
                 && accessibilityEvent.packageName != null
                 && !isNonAppPackage(accessibilityEvent.packageName.toString())
         lastEventTs = System.currentTimeMillis()
@@ -75,6 +72,14 @@ class MyAccessibilityService : AccessibilityService() {
             "ACCESSIBILITY",
             "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
         )
+//        Log.v(
+//            "ACCESSIBILITY",
+//            "onAccessibilityEvent(), isStartService:${isStartService} ${(System.currentTimeMillis() - lastEventTs > 0)}${accessibilityEvent.packageName != null}${
+//                !isNonAppPackage(
+//                    accessibilityEvent.packageName.toString()
+//                )
+//            }"
+//        )
         if (isStartService) {
             currentPackageName = accessibilityEvent.packageName
             val intent = Intent(this, OverlayControllerService::class.java)
