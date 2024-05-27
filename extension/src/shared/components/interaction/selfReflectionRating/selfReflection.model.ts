@@ -1,5 +1,7 @@
 // export const SELF_REF
 
+import { TglBtnOption } from "@src/shared/components/ui/TglBtns";
+
 export enum SelfReflectionQuestionId {
   CARE_OF_NEEDS = "CARE_OF_NEEDS",
   SOCIAL_CONTACTS = "SOCIAL_CONTACTS",
@@ -60,8 +62,7 @@ export const SELF_REFLECTION_QUESTIONS: SelfReflectionQuestion[] = [
 
 export type SelfReflectionAnswerVal = 1 | 2 | 3 | 4;
 
-export interface SelfReflectionAnswer {
-  txt: string;
+export interface SelfReflectionAnswer extends TglBtnOption<number> {
   val: SelfReflectionAnswerVal;
 }
 

@@ -1,12 +1,12 @@
 import { createSignal, For, JSX } from "solid-js";
 
-interface Option<T> {
+export interface TglBtnOption<T> {
   val: T;
   txt: JSX.Element;
 }
 
 const TglBtns = <T,>(props: {
-  options: Option<T>[];
+  options: TglBtnOption<T>[];
   onSelect: (value: T) => void;
 }): JSX.Element => {
   const [getSelectedVal, setSelectedVal] = createSignal<T | null>(null);
