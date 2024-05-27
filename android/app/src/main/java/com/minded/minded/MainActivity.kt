@@ -2,6 +2,7 @@ package com.minded.minded
 
 import MainActivityJavaScriptInterface
 import SharedPreferenceService
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private val logTag = "MainActivity"
 
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
@@ -78,8 +80,8 @@ class MainActivity : AppCompatActivity() {
                                 )
                                 loadUrl("file:///android_asset/web/src/android/main/index.html")
                             }
-                            webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-                            webView.setScrollbarFadingEnabled(false);
+                            webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
+                            webView.setScrollbarFadingEnabled(false)
                             webView
                         })
                     }
@@ -116,15 +118,15 @@ class MainActivity : AppCompatActivity() {
         OverlayControllerService.hideOverlay(
             this,
             OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
-        );
+        )
         OverlayControllerService.hideOverlay(
             this,
             OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-        );
+        )
         OverlayControllerService.hideOverlay(
             this,
             OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
-        );
+        )
     }
 
 
@@ -134,7 +136,7 @@ class MainActivity : AppCompatActivity() {
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:$packageName")
             )
-        );
+        )
     }
 
 
@@ -143,7 +145,7 @@ class MainActivity : AppCompatActivity() {
             Intent(
                 Settings.ACTION_ACCESSIBILITY_SETTINGS
             )
-        );
+        )
     }
 
     private fun getMissingCapabilities(): List<MissingCapability> {
