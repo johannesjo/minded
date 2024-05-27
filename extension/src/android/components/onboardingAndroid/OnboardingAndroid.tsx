@@ -37,7 +37,7 @@ export const OnboardingAndroid = () => {
 
               <ButtonWrapper isVisible={true}>
                 <div class="btnTxtBig" onClick={() => setStep(1)}>
-                  let's start
+                  let's start!
                 </div>
               </ButtonWrapper>
             </div>

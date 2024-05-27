@@ -40,7 +40,7 @@ Other comments:
 
       <div>
         <a href={mailtoLink()} class="btnTxtBig" target="_blank">
-          Send us a quick email
+          ♥ send us a quick email ♥
         </a>
       </div>
       {/*<div style="margin-top: 16px">*/}
