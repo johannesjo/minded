@@ -3,7 +3,7 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [key in QuestionCategoryId]: string;
 } = {
-  [QuestionCategoryId.BetterBrowsingHabits]:
+  [QuestionCategoryId.HealthierBrowsingHabits]:
     "Understanding and improving your browsing habits can significantly enhance your productivity and mental health. Spending time online wisely can prevent unnecessary stress and distractions, allowing you to focus on tasks that truly matter.",
   [QuestionCategoryId.PersonalResources]:
     "Recognizing your personal resources, such as skills and strengths, can boost your self-esteem and confidence. It can also help you leverage these resources to overcome challenges and achieve your goals.",

@@ -9,6 +9,8 @@ import {
 import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { isWorkDay } from "@src/util/isWorkDay";
+// @ts-ignore
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 const THRESHOLD_MORNING_START = 4;
 const THRESHOLD_MORNING_END = 14;
@@ -34,15 +36,24 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   Object.keys(QuestionCategoryId)
     .filter(filterSpecialWidgets)
     .forEach((categoryId: QuestionCategoryId) => {
-      const categoryForAnswer = QUESTION_CATEGORIES[categoryId];
-      if (categoryForAnswer?.questions?.length > 0) {
+      const questionCategory = QUESTION_CATEGORIES[categoryId];
+      if (questionCategory.limitTo?.includes("Android") && !IS_ANDROID) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
+      }
+      if (
+        questionCategory.limitTo?.includes("BrowserExtension") &&
+        IS_ANDROID
+      ) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
+      }
+      if (questionCategory?.questions?.length > 0) {
         map[categoryId] = 0;
       }
-      if (categoryForAnswer?.frequencyModifier > 0) {
-        map[categoryId] = -1 * categoryForAnswer.frequencyModifier;
+      if (questionCategory?.frequencyModifier > 0) {
+        map[categoryId] = -1 * questionCategory.frequencyModifier;
       }
 
-      if (categoryForAnswer.isMorningCategory) {
+      if (questionCategory.isMorningCategory) {
         if (
           nowHours < THRESHOLD_MORNING_START ||
           nowHours > THRESHOLD_MORNING_END
@@ -53,7 +64,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
-      if (categoryForAnswer.isEveningCategory) {
+      if (questionCategory.isEveningCategory) {
         if (nowHours < THRESHOLD_EVENING_START) {
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
@@ -61,7 +72,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
-      if (categoryForAnswer.isLateNightCategory) {
+      if (questionCategory.isLateNightCategory) {
         if (
           nowHours < THRESHOLD_LATE_NIGHT_START ||
           nowHours > THRESHOLD_LATE_NIGHT_END
@@ -72,7 +83,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
         }
       }
-      if (categoryForAnswer.isWorkDayCategory && !isWorkDayToday) {
+      if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
         map[categoryId] = FAKE_RULE_OUT_NR;
       }
     });
@@ -116,8 +127,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     questionsForCategory,
     isWorkDayToday,
   });
-  const q = getRndEntry(questionsForCategory);
-  return q;
+  return getQuestionFromArray(questionsForCategory);
 };
 
 export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
@@ -126,6 +136,15 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
 
   const questionsToUse = QUESTIONS.filter((q) => {
     const categoryForQuestion = QUESTION_CATEGORIES[q.categoryId];
+    if (categoryForQuestion.limitTo?.includes("Android") && !IS_ANDROID) {
+      return false;
+    }
+    if (
+      categoryForQuestion.limitTo?.includes("BrowserExtension") &&
+      IS_ANDROID
+    ) {
+      return false;
+    }
     if (categoryForQuestion.isMorningCategory) {
       if (
         nowHours < THRESHOLD_MORNING_START ||
@@ -152,5 +171,29 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
     }
     return true;
   });
-  return getRndEntry(questionsToUse);
+  return getQuestionFromArray(questionsToUse);
+};
+
+const getQuestionFromArray = (
+  questions: QuestionForPrompt[],
+): QuestionForPrompt => {
+  let newQuestion = getRndEntry(questions);
+  while (!isQuestionAllowed(newQuestion)) {
+    newQuestion = getRndEntry(questions);
+  }
+  return newQuestion;
+};
+
+const isQuestionAllowed = (question: QuestionForPrompt): boolean => {
+  return (
+    !question.limitTo ||
+    !!question.limitTo.find((limitTo) => {
+      if (limitTo === "Android") {
+        return IS_ANDROID;
+      }
+      if (limitTo === "BrowserExtension") {
+        return !IS_ANDROID;
+      }
+    })
+  );
 };

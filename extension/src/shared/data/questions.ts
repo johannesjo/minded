@@ -1,7 +1,8 @@
 import { QID } from "@src/shared/data/questionId";
 
 export enum QuestionCategoryId {
-  BetterBrowsingHabits = "BetterBrowsingHabits",
+  HealthierBrowsingHabits = "HealthierBrowsingHabits",
+  HealthierAppUsage = "HealthierAppUsage",
   Motivation = "Motivation",
   PersonalResources = "PersonalResources",
   RefocusHelperToday = "RefocusHelperToday",
@@ -35,6 +36,8 @@ export enum QuestionCategoryId {
   // SelfCompassion = "SelfCompassion",
 }
 
+export type LimitTo = "BrowserExtension" | "Android";
+export type LimitToOpts = LimitTo[];
 export const SPECIAL_WIDGET_LETTER = "X";
 export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
   categoryId[0] !== SPECIAL_WIDGET_LETTER;
@@ -43,6 +46,7 @@ export type Question = {
   t: string;
   id: QID;
   prompt?: string;
+  limitTo?: LimitToOpts;
 };
 
 export type QuestionForPrompt = {
@@ -50,6 +54,7 @@ export type QuestionForPrompt = {
   id: QID;
   t: string;
   prompt?: string;
+  limitTo?: LimitToOpts;
 };
 
 export interface QuestionCategory {
@@ -62,6 +67,7 @@ export interface QuestionCategory {
   isLateNightCategory?: boolean;
   isWorkDayCategory?: boolean;
   isDontSaveQuestion?: boolean;
+  limitTo?: LimitToOpts;
   questions?: Question[];
   specialQuestions?: Question[];
 }
@@ -69,36 +75,71 @@ export interface QuestionCategory {
 export const QUESTION_CATEGORIES: {
   [key in QuestionCategoryId]: QuestionCategory;
 } = {
-  [QuestionCategoryId.BetterBrowsingHabits]: {
-    dashboardTxt: "Better Browsing Habits",
+  [QuestionCategoryId.HealthierBrowsingHabits]: {
+    dashboardTxt: "Healthier Browsing Habits",
     frequencyModifier: 2,
+    limitTo: ["BrowserExtension"],
     questions: [
       {
-        id: QID.BBH1,
+        id: QID.HBH1,
         t: "What is the one thing you find most problematic in your recent browsing behavior",
         prompt: "The biggest challenge is",
       },
       {
-        id: QID.BBH2,
+        id: QID.HBH2,
         t: "What would you like to change in your browsing behavior",
         prompt: "I want to change",
       },
       {
-        id: QID.BBH3,
+        id: QID.HBH3,
         t: "What might help you change your negative browsing behavior",
       },
       {
-        id: QID.BBH4,
+        id: QID.HBH4,
         t: "What specific first step could you take right now to develop a better browsing behavior",
       },
       {
-        id: QID.BBH5,
+        id: QID.HBH5,
         t: "How would your ideal media consumption behavior look like",
       },
       {
-        id: QID.BBH6,
+        id: QID.HBH6,
         t: "Instead of instant gratification, what might be a better alternative",
-        prompt: "Instead of using these websites and apps I could",
+        prompt: "Instead of using these websites I could",
+      },
+    ],
+  },
+  [QuestionCategoryId.HealthierAppUsage]: {
+    dashboardTxt: "Healthier App Usage",
+    frequencyModifier: 2,
+    limitTo: ["Android"],
+    questions: [
+      {
+        id: QID.HAU1,
+        t: "What is the one thing you find most problematic in your recent usage of mobile apps",
+        prompt: "The biggest challenge is",
+      },
+      {
+        id: QID.HAU2,
+        t: "What would you like to change in your phone usage",
+        prompt: "I want to change",
+      },
+      {
+        id: QID.HAU3,
+        t: "What might help you change your negative usage of mobile apps",
+      },
+      {
+        id: QID.HAU4,
+        t: "What specific first step could you take right now to develop better habits in using mobile apps",
+      },
+      {
+        id: QID.HAU5,
+        t: "How would your ideal media consumption behavior look like",
+      },
+      {
+        id: QID.HAU6,
+        t: "Instead of instant gratification, what might be a better alternative",
+        prompt: "Instead of using these apps I could",
       },
     ],
   },
@@ -356,7 +397,11 @@ export const QUESTION_CATEGORIES: {
         id: QID.UP1,
         t: "What do you think is a factor that enables your procrastination",
       },
-      { id: QID.UP2, t: "Why are you visiting this website" },
+      {
+        id: QID.UP2,
+        t: "Why are you visiting this website",
+        limitTo: ["BrowserExtension"],
+      },
       { id: QID.UP3, t: "Where and how do I waste time" },
       { id: QID.UP4, t: "What is hurting your focus" },
       {
@@ -488,7 +533,8 @@ export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.TodayILearned,
   QuestionCategoryId.GoalForTheWeek,
-  QuestionCategoryId.BetterBrowsingHabits,
+  QuestionCategoryId.HealthierAppUsage,
+  QuestionCategoryId.HealthierBrowsingHabits,
 ];
 
 export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
