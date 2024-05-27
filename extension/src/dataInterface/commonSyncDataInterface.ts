@@ -1,4 +1,4 @@
-import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { Answer, SyncData, UserCfg } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
 // @ts-ignore

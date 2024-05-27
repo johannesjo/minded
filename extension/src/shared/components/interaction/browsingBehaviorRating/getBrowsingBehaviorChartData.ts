@@ -1,5 +1,5 @@
 import { ChartData } from "chart.js";
-import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsing-behavior-rating/browsingBehaviorRating.const";
+import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsingBehaviorRating/browsingBehaviorRating.const";
 
 export const getBrowsingBehaviorChartData = (data: {
   [key: string]: number;

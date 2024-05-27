@@ -1,7 +1,7 @@
 import {
   EMOIJI_CATEGORIES,
   EMOIJI_CATEGORIES_SORTED,
-} from "@src/shared/components/interaction/emoji-checkin/emojis.const";
+} from "@src/shared/components/interaction/emojiCheckin/emojis.const";
 import { JSX } from "solid-js";
 
 export const EmojiCheckin: (props: {

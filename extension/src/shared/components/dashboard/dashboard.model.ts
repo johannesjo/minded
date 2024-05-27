@@ -1,6 +1,6 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
-import { MoodCheckinVal } from "@src/shared/components/interaction/mood-checkin/moodCheckin.const";
+import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 
 export enum DashboardGroupType {
   TxtQuestion = "TxtQuestion",
