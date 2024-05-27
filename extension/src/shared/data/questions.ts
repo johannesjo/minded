@@ -192,7 +192,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT5,
-        t: "What would make me proud today, if it would finally be done",
+        t: "What would make you proud today, if it would finally be done",
         prompt: "I would be proud to",
       },
       {
@@ -227,7 +227,7 @@ export const QUESTION_CATEGORIES: {
       { id: QID.MO1, t: "What motivates you", prompt: "I am motivated by" },
       {
         id: QID.MO2,
-        t: "What motivates me to make progress",
+        t: "What motivates you to make progress",
         prompt: "I am motivated by",
       },
     ],
