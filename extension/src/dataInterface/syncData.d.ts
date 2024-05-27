@@ -37,6 +37,10 @@ export interface SyncData {
   browsingBehaviorRating: {
     [key: string]: number;
   };
+  lastAppUsageRatingTS: number;
+  appUsageRating: {
+    [key: string]: number;
+  };
 }
 
 export interface StaticCfg {

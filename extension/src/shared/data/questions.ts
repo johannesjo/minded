@@ -92,7 +92,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH3,
-        t: "What might help you change your negative browsing behavior",
+        t: "What might help you change your unhealthy browsing behavior",
       },
       {
         id: QID.HBH4,
@@ -126,7 +126,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU3,
-        t: "What might help you change your negative usage of mobile apps",
+        t: "What might help you change your unhealthy usage of mobile apps",
       },
       {
         id: QID.HAU4,

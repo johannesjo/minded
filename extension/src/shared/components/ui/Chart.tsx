@@ -2,7 +2,7 @@ import { createSignal, onMount } from "solid-js";
 import { Line } from "solid-chartjs";
 import { createStore } from "solid-js/store";
 import { Chart as ChartJSChart, ChartData } from "chart.js";
-import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsingBehaviorRating/browsingBehaviorRating.const";
+import { APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/appUsageOrBrowsingBehavior.const";
 
 function Chart(props: { chartData: ChartData }) {
   onMount(() => {
@@ -45,7 +45,7 @@ function Chart(props: { chartData: ChartData }) {
                 ticks: {
                   callback: function (value, index, values) {
                     // Replace this with your custom logic
-                    return BROWSING_BEHAVIOR_OPTIONS.find(
+                    return APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS.find(
                       (opt) => opt.val === value,
                     )?.txt;
                   },

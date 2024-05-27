@@ -1,7 +1,7 @@
 import { ChartData } from "chart.js";
-import { BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/browsingBehaviorRating/browsingBehaviorRating.const";
+import { APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/appUsageOrBrowsingBehavior.const";
 
-export const getBrowsingBehaviorChartData = (data: {
+export const getAppUsageOrBrowsingBehaviorChartData = (data: {
   [key: string]: number;
 }): ChartData => {
   const values = Object.values(data);
@@ -20,7 +20,7 @@ export const getBrowsingBehaviorChartData = (data: {
     ],
 
     // yLabels: [1, 2, 3, 4, 5],
-    yLabels: BROWSING_BEHAVIOR_OPTIONS.map((opt) => opt.txt),
+    yLabels: APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS.map((opt) => opt.txt),
     // yLabels: [1, 2, 3, 4, 5],
     xLabels: dates,
   };

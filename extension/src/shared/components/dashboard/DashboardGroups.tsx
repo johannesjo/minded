@@ -17,7 +17,7 @@ import Rating from "@src/shared/components/ui/Rating";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
-import { getBrowsingBehaviorChartData } from "@src/shared/components/interaction/browsingBehaviorRating/getBrowsingBehaviorChartData";
+import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
@@ -87,7 +87,9 @@ export const DashboardGroups: (props: {
                         ? "bad app usage rating over time"
                         : "browsing behavior over time"}
                     </div>
-                    <Chart chartData={getBrowsingBehaviorChartData(rd)} />
+                    <Chart
+                      chartData={getAppUsageOrBrowsingBehaviorChartData(rd)}
+                    />
                   </div>
                 );
               case DashboardGroupType.Stats:
