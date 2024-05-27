@@ -1,4 +1,4 @@
-import { SyncData } from "@src/dataInterface/syncData";
+import { Answer, SyncData } from "@src/dataInterface/syncData";
 import {
   DashboardGroup,
   DashboardGroupBrowsingBehavior,
@@ -25,7 +25,8 @@ const CENTER_INDEX = 4;
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
-  now = new Date()
+  now = new Date(),
+  isSkipRndEntry = IS_ANDROID
 ): DashboardGroup[] => {
   const ds = getIsoDate(now);
   const dashboardGroups = [];
@@ -50,7 +51,7 @@ export const getDashboardEntriesFromQuestions = (
         id: catId,
         dashboardTxt: QUESTION_CATEGORIES[catId].dashboardTxt,
         // TODO more sophisticated algorithm based on character length
-        answers: getRndEntries(answersForCat, MAX_ANSWERS),
+        answers: getLastThreeAnswers(answersForCat),
         type: DashboardGroupType.TxtQuestion
       });
     }
@@ -100,7 +101,7 @@ export const getDashboardEntriesFromQuestions = (
   }
 
   // center one rnd entry
-  if(sortedEntries.length >= 5 && !IS_ANDROID) {
+  if(sortedEntries.length >= 5 && !isSkipRndEntry) {
     // NOTE: start val needs to be bigger than the fixed added entries
     const rndIndex = getRndInt(
       fixedEntriesIndexAndNr,
@@ -116,8 +117,11 @@ export const getDashboardEntriesFromQuestions = (
   }
 
   console.log("sunTaps", syncData.sunTaps);
-
   console.log({ syncData, sortedEntries });
 
   return sortedEntries;
+};
+
+const getLastThreeAnswers = (answers: Answer[]): Answer[] => {
+  return answers.sort((a, b) => a.ts - b.ts).slice(-MAX_ANSWERS);
 };

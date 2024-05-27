@@ -4,28 +4,34 @@ import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboa
 
 export const updateDashboardEntriesFromQuestions = (
   syncData: SyncData,
-  dashboardGroups: DashboardGroup[],
-  now = new Date(),
+  existingDashboardGroups: DashboardGroup[],
+  now = new Date()
 ): DashboardGroup[] => {
   const newDashboardGroups = getDashboardEntriesFromQuestions(syncData, now);
 
-  if (dashboardGroups.length !== newDashboardGroups.length) {
+  if(existingDashboardGroups.length !== newDashboardGroups.length) {
     return newDashboardGroups;
   }
 
-  const dashboardGroupsCopy = [...dashboardGroups];
+  const dashboardGroupsCopy = [...existingDashboardGroups];
   // Update existing groups with new data
-  newDashboardGroups.forEach((newGroup) => {
-    const existingGroupIndex = dashboardGroupsCopy.findIndex(
-      (group) => group.type === newGroup.type,
+  dashboardGroupsCopy.forEach((oldGroup, oldGroupIndex) => {
+    const newGroupEntry = newDashboardGroups.find(
+      (newGroup) => ("id" in newGroup) && ("id" in oldGroup)
+        ? newGroup.id === oldGroup.id
+        : newGroup.type === oldGroup.type
     );
 
-    if (existingGroupIndex !== -1) {
-      // Update the existing group with the new data
-      dashboardGroupsCopy[existingGroupIndex] = {
-        ...dashboardGroupsCopy[existingGroupIndex],
-        ...newGroup,
-      };
+    if(newGroupEntry) {
+      if(JSON.stringify(newGroupEntry) !== JSON.stringify(oldGroup)) {
+        // Update the existing group with the new data
+        dashboardGroupsCopy[oldGroupIndex] = {
+          ...newGroupEntry,
+          ...oldGroup
+        } as DashboardGroup;
+        console.log("UPDATE", (newGroupEntry) , (oldGroup));
+      }
+
     } else {
       // if there is any inconsistency in the groups, return the new groups
       return newDashboardGroups;
