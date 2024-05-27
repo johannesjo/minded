@@ -39,6 +39,7 @@
     opacity: .8;
     transform: scale(.95);
     box-shadow: var(--btn-box-shadow);
+    transition: all 10ms;
   }
 
   &:after {

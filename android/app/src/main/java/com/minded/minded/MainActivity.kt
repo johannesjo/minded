@@ -114,19 +114,19 @@ class MainActivity : AppCompatActivity() {
                 ValueCallback<String?> { })
         }
 
-        // always hide all overlays on resume
-        OverlayControllerService.hideOverlay(
-            this,
-            OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
-        )
-        OverlayControllerService.hideOverlay(
-            this,
-            OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-        )
-        OverlayControllerService.hideOverlay(
-            this,
-            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
-        )
+//        // always hide all overlays on resume
+//        OverlayControllerService.hideOverlay(
+//            this,
+//            OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
+//        )
+//        OverlayControllerService.hideOverlay(
+//            this,
+//            OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
+//        )
+//        OverlayControllerService.hideOverlay(
+//            this,
+//            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
+//        )
     }
 
 

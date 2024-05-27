@@ -291,16 +291,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     fun userDrivenClose(isSkipShowSuccessSunAfter: Boolean = false) {
-        Log.v("QuestionOverlaySVC", "userDrivenClose()")
+        Log.v("QuestionOverlaySVC", "userDrivenClose() isSkipShowSuccessSunAfter: $isSkipShowSuccessSunAfter")
         sharedPreferenceService.countUserDrivenClose()
         // we do this to let the sun animation finish, sun is supposed to close itself after
-        if (isSkipShowSuccessSunAfter) {
-            hideOverlay(OverlayName.LITTLE_SUN_OVERLAY)
-            hideOverlay(OverlayName.INTERACTION_OVERLAY)
-            hideOverlay(OverlayName.SMALL_MSG_OVERLAY)
-        } else {
-            hideAllBut()
-        }
+        hideAllBut(OverlayName.SUCCESS_SUN_OVERLAY)
+
         goToApp()
 
         if (!isSkipShowSuccessSunAfter) {
