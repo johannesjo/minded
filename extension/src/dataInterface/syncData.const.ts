@@ -37,6 +37,8 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   moodCheckAdditional: "",
   browsingBehaviorRating: {},
   lastBrowsingBehaviorRatingTS: DEFAULT_TS_VAL,
+  appUsageRating: {},
+  lastAppUsageRatingTS: DEFAULT_TS_VAL,
   energyLvlVal: 0,
   energyLvlTS: DEFAULT_TS_VAL,
   answers: [],

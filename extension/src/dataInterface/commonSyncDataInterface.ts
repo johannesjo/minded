@@ -136,6 +136,23 @@ export const rateCurrentBrowsingBehavior = async (
   return saveSyncData(newSyncData);
 };
 
+export const rateCurrentAppUsage = async (
+  val: number,
+  dateTS = Date.now(),
+): Promise<void> => {
+  const ds = getIsoDate(new Date(dateTS));
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    lastAppUsageRatingTS: dateTS,
+    appUsageRating: {
+      ...syncData.appUsageRating,
+      [ds]: val,
+    },
+  };
+  return saveSyncData(newSyncData);
+};
+
 export const updateBlockedApps = async (
   blockedApps: string[],
 ): Promise<void> => {

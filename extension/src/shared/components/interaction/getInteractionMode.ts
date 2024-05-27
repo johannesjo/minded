@@ -17,7 +17,7 @@ const TINY_CHANCE = 0.01;
 
 export type InteractionMode =
   | "ENERGY_LVL"
-  | "BROWSING_BEHAVIOR_RATING"
+  | "APP_USAGE_OR_BROWSING_BEHAVIOR"
   | "ACTION_ADVICE"
   | "EMOJI_CHECKIN"
   | "QUESTION"
@@ -25,7 +25,7 @@ export type InteractionMode =
   | "SELF_REFLECTION_RATING";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
-  // return "BROWSING_BEHAVIOR_RATING";
+  // return "APP_USAGE_OR_BROWSING_BEHAVIOR";
   // return "ACTION_ADVICE";
   // return "MOOD_CHECKIN";
   // return "ENERGY_LVL";
@@ -81,7 +81,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
       LAST_BROWSING_RATING_MIN_GAP &&
       isXIn1(TINY_CHANCE))
   ) {
-    return "BROWSING_BEHAVIOR_RATING";
+    return "APP_USAGE_OR_BROWSING_BEHAVIOR";
   }
 
   return "QUESTION";

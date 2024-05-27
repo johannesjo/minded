@@ -10,7 +10,7 @@ import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/Mood
 import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
-import { BrowsingBehaviorRatingInteraction } from "@src/shared/components/interaction/browsingBehaviorRating/BrowsingBehaviorRating";
+import { AppUsageOrBrowsingBehavior } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/AppUsageOrBrowsingBehavior";
 import {
   getInteractionMode,
   InteractionMode,
@@ -21,11 +21,8 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import SelfReflectionRating from "@src/shared/components/interaction/selfReflectionRating/SelfReflectionRating";
@@ -236,8 +233,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               onSkip={props.onSkip}
             />
           </Match>
-          <Match when={getMode() === "BROWSING_BEHAVIOR_RATING"}>
-            <BrowsingBehaviorRatingInteraction
+          <Match when={getMode() === "APP_USAGE_OR_BROWSING_BEHAVIOR"}>
+            <AppUsageOrBrowsingBehavior
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
               onSkip={props.onSkip}
