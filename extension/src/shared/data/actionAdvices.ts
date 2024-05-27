@@ -1,5 +1,5 @@
 export const ACTION_ADVICES_MAX_HOUR = 22;
-export const ACTION_ADVICES_MIN_HOUR = 4;
+export const ACTION_ADVICES_MIN_HOUR = 5;
 export const ACTION_ADVICES: {
   ico?: string;
   txt: string;

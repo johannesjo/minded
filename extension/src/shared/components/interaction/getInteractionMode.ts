@@ -5,15 +5,12 @@ import {
 import { SyncData } from "@src/dataInterface/syncData";
 import { hasHappenedInLastXDay, isToday } from "@src/util/isToday";
 import { isXIn1 } from "@src/util/isXIn1";
+// @ts-expect-error
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
-const LAST_MOOD_CHECKIN_MIN_GAP = 60 * 60 * 1000;
-const LAST_ENERGY_LVL_CHECKIN_MIN_GAP = 60 * 60 * 1000;
-const LAST_ENERGY_LVL_CHECKIN_BOOST_GAP = 12 * 60 * 60 * 1000;
-const LAST_BROWSING_RATING_MIN_GAP = 8 * 60 * 1000;
+const LAST_MOOD_CHECKIN_MIN_GAP = 2 * 60 * 60 * 1000;
+const TODAY_START_HOUR = 5;
 const ENERGY_LVL_MAX_HOURS = 19;
-
-const SMALL_CHANCE = 0.1;
-const TINY_CHANCE = 0.01;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -41,47 +38,46 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
     return "QUESTION";
   }
 
-  if (isXIn1(SMALL_CHANCE)) {
+  if (isXIn1(1 / 10)) {
     return "SELF_REFLECTION_RATING";
   }
 
   if (
-    (!isToday(syncData.moodCheckTS) && isXIn1(0.4)) ||
-    (nowTS - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP &&
-      isXIn1(TINY_CHANCE))
+    (!isToday(syncData.moodCheckTS) && isXIn1(2 / 5)) ||
+    (nowTS - syncData.moodCheckTS > LAST_MOOD_CHECKIN_MIN_GAP && isXIn1(1 / 50))
   ) {
     return "MOOD_CHECKIN";
   }
 
   if (
+    nowHours >= TODAY_START_HOUR &&
     nowHours < ENERGY_LVL_MAX_HOURS &&
-    ((nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_BOOST_GAP &&
-      isXIn1(0.3)) ||
-      (nowTS - syncData.energyLvlTS > LAST_ENERGY_LVL_CHECKIN_MIN_GAP &&
-        isXIn1(TINY_CHANCE)))
+    !isToday(syncData.energyLvlTS) &&
+    isXIn1(1 / 3)
   ) {
     return "ENERGY_LVL";
+  }
+
+  const rTS = IS_ANDROID
+    ? syncData.lastAppUsageRatingTS
+    : syncData.lastBrowsingBehaviorRatingTS;
+  if (
+    (!hasHappenedInLastXDay(rTS, 2) && isXIn1(0.5)) ||
+    (!isToday(rTS) && isXIn1(1 / 20))
+  ) {
+    return "APP_USAGE_OR_BROWSING_BEHAVIOR";
   }
 
   if (
     nowHours < ACTION_ADVICES_MAX_HOUR &&
     nowHours >= ACTION_ADVICES_MIN_HOUR &&
-    isXIn1(0.1)
+    isXIn1(1 / 20)
   ) {
     return "ACTION_ADVICE";
   }
-  if (isXIn1(0.01)) {
-    return "EMOJI_CHECKIN";
-  }
 
-  if (
-    (!hasHappenedInLastXDay(syncData.lastBrowsingBehaviorRatingTS, 2) &&
-      isXIn1(0.5)) ||
-    (nowTS - syncData.lastBrowsingBehaviorRatingTS >
-      LAST_BROWSING_RATING_MIN_GAP &&
-      isXIn1(TINY_CHANCE))
-  ) {
-    return "APP_USAGE_OR_BROWSING_BEHAVIOR";
+  if (isXIn1(1 / 100)) {
+    return "EMOJI_CHECKIN";
   }
 
   return "QUESTION";
