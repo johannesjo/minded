@@ -40,7 +40,7 @@ const MainAndroid = () => {
 
     setTimeout(() => {
       setMissingCapabilities(
-        JSON.parse(androidInterface.getMissingCapabilities()),
+        JSON.parse(androidInterface.getMissingCapabilities()) as string[],
       );
     });
   };
