@@ -247,6 +247,11 @@ $aniDelay: 1.5s;
     cursor: pointer;
     transition: all .2s;
 
+
+    &:active {
+      transform: scale(0.95);
+    }
+
     //@include onMousePrimary() {
     @media (hover: hover) {
       &:hover {
