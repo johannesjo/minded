@@ -34,37 +34,37 @@ export const SELF_REFLECTION_QUESTIONS: SelfReflectionQuestion[] = [
   {
     id: SelfReflectionQuestionId.SOCIAL_CONTACTS,
     question: "I had enough social contacts",
-    ico: "info",
+    ico: "askQuestion",
     short: "Social Contacts",
   },
   {
     id: SelfReflectionQuestionId.HAPPY_WITH_ACHIEVEMENTS,
     question: "I am happy with what I achieved",
     ico: "info",
-    short: "Happy with Achievements",
+    short: "Achievements",
   },
   {
     id: SelfReflectionQuestionId.WAS_OPTIMISTIC,
     question: "I was optimistic",
-    ico: "info",
+    ico: "questionExchange",
     short: "Optimistic",
   },
   {
     id: SelfReflectionQuestionId.TRIED_NEW_THINGS,
     question: "I tried new things",
-    ico: "info",
+    ico: "feedback",
     short: "Tried New Things",
   },
   {
     id: SelfReflectionQuestionId.COULD_RELAX,
     question: "I could relax",
-    ico: "info",
+    ico: "edit",
     short: "Could Relax",
   },
   {
     id: SelfReflectionQuestionId.TRIED_TO_SEE_THE_GOOD,
     question: "I tried to see the good",
-    ico: "info",
+    ico: "questionExchange",
     short: "Appreciation",
   },
   {
@@ -83,7 +83,7 @@ export const SELF_REFLECTION_QUESTIONS: SelfReflectionQuestion[] = [
     id: SelfReflectionQuestionId.ABLE_TO_DROP_NEGATIVE_THOUGHTS,
     question: "I was able to drop negative thoughts",
     ico: "info",
-    short: "Able to drop Negative Thoughts",
+    short: "Dropping Negative Thoughts",
   },
   {
     id: SelfReflectionQuestionId.HAD_ENOUGH_ENERGY,

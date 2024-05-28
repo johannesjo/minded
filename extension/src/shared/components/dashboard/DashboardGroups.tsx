@@ -24,6 +24,7 @@ import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dash
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { SELF_REFLECTION_QUESTIONS } from "@src/shared/components/interaction/selfReflectionRating/selfReflection.model";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { SelfReflectionCard } from "@src/shared/components/dashboard/dashboardCards/SelfReflectionCard";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -158,33 +159,16 @@ export const DashboardGroups: (props: {
         )}
       </For>
 
-      {/*<div*/}
-      {/*  classList={{*/}
-      {/*    ["cardDashboard"]: true,*/}
-      {/*    [styles.box]: true,*/}
-      {/*    [styles.interactive]: true,*/}
-      {/*    [styles.centerItem]: true,*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  <div class="dashboardHeading">recently</div>*/}
-      {/*  <div class="dashboardContent" style="display: inline-block">*/}
-      {/*    <table>*/}
-      {/*      <For each={SELF_REFLECTION_QUESTIONS.slice(0, 4)}>*/}
-      {/*        {(q) => (*/}
-      {/*          <tr class={styles.selfReflectionQuestion}>*/}
-      {/*            /!*<td style="text-align: left; padding-top: 8px">{q.short}</td>*!/*/}
-      {/*            <td style="text-align: left; padding-top: 8px; vertical-align: center;">*/}
-      {/*              <Ico name={q.ico} /> <span>{q.short}</span>*/}
-      {/*            </td>*/}
-      {/*            <td style="padding-top: 8px">*/}
-      {/*              <em>always</em>*/}
-      {/*            </td>*/}
-      {/*          </tr>*/}
-      {/*        )}*/}
-      {/*      </For>*/}
-      {/*    </table>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
+      <div
+        classList={{
+          ["cardDashboard"]: true,
+          [styles.box]: true,
+          [styles.interactive]: true,
+          [styles.centerItem]: true,
+        }}
+      >
+        <SelfReflectionCard />
+      </div>
     </div>
   );
 };
