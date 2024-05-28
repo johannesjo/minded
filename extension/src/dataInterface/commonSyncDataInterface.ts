@@ -141,7 +141,7 @@ export const rateCurrentAppUsage = async (
   val: number,
   dateTS = Date.now(),
 ): Promise<void> => {
-  const ds = getIsoDate(new Date(dateTS));
+  const ds = getIsoDate(new Date(dateTS - 1000 * 60 * 60 * 24 * 3));
   const syncData = await getSyncData();
   const newSyncData: SyncData = {
     ...syncData,
