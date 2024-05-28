@@ -26,10 +26,12 @@ const SelfAssessmentInteraction = (props: {
     setSelectedQuestion(SELF_ASSESSMENT_QUESTIONS[randomIndex]);
   });
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (getSelectedAnswerVal()) {
-      saveSelfAssessment(getSelectedQuestion().id, getSelectedAnswerVal());
-      setSelectedAnswerVal(null);
+      await saveSelfAssessment(
+        getSelectedQuestion().id,
+        getSelectedAnswerVal(),
+      );
       props.onSuccess();
     }
   };

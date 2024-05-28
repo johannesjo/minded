@@ -5,33 +5,32 @@ import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboa
 export const updateDashboardEntriesFromQuestions = (
   syncData: SyncData,
   existingDashboardGroups: DashboardGroup[],
-  now = new Date()
+  now = new Date(),
 ): DashboardGroup[] => {
   const newDashboardGroups = getDashboardEntriesFromQuestions(syncData, now);
 
-  if(existingDashboardGroups.length !== newDashboardGroups.length) {
+  if (existingDashboardGroups.length !== newDashboardGroups.length) {
     return newDashboardGroups;
   }
 
   const dashboardGroupsCopy = [...existingDashboardGroups];
   // Update existing groups with new data
   dashboardGroupsCopy.forEach((oldGroup, oldGroupIndex) => {
-    const newGroupEntry = newDashboardGroups.find(
-      (newGroup) => ("id" in newGroup) && ("id" in oldGroup)
+    const newGroupEntry = newDashboardGroups.find((newGroup) =>
+      "id" in newGroup && "id" in oldGroup
         ? newGroup.id === oldGroup.id
-        : newGroup.type === oldGroup.type
+        : newGroup.type === oldGroup.type,
     );
 
-    if(newGroupEntry) {
-      if(JSON.stringify(newGroupEntry) !== JSON.stringify(oldGroup)) {
+    if (newGroupEntry) {
+      if (JSON.stringify(newGroupEntry) !== JSON.stringify(oldGroup)) {
         // Update the existing group with the new data
         dashboardGroupsCopy[oldGroupIndex] = {
+          ...oldGroup,
           ...newGroupEntry,
-          ...oldGroup
         } as DashboardGroup;
-        console.log("UPDATE", (newGroupEntry) , (oldGroup));
+        console.log("UPDATE", { newGroupEntry, oldGroup });
       }
-
     } else {
       // if there is any inconsistency in the groups, return the new groups
       return newDashboardGroups;

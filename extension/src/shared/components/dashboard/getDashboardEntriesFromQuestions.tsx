@@ -153,7 +153,6 @@ const getRecentSelfAssessmentEntries = (
     ...entry,
     selfAssessmentId: key as SelfAssessmentId,
   }));
-  console.log(categoryEntries);
 
   // Sort the entries in descending order based on the timestamp
   const sortedEntries = categoryEntries
@@ -162,8 +161,6 @@ const getRecentSelfAssessmentEntries = (
         entry.ts > DEFAULT_TS_VAL && hasHappenedInLastXDay(entry.ts, 10),
     )
     .sort((a, b) => b.ts - a.ts);
-
-  console.log(sortedEntries);
 
   // Return the most recent three entries
   return sortedEntries.slice(0, MAX_SELF_ASSESMENTS);
