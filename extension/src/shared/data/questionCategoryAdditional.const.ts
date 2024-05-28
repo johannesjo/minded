@@ -5,6 +5,8 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
 } = {
   [QuestionCategoryId.HealthierBrowsingHabits]:
     "Understanding and improving your browsing habits can significantly enhance your productivity and mental health. Spending time online wisely can prevent unnecessary stress and distractions, allowing you to focus on tasks that truly matter.",
+  [QuestionCategoryId.HealthierAppUsage]:
+    "Understanding and improving your habits when using apps on your phone can significantly enhance your productivity and mental health. Spending your time more mindfully can prevent unnecessary stress and distractions, allowing you to focus on tasks that truly matter.",
   [QuestionCategoryId.PersonalResources]:
     "Recognizing your personal resources, such as skills and strengths, can boost your self-esteem and confidence. It can also help you leverage these resources to overcome challenges and achieve your goals.",
   [QuestionCategoryId.TodayILearned]:
@@ -42,5 +44,7 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   // NO save questions
   [QuestionCategoryId.XMoodCheckin]:
     "Mood tracking can be beneficial as it provides insights into emotional patterns and triggers, helping you better manage your mental health. By understanding your mood fluctuations, you can implement strategies to enhance positive emotions and mitigate negative ones.",
+  [QuestionCategoryId.XSelfAssessment]:
+    "Self-assessment is beneficial  as it encourages  to reflect, leading to increased self-awareness and understanding. This can help identify areas of improvement, manage stress, and promote healthier lifestyle choices, contributing to overall physical and mental well-being.",
   [QuestionCategoryId.XXPurposeOfSession]: "",
 };
