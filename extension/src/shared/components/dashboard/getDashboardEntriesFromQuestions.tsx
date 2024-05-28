@@ -27,6 +27,7 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
 import { DEFAULT_TS_VAL } from "@src/dataInterface/syncData.const";
+import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard/getRecentSelfAssementEntries";
 
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
@@ -99,6 +100,7 @@ export const getDashboardEntriesFromQuestions = (
 
   const entriesForSelfAssessment = getRecentSelfAssessmentEntries(
     syncData.selfAssessment,
+    MAX_SELF_ASSESMENTS,
   );
   if (entriesForSelfAssessment.length >= 1) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
@@ -142,26 +144,4 @@ export const getDashboardEntriesFromQuestions = (
 
 const getLastThreeAnswers = (answers: Answer[]): Answer[] => {
   return answers.sort((a, b) => a.ts - b.ts).slice(-MAX_ANSWERS);
-};
-
-const getRecentSelfAssessmentEntries = (
-  selfAssessmentData: SelfAssessmentData,
-): SelfAssessmentEntryForDashboard[] => {
-  const categoryEntries: SelfAssessmentEntryForDashboard[] = Object.entries(
-    selfAssessmentData,
-  ).map(([key, entry], i) => ({
-    ...entry,
-    selfAssessmentId: key as SelfAssessmentId,
-  }));
-
-  // Sort the entries in descending order based on the timestamp
-  const sortedEntries = categoryEntries
-    .filter(
-      (entry) =>
-        entry.ts > DEFAULT_TS_VAL && hasHappenedInLastXDay(entry.ts, 10),
-    )
-    .sort((a, b) => b.ts - a.ts);
-
-  // Return the most recent three entries
-  return sortedEntries.slice(0, MAX_SELF_ASSESMENTS);
 };
