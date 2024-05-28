@@ -39,7 +39,7 @@ Other comments:
       </p>
 
       <div>
-        <a href={mailtoLink()} class="btnTxtBig" target="_blank">
+        <a href={mailtoLink()} class="btnTxt" target="_blank">
           ♥ send us a quick email ♥
         </a>
       </div>
