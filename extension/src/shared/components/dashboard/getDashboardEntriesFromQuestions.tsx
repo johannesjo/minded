@@ -30,6 +30,7 @@ import { DEFAULT_TS_VAL } from "@src/dataInterface/syncData.const";
 
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
+const MAX_SELF_ASSESMENTS = 4;
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -101,6 +102,8 @@ export const getDashboardEntriesFromQuestions = (
   );
   if (entriesForSelfAssessment.length >= 1) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      // sortedEntries.splice(8, 0, {
+      // sortedEntries.push({
       id: QuestionCategoryId.XSelfAssessment,
       type: DashboardGroupType.SelfAssessment,
       entries: entriesForSelfAssessment,
@@ -163,5 +166,5 @@ const getRecentSelfAssessmentEntries = (
   console.log(sortedEntries);
 
   // Return the most recent three entries
-  return sortedEntries.slice(0, 3);
+  return sortedEntries.slice(0, MAX_SELF_ASSESMENTS);
 };

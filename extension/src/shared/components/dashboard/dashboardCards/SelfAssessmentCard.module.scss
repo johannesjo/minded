@@ -1,31 +1,42 @@
+@import "@src/styles/mixins/mixins.scss";
+
 .dashboardContent {
   display: inline-block;
 }
 
 .selfReflectionQuestion {
   td {
-    text-align: center;
+    text-align: left;
     padding-top: 8px;
     vertical-align: middle;
   }
 
   td:first-child {
-    text-align: left;
+    padding-right: 8px;
+
+    @include onNonMobileScreens {
+      padding-right: 16px;
+    }
   }
 }
 
-.dots{
+.dots {
   display: flex;
-  margin-left: 16px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
   background: var(--c-fg);
   opacity: var(--rating-inactive-opacity);
   border-radius: 50%;
-  margin-left: 4px;
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+
+  @include onNonMobileScreens {
+    width: 8px;
+    height: 8px;
+    margin-left: 4px;
+  }
 
   &.full {
     opacity: .7;
