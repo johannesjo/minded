@@ -78,54 +78,56 @@ export const InteractionWeb: (props: {
           }}
         />
       ) : (
-        <div
-          id="minded-6622-coloured-wrapper-dynamic"
-          onclick={(ev) => {
-            if (
-              (ev.target as HTMLElement)?.id ===
-              "minded-6622-coloured-wrapper-dynamic"
-            ) {
-              setIsShowBlackScreen(true);
+        <div class="aniIn">
+          <div
+            id="minded-6622-coloured-wrapper-dynamic"
+            onclick={(ev) => {
+              if (
+                (ev.target as HTMLElement)?.id ===
+                "minded-6622-coloured-wrapper-dynamic"
+              ) {
+                setIsShowBlackScreen(true);
 
-              setTimeout(() => {
-                // fadeOutInteractionWrapper();
-                wrapperEl.style.display = "none";
                 setTimeout(() => {
-                  setIsShowBlackScreen(false);
-                  setIsShowLittleSun(true);
+                  // fadeOutInteractionWrapper();
+                  wrapperEl.style.display = "none";
+                  setTimeout(() => {
+                    setIsShowBlackScreen(false);
+                    setIsShowLittleSun(true);
+                  }, 300);
                 }, 300);
-              }, 300);
-            }
-          }}
-          ref={wrapperEl}
-        >
-          <InteractionCommon
-            questionForPrompt={getQuestion()}
-            isInitFadeout={IS_MOUSE_PRIMARY}
-            wrapperEl={wrapperEl}
-            onSetAnswer={setLittleSunTxt}
-            onModeSet={(mode) => {
-              if (mode !== "QUESTION") {
-                setLittleSunTxt("");
               }
             }}
-            onAfterSuccessSunFadeout={() =>
-              fadeOut(wrapperEl, 150).promise.then(() => {
+            ref={wrapperEl}
+          >
+            <InteractionCommon
+              questionForPrompt={getQuestion()}
+              isInitFadeout={IS_MOUSE_PRIMARY}
+              wrapperEl={wrapperEl}
+              onSetAnswer={setLittleSunTxt}
+              onModeSet={(mode) => {
+                if (mode !== "QUESTION") {
+                  setLittleSunTxt("");
+                }
+              }}
+              onAfterSuccessSunFadeout={() =>
+                fadeOut(wrapperEl, 150).promise.then(() => {
+                  setIsShowLittleSun(true);
+                })
+              }
+              onAfterInteractionFadeout={() => {
                 setIsShowLittleSun(true);
-              })
-            }
-            onAfterInteractionFadeout={() => {
-              setIsShowLittleSun(true);
-            }}
-            onSuccessSunTap={onSuccessSunTap}
-            onSkip={() => {
-              setIsShowLittleSun(true);
-            }}
-            onUpdateQuestion={(question) => {
-              setQuestion(question);
-              setLittleSunTxt(question?.t + "?");
-            }}
-          />
+              }}
+              onSuccessSunTap={onSuccessSunTap}
+              onSkip={() => {
+                setIsShowLittleSun(true);
+              }}
+              onUpdateQuestion={(question) => {
+                setQuestion(question);
+                setLittleSunTxt(question?.t + "?");
+              }}
+            />
+          </div>
         </div>
       )}
 
