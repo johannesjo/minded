@@ -27,7 +27,6 @@ data class SharedOverlayData(
     var lastQuestionForPrompt: QuestionForPrompt? = null,
     var answerTxt: String? = null,
     var successSunTxt: String? = null,
-    var isShowLittleSunAfterSuccess: Boolean = true,
     var appMap: AppMap = emptyMap()
 )
 
@@ -56,7 +55,6 @@ class SharedOverlayViewModel(
         questionForPrompt: QuestionForPrompt? = null,
         answerTxt: String? = null,
         successSunTxt: String? = null,
-        isShowLittleSunAfterSuccess: Boolean? = null
     ) {
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
@@ -64,9 +62,7 @@ class SharedOverlayViewModel(
             appMap = currentData.appMap,
             lastQuestionForPrompt = questionForPrompt ?: currentData.lastQuestionForPrompt,
             answerTxt = answerTxt ?: currentData.answerTxt,
-            successSunTxt = successSunTxt ?: currentData.successSunTxt,
-            isShowLittleSunAfterSuccess = isShowLittleSunAfterSuccess
-                ?: currentData.isShowLittleSunAfterSuccess
+            successSunTxt = successSunTxt ?: currentData.successSunTxt
         )
         Log.v(lt, "updateSharedData() ${newSharedData}")
         _sharedData.update { newSharedData }
@@ -129,7 +125,6 @@ class SharedOverlayViewModel(
         val currentData = sharedData.value ?: SharedOverlayData()
         val newSharedData = currentData.copy(
             currentApp = currentApp,
-            isShowLittleSunAfterSuccess = true,
             answerTxt = null,
             lastQuestionForPrompt = null,
             successSunTxt = null,
