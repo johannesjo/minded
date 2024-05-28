@@ -76,7 +76,8 @@ export const DashboardGroups: (props: {
               [styles.interactive]: "id" in dg,
               [styles.centerItem]:
                 dg.type !== DashboardGroupType.TxtQuestion &&
-                dg.type !== DashboardGroupType.BrowsingBehaviorRating,
+                dg.type !== DashboardGroupType.BrowsingBehaviorRating &&
+                dg.type !== DashboardGroupType.SelfAssessment,
             }}
           >
             {(() => {
