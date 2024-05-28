@@ -10,7 +10,8 @@ import com.minded.minded.overlay.OverlayControllerService
 
 class MyAccessibilityService : AccessibilityService() {
     private var lastEventTs: Long = 0
-    private var currentPackageName: CharSequence? = null
+    private var lastPackageName: CharSequence? = null
+    private val minThresholdVorNexusLauncher = 350L
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -64,14 +65,23 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
         Log.v("ACCESSIBILITY", "onAccessibilityEvent() ${System.currentTimeMillis() - lastEventTs}")
         // NOTE: we only check if the new event was fired after the last event. NOT sure if this is necessary
+        // NOTE2: when using the nexuslauncher to swipe in between app, the nexuslauncher is recorded again shortly after refocusing
+        // the app that is actually focused afterwards. To counter this we use the magic 350ms and don't fire the service again if the nexus launcher is not recorded after that delay
+        val isSpecialNexusLauncherCase =
+            (accessibilityEvent.packageName == "com.google.android.apps.nexuslauncher" &&
+                    (System.currentTimeMillis() - lastEventTs <= minThresholdVorNexusLauncher
+                            // but if the it is recorded twice in a row proceed
+                            && lastPackageName != "com.google.android.apps.nexuslauncher"))
         val isStartService = (System.currentTimeMillis() - lastEventTs > 0)
+                && !isSpecialNexusLauncherCase
                 && accessibilityEvent.packageName != null
                 && !isNonAppPackage(accessibilityEvent.packageName.toString())
         lastEventTs = System.currentTimeMillis()
         Log.v(
             "ACCESSIBILITY",
-            "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$currentPackageName ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
+            "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$lastPackageName isSpecialNexusLauncherCase $isSpecialNexusLauncherCase – ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
         )
+        lastPackageName = accessibilityEvent.packageName
 //        Log.v(
 //            "ACCESSIBILITY",
 //            "onAccessibilityEvent(), isStartService:${isStartService} ${(System.currentTimeMillis() - lastEventTs > 0)}${accessibilityEvent.packageName != null}${
@@ -81,11 +91,10 @@ class MyAccessibilityService : AccessibilityService() {
 //            }"
 //        )
         if (isStartService) {
-            currentPackageName = accessibilityEvent.packageName
             val intent = Intent(this, OverlayControllerService::class.java)
             intent.putExtra(
                 INTENT_EXTRA_CURRENT_PACKAGE_NAME,
-                currentPackageName
+                accessibilityEvent.packageName
             )
             startService(intent)
 
