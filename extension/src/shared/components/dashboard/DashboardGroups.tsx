@@ -33,15 +33,15 @@ export const DashboardGroups: (props: {
   >([]);
 
   const refresh = () => {
+    console.log("REFRESH DASHBOARD");
     getSyncData().then((syncData) => {
       const existingDashboardGroups = getDashboardGroups();
       if (existingDashboardGroups) {
-        setDashboardGroups(
-          updateDashboardEntriesFromQuestions(
-            syncData,
-            existingDashboardGroups,
-          ),
+        const upd = updateDashboardEntriesFromQuestions(
+          syncData,
+          existingDashboardGroups,
         );
+        setDashboardGroups(upd);
       } else {
         const entries = getDashboardEntriesFromQuestions(syncData);
         setDashboardGroups(entries);
@@ -140,9 +140,10 @@ export const DashboardGroups: (props: {
                   return <RndQuote />;
 
                 case DashboardGroupType.SelfAssessment:
-                  const dgsa = dg as DashboardGroupSelAssessment;
+                  // eslint-disable-next-line no-case-declarations
+                  const dgSA = dg as DashboardGroupSelAssessment;
                   return (
-                    <SelfAssessmentCard selfAssessmentEntries={dgsa.entries} />
+                    <SelfAssessmentCard selfAssessmentEntries={dgSA.entries} />
                   );
 
                 case DashboardGroupType.EnergyLvl:

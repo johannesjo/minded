@@ -26,6 +26,7 @@ import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentRating/SelfAssessmentInteraction";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 
 interface InteractionCommonProps {
   isReducedSuccessSun?: boolean;
