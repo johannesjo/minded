@@ -2,6 +2,10 @@
 
 #minded-6622 {
   @include allTypo();
+
+  .aniIn {
+    animation: minded6622fadeIn .3s ease;
+  }
 }
 
 
