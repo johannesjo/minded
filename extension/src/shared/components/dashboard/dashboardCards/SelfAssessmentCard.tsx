@@ -14,10 +14,11 @@ export interface SelfAssessmentEntryForDashboard extends SelfAssessmentEntry {
 
 export const SelfAssessmentCard = (props: {
   selfAssessmentEntries: SelfAssessmentEntryForDashboard[];
+  isHideHeading?: boolean;
 }): JSX.Element => {
   return (
     <div>
-      <div class="dashboardHeading">recently...</div>
+      {!props.isHideHeading && <div class="dashboardHeading">recently...</div>}
       <div class="dashboardContent">
         <div style={{ display: "inline-block" }}>
           <table>
