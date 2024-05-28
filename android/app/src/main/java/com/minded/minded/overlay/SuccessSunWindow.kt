@@ -39,12 +39,12 @@ open class SuccessSunWindow(
             },
             onAfterShow = {
                 Log.v(logTag, "onAfterShow()")
-                if (sharedData.isShowLittleSunAfterSuccess) {
-                    OverlayControllerService.showOverlay(
-                        ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
-                    )
-                }
+//                if (sharedData.isShowLittleSunAfterSuccess) {
+//                    OverlayControllerService.showOverlay(
+//                        ctrlSvc,
+//                        OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
+//                    )
+//                }
                 hideWindow()
             })
     }
