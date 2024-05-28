@@ -38,7 +38,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
     return "QUESTION";
   }
 
-  if (isXIn1(1 / 8)) {
+  if (isXIn1(1 / 10)) {
     return "SELF_REFLECTION_RATING";
   }
 

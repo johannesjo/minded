@@ -216,7 +216,7 @@ $aniDelay: 1.5s;
 
   @media (min-width: $bpDashboardMoreThan2Col) {
     &:nth-child(n+10) {
-      display: none;
+      display: none !important;
     }
   }
 
