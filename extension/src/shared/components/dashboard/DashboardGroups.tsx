@@ -1,7 +1,8 @@
 import { createSignal, For, JSX, onCleanup, onMount } from "solid-js";
 import {
   DashboardGroup,
-  DashboardGroupBrowsingBehavior,
+  DashboardGroupAppUsageHappiness,
+  DashboardGroupBrowsingBehaviorHappiness,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupSelAssessment,
@@ -82,9 +83,14 @@ export const DashboardGroups: (props: {
           >
             {(() => {
               switch (dg.type) {
+                case DashboardGroupType.AppUsageRating:
                 case DashboardGroupType.BrowsingBehaviorRating:
                   // eslint-disable-next-line no-case-declarations
-                  const rd = (dg as DashboardGroupBrowsingBehavior).data;
+                  const rd = (
+                    dg as
+                      | DashboardGroupBrowsingBehaviorHappiness
+                      | DashboardGroupAppUsageHappiness
+                  ).data;
                   return (
                     <div class={styles.browsingBehaviorGraph}>
                       <div class="dashboardHeading">

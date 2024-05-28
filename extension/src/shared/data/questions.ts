@@ -23,6 +23,7 @@ export enum QuestionCategoryId {
   XMoodCheckin = "XMoodCheckin",
   XEnergyLevelToday = "XEnergyLevelToday",
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
+  XAppUsageHappiness = "XAppUsageHappiness",
   XSelfAssessment = "XSelfAssessment",
 
   // NO save questions
@@ -521,6 +522,10 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.XBrowsingBehaviorHappiness]: {
     dashboardTxt: "Browsing Behavior",
+    isThisWeekOnlyCategory: true,
+  },
+  [QuestionCategoryId.XAppUsageHappiness]: {
+    dashboardTxt: "Usage of configured Apps",
     isThisWeekOnlyCategory: true,
   },
   [QuestionCategoryId.XMoodCheckin]: {

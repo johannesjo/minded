@@ -1,7 +1,8 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import {
   DashboardGroup,
-  DashboardGroupBrowsingBehavior,
+  DashboardGroupAppUsageHappiness,
+  DashboardGroupBrowsingBehaviorHappiness,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupSelAssessment,
@@ -111,7 +112,15 @@ export const getDashboardEntriesFromQuestions = (
       id: QuestionCategoryId.XBrowsingBehaviorHappiness,
       type: DashboardGroupType.BrowsingBehaviorRating,
       data: syncData.browsingBehaviorRating,
-    } as DashboardGroupBrowsingBehavior);
+    } as DashboardGroupBrowsingBehaviorHappiness);
+  }
+
+  if (Object.keys(syncData.appUsageRating).length >= 3) {
+    sortedEntries.push({
+      id: QuestionCategoryId.XAppUsageHappiness,
+      type: DashboardGroupType.AppUsageRating,
+      data: syncData.appUsageRating,
+    } as DashboardGroupAppUsageHappiness);
   }
 
   // center one rnd entry

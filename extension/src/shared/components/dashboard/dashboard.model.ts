@@ -1,5 +1,5 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { Answer, SelfAssessmentData } from "@src/dataInterface/syncData";
+import { Answer } from "@src/dataInterface/syncData";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 
@@ -10,6 +10,7 @@ export enum DashboardGroupType {
   EnergyLvl = "EnergyLvl",
   Stats = "Stats",
   BrowsingBehaviorRating = "BrowsingBehaviorRating",
+  AppUsageRating = "AppUsageRating",
   SelfAssessment = "SelfAssessment",
 }
 
@@ -43,9 +44,15 @@ export interface DashboardGroupEnergyLvl {
   energyLvl: number;
 }
 
-export interface DashboardGroupBrowsingBehavior {
+export interface DashboardGroupBrowsingBehaviorHappiness {
   id: QuestionCategoryId.XBrowsingBehaviorHappiness;
   type: DashboardGroupType.BrowsingBehaviorRating;
+  data: { [key: string]: number };
+}
+
+export interface DashboardGroupAppUsageHappiness {
+  id: QuestionCategoryId.XAppUsageHappiness;
+  type: DashboardGroupType.AppUsageRating;
   data: { [key: string]: number };
 }
 
@@ -57,7 +64,8 @@ export interface DashboardGroupSelAssessment {
 
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
-  | DashboardGroupBrowsingBehavior
+  | DashboardGroupBrowsingBehaviorHappiness
+  | DashboardGroupAppUsageHappiness
   | DashboardGroupStats
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
