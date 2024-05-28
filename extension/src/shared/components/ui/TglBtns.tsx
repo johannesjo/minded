@@ -2,7 +2,7 @@ import { createSignal, For, JSX } from "solid-js";
 
 export interface TglBtnOption<T> {
   val: T;
-  txt: JSX.Element;
+  txt: string;
 }
 
 const TglBtns = <T,>(props: {

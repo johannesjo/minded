@@ -1,0 +1,33 @@
+.dashboardContent {
+  display: inline-block;
+}
+
+.selfReflectionQuestion {
+  td {
+    text-align: center;
+    padding-top: 8px;
+    vertical-align: middle;
+  }
+
+  td:first-child {
+    text-align: left;
+  }
+}
+
+.dots{
+  display: flex;
+  margin-left: 16px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--c-fg);
+  opacity: var(--rating-inactive-opacity);
+  border-radius: 50%;
+  margin-left: 4px;
+
+  &.full {
+    opacity: .7;
+  }
+}

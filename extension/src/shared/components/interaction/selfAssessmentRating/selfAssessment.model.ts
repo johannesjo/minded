@@ -107,9 +107,8 @@ export const SELF_ASSESSMENT_QUESTIONS: SelfAssessmentQuestion[] = [
 
 export type SelfReflectionAnswerVal = 1 | 2 | 3 | 4;
 
-export interface SelfReflectionAnswer extends TglBtnOption<number> {
-  val: SelfReflectionAnswerVal;
-}
+export interface SelfReflectionAnswer
+  extends TglBtnOption<SelfReflectionAnswerVal> {}
 
 export const SELF_ASSESSMENT_ANSWERS: SelfReflectionAnswer[] = [
   { txt: "(almost) never", val: 1 },
