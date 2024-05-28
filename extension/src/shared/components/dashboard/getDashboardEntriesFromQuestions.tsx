@@ -1,8 +1,4 @@
-import {
-  Answer,
-  SelfAssessmentData,
-  SyncData,
-} from "@src/dataInterface/syncData";
+import { Answer, SyncData } from "@src/dataInterface/syncData";
 import {
   DashboardGroup,
   DashboardGroupBrowsingBehavior,
@@ -19,19 +15,16 @@ import {
   RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
-import { hasHappenedInLastXDay, isThisWeek, isToday } from "@src/util/isToday";
+import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
-import { DEFAULT_TS_VAL } from "@src/dataInterface/syncData.const";
 import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard/getRecentSelfAssementEntries";
 
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
-const MAX_SELF_ASSESMENTS = 4;
+const MAX_SELF_ASSESSMENTS = 4;
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -100,7 +93,7 @@ export const getDashboardEntriesFromQuestions = (
 
   const entriesForSelfAssessment = getRecentSelfAssessmentEntries(
     syncData.selfAssessment,
-    MAX_SELF_ASSESMENTS,
+    MAX_SELF_ASSESSMENTS,
   );
   if (entriesForSelfAssessment.length >= 1) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
@@ -122,15 +115,17 @@ export const getDashboardEntriesFromQuestions = (
   }
 
   // center one rnd entry
-  if (sortedEntries.length >= 5 && !isSkipRndEntry) {
-    // NOTE: start val needs to be bigger than the fixed added entries
-    const rndIndex = getRndInt(
-      fixedEntriesIndexAndNr,
-      sortedEntries.length - 1,
-    );
-    const rndEntry = { ...sortedEntries[rndIndex] };
-    sortedEntries.splice(rndIndex, 1);
-    sortedEntries.splice(CENTER_INDEX, 0, rndEntry as DashboardGroup);
+  if (sortedEntries.length >= 5) {
+    if (!isSkipRndEntry) {
+      // NOTE: start val needs to be bigger than the fixed added entries
+      const rndIndex = getRndInt(
+        fixedEntriesIndexAndNr,
+        sortedEntries.length - 1,
+      );
+      const rndEntry = { ...sortedEntries[rndIndex] };
+      sortedEntries.splice(rndIndex, 1);
+      sortedEntries.splice(CENTER_INDEX, 0, rndEntry as DashboardGroup);
+    }
   } else {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
