@@ -128,14 +128,17 @@ export const DashboardGroups: (props: {
                 case DashboardGroupType.MoodCheckin:
                   // eslint-disable-next-line no-case-declarations
                   const dgm = dg as DashboardGroupMood;
+                  // eslint-disable-next-line no-case-declarations
+                  const additionalTxt =
+                    dgm.additionalTxt === "null" ? null : dgm.additionalTxt;
                   return (
                     <div class={styles.moodCheckinWidget}>
                       <div class="dashboardHeading">
                         you feel <span class="fatTxt">{dgm.mood}</span> today!
                       </div>
                       <div class="dashboardContent">
-                        {dgm.additionalTxt}
-                        {!dgm.additionalTxt &&
+                        {additionalTxt}
+                        {!additionalTxt &&
                           (dgm.mood === MoodCheckinVal.Awful ||
                             dgm.mood === MoodCheckinVal.Bad) &&
                           "Be very kind to yourself!"}
