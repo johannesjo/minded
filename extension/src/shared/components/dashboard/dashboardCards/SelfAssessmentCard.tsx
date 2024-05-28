@@ -1,15 +1,19 @@
 import { For, JSX } from "solid-js";
-import { SELF_REFLECTION_QUESTIONS } from "@src/shared/components/interaction/selfReflectionRating/selfReflection.model";
+import { SELF_ASSESSMENT_QUESTIONS } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
 // @ts-ignore
-import styles from "./SelfReflectionCard.module.scss";
+import styles from "./SelfAssessmentCard.module.scss";
 
-export const SelfReflectionCard = (): JSX.Element => {
+const getRecentEntries = () => {
+  return SELF_ASSESSMENT_QUESTIONS.slice(0, 3);
+};
+
+export const SelfAssessmentCard = (): JSX.Element => {
   return (
     <div>
       <div class="dashboardHeading">recently...</div>
       <div class="dashboardContent" style="display: inline-block">
         <table>
-          <For each={SELF_REFLECTION_QUESTIONS.slice(0, 3)}>
+          <For each={getRecentEntries()}>
             {(q) => (
               <tr class={styles.selfReflectionQuestion}>
                 {/*<td style="text-align: left; padding-top: 8px">{q.short}</td>*/}

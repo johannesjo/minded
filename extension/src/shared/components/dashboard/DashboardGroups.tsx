@@ -22,9 +22,9 @@ import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/i
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
-import { SELF_REFLECTION_QUESTIONS } from "@src/shared/components/interaction/selfReflectionRating/selfReflection.model";
+import { SELF_ASSESSMENT_QUESTIONS } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
 import { Ico } from "@src/shared/components/ui/Ico";
-import { SelfReflectionCard } from "@src/shared/components/dashboard/dashboardCards/SelfReflectionCard";
+import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
@@ -167,7 +167,7 @@ export const DashboardGroups: (props: {
           [styles.centerItem]: true,
         }}
       >
-        <SelfReflectionCard />
+        <SelfAssessmentCard />
       </div>
     </div>
   );

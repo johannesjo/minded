@@ -8,6 +8,7 @@ import {
   saveSyncDataN,
   // @ts-ignore
 } from "@dataInterface/syncDataInterface";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
@@ -148,6 +149,25 @@ export const rateCurrentAppUsage = async (
     appUsageRating: {
       ...syncData.appUsageRating,
       [ds]: val,
+    },
+  };
+  return saveSyncData(newSyncData);
+};
+
+export const saveSelfAssessment = async (
+  selfAssessmentId: SelfAssessmentId,
+  val: number,
+  dateTS = Date.now(),
+): Promise<void> => {
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    selfAssessment: {
+      ...syncData.selfAssessment,
+      [selfAssessmentId]: {
+        ts: dateTS,
+        val,
+      },
     },
   };
   return saveSyncData(newSyncData);

@@ -23,6 +23,8 @@ export enum QuestionCategoryId {
   XMoodCheckin = "XMoodCheckin",
   XEnergyLevelToday = "XEnergyLevelToday",
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
+  XSelfAssessment = "XSelfAssessment",
+
   // NO save questions
   XXPurposeOfSession = "XXPurposeOfSession",
   // IDEAS
@@ -524,6 +526,9 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.XMoodCheckin]: {
     dashboardTxt: "Mood Checkin",
     isTodayOnlyCategory: true,
+  },
+  [QuestionCategoryId.XSelfAssessment]: {
+    dashboardTxt: "Recently...",
   },
 };
 
