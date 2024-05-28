@@ -20,7 +20,6 @@
 
 
   img {
-    opacity: .12;
     width: var(--rating-size);
     height: var(--rating-size);
 
@@ -30,24 +29,24 @@
     font-size: var(--rating-size);
     width: var(--rating-size);
     line-height: var(--rating-size);
-    color: var(--rating-inactive);
+    opacity: var(--rating-inactive-opacity);
     transition: all ease-in .1s;
     margin: 4px;
 
     @include onNonMobileScreens {
       &:hover {
         transform: scale(1.6);
-        color: var(--c-fg-full-emphasis);
+        opacity: var(--rating-active-opacity);
       }
       &:active {
         transform: scale(1.1);
-        color: var(--c-fg);
+        opacity: var(--rating-active-opacity);
       }
     }
 
     &.isFull {
       color: var(--c-fg-full-emphasis);
-      opacity: 1;
+      opacity: var(--rating-active-opacity);
     }
 
     @include inDarkMode() {

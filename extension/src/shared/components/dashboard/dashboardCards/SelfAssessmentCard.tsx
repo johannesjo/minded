@@ -3,6 +3,7 @@ import { For, JSX } from "solid-js";
 import styles from "./SelfAssessmentCard.module.scss";
 import { SelfAssessmentEntry } from "@src/dataInterface/syncData";
 import {
+  SELF_ASSESSMENT_ANSWERS,
   SELF_ASSESSMENT_QUESTIONS,
   SelfAssessmentId,
 } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
@@ -17,7 +18,7 @@ export const SelfAssessmentCard = (props: {
   return (
     <div>
       <div class="dashboardHeading">recently...</div>
-      <div class="dashboardContent" style="display: inline-block">
+      <div class="dashboardContent">
         <table>
           <For each={props.selfAssessmentEntries}>
             {(entry) => {
@@ -26,22 +27,31 @@ export const SelfAssessmentCard = (props: {
               );
               return (
                 <tr class={styles.selfReflectionQuestion}>
-                  {/*<td style="text-align: left; padding-top: 8px">{q.short}</td>*/}
-                  <td style="text-align: center; padding-top: 8px; vertical-align: middle;">
-                    <div style=" align-items: center">
-                      {/*<div style="opacity: .8; margin-right: 8px;">*/}
-                      {/*  <Ico name={q.ico} size={18} />*/}
-                      {/*</div>*/}
-                      <div>{q.short}</div>
-                    </div>
+                  <td>
+                    <div title={q.question}>{q.short}</div>
                   </td>
-                  <td style="padding-top: 8px">
-                    {/*<em>always</em>*/}
-                    <div style="display: flex; margin-left: 16px">
-                      <div style="width: 10px; height: 10px; background: rgba(0,0,0,.55); border-radius: 50%; "></div>
-                      <div style="width: 10px; height: 10px; background: rgba(0,0,0,.55); border-radius: 50%; margin-left: 4px "></div>
-                      <div style="width: 10px; height: 10px; background: rgba(0,0,0,.55); border-radius: 50%; margin-left: 4px "></div>
-                      <div style="width: 10px; height: 10px; background: rgba(0,0,0,.55); border-radius: 50%; margin-left: 4px "></div>
+                  <td>
+                    <div
+                      class={styles.dots}
+                      title={
+                        (SELF_ASSESSMENT_ANSWERS.find(
+                          (answ) => answ.val === entry.val,
+                        )?.txt as string) || ""
+                      }
+                    >
+                      <For each={SELF_ASSESSMENT_ANSWERS}>
+                        {(selfReflectionAnswer) => {
+                          return (
+                            <div
+                              classList={{
+                                [styles.dot]: true,
+                                [styles.full]:
+                                  selfReflectionAnswer.val <= entry.val,
+                              }}
+                            ></div>
+                          );
+                        }}
+                      </For>
                     </div>
                   </td>
                 </tr>
