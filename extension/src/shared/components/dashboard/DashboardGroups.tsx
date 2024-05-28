@@ -4,6 +4,7 @@ import {
   DashboardGroupBrowsingBehavior,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
+  DashboardGroupSelAssessment,
   DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
@@ -22,8 +23,6 @@ import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/i
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
-import { SELF_ASSESSMENT_QUESTIONS } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
-import { Ico } from "@src/shared/components/ui/Ico";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 
 export const DashboardGroups: (props: {
@@ -139,6 +138,12 @@ export const DashboardGroups: (props: {
                 case DashboardGroupType.Quote:
                   return <RndQuote />;
 
+                case DashboardGroupType.SelfAssessment:
+                  const dgsa = dg as DashboardGroupSelAssessment;
+                  return (
+                    <SelfAssessmentCard selfAssessmentEntries={dgsa.entries} />
+                  );
+
                 case DashboardGroupType.EnergyLvl:
                   // eslint-disable-next-line no-case-declarations
                   const dge = dg as DashboardGroupEnergyLvl;
@@ -158,17 +163,6 @@ export const DashboardGroups: (props: {
           </div>
         )}
       </For>
-
-      <div
-        classList={{
-          ["cardDashboard"]: true,
-          [styles.box]: true,
-          [styles.interactive]: true,
-          [styles.centerItem]: true,
-        }}
-      >
-        <SelfAssessmentCard />
-      </div>
     </div>
   );
 };

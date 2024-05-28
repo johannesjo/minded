@@ -1,9 +1,14 @@
-import { Answer, SyncData } from "@src/dataInterface/syncData";
+import {
+  Answer,
+  SelfAssessmentData,
+  SyncData,
+} from "@src/dataInterface/syncData";
 import {
   DashboardGroup,
   DashboardGroupBrowsingBehavior,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
+  DashboardGroupSelAssessment,
   DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
@@ -19,7 +24,9 @@ import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import { SELF_ASSESSMENT_QUESTIONS } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { DEFAULT_TS_VAL } from "@src/dataInterface/syncData.const";
 
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
@@ -97,12 +104,15 @@ export const getDashboardEntriesFromQuestions = (
     } as DashboardGroupBrowsingBehavior);
   }
 
-  if (Object.keys(syncData.selfAssessment).length >= 3) {
+  const entriesForSelfAssessment = getRecentSelfAssessmentEntries(
+    syncData.selfAssessment,
+  );
+  if (entriesForSelfAssessment.length >= 1) {
     sortedEntries.push({
-      id: QuestionCategoryId.XBrowsingBehaviorHappiness,
-      type: DashboardGroupType.BrowsingBehaviorRating,
-      data: syncData.browsingBehaviorRating,
-    } as DashboardGroupBrowsingBehavior);
+      id: QuestionCategoryId.XSelfAssessment,
+      type: DashboardGroupType.SelfAssessment,
+      entries: entriesForSelfAssessment,
+    } as DashboardGroupSelAssessment);
   }
 
   // center one rnd entry
@@ -130,6 +140,24 @@ const getLastThreeAnswers = (answers: Answer[]): Answer[] => {
   return answers.sort((a, b) => a.ts - b.ts).slice(-MAX_ANSWERS);
 };
 
-// const getRecentSelfReflectionEntries = (syncData: SyncData) => {
-//   return syncData.selfAssessment;
-// };
+const getRecentSelfAssessmentEntries = (
+  selfAssessmentData: SelfAssessmentData,
+): SelfAssessmentEntryForDashboard[] => {
+  const categoryEntries: SelfAssessmentEntryForDashboard[] = Object.entries(
+    selfAssessmentData,
+  ).map(([key, entry], i) => ({
+    ...entry,
+    selfAssessmentId: key as SelfAssessmentId,
+  }));
+  console.log(categoryEntries);
+
+  // Sort the entries in descending order based on the timestamp
+  const sortedEntries = categoryEntries
+    .filter((entry) => entry.ts > DEFAULT_TS_VAL)
+    .sort((a, b) => b.ts - a.ts);
+
+  console.log(sortedEntries);
+
+  // Return the most recent three entries
+  return sortedEntries.slice(0, 3);
+};

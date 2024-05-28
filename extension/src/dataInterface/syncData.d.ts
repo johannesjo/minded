@@ -17,6 +17,10 @@ export interface Answer {
   ts: number;
 }
 
+export type SelfAssessmentData = {
+  [key in SelfAssessmentId]: SelfAssessmentEntry;
+};
+
 export interface SelfAssessmentEntry {
   ts: number;
   val: number;
@@ -47,9 +51,7 @@ export interface SyncData {
   appUsageRating: {
     [key: string]: number;
   };
-  selfAssessment: {
-    [key in SelfAssessmentId]: SelfAssessmentEntry;
-  };
+  selfAssessment: SelfAssessmentData;
 }
 
 export interface StaticCfg {

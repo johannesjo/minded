@@ -1,6 +1,7 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, SelfAssessmentData } from "@src/dataInterface/syncData";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
+import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 
 export enum DashboardGroupType {
   TxtQuestion = "TxtQuestion",
@@ -9,6 +10,7 @@ export enum DashboardGroupType {
   EnergyLvl = "EnergyLvl",
   Stats = "Stats",
   BrowsingBehaviorRating = "BrowsingBehaviorRating",
+  SelfAssessment = "SelfAssessment",
 }
 
 export interface DashboardGroupTxtQuestion {
@@ -47,10 +49,10 @@ export interface DashboardGroupBrowsingBehavior {
   data: { [key: string]: number };
 }
 
-export interface DashboardGroupSelfReflection {
-  id: QuestionCategoryId.XBrowsingBehaviorHappiness;
-  type: DashboardGroupType.BrowsingBehaviorRating;
-  data: { [key: string]: number };
+export interface DashboardGroupSelAssessment {
+  id: QuestionCategoryId.XSelfAssessment;
+  type: DashboardGroupType.SelfAssessment;
+  entries: SelfAssessmentEntryForDashboard[];
 }
 
 export type DashboardGroup =
@@ -59,4 +61,5 @@ export type DashboardGroup =
   | DashboardGroupStats
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
+  | DashboardGroupSelAssessment
   | DashboardGroupMood;
