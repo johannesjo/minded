@@ -1,6 +1,7 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
 
 export interface UserCfg {
   isOnboardingComplete: boolean;
@@ -14,6 +15,11 @@ export interface Answer {
   questionCategoryId: QuestionCategoryId;
   val: string | number;
   ts: number;
+}
+
+export interface SelfAssessmentEntry {
+  ts: number;
+  val: number;
 }
 
 export interface SyncData {
@@ -40,6 +46,9 @@ export interface SyncData {
   lastAppUsageRatingTS: number;
   appUsageRating: {
     [key: string]: number;
+  };
+  selfAssessment: {
+    [key in SelfAssessmentId]: SelfAssessmentEntry;
   };
 }
 

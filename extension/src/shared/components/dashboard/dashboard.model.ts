@@ -47,6 +47,12 @@ export interface DashboardGroupBrowsingBehavior {
   data: { [key: string]: number };
 }
 
+export interface DashboardGroupSelfReflection {
+  id: QuestionCategoryId.XBrowsingBehaviorHappiness;
+  type: DashboardGroupType.BrowsingBehaviorRating;
+  data: { [key: string]: number };
+}
+
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
   | DashboardGroupBrowsingBehavior

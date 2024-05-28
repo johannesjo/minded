@@ -1,7 +1,7 @@
 import { TglBtnOption } from "@src/shared/components/ui/TglBtns";
 import { IcoName } from "@src/shared/components/ui/Ico";
 
-export enum SelfReflectionQuestionId {
+export enum SelfAssessmentId {
   CARE_OF_NEEDS = "CARE_OF_NEEDS",
   SOCIAL_CONTACTS = "SOCIAL_CONTACTS",
   HAPPY_WITH_ACHIEVEMENTS = "HAPPY_WITH_ACHIEVEMENTS",
@@ -17,88 +17,88 @@ export enum SelfReflectionQuestionId {
   ENJOYED_LIFE = "ENJOYED_LIFE",
 }
 
-interface SelfReflectionQuestion {
-  id: SelfReflectionQuestionId;
+interface SelfAssessmentQuestion {
+  id: SelfAssessmentId;
   question: string;
   short: string;
   ico: IcoName;
 }
 
-export const SELF_REFLECTION_QUESTIONS: SelfReflectionQuestion[] = [
+export const SELF_ASSESSMENT_QUESTIONS: SelfAssessmentQuestion[] = [
   {
-    id: SelfReflectionQuestionId.CARE_OF_NEEDS,
+    id: SelfAssessmentId.CARE_OF_NEEDS,
     question: "I took care of my needs",
     ico: "info",
     short: "Care of Needs",
   },
   {
-    id: SelfReflectionQuestionId.SOCIAL_CONTACTS,
+    id: SelfAssessmentId.SOCIAL_CONTACTS,
     question: "I had enough social contacts",
     ico: "askQuestion",
     short: "Social Contacts",
   },
   {
-    id: SelfReflectionQuestionId.HAPPY_WITH_ACHIEVEMENTS,
+    id: SelfAssessmentId.HAPPY_WITH_ACHIEVEMENTS,
     question: "I am happy with what I achieved",
     ico: "info",
     short: "Achievements",
   },
   {
-    id: SelfReflectionQuestionId.WAS_OPTIMISTIC,
+    id: SelfAssessmentId.WAS_OPTIMISTIC,
     question: "I was optimistic",
     ico: "questionExchange",
     short: "Optimistic",
   },
   {
-    id: SelfReflectionQuestionId.TRIED_NEW_THINGS,
+    id: SelfAssessmentId.TRIED_NEW_THINGS,
     question: "I tried new things",
     ico: "feedback",
     short: "Tried New Things",
   },
   {
-    id: SelfReflectionQuestionId.COULD_RELAX,
+    id: SelfAssessmentId.COULD_RELAX,
     question: "I could relax",
     ico: "edit",
     short: "Could Relax",
   },
   {
-    id: SelfReflectionQuestionId.TRIED_TO_SEE_THE_GOOD,
+    id: SelfAssessmentId.TRIED_TO_SEE_THE_GOOD,
     question: "I tried to see the good",
     ico: "questionExchange",
     short: "Appreciation",
   },
   {
-    id: SelfReflectionQuestionId.WAS_HAPPY,
+    id: SelfAssessmentId.WAS_HAPPY,
     question: "I was happy",
     ico: "info",
     short: "Happy",
   },
   {
-    id: SelfReflectionQuestionId.WAS_COURAGEOUS,
+    id: SelfAssessmentId.WAS_COURAGEOUS,
     question: "I was courageous",
     ico: "info",
     short: "Courageous",
   },
   {
-    id: SelfReflectionQuestionId.ABLE_TO_DROP_NEGATIVE_THOUGHTS,
+    id: SelfAssessmentId.ABLE_TO_DROP_NEGATIVE_THOUGHTS,
     question: "I was able to drop negative thoughts",
     ico: "info",
     short: "Dropping Negative Thoughts",
   },
   {
-    id: SelfReflectionQuestionId.HAD_ENOUGH_ENERGY,
+    id: SelfAssessmentId.HAD_ENOUGH_ENERGY,
     question: "I had enough energy",
     ico: "info",
     short: "Enough Energy",
   },
   {
-    id: SelfReflectionQuestionId.SLEPT_WELL,
+    id: SelfAssessmentId.SLEPT_WELL,
     question: "I slept well",
     ico: "info",
     short: "Slept Well",
   },
   {
-    id: SelfReflectionQuestionId.ENJOYED_LIFE,
+    id: SelfAssessmentId.ENJOYED_LIFE,
     question: "I enjoyed life",
     ico: "info",
     short: "Enjoyed Life",
@@ -111,7 +111,7 @@ export interface SelfReflectionAnswer extends TglBtnOption<number> {
   val: SelfReflectionAnswerVal;
 }
 
-export const SELF_REFLECTION_ANSWERS: SelfReflectionAnswer[] = [
+export const SELF_ASSESSMENT_ANSWERS: SelfReflectionAnswer[] = [
   { txt: "(almost) never", val: 1 },
   { txt: "sometimes", val: 2 },
   { txt: "often", val: 3 },

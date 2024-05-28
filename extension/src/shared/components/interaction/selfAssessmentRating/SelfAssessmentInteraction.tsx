@@ -1,32 +1,34 @@
 import { createSignal, JSX, onMount } from "solid-js";
 import {
-  SELF_REFLECTION_ANSWERS,
-  SELF_REFLECTION_QUESTIONS,
+  SELF_ASSESSMENT_ANSWERS,
+  SELF_ASSESSMENT_QUESTIONS,
   SelfReflectionAnswerVal,
-} from "./selfReflection.model";
+} from "./selfAssessment.model";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
+import { saveSelfAssessment } from "@src/dataInterface/commonSyncDataInterface";
 
-const SelfReflectionRating = (props: {
+const SelfAssessmentInteraction = (props: {
   onSuccess: () => void;
   onSkip: () => void;
   onCancelCountdown: () => void;
 }): JSX.Element => {
   const [getSelectedQuestion, setSelectedQuestion] = createSignal(
-    SELF_REFLECTION_QUESTIONS[0],
+    SELF_ASSESSMENT_QUESTIONS[0],
   );
   const [getSelectedAnswerVal, setSelectedAnswerVal] =
     createSignal<SelfReflectionAnswerVal | null>(null);
 
   onMount(() => {
     const randomIndex = Math.floor(
-      Math.random() * SELF_REFLECTION_QUESTIONS.length,
+      Math.random() * SELF_ASSESSMENT_QUESTIONS.length,
     );
-    setSelectedQuestion(SELF_REFLECTION_QUESTIONS[randomIndex]);
+    setSelectedQuestion(SELF_ASSESSMENT_QUESTIONS[randomIndex]);
   });
 
   const handleSaveClick = () => {
     if (getSelectedAnswerVal()) {
+      saveSelfAssessment(getSelectedQuestion().id, getSelectedAnswerVal());
       setSelectedAnswerVal(null);
       props.onSuccess();
     }
@@ -39,7 +41,7 @@ const SelfReflectionRating = (props: {
       </div>
 
       <TglBtns
-        options={SELF_REFLECTION_ANSWERS}
+        options={SELF_ASSESSMENT_ANSWERS}
         onSelect={(v) => setSelectedAnswerVal(v)}
       />
 
@@ -48,4 +50,4 @@ const SelfReflectionRating = (props: {
   );
 };
 
-export default SelfReflectionRating;
+export default SelfAssessmentInteraction;

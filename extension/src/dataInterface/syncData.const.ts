@@ -1,7 +1,8 @@
-import { StaticCfg, SyncData } from "./syncData";
+import { SelfAssessmentEntry, StaticCfg, SyncData } from "./syncData";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
 
 export const DEFAULT_TS_VAL = 99;
 
@@ -44,6 +45,13 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   answers: [],
   attempts: {},
   sunTaps: {},
+  selfAssessment: Object.values(SelfAssessmentId).reduce(
+    (acc, curr) => {
+      acc[curr] = { ts: DEFAULT_TS_VAL, val: -1 };
+      return acc;
+    },
+    {} as Record<SelfAssessmentId, SelfAssessmentEntry>,
+  ),
 };
 
 export const STATIC_CFG: StaticCfg = {
