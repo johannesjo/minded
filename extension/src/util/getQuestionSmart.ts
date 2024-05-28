@@ -2,6 +2,7 @@ import { Answer } from "@src/dataInterface/syncData";
 import {
   filterSpecialWidgets,
   QUESTION_CATEGORIES,
+  QuestionCategory,
   QuestionCategoryId,
   QuestionForPrompt,
   QUESTIONS,
@@ -37,15 +38,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     .filter(filterSpecialWidgets)
     .forEach((categoryId: QuestionCategoryId) => {
       const questionCategory = QUESTION_CATEGORIES[categoryId];
-      if (questionCategory.limitTo?.includes("Android") && !IS_ANDROID) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
-      }
-      if (
-        questionCategory.limitTo?.includes("BrowserExtension") &&
-        IS_ANDROID
-      ) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
-      }
+
       if (questionCategory?.questions?.length > 0) {
         map[categoryId] = 0;
       }
@@ -84,6 +77,10 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
         }
       }
       if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
+      }
+
+      if (isExcludedByLimitTo(questionCategory)) {
         map[categoryId] = FAKE_RULE_OUT_NR;
       }
     });
@@ -136,13 +133,7 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
 
   const questionsToUse = QUESTIONS.filter((q) => {
     const categoryForQuestion = QUESTION_CATEGORIES[q.categoryId];
-    if (categoryForQuestion.limitTo?.includes("Android") && !IS_ANDROID) {
-      return false;
-    }
-    if (
-      categoryForQuestion.limitTo?.includes("BrowserExtension") &&
-      IS_ANDROID
-    ) {
+    if (isExcludedByLimitTo(categoryForQuestion)) {
       return false;
     }
     if (categoryForQuestion.isMorningCategory) {
@@ -196,4 +187,17 @@ const isQuestionAllowed = (question: QuestionForPrompt): boolean => {
       }
     })
   );
+};
+
+const isExcludedByLimitTo = (questionCategory: QuestionCategory): boolean => {
+  const isExtension = !IS_ANDROID;
+
+  if (questionCategory.limitTo) {
+    if (
+      (!questionCategory.limitTo.includes("Android") && IS_ANDROID) ||
+      (!questionCategory.limitTo.includes("BrowserExtension") && !isExtension)
+    ) {
+      return true;
+    }
+  }
 };
