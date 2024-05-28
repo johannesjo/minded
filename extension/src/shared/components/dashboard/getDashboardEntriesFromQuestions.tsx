@@ -19,7 +19,7 @@ import {
   RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
-import { isThisWeek, isToday } from "@src/util/isToday";
+import { hasHappenedInLastXDay, isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
 // @ts-expect-error
@@ -96,23 +96,24 @@ export const getDashboardEntriesFromQuestions = (
     fixedEntriesIndexAndNr++;
   }
 
+  const entriesForSelfAssessment = getRecentSelfAssessmentEntries(
+    syncData.selfAssessment,
+  );
+  if (entriesForSelfAssessment.length >= 1) {
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      id: QuestionCategoryId.XSelfAssessment,
+      type: DashboardGroupType.SelfAssessment,
+      entries: entriesForSelfAssessment,
+    } as DashboardGroupSelAssessment);
+    fixedEntriesIndexAndNr++;
+  }
+
   if (Object.keys(syncData.browsingBehaviorRating).length >= 3) {
     sortedEntries.push({
       id: QuestionCategoryId.XBrowsingBehaviorHappiness,
       type: DashboardGroupType.BrowsingBehaviorRating,
       data: syncData.browsingBehaviorRating,
     } as DashboardGroupBrowsingBehavior);
-  }
-
-  const entriesForSelfAssessment = getRecentSelfAssessmentEntries(
-    syncData.selfAssessment,
-  );
-  if (entriesForSelfAssessment.length >= 1) {
-    sortedEntries.push({
-      id: QuestionCategoryId.XSelfAssessment,
-      type: DashboardGroupType.SelfAssessment,
-      entries: entriesForSelfAssessment,
-    } as DashboardGroupSelAssessment);
   }
 
   // center one rnd entry
@@ -153,7 +154,10 @@ const getRecentSelfAssessmentEntries = (
 
   // Sort the entries in descending order based on the timestamp
   const sortedEntries = categoryEntries
-    .filter((entry) => entry.ts > DEFAULT_TS_VAL)
+    .filter(
+      (entry) =>
+        entry.ts > DEFAULT_TS_VAL && hasHappenedInLastXDay(entry.ts, 10),
+    )
     .sort((a, b) => b.ts - a.ts);
 
   console.log(sortedEntries);
