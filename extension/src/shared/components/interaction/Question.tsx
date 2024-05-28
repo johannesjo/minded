@@ -154,6 +154,7 @@ export const Question: (props: {
         {props.isChangeQuestion && (
           <div
             id="minded-6622-change-question-btn"
+            ontouchstart={() => undefined}
             onmouseenter={props.onCancelCountdown}
             onclick={() => {
               props.onCancelCountdown();
