@@ -196,7 +196,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       <div id="minded-6622-interaction-wrapper-box">
         <Switch>
-          <Match when={getMode() === "SELF_REFLECTION_RATING"}>
+          <Match when={getMode() === "SELF_ASSESSMENT"}>
             <SelfAssessmentInteraction
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
