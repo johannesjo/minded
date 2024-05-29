@@ -10,8 +10,6 @@ import {
 import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { isWorkDay } from "@src/util/isWorkDay";
-// @ts-ignore
-import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 const THRESHOLD_MORNING_START = 4;
 const THRESHOLD_MORNING_END = 14;
@@ -42,8 +40,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       if (questionCategory?.questions?.length > 0) {
         map[categoryId] = 0;
       }
+
       if (questionCategory?.frequencyModifier > 0) {
-        map[categoryId] = -1 * questionCategory.frequencyModifier;
+        map[categoryId] = questionCategory.frequencyModifier * -1;
       }
 
       if (questionCategory.isMorningCategory) {
@@ -54,7 +53,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
           // boost when applicable
-          map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
+          map[categoryId] = (map[categoryId] || 0) + BOOST_FACTOR * -1;
         }
       }
       if (questionCategory.isEveningCategory) {
@@ -62,7 +61,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
           // boost when applicable
-          map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
+          map[categoryId] = (map[categoryId] || 0) + BOOST_FACTOR * -1;
         }
       }
       if (questionCategory.isLateNightCategory) {
@@ -73,10 +72,13 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           map[categoryId] = FAKE_RULE_OUT_NR;
         } else {
           // boost when applicable
-          map[categoryId] = -1 * ((map[categoryId] || 0) + BOOST_FACTOR);
+          map[categoryId] = (map[categoryId] || 0) + BOOST_FACTOR * -1;
         }
       }
       if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
+        map[categoryId] = FAKE_RULE_OUT_NR;
+      }
+      if (isExcludedByLimitTo(questionCategory)) {
         map[categoryId] = FAKE_RULE_OUT_NR;
       }
     });
@@ -92,11 +94,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     if (categoryForAnswer.isThisWeekOnlyCategory && !isThisWeek(answer.ts)) {
       return;
     }
-
     map[answer.questionCategoryId] = map[answer.questionCategoryId] + 1;
   });
 
-  // we
   const sortedEntries = Object.entries(map)
     .map(([catId, val]) => ({ catId, val }))
     .sort((a, b) => a.val - b.val);
@@ -120,6 +120,8 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     questionsForCategory,
     isWorkDayToday,
   });
+  console.log(categoriesLeastUsed);
+
   return getRndEntry(questionsForCategory);
 };
 
