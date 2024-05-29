@@ -10,6 +10,7 @@ import {
 import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { isWorkDay } from "@src/util/isWorkDay";
+import { isXIn1 } from "@src/util/isXIn1";
 
 const THRESHOLD_MORNING_START = 4;
 const THRESHOLD_MORNING_END = 14;
@@ -102,11 +103,19 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     .sort((a, b) => a.val - b.val);
 
   // effectively translates to random categories between all categories with 0 answer or less
-  const nrOfEntriesForLeastUsed = Math.max(sortedEntries[0].val, 0);
-  const categoriesLeastUsed = sortedEntries.filter(
-    (se) => se.val <= nrOfEntriesForLeastUsed,
+  const scoreThreshold = Math.max(sortedEntries[0].val, 0);
+  const categoriesLowestScore = sortedEntries.filter(
+    (se) => se.val <= scoreThreshold,
   );
-  const categoryToUse = getRndEntry(categoriesLeastUsed).catId;
+
+  // give an additional 1/3 chance to get the question with the actual lowest score
+  const categoryToUse =
+    categoriesLowestScore.length >= 2 &&
+    categoriesLowestScore[0].val < categoriesLowestScore[1].val &&
+    isXIn1(1 / 3)
+      ? categoriesLowestScore[0].catId
+      : getRndEntry(categoriesLowestScore).catId;
+
   const questionsForCategory = QUESTIONS_FOR_DEVICE.filter(
     (q) => q.categoryId === categoryToUse,
   );
@@ -114,13 +123,13 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   console.log("getQuestionSmart() map:", map);
   console.log("getQuestionSmart():", {
     sortedEntries,
-    nrOfEntriesForLeastUsed,
-    categoriesLeastUsed,
+    scoreThreshold,
+    categoriesLowestScore,
     categoryToUse,
     questionsForCategory,
     isWorkDayToday,
   });
-  console.log(categoriesLeastUsed);
+  console.log(categoriesLowestScore);
 
   return getRndEntry(questionsForCategory);
 };
