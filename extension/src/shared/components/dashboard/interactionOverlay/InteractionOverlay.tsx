@@ -14,13 +14,10 @@ export const InteractionOverlay: (props: {
   return (
     <div
       class={styles.interactionOverlay}
-      id="minded-6622-coloured-wrapper-dynamic"
+      id="minded-6622-coloured-wrapper"
       ref={wrapperEl}
       onclick={async (ev) => {
-        if (
-          (ev.target as HTMLElement)?.id ===
-          "minded-6622-coloured-wrapper-dynamic"
-        ) {
+        if ((ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper") {
           await fadeOut(wrapperEl, 150).promise;
           props.onHideInteraction();
         }
