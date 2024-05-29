@@ -87,14 +87,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   createEffect(() => {
-    console.log("props.onModeSet", getMode());
     if (getMode()) {
       props.onModeSet(getMode());
     }
   });
 
   createEffect(() => {
-    console.log("props.onUpdateQuestion", getInitialQuestion());
     if (getInitialQuestion()) {
       props.onUpdateQuestion(getInitialQuestion());
     }

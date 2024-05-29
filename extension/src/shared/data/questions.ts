@@ -170,7 +170,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isMorningCategory: true,
     isWorkDayCategory: true,
-    frequencyModifier: 1,
+    frequencyModifier: 2,
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
