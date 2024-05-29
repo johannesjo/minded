@@ -93,8 +93,8 @@
 
     //background: linear-gradient(175deg, #0b153f, #181357, #300d37);
 
-    --c-fg: rgba(255, 255, 255, .9);
-    --c-fg-full-emphasis: #fff;
+    --c-fg: rgba(255, 255, 255, .7);
+    --c-fg-full-emphasis: #rgba(255, 255, 255, .9);
 
     --c-graph-fg-full: rgba(255, 255, 255, .7);
     --c-graph-fg-less: rgba(255, 255, 255, .5);
@@ -105,7 +105,7 @@
     --dashboard-card-bg-hover: rgba(0, 0, 0, .6);
 
     --c-bg: #444a5b;
-    --h4-c: rgba(255, 255, 255, .7);
+    --h4-c: rgba(255, 255, 255, .9);
     --c-bg-btns: rgba(0, 0, 0, .5);
     --form-inputs-bg: rgba(0, 0, 0, .4);
     --btn-bg: rgba(0, 0, 0, .6);
