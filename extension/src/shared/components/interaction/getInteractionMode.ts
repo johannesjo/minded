@@ -19,7 +19,7 @@ export type InteractionMode =
   | "EMOJI_CHECKIN"
   | "QUESTION"
   | "MOOD_CHECKIN"
-  | "SELF_REFLECTION_RATING";
+  | "SELF_ASSESSMENT";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "APP_USAGE_OR_BROWSING_BEHAVIOR";
@@ -27,7 +27,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "MOOD_CHECKIN";
   // return "ENERGY_LVL";
   // return "EMOJI_CHECKIN";
-  // return "SELF_REFLECTION_RATING";
+  // return "SELF_ASSESSMENT";
 
   const now = new Date();
   const nowTS = Date.now();
@@ -39,7 +39,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   }
 
   if (isXIn1(1 / 10)) {
-    return "SELF_REFLECTION_RATING";
+    return "SELF_ASSESSMENT";
   }
 
   if (
