@@ -59,43 +59,47 @@ export const SettingsAndroid = (props: {
         Please select at least one app that you want to use less.
       </div>
 
-      {getAvailableApps().length === 0 && (
+      {getAvailableApps().length === 0 ? (
         <div style="margin: 16px;">Loading apps...</div>
-      )}
+      ) : (
+        <>
+          <div class={styles.appList}>
+            <For each={getAvailableApps()}>
+              {(app) => (
+                <div
+                  onClick={() => handleSelect(app)}
+                  class={`${styles.appEntry} ${getSelectedApps().includes(app.packageName) ? styles.selected : ""}`}
+                >
+                  {getSelectedApps().includes(app.packageName) && (
+                    <span>✓ </span>
+                  )}
+                  {app.name}
+                </div>
+              )}
+            </For>
+          </div>
 
-      <div class={styles.appList}>
-        <For each={getAvailableApps()}>
-          {(app) => (
-            <div
-              onClick={() => handleSelect(app)}
-              class={`${styles.appEntry} ${getSelectedApps().includes(app.packageName) ? styles.selected : ""}`}
+          <div>
+            {props.isRouting && (
+              <button
+                class="btnTxt"
+                style="margin-right: 16px;"
+                onClick={() => navigate("/")}
+              >
+                <Ico name="arrowBack" /> Back
+              </button>
+            )}
+
+            <button
+              class="btnTxt"
+              disabled={!getSelectedApps()?.length}
+              onClick={handleSave}
             >
-              {getSelectedApps().includes(app.packageName) && <span>✓ </span>}
-              {app.name}
-            </div>
-          )}
-        </For>
-      </div>
-
-      <div>
-        {props.isRouting && (
-          <button
-            class="btnTxt"
-            style="margin-right: 16px;"
-            onClick={() => navigate("/")}
-          >
-            <Ico name="arrowBack" /> Back
-          </button>
-        )}
-
-        <button
-          class="btnTxt"
-          disabled={!getSelectedApps()?.length}
-          onClick={handleSave}
-        >
-          <Ico name="send" /> {props.saveBtnTxt || "Save"}
-        </button>
-      </div>
+              <Ico name="send" /> {props.saveBtnTxt || "Save"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
