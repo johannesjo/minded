@@ -12,7 +12,7 @@ body {
 
 
 .missingCapabilitiesMsg {
-  background: #8f1616;
+  background: #e338f1;
   color: #fff;
   padding: 16px;
   position: fixed;
@@ -21,4 +21,6 @@ body {
   right: 0;
   z-index: 2147483647;
   z-index: 9999999999999999;
+  border-radius: 8px;
+  margin: 8px;
 }
