@@ -6,7 +6,7 @@ $aniDelay: 1.5s;
 
 
 .DashboardGroups {
-  max-width: 1600px;
+  max-width: 1400px;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -35,9 +35,16 @@ $aniDelay: 1.5s;
     padding: 4px;
   }
 
-
   @media (min-width: $bpMobile) {
     padding: 16px;
+  }
+
+  @media (min-width: #{$bpDashboardMoreThan2Col + 32px}) {
+    padding: 32px;
+  }
+
+  @media (min-width: #{$bpDashboardMoreThan2Col + 128px}) {
+    padding: 32px 64px;
   }
 
   @media (min-width: $bpDashboardMoreThan1Col) and (max-width: $bpMobile - 1px) {
@@ -78,13 +85,6 @@ $aniDelay: 1.5s;
     }
   }
 
-  @media (min-width: #{$bpDashboardMoreThan2Col + 32px}) {
-    padding: 32px;
-  }
-
-  @media (min-width: #{$bpDashboardMoreThan2Col + 128px}) {
-    padding: 64px;
-  }
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     &[nr-of-items="1"] {
