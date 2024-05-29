@@ -621,4 +621,6 @@ What actions, if taken, would make me proud of myself, regardless of the outcome
 When negative thoughts arise, how do I deal with them?
 
 
+Recently I discovered that...
+
  */
