@@ -172,7 +172,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isMorningCategory: true,
     isWorkDayCategory: true,
-    frequencyModifier: 2,
+    frequencyModifier: 1,
     dashboardTxt: "Finding Focus Today",
     questions: [
       {
@@ -219,10 +219,10 @@ export const QUESTION_CATEGORIES: {
         t: "What exactly needs to be done in your current task",
         prompt: "First I",
       },
-      {
-        id: QID.RFHT11,
-        t: "Are you setting realistic goals and deadlines and if not how can you improve",
-      },
+      // {
+      //   id: QID.RFHT11,
+      //   t: "Are you setting realistic goals and deadlines and if not how can you improve",
+      // },
     ],
   },
   [QuestionCategoryId.Motivation]: {
