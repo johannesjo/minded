@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    <string name="app_name">Minded</string>
-    <string name="accessibility_service_description">Minded Accessibility Service</string>
-    <string name="title_activity_app_picker">Minded – App Picker</string>
+    <string name="app_name">minded</string>
+    <string name="accessibility_service_description">minded – Accessibility Service</string>
+    <string name="title_activity_app_picker">minded – App Picker</string>
     <string name="preference_file_key">preference_file_key1</string>
 </resources>
