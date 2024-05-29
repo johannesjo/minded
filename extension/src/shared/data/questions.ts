@@ -1,4 +1,6 @@
 import { QID } from "@src/shared/data/questionId";
+// @ts-ignore
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 export enum QuestionCategoryId {
   HealthierBrowsingHabits = "HealthierBrowsingHabits",
@@ -580,6 +582,23 @@ Object.keys(QUESTION_CATEGORIES)
     });
   });
 
+export const isExcludedByLimitTo = (qc: QuestionCategory): boolean => {
+  const isExtension = !IS_ANDROID;
+  if (
+    qc.limitTo &&
+    ((!qc.limitTo.includes("Android") && IS_ANDROID) ||
+      (!qc.limitTo.includes("BrowserExtension") && isExtension))
+  ) {
+    return true;
+  }
+};
+
+export const QUESTIONS_FOR_DEVICE: QuestionForPrompt[] = QUESTIONS.filter(
+  (q) => {
+    const categoryForQuestion = QUESTION_CATEGORIES[q.categoryId];
+    return !isExcludedByLimitTo(categoryForQuestion);
+  },
+);
 // console.log(JSON.stringify(QUESTIONS));
 
 /*

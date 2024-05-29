@@ -1,11 +1,11 @@
 import { Answer } from "@src/dataInterface/syncData";
 import {
   filterSpecialWidgets,
+  isExcludedByLimitTo,
   QUESTION_CATEGORIES,
-  QuestionCategory,
   QuestionCategoryId,
   QuestionForPrompt,
-  QUESTIONS,
+  QUESTIONS_FOR_DEVICE,
 } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
@@ -29,7 +29,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const nowHours = now.getHours();
 
   if (!answers.length) {
-    return getRndEntry(QUESTIONS);
+    return getRndEntry(QUESTIONS_FOR_DEVICE);
   }
 
   const map: { [key in QuestionCategoryId]?: number } = {};
@@ -79,10 +79,6 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
         map[categoryId] = FAKE_RULE_OUT_NR;
       }
-
-      if (isExcludedByLimitTo(questionCategory)) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
-      }
     });
 
   answers.forEach((answer) => {
@@ -111,7 +107,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     (se) => se.val <= nrOfEntriesForLeastUsed,
   );
   const categoryToUse = getRndEntry(categoriesLeastUsed).catId;
-  const questionsForCategory = QUESTIONS.filter(
+  const questionsForCategory = QUESTIONS_FOR_DEVICE.filter(
     (q) => q.categoryId === categoryToUse,
   );
 
@@ -124,18 +120,16 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     questionsForCategory,
     isWorkDayToday,
   });
-  return getQuestionFromArray(questionsForCategory);
+  return getRndEntry(questionsForCategory);
 };
 
 export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
   const isWorkDayToday = isWorkDay(now);
   const nowHours = now.getHours();
 
-  const questionsToUse = QUESTIONS.filter((q) => {
+  const questionsToUse = QUESTIONS_FOR_DEVICE.filter((q) => {
     const categoryForQuestion = QUESTION_CATEGORIES[q.categoryId];
-    if (isExcludedByLimitTo(categoryForQuestion)) {
-      return false;
-    }
+
     if (categoryForQuestion.isMorningCategory) {
       if (
         nowHours < THRESHOLD_MORNING_START ||
@@ -162,42 +156,5 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
     }
     return true;
   });
-  return getQuestionFromArray(questionsToUse);
-};
-
-const getQuestionFromArray = (
-  questions: QuestionForPrompt[],
-): QuestionForPrompt => {
-  let newQuestion = getRndEntry(questions);
-  while (!isQuestionAllowed(newQuestion)) {
-    newQuestion = getRndEntry(questions);
-  }
-  return newQuestion;
-};
-
-const isQuestionAllowed = (question: QuestionForPrompt): boolean => {
-  return (
-    !question.limitTo ||
-    !!question.limitTo.find((limitTo) => {
-      if (limitTo === "Android") {
-        return IS_ANDROID;
-      }
-      if (limitTo === "BrowserExtension") {
-        return !IS_ANDROID;
-      }
-    })
-  );
-};
-
-const isExcludedByLimitTo = (questionCategory: QuestionCategory): boolean => {
-  const isExtension = !IS_ANDROID;
-
-  if (questionCategory.limitTo) {
-    if (
-      (!questionCategory.limitTo.includes("Android") && IS_ANDROID) ||
-      (!questionCategory.limitTo.includes("BrowserExtension") && !isExtension)
-    ) {
-      return true;
-    }
-  }
+  return getRndEntry(questionsToUse);
 };
