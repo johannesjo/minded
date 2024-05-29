@@ -16,13 +16,14 @@ const manifest = defineManifest(async () => ({
   version: `${major}.${minor}.${patch}.${label}`,
   description: packageJson.description,
   icons: {
-    "128": "icons/sun-no-rays-more-contrast.png",
+    "128": "icons/logo-ext-128.png",
+    "256": "icons/logo-ext-256.png",
   },
   options_page: "src/pages/options/index.html",
   background: { service_worker: "src/pages/background/background.ts" },
   action: {
     // default_popup: "src/pages/popup/index.html",
-    default_icon: "icons/sun-no-rays-more-contrast.png",
+    default_icon: "icons/logo-ext-128.png",
   },
   content_scripts: [
     {
