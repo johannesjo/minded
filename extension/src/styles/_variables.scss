@@ -83,12 +83,15 @@
 
   //@media (prefers-color-scheme: dark) {
   &.minded-6622-dark {
-    //--c-gradient-1: #080c3a;
-    //--c-gradient-2: #3f1177;
-    //--c-gradient-3: #731335;
-    --c-gradient-1: #121763;
-    --c-gradient-2: #3c1171;
-    --c-gradient-3: #600f2a;
+    //--c-gradient-1: #121763;
+    //--c-gradient-2: #3c1171;
+    //--c-gradient-3: #600f2a;
+
+    --c-gradient-1: #071449;
+    --c-gradient-2: #1a137c;
+    --c-gradient-3: #401049;
+
+    //background: linear-gradient(175deg, #0b153f, #181357, #300d37);
 
     --c-fg: rgba(255, 255, 255, .9);
     --c-fg-full-emphasis: #fff;
