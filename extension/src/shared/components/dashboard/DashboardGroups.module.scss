@@ -205,14 +205,18 @@ $aniDelay: 1.5s;
     }
   }
 
-  //&:nth-child(n+7) {
-  //  @media (min-width: $bpMobile) {
-  //    display: none;
-  //  }
-  //  @media (min-width: $bpDashboardMoreThan2Col) {
-  //    display: block;
-  //  }
-  //}
+  &:nth-child(n+7) {
+    @media (min-width: $bpMobile) {
+      display: none;
+
+      :global(.minded-6622-android) & {
+        display: block;
+      }
+    }
+    @media (min-width: $bpDashboardMoreThan2Col) {
+      display: block;
+    }
+  }
 
   @media (min-width: $bpDashboardMoreThan2Col) {
     &:nth-child(n+10) {
