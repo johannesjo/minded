@@ -15,18 +15,17 @@ import {
   getInteractionMode,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
-import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentRating/SelfAssessmentInteraction";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 
 interface InteractionCommonProps {
   isReducedSuccessSun?: boolean;
@@ -55,6 +54,7 @@ const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 200;
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
+  const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getInitialQuestion, setInitialQuestion] = createSignal<
     QuestionForPrompt | undefined
@@ -75,6 +75,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     getSyncData().then((syncData) => {
+      setSyncDataI(syncData);
       setAnswers(syncData.answers);
       if (props.questionForPrompt) {
         setInitialQuestion(props.questionForPrompt);
@@ -195,11 +196,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       <div id="minded-6622-interaction-wrapper-box">
         <Switch>
           <Match when={getMode() === "SELF_ASSESSMENT"}>
-            <SelfAssessmentInteraction
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onInteractionSuccess}
-              onSkip={props.onSkip}
-            />
+            {getSyncDataI() && (
+              <SelfAssessmentInteraction
+                syncData={getSyncDataI()}
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onInteractionSuccess}
+                onSkip={props.onSkip}
+              />
+            )}
           </Match>
           <Match when={getMode() === "MOOD_CHECKIN"}>
             <MoodCheckin

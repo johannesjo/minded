@@ -1,6 +1,6 @@
 import { SelfAssessmentData } from "@src/dataInterface/syncData";
 import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { DEFAULT_TS_VAL } from "@src/dataInterface/syncData.const";
 import { hasHappenedInLastXDay } from "@src/util/isToday";
 

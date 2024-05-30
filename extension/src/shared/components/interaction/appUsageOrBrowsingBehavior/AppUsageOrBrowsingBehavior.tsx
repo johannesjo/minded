@@ -12,7 +12,7 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
-import { SELF_ASSESSMENT_ANSWERS } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { SELF_ASSESSMENT_ANSWERS } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export const AppUsageOrBrowsingBehavior: (props: {
   onSuccess: () => void;

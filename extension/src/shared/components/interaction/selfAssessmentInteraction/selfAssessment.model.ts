@@ -17,7 +17,7 @@ export enum SelfAssessmentId {
   ENJOYED_LIFE = "ENJOYED_LIFE",
 }
 
-interface SelfAssessmentQuestion {
+export interface SelfAssessmentQuestion {
   id: SelfAssessmentId;
   question: string;
   short: string;
