@@ -25,7 +25,7 @@ import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard
 
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
-const MAX_SELF_ASSESSMENTS = 4;
+const MAX_SELF_ASSESSMENTS = 3;
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
