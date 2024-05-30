@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+        width="512"
+        height="512"
+        viewBox="0 0 512 512"
+        version="1.1"
+        id="svg1"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns="http://www.w3.org/2000/svg"
+>
+
+    <defs
+            id="defs1">
+        <clipPath id="squareViewBox">
+            <circle cx="256" cy="256" r="256"/>
+            <rect
+                    width="512"
+                    height="512"
+                    x="0"
+                    y="0"/>
+        </clipPath>
+
+        <linearGradient
+                id="linearGradient6-1">
+            <stop
+                    style="stop-color:#efee9f;"
+                    offset=".33"
+                    id="stop11"/>
+            <stop
+                    style="stop-color:#ffccea;"
+                    offset="0.66"
+                    id="stop12"/>
+            <stop
+                    style="stop-color:#aae9ee;"
+                    offset=".9"
+                    id="stop10"/>
+        </linearGradient>
+        <radialGradient
+                xlink:href="#linearGradient6-1"
+                id="radialGradient1"
+                cx="256"
+                cy="512"
+                r="512"
+                gradientUnits="userSpaceOnUse"
+                spreadMethod="pad"/>
+    </defs>
+    <g
+            id="mainLayer">
+        <rect
+                style="fill:url(#radialGradient1); "
+                id="rect5"
+                width="512"
+                height="512"
+                x="0"
+                y="0"/>
+
+        <circle
+                clip-path="url(#circleViewBox)"
+                id="sunCircle"
+                cy="512"
+                cx="256"
+                style="fill:#ffffff;"
+                r="256"/>
+    </g>
+</svg>
