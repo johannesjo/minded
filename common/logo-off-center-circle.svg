@@ -21,11 +21,11 @@
                 id="linearGradient6-1">
             <stop
                     style="stop-color:#efee9f;"
-                    offset=".4"
+                    offset=".33"
                     id="stop11"/>
             <stop
                     style="stop-color:#ffccea;"
-                    offset="0.75"
+                    offset="0.6"
                     id="stop12"/>
             <stop
                     style="stop-color:#aae9ee;"
@@ -35,26 +35,29 @@
         <radialGradient
                 xlink:href="#linearGradient6-1"
                 id="radialGradient1"
-                cx="256"
+                cx="0"
                 cy="512"
-                r="512"
+                r="724.08"
                 gradientUnits="userSpaceOnUse"
                 spreadMethod="pad"/>
     </defs>
-    <g id="mainLayer">
-        <circle
+    <g
+            id="mainLayer">
+        <rect
+                clip-path="url(#circleViewBox)"
                 style="fill:url(#radialGradient1); "
-                id="outerCircle"
-                cy="256"
-                cx="256"
-                r="256"/>
+                id="rect5"
+                width="512"
+                height="512"
+                x="0"
+                y="0"/>
 
         <circle
                 clip-path="url(#circleViewBox)"
                 id="sunCircle"
                 cy="512"
-                cx="256"
+                cx="0"
                 style="fill:#ffffff;"
-                r="256"/>
+                r="362.04"/>
     </g>
 </svg>
