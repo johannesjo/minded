@@ -41,16 +41,14 @@
                 gradientUnits="userSpaceOnUse"
                 spreadMethod="pad"/>
     </defs>
-    <g
-            id="mainLayer">
-        <rect
-                clip-path="url(#circleViewBox)"
+    <g id="mainLayer">
+        <circle
                 style="fill:url(#radialGradient1); "
-                id="rect5"
-                width="512"
-                height="512"
-                x="0"
-                y="0"/>
+                id="outerCircle"
+                cy="256"
+                cx="256"
+                r="256"/>
+
         <circle
                 clip-path="url(#circleViewBox)"
                 id="sunCircle"
