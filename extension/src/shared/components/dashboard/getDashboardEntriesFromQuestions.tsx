@@ -107,7 +107,7 @@ export const getDashboardEntriesFromQuestions = (
     fixedEntriesIndexAndNr++;
   }
 
-  if (Object.keys(syncData.browsingBehaviorRating).length >= 3) {
+  if (Object.keys(syncData.browsingBehaviorRating).length >= 3 && !IS_ANDROID) {
     sortedEntries.push({
       id: QuestionCategoryId.XBrowsingBehaviorHappiness,
       type: DashboardGroupType.BrowsingBehaviorRating,
@@ -115,7 +115,7 @@ export const getDashboardEntriesFromQuestions = (
     } as DashboardGroupBrowsingBehaviorHappiness);
   }
 
-  if (Object.keys(syncData.appUsageRating).length >= 3) {
+  if (Object.keys(syncData.appUsageRating).length >= 3 && IS_ANDROID) {
     sortedEntries.push({
       id: QuestionCategoryId.XAppUsageHappiness,
       type: DashboardGroupType.AppUsageRating,
