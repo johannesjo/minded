@@ -58,6 +58,7 @@ export enum QID {
 
   GT1 = "GT1",
   GT2 = "GT2",
+  GT3 = "GT3",
 
   GP1 = "GP1",
   GP2 = "GP2",

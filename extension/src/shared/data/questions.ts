@@ -109,7 +109,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH6,
-        t: "Instead of instant gratification, what might be a better alternative",
+        t: "Instead of visiting this website, what might be a better alternative",
         prompt: "Instead of using these websites I could",
       },
     ],
@@ -143,7 +143,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU6,
-        t: "Instead of instant gratification, what might be a better alternative",
+        t: "Instead of using this app, what might be a better alternative",
         prompt: "Instead of using these apps I could",
       },
     ],
@@ -324,6 +324,11 @@ export const QUESTION_CATEGORIES: {
         t: "What is a little thing you enjoyed today",
         prompt: "I enjoyed",
       },
+      {
+        id: QID.GT3,
+        t: "What are you grateful for today",
+        prompt: "I am grateful for",
+      },
     ],
     dashboardTxt: "Good Today",
   },
@@ -436,7 +441,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.IN3,
-        t: "Are there any unresolved tasks or worries that you can address tomorrow, rather than ruminating on them tonight",
+        t: "Which unresolved tasks or worries can you address tomorrow, rather than ruminating on them tonight",
       },
       {
         id: QID.IN4,
@@ -455,7 +460,7 @@ export const QUESTION_CATEGORIES: {
     frequencyModifier: 2,
     dashboardTxt: "Self Discovery",
     questions: [
-      { id: QID.SD1, t: "Are you using your time wisely" },
+      // { id: QID.SD1, t: "Are you using your time wisely" },
       { id: QID.SD2, t: "What do you want in life" },
       {
         id: QID.SD3,
@@ -472,7 +477,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.SD6,
-        t: "Are you letting matters that are out of your control stress you out",
+        t: "What things that are out of your control stress you out? What might be a good way to deal with them",
       },
       { id: QID.SD7, t: "Is where you are today making you happy" },
       { id: QID.SD8, t: "Your favorite way to spend the day is..." },
@@ -493,7 +498,7 @@ export const QUESTION_CATEGORIES: {
       { id: QID.SD16, t: "Why are you here" },
       {
         id: QID.SD17,
-        t: "Are you taking care of your physical and mental well-being",
+        t: "Can you take better care of your physical and mental well-being? How",
       },
       {
         id: QID.SD18,
