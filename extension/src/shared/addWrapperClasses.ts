@@ -8,9 +8,8 @@ const DARK_MODE_END_HOUR = 6;
 export const addWrapperClasses = () => {
   const el = document.getElementById("minded-6622");
 
-  if (isDarkModeNow()) {
-    el.classList.add("minded-6622-dark");
-  }
+  setIsDarkModeIfApplies(el);
+
   if (IS_ANDROID) {
     el.classList.add("minded-6622-android");
   }
@@ -28,4 +27,14 @@ export const isDarkModeNow = (): boolean => {
   const nowHours = now.getHours();
 
   return nowHours >= DARK_MODE_START_HOUR || nowHours < DARK_MODE_END_HOUR;
+};
+
+export const setIsDarkModeIfApplies = (
+  el = document.getElementById("minded-6622"),
+) => {
+  if (isDarkModeNow()) {
+    el.classList.add("minded-6622-dark");
+  } else {
+    el.classList.remove("minded-6622-dark");
+  }
 };
