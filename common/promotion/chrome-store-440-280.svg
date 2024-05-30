@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="440"
+   height="280"
+   viewBox="0 0 440 280"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch14">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.87987994;"
+         offset="0"
+         id="stop14" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient6-1">
+      <stop
+         style="stop-color:#aae9ee;stop-opacity:1;"
+         offset="0"
+         id="stop10" />
+      <stop
+         style="stop-color:#ffccea;stop-opacity:1;"
+         offset="0.5"
+         id="stop12" />
+      <stop
+         style="stop-color:#efee9f;stop-opacity:1;"
+         offset="1"
+         id="stop11" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7"
+       x1="0"
+       y1="229"
+       x2="440"
+       y2="229"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="rotate(90)"
+       xlink:href="#linearGradient6-1" />
+  </defs>
+  <g
+     id="layer1">
+    <rect
+       style="fill:url(#linearGradient7);"
+       id="rect5"
+       width="440"
+       height="440"
+       x="0"
+       y="0"
+       transform="0" />
+    <circle
+       id="circle12"
+       cy="620"
+       cx="229"
+       r="400"
+       style="fill:#ffffff" />
+
+    <text
+            y="18%"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            style="font-size: 50; fill: #000000; font-family: Ubuntu;">
+      <tspan  x="51.5%" >gain freedom</tspan>
+    </text>
+    <text
+            y="18%"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            style="font-size: 34; fill: #000000; font-family: Ubuntu;">
+      <tspan x="51.5%" dy="1.6em"> from</tspan>
+      <tspan x="51.5%" dy="1.5em"> social-media addiction</tspan>
+      <tspan x="51.5%" dy="1.2em">doom-scrolling</tspan>
+      <tspan x="51.5%" dy="1.2em">procrastination</tspan>
+    </text>
+
+  </g>
+</svg>

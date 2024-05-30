@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+        width="1400"
+        height="560"
+        viewBox="0 0 1400 560"
+        version="1.1"
+        id="svg1"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns="http://www.w3.org/2000/svg"
+>
+    <defs
+            id="defs1">
+        <linearGradient
+                id="linearGradient6-1">
+            <stop
+                    style="stop-color:#efee9f;"
+                    offset="0"
+                    id="stop11"/>
+            <stop
+                    style="stop-color:#ffccea;"
+                    offset="0.33"
+                    id="stop12"/>
+            <stop
+                    style="stop-color:#aae9ee;"
+                    offset="1"
+                    id="stop10"/>
+
+        </linearGradient>
+        <linearGradient
+                id="linearGradient7"
+                x1="0"
+                y1="700"
+                gradientUnits="userSpaceOnUse"
+                xlink:href="#linearGradient6-1"/>
+    </defs>
+    <g
+            id="layer1">
+        <rect
+                style="fill:url(#linearGradient7);"
+                id="rect5"
+                width="1400"
+                height="1400"
+                x="0"
+                y="0"
+                transform="0"/>
+        <circle
+                id="circle12"
+                cy="620"
+                cx="0"
+                r="400"
+                style="fill:#ffffff"/>
+
+        <text
+                y="18%"
+                text-anchor="middle"
+                dominant-baseline="middle"
+                style="font-size: 70; fill: #000000; font-family: Ubuntu;">
+            <tspan x="51.5%">gain freedom</tspan>
+        </text>
+        <text
+                y="18%"
+                text-anchor="middle"
+                dominant-baseline="middle"
+                style="font-size: 50; fill: #000000; font-family: Ubuntu;">
+            <tspan x="51.5%" dy="1.9em">from</tspan>
+            <tspan x="51.5%" dy="1.7em">social-media addiction</tspan>
+            <tspan x="51.5%" dy="1.2em">doom-scrolling &amp; procrastination</tspan>
+            <tspan x="51.5%" dy="2.2em">to focus on what really counts</tspan>
+        </text>
+
+    </g>
+</svg>
