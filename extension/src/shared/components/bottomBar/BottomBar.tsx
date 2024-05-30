@@ -1,13 +1,14 @@
 // @ts-expect-error
 import styles from "./BottomBar.module.scss";
 
-import { A, useLocation } from "@solidjs/router";
+import { A, useLocation, useNavigate } from "@solidjs/router";
 import { createEffect, createSignal } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   createEffect(() => {
     setIsOnDashboard(location.pathname === "/");
@@ -15,6 +16,8 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
 
   return (
     <div
+      onClick={() => !getIsOnDashboard() && navigate("/")}
+      style={!getIsOnDashboard() && "cursor: pointer;"}
       class={`${styles.bottomBarWrapper}  ${getIsOnDashboard() && styles.isOnDashboard} `}
     >
       {getIsOnDashboard() ? (
