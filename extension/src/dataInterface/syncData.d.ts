@@ -1,7 +1,7 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export interface UserCfg {
   isOnboardingComplete: boolean;

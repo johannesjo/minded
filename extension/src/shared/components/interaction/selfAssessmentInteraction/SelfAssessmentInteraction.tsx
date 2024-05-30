@@ -7,11 +7,14 @@ import {
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
 import { saveSelfAssessment } from "@src/dataInterface/commonSyncDataInterface";
+import { SyncData } from "@src/dataInterface/syncData";
+import { getSelfAssessmentQuestion } from "@src/shared/components/interaction/selfAssessmentInteraction/getSelfAssessmentQuestion";
 
 const SelfAssessmentInteraction = (props: {
   onSuccess: () => void;
   onSkip: () => void;
   onCancelCountdown: () => void;
+  syncData: SyncData;
 }): JSX.Element => {
   const [getSelectedQuestion, setSelectedQuestion] = createSignal(
     SELF_ASSESSMENT_QUESTIONS[0],
@@ -20,10 +23,7 @@ const SelfAssessmentInteraction = (props: {
     createSignal<SelfReflectionAnswerVal | null>(null);
 
   onMount(() => {
-    const randomIndex = Math.floor(
-      Math.random() * SELF_ASSESSMENT_QUESTIONS.length,
-    );
-    setSelectedQuestion(SELF_ASSESSMENT_QUESTIONS[randomIndex]);
+    setSelectedQuestion(getSelfAssessmentQuestion(props.syncData));
   });
 
   const handleSaveClick = async () => {

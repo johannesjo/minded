@@ -6,7 +6,7 @@ import {
   SELF_ASSESSMENT_ANSWERS,
   SELF_ASSESSMENT_QUESTIONS,
   SelfAssessmentId,
-} from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+} from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export interface SelfAssessmentEntryForDashboard extends SelfAssessmentEntry {
   selfAssessmentId: SelfAssessmentId;

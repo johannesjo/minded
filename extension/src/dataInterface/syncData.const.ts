@@ -2,7 +2,7 @@ import { SelfAssessmentEntry, StaticCfg, SyncData } from "./syncData";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export const DEFAULT_TS_VAL = 99;
 

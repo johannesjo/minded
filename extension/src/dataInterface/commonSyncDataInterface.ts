@@ -8,7 +8,7 @@ import {
   saveSyncDataN,
   // @ts-ignore
 } from "@dataInterface/syncDataInterface";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentRating/selfAssessment.model";
+import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
