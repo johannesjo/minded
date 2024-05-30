@@ -5,7 +5,10 @@ import {
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
-import { addWrapperClasses } from "@src/shared/addWrapperClasses";
+import {
+  addWrapperClasses,
+  setIsDarkModeIfApplies,
+} from "@src/shared/addWrapperClasses";
 import { SyncData } from "@src/dataInterface/syncData";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
@@ -21,6 +24,8 @@ const MainAndroid = () => {
   });
 
   const refresh = () => {
+    setIsDarkModeIfApplies();
+
     getSyncData().then((syncData: SyncData) => {
       setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
     });
