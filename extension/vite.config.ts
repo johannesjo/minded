@@ -67,12 +67,14 @@ export default defineConfig(({ mode }) => {
           },
         },
         publicDir,
-        // server: {
-        //   watch: {
-        //     usePolling: true,
-        //   },
-        //   hmr: true
-        // },
+        server: {
+          watch: {
+            usePolling: true,
+          },
+          hmr: {
+            clientPort: 5173,
+          },
+        },
         build: {
           outDir,
           sourcemap: true,
