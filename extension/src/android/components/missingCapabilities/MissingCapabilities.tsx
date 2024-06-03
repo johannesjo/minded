@@ -56,39 +56,33 @@ export const MissingCapabilityView = (props: {
           configured apps. For this to work you need to give permission to{" "}
           <em>minded</em>.
         </div>
-
-        <div
-          class="txtSlightlyBigger"
-          style="margin-top: 16px; margin-bottom: 32px;"
-        >
-          <strong>
-            <em>minded</em> does not collect any data! Everything stays on your
-            device!
-          </strong>
-        </div>
-
-        {getMissingCapabilities().includes("SystemAlertWindow") && (
-          <div class="card">
-            <p class={styles.permissionText + "  noRealClassMM"}>
-              To display overlays, <em>minded </em>needs the overlay permission.
-            </p>
-            <button
-              class="btnTxt"
-              onClick={() => onMissingCapabilityClick("SystemAlertWindow")}
-            >
-              Enable Overlay Permission
-            </button>
-          </div>
-        )}
-
+        {/*<div*/}
+        {/*  class="txtSlightlyBigger"*/}
+        {/*  style="margin-top: 16px; margin-bottom: 32px;"*/}
+        {/*>*/}
+        {/*  <strong>*/}
+        {/*    <em>minded</em> does not collect or send any kind of information!*/}
+        {/*  </strong>*/}
+        {/*</div>*/}
         {getMissingCapabilities().includes("Accessibility") && (
           <div class="card">
-            <p class={styles.permissionText + "  noRealClassMM"}>
-              The <em>minded</em> accessibility service is required to detect
-              app starts on your device, so <em>minded</em> knows when to
-              display the interaction overlay. Enabling the shortcut is{" "}
-              <strong>not</strong> required.
+            <p class={styles.permissionText}>
+              <em>minded</em> uses accessibility capabilities only to detect the
+              app that is currently in the foreground, so <em>minded</em> can
+              display its interaction overlay for the apps you configured.
             </p>
+            <p class={styles.permissionText}>
+              <strong>
+                <em>minded</em> does not collect or send any kind of
+                information!
+              </strong>
+            </p>
+            {/*<p class={styles.permissionText "}>*/}
+            {/*  <em>minded</em> does not collect any kind of information and does*/}
+            {/*  not send any kind of information.*/}
+            {/*Enabling the shortcut is{" "}*/}
+            {/*<strong>not</strong> required or recommended.*/}
+            {/*</p>*/}
             <button
               class="btnTxt"
               onClick={() => onMissingCapabilityClick("Accessibility")}
@@ -110,6 +104,20 @@ export const MissingCapabilityView = (props: {
                 </p>
               </>
             )}
+          </div>
+        )}
+        {getMissingCapabilities().includes("SystemAlertWindow") && (
+          <div class="card">
+            <p class={styles.permissionText}>
+              To display its overlays, <em>minded </em>needs the overlay
+              permission.
+            </p>
+            <button
+              class="btnTxt"
+              onClick={() => onMissingCapabilityClick("SystemAlertWindow")}
+            >
+              Enable Overlay Permission
+            </button>
           </div>
         )}
       </div>
