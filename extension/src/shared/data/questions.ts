@@ -166,7 +166,14 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isEveningCategory: true,
     dashboardTxt: "Today I learned",
-    questions: [{ id: QID.TIL1, t: "Today I learned...", prompt: "I learned" }],
+    questions: [
+      { id: QID.TIL1, t: "Today I learned...", prompt: "I learned" },
+      {
+        id: QID.TIL2,
+        t: "What did I learn about myself today",
+        prompt: "I learned",
+      },
+    ],
   },
   [QuestionCategoryId.RefocusHelperToday]: {
     isTodayOnlyCategory: true,
@@ -219,6 +226,11 @@ export const QUESTION_CATEGORIES: {
         t: "What exactly needs to be done in your current task",
         prompt: "First I",
       },
+      {
+        id: QID.RFHT10,
+        t: "What is one small step I can take today towards my long-term goals",
+        prompt: "",
+      },
       // {
       //   id: QID.RFHT11,
       //   t: "Are you setting realistic goals and deadlines and if not how can you improve",
@@ -239,6 +251,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.Gratitude]: {
     dashboardTxt: "Gratitude",
+    frequencyModifier: 1,
     questions: [
       {
         id: QID.GR1,
@@ -328,6 +341,16 @@ export const QUESTION_CATEGORIES: {
         id: QID.GT3,
         t: "What are you grateful for today",
         prompt: "I am grateful for",
+      },
+      {
+        id: QID.GT4,
+        t: "How did I show kindness to myself and others today",
+        prompt: "",
+      },
+      {
+        id: QID.GT5,
+        t: "What positive experiences did I have today, no matter how small",
+        prompt: "",
       },
     ],
     dashboardTxt: "Good Today",
@@ -509,12 +532,38 @@ export const QUESTION_CATEGORIES: {
         t: "What is something you want",
         prompt: "I want",
       },
+      {
+        id: QID.SD20,
+        t: "What am I really scared of",
+        prompt: "I am scared of",
+      },
+      {
+        id: QID.SD21,
+        t: "What might I need to let go of",
+        prompt: "I need to let go of",
+      },
+      {
+        id: QID.SD22,
+        t: "What are three words I would use to describe myself",
+        prompt: "",
+      },
+      {
+        id: QID.SD23,
+        t: "If this were the last day of my life, what would be my plans for today",
+        prompt: "",
+      },
+      {
+        id: QID.SD24,
+        t: "What activities make me lose track of time",
+        prompt: "",
+      },
     ],
   },
   [QuestionCategoryId.XXPurposeOfSession]: {
     dashboardTxt: "XXX",
     isTodayOnlyCategory: true,
     isDontSaveQuestion: true,
+    frequencyModifier: -1,
     questions: [
       {
         id: QID.XP1,
@@ -619,6 +668,7 @@ IDEAS:
 /*
 FOR LATER:
 What kind of person do I want to be today?
+What is one thing I can do tomorrow to be a better version of myself?
 What situations make me feel terrible, and what do they have in common?
 When am I at my best?
 If I change nothing, what will your life look like three months from now? How does this make me feel?

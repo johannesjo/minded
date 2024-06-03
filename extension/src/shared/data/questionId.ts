@@ -19,6 +19,7 @@ export enum QID {
   PR2 = "PR2",
 
   TIL1 = "TIL1",
+  TIL2 = "TIL2",
 
   RFHT1 = "RFHT1",
   RFHT2 = "RFHT2",
@@ -59,6 +60,8 @@ export enum QID {
   GT1 = "GT1",
   GT2 = "GT2",
   GT3 = "GT3",
+  GT4 = "GT4",
+  GT5 = "GT5",
 
   GP1 = "GP1",
   GP2 = "GP2",
@@ -114,6 +117,10 @@ export enum QID {
   SD19 = "SD19",
   SD20 = "SD20",
   SD21 = "SD21",
+  SD22 = "SD22",
+  SD23 = "SD23",
+  SD24 = "SD24",
+  SD25 = "SD25",
 
   XP1 = "XP1",
 }
