@@ -23,6 +23,8 @@ import deleteForeverSvg from "@assets/img/delete-forever.svg";
 import editSvg from "@assets/img/edit.svg";
 // @ts-expect-error
 import infoSvg from "@assets/img/info.svg";
+// @ts-expect-error
+import questionOverlaySvg from "@assets/img/question-overlay.svg";
 
 const ICO_MAP = {
   settings: settingsSvg,
@@ -37,6 +39,7 @@ const ICO_MAP = {
   deleteForever: deleteForeverSvg,
   edit: editSvg,
   info: infoSvg,
+  questionOverlay: questionOverlaySvg,
 } as const;
 
 export type IcoName = keyof typeof ICO_MAP;
