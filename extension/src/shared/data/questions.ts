@@ -457,7 +457,7 @@ export const QUESTION_CATEGORIES: {
     dashboardTxt: "Insomnia",
   },
   [QuestionCategoryId.SelfDiscovery]: {
-    frequencyModifier: 2,
+    frequencyModifier: 1,
     dashboardTxt: "Self Discovery",
     questions: [
       // { id: QID.SD1, t: "Are you using your time wisely" },
