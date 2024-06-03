@@ -23,12 +23,19 @@ import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/i
 // @ts-expect-error
 import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import {
+  ON_SHOW_INTERACTION_OVERLAY_EV,
+  REFRESH_DASHBOARD_EV,
+} from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 
+const SS_KEY = "dashboardGroupShown";
+
 export const DashboardGroups: (props: {
-  onQuestionCategorySelect?: (question: QuestionCategoryId) => void;
+  onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
 }) => JSX.Element = (props) => {
+  const [getIsAnimateEntrance, setIsAnimateEntrance] =
+    createSignal<boolean>(true);
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
@@ -50,19 +57,37 @@ export const DashboardGroups: (props: {
     });
   };
 
+  const unsetIsAnimateEntrance = () => {
+    setIsAnimateEntrance(false);
+  };
+
   onMount(() => {
+    setIsAnimateEntrance(!sessionStorage.getItem(SS_KEY));
+    sessionStorage.setItem(SS_KEY, Date.now().toString());
+
     refresh();
     window.addEventListener(REFRESH_DASHBOARD_EV, refresh);
+    window.addEventListener(
+      ON_SHOW_INTERACTION_OVERLAY_EV,
+      unsetIsAnimateEntrance,
+    );
   });
 
   onCleanup(() => {
     window.removeEventListener(REFRESH_DASHBOARD_EV, refresh);
+    window.removeEventListener(
+      ON_SHOW_INTERACTION_OVERLAY_EV,
+      unsetIsAnimateEntrance,
+    );
   });
 
   return (
     <div
       nr-of-items={getDashboardGroups().length}
-      class={styles.DashboardGroups}
+      classList={{
+        [styles.DashboardGroups]: true,
+        [styles.animateCenterEntry]: getIsAnimateEntrance(),
+      }}
     >
       {/* TODO refactor */}
       {/* eslint-disable-next-line solid/prefer-for */}

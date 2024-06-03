@@ -8,7 +8,10 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import {
+  ON_SHOW_INTERACTION_OVERLAY_EV,
+  REFRESH_DASHBOARD_EV,
+} from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
@@ -37,7 +40,11 @@ const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
     <>
       <main class={styles.contentWrapper}>{props.children}</main>
 
-      <BottomBar onShowQuestion={() => setIsShowQuestionOverlay(true)} />
+      <BottomBar
+        onShowQuestion={() => {
+          setIsShowQuestionOverlay(true);
+        }}
+      />
 
       {getIsShowQuestionOverlay() && (
         <InteractionOverlay

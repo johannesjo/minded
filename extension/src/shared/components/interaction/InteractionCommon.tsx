@@ -48,8 +48,8 @@ const ADVICE = getRndEntry(ACTION_ADVICES);
 const SUCCESS_SUN_ANI_IN_DURATION = 800;
 const SUCCESS_SUN_STAY_DURATION = 3600;
 const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
-const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 250;
-const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 100;
+const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 320;
+const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 300;
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
@@ -134,8 +134,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     if (props.isReducedSuccessSun) {
       successSunEl.style.animationDuration = `${SUCCESS_SUN_REDUCED_ANI_IN_DURATION}ms`;
-      await promiseTimeout(SUCCESS_SUN_REDUCED_ANI_IN_DURATION);
-      successSunSunEl.style.animationDuration = `0s`;
+      await promiseTimeout(50);
       successSunSunEl.style.animationFillMode = `forwards`;
       await fadeOut(props.wrapperEl, SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION)
         .promise;

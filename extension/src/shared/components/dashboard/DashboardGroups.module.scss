@@ -1,8 +1,8 @@
 @import "./../../../styles/mixins/_mixins.scss";
 @import "./../../../styles/variablesSCSS.scss";
 
+$aniDurQuick: .3s;
 $aniDur: 1.5s;
-$aniDelay: 1.5s;
 
 
 .DashboardGroups {
@@ -14,7 +14,6 @@ $aniDelay: 1.5s;
   left: 0;
   overflow: auto;
   padding-bottom: 72px;
-
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     display: grid;
@@ -157,14 +156,18 @@ $aniDelay: 1.5s;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
 
-      .box {
-        animation-delay: $aniDelay;
 
-        @media (min-width: $bpDashboardMoreThan2Col) {
-          &:nth-child(5) {
-            animation-delay: 0s !important;
-            animation-duration: $aniDelay + $aniDur;
-            animation-name: minded6622fadeInWithBackgroundForCard;
+      &.animateCenterEntry {
+        .box {
+          animation-duration: 2* $aniDur;
+          animation-name: minded6622fadeInAfterDelay;
+
+
+          @media (min-width: $bpDashboardMoreThan2Col) {
+            &:nth-child(5) {
+              animation-duration: 2* $aniDur;
+              animation-name: minded6622fadeInWithBackgroundForCard;
+            }
           }
         }
       }
@@ -176,7 +179,7 @@ $aniDelay: 1.5s;
 .box {
   position: relative;
   box-sizing: border-box;
-  animation-duration: .3s;
+  animation-duration: $aniDurQuick;
   // NOTE: padding leads to scrollbars
   @include standardPageTransitionIn();
   min-width: 0;
@@ -195,10 +198,7 @@ $aniDelay: 1.5s;
 
 
   @media (min-width: $bpDashboardMoreThan1Col) {
-    opacity: 0;
     animation: minded6622fadeIn ease $aniDur;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
 
     :global {
       animation-name: minded6622fadeIn;
@@ -323,6 +323,18 @@ $aniDelay: 1.5s;
   50% {
     opacity: 1;
     background: transparent;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes minded6622fadeInAfterDelay {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
   }
   100% {
     opacity: 1;

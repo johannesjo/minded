@@ -1,15 +1,20 @@
-import { JSX } from "solid-js";
+import { JSX, onMount } from "solid-js";
 import { fadeOut } from "@src/util/animation";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import styles from "./InteractionOverlay.module.scss";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
+import { ON_SHOW_INTERACTION_OVERLAY_EV } from "@src/ev.const";
 
 export const InteractionOverlay: (props: {
   onHideInteraction: () => void;
   onPossibleNewData: () => void;
 }) => JSX.Element = (props) => {
   let wrapperEl;
+
+  onMount(() => {
+    window.dispatchEvent(new Event(ON_SHOW_INTERACTION_OVERLAY_EV));
+  });
 
   return (
     <div
