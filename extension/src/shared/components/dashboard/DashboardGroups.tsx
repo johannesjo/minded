@@ -89,6 +89,26 @@ export const DashboardGroups: (props: {
         [styles.animateCenterEntry]: getIsAnimateEntrance(),
       }}
     >
+      {/*<div*/}
+      {/*  class="cardDashboard"*/}
+      {/*  style="border: 4px solid ;"*/}
+      {/*  classList={{*/}
+      {/*    ["cardDashboard"]: true,*/}
+      {/*    [styles.box]: true,*/}
+      {/*    [styles.centerItem]: true,*/}
+      {/*  }}*/}
+      {/*>*/}
+      {/*  <div class="dashboardContent">*/}
+      {/*    Answer some questions to reflect on your day!?*/}
+      {/*  </div>*/}
+      {/*  <div class="bnts" style="margin-top: 32px">*/}
+      {/*    <button class="btnTxt">let's go!</button>*/}
+      {/*    <button class="btnTxt" style="margin-left: 8px">*/}
+      {/*      Nah*/}
+      {/*    </button>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
+
       {/* TODO refactor */}
       {/* eslint-disable-next-line solid/prefer-for */}
 
