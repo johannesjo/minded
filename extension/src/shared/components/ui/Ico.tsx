@@ -25,6 +25,8 @@ import editSvg from "@assets/img/edit.svg";
 import infoSvg from "@assets/img/info.svg";
 // @ts-expect-error
 import questionOverlaySvg from "@assets/img/question-overlay.svg";
+// @ts-expect-error
+import checkSvg from "@assets/img/check.svg";
 
 const ICO_MAP = {
   settings: settingsSvg,
@@ -40,6 +42,7 @@ const ICO_MAP = {
   edit: editSvg,
   info: infoSvg,
   questionOverlay: questionOverlaySvg,
+  check: checkSvg,
 } as const;
 
 export type IcoName = keyof typeof ICO_MAP;
