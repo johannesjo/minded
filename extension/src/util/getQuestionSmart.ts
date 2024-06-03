@@ -22,6 +22,14 @@ const BOOST_FACTOR = 1;
 
 const FAKE_RULE_OUT_NR = 9999;
 
+/*
+What do I want to achieve?
+* questions should be asked in a way that they are not too repetitive
+* prioritized today question should have a much higher chance than others until they have at least X answers
+* if they have X answers they should appear less
+* categories with more questions should appear more often
+ */
+
 export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const now = new Date();
   const isWorkDayToday = isWorkDay(now);
@@ -31,59 +39,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     return getRndEntry(QUESTIONS_FOR_DEVICE);
   }
 
-  const map: { [key in QuestionCategoryId]?: number } = {};
-
-  Object.keys(QuestionCategoryId)
-    .filter(filterSpecialWidgets)
-    .forEach((categoryId: QuestionCategoryId) => {
-      const questionCategory = QUESTION_CATEGORIES[categoryId];
-
-      if (questionCategory?.questions?.length > 0) {
-        map[categoryId] = 0;
-      }
-
-      if (questionCategory?.frequencyModifier > 0) {
-        map[categoryId] = questionCategory.frequencyModifier * -1;
-      }
-
-      if (questionCategory.isMorningCategory) {
-        if (
-          nowHours < THRESHOLD_MORNING_START ||
-          nowHours > THRESHOLD_MORNING_END
-        ) {
-          map[categoryId] = FAKE_RULE_OUT_NR;
-        } else {
-          // boost when applicable
-          map[categoryId] = (map[categoryId] || 0) + BOOST_FACTOR * -1;
-        }
-      }
-      if (questionCategory.isEveningCategory) {
-        if (nowHours < THRESHOLD_EVENING_START) {
-          map[categoryId] = FAKE_RULE_OUT_NR;
-        } else {
-          // boost when applicable
-          map[categoryId] = (map[categoryId] || 0) + BOOST_FACTOR * -1;
-        }
-      }
-      if (questionCategory.isLateNightCategory) {
-        if (
-          nowHours < THRESHOLD_LATE_NIGHT_START ||
-          nowHours > THRESHOLD_LATE_NIGHT_END
-        ) {
-          map[categoryId] = FAKE_RULE_OUT_NR;
-        } else {
-          // boost when applicable
-          map[categoryId] = (map[categoryId] || 0) + BOOST_FACTOR * -1;
-        }
-      }
-      if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
-      }
-      if (isExcludedByLimitTo(questionCategory)) {
-        map[categoryId] = FAKE_RULE_OUT_NR;
-      }
-    });
-
+  const nrOfAnswersMap: { [key in QuestionCategoryId]?: number } = {};
   answers.forEach((answer) => {
     const categoryForAnswer = QUESTION_CATEGORIES[answer.questionCategoryId];
     if (!categoryForAnswer?.questions?.length) {
@@ -95,32 +51,107 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     if (categoryForAnswer.isThisWeekOnlyCategory && !isThisWeek(answer.ts)) {
       return;
     }
-    map[answer.questionCategoryId] = map[answer.questionCategoryId] + 1;
+    nrOfAnswersMap[answer.questionCategoryId] = nrOfAnswersMap[
+      answer.questionCategoryId
+    ]
+      ? nrOfAnswersMap[answer.questionCategoryId] + 1
+      : 1;
   });
 
-  const sortedEntries = Object.entries(map)
+  // NOTE: lower score is better
+  const pointsMap: { [key in QuestionCategoryId]?: number } = {};
+  Object.keys(QuestionCategoryId)
+    .filter(filterSpecialWidgets)
+    .forEach((categoryId: QuestionCategoryId) => {
+      const questionCategory = QUESTION_CATEGORIES[categoryId];
+
+      if (questionCategory?.questions?.length > 0) {
+        pointsMap[categoryId] = 0;
+      }
+
+      if (questionCategory?.frequencyModifier > 0) {
+        pointsMap[categoryId] = questionCategory.frequencyModifier * -1;
+      }
+
+      if (questionCategory.isMorningCategory) {
+        if (
+          nowHours < THRESHOLD_MORNING_START ||
+          nowHours > THRESHOLD_MORNING_END
+        ) {
+          pointsMap[categoryId] = FAKE_RULE_OUT_NR;
+        } else {
+          // boost when applicable
+          pointsMap[categoryId] =
+            (pointsMap[categoryId] || 0) + BOOST_FACTOR * -1;
+        }
+      }
+      if (questionCategory.isEveningCategory) {
+        if (nowHours < THRESHOLD_EVENING_START) {
+          pointsMap[categoryId] = FAKE_RULE_OUT_NR;
+        } else {
+          // boost when applicable
+          pointsMap[categoryId] =
+            (pointsMap[categoryId] || 0) + BOOST_FACTOR * -1;
+        }
+      }
+      if (questionCategory.isLateNightCategory) {
+        if (
+          nowHours < THRESHOLD_LATE_NIGHT_START ||
+          nowHours > THRESHOLD_LATE_NIGHT_END
+        ) {
+          pointsMap[categoryId] = FAKE_RULE_OUT_NR;
+        } else {
+          // boost when applicable
+          pointsMap[categoryId] =
+            (pointsMap[categoryId] || 0) + BOOST_FACTOR * -1;
+        }
+      }
+      if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
+        pointsMap[categoryId] = FAKE_RULE_OUT_NR;
+      }
+      if (isExcludedByLimitTo(questionCategory)) {
+        pointsMap[categoryId] = FAKE_RULE_OUT_NR;
+      }
+
+      const nrOfAnswersForCategory = nrOfAnswersMap[categoryId] || 0;
+      if (nrOfAnswersForCategory >= 3) {
+        pointsMap[categoryId] +=
+          1 +
+          (Math.round(
+            (nrOfAnswersForCategory / questionCategory?.questions?.length) * 10,
+          ) || 0);
+      } else if (nrOfAnswersForCategory > 1) {
+        pointsMap[categoryId] += nrOfAnswersForCategory;
+      }
+    });
+
+  const sortedEntries = Object.entries(pointsMap)
     .map(([catId, val]) => ({ catId, val }))
     .sort((a, b) => a.val - b.val);
 
-  // effectively translates to random categories between all categories with 0 answer or less
-  const scoreThreshold = Math.max(sortedEntries[0].val, 0);
-  const categoriesLowestScore = sortedEntries.filter(
+  const scoreThreshold = sortedEntries[0].val;
+  let categoriesLowestScore = sortedEntries.filter(
     (se) => se.val <= scoreThreshold,
   );
 
-  // give an additional 1/3 chance to get the question with the actual lowest score
-  const categoryToUse =
-    categoriesLowestScore.length >= 2 &&
-    categoriesLowestScore[0].val < categoriesLowestScore[1].val &&
-    isXIn1(1 / 3)
-      ? categoriesLowestScore[0].catId
-      : getRndEntry(categoriesLowestScore).catId;
-
+  // if there is only one category with the lowest score, then add a 40% chance for another category to be chosen
+  if (categoriesLowestScore.length === 1) {
+    if (isXIn1(0.4)) {
+      categoriesLowestScore = [
+        // next most likely entry has double the chance
+        sortedEntries[1],
+        sortedEntries[1],
+        sortedEntries[2],
+        sortedEntries[3],
+      ];
+    }
+  }
+  const categoryToUse = getRndEntry(categoriesLowestScore).catId;
   const questionsForCategory = QUESTIONS_FOR_DEVICE.filter(
     (q) => q.categoryId === categoryToUse,
   );
 
-  console.log("getQuestionSmart() map:", map);
+  console.log("getQuestionSmart() pointsMap:", pointsMap);
   console.log("getQuestionSmart():", {
     sortedEntries,
     scoreThreshold,
@@ -129,7 +160,6 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     questionsForCategory,
     isWorkDayToday,
   });
-  console.log(categoriesLowestScore);
 
   return getRndEntry(questionsForCategory);
 };
