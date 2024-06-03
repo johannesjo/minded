@@ -1,0 +1,46 @@
+import { createEffect, createSignal, For, JSX } from "solid-js";
+// @ts-ignore
+import styles from "./Stepper.module.scss";
+
+export const Stepper = (props: {
+  nrOfSteps: number;
+  activeStep: number;
+  onSetStep?: (step: number) => void;
+  labelFn?: (step: number) => string | number | undefined;
+}): JSX.Element => {
+  const [getStep, setStep] = createSignal<number>(props.activeStep);
+  const arr = Array.from({ length: props.nrOfSteps }, (_, i) => i);
+
+  createEffect(() => {
+    setStep(props.activeStep);
+  });
+
+  return (
+    <div class={styles.stepper}>
+      <For each={arr}>
+        {(step) => (
+          <div
+            onClick={() => {
+              if (step < getStep()) {
+                if (props.onSetStep) {
+                  props.onSetStep(step);
+                } else {
+                  setStep(step);
+                }
+              }
+            }}
+            class={`${styles.step} ${step === getStep() ? styles.active : ""} ${step < getStep() ? styles.done : ""}`}
+          >
+            {props.labelFn && props.labelFn(step) !== undefined
+              ? props.labelFn(step)
+              : step < getStep()
+                ? "✓"
+                : step + 1}
+          </div>
+        )}
+      </For>
+    </div>
+  );
+};
+
+export default Stepper;
