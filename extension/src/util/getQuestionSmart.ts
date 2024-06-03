@@ -69,7 +69,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
         pointsMap[categoryId] = 0;
       }
 
-      if (questionCategory?.frequencyModifier > 0) {
+      if (typeof questionCategory?.frequencyModifier === "number") {
         pointsMap[categoryId] = questionCategory.frequencyModifier * -1;
       }
 
@@ -120,7 +120,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
           (Math.round(
             (nrOfAnswersForCategory / questionCategory?.questions?.length) * 10,
           ) || 0);
-      } else if (nrOfAnswersForCategory > 1) {
+      } else if (nrOfAnswersForCategory >= 1) {
         pointsMap[categoryId] += nrOfAnswersForCategory;
       }
     });
@@ -153,6 +153,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
 
   console.log("getQuestionSmart() pointsMap:", pointsMap);
   console.log("getQuestionSmart():", {
+    pointsMap,
     sortedEntries,
     scoreThreshold,
     categoriesLowestScore,

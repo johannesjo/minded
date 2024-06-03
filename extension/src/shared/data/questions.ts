@@ -166,6 +166,7 @@ export const QUESTION_CATEGORIES: {
     isTodayOnlyCategory: true,
     isEveningCategory: true,
     dashboardTxt: "Today I learned",
+    frequencyModifier: -1,
     questions: [
       { id: QID.TIL1, t: "Today I learned...", prompt: "I learned" },
       {
