@@ -65,7 +65,7 @@ export const AnswerEntry: (props: {
         </div>
       )}
 
-      {true && !getIsEditMode() && (
+      {!getIsEditMode() && (
         <div class={styles.editBar}>
           <button class="btnIcoSmall" onClick={triggerEdit}>
             <Ico name="edit" />
@@ -97,7 +97,7 @@ export const AnswerEntry: (props: {
             onblur={() => {
               if (getIsEditMode()) {
                 props.onBlur?.();
-                if (getTitle() !== props.answer.val) {
+                if (getTitle().trim().length > 0) {
                   props.onEdit({
                     ...props.answer,
                     val: getTitle(),
@@ -109,6 +109,10 @@ export const AnswerEntry: (props: {
             maxlength={500}
             autofocus={true}
           />
+
+          <button class="btnIcoSmall" onClick={() => {}}>
+            <Ico name="check" />
+          </button>
         </div>
       )}
     </div>
