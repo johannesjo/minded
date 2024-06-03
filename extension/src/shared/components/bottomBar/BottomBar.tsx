@@ -29,7 +29,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
               props.onShowQuestion();
             }}
           >
-            <Ico name="askQuestion" />
+            <Ico name="questionOverlay" />
           </button>
           <A
             title="Give us somet feedback"
