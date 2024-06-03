@@ -1,0 +1,56 @@
+.stepper {
+  --spacing-medium: 16px;
+  --step-size: 52px;
+  --color-inactive: var(--btn-bg-not-selected);
+  --color-inactive: var(--btn-bg-selected);
+  --color-active: var(--btn-bg-selected);
+  --transition-speed: 0.3s;
+  --line-height: 3px;
+  --line-width: 32px;
+  --color-line: var(--btn-bg);
+
+  display: flex;
+  padding: var(--spacing-medium);
+  margin-top: auto;
+}
+
+.step {
+  color: var(--c-fg);
+  width: var(--step-size);
+  height: var(--step-size);
+  background-color: var(--color-inactive);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-speed);
+  position: relative;
+  opacity: .5;
+  cursor:  default;
+
+  &.active {
+    background-color: var(--color-active);
+    opacity: 1;
+    &::after{
+      opacity: .5;
+    }
+  }
+  &.done {
+    background-color: var(--color-active);
+    opacity: 1;
+    cursor: pointer;
+  }
+
+  &:not(:last-child) {
+    margin-right: calc(var(--line-width));
+  }
+
+  &:not(:last-child)::after {
+    content: "";
+    height: var(--line-height);
+    width: var(--line-width);
+    background-color: var(--color-line);
+    position: absolute;
+    left: 100%;
+  }
+}

@@ -1,10 +1,11 @@
-import { createEffect, createSignal, For, Match, Switch } from "solid-js";
+import { createEffect, createSignal, Match, Switch } from "solid-js";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { SettingsAndroid } from "@src/android/components/settingsAndroid/SettingsAndroid";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 // @ts-ignore
 import styles from "./OnboardingAndroid.module.scss";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
+import { Stepper } from "@src/shared/components/ui/Stepper";
 
 export const OnboardingAndroid = () => {
   const [getStep, setStep] = createSignal<number>(0);
@@ -81,20 +82,12 @@ export const OnboardingAndroid = () => {
         </Switch>
       </div>
 
-      <div class={styles.stepper}>
-        <For each={[0, 1, 2, 3]}>
-          {(step) => (
-            <div
-              class={`${styles.step} ${
-                step === getStep() ? styles.active : ""
-              }`}
-            >
-              {step <= 2 && step + 1}
-              {step === 3 && "☀"}
-            </div>
-          )}
-        </For>
-      </div>
+      <Stepper
+        nrOfSteps={4}
+        activeStep={getStep()}
+        onSetStep={(step) => setStep(step)}
+        labelFn={(step) => (step === 3 ? "☀" : undefined)}
+      />
     </div>
   );
 };
