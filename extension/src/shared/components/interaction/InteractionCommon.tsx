@@ -48,8 +48,8 @@ const ADVICE = getRndEntry(ACTION_ADVICES);
 const SUCCESS_SUN_ANI_IN_DURATION = 800;
 const SUCCESS_SUN_STAY_DURATION = 3600;
 const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
-const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 400;
-const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 200;
+const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 250;
+const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 100;
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
