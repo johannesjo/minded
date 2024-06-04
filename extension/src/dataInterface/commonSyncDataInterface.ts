@@ -147,7 +147,7 @@ export const setDailyQuestionsDoneForToday = async (
     ...syncData,
     ...(mode === "Morning"
       ? { dailyQuestionsMorningTS: dateTS }
-      : { dailyQuestionsMorningTS: dateTS }),
+      : { dailyQuestionsEveningTS: dateTS }),
   };
   console.log({ newSyncData });
 
