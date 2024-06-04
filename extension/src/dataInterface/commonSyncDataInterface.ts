@@ -9,6 +9,7 @@ import {
   // @ts-ignore
 } from "@dataInterface/syncDataInterface";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
+import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
@@ -134,6 +135,22 @@ export const rateCurrentBrowsingBehavior = async (
       [ds]: val,
     },
   };
+  return saveSyncData(newSyncData);
+};
+
+export const setDailyQuestionsDoneForToday = async (
+  mode: DailyQuestionsMode,
+  dateTS = Date.now(),
+): Promise<void> => {
+  const syncData = await getSyncData();
+  const newSyncData: SyncData = {
+    ...syncData,
+    ...(mode === "Morning"
+      ? { dailyQuestionsMorningTS: dateTS }
+      : { dailyQuestionsMorningTS: dateTS }),
+  };
+  console.log({ newSyncData });
+
   return saveSyncData(newSyncData);
 };
 
