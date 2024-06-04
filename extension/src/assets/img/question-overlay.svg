@@ -2,63 +2,53 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-        width="512"
-        height="512"
-        viewBox="0 0 512 512"
-        version="1.1"
-        id="svg1"
-        sodipodi:docname="question-overlay.svg"
-        inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
-        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-        xmlns="http://www.w3.org/2000/svg"
->
-    <defs
-            id="defs5"/>
-    <sodipodi:namedview
-            id="namedview5"
-            pagecolor="#ffffff"
-            bordercolor="#000000"
-            borderopacity="0.25"
-            inkscape:showpageshadow="2"
-            inkscape:pageopacity="0.0"
-            inkscape:pagecheckerboard="0"
-            inkscape:deskcolor="#d1d1d1"
-            inkscape:zoom="0.56214254"
-            inkscape:cx="482.08413"
-            inkscape:cy="587.03972"
-            inkscape:window-width="2560"
-            inkscape:window-height="1376"
-            inkscape:window-x="0"
-            inkscape:window-y="27"
-            inkscape:window-maximized="1"
-            inkscape:current-layer="svg1"/>
-    <!-- Large Sparkle -->
-    <polygon
-            fill="#111"
-            points="50,90 40,60 10,50 40,40 50,10 60,40 90,50 60,60 "
-            id="polygon1"
-            transform="matrix(1.8605557,0,0,1.951119,313.9698,19.24671)"/>
-    <polygon
-            fill="#111"
-            points="10,50 40,40 50,10 60,40 90,50 60,60 50,90 40,60 "
-            id="polygon1-56"
-            transform="matrix(1.6629696,0,0,1.584367,320.79711,328.02745)"/>
-    <polygon
-            fill="#111"
-            points="90,50 60,60 50,90 40,60 10,50 40,40 50,10 60,40 "
-            id="polygon1-5"
-            transform="matrix(3.1877344,0,0,3.2663465,96.613282,92.682675)"/>
-    <polygon
-            fill="#111"
-            points="50,10 60,40 90,50 60,60 50,90 40,60 10,50 40,40 "
-            id="polygon1-6"
-            transform="matrix(1.8498675,0,0,1.867731,26.15949,42.655652)"/>
-    <!-- Medium Sparkle -->
-    <!-- Small Sparkles -->
-    <polygon
-            fill="#111"
-            points="78,82 85,85 78,88 75,95 72,88 65,85 72,82 75,75 "
-            id="polygon3"
-            transform="matrix(5.2027763,0,0,5.6089164,-288.92412,-62.226574)"/>
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="question-overlay.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs5" />
+  <sodipodi:namedview
+     id="namedview5"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.8712882"
+     inkscape:cx="-180.19296"
+     inkscape:cy="-123.95439"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <!-- Large Sparkle -->
+  <polygon
+     fill="#111111"
+     points="40,40 50,10 60,40 90,50 60,60 50,90 40,60 10,50 "
+     id="polygon1-5"
+     transform="matrix(5.8410135,0,0,5.8452652,-36.050675,-36.26326)" />
+  <polygon
+     fill="#111111"
+     points="40,40 50,10 60,40 90,50 60,60 50,90 40,60 10,50 "
+     id="polygon1-6-6"
+     transform="matrix(2.0989403,0,0,2.119209,322.64272,299.0818)" />
+  <polygon
+     fill="#111111"
+     points="50,10 60,40 90,50 60,60 50,90 40,60 10,50 40,40 "
+     id="polygon1-6-6-5"
+     transform="matrix(2.0989403,0,0,2.119209,-20.505405,0.997302)" />
+  <!-- Medium Sparkle -->
+  <!-- Small Sparkles -->
 </svg>
