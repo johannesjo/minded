@@ -12,12 +12,15 @@ import {
 import { SyncData } from "@src/dataInterface/syncData";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
+import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
   const [getIsShowOnboarding, setIsShowOnboarding] = createSignal(false);
+  const [getIsShowMissingCapabilities, setIsShowMissingCapabilities] =
+    createSignal(false);
 
   onMount(() => {
     addWrapperClasses();
@@ -48,28 +51,29 @@ const MainAndroid = () => {
 
   return (
     <>
-      {getIsShowOnboarding() ? (
+      {getIsShowMissingCapabilities() ? (
+        <div id="minded-6622-coloured-wrapper" class="pageWrapper">
+          <MissingCapabilityView
+            onAllConfigured={() => setIsShowMissingCapabilities(false)}
+            onPermissionDenied={() => setIsShowMissingCapabilities(false)}
+          />
+        </div>
+      ) : getIsShowOnboarding() ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
           <OnboardingAndroid onGoDashboard={() => refresh()} />
         </div>
       ) : (
-        <>
-          <RoutesCmp></RoutesCmp>
-
+        <RoutesCmp>
           {getMissingCapabilities().length > 0 && (
             <div
-              onClick={() =>
-                androidInterface.onMissingCapabilityClick(
-                  getMissingCapabilities()[0],
-                )
-              }
+              onClick={() => setIsShowMissingCapabilities(true)}
               class="missingCapabilitiesMsg"
             >
-              <em>minded</em> is missing permissions for displaying its overlay
-              ({getMissingCapabilities()}). Click here to resolve!
+              <em>minded</em> is missing permissions to work properly. Click
+              here to resolve!
             </div>
           )}
-        </>
+        </RoutesCmp>
       )}
     </>
   );
