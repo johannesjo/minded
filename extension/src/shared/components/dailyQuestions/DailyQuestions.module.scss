@@ -1,3 +1,5 @@
+@import '../../../styles/mixins/mixins.scss';
+
 .wrapper {
 
   display: flex;
@@ -8,6 +10,7 @@
 }
 
 .interactionWrapper {
+  max-width: 100%;
   margin-top: auto;
 
   > * {
@@ -21,5 +24,13 @@
 
 .stepperWrapper {
   margin-top: auto;
-  margin-bottom: 32px;
+  margin-bottom: 8px;
+
+  @include onNonMobileScreens {
+    margin-bottom: 32px;
+  }
+}
+
+.haveAWonderfulDayMsg{
+  font-size: 16px;
 }

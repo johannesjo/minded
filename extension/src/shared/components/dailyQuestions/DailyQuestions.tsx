@@ -14,8 +14,11 @@ import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/Mood
 // @ts-ignore
 import styles from "./DailyQuestions.module.scss";
 import { getDailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+import { useNavigate } from "@solidjs/router";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 const DailyQuestions = () => {
+  const navigate = useNavigate();
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getStep, setStep] = createSignal(0);
 
@@ -40,7 +43,13 @@ const DailyQuestions = () => {
 
   // TODO answers
   return (
-    <div classList={{ [styles.wrapper]: true, pageTransitionIn: true }}>
+    <div
+      classList={{
+        [styles.wrapper]: true,
+        pageTransitionIn: true,
+        pageWrapper: true,
+      }}
+    >
       <div class={styles.interactionWrapper}>
         {mode === "DayStart" && (
           <Switch>
@@ -79,7 +88,16 @@ const DailyQuestions = () => {
             </Match>
             <Match when={getStep() === 3}>
               <div class="haveAWonderfulDayMsg">
-                That's all! Have a wonderful day today! 🌞
+                <div class="txtBig">
+                  That's all! Have a wonderful day today! 🌞
+                </div>
+                <button
+                  style="margin-top:32px;"
+                  class="btnTxt"
+                  onClick={() => navigate("/")}
+                >
+                  <Ico name="arrowBack" />
+                </button>
               </div>
             </Match>
           </Switch>
@@ -120,8 +138,17 @@ const DailyQuestions = () => {
             </Match>
             <Match when={getStep() === 3}>
               <div class="haveAWonderfulDayMsg">
-                That's all! Have a wonderful rest of the day and a refreshing
-                night!!
+                <div class="txtBig">
+                  That's all! Have a wonderful rest of the day and a refreshing
+                  night!! 🌙
+                </div>
+                <button
+                  style="margin-top:32px;"
+                  class="btnTxt"
+                  onClick={() => navigate("/")}
+                >
+                  <Ico name="arrowBack" />
+                </button>
               </div>
             </Match>
           </Switch>
@@ -134,7 +161,7 @@ const DailyQuestions = () => {
           activeStep={getStep()}
           isNoGoBack={true}
           onSetStep={(step) => setStep(step)}
-          labelFn={(step) => (step === 3 ? "☀" : undefined)}
+          labelFn={(step) => (step === 3 ? "🌞" : undefined)}
         />
       </div>
     </div>

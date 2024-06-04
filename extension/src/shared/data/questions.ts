@@ -229,7 +229,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT10,
-        t: "What is one small step I can take today towards my long-term goals",
+        t: "What is one small step I can take towards my long-term goals today",
         prompt: "",
       },
       // {
@@ -402,7 +402,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.GPT5,
-        t: "What kind of person do I want to be today",
+        t: "What kind of person do you want to be today",
       },
       {
         id: QID.GPT6,

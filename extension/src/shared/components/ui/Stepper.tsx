@@ -27,7 +27,7 @@ export const Stepper = (props: {
         {(step) => (
           <div
             onClick={() => {
-              if (props.isNoGoBack && step) {
+              if (props.isNoGoBack) {
                 return;
               }
 

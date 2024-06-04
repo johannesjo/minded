@@ -12,7 +12,13 @@
   display: flex;
   padding: var(--spacing-medium);
   margin-top: auto;
+
+  &.isNoGoBack .step {
+    cursor: default;
+  }
 }
+
+
 
 .step {
   color: var(--c-fg);
@@ -39,10 +45,6 @@
     background-color: var(--color-active);
     opacity: 1;
     cursor: pointer;
-
-    &.isNoGoBack {
-      cursor: default;
-    }
   }
 
   &:not(:last-child) {

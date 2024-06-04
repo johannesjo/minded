@@ -29,6 +29,7 @@ import {
 } from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { useNavigate } from "@solidjs/router";
+import dailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
 
 const SS_KEY = "dashboardGroupShown";
 
@@ -92,25 +93,22 @@ export const DashboardGroups: (props: {
       }}
     >
       <div
-        class="cardDashboard"
-        // style="border: 4px solid ;"
-        style="box-shadow: var(--btn-box-shadow);    background: var(--btn-bgXX); "
         classList={{
           ["cardDashboard"]: true,
           [styles.box]: true,
           [styles.centerItem]: true,
+          [styles.cardDailyQuestions]: true,
         }}
       >
-        <div class="dashboardContent">
-          Answer some questions to reflect on your day!?
+        <div class="txtSlightlyBigger">
+          {/*Answer some questions to reflect on your day!?*/}
+          Would you like some inspiration for the day?
         </div>
-        <div class="bnts" style="margin-top: 32px">
+        <div class={styles.cardDailyQuestionsBtns}>
           <button class="btnTxt" onClick={() => navigate("/dailyQuestions")}>
             let's go!
           </button>
-          <button class="btnTxt" style="margin-left: 8px">
-            Nah
-          </button>
+          <button class="btnTxt">no</button>
         </div>
       </div>
 
