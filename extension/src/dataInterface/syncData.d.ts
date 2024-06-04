@@ -36,6 +36,8 @@ export interface SyncData {
   moodCheckAdditional: string;
   energyLvlTS: number;
   energyLvlVal: number;
+  dailyQuestionsMorningTS: number;
+  dailyQuestionsEveningTS: number;
 
   sunTaps: {
     [key: string]: number;

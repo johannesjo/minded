@@ -6,6 +6,7 @@ export const Stepper = (props: {
   nrOfSteps: number;
   activeStep: number;
   onSetStep?: (step: number) => void;
+  isNoGoBack?: boolean;
   labelFn?: (step: number) => string | number | undefined;
 }): JSX.Element => {
   const [getStep, setStep] = createSignal<number>(props.activeStep);
@@ -16,11 +17,20 @@ export const Stepper = (props: {
   });
 
   return (
-    <div class={styles.stepper}>
+    <div
+      classList={{
+        [styles.stepper]: true,
+        [styles.isNoGoBack]: props.isNoGoBack,
+      }}
+    >
       <For each={arr}>
         {(step) => (
           <div
             onClick={() => {
+              if (props.isNoGoBack && step) {
+                return;
+              }
+
               if (step < getStep()) {
                 if (props.onSetStep) {
                   props.onSetStep(step);

@@ -1,0 +1,25 @@
+.wrapper {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+.interactionWrapper {
+  margin-top: auto;
+
+  > * {
+    animation: 1s;
+
+    :global {
+      animation-name: minded6622fadeIn;
+    }
+  }
+}
+
+.stepperWrapper {
+  margin-top: auto;
+  margin-bottom: 32px;
+}

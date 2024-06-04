@@ -42,6 +42,8 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   lastAppUsageRatingTS: DEFAULT_TS_VAL,
   energyLvlVal: 0,
   energyLvlTS: DEFAULT_TS_VAL,
+  dailyQuestionsMorningTS: DEFAULT_TS_VAL,
+  dailyQuestionsEveningTS: DEFAULT_TS_VAL,
   answers: [],
   attempts: {},
   sunTaps: {},
