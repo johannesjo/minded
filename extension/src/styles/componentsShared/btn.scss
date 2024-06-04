@@ -38,6 +38,13 @@
   }
 }
 
+//.btnTxtSlightlySmaller {
+//  &,
+//  #minded-6622 & {
+//    @include btnTxtSlightlySmaller();
+//  }
+//}
+
 .btnToggleSelect {
   @include btnToggleSelect();
 }

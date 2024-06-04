@@ -125,6 +125,17 @@
     margin-bottom: 2px;
   }
 }
+//@mixin btnTxtSlightlySmaller() {
+//  @include btnBase(var(--btn-slightly-smaller));
+//  padding: 0 16px;
+//  font-weight: 300;
+//
+//  .minded-6622-ico {
+//    opacity: var(--btn-opacity);
+//    margin-bottom: 2px;
+//  }
+//  font-size: var(--fz-m);
+//}
 
 @mixin btnToggleSelect() {
   @include btnTxt;

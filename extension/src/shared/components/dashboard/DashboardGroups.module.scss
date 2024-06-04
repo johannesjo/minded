@@ -321,9 +321,16 @@ $aniDur: 1.5s;
   border: 6px solid var(--dashboard-card-bg-hover);
   padding-left: 16px;
   padding-right: 16px;
+  transition: all 0.2s ease-out;
 
   @media (max-width: $bpDashboardMoreThan2ColMax) {
     grid-column: 1 / -1;
+  }
+
+  &.isBeingRemoved {
+    animation: none !important;
+    opacity: 0.3 !important;
+    transform: scale(0.01);
   }
 }
 
