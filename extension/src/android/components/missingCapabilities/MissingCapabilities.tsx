@@ -81,6 +81,7 @@ export const MissingCapabilityView = (props: {
             {/*<p class={styles.permissionText "}>*/}
             {/*  <em>minded</em> does not collect any kind of information and does*/}
             {/*  not send any kind of information.*/}
+
             {/*Enabling the shortcut is{" "}*/}
             {/*<strong>not</strong> required or recommended.*/}
             {/*</p>*/}
@@ -124,10 +125,10 @@ export const MissingCapabilityView = (props: {
 
         <button
           style="margin-top:  32px"
-          class="btnTxt"
+          class="btnTxtOutline"
           onClick={() => props.onPermissionDenied?.()}
         >
-          <Ico name="close" /> Don't give permission
+          <Ico name="close" /> don't give permission
         </button>
       </div>
     </div>
