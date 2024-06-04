@@ -29,15 +29,24 @@ import {
 } from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { useNavigate } from "@solidjs/router";
-import dailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
 
 const SS_KEY = "dashboardGroupShown";
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
 }) => JSX.Element = (props) => {
+  let t0;
   const [getIsAnimateEntrance, setIsAnimateEntrance] =
     createSignal<boolean>(true);
+
+  const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
+    createSignal<boolean>(true);
+
+  const [
+    getIsDailyQuestionsBannerBeingRemoved,
+    setIsDailyQuestionsBannerBeingRemoved,
+  ] = createSignal<boolean>(false);
+
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
@@ -82,7 +91,16 @@ export const DashboardGroups: (props: {
       ON_SHOW_INTERACTION_OVERLAY_EV,
       unsetIsAnimateEntrance,
     );
+    window.clearTimeout(t0);
   });
+
+  const removeDailyQuestionsBanner = () => {
+    setIsDailyQuestionsBannerBeingRemoved(true);
+    window.clearTimeout(t0);
+    t0 = setTimeout(() => {
+      setIsShowDailyQuestionsBanner(false);
+    }, 300);
+  };
 
   return (
     <div
@@ -92,28 +110,30 @@ export const DashboardGroups: (props: {
         [styles.animateCenterEntry]: getIsAnimateEntrance(),
       }}
     >
-      <div
-        classList={{
-          ["cardDashboard"]: true,
-          [styles.box]: true,
-          [styles.centerItem]: true,
-          [styles.cardDailyQuestions]: true,
-        }}
-      >
-        <div class="txtSlightlyBigger">
-          {/*Answer some questions to reflect on your day!?*/}
-          Would you like some inspiration for the day?
+      {getIsShowDailyQuestionsBanner() && (
+        <div
+          classList={{
+            ["cardDashboard"]: true,
+            [styles.box]: true,
+            [styles.centerItem]: true,
+            [styles.cardDailyQuestions]: true,
+            [styles.isBeingRemoved]: getIsDailyQuestionsBannerBeingRemoved(),
+          }}
+        >
+          <div class="txtSlightlyBigger">
+            {/*Answer some questions to reflect on your day!?*/}
+            Would you like some inspiration for your day?
+          </div>
+          <div class={styles.cardDailyQuestionsBtns}>
+            <button class="btnTxt" onClick={() => navigate("/dailyQuestions")}>
+              let's go!
+            </button>
+            <button class="btnTxt" onClick={() => removeDailyQuestionsBanner()}>
+              no
+            </button>
+          </div>
         </div>
-        <div class={styles.cardDailyQuestionsBtns}>
-          <button class="btnTxt" onClick={() => navigate("/dailyQuestions")}>
-            let's go!
-          </button>
-          <button class="btnTxt">no</button>
-        </div>
-      </div>
-
-      {/* TODO refactor */}
-      {/* eslint-disable-next-line solid/prefer-for */}
+      )}
 
       <For each={getDashboardGroups()}>
         {(dg) => (
