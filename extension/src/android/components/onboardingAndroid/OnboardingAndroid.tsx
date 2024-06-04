@@ -86,7 +86,7 @@ export const OnboardingAndroid = () => {
         nrOfSteps={4}
         activeStep={getStep()}
         onSetStep={(step) => setStep(step)}
-        labelFn={(step) => (step === 3 ? "☀" : undefined)}
+        labelFn={(step) => (step === 3 ? "🌞" : undefined)}
       />
     </div>
   );

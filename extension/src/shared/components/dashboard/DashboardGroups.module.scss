@@ -315,6 +315,31 @@ $aniDur: 1.5s;
 }
 
 
+.cardDailyQuestions {
+  //box-shadow: var(--btn-box-shadow);
+  //background: #fff !important;
+  border: 6px solid var(--dashboard-card-bg-hover);
+  padding-left: 16px;
+  padding-right: 16px;
+
+  @media (max-width: $bpDashboardMoreThan2ColMax) {
+    grid-column: 1 / -1;
+  }
+}
+
+.cardDailyQuestionsBtns {
+  margin-top: 24px;
+
+
+  button {
+    margin-left: 16px;
+
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+}
+
 @keyframes minded6622fadeInWithBackgroundForCard {
   0% {
     opacity: 0;
