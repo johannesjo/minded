@@ -16,6 +16,7 @@ import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/Se
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
+import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
 
 const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -74,6 +75,7 @@ const RoutesCmp = () => {
         )}
         {!IS_ANDROID && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
+        <Route path="/dailyQuestions" component={DailyQuestions} />
       </HashRouter>
     </div>
   );
