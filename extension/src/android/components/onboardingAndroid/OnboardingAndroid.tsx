@@ -7,8 +7,10 @@ import styles from "./OnboardingAndroid.module.scss";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import { Stepper } from "@src/shared/components/ui/Stepper";
 
-export const OnboardingAndroid = () => {
+export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
   const [getStep, setStep] = createSignal<number>(0);
+  const [getPermissionNotGiven, setPermissionNotGiven] =
+    createSignal<boolean>(false);
 
   createEffect(() => {
     if (getStep() === 3) {
@@ -27,8 +29,8 @@ export const OnboardingAndroid = () => {
               </div>
               <div class="txtSlightlyBigger">
                 <p>
-                  <em>minded</em> will help you to reduce your usage of apps you
-                  intend to use less, but have a hard time doing so.
+                  <em>minded</em> will help you to reduce the usage of apps that
+                  you aim to use less frequently, but struggle to do so.
                 </p>
                 <p>
                   Before we can start there are some small things we need to set
@@ -55,29 +57,65 @@ export const OnboardingAndroid = () => {
           </Match>
           <Match when={getStep() === 2}>
             <div class="pageWrapper pageTransitionIn">
-              <MissingCapabilityView onAllConfigured={() => setStep(3)} />
+              <MissingCapabilityView
+                onAllConfigured={() => {
+                  setStep(3);
+                  setPermissionNotGiven(false);
+                }}
+                onPermissionDenied={() => {
+                  setStep(3);
+                  setPermissionNotGiven(true);
+                }}
+              />
             </div>
           </Match>
           <Match when={getStep() >= 3}>
-            <div class="card pageTransitionIn" style="margin: 32px;">
-              <div class="h2">
-                <em>minded</em> is now successfully configured! 🎉
+            {getPermissionNotGiven() ? (
+              <div class="card pageTransitionIn" style="margin: 32px;">
+                <div class="h2">
+                  <em>minded</em> is not completely configured 🙁
+                </div>
+                <p>
+                  You did not configure all the permissions needed. You might
+                  still be able to get some value out of <em>minded</em>, but it
+                  will <strong>not work as intended</strong>.
+                </p>
+                <div style="margin-top: 32px;">
+                  <button
+                    class="btnTxt"
+                    onClick={() => {
+                      setStep(2);
+                      setPermissionNotGiven(false);
+                    }}
+                  >
+                    back
+                  </button>
+                  <button
+                    class="btnTxt"
+                    onClick={() => props.onGoDashboard()}
+                    style="margin-left: 16px;"
+                  >
+                    continue anyway
+                  </button>
+                </div>
               </div>
-              <p>
-                Whenever you open one of the apps you configured a short
-                interaction prompt will appear.
-              </p>
-              <p>
-                This will help you break your automatic patterns to use those
-                apps more often than you like.
-              </p>
+            ) : (
+              <div class="card pageTransitionIn" style="margin: 32px;">
+                <div class="h2">
+                  <em>minded</em> is now successfully configured! 🎉
+                </div>
+                <p>
+                  Whenever you open one of the apps you configured a short
+                  interaction prompt will appear.
+                </p>
+                <p>
+                  This will help you break your automatic patterns to use those
+                  apps more often than you like.
+                </p>
 
-              <p>Come back here, once you answered a couple of those.</p>
-              {/*<ButtonWrapper isVisible={true}>*/}
-              {/*  <div class="btnTxtBig"*/}
-              {/*       onClick={() => setStep(0)}>Let's start!</div>*/}
-              {/*</ButtonWrapper>*/}
-            </div>
+                <p>Come back here, once you answered a couple of those.</p>
+              </div>
+            )}
           </Match>
         </Switch>
       </div>
@@ -86,7 +124,9 @@ export const OnboardingAndroid = () => {
         nrOfSteps={4}
         activeStep={getStep()}
         onSetStep={(step) => setStep(step)}
-        labelFn={(step) => (step === 3 ? "🌞" : undefined)}
+        labelFn={(step) =>
+          step === 3 ? (getPermissionNotGiven() ? "🙁" : "🌞") : undefined
+        }
       />
     </div>
   );
