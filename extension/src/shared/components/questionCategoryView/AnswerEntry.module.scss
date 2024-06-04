@@ -27,7 +27,12 @@
   //align-items: center;
   //flex-direction: column;
   text-align: left;
+  padding-bottom: 16px;
+}
 
+.createdAt {
+  opacity: .5;
+  font-size: var(--fz-s);
 }
 
 .question {

@@ -52,17 +52,21 @@ export const AnswerEntry: (props: {
       {question && <div class={styles.question}>{question.t}?</div>}
 
       {!getIsEditMode() && (
-        <div
-          class={styles.answer}
-          title={
-            "Created on " +
-            new Date(props.answer.ts).toLocaleDateString() +
-            " – " +
-            new Date(props.answer.ts).toLocaleTimeString()
-          }
-        >
-          {props.answer.val.toString()}
-        </div>
+        <>
+          <div class={styles.answer}>{props.answer.val.toString()}</div>
+
+          <div
+            class={styles.createdAt}
+            title={
+              "Created on " +
+              new Date(props.answer.ts).toLocaleDateString() +
+              " – " +
+              new Date(props.answer.ts).toLocaleTimeString()
+            }
+          >
+            {new Date(props.answer.ts).toLocaleDateString()}
+          </div>
+        </>
       )}
 
       {!getIsEditMode() && (
