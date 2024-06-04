@@ -8,15 +8,13 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import {
-  ON_SHOW_INTERACTION_OVERLAY_EV,
-  REFRESH_DASHBOARD_EV,
-} from "@src/ev.const";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 
 const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -61,9 +59,18 @@ const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   );
 };
 
-const RoutesCmp = () => {
+const RoutesCmp = (props: { children: JSX.Element }) => {
   return (
     <div id="minded-6622-coloured-wrapper" class={styles.mainWrapper}>
+      {props.children}
+      {/*<div*/}
+      {/*  class="missingCapabilitiesMsg"*/}
+      {/*  style="border: 2px solid red; min-height: 100px"*/}
+      {/*>*/}
+      {/*  <em>minded</em> is missing permissions to work properly. Click here to*/}
+      {/*  resolve!*/}
+      {/*</div>*/}
+
       <HashRouter root={MainWrapper as any}>
         <Route path="*" component={Dashboard} />
         <Route
