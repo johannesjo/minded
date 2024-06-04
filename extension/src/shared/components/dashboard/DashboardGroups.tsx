@@ -140,7 +140,7 @@ export const DashboardGroups: (props: {
               let's go!
             </button>
             <button class="btnTxt" onClick={() => removeDailyQuestionsBanner()}>
-              no
+              nah
             </button>
           </div>
         </div>
