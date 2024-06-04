@@ -9,7 +9,10 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import { Question } from "@src/shared/components/interaction/Question";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Answer } from "@src/dataInterface/syncData";
-import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
+import {
+  getSyncData,
+  setDailyQuestionsDoneForToday,
+} from "@src/dataInterface/commonSyncDataInterface";
 import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 // @ts-ignore
 import styles from "./DailyQuestions.module.scss";
@@ -41,6 +44,10 @@ const DailyQuestions = () => {
     });
   });
 
+  const onSuccess = () => {
+    setDailyQuestionsDoneForToday(mode);
+  };
+
   // TODO answers
   return (
     <div
@@ -51,7 +58,7 @@ const DailyQuestions = () => {
       }}
     >
       <div class={styles.interactionWrapper}>
-        {mode === "DayStart" && (
+        {mode === "Morning" && (
           <Switch>
             <Match when={getStep() === 0}>
               <EnergyLvlInteraction
@@ -80,7 +87,10 @@ const DailyQuestions = () => {
                   QuestionCategoryId.GoodPlansToday,
                 )}
                 answers={getAnswers()}
-                onSuccess={() => setStep(3)}
+                onSuccess={() => {
+                  onSuccess();
+                  setStep(3);
+                }}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}
@@ -103,7 +113,7 @@ const DailyQuestions = () => {
           </Switch>
         )}
 
-        {mode === "DayEnd" && (
+        {mode === "Evening" && (
           <Switch>
             <Match when={getStep() === 0}>
               <MoodCheckin
@@ -130,7 +140,10 @@ const DailyQuestions = () => {
                   QuestionCategoryId.TodayILearned,
                 )}
                 answers={getAnswers()}
-                onSuccess={() => setStep(3)}
+                onSuccess={() => {
+                  onSuccess();
+                  setStep(3);
+                }}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}

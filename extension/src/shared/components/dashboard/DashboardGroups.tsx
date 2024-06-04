@@ -9,7 +9,10 @@ import {
   DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
-import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
+import {
+  getSyncData,
+  setDailyQuestionsDoneForToday,
+} from "@src/dataInterface/commonSyncDataInterface";
 import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 // @ts-expect-error
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
@@ -29,6 +32,10 @@ import {
 } from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { useNavigate } from "@solidjs/router";
+import {
+  getDailyQuestionsMode,
+  isShowDailyQuestionsBanner,
+} from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 
 const SS_KEY = "dashboardGroupShown";
 
@@ -40,7 +47,7 @@ export const DashboardGroups: (props: {
     createSignal<boolean>(true);
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
-    createSignal<boolean>(true);
+    createSignal<boolean>(false);
 
   const [
     getIsDailyQuestionsBannerBeingRemoved,
@@ -55,6 +62,8 @@ export const DashboardGroups: (props: {
   const refresh = () => {
     console.log("REFRESH DASHBOARD");
     getSyncData().then((syncData) => {
+      setIsShowDailyQuestionsBanner(isShowDailyQuestionsBanner(syncData));
+
       const existingDashboardGroups = getDashboardGroups();
       if (existingDashboardGroups) {
         const upd = updateDashboardEntriesFromQuestions(
@@ -96,6 +105,7 @@ export const DashboardGroups: (props: {
 
   const removeDailyQuestionsBanner = () => {
     setIsDailyQuestionsBannerBeingRemoved(true);
+    setDailyQuestionsDoneForToday(getDailyQuestionsMode());
     window.clearTimeout(t0);
     t0 = setTimeout(() => {
       setIsShowDailyQuestionsBanner(false);
@@ -121,8 +131,9 @@ export const DashboardGroups: (props: {
           }}
         >
           <div class="txtSlightlyBigger">
-            {/*Answer some questions to reflect on your day!?*/}
-            Would you like some inspiration for your day?
+            {getDailyQuestionsMode() === "Morning"
+              ? "Would you like some inspiration for your day?"
+              : "Would you like to reflect on your day?"}
           </div>
           <div class={styles.cardDailyQuestionsBtns}>
             <button class="btnTxt" onClick={() => navigate("/dailyQuestions")}>
