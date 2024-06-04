@@ -6,9 +6,11 @@ import {
   ANDROID_EV_RESUME,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const MissingCapabilityView = (props: {
   onAllConfigured?: () => void;
+  onPermissionDenied?: () => void;
 }) => {
   const [getIsShowManualInstructions, setIsShowManualInstructions] =
     createSignal<boolean>(false);
@@ -53,8 +55,7 @@ export const MissingCapabilityView = (props: {
       <div class={styles.innerContainer}>
         <div class="txtSlightlyBigger">
           <em>minded</em> displays an overlay when you open one of the
-          configured apps. For this to work you need to give permission to{" "}
-          <em>minded</em>.
+          configured apps. For this to work you need to give us permission.
         </div>
         {/*<div*/}
         {/*  class="txtSlightlyBigger"*/}
@@ -120,6 +121,14 @@ export const MissingCapabilityView = (props: {
             </button>
           </div>
         )}
+
+        <button
+          style="margin-top:  32px"
+          class="btnTxt"
+          onClick={() => props.onPermissionDenied?.()}
+        >
+          <Ico name="close" /> Don't give permission
+        </button>
       </div>
     </div>
   );

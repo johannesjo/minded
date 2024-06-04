@@ -50,7 +50,7 @@ const MainAndroid = () => {
     <>
       {getIsShowOnboarding() ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
-          <OnboardingAndroid />
+          <OnboardingAndroid onGoDashboard={() => refresh()} />
         </div>
       ) : (
         <>
