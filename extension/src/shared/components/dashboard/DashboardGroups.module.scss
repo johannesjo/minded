@@ -318,13 +318,16 @@ $aniDur: 1.5s;
 .cardDailyQuestions {
   //box-shadow: var(--btn-box-shadow);
   //background: #fff !important;
-  border: 6px solid var(--dashboard-card-bg-hover);
-  padding-left: 16px;
-  padding-right: 16px;
-  transition: all 0.2s ease-out;
+  //border: 3px solid var(--dashboard-card-bg-hover);
+  //padding-left: 24px !important;
+  //padding-right: 24px !important;
+  //transition: all 0.2s ease-out;
+  //background: transparent !important;
 
   @media (max-width: $bpDashboardMoreThan2ColMax) {
     grid-column: 1 / -1;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 
   &.isBeingRemoved {
