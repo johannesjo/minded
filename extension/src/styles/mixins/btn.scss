@@ -115,6 +115,12 @@
   }
 }
 
+@mixin btnTxtOutline() {
+  @include btnTxt;
+  background: none !important;
+  border: 1px solid var(--c-fg);
+}
+
 @mixin btnTxtBigger() {
   @include btnBase(var(--btn-height-bigger));
   padding: 0 20px;

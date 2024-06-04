@@ -38,6 +38,13 @@
   }
 }
 
+.btnTxtOutline {
+  &,
+  #minded-6622 & {
+    @include btnTxtOutline();
+  }
+}
+
 //.btnTxtSlightlySmaller {
 //  &,
 //  #minded-6622 & {

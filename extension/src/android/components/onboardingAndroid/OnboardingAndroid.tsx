@@ -77,8 +77,8 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
                 </div>
                 <p>
                   You did not configure all the permissions needed. You might
-                  still be able to get some value out of <em>minded</em>, but it
-                  will <strong>not work as intended</strong>.
+                  still be able to use <em>minded</em>, but it will{" "}
+                  <strong>not work as intended</strong>.
                 </p>
                 <div style="margin-top: 32px;">
                   <button
