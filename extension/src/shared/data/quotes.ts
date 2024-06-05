@@ -21,4 +21,8 @@ export const QUOTES: Quote[] = [
   {
     txt: "Take breaks! They help you clear your mind and make you almost always more productive in the long run. Go! Take a walk!",
   },
+  {
+    author: "Seth Godin",
+    txt: "You don't need more time in your day. You need to decide.",
+  },
 ];
