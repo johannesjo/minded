@@ -28,6 +28,7 @@
   --btn-bg: #fff;
   --btn-bg-not-selected: rgba(255, 255, 255, .25);
   --btn-bg-selected: rgba(255, 255, 255, 1);
+  --btn-outline-color: rgba(0, 0, 0, .1);
   --btn-bg-selectable-hover: rgba(255, 255, 255, .7);
   --btn-selected-scale: 1.1;
   --btn-box-shadow: 0 0 30px 10px  rgba(255, 255, 255, .9);
@@ -108,6 +109,7 @@
     --btn-bg-selected: rgba(0, 0, 0, 1);
     --btn-bg-selectable-hover: rgba(0, 0, 0, .2);
     --btn-bg-not-selected: rgba(0, 0, 0, .25);
+    --btn-outline-color: rgba(255, 255, 255, .3);
     //--btn-box-shadow: 0 0 10px 1px  rgba(255, 255, 255, .8);
     --btn-box-shadow: 0 0 10px 1px rgba(250, 104, 203, 0.8);
   }

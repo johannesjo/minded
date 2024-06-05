@@ -136,10 +136,16 @@ export const DashboardGroups: (props: {
               : "Would you like to reflect on your day?"}
           </div>
           <div class={styles.cardDailyQuestionsBtns}>
-            <button class="btnTxt" onClick={() => navigate("/dailyQuestions")}>
+            <button
+              class="btnTxtOutline"
+              onClick={() => navigate("/dailyQuestions")}
+            >
               let's go!
             </button>
-            <button class="btnTxt" onClick={() => removeDailyQuestionsBanner()}>
+            <button
+              class="btnTxtOutline"
+              onClick={() => removeDailyQuestionsBanner()}
+            >
               nah
             </button>
           </div>
