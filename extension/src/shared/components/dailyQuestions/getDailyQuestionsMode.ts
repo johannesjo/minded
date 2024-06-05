@@ -22,6 +22,7 @@ export const isShowDailyQuestionsBanner = (syncData: SyncData): boolean => {
   //   syncData.dailyQuestionsMorningTS,
   //   syncData.dailyQuestionsEveningTS,
   //   isToday(syncData.dailyQuestionsMorningTS),
+
   //   getDailyQuestionsMode() === "Morning"
   //     ? !isToday(syncData.dailyQuestionsMorningTS) &&
   //         hour < DAILY_QUESTION_MORNING_END &&
