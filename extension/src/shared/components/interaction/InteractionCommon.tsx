@@ -19,13 +19,11 @@ import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
-import { fadeOut, promiseTimeout } from "@src/util/animation";
+import { fadeOut } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
-import { IS_TOUCH_PRIMARY } from "@src/util/touch";
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
 import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
+import SuccessSun from "@src/shared/components/successSun/SuccessSun";
 
 interface InteractionCommonProps {
   isReducedSuccessSun?: boolean;
@@ -44,13 +42,6 @@ interface InteractionCommonProps {
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
-// NOTE: ani in needs to match css value for smoothness
-const SUCCESS_SUN_ANI_IN_DURATION = 800;
-const SUCCESS_SUN_STAY_DURATION = 3600;
-const SUCCESS_SUN_ANI_FADE_OUT_DURATION = 1600;
-const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 320;
-const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 300;
-
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
@@ -60,8 +51,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     QuestionForPrompt | undefined
   >();
 
-  let successSunEl;
-  let successSunSunEl;
   let frameNr;
 
   let isSuccessSunTapped = false;
@@ -102,7 +91,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     props.onInteractionSubmitted?.();
     cancelCountdown();
-    showSuccessSunAniFlow();
+    setIsShowSuccessSun(true);
 
     console.log("answerOrData", answerOrData);
     if (answerOrData) {
@@ -124,37 +113,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
-  const showSuccessSunAniFlow = async () => {
-    // wait for keyboard to close on android
-    if (IS_ANDROID) {
-      window.focus();
-      await promiseTimeout(100);
-    }
-    setIsShowSuccessSun(true);
-
-    if (props.isReducedSuccessSun) {
-      successSunEl.style.animationDuration = `${SUCCESS_SUN_REDUCED_ANI_IN_DURATION}ms`;
-      await promiseTimeout(50);
-      successSunSunEl.style.animationFillMode = `forwards`;
-      await fadeOut(props.wrapperEl, SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION)
-        .promise;
-    } else {
-      // wait for sun
-      successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
-      await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
-      successSunSunEl.style.animation = `${SUCCESS_SUN_STAY_DURATION}ms minded6622successSunStay ease-in-out`;
-      successSunSunEl.style.animationFillMode = `forwards`;
-      await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
-      successSunSunEl.style.animationDuration = `0s`;
-      successSunSunEl.style.animationFillMode = `forwards`;
-      await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
-    }
-
-    if (!isSuccessSunTapped) {
-      props.onAfterSuccessSunFadeout();
-    }
-  };
-
   const initFadeOut = () => {
     const res = fadeOut(props.wrapperEl, 5000, 2000);
     frameNr = res.frameNr;
@@ -173,23 +131,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   return (
     <>
       {getIsShowSuccessSun() && (
-        <div
-          id="minded-6622-success-sun"
-          class={props.isReducedSuccessSun ? "reducedSuccessSun" : ""}
-          ref={successSunEl}
-          title="Click sun to close tab"
-          onclick={onSuccessSunTap}
-        >
-          <div ref={successSunSunEl}></div>
-          <div>
-            {!props.isReducedSuccessSun && (
-              <>
-                {IS_TOUCH_PRIMARY ? "tap" : "click"} sun to close{" "}
-                {IS_ANDROID ? "app" : "the website"}
-              </>
-            )}
-          </div>
-        </div>
+        <SuccessSun
+          isReducedSuccessSun={props.isReducedSuccessSun}
+          onAfterAni={() => {
+            if (!isSuccessSunTapped) {
+              props.onAfterSuccessSunFadeout();
+            }
+          }}
+          onSuccessSunTap={onSuccessSunTap}
+          wrapperEl={props.wrapperEl}
+        />
       )}
 
       <div id="minded-6622-interaction-wrapper-box">
