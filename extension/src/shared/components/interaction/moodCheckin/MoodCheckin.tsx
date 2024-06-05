@@ -7,6 +7,8 @@ import {
 import { saveMoodCheckIn } from "@src/dataInterface/commonSyncDataInterface";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
+// @ts-ignore
+import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;
@@ -55,8 +57,9 @@ export const MoodCheckin: (props: {
               : "minded-6622-checkin-notes"
           }
           list={
-            getSelectedMood() === MoodCheckinVal.Awful ||
-            getSelectedMood() === MoodCheckinVal.Bad
+            !IS_ANDROID &&
+            (getSelectedMood() === MoodCheckinVal.Awful ||
+              getSelectedMood() === MoodCheckinVal.Bad)
               ? "auto-suggestions-for-mood-checkin"
               : ""
           }
