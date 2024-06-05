@@ -140,13 +140,13 @@ export const DashboardGroups: (props: {
               class="btnTxtOutline"
               onClick={() => navigate("/dailyQuestions")}
             >
-              let's go!
+              let's go
             </button>
             <button
               class="btnTxtOutline"
               onClick={() => removeDailyQuestionsBanner()}
             >
-              nah
+              no
             </button>
           </div>
         </div>

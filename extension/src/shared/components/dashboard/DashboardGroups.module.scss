@@ -339,14 +339,12 @@ $aniDur: 1.5s;
 
 .cardDailyQuestionsBtns {
   margin-top: 24px;
-
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   button {
-    margin-left: 16px;
-
-    &:first-child {
-      margin-left: 0;
-    }
+    margin: 0 6px;
+    white-space: nowrap;
   }
 }
 
