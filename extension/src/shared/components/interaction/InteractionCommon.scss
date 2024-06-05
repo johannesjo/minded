@@ -20,6 +20,12 @@
   z-index: 9999999999999999;
 }
 
+#minded-6622-little-sun-success-sun {
+  border-radius: 50%;
+  //box-shadow: 0 0 30px 5px var(--c-pastel-red),
+  //0 0 60px 5px var(--c-pastel-yellow);
+}
+
 #minded-6622-little-sun-success-sun,
 #minded-6622-success-sun {
   cursor: cell;
@@ -34,8 +40,8 @@
     transform: translate(-50%, -50%);
     background: var(--sun-bg);
     border-radius: 50%;
-    box-shadow: 0 0 30px 5px var(--c-pastel-red),
-    0 0 60px 5px var(--c-pastel-yellow);
+    //box-shadow: 0 0 30px 0px var(--c-pastel-red), 0 0 60px 5px var(--c-pastel-yellow);
+    box-shadow: 0 0 3px 0 var(--c-pastel-red), 0 0 5px 0 var(--c-pastel-yellow);
     animation: minded6622successSun ease;
     animation-iteration-count: 1;
     animation-duration: 800ms;
@@ -78,7 +84,6 @@
     padding: 16px;
   }
 }
-
 
 
 #minded-6622-action-advice {

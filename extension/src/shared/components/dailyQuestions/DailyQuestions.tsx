@@ -1,4 +1,4 @@
-import { createSignal, Match, onMount, Switch } from "solid-js";
+import { createSignal, Match, onCleanup, onMount, Switch } from "solid-js";
 import Stepper from "@src/shared/components/ui/Stepper";
 import {
   QUESTION_CATEGORIES,
@@ -16,9 +16,15 @@ import {
 import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 // @ts-ignore
 import styles from "./DailyQuestions.module.scss";
-import { getDailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+import {
+  DailyQuestionsMode,
+  getDailyQuestionsMode,
+} from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { useNavigate } from "@solidjs/router";
-import { Ico } from "@src/shared/components/ui/Ico";
+import SuccessSun from "@src/shared/components/successSun/SuccessSun";
+
+const SUN_ANI_DURATION = 600;
+const AFTER_ANI_WAIT_DURATION = 1100;
 
 const DailyQuestions = () => {
   const navigate = useNavigate();
@@ -27,7 +33,9 @@ const DailyQuestions = () => {
 
   const today = new Date();
   const isMonday = today.getDay() === 1;
-  const mode = getDailyQuestionsMode();
+  const mode: DailyQuestionsMode = getDailyQuestionsMode();
+  // const mode: DailyQuestionsMode = "Evening";
+  let t0;
 
   const getRndQuestionFromCat = (
     categoryId: QuestionCategoryId,
@@ -44,8 +52,19 @@ const DailyQuestions = () => {
     });
   });
 
+  onCleanup(() => {
+    window.clearTimeout(t0);
+  });
+
   const onSuccess = () => {
     setDailyQuestionsDoneForToday(mode);
+  };
+
+  const afterAni = () => {
+    window.clearTimeout(t0);
+    t0 = setTimeout(() => {
+      navigate("/");
+    }, AFTER_ANI_WAIT_DURATION);
   };
 
   // TODO answers
@@ -97,18 +116,12 @@ const DailyQuestions = () => {
               />
             </Match>
             <Match when={getStep() === 3}>
-              <div class="haveAWonderfulDayMsg">
-                <div class="txtBig">
-                  That's all! Have a wonderful day today! 🌞
-                </div>
-                <button
-                  style="margin-top:32px;"
-                  class="btnTxt"
-                  onClick={() => navigate("/")}
-                >
-                  <Ico name="arrowBack" />
-                </button>
-              </div>
+              <SuccessSun
+                onAfterAni={() => afterAni()}
+                msg={"That's all! Have a wonderful day today!"}
+                isReducedSuccessSun={true}
+                reducedAniInDuration={SUN_ANI_DURATION}
+              />
             </Match>
           </Switch>
         )}
@@ -150,25 +163,23 @@ const DailyQuestions = () => {
               />
             </Match>
             <Match when={getStep() === 3}>
-              <div class="haveAWonderfulDayMsg">
-                <div class="txtBig">
-                  That's all! Have a wonderful rest of the day and a refreshing
-                  night!! 🌙
-                </div>
-                <button
-                  style="margin-top:32px;"
-                  class="btnTxt"
-                  onClick={() => navigate("/")}
-                >
-                  <Ico name="arrowBack" />
-                </button>
-              </div>
+              <SuccessSun
+                onAfterAni={() => afterAni()}
+                msg={
+                  "That's all! Have a wonderful rest of the day and a refreshing night!"
+                }
+                isReducedSuccessSun={true}
+                reducedAniInDuration={SUN_ANI_DURATION}
+              />
             </Match>
           </Switch>
         )}
       </div>
 
-      <div class={styles.stepperWrapper}>
+      <div
+        class={styles.stepperWrapper}
+        style={{ visibility: getStep() === 3 ? "hidden" : "visible" }}
+      >
         <Stepper
           nrOfSteps={4}
           activeStep={getStep()}

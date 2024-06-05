@@ -6,9 +6,11 @@ import { IS_ANDROID } from "@dataInterface/isAndroid";
 
 interface SuccessSunProps {
   isReducedSuccessSun?: boolean;
-  onSuccessSunTap: () => void;
-  onAfterAni: () => void;
-  wrapperEl: HTMLElement;
+  onSuccessSunTap?: () => void;
+  onAfterAni?: () => void;
+  wrapperEl?: HTMLElement;
+  msg?: string;
+  reducedAniInDuration?: number;
 }
 
 // NOTE: ani in needs to match css value for smoothness
@@ -34,11 +36,19 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
     }
 
     if (props.isReducedSuccessSun) {
-      successSunEl.style.animationDuration = `${SUCCESS_SUN_REDUCED_ANI_IN_DURATION}ms`;
-      await promiseTimeout(50);
+      const aniDur =
+        props.reducedAniInDuration || SUCCESS_SUN_REDUCED_ANI_IN_DURATION;
+      successSunSunEl.style.animationDuration = `${aniDur}ms`;
+      // await promiseTimeout(20);
       successSunSunEl.style.animationFillMode = `forwards`;
-      await fadeOut(props.wrapperEl, SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION)
-        .promise;
+
+      await promiseTimeout(aniDur);
+      if (props.wrapperEl) {
+        await fadeOut(
+          props.wrapperEl,
+          SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION,
+        ).promise;
+      }
     } else {
       // wait for sun
       successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
@@ -48,9 +58,13 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
       await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
       successSunSunEl.style.animationDuration = `0s`;
       successSunSunEl.style.animationFillMode = `forwards`;
-      await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION).promise;
+      if (props.wrapperEl) {
+        await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION)
+          .promise;
+      }
     }
-    props.onAfterAni();
+
+    props.onAfterAni?.();
   };
 
   return (
@@ -58,12 +72,13 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
       id="minded-6622-success-sun"
       class={props.isReducedSuccessSun ? "reducedSuccessSun" : ""}
       ref={successSunEl}
-      title="Click sun to close tab"
-      onclick={props.onSuccessSunTap}
+      onclick={() => props.onSuccessSunTap?.()}
     >
       <div ref={successSunSunEl}></div>
       <div>
-        {!props.isReducedSuccessSun && (
+        {props.msg}
+
+        {!props.isReducedSuccessSun && !props.msg && (
           <>
             {IS_TOUCH_PRIMARY ? "tap" : "click"} sun to close{" "}
             {IS_ANDROID ? "app" : "the website"}
