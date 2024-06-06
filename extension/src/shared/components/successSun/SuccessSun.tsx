@@ -51,13 +51,13 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
       }
     } else {
       // wait for sun
-      successSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
+      successSunSunEl.style.animationDuration = `${SUCCESS_SUN_ANI_IN_DURATION}ms`;
+      successSunSunEl.style.animationFillMode = `forwards`;
       await promiseTimeout(SUCCESS_SUN_ANI_IN_DURATION);
       successSunSunEl.style.animation = `${SUCCESS_SUN_STAY_DURATION}ms minded6622successSunStay ease-in-out`;
       successSunSunEl.style.animationFillMode = `forwards`;
+
       await promiseTimeout(SUCCESS_SUN_STAY_DURATION);
-      successSunSunEl.style.animationDuration = `0s`;
-      successSunSunEl.style.animationFillMode = `forwards`;
       if (props.wrapperEl) {
         await fadeOut(props.wrapperEl, SUCCESS_SUN_ANI_FADE_OUT_DURATION)
           .promise;
