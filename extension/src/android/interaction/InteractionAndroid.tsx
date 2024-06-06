@@ -13,10 +13,9 @@ if (questionId) {
 }
 
 const InteractionAndroid = () => {
-  const [getQuestion, setQuestion] = createSignal<QuestionForPrompt | null>(
-    questionId?.length ? QUESTIONS.find((q) => q.id === questionId) : null,
-  );
-
+  const question: QuestionForPrompt | null = questionId?.length
+    ? QUESTIONS.find((q) => q.id === questionId)
+    : null;
   let wrapperEl;
 
   onMount(async () => {
@@ -62,7 +61,7 @@ const InteractionAndroid = () => {
             androidInterface.unsetQuestion();
           }
         }}
-        questionForPrompt={getQuestion()}
+        questionForPrompt={question}
         onSuccessSunTap={() => {
           countSunTap();
           androidInterface.onSuccessSunTap();
