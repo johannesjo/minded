@@ -9,6 +9,7 @@
 #minded-6622-success-sun {
   cursor: cell;
 
+
   div:first-child {
     transform-origin: center center;
     width: 50px;
@@ -19,7 +20,7 @@
     transform: translate(-50%, -50%);
     background: var(--sun-bg);
     border-radius: 50%;
-    box-shadow: 0 0 1px 0 rgba(233, 132, 58, 0.5);
+    box-shadow: var(--sun-shadow);
     animation: minded6622successSun ease;
     animation-iteration-count: 1;
     animation-duration: 800ms;
