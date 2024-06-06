@@ -20,55 +20,6 @@
   z-index: 9999999999999999;
 }
 
-#minded-6622-little-sun-success-sun {
-  border-radius: 50%;
-  //box-shadow: 0 0 30px 5px var(--c-pastel-red),
-  //0 0 60px 5px var(--c-pastel-yellow);
-}
-
-#minded-6622-little-sun-success-sun,
-#minded-6622-success-sun {
-  cursor: cell;
-
-  div:first-child {
-    transform-origin: center center;
-    width: 50px;
-    height: 50px;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--sun-bg);
-    border-radius: 50%;
-    //box-shadow: 0 0 30px 0px var(--c-pastel-red), 0 0 60px 5px var(--c-pastel-yellow);
-    box-shadow: 0 0 3px 0 var(--c-pastel-red), 0 0 5px 0 var(--c-pastel-yellow);
-    animation: minded6622successSun ease;
-    animation-iteration-count: 1;
-    animation-duration: 800ms;
-    z-index: 30;
-  }
-
-
-  div:last-child {
-    animation: minded6622fadeIn ease 1s;
-    animation-fill-mode: forwards;
-    opacity: 1;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 31;
-    font-weight: 500;
-    color: var(--success-sun-txt-c);
-  }
-}
-
-#minded-6622-success-sun.reducedSuccessSun div:first-child {
-  --success-sun-ani-scale-1: var(--success-sun-reduced-ani-scale-1);
-  animation-duration: 250ms;
-}
-
-
 #minded-6622-interaction-wrapper-box {
   pointer-events: none;
   position: absolute;
