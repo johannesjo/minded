@@ -1,15 +1,19 @@
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { Answer, SyncData, UserCfg } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
-// @ts-ignore
 import {
   getSyncDataN,
   saveAnswerN,
   saveSyncDataN,
   // @ts-ignore
 } from "@dataInterface/syncDataInterface";
-// @ts-ignore
-export { IS_ANDROID, IS_IOS, IS_WEB_EXT, IS_APP } from "@dataInterface/system";
+import {
+  IS_ANDROID as IS_ANDROID_N,
+  IS_APP as IS_APP_N,
+  IS_IOS as IS_IOS_N,
+  IS_WEB_EXT as IS_WEB_EXT_N,
+  // @ts-ignore
+} from "@dataInterface/system";
 
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
@@ -18,6 +22,13 @@ export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
   saveSyncDataN;
 export const saveAnswer: (answer: Answer) => Promise<void> = saveAnswerN;
+
+export const IS_ANDROID: boolean = IS_ANDROID_N;
+export const IS_IOS: boolean = IS_IOS_N;
+export const IS_APP: boolean = IS_APP_N;
+export const IS_WEB_EXT: boolean = IS_WEB_EXT_N;
+
+console.log({ IS_ANDROID, IS_IOS, IS_WEB_EXT, IS_APP });
 
 export const updateSyncData = async (
   newSyncData: Partial<SyncData>,
