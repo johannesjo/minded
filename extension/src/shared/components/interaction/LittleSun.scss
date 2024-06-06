@@ -59,6 +59,8 @@
 }
 
 $sun-size: 40px;
+$shadow:  var(--little-sun-shadow);
+
 #minded-6622-little-sun-sun {
   cursor: cell;
   transform-origin: center center;
@@ -68,9 +70,8 @@ $sun-size: 40px;
   background: var(--little-sun-bg);
   display: block;
   border-radius: 50%;
-  //box-shadow: 0 0 30px 5px var(--c-pastel-red),
-  //0 0 60px 5px var(--c-pastel-yellow);
-  box-shadow: var(--little-sun-shadow);
+  box-shadow: $shadow;
+
   text-align: center;
   color: #956969;
   font-weight: 400;
@@ -80,7 +81,7 @@ $sun-size: 40px;
 
 #minded-6622-little-sun-text {
   color: var(--little-sun-txt-c);
-  box-shadow: var(--little-sun-shadow);
+  box-shadow: $shadow;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);

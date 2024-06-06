@@ -43,6 +43,7 @@
   --dashboard-card-border-radius: 24px;
 
   --sun-bg: #fff;
+  --sun-shadow:  0 0 1px 0 rgba(233, 132, 58, 0.5);
 
   --c-graph-fg-full: rgba(0, 0, 0, .5);
   --c-graph-fg-less: rgba(0, 0, 0, .3);
@@ -52,10 +53,10 @@
 
 
   --little-sun-bg: #fff;
+  --little-sun-shadow: 0 0 6px 1px #e9843a;
   --litle-sun-txt-fz: 13px;
   --litle-sun-counter-fz: 14px;
   --litle-sun-btn-fz: 18px;
-  --little-sun-shadow: 0 0 4px 0 var(--c-pastel-red), 0 0 8px 0 var(--c-pastel-yellow);
   --little-sun-txt-c: rgba(0, 0, 0, .6);
 
   --success-sun-txt-c: rgba(0, 0, 0, .6);
@@ -67,9 +68,6 @@
   --rating-inactive-opacity: 0.15;
   --h4-c: rgba(0, 0, 0, .7);
 
-  // for sun
-  --c-pastel-red: #ffc5ca;
-  --c-pastel-yellow: #e6ea9b;
 
   //--c-gradient-1: #A5DEE5;
   //--c-gradient-2: #FFCFDF;
