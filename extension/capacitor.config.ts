@@ -4,7 +4,16 @@ const config: CapacitorConfig = {
   appId: "com.minded.minded",
   appName: "minded",
   webDir: "distIOS",
-  ios: {},
+  zoomEnabled: false,
+  plugins: {
+    Keyboard: {
+      resize: "native",
+      resizeOnFullScreen: true,
+    },
+  },
+  ios: {
+    zoomEnabled: false,
+  },
   android: {
     allowMixedContent: true,
   },
