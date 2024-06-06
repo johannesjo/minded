@@ -28,8 +28,6 @@ export enum QuestionCategoryId {
   XAppUsageHappiness = "XAppUsageHappiness",
   XSelfAssessment = "XSelfAssessment",
 
-  // NO save questions
-  XXPurposeOfSession = "XXPurposeOfSession",
   // IDEAS
   // ---------
   // XSpecialWidget = "XSpecialWidget",
@@ -47,20 +45,18 @@ export const SPECIAL_WIDGET_LETTER = "X";
 export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
   categoryId[0] !== SPECIAL_WIDGET_LETTER;
 
-export type Question = {
+export interface Question {
   t: string;
   id: QID;
   prompt?: string;
   limitTo?: LimitToOpts;
-};
+  isSkipOnDashboard?: boolean;
+  isDontSaveAnswer?: boolean;
+}
 
-export type QuestionForPrompt = {
+export interface QuestionForPrompt extends Question {
   categoryId: QuestionCategoryId;
-  id: QID;
-  t: string;
-  prompt?: string;
-  limitTo?: LimitToOpts;
-};
+}
 
 export interface QuestionCategory {
   dashboardTxt: string;
@@ -71,7 +67,7 @@ export interface QuestionCategory {
   isEveningCategory?: boolean;
   isLateNightCategory?: boolean;
   isWorkDayCategory?: boolean;
-  isDontSaveQuestion?: boolean;
+  isSkipOnDashboard?: boolean;
   limitTo?: LimitToOpts;
   questions?: Question[];
   specialQuestions?: Question[];
@@ -111,6 +107,14 @@ export const QUESTION_CATEGORIES: {
         id: QID.HBH6,
         t: "Instead of visiting this website, what might be a better alternative",
         prompt: "Instead of using these websites I could",
+        isSkipOnDashboard: true,
+      },
+      {
+        id: QID.HBH7,
+        t: "What is the purpose of visiting this website  now",
+        prompt: "In this session I want to",
+        isDontSaveAnswer: true,
+        isSkipOnDashboard: true,
       },
     ],
   },
@@ -145,6 +149,14 @@ export const QUESTION_CATEGORIES: {
         id: QID.HAU6,
         t: "Instead of using this app, what might be a better alternative",
         prompt: "Instead of using these apps I could",
+        isSkipOnDashboard: true,
+      },
+      {
+        id: QID.HAU7,
+        t: "What is the purpose of using this app now",
+        prompt: "In this session I want to",
+        isDontSaveAnswer: true,
+        isSkipOnDashboard: true,
       },
     ],
   },
@@ -557,19 +569,6 @@ export const QUESTION_CATEGORIES: {
         id: QID.SD24,
         t: "What activities make me lose track of time",
         prompt: "",
-      },
-    ],
-  },
-  [QuestionCategoryId.XXPurposeOfSession]: {
-    dashboardTxt: "XXX",
-    isTodayOnlyCategory: true,
-    isDontSaveQuestion: true,
-    frequencyModifier: -1,
-    questions: [
-      {
-        id: QID.XP1,
-        t: "What is the purpose of visiting this website",
-        prompt: "In this session I want to",
       },
     ],
   },
