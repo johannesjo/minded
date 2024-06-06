@@ -8,6 +8,9 @@ import {
   saveSyncDataN,
   // @ts-ignore
 } from "@dataInterface/syncDataInterface";
+// @ts-ignore
+export { IS_ANDROID, IS_IOS, IS_WEB_EXT, IS_APP } from "@dataInterface/system";
+
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 

@@ -19,8 +19,7 @@ import { getRndEntries } from "@src/util/getRndEntries";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard/getRecentSelfAssementEntries";
 
 const MAX_ANSWERS = 4;

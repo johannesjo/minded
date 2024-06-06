@@ -1,6 +1,5 @@
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
 import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 // const DARK_MODE_START_HOUR = 11;
 const DARK_MODE_START_HOUR = 19;

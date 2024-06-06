@@ -7,8 +7,7 @@ import {
 import { saveMoodCheckIn } from "@src/dataInterface/commonSyncDataInterface";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
-// @ts-ignore
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 export const MoodCheckin: (props: {
   onSuccess: () => void;

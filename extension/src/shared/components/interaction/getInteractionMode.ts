@@ -5,8 +5,7 @@ import {
 import { SyncData } from "@src/dataInterface/syncData";
 import { hasHappenedInLastXDay, isToday } from "@src/util/isToday";
 import { isXIn1 } from "@src/util/isXIn1";
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 const LAST_MOOD_CHECKIN_MIN_GAP = 2 * 60 * 60 * 1000;
 const TODAY_START_HOUR = 5;

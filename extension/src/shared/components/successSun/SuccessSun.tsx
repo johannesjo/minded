@@ -1,8 +1,7 @@
 import { Component, onMount } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 interface SuccessSunProps {
   isReducedSuccessSun?: boolean;

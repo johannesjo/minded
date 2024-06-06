@@ -3,8 +3,12 @@ import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, JSX, onMount } from "solid-js";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+
+import {
+  IS_ANDROID,
+  IS_WEB_EXT,
+} from "@src/dataInterface/commonSyncDataInterface";
+
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
@@ -14,7 +18,6 @@ import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
 
 const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -80,7 +83,7 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         {IS_ANDROID && (
           <Route path="/settings" component={SettingsAndroidRoute} />
         )}
-        {!IS_ANDROID && <Route path="/settings" component={SettingsWebRoute} />}
+        {IS_WEB_EXT && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
         <Route path="/dailyQuestions" component={DailyQuestions} />
       </HashRouter>
