@@ -1,3 +1,5 @@
+(window as any).IS_MAIN_MINDED_6622 = true;
+
 import { render } from "solid-js/web";
 import "./mainAndroid.scss";
 // @ts-ignore

@@ -1,3 +1,5 @@
+(window as any).IS_MAIN_MINDED_6622 = true;
+
 import { render } from "solid-js/web";
 import "./new-tab-page.scss";
 import NewTab from "./NewTab";

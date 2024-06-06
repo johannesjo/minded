@@ -7,6 +7,7 @@ export enum QID {
   HBH4 = "HBH4",
   HBH5 = "HBH5",
   HBH6 = "HBH6",
+  HBH7 = "HBH7",
 
   HAU1 = "HAU1",
   HAU2 = "HAU2",
@@ -14,6 +15,7 @@ export enum QID {
   HAU4 = "HAU4",
   HAU5 = "HAU5",
   HAU6 = "HAU6",
+  HAU7 = "HAU7",
 
   PR1 = "PR1",
   PR2 = "PR2",

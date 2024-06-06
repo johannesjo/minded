@@ -1,9 +1,6 @@
 /* @refresh reload */
 import { createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
-import {
-  QUESTION_CATEGORIES,
-  QuestionForPrompt,
-} from "@src/shared/data/questions";
+import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
 import { saveAnswer } from "@src/dataInterface/commonSyncDataInterface";
 // @ts-expect-error
@@ -84,8 +81,7 @@ export const Question: (props: {
       return;
     }
     setIsInputDisabled(true);
-    const cat = QUESTION_CATEGORIES[props.initialQuestion.categoryId];
-    if (!cat.isDontSaveQuestion) {
+    if (!q.isDontSaveAnswer) {
       await saveAnswer(answer);
     }
     props.onSuccess(answer);

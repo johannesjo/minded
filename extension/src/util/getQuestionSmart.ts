@@ -11,6 +11,7 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { isWorkDay } from "@src/util/isWorkDay";
 import { isXIn1 } from "@src/util/isXIn1";
+import { isMain } from "@src/shared/isMain.const";
 
 const THRESHOLD_MORNING_START = 4;
 const THRESHOLD_MORNING_END = 14;
@@ -36,7 +37,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const nowHours = now.getHours();
 
   if (!answers.length) {
-    return getRndEntry(QUESTIONS_FOR_DEVICE);
+    return getRndQuestionConsideringMain(QUESTIONS_FOR_DEVICE);
   }
 
   const nrOfAnswersMap: { [key in QuestionCategoryId]?: number } = {};
@@ -162,7 +163,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     isWorkDayToday,
   });
 
-  return getRndEntry(questionsForCategory);
+  return getRndQuestionConsideringMain(questionsForCategory);
 };
 
 export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
@@ -198,5 +199,14 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
     }
     return true;
   });
-  return getRndEntry(questionsToUse);
+  return getRndQuestionConsideringMain(questionsToUse);
+};
+
+const getRndQuestionConsideringMain = (
+  questions: QuestionForPrompt[],
+): QuestionForPrompt => {
+  if (isMain) {
+    return getRndEntry(questions.filter((q) => !q.isSkipOnDashboard));
+  }
+  return getRndEntry(questions);
 };
