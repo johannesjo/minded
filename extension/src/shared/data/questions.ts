@@ -1,5 +1,9 @@
+// import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
+// NOTE: for some reason the import above gives "cannot access before initialization" error
+// @ts-ignore
+import { IS_ANDROID } from "@dataInterface/system";
+
 import { QID } from "@src/shared/data/questionId";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 export enum QuestionCategoryId {
   HealthierBrowsingHabits = "HealthierBrowsingHabits",
@@ -635,6 +639,7 @@ Object.keys(QUESTION_CATEGORIES)
     });
   });
 
+// TODO update for IOS
 export const isExcludedByLimitTo = (qc: QuestionCategory): boolean => {
   const isExtension = !IS_ANDROID;
   if (
