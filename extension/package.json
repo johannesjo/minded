@@ -6,11 +6,13 @@
   "scripts": {
     "start": "NODE_ENV=development npm run dev",
     "startDroid": "NODE_ENV=development vite build -w --mode android --emptyOutDir",
+    "startIOS": "NODE_ENV=development vite build -w --mode ios --emptyOutDir",
     "dev": "vite build -w",
     "serve": "vite preview",
     "lint": "eslint .. --fix -c .eslintrc --ext js,ts --ignore-pattern='!.*'",
     "build": "vite build && npm run pack",
     "buildDroid": "vite build --mode android --emptyOutDir",
+    "buildIOS": "vite build --mode ios --emptyOutDir",
     "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
     "clean": "rimraf dist",
     "test": "jest",
@@ -23,6 +25,9 @@
   },
   "type": "module",
   "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
     "@solidjs/router": "^0.13.3",
     "chart.js": "^4.4.2",
     "nanoid": "^5.0.6",
@@ -32,6 +37,7 @@
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
     "@crxjs/vite-plugin": "^2.0.0-beta.23",
     "@types/chrome": "0.0.262",
     "@types/webextension-polyfill": "^0.10.7",
@@ -44,6 +50,7 @@
     "nodemon": "3.1.0",
     "prettier": "3.2.5",
     "rimraf": "^5.0.5",
+    "rollup-plugin-copy": "^3.5.0",
     "sass": "^1.70.0",
     "solid-devtools": "^0.29.2",
     "ts-jest": "^29.0.3",
