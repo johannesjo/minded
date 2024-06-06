@@ -1,14 +1,14 @@
-import { Answer, SyncData, UserCfg } from "@src/dataInterface/syncData";
+import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
-import { getIsoDate } from "@src/util/getIsoDate";
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 
 const ITEMS_DO_DELETE_IF_OVER_QUOTE = 15;
 const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
-  QuestionCategoryId.XXPurposeOfSession,
-  QuestionCategoryId.XEnergyLevelToday,
+  QuestionCategoryId.GoodToday,
+  QuestionCategoryId.TodayILearned,
+  QuestionCategoryId.GoodPlansToday,
+  QuestionCategoryId.RefocusHelperToday,
 ];
 
 export const getSyncDataN = (): Promise<SyncData> => {

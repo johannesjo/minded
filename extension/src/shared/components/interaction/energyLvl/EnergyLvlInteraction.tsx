@@ -1,7 +1,6 @@
 /* @refresh reload */
 import { createSignal, JSX } from "solid-js";
 import Rating from "@src/shared/components/ui/Rating";
-// @ts-expect-error
 import { saveEnergyLvl } from "@src/dataInterface/commonSyncDataInterface";
 import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 
