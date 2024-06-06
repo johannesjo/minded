@@ -8,7 +8,6 @@ const config: CapacitorConfig = {
   plugins: {
     Keyboard: {
       resize: "native",
-      resizeOnFullScreen: true,
     },
   },
   ios: {
