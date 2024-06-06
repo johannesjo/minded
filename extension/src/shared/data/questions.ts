@@ -1,6 +1,5 @@
 import { QID } from "@src/shared/data/questionId";
-// @ts-ignore
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 export enum QuestionCategoryId {
   HealthierBrowsingHabits = "HealthierBrowsingHabits",

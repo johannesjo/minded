@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 interface InteractionWindowJavaScriptInterface {
   onSuccessSunTap: () => void;

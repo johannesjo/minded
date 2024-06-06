@@ -23,8 +23,7 @@ import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardA
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
 import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
-// @ts-expect-error
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
 import {
   ON_SHOW_INTERACTION_OVERLAY_EV,

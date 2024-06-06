@@ -2,7 +2,7 @@ import { createSignal, onMount } from "solid-js";
 // @ts-ignore
 import styles from "./Feedback.module.scss";
 // @ts-ignore
-import { IS_ANDROID } from "@dataInterface/isAndroid";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 const Feedback = () => {
   // const navigate = useNavigate();
