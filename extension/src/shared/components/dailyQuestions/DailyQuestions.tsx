@@ -118,7 +118,7 @@ const DailyQuestions = () => {
             <Match when={getStep() === 3}>
               <SuccessSun
                 onAfterAni={() => afterAni()}
-                msg={"That's all! Have a wonderful day today!"}
+                msg={"Have a wonderful day today!"}
                 isReducedSuccessSun={true}
                 reducedAniInDuration={SUN_ANI_DURATION}
               />
@@ -165,9 +165,7 @@ const DailyQuestions = () => {
             <Match when={getStep() === 3}>
               <SuccessSun
                 onAfterAni={() => afterAni()}
-                msg={
-                  "That's all! Have a wonderful rest of the day and a refreshing night!"
-                }
+                msg={"Have a wonderful rest of the day!"}
                 isReducedSuccessSun={true}
                 reducedAniInDuration={SUN_ANI_DURATION}
               />
