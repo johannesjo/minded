@@ -76,6 +76,11 @@
   --c-gradient-2: #ffebf6;
   --c-gradient-3: #f4f3b5;
 
+  --safe-area-inset-bottom: 0;
+  --safe-area-inset-top: 0;
+  --safe-area-inset-left: 0;
+  --safe-area-inset-right: 0;
+
   //@media (prefers-color-scheme: dark) {
   &.minded-6622-dark {
     //--c-gradient-1: #121763;

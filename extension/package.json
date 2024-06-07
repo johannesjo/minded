@@ -30,6 +30,7 @@
     "@capacitor/ios": "^6.0.0",
     "@capacitor/preferences": "^6.0.0",
     "@solidjs/router": "^0.13.3",
+    "capacitor-plugin-safe-area": "^3.0.1",
     "chart.js": "^4.4.2",
     "nanoid": "^5.0.6",
     "parse-domain": "^8.0.2",

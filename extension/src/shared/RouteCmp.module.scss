@@ -9,4 +9,5 @@
   flex: 1;
   position: relative;
   overflow: auto;
+  padding-top: var(--safe-area-inset-top);
 }
