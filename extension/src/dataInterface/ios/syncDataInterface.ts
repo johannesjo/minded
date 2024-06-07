@@ -1,25 +1,28 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
-// import { iosInterface } from "@src/dataInterface/ios/iosInterface";
+import { Preferences } from '@capacitor/preferences';
+
+const DB_KEY = "mindedSyncData"
 
 export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
-  return Promise.resolve(undefined);
-  // iosInterface.saveDataString(JSON.stringify(syncData));
+  return   await Preferences.set({
+    key: DB_KEY,
+    value: JSON.stringify(syncData),
+  });
 };
 
 export const getSyncDataN = async (): Promise<SyncData> => {
-  return DEFAULT_SYNC_DATA;
-
-  // const str = iosInterface.retrieveDataString();
-  // try {
-  //   return {
-  //     ...DEFAULT_SYNC_DATA,
-  //     ...JSON.parse(str),
-  //   };
-  // } catch (e) {
-  //   console.error(e);
-  //   return DEFAULT_SYNC_DATA;
-  // }
+  const result = await Preferences.get({ key: DB_KEY });
+  console.log(result);
+  try {
+    return {
+      ...DEFAULT_SYNC_DATA,
+      ...JSON.parse(result.value),
+    };
+  } catch (e) {
+    console.error(e);
+    return DEFAULT_SYNC_DATA;
+  }
 };
 
 export const saveAnswerN = (answer: Answer): Promise<void> => {
