@@ -9,6 +9,7 @@
   justify-content: center;
   //padding-bottom: 8px;
   background: var(--bottom-bar-bg);
+  padding-bottom: var(--safe-area-inset-bottom);
 
 
   :global(.androidKeyboardOpen) & {
