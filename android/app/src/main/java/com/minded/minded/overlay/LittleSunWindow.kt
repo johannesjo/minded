@@ -69,15 +69,16 @@ class LittleSunWindow(
                     logTag,
                     "${sharedOverlayViewModel.sharedData.value}"
                 )
-                if ((elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
-                    hideWindow()
-                    OverlayControllerService.showOverlay(
-                        ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
-                        OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
-                        sharedOverlayViewModel.sharedData.value.currentApp
-                    )
-                } else if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+//                if ((elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
+//                    hideWindow()
+//                    OverlayControllerService.showOverlay(
+//                        ctrlSvc,
+//                        OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
+//                        OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
+//                        sharedOverlayViewModel.sharedData.value.currentApp
+//                    )
+//                } else
+                if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
                     OverlayControllerService.showOverlay(
                         ctrlSvc,
                         OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
