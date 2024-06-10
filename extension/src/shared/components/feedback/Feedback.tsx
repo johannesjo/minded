@@ -2,7 +2,7 @@ import { createSignal, onMount } from "solid-js";
 // @ts-ignore
 import styles from "./Feedback.module.scss";
 // @ts-ignore
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
+import { IS_ANDROID, IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 
 const Feedback = () => {
   // const navigate = useNavigate();
@@ -10,7 +10,7 @@ const Feedback = () => {
 
   onMount(() => {
     const encodedSubject = encodeURIComponent(
-      `Feedback for minded ${IS_ANDROID ? "on Android" : "WebExtension"}`,
+      `Feedback for minded ${IS_ANDROID ? "on Android" : IS_IOS ? "on IOS" : "WebExtension"}`,
     );
     const encodedBody = encodeURIComponent(`Things, I like:
 
