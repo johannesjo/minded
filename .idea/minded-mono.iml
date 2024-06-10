@@ -5,6 +5,8 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/android" />
       <excludeFolder url="file://$MODULE_DIR$/extension/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/extension/android" />
+      <excludeFolder url="file://$MODULE_DIR$/extension/distIOS" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

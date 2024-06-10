@@ -2,6 +2,7 @@ import { Component, onMount } from "solid-js";
 import { fadeOut, promiseTimeout } from "@src/util/animation";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
+import { calcScalingFactorsForSun } from "@src/shared/components/successSun/calcScalingFactorsForSun";
 
 interface SuccessSunProps {
   isReducedSuccessSun?: boolean;
@@ -20,7 +21,6 @@ const SUCCESS_SUN_REDUCED_ANI_IN_DURATION = 320;
 const SUCCESS_SUN_REDUCED_ANI_FADE_OUT_DURATION = 300;
 
 export const SuccessSun: Component<SuccessSunProps> = (props) => {
-  let successSunEl;
   let successSunSunEl;
 
   onMount(() => {
@@ -33,6 +33,15 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
       window.focus();
       await promiseTimeout(100);
     }
+    const { scaleBigger, scaleSmaller } =
+      calcScalingFactorsForSun(successSunSunEl);
+    console.log({ scaleBigger, scaleSmaller });
+
+    successSunSunEl.style.setProperty(
+      "--success-sun-ani-scale-1",
+      scaleSmaller,
+    );
+    successSunSunEl.style.setProperty("--success-sun-ani-scale-2", scaleBigger);
 
     if (props.isReducedSuccessSun) {
       const aniDur =
@@ -70,7 +79,6 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
     <div
       id="minded-6622-success-sun"
       class={props.isReducedSuccessSun ? "reducedSuccessSun" : ""}
-      ref={successSunEl}
       onclick={() => props.onSuccessSunTap?.()}
     >
       <div ref={successSunSunEl}></div>
