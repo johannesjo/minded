@@ -1,7 +1,7 @@
 // import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 // NOTE: for some reason the import above gives "cannot access before initialization" error
 // @ts-ignore
-import { IS_ANDROID } from "@dataInterface/system";
+import { IS_APP, IS_WEB_EXT } from "@dataInterface/system";
 
 import { QID } from "@src/shared/data/questionId";
 
@@ -42,7 +42,7 @@ export enum QuestionCategoryId {
   // SelfCompassion = "SelfCompassion",
 }
 
-export type LimitTo = "BrowserExtension" | "Android";
+export type LimitTo = "BrowserExtension" | "MobileApp";
 export type LimitToOpts = LimitTo[];
 export const SPECIAL_WIDGET_LETTER = "X";
 export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
@@ -124,7 +124,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.HealthierAppUsage]: {
     dashboardTxt: "Healthier App Usage",
     frequencyModifier: 2,
-    limitTo: ["Android"],
+    limitTo: ["MobileApp"],
     questions: [
       {
         id: QID.HAU1,
@@ -641,11 +641,10 @@ Object.keys(QUESTION_CATEGORIES)
 
 // TODO update for IOS
 export const isExcludedByLimitTo = (qc: QuestionCategory): boolean => {
-  const isExtension = !IS_ANDROID;
   if (
     qc.limitTo &&
-    ((!qc.limitTo.includes("Android") && IS_ANDROID) ||
-      (!qc.limitTo.includes("BrowserExtension") && isExtension))
+    ((!qc.limitTo.includes("MobileApp") && IS_APP) ||
+      (!qc.limitTo.includes("BrowserExtension") && IS_WEB_EXT))
   ) {
     return true;
   }
