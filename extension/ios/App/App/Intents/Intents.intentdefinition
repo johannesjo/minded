@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>INEnums</key>
+	<array/>
+	<key>INIntentDefinitionModelVersion</key>
+	<string>1.2</string>
+	<key>INIntentDefinitionNamespace</key>
+	<string>gkh1mr</string>
+	<key>INIntentDefinitionSystemVersion</key>
+	<string>23D60</string>
+	<key>INIntentDefinitionToolsBuildVersion</key>
+	<string>15E204a</string>
+	<key>INIntentDefinitionToolsVersion</key>
+	<string>15.3</string>
+	<key>INIntents</key>
+	<array>
+		<dict>
+			<key>INIntentCategory</key>
+			<string>generic</string>
+			<key>INIntentConfigurable</key>
+			<true/>
+			<key>INIntentDefaultImageName</key>
+			<string>Splash</string>
+			<key>INIntentDescription</key>
+			<string>Opens the minded interaction</string>
+			<key>INIntentDescriptionID</key>
+			<string>10VVdV</string>
+			<key>INIntentManagedParameterCombinations</key>
+			<dict>
+				<key></key>
+				<dict>
+					<key>INIntentParameterCombinationSupportsBackgroundExecution</key>
+					<true/>
+				</dict>
+			</dict>
+			<key>INIntentName</key>
+			<string>InteractionIntent</string>
+			<key>INIntentParameterCombinations</key>
+			<dict>
+				<key></key>
+				<dict>
+					<key>INIntentParameterCombinationIsPrimary</key>
+					<true/>
+					<key>INIntentParameterCombinationSubtitle</key>
+					<string>Starts the minded interaction to be used via shortcuts automation. </string>
+					<key>INIntentParameterCombinationSubtitleID</key>
+					<string>hyOgGN</string>
+					<key>INIntentParameterCombinationSupportsBackgroundExecution</key>
+					<true/>
+					<key>INIntentParameterCombinationTitle</key>
+					<string>minded Interaction</string>
+					<key>INIntentParameterCombinationTitleID</key>
+					<string>MWsc9b</string>
+				</dict>
+			</dict>
+			<key>INIntentResponse</key>
+			<dict>
+				<key>INIntentResponseCodes</key>
+				<array>
+					<dict>
+						<key>INIntentResponseCodeName</key>
+						<string>success</string>
+						<key>INIntentResponseCodeSuccess</key>
+						<true/>
+					</dict>
+					<dict>
+						<key>INIntentResponseCodeName</key>
+						<string>failure</string>
+					</dict>
+				</array>
+			</dict>
+			<key>INIntentTitle</key>
+			<string>minded Interaction IntentDefFile</string>
+			<key>INIntentTitleID</key>
+			<string>WRRxfM</string>
+			<key>INIntentType</key>
+			<string>Custom</string>
+			<key>INIntentVerb</key>
+			<string>Run</string>
+		</dict>
+	</array>
+	<key>INTypes</key>
+	<array/>
+</dict>
+</plist>
