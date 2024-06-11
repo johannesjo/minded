@@ -19,7 +19,7 @@ struct InteractionIntent: AppIntent  {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-     
+     print("Asadasdasd")
       return .result()
     }
     
