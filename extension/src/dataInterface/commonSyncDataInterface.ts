@@ -76,7 +76,7 @@ export const updateAnswer = (answerToUpdate: Answer): Promise<void> => {
       }),
     )
     .then(() => {
-      getSyncData().then(console.log);
+      // getSyncData().then(console.log);
     });
 };
 
@@ -89,7 +89,7 @@ export const removeAnswer = (answerId: string): Promise<void> => {
       }),
     )
     .then(() => {
-      getSyncData().then(console.log);
+      // getSyncData().then(console.log);
     });
 };
 

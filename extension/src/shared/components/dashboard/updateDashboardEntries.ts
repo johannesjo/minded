@@ -29,7 +29,7 @@ export const updateDashboardEntriesFromQuestions = (
           ...oldGroup,
           ...newGroupEntry,
         } as DashboardGroup;
-        console.log("UPDATE", { newGroupEntry, oldGroup });
+        // console.log("UPDATE", { newGroupEntry, oldGroup });
       }
     } else {
       // if there is any inconsistency in the groups, return the new groups
