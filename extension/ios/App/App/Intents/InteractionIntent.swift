@@ -19,21 +19,13 @@ struct InteractionIntent: AppIntent  {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-     print("PERFORM")
-        if let url = URL(string: "minded://") {
-            print(url)
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        print("PERFORM")
+        let urlMinded  = NSURL(string: "minded://")
+        if UIApplication.shared.canOpenURL(urlMinded! as URL) {
+            await UIApplication.shared.open(urlMinded! as URL)
+        } else {
+            print("unable to open url")
         }
-      return .result()
-    }
-    
-    func handle(intent: InteractionIntent, completion: @escaping () -> Void) {
-        print("HAAANDLE")
-
-          // Trigger app launch
-        if let url = URL(string: "minded://") {
-            print(url)
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        }
+        return .result()
     }
 }
