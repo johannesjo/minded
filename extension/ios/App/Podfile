@@ -21,7 +21,6 @@ target 'App' do
 end
 
 post_install do |installer|
-  assertDeploymentTarget(installer)
   installer.generated_projects.each do |project|
     project.targets.each do |target|
       target.build_configurations.each do |config|
@@ -29,4 +28,5 @@ post_install do |installer|
       end
     end
   end
+  assertDeploymentTarget(installer)
 end
