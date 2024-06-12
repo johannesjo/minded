@@ -20,7 +20,6 @@ struct InteractionIntent: AppIntent  {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        print("PERFORM")
         let urlMinded  = NSURL(string: "minded://interaction")
         if UIApplication.shared.canOpenURL(urlMinded! as URL) {
             await UIApplication.shared.open(urlMinded! as URL)

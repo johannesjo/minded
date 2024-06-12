@@ -41,8 +41,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Handle the URL scheme and perform any necessary actions
         if url.scheme == "minded" {
             // Do something when the app is opened via URL
-            // return true
-            print(" AAAA 2 ", url)
+            print("CUSTOM URL", url)
+            NotificationCenter.default.post(name: Notification.Name("OPEN_APP_URL"), object: nil, userInfo: ["url": url])
             return true
         }
 
