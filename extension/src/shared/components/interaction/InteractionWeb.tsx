@@ -102,7 +102,7 @@ export const InteractionWeb: (props: {
           >
             <InteractionCommon
               questionForPrompt={getQuestion()}
-              isInitFadeout={IS_MOUSE_PRIMARY}
+              isInitFadeout={false}
               wrapperEl={wrapperEl}
               onSetAnswer={setLittleSunTxt}
               onModeSet={(mode) => {
