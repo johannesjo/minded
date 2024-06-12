@@ -50,20 +50,26 @@ class MainViewController: CAPBridgeViewController {
        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("OPEN_APP_URL"), object: nil)
     }
     
+    func changeHash(newHash: String) {
+        let js = "console.log('prev',window.location.hash); window.location.hash = '\(newHash)'"
+        webView?.evaluateJavaScript(js) { (result, error) in
+            if let error = error {
+                print("Error changing hash: \(error.localizedDescription)")
+            } else {
+                print("Hash changed to \(newHash)")
+            }
+        }
+    }
+
+    
     func loadInteracation() {
         if(isInteractionShown) {
             return
         }
         isInteractionShown = true
         
-        var urlStr = (bridge?.config.appStartServerURL.absoluteString)!+"/src/ios/interaction/index.html"
-        print("Loading URLStr \(urlStr)")
-        if let interactionURL = URL(string: urlStr) {
-            print("Loading URL \(interactionURL.absoluteString)")
-          webView?.load(URLRequest(url: interactionURL))
-        } else {
-          print("Failed to create interaction URL")
-        }
+        changeHash(newHash: "interaction")
+
     }
     
     func loadMain() {
@@ -72,13 +78,6 @@ class MainViewController: CAPBridgeViewController {
         }
         isInteractionShown = false
         
-        var urlStr = (bridge?.config.appStartServerURL.absoluteString)!+"/"
-        print("Loading URLStr \(urlStr)")
-        if let interactionURL = URL(string: urlStr) {
-            print("Loading URL \(interactionURL.absoluteString)")
-          webView?.load(URLRequest(url: interactionURL))
-        } else {
-          print("Failed to create interaction URL")
-        }
+        changeHash(newHash: "")
     }
 }

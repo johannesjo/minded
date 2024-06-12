@@ -6,6 +6,7 @@ import { QuestionCategoryView } from "@src/shared/components/questionCategoryVie
 
 import {
   IS_ANDROID,
+  IS_IOS,
   IS_WEB_EXT,
 } from "@src/dataInterface/commonSyncDataInterface";
 
@@ -18,6 +19,7 @@ import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
+import InteractionIOS from "@src/ios/interaction/InteractionIOS";
 
 const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -83,6 +85,7 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         {IS_ANDROID && (
           <Route path="/settings" component={SettingsAndroidRoute} />
         )}
+        {IS_IOS && <Route path="/interaction" component={InteractionIOS} />}
         {IS_WEB_EXT && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
         <Route path="/dailyQuestions" component={DailyQuestions} />
