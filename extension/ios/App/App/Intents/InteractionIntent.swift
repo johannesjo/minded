@@ -13,14 +13,15 @@ import Intents
 
 @available(iOS 16, *)
 struct InteractionIntent: AppIntent  {
-    
+    static var openAppWhenRun = true
+
     @available(iOS 16, *)
     static let title = LocalizedStringResource("minded Interaction File")
 
     @MainActor
     func perform() async throws -> some IntentResult {
         print("PERFORM")
-        let urlMinded  = NSURL(string: "minded://")
+        let urlMinded  = NSURL(string: "minded://interaction")
         if UIApplication.shared.canOpenURL(urlMinded! as URL) {
             await UIApplication.shared.open(urlMinded! as URL)
         } else {
