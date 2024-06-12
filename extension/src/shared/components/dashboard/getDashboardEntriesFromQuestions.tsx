@@ -140,7 +140,7 @@ export const getDashboardEntriesFromQuestions = (
     });
   }
 
-  console.log({ syncData, sortedEntries });
+  // console.log({ syncData, sortedEntries });
 
   return sortedEntries;
 };

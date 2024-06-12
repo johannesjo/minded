@@ -1,11 +1,11 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
-import { Preferences } from '@capacitor/preferences';
+import { Preferences } from "@capacitor/preferences";
 
-const DB_KEY = "mindedSyncData"
+const DB_KEY = "mindedSyncData";
 
 export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
-  return   await Preferences.set({
+  return await Preferences.set({
     key: DB_KEY,
     value: JSON.stringify(syncData),
   });
@@ -13,7 +13,6 @@ export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
 
 export const getSyncDataN = async (): Promise<SyncData> => {
   const result = await Preferences.get({ key: DB_KEY });
-  console.log(result);
   try {
     return {
       ...DEFAULT_SYNC_DATA,
@@ -32,7 +31,7 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
       ...syncData,
       answers: newAnswers,
     }).then(() => {
-      getSyncDataN().then(console.log);
+      // getSyncDataN().then(console.log);
     });
   });
 };
