@@ -18,16 +18,16 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLName</key>
+	<string>com.minded.app</string>
+	<key>CFBundleURLSchemes</key>
+	<array>
+		<string>minded</string>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-    <key>CFBundleURLName</key>
-    <string>com.example.myapp</string>
-    <key>CFBundleURLSchemes</key>
-    <array>
-       <string>minded</string>
-    </array>
 	<key>MinimumOSVersion</key>
 	<string>16.0</string>
 	<key>UILaunchStoryboardName</key>
@@ -52,6 +52,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>com.apple.developer.siri</key>
 	<true/>
 </dict>
 </plist>

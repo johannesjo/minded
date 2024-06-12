@@ -19,15 +19,21 @@ struct InteractionIntent: AppIntent  {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-     print("Asadasdasd")
+     print("PERFORM")
+        if let url = URL(string: "minded://") {
+            print(url)
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
       return .result()
     }
     
     func handle(intent: InteractionIntent, completion: @escaping () -> Void) {
+        print("HAAANDLE")
+
           // Trigger app launch
         if let url = URL(string: "minded://") {
-              print(url)
-              UIApplication.shared.open(url, options: [:], completionHandler: nil)
-          }
-      }
- }
+            print(url)
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+    }
+}
