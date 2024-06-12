@@ -56,4 +56,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
+    
+    // This function adjusts the web view's frame when the keyboard is displayed
+    func application(_ application: UIApplication, willChangeStatusBarFrame newStatusBarFrame: CGRect) {
+        print ("keyboard yeah")
+        if let webView = self.window?.rootViewController?.view as? WKWebView {
+            webView.frame.size.height -= newStatusBarFrame.height
+        }
+    }
 }
