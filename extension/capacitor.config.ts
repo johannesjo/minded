@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   zoomEnabled: false,
   plugins: {
     Keyboard: {
-      resize: "native",
+      resize: "none" as any,
     },
   },
   ios: {

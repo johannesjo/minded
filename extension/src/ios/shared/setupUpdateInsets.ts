@@ -1,6 +1,18 @@
 import { SafeArea, SafeAreaInsets } from "capacitor-plugin-safe-area";
+import { Keyboard } from "@capacitor/keyboard";
 
 export const setupUpdateInsets = (appEl: HTMLElement) => {
+  Keyboard.addListener("keyboardWillShow", (info) => {
+    appEl.style.setProperty(
+      `--app-height`,
+      `calc(100% - ${info.keyboardHeight}px)`,
+    );
+  });
+
+  Keyboard.addListener("keyboardWillHide", () => {
+    appEl.style.setProperty(`--app-height`, `100%`);
+  });
+
   SafeArea.getSafeAreaInsets().then((data) => {
     updateInsets(data);
   });

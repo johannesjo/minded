@@ -28,6 +28,7 @@
     "@capacitor/android": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@capacitor/ios": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
     "@capacitor/preferences": "^6.0.0",
     "@solidjs/router": "^0.13.3",
     "capacitor-plugin-safe-area": "^3.0.1",
