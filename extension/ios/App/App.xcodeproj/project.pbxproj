@@ -17,6 +17,7 @@
 		8F46FD202C19CBE70056AA6B /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F46FD1F2C19CBE70056AA6B /* MainViewController.swift */; };
 		8F46FD242C1B1F3F0056AA6B /* MindedIOSPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F46FD232C1B1F3F0056AA6B /* MindedIOSPlugin.swift */; };
 		8F6474942C1B2816009079CC /* MindedIOSPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F6474932C1B2816009079CC /* MindedIOSPlugin.m */; };
+		8F6474962C1B3743009079CC /* InteractionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6474952C1B3743009079CC /* InteractionIntent.swift */; };
 		8FE2EC692C18619200939672 /* Intents.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 8FE2EC682C18619200939672 /* Intents.intentdefinition */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 /* End PBXBuildFile section */
@@ -35,6 +36,7 @@
 		8F46FD232C1B1F3F0056AA6B /* MindedIOSPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindedIOSPlugin.swift; sourceTree = "<group>"; };
 		8F46FD2B2C1B20B50056AA6B /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
 		8F6474932C1B2816009079CC /* MindedIOSPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MindedIOSPlugin.m; sourceTree = "<group>"; };
+		8F6474952C1B3743009079CC /* InteractionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = InteractionIntent.swift; path = InteractionIntent.swift; sourceTree = "<absolute>"; };
 		8FCAA6CE2C199D1F00220C8B /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		8FE2EC682C18619200939672 /* Intents.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = Intents.intentdefinition; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				8F46FD212C1B1EDE0056AA6B /* plugins */,
+				8F6474952C1B3743009079CC /* InteractionIntent.swift */,
 				8FE2EC682C18619200939672 /* Intents.intentdefinition */,
 				8FCAA6CE2C199D1F00220C8B /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
@@ -242,6 +245,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F6474962C1B3743009079CC /* InteractionIntent.swift in Sources */,
 				8FE2EC692C18619200939672 /* Intents.intentdefinition in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				8F46FD202C19CBE70056AA6B /* MainViewController.swift in Sources */,
