@@ -4,6 +4,7 @@ import styles from "./BottomBar.module.scss";
 import { A, useLocation, useNavigate } from "@solidjs/router";
 import { createEffect, createSignal } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
@@ -39,14 +40,16 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           >
             <Ico name="feedback" />
           </A>
-          <A
-            title="Go to settings page"
-            class="btnIcoOnly"
-            href="/settings"
-            activeClass="active"
-          >
-            <Ico name="settings" />
-          </A>
+          {!IS_IOS && (
+            <A
+              title="Go to settings page"
+              class="btnIcoOnly"
+              href="/settings"
+              activeClass="active"
+            >
+              <Ico name="settings" />
+            </A>
+          )}
         </>
       ) : (
         <A
