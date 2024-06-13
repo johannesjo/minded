@@ -25,8 +25,6 @@ export const InteractionWeb: (props: {
   let wrapperEl;
 
   onMount(async () => {
-    console.log("InteractionWeb onMount()");
-
     // give a moment time for rendering
     setTimeout(() => {
       stopAllVideos();

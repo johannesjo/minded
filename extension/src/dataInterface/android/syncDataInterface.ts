@@ -25,8 +25,6 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
     return saveSyncDataN({
       ...syncData,
       answers: newAnswers,
-    }).then(() => {
-      getSyncDataN().then(console.log);
     });
   });
 };

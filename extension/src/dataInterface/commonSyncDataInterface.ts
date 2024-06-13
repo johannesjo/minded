@@ -130,8 +130,6 @@ export const countSunTap = async (): Promise<void> => {
       [ds]: syncData.sunTaps[ds] ? syncData.sunTaps[ds] + 1 : 1,
     },
   };
-  console.log({ newSyncData });
-
   return saveSyncData(newSyncData);
 };
 
@@ -164,7 +162,6 @@ export const setDailyQuestionsDoneForToday = async (
       : { dailyQuestionsEveningTS: dateTS }),
   };
   console.log({ newSyncData });
-
   return saveSyncData(newSyncData);
 };
 
