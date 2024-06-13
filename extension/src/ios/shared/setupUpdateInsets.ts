@@ -22,7 +22,6 @@ export const setupUpdateInsets = (appEl: HTMLElement) => {
 
   const updateInsets = (data: SafeAreaInsets) => {
     const { insets } = data;
-    console.log(data);
 
     for (const [key, value] of Object.entries(insets)) {
       appEl.style.setProperty(`--safe-area-inset-${key}`, `${value}px`);

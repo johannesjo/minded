@@ -22,8 +22,6 @@ export const ContentScriptMain: (props: {
   );
 
   onMount(async () => {
-    console.log("ContentScriptMain onMount()");
-
     addWrapperClasses();
 
     if (props.isShowFullMinderInitially) {

@@ -35,7 +35,6 @@ export const SuccessSun: Component<SuccessSunProps> = (props) => {
     }
     const { scaleBigger, scaleSmaller } =
       calcScalingFactorsForSun(successSunSunEl);
-    console.log({ scaleBigger, scaleSmaller });
 
     successSunSunEl.style.setProperty(
       "--success-sun-ani-scale-1",

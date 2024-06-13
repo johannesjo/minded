@@ -79,10 +79,6 @@ export const LittleSunComponent: (props: {
         sessionDurationInS: v,
       });
       setSessionTime(v);
-      console.log(
-        `${v % RE_QUESTION_INTERVAL_IN_S === 0}: ${v} % ${RE_QUESTION_INTERVAL_IN_S} === 0`,
-        `||||| ${v - initialValue > MIN_RE_QUESTION_ELAPSED_TIME_S}: ${v} - ${initialValue} > ${MIN_RE_QUESTION_ELAPSED_TIME_S}`,
-      );
 
       if (
         v - initialValue > MIN_RE_QUESTION_ELAPSED_TIME_S &&

@@ -152,16 +152,16 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     (q) => q.categoryId === categoryToUse,
   );
 
-  console.log("getQuestionSmart() pointsMap:", pointsMap);
-  console.log("getQuestionSmart():", {
-    pointsMap,
-    sortedEntries,
-    scoreThreshold,
-    categoriesLowestScore,
-    categoryToUse,
-    questionsForCategory,
-    isWorkDayToday,
-  });
+  // console.log("getQuestionSmart() pointsMap:", pointsMap);
+  // console.log("getQuestionSmart():", {
+  //   pointsMap,
+  //   sortedEntries,
+  //   scoreThreshold,
+  //   categoriesLowestScore,
+  //   categoryToUse,
+  //   questionsForCategory,
+  //   isWorkDayToday,
+  // });
 
   return getRndQuestionConsideringMain(questionsForCategory);
 };
