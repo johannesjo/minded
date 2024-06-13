@@ -3,7 +3,6 @@
 
 .interactionOverlay {
   position: fixed;
-  top: 0;
   left: 0;
   right: 0;
   width: 100%;
@@ -24,6 +23,7 @@
 .interactionWrapper {
   padding: 32px;
   max-width: 100%;
+  margin-top: var(--safe-area-inset-top)
 }
 
 
