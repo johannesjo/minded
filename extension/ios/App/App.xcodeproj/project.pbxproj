@@ -15,6 +15,8 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		8F46FD202C19CBE70056AA6B /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F46FD1F2C19CBE70056AA6B /* MainViewController.swift */; };
+		8F46FD242C1B1F3F0056AA6B /* MindedIOSPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F46FD232C1B1F3F0056AA6B /* MindedIOSPlugin.swift */; };
+		8F6474942C1B2816009079CC /* MindedIOSPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F6474932C1B2816009079CC /* MindedIOSPlugin.m */; };
 		8FE2EC692C18619200939672 /* Intents.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 8FE2EC682C18619200939672 /* Intents.intentdefinition */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 /* End PBXBuildFile section */
@@ -30,6 +32,9 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		8F46FD1F2C19CBE70056AA6B /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		8F46FD232C1B1F3F0056AA6B /* MindedIOSPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindedIOSPlugin.swift; sourceTree = "<group>"; };
+		8F46FD2B2C1B20B50056AA6B /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
+		8F6474932C1B2816009079CC /* MindedIOSPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MindedIOSPlugin.m; sourceTree = "<group>"; };
 		8FCAA6CE2C199D1F00220C8B /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		8FE2EC682C18619200939672 /* Intents.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = Intents.intentdefinition; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -78,6 +83,7 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				8F46FD212C1B1EDE0056AA6B /* plugins */,
 				8FE2EC682C18619200939672 /* Intents.intentdefinition */,
 				8FCAA6CE2C199D1F00220C8B /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
@@ -100,6 +106,24 @@
 				AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		8F46FD212C1B1EDE0056AA6B /* plugins */ = {
+			isa = PBXGroup;
+			children = (
+				8F46FD222C1B1EFB0056AA6B /* MindedIOSPlugin */,
+			);
+			path = plugins;
+			sourceTree = "<group>";
+		};
+		8F46FD222C1B1EFB0056AA6B /* MindedIOSPlugin */ = {
+			isa = PBXGroup;
+			children = (
+				8F46FD232C1B1F3F0056AA6B /* MindedIOSPlugin.swift */,
+				8F46FD2B2C1B20B50056AA6B /* App-Bridging-Header.h */,
+				8F6474932C1B2816009079CC /* MindedIOSPlugin.m */,
+			);
+			path = MindedIOSPlugin;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,7 +160,7 @@
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 1100;
+						LastSwiftMigration = 1530;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -221,6 +245,8 @@
 				8FE2EC692C18619200939672 /* Intents.intentdefinition in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				8F46FD202C19CBE70056AA6B /* MainViewController.swift in Sources */,
+				8F6474942C1B2816009079CC /* MindedIOSPlugin.m in Sources */,
+				8F46FD242C1B1F3F0056AA6B /* MindedIOSPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,6 +384,7 @@
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -375,6 +402,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.minded.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/plugins/MindedIOSPlugin/App-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -385,6 +414,7 @@
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -401,6 +431,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.minded.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "App/plugins/MindedIOSPlugin/App-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

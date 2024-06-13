@@ -12,6 +12,10 @@ class MainViewController: CAPBridgeViewController {
     
     var isInteractionShown = false
     
+    override open func capacitorDidLoad() {
+        bridge?.registerPluginInstance(MindedIOSPlugin())
+    }
+    
     override func viewDidLoad() {
         print("viewDidLoad")
         super.viewDidLoad()
