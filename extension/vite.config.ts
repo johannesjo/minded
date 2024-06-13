@@ -50,7 +50,6 @@ export default defineConfig(({ mode }) => {
             ],
             input: {
               main: resolve(root, "ios", "main", "index.html"),
-              interaction: resolve(root, "ios", "interaction", "index.html"),
             },
             output: {
               entryFileNames: "[name]/index.js",
