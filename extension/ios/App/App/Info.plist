@@ -37,6 +37,10 @@
 	<true/>
 	<key>MinimumOSVersion</key>
 	<string>16.0</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>InteractionIntentIntent</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

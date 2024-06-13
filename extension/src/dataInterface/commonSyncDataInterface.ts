@@ -161,7 +161,6 @@ export const setDailyQuestionsDoneForToday = async (
       ? { dailyQuestionsMorningTS: dateTS }
       : { dailyQuestionsEveningTS: dateTS }),
   };
-  console.log({ newSyncData });
   return saveSyncData(newSyncData);
 };
 

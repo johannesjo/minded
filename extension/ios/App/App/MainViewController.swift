@@ -18,56 +18,63 @@ class MainViewController: CAPBridgeViewController {
 
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: NSNotification.Name("OPEN_APP_URL"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: NSNotification.Name("SWITCH_MODE"), object: nil)
     }
     
     @objc func handleNotification(_ notification: Notification) {
-        if let url = notification.userInfo?["url"] as? URL {
+        if let mode = notification.userInfo?["mode"] as? String {
             // Handle the URL data here
-            print("Received URL:", url)
-            if url.absoluteString.contains("interaction") {
+            print("Received MODE:", mode)
+            if mode=="interaction" {
                print("URL contains the string 'interaction'")
                 loadInteracation()
+            } else {
+                loadMain()
             }
         }
     }
     
     @objc func appWillEnterForeground() {
         print("App will enter foreground")
-        loadMain()
+        dispatchJSEvent(evName: "WILL_ENTER_FOREGROUND")
     }
 
     @objc func appDidBecomeActive() {
         print("App did become active")
-        loadMain()
+        dispatchJSEvent(evName: "DID_BECOME_ACTIVE")
     }
 
     // Don't forget to remove the observers when the app delegate is deinitialized
     deinit {
-        
        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
-       NotificationCenter.default.removeObserver(self, name: NSNotification.Name("OPEN_APP_URL"), object: nil)
+       NotificationCenter.default.removeObserver(self, name: NSNotification.Name("SWITCH_MODE"), object: nil)
     }
     
     func changeHash(newHash: String) {
-        let js = "console.log('prev',window.location.hash); window.location.hash = '\(newHash)'"
+        execJs(js: "window.location.hash = '\(newHash)'")
+    }
+
+    func dispatchJSEvent(evName:String) {
+        execJs(js: "window.dispatchEvent(new Event('\(evName)'))")
+    }
+    
+    func execJs(js: String){
         webView?.evaluateJavaScript(js) { (result, error) in
             if let error = error {
-                print("Error changing hash: \(error.localizedDescription)")
+                print("error execJs: \(error.localizedDescription)")
             } else {
-                print("Hash changed to \(newHash)")
+                print("execJs: \(js)")
             }
         }
     }
-
+    
     
     func loadInteracation() {
         if(isInteractionShown) {
             return
         }
         isInteractionShown = true
-        
         changeHash(newHash: "interaction")
 
     }
@@ -77,7 +84,6 @@ class MainViewController: CAPBridgeViewController {
             return
         }
         isInteractionShown = false
-        
         changeHash(newHash: "")
     }
 }

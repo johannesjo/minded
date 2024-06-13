@@ -22,3 +22,6 @@
 export const iosInterface = {} as never;
 
 export const IOS_EV_RESUME = "iosAppResume";
+
+export const IOS_WILL_ENTER_FOREGROUND = "WILL_ENTER_FOREGROUND";
+export const IOS_DID_BECOME_ACTIVE = "DID_BECOME_ACTIVE";
