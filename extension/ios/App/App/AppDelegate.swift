@@ -5,7 +5,6 @@ import Capacitor
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var lastLaunchedUrl: URL?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("application1")
@@ -21,12 +20,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "main"])
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-        print("applicationWillEnterForeground", lastLaunchedUrl)
-        NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "main"])
+        print("applicationWillEnterForeground")
+        //   NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "main"])
  }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -46,6 +46,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         print("application2")
+        print("application2", userActivity.activityType)
+
         NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "interaction"])
         return true
         // Called when the app was launched with an activity, including Universal Links.

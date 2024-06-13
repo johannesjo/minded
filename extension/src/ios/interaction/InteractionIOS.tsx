@@ -19,6 +19,12 @@ const InteractionIOS = () => {
     : null;
   let wrapperEl;
 
+  const continueToApp = () => {
+    // continue to main instead since continue to app is not working
+    // window.location.hash = "";
+    // MindedIOSPlugin.continueToApp();
+  };
+
   onMount(async () => {
     addWrapperClasses();
     MindedIOSPlugin.continueToApp();
@@ -32,13 +38,13 @@ const InteractionIOS = () => {
       ref={wrapperEl}
       id="minded-6622-coloured-wrapper-dynamic"
       onClick={async (ev) => {
-        if (
-          (ev.target as HTMLElement)?.id ===
-          "minded-6622-coloured-wrapper-dynamic"
-        ) {
-          await fadeOut(wrapperEl, 400).promise;
-          MindedIOSPlugin.continueToApp();
-        }
+        // if (
+        //   (ev.target as HTMLElement)?.id ===
+        //   "minded-6622-coloured-wrapper-dynamic"
+        // ) {
+        //   await fadeOut(wrapperEl, 400).promise;
+        //   continueToApp();
+        // }
       }}
     >
       <InteractionCommon
@@ -52,9 +58,9 @@ const InteractionIOS = () => {
           window.location.hash = "";
         }}
         onSetAnswer={() => undefined}
-        onAfterInteractionFadeout={() => MindedIOSPlugin.continueToApp()}
-        onAfterSuccessSunFadeout={() => MindedIOSPlugin.continueToApp()}
-        onSkip={() => MindedIOSPlugin.continueToApp()}
+        onAfterInteractionFadeout={() => continueToApp()}
+        onAfterSuccessSunFadeout={() => (window.location.hash = "")}
+        onSkip={() => continueToApp()}
         onUpdateQuestion={onUpdateQuestion}
       />
     </div>
