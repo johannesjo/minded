@@ -6,6 +6,7 @@ import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
+import { MindedIOSPlugin } from "@src/ios/plugin/MindedIOSPlugin";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {
@@ -20,23 +21,10 @@ const InteractionIOS = () => {
 
   onMount(async () => {
     addWrapperClasses();
+    MindedIOSPlugin.continueToApp();
   });
 
-  const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {
-    // iosInterface.setQuestion(JSON.stringify(rndQuestion));
-  };
-
-  const onSkip = () => {
-    // iosInterface.onSkip();
-  };
-
-  const showLittleSunAfter = () => {
-    // MOTE: we need to wait just a little extra otherwise ios throws an error that we are still drawing
-    setTimeout(() => {
-      // iosInterface.hideWindow();
-      // iosInterface.showLittleSun();
-    }, 100);
-  };
+  const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {};
 
   // TODO add app name
   return (
@@ -49,28 +37,24 @@ const InteractionIOS = () => {
           "minded-6622-coloured-wrapper-dynamic"
         ) {
           await fadeOut(wrapperEl, 400).promise;
-          showLittleSunAfter();
+          MindedIOSPlugin.continueToApp();
         }
       }}
     >
       <InteractionCommon
         isInitFadeout={false}
         wrapperEl={wrapperEl}
-        onModeSet={(mode) => {
-          if (mode !== "QUESTION") {
-            // iosInterface.unsetQuestion();
-          }
-        }}
+        onModeSet={() => undefined}
         questionForPrompt={question}
         onSuccessSunTap={() => {
           countSunTap();
-          // iosInterface.onSuccessSunTap();
+          // TODO close interaction and return to main screen;
+          window.location.hash = "";
         }}
-        // onSetAnswer={(txt) => iosInterface.setAnswerTxt(txt)}
         onSetAnswer={() => undefined}
-        onAfterInteractionFadeout={() => showLittleSunAfter()}
-        onAfterSuccessSunFadeout={() => showLittleSunAfter()}
-        onSkip={onSkip}
+        onAfterInteractionFadeout={() => MindedIOSPlugin.continueToApp()}
+        onAfterSuccessSunFadeout={() => MindedIOSPlugin.continueToApp()}
+        onSkip={() => MindedIOSPlugin.continueToApp()}
         onUpdateQuestion={onUpdateQuestion}
       />
     </div>

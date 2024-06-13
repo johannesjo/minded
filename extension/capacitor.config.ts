@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
     },
   },
   ios: {
-    loggingBehavior: "none",
+    // loggingBehavior: "none",
     zoomEnabled: false,
   },
   android: {

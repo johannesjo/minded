@@ -11,6 +11,7 @@ import {
   IOS_EV_RESUME,
   IOS_WILL_ENTER_FOREGROUND,
 } from "@src/dataInterface/ios/iosInterface";
+import { MindedIOSPlugin } from "@src/ios/plugin/MindedIOSPlugin";
 
 const MainIOS = () => {
   // NOTE: we start with false, since events might have been triggered before app start
@@ -18,6 +19,8 @@ const MainIOS = () => {
 
   onMount(() => {
     addWrapperClasses();
+    MindedIOSPlugin.continueToApp();
+    console.log(MindedIOSPlugin);
   });
 
   const refresh = () => {
