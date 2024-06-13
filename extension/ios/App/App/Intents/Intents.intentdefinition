@@ -27,6 +27,8 @@
 			<string>Opens the minded interaction</string>
 			<key>INIntentDescriptionID</key>
 			<string>10VVdV</string>
+			<key>INIntentLastParameterTag</key>
+			<integer>1</integer>
 			<key>INIntentManagedParameterCombinations</key>
 			<dict>
 				<key></key>
