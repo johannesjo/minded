@@ -7,11 +7,13 @@ import {
 } from "@src/shared/addWrapperClasses";
 import {
   IOS_DID_BECOME_ACTIVE,
+  IOS_DID_ENTER_BACKGROUND,
   IOS_EV_RESUME,
   IOS_WILL_ENTER_FOREGROUND,
 } from "@src/dataInterface/ios/iosInterface";
 
 const MainIOS = () => {
+  // NOTE: we start with false, since events might have been triggered before app start
   const [getIsHide, setIsHide] = createSignal<boolean>(false);
 
   onMount(() => {
@@ -36,6 +38,9 @@ const MainIOS = () => {
       setIsHide(false);
     });
     window.addEventListener(IOS_WILL_ENTER_FOREGROUND, () => {
+      setIsHide(false);
+    });
+    window.addEventListener(IOS_DID_ENTER_BACKGROUND, () => {
       setIsHide(true);
     });
   });

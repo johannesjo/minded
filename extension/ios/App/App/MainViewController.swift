@@ -16,6 +16,8 @@ class MainViewController: CAPBridgeViewController {
         print("viewDidLoad")
         super.viewDidLoad()
 
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: NSNotification.Name("SWITCH_MODE"), object: nil)
@@ -42,6 +44,11 @@ class MainViewController: CAPBridgeViewController {
     @objc func appDidBecomeActive() {
         print("App did become active")
         dispatchJSEvent(evName: "DID_BECOME_ACTIVE")
+    }
+    
+    @objc func appDidEnterBackground() {
+        print("App did become active")
+        dispatchJSEvent(evName: "DID_ENTER_BACKGROUND")
     }
 
     // Don't forget to remove the observers when the app delegate is deinitialized
