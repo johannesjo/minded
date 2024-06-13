@@ -15,7 +15,6 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		8F46FD202C19CBE70056AA6B /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F46FD1F2C19CBE70056AA6B /* MainViewController.swift */; };
-		8FE2EC652C183A3500939672 /* InteractionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE2EC642C183A3500939672 /* InteractionIntent.swift */; };
 		8FE2EC692C18619200939672 /* Intents.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 8FE2EC682C18619200939672 /* Intents.intentdefinition */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 /* End PBXBuildFile section */
@@ -32,7 +31,6 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		8F46FD1F2C19CBE70056AA6B /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		8FCAA6CE2C199D1F00220C8B /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
-		8FE2EC642C183A3500939672 /* InteractionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionIntent.swift; sourceTree = "<group>"; };
 		8FE2EC682C18619200939672 /* Intents.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = Intents.intentdefinition; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
@@ -80,8 +78,8 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				8FE2EC682C18619200939672 /* Intents.intentdefinition */,
 				8FCAA6CE2C199D1F00220C8B /* App.entitlements */,
-				8FE2EC632C183A0800939672 /* Intents */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -102,15 +100,6 @@
 				AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */,
 			);
 			name = Pods;
-			sourceTree = "<group>";
-		};
-		8FE2EC632C183A0800939672 /* Intents */ = {
-			isa = PBXGroup;
-			children = (
-				8FE2EC642C183A3500939672 /* InteractionIntent.swift */,
-				8FE2EC682C18619200939672 /* Intents.intentdefinition */,
-			);
-			path = Intents;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -230,7 +219,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8FE2EC692C18619200939672 /* Intents.intentdefinition in Sources */,
-				8FE2EC652C183A3500939672 /* InteractionIntent.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				8F46FD202C19CBE70056AA6B /* MainViewController.swift in Sources */,
 			);
