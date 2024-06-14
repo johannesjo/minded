@@ -52,6 +52,7 @@ const InteractionIOS = () => {
         wrapperEl={wrapperEl}
         onModeSet={() => undefined}
         questionForPrompt={question}
+        isReducedSuccessSun={true}
         onSuccessSunTap={() => {
           countSunTap();
           // TODO close interaction and return to main screen;

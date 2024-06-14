@@ -23,10 +23,12 @@ struct InteractionIntent: ForegroundContinuableIntent {
       func perform() async throws -> some IntentResult {
           try await requestToContinueInForeground("How about a minded interaction rather than this app?") { () async throws -> ResultValue in
               NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil, userInfo: ["mode": "interaction"])
-              return .success // Return appropriate ResultValue after the action
+              print("before success")
+              return .success // Return appropriate ResultValue after the action#
           }
 
-          return .result(dialog: "I opened the app.")
+          print("AAAFTER")
+          return .result()
       }
 }
 
