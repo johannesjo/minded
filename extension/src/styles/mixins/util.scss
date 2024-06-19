@@ -1,7 +1,13 @@
 @import "../variablesSCSS";
 
-@mixin onAndroid() {
-  :global(body.android) & {
+@mixin onWebExtension() {
+  :global(body.minded-6622-web-extension) & {
+    @content
+  }
+}
+
+@mixin onMobileApp() {
+  :global(body.minded-6622-mobile-app) & {
     @content
   }
 }
