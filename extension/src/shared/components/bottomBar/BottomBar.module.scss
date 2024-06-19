@@ -24,8 +24,10 @@
         animation-name: minded6622fadeIn;
       }
     }
-    @media (min-width: $bpDashboardMoreThan2Col) {
-      animation-delay: 1.5s;
+    @include onWebExtension {
+      @media (min-width: $bpDashboardMoreThan2Col) {
+        animation-delay: 1.5s;
+      }
     }
   }
 

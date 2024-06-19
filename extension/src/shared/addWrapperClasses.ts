@@ -1,5 +1,5 @@
 import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
+import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/commonSyncDataInterface";
 
 // const DARK_MODE_START_HOUR = 11;
 const DARK_MODE_START_HOUR = 19;
@@ -10,8 +10,11 @@ export const addWrapperClasses = () => {
 
   setIsDarkModeIfApplies(el);
 
-  if (IS_ANDROID) {
-    el.classList.add("minded-6622-android");
+  if (IS_APP) {
+    el.classList.add("minded-6622-mobile-app");
+  }
+  if (IS_WEB_EXT) {
+    el.classList.add("minded-6622-web-extension");
   }
   if (IS_TOUCH_PRIMARY) {
     el.classList.add("minded-6622-touch-primary");
