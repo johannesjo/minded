@@ -119,6 +119,13 @@ export const QUESTION_CATEGORIES: {
         isDontSaveAnswer: true,
         isSkipOnDashboard: true,
       },
+      {
+        id: QID.HBH8,
+        t: "What is a good reason why you want to visit this website less?",
+        prompt: "I want to",
+        isDontSaveAnswer: true,
+        isSkipOnDashboard: true,
+      },
     ],
   },
   [QuestionCategoryId.HealthierAppUsage]: {
@@ -158,6 +165,13 @@ export const QUESTION_CATEGORIES: {
         id: QID.HAU7,
         t: "What is the purpose of using this app now",
         prompt: "In this session I want to",
+        isDontSaveAnswer: true,
+        isSkipOnDashboard: true,
+      },
+      {
+        id: QID.HAU8,
+        t: "What is a good reason why you want use this app less?",
+        prompt: "I want to",
         isDontSaveAnswer: true,
         isSkipOnDashboard: true,
       },
@@ -361,12 +375,30 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.GT4,
         t: "How did I show kindness to myself and others today",
-        prompt: "",
       },
       {
         id: QID.GT5,
         t: "What positive experiences did I have today, no matter how small",
-        prompt: "",
+      },
+      {
+        id: QID.GT6,
+        t: "In what ways did you improve today",
+        prompt: "I improved by",
+      },
+      {
+        id: QID.GT7,
+        t: "What was the best thing about today",
+        prompt: "The best thing today was",
+      },
+      {
+        id: QID.GT8,
+        t: "Who are you grateful for today",
+        prompt: "I am grateful for",
+      },
+      {
+        id: QID.GT9,
+        t: "What are you most proud for doing today",
+        prompt: "I am proud",
       },
     ],
     dashboardTxt: "Good Today",
@@ -677,6 +709,11 @@ When am I at my best?
 If I change nothing, what will your life look like three months from now? How does this make me feel?
 What actions, if taken, would make me proud of myself, regardless of the outcome?
 When negative thoughts arise, how do I deal with them?
+
+What did I do today toward reaching my goals and what can i do tomorrow toward reaching my goals?
+
+What do I want to achieve tomorrow?
+What will get me out of bed on time tomorrow morning?
 
 
 Recently I discovered that...

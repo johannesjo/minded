@@ -8,6 +8,8 @@ export enum QID {
   HBH5 = "HBH5",
   HBH6 = "HBH6",
   HBH7 = "HBH7",
+  HBH8 = "HBH8",
+  HBH9 = "HBH9",
 
   HAU1 = "HAU1",
   HAU2 = "HAU2",
@@ -16,6 +18,8 @@ export enum QID {
   HAU5 = "HAU5",
   HAU6 = "HAU6",
   HAU7 = "HAU7",
+  HAU8 = "HAU8",
+  HAU9 = "HAU9",
 
   PR1 = "PR1",
   PR2 = "PR2",
@@ -64,6 +68,10 @@ export enum QID {
   GT3 = "GT3",
   GT4 = "GT4",
   GT5 = "GT5",
+  GT6 = "GT6",
+  GT7 = "GT7",
+  GT8 = "GT8",
+  GT9 = "GT9",
 
   GP1 = "GP1",
   GP2 = "GP2",
