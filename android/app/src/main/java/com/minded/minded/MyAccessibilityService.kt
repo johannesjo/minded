@@ -56,14 +56,13 @@ class MyAccessibilityService : AccessibilityService() {
         // NOTE we exclude minded here too since the overlay otherwise also gets counted :/
         // TODO better solution
         return packageName.contains("com.google.android.inputmethod")
-                || packageName == "com.minded.minded"
                 || packageName == "com.android.systemui"
-//                || packageName == "com.google.android.googlequicksearchbox"
     }
 
 
     override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
         Log.v("ACCESSIBILITY", "onAccessibilityEvent() ${System.currentTimeMillis() - lastEventTs}")
+        val isMindedWidget = accessibilityEvent.className == "androidx.compose.ui.platform.ComposeView" && packageName == "com.minded.minded"
         // NOTE: we only check if the new event was fired after the last event. NOT sure if this is necessary
         // NOTE2: when using the nexuslauncher to swipe in between app, the nexuslauncher is recorded again shortly after refocusing
         // the app that is actually focused afterwards. To counter this we use the magic 350ms and don't fire the service again if the nexus launcher is not recorded after that delay
@@ -72,14 +71,16 @@ class MyAccessibilityService : AccessibilityService() {
                     (System.currentTimeMillis() - lastEventTs <= minThresholdVorNexusLauncher
                             // but if the it is recorded twice in a row proceed
                             && lastPackageName != "com.google.android.apps.nexuslauncher"))
+
         val isStartService = (System.currentTimeMillis() - lastEventTs > 0)
+                && !isMindedWidget
                 && !isSpecialNexusLauncherCase
                 && accessibilityEvent.packageName != null
                 && !isNonAppPackage(accessibilityEvent.packageName.toString())
         lastEventTs = System.currentTimeMillis()
         Log.v(
             "ACCESSIBILITY",
-            "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$lastPackageName isSpecialNexusLauncherCase $isSpecialNexusLauncherCase – ${accessibilityEvent.eventType} ${accessibilityEvent.action}"
+            "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$lastPackageName isSpecialNexusLauncherCase $isSpecialNexusLauncherCase – ${accessibilityEvent.eventType} ${accessibilityEvent.action} ${accessibilityEvent.contentChangeTypes} ${accessibilityEvent.eventTime} ${accessibilityEvent.className}"
         )
         lastPackageName = accessibilityEvent.packageName
 //        Log.v(
