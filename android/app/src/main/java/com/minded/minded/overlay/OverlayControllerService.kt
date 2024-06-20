@@ -236,6 +236,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 Log.v(logTag, "isInGracePeriod")
                 if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
+                    if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null) {
+                        showOverlay(OverlayName.SMALL_MSG_OVERLAY, null, currentPackageName)
+                    }
                 }
                 // since we also want to show the question overlay after the lock screen, we DON'T do this check
 //            } else if (lastForeGroundApp == currentPackageName) {
@@ -289,7 +292,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     fun userDrivenClose(isSkipShowSuccessSunAfter: Boolean = false) {
-        Log.v("QuestionOverlaySVC", "userDrivenClose() isSkipShowSuccessSunAfter: $isSkipShowSuccessSunAfter")
+        Log.v(
+            "QuestionOverlaySVC",
+            "userDrivenClose() isSkipShowSuccessSunAfter: $isSkipShowSuccessSunAfter"
+        )
         sharedPreferenceService.countUserDrivenClose()
         // we do this to let the sun animation finish, sun is supposed to close itself after
         hideAllBut(OverlayName.SUCCESS_SUN_OVERLAY)
