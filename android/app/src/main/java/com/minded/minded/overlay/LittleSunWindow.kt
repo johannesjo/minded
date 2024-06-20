@@ -61,14 +61,10 @@ class LittleSunWindow(
                 // go to homescreen directly to prevent showing the overlay after screen is turned on
                 ctrlSvc.goToHomeScreen()
             } else {
-                Log.v(
-                    logTag,
-                    "elapsedSeconds: $elapsedSeconds + $initialTime) % $REQUESTION_CYCLE_DURATION_IN_S == 0 ${(elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0}"
-                )
-                Log.v(
-                    logTag,
-                    "${sharedOverlayViewModel.sharedData.value}"
-                )
+//                Log.v(
+//                    logTag,
+//                    "elapsedSeconds: $elapsedSeconds + $initialTime) % $REQUESTION_CYCLE_DURATION_IN_S == 0 ${(elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0}"
+//                )
 //                if ((elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
 //                    hideWindow()
 //                    OverlayControllerService.showOverlay(
@@ -78,12 +74,12 @@ class LittleSunWindow(
 //                        sharedOverlayViewModel.sharedData.value.currentApp
 //                    )
 //                } else
-                if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
-                    OverlayControllerService.showOverlay(
-                        ctrlSvc,
-                        OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-                    )
-                }
+//                if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
+//                    OverlayControllerService.showOverlay(
+//                        ctrlSvc,
+//                        OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
+//                    )
+//                }
                 // restart timer
                 handler.postDelayed(this, 1000)
             }
@@ -93,12 +89,12 @@ class LittleSunWindow(
     override fun showWindow() {
         super.showWindow()
         // show small msg overlay initially if there is a question (possibly with answer)
-        if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null) {
-            OverlayControllerService.showOverlay(
-                ctrlSvc,
-                OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-            )
-        }
+//        if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null) {
+//            OverlayControllerService.showOverlay(
+//                ctrlSvc,
+//                OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
+//            )
+//        }
     }
 
     override fun hideWindow() {
