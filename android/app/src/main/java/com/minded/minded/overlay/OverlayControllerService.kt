@@ -30,6 +30,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private var wasNoOverlaysBefore = false
+    private var lastGoToAppTS: Long = 0
+    private var lastGoTaAppThreshold: Long = 2200L
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
@@ -200,11 +202,18 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
             it > Instant.now().minusSeconds(GRACE_PERIOD_IN_S.toLong())
         } ?: false
+        val isInLastGoToAppThreshold = lastGoToAppTS > 0 && System.currentTimeMillis() - lastGoToAppTS < lastGoTaAppThreshold
 
         Log.v(
             logTag,
-            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName}"
+            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName} ${isInLastGoToAppThreshold}"
         )
+
+        // NOTE: never show the overlay if the user just went to the app
+        if(isInLastGoToAppThreshold){
+            Log.v(logTag, "isInLastGoToAppThreshold")
+            return;
+        }
 
         if (!isBlockedPackage(currentPackageName)) {
             hideAllBut()
@@ -311,15 +320,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
     }
 
-    fun countUserDrivenClose() {
-        val sharedPreferences = this.getSharedPreferences("mindedData", Context.MODE_PRIVATE)
-        val str = sharedPreferences.getString("mindedAll", null);
-        if (str != null) {
-            val syncData = parseSyncData(str)
-            Log.v(logTag, "syncData: $syncData")
-        }
-    }
-
     fun goToHomeScreen() {
         val intent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME)
@@ -331,6 +331,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     fun goToApp() {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        lastGoToAppTS = System.currentTimeMillis()
         startActivity(intent)
     }
 
