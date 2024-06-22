@@ -28,7 +28,7 @@ export const SetAlternativeInteraction: (props: {
     <div onmouseenter={props.onCancelCountdown}>
       <div class="txtBig">
         {IS_APP
-          ? "What other app would be better to use insteadof this one?"
+          ? "What other app would be better to use instead of this one?"
           : "What website might be better to visit instead of this one?"}
       </div>
 
