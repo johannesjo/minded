@@ -7,27 +7,21 @@ export const InputWithSend = (props: {
   isAutoFocus?: boolean;
   value?: string;
   setRef?: (el: HTMLInputElement) => void;
-  onKeyDown?: (e: KeyboardEvent) => void;
   maxLength?: number;
-  isDisabled?: boolean;
-  onSubmitClick: (val: string) => void;
+  onSubmit: (val: string) => Promise<void>;
+  onCancelCountdown?: () => void;
+  onEscape: () => void;
 }): JSX.Element => {
   let inpEl;
   let t0;
   let t1;
 
-  const [getIsInputDisabled, setIsInputDisabled] = createSignal(
-    props.isDisabled,
-  );
+  const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
 
   createEffect(() => {
     if (inpEl) {
       inpEl.value = props.value || "";
     }
-  });
-
-  createEffect(() => {
-    setIsInputDisabled(props.isDisabled);
   });
 
   onMount(async () => {
@@ -45,9 +39,30 @@ export const InputWithSend = (props: {
     window.clearTimeout(t1);
   });
 
+  const onSubmit = async (val: string) => {
+    if (!val) {
+      focusInp();
+      return;
+    }
+
+    setIsInputDisabled(true);
+    await props.onSubmit(val);
+    setIsInputDisabled(false);
+  };
+
   const focusInp = () => {
     inpEl.focus();
     requestFocusAndShowKeyboard();
+  };
+
+  const onKeyDown = (ev: KeyboardEvent): void => {
+    if (ev.key === "Enter") {
+      onSubmit((ev.target as HTMLInputElement).value);
+    } else if (ev.key === "Escape") {
+      props.onEscape();
+    } else if (ev.key !== "Control") {
+      props.onCancelCountdown?.();
+    }
   };
 
   return (
@@ -56,15 +71,11 @@ export const InputWithSend = (props: {
         ref={inpEl}
         type="text"
         disabled={getIsInputDisabled()}
-        onkeydown={props.onKeyDown}
+        onkeydown={onKeyDown}
         maxlength={props.maxLength}
         autofocus={true}
       />
-      <div
-        onclick={() => {
-          props.onSubmitClick(inpEl?.value);
-        }}
-      >
+      <div onclick={() => onSubmit(inpEl?.value)}>
         <Ico name="send" />
       </div>
     </div>

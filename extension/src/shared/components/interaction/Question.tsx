@@ -68,16 +68,6 @@ export const Question: (props: {
     props.onSuccess(answer);
   };
 
-  const onKeyDown = (ev: KeyboardEvent): void => {
-    if (ev.key === "Enter") {
-      submitAnswer((ev.target as HTMLInputElement).value);
-    } else if (ev.key === "Escape") {
-      props.onSkip();
-    } else if (ev.key !== "Control") {
-      props.onCancelCountdown();
-    }
-  };
-
   const updateQuestion = () => {
     const newQuestion =
       questionUpdateCount > MAX_SMART_QUESTION_ATTEMPTS
@@ -110,12 +100,13 @@ export const Question: (props: {
           onclick={props.onCancelCountdown}
         >
           <InputWithSend
-            onKeyDown={onKeyDown}
+            onEscape={props.onSkip}
+            onCancelCountdown={props.onCancelCountdown}
             value={getValue()}
+            maxLength={500}
             isAutoFocus={true}
-            isDisabled={getIsInputDisabled()}
             setRef={setInpEl}
-            onSubmitClick={submitAnswer}
+            onSubmit={submitAnswer}
           />
         </div>
 
