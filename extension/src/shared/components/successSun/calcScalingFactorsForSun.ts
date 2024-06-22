@@ -18,8 +18,8 @@ export const calcScalingFactorsForSun = (
   let scaleSmaller = Math.min(scaleY, scaleX);
   let scaleBigger = Math.max(scaleY, scaleX);
   if (scaleSmaller < 9) {
-    scaleSmaller = scaleBigger - 2;
-    scaleBigger = scaleBigger + 1.5;
+    scaleSmaller = (scaleBigger + scaleSmaller) / 2;
+    scaleBigger = scaleBigger + 1;
   } else {
     scaleSmaller = scaleSmaller - 1;
     scaleBigger = scaleBigger + 1;
