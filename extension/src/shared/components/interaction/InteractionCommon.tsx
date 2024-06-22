@@ -24,6 +24,8 @@ import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import SuccessSun from "@src/shared/components/successSun/SuccessSun";
+import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
+import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
 
 interface InteractionCommonProps {
   isReducedSuccessSun?: boolean;
@@ -181,6 +183,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           </Match>
           <Match when={getMode() === "ENERGY_LVL"}>
             <EnergyLvlInteraction
+              onCancelCountdown={cancelCountdown}
+              onSuccess={onInteractionSuccess}
+              onSkip={props.onSkip}
+            />
+          </Match>
+          <Match when={getMode() === "SHOW_ALTERNATIVE"}>
+            <ShowAlternativeInteraction
+              syncData={getSyncDataI()}
+              onCancelCountdown={cancelCountdown}
+              onSkip={props.onSkip}
+            />
+          </Match>
+          <Match when={getMode() === "SET_ALTERNATIVE"}>
+            <SetAlternativeInteraction
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
               onSkip={props.onSkip}

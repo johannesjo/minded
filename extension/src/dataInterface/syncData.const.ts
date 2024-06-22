@@ -54,6 +54,8 @@ export const DEFAULT_SYNC_DATA: SyncData = {
     },
     {} as Record<SelfAssessmentId, SelfAssessmentEntry>,
   ),
+  alternativeApps: [],
+  alternativeWebsites: [],
 };
 
 export const STATIC_CFG: StaticCfg = {

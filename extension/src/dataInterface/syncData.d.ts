@@ -54,6 +54,8 @@ export interface SyncData {
     [key: string]: number;
   };
   selfAssessment: SelfAssessmentData;
+  alternativeApps: string[];
+  alternativeWebsites: string[];
 }
 
 export interface StaticCfg {

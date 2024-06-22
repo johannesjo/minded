@@ -65,6 +65,24 @@ export const saveEnergyLvl = (energyLvlVal: number): Promise<void> => {
   });
 };
 
+export const saveAlternativeApp = (alternative: string): Promise<void> => {
+  return getSyncData().then((syncData) => {
+    return saveSyncData({
+      ...syncData,
+      alternativeApps: [...syncData.alternativeApps, alternative],
+    });
+  });
+};
+
+export const saveAlternativeWebsite = (alternative: string): Promise<void> => {
+  return getSyncData().then((syncData) => {
+    return saveSyncData({
+      ...syncData,
+      alternativeWebsites: [...syncData.alternativeWebsites, alternative],
+    });
+  });
+};
+
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> => {
   return getSyncData()
     .then((syncData) =>
