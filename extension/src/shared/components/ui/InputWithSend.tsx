@@ -4,6 +4,7 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import { requestFocusAndShowKeyboard } from "@dataInterface/system";
 
 export const InputWithSend = (props: {
+  type?: string;
   isAutoFocus?: boolean;
   value?: string;
   setRef?: (el: HTMLInputElement) => void;
@@ -21,6 +22,11 @@ export const InputWithSend = (props: {
   createEffect(() => {
     if (inpEl) {
       inpEl.value = props.value || "";
+    }
+  });
+  createEffect(() => {
+    if (props.type === "url") {
+      inpEl.value = "https://";
     }
   });
 
@@ -68,8 +74,9 @@ export const InputWithSend = (props: {
   return (
     <div id="minded-6622-inp">
       <input
+        spellcheck={false}
         ref={inpEl}
-        type="text"
+        type={props.type || "text"}
         disabled={getIsInputDisabled()}
         onkeydown={onKeyDown}
         maxlength={props.maxLength}
