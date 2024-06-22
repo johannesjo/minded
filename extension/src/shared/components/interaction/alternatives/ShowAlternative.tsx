@@ -28,6 +28,10 @@ export const ShowAlternativeInteraction: (props: {
     );
   });
 
+  const beautifyUrl = (url: string): string => {
+    return url?.replace("https://", "").replace("www.", "");
+  };
+
   const onGoToUrl = () => {
     setIsShowSuccessSun(true);
     countSunTap();
@@ -40,15 +44,17 @@ export const ShowAlternativeInteraction: (props: {
       <div onmouseenter={props.onCancelCountdown}>
         <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">
           {IS_APP ? (
-            `How about using <em>${getAlternative()}</em> instead?`
+            <>
+              How about using <strong>{getAlternative()}</strong> instead?
+            </>
           ) : (
-            <span>
+            <>
               How about visiting{" "}
               <a href={getAlternative()} onclick={onGoToUrl}>
-                {getAlternative()?.replace("https://", "").replace("www.", "")}
+                {beautifyUrl(getAlternative())}
               </a>{" "}
               instead?
-            </span>
+            </>
           )}
         </div>
       </div>
