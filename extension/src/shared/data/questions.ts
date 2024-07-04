@@ -261,10 +261,12 @@ export const QUESTION_CATEGORIES: {
         t: "What is one small step I can take towards my long-term goals today",
         prompt: "",
       },
-      // {
-      //   id: QID.RFHT11,
-      //   t: "Are you setting realistic goals and deadlines and if not how can you improve",
-      // },
+      { id: QID.RFHT11, t: "What is currently my most important goal" },
+      { id: QID.RFHT12, t: "What is the most fun task I could work on today" },
+      {
+        id: QID.RFHT13,
+        t: "What is the most interesting thing I could work on today",
+      },
     ],
   },
   [QuestionCategoryId.Motivation]: {
@@ -469,6 +471,7 @@ export const QUESTION_CATEGORIES: {
         t: "This week I will do my best to...",
         prompt: "This week I will do my best to",
       },
+      { id: QID.GW3, t: "What is my most important goal this week" },
     ],
     dashboardTxt: "Your Goal for the Week",
   },
