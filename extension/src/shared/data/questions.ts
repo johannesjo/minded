@@ -25,6 +25,10 @@ export enum QuestionCategoryId {
   SelfDiscovery = "SelfDiscovery",
   // NOTE: we filter out all questions from categories starting with X
 
+  // TODO add self improvement category
+  // TODO add relationships category
+  // TODO add mindful eating category
+
   XMoodCheckin = "XMoodCheckin",
   XEnergyLevelToday = "XEnergyLevelToday",
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
@@ -423,6 +427,16 @@ export const QUESTION_CATEGORIES: {
         t: "What is something new you could try",
         prompt: "I want to try",
       },
+      {
+        id: QID.GP5,
+        t: "What do you want to change",
+        prompt: "I want to change",
+      },
+      {
+        id: QID.GP6,
+        t: "What is something you'd like to learn",
+        prompt: "I want to learn",
+      },
     ],
     dashboardTxt: "Good Plans",
   },
@@ -456,6 +470,11 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.GPT6,
         t: "What is something you are looking forward to today",
+      },
+      {
+        id: QID.GPT7,
+        t: "What do you want to change today",
+        prompt: "I want to change",
       },
     ],
     dashboardTxt: "Good Plans Today",
@@ -608,6 +627,10 @@ export const QUESTION_CATEGORIES: {
         t: "What activities make me lose track of time",
         prompt: "",
       },
+      {
+        id: QID.SD25,
+        t: "Some quality I value in others is...",
+      },
     ],
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
@@ -705,6 +728,12 @@ IDEAS:
 
 /*
 FOR LATER:
+What kind of meal does make me feel good afterward?
+What meal does make me happy?
+What could I do to enjoy my meals more?
+What would I like to change in my eating habits?
+
+
 What kind of person do I want to be today?
 What is one thing I can do tomorrow to be a better version of myself?
 What situations make me feel terrible, and what do they have in common?
