@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -52,20 +53,20 @@ fun LittleSun(
         Box(
             modifier = Modifier
 //            .border(1.dp, Color.Black, CircleShape  )
-                .size(52.dp),
+                .size(44.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
             Box(
                 modifier = Modifier
 //                .border(1.dp, Color.Red, CircleShape  )
-                    .size(44.dp),
+                    .size(36.dp),
                 contentAlignment = Alignment.Center // This will center the inner Box
 
             ) {
                 val brush = Brush.radialGradient(listOf(Color.Red, Color.Transparent))
                 Canvas(
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier.size(90.dp),
                     onDraw = {
                         drawCircle(brush)
                     }
@@ -73,7 +74,7 @@ fun LittleSun(
 
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(30.dp)
                         .clickable(onClick = onSunTap)
                 ) {
                     Surface(
@@ -88,7 +89,7 @@ fun LittleSun(
                         Box(contentAlignment = Alignment.Center) {
                             Text(
                                 text = clockString,
-                                fontSize = 12.sp,
+                                fontSize = 10.sp,
                                 textAlign = TextAlign.Center,
                                 fontWeight = FontWeight.Normal,
                                 maxLines = 1
