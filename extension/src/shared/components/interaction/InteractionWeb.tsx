@@ -84,7 +84,6 @@ export const InteractionWeb: (props: {
                 (ev.target as HTMLElement)?.id ===
                 "minded-6622-coloured-wrapper-dynamic"
               ) {
-                return;
                 setIsShowBlackScreen(true);
 
                 setTimeout(() => {
