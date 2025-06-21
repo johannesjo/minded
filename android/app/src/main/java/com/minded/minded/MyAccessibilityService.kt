@@ -24,6 +24,11 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate()")
+        
+        // Clear any stale state on service creation
+        lastPackageName = null
+        lastEventTimestamp = 0
+        recentPackageHistory.clear()
     }
 
     override fun onInterrupt() {
@@ -51,6 +56,19 @@ class MyAccessibilityService : AccessibilityService() {
                     AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
         }
         serviceInfo = config
+        
+        // Ensure OverlayControllerService is running
+        ensureOverlayServiceRunning()
+    }
+    
+    private fun ensureOverlayServiceRunning() {
+        try {
+            val intent = Intent(this, OverlayControllerService::class.java)
+            startService(intent)
+            Log.d(TAG, "Started OverlayControllerService")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start OverlayControllerService", e)
+        }
     }
 
     private fun isSystemPackage(packageName: String): Boolean {

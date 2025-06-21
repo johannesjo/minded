@@ -1,12 +1,15 @@
 package com.minded.minded.overlay
 
 import SharedPreferenceService
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.WindowManager
 import androidx.lifecycle.Lifecycle
@@ -98,7 +101,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
 
-        return START_NOT_STICKY
+        // Return START_STICKY to ensure service restarts if killed
+        return START_STICKY
     }
 
 
@@ -283,24 +287,35 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     override fun onDestroy() {
+        Log.d(logTag, "onDestroy() - Service is being destroyed")
+        
+        // Hide all overlays before destruction
+        hideAllBut()
+        
         super.onDestroy()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        // TODO hide all overlays
-
-        // restart on destroy
-//        val timeToInvoke = 5 * 1000
-//        val intent: Intent = Intent(
-//            this@CommonOverlayService, CommonOverlayService::class.java
-//        )
-//        val pendingIntent = PendingIntent.getService(
-//            this@CommonOverlayService, 0, intent, PendingIntent.FLAG_IMMUTABLE
-//        )
-//        val alarm = getSystemService(ALARM_SERVICE) as AlarmManager
-//        alarm.set(
-//            AlarmManager.RTC_WAKEUP,
-//            System.currentTimeMillis() + timeToInvoke.toLong(),
-//            pendingIntent
-//        )
+        
+        // Schedule service restart to ensure continuous protection
+        scheduleServiceRestart()
+    }
+    
+    private fun scheduleServiceRestart() {
+        val restartServiceIntent = Intent(this, OverlayControllerService::class.java)
+        val restartServicePendingIntent = PendingIntent.getService(
+            this, 
+            1, 
+            restartServiceIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        val alarmService = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmService.set(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 5000, // Restart after 5 seconds
+            restartServicePendingIntent
+        )
+        
+        Log.d(logTag, "Service restart scheduled")
     }
 
     fun userDrivenClose(isSkipShowSuccessSunAfter: Boolean = false) {
