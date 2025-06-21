@@ -30,8 +30,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private var wasNoOverlaysBefore = false
-    private var lastGoToAppTS: Long = 0
-    private var lastGoTaAppThreshold: Long = 2200L
+    private var lastGoToAppTimestamp: Long = 0
+    private val APP_SWITCH_DEBOUNCE_MS: Long = 1500L // Reduced from 2200ms for better UX
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
@@ -202,17 +202,19 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
             it > Instant.now().minusSeconds(GRACE_PERIOD_IN_S.toLong())
         } ?: false
-        val isInLastGoToAppThreshold = lastGoToAppTS > 0 && System.currentTimeMillis() - lastGoToAppTS < lastGoTaAppThreshold
+        val isRecentAppSwitch = lastGoToAppTimestamp > 0 && 
+            System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
 
         Log.v(
             logTag,
-            "checkToShowOverlay() $isInGracePeriod ${isBlockedPackage(currentPackageName)} ${currentPackageName} ${isInLastGoToAppThreshold}"
+            "checkToShowOverlay() gracePeriod=$isInGracePeriod blocked=${isBlockedPackage(currentPackageName)} " +
+            "package=$currentPackageName recentSwitch=$isRecentAppSwitch"
         )
 
-        // NOTE: never show the overlay if the user just went to the app
-        if(isInLastGoToAppThreshold){
-            Log.v(logTag, "isInLastGoToAppThreshold")
-            return;
+        // Skip if user just switched to the app (debounce)
+        if (isRecentAppSwitch) {
+            Log.d(logTag, "Skipping due to recent app switch")
+            return
         }
 
         if (!isBlockedPackage(currentPackageName)) {
@@ -220,9 +222,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return;
         }
 
-        if (currentPackageName == "com.google.android.apps.nexuslauncher" || currentPackageName == "com.google.android.googlequicksearchbox") {
+        // Already handled by isSystemPackage in AccessibilityService, but double-check launchers
+        if (currentPackageName.contains("launcher") || currentPackageName.contains("home")) {
             hideAllBut()
-            return;
+            return
         }
 
         if (isBlockedPackage(currentPackageName)) {
@@ -331,7 +334,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     fun goToApp() {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        lastGoToAppTS = System.currentTimeMillis()
+        lastGoToAppTimestamp = System.currentTimeMillis()
         startActivity(intent)
     }
 
