@@ -2,16 +2,23 @@ package com.minded.minded.overlay
 
 import SharedPreferenceService
 import android.app.AlarmManager
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.WindowManager
+import androidx.core.app.NotificationCompat
+import com.minded.minded.R
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -32,6 +39,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
     private val MAX_OVERLAY_RETRY_ATTEMPTS = 3
     private val OVERLAY_RETRY_DELAY_MS = 500L
+    private val NOTIFICATION_ID = 1001
+    private val NOTIFICATION_CHANNEL_ID = "minded_protection_service"
 
     private var wasNoOverlaysBefore = false
     private var lastGoToAppTimestamp: Long = 0
@@ -57,6 +66,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     override fun onCreate() {
+        super.onCreate()
+        
+        // Create notification channel and start foreground service
+        createNotificationChannel()
+        startForegroundService()
+        
         val windowManager: WindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         sharedOverlayViewModel = SharedOverlayViewModel();
         // NOTE: initialization should be enough to write data
@@ -72,8 +87,55 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-
-        super.onCreate()
+    }
+    
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                getString(R.string.notification_channel_name),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = getString(R.string.notification_channel_description)
+                setShowBadge(false)
+            }
+            
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+    
+    private fun startForegroundService() {
+        val notification = createNotification()
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID, 
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+    
+    private fun createNotification(): Notification {
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.notification_title))
+            .setContentText(getString(R.string.notification_text))
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // You can replace with your own icon
+            .setOngoing(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
     }
 
 

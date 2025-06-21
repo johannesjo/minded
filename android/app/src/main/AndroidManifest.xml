@@ -14,6 +14,8 @@
     <uses-permission
             android:name="android.permission.QUERY_ALL_PACKAGES"
             tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
             android:allowBackup="true"
@@ -41,7 +43,12 @@
         <service
                 android:name=".overlay.OverlayControllerService"
                 android:enabled="true"
-                android:exported="false" />
+                android:exported="false"
+                android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors app usage to provide mindfulness interventions" />
+        </service>
         <service
                 android:name=".MyAccessibilityService"
                 android:exported="false"
