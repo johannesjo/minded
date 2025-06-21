@@ -9,96 +9,159 @@ import com.minded.minded.overlay.OverlayControllerService
 
 
 class MyAccessibilityService : AccessibilityService() {
-    private var lastEventTs: Long = 0
-    private var lastPackageName: CharSequence? = null
-    private val minThresholdVorNexusLauncher = 350L
+    private var lastPackageName: String? = null
+    private var lastEventTimestamp: Long = 0
+    private val recentPackageHistory = mutableListOf<Pair<String, Long>>()
+    private val PACKAGE_HISTORY_SIZE = 5
+    private val LAUNCHER_DEBOUNCE_MS = 500L
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
+        private const val TAG = "MindedAccessibility"
     }
 
 
     override fun onCreate() {
         super.onCreate()
-        Log.v("ACCESSIBILITY", "onCreate()")
-
+        Log.d(TAG, "onCreate()")
     }
 
     override fun onInterrupt() {
-        Log.v("ACCESSIBILITY", "onInterrupt()")
-        // Handle interrupts
+        Log.d(TAG, "onInterrupt()")
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        Log.v("ACCESSIBILITY", "onUnbind()")
+        Log.d(TAG, "onUnbind()")
         return super.onUnbind(intent)
-        // Handle interrupts
     }
 
 
     override fun onServiceConnected() {
-        Log.v("ACCESSIBILITY", "onServiceConnected()")
-        // NOTE we also configure it in accessibility_service_config.xml
-        // but it seems service is not working until we configure TYPE_WINDOW_STATE_CHANGED (and more?) here
+        Log.d(TAG, "onServiceConnected()")
         super.onServiceConnected()
-        val config = AccessibilityServiceInfo()
-        config.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-        // Not sure if needed :(
-        config.feedbackType = AccessibilityServiceInfo.FEEDBACK_VISUAL
-        config.notificationTimeout = 100
-        config.packageNames = arrayOf<String>()
-        config.flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
-
+        
+        // Configure the service programmatically to ensure it works reliably
+        val config = AccessibilityServiceInfo().apply {
+            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+            feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+            notificationTimeout = 100
+            // Monitor all packages
+            packageNames = null
+            flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS or
+                    AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
+        }
         serviceInfo = config
     }
 
-    private fun isNonAppPackage(packageName: String): Boolean {
-        // NOTE we exclude minded here too since the overlay otherwise also gets counted :/
-        // TODO better solution
-        return packageName.contains("com.google.android.inputmethod")
-                || packageName == "com.android.systemui"
+    private fun isSystemPackage(packageName: String): Boolean {
+        return when {
+            // Own package
+            packageName == "com.minded.minded" -> true
+            
+            // System UI and launchers
+            packageName.startsWith("com.android.systemui") -> true
+            packageName.startsWith("com.android.launcher") -> true
+            packageName.contains(".launcher") -> true
+            packageName.contains(".home") -> true
+            
+            // Input methods
+            packageName.contains("inputmethod") -> true
+            packageName.contains("keyboard") -> true
+            
+            // System dialogs and settings
+            packageName.startsWith("com.android.settings") -> true
+            packageName.startsWith("com.android.packageinstaller") -> true
+            packageName.startsWith("com.android.permissioncontroller") -> true
+            
+            // System services
+            packageName.startsWith("com.android.system") -> true
+            packageName == "android" -> true
+            
+            // Lock screens and security
+            packageName.contains("keyguard") -> true
+            packageName.contains("lockscreen") -> true
+            
+            // Accessibility services
+            packageName.contains("accessibility") -> true
+            packageName.contains("talkback") -> true
+            
+            else -> false
+        }
+    }
+    
+    private fun isLauncherPackage(packageName: String): Boolean {
+        return packageName.contains("launcher") || 
+               packageName.contains("home") ||
+               packageName == "com.google.android.apps.nexuslauncher" ||
+               packageName == "com.google.android.googlequicksearchbox"
     }
 
 
-    override fun onAccessibilityEvent(accessibilityEvent: AccessibilityEvent) {
-        Log.v("ACCESSIBILITY", "onAccessibilityEvent() ${System.currentTimeMillis() - lastEventTs}")
-        val isMindedWidget = accessibilityEvent.className == "androidx.compose.ui.platform.ComposeView" && packageName == "com.minded.minded"
-        // NOTE: we only check if the new event was fired after the last event. NOT sure if this is necessary
-        // NOTE2: when using the nexuslauncher to swipe in between app, the nexuslauncher is recorded again shortly after refocusing
-        // the app that is actually focused afterwards. To counter this we use the magic 350ms and don't fire the service again if the nexus launcher is not recorded after that delay
-        val isSpecialNexusLauncherCase =
-            (accessibilityEvent.packageName == "com.google.android.apps.nexuslauncher" &&
-                    (System.currentTimeMillis() - lastEventTs <= minThresholdVorNexusLauncher
-                            // but if the it is recorded twice in a row proceed
-                            && lastPackageName != "com.google.android.apps.nexuslauncher"))
-
-        val isStartService = (System.currentTimeMillis() - lastEventTs > 0)
-                && !isMindedWidget
-                && !isSpecialNexusLauncherCase
-                && accessibilityEvent.packageName != null
-                && !isNonAppPackage(accessibilityEvent.packageName.toString())
-        lastEventTs = System.currentTimeMillis()
-        Log.v(
-            "ACCESSIBILITY",
-            "onAccessibilityEvent(), Package name: s:${isStartService} ${accessibilityEvent.packageName}  L:$lastPackageName isSpecialNexusLauncherCase $isSpecialNexusLauncherCase – ${accessibilityEvent.eventType} ${accessibilityEvent.action} ${accessibilityEvent.contentChangeTypes} ${accessibilityEvent.eventTime} ${accessibilityEvent.className}"
-        )
-        lastPackageName = accessibilityEvent.packageName
-//        Log.v(
-//            "ACCESSIBILITY",
-//            "onAccessibilityEvent(), isStartService:${isStartService} ${(System.currentTimeMillis() - lastEventTs > 0)}${accessibilityEvent.packageName != null}${
-//                !isNonAppPackage(
-//                    accessibilityEvent.packageName.toString()
-//                )
-//            }"
-//        )
-        if (isStartService) {
-            val intent = Intent(this, OverlayControllerService::class.java)
-            intent.putExtra(
-                INTENT_EXTRA_CURRENT_PACKAGE_NAME,
-                accessibilityEvent.packageName
-            )
-            startService(intent)
-
+    override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        val packageName = event.packageName?.toString() ?: return
+        val currentTime = System.currentTimeMillis()
+        
+        Log.d(TAG, "onAccessibilityEvent: package=$packageName, lastPackage=$lastPackageName")
+        
+        // Skip if this is a system package
+        if (isSystemPackage(packageName)) {
+            Log.d(TAG, "Skipping system package: $packageName")
+            return
         }
+        
+        // Track package history for better launcher detection
+        updatePackageHistory(packageName, currentTime)
+        
+        // Check if this is a genuine app switch
+        if (shouldTriggerOverlay(packageName, currentTime)) {
+            Log.d(TAG, "Triggering overlay for package: $packageName")
+            
+            val intent = Intent(this, OverlayControllerService::class.java).apply {
+                putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+            }
+            startService(intent)
+        }
+        
+        lastPackageName = packageName
+        lastEventTimestamp = currentTime
+    }
+    
+    private fun updatePackageHistory(packageName: String, timestamp: Long) {
+        recentPackageHistory.add(packageName to timestamp)
+        if (recentPackageHistory.size > PACKAGE_HISTORY_SIZE) {
+            recentPackageHistory.removeAt(0)
+        }
+    }
+    
+    private fun shouldTriggerOverlay(packageName: String, currentTime: Long): Boolean {
+        // Don't trigger if it's the same package
+        if (packageName == lastPackageName) {
+            return false
+        }
+        
+        // Handle launcher debouncing more intelligently
+        if (isLauncherPackage(packageName)) {
+            // Check if we're bouncing between launcher and app
+            val timeSinceLastEvent = currentTime - lastEventTimestamp
+            if (timeSinceLastEvent < LAUNCHER_DEBOUNCE_MS) {
+                Log.d(TAG, "Debouncing launcher event: $packageName")
+                return false
+            }
+        }
+        
+        // Check if the previous package was a launcher and we're quickly switching
+        if (lastPackageName != null && isLauncherPackage(lastPackageName)) {
+            val timeSinceLastEvent = currentTime - lastEventTimestamp
+            if (timeSinceLastEvent < LAUNCHER_DEBOUNCE_MS) {
+                // But allow if we see the same app multiple times in history
+                val recentAppCount = recentPackageHistory.count { it.first == packageName }
+                if (recentAppCount < 2) {
+                    Log.d(TAG, "Skipping quick launcher->app switch")
+                    return false
+                }
+            }
+        }
+        
+        return true
     }
 }
