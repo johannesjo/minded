@@ -3,6 +3,7 @@ package com.minded.minded
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -66,7 +67,11 @@ class MyAccessibilityService : AccessibilityService() {
     private fun ensureOverlayServiceRunning() {
         try {
             val intent = Intent(this, OverlayControllerService::class.java)
-            startService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
             Log.d(TAG, "Started OverlayControllerService")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start OverlayControllerService", e)

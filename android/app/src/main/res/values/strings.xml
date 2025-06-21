@@ -5,4 +5,8 @@
     <string name="accessibility_service_description">minded – Accessibility Service</string>
     <string name="title_activity_app_picker">minded – App Picker</string>
     <string name="preference_file_key">preference_file_key1</string>
+    <string name="notification_channel_name">Minded Protection Service</string>
+    <string name="notification_channel_description">Keeps the app protection service running</string>
+    <string name="notification_title">Minded is protecting you</string>
+    <string name="notification_text">Monitoring selected apps to help you stay mindful</string>
 </resources>
