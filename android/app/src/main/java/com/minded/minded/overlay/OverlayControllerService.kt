@@ -30,11 +30,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private val GRACE_PERIOD_IN_S = 30
     private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
-
+    private val MAX_OVERLAY_RETRY_ATTEMPTS = 3
+    private val OVERLAY_RETRY_DELAY_MS = 500L
 
     private var wasNoOverlaysBefore = false
     private var lastGoToAppTimestamp: Long = 0
     private val APP_SWITCH_DEBOUNCE_MS: Long = 1500L // Reduced from 2200ms for better UX
+    private val overlayRetryHandler = Handler(Looper.getMainLooper())
+    private val pendingOverlayRetries = mutableMapOf<String, Int>()
 
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
@@ -135,45 +138,76 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         }
 
-        when (overlayName) {
-            OverlayName.INTERACTION_OVERLAY -> {
-                if (appName == null) {
-                    throw RuntimeException("appName is null")
+        try {
+            when (overlayName) {
+                OverlayName.INTERACTION_OVERLAY -> {
+                    if (appName == null) {
+                        throw RuntimeException("appName is null")
+                    }
+                    if (overlayMode == OverlayMode.INTERACTION_OVERLAY__FRESH) {
+                        sharedOverlayViewModel.resetAll(appName)
+                    } else {
+                        sharedOverlayViewModel.resetAnswerTxt()
+                        sharedOverlayViewModel.resetSunTxt()
+                    }
+                    // when whe show the question, we likely want to update the current app usage
+                    sharedOverlayViewModel.updateLastAppUsage()
+                    interactionOverlayWindow.showWindow()
+
+                    // we hide others only after to avoid lifecycle complications
+                    hideAllBut(OverlayName.INTERACTION_OVERLAY)
                 }
-                if (overlayMode == OverlayMode.INTERACTION_OVERLAY__FRESH) {
-                    sharedOverlayViewModel.resetAll(appName)
-                } else {
-                    sharedOverlayViewModel.resetAnswerTxt()
-                    sharedOverlayViewModel.resetSunTxt()
+
+                OverlayName.SUCCESS_SUN_OVERLAY -> {
+                    if (overlayMode === OverlayMode.SUCCESS_SUN_OVERLAY__FINAL) {
+                        sharedOverlayViewModel.updateSharedData(
+                            successSunTxt = "That's a good decision!",
+                        )
+                    } else {
+                        sharedOverlayViewModel.updateSharedData(
+                            successSunTxt = "tap sun to close",
+                        )
+                    }
+                    successSunOverlayWindow.showWindow()
                 }
-                // when whe show the question, we likely want to update the current app usage
-                sharedOverlayViewModel.updateLastAppUsage()
-                interactionOverlayWindow.showWindow()
 
-                // we hide others only after to avoid lifecycle complications
-                hideAllBut(OverlayName.INTERACTION_OVERLAY)
-            }
-
-            OverlayName.SUCCESS_SUN_OVERLAY -> {
-                if (overlayMode === OverlayMode.SUCCESS_SUN_OVERLAY__FINAL) {
-                    sharedOverlayViewModel.updateSharedData(
-                        successSunTxt = "That's a good decision!",
-                    )
-                } else {
-                    sharedOverlayViewModel.updateSharedData(
-                        successSunTxt = "tap sun to close",
-                    )
+                OverlayName.LITTLE_SUN_OVERLAY -> {
+                    littleSunOverlayWindow.showWindow()
                 }
-                successSunOverlayWindow.showWindow()
-            }
 
-            OverlayName.LITTLE_SUN_OVERLAY -> {
-                littleSunOverlayWindow.showWindow()
+                OverlayName.SMALL_MSG_OVERLAY -> {
+                    smallMsgOverlayWindow.showWindow()
+                }
             }
-
-            OverlayName.SMALL_MSG_OVERLAY -> {
-                smallMsgOverlayWindow.showWindow()
-            }
+            
+            // Clear retry count on successful show
+            val retryKey = "${overlayName}_${appName ?: ""}"
+            pendingOverlayRetries.remove(retryKey)
+            
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to show overlay ${overlayName}", e)
+            scheduleOverlayRetry(overlayName, overlayMode, appName)
+        }
+    }
+    
+    private fun scheduleOverlayRetry(
+        overlayName: OverlayName,
+        overlayMode: OverlayMode?,
+        appName: String?
+    ) {
+        val retryKey = "${overlayName}_${appName ?: ""}"
+        val currentRetries = pendingOverlayRetries[retryKey] ?: 0
+        
+        if (currentRetries < MAX_OVERLAY_RETRY_ATTEMPTS) {
+            pendingOverlayRetries[retryKey] = currentRetries + 1
+            
+            overlayRetryHandler.postDelayed({
+                Log.d(logTag, "Retrying overlay display: $overlayName (attempt ${currentRetries + 1})")
+                showOverlay(overlayName, overlayMode, appName)
+            }, OVERLAY_RETRY_DELAY_MS * (currentRetries + 1))
+        } else {
+            Log.e(logTag, "Max retry attempts reached for overlay: $overlayName")
+            pendingOverlayRetries.remove(retryKey)
         }
     }
 
@@ -288,6 +322,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     override fun onDestroy() {
         Log.d(logTag, "onDestroy() - Service is being destroyed")
+        
+        // Cancel any pending retry attempts
+        overlayRetryHandler.removeCallbacksAndMessages(null)
+        pendingOverlayRetries.clear()
         
         // Hide all overlays before destruction
         hideAllBut()

@@ -3,6 +3,8 @@ package com.minded.minded
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.minded.minded.overlay.OverlayControllerService
@@ -134,10 +136,26 @@ class MyAccessibilityService : AccessibilityService() {
         if (shouldTriggerOverlay(packageName, currentTime)) {
             Log.d(TAG, "Triggering overlay for package: $packageName")
             
-            val intent = Intent(this, OverlayControllerService::class.java).apply {
-                putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+            try {
+                val intent = Intent(this, OverlayControllerService::class.java).apply {
+                    putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+                }
+                startService(intent)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to start OverlayControllerService for package: $packageName", e)
+                // Try to ensure service is running and retry
+                ensureOverlayServiceRunning()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    try {
+                        val retryIntent = Intent(this, OverlayControllerService::class.java).apply {
+                            putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+                        }
+                        startService(retryIntent)
+                    } catch (retryException: Exception) {
+                        Log.e(TAG, "Retry failed for package: $packageName", retryException)
+                    }
+                }, 500)
             }
-            startService(intent)
         }
         
         lastPackageName = packageName
