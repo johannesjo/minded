@@ -1,5 +1,7 @@
 // NOTE: styles for initialQuestion work differently since we're using them for the content-script
 
+@import '@src/styles/mixins/mixins';
+
 #minded-6622-question-wrapper {
   user-select: none;
   margin-top: -38px;
@@ -37,8 +39,31 @@
 //  100% {-webkit-mask-position:left}
 //}
 
+@keyframes slideInFadeIn {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.question-input-container {
+  animation: slideInFadeIn 0.4s ease-out forwards;
+  transform: translateY(20px);
+  opacity: 0;
+}
+
 #minded-6622-question {
   display: inline-block;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  
+  &.show-input {
+    cursor: default;
+  }
 }
 
 #minded-6622-inp {

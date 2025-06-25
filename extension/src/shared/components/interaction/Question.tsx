@@ -10,6 +10,7 @@ import {
 } from "@src/util/getQuestionSmart";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
+import "./Question.scss";
 
 const MAX_SMART_QUESTION_ATTEMPTS = 3;
 
@@ -27,6 +28,7 @@ export const Question: (props: {
   const [getIsChangingQuestion, setIsChangingQuestion] = createSignal(false);
   const [getInpEl, setInpEl] = createSignal<HTMLInputElement | null>(null);
   const [getValue, setValue] = createSignal<string>("");
+  const [getShowInput, setShowInput] = createSignal(false);
 
   let tChangeQuestion;
 
@@ -49,6 +51,7 @@ export const Question: (props: {
   });
 
   const submitAnswer = async (answerTxt: string) => {
+    console.log("Question: submitAnswer called with:", answerTxt);
     const q = getQuestion();
     const answer = {
       questionCategoryId: q.categoryId,
@@ -59,12 +62,14 @@ export const Question: (props: {
     };
 
     if (!answer.val || (answer.val as string).length < 2) {
+      console.log("Question: answer too short, returning");
       return;
     }
     setIsInputDisabled(true);
     if (!q.isDontSaveAnswer) {
       await saveAnswer(answer);
     }
+    console.log("Question: calling props.onSuccess with answer:", answer);
     props.onSuccess(answer);
   };
 
@@ -91,25 +96,41 @@ export const Question: (props: {
         id="minded-6622-question-wrapper"
         class={`${getIsChangingQuestion() ? "isChangingQuestion" : ""}`}
       >
-        <div id="minded-6622-question" class="txtBig">
+        <div 
+          id="minded-6622-question" 
+          class="txtBig"
+          classList={{ 'show-input': getShowInput() }}
+          onclick={() => {
+            if (!getShowInput()) {
+              setShowInput(true);
+              props.onCancelCountdown();
+              // Focus input after it appears
+              setTimeout(() => getInpEl()?.focus(), 100);
+            }
+          }}
+        >
           <span>{getQuestion().t}?</span>
         </div>
 
-        <div
-          onmouseenter={props.onCancelCountdown}
-          onclick={props.onCancelCountdown}
-        >
-          <InputWithSend
-            onEscape={props.onSkip}
-            onCancelCountdown={props.onCancelCountdown}
-            value={getValue()}
-            maxLength={500}
-            isAutoFocus={true}
-            setRef={setInpEl}
-            onSubmit={submitAnswer}
-          />
-        </div>
+        {getShowInput() && (
+          <div
+            class="question-input-container"
+            onmouseenter={props.onCancelCountdown}
+            onclick={props.onCancelCountdown}
+          >
+            <InputWithSend
+              onEscape={props.onSkip}
+              onCancelCountdown={props.onCancelCountdown}
+              value={getValue()}
+              maxLength={500}
+              isAutoFocus={true}
+              setRef={setInpEl}
+              onSubmit={submitAnswer}
+            />
+          </div>
+        )}
 
+        {/* Temporarily commented out - cycle through prompts button
         {props.isChangeQuestion && (
           <div
             id="minded-6622-change-question-btn"
@@ -129,6 +150,7 @@ export const Question: (props: {
             <Ico name="questionExchange" />
           </div>
         )}
+        */}
       </div>
     </>
   );

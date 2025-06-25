@@ -31,14 +31,21 @@ const InteractionAndroid = () => {
   };
 
   const showLittleSunAfter = () => {
-    // MOTE: we need to wait just a little extra otherwise android throws an error that we are still drawing
     setTimeout(() => {
       androidInterface.hideWindow();
       androidInterface.showLittleSun();
     }, 100);
   };
 
-  // TODO add app name
+  const onSwipeDown = () => {
+    androidInterface.hideWindow();
+  };
+
+  const onSwipeUp = () => {
+    androidInterface.hideWindow();
+    androidInterface.onSkip();
+  };
+
   return (
     <div
       ref={wrapperEl}
@@ -62,15 +69,12 @@ const InteractionAndroid = () => {
           }
         }}
         questionForPrompt={question}
-        onSuccessSunTap={() => {
-          countSunTap();
-          androidInterface.onSuccessSunTap();
-        }}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
         onAfterInteractionFadeout={() => showLittleSunAfter()}
-        onAfterSuccessSunFadeout={() => showLittleSunAfter()}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
+        onSwipeDown={onSwipeDown}
+        onSwipeUp={onSwipeUp}
       />
     </div>
   );

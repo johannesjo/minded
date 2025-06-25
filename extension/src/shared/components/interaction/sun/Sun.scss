@@ -1,0 +1,38 @@
+.minded-sun {
+  position: relative;
+  background: var(--sun-bg);
+  border-radius: 50%;
+  box-shadow: var(--sun-shadow);
+  z-index: 30;
+  cursor: grab;
+  transform-origin: center;
+  
+  .tap-indicator {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms;
+    
+    &.active {
+      opacity: 1;
+    }
+  }
+  
+  .tap-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: background 200ms;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    &.filled {
+      background: rgba(255, 255, 255, 0.9);
+    }
+  }
+}

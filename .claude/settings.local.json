@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(npx license-checker:*)",
+      "Bash(npm audit:*)",
+      "Bash(git restore:*)",
+      "Bash(npm start)",
+      "Bash(rg:*)",
+      "Bash(npx tsc:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(ls:*)",
+      "Bash(git rm:*)",
+      "Bash(git mv:*)"
+    ],
+    "deny": []
+  }
+}

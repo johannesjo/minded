@@ -30,9 +30,31 @@
   width: 990px;
   max-width: 100%;
   padding: 32px;
+  z-index: 10; // Above background, below sun
 
-  @include onSmallScreens() {
+  // @include onSmallScreens() {
+  //   padding: 16px;
+  // }
+  @media (max-width: 768px) {
     padding: 16px;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
@@ -43,6 +65,37 @@
     font-size: 48px;
     margin-top: 16px;
   }
+}
+
+.sun-container {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+.be-proud-message {
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 1);
+  font-size: 1.8rem;
+  font-weight: 600;
+  z-index: 40;
+  animation: fadeIn 0.8s ease-in forwards;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
+}
+
+// Ensure text is visible on all backgrounds
+#minded-6622-interaction-wrapper-box,
+.sun-container {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 

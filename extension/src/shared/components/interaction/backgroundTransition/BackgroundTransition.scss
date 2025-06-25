@@ -1,0 +1,14 @@
+.background-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; // Behind all other content
+  background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); // Default state
+  transition: none; // We handle transitions manually for smooth drag
+  
+  &.animating {
+    // No CSS transition - using JS animation for precise control
+  }
+}

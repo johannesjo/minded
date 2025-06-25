@@ -23,43 +23,50 @@ import { fadeOut } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import SuccessSun from "@src/shared/components/successSun/SuccessSun";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
+import "./InteractionCommon.scss";
 
 interface InteractionCommonProps {
-  isReducedSuccessSun?: boolean;
   questionForPrompt?: QuestionForPrompt;
   isInitFadeout: boolean;
   wrapperEl: HTMLElement;
-  onSuccessSunTap: () => void;
-  onAfterSuccessSunFadeout: () => void;
   onAfterInteractionFadeout: () => void;
   onSetAnswer: (txt: string) => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
   onModeSet: (mode: InteractionMode) => void;
   onInteractionSubmitted?: () => void;
   onSkip: () => void;
+  onSwipeDown: () => void;
+  onSwipeUp: () => void;
 }
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
-  const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getInitialQuestion, setInitialQuestion] = createSignal<
     QuestionForPrompt | undefined
   >();
+  const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
+
+  // Handler to trigger background animations from sun component
+  const handleStartBackgroundAnimation = (direction: "up" | "down") => {
+    setShowBeProudMessage(true);
+    const event = new CustomEvent("startBackgroundAnimation", {
+      detail: { direction },
+    });
+    window.dispatchEvent(event);
+  };
 
   let frameNr;
 
-  let isSuccessSunTapped = false;
-
   onMount(async () => {
     if (props.isInitFadeout) {
-      // timeout needed otherwise it won't work probably because props.wrapperEl is passed yet?
       setTimeout(() => {
         initFadeOut();
       }, 200);
@@ -72,8 +79,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setInitialQuestion(props.questionForPrompt);
         setMode("QUESTION");
       } else {
-        setInitialQuestion(getQuestionSmart(syncData.answers));
-        setMode(getInteractionMode(syncData));
+        const question = getQuestionSmart(syncData.answers);
+        const mode = getInteractionMode(syncData);
+        setInitialQuestion(question);
+        setMode(mode);
       }
     });
   });
@@ -93,9 +102,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     props.onInteractionSubmitted?.();
     cancelCountdown();
-    setIsShowSuccessSun(true);
 
-    console.log("answerOrData", answerOrData);
     if (answerOrData) {
       props.onSetAnswer(answerOrData.val.toString());
     }
@@ -103,9 +110,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const cancelCountdown = () => {
     if (!frameNr) {
-      return;
-    }
-    if (getIsShowSuccessSun()) {
       return;
     }
     window.cancelAnimationFrame(frameNr);
@@ -125,24 +129,26 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     });
   };
 
-  const onSuccessSunTap = () => {
-    isSuccessSunTapped = true;
-    props.onSuccessSunTap();
-  };
 
   return (
     <>
-      {getIsShowSuccessSun() && (
-        <SuccessSun
-          isReducedSuccessSun={props.isReducedSuccessSun}
-          onAfterAni={() => {
-            if (!isSuccessSunTapped) {
-              props.onAfterSuccessSunFadeout();
-            }
-          }}
-          onSuccessSunTap={onSuccessSunTap}
-          wrapperEl={props.wrapperEl}
+      <BackgroundTransition dragThreshold={0.3} />
+      
+      <div class="sun-container">
+        <Sun
+          onSkip={props.onSkip}
+          onSwipeDown={props.onSwipeDown}
+          onSwipeUp={props.onSwipeUp}
+          onStartBackgroundAnimation={handleStartBackgroundAnimation}
+          dragThreshold={0.3}
         />
+      </div>
+
+      {/* Be proud message during final animation */}
+      {getShowBeProudMessage() && (
+        <div class="be-proud-message">
+          Be proud!
+        </div>
       )}
 
       <div id="minded-6622-interaction-wrapper-box">
