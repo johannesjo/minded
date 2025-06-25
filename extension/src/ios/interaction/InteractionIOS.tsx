@@ -37,7 +37,6 @@ const InteractionIOS = () => {
 
   const onSwipeUp = () => {
     window.location.hash = "";
-    MindedIOSPlugin.continueToApp();
   };
 
   return (

@@ -129,11 +129,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     });
   };
 
-
   return (
     <>
       <BackgroundTransition dragThreshold={0.3} />
-      
+
       <div class="sun-container">
         <Sun
           onSkip={props.onSkip}
@@ -145,11 +144,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       </div>
 
       {/* Be proud message during final animation */}
-      {getShowBeProudMessage() && (
-        <div class="be-proud-message">
-          Be proud!
-        </div>
-      )}
+      {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
       <div id="minded-6622-interaction-wrapper-box">
         <Switch>

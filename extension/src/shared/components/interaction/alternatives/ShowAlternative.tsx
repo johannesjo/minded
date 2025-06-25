@@ -6,7 +6,6 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { SyncData } from "@src/dataInterface/syncData";
-import Sun from "@src/shared/components/interaction/sun/Sun";
 
 // once on app load
 
@@ -16,7 +15,6 @@ export const ShowAlternativeInteraction: (props: {
   syncData: SyncData;
 }) => JSX.Element = (props) => {
   const [getAlternative, setAlternative] = createSignal<string | undefined>();
-  const [getIsShowSuccessSun, setIsShowSuccessSun] = createSignal(false);
 
   createEffect(() => {
     setAlternative(
@@ -33,18 +31,11 @@ export const ShowAlternativeInteraction: (props: {
   };
 
   const onGoToUrl = () => {
-    setIsShowSuccessSun(true);
     countSunTap();
   };
 
   return (
     <>
-      {getIsShowSuccessSun() && (
-        <div class="success-message" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-          <div class="success-sun"></div>
-        </div>
-      )}
-
       <div onmouseenter={props.onCancelCountdown}>
         <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">
           {IS_APP ? (

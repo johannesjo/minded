@@ -115,9 +115,13 @@ const DailyQuestions = () => {
               />
             </Match>
             <Match when={getStep() === 3}>
-              <div class="success-message" ref={el => {
-                setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
-              }}>
+              {/* TODO component */}
+              <div
+                class="success-message"
+                ref={() => {
+                  setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
+                }}
+              >
                 <div class="success-sun"></div>
                 <div class="success-text">Have a wonderful day today!</div>
               </div>
@@ -162,11 +166,17 @@ const DailyQuestions = () => {
               />
             </Match>
             <Match when={getStep() === 3}>
-              <div class="success-message" ref={el => {
-                setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
-              }}>
+              {/* TODO component */}
+              <div
+                class="success-message"
+                ref={() => {
+                  setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
+                }}
+              >
                 <div class="success-sun"></div>
-                <div class="success-text">Have a wonderful rest of the day!</div>
+                <div class="success-text">
+                  Have a wonderful rest of the day!
+                </div>
               </div>
             </Match>
           </Switch>

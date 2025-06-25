@@ -21,10 +21,6 @@ export const InteractionOverlay: (props: {
       class={styles.interactionOverlay}
       id="minded-6622-coloured-wrapper"
       ref={wrapperEl}
-      onclick={(ev) => {
-        // Background click disabled - only gesture controls
-        ev.stopPropagation();
-      }}
     >
       <div class={styles.interactionWrapper}>
         <InteractionCommon
@@ -41,8 +37,6 @@ export const InteractionOverlay: (props: {
           onSkip={() => props.onHideInteraction()}
           onSwipeDown={() => props.onHideInteraction()}
           onSwipeUp={() => props.onHideInteraction()}
-          onProceedToApp={() => props.onHideInteraction()}
-          enableGestures={true}
         />
       </div>
     </div>

@@ -138,6 +138,7 @@ export const countOpeningAttempt = async (): Promise<void> => {
   return saveSyncData(newSyncData);
 };
 
+// TODO rename to something better
 export const countSunTap = async (): Promise<void> => {
   const ds = getIsoDate();
   const syncData = await getSyncData();

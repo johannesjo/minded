@@ -1,11 +1,10 @@
 /* @refresh reload */
-import { createSignal, onMount } from "solid-js";
+import { onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {
@@ -37,15 +36,6 @@ const InteractionAndroid = () => {
     }, 100);
   };
 
-  const onSwipeDown = () => {
-    androidInterface.hideWindow();
-  };
-
-  const onSwipeUp = () => {
-    androidInterface.hideWindow();
-    androidInterface.onSkip();
-  };
-
   return (
     <div
       ref={wrapperEl}
@@ -73,8 +63,8 @@ const InteractionAndroid = () => {
         onAfterInteractionFadeout={() => showLittleSunAfter()}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
-        onSwipeDown={onSwipeDown}
-        onSwipeUp={onSwipeUp}
+        onSwipeDown={() => androidInterface.hideWindow()}
+        onSwipeUp={() => androidInterface.hideWindow()}
       />
     </div>
   );
