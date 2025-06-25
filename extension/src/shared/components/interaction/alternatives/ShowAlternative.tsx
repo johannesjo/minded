@@ -6,7 +6,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { SyncData } from "@src/dataInterface/syncData";
-import SuccessSun from "@src/shared/components/successSun/SuccessSun";
+import Sun from "@src/shared/components/interaction/sun/Sun";
 
 // once on app load
 
@@ -39,7 +39,11 @@ export const ShowAlternativeInteraction: (props: {
 
   return (
     <>
-      {getIsShowSuccessSun() && <SuccessSun isReducedSuccessSun={true} />}
+      {getIsShowSuccessSun() && (
+        <div class="success-message" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+          <div class="success-sun"></div>
+        </div>
+      )}
 
       <div onmouseenter={props.onCancelCountdown}>
         <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">

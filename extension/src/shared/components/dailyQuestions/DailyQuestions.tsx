@@ -21,7 +21,6 @@ import {
   getDailyQuestionsMode,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { useNavigate } from "@solidjs/router";
-import SuccessSun from "@src/shared/components/successSun/SuccessSun";
 
 const SUN_ANI_DURATION = 600;
 const AFTER_ANI_WAIT_DURATION = 1100;
@@ -116,12 +115,12 @@ const DailyQuestions = () => {
               />
             </Match>
             <Match when={getStep() === 3}>
-              <SuccessSun
-                onAfterAni={() => afterAni()}
-                msg={"Have a wonderful day today!"}
-                isReducedSuccessSun={true}
-                reducedAniInDuration={SUN_ANI_DURATION}
-              />
+              <div class="success-message" ref={el => {
+                setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
+              }}>
+                <div class="success-sun"></div>
+                <div class="success-text">Have a wonderful day today!</div>
+              </div>
             </Match>
           </Switch>
         )}
@@ -163,12 +162,12 @@ const DailyQuestions = () => {
               />
             </Match>
             <Match when={getStep() === 3}>
-              <SuccessSun
-                onAfterAni={() => afterAni()}
-                msg={"Have a wonderful rest of the day!"}
-                isReducedSuccessSun={true}
-                reducedAniInDuration={SUN_ANI_DURATION}
-              />
+              <div class="success-message" ref={el => {
+                setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
+              }}>
+                <div class="success-sun"></div>
+                <div class="success-text">Have a wonderful rest of the day!</div>
+              </div>
             </Match>
           </Switch>
         )}

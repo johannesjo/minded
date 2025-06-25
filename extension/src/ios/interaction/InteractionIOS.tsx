@@ -1,7 +1,6 @@
 /* @refresh reload */
 import { onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
-// import { iosInterface } from "@src/dataInterface/ios/iosInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
@@ -32,7 +31,15 @@ const InteractionIOS = () => {
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {};
 
-  // TODO add app name
+  const onSwipeDown = () => {
+    window.location.hash = "";
+  };
+
+  const onSwipeUp = () => {
+    window.location.hash = "";
+    MindedIOSPlugin.continueToApp();
+  };
+
   return (
     <div
       ref={wrapperEl}
@@ -52,17 +59,12 @@ const InteractionIOS = () => {
         wrapperEl={wrapperEl}
         onModeSet={() => undefined}
         questionForPrompt={question}
-        isReducedSuccessSun={true}
-        onSuccessSunTap={() => {
-          countSunTap();
-          // TODO close interaction and return to main screen;
-          window.location.hash = "";
-        }}
         onSetAnswer={() => undefined}
         onAfterInteractionFadeout={() => continueToApp()}
-        onAfterSuccessSunFadeout={() => (window.location.hash = "")}
-        onSkip={() => continueToApp()}
+        onSkip={() => MindedIOSPlugin.continueToApp()}
         onUpdateQuestion={onUpdateQuestion}
+        onSwipeDown={onSwipeDown}
+        onSwipeUp={onSwipeUp}
       />
     </div>
   );

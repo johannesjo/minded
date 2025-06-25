@@ -21,33 +21,28 @@ export const InteractionOverlay: (props: {
       class={styles.interactionOverlay}
       id="minded-6622-coloured-wrapper"
       ref={wrapperEl}
-      onclick={async (ev) => {
-        if ((ev.target as HTMLElement)?.id === "minded-6622-coloured-wrapper") {
-          await fadeOut(wrapperEl, 150).promise;
-          props.onHideInteraction();
-        }
+      onclick={(ev) => {
+        // Background click disabled - only gesture controls
+        ev.stopPropagation();
       }}
     >
       <div class={styles.interactionWrapper}>
         <InteractionCommon
-          isReducedSuccessSun={true}
           questionForPrompt={undefined}
           isInitFadeout={false}
           wrapperEl={wrapperEl}
           onInteractionSubmitted={() => {
             props.onPossibleNewData();
           }}
-          onSuccessSunTap={() => {
-            props.onHideInteraction();
-          }}
-          onAfterSuccessSunFadeout={() => {
-            props.onHideInteraction();
-          }}
           onAfterInteractionFadeout={() => props.onHideInteraction()}
           onSetAnswer={() => undefined}
           onUpdateQuestion={() => undefined}
           onModeSet={() => undefined}
           onSkip={() => props.onHideInteraction()}
+          onSwipeDown={() => props.onHideInteraction()}
+          onSwipeUp={() => props.onHideInteraction()}
+          onProceedToApp={() => props.onHideInteraction()}
+          enableGestures={true}
         />
       </div>
     </div>

@@ -43,11 +43,10 @@ export const InteractionWeb: (props: {
     document.removeEventListener("keypress", escapeHandler);
   });
 
-  const onSuccessSunTap = () => {
-    closeTab();
-  };
 
   const teardown = () => {
+    console.log('InteractionWeb: teardown called - hiding interaction');
+    console.trace('Teardown call stack');
     document.removeEventListener("keypress", escapeHandler);
     props.onHideAll();
   };
@@ -80,21 +79,8 @@ export const InteractionWeb: (props: {
           <div
             id="minded-6622-coloured-wrapper-dynamic"
             onclick={(ev) => {
-              if (
-                (ev.target as HTMLElement)?.id ===
-                "minded-6622-coloured-wrapper-dynamic"
-              ) {
-                setIsShowBlackScreen(true);
-
-                setTimeout(() => {
-                  // fadeOutInteractionWrapper();
-                  wrapperEl.style.display = "none";
-                  setTimeout(() => {
-                    setIsShowBlackScreen(false);
-                    setIsShowLittleSun(true);
-                  }, 300);
-                }, 300);
-              }
+              // Background click disabled - only gesture controls
+              ev.stopPropagation();
             }}
             ref={wrapperEl}
           >
@@ -108,21 +94,24 @@ export const InteractionWeb: (props: {
                   setLittleSunTxt("");
                 }
               }}
-              onAfterSuccessSunFadeout={() =>
-                fadeOut(wrapperEl, 150).promise.then(() => {
-                  setIsShowLittleSun(true);
-                })
-              }
               onAfterInteractionFadeout={() => {
                 setIsShowLittleSun(true);
               }}
-              onSuccessSunTap={onSuccessSunTap}
               onSkip={() => {
-                setIsShowLittleSun(true);
+                console.log('InteractionWeb: onSkip called, tearing down interaction');
+                teardown();
               }}
               onUpdateQuestion={(question) => {
                 setQuestion(question);
                 setLittleSunTxt(question?.t + "?");
+              }}
+              onSwipeDown={() => {
+                console.log('InteractionWeb: onSwipeDown called, closing tab');
+                closeTab();
+              }}
+              onSwipeUp={() => {
+                console.log('InteractionWeb: onSwipeUp called, showing little sun');
+                setIsShowLittleSun(true);
               }}
             />
           </div>
