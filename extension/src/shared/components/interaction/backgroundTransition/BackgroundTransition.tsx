@@ -1,5 +1,6 @@
 import { Component, createSignal, onCleanup, onMount } from "solid-js";
 import "./BackgroundTransition.scss";
+import Stars from "./Stars";
 
 interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
@@ -17,6 +18,8 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 ) => {
   const [getProgress, setProgress] = createSignal(0); // -1 to 1, where 0 is default
   const [getIsAnimating, setIsAnimating] = createSignal(false);
+  const [getShowStars, setShowStars] = createSignal(false);
+  const [getIsDarkMode, setIsDarkMode] = createSignal(false);
 
   // const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
 
@@ -36,14 +39,17 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     
     const computedStyle = getComputedStyle(backgroundEl);
     
+    // Check if dark mode
+    const mindedWrapper = document.querySelector('#minded-6622');
+    const isDark = mindedWrapper?.classList.contains('minded-6622-dark') || false;
+    setIsDarkMode(isDark);
+    
     // Get the default gradient from CSS variables
     const gradient = computedStyle.getPropertyValue('--background-gradient').trim();
     if (gradient) {
       defaultGradient = gradient;
     } else {
       // Fallback based on theme
-      const mindedWrapper = document.querySelector('#minded-6622');
-      const isDark = mindedWrapper?.classList.contains('minded-6622-dark');
       defaultGradient = isDark 
         ? 'linear-gradient(175deg, #071449, #1a137c, #401049)'
         : 'linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)';
@@ -206,6 +212,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
   const animateToDefault = () => {
     setIsAnimating(true);
+    setShowStars(false); // Hide stars when returning to default
     const startProgress = getProgress();
     const duration = 600; // Match sun snap-back duration
     const startTime = Date.now();
@@ -238,6 +245,11 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     const duration = 3000; // Match sun completion duration
     const startTime = Date.now();
 
+    // Show stars if dark mode and going up (blue sky)
+    if (getIsDarkMode() && direction === "up") {
+      setTimeout(() => setShowStars(true), 500); // Delay slightly for better effect
+    }
+
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const animProgress = Math.min(elapsed / duration, 1);
@@ -263,13 +275,14 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     animate();
   };
 
-  return (
+  return [
     <div
       ref={backgroundEl!}
       class="background-transition"
       classList={{ animating: getIsAnimating() }}
-    />
-  );
+    />,
+    <Stars isActive={getShowStars()} isDarkMode={getIsDarkMode()} />
+  ];
 };
 
 export default BackgroundTransition;

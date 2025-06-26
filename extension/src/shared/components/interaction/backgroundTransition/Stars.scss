@@ -1,0 +1,134 @@
+.stars-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2; // Above background but below content
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+
+  &.active {
+    opacity: 1;
+  }
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle infinite ease-in-out;
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Shooting stars for extra magic
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, white, transparent);
+  opacity: 0;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(to right, white, transparent);
+    transform: translateX(-100%);
+  }
+}
+
+.stars-container.active {
+  .shooting-star-1 {
+    animation: shoot-1 4s linear infinite;
+    animation-delay: 1s;
+  }
+  
+  .shooting-star-2 {
+    animation: shoot-2 5s linear infinite;
+    animation-delay: 3s;
+  }
+  
+  .shooting-star-3 {
+    animation: shoot-3 6s linear infinite;
+    animation-delay: 2s;
+  }
+}
+
+@keyframes shoot-1 {
+  0% {
+    opacity: 0;
+    top: 20%;
+    left: -10%;
+    transform: rotate(45deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    top: 80%;
+    left: 110%;
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes shoot-2 {
+  0% {
+    opacity: 0;
+    top: 10%;
+    right: -10%;
+    transform: rotate(-45deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    top: 70%;
+    right: 110%;
+    transform: rotate(-45deg);
+  }
+}
+
+@keyframes shoot-3 {
+  0% {
+    opacity: 0;
+    top: 40%;
+    left: -10%;
+    transform: rotate(30deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    top: 90%;
+    left: 110%;
+    transform: rotate(30deg);
+  }
+}
