@@ -1,4 +1,4 @@
-#minded-6622 .background-transition {
+.background-transition {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,9 +11,4 @@
   &.animating {
     // No CSS transition - using JS animation for precise control
   }
-}
-
-// Dark mode specific
-#minded-6622.minded-6622-dark .background-transition {
-  background: var(--background-gradient, linear-gradient(175deg, #071449, #1a137c, #401049));
 }

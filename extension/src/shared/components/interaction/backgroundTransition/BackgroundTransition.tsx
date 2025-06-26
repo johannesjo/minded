@@ -5,29 +5,12 @@ interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
 }
 
-// Theme-aware color states
-const THEME_COLORS = {
-  light: {
-    blueSky: {
-      top: "#3e88dd", // Bright blue
-      bottom: "#66c5e4", // Sky blue
-    },
-    sunset: {
-      top: "#FF6B35", // Deep orange
-      bottom: "#FFCC33", // Golden yellow
-    },
-  },
-  dark: {
-    blueSky: {
-      top: "#1e4d8d", // Darker blue for dark mode
-      bottom: "#3675a4", // Darker sky blue
-    },
-    sunset: {
-      top: "#b54925", // Darker orange for dark mode
-      bottom: "#cc9922", // Darker yellow
-    },
-  },
-};
+interface TransitionColors {
+  blueSkyTop: string;
+  blueSkyBottom: string;
+  sunsetTop: string;
+  sunsetBottom: string;
+}
 
 export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   props,
@@ -40,23 +23,52 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   let animationFrame: number;
   let backgroundEl: HTMLDivElement;
   let defaultGradient: string = '';
-  let currentTheme: 'light' | 'dark' = 'light';
+  let transitionColors: TransitionColors = {
+    blueSkyTop: '#3e88dd',
+    blueSkyBottom: '#66c5e4',
+    sunsetTop: '#FF6B35',
+    sunsetBottom: '#FFCC33',
+  };
 
-  onMount(() => {
-    // Detect current theme
-    const mindedWrapper = document.querySelector('#minded-6622');
-    currentTheme = mindedWrapper?.classList.contains('minded-6622-dark') ? 'dark' : 'light';
-
-    // Get the default gradient from CSS variables
-    const computedStyle = getComputedStyle(mindedWrapper || document.documentElement);
-    defaultGradient = computedStyle.getPropertyValue('--background-gradient').trim();
+  const updateColorsFromCSS = () => {
+    // Get the computed styles from the background element itself to ensure proper CSS variable inheritance
+    if (!backgroundEl) return;
     
-    // If no gradient found, use fallback based on theme
-    if (!defaultGradient) {
-      defaultGradient = currentTheme === 'dark' 
+    const computedStyle = getComputedStyle(backgroundEl);
+    
+    // Get the default gradient from CSS variables
+    const gradient = computedStyle.getPropertyValue('--background-gradient').trim();
+    if (gradient) {
+      defaultGradient = gradient;
+    } else {
+      // Fallback based on theme
+      const mindedWrapper = document.querySelector('#minded-6622');
+      const isDark = mindedWrapper?.classList.contains('minded-6622-dark');
+      defaultGradient = isDark 
         ? 'linear-gradient(175deg, #071449, #1a137c, #401049)'
         : 'linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)';
     }
+    
+    // Get transition colors from CSS variables
+    const blueSkyTop = computedStyle.getPropertyValue('--bg-transition-bluesky-top').trim();
+    const blueSkyBottom = computedStyle.getPropertyValue('--bg-transition-bluesky-bottom').trim();
+    const sunsetTop = computedStyle.getPropertyValue('--bg-transition-sunset-top').trim();
+    const sunsetBottom = computedStyle.getPropertyValue('--bg-transition-sunset-bottom').trim();
+    
+    if (blueSkyTop) transitionColors.blueSkyTop = blueSkyTop;
+    if (blueSkyBottom) transitionColors.blueSkyBottom = blueSkyBottom;
+    if (sunsetTop) transitionColors.sunsetTop = sunsetTop;
+    if (sunsetBottom) transitionColors.sunsetBottom = sunsetBottom;
+  };
+
+  onMount(() => {
+    // Wait for next tick to ensure backgroundEl is available
+    requestAnimationFrame(() => {
+      updateColorsFromCSS();
+      
+      // Also try after a delay in case CSS isn't loaded yet
+      setTimeout(updateColorsFromCSS, 100);
+    });
 
     // Listen for drag progress events from Sun component
     const handleDragProgress = (event: CustomEvent) => {
@@ -134,11 +146,22 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     return `rgb(${r}, ${g}, ${b})`;
   };
 
-  const hexToRgba = (hex: string, alpha: number): string => {
+  const hexToRgba = (color: string, alpha: number): string => {
+    // Ensure we have a valid hex color
+    const hex = color.startsWith('#') ? color : `#${color}`;
+    
+    // Parse hex to RGB
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    
+    // Return if we got valid RGB values
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    // Fallback - return the color with opacity
+    return `rgba(128, 128, 128, ${alpha})`;
   };
 
   const updateBackground = (progress: number) => {
@@ -150,9 +173,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       return;
     }
 
-    // Get theme-specific colors
-    const themeColors = THEME_COLORS[currentTheme];
-
     // For transitions, we'll blend between the default gradient and target colors
     // This creates a smooth transition effect
     if (progress < 0) {
@@ -160,11 +180,11 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       const factor = Math.abs(progress);
       const opacity = factor * 0.8; // Max 80% opacity for better blending
       
-      // Create a layered gradient effect with theme-specific colors
+      // Create a layered gradient effect with colors from CSS variables
       backgroundEl.style.background = `
         linear-gradient(to bottom, 
-          ${hexToRgba(themeColors.blueSky.top, opacity)}, 
-          ${hexToRgba(themeColors.blueSky.bottom, opacity)}
+          ${hexToRgba(transitionColors.blueSkyTop, opacity)}, 
+          ${hexToRgba(transitionColors.blueSkyBottom, opacity)}
         ),
         ${defaultGradient}
       `;
@@ -173,11 +193,11 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       const factor = progress;
       const opacity = factor * 0.8; // Max 80% opacity for better blending
       
-      // Create a layered gradient effect with theme-specific colors
+      // Create a layered gradient effect with colors from CSS variables
       backgroundEl.style.background = `
         linear-gradient(to bottom, 
-          ${hexToRgba(themeColors.sunset.top, opacity)}, 
-          ${hexToRgba(themeColors.sunset.bottom, opacity)}
+          ${hexToRgba(transitionColors.sunsetTop, opacity)}, 
+          ${hexToRgba(transitionColors.sunsetBottom, opacity)}
         ),
         ${defaultGradient}
       `;
