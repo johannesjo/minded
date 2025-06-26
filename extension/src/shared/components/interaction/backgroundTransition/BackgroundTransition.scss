@@ -1,14 +1,19 @@
-.background-transition {
+#minded-6622 .background-transition {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 1; // Behind all other content
-  background: linear-gradient(to bottom, #1a1a1a, #2d2d2d); // Default state
+  background: var(--background-gradient, linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)); // Use CSS variable with fallback
   transition: none; // We handle transitions manually for smooth drag
 
   &.animating {
     // No CSS transition - using JS animation for precise control
   }
+}
+
+// Dark mode specific
+#minded-6622.minded-6622-dark .background-transition {
+  background: var(--background-gradient, linear-gradient(175deg, #071449, #1a137c, #401049));
 }
