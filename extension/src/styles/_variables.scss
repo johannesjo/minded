@@ -76,6 +76,7 @@
   --c-gradient-1: #ccf1f6;
   --c-gradient-2: #ffebf6;
   --c-gradient-3: #f4f3b5;
+  --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
 
   --safe-area-inset-bottom: 0;
   --safe-area-inset-top: 0;
@@ -91,6 +92,7 @@
     --c-gradient-1: #071449;
     --c-gradient-2: #1a137c;
     --c-gradient-3: #401049;
+    --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
 
     //background: linear-gradient(175deg, #0b153f, #181357, #300d37);
 

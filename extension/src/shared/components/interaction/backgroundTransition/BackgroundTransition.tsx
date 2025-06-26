@@ -5,19 +5,27 @@ interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
 }
 
-// Color states for the background transition
-const VISUAL_STATES = {
-  blueSky: {
-    top: "#3e88dd", // Bright blue
-    bottom: "#66c5e4", // Sky blue
+// Theme-aware color states
+const THEME_COLORS = {
+  light: {
+    blueSky: {
+      top: "#3e88dd", // Bright blue
+      bottom: "#66c5e4", // Sky blue
+    },
+    sunset: {
+      top: "#FF6B35", // Deep orange
+      bottom: "#FFCC33", // Golden yellow
+    },
   },
-  default: {
-    top: "#1a1a1a", // Dark gray
-    bottom: "#2d2d2d", // Slightly lighter gray
-  },
-  sunset: {
-    top: "#FF6B35", // Deep orange
-    bottom: "#FFCC33", // Golden yellow
+  dark: {
+    blueSky: {
+      top: "#1e4d8d", // Darker blue for dark mode
+      bottom: "#3675a4", // Darker sky blue
+    },
+    sunset: {
+      top: "#b54925", // Darker orange for dark mode
+      bottom: "#cc9922", // Darker yellow
+    },
   },
 };
 
@@ -31,8 +39,25 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
   let animationFrame: number;
   let backgroundEl: HTMLDivElement;
+  let defaultGradient: string = '';
+  let currentTheme: 'light' | 'dark' = 'light';
 
   onMount(() => {
+    // Detect current theme
+    const mindedWrapper = document.querySelector('#minded-6622');
+    currentTheme = mindedWrapper?.classList.contains('minded-6622-dark') ? 'dark' : 'light';
+
+    // Get the default gradient from CSS variables
+    const computedStyle = getComputedStyle(mindedWrapper || document.documentElement);
+    defaultGradient = computedStyle.getPropertyValue('--background-gradient').trim();
+    
+    // If no gradient found, use fallback based on theme
+    if (!defaultGradient) {
+      defaultGradient = currentTheme === 'dark' 
+        ? 'linear-gradient(175deg, #071449, #1a137c, #401049)'
+        : 'linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)';
+    }
+
     // Listen for drag progress events from Sun component
     const handleDragProgress = (event: CustomEvent) => {
       const { direction, intensity, isDragging, resetToInitial } = event.detail;
@@ -109,45 +134,54 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     return `rgb(${r}, ${g}, ${b})`;
   };
 
+  const hexToRgba = (hex: string, alpha: number): string => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   const updateBackground = (progress: number) => {
     if (!backgroundEl) return;
 
-    let topColor: string;
-    let bottomColor: string;
-
-    if (progress < 0) {
-      // Dragging up - interpolate from default to blue sky
-      const factor = Math.abs(progress);
-      topColor = interpolateColor(
-        VISUAL_STATES.default.top,
-        VISUAL_STATES.blueSky.top,
-        factor,
-      );
-      bottomColor = interpolateColor(
-        VISUAL_STATES.default.bottom,
-        VISUAL_STATES.blueSky.bottom,
-        factor,
-      );
-    } else if (progress > 0) {
-      // Dragging down - interpolate from default to sunset
-      const factor = progress;
-      topColor = interpolateColor(
-        VISUAL_STATES.default.top,
-        VISUAL_STATES.sunset.top,
-        factor,
-      );
-      bottomColor = interpolateColor(
-        VISUAL_STATES.default.bottom,
-        VISUAL_STATES.sunset.bottom,
-        factor,
-      );
-    } else {
-      // Default state
-      topColor = VISUAL_STATES.default.top;
-      bottomColor = VISUAL_STATES.default.bottom;
+    if (progress === 0) {
+      // Default state - use the CSS variable gradient
+      backgroundEl.style.background = defaultGradient;
+      return;
     }
 
-    backgroundEl.style.background = `linear-gradient(to bottom, ${topColor}, ${bottomColor})`;
+    // Get theme-specific colors
+    const themeColors = THEME_COLORS[currentTheme];
+
+    // For transitions, we'll blend between the default gradient and target colors
+    // This creates a smooth transition effect
+    if (progress < 0) {
+      // Dragging up - transition to blue sky
+      const factor = Math.abs(progress);
+      const opacity = factor * 0.8; // Max 80% opacity for better blending
+      
+      // Create a layered gradient effect with theme-specific colors
+      backgroundEl.style.background = `
+        linear-gradient(to bottom, 
+          ${hexToRgba(themeColors.blueSky.top, opacity)}, 
+          ${hexToRgba(themeColors.blueSky.bottom, opacity)}
+        ),
+        ${defaultGradient}
+      `;
+    } else if (progress > 0) {
+      // Dragging down - transition to sunset
+      const factor = progress;
+      const opacity = factor * 0.8; // Max 80% opacity for better blending
+      
+      // Create a layered gradient effect with theme-specific colors
+      backgroundEl.style.background = `
+        linear-gradient(to bottom, 
+          ${hexToRgba(themeColors.sunset.top, opacity)}, 
+          ${hexToRgba(themeColors.sunset.bottom, opacity)}
+        ),
+        ${defaultGradient}
+      `;
+    }
   };
 
   const animateToDefault = () => {
