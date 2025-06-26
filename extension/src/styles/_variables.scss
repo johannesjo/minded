@@ -77,6 +77,12 @@
   --c-gradient-2: #ffebf6;
   --c-gradient-3: #f4f3b5;
   --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
+  
+  // Background transition target colors
+  --bg-transition-bluesky-top: #0058c1;
+  --bg-transition-bluesky-bottom: #0a75bc;
+  --bg-transition-sunset-top: #cd492a;
+  --bg-transition-sunset-bottom: #ddb543;
 
   --safe-area-inset-bottom: 0;
   --safe-area-inset-top: 0;
@@ -93,6 +99,12 @@
     --c-gradient-2: #1a137c;
     --c-gradient-3: #401049;
     --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
+    
+    // Background transition target colors (dark mode)
+    --bg-transition-bluesky-top: #07285a;
+    --bg-transition-bluesky-bottom: #042d6a;
+    --bg-transition-sunset-top: #a12540;
+    --bg-transition-sunset-bottom: #c17328;
 
     //background: linear-gradient(175deg, #0b153f, #181357, #300d37);
 
