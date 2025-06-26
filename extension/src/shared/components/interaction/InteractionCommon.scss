@@ -6,6 +6,40 @@
   cursor: auto;
 }
 
+.interaction-content {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+  
+  &.fade-in {
+    opacity: 1;
+  }
+}
+
+.be-proud-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+  opacity: 0;
+  animation: fadeInProud 1s ease-in forwards;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+@keyframes fadeInProud {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 #minded-6622-black-screen {
   background: #000;
   position: fixed;
@@ -74,6 +108,7 @@
   display: flex;
   justify-content: center;
   pointer-events: all;
+  margin-bottom: 16px;
 }
 
 .be-proud-message {
