@@ -133,20 +133,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     <>
       <BackgroundTransition dragThreshold={0.3} />
 
-      <div class="sun-container">
-        <Sun
-          onSkip={props.onSkip}
-          onSwipeDown={props.onSwipeDown}
-          onSwipeUp={props.onSwipeUp}
-          onStartBackgroundAnimation={handleStartBackgroundAnimation}
-          dragThreshold={0.3}
-        />
-      </div>
-
-      {/* Be proud message during final animation */}
-      {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
-
       <div id="minded-6622-interaction-wrapper-box">
+        {/* Be proud message during final animation */}
+        {getShowBeProudMessage() && (
+          <div class="be-proud-message">Be proud!</div>
+        )}
+
+        <div class="sun-container">
+          <Sun
+            onSkip={props.onSkip}
+            onSwipeDown={props.onSwipeDown}
+            onSwipeUp={props.onSwipeUp}
+            onStartBackgroundAnimation={handleStartBackgroundAnimation}
+            dragThreshold={0.3}
+          />
+        </div>
+
         <Switch>
           <Match when={getMode() === "SELF_ASSESSMENT"}>
             {getSyncDataI() && (

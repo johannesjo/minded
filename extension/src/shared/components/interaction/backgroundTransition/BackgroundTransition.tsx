@@ -8,8 +8,8 @@ interface BackgroundTransitionProps {
 // Color states for the background transition
 const VISUAL_STATES = {
   blueSky: {
-    top: "#4A90E2", // Bright blue
-    bottom: "#87CEEB", // Sky blue
+    top: "#3e88dd", // Bright blue
+    bottom: "#66c5e4", // Sky blue
   },
   default: {
     top: "#1a1a1a", // Dark gray
@@ -27,7 +27,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   const [getProgress, setProgress] = createSignal(0); // -1 to 1, where 0 is default
   const [getIsAnimating, setIsAnimating] = createSignal(false);
 
-  const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
+  // const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
 
   let animationFrame: number;
   let backgroundEl: HTMLDivElement;

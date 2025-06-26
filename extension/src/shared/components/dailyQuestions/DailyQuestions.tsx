@@ -22,7 +22,6 @@ import {
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { useNavigate } from "@solidjs/router";
 
-const SUN_ANI_DURATION = 600;
 const AFTER_ANI_WAIT_DURATION = 1100;
 
 const DailyQuestions = () => {

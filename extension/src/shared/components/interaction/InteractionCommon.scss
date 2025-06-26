@@ -68,12 +68,12 @@
 }
 
 .sun-container {
-  position: fixed;
-  top: 35%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 30;
+  position: relative;
+  z-index: 4444;
   animation: fadeIn 0.5s ease-in forwards;
+  display: flex;
+  justify-content: center;
+  pointer-events: all;
 }
 
 .be-proud-message {
