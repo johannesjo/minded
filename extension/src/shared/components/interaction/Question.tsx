@@ -96,11 +96,11 @@ export const Question: (props: {
         id="minded-6622-question-wrapper"
         class={`${getIsChangingQuestion() ? "isChangingQuestion" : ""}`}
       >
-        <div 
-          id="minded-6622-question" 
+        <div
+          id="minded-6622-question"
           class="txtBig"
-          classList={{ 'show-input': getShowInput() }}
-          onclick={() => {
+          classList={{ "show-input": getShowInput() }}
+          onClick={() => {
             if (!getShowInput()) {
               setShowInput(true);
               props.onCancelCountdown();
@@ -112,12 +112,12 @@ export const Question: (props: {
           <span>{getQuestion().t}?</span>
         </div>
 
-        {getShowInput() && (
-          <div
-            class="question-input-container"
-            onmouseenter={props.onCancelCountdown}
-            onclick={props.onCancelCountdown}
-          >
+        <div
+          class="question-input-container"
+          classList={{ "show": getShowInput() }}
+          onMouseEnter={props.onCancelCountdown}
+          onClick={props.onCancelCountdown}
+        >
             <InputWithSend
               onEscape={props.onSkip}
               onCancelCountdown={props.onCancelCountdown}
@@ -127,8 +127,7 @@ export const Question: (props: {
               setRef={setInpEl}
               onSubmit={submitAnswer}
             />
-          </div>
-        )}
+        </div>
 
         {/* Temporarily commented out - cycle through prompts button
         {props.isChangeQuestion && (

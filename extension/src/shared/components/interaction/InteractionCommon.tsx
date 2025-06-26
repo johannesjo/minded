@@ -53,10 +53,72 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     QuestionForPrompt | undefined
   >();
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
+  const [getInteractionOpacity, setInteractionOpacity] = createSignal(1);
+  const [getIsContentReady, setIsContentReady] = createSignal(false);
+  const [getIsSkipping, setIsSkipping] = createSignal(false);
+
+  // Handler for skip with fade-out animation
+  const handleSkip = () => {
+    if (getIsSkipping()) return; // Prevent multiple skip calls
+    
+    setIsSkipping(true);
+    
+    // Check if we have a wrapper element (web extension case)
+    if (props.wrapperEl) {
+      // Use the fadeOut utility for web extension
+      const { promise } = fadeOut(props.wrapperEl, 1000); // 1 second
+      promise.then(() => {
+        props.onSkip();
+      });
+    } else {
+      // Fade out the interaction content for mobile apps
+      let startTime = Date.now();
+      const fadeOutDuration = 1000; // 1 second
+      
+      const fadeOutContent = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / fadeOutDuration, 1);
+        const opacity = 1 - progress;
+        
+        setInteractionOpacity(opacity);
+        
+        if (progress < 1) {
+          requestAnimationFrame(fadeOutContent);
+        } else {
+          // Call the original skip handler after fade out
+          props.onSkip();
+        }
+      };
+      
+      fadeOutContent();
+    }
+  };
 
   // Handler to trigger background animations from sun component
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
-    setShowBeProudMessage(true);
+    // Fade out the interaction content first
+    let startTime = Date.now();
+    const fadeOutDuration = 1000; // 1 second
+    
+    const fadeOut = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / fadeOutDuration, 1);
+      const opacity = 1 - progress;
+      
+      setInteractionOpacity(opacity);
+      
+      if (progress < 1) {
+        requestAnimationFrame(fadeOut);
+      } else {
+        // Show "Be proud" message after a longer delay for better timing
+        setTimeout(() => {
+          setShowBeProudMessage(true);
+        }, 1000); // Additional 1 second delay after fade out
+      }
+    };
+    
+    fadeOut();
+    
     const event = new CustomEvent("startBackgroundAnimation", {
       detail: { direction },
     });
@@ -84,6 +146,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setInitialQuestion(question);
         setMode(mode);
       }
+      
+      // Trigger fade-in animation after content is ready
+      setTimeout(() => {
+        setIsContentReady(true);
+      }, 100);
     });
   });
 
@@ -100,12 +167,31 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
-    props.onInteractionSubmitted?.();
-    cancelCountdown();
+    // Fade out the interaction content first
+    let startTime = Date.now();
+    const fadeOutDuration = 1000; // 1 second
+    
+    const fadeOut = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / fadeOutDuration, 1);
+      const opacity = 1 - progress;
+      
+      setInteractionOpacity(opacity);
+      
+      if (progress < 1) {
+        requestAnimationFrame(fadeOut);
+      } else {
+        // Call the original success handlers after fade out
+        props.onInteractionSubmitted?.();
+        cancelCountdown();
 
-    if (answerOrData) {
-      props.onSetAnswer(answerOrData.val.toString());
-    }
+        if (answerOrData) {
+          props.onSetAnswer(answerOrData.val.toString());
+        }
+      }
+    };
+    
+    fadeOut();
   };
 
   const cancelCountdown = () => {
@@ -141,7 +227,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
         <div class="sun-container">
           <Sun
-            onSkip={props.onSkip}
+            onSkip={handleSkip}
             onSwipeDown={props.onSwipeDown}
             onSwipeUp={props.onSwipeUp}
             onStartBackgroundAnimation={handleStartBackgroundAnimation}
@@ -149,14 +235,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           />
         </div>
 
-        <Switch>
-          <Match when={getMode() === "SELF_ASSESSMENT"}>
+        <div 
+          class="interaction-content"
+          classList={{ "fade-in": getIsContentReady() }}
+          style={{ opacity: getInteractionOpacity() }}
+        >
+          <Switch>
+            <Match when={getMode() === "SELF_ASSESSMENT"}>
             {getSyncDataI() && (
               <SelfAssessmentInteraction
                 syncData={getSyncDataI()}
                 onCancelCountdown={cancelCountdown}
                 onSuccess={onInteractionSuccess}
-                onSkip={props.onSkip}
+                onSkip={handleSkip}
               />
             )}
           </Match>
@@ -164,14 +255,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <MoodCheckin
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
-              onSkip={props.onSkip}
+              onSkip={handleSkip}
             />
           </Match>
           <Match when={getMode() === "EMOJI_CHECKIN"}>
             <EmojiCheckin
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
-              onSkip={props.onSkip}
+              onSkip={handleSkip}
             />
           </Match>
           <Match when={getMode() === "ACTION_ADVICE"}>
@@ -188,28 +279,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <EnergyLvlInteraction
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
-              onSkip={props.onSkip}
+              onSkip={handleSkip}
             />
           </Match>
           <Match when={getMode() === "SHOW_ALTERNATIVE"}>
             <ShowAlternativeInteraction
               syncData={getSyncDataI()}
               onCancelCountdown={cancelCountdown}
-              onSkip={props.onSkip}
+              onSkip={handleSkip}
             />
           </Match>
           <Match when={getMode() === "SET_ALTERNATIVE"}>
             <SetAlternativeInteraction
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
-              onSkip={props.onSkip}
+              onSkip={handleSkip}
             />
           </Match>
           <Match when={getMode() === "APP_USAGE_OR_BROWSING_BEHAVIOR"}>
             <AppUsageOrBrowsingBehavior
               onCancelCountdown={cancelCountdown}
               onSuccess={onInteractionSuccess}
-              onSkip={props.onSkip}
+              onSkip={handleSkip}
             />
           </Match>
           <Match when={getMode() === "QUESTION"}>
@@ -223,11 +314,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onUpdateQuestion={(question) =>
                   props.onUpdateQuestion(question)
                 }
-                onSkip={props.onSkip}
+                onSkip={handleSkip}
               />
             )}
           </Match>
-        </Switch>
+          </Switch>
+        </div>
       </div>
     </>
   );

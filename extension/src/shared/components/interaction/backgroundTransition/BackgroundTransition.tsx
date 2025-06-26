@@ -245,8 +245,8 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     const duration = 3000; // Match sun completion duration
     const startTime = Date.now();
 
-    // Show stars if dark mode and going up (blue sky)
-    if (getIsDarkMode() && direction === "up") {
+    // Show stars if dark mode for both directions
+    if (getIsDarkMode()) {
       setTimeout(() => setShowStars(true), 500); // Delay slightly for better effect
     }
 

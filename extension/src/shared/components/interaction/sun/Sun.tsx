@@ -149,7 +149,7 @@ export const Sun: Component<SunProps> = (props) => {
         tapTimer = null;
       }
       
-      if (currentTapCount >= 4) {
+      if (currentTapCount >= 5) {
         props.onSkip();
         setTapCount(0);
       } else {
@@ -294,7 +294,7 @@ export const Sun: Component<SunProps> = (props) => {
       }}
     >
       <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
-        {[1, 2, 3, 4].map(i => (
+        {[1, 2, 3, 4, 5].map(i => (
           <div class="tap-dot" classList={{ filled: i <= getTapCount() }}></div>
         ))}
       </div>
