@@ -57,6 +57,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsContentReady, setIsContentReady] = createSignal(false);
   const [getIsSkipping, setIsSkipping] = createSignal(false);
   const [getTextOpacity, setTextOpacity] = createSignal(1);
+  const [getIsFinalAnimation, setIsFinalAnimation] = createSignal(false);
 
   // Handler for skip with fade-out animation
   const handleSkip = () => {
@@ -97,6 +98,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   // Handler to trigger background animations from sun component
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
+    // Mark final animation as started
+    setIsFinalAnimation(true);
+    
     // Fade out the interaction content first
     let startTime = Date.now();
     const fadeOutDuration = 1000; // 1 second
@@ -194,6 +198,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
+    // Mark final animation as started
+    setIsFinalAnimation(true);
+    
     // Fade out the interaction content first
     let startTime = Date.now();
     const fadeOutDuration = 1000; // 1 second
@@ -250,7 +257,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     <>
       <BackgroundTransition dragThreshold={0.3} />
 
-      <div id="minded-6622-interaction-wrapper-box">
+      <div 
+        id="minded-6622-interaction-wrapper-box"
+        style={{
+          "pointer-events": getIsFinalAnimation() ? "none" : "auto"
+        }}
+      >
         {/* Be proud message during final animation */}
         {getShowBeProudMessage() && (
           <div class="be-proud-message">Be proud!</div>
