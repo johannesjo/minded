@@ -399,10 +399,18 @@ export const Sun: Component<SunProps> = (props) => {
       const startScale = getScale();
       const startOpacity = getOpacity();
       
+      // Safety check: ensure we have valid initial values
+      if (!startOffset || startScale <= 0 || startOpacity <= 0) {
+        console.warn("Invalid initial state for fling animation");
+        props.onSwipeUp();
+        return;
+      }
+      
       // Physics parameters
       const friction = 0.98; // Deceleration factor (0-1, lower = more friction)
       const gravity = 500; // Downward acceleration in px/s²
       const rotationFactor = 0.0005; // How much rotation based on horizontal velocity
+      const minAnimationTime = 500; // Minimum animation duration in ms
       
       // Current state
       let position = { x: startOffset.x, y: startOffset.y };
@@ -416,6 +424,7 @@ export const Sun: Component<SunProps> = (props) => {
         const now = Date.now();
         const dt = (now - lastTime) / 1000; // Delta time in seconds
         lastTime = now;
+        const elapsedTime = now - startTime;
         
         // Apply physics
         currentVelocity.x *= Math.pow(friction, dt * 60); // Normalize to 60fps
@@ -459,7 +468,11 @@ export const Sun: Component<SunProps> = (props) => {
           position.x < -200 || position.x > window.innerWidth + 200 ||
           position.y < -200 || position.y > window.innerHeight + 200;
         
-        if (isOffScreen || (speed < 50 && distanceProgress > 0.5)) {
+        // Don't complete animation too early
+        const hasMinTimeElapsed = elapsedTime >= minAnimationTime;
+        const isSlowAndFar = speed < 50 && distanceProgress > 0.5;
+        
+        if (hasMinTimeElapsed && (isOffScreen || isSlowAndFar)) {
           setIsAnimating(false);
           // Call appropriate callback based on final direction
           if (position.y > window.innerHeight / 2) {
