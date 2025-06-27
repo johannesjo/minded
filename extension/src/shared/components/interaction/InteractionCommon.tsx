@@ -404,8 +404,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             }}
           >
             <div className="sun-instructions txtSmaller">
-              <p>Drag the sun up to let go.</p>
-              <p>Drag the sun down to relax.</p>
+              <p>Fling the sun away to let go.</p>
+              <p>Drag the sun down to ground yourself.</p>
               <p>Tap the sun 5 times to proceed.</p>
             </div>
           </div>
