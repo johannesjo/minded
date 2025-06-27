@@ -104,11 +104,13 @@ export const Sun: Component<SunProps> = (props) => {
       isDragIntent = false;
       startPos = { x: clientX, y: clientY };
       // Reset velocity tracking
-      velocitySamples = [{
-        x: clientX,
-        y: clientY,
-        timestamp: Date.now()
-      }];
+      velocitySamples = [
+        {
+          x: clientX,
+          y: clientY,
+          timestamp: Date.now(),
+        },
+      ];
       // Immediately set dragging state to disable transitions
       setIsDragging(true);
       // Light haptic feedback on touch
@@ -184,13 +186,19 @@ export const Sun: Component<SunProps> = (props) => {
       }
     };
 
-    const calculateVelocity = (): { x: number; y: number; magnitude: number } => {
+    const calculateVelocity = (): {
+      x: number;
+      y: number;
+      magnitude: number;
+    } => {
       if (velocitySamples.length < 2) {
         return { x: 0, y: 0, magnitude: 0 };
       }
 
       // Use recent samples for velocity calculation
-      const recentSamples = velocitySamples.slice(-Math.min(3, velocitySamples.length));
+      const recentSamples = velocitySamples.slice(
+        -Math.min(3, velocitySamples.length),
+      );
       const first = recentSamples[0];
       const last = recentSamples[recentSamples.length - 1];
       const dt = (last.timestamp - first.timestamp) / 1000; // Convert to seconds
@@ -393,93 +401,99 @@ export const Sun: Component<SunProps> = (props) => {
       animate();
     };
 
-    const animateFling = (velocity: { x: number; y: number; magnitude: number }) => {
+    const animateFling = (velocity: {
+      x: number;
+      y: number;
+      magnitude: number;
+    }) => {
       setIsAnimating(true);
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
-      
+
       // Safety check: ensure we have valid initial values
       if (!startOffset || startScale <= 0 || startOpacity <= 0) {
         props.onSwipeUp();
         return;
       }
-      
+
       // Physics parameters
-      const friction = 0.98; // Deceleration factor (0-1, lower = more friction)
-      const gravity = 500; // Downward acceleration in px/s²
+      const friction = 0.99999; // Deceleration factor (0-1, lower = more friction)
+      const gravity = 0; // Downward acceleration in px/s²
       const rotationFactor = 0.0005; // How much rotation based on horizontal velocity
-      const minAnimationTime = 1500; // Minimum animation duration in ms before completion
-      
+      const minAnimationTime = 4000; // Minimum animation duration in ms before completion
+
       // Current state
       let position = { x: startOffset.x, y: startOffset.y };
       let currentVelocity = { x: velocity.x, y: velocity.y };
       let rotation = 0;
-      
+
       const startTime = Date.now();
       let lastTime = startTime;
-      
+
       const animate = () => {
         const now = Date.now();
         const dt = (now - lastTime) / 1000; // Delta time in seconds
         lastTime = now;
         const elapsedTime = now - startTime;
-        
+
         // Apply physics
         currentVelocity.x *= Math.pow(friction, dt * 60); // Normalize to 60fps
         currentVelocity.y *= Math.pow(friction, dt * 60);
         currentVelocity.y += gravity * dt; // Add gravity
-        
+
         // Update position
         position.x += currentVelocity.x * dt;
         position.y += currentVelocity.y * dt;
-        
+
         // Calculate rotation based on horizontal velocity
         rotation += currentVelocity.x * rotationFactor * dt;
-        
+
         // Calculate distance from start for scaling/opacity
         const distance = Math.sqrt(
-          Math.pow(position.x - startOffset.x, 2) + 
-          Math.pow(position.y - startOffset.y, 2)
+          Math.pow(position.x - startOffset.x, 2) +
+            Math.pow(position.y - startOffset.y, 2),
         );
         const maxDistance = Math.max(window.innerWidth, window.innerHeight);
         const distanceProgress = Math.min(distance / maxDistance, 1);
-        
+
         // Scale down as it flies away
         const currentScale = startScale * (1 - distanceProgress * 0.5);
         setScale(currentScale);
-        
+
         // Fade out
         const currentOpacity = startOpacity * (1 - distanceProgress * 0.8);
         setOpacity(currentOpacity);
-        
+
         // Apply transform with rotation
         setDragOffset({ x: position.x, y: position.y });
         setRotation(rotation);
-        
+
         // Check if sun is off screen or has slowed down enough
         const speed = Math.sqrt(
-          currentVelocity.x * currentVelocity.x + 
-          currentVelocity.y * currentVelocity.y
+          currentVelocity.x * currentVelocity.x +
+            currentVelocity.y * currentVelocity.y,
         );
-        
+
         // Get sun's actual position on screen
         const sunRect = sunEl.getBoundingClientRect();
         const sunCenterX = sunRect.left + sunRect.width / 2;
         const sunCenterY = sunRect.top + sunRect.height / 2;
         const sunRadius = sunRect.width / 2;
-        
-        const isOffScreen = 
-          sunCenterX < -sunRadius || sunCenterX > window.innerWidth + sunRadius ||
-          sunCenterY < -sunRadius || sunCenterY > window.innerHeight + sunRadius;
-        
+
+        const isOffScreen =
+          sunCenterX < -sunRadius ||
+          sunCenterX > window.innerWidth + sunRadius ||
+          sunCenterY < -sunRadius ||
+          sunCenterY > window.innerHeight + sunRadius;
+
         // Don't complete animation too early
         const hasMinTimeElapsed = elapsedTime >= minAnimationTime;
         const isAlmostStopped = speed < 10; // Very low speed threshold
         const isFadedOut = currentOpacity < 0.1; // Almost invisible
-        
+
         // Only complete after minimum time has elapsed
-        if (hasMinTimeElapsed && (isOffScreen || (isAlmostStopped && isFadedOut))) {
+        if (hasMinTimeElapsed) {
           setIsAnimating(false);
           // Call appropriate callback based on final direction
           if (position.y > window.innerHeight / 2) {
@@ -491,7 +505,7 @@ export const Sun: Component<SunProps> = (props) => {
           animationFrame = requestAnimationFrame(animate);
         }
       };
-      
+
       animate();
     };
 
