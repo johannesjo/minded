@@ -66,6 +66,8 @@ class MainActivity : AppCompatActivity() {
                                 settings.allowFileAccessFromFileURLs = true
                                 settings.allowUniversalAccessFromFileURLs = true
                                 settings.allowContentAccess = true
+                                // Disable caching to always load fresh content
+                                settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                     settings.forceDark = WebSettings.FORCE_DARK_ON
                                 }
