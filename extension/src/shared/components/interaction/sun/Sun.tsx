@@ -20,7 +20,9 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getTapCount, setTapCount] = createSignal(0);
   const [getDragProgress, setDragProgress] = createSignal(0);
-  const [getDragDirection, setDragDirection] = createSignal<"up" | "down" | "none">("none");
+  const [getDragDirection, setDragDirection] = createSignal<
+    "up" | "down" | "none"
+  >("none");
   const [getIsBeyondThreshold, setIsBeyondThreshold] = createSignal(false);
 
   let tapTimer: number | null = null;
@@ -39,16 +41,16 @@ export const Sun: Component<SunProps> = (props) => {
   };
 
   // Haptic feedback helper
-  const triggerHaptic = (type: 'light' | 'medium' | 'heavy') => {
-    if ('vibrate' in navigator) {
+  const triggerHaptic = (type: "light" | "medium" | "heavy") => {
+    if ("vibrate" in navigator) {
       switch (type) {
-        case 'light':
+        case "light":
           navigator.vibrate(10);
           break;
-        case 'medium':
+        case "medium":
           navigator.vibrate(20);
           break;
-        case 'heavy':
+        case "heavy":
           navigator.vibrate(30);
           break;
       }
@@ -84,7 +86,7 @@ export const Sun: Component<SunProps> = (props) => {
       // Immediately set dragging state to disable transitions
       setIsDragging(true);
       // Light haptic feedback on touch
-      triggerHaptic('light');
+      triggerHaptic("light");
     };
 
     let hasTriggeredThresholdHaptic = false;
@@ -105,7 +107,7 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Trigger haptic when crossing threshold
       if (dragProgress >= DRAG_THRESHOLD && !hasTriggeredThresholdHaptic) {
-        triggerHaptic('medium');
+        triggerHaptic("medium");
         hasTriggeredThresholdHaptic = true;
         setIsBeyondThreshold(true);
       } else if (dragProgress < DRAG_THRESHOLD) {
@@ -153,7 +155,7 @@ export const Sun: Component<SunProps> = (props) => {
       setDragProgress(0);
       setDragDirection("none");
       setIsBeyondThreshold(false);
-      
+
       // Don't reset rotation here - let it animate back smoothly
 
       if (
@@ -180,7 +182,7 @@ export const Sun: Component<SunProps> = (props) => {
       if (actualProgress >= DRAG_THRESHOLD) {
         const direction = offset.y > 0 ? "down" : "up";
         // Heavy haptic for completion
-        triggerHaptic('heavy');
+        triggerHaptic("heavy");
         props.onStartBackgroundAnimation?.(direction);
         animateToCompletion(direction);
       } else {
@@ -352,7 +354,7 @@ export const Sun: Component<SunProps> = (props) => {
         opacity: getOpacity(),
         transition:
           getIsDragging() || getIsAnimating()
-            ? "none"
+            ? "box-shadow 0.2s ease-out"
             : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
