@@ -6,6 +6,7 @@
   z-index: 30;
   cursor: grab;
   transform-origin: center;
+  will-change: transform, transition;
   
   .tap-indicator {
     position: absolute;
