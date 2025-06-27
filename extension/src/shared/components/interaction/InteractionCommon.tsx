@@ -227,7 +227,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     // Fade out the interaction content first
     let startTime = Date.now();
-    const fadeOutDuration = 1000; // 1 second
+    const fadeOutDuration = 700; // Faster fade out
     const startOpacity = getInteractionOpacity(); // Start from current opacity
 
     const fadeOut = () => {
@@ -248,10 +248,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
         // Show sun instructions after answering
         setShowSunInstructions(true);
-        // Fade instructions in after a delay
+        // Fade instructions in after a longer delay for smoother transition
         setTimeout(() => {
           setInteractionOpacity(1);
-        }, 300);
+        }, 600);
       }
     };
 

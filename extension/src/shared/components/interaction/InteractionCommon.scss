@@ -126,7 +126,11 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  padding-top: 16px;
+  padding-top: 32px;
+  
+  &.fade-in {
+    transition: opacity 1.2s ease-out; // Slower fade in for instructions
+  }
 }
 
 .sun-instructions {
