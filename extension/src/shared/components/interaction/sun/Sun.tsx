@@ -464,15 +464,18 @@ export const Sun: Component<SunProps> = (props) => {
           currentVelocity.y * currentVelocity.y
         );
         
+        const sunRadius = 100; // Approximate sun size
         const isOffScreen = 
-          position.x < -200 || position.x > window.innerWidth + 200 ||
-          position.y < -200 || position.y > window.innerHeight + 200;
+          position.x < -sunRadius || position.x > window.innerWidth + sunRadius ||
+          position.y < -sunRadius || position.y > window.innerHeight + sunRadius;
         
         // Don't complete animation too early
         const hasMinTimeElapsed = elapsedTime >= minAnimationTime;
-        const isSlowAndFar = speed < 50 && distanceProgress > 0.5;
+        const isAlmostStopped = speed < 10; // Very low speed threshold
+        const isFadedOut = currentOpacity < 0.1; // Almost invisible
         
-        if (hasMinTimeElapsed && (isOffScreen || isSlowAndFar)) {
+        // Only complete if sun is truly off-screen or has been animating for a while and is nearly stopped
+        if (isOffScreen || (hasMinTimeElapsed && isAlmostStopped && isFadedOut)) {
           setIsAnimating(false);
           // Call appropriate callback based on final direction
           if (position.y > window.innerHeight / 2) {
