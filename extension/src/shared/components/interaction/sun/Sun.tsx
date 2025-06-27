@@ -421,7 +421,7 @@ export const Sun: Component<SunProps> = (props) => {
       const friction = 0.99999; // Deceleration factor (0-1, lower = more friction)
       const gravity = 0; // Downward acceleration in px/s²
       const rotationFactor = 0.0005; // How much rotation based on horizontal velocity
-      const minAnimationTime = 5000; // Minimum animation duration in ms before completion
+      const animationDuration = 5000; // Fixed animation duration in ms
 
       // Current state
       let position = { x: startOffset.x, y: startOffset.y };
@@ -469,31 +469,11 @@ export const Sun: Component<SunProps> = (props) => {
         setDragOffset({ x: position.x, y: position.y });
         setRotation(rotation);
 
-        // Check if sun is off screen or has slowed down enough
-        const speed = Math.sqrt(
-          currentVelocity.x * currentVelocity.x +
-            currentVelocity.y * currentVelocity.y,
-        );
+        // Animation runs for fixed duration
+        const animationComplete = elapsedTime >= animationDuration;
 
-        // Get sun's actual position on screen
-        const sunRect = sunEl.getBoundingClientRect();
-        const sunCenterX = sunRect.left + sunRect.width / 2;
-        const sunCenterY = sunRect.top + sunRect.height / 2;
-        const sunRadius = sunRect.width / 2;
-
-        const isOffScreen =
-          sunCenterX < -sunRadius ||
-          sunCenterX > window.innerWidth + sunRadius ||
-          sunCenterY < -sunRadius ||
-          sunCenterY > window.innerHeight + sunRadius;
-
-        // Don't complete animation too early
-        const hasMinTimeElapsed = elapsedTime >= minAnimationTime;
-        const isAlmostStopped = speed < 10; // Very low speed threshold
-        const isFadedOut = currentOpacity < 0.1; // Almost invisible
-
-        // Only complete after minimum time has elapsed
-        if (hasMinTimeElapsed) {
+        // Complete after fixed duration
+        if (animationComplete) {
           setIsAnimating(false);
           // Call appropriate callback based on final direction
           if (position.y > window.innerHeight / 2) {
