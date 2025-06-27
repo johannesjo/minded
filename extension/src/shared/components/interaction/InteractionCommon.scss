@@ -116,6 +116,30 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.sun-instructions-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding-top: 16px;
+}
+
+.sun-instructions {
+  text-align: center;
+  pointer-events: none;
+
+  p {
+    margin: 0.5em 0;
+    color: var(--c-fg-full-emphasis);
+    opacity: 0.9;
+  }
+}
+
 
 
 

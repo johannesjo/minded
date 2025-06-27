@@ -58,12 +58,24 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsSkipping, setIsSkipping] = createSignal(false);
   const [getIsFinalAnimation, setIsFinalAnimation] = createSignal(false);
   const [getIsDragging, setIsDragging] = createSignal(false);
+  const [getShowSunInstructions, setShowSunInstructions] = createSignal(false);
+  const [getHasAnswered, setHasAnswered] = createSignal(false);
+  const [getPendingAnswer, setPendingAnswer] = createSignal<
+    Answer | undefined
+  >();
 
   // Handler for skip with fade-out animation
   const handleSkip = () => {
     if (getIsSkipping()) return; // Prevent multiple skip calls
 
     setIsSkipping(true);
+
+    // If we're showing instructions, complete the interaction instead
+    if (getShowSunInstructions()) {
+      props.onInteractionSubmitted?.();
+      cancelCountdown();
+      // Then proceed with normal skip
+    }
 
     // Check if we have a wrapper element (web extension case)
     if (props.wrapperEl) {
@@ -116,6 +128,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       if (progress < 1) {
         requestAnimationFrame(fadeOut);
       } else {
+        // If we were showing instructions, complete the interaction
+        if (getShowSunInstructions()) {
+          props.onInteractionSubmitted?.();
+          cancelCountdown();
+        }
+
         // Show "Be proud" message after a longer delay for better timing
         setTimeout(() => {
           setShowBeProudMessage(true);
@@ -163,9 +181,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     const handleDragProgress = (event: CustomEvent) => {
       const { intensity, isDragging, resetToInitial } = event.detail;
       const DRAG_THRESHOLD = 0.1; // Same as in Sun.tsx
-      
+
       setIsDragging(isDragging);
-      
+
       if (isDragging) {
         if (intensity >= DRAG_THRESHOLD) {
           // Fade to 0 when threshold is reached
@@ -204,8 +222,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
-    // Mark final animation as started
-    setIsFinalAnimation(true);
+    // Mark that user has answered
+    setHasAnswered(true);
 
     // Fade out the interaction content first
     let startTime = Date.now();
@@ -222,13 +240,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       if (progress < 1) {
         requestAnimationFrame(fadeOut);
       } else {
-        // Call the original success handlers after fade out
-        props.onInteractionSubmitted?.();
-        cancelCountdown();
-
+        // Save the answer for later
         if (answerOrData) {
+          setPendingAnswer(answerOrData);
           props.onSetAnswer(answerOrData.val.toString());
         }
+
+        // Show sun instructions after answering
+        setShowSunInstructions(true);
+        // Fade instructions in after a delay
+        setTimeout(() => {
+          setInteractionOpacity(1);
+        }, 300);
       }
     };
 
@@ -280,14 +303,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           />
         </div>
 
+        {/* Original interaction content - keep in place to prevent jumping */}
         <div
           class="interaction-content"
-          classList={{ 
+          classList={{
             "fade-in": getIsContentReady(),
-            "dragging": getIsDragging()
+            dragging: getIsDragging(),
           }}
           style={{
-            opacity: getInteractionOpacity(),
+            opacity: getShowSunInstructions() ? 0 : getInteractionOpacity(),
+            "pointer-events": getShowSunInstructions() ? "none" : "auto",
           }}
         >
           <Switch>
@@ -370,6 +395,26 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             </Match>
           </Switch>
         </div>
+
+        {/* Sun instructions overlay */}
+        {getShowSunInstructions() && (
+          <div
+            class="interaction-content sun-instructions-overlay"
+            classList={{
+              "fade-in": getShowSunInstructions(),
+              dragging: getIsDragging(),
+            }}
+            style={{
+              opacity: getInteractionOpacity(),
+            }}
+          >
+            <div class="sun-instructions txtSmaller">
+              <p>Drag the sun up to let go.</p>
+              <p>Drag the sun down to relax.</p>
+              <p>Tap the sun 5 times to proceed.</p>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
