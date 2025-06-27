@@ -29,7 +29,7 @@ export const FLING_VELOCITY_THRESHOLD = 200;
 export const VELOCITY_SAMPLE_SIZE = 5;
 
 export const FLING_ANIMATION_CONFIG: AnimationConfig = {
-  friction: 0.99999,
+  friction: 0.98,
   gravity: 0,
   rotationFactor: 0.0005,
   duration: 5000,
@@ -50,7 +50,9 @@ export const COMPLETION_ANIMATION_CONFIG = {
 };
 
 // Utility functions
-export function calculateVelocity(samples: VelocitySample[]): Vector2D & { magnitude: number } {
+export function calculateVelocity(
+  samples: VelocitySample[],
+): Vector2D & { magnitude: number } {
   if (samples.length < 2) {
     return { x: 0, y: 0, magnitude: 0 };
   }
@@ -78,12 +80,14 @@ export function updatePhysics(
   startOffset: Vector2D,
   startScale: number,
   startOpacity: number,
-  screenDimensions: { width: number; height: number }
+  screenDimensions: { width: number; height: number },
 ): PhysicsState {
   // Apply physics
   const newVelocity = {
     x: state.velocity.x * Math.pow(config.friction, deltaTime * 60),
-    y: state.velocity.y * Math.pow(config.friction, deltaTime * 60) + config.gravity * deltaTime,
+    y:
+      state.velocity.y * Math.pow(config.friction, deltaTime * 60) +
+      config.gravity * deltaTime,
   };
 
   // Update position
@@ -93,12 +97,13 @@ export function updatePhysics(
   };
 
   // Calculate rotation
-  const newRotation = state.rotation + newVelocity.x * config.rotationFactor * deltaTime;
+  const newRotation =
+    state.rotation + newVelocity.x * config.rotationFactor * deltaTime;
 
   // Calculate distance-based effects
   const distance = Math.sqrt(
-    Math.pow(newPosition.x - startOffset.x, 2) + 
-    Math.pow(newPosition.y - startOffset.y, 2)
+    Math.pow(newPosition.x - startOffset.x, 2) +
+      Math.pow(newPosition.y - startOffset.y, 2),
   );
   const maxDistance = Math.max(screenDimensions.width, screenDimensions.height);
   const distanceProgress = Math.min(distance / maxDistance, 1);
@@ -119,10 +124,10 @@ export function updatePhysics(
 export function calculateDragEffects(
   deltaY: number,
   dragDistance: number,
-  maxDragDistance: number = 200
+  maxDragDistance: number = 200,
 ): { scale: number; opacity: number; progress: number } {
   const dragProgress = Math.min(dragDistance / maxDragDistance, 1);
-  
+
   let scale, opacity;
   if (deltaY < 0) {
     // Upward drag
@@ -158,7 +163,10 @@ export function triggerHaptic(type: "light" | "medium" | "heavy"): void {
   }
 }
 
-export function getSunSize(screenWidth: number): { size: number; baseScale: number } {
+export function getSunSize(screenWidth: number): {
+  size: number;
+  baseScale: number;
+} {
   if (screenWidth >= 1024) {
     return { size: 120, baseScale: 1 };
   } else if (screenWidth >= 600) {
