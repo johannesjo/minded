@@ -56,6 +56,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getInteractionOpacity, setInteractionOpacity] = createSignal(1);
   const [getIsContentReady, setIsContentReady] = createSignal(false);
   const [getIsSkipping, setIsSkipping] = createSignal(false);
+  const [getTextOpacity, setTextOpacity] = createSignal(1);
 
   // Handler for skip with fade-out animation
   const handleSkip = () => {
@@ -99,13 +100,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Fade out the interaction content first
     let startTime = Date.now();
     const fadeOutDuration = 1000; // 1 second
+    const startOpacity = getInteractionOpacity(); // Start from current opacity
+    const startTextOpacity = getTextOpacity(); // Get current text opacity
     
     const fadeOut = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / fadeOutDuration, 1);
-      const opacity = 1 - progress;
+      const opacity = startOpacity * (1 - progress); // Fade from current opacity to 0
+      const textOpacity = startTextOpacity * (1 - progress); // Fade text from current opacity to 0
       
       setInteractionOpacity(opacity);
+      setTextOpacity(textOpacity);
       
       if (progress < 1) {
         requestAnimationFrame(fadeOut);
@@ -152,6 +157,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setIsContentReady(true);
       }, 100);
     });
+
+    // Listen for drag progress events to fade text
+    const handleDragProgress = (event: CustomEvent) => {
+      const { intensity, isDragging, resetToInitial } = event.detail;
+      if (isDragging) {
+        // Immediately drop to 0.3 opacity, then fade from there
+        const baseOpacity = 0.3;
+        const fadePower = 2; // Smooth fade curve from 0.3 to 0
+        const opacity = Math.max(0, baseOpacity * (1 - Math.pow(intensity, fadePower)));
+        setTextOpacity(opacity);
+      } else if (resetToInitial) {
+        // Only reset opacity when explicitly told to (snap back case)
+        setTextOpacity(1);
+      }
+      // Otherwise, keep current opacity (for completion animation)
+    };
+
+    window.addEventListener('dragProgress', handleDragProgress);
+
+    return () => {
+      window.removeEventListener('dragProgress', handleDragProgress);
+    };
   });
 
   createEffect(() => {
@@ -170,13 +197,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Fade out the interaction content first
     let startTime = Date.now();
     const fadeOutDuration = 1000; // 1 second
+    const startOpacity = getInteractionOpacity(); // Start from current opacity
+    const startTextOpacity = getTextOpacity(); // Get current text opacity
     
     const fadeOut = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / fadeOutDuration, 1);
-      const opacity = 1 - progress;
+      const opacity = startOpacity * (1 - progress); // Fade from current opacity to 0
+      const textOpacity = startTextOpacity * (1 - progress); // Fade text from current opacity to 0
       
       setInteractionOpacity(opacity);
+      setTextOpacity(textOpacity);
       
       if (progress < 1) {
         requestAnimationFrame(fadeOut);
@@ -238,7 +269,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <div 
           class="interaction-content"
           classList={{ "fade-in": getIsContentReady() }}
-          style={{ opacity: getInteractionOpacity() }}
+          style={{ 
+            opacity: getInteractionOpacity(),
+            "--text-opacity": getTextOpacity()
+          }}
         >
           <Switch>
             <Match when={getMode() === "SELF_ASSESSMENT"}>
