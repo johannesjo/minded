@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.minded.minded",
   appName: "minded",
-  webDir: "distIOS",
+  webDir: "../android/app/src/main/assets/web",
   zoomEnabled: false,
   plugins: {
     Keyboard: {

@@ -17,7 +17,13 @@
       "Bash(npm run start:*)",
       "Bash(git reset:*)",
       "Bash(./gradlew:*)",
-      "Bash(adb install:*)"
+      "Bash(adb install:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx vite build:*)",
+      "Bash(cat:*)",
+      "Bash(npx cap sync:*)",
+      "Bash(npx cap:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }
