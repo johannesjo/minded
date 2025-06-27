@@ -291,24 +291,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       <div
         id="minded-6622-interaction-wrapper-box"
         style={{
-          "pointer-events": getIsFinalAnimation() || getIsCompletionStarted() ? "none" : "auto",
+          "pointer-events":
+            getIsFinalAnimation() || getIsCompletionStarted() ? "none" : "auto",
         }}
       >
-        <div class="sun-container">
-          <Sun
-            onSkip={handleSkip}
-            onSwipeDown={props.onSwipeDown}
-            onSwipeUp={props.onSwipeUp}
-            onStartBackgroundAnimation={handleStartBackgroundAnimation}
-            onCompletionStarted={(started) => {
-              setIsCompletionStarted(started);
-              props.onCompletionStarted?.(started);
-            }}
-          />
-        </div>
-
         <div
-          class="interaction-content"
+          className="interaction-content"
           classList={{
             "fade-in": getIsContentReady(),
             dragging: getIsDragging(),
@@ -349,7 +337,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <Match when={getMode() === "ACTION_ADVICE"}>
               <div
                 id="minded-6622-action-advice"
-                class="txtBig"
+                className="txtBig"
                 style="pointer-events:none;"
               >
                 <div>{ADVICE.txt}</div>
@@ -405,7 +393,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         {/* Sun instructions overlay */}
         {getShowSunInstructions() && !getIsCompletionStarted() && (
           <div
-            class="interaction-content sun-instructions-overlay"
+            className="interaction-content sun-instructions-overlay"
             classList={{
               "fade-in": getShowSunInstructions(),
               dragging: getIsDragging(),
@@ -415,13 +403,26 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               "pointer-events": getIsCompletionStarted() ? "none" : "auto",
             }}
           >
-            <div class="sun-instructions txtSmaller">
+            <div className="sun-instructions txtSmaller">
               <p>Drag the sun up to let go.</p>
               <p>Drag the sun down to relax.</p>
               <p>Tap the sun 5 times to proceed.</p>
             </div>
           </div>
         )}
+
+        <div className="sun-container">
+          <Sun
+            onSkip={handleSkip}
+            onSwipeDown={props.onSwipeDown}
+            onSwipeUp={props.onSwipeUp}
+            onStartBackgroundAnimation={handleStartBackgroundAnimation}
+            onCompletionStarted={(started) => {
+              setIsCompletionStarted(started);
+              props.onCompletionStarted?.(started);
+            }}
+          />
+        </div>
       </div>
     </>
   );

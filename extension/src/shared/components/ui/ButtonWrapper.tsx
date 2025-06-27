@@ -16,7 +16,7 @@ const ButtonWrapper = (props: {
       class="btn-wrapper"
       style={`text-align:center;  transition: 0.2s ease-out; ${!getIsVisible() ? "visibility: hidden; opacity: 0;" : "opacity: 1"}\``}
     >
-      <div style="padding-top: 48px; pointer-events:all; display: inline-block;">
+      <div style="padding-top: 32px; pointer-events:all; display: inline-block;">
         {props.children}
       </div>
     </div>
