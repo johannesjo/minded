@@ -1,9 +1,21 @@
 import { Component, createSignal, onMount } from "solid-js";
 import "./Sun.scss";
-
-const DRAG_THRESHOLD_PX = 100; // Pixel distance required to trigger action
-const FLING_VELOCITY_THRESHOLD = 200; // Minimum velocity (px/s) to trigger fling
-const VELOCITY_SAMPLE_SIZE = 5; // Number of position samples to track for velocity
+import {
+  DRAG_THRESHOLD_PX,
+  FLING_VELOCITY_THRESHOLD,
+  VELOCITY_SAMPLE_SIZE,
+  FLING_ANIMATION_CONFIG,
+  COMPLETION_ANIMATION_CONFIG,
+  calculateVelocity,
+  updatePhysics,
+  calculateDragEffects,
+  easeInOut,
+  easeOut,
+  triggerHaptic,
+  getSunSize,
+  type VelocitySample,
+  type PhysicsState,
+} from "./sunAnimationUtils";
 
 interface SunProps {
   onSkip: () => void;
@@ -11,12 +23,6 @@ interface SunProps {
   onSwipeUp: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
-}
-
-interface VelocitySample {
-  x: number;
-  y: number;
-  timestamp: number;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -40,33 +46,6 @@ export const Sun: Component<SunProps> = (props) => {
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
 
-  const getSunSize = () => {
-    const screenWidth = window.innerWidth;
-    if (screenWidth >= 1024) {
-      return { size: 120, baseScale: 1 };
-    } else if (screenWidth >= 600) {
-      return { size: 100, baseScale: 1 };
-    } else {
-      return { size: 80, baseScale: 1.0 };
-    }
-  };
-
-  // Haptic feedback helper
-  const triggerHaptic = (type: "light" | "medium" | "heavy") => {
-    if ("vibrate" in navigator) {
-      switch (type) {
-        case "light":
-          navigator.vibrate(10);
-          break;
-        case "medium":
-          navigator.vibrate(20);
-          break;
-        case "heavy":
-          navigator.vibrate(30);
-          break;
-      }
-    }
-  };
 
   onMount(() => {
     // Pre-initialize transform to eliminate initial jaggedness
@@ -131,10 +110,9 @@ export const Sun: Component<SunProps> = (props) => {
         isDragIntent = true;
       }
 
-      // Calculate drag progress based on pixel distance
+      // Calculate drag progress and visual effects
       const dragDistance = Math.abs(deltaY);
-      const maxDragDistance = 200; // Maximum distance for full visual effect
-      const dragProgress = Math.min(dragDistance / maxDragDistance, 1);
+      const effects = calculateDragEffects(deltaY, dragDistance);
 
       // Trigger haptic when crossing pixel threshold
       if (dragDistance >= DRAG_THRESHOLD_PX && !hasTriggeredThresholdHaptic) {
@@ -146,25 +124,13 @@ export const Sun: Component<SunProps> = (props) => {
         setIsBeyondThreshold(false);
       }
 
-      // Calculate all visual effects
-      let newScale, newOpacity;
-      if (deltaY < 0) {
-        // TODO make configurable
-        newScale = Math.max(0.7, 1 - dragProgress * 0.3);
-        newOpacity = Math.max(0.5, 1 - dragProgress * 0.5);
-      } else {
-        // TODO make configurable
-        newScale = Math.min(2, 1 + dragProgress * 1.5);
-        newOpacity = 1;
-      }
-
       // Batch all state updates together
       setDragOffset({ x: deltaX, y: deltaY });
-      setScale(newScale);
-      setOpacity(newOpacity);
+      setScale(effects.scale);
+      setOpacity(effects.opacity);
 
       // Update progress and direction for visual indicators
-      setDragProgress(dragProgress);
+      setDragProgress(effects.progress);
       setDragDirection(deltaY > 0 ? "down" : deltaY < 0 ? "up" : "none");
 
       // Track velocity samples
@@ -186,38 +152,11 @@ export const Sun: Component<SunProps> = (props) => {
       }
     };
 
-    const calculateVelocity = (): {
-      x: number;
-      y: number;
-      magnitude: number;
-    } => {
-      if (velocitySamples.length < 2) {
-        return { x: 0, y: 0, magnitude: 0 };
-      }
-
-      // Use recent samples for velocity calculation
-      const recentSamples = velocitySamples.slice(
-        -Math.min(3, velocitySamples.length),
-      );
-      const first = recentSamples[0];
-      const last = recentSamples[recentSamples.length - 1];
-      const dt = (last.timestamp - first.timestamp) / 1000; // Convert to seconds
-
-      if (dt === 0) {
-        return { x: 0, y: 0, magnitude: 0 };
-      }
-
-      const vx = (last.x - first.x) / dt;
-      const vy = (last.y - first.y) / dt;
-      const magnitude = Math.sqrt(vx * vx + vy * vy);
-
-      return { x: vx, y: vy, magnitude };
-    };
 
     const handleEnd = () => {
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
-      const velocity = calculateVelocity();
+      const velocity = calculateVelocity(velocitySamples);
 
       // Always reset dragging state
       setIsDragging(false);
@@ -326,20 +265,19 @@ export const Sun: Component<SunProps> = (props) => {
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOut(progress);
 
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-
-        const currentX = startOffset.x * (1 - easeOut);
-        const currentY = startOffset.y * (1 - easeOut);
+        const currentX = startOffset.x * (1 - easedProgress);
+        const currentY = startOffset.y * (1 - easedProgress);
         setDragOffset({ x: currentX, y: currentY });
 
-        const currentScale = startScale + (1 - startScale) * easeOut;
+        const currentScale = startScale + (1 - startScale) * easedProgress;
         setScale(currentScale);
 
-        const currentOpacity = startOpacity + (1 - startOpacity) * easeOut;
+        const currentOpacity = startOpacity + (1 - startOpacity) * easedProgress;
         setOpacity(currentOpacity);
 
-        const currentRotation = startRotation * (1 - easeOut);
+        const currentRotation = startRotation * (1 - easedProgress);
         setRotation(currentRotation);
 
         if (progress < 1) {
@@ -358,32 +296,24 @@ export const Sun: Component<SunProps> = (props) => {
       const startScale = getScale();
       const startOpacity = getOpacity();
 
-      const targetY =
-        direction === "down" ? window.innerHeight : -window.innerHeight;
-      const targetScale = direction === "down" ? 5.0 : 0.3;
-      const targetOpacity = direction === "up" ? 0.2 : 1;
+      const config = COMPLETION_ANIMATION_CONFIG;
+      const easing = direction === "down" ? config.easing.downward : config.easing.upward;
+      const targetY = direction === "down" ? window.innerHeight : -window.innerHeight;
 
-      const duration = 5000; // Match fling animation duration
       const startTime = Date.now();
 
       const animate = () => {
         const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+        const progress = Math.min(elapsed / config.duration, 1);
+        const easedProgress = easeInOut(progress);
 
-        const easeInOut =
-          progress < 0.5
-            ? 2 * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-        const currentY = startOffset.y + (targetY - startOffset.y) * easeInOut;
+        const currentY = startOffset.y + (targetY - startOffset.y) * easedProgress;
         setDragOffset({ x: startOffset.x, y: currentY });
 
-        const currentScale =
-          startScale + (targetScale - startScale) * easeInOut;
+        const currentScale = startScale + (easing.targetScale - startScale) * easedProgress;
         setScale(currentScale);
 
-        const currentOpacity =
-          startOpacity + (targetOpacity - startOpacity) * easeInOut;
+        const currentOpacity = startOpacity + (easing.targetOpacity - startOpacity) * easedProgress;
         setOpacity(currentOpacity);
 
         if (progress < 1) {
@@ -401,11 +331,7 @@ export const Sun: Component<SunProps> = (props) => {
       animate();
     };
 
-    const animateFling = (velocity: {
-      x: number;
-      y: number;
-      magnitude: number;
-    }) => {
+    const animateFling = (velocity: { x: number; y: number; magnitude: number }) => {
       setIsAnimating(true);
       const startOffset = getDragOffset();
       const startScale = getScale();
@@ -417,16 +343,17 @@ export const Sun: Component<SunProps> = (props) => {
         return;
       }
 
-      // Physics parameters
-      const friction = 0.99999; // Deceleration factor (0-1, lower = more friction)
-      const gravity = 0; // Downward acceleration in px/s²
-      const rotationFactor = 0.0005; // How much rotation based on horizontal velocity
-      const animationDuration = 5000; // Fixed animation duration in ms
+      const config = FLING_ANIMATION_CONFIG;
+      const screenDimensions = { width: window.innerWidth, height: window.innerHeight };
 
-      // Current state
-      let position = { x: startOffset.x, y: startOffset.y };
-      let currentVelocity = { x: velocity.x, y: velocity.y };
-      let rotation = 0;
+      // Initialize physics state
+      let physicsState: PhysicsState = {
+        position: { x: startOffset.x, y: startOffset.y },
+        velocity: { x: velocity.x, y: velocity.y },
+        rotation: 0,
+        scale: startScale,
+        opacity: startOpacity,
+      };
 
       const startTime = Date.now();
       let lastTime = startTime;
@@ -437,46 +364,31 @@ export const Sun: Component<SunProps> = (props) => {
         lastTime = now;
         const elapsedTime = now - startTime;
 
-        // Apply physics
-        currentVelocity.x *= Math.pow(friction, dt * 60); // Normalize to 60fps
-        currentVelocity.y *= Math.pow(friction, dt * 60);
-        currentVelocity.y += gravity * dt; // Add gravity
-
-        // Update position
-        position.x += currentVelocity.x * dt;
-        position.y += currentVelocity.y * dt;
-
-        // Calculate rotation based on horizontal velocity
-        rotation += currentVelocity.x * rotationFactor * dt;
-
-        // Calculate distance from start for scaling/opacity
-        const distance = Math.sqrt(
-          Math.pow(position.x - startOffset.x, 2) +
-            Math.pow(position.y - startOffset.y, 2),
+        // Update physics
+        physicsState = updatePhysics(
+          physicsState,
+          config,
+          dt,
+          startOffset,
+          startScale,
+          startOpacity,
+          screenDimensions
         );
-        const maxDistance = Math.max(window.innerWidth, window.innerHeight);
-        const distanceProgress = Math.min(distance / maxDistance, 1);
 
-        // Scale down as it flies away
-        const currentScale = startScale * (1 - distanceProgress * 0.5);
-        setScale(currentScale);
-
-        // Fade out
-        const currentOpacity = startOpacity * (1 - distanceProgress * 0.8);
-        setOpacity(currentOpacity);
-
-        // Apply transform with rotation
-        setDragOffset({ x: position.x, y: position.y });
-        setRotation(rotation);
+        // Apply state to UI
+        setDragOffset(physicsState.position);
+        setScale(physicsState.scale);
+        setOpacity(physicsState.opacity);
+        setRotation(physicsState.rotation);
 
         // Animation runs for fixed duration
-        const animationComplete = elapsedTime >= animationDuration;
+        const animationComplete = elapsedTime >= config.duration;
 
         // Complete after fixed duration
         if (animationComplete) {
           setIsAnimating(false);
           // Call appropriate callback based on final direction
-          if (position.y > window.innerHeight / 2) {
+          if (physicsState.position.y > window.innerHeight / 2) {
             props.onSwipeDown();
           } else {
             props.onSwipeUp();
@@ -529,7 +441,7 @@ export const Sun: Component<SunProps> = (props) => {
     });
   };
 
-  const sunSize = getSunSize();
+  const sunSize = getSunSize(window.innerWidth);
 
   return (
     <div
