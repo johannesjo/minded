@@ -62,9 +62,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // Handler for skip with fade-out animation
   const handleSkip = () => {
     if (getIsSkipping()) return; // Prevent multiple skip calls
-    
+
     setIsSkipping(true);
-    
+
     // Check if we have a wrapper element (web extension case)
     if (props.wrapperEl) {
       // Use the fadeOut utility for web extension
@@ -76,14 +76,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // Fade out the interaction content for mobile apps
       let startTime = Date.now();
       const fadeOutDuration = 1000; // 1 second
-      
+
       const fadeOutContent = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / fadeOutDuration, 1);
         const opacity = 1 - progress;
-        
+
         setInteractionOpacity(opacity);
-        
+
         if (progress < 1) {
           requestAnimationFrame(fadeOutContent);
         } else {
@@ -91,7 +91,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           props.onSkip();
         }
       };
-      
+
       fadeOutContent();
     }
   };
@@ -100,22 +100,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
     // Mark final animation as started
     setIsFinalAnimation(true);
-    
+
     // Fade out the interaction content first
     let startTime = Date.now();
     const fadeOutDuration = 1000; // 1 second
     const startOpacity = getInteractionOpacity(); // Start from current opacity
     const startTextOpacity = getTextOpacity(); // Get current text opacity
-    
+
     const fadeOut = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / fadeOutDuration, 1);
       const opacity = startOpacity * (1 - progress); // Fade from current opacity to 0
       const textOpacity = startTextOpacity * (1 - progress); // Fade text from current opacity to 0
-      
+
       setInteractionOpacity(opacity);
       setTextOpacity(textOpacity);
-      
+
       if (progress < 1) {
         requestAnimationFrame(fadeOut);
       } else {
@@ -125,9 +125,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         }, 1000); // Additional 1 second delay after fade out
       }
     };
-    
+
     fadeOut();
-    
+
     const event = new CustomEvent("startBackgroundAnimation", {
       detail: { direction },
     });
@@ -155,7 +155,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setInitialQuestion(question);
         setMode(mode);
       }
-      
+
       // Trigger fade-in animation after content is ready
       setTimeout(() => {
         setIsContentReady(true);
@@ -169,7 +169,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         // Immediately drop to 0.3 opacity, then fade from there
         const baseOpacity = 0.3;
         const fadePower = 2; // Smooth fade curve from 0.3 to 0
-        const opacity = Math.max(0, baseOpacity * (1 - Math.pow(intensity, fadePower)));
+        const opacity = Math.max(
+          0,
+          baseOpacity * (1 - Math.pow(intensity, fadePower)),
+        );
         setTextOpacity(opacity);
       } else if (resetToInitial) {
         // Only reset opacity when explicitly told to (snap back case)
@@ -178,10 +181,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // Otherwise, keep current opacity (for completion animation)
     };
 
-    window.addEventListener('dragProgress', handleDragProgress);
+    window.addEventListener("dragProgress", handleDragProgress);
 
     return () => {
-      window.removeEventListener('dragProgress', handleDragProgress);
+      window.removeEventListener("dragProgress", handleDragProgress);
     };
   });
 
@@ -200,22 +203,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     // Mark final animation as started
     setIsFinalAnimation(true);
-    
+
     // Fade out the interaction content first
     let startTime = Date.now();
     const fadeOutDuration = 1000; // 1 second
     const startOpacity = getInteractionOpacity(); // Start from current opacity
     const startTextOpacity = getTextOpacity(); // Get current text opacity
-    
+
     const fadeOut = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / fadeOutDuration, 1);
       const opacity = startOpacity * (1 - progress); // Fade from current opacity to 0
       const textOpacity = startTextOpacity * (1 - progress); // Fade text from current opacity to 0
-      
+
       setInteractionOpacity(opacity);
       setTextOpacity(textOpacity);
-      
+
       if (progress < 1) {
         requestAnimationFrame(fadeOut);
       } else {
@@ -228,7 +231,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         }
       }
     };
-    
+
     fadeOut();
   };
 
@@ -257,10 +260,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     <>
       <BackgroundTransition dragThreshold={0.3} />
 
-      <div 
+      <div
         id="minded-6622-interaction-wrapper-box"
         style={{
-          "pointer-events": getIsFinalAnimation() ? "none" : "auto"
+          "pointer-events": getIsFinalAnimation() ? "none" : "auto",
         }}
       >
         {/* Be proud message during final animation */}
@@ -274,96 +277,95 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onSwipeDown={props.onSwipeDown}
             onSwipeUp={props.onSwipeUp}
             onStartBackgroundAnimation={handleStartBackgroundAnimation}
-            dragThreshold={0.3}
           />
         </div>
 
-        <div 
+        <div
           class="interaction-content"
           classList={{ "fade-in": getIsContentReady() }}
-          style={{ 
+          style={{
             opacity: getInteractionOpacity(),
-            "--text-opacity": getTextOpacity()
+            "--text-opacity": getTextOpacity(),
           }}
         >
           <Switch>
             <Match when={getMode() === "SELF_ASSESSMENT"}>
-            {getSyncDataI() && (
-              <SelfAssessmentInteraction
+              {getSyncDataI() && (
+                <SelfAssessmentInteraction
+                  syncData={getSyncDataI()}
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onInteractionSuccess}
+                  onSkip={handleSkip}
+                />
+              )}
+            </Match>
+            <Match when={getMode() === "MOOD_CHECKIN"}>
+              <MoodCheckin
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onInteractionSuccess}
+                onSkip={handleSkip}
+              />
+            </Match>
+            <Match when={getMode() === "EMOJI_CHECKIN"}>
+              <EmojiCheckin
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onInteractionSuccess}
+                onSkip={handleSkip}
+              />
+            </Match>
+            <Match when={getMode() === "ACTION_ADVICE"}>
+              <div
+                id="minded-6622-action-advice"
+                class="txtBig"
+                style="pointer-events:none;"
+              >
+                <div>{ADVICE.txt}</div>
+                <div>{ADVICE.ico}</div>
+              </div>
+            </Match>
+            <Match when={getMode() === "ENERGY_LVL"}>
+              <EnergyLvlInteraction
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onInteractionSuccess}
+                onSkip={handleSkip}
+              />
+            </Match>
+            <Match when={getMode() === "SHOW_ALTERNATIVE"}>
+              <ShowAlternativeInteraction
                 syncData={getSyncDataI()}
                 onCancelCountdown={cancelCountdown}
-                onSuccess={onInteractionSuccess}
                 onSkip={handleSkip}
               />
-            )}
-          </Match>
-          <Match when={getMode() === "MOOD_CHECKIN"}>
-            <MoodCheckin
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onInteractionSuccess}
-              onSkip={handleSkip}
-            />
-          </Match>
-          <Match when={getMode() === "EMOJI_CHECKIN"}>
-            <EmojiCheckin
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onInteractionSuccess}
-              onSkip={handleSkip}
-            />
-          </Match>
-          <Match when={getMode() === "ACTION_ADVICE"}>
-            <div
-              id="minded-6622-action-advice"
-              class="txtBig"
-              style="pointer-events:none;"
-            >
-              <div>{ADVICE.txt}</div>
-              <div>{ADVICE.ico}</div>
-            </div>
-          </Match>
-          <Match when={getMode() === "ENERGY_LVL"}>
-            <EnergyLvlInteraction
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onInteractionSuccess}
-              onSkip={handleSkip}
-            />
-          </Match>
-          <Match when={getMode() === "SHOW_ALTERNATIVE"}>
-            <ShowAlternativeInteraction
-              syncData={getSyncDataI()}
-              onCancelCountdown={cancelCountdown}
-              onSkip={handleSkip}
-            />
-          </Match>
-          <Match when={getMode() === "SET_ALTERNATIVE"}>
-            <SetAlternativeInteraction
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onInteractionSuccess}
-              onSkip={handleSkip}
-            />
-          </Match>
-          <Match when={getMode() === "APP_USAGE_OR_BROWSING_BEHAVIOR"}>
-            <AppUsageOrBrowsingBehavior
-              onCancelCountdown={cancelCountdown}
-              onSuccess={onInteractionSuccess}
-              onSkip={handleSkip}
-            />
-          </Match>
-          <Match when={getMode() === "QUESTION"}>
-            {getInitialQuestion() && (
-              <Question
-                isChangeQuestion={true}
-                initialQuestion={getInitialQuestion()}
-                answers={getAnswers()}
+            </Match>
+            <Match when={getMode() === "SET_ALTERNATIVE"}>
+              <SetAlternativeInteraction
                 onCancelCountdown={cancelCountdown}
                 onSuccess={onInteractionSuccess}
-                onUpdateQuestion={(question) =>
-                  props.onUpdateQuestion(question)
-                }
                 onSkip={handleSkip}
               />
-            )}
-          </Match>
+            </Match>
+            <Match when={getMode() === "APP_USAGE_OR_BROWSING_BEHAVIOR"}>
+              <AppUsageOrBrowsingBehavior
+                onCancelCountdown={cancelCountdown}
+                onSuccess={onInteractionSuccess}
+                onSkip={handleSkip}
+              />
+            </Match>
+            <Match when={getMode() === "QUESTION"}>
+              {getInitialQuestion() && (
+                <Question
+                  isChangeQuestion={true}
+                  initialQuestion={getInitialQuestion()}
+                  answers={getAnswers()}
+                  onCancelCountdown={cancelCountdown}
+                  onSuccess={onInteractionSuccess}
+                  onUpdateQuestion={(question) =>
+                    props.onUpdateQuestion(question)
+                  }
+                  onSkip={handleSkip}
+                />
+              )}
+            </Match>
           </Switch>
         </div>
       </div>
