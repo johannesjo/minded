@@ -13,7 +13,9 @@
       "Bash(touch:*)",
       "Bash(ls:*)",
       "Bash(git rm:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(npm run start:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

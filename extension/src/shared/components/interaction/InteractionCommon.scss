@@ -30,30 +30,7 @@
   }
 }
 
-.be-proud-message {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--c-fg-full-emphasis);
-  opacity: 0;
-  animation: fadeInProud 1s ease-in forwards;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-}
-
-@keyframes fadeInProud {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
+// First .be-proud-message definition (remove duplicate later)
 
 #minded-6622-black-screen {
   background: #000;
@@ -133,12 +110,13 @@
   transform: translate(-50%, -50%);
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: var(--fz-xl); // Same as .txtBig
+  line-height: 1.5; // Same as .txtBig
+  font-weight: normal; // Match interaction text weight
   z-index: 40;
   animation: fadeIn 0.8s ease-in forwards;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); // Match wrapper text-shadow
+  pointer-events: all; // Same as .txtBig
 }
 
 // Ensure text is visible on all backgrounds
