@@ -61,6 +61,16 @@ export const Sun: Component<SunProps> = (props) => {
     if (IS_ANDROID) {
       window.focus();
     }
+
+    // Pre-initialize transform to eliminate initial jaggedness
+    // This forces the browser to create the transform matrix early
+    if (sunEl) {
+      sunEl.style.transform = "translate(0px, 0px) scale(1)";
+      sunEl.style.willChange = "transform, box-shadow";
+      // Force a reflow to ensure the transform is applied
+      sunEl.offsetHeight;
+    }
+
     setupDragHandlers();
 
     return () => {
@@ -118,10 +128,12 @@ export const Sun: Component<SunProps> = (props) => {
       // Calculate all visual effects
       let newScale, newOpacity;
       if (deltaY < 0) {
+        // TODO make configurable
         newScale = Math.max(0.7, 1 - dragProgress * 0.3);
         newOpacity = Math.max(0.5, 1 - dragProgress * 0.5);
       } else {
-        newScale = Math.min(2.5, 1 + dragProgress * 1.5);
+        // TODO make configurable
+        newScale = Math.min(2, 1 + dragProgress * 1.5);
         newOpacity = 1;
       }
 
@@ -154,7 +166,7 @@ export const Sun: Component<SunProps> = (props) => {
       setIsDragging(false);
       setDragProgress(0);
       setDragDirection("none");
-      setIsBeyondThreshold(false);
+      // Don't reset beyond threshold here - let it persist during completion animation
 
       // Don't reset rotation here - let it animate back smoothly
 
@@ -220,6 +232,7 @@ export const Sun: Component<SunProps> = (props) => {
 
     const animateSnapBack = () => {
       setIsAnimating(true);
+      setIsBeyondThreshold(false); // Reset glow when snapping back
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
