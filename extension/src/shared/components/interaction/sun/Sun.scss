@@ -12,8 +12,9 @@
   
   .tap-indicator {
     position: absolute;
-    bottom: -40px;
+    top: 100%;
     left: 50%;
+    margin-top: 16px;
     transform: translateX(-50%);
     display: flex;
     gap: 6px;
@@ -32,8 +33,7 @@
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.3);
     transition: background 200ms;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    
+
     &.filled {
       background: rgba(255, 255, 255, 0.9);
     }
