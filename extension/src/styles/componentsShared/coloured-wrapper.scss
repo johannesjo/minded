@@ -14,8 +14,21 @@
 
   background-size: 100% 100%;
   overflow: hidden;
+  
+  // Ensure CSS variables are inherited for light mode
+  color: var(--c-fg-full-emphasis);
 
   @media (orientation: portrait) {
+  }
+  
+  // Dark mode specific styles
+  &.minded-6622-dark {
+    --c-gradient-1: #071449;
+    --c-gradient-2: #1a137c;
+    --c-gradient-3: #401049;
+    --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
+    --c-fg: rgba(255, 255, 255, .8);
+    --c-fg-full-emphasis: rgba(255, 255, 255, .95);
   }
 }
 

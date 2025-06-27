@@ -7,6 +7,7 @@ import InteractionCommon from "@src/shared/components/interaction/InteractionCom
 import { closeTab } from "@src/dataInterface/extension/extensionApi";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { IS_MOUSE_PRIMARY } from "@src/util/touch";
+import { isDarkModeNow } from "@src/shared/addWrapperClasses";
 
 // NOTE: val also needs to be set in css
 
@@ -78,6 +79,7 @@ export const InteractionWeb: (props: {
         <div class="aniIn">
           <div
             id="minded-6622-coloured-wrapper-dynamic"
+            class={isDarkModeNow() ? "minded-6622-dark" : ""}
             onclick={(ev) => {
               // Background click disabled - only gesture controls
               ev.stopPropagation();
