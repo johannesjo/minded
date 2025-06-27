@@ -1,14 +1,14 @@
 import { Component, createSignal, onMount } from "solid-js";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import "./Sun.scss";
 
-const DRAG_THRESHOLD = 0.1;
+const DRAG_THRESHOLD_PX = 100; // Pixel distance required to trigger action
 
 interface SunProps {
   onSkip: () => void;
   onSwipeDown: () => void;
   onSwipeUp: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
+  onCompletionStarted?: (started: boolean) => void;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -24,6 +24,7 @@ export const Sun: Component<SunProps> = (props) => {
     "up" | "down" | "none"
   >("none");
   const [getIsBeyondThreshold, setIsBeyondThreshold] = createSignal(false);
+  const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -58,10 +59,6 @@ export const Sun: Component<SunProps> = (props) => {
   };
 
   onMount(() => {
-    if (IS_ANDROID) {
-      window.focus();
-    }
-
     // Pre-initialize transform to eliminate initial jaggedness
     // This forces the browser to create the transform matrix early
     if (sunEl) {
@@ -90,6 +87,9 @@ export const Sun: Component<SunProps> = (props) => {
     let touchStartTime = 0;
 
     const handleStart = (clientX: number, clientY: number) => {
+      // Prevent interactions once completion animation has started
+      if (getIsCompletionStarted()) return;
+
       touchStartTime = Date.now();
       isDragIntent = false;
       startPos = { x: clientX, y: clientY };
@@ -102,6 +102,9 @@ export const Sun: Component<SunProps> = (props) => {
     let hasTriggeredThresholdHaptic = false;
 
     const handleMove = (clientX: number, clientY: number) => {
+      // Prevent interactions once completion animation has started
+      if (getIsCompletionStarted()) return;
+
       const deltaX = clientX - startPos.x;
       const deltaY = clientY - startPos.y;
 
@@ -110,17 +113,17 @@ export const Sun: Component<SunProps> = (props) => {
         isDragIntent = true;
       }
 
-      // Calculate drag progress as a percentage of screen height
-      const screenHeight = window.innerHeight;
-      const maxDragDistance = screenHeight * 0.4; // 40% of screen height for full effect
-      const dragProgress = Math.min(Math.abs(deltaY) / maxDragDistance, 1);
+      // Calculate drag progress based on pixel distance
+      const dragDistance = Math.abs(deltaY);
+      const maxDragDistance = 200; // Maximum distance for full visual effect
+      const dragProgress = Math.min(dragDistance / maxDragDistance, 1);
 
-      // Trigger haptic when crossing threshold
-      if (dragProgress >= DRAG_THRESHOLD && !hasTriggeredThresholdHaptic) {
+      // Trigger haptic when crossing pixel threshold
+      if (dragDistance >= DRAG_THRESHOLD_PX && !hasTriggeredThresholdHaptic) {
         triggerHaptic("medium");
         hasTriggeredThresholdHaptic = true;
         setIsBeyondThreshold(true);
-      } else if (dragProgress < DRAG_THRESHOLD) {
+      } else if (dragDistance < DRAG_THRESHOLD_PX) {
         hasTriggeredThresholdHaptic = false;
         setIsBeyondThreshold(false);
       }
@@ -187,14 +190,16 @@ export const Sun: Component<SunProps> = (props) => {
       });
       window.dispatchEvent(clearEvent);
 
-      // Calculate actual drag progress for threshold check
-      const maxDragDistance = screenHeight * 0.4;
-      const actualProgress = Math.abs(offset.y) / maxDragDistance;
+      // Check if drag distance exceeded pixel threshold
+      const dragDistance = Math.abs(offset.y);
 
-      if (actualProgress >= DRAG_THRESHOLD) {
+      if (dragDistance >= DRAG_THRESHOLD_PX) {
         const direction = offset.y > 0 ? "down" : "up";
         // Heavy haptic for completion
         triggerHaptic("heavy");
+        // Disable all interactions once completion starts
+        setIsCompletionStarted(true);
+        props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.(direction);
         animateToCompletion(direction);
       } else {
@@ -212,6 +217,9 @@ export const Sun: Component<SunProps> = (props) => {
     };
 
     const handleTap = () => {
+      // Prevent interactions once completion animation has started
+      if (getIsCompletionStarted()) return;
+
       const currentTapCount = getTapCount() + 1;
       setTapCount(currentTapCount);
 
