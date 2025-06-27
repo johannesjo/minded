@@ -15,7 +15,9 @@
       "Bash(git rm:*)",
       "Bash(git mv:*)",
       "Bash(npm run start:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(./gradlew:*)",
+      "Bash(adb install:*)"
     ],
     "deny": []
   }

@@ -9,11 +9,11 @@
 .interaction-content {
   opacity: 0;
   transition: opacity 0.8s ease-out;
-  
+
   &.fade-in {
     opacity: 1;
   }
-  
+
   // Much faster transition during drag for immediate feedback
   &.dragging {
     transition: opacity 0.05s ease-out;
@@ -90,23 +90,22 @@
   display: flex;
   justify-content: center;
   pointer-events: all;
-  margin-bottom: 16px;
+  margin-bottom: 32px;
 }
 
 .be-proud-message {
   position: fixed;
-  top: 25%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  font-size: var(--fz-xl); // Same as .txtBig
-  line-height: 1.5; // Same as .txtBig
+  font-size: var(--fz-xl);
+  line-height: 1.5;
   font-weight: normal; // Match interaction text weight
   z-index: 40;
   animation: fadeIn 0.8s ease-in forwards;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); // Match wrapper text-shadow
-  pointer-events: all; // Same as .txtBig
+  pointer-events: none;
 }
 
 // Ensure text is visible on all backgrounds
@@ -127,7 +126,7 @@
   justify-content: center;
   z-index: 10;
   padding-top: 32px;
-  
+
   &.fade-in {
     transition: opacity 1.2s ease-out; // Slower fade in for instructions
   }

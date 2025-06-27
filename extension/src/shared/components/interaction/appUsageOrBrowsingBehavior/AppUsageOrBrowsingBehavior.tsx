@@ -52,7 +52,7 @@ export const AppUsageOrBrowsingBehavior: (props: {
       <Switch>
         <Match when={getStep() === 0}>
           <div>
-            <div class="txtBig" style="padding-bottom:32px;">
+            <div class="txtBig" style="padding-bottom:16px;">
               {IS_ANDROID
                 ? "How would you rate your recent usage of the apps you configured to use less?"
                 : "How would you rate your recent browsing behavior?"}

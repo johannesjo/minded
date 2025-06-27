@@ -191,7 +191,8 @@ class MyAccessibilityService : AccessibilityService() {
         }
         
         // Check if the previous package was a launcher and we're quickly switching
-        if (lastPackageName != null && isLauncherPackage(lastPackageName)) {
+        val lastPkg = lastPackageName
+        if (lastPkg != null && isLauncherPackage(lastPkg)) {
             val timeSinceLastEvent = currentTime - lastEventTimestamp
             if (timeSinceLastEvent < LAUNCHER_DEBOUNCE_MS) {
                 // But allow if we see the same app multiple times in history

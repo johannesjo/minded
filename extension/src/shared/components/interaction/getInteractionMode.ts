@@ -33,9 +33,6 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "SHOW_ALTERNATIVE";
   // return "SET_ALTERNATIVE";
   
-  // TEMPORARY: Force QUESTION mode for testing gestures
-  return "QUESTION";
-
   const now = new Date();
   const nowTS = Date.now();
   const nowHours = now.getHours();

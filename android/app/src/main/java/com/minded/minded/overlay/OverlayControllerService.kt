@@ -139,7 +139,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Handle null intent (can happen during service restart)
+        if (intent == null) {
+            Log.v(logTag, "onStartCommand() with null intent - service restart")
+            return START_STICKY
+        }
+        
         val currentPackage =
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
         Log.v(logTag, "onStartCommand() $currentPackage")
@@ -148,7 +154,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         } else {
             val overlayNameString = intent.getStringExtra(INTENT_EXTRA_OVERLAY_NAME)
             if (overlayNameString.isNullOrEmpty()) {
-                throw RuntimeException("missing overlay name")
+                // If no specific action is provided, just ensure service is running
+                Log.v(logTag, "onStartCommand() - service initialization without specific action")
+                return START_STICKY
             }
             val overlayName = OverlayName.valueOf(overlayNameString)
 

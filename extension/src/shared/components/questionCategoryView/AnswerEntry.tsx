@@ -111,7 +111,6 @@ export const AnswerEntry: (props: {
               }
             }}
             maxlength={500}
-            autofocus={true}
           />
 
           <button class="btnIcoSmall" onClick={() => {}}>

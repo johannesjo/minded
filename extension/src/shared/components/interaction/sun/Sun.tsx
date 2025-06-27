@@ -21,6 +21,7 @@ export const Sun: Component<SunProps> = (props) => {
   const [getTapCount, setTapCount] = createSignal(0);
   const [getDragProgress, setDragProgress] = createSignal(0);
   const [getDragDirection, setDragDirection] = createSignal<"up" | "down" | "none">("none");
+  const [getIsBeyondThreshold, setIsBeyondThreshold] = createSignal(false);
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -106,8 +107,10 @@ export const Sun: Component<SunProps> = (props) => {
       if (dragProgress >= DRAG_THRESHOLD && !hasTriggeredThresholdHaptic) {
         triggerHaptic('medium');
         hasTriggeredThresholdHaptic = true;
+        setIsBeyondThreshold(true);
       } else if (dragProgress < DRAG_THRESHOLD) {
         hasTriggeredThresholdHaptic = false;
+        setIsBeyondThreshold(false);
       }
 
       // Calculate all visual effects
@@ -149,6 +152,7 @@ export const Sun: Component<SunProps> = (props) => {
       setIsDragging(false);
       setDragProgress(0);
       setDragDirection("none");
+      setIsBeyondThreshold(false);
       
       // Don't reset rotation here - let it animate back smoothly
 
@@ -342,6 +346,7 @@ export const Sun: Component<SunProps> = (props) => {
     <div
       ref={sunEl!}
       class="minded-sun"
+      classList={{ "beyond-threshold": getIsBeyondThreshold() }}
       style={{
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()})`,
         opacity: getOpacity(),

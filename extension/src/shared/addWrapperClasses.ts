@@ -39,5 +39,6 @@ export const setIsDarkModeIfApplies = (
     el.classList.add("minded-6622-dark");
   } else {
     el.classList.remove("minded-6622-dark");
+    el.classList.add("minded-6622-dark");
   }
 };
