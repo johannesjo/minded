@@ -363,7 +363,7 @@ export const Sun: Component<SunProps> = (props) => {
       const targetScale = direction === "down" ? 5.0 : 0.3;
       const targetOpacity = direction === "up" ? 0.2 : 1;
 
-      const duration = 3000;
+      const duration = 5000; // Match fling animation duration
       const startTime = Date.now();
 
       const animate = () => {
