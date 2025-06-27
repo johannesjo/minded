@@ -283,17 +283,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     <>
       <BackgroundTransition dragThreshold={0.3} />
 
+      {/* Be proud message during final animation */}
+      {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
+
       <div
         id="minded-6622-interaction-wrapper-box"
         style={{
           "pointer-events": getIsFinalAnimation() ? "none" : "auto",
         }}
       >
-        {/* Be proud message during final animation */}
-        {getShowBeProudMessage() && (
-          <div class="be-proud-message">Be proud!</div>
-        )}
-
         <div class="sun-container">
           <Sun
             onSkip={handleSkip}

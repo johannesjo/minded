@@ -38,7 +38,7 @@ const SelfAssessmentInteraction = (props: {
 
   return (
     <div onmousemove={props.onCancelCountdown}>
-      <div class="txtBig" style="padding-bottom: 32px;">
+      <div class="txtBig" style="padding-bottom: 16px;">
         Recently {getSelectedQuestion().question}
       </div>
 

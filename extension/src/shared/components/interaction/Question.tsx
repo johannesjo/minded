@@ -2,17 +2,15 @@
 import { createEffect, createSignal, JSX, onCleanup } from "solid-js";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
-import { saveAnswer } from "@src/dataInterface/commonSyncDataInterface";
-import { nanoid } from "nanoid";
 import {
-  getQuestionSemiSmart,
-  getQuestionSmart,
-} from "@src/util/getQuestionSmart";
-import { Ico } from "@src/shared/components/ui/Ico";
+  IS_ANDROID,
+  saveAnswer,
+} from "@src/dataInterface/commonSyncDataInterface";
+import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 import "./Question.scss";
 
-const MAX_SMART_QUESTION_ATTEMPTS = 3;
+// const MAX_SMART_QUESTION_ATTEMPTS = 3;
 
 export const Question: (props: {
   isChangeQuestion?: boolean;
@@ -23,7 +21,7 @@ export const Question: (props: {
   onUpdateQuestion: (question: QuestionForPrompt) => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
-  const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
+  // const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   const [getQuestion, setQuestion] = createSignal(props.initialQuestion);
   const [getIsChangingQuestion, setIsChangingQuestion] = createSignal(false);
   const [getInpEl, setInpEl] = createSignal<HTMLInputElement | null>(null);
@@ -32,8 +30,8 @@ export const Question: (props: {
 
   let tChangeQuestion;
 
-  let questionUpdateCount = 0;
-  let questionIdBefore = props.initialQuestion.id;
+  // let questionUpdateCount = 0;
+  // let questionIdBefore = props.initialQuestion.id;
 
   onCleanup(() => {
     window.clearTimeout(tChangeQuestion);
@@ -65,7 +63,6 @@ export const Question: (props: {
       console.log("Question: answer too short, returning");
       return;
     }
-    setIsInputDisabled(true);
     if (!q.isDontSaveAnswer) {
       await saveAnswer(answer);
     }
@@ -73,22 +70,22 @@ export const Question: (props: {
     props.onSuccess(answer);
   };
 
-  const updateQuestion = () => {
-    const newQuestion =
-      questionUpdateCount > MAX_SMART_QUESTION_ATTEMPTS
-        ? getQuestionSemiSmart()
-        : getQuestionSmart(props.answers);
-
-    if (questionIdBefore === newQuestion.id) {
-      questionUpdateCount++;
-      updateQuestion();
-    } else {
-      questionIdBefore = newQuestion.id;
-      questionUpdateCount++;
-      setQuestion(newQuestion);
-      props.onUpdateQuestion(newQuestion);
-    }
-  };
+  // const updateQuestion = () => {
+  //   const newQuestion =
+  //     questionUpdateCount > MAX_SMART_QUESTION_ATTEMPTS
+  //       ? getQuestionSemiSmart()
+  //       : getQuestionSmart(props.answers);
+  //
+  //   if (questionIdBefore === newQuestion.id) {
+  //     questionUpdateCount++;
+  //     updateQuestion();
+  //   } else {
+  //     questionIdBefore = newQuestion.id;
+  //     questionUpdateCount++;
+  //     setQuestion(newQuestion);
+  //     props.onUpdateQuestion(newQuestion);
+  //   }
+  // };
 
   return (
     <>
@@ -114,19 +111,19 @@ export const Question: (props: {
 
         <div
           class="question-input-container"
-          classList={{ "show": getShowInput() }}
+          classList={{ show: getShowInput() }}
           onMouseEnter={props.onCancelCountdown}
           onClick={props.onCancelCountdown}
         >
-            <InputWithSend
-              onEscape={props.onSkip}
-              onCancelCountdown={props.onCancelCountdown}
-              value={getValue()}
-              maxLength={500}
-              isAutoFocus={true}
-              setRef={setInpEl}
-              onSubmit={submitAnswer}
-            />
+          <InputWithSend
+            onEscape={props.onSkip}
+            onCancelCountdown={props.onCancelCountdown}
+            value={getValue()}
+            maxLength={500}
+            isAutoFocus={!IS_ANDROID}
+            setRef={setInpEl}
+            onSubmit={submitAnswer}
+          />
         </div>
 
         {/* Temporarily commented out - cycle through prompts button

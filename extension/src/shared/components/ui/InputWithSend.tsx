@@ -1,5 +1,6 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 // @ts-ignore
 import { requestFocusAndShowKeyboard } from "@dataInterface/system";
 
@@ -80,7 +81,6 @@ export const InputWithSend = (props: {
         disabled={getIsInputDisabled()}
         onkeydown={onKeyDown}
         maxlength={props.maxLength}
-        autofocus={true}
       />
       <div onclick={() => onSubmit(inpEl?.value)}>
         <Ico name="send" />
