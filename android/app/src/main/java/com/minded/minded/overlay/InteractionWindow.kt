@@ -42,6 +42,8 @@ class InteractionWindow(
                 settings.allowUniversalAccessFromFileURLs = true
                 settings.allowContentAccess = true
                 settings.setNeedInitialFocus(true)
+                // Disable caching to always load fresh content
+                settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
                 this.focusable = focusable
                 this.setBackgroundColor(0x00000000)
                 addJavascriptInterface(

@@ -60,6 +60,11 @@ const InteractionIOS = () => {
         questionForPrompt={question}
         onSetAnswer={() => undefined}
         onAfterInteractionFadeout={() => continueToApp()}
+        onInteractionSubmitted={() => {
+          // Called when user completes the interaction (answers question and drags sun)
+          countSunTap();
+          console.log("Interaction completed on iOS");
+        }}
         onSkip={() => MindedIOSPlugin.continueToApp()}
         onUpdateQuestion={onUpdateQuestion}
         onSwipeDown={onSwipeDown}

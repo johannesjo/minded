@@ -61,6 +61,10 @@ const InteractionAndroid = () => {
         questionForPrompt={question}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
         onAfterInteractionFadeout={() => showLittleSunAfter()}
+        onInteractionSubmitted={() => {
+          // Called when user completes the interaction (answers question and drags sun)
+          console.log("Interaction completed on Android");
+        }}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
         onSwipeDown={() => androidInterface.hideWindow()}
