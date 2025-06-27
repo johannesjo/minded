@@ -303,7 +303,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           />
         </div>
 
-        {/* Original interaction content - keep in place to prevent jumping */}
         <div
           class="interaction-content"
           classList={{

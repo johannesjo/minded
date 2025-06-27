@@ -5,8 +5,31 @@
   right: 0;
   bottom: 0;
   z-index: 1; // Behind all other content
-  background: var(--background-gradient, linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)); // Use CSS variable with fallback
   transition: none; // We handle transitions manually for smooth drag
+
+  &.background-default {
+    background: var(--background-gradient, linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5));
+  }
+
+  &.background-overlay {
+    z-index: 2;
+    opacity: 0;
+    will-change: opacity;
+  }
+
+  &.background-blue {
+    background: linear-gradient(to bottom, 
+      var(--bg-transition-bluesky-top, #3e88dd), 
+      var(--bg-transition-bluesky-bottom, #66c5e4)
+    );
+  }
+
+  &.background-sunset {
+    background: linear-gradient(to bottom, 
+      var(--bg-transition-sunset-top, #FF6B35), 
+      var(--bg-transition-sunset-bottom, #FFCC33)
+    );
+  }
 
   &.animating {
     // No CSS transition - using JS animation for precise control
