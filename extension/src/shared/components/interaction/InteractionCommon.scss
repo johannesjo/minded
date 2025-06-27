@@ -13,20 +13,10 @@
   &.fade-in {
     opacity: 1;
   }
-
-  // Apply text opacity to all text elements during drag
-  .txtBig,
-  .txtSmaller,
-  #minded-6622-question,
-  #minded-6622-mood-checkin > div:first-child,
-  #minded-6622-energy-checkin > div:first-child,
-  #minded-6622-emoji-checkin-txt,
-  #minded-6622-interaction-self-assesment-txt,
-  #minded-6622-app-usage-or-browsing-behavior > div:first-child,
-  #minded-6622-alternative-txt,
-  #minded-6622-action-advice > div:first-child {
-    opacity: var(--text-opacity, 1);
-    transition: opacity 0.3s ease-out;
+  
+  // Much faster transition during drag for immediate feedback
+  &.dragging {
+    transition: opacity 0.05s ease-out;
   }
 }
 
