@@ -61,6 +61,8 @@ export const Sun: Component<SunProps> = (props) => {
       touchStartTime = Date.now();
       isDragIntent = false;
       startPos = { x: clientX, y: clientY };
+      // Immediately set dragging state to disable transitions
+      setIsDragging(true);
     };
 
     const handleMove = (clientX: number, clientY: number) => {
@@ -68,38 +70,39 @@ export const Sun: Component<SunProps> = (props) => {
       const deltaY = clientY - startPos.y;
 
       const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      if (moveDistance > 10 && !isDragIntent) {
+      if (moveDistance > 2 && !isDragIntent) {
         isDragIntent = true;
-        setIsDragging(true);
       }
-
-      if (!getIsDragging()) return;
-
-      setDragOffset({ x: deltaX, y: deltaY });
 
       // Calculate drag progress as a percentage of screen height
       const screenHeight = window.innerHeight;
       const maxDragDistance = screenHeight * 0.4; // 40% of screen height for full effect
       const dragProgress = Math.min(Math.abs(deltaY) / maxDragDistance, 1);
 
-      // Always emit drag progress, even for small movements
-      const direction = deltaY > 0 ? "down" : "up";
-      const intensity = dragProgress; // Use full 0-1 range
-
-      const event = new CustomEvent("dragProgress", {
-        detail: { direction, intensity, isDragging: true },
-      });
-      window.dispatchEvent(event);
-
+      // Calculate all visual effects
+      let newScale, newOpacity;
       if (deltaY < 0) {
-        const scaleEffect = 1 - dragProgress * 0.3;
-        const opacityEffect = 1 - dragProgress * 0.5;
-        setScale(Math.max(0.7, scaleEffect));
-        setOpacity(Math.max(0.5, opacityEffect));
+        newScale = Math.max(0.7, 1 - dragProgress * 0.3);
+        newOpacity = Math.max(0.5, 1 - dragProgress * 0.5);
       } else {
-        const scaleEffect = 1 + dragProgress * 1.5;
-        setOpacity(1);
-        setScale(Math.min(2.5, scaleEffect));
+        newScale = Math.min(2.5, 1 + dragProgress * 1.5);
+        newOpacity = 1;
+      }
+
+      // Batch all state updates together
+      setDragOffset({ x: deltaX, y: deltaY });
+      setScale(newScale);
+      setOpacity(newOpacity);
+
+      // Only emit drag progress events after drag intent is confirmed
+      if (isDragIntent) {
+        const direction = deltaY > 0 ? "down" : "up";
+        const intensity = dragProgress;
+
+        const event = new CustomEvent("dragProgress", {
+          detail: { direction, intensity, isDragging: true },
+        });
+        window.dispatchEvent(event);
       }
     };
 
@@ -107,20 +110,20 @@ export const Sun: Component<SunProps> = (props) => {
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
 
+      // Always reset dragging state
+      setIsDragging(false);
+
       if (
         !isDragIntent &&
         duration < 300 &&
-        Math.abs(offset.x) < 10 &&
-        Math.abs(offset.y) < 10
+        Math.abs(offset.x) < 2 &&
+        Math.abs(offset.y) < 2
       ) {
         handleTap();
-        setIsDragging(false);
         return;
       }
 
       const screenHeight = window.innerHeight;
-
-      setIsDragging(false);
 
       const clearEvent = new CustomEvent("dragProgress", {
         detail: { direction: "none", intensity: 0, isDragging: false },
