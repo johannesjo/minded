@@ -409,7 +409,7 @@ export const Sun: Component<SunProps> = (props) => {
       const friction = 0.98; // Deceleration factor (0-1, lower = more friction)
       const gravity = 500; // Downward acceleration in px/s²
       const rotationFactor = 0.0005; // How much rotation based on horizontal velocity
-      const minAnimationTime = 500; // Minimum animation duration in ms
+      const minAnimationTime = 1500; // Minimum animation duration in ms before completion
       
       // Current state
       let position = { x: startOffset.x, y: startOffset.y };
@@ -478,8 +478,8 @@ export const Sun: Component<SunProps> = (props) => {
         const isAlmostStopped = speed < 10; // Very low speed threshold
         const isFadedOut = currentOpacity < 0.1; // Almost invisible
         
-        // Only complete if sun is truly off-screen or has been animating for a while and is nearly stopped
-        if (isOffScreen || (hasMinTimeElapsed && isAlmostStopped && isFadedOut)) {
+        // Only complete after minimum time has elapsed
+        if (hasMinTimeElapsed && (isOffScreen || (isAlmostStopped && isFadedOut))) {
           setIsAnimating(false);
           // Call appropriate callback based on final direction
           if (position.y > window.innerHeight / 2) {
