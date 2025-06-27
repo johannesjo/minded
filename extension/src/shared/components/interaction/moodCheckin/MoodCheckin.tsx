@@ -5,7 +5,6 @@ import {
   MoodCheckinVal,
 } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { saveMoodCheckIn } from "@src/dataInterface/commonSyncDataInterface";
-import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
@@ -19,12 +18,41 @@ export const MoodCheckin: (props: {
   const [getAdditionalTxt, setAdditionalTxt] = createSignal<string | null>(
     null,
   );
+  const [getSaveDelay, setSaveDelay] = createSignal<any>(null);
 
-  const onSaveAll = async () => {
-    const mood = getSelectedMood();
-    if (mood) {
+  const onMoodSelect = async (mood: MoodCheckinVal) => {
+    setSelectedMood(mood);
+    
+    // Clear any existing timeout
+    if (getSaveDelay()) {
+      clearTimeout(getSaveDelay());
+    }
+    
+    // Save immediately if no additional text is expected, otherwise wait a bit
+    const delay = setTimeout(async () => {
       await saveMoodCheckIn(mood, getAdditionalTxt());
       props.onSuccess();
+    }, 3000); // Give user 3 seconds to add additional text
+    
+    setSaveDelay(delay);
+  };
+
+  const handleInputChange = (value: string) => {
+    setAdditionalTxt(value);
+    
+    // Reset the save timer when user types
+    if (getSaveDelay()) {
+      clearTimeout(getSaveDelay());
+      
+      const mood = getSelectedMood();
+      if (mood) {
+        const delay = setTimeout(async () => {
+          await saveMoodCheckIn(mood, getAdditionalTxt());
+          props.onSuccess();
+        }, 2000); // Save 2 seconds after user stops typing
+        
+        setSaveDelay(delay);
+      }
     }
   };
 
@@ -34,7 +62,7 @@ export const MoodCheckin: (props: {
 
       <TglBtns
         options={MOOD_CHECKIN_OPTIONS}
-        onSelect={(v) => setSelectedMood(v)}
+        onSelect={onMoodSelect}
       />
 
       <div
@@ -64,8 +92,22 @@ export const MoodCheckin: (props: {
           }
           autocomplete="true"
           maxlength="200"
-          onInput={(ev) => setAdditionalTxt((ev.target as any).value)}
-          onKeyDown={(ev) => setAdditionalTxt((ev.target as any).value)}
+          onInput={(ev) => handleInputChange((ev.target as any).value)}
+          onKeyDown={(ev) => {
+            if (ev.key === 'Enter') {
+              ev.preventDefault();
+              // Save immediately on Enter
+              if (getSaveDelay()) {
+                clearTimeout(getSaveDelay());
+              }
+              const mood = getSelectedMood();
+              if (mood) {
+                saveMoodCheckIn(mood, getAdditionalTxt()).then(() => {
+                  props.onSuccess();
+                });
+              }
+            }
+          }}
         />
         <datalist id="auto-suggestions-for-mood-checkin">
           <For each={MOOD_CHECKIN_FEEL_BETTER_OPTIONS}>
@@ -73,8 +115,6 @@ export const MoodCheckin: (props: {
           </For>
         </datalist>
       </div>
-
-      <SaveBtn onSave={onSaveAll} isVisible={!!getSelectedMood()} />
     </div>
   );
 };

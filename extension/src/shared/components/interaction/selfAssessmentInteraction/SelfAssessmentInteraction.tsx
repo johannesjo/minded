@@ -4,7 +4,6 @@ import {
   SELF_ASSESSMENT_QUESTIONS,
   SelfReflectionAnswerVal,
 } from "./selfAssessment.model";
-import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import TglBtns from "@src/shared/components/ui/TglBtns";
 import { saveSelfAssessment } from "@src/dataInterface/commonSyncDataInterface";
 import { SyncData } from "@src/dataInterface/syncData";
@@ -19,21 +18,17 @@ const SelfAssessmentInteraction = (props: {
   const [getSelectedQuestion, setSelectedQuestion] = createSignal(
     SELF_ASSESSMENT_QUESTIONS[0],
   );
-  const [getSelectedAnswerVal, setSelectedAnswerVal] =
-    createSignal<SelfReflectionAnswerVal | null>(null);
 
   onMount(() => {
     setSelectedQuestion(getSelfAssessmentQuestion(props.syncData));
   });
 
-  const handleSaveClick = async () => {
-    if (getSelectedAnswerVal()) {
-      await saveSelfAssessment(
-        getSelectedQuestion().id,
-        getSelectedAnswerVal(),
-      );
-      props.onSuccess();
-    }
+  const handleAnswerSelect = async (answerVal: SelfReflectionAnswerVal) => {
+    await saveSelfAssessment(
+      getSelectedQuestion().id,
+      answerVal,
+    );
+    props.onSuccess();
   };
 
   return (
@@ -44,10 +39,8 @@ const SelfAssessmentInteraction = (props: {
 
       <TglBtns
         options={SELF_ASSESSMENT_ANSWERS}
-        onSelect={(v) => setSelectedAnswerVal(v)}
+        onSelect={handleAnswerSelect}
       />
-
-      <SaveBtn onSave={handleSaveClick} isVisible={!!getSelectedAnswerVal()} />
     </div>
   );
 };
