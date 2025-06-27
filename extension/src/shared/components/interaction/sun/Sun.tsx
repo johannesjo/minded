@@ -421,7 +421,7 @@ export const Sun: Component<SunProps> = (props) => {
       const friction = 0.99999; // Deceleration factor (0-1, lower = more friction)
       const gravity = 0; // Downward acceleration in px/s²
       const rotationFactor = 0.0005; // How much rotation based on horizontal velocity
-      const minAnimationTime = 4000; // Minimum animation duration in ms before completion
+      const minAnimationTime = 5000; // Minimum animation duration in ms before completion
 
       // Current state
       let position = { x: startOffset.x, y: startOffset.y };
