@@ -401,7 +401,6 @@ export const Sun: Component<SunProps> = (props) => {
       
       // Safety check: ensure we have valid initial values
       if (!startOffset || startScale <= 0 || startOpacity <= 0) {
-        console.warn("Invalid initial state for fling animation");
         props.onSwipeUp();
         return;
       }
@@ -464,10 +463,15 @@ export const Sun: Component<SunProps> = (props) => {
           currentVelocity.y * currentVelocity.y
         );
         
-        const sunRadius = 100; // Approximate sun size
+        // Get sun's actual position on screen
+        const sunRect = sunEl.getBoundingClientRect();
+        const sunCenterX = sunRect.left + sunRect.width / 2;
+        const sunCenterY = sunRect.top + sunRect.height / 2;
+        const sunRadius = sunRect.width / 2;
+        
         const isOffScreen = 
-          position.x < -sunRadius || position.x > window.innerWidth + sunRadius ||
-          position.y < -sunRadius || position.y > window.innerHeight + sunRadius;
+          sunCenterX < -sunRadius || sunCenterX > window.innerWidth + sunRadius ||
+          sunCenterY < -sunRadius || sunCenterY > window.innerHeight + sunRadius;
         
         // Don't complete animation too early
         const hasMinTimeElapsed = elapsedTime >= minAnimationTime;
