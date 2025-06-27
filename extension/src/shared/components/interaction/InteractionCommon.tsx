@@ -41,6 +41,7 @@ interface InteractionCommonProps {
   onSkip: () => void;
   onSwipeDown: () => void;
   onSwipeUp: () => void;
+  onCompletionStarted?: (started: boolean) => void;
 }
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
@@ -63,6 +64,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getPendingAnswer, setPendingAnswer] = createSignal<
     Answer | undefined
   >();
+  const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
 
   // Handler for skip with fade-out animation
   const handleSkip = () => {
@@ -289,7 +291,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       <div
         id="minded-6622-interaction-wrapper-box"
         style={{
-          "pointer-events": getIsFinalAnimation() ? "none" : "auto",
+          "pointer-events": getIsFinalAnimation() || getIsCompletionStarted() ? "none" : "auto",
         }}
       >
         <div class="sun-container">
@@ -298,6 +300,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onSwipeDown={props.onSwipeDown}
             onSwipeUp={props.onSwipeUp}
             onStartBackgroundAnimation={handleStartBackgroundAnimation}
+            onCompletionStarted={(started) => {
+              setIsCompletionStarted(started);
+              props.onCompletionStarted?.(started);
+            }}
           />
         </div>
 
@@ -309,7 +315,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           }}
           style={{
             opacity: getShowSunInstructions() ? 0 : getInteractionOpacity(),
-            "pointer-events": getShowSunInstructions() ? "none" : "auto",
+            "pointer-events":
+              getShowSunInstructions() || getIsCompletionStarted()
+                ? "none"
+                : "auto",
           }}
         >
           <Switch>
@@ -394,7 +403,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         </div>
 
         {/* Sun instructions overlay */}
-        {getShowSunInstructions() && (
+        {getShowSunInstructions() && !getIsCompletionStarted() && (
           <div
             class="interaction-content sun-instructions-overlay"
             classList={{
@@ -403,6 +412,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             }}
             style={{
               opacity: getInteractionOpacity(),
+              "pointer-events": getIsCompletionStarted() ? "none" : "auto",
             }}
           >
             <div class="sun-instructions txtSmaller">
