@@ -17,9 +17,11 @@ export const LittleSunComponent: (props: {
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
   const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
+  const [getIsScalingOut, setIsScalingOut] = createSignal(false);
 
   let currentSessionInterval: number;
   let t0: NodeJS.Timeout;
+  let sunEl: HTMLDivElement = undefined!;
 
   onMount(async () => {
     const d = await loadDataForHost(props.host);
@@ -78,15 +80,25 @@ export const LittleSunComponent: (props: {
   };
 
   const handleDoubleClick = () => {
-    props.teardown();
+    setIsScalingOut(true);
+    // Wait for animation to complete before tearing down
+    sunEl.addEventListener(
+      "animationend",
+      () => {
+        props.teardown();
+      },
+      { once: true },
+    );
   };
 
   return (
     <div
       id="minded-6622-little-sun"
+      ref={sunEl}
       classList={{
         ["bottomLeft"]: true,
         ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
+        ["scaling-out"]: getIsScalingOut(),
       }}
     >
       <div id="minded-6622-little-sun-sun-wrapper">

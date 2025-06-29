@@ -1,7 +1,7 @@
 // NOTE: this is styled in Interaction.scss
 
 // Define variables at the top
-$sun-size: 30px;
+$sun-size: 40px;
 $shadow: var(--little-sun-shadow);
 
 #minded-6622-little-sun-success-sun {
@@ -26,30 +26,35 @@ $shadow: var(--little-sun-shadow);
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 
+  // TODO cleanup and fix class names
   &.topRight {
-    top: 50%;
+    bottom: 50%;
     left: 50%;
 
     &.isOutOfTheWay {
-      // Calculate the exact position to move from center to top-right
+      // Calculate the exact position to move from center to bottom-right
       // Using calc to maintain smooth transition from center
-      top: 40px;
-      left: calc(100% - 40px - #{$sun-size});
+      bottom: 40px;
+      left: 40px;
       transform: translate(0, 0);
     }
   }
 
   &.bottomLeft {
-    top: 50%;
+    bottom: 50%;
     left: 50%;
 
     &.isOutOfTheWay {
       // Calculate the exact position to move from center to bottom-left
       // Using calc to maintain smooth transition from center
-      top: calc(100% - 40px - #{$sun-size});
+      bottom: 40px;
       left: 40px;
       transform: translate(0, 0);
     }
+  }
+
+  &.scaling-out {
+    animation: minded6622littleSunOut 0.4s ease-in forwards;
   }
 }
 
@@ -138,5 +143,16 @@ $shadow: var(--little-sun-shadow);
   100% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes minded6622littleSunOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
   }
 }
