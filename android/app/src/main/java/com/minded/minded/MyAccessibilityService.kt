@@ -34,7 +34,9 @@ class MyAccessibilityService : AccessibilityService() {
     private var lastEventTimestamp: Long = 0
     private val recentPackageHistory = mutableListOf<Pair<String, Long>>()
     private val PACKAGE_HISTORY_SIZE = 5
-    private val LAUNCHER_DEBOUNCE_MS = getManufacturerDebounceTime()
+    private val LAUNCHER_DEBOUNCE_MS: Long by lazy { 
+        getManufacturerDebounceTime() 
+    }
     
     // Dynamic launcher detection
     private var cachedLaunchers: Set<String>? = null
@@ -56,8 +58,12 @@ class MyAccessibilityService : AccessibilityService() {
     private var lastUserApp: String? = null
     
     // Device manufacturer info
-    private val deviceManufacturer = Build.MANUFACTURER.lowercase()
-    private val deviceModel = Build.MODEL.lowercase()
+    private val deviceManufacturer: String by lazy { 
+        Build.MANUFACTURER?.lowercase() ?: "unknown"
+    }
+    private val deviceModel: String by lazy { 
+        Build.MODEL?.lowercase() ?: "unknown"
+    }
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -133,8 +139,12 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate()")
-        Log.d(TAG, "Device: $deviceManufacturer - $deviceModel")
-        Log.d(TAG, "Debounce time: ${LAUNCHER_DEBOUNCE_MS}ms")
+        try {
+            Log.d(TAG, "Device: $deviceManufacturer - $deviceModel")
+            Log.d(TAG, "Debounce time: ${LAUNCHER_DEBOUNCE_MS}ms")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error accessing device info", e)
+        }
         
         // Clear any stale state on service creation
         lastPackageName = null

@@ -52,7 +52,7 @@
         </service>
         <service
                 android:name=".MyAccessibilityService"
-                android:exported="false"
+                android:exported="true"
                 android:label="@string/accessibility_service_description"
                 android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
