@@ -158,13 +158,7 @@ class InteractionWindowJavaScriptInterface(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val timings = longArrayOf(0, 30, 50, 80) // Start, vibrate 30ms, pause 50ms, vibrate 80ms
                     val amplitudes = intArrayOf(0, 150, 0, 255) // No vibration, medium, no vibration, max
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        VibrationEffect.createWaveform(timings, amplitudes, -1) // -1 means no repeat
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(timings, -1)
-                        return
-                    }
+                    VibrationEffect.createWaveform(timings, amplitudes, -1) // -1 means no repeat
                 } else {
                     // Fallback for older devices
                     val pattern = longArrayOf(0, 30, 50, 80)
