@@ -27,7 +27,8 @@
       "Bash(npm run dev:*)",
       "Bash(npx sass-migrator module:*)",
       "Bash(adb shell:*)",
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }
