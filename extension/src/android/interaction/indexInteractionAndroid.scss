@@ -2,13 +2,29 @@
 
 // Set the minded gradient background to prevent white flashes
 html {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   min-height: 100vh;
+  min-height: 100dvh; // Dynamic viewport height
   background: var(--background-gradient) fixed;
+  overflow: hidden;
 }
 
 body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
   background: transparent;
   min-height: 100vh;
+  min-height: 100dvh; // Dynamic viewport height
+  overflow: hidden;
 }
 
 #minded-6622 {

@@ -35,8 +35,8 @@ open class CommonWindow(
         window = ComposeView(ctrlSvc).apply {
             setViewTreeLifecycleOwner(ctrlSvc)
             setViewTreeSavedStateRegistryOwner(ctrlSvc)
-            // Ensure the ComposeView is also transparent
-            setBackgroundColor(0x00000000)
+            // Set dark background to prevent white flashes
+            setBackgroundColor(0xFF1a1a1a.toInt())
             setContent {
                 // NOTE: theme wont work since it's not an activity
                 //                MindedTheme {
