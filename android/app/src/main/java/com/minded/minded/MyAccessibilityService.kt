@@ -35,7 +35,8 @@ class MyAccessibilityService : AccessibilityService() {
         val fromPackage: String?,
         val toPackage: String,
         val timestamp: Long,
-        val eventType: String = "window_state_changed"
+        val eventType: String = "window_state_changed",
+        val className: String = ""
     )
     private val transitionHistory = mutableListOf<AppTransition>()
     private var lastUserApp: String? = null
@@ -291,13 +292,78 @@ class MyAccessibilityService : AccessibilityService() {
         Log.d(TAG, "Total launchers detected: ${launchers.size}")
         return launchers
     }
+    
+    private fun isValidAppWindow(className: String, eventText: String, contentDesc: String): Boolean {
+        // Filter out non-activity windows
+        val lowerClassName = className.lowercase()
+        
+        // Skip if it's a dialog, popup, or menu
+        if (lowerClassName.contains("dialog") ||
+            lowerClassName.contains("popup") ||
+            lowerClassName.contains("menu") ||
+            lowerClassName.contains("toast")) {
+            return false
+        }
+        
+        // Skip if it's a system overlay or notification
+        if (lowerClassName.contains("notification") ||
+            lowerClassName.contains("statusbar") ||
+            lowerClassName.contains("navigationbar")) {
+            return false
+        }
+        
+        // Skip keyboard and input method windows
+        if (lowerClassName.contains("inputmethod") ||
+            lowerClassName.contains("keyboard")) {
+            return false
+        }
+        
+        // Accept if it looks like an activity
+        if (className.endsWith("Activity") ||
+            className.contains("MainActivity") ||
+            className.contains("LauncherActivity")) {
+            return true
+        }
+        
+        // Accept if it's a common view container that typically represents main content
+        if (className.endsWith("FrameLayout") ||
+            className.endsWith("CoordinatorLayout") ||
+            className.endsWith("ConstraintLayout") ||
+            className.endsWith("LinearLayout") ||
+            className.endsWith("RelativeLayout")) {
+            // But only if it doesn't look like a system UI element
+            if (!contentDesc.lowercase().contains("status") &&
+                !contentDesc.lowercase().contains("navigation")) {
+                return true
+            }
+        }
+        
+        // Accept WebView as it often represents main app content
+        if (className.contains("WebView")) {
+            return true
+        }
+        
+        // Accept RecyclerView/ListView as they often represent main app content
+        if (className.contains("RecyclerView") ||
+            className.contains("ListView")) {
+            return true
+        }
+        
+        // If we can't determine, be conservative and accept it
+        return true
+    }
 
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         val packageName = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
         
-        Log.d(TAG, "onAccessibilityEvent: package=$packageName, lastPackage=$lastPackageName")
+        // Extract event context for better validation
+        val className = event.className?.toString() ?: ""
+        val eventText = event.text.joinToString(" ")
+        val contentDesc = event.contentDescription?.toString() ?: ""
+        
+        Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
         
         // Skip if this is a system package
         if (isSystemPackage(packageName)) {
@@ -305,11 +371,17 @@ class MyAccessibilityService : AccessibilityService() {
             return
         }
         
+        // Validate this is a genuine app window
+        if (!isValidAppWindow(className, eventText, contentDesc)) {
+            Log.d(TAG, "Skipping non-app window: $className")
+            return
+        }
+        
         // Track package history for better launcher detection
         updatePackageHistory(packageName, currentTime)
         
         // Track transition
-        trackTransition(packageName, currentTime)
+        trackTransition(packageName, currentTime, className)
         
         // Check if this is a genuine app switch
         if (shouldTriggerOverlay(packageName, currentTime)) {
@@ -348,12 +420,13 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
     
-    private fun trackTransition(toPackage: String, timestamp: Long) {
+    private fun trackTransition(toPackage: String, timestamp: Long, className: String = "") {
         // Add new transition
         val transition = AppTransition(
             fromPackage = lastPackageName,
             toPackage = toPackage,
-            timestamp = timestamp
+            timestamp = timestamp,
+            className = className
         )
         transitionHistory.add(transition)
         
