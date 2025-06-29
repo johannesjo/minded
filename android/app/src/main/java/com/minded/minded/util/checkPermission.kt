@@ -43,18 +43,53 @@ fun isAccessibilityServiceEnabled(
     context: Context,
     serviceToCheck: Class<out AccessibilityService?> = MyAccessibilityService::class.java
 ): Boolean {
+    // Method 1: Check using AccessibilityManager
     val am: AccessibilityManager =
         context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
     val enabledServices: List<AccessibilityServiceInfo> =
         am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
     Log.v("UTIL", "isAccessibilityServiceEnabled ENABLED SERVICES ${enabledServices.size} ")
+    
+    val expectedServiceName = serviceToCheck.name
+    val expectedPackageName = context.packageName
+    
     for (enabledService in enabledServices) {
-        Log.v("UTIL", enabledService.resolveInfo.serviceInfo.packageName)
         val enabledServiceInfo: ServiceInfo = enabledService.resolveInfo.serviceInfo
-        if (enabledServiceInfo.packageName.equals(context.packageName) && enabledServiceInfo.name.equals(
-                serviceToCheck.name
-            )
-        ) return true
+        Log.v("UTIL", "Checking service: ${enabledServiceInfo.packageName}/${enabledServiceInfo.name}")
+        
+        // Check if this is our service
+        if (enabledServiceInfo.packageName == expectedPackageName && 
+            enabledServiceInfo.name == expectedServiceName) {
+            Log.v("UTIL", "Found our accessibility service enabled!")
+            return true
+        }
     }
+    
+    // Method 2: Check using Settings.Secure
+    try {
+        val enabledServicesString = Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        Log.v("UTIL", "Enabled services from Settings: $enabledServicesString")
+        
+        if (enabledServicesString != null) {
+            val colonSplitter = enabledServicesString.split(":")
+            val expectedComponentName = "$expectedPackageName/$expectedServiceName"
+            val expectedComponentNameShort = "$expectedPackageName/.MyAccessibilityService"
+            
+            for (componentName in colonSplitter) {
+                Log.v("UTIL", "Checking component: $componentName")
+                if (componentName == expectedComponentName || componentName == expectedComponentNameShort) {
+                    Log.v("UTIL", "Found our service in Settings!")
+                    return true
+                }
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("UTIL", "Error checking accessibility settings", e)
+    }
+    
+    Log.v("UTIL", "Looking for: $expectedPackageName/$expectedServiceName - NOT FOUND")
     return false
 }
