@@ -38,7 +38,11 @@ class MyAccessibilityService : AccessibilityService() {
         
         // Register broadcast receiver for home action
         val filter = android.content.IntentFilter("com.minded.ACTION_GO_HOME")
-        registerReceiver(homeActionReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(homeActionReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(homeActionReceiver, filter)
+        }
     }
     
     private val homeActionReceiver = object : android.content.BroadcastReceiver() {
