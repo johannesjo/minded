@@ -14,6 +14,13 @@ export const InteractionOverlay: (props: {
     window.dispatchEvent(new Event(ON_SHOW_INTERACTION_OVERLAY_EV));
   });
 
+  const handleHideWithFade = () => {
+    const { promise } = fadeOut(wrapperEl, 800); // 0.8 second fade
+    promise.then(() => {
+      props.onHideInteraction();
+    });
+  };
+
   return (
     <div
       class={styles.interactionOverlay}
@@ -33,9 +40,9 @@ export const InteractionOverlay: (props: {
           onSetAnswer={() => undefined}
           onUpdateQuestion={() => undefined}
           onModeSet={() => undefined}
-          onSkip={() => props.onHideInteraction()}
-          onSwipeDown={() => props.onHideInteraction()}
-          onSwipeUp={() => props.onHideInteraction()}
+          onSkip={handleHideWithFade}
+          onSwipeDown={handleHideWithFade}
+          onSwipeUp={handleHideWithFade}
         />
       </div>
     </div>
