@@ -1,13 +1,21 @@
 @import "@src/styles/sharedInteractionOnly";
 
+// Set a dark gradient background to prevent white flashes
+html {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) fixed;
+}
+
 body {
   background: transparent;
+  min-height: 100vh;
 }
 
 #minded-6622 {
   animation: minded6622fadeIn ease 0.2s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
+  min-height: 100vh;
 }
 
 // Smooth keyboard transitions
@@ -60,4 +68,23 @@ textarea {
 // Add will-change for smoother animations
 #minded-6622-coloured-wrapper-dynamic {
   will-change: transform;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  // Ensure the gradient background is always visible
+  &::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    z-index: -2;
+    pointer-events: none;
+  }
 }
