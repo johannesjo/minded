@@ -25,6 +25,7 @@ export const InteractionOverlay: (props: {
           questionForPrompt={undefined}
           isInitFadeout={false}
           wrapperEl={wrapperEl!}
+          isFromDashboard={true}
           onInteractionSubmitted={() => {
             props.onPossibleNewData();
           }}

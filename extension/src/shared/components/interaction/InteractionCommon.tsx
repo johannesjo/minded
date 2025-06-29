@@ -27,6 +27,7 @@ import Sun from "@src/shared/components/interaction/sun/Sun";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
+import { Ico } from "@src/shared/components/ui/Ico";
 import "./InteractionCommon.scss";
 
 interface InteractionCommonProps {
@@ -42,6 +43,7 @@ interface InteractionCommonProps {
   onSwipeDown: () => void;
   onSwipeUp: () => void;
   onCompletionStarted?: (started: boolean) => void;
+  isFromDashboard?: boolean;
 }
 
 const ADVICE = getRndEntry(ACTION_ADVICES);
@@ -396,38 +398,52 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         </div>
 
         {/* Sun instructions overlay */}
-        {getShowSunInstructions() && !getIsCompletionStarted() && (
-          <div
-            class="interaction-content sun-instructions-overlay"
-            classList={{
-              "fade-in": getShowSunInstructions(),
-              dragging: getIsDragging(),
-            }}
-            style={{
-              opacity: getInteractionOpacity(),
-              "pointer-events": getIsCompletionStarted() ? "none" : "auto",
-            }}
-          >
-            <div class="sun-instructions txtSmaller">
-              <p>Fling the sun away to let go.</p>
-              <p>Drag the sun down to ground yourself.</p>
-              <p>Tap the sun 5 times to proceed.</p>
+        {getShowSunInstructions() &&
+          !getIsCompletionStarted() &&
+          !props.isFromDashboard && (
+            <div
+              class="interaction-content sun-instructions-overlay"
+              classList={{
+                "fade-in": getShowSunInstructions(),
+                dragging: getIsDragging(),
+              }}
+              style={{
+                opacity: getInteractionOpacity(),
+                "pointer-events": getIsCompletionStarted() ? "none" : "auto",
+              }}
+            >
+              <div class="sun-instructions txtSmaller">
+                <p>Fling the sun away to let go.</p>
+                <p>Drag the sun down to ground yourself.</p>
+                <p>Tap the sun 5 times to proceed.</p>
+              </div>
             </div>
+          )}
+
+        {!props.isFromDashboard && (
+          <div class="sun-container">
+            <Sun
+              onSkip={handleSkip}
+              onSwipeDown={props.onSwipeDown}
+              onSwipeUp={props.onSwipeUp}
+              onStartBackgroundAnimation={handleStartBackgroundAnimation}
+              onCompletionStarted={(started) => {
+                setIsCompletionStarted(started);
+                props.onCompletionStarted?.(started);
+              }}
+            />
           </div>
         )}
 
-        <div class="sun-container">
-          <Sun
-            onSkip={handleSkip}
-            onSwipeDown={props.onSwipeDown}
-            onSwipeUp={props.onSwipeUp}
-            onStartBackgroundAnimation={handleStartBackgroundAnimation}
-            onCompletionStarted={(started) => {
-              setIsCompletionStarted(started);
-              props.onCompletionStarted?.(started);
-            }}
-          />
-        </div>
+        {props.isFromDashboard && (
+          <button
+            class="back-button btnTxt"
+            onClick={() => props.onSkip()}
+            aria-label="Go back"
+          >
+            <Ico name="arrowBack" /> Back
+          </button>
+        )}
       </div>
     </>
   );
