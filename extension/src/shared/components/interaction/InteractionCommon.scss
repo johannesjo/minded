@@ -143,3 +143,12 @@
     opacity: 0.9;
   }
 }
+
+.back-button {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: all;
+}
