@@ -247,6 +247,30 @@ class MyAccessibilityService : AccessibilityService() {
             return true
         }
         
+        // Apps that should NEVER be considered system packages (even if pre-installed)
+        val userAppsWhitelist = setOf(
+            "com.google.android.youtube",
+            "com.android.chrome",
+            "com.chrome.canary",
+            "com.chrome.dev",
+            "com.chrome.beta",
+            "com.facebook.katana",
+            "com.facebook.orca",
+            "com.instagram.android",
+            "com.whatsapp",
+            "com.twitter.android",
+            "com.snapchat.android",
+            "com.zhiliaoapp.musically", // TikTok
+            "com.ss.android.ugc.trill", // TikTok
+            "com.reddit.frontpage",
+            "com.discord"
+        )
+        
+        if (userAppsWhitelist.contains(packageName)) {
+            systemAppCache[packageName] = false
+            return false
+        }
+        
         val isSystem = try {
             // Get application info
             val appInfo = packageManager.getApplicationInfo(packageName, 0)
