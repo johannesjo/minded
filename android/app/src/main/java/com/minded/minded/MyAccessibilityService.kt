@@ -29,6 +29,16 @@ class MyAccessibilityService : AccessibilityService() {
     // System app detection cache
     private val systemAppCache = mutableMapOf<String, Boolean>()
     private var lastSystemAppCacheClear = 0L
+    
+    // Transition pattern tracking
+    private data class AppTransition(
+        val fromPackage: String?,
+        val toPackage: String,
+        val timestamp: Long,
+        val eventType: String = "window_state_changed"
+    )
+    private val transitionHistory = mutableListOf<AppTransition>()
+    private var lastUserApp: String? = null
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -36,6 +46,8 @@ class MyAccessibilityService : AccessibilityService() {
         private const val LAUNCHER_CACHE_DURATION_MS = 60_000L // 1 minute
         private const val LAUNCHER_DEBOUNCE_DEFAULT_MS = 500L
         private const val SYSTEM_APP_CACHE_DURATION_MS = 300_000L // 5 minutes
+        private const val TRANSITION_HISTORY_DURATION_MS = 10_000L // 10 seconds
+        private const val TRANSITION_HISTORY_MAX_SIZE = 20
         
         // Known launcher packages as fallback
         private val KNOWN_LAUNCHERS = setOf(
@@ -73,6 +85,8 @@ class MyAccessibilityService : AccessibilityService() {
         lastPackageName = null
         lastEventTimestamp = 0
         recentPackageHistory.clear()
+        transitionHistory.clear()
+        lastUserApp = null
         
         // Register broadcast receiver for home action
         val filter = android.content.IntentFilter("com.minded.ACTION_GO_HOME")
@@ -294,6 +308,9 @@ class MyAccessibilityService : AccessibilityService() {
         // Track package history for better launcher detection
         updatePackageHistory(packageName, currentTime)
         
+        // Track transition
+        trackTransition(packageName, currentTime)
+        
         // Check if this is a genuine app switch
         if (shouldTriggerOverlay(packageName, currentTime)) {
             Log.d(TAG, "Triggering overlay for package: $packageName")
@@ -331,36 +348,139 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
     
+    private fun trackTransition(toPackage: String, timestamp: Long) {
+        // Add new transition
+        val transition = AppTransition(
+            fromPackage = lastPackageName,
+            toPackage = toPackage,
+            timestamp = timestamp
+        )
+        transitionHistory.add(transition)
+        
+        // Clean up old transitions
+        val cutoffTime = timestamp - TRANSITION_HISTORY_DURATION_MS
+        transitionHistory.removeAll { it.timestamp < cutoffTime }
+        
+        // Limit size
+        while (transitionHistory.size > TRANSITION_HISTORY_MAX_SIZE) {
+            transitionHistory.removeAt(0)
+        }
+        
+        // Update last user app if this is not a system package
+        if (!isSystemPackage(toPackage) && !isLauncherPackage(toPackage)) {
+            lastUserApp = toPackage
+        }
+        
+        Log.d(TAG, "Tracked transition: ${transition.fromPackage} -> ${transition.toPackage}")
+    }
+    
+    private fun analyzeTransitionPattern(currentPackage: String, currentTime: Long): TransitionPattern {
+        if (transitionHistory.isEmpty()) {
+            return TransitionPattern.FIRST_APP_LAUNCH
+        }
+        
+        val recentTransitions = transitionHistory.takeLast(5)
+        
+        // Check for launcher -> app pattern (direct app launch)
+        val lastTransition = recentTransitions.lastOrNull()
+        if (lastTransition != null && 
+            isLauncherPackage(lastTransition.fromPackage ?: "") &&
+            !isSystemPackage(currentPackage) &&
+            currentTime - lastTransition.timestamp < 2000) {
+            return TransitionPattern.LAUNCHER_TO_APP
+        }
+        
+        // Check for app -> launcher -> app pattern (task switching)
+        if (recentTransitions.size >= 2) {
+            val secondLast = recentTransitions[recentTransitions.size - 2]
+            if (!isSystemPackage(secondLast.fromPackage ?: "") &&
+                isLauncherPackage(lastTransition?.toPackage ?: "") &&
+                !isSystemPackage(currentPackage) &&
+                currentTime - secondLast.timestamp < 3000) {
+                return TransitionPattern.APP_SWITCH_VIA_LAUNCHER
+            }
+        }
+        
+        // Check for direct app-to-app switch
+        if (lastTransition != null &&
+            !isSystemPackage(lastTransition.fromPackage ?: "") &&
+            !isSystemPackage(currentPackage) &&
+            lastTransition.fromPackage != currentPackage &&
+            currentTime - lastTransition.timestamp < 1000) {
+            return TransitionPattern.DIRECT_APP_SWITCH
+        }
+        
+        // Check if returning to same app after brief launcher/recents visit
+        val sameAppTransitions = recentTransitions.filter { it.toPackage == currentPackage }
+        if (sameAppTransitions.isNotEmpty() && 
+            currentTime - sameAppTransitions.last().timestamp < 5000) {
+            return TransitionPattern.RETURNING_TO_APP
+        }
+        
+        return TransitionPattern.UNKNOWN
+    }
+    
+    private enum class TransitionPattern {
+        FIRST_APP_LAUNCH,
+        LAUNCHER_TO_APP,
+        APP_SWITCH_VIA_LAUNCHER,
+        DIRECT_APP_SWITCH,
+        RETURNING_TO_APP,
+        UNKNOWN
+    }
+    
     private fun shouldTriggerOverlay(packageName: String, currentTime: Long): Boolean {
+        // Don't trigger for launchers
+        if (isLauncherPackage(packageName)) {
+            Log.d(TAG, "Not triggering for launcher: $packageName")
+            return false
+        }
+        
         // Don't trigger if it's the same package
         if (packageName == lastPackageName) {
             return false
         }
         
-        // Handle launcher debouncing more intelligently
-        if (isLauncherPackage(packageName)) {
-            // Check if we're bouncing between launcher and app
-            val timeSinceLastEvent = currentTime - lastEventTimestamp
-            if (timeSinceLastEvent < LAUNCHER_DEBOUNCE_MS) {
-                Log.d(TAG, "Debouncing launcher event: $packageName")
-                return false
+        // Analyze the transition pattern
+        val pattern = analyzeTransitionPattern(packageName, currentTime)
+        Log.d(TAG, "Transition pattern for $packageName: $pattern")
+        
+        return when (pattern) {
+            TransitionPattern.FIRST_APP_LAUNCH -> {
+                // Always show overlay for first app launch
+                Log.d(TAG, "First app launch detected")
+                true
+            }
+            
+            TransitionPattern.LAUNCHER_TO_APP -> {
+                // Show overlay for direct launches from launcher
+                Log.d(TAG, "Direct launch from launcher detected")
+                true
+            }
+            
+            TransitionPattern.APP_SWITCH_VIA_LAUNCHER -> {
+                // Show overlay when switching between apps via launcher/recents
+                Log.d(TAG, "App switch via launcher detected")
+                true
+            }
+            
+            TransitionPattern.DIRECT_APP_SWITCH -> {
+                // Show overlay for direct app-to-app switches (e.g., via notifications)
+                Log.d(TAG, "Direct app switch detected")
+                true
+            }
+            
+            TransitionPattern.RETURNING_TO_APP -> {
+                // Don't show overlay when returning to same app
+                Log.d(TAG, "Returning to same app, not triggering")
+                false
+            }
+            
+            TransitionPattern.UNKNOWN -> {
+                // For unknown patterns, use conservative approach
+                Log.d(TAG, "Unknown pattern, using time-based logic")
+                currentTime - lastEventTimestamp > LAUNCHER_DEBOUNCE_MS
             }
         }
-        
-        // Check if the previous package was a launcher and we're quickly switching
-        val lastPkg = lastPackageName
-        if (lastPkg != null && isLauncherPackage(lastPkg)) {
-            val timeSinceLastEvent = currentTime - lastEventTimestamp
-            if (timeSinceLastEvent < LAUNCHER_DEBOUNCE_MS) {
-                // But allow if we see the same app multiple times in history
-                val recentAppCount = recentPackageHistory.count { it.first == packageName }
-                if (recentAppCount < 2) {
-                    Log.d(TAG, "Skipping quick launcher->app switch")
-                    return false
-                }
-            }
-        }
-        
-        return true
     }
 }
