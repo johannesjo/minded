@@ -14,7 +14,6 @@ import {
   setDailyQuestionsDoneForToday,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
-// @ts-expect-error
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
@@ -41,7 +40,7 @@ const SS_KEY = "dashboardGroupShown";
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
 }) => JSX.Element = (props) => {
-  let t0;
+  let t0: NodeJS.Timeout | undefined;
   const [getIsAnimateEntrance, setIsAnimateEntrance] =
     createSignal<boolean>(true);
 
@@ -154,7 +153,9 @@ export const DashboardGroups: (props: {
       <For each={getDashboardGroups()}>
         {(dg) => (
           <div
-            onClick={() => "id" in dg && props.onQuestionCategorySelect(dg.id)}
+            onClick={() =>
+              "id" in dg && props.onQuestionCategorySelect?.(dg.id)
+            }
             classList={{
               ["cardDashboard"]: true,
               [styles.box]: true,

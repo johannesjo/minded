@@ -151,7 +151,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     window.dispatchEvent(event);
   };
 
-  let frameNr;
+  let frameNr: number | undefined;
 
   onMount(async () => {
     if (props.isInitFadeout) {
@@ -180,8 +180,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     });
 
     // Listen for drag progress events to fade content
-    const handleDragProgress = (event: CustomEvent) => {
-      const { isDragging, resetToInitial } = event.detail;
+    const handleDragProgress = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        isDragging: boolean;
+        resetToInitial?: boolean;
+      }>;
+      const { isDragging, resetToInitial } = customEvent.detail;
 
       setIsDragging(isDragging);
 
@@ -195,22 +199,30 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // Otherwise, keep current opacity (for completion animation or threshold crossed)
     };
 
-    window.addEventListener("dragProgress", handleDragProgress);
+    window.addEventListener(
+      "dragProgress",
+      handleDragProgress as EventListener,
+    );
 
     return () => {
-      window.removeEventListener("dragProgress", handleDragProgress);
+      window.removeEventListener(
+        "dragProgress",
+        handleDragProgress as EventListener,
+      );
     };
   });
 
   createEffect(() => {
-    if (getMode()) {
-      props.onModeSet(getMode());
+    const mode = getMode();
+    if (mode) {
+      props.onModeSet(mode);
     }
   });
 
   createEffect(() => {
-    if (getInitialQuestion()) {
-      props.onUpdateQuestion(getInitialQuestion());
+    const question = getInitialQuestion();
+    if (question) {
+      props.onUpdateQuestion(question);
     }
   });
 
@@ -287,7 +299,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         }}
       >
         <div
-          className="interaction-content"
+          class="interaction-content"
           classList={{
             "fade-in": getIsContentReady(),
             dragging: getIsDragging(),
@@ -304,7 +316,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <Match when={getMode() === "SELF_ASSESSMENT"}>
               {getSyncDataI() && (
                 <SelfAssessmentInteraction
-                  syncData={getSyncDataI()}
+                  syncData={getSyncDataI()!}
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onInteractionSuccess}
                   onSkip={handleSkip}
@@ -328,7 +340,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <Match when={getMode() === "ACTION_ADVICE"}>
               <div
                 id="minded-6622-action-advice"
-                className="txtBig"
+                class="txtBig"
                 style="pointer-events:none;"
               >
                 <div>{ADVICE.txt}</div>
@@ -343,11 +355,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               />
             </Match>
             <Match when={getMode() === "SHOW_ALTERNATIVE"}>
-              <ShowAlternativeInteraction
-                syncData={getSyncDataI()}
-                onCancelCountdown={cancelCountdown}
-                onSkip={handleSkip}
-              />
+              {getSyncDataI() && (
+                <ShowAlternativeInteraction
+                  syncData={getSyncDataI()!}
+                  onCancelCountdown={cancelCountdown}
+                  onSkip={handleSkip}
+                />
+              )}
             </Match>
             <Match when={getMode() === "SET_ALTERNATIVE"}>
               <SetAlternativeInteraction
@@ -367,7 +381,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               {getInitialQuestion() && (
                 <Question
                   isChangeQuestion={true}
-                  initialQuestion={getInitialQuestion()}
+                  initialQuestion={getInitialQuestion()!}
                   answers={getAnswers()}
                   onCancelCountdown={cancelCountdown}
                   onSuccess={onInteractionSuccess}
@@ -384,7 +398,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         {/* Sun instructions overlay */}
         {getShowSunInstructions() && !getIsCompletionStarted() && (
           <div
-            className="interaction-content sun-instructions-overlay"
+            class="interaction-content sun-instructions-overlay"
             classList={{
               "fade-in": getShowSunInstructions(),
               dragging: getIsDragging(),
@@ -394,7 +408,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               "pointer-events": getIsCompletionStarted() ? "none" : "auto",
             }}
           >
-            <div className="sun-instructions txtSmaller">
+            <div class="sun-instructions txtSmaller">
               <p>Fling the sun away to let go.</p>
               <p>Drag the sun down to ground yourself.</p>
               <p>Tap the sun 5 times to proceed.</p>
@@ -402,7 +416,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           </div>
         )}
 
-        <div className="sun-container">
+        <div class="sun-container">
           <Sun
             onSkip={handleSkip}
             onSwipeDown={props.onSwipeDown}

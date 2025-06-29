@@ -1,7 +1,5 @@
 // SettingsAndroid.tsx
 import { createSignal, For, onCleanup, onMount } from "solid-js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import styles from "./SettingsAndroid.module.scss";
 import {
   getSyncData,
@@ -16,7 +14,7 @@ export const SettingsAndroid = (props: {
   saveBtnTxt?: string;
   onSave?: () => void;
 }) => {
-  let t0;
+  let t0: NodeJS.Timeout | undefined;
   // const navigate = useNavigate();
   const [getAvailableApps, setAvailableApps] = createSignal<
     { packageName: string; name: string }[]

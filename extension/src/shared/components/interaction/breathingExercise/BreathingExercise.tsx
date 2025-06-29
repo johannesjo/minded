@@ -11,7 +11,7 @@ const BreathingExercise = () => {
   ];
 
   let currentStageIndex = -1;
-  let intervalId = null;
+  let intervalId: NodeJS.Timeout | null = null;
 
   const startExercise = () => {
     currentStageIndex = 0;

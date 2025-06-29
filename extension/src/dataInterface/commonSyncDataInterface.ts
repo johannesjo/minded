@@ -50,7 +50,7 @@ export const saveMoodCheckIn = (
       ...syncData,
       moodCheckTS: Date.now(),
       moodCheckVal: mood,
-      moodCheckAdditional: additional,
+      moodCheckAdditional: additional || "",
     });
   });
 };
