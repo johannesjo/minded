@@ -20,7 +20,7 @@ class MyAccessibilityService : AccessibilityService() {
     private var lastEventTimestamp: Long = 0
     private val recentPackageHistory = mutableListOf<Pair<String, Long>>()
     private val PACKAGE_HISTORY_SIZE = 5
-    private val LAUNCHER_DEBOUNCE_MS = 500L
+    private val LAUNCHER_DEBOUNCE_MS = getManufacturerDebounceTime()
     
     // Dynamic launcher detection
     private var cachedLaunchers: Set<String>? = null
@@ -40,6 +40,10 @@ class MyAccessibilityService : AccessibilityService() {
     )
     private val transitionHistory = mutableListOf<AppTransition>()
     private var lastUserApp: String? = null
+    
+    // Device manufacturer info
+    private val deviceManufacturer = Build.MANUFACTURER.lowercase()
+    private val deviceModel = Build.MODEL.lowercase()
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -49,6 +53,28 @@ class MyAccessibilityService : AccessibilityService() {
         private const val SYSTEM_APP_CACHE_DURATION_MS = 300_000L // 5 minutes
         private const val TRANSITION_HISTORY_DURATION_MS = 10_000L // 10 seconds
         private const val TRANSITION_HISTORY_MAX_SIZE = 20
+        
+        // Manufacturer-specific packages
+        private val SAMSUNG_SYSTEM_PACKAGES = setOf(
+            "com.samsung.android.app.taskedge", // Edge panel
+            "com.samsung.android.app.cocktailbarservice", // Edge screen
+            "com.samsung.android.honeyboard", // Samsung keyboard
+            "com.sec.android.app.launcher", // Samsung launcher
+            "com.samsung.android.incallui" // Samsung phone UI
+        )
+        
+        private val XIAOMI_SYSTEM_PACKAGES = setOf(
+            "com.miui.home", // MIUI launcher
+            "com.miui.securitycenter", // MIUI security
+            "com.miui.notification", // MIUI notifications
+            "com.xiaomi.discover" // MIUI app vault
+        )
+        
+        private val ONEPLUS_SYSTEM_PACKAGES = setOf(
+            "net.oneplus.launcher", // OnePlus launcher
+            "com.oneplus.systemui", // OnePlus system UI
+            "com.oneplus.camera" // OnePlus camera (often used for gestures)
+        )
         
         // Known launcher packages as fallback
         private val KNOWN_LAUNCHERS = setOf(
@@ -81,6 +107,8 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate()")
+        Log.d(TAG, "Device: $deviceManufacturer - $deviceModel")
+        Log.d(TAG, "Debounce time: ${LAUNCHER_DEBOUNCE_MS}ms")
         
         // Clear any stale state on service creation
         lastPackageName = null
@@ -225,6 +253,9 @@ class MyAccessibilityService : AccessibilityService() {
                     // Quick settings
                     packageName.contains("quicksetting") -> true
                     
+                    // Manufacturer-specific system packages
+                    isManufacturerSystemPackage(packageName) -> true
+                    
                     else -> false
                 }
             }
@@ -244,6 +275,70 @@ class MyAccessibilityService : AccessibilityService() {
         }
         
         return isSystem
+    }
+    
+    private fun isManufacturerSystemPackage(packageName: String): Boolean {
+        return when (deviceManufacturer) {
+            "samsung" -> {
+                SAMSUNG_SYSTEM_PACKAGES.contains(packageName) ||
+                packageName.startsWith("com.samsung.android.") ||
+                packageName.startsWith("com.sec.android.")
+            }
+            
+            "xiaomi" -> {
+                XIAOMI_SYSTEM_PACKAGES.contains(packageName) ||
+                packageName.startsWith("com.miui.") ||
+                packageName.startsWith("com.xiaomi.")
+            }
+            
+            "oneplus", "oppo" -> {
+                ONEPLUS_SYSTEM_PACKAGES.contains(packageName) ||
+                packageName.startsWith("com.oneplus.") ||
+                packageName.startsWith("com.oppo.") ||
+                packageName.startsWith("net.oneplus.")
+            }
+            
+            "huawei", "honor" -> {
+                packageName.startsWith("com.huawei.") ||
+                packageName.startsWith("com.honor.")
+            }
+            
+            "vivo" -> {
+                packageName.startsWith("com.vivo.") ||
+                packageName.startsWith("com.bbk.")
+            }
+            
+            "realme" -> {
+                packageName.startsWith("com.realme.") ||
+                packageName.startsWith("com.oppo.")
+            }
+            
+            "motorola" -> {
+                packageName.startsWith("com.motorola.")
+            }
+            
+            "sony" -> {
+                packageName.startsWith("com.sonymobile.") ||
+                packageName.startsWith("com.sonyericsson.")
+            }
+            
+            "lg" -> {
+                packageName.startsWith("com.lge.")
+            }
+            
+            else -> false
+        }
+    }
+    
+    private fun getManufacturerDebounceTime(): Long {
+        return when (deviceManufacturer) {
+            "samsung" -> 600L // Samsung devices often have slower animations
+            "xiaomi" -> 700L // MIUI has heavy animations
+            "oneplus" -> 400L // OnePlus is generally snappy
+            "oppo", "vivo", "realme" -> 600L // ColorOS/OriginOS can be slower
+            "huawei", "honor" -> 600L // EMUI/MagicUI animations
+            else -> LAUNCHER_DEBOUNCE_DEFAULT_MS // Default 500ms
+        }
     }
     
     private fun isLauncherPackage(packageName: String): Boolean {
