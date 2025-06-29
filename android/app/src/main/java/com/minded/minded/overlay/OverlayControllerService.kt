@@ -155,7 +155,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         
         val currentPackage =
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
-        Log.v(logTag, "onStartCommand() $currentPackage")
+        Log.d(logTag, "onStartCommand() received intent for package: $currentPackage")
         if (currentPackage != null) {
             checkToShowOverlay(currentPackage)
         } else {
@@ -308,21 +308,32 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private fun isBlockedPackage(packageName: String): Boolean {
         val blockedApps = sharedPreferenceService.getBlockedApps()
+        Log.d(logTag, "isBlockedPackage() - checking $packageName against blocked apps: $blockedApps")
+        
+        // If no apps are blocked in preferences, use hardcoded test apps
+        if (blockedApps.isEmpty()) {
+            Log.d(logTag, "No blocked apps configured, using test apps: Chrome and YouTube")
+            return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
+        }
+        
         return blockedApps.contains(packageName)
-//        return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
+        val blockedApps = sharedPreferenceService.getBlockedApps()
+        Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
+        
         val entryForCurrentApp = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
         val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
             it > Instant.now().minusSeconds(GRACE_PERIOD_IN_S.toLong())
         } ?: false
         val isRecentAppSwitch = lastGoToAppTimestamp > 0 && 
             System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
+        val isBlocked = isBlockedPackage(currentPackageName)
 
         Log.v(
             logTag,
-            "checkToShowOverlay() gracePeriod=$isInGracePeriod blocked=${isBlockedPackage(currentPackageName)} " +
+            "checkToShowOverlay() gracePeriod=$isInGracePeriod blocked=$isBlocked " +
             "package=$currentPackageName recentSwitch=$isRecentAppSwitch"
         )
 

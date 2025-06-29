@@ -522,13 +522,23 @@ class MyAccessibilityService : AccessibilityService() {
         Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
         
         // Check if we're leaving a blocked app (before updating lastPackageName)
+        // Only hide overlay if we're moving to a non-blocked app or system app
         if (lastPackageName != null && 
             lastPackageName != packageName && 
+            packageName != "com.minded.minded" &&  // Don't process when our overlay is showing
             !isSystemPackage(lastPackageName!!) &&
             !isLauncherPackage(lastPackageName!!)) {
-            // The previous app is going to background, hide overlay if it was a blocked app
-            Log.d(TAG, "Previous app going to background: $lastPackageName")
-            hideOverlayForBackgroundedApp()
+            
+            // Check if the new app is also blocked before hiding overlay
+            // This prevents hiding overlay when switching between blocked apps
+            if (isSystemPackage(packageName) || isLauncherPackage(packageName)) {
+                // Moving to system/launcher, safe to hide overlay
+                Log.d(TAG, "Previous app going to background, moving to system/launcher: $lastPackageName -> $packageName")
+                hideOverlayForBackgroundedApp()
+            } else {
+                // Moving to another user app, let the overlay logic handle it
+                Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
+            }
         }
         
         // Skip if this is a system package
