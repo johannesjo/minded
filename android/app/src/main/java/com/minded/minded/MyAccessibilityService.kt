@@ -453,9 +453,24 @@ class MyAccessibilityService : AccessibilityService() {
         }
         
         val recentTransitions = transitionHistory.takeLast(5)
+        val lastTransition = recentTransitions.lastOrNull()
+        
+        // Check for notification shade pattern
+        if (detectNotificationShadePattern(recentTransitions, currentPackage, currentTime)) {
+            return TransitionPattern.NOTIFICATION_PULL
+        }
+        
+        // Check for recents/task switcher browsing
+        if (detectRecentsBrowsingPattern(recentTransitions, currentPackage)) {
+            return TransitionPattern.RECENTS_BROWSING
+        }
+        
+        // Check for quick settings pattern
+        if (detectQuickSettingsPattern(recentTransitions, currentPackage)) {
+            return TransitionPattern.QUICK_SETTINGS_PULL
+        }
         
         // Check for launcher -> app pattern (direct app launch)
-        val lastTransition = recentTransitions.lastOrNull()
         if (lastTransition != null && 
             isLauncherPackage(lastTransition.fromPackage ?: "") &&
             !isSystemPackage(currentPackage) &&
@@ -499,7 +514,73 @@ class MyAccessibilityService : AccessibilityService() {
         APP_SWITCH_VIA_LAUNCHER,
         DIRECT_APP_SWITCH,
         RETURNING_TO_APP,
+        NOTIFICATION_PULL,
+        RECENTS_BROWSING,
+        QUICK_SETTINGS_PULL,
         UNKNOWN
+    }
+    
+    private fun detectNotificationShadePattern(
+        transitions: List<AppTransition>, 
+        currentPackage: String, 
+        currentTime: Long
+    ): Boolean {
+        // Pattern: App -> SystemUI (notification) -> Same App (within 2 seconds)
+        if (transitions.size >= 2) {
+            val previous = transitions[transitions.size - 1]
+            val beforePrevious = transitions[transitions.size - 2]
+            
+            if (beforePrevious.toPackage == currentPackage &&
+                previous.toPackage.contains("systemui") &&
+                (previous.className.lowercase().contains("notification") || 
+                 previous.className.lowercase().contains("statusbar")) &&
+                currentTime - beforePrevious.timestamp < 2000) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private fun detectRecentsBrowsingPattern(
+        transitions: List<AppTransition>,
+        currentPackage: String
+    ): Boolean {
+        // Pattern: Multiple launcher/systemui transitions in short time
+        if (transitions.size >= 3) {
+            val systemUICount = transitions.takeLast(3).count { 
+                it.toPackage.contains("systemui") && 
+                (it.className.lowercase().contains("recent") || 
+                 it.className.lowercase().contains("task"))
+            }
+            
+            // If we see multiple recent/task events, user is browsing recents
+            if (systemUICount >= 2) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private fun detectQuickSettingsPattern(
+        transitions: List<AppTransition>,
+        currentPackage: String
+    ): Boolean {
+        // Pattern: App -> SystemUI (quick settings) -> Same App
+        if (transitions.isNotEmpty()) {
+            val last = transitions.last()
+            
+            if (last.toPackage.contains("systemui") &&
+                (last.className.lowercase().contains("quicksetting") ||
+                 last.className.lowercase().contains("brightness") ||
+                 last.className.lowercase().contains("volume"))) {
+                // Check if we're returning to the same app
+                val previousAppTransition = transitions.findLast { 
+                    !isSystemPackage(it.toPackage) && !isLauncherPackage(it.toPackage)
+                }
+                return previousAppTransition?.toPackage == currentPackage
+            }
+        }
+        return false
     }
     
     private fun shouldTriggerOverlay(packageName: String, currentTime: Long): Boolean {
@@ -546,6 +627,24 @@ class MyAccessibilityService : AccessibilityService() {
             TransitionPattern.RETURNING_TO_APP -> {
                 // Don't show overlay when returning to same app
                 Log.d(TAG, "Returning to same app, not triggering")
+                false
+            }
+            
+            TransitionPattern.NOTIFICATION_PULL -> {
+                // Don't show overlay when returning from notification shade
+                Log.d(TAG, "Returning from notification shade, not triggering")
+                false
+            }
+            
+            TransitionPattern.RECENTS_BROWSING -> {
+                // Don't show overlay while browsing recents
+                Log.d(TAG, "User browsing recents, not triggering")
+                false
+            }
+            
+            TransitionPattern.QUICK_SETTINGS_PULL -> {
+                // Don't show overlay when returning from quick settings
+                Log.d(TAG, "Returning from quick settings, not triggering")
                 false
             }
             
