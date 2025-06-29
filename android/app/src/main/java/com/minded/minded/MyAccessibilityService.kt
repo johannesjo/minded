@@ -15,6 +15,20 @@ import com.minded.minded.overlay.OverlayControllerService
 import android.content.pm.ApplicationInfo
 
 
+/**
+ * Accessibility service that detects app changes and triggers overlays for blocked apps.
+ * 
+ * This service uses sophisticated pattern recognition to accurately detect when users
+ * switch to blocked apps, while filtering out false positives from system UI interactions,
+ * notification pulls, and task switching.
+ * 
+ * Key features:
+ * - Dynamic launcher detection using PackageManager
+ * - Manufacturer-specific handling for different Android skins
+ * - Transition pattern recognition to understand user navigation
+ * - Event context validation to filter non-app windows
+ * - History-based filtering for system UI interactions
+ */
 class MyAccessibilityService : AccessibilityService() {
     private var lastPackageName: String? = null
     private var lastEventTimestamp: Long = 0
@@ -53,6 +67,18 @@ class MyAccessibilityService : AccessibilityService() {
         private const val SYSTEM_APP_CACHE_DURATION_MS = 300_000L // 5 minutes
         private const val TRANSITION_HISTORY_DURATION_MS = 10_000L // 10 seconds
         private const val TRANSITION_HISTORY_MAX_SIZE = 20
+        
+        // Transition detection timeouts
+        private const val LAUNCHER_TO_APP_TIMEOUT_MS = 2000L
+        private const val APP_SWITCH_VIA_LAUNCHER_TIMEOUT_MS = 3000L
+        private const val DIRECT_APP_SWITCH_TIMEOUT_MS = 1000L
+        private const val RETURNING_TO_APP_TIMEOUT_MS = 5000L
+        private const val NOTIFICATION_RETURN_TIMEOUT_MS = 2000L
+        
+        // Pattern detection thresholds
+        private const val RECENT_TRANSITIONS_TO_ANALYZE = 5
+        private const val RECENTS_BROWSING_MIN_EVENTS = 2
+        private const val RECENTS_BROWSING_WINDOW_SIZE = 3
         
         // Manufacturer-specific packages
         private val SAMSUNG_SYSTEM_PACKAGES = setOf(
@@ -542,12 +568,20 @@ class MyAccessibilityService : AccessibilityService() {
         Log.d(TAG, "Tracked transition: ${transition.fromPackage} -> ${transition.toPackage}")
     }
     
+    /**
+     * Analyzes recent transition history to determine the pattern of app switching.
+     * This helps differentiate between genuine app launches and system UI interactions.
+     * 
+     * @param currentPackage The package name of the current window
+     * @param currentTime The timestamp of the current event
+     * @return The detected transition pattern
+     */
     private fun analyzeTransitionPattern(currentPackage: String, currentTime: Long): TransitionPattern {
         if (transitionHistory.isEmpty()) {
             return TransitionPattern.FIRST_APP_LAUNCH
         }
         
-        val recentTransitions = transitionHistory.takeLast(5)
+        val recentTransitions = transitionHistory.takeLast(RECENT_TRANSITIONS_TO_ANALYZE)
         val lastTransition = recentTransitions.lastOrNull()
         
         // Check for notification shade pattern
@@ -569,7 +603,7 @@ class MyAccessibilityService : AccessibilityService() {
         if (lastTransition != null && 
             isLauncherPackage(lastTransition.fromPackage ?: "") &&
             !isSystemPackage(currentPackage) &&
-            currentTime - lastTransition.timestamp < 2000) {
+            currentTime - lastTransition.timestamp < LAUNCHER_TO_APP_TIMEOUT_MS) {
             return TransitionPattern.LAUNCHER_TO_APP
         }
         
@@ -579,7 +613,7 @@ class MyAccessibilityService : AccessibilityService() {
             if (!isSystemPackage(secondLast.fromPackage ?: "") &&
                 isLauncherPackage(lastTransition?.toPackage ?: "") &&
                 !isSystemPackage(currentPackage) &&
-                currentTime - secondLast.timestamp < 3000) {
+                currentTime - secondLast.timestamp < APP_SWITCH_VIA_LAUNCHER_TIMEOUT_MS) {
                 return TransitionPattern.APP_SWITCH_VIA_LAUNCHER
             }
         }
@@ -589,14 +623,14 @@ class MyAccessibilityService : AccessibilityService() {
             !isSystemPackage(lastTransition.fromPackage ?: "") &&
             !isSystemPackage(currentPackage) &&
             lastTransition.fromPackage != currentPackage &&
-            currentTime - lastTransition.timestamp < 1000) {
+            currentTime - lastTransition.timestamp < DIRECT_APP_SWITCH_TIMEOUT_MS) {
             return TransitionPattern.DIRECT_APP_SWITCH
         }
         
         // Check if returning to same app after brief launcher/recents visit
         val sameAppTransitions = recentTransitions.filter { it.toPackage == currentPackage }
         if (sameAppTransitions.isNotEmpty() && 
-            currentTime - sameAppTransitions.last().timestamp < 5000) {
+            currentTime - sameAppTransitions.last().timestamp < RETURNING_TO_APP_TIMEOUT_MS) {
             return TransitionPattern.RETURNING_TO_APP
         }
         
@@ -629,7 +663,7 @@ class MyAccessibilityService : AccessibilityService() {
                 previous.toPackage.contains("systemui") &&
                 (previous.className.lowercase().contains("notification") || 
                  previous.className.lowercase().contains("statusbar")) &&
-                currentTime - beforePrevious.timestamp < 2000) {
+                currentTime - beforePrevious.timestamp < NOTIFICATION_RETURN_TIMEOUT_MS) {
                 return true
             }
         }
@@ -641,15 +675,15 @@ class MyAccessibilityService : AccessibilityService() {
         currentPackage: String
     ): Boolean {
         // Pattern: Multiple launcher/systemui transitions in short time
-        if (transitions.size >= 3) {
-            val systemUICount = transitions.takeLast(3).count { 
+        if (transitions.size >= RECENTS_BROWSING_WINDOW_SIZE) {
+            val systemUICount = transitions.takeLast(RECENTS_BROWSING_WINDOW_SIZE).count { 
                 it.toPackage.contains("systemui") && 
                 (it.className.lowercase().contains("recent") || 
                  it.className.lowercase().contains("task"))
             }
             
             // If we see multiple recent/task events, user is browsing recents
-            if (systemUICount >= 2) {
+            if (systemUICount >= RECENTS_BROWSING_MIN_EVENTS) {
                 return true
             }
         }
