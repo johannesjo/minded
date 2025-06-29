@@ -40,7 +40,7 @@ export const COMPLETION_ANIMATION_CONFIG = {
   easing: {
     upward: {
       targetScale: 0.3,
-      targetOpacity: 0.2,
+      targetOpacity: 1, // Keep full opacity when moving upward
     },
     downward: {
       targetScale: 5.0,
@@ -110,7 +110,11 @@ export function updatePhysics(
 
   // Scale and opacity based on distance
   const newScale = startScale * (1 - distanceProgress * 0.5);
-  const newOpacity = startOpacity * (1 - distanceProgress * 0.8);
+  // Keep full opacity when flinging upward
+  const newOpacity =
+    newVelocity.y < 0
+      ? startOpacity
+      : startOpacity * (1 - distanceProgress * 0.8);
 
   return {
     position: newPosition,
