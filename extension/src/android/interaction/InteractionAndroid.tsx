@@ -67,8 +67,8 @@ const InteractionAndroid = () => {
         }}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
-        onSwipeDown={() => androidInterface.hideWindow()}
-        onSwipeUp={() => androidInterface.hideWindow()}
+        onSwipeDown={() => androidInterface.closeCurrentApp()}
+        onSwipeUp={() => androidInterface.closeCurrentApp()}
       />
     </div>
   );

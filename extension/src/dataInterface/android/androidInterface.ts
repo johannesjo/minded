@@ -10,6 +10,7 @@ interface InteractionWindowJavaScriptInterface {
   setAnswerTxt: (txt: string) => void;
   onSkip: () => void;
   hideWindow: () => void;
+  closeCurrentApp: () => void;
   requestFocusAndShowKeyboard: () => void;
   getAllApps: () => string;
   getMissingCapabilities: () => string;
