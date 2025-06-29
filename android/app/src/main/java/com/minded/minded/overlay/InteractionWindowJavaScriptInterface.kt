@@ -153,16 +153,6 @@ class InteractionWindowJavaScriptInterface(
                     return
                 }
             }
-            "threshold" -> {
-                // More intense single vibration for threshold
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE)
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(80)
-                    return
-                }
-            }
             else -> {
                 Log.w(logTag, "Unknown haptic type: $type")
                 return
