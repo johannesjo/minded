@@ -146,6 +146,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return START_STICKY
         }
         
+        // Check if this is a hide overlay request from accessibility service
+        if (intent.getBooleanExtra(MyAccessibilityService.INTENT_EXTRA_HIDE_OVERLAY, false)) {
+            Log.v(logTag, "onStartCommand() - hiding all overlays due to app backgrounding")
+            hideAllBut()
+            return START_STICKY
+        }
+        
         val currentPackage =
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
         Log.v(logTag, "onStartCommand() $currentPackage")
