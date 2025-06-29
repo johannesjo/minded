@@ -45,7 +45,14 @@ class InteractionWindow(
                 // Disable caching to always load fresh content
                 settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
                 this.focusable = focusable
+                
+                // Set transparent background and ensure it stays transparent
                 this.setBackgroundColor(0x00000000)
+                this.setBackgroundResource(android.R.color.transparent)
+                
+                // Force hardware acceleration for smoother rendering
+                this.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                
                 addJavascriptInterface(
                     InteractionWindowJavaScriptInterface(
                         this,
@@ -73,7 +80,8 @@ class InteractionWindow(
             PixelFormat.TRANSLUCENT
         ).apply {
             // Add soft input mode to handle keyboard smoothly
-            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+            // ADJUST_PAN works better for overlay windows to prevent white space
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN or
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
         }
     }
