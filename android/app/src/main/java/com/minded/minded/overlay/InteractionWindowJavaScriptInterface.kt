@@ -146,10 +146,10 @@ class InteractionWindowJavaScriptInterface(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator.vibrate(100)
+                    vibrator.vibrate(300)
                     return
                 }
             }
