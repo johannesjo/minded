@@ -1,0 +1,18 @@
+<html>
+<body>
+<h1>Test Android Interface</h1>
+<script>
+console.log("window.androidMinded:", window.androidMinded);
+if (window.androidMinded) {
+    console.log("androidMinded exists\!");
+    console.log("Available methods:");
+    for (let key in window.androidMinded) {
+        console.log("  - " + key + ":", typeof window.androidMinded[key]);
+    }
+} else {
+    console.log("androidMinded does NOT exist");
+}
+</script>
+</body>
+</html>
+EOF < /dev/null

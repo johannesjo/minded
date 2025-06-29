@@ -25,7 +25,9 @@
       "Bash(npx cap:*)",
       "Bash(chmod:*)",
       "Bash(npm run dev:*)",
-      "Bash(npx sass-migrator module:*)"
+      "Bash(npx sass-migrator module:*)",
+      "Bash(adb shell:*)",
+      "Bash(adb:*)"
     ],
     "deny": []
   }
