@@ -15,11 +15,11 @@
   --fz-s: 14px;
   //--fz-s: 18px;
 
-  --c-fg-full-emphasis: rgba(0, 0, 0, .85);
-  --c-fg: rgba(0, 0, 0, .8);
+  --c-fg-full-emphasis: rgba(0, 0, 0, 0.85);
+  --c-fg: rgba(0, 0, 0, 0.8);
 
   // global components
-  --form-inputs-bg: rgba(255, 255, 255, .55);
+  --form-inputs-bg: rgba(255, 255, 255, 0.55);
   --form-inputs-height: var(--btn-height);
   --form-inputs-height-smaller: 40px;
 
@@ -30,45 +30,43 @@
   --btn-small: 40px;
   --btn-bigger-fz: 30px;
   --btn-bg: #fff;
-  --btn-bg-not-selected: rgba(255, 255, 255, .25);
+  --btn-bg-not-selected: rgba(255, 255, 255, 0.25);
   --btn-bg-selected: rgba(255, 255, 255, 1);
-  --btn-outline-color: rgba(0, 0, 0, .1);
-  --btn-bg-selectable-hover: rgba(255, 255, 255, .7);
+  --btn-outline-color: rgba(0, 0, 0, 0.1);
+  --btn-bg-selectable-hover: rgba(255, 255, 255, 0.7);
   --btn-selected-scale: 1.1;
-  --btn-box-shadow: 0 0 30px 10px  rgba(255, 255, 255, .9);
+  --btn-box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.9);
   // components
   --interaction-txt-size: var(--fz-xl);
 
   --bottom-bar-height: var(--btn-height);
   --bottom-bar-bg: rgba(255, 255, 255, 0.6);
 
-  --dashboard-card-bg: rgba(255, 255, 255, .35);
-  --dashboard-card-bg-hover: rgba(255, 255, 255, .7);
+  --dashboard-card-bg: rgba(255, 255, 255, 0.35);
+  --dashboard-card-bg-hover: rgba(255, 255, 255, 0.7);
   --dashboard-card-border-radius: 24px;
 
   --sun-bg: #fff;
-  --sun-shadow:  0 0 1px 0 rgba(233, 132, 58, 0.5);
+  --sun-shadow: 0 0 1px 0 rgba(233, 132, 58, 0.5);
 
-  --c-graph-fg-full: rgba(0, 0, 0, .5);
-  --c-graph-fg-less: rgba(0, 0, 0, .3);
+  --c-graph-fg-full: rgba(0, 0, 0, 0.5);
+  --c-graph-fg-less: rgba(0, 0, 0, 0.3);
 
   --rating-size: 48px;
   --rating-size-small: 24px;
 
-
   --little-sun-bg: #fff;
   --little-sun-shadow: 0 0 6px 1px #e9843a;
   --litle-sun-txt-fz: 13px;
-  --litle-sun-counter-fz: 14px;
+  --litle-sun-counter-fz: 10px;
   --litle-sun-btn-fz: 18px;
-  --little-sun-txt-c: rgba(0, 0, 0, .6);
+  --little-sun-txt-c: rgba(0, 0, 0, 0.6);
 
-  --success-sun-txt-c: rgba(0, 0, 0, .6);
+  --success-sun-txt-c: rgba(0, 0, 0, 0.6);
 
   --rating-active-opacity: 0.55;
   --rating-inactive-opacity: 0.15;
-  --h4-c: rgba(0, 0, 0, .7);
-
+  --h4-c: rgba(0, 0, 0, 0.7);
 
   //--c-gradient-1: #A5DEE5;
   //--c-gradient-2: #FFCFDF;
@@ -76,8 +74,13 @@
   --c-gradient-1: #ccf1f6;
   --c-gradient-2: #ffebf6;
   --c-gradient-3: #f4f3b5;
-  --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
-  
+  --background-gradient: linear-gradient(
+    175deg,
+    var(--c-gradient-1),
+    var(--c-gradient-2),
+    var(--c-gradient-3)
+  );
+
   // Background transition target colors
   --bg-transition-bluesky-top: #0058c1;
   --bg-transition-bluesky-bottom: #0a75bc;
@@ -98,8 +101,13 @@
     --c-gradient-1: #071449;
     --c-gradient-2: #1a137c;
     --c-gradient-3: #401049;
-    --background-gradient: linear-gradient(175deg, var(--c-gradient-1), var(--c-gradient-2), var(--c-gradient-3));
-    
+    --background-gradient: linear-gradient(
+      175deg,
+      var(--c-gradient-1),
+      var(--c-gradient-2),
+      var(--c-gradient-3)
+    );
+
     // Background transition target colors (dark mode)
     --bg-transition-sunset-top: #020c25;
     --bg-transition-sunset-bottom: #05214e;
@@ -116,26 +124,26 @@
 
     //background: linear-gradient(175deg, #0b153f, #181357, #300d37);
 
-    --c-fg: rgba(255, 255, 255, .8);
-    --c-fg-full-emphasis: #rgba(255, 255, 255, .95);
+    --c-fg: rgba(255, 255, 255, 0.8);
+    --c-fg-full-emphasis: #rgba(255, 255, 255, 0.95);
 
-    --c-graph-fg-full: rgba(255, 255, 255, .8);
-    --c-graph-fg-less: rgba(255, 255, 255, .5);
+    --c-graph-fg-full: rgba(255, 255, 255, 0.8);
+    --c-graph-fg-less: rgba(255, 255, 255, 0.5);
 
-    --bottom-bar-bg: rgba(0, 0, 0, .2);
+    --bottom-bar-bg: rgba(0, 0, 0, 0.2);
 
-    --dashboard-card-bg: rgba(0, 0, 0, .35);
-    --dashboard-card-bg-hover: rgba(0, 0, 0, .6);
+    --dashboard-card-bg: rgba(0, 0, 0, 0.35);
+    --dashboard-card-bg-hover: rgba(0, 0, 0, 0.6);
 
     --c-bg: #444a5b;
-    --h4-c: rgba(255, 255, 255, .95);
-    --c-bg-btns: rgba(0, 0, 0, .5);
-    --form-inputs-bg: rgba(0, 0, 0, .4);
-    --btn-bg: rgba(0, 0, 0, .6);
+    --h4-c: rgba(255, 255, 255, 0.95);
+    --c-bg-btns: rgba(0, 0, 0, 0.5);
+    --form-inputs-bg: rgba(0, 0, 0, 0.4);
+    --btn-bg: rgba(0, 0, 0, 0.6);
     --btn-bg-selected: rgba(0, 0, 0, 1);
-    --btn-bg-selectable-hover: rgba(0, 0, 0, .2);
-    --btn-bg-not-selected: rgba(0, 0, 0, .25);
-    --btn-outline-color: rgba(255, 255, 255, .3);
+    --btn-bg-selectable-hover: rgba(0, 0, 0, 0.2);
+    --btn-bg-not-selected: rgba(0, 0, 0, 0.25);
+    --btn-outline-color: rgba(255, 255, 255, 0.3);
     //--btn-box-shadow: 0 0 10px 1px  rgba(255, 255, 255, .8);
     --btn-box-shadow: 0 0 10px 1px rgba(250, 104, 203, 0.8);
   }
@@ -161,7 +169,6 @@
   }
 }
 
-
 // LIGHT
 //--c-gradient-1: var(--c-pastel-green);
 //--c-gradient-2: var(--c-pastel-red);
@@ -179,7 +186,6 @@
 //--c-gradient-1: #FFCFDF;
 //--c-gradient-2: #FFE8CF;
 //--c-gradient-3: #FDFDC4;
-
 
 // DARK
 //--c-gradient-1: #401F71;
