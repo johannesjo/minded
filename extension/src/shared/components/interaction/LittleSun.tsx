@@ -4,7 +4,7 @@ import {
   updateHostsEntry,
   // @ts-ignore
 } from "@dataInterface/localDataInterface";
-import { closeTab } from "@src/dataInterface/extension/extensionApi";
+// Removed closeTab import as it's no longer needed
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -16,11 +16,9 @@ export const LittleSunComponent: (props: {
   host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
-  const [getIsLittleSunSuccess, setIsLittleSunSuccess] = createSignal(false);
   const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
 
   let currentSessionInterval: number;
-  let littleSunSuccessSunEl: HTMLDivElement = undefined!;
   let t0: NodeJS.Timeout;
 
   onMount(async () => {
@@ -79,48 +77,33 @@ export const LittleSunComponent: (props: {
     }, 1000);
   };
 
-  const littleSunClose = () => {
-    setIsLittleSunSuccess(true);
-    littleSunSuccessSunEl.addEventListener("animationend", () => {
-      closeTab();
-    });
+  const handleDoubleClick = () => {
+    props.teardown();
   };
 
   return (
-    <>
-      {getIsLittleSunSuccess() ? (
+    <div
+      id="minded-6622-little-sun"
+      classList={{
+        ["bottomLeft"]: true,
+        ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
+      }}
+    >
+      <div id="minded-6622-little-sun-sun-wrapper">
         <div
-          id="minded-6622-little-sun-success-sun"
-          ref={littleSunSuccessSunEl}
+          id="minded-6622-little-sun-sun"
+          title="Double-click to hide"
+          onDblClick={handleDoubleClick}
         >
-          <div></div>
-          <div>That is a good decision!</div>
+          {formatSessionTime(getSessionTime())}
         </div>
-      ) : (
-        <div
-          id="minded-6622-little-sun"
-          classList={{
-            ["topRight"]: true,
-            ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
-          }}
-        >
-          <div id="minded-6622-little-sun-sun-wrapper">
-            <div
-              id="minded-6622-little-sun-sun"
-              title="Close website"
-              onClick={() => littleSunClose()}
-            >
-              {formatSessionTime(getSessionTime())}
-            </div>
-          </div>
+      </div>
 
-          <div id="minded-6622-additional-controls">
-            <div title="Hide sun" onClick={() => props.teardown()}>
-              ✕
-            </div>
-          </div>
+      <div id="minded-6622-additional-controls">
+        <div title="Hide sun" onClick={() => props.teardown()}>
+          ✕
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 };
