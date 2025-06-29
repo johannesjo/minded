@@ -14,9 +14,9 @@
     opacity: 1;
   }
 
-  // Much faster transition during drag for immediate feedback
+  // 1s transition during drag as requested
   &.dragging {
-    transition: opacity 0.05s ease-out;
+    transition: opacity 1s ease-out;
   }
 }
 
@@ -73,7 +73,6 @@
     opacity: 0;
   }
 }
-
 
 #minded-6622-action-advice {
   // icon
@@ -142,9 +141,3 @@
     opacity: 0.9;
   }
 }
-
-
-
-
-
-
