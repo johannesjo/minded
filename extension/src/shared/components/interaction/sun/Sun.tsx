@@ -46,7 +46,6 @@ export const Sun: Component<SunProps> = (props) => {
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
 
-
   onMount(() => {
     // Pre-initialize transform to eliminate initial jaggedness
     // This forces the browser to create the transform matrix early
@@ -143,7 +142,7 @@ export const Sun: Component<SunProps> = (props) => {
       // Only emit drag progress events after drag intent is confirmed
       if (isDragIntent) {
         const direction = deltaY > 0 ? "down" : "up";
-        const intensity = dragProgress;
+        const intensity = getDragProgress();
 
         const event = new CustomEvent("dragProgress", {
           detail: { direction, intensity, isDragging: true },
@@ -151,7 +150,6 @@ export const Sun: Component<SunProps> = (props) => {
         window.dispatchEvent(event);
       }
     };
-
 
     const handleEnd = () => {
       const duration = Date.now() - touchStartTime;
@@ -274,7 +272,8 @@ export const Sun: Component<SunProps> = (props) => {
         const currentScale = startScale + (1 - startScale) * easedProgress;
         setScale(currentScale);
 
-        const currentOpacity = startOpacity + (1 - startOpacity) * easedProgress;
+        const currentOpacity =
+          startOpacity + (1 - startOpacity) * easedProgress;
         setOpacity(currentOpacity);
 
         const currentRotation = startRotation * (1 - easedProgress);
@@ -297,8 +296,10 @@ export const Sun: Component<SunProps> = (props) => {
       const startOpacity = getOpacity();
 
       const config = COMPLETION_ANIMATION_CONFIG;
-      const easing = direction === "down" ? config.easing.downward : config.easing.upward;
-      const targetY = direction === "down" ? window.innerHeight : -window.innerHeight;
+      const easing =
+        direction === "down" ? config.easing.downward : config.easing.upward;
+      const targetY =
+        direction === "down" ? window.innerHeight : -window.innerHeight;
 
       const startTime = Date.now();
 
@@ -307,13 +308,16 @@ export const Sun: Component<SunProps> = (props) => {
         const progress = Math.min(elapsed / config.duration, 1);
         const easedProgress = easeInOut(progress);
 
-        const currentY = startOffset.y + (targetY - startOffset.y) * easedProgress;
+        const currentY =
+          startOffset.y + (targetY - startOffset.y) * easedProgress;
         setDragOffset({ x: startOffset.x, y: currentY });
 
-        const currentScale = startScale + (easing.targetScale - startScale) * easedProgress;
+        const currentScale =
+          startScale + (easing.targetScale - startScale) * easedProgress;
         setScale(currentScale);
 
-        const currentOpacity = startOpacity + (easing.targetOpacity - startOpacity) * easedProgress;
+        const currentOpacity =
+          startOpacity + (easing.targetOpacity - startOpacity) * easedProgress;
         setOpacity(currentOpacity);
 
         if (progress < 1) {
@@ -331,7 +335,11 @@ export const Sun: Component<SunProps> = (props) => {
       animate();
     };
 
-    const animateFling = (velocity: { x: number; y: number; magnitude: number }) => {
+    const animateFling = (velocity: {
+      x: number;
+      y: number;
+      magnitude: number;
+    }) => {
       setIsAnimating(true);
       const startOffset = getDragOffset();
       const startScale = getScale();
@@ -344,7 +352,10 @@ export const Sun: Component<SunProps> = (props) => {
       }
 
       const config = FLING_ANIMATION_CONFIG;
-      const screenDimensions = { width: window.innerWidth, height: window.innerHeight };
+      const screenDimensions = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
 
       // Initialize physics state
       let physicsState: PhysicsState = {
@@ -372,7 +383,7 @@ export const Sun: Component<SunProps> = (props) => {
           startOffset,
           startScale,
           startOpacity,
-          screenDimensions
+          screenDimensions,
         );
 
         // Apply state to UI
