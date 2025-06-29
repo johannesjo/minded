@@ -144,8 +144,8 @@
   }
 }
 
-.back-button {
-  position: absolute;
+.back-button-wrapper {
+  position: fixed !important;
   bottom: 32px;
   left: 50%;
   transform: translateX(-50%);

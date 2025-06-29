@@ -434,17 +434,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             />
           </div>
         )}
+      </div>
 
-        {props.isFromDashboard && (
+      {props.isFromDashboard && (
+        <div class="back-button-wrapper">
           <button
-            class="back-button btnTxt"
+            class="btnTxt"
             onClick={() => props.onSkip()}
             aria-label="Go back"
           >
             <Ico name="arrowBack" /> Back
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

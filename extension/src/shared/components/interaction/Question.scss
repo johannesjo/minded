@@ -93,10 +93,10 @@
   max-width: 100%;
   margin: auto;
   pointer-events: all;
-  padding: 8px;
+  padding: 0 8px;
   // use padding rather than margin to avoid taping in between leading to close the overlay
-  padding-top: 32px;
-  padding-bottom: 32px;
+  margin-top: 32px;
+  margin-bottom: 32px;
 
   textarea {
     @include formInput();
@@ -108,13 +108,15 @@
     padding: 12px;
     padding-bottom: 40px; // Make room for the button
     font-family: inherit;
+    height: auto !important;
   }
 
   .send-button {
     @include btnIco();
     position: absolute;
-    bottom: 16px;
-    right: 16px;
+    bottom: 0;
+    right: 8px;
+    left: auto;
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 14px;
