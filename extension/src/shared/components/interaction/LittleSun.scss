@@ -1,6 +1,5 @@
 // NOTE: this is styled in Interaction.scss
 #minded-6622-little-sun-success-sun {
-
   div:first-child {
     animation: minded6622successSun ease 0.8s;
     animation-iteration-count: 1;
@@ -8,21 +7,20 @@
   }
 }
 
-
 #minded-6622-little-sun {
   cursor: cell;
   position: fixed;
   transform-origin: center center;
   z-index: 30;
-  transform: translate(50%, -50%);
+  transform: translate(-50%, -50%);
   transition: 1s all;
-  animation: minded6622littleSunIn .5s;
+  animation: minded6622littleSunIn 0.8s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 
   &.topRight {
     top: 50%;
-    right: 50%;
+    left: 50%;
 
     &.isOutOfTheWay {
       transform: translate(0, 0);
@@ -45,21 +43,18 @@
   }
 }
 
-
 #minded-6622-little-sun-sun-wrapper {
-  transition: .5s all;
+  transition: 0.5s all;
   position: relative;
   z-index: 3;
-
 
   &:hover {
     transform: scale(1.5);
   }
-
 }
 
-$sun-size: 40px;
-$shadow:  var(--little-sun-shadow);
+$sun-size: 30px;
+$shadow: var(--little-sun-shadow);
 
 #minded-6622-little-sun-sun {
   cursor: grab;
@@ -79,50 +74,6 @@ $shadow:  var(--little-sun-shadow);
   font-size: var(--litle-sun-counter-fz);
 }
 
-#minded-6622-little-sun-text {
-  color: var(--little-sun-txt-c);
-  box-shadow: $shadow;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  /* transform: translate(-50%); */
-  background: var(--little-sun-bg);
-  min-width: 200px;
-  border-radius: 8px;
-  padding: 8px;
-  font-size: var(--litle-sun-txt-fz);
-  line-height: 16px;
-  text-align: center;
-  animation: minded6622littleSunTextIn .15s;
-  animation-fill-mode: forwards;
-  animation-iteration-count: 1;
-
-
-  &.long-text {
-    min-width: 320px;
-  }
-
-  &.very-long-text {
-    min-width: 520px;
-  }
-
-  &.was-NO-answer-given {
-    cursor: pointer;
-  }
-
-  .topRight & {
-    padding-right: (($sun-size*0.5) + 4px);
-    margin-right: -0.5* $sun-size;
-    right: 100%;
-  }
-
-  .bottomLeft & {
-    padding-left: (($sun-size*0.5) + 4px);
-    margin-left: -0.5* $sun-size;
-    left: 100%;
-  }
-}
-
 #minded-6622-additional-controls {
   display: flex;
   justify-content: center;
@@ -132,7 +83,7 @@ $shadow:  var(--little-sun-shadow);
   transform: translateX(-50%);
   opacity: 0;
   pointer-events: none;
-  transition: .5s opacity;
+  transition: 0.5s opacity;
   transition-delay: 0s;
   gap: 4px;
 
@@ -153,13 +104,13 @@ $shadow:  var(--little-sun-shadow);
     font-weight: bold;
     text-transform: lowercase;
     color: var(--little-sun-txt-c);
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
     padding: 0;
     font-size: var(--little-sun-btn-fz);
     user-select: none;
-    opacity: .8;
+    opacity: 0.8;
 
     &:hover {
       transform: scale(1.2);
@@ -172,25 +123,13 @@ $shadow:  var(--little-sun-shadow);
   }
 }
 
-
 @keyframes minded6622littleSunIn {
   0% {
-    transform: scale(.4);
+    transform: translate(-50%, -50%) scale(0.1);
     opacity: 0;
   }
   100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes minded6622littleSunTextIn {
-  0% {
-    transform: scale(.5) translateY(-50%);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1) translateY(-50%);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
 }

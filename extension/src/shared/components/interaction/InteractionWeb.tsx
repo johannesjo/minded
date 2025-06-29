@@ -20,7 +20,6 @@ export const InteractionWeb: (props: {
   const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
-  const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
   const [getIsShowBlackScreen, setIsShowBlackScreen] = createSignal(false);
 
   let wrapperEl: HTMLDivElement = undefined!;
@@ -60,25 +59,23 @@ export const InteractionWeb: (props: {
   return (
     <>
       {getIsShowLittleSun() ? (
-        <LittleSunComponent
-          host={props.host}
-          wasAnswerGiven={getWasAnswerGiven()}
-          bubbleTxt={getLittleSunTxt()}
-          teardown={teardown}
-          onShowFreshInteraction={() => {
-            setIsShowLittleSun(false);
-            setQuestion(undefined);
-            stopAllVideos();
-          }}
-          onShowQuestionAgain={() => {
-            setIsShowLittleSun(false);
-          }}
-        />
+        <div class="aniIn" style={{ opacity: "1" }}>
+          <LittleSunComponent
+            host={props.host}
+            teardown={teardown}
+            onShowFreshInteraction={() => {
+              setIsShowLittleSun(false);
+              setQuestion(undefined);
+              stopAllVideos();
+            }}
+          />
+        </div>
       ) : (
         <div class="aniIn">
           <div
             id="minded-6622-coloured-wrapper-dynamic"
             class={isDarkModeNow() ? "minded-6622-dark" : ""}
+            style={{ opacity: "1" }}
             onclick={(ev) => {
               // Background click disabled - only gesture controls
               ev.stopPropagation();
@@ -89,24 +86,19 @@ export const InteractionWeb: (props: {
               questionForPrompt={getQuestion()}
               isInitFadeout={false}
               wrapperEl={wrapperEl}
-              onSetAnswer={setLittleSunTxt}
-              onModeSet={(mode) => {
-                if (mode !== "QUESTION") {
-                  setLittleSunTxt("");
-                }
-              }}
+              onSetAnswer={() => {}}
+              onModeSet={() => {}}
               onAfterInteractionFadeout={() => {
                 setIsShowLittleSun(true);
               }}
               onSkip={() => {
                 console.log(
-                  "InteractionWeb: onSkip called, tearing down interaction",
+                  "InteractionWeb: onSkip called, showing little sun",
                 );
-                teardown();
+                setIsShowLittleSun(true);
               }}
               onUpdateQuestion={(question) => {
                 setQuestion(question);
-                setLittleSunTxt(question?.t + "?");
               }}
               onSwipeDown={() => {
                 console.log("InteractionWeb: onSwipeDown called, closing tab");
