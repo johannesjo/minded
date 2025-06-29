@@ -54,7 +54,7 @@ class InteractionWindow(
                 this.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                 
                 // Set transparent background after page starts loading
-                this.webViewClient = android.webkit.WebViewClient().apply {
+                this.webViewClient = object : android.webkit.WebViewClient() {
                     override fun onPageStarted(view: android.webkit.WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                         super.onPageStarted(view, url, favicon)
                         // Delay setting transparent background to ensure CSS is loaded

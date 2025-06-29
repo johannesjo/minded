@@ -93,9 +93,18 @@ const InteractionAndroid = () => {
       ref={wrapperEl}
       id="minded-6622-coloured-wrapper-dynamic"
       onClick={async (ev) => {
+        // Only close if clicking directly on the wrapper, not its children
+        // Also check if any input or textarea is focused to prevent closing during keyboard interaction
+        const activeElement = document.activeElement;
+        const isInputFocused =
+          activeElement &&
+          (activeElement.tagName === "INPUT" ||
+            activeElement.tagName === "TEXTAREA");
+
         if (
           (ev.target as HTMLElement)?.id ===
-          "minded-6622-coloured-wrapper-dynamic"
+            "minded-6622-coloured-wrapper-dynamic" &&
+          !isInputFocused
         ) {
           await fadeOut(wrapperEl, 400).promise;
           showLittleSunAfter();
