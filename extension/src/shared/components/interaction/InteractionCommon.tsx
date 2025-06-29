@@ -181,27 +181,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     // Listen for drag progress events to fade content
     const handleDragProgress = (event: CustomEvent) => {
-      const { intensity, isDragging, resetToInitial } = event.detail;
-      const DRAG_THRESHOLD = 0.1; // Same as in Sun.tsx
+      const { isDragging, resetToInitial } = event.detail;
 
       setIsDragging(isDragging);
 
       if (isDragging) {
-        if (intensity >= DRAG_THRESHOLD) {
-          // Fade to 0 when threshold is reached
-          setInteractionOpacity(0);
-        } else {
-          // Gradually fade as approaching threshold
-          // Map intensity (0 to threshold) to opacity (1 to 0)
-          const normalizedProgress = intensity / DRAG_THRESHOLD;
-          const opacity = Math.max(0, 1 - normalizedProgress);
-          setInteractionOpacity(opacity);
-        }
+        // Fade out immediately when dragging starts (1s transition via CSS)
+        setInteractionOpacity(0);
       } else if (resetToInitial) {
-        // Only reset opacity when explicitly told to (snap back case)
+        // Only fade back in when explicitly reset to initial (snap back case)
         setInteractionOpacity(1);
       }
-      // Otherwise, keep current opacity (for completion animation)
+      // Otherwise, keep current opacity (for completion animation or threshold crossed)
     };
 
     window.addEventListener("dragProgress", handleDragProgress);
