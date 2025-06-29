@@ -18,6 +18,11 @@ class InteractionWindowJavaScriptInterface(
     private val win: InteractionWindow,
     private val ctrlSvc: OverlayControllerService
 ) : MainActivityJavaScriptInterface(ctrlSvc, webView) {
+    
+    @JavascriptInterface
+    fun test() {
+        Log.d(logTag, "TEST - JavaScript interface is working!")
+    }
     @JavascriptInterface
     fun onSuccessSunTap() {
         Log.v(logTag, "onSuccessSunTap()")
@@ -96,20 +101,23 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun triggerHaptic(type: String) {
-        Log.v(logTag, "triggerHaptic() $type")
+        Log.d(logTag, "triggerHaptic() called with type: $type")
         
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = ctrlSvc.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            ctrlSvc.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
-        
-        if (!vibrator.hasVibrator()) {
-            Log.w(logTag, "Device does not support vibration")
-            return
-        }
+        try {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vibratorManager = ctrlSvc.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                vibratorManager.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                ctrlSvc.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            }
+            
+            if (!vibrator.hasVibrator()) {
+                Log.w(logTag, "Device does not support vibration")
+                return
+            }
+            
+            Log.d(logTag, "Vibrator available, proceeding with haptic feedback")
         
         val effect = when (type) {
             "light" -> {
@@ -149,8 +157,12 @@ class InteractionWindowJavaScriptInterface(
             }
         }
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(effect)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(effect)
+                Log.d(logTag, "Haptic feedback triggered successfully")
+            }
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to trigger haptic feedback", e)
         }
     }
 }
