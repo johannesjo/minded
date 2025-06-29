@@ -89,11 +89,11 @@ class InteractionWindowJavaScriptInterface(
         Log.v(logTag, "triggerHaptic() $type")
         
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = win.context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            val vibratorManager = ctrlSvc.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vibratorManager.defaultVibrator
         } else {
             @Suppress("DEPRECATION")
-            win.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            ctrlSvc.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
         
         if (!vibrator.hasVibrator()) {
