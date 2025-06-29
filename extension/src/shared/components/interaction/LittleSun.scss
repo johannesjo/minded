@@ -40,14 +40,15 @@ $shadow: var(--little-sun-shadow);
   }
 
   &.bottomLeft {
+    top: 50%;
     left: 50%;
-    bottom: 50%;
 
     &.isOutOfTheWay {
-      transform: translate(0, 0);
-      bottom: 40px;
+      // Calculate the exact position to move from center to bottom-left
+      // Using calc to maintain smooth transition from center
+      top: calc(100% - 40px - #{$sun-size});
       left: 40px;
-      right: auto;
+      transform: translate(0, 0);
     }
   }
 }
