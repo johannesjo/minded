@@ -13,7 +13,10 @@
   transform-origin: center center;
   z-index: 30;
   transform: translate(-50%, -50%);
-  transition: 1s all;
+  transition:
+    top 1s ease-out,
+    left 1s ease-out,
+    transform 1s ease-out;
   animation: minded6622littleSunIn 0.8s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
@@ -23,10 +26,11 @@
     left: 50%;
 
     &.isOutOfTheWay {
-      transform: translate(0, 0);
+      // Calculate the exact position to move from center to top-right
+      // Using calc to maintain smooth transition from center
       top: 40px;
-      right: 40px;
-      left: auto;
+      left: calc(100% - 40px - #{$sun-size});
+      transform: translate(0, 0);
     }
   }
 
