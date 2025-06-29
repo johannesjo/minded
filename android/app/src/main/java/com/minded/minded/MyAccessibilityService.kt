@@ -20,10 +20,42 @@ class MyAccessibilityService : AccessibilityService() {
     private val recentPackageHistory = mutableListOf<Pair<String, Long>>()
     private val PACKAGE_HISTORY_SIZE = 5
     private val LAUNCHER_DEBOUNCE_MS = 500L
+    
+    // Dynamic launcher detection
+    private var cachedLaunchers: Set<String>? = null
+    private var lastLauncherCacheTime = 0L
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         private const val TAG = "MindedAccessibility"
+        private const val LAUNCHER_CACHE_DURATION_MS = 60_000L // 1 minute
+        private const val LAUNCHER_DEBOUNCE_DEFAULT_MS = 500L
+        
+        // Known launcher packages as fallback
+        private val KNOWN_LAUNCHERS = setOf(
+            "com.android.launcher",
+            "com.android.launcher2",
+            "com.android.launcher3",
+            "com.google.android.apps.nexuslauncher",
+            "com.google.android.launcher",
+            "com.google.android.googlequicksearchbox", // Google app acts as launcher on some devices
+            "com.miui.home", // Xiaomi
+            "com.sec.android.app.launcher", // Samsung
+            "com.oneplus.launcher", // OnePlus
+            "com.oppo.launcher", // Oppo
+            "com.vivo.launcher", // Vivo
+            "com.huawei.android.launcher", // Huawei
+            "com.sonyericsson.home", // Sony
+            "com.sonymobile.launcher", // Sony newer
+            "org.cyanogenmod.trebuchet", // CyanogenMod
+            "com.cyanogenmod.trebuchet", // CyanogenMod
+            "com.microsoft.launcher", // Microsoft Launcher
+            "com.teslacoilsw.launcher", // Nova Launcher
+            "com.actionlauncher.playstore", // Action Launcher
+            "ch.deletescape.lawnchair.plah", // Lawnchair
+            "com.niagara.launcher", // Niagara Launcher
+            "com.ss.squarehome2" // Square Home
+        )
     }
 
 
@@ -142,10 +174,50 @@ class MyAccessibilityService : AccessibilityService() {
     }
     
     private fun isLauncherPackage(packageName: String): Boolean {
-        return packageName.contains("launcher") || 
-               packageName.contains("home") ||
-               packageName == "com.google.android.apps.nexuslauncher" ||
-               packageName == "com.google.android.googlequicksearchbox"
+        // Use dynamic detection with fallback to known launchers
+        return getInstalledLaunchers().contains(packageName)
+    }
+    
+    private fun getInstalledLaunchers(): Set<String> {
+        val currentTime = System.currentTimeMillis()
+        
+        // Return cached launchers if still valid
+        if (cachedLaunchers != null && 
+            currentTime - lastLauncherCacheTime < LAUNCHER_CACHE_DURATION_MS) {
+            return cachedLaunchers!!
+        }
+        
+        // Detect launchers dynamically
+        val launchers = mutableSetOf<String>()
+        
+        try {
+            // Query for all apps that can handle the home intent
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+            }
+            
+            val resolveInfos = packageManager.queryIntentActivities(
+                homeIntent,
+                android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
+            )
+            
+            resolveInfos.forEach { resolveInfo ->
+                launchers.add(resolveInfo.activityInfo.packageName)
+                Log.d(TAG, "Detected launcher: ${resolveInfo.activityInfo.packageName}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to query launchers dynamically", e)
+        }
+        
+        // Add known launchers as fallback
+        launchers.addAll(KNOWN_LAUNCHERS)
+        
+        // Cache the results
+        cachedLaunchers = launchers
+        lastLauncherCacheTime = currentTime
+        
+        Log.d(TAG, "Total launchers detected: ${launchers.size}")
+        return launchers
     }
 
 
