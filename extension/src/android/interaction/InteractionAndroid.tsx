@@ -19,6 +19,58 @@ const InteractionAndroid = () => {
 
   onMount(async () => {
     addWrapperClasses();
+
+    // Handle keyboard viewport changes smoothly
+    let lastHeight = window.innerHeight;
+    const handleViewportChange = () => {
+      const currentHeight = window.innerHeight;
+      const heightDiff = lastHeight - currentHeight;
+
+      // Keyboard is showing if height decreased
+      if (heightDiff > 100) {
+        // Add class to handle keyboard state
+        document.body.classList.add("keyboard-visible");
+
+        // Smoothly adjust content position
+        const wrapper = document.getElementById(
+          "minded-6622-interaction-wrapper-box",
+        );
+        if (wrapper) {
+          wrapper.style.paddingBottom = `${heightDiff / 2}px`;
+        }
+      } else if (heightDiff < -100) {
+        // Keyboard is hiding
+        document.body.classList.remove("keyboard-visible");
+
+        const wrapper = document.getElementById(
+          "minded-6622-interaction-wrapper-box",
+        );
+        if (wrapper) {
+          wrapper.style.paddingBottom = "0";
+        }
+      }
+
+      lastHeight = currentHeight;
+    };
+
+    // Listen for viewport changes
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleViewportChange);
+    } else {
+      window.addEventListener("resize", handleViewportChange);
+    }
+
+    // Cleanup
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener(
+          "resize",
+          handleViewportChange,
+        );
+      } else {
+        window.removeEventListener("resize", handleViewportChange);
+      }
+    };
   });
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {
