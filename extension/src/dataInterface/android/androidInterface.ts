@@ -15,7 +15,7 @@ interface InteractionWindowJavaScriptInterface {
   getAllApps: () => string;
   getMissingCapabilities: () => string;
   onMissingCapabilityClick: (capability: string) => void;
-  triggerHaptic: (type: "light" | "medium" | "heavy" | "threshold") => void;
+  triggerHaptic: (type: "light" | "medium" | "heavy") => void;
   test: () => void;
 }
 
