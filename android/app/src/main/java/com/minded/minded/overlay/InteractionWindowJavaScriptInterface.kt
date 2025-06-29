@@ -122,10 +122,10 @@ class InteractionWindowJavaScriptInterface(
         val effect = when (type) {
             "light" -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator.vibrate(10)
+                    vibrator.vibrate(30)
                     return
                 }
             }
@@ -133,10 +133,10 @@ class InteractionWindowJavaScriptInterface(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator.vibrate(20)
+                    vibrator.vibrate(50)
                     return
                 }
             }
@@ -144,10 +144,10 @@ class InteractionWindowJavaScriptInterface(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                    VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator.vibrate(50)
+                    vibrator.vibrate(100)
                     return
                 }
             }
