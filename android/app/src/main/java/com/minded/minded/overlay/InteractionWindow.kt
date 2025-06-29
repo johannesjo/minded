@@ -71,7 +71,11 @@ class InteractionWindow(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN or
                     WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
             PixelFormat.TRANSLUCENT
-        )
+        ).apply {
+            // Add soft input mode to handle keyboard smoothly
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+                    WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+        }
     }
 }
 
