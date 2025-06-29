@@ -1,4 +1,9 @@
 // NOTE: this is styled in Interaction.scss
+
+// Define variables at the top
+$sun-size: 30px;
+$shadow: var(--little-sun-shadow);
+
 #minded-6622-little-sun-success-sun {
   div:first-child {
     animation: minded6622successSun ease 0.8s;
@@ -56,9 +61,6 @@
     transform: scale(1.5);
   }
 }
-
-$sun-size: 30px;
-$shadow: var(--little-sun-shadow);
 
 #minded-6622-little-sun-sun {
   cursor: grab;
