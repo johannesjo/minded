@@ -37,7 +37,7 @@
 }
 
 #minded-6622-interaction-wrapper-box {
-  pointer-events: none;
+  pointer-events: auto; // Changed from none to auto to catch clicks
   position: absolute;
   top: 50%;
   left: 50%;
