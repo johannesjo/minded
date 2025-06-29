@@ -1,6 +1,5 @@
 @import "../variablesSCSS";
 
-
 @mixin btnBase($height: var(--btn-height)) {
   border: none;
   border-radius: 8px;
@@ -37,7 +36,7 @@
 
   &:active {
     //opacity: .8;
-    transform: scale(.95);
+    transform: scale(0.95);
     //box-shadow: var(--btn-box-shadow);
     transition: all 10ms;
   }
@@ -58,7 +57,7 @@
     &:active {
       transition: none;
       cursor: not-allowed;
-      opacity: .3;
+      opacity: 0.3;
       transform: scale(1);
     }
   }
@@ -71,12 +70,15 @@
 
 @mixin btnIco($height: var(--btn-height)) {
   @include btnBase($height);
-  width: $height;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  padding: 0;
+
+  & {
+    width: $height;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
 
   > .minded-6622-ico {
     margin: 12px;
@@ -92,17 +94,15 @@
   @include btnIco($height);
   background: none;
 
-
   &:hover {
     background: var(--btn-bg);
   }
 
   &.active {
-    opacity: .8;
+    opacity: 0.8;
     background: var(--btn-bg);
   }
 }
-
 
 @mixin btnTxt() {
   @include btnBase;
@@ -155,7 +155,7 @@
   user-select: none;
   text-transform: lowercase;
   min-width: 100px;
-  transition: .2s all;
+  transition: 0.2s all;
   background: var(--btn-bg-not-selected);
 
   @include onNonMobileScreens() {
@@ -175,4 +175,3 @@
     transform: scale(var(--btn-selected-scale));
   }
 }
-

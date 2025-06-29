@@ -1,5 +1,6 @@
 @import "../../../styles/variablesSCSS";
 @import "../../../styles/mixins/mixins";
+@import "../../../styles/mixins/ani";
 
 .QuestionCategoryView {
   padding-top: 16px;
@@ -13,7 +14,6 @@
   margin-bottom: 64px;
 }
 
-
 .categoryTitle {
   margin-top: 32px;
   margin-bottom: 20px;
@@ -21,7 +21,6 @@
   display: inline-block;
   text-transform: lowercase;
 }
-
 
 .infoTxt {
   text-align: center;
