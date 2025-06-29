@@ -139,8 +139,12 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate()")
-        Log.d(TAG, "Device: $deviceManufacturer - $deviceModel")
-        Log.d(TAG, "Debounce time: ${LAUNCHER_DEBOUNCE_MS}ms")
+        try {
+            Log.d(TAG, "Device: $deviceManufacturer - $deviceModel")
+            Log.d(TAG, "Debounce time: ${LAUNCHER_DEBOUNCE_MS}ms")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error accessing device info", e)
+        }
         
         // Clear any stale state on service creation
         lastPackageName = null
