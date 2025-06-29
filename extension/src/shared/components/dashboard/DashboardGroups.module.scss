@@ -1,9 +1,10 @@
-@import "./../../../styles/mixins/_mixins.scss";
+@import "./../../../styles/mixins/mixins";
+@import "./../../../styles/mixins/ani";
+@import "./../../../styles/mixins/util";
 @import "./../../../styles/variablesSCSS.scss";
 
-$aniDurQuick: .3s;
+$aniDurQuick: 0.3s;
 $aniDur: 1.5s;
-
 
 .DashboardGroups {
   max-width: 1400px;
@@ -84,7 +85,6 @@ $aniDur: 1.5s;
     }
   }
 
-
   @media (min-width: $bpDashboardMoreThan1Col) {
     &[nr-of-items="1"] {
       grid-template-rows: repeat(1, minmax(0, 1fr));
@@ -132,7 +132,6 @@ $aniDur: 1.5s;
     }
   }
 
-
   // fade in one entry if there is enough stuff to show and space for three columns
   @media (min-width: $bpDashboardMoreThan2Col) {
     &[nr-of-items="5"],
@@ -156,16 +155,14 @@ $aniDur: 1.5s;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
 
-
       &.animateCenterEntry {
         .box {
-          animation-duration: 2* $aniDur;
+          animation-duration: 2 * $aniDur;
           animation-name: minded6622fadeInAfterDelay;
-
 
           @media (min-width: $bpDashboardMoreThan2Col) {
             &:nth-child(5) {
-              animation-duration: 2* $aniDur;
+              animation-duration: 2 * $aniDur;
               animation-name: minded6622fadeInWithBackgroundForCard;
             }
           }
@@ -174,7 +171,6 @@ $aniDur: 1.5s;
     }
   }
 }
-
 
 .box {
   position: relative;
@@ -191,11 +187,9 @@ $aniDur: 1.5s;
     padding: 8px 6px;
   }
 
-
   @media (min-width: $bpMobile) {
     margin: 16px;
   }
-
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     animation: minded6622fadeIn ease $aniDur;
@@ -205,7 +199,7 @@ $aniDur: 1.5s;
     }
   }
 
-  &:nth-child(n+7) {
+  &:nth-child(n + 7) {
     @media (min-width: $bpMobile) {
       display: none;
 
@@ -219,11 +213,10 @@ $aniDur: 1.5s;
   }
 
   @media (min-width: $bpDashboardMoreThan2Col) {
-    &:nth-child(n+10) {
+    &:nth-child(n + 10) {
       display: none !important;
     }
   }
-
 
   // center logic
   @mixin centerItem() {
@@ -237,20 +230,19 @@ $aniDur: 1.5s;
     &.centerItem,
     &:nth-child(1),
     &:nth-child(2) {
-      @include centerItem()
+      @include centerItem();
     }
   }
 
   @media (min-width: $bpDashboardMoreThan2Col) {
     &:nth-child(3) {
-      @include centerItem()
+      @include centerItem();
     }
   }
 
   &.interactive {
     cursor: pointer;
-    transition: all .2s;
-
+    transition: all 0.2s;
 
     &:active {
       transform: scale(0.95);
@@ -264,7 +256,6 @@ $aniDur: 1.5s;
     }
   }
 }
-
 
 .browsingBehaviorGraph,
 .stats,
@@ -301,7 +292,6 @@ $aniDur: 1.5s;
 .stats {
 }
 
-
 .moodCheckinWidget {
   div:first-child {
     margin-bottom: 10px;
@@ -313,7 +303,6 @@ $aniDur: 1.5s;
     }
   }
 }
-
 
 .cardDailyQuestions {
   //box-shadow: var(--btn-box-shadow);

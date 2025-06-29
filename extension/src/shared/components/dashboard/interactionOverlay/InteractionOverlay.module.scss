@@ -1,5 +1,5 @@
 @import "../../../../styles/mixins/mixins";
-
+@import "../../../../styles/mixins/ani";
 
 .interactionOverlay {
   position: fixed;
@@ -13,7 +13,7 @@
 
   @include standardPageTransitionIn();
 
-  animation: minded6622fadeIn ease .5s !important;
+  animation: minded6622fadeIn ease 0.5s !important;
   :global {
     animation-name: minded6622fadeIn !important;
   }
@@ -22,7 +22,5 @@
 .interactionWrapper {
   padding: 32px;
   max-width: 100%;
-  margin-top: var(--safe-area-inset-top)
+  margin-top: var(--safe-area-inset-top);
 }
-
-

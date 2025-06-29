@@ -1,8 +1,6 @@
-@import "./../../../styles/mixins/_mixins.scss";
+@import "./../../../styles/mixins/mixins";
 
 .AnswerList {
-
-
   :global .dashboardContent {
     margin-top: 10px;
 
@@ -10,9 +8,7 @@
       margin-top: 16px;
     }
   }
-
 }
-
 
 .categoryTitle {
   margin-top: 0;
@@ -22,5 +18,3 @@
   display: inline-block;
   text-transform: lowercase;
 }
-
-
