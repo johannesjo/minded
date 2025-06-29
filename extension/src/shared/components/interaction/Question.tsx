@@ -24,7 +24,7 @@ export const Question: (props: {
   // const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   const [getQuestion, setQuestion] = createSignal(props.initialQuestion);
   const [getIsChangingQuestion, setIsChangingQuestion] = createSignal(false);
-  const [getInpEl, setInpEl] = createSignal<HTMLInputElement | null>(null);
+  const [getInpEl, setInpEl] = createSignal<HTMLTextAreaElement | null>(null);
   const [getValue, setValue] = createSignal<string>("");
   const [getShowInput, setShowInput] = createSignal(false);
 

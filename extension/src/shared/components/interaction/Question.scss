@@ -1,10 +1,9 @@
 // NOTE: styles for initialQuestion work differently since we're using them for the content-script
 
-@import '@src/styles/mixins/mixins';
+@import "@src/styles/mixins/mixins";
 
 #minded-6622-question-wrapper {
   user-select: none;
-
 
   #minded-6622-question {
     color: var(--c-fg-full-emphasis);
@@ -29,7 +28,7 @@
 
   &.isChangingQuestion {
     #minded-6622-question > span {
-      opacity: .0;
+      opacity: 0;
       transform: scale(0);
       animation: none;
     }
@@ -66,8 +65,11 @@
   transform: translateY(20px);
   opacity: 0;
   visibility: hidden;
-  transition: transform 0.4s ease-out, opacity 0.4s ease-out, visibility 0.4s;
-  
+  transition:
+    transform 0.4s ease-out,
+    opacity 0.4s ease-out,
+    visibility 0.4s;
+
   &.show {
     transform: translateY(0);
     opacity: 1;
@@ -79,14 +81,14 @@
   display: inline-block;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  
+
   &.show-input {
     cursor: default;
   }
 }
 
 #minded-6622-inp {
-  display: flex;
+  position: relative;
   width: 540px;
   max-width: 100%;
   margin: auto;
@@ -96,20 +98,26 @@
   padding-top: 32px;
   padding-bottom: 32px;
 
-  input {
+  textarea {
     @include formInput();
-    flex: 1;
-    margin: auto;
+    width: 100%;
     display: block;
-    border-bottom-right-radius: 0 !important;
-    border-top-right-radius: 0 !important;
+    resize: none;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 12px;
+    padding-bottom: 40px; // Make room for the button
+    font-family: inherit;
   }
 
-  div {
+  .send-button {
     @include btnIco();
-    margin: auto;
-    margin-left: 4px;
-    border-radius: 0 8px 8px 0;
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }
 
@@ -119,5 +127,3 @@
   // use padding rather than margin to avoid taping in between leading to close the overlay
   border-radius: 50%;
 }
-
-
