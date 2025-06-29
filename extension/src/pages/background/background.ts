@@ -13,7 +13,7 @@ bro.runtime.onInstalled.addListener(() => {
 });
 
 bro.runtime.onMessage.addListener((request, sender) => {
-  if (request.closeTab) {
+  if (request.closeTab && sender.tab?.id) {
     countSunTap();
     bro.tabs.remove(sender.tab.id);
   }

@@ -1,6 +1,5 @@
 import { Answer } from "@src/dataInterface/syncData";
 import { createSignal, JSX } from "solid-js";
-// @ts-ignore
 import styles from "@src/shared/components/questionCategoryView/AnswerEntry.module.scss";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { QUESTIONS } from "@src/shared/data/questions";
@@ -12,12 +11,12 @@ export const AnswerEntry: (props: {
   onBlur?: () => void;
   onRemove: () => void;
 }) => JSX.Element = (props) => {
-  let inpEl;
-  let cardEl;
+  let inpEl: HTMLInputElement = undefined!;
+  let cardEl: HTMLDivElement = undefined!;
 
   const [getTitle, setTitle] = createSignal<string>(props.answer.val as string);
   const [getIsEditMode, setIsEditMode] = createSignal<boolean>(
-    props.isInitialEditMode,
+    props.isInitialEditMode || false,
     // true,
   );
   const [getIsShowEditBar, setIsShowEditBar] = createSignal<boolean>(false);

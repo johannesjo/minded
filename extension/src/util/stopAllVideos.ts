@@ -21,8 +21,9 @@ export function stopAllVideos(): void {
   }
 }
 
-function findRoots(baseEl) {
-  return [baseEl, ...baseEl.querySelectorAll("*")]
-    .filter((e) => !!e.shadowRoot)
-    .flatMap((e) => [e.shadowRoot, ...findRoots(e.shadowRoot)]);
+function findRoots(baseEl: Element | ShadowRoot): ShadowRoot[] {
+  const elements = [baseEl, ...baseEl.querySelectorAll("*")];
+  return elements
+    .filter((e): e is Element => e instanceof Element && !!e.shadowRoot)
+    .flatMap((e) => [e.shadowRoot!, ...findRoots(e.shadowRoot!)]);
 }

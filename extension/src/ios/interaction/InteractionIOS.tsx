@@ -14,9 +14,9 @@ if (questionId) {
 
 const InteractionIOS = () => {
   const question: QuestionForPrompt | null = questionId?.length
-    ? QUESTIONS.find((q) => q.id === questionId)
+    ? QUESTIONS.find((q) => q.id === questionId) || null
     : null;
-  let wrapperEl;
+  let wrapperEl: HTMLDivElement = undefined!;
 
   const continueToApp = () => {
     // continue to main instead since continue to app is not working
@@ -55,9 +55,9 @@ const InteractionIOS = () => {
     >
       <InteractionCommon
         isInitFadeout={false}
-        wrapperEl={wrapperEl}
+        wrapperEl={wrapperEl!}
         onModeSet={() => undefined}
-        questionForPrompt={question}
+        questionForPrompt={question || undefined}
         onSetAnswer={() => undefined}
         onAfterInteractionFadeout={() => continueToApp()}
         onInteractionSubmitted={() => {

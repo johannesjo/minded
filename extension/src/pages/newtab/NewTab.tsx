@@ -1,9 +1,6 @@
-// @ts-ignore
-
 import { createSignal, onMount } from "solid-js";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingWeb } from "@pages/newtab/components/onboardingWeb/OnboardingWeb";
-// @ts-expect-error
 import styles from "./NewTab.module.scss";
 import { getRndEntry } from "@src/util/getRndEntry";
 import RoutesCmp from "@src/shared/RouteCmp";

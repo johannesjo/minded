@@ -13,9 +13,9 @@ if (questionId) {
 
 const InteractionAndroid = () => {
   const question: QuestionForPrompt | null = questionId?.length
-    ? QUESTIONS.find((q) => q.id === questionId)
+    ? QUESTIONS.find((q) => q.id === questionId) || null
     : null;
-  let wrapperEl;
+  let wrapperEl: HTMLDivElement = undefined!;
 
   onMount(async () => {
     addWrapperClasses();
@@ -52,13 +52,13 @@ const InteractionAndroid = () => {
     >
       <InteractionCommon
         isInitFadeout={false}
-        wrapperEl={wrapperEl}
+        wrapperEl={wrapperEl!}
         onModeSet={(mode) => {
           if (mode !== "QUESTION") {
             androidInterface.unsetQuestion();
           }
         }}
-        questionForPrompt={question}
+        questionForPrompt={question || undefined}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
         onAfterInteractionFadeout={() => showLittleSunAfter()}
         onInteractionSubmitted={() => {

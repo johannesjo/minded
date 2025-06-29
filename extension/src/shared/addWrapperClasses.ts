@@ -7,6 +7,10 @@ const DARK_MODE_END_HOUR = 6;
 
 export const addWrapperClasses = () => {
   const el = document.getElementById("minded-6622");
+  if (!el) {
+    console.error("minded-6622 wrapper element not found");
+    return;
+  }
 
   setIsDarkModeIfApplies(el);
 
@@ -33,8 +37,13 @@ export const isDarkModeNow = (): boolean => {
 };
 
 export const setIsDarkModeIfApplies = (
-  el = document.getElementById("minded-6622"),
+  el: HTMLElement | null = document.getElementById("minded-6622"),
 ) => {
+  if (!el) {
+    console.error("Element not found for dark mode application");
+    return;
+  }
+
   if (isDarkModeNow()) {
     el.classList.add("minded-6622-dark");
   } else {

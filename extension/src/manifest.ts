@@ -1,6 +1,4 @@
 import { defineManifest } from "@crxjs/vite-plugin";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import packageJson from "../package.json";
 
 // Convert from Semver (example: 0.1.0-beta6)

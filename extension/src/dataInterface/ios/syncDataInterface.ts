@@ -13,6 +13,9 @@ export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
 
 export const getSyncDataN = async (): Promise<SyncData> => {
   const result = await Preferences.get({ key: DB_KEY });
+  if (!result.value) {
+    return DEFAULT_SYNC_DATA;
+  }
   try {
     return {
       ...DEFAULT_SYNC_DATA,

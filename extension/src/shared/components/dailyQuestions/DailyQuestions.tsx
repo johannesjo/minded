@@ -14,7 +14,6 @@ import {
   setDailyQuestionsDoneForToday,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
-// @ts-ignore
 import styles from "./DailyQuestions.module.scss";
 import {
   DailyQuestionsMode,
@@ -33,13 +32,14 @@ const DailyQuestions = () => {
   const isMonday = today.getDay() === 1;
   const mode: DailyQuestionsMode = getDailyQuestionsMode();
   // const mode: DailyQuestionsMode = "Evening";
-  let t0;
+  let t0: NodeJS.Timeout | undefined;
 
   const getRndQuestionFromCat = (
     categoryId: QuestionCategoryId,
   ): QuestionForPrompt => {
+    const questions = QUESTION_CATEGORIES[categoryId].questions;
     return {
-      ...getRndEntry(QUESTION_CATEGORIES[categoryId].questions),
+      ...getRndEntry(questions || []),
       categoryId,
     };
   };

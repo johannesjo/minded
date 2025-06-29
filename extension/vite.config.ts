@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, UserConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 import * as path from "path";
 import { resolve } from "path";
@@ -20,7 +20,7 @@ const dataInterfaceExtension = resolve(root, "dataInterface", "extension");
 const dataInterfaceDroid = resolve(root, "dataInterface", "android");
 const dataInterfaceIOS = resolve(root, "dataInterface", "ios");
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }): UserConfig => {
   const sassOptions = {
     quietDeps: true,
     silenceDeprecations: ["import", "mixed-decls"],
@@ -66,6 +66,7 @@ export default defineConfig(({ mode }) => {
                 ? "assets/js/[name].js"
                 : "assets/js/[name].[hash].js",
               assetFileNames: (assetInfo) => {
+                if (!assetInfo.name) return "assets/[ext]/[name].chunk.[ext]";
                 const { name } = path.parse(assetInfo.name);
                 return `assets/[ext]/${name}.chunk.[ext]`;
               },
@@ -109,6 +110,7 @@ export default defineConfig(({ mode }) => {
                   ? "assets/js/[name].js"
                   : "assets/js/[name].[hash].js",
                 assetFileNames: (assetInfo) => {
+                  if (!assetInfo.name) return "assets/[ext]/[name].chunk.[ext]";
                   const { name } = path.parse(assetInfo.name);
                   return `assets/[ext]/${name}.chunk.[ext]`;
                 },
@@ -157,6 +159,7 @@ export default defineConfig(({ mode }) => {
                   ? "assets/js/[name].js"
                   : "assets/js/[name].[hash].js",
                 assetFileNames: (assetInfo) => {
+                  if (!assetInfo.name) return "assets/[ext]/[name].chunk.[ext]";
                   const { name } = path.parse(assetInfo.name);
                   return `assets/[ext]/${name}.chunk.[ext]`;
                 },
