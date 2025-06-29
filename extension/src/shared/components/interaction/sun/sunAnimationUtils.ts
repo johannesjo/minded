@@ -132,7 +132,7 @@ export function calculateDragEffects(
   if (deltaY < 0) {
     // Upward drag
     scale = Math.max(0.7, 1 - dragProgress * 0.3);
-    opacity = Math.max(0.5, 1 - dragProgress * 0.5);
+    opacity = 1; // Keep full opacity when dragging up
   } else {
     // Downward drag
     scale = Math.min(2, 1 + dragProgress * 1.5);
