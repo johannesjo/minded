@@ -67,6 +67,7 @@ class MyAccessibilityService : AccessibilityService() {
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
+        const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
         private const val TAG = "MindedAccessibility"
         private const val LAUNCHER_CACHE_DURATION_MS = 60_000L // 1 minute
         private const val LAUNCHER_DEBOUNCE_DEFAULT_MS = 500L
@@ -520,6 +521,16 @@ class MyAccessibilityService : AccessibilityService() {
         
         Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
         
+        // Check if we're leaving a blocked app (before updating lastPackageName)
+        if (lastPackageName != null && 
+            lastPackageName != packageName && 
+            !isSystemPackage(lastPackageName!!) &&
+            !isLauncherPackage(lastPackageName!!)) {
+            // The previous app is going to background, hide overlay if it was a blocked app
+            Log.d(TAG, "Previous app going to background: $lastPackageName")
+            hideOverlayForBackgroundedApp()
+        }
+        
         // Skip if this is a system package
         if (isSystemPackage(packageName)) {
             Log.d(TAG, "Skipping system package: $packageName")
@@ -816,6 +827,18 @@ class MyAccessibilityService : AccessibilityService() {
                 Log.d(TAG, "Unknown pattern, using time-based logic")
                 currentTime - lastEventTimestamp > LAUNCHER_DEBOUNCE_MS
             }
+        }
+    }
+    
+    private fun hideOverlayForBackgroundedApp() {
+        try {
+            val intent = Intent(this, OverlayControllerService::class.java).apply {
+                putExtra(INTENT_EXTRA_HIDE_OVERLAY, true)
+            }
+            startService(intent)
+            Log.d(TAG, "Sent hide overlay signal for backgrounded app")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to hide overlay for backgrounded app", e)
         }
     }
 }
