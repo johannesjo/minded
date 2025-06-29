@@ -104,12 +104,14 @@ class InteractionWindowJavaScriptInterface(
         Log.d(logTag, "triggerHaptic() called with type: $type")
         
         try {
+            // Try using application context instead of service context
+            val context = ctrlSvc.applicationContext
             val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vibratorManager = ctrlSvc.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
                 vibratorManager.defaultVibrator
             } else {
                 @Suppress("DEPRECATION")
-                ctrlSvc.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             }
             
             if (!vibrator.hasVibrator()) {
@@ -159,10 +161,35 @@ class InteractionWindowJavaScriptInterface(
         
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(effect)
-                Log.d(logTag, "Haptic feedback triggered successfully")
+                Log.d(logTag, "Haptic feedback triggered successfully with VibrationEffect")
             }
         } catch (e: Exception) {
-            Log.e(logTag, "Failed to trigger haptic feedback", e)
+            Log.e(logTag, "Failed to trigger haptic feedback with application context", e)
+            
+            // Fallback: Try with a simple pattern
+            try {
+                val context = ctrlSvc.applicationContext
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                
+                // Use a simple vibration pattern that should work on all devices
+                val duration = when (type) {
+                    "light" -> 30L
+                    "medium" -> 50L
+                    "heavy" -> 100L
+                    else -> 50L
+                }
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(duration)
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(duration)
+                }
+                Log.d(logTag, "Haptic feedback triggered with fallback method, duration: $duration")
+            } catch (fallbackError: Exception) {
+                Log.e(logTag, "Fallback haptic also failed", fallbackError)
+            }
         }
     }
 }
