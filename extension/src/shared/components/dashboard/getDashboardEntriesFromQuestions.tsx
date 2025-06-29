@@ -32,7 +32,7 @@ export const getDashboardEntriesFromQuestions = (
   isSkipRndEntry = IS_ANDROID,
 ): DashboardGroup[] => {
   const ds = getIsoDate(now);
-  const dashboardGroups = [];
+  const dashboardGroups: DashboardGroup[] = [];
   const groupsToCheck = [
     ...FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
     ...getRndEntries(

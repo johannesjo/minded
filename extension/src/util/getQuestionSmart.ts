@@ -52,21 +52,23 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     if (categoryForAnswer.isThisWeekOnlyCategory && !isThisWeek(answer.ts)) {
       return;
     }
-    nrOfAnswersMap[answer.questionCategoryId] = nrOfAnswersMap[
-      answer.questionCategoryId
-    ]
-      ? nrOfAnswersMap[answer.questionCategoryId] + 1
+    const currentCount = nrOfAnswersMap[answer.questionCategoryId];
+    nrOfAnswersMap[answer.questionCategoryId] = currentCount
+      ? currentCount + 1
       : 1;
   });
 
   // NOTE: lower score is better
   const pointsMap: { [key in QuestionCategoryId]?: number } = {};
-  Object.keys(QuestionCategoryId)
+  Object.values(QuestionCategoryId)
     .filter(filterSpecialWidgets)
-    .forEach((categoryId: QuestionCategoryId) => {
+    .forEach((categoryId) => {
       const questionCategory = QUESTION_CATEGORIES[categoryId];
 
-      if (questionCategory?.questions?.length > 0) {
+      if (
+        questionCategory?.questions &&
+        questionCategory.questions.length > 0
+      ) {
         pointsMap[categoryId] = 0;
       }
 
@@ -74,7 +76,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
         pointsMap[categoryId] = questionCategory.frequencyModifier * -1;
       }
 
-      if (questionCategory.isMorningCategory) {
+      if (questionCategory?.isMorningCategory) {
         if (
           nowHours < THRESHOLD_MORNING_START ||
           nowHours > THRESHOLD_MORNING_END
@@ -86,7 +88,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
             (pointsMap[categoryId] || 0) + BOOST_FACTOR * -1;
         }
       }
-      if (questionCategory.isEveningCategory) {
+      if (questionCategory?.isEveningCategory) {
         if (nowHours < THRESHOLD_EVENING_START) {
           pointsMap[categoryId] = FAKE_RULE_OUT_NR;
         } else {
@@ -95,7 +97,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
             (pointsMap[categoryId] || 0) + BOOST_FACTOR * -1;
         }
       }
-      if (questionCategory.isLateNightCategory) {
+      if (questionCategory?.isLateNightCategory) {
         if (
           nowHours < THRESHOLD_LATE_NIGHT_START ||
           nowHours > THRESHOLD_LATE_NIGHT_END
@@ -107,7 +109,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
             (pointsMap[categoryId] || 0) + BOOST_FACTOR * -1;
         }
       }
-      if (questionCategory.isWorkDayCategory && !isWorkDayToday) {
+      if (questionCategory?.isWorkDayCategory && !isWorkDayToday) {
         pointsMap[categoryId] = FAKE_RULE_OUT_NR;
       }
       if (isExcludedByLimitTo(questionCategory)) {
@@ -115,14 +117,17 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       }
 
       const nrOfAnswersForCategory = nrOfAnswersMap[categoryId] || 0;
-      if (nrOfAnswersForCategory >= 3) {
-        pointsMap[categoryId] +=
+      if (nrOfAnswersForCategory >= 3 && questionCategory?.questions?.length) {
+        const currentPoints = pointsMap[categoryId] || 0;
+        pointsMap[categoryId] =
+          currentPoints +
           1 +
-          (Math.round(
-            (nrOfAnswersForCategory / questionCategory?.questions?.length) * 10,
-          ) || 0);
+          Math.round(
+            (nrOfAnswersForCategory / questionCategory.questions.length) * 10,
+          );
       } else if (nrOfAnswersForCategory >= 1) {
-        pointsMap[categoryId] += nrOfAnswersForCategory;
+        const currentPoints = pointsMap[categoryId] || 0;
+        pointsMap[categoryId] = currentPoints + nrOfAnswersForCategory;
       }
     });
 
@@ -205,7 +210,7 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
 const getRndQuestionConsideringMain = (
   questions: QuestionForPrompt[],
 ): QuestionForPrompt => {
-  if (isMain) {
+  if (isMain()) {
     return getRndEntry(questions.filter((q) => !q.isSkipOnDashboard));
   }
   return getRndEntry(questions);

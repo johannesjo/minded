@@ -28,7 +28,7 @@ export const Question: (props: {
   const [getValue, setValue] = createSignal<string>("");
   const [getShowInput, setShowInput] = createSignal(false);
 
-  let tChangeQuestion;
+  let tChangeQuestion: NodeJS.Timeout;
 
   // let questionUpdateCount = 0;
   // let questionIdBefore = props.initialQuestion.id;

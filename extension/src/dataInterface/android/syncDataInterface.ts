@@ -8,6 +8,9 @@ export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
 
 export const getSyncDataN = async (): Promise<SyncData> => {
   const str = androidInterface.retrieveDataString();
+  if (!str) {
+    return DEFAULT_SYNC_DATA;
+  }
   try {
     return {
       ...DEFAULT_SYNC_DATA,

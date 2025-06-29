@@ -46,7 +46,7 @@ export const ShowAlternativeInteraction: (props: {
             <>
               How about visiting{" "}
               <a href={getAlternative()} onclick={onGoToUrl}>
-                {beautifyUrl(getAlternative())}
+                {beautifyUrl(getAlternative() || "")}
               </a>{" "}
               instead?
             </>

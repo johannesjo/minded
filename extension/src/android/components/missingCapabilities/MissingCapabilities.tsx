@@ -1,6 +1,4 @@
 import { createSignal, onCleanup, onMount } from "solid-js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import styles from "./MissingCapabilities.module.scss";
 import {
   ANDROID_EV_RESUME,
@@ -18,7 +16,7 @@ export const MissingCapabilityView = (props: {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
-  let t0;
+  let t0: NodeJS.Timeout | undefined;
 
   const refreshMissingCapabilities = () => {
     const mc = JSON.parse(androidInterface.getMissingCapabilities());
