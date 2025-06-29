@@ -152,9 +152,7 @@ export function easeOut(progress: number): number {
   return 1 - Math.pow(1 - progress, 3);
 }
 
-export function triggerHaptic(
-  type: "light" | "medium" | "heavy" | "threshold",
-): void {
+export function triggerHaptic(type: "light" | "medium" | "heavy"): void {
   // Check if we're on Android and have the native interface available
   if (
     typeof window !== "undefined" &&

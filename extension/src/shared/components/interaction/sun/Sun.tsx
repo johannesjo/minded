@@ -114,7 +114,7 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Trigger haptic when crossing pixel threshold
       if (dragDistance >= DRAG_THRESHOLD_PX && !hasTriggeredThresholdHaptic) {
-        triggerHaptic("threshold");
+        triggerHaptic("medium");
         hasTriggeredThresholdHaptic = true;
         setIsBeyondThreshold(true);
       } else if (dragDistance < DRAG_THRESHOLD_PX) {
