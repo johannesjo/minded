@@ -38,6 +38,9 @@ class MyAccessibilityService : AccessibilityService() {
         getManufacturerDebounceTime() 
     }
     
+    // Track if minded overlay is active to prevent keyboard from closing it
+    private var isMindedOverlayActive = false
+    
     // Dynamic launcher detection
     private var cachedLaunchers: Set<String>? = null
     private var lastLauncherCacheTime = 0L
@@ -521,6 +524,27 @@ class MyAccessibilityService : AccessibilityService() {
         
         Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
         
+        // Track if minded overlay is active
+        if (packageName == "com.minded.minded") {
+            // Check if this is an overlay window (InteractionWindow)
+            if (className.contains("InteractionWindow") || 
+                className.contains("WebView") ||
+                event.toString().contains("InteractionWindow")) {
+                isMindedOverlayActive = true
+                Log.d(TAG, "Minded overlay is now active")
+            }
+        }
+        
+        // Skip keyboard/input method events when our overlay is active
+        if (isMindedOverlayActive && 
+            (packageName.contains("inputmethod") || 
+             packageName.contains("keyboard") ||
+             className.lowercase().contains("inputmethod") || 
+             className.lowercase().contains("keyboard"))) {
+            Log.d(TAG, "Ignoring keyboard event while minded overlay is active")
+            return
+        }
+        
         // Check if we're leaving a blocked app (before updating lastPackageName)
         // Only hide overlay if we're moving to a non-blocked app or system app
         if (lastPackageName != null && 
@@ -528,6 +552,16 @@ class MyAccessibilityService : AccessibilityService() {
             packageName != "com.minded.minded" &&  // Don't process when our overlay is showing
             !isSystemPackage(lastPackageName!!) &&
             !isLauncherPackage(lastPackageName!!)) {
+            
+            // Don't hide overlay when transitioning to keyboard/input method
+            if (packageName.contains("inputmethod") || 
+                packageName.contains("keyboard") ||
+                className.lowercase().contains("inputmethod") ||
+                className.lowercase().contains("keyboard") ||
+                className.lowercase().contains("softinput")) {
+                Log.d(TAG, "Ignoring transition to keyboard/input method: $lastPackageName -> $packageName")
+                return
+            }
             
             // Check if the new app is also blocked before hiding overlay
             // This prevents hiding overlay when switching between blocked apps
@@ -541,9 +575,13 @@ class MyAccessibilityService : AccessibilityService() {
             }
         }
         
-        // Skip if this is a system package
+        // Skip if this is a system package (but don't update lastPackageName for keyboards)
         if (isSystemPackage(packageName)) {
             Log.d(TAG, "Skipping system package: $packageName")
+            // Don't update lastPackageName for keyboard/input method packages
+            if (!packageName.contains("inputmethod") && !packageName.contains("keyboard")) {
+                lastPackageName = packageName
+            }
             return
         }
         
@@ -846,6 +884,7 @@ class MyAccessibilityService : AccessibilityService() {
                 putExtra(INTENT_EXTRA_HIDE_OVERLAY, true)
             }
             startService(intent)
+            isMindedOverlayActive = false
             Log.d(TAG, "Sent hide overlay signal for backgrounded app")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to hide overlay for backgrounded app", e)

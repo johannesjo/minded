@@ -92,9 +92,9 @@ class InteractionWindow(
             PixelFormat.TRANSLUCENT
         ).apply {
             // Add soft input mode to handle keyboard smoothly
-            // ADJUST_NOTHING prevents any resize or pan, avoiding white space
-            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING or
-                    WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+            // ADJUST_RESIZE with STATE_UNCHANGED to maintain keyboard state
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+                    WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
             
             // Set window background color to dark to prevent white flashes
             // This is different from the view background and helps during transitions
