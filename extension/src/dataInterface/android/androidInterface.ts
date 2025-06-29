@@ -16,6 +16,7 @@ interface InteractionWindowJavaScriptInterface {
   getMissingCapabilities: () => string;
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: string) => void;
+  test: () => void;
 }
 
 declare const androidMinded: InteractionWindowJavaScriptInterface;
