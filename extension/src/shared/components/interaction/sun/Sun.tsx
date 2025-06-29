@@ -91,8 +91,7 @@ export const Sun: Component<SunProps> = (props) => {
       ];
       // Immediately set dragging state to disable transitions
       setIsDragging(true);
-      // Light haptic feedback on touch
-      triggerHaptic("light");
+      // Removed haptic feedback for initial touch
     };
 
     let hasTriggeredThresholdHaptic = false;
@@ -115,7 +114,7 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Trigger haptic when crossing pixel threshold
       if (dragDistance >= DRAG_THRESHOLD_PX && !hasTriggeredThresholdHaptic) {
-        triggerHaptic("medium");
+        triggerHaptic("threshold");
         hasTriggeredThresholdHaptic = true;
         setIsBeyondThreshold(true);
       } else if (dragDistance < DRAG_THRESHOLD_PX) {
