@@ -94,6 +94,7 @@ export const LittleSunComponent: (props: {
   return (
     <div
       id="minded-6622-little-sun"
+      title="Double-click to hide"
       ref={sunEl}
       classList={{
         ["bottomLeft"]: true,
@@ -102,18 +103,8 @@ export const LittleSunComponent: (props: {
       }}
     >
       <div id="minded-6622-little-sun-sun-wrapper">
-        <div
-          id="minded-6622-little-sun-sun"
-          title="Double-click to hide"
-          onDblClick={handleDoubleClick}
-        >
+        <div id="minded-6622-little-sun-sun" onDblClick={handleDoubleClick}>
           {formatSessionTime(getSessionTime())}
-        </div>
-      </div>
-
-      <div id="minded-6622-additional-controls">
-        <div title="Hide sun" onClick={() => props.teardown()}>
-          ✕
         </div>
       </div>
     </div>
