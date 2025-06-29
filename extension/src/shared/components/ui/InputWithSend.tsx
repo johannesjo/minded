@@ -7,13 +7,13 @@ export const InputWithSend = (props: {
   type?: string;
   isAutoFocus?: boolean;
   value?: string;
-  setRef?: (el: HTMLInputElement) => void;
+  setRef?: (el: HTMLTextAreaElement) => void;
   maxLength?: number;
   onSubmit: (val: string) => Promise<void>;
   onCancelCountdown?: () => void;
   onEscape: () => void;
 }): JSX.Element => {
-  let inpEl: HTMLInputElement;
+  let inpEl: HTMLTextAreaElement;
   let t0: NodeJS.Timeout | undefined;
   let t1: NodeJS.Timeout | undefined;
 
@@ -62,8 +62,9 @@ export const InputWithSend = (props: {
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
-    if (ev.key === "Enter") {
-      onSubmit((ev.target as HTMLInputElement).value);
+    if (ev.key === "Enter" && !ev.shiftKey) {
+      ev.preventDefault();
+      onSubmit((ev.target as HTMLTextAreaElement).value);
     } else if (ev.key === "Escape") {
       props.onEscape();
     } else if (ev.key !== "Control") {
@@ -72,18 +73,23 @@ export const InputWithSend = (props: {
   };
 
   return (
-    <div id="minded-6622-inp">
-      <input
+    <div id="minded-6622-inp" class="textarea-container">
+      <textarea
         spellcheck={false}
         ref={inpEl!}
-        type={props.type || "text"}
         disabled={getIsInputDisabled()}
         onkeydown={onKeyDown}
         maxlength={props.maxLength}
+        rows={3}
+        placeholder="Type your response..."
       />
-      <div onclick={() => onSubmit(inpEl?.value)}>
+      <button
+        class="send-button"
+        onclick={() => onSubmit(inpEl?.value)}
+        disabled={getIsInputDisabled()}
+      >
         <Ico name="send" />
-      </div>
+      </button>
     </div>
   );
 };
