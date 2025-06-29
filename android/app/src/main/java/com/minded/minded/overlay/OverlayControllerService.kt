@@ -374,9 +374,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 Log.v(logTag, "isInGracePeriod")
                 if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
-                    if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null) {
-                        showOverlay(OverlayName.SMALL_MSG_OVERLAY, null, currentPackageName)
-                    }
+                    // Removed SMALL_MSG_OVERLAY - only show the little sun
                 }
                 // since we also want to show the question overlay after the lock screen, we DON'T do this check
 //            } else if (lastForeGroundApp == currentPackageName) {
