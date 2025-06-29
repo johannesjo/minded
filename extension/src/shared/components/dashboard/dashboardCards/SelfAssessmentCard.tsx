@@ -41,7 +41,7 @@ export const SelfAssessmentCard = (props: {
                     }
                   >
                     <td>
-                      <div>{q.question}</div>
+                      <div>{q?.question}</div>
                     </td>
                     <td>
                       <div class={styles.dots}>

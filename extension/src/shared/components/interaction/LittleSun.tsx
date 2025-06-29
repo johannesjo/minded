@@ -24,9 +24,9 @@ export const LittleSunComponent: (props: {
   const [getIsShowBubbleTxt, setIsShowBubbleTxt] = createSignal(false);
 
   let currentSessionInterval: number;
-  let littleSunSuccessSunEl;
-  let t0;
-  let t1;
+  let littleSunSuccessSunEl: HTMLDivElement = undefined!;
+  let t0: NodeJS.Timeout;
+  let t1: NodeJS.Timeout;
 
   onMount(async () => {
     const d = await loadDataForHost(props.host);

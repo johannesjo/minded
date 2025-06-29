@@ -18,39 +18,43 @@ export const MoodCheckin: (props: {
   const [getAdditionalTxt, setAdditionalTxt] = createSignal<string | null>(
     null,
   );
-  const [getSaveDelay, setSaveDelay] = createSignal<any>(null);
+  const [getSaveDelay, setSaveDelay] = createSignal<NodeJS.Timeout | null>(
+    null,
+  );
 
   const onMoodSelect = async (mood: MoodCheckinVal) => {
     setSelectedMood(mood);
-    
+
     // Clear any existing timeout
-    if (getSaveDelay()) {
-      clearTimeout(getSaveDelay());
+    const existingDelay = getSaveDelay();
+    if (existingDelay) {
+      clearTimeout(existingDelay);
     }
-    
+
     // Save immediately if no additional text is expected, otherwise wait a bit
     const delay = setTimeout(async () => {
-      await saveMoodCheckIn(mood, getAdditionalTxt());
+      await saveMoodCheckIn(mood, getAdditionalTxt() || undefined);
       props.onSuccess();
     }, 3000); // Give user 3 seconds to add additional text
-    
+
     setSaveDelay(delay);
   };
 
   const handleInputChange = (value: string) => {
     setAdditionalTxt(value);
-    
+
     // Reset the save timer when user types
-    if (getSaveDelay()) {
-      clearTimeout(getSaveDelay());
-      
+    const existingDelay = getSaveDelay();
+    if (existingDelay) {
+      clearTimeout(existingDelay);
+
       const mood = getSelectedMood();
       if (mood) {
         const delay = setTimeout(async () => {
-          await saveMoodCheckIn(mood, getAdditionalTxt());
+          await saveMoodCheckIn(mood, getAdditionalTxt() || undefined);
           props.onSuccess();
         }, 2000); // Save 2 seconds after user stops typing
-        
+
         setSaveDelay(delay);
       }
     }
@@ -60,10 +64,7 @@ export const MoodCheckin: (props: {
     <div id="minded-6622-mood-checkin" onmousemove={props.onCancelCountdown}>
       <div class="txtBig">How do you feel?</div>
 
-      <TglBtns
-        options={MOOD_CHECKIN_OPTIONS}
-        onSelect={onMoodSelect}
-      />
+      <TglBtns options={MOOD_CHECKIN_OPTIONS} onSelect={onMoodSelect} />
 
       <div
         class={
@@ -94,17 +95,20 @@ export const MoodCheckin: (props: {
           maxlength="200"
           onInput={(ev) => handleInputChange((ev.target as any).value)}
           onKeyDown={(ev) => {
-            if (ev.key === 'Enter') {
+            if (ev.key === "Enter") {
               ev.preventDefault();
               // Save immediately on Enter
-              if (getSaveDelay()) {
-                clearTimeout(getSaveDelay());
+              const existingDelay = getSaveDelay();
+              if (existingDelay) {
+                clearTimeout(existingDelay);
               }
               const mood = getSelectedMood();
               if (mood) {
-                saveMoodCheckIn(mood, getAdditionalTxt()).then(() => {
-                  props.onSuccess();
-                });
+                saveMoodCheckIn(mood, getAdditionalTxt() || undefined).then(
+                  () => {
+                    props.onSuccess();
+                  },
+                );
               }
             }
           }}

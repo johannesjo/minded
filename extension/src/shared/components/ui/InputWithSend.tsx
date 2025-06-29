@@ -1,8 +1,7 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
-// @ts-ignore
-import { requestFocusAndShowKeyboard } from "@dataInterface/system";
+import { requestFocusAndShowKeyboard } from "@src/dataInterface/system";
 
 export const InputWithSend = (props: {
   type?: string;
@@ -14,9 +13,9 @@ export const InputWithSend = (props: {
   onCancelCountdown?: () => void;
   onEscape: () => void;
 }): JSX.Element => {
-  let inpEl;
-  let t0;
-  let t1;
+  let inpEl: HTMLInputElement;
+  let t0: NodeJS.Timeout | undefined;
+  let t1: NodeJS.Timeout | undefined;
 
   const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
 
@@ -76,7 +75,7 @@ export const InputWithSend = (props: {
     <div id="minded-6622-inp">
       <input
         spellcheck={false}
-        ref={inpEl}
+        ref={inpEl!}
         type={props.type || "text"}
         disabled={getIsInputDisabled()}
         onkeydown={onKeyDown}

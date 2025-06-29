@@ -1,32 +1,29 @@
 {
   "compilerOptions": {
-    "strict": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
     "baseUrl": "./",
     "module": "commonjs",
     "target": "es6",
     "esModuleInterop": true,
     "sourceMap": false,
-    "rootDir": "src",
+    "rootDir": "./",
     "outDir": "dist/js",
     "noEmitOnError": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
+    "typeRoots": ["node_modules/@types"],
     "paths": {
-      "@src/*": [
-        "src/*"
-      ],
-      "@assets/*": [
-        "src/assets/*"
-      ],
-      "@pages/*": [
-        "src/pages/*"
-      ],
-      "@dataInterface/*": [
-        "src/dataInterface/web/*"
-      ]
+      "@src/*": ["src/*"],
+      "@assets/*": ["src/assets/*"],
+      "@pages/*": ["src/pages/*"],
+      "@dataInterface/*": ["src/dataInterface/web/*"]
     }
   }
 }

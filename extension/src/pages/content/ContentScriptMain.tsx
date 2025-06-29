@@ -54,7 +54,7 @@ export const ContentScriptMain: (props: {
       {getIsShowFullMinder() ? (
         <InteractionWeb
           host={host}
-          onHideAll={() => document.getElementById("minded-6622").remove()}
+          onHideAll={() => document.getElementById("minded-6622")?.remove()}
         />
       ) : (
         <LittleSunComponent
@@ -62,7 +62,7 @@ export const ContentScriptMain: (props: {
           wasAnswerGiven={false}
           onShowQuestionAgain={() => undefined}
           onShowFreshInteraction={() => setIsShowFullMinder(true)}
-          teardown={() => document.getElementById("minded-6622").remove()}
+          teardown={() => document.getElementById("minded-6622")?.remove()}
         ></LittleSunComponent>
       )}
     </>

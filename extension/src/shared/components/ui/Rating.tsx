@@ -1,5 +1,4 @@
 import { createSignal, For, JSX } from "solid-js";
-// @ts-ignore
 import lightningSvg from "@assets/img/lightning.svg";
 
 export const Rating: (props: {
@@ -7,7 +6,7 @@ export const Rating: (props: {
   isShowOnly?: boolean;
   onSetRating?: (val: number) => void;
 }) => JSX.Element = (props) => {
-  const [rating, setRating] = createSignal(props.value);
+  const [rating, setRating] = createSignal(props.value || 0);
   const [hoveredRating, setHoveredRating] = createSignal(0);
 
   return (
@@ -21,7 +20,7 @@ export const Rating: (props: {
             onClick={() => {
               if (props.isShowOnly) return;
               setRating(value);
-              props.onSetRating(value);
+              props.onSetRating?.(value);
             }}
             onmouseenter={() => {
               if (props.isShowOnly) return;

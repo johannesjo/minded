@@ -6,7 +6,9 @@ import { APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/i
 
 function Chart(props: { chartData: ChartData }) {
   onMount(() => {
-    const style = getComputedStyle(document.getElementById("minded-6622"));
+    const element = document.getElementById("minded-6622");
+    if (!element) return;
+    const style = getComputedStyle(element);
     const primCol = style.getPropertyValue("--c-graph-fg-full");
     const mutedColor = style.getPropertyValue("--c-graph-fg-less");
     ChartJSChart.defaults.backgroundColor = "transparent";
@@ -43,7 +45,7 @@ function Chart(props: { chartData: ChartData }) {
                 // beginAtZero: true,
                 min: 1,
                 ticks: {
-                  callback: function (value, index, values) {
+                  callback: function (value: string | number) {
                     // Replace this with your custom logic
                     return APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS.find(
                       (opt) => opt.val === value,

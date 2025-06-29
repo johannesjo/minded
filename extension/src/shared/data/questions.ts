@@ -1,7 +1,6 @@
 // import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 // NOTE: for some reason the import above gives "cannot access before initialization" error
-// @ts-ignore
-import { IS_APP, IS_WEB_EXT } from "@dataInterface/system";
+import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/system";
 
 import { QID } from "@src/shared/data/questionId";
 
@@ -677,15 +676,15 @@ export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.CalmingThoughts,
 ];
 
-const qids = {};
+const qids: Record<string, Question> = {};
 
 export const QUESTIONS: QuestionForPrompt[] = [];
-Object.keys(QUESTION_CATEGORIES)
+Object.values(QuestionCategoryId)
   // NOTE: we filter out all questions from categories starting with X
   .filter(filterSpecialWidgets)
   .forEach((categoryId) => {
     const entry = QUESTION_CATEGORIES[categoryId];
-    entry.questions?.forEach((question) => {
+    entry.questions?.forEach((question: Question) => {
       if (qids[question.id]) {
         console.log(qids, question, qids[question.id]);
         throw new Error(`"${question.id}" was used for other question already`);
@@ -706,6 +705,7 @@ export const isExcludedByLimitTo = (qc: QuestionCategory): boolean => {
   ) {
     return true;
   }
+  return false;
 };
 
 export const QUESTIONS_FOR_DEVICE: QuestionForPrompt[] = QUESTIONS.filter(

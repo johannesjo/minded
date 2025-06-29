@@ -46,5 +46,6 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Mood tracking can be beneficial as it provides insights into emotional patterns and triggers, helping you better manage your mental health. By understanding your mood fluctuations, you can implement strategies to enhance positive emotions and mitigate negative ones.",
   [QuestionCategoryId.XSelfAssessment]:
     "Self-assessment is beneficial  as it encourages  to reflect, leading to increased self-awareness and understanding. This can help identify areas of improvement, manage stress, and promote healthier lifestyle choices, contributing to overall physical and mental well-being.",
-  [QuestionCategoryId.XXPurposeOfSession]: "",
+  [QuestionCategoryId.XAppUsageHappiness]:
+    "Monitoring your app usage behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your digital habits, leading to better productivity and time management.",
 };

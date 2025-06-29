@@ -1,4 +1,3 @@
-// @ts-expect-error
 import styles from "./BottomBar.module.scss";
 
 import { A, useLocation, useNavigate } from "@solidjs/router";
@@ -18,7 +17,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
   return (
     <div
       onClick={() => !getIsOnDashboard() && navigate("/")}
-      style={!getIsOnDashboard() && "cursor: pointer;"}
+      style={!getIsOnDashboard() ? { cursor: "pointer" } : {}}
       class={`${styles.bottomBarWrapper}  ${getIsOnDashboard() && styles.isOnDashboard} `}
     >
       {getIsOnDashboard() ? (

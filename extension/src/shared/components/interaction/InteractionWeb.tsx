@@ -23,7 +23,7 @@ export const InteractionWeb: (props: {
   const [getLittleSunTxt, setLittleSunTxt] = createSignal<string>("");
   const [getIsShowBlackScreen, setIsShowBlackScreen] = createSignal(false);
 
-  let wrapperEl;
+  let wrapperEl: HTMLDivElement = undefined!;
 
   onMount(async () => {
     // give a moment time for rendering
@@ -44,10 +44,9 @@ export const InteractionWeb: (props: {
     document.removeEventListener("keypress", escapeHandler);
   });
 
-
   const teardown = () => {
-    console.log('InteractionWeb: teardown called - hiding interaction');
-    console.trace('Teardown call stack');
+    console.log("InteractionWeb: teardown called - hiding interaction");
+    console.trace("Teardown call stack");
     document.removeEventListener("keypress", escapeHandler);
     props.onHideAll();
   };
@@ -100,7 +99,9 @@ export const InteractionWeb: (props: {
                 setIsShowLittleSun(true);
               }}
               onSkip={() => {
-                console.log('InteractionWeb: onSkip called, tearing down interaction');
+                console.log(
+                  "InteractionWeb: onSkip called, tearing down interaction",
+                );
                 teardown();
               }}
               onUpdateQuestion={(question) => {
@@ -108,11 +109,13 @@ export const InteractionWeb: (props: {
                 setLittleSunTxt(question?.t + "?");
               }}
               onSwipeDown={() => {
-                console.log('InteractionWeb: onSwipeDown called, closing tab');
+                console.log("InteractionWeb: onSwipeDown called, closing tab");
                 closeTab();
               }}
               onSwipeUp={() => {
-                console.log('InteractionWeb: onSwipeUp called, showing little sun');
+                console.log(
+                  "InteractionWeb: onSwipeUp called, showing little sun",
+                );
                 setIsShowLittleSun(true);
               }}
             />

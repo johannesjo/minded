@@ -3,7 +3,6 @@ import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
 } from "@src/shared/data/questions";
-// @ts-ignore
 import styles from "@src/shared/components/questionCategoryView/QuestionCategoryView.module.scss";
 import { AnswerListEditable } from "@src/shared/components/questionCategoryView/AnswerListEditable";
 import {
@@ -25,7 +24,9 @@ export const QuestionCategoryView: (props: {
   // onLeave: () => void;
 }) => JSX.Element = (props) => {
   const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
-  const [getAnswersForCategory, setAnswersForCategory] = createSignal([]);
+  const [getAnswersForCategory, setAnswersForCategory] = createSignal<Answer[]>(
+    [],
+  );
   const questionCategoryId = props.params
     .questionCategoryId as QuestionCategoryId;
 
@@ -52,14 +53,14 @@ export const QuestionCategoryView: (props: {
 
   const removeAnswerI = (answerId: string) => {
     setAnswersForCategory(
-      getAnswersForCategory().filter((a) => a.id !== answerId),
+      getAnswersForCategory().filter((a: Answer) => a.id !== answerId),
     );
     removeAnswer(answerId);
   };
 
   const editAnswer = (answerToUpdate: Answer) => {
     setAnswersForCategory(
-      getAnswersForCategory().map((aI) =>
+      getAnswersForCategory().map((aI: Answer) =>
         aI.id === answerToUpdate.id ? { ...aI, ...answerToUpdate } : aI,
       ),
     );
@@ -99,7 +100,7 @@ export const QuestionCategoryView: (props: {
           <Match
             when={questionCategoryId === QuestionCategoryId.XSelfAssessment}
           >
-            <SelfAssessmentSingleView syncData={getSyncDataI()} />
+            <SelfAssessmentSingleView syncData={getSyncDataI()!} />
           </Match>
         </Switch>
       )}
