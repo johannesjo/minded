@@ -78,6 +78,13 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
+    fun closeCurrentApp() {
+        Log.v(logTag, "closeCurrentApp()")
+        ctrlSvc.goToHomeScreen()
+        win.hideWindow()
+    }
+
+    @JavascriptInterface
     fun triggerHaptic(type: String) {
         Log.v(logTag, "triggerHaptic() $type")
         
