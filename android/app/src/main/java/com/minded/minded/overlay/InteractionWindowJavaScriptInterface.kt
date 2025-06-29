@@ -1,4 +1,8 @@
 import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
@@ -71,5 +75,65 @@ class InteractionWindowJavaScriptInterface(
     fun hideWindow() {
         Log.v(logTag, "hideWindow()")
         win.hideWindow()
+    }
+
+    @JavascriptInterface
+    fun triggerHaptic(type: String) {
+        Log.v(logTag, "triggerHaptic() $type")
+        
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = win.context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            win.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        
+        if (!vibrator.hasVibrator()) {
+            Log.w(logTag, "Device does not support vibration")
+            return
+        }
+        
+        val effect = when (type) {
+            "light" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(10)
+                    return
+                }
+            }
+            "medium" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(20)
+                    return
+                }
+            }
+            "heavy" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(50)
+                    return
+                }
+            }
+            else -> {
+                Log.w(logTag, "Unknown haptic type: $type")
+                return
+            }
+        }
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(effect)
+        }
     }
 }

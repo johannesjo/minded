@@ -153,6 +153,20 @@ export function easeOut(progress: number): number {
 }
 
 export function triggerHaptic(type: "light" | "medium" | "heavy"): void {
+  // Check if we're on Android and have the native interface available
+  if (
+    typeof window !== "undefined" &&
+    (window as any).androidMinded?.triggerHaptic
+  ) {
+    try {
+      (window as any).androidMinded.triggerHaptic(type);
+      return;
+    } catch (error) {
+      console.warn("Failed to trigger native Android haptic:", error);
+    }
+  }
+
+  // Fallback to web vibration API
   if ("vibrate" in navigator) {
     const durations = {
       light: 10,
