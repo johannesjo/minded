@@ -1,9 +1,9 @@
 @import "@src/styles/sharedInteractionOnly";
 
-// Set a dark gradient background to prevent white flashes
+// Set the minded gradient background to prevent white flashes
 html {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) fixed;
+  background: var(--background-gradient) fixed;
 }
 
 body {
@@ -83,7 +83,7 @@ textarea {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    background: var(--background-gradient);
     z-index: -2;
     pointer-events: none;
   }
