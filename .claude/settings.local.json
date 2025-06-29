@@ -24,7 +24,8 @@
       "Bash(npx cap sync:*)",
       "Bash(npx cap:*)",
       "Bash(chmod:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(npx sass-migrator module:*)"
     ],
     "deny": []
   }

@@ -21,10 +21,19 @@ const dataInterfaceDroid = resolve(root, "dataInterface", "android");
 const dataInterfaceIOS = resolve(root, "dataInterface", "ios");
 
 export default defineConfig(({ mode }) => {
+  const sassOptions = {
+    quietDeps: true,
+    silenceDeprecations: ["import", "mixed-decls"],
+  };
   return mode === "ios"
     ? {
         // base: "file:///android_asset/web",
         plugins: [solidPlugin()],
+        css: {
+          preprocessorOptions: {
+            scss: sassOptions,
+          },
+        },
         resolve: {
           alias: {
             "@src": root,
@@ -68,6 +77,11 @@ export default defineConfig(({ mode }) => {
       ? {
           base: "file:///android_asset/web",
           plugins: [solidPlugin()],
+          css: {
+            preprocessorOptions: {
+              scss: sassOptions,
+            },
+          },
           resolve: {
             alias: {
               "@src": root,
@@ -104,6 +118,11 @@ export default defineConfig(({ mode }) => {
         }
       : {
           plugins: [solidPlugin(), crx({ manifest })],
+          css: {
+            preprocessorOptions: {
+              scss: sassOptions,
+            },
+          },
           resolve: {
             alias: {
               "@src": root,
