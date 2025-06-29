@@ -92,7 +92,10 @@
 
 @mixin btnIcoOnly($height: var(--btn-height)) {
   @include btnIco($height);
-  background: none;
+
+  & {
+    background: none;
+  }
 
   &:hover {
     background: var(--btn-bg);
@@ -106,8 +109,11 @@
 
 @mixin btnTxt() {
   @include btnBase;
-  padding: 0 16px;
-  font-weight: 300;
+
+  & {
+    padding: 0 16px;
+    font-weight: 300;
+  }
 
   .minded-6622-ico {
     opacity: var(--btn-opacity);
@@ -117,8 +123,11 @@
 
 @mixin btnTxtOutline() {
   @include btnTxt;
-  background: none !important;
-  border: 1px solid var(--btn-outline-color);
+
+  & {
+    background: none !important;
+    border: 1px solid var(--btn-outline-color);
+  }
   &:hover {
     background: var(--btn-bg) !important;
     //box-shadow: none;
@@ -128,8 +137,11 @@
 
 @mixin btnTxtBigger() {
   @include btnBase(var(--btn-height-bigger));
-  padding: 0 20px;
-  font-size: var(--btn-bigger-fz);
+
+  & {
+    padding: 0 20px;
+    font-size: var(--btn-bigger-fz);
+  }
 
   .minded-6622-ico {
     opacity: var(--btn-opacity);
@@ -151,12 +163,15 @@
 
 @mixin btnToggleSelect() {
   @include btnTxt;
-  margin: 8px;
-  user-select: none;
-  text-transform: lowercase;
-  min-width: 100px;
-  transition: 0.2s all;
-  background: var(--btn-bg-not-selected);
+
+  & {
+    margin: 8px;
+    user-select: none;
+    text-transform: lowercase;
+    min-width: 100px;
+    transition: 0.2s all;
+    background: var(--btn-bg-not-selected);
+  }
 
   @include onNonMobileScreens() {
     margin: 16px;
