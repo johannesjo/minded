@@ -12,6 +12,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.minded.minded.overlay.OverlayControllerService
+import android.content.pm.ApplicationInfo
 
 
 class MyAccessibilityService : AccessibilityService() {
@@ -24,12 +25,17 @@ class MyAccessibilityService : AccessibilityService() {
     // Dynamic launcher detection
     private var cachedLaunchers: Set<String>? = null
     private var lastLauncherCacheTime = 0L
+    
+    // System app detection cache
+    private val systemAppCache = mutableMapOf<String, Boolean>()
+    private var lastSystemAppCacheClear = 0L
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         private const val TAG = "MindedAccessibility"
         private const val LAUNCHER_CACHE_DURATION_MS = 60_000L // 1 minute
         private const val LAUNCHER_DEBOUNCE_DEFAULT_MS = 500L
+        private const val SYSTEM_APP_CACHE_DURATION_MS = 300_000L // 5 minutes
         
         // Known launcher packages as fallback
         private val KNOWN_LAUNCHERS = setOf(
@@ -138,39 +144,91 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     private fun isSystemPackage(packageName: String): Boolean {
-        return when {
-            // Own package
-            packageName == "com.minded.minded" -> true
-            
-            // System UI and launchers
-            packageName.startsWith("com.android.systemui") -> true
-            packageName.startsWith("com.android.launcher") -> true
-            packageName.contains(".launcher") -> true
-            packageName.contains(".home") -> true
-            
-            // Input methods
-            packageName.contains("inputmethod") -> true
-            packageName.contains("keyboard") -> true
-            
-            // System dialogs and settings
-            packageName.startsWith("com.android.settings") -> true
-            packageName.startsWith("com.android.packageinstaller") -> true
-            packageName.startsWith("com.android.permissioncontroller") -> true
-            
-            // System services
-            packageName.startsWith("com.android.system") -> true
-            packageName == "android" -> true
-            
-            // Lock screens and security
-            packageName.contains("keyguard") -> true
-            packageName.contains("lockscreen") -> true
-            
-            // Accessibility services
-            packageName.contains("accessibility") -> true
-            packageName.contains("talkback") -> true
-            
-            else -> false
+        // Check cache first
+        val currentTime = System.currentTimeMillis()
+        
+        // Clear cache periodically
+        if (currentTime - lastSystemAppCacheClear > SYSTEM_APP_CACHE_DURATION_MS) {
+            systemAppCache.clear()
+            lastSystemAppCacheClear = currentTime
         }
+        
+        // Return cached result if available
+        systemAppCache[packageName]?.let { return it }
+        
+        // Check if it's our own package
+        if (packageName == "com.minded.minded") {
+            systemAppCache[packageName] = true
+            return true
+        }
+        
+        // Check if it's a launcher (launchers are considered system packages for our purposes)
+        if (isLauncherPackage(packageName)) {
+            systemAppCache[packageName] = true
+            return true
+        }
+        
+        val isSystem = try {
+            // Get application info
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            
+            // Check if it's a system app
+            val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                             (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+            
+            // Additional checks for known system components
+            if (isSystemApp) {
+                true
+            } else {
+                when {
+                    // System UI components
+                    packageName.startsWith("com.android.systemui") -> true
+                    packageName == "android" -> true
+                    
+                    // Input methods
+                    packageName.contains("inputmethod") -> true
+                    packageName.contains("keyboard") -> true
+                    
+                    // Settings and installers
+                    packageName.startsWith("com.android.settings") -> true
+                    packageName.startsWith("com.android.packageinstaller") -> true
+                    packageName.startsWith("com.android.permissioncontroller") -> true
+                    
+                    // Lock screens and security
+                    packageName.contains("keyguard") -> true
+                    packageName.contains("lockscreen") -> true
+                    
+                    // Accessibility services (but not user-installed ones)
+                    packageName.contains("talkback") && packageName.startsWith("com.google") -> true
+                    
+                    // Recent apps / task switcher
+                    packageName.contains("recent") && packageName.startsWith("com.android") -> true
+                    
+                    // Notification shade
+                    packageName.contains("notification") && packageName.startsWith("com.android") -> true
+                    
+                    // Quick settings
+                    packageName.contains("quicksetting") -> true
+                    
+                    else -> false
+                }
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get ApplicationInfo for $packageName", e)
+            // Fall back to simple pattern matching for unknown packages
+            packageName.startsWith("com.android.") || 
+            packageName.startsWith("com.google.android.system")
+        }
+        
+        // Cache the result
+        systemAppCache[packageName] = isSystem
+        
+        if (isSystem) {
+            Log.d(TAG, "Identified system package: $packageName")
+        }
+        
+        return isSystem
     }
     
     private fun isLauncherPackage(packageName: String): Boolean {
