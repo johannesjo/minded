@@ -447,11 +447,30 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     fun goToHomeScreen() {
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        Log.d(logTag, "goToHomeScreen() - attempting to go to home screen")
+        
+        try {
+            // Method 1: Try to use the home intent
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            startActivity(homeIntent)
+            Log.d(logTag, "goToHomeScreen() - home intent sent successfully")
+        } catch (e: Exception) {
+            Log.e(logTag, "goToHomeScreen() - failed to send home intent", e)
+            
+            // Method 2: Fallback - try to use accessibility service to go home
+            try {
+                // Send a broadcast to accessibility service to perform global home action
+                val intent = Intent("com.minded.ACTION_GO_HOME")
+                intent.setPackage(packageName)
+                sendBroadcast(intent)
+                Log.d(logTag, "goToHomeScreen() - sent ACTION_GO_HOME broadcast to accessibility service")
+            } catch (fallbackError: Exception) {
+                Log.e(logTag, "goToHomeScreen() - fallback also failed", fallbackError)
+            }
         }
-        startActivity(intent)
     }
 
     fun goToApp() {

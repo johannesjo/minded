@@ -2,7 +2,10 @@ package com.minded.minded
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -32,6 +35,17 @@ class MyAccessibilityService : AccessibilityService() {
         lastPackageName = null
         lastEventTimestamp = 0
         recentPackageHistory.clear()
+        
+        // Register broadcast receiver for home action
+        val filter = android.content.IntentFilter("com.minded.ACTION_GO_HOME")
+        registerReceiver(homeActionReceiver, filter)
+    }
+    
+    private val homeActionReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d(TAG, "Received ACTION_GO_HOME broadcast")
+            performGlobalAction(GLOBAL_ACTION_HOME)
+        }
     }
 
     override fun onInterrupt() {
@@ -41,6 +55,15 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "onUnbind()")
         return super.onUnbind(intent)
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            unregisterReceiver(homeActionReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister receiver", e)
+        }
     }
 
 
