@@ -31,7 +31,9 @@
       "Bash(npm test:*)",
       "Bash(git checkout:*)",
       "Bash(adb:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(echo:*)",
+      "Bash(adb logcat:*)"
     ],
     "deny": []
   }
