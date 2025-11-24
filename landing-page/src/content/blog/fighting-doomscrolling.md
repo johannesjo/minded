@@ -6,28 +6,39 @@ heroImage: "/blog/doomscrolling.jpg"
 ---
 
 
-Doom-scrolling—the act of endlessly consuming negative news online—has become a common and destructive habit. It feels like staying informed, but it often just amplifies anxiety and helplessness. Here’s how you can fight back.
+Doom-scrolling—the compulsive consumption of negative news—has quietly become one of the most draining digital habits of modern life. It creates the illusion of staying informed, but in reality it reinforces stress, anxiety, and a sense of powerlessness. Breaking the cycle requires intention, not willpower. Here are five practical strategies that work.
 
-## 1. Set a "News Timer"
+## 1. Set a Controlled “News Window”
 
-Decide on a specific, limited time to catch up on the news each day. This could be 15 minutes in the morning and 15 in the evening. When the timer goes off, close the apps. This prevents a quick check-in from turning into an hour-long spiral.
+Decide *when* and *for how long* you consume news. For example, 15 minutes in the morning and 15 minutes in the evening. When the time is up, stop—without negotiation. Limiting exposure prevents a quick update from turning into a 60-minute spiral and helps the brain return to a calmer baseline.
 
-## 2. Curate Your Feeds Ruthlessly
+## 2. Curate Your Inputs Without Hesitation
 
-Unfollow accounts that consistently post rage-bait, overly sensational content, or anything that leaves you feeling drained. Your feed is your digital environment—make it a pleasant place to be. Follow more accounts that share art, nature, hobbies, or uplifting stories.
+Remove accounts that rely on outrage, fear, or sensationalism to drive engagement. If it consistently leaves you tense or exhausted, unfollow it. Your feed functions like an environment—shape it deliberately. Add accounts that focus on art, science, nature, craftsmanship, or anything that restores rather than depletes.
 
-## 3. Create "No-Phone" Zones & Times
+## 3. Establish Screen-Free Zones and Times
 
-Designate certain times or physical spaces as screen-free. The dinner table and the bedroom are great places to start. This creates natural breaks and helps your brain disconnect from the constant stream of information.
+Designate areas or moments where the phone simply does not belong—for example:
 
-## 4. Replace the Habit with a Healthy Alternative
+* the dinner table
+* the bedroom
+* the first 30 minutes after waking
 
-When you feel the urge to start scrolling, have a backup plan. This could be:
--   Reading a chapter of a book.
--   Doing a 5-minute stretching routine.
--   Listening to a favorite song.
--   Using an app like **Minded** to check in with your mood and set an intention.
+These boundaries create natural recovery periods and reduce automatic checking.
 
-## 5. Turn Off Notifications
+## 4. Replace the Behavior, Don’t Just Remove It
 
-Most news alerts are not urgent. By turning off non-essential notifications, you take back control. You decide when you engage, not your phone. This single change can dramatically reduce the pull to pick up your device and start scrolling.
+Stopping a habit without a substitute rarely works. Prepare a default alternative for the moment the urge appears:
+
+* read a few pages of a book
+* do a short stretching routine
+* take a brief walk
+* listen to a favorite song
+* use an app like **Minded** to check in with your mood and set an intention
+
+The goal is to redirect the impulse, not suppress it.
+
+## 5. Silence Non-Essential Notifications
+
+Most alerts are neither urgent nor useful. Disable breaking-news push notifications and anything unrelated to real-world obligations. When you control the entry points of information, you reduce the compulsion to pick up your phone—and the scrolling cycle weakens on its own.
+
