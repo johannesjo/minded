@@ -7,10 +7,11 @@ const posts = (await getCollection('blog')).sort(
 );
 ---
 
-<Layout title="Minded Blog">
+<Layout title="Minded Blog - Digital Mindfulness & Updates" description="Read the latest articles, thoughts on digital mindfulness, and updates from the Minded team.">
 	<main class="container">
 		<section>
 			<h1>Blog</h1>
+      <p class="intro">Welcome to the Minded <strong>Blog</strong>. Here we share thoughts on digital mindfulness and product updates.</p>
 			<ul class="post-list">
 				{
 					posts.map((post) => (
