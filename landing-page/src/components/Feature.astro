@@ -3,10 +3,11 @@ interface Props {
   title: string;
   description: string;
   icon?: string;
+  image?: string;
   reverse?: boolean;
 }
 
-const { title, description, icon, reverse = false } = Astro.props;
+const { title, description, icon, image, reverse = false } = Astro.props;
 ---
 
 <div class={`feature ${reverse ? 'reverse' : ''}`}>
@@ -15,7 +16,13 @@ const { title, description, icon, reverse = false } = Astro.props;
     <p>{description}</p>
   </div>
   <div class="visual">
-    {icon ? <span class="icon">{icon}</span> : <div class="placeholder-img"></div>}
+    {image ? (
+      <img src={image} alt={title} class="feature-image" />
+    ) : icon ? (
+      <span class="icon">{icon}</span>
+    ) : (
+      <div class="placeholder-img"></div>
+    )}
   </div>
 </div>
 
@@ -40,6 +47,14 @@ const { title, description, icon, reverse = false } = Astro.props;
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  .feature-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .placeholder-img {
