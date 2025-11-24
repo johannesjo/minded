@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
+    "deploy": "astro build && rsync -avz --delete --exclude '.well-known/' ./dist/ jo@the-front-end.de:/var/www/vhosts/the-front-end.de/minded.today",
     "preview": "astro preview",
     "astro": "astro"
   },
