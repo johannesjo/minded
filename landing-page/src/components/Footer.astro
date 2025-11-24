@@ -1,0 +1,111 @@
+---
+const today = new Date();
+---
+
+<footer>
+  <div class="container">
+    <div class="footer-content">
+      <div class="brand">
+        <span class="logo-text">Minded</span>
+        <p class="tagline">Reclaim your focus.</p>
+      </div>
+      
+      <div class="links-group">
+        <h3>Product</h3>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/blog">Blog</a></li>
+          <li><a href="https://github.com/johannesjo/minded" target="_blank">GitHub</a></li>
+        </ul>
+      </div>
+
+      <div class="links-group">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/imprint">Imprint</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; {today.getFullYear()} Johannes Millan. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  footer {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4rem 0 2rem;
+    margin-top: auto;
+  }
+
+  .footer-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 4rem;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--c-fg);
+  }
+
+  .tagline {
+    color: var(--c-fg-full-emphasis);
+    opacity: 0.7;
+    margin-top: 0.5rem;
+  }
+
+  .links-group h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+
+  .links-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .links-group li {
+    margin-bottom: 0.8rem;
+  }
+
+  .links-group a {
+    color: var(--c-fg);
+    text-decoration: none;
+    opacity: 0.8;
+    font-weight: normal;
+    transition: opacity 0.2s;
+  }
+
+  .links-group a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 768px) {
+    .footer-content {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      text-align: center;
+    }
+  }
+</style>

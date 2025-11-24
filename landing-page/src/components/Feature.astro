@@ -1,0 +1,83 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  icon?: string;
+  reverse?: boolean;
+}
+
+const { title, description, icon, reverse = false } = Astro.props;
+---
+
+<div class={`feature ${reverse ? 'reverse' : ''}`}>
+  <div class="content">
+    <h3>{title}</h3>
+    <p>{description}</p>
+  </div>
+  <div class="visual">
+    {icon ? <span class="icon">{icon}</span> : <div class="placeholder-img"></div>}
+  </div>
+</div>
+
+<style>
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+    margin: 6rem 0;
+  }
+
+  .feature.reverse {
+    flex-direction: row-reverse;
+  }
+
+  .content {
+    flex: 1;
+  }
+
+  .visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .placeholder-img {
+    width: 100%;
+    max-width: 400px;
+    height: 250px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .icon {
+    font-size: 5rem;
+  }
+
+  h3 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--c-fg);
+  }
+
+  p {
+    font-size: 1.25rem;
+    color: var(--c-fg-full-emphasis);
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .feature {
+      flex-direction: column;
+      gap: 2rem;
+      margin: 4rem 0;
+      text-align: center;
+    }
+    .feature.reverse {
+      flex-direction: column;
+    }
+  }
+</style>

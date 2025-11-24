@@ -1,0 +1,118 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const principles = [
+  {
+    title: "Attention is your most valuable resource.",
+    body: "Social media platforms are engineered to capture and monetize your attention. We build tools to help you defend it."
+  },
+  {
+    title: "Friction can be good.",
+    body: "Mindless scrolling happens when access is too easy. We introduce gentle friction—a pause, a breath, a question—to help you make a conscious choice."
+  },
+  {
+    title: "Data belongs to you.",
+    body: "Your mood, your reflections, and your habits are private. Minded operates offline-first and doesn't sell your data."
+  },
+  {
+    title: "Technology should serve life, not replace it.",
+    body: "Our goal isn't to keep you in our app. It's to help you get off your screen and back to the real world."
+  }
+];
+---
+
+<Layout title="About Minded">
+  <main class="container">
+    <div class="hero-section">
+      <h1>About Minded</h1>
+      <p class="subtitle">We're building a calmer internet.</p>
+    </div>
+
+    <div class="content-wrapper">
+      <section class="intro">
+        <h2>Hi, I'm Johannes.</h2>
+        <div class="bio">
+          <p>
+            I'm a web developer based in Berlin and the creator of Minded (and <a href="https://super-productivity.com" target="_blank">Super Productivity</a>).
+          </p>
+          <p>
+            I built Minded because I found myself constantly falling into the trap of "just checking" my phone or browser, only to lose 30 minutes to a feed I didn't care about.
+          </p>
+          <p>
+            I wanted a tool that wasn't just a blocker, but a reminder. A digital nudge to ask: "Is this what you want to be doing right now?"
+          </p>
+        </div>
+      </section>
+
+      <section class="principles">
+        <h2>Our Principles</h2>
+        <div class="grid">
+          {principles.map((item, index) => (
+            <div class="card">
+              <span class="number">{index + 1}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .hero-section {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  .subtitle {
+    font-size: 1.5rem;
+    opacity: 0.8;
+  }
+
+  .content-wrapper {
+    max-width: 900px;
+    margin: 0 auto 4rem;
+  }
+
+  .intro {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 3rem;
+    border-radius: 16px;
+    margin-bottom: 4rem;
+  }
+
+  .intro h2 {
+    margin-top: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2rem;
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .number {
+    font-size: 3rem;
+    font-weight: bold;
+    opacity: 0.1;
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+  }
+
+  .card h3 {
+    margin-top: 0.5rem;
+    font-size: 1.25rem;
+  }
+</style>

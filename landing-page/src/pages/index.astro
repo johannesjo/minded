@@ -1,45 +1,195 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Feature from '../components/Feature.astro';
 ---
 
-<Layout title="Minded - Mindfulness Made Simple">
-	<main class="container">
+<Layout title="Minded - Reclaim Your Focus">
+	<main>
 		<section class="hero">
-			<h1>Minded</h1>
-			<p class="subtitle">A mindful approach to your digital life.</p>
-			
-			<div class="cta-group">
-				<!-- Placeholder for store links or download -->
-				<a href="/blog" class="btn">Read our Blog</a>
+			<div class="container">
+				<div class="hero-content">
+					<h1>Stop Doom-Scrolling.<br/>Start Living.</h1>
+					<p class="subtitle">Minded helps you fight social media addiction and focus on what really counts. Reclaim your time and attention today.</p>
+					
+					<div class="cta-group">
+						<a href="#" class="btn btn-primary">Get Extension</a>
+						<a href="#features" class="btn btn-secondary">Learn More</a>
+					</div>
+          <p class="small-print">Available on Chrome & Android</p>
+				</div>
 			</div>
 		</section>
+
+    <section id="features" class="features container">
+      <div class="section-header">
+        <h2>Your Digital Mindfulness Companion</h2>
+        <p>Minded replaces the mindless scroll with intentional pauses.</p>
+      </div>
+
+      <Feature 
+        title="Mindful New Tab"
+        description="Replace your new tab page with a calm, focusing dashboard. Instead of distractions, see your goals and current state of mind every time you open a new tab."
+        icon="🧘"
+      />
+
+      <Feature 
+        title="Daily Mood Check-in"
+        description="Track your energy levels and mood throughout the day. Identify patterns and understand when you work best and when you need a break."
+        icon="📊"
+        reverse={true}
+      />
+
+      <Feature 
+        title="Reflective Questions"
+        description="Answer simple, grounding questions like 'What are you looking forward to?' or 'What will you do your best at today?' to set a positive intention."
+        icon="🤔"
+      />
+    </section>
+
+    <section class="download">
+      <div class="container">
+        <h2>Ready to take back control?</h2>
+        <p>Join thousands of users who have reclaimed their focus with Minded.</p>
+        <div class="platform-links">
+          <a href="https://chromewebstore.google.com/detail/minded/obghjflblojheamhnchaklenibffehjk" class="platform-btn">Chrome Extension</a>
+          <a href="https://play.google.com/store/apps/details?id=com.minded.minded&hl=gsw" class="platform-btn">Android App</a>
+        </div>
+      </div>
+    </section>
 	</main>
 </Layout>
 
 <style>
 	.hero {
 		text-align: center;
-		padding: 4rem 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		min-height: 60vh;
+		padding: 8rem 0 6rem;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
 	}
+
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
 	
 	h1 {
-		font-size: 4rem;
-		margin-bottom: 0.5rem;
+		font-size: 4.5rem;
+		line-height: 1.1;
+		margin-bottom: 1.5rem;
+    font-weight: 800;
 	}
 	
 	.subtitle {
 		font-size: 1.5rem;
-		opacity: 0.8;
-		margin-bottom: 2rem;
+		opacity: 0.9;
+		margin-bottom: 3rem;
+    line-height: 1.5;
 	}
 	
 	.cta-group {
 		display: flex;
-		gap: 1rem;
+		gap: 1.5rem;
+		justify-content: center;
+    margin-bottom: 2rem;
 	}
+
+	.btn-primary {
+    background: var(--c-fg);
+    color: #fff; /* Default for light mode (Dark BG -> White Text) */
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .btn-primary {
+      color: #000; /* Dark mode (Light BG -> Dark Text) */
+    }
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--c-fg);
+    color: var(--c-fg);
+  }
+
+  .btn-secondary:hover {
+    background: var(--c-fg);
+    color: var(--btn-text-hover, #fff);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .btn-secondary:hover {
+      color: #000;
+    }
+  }
+
+  .small-print {
+    font-size: 0.9rem;
+    opacity: 0.6;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-header h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-header p {
+    font-size: 1.25rem;
+    opacity: 0.8;
+  }
+
+  .download {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6rem 0;
+    text-align: center;
+    margin-top: 4rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .platform-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 3rem;
+  }
+
+  .platform-btn {
+    background: #fff;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    color: var(--c-fg); /* Default for light mode */
+    font-weight: bold;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .platform-btn {
+      color: #000; /* Force black text for dark mode on white background */
+    }
+  }
+
+  .platform-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 3rem;
+    }
+    .cta-group {
+      flex-direction: column;
+    }
+  }
 </style>

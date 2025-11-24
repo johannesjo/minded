@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Imprint - Minded">
+  <main class="container">
+    <article class="content-page">
+      <h1>Imprint</h1>
+      
+      <p>
+        This legal notice fulfills the information requirements for online services under German law (§ 5 TMG and § 55 RStV).
+      </p>
+
+      <div class="section">
+        <h2>Responsible Entity</h2>
+        <p>
+          Johannes Millan<br />
+          Hauptstraße 4H<br />
+          10407 Berlin<br />
+          Germany
+        </p>
+        <p>
+          Email: <a href="mailto:contact@super-productivity.com">contact@super-productivity.com</a>
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>Editorial Responsibility</h2>
+        <p>Johannes Millan (address as above)</p>
+      </div>
+
+      <div class="section">
+        <h2>Online Dispute Resolution</h2>
+        <p>
+          The European Commission provides a platform for online dispute resolution (ODR): 
+          <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer">https://ec.europa.eu/consumers/odr/</a>. 
+          I am neither obliged nor willing to participate in dispute-settlement proceedings before a consumer arbitration board.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>Disclaimer</h2>
+        <p>
+          Every effort is made to keep the information on this website current and correct. However, I accept no liability for the completeness, accuracy, or timeliness of the content or for external links. Linked pages are the sole responsibility of their operators.
+        </p>
+      </div>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  .content-page {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 3rem;
+    border-radius: 16px;
+    margin: 4rem auto;
+    max-width: 800px;
+  }
+
+  .section {
+    margin-top: 2.5rem;
+  }
+
+  h1 {
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--c-fg);
+  }
+
+  a {
+    text-decoration: underline;
+  }
+</style>
