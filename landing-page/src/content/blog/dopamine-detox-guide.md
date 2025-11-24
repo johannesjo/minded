@@ -1,7 +1,7 @@
 ---
 title: "The Practical Guide to a Dopamine Detox"
 description: "Feeling unmotivated, bored, and constantly reaching for your phone? It might be time for a dopamine detox. This is not about punishment; it's about resetting your brain's reward system. Here is a practical, step-by-step guide."
-pubDate: 2025-11-25
+pubDate: 2025-11-24
 heroImage: "/blog/dopamine-detox.jpg"
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: "The Subtle Art of Digital Minimalism"
 description: "Digital minimalism isn't about throwing away your phone. It's about curating your digital life to support your real-world values. Here is how to start."
-pubDate: 2025-11-22
+pubDate: 2025-11-24
 heroImage: "/blog/digital-minimalism.jpg"
 ---
 
