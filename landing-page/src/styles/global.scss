@@ -1,0 +1,96 @@
+:root {
+  --border-radius: 8px;
+  --c-link-color: rgb(153, 23, 166);
+  
+  --fz-xxl: 40px;
+  --fz-xl: 32px;
+  --fz-l: 24px;
+  --fz-m: 19px;
+  --fz-s: 14px;
+
+  --c-fg-full-emphasis: rgba(0, 0, 0, 0.85);
+  --c-fg: rgba(0, 0, 0, 0.8);
+
+  --btn-fz: 24px;
+  --btn-height: 56px;
+  --btn-bg: #fff;
+  
+  /* Light Mode Gradients */
+  --c-gradient-1: #ccf1f6;
+  --c-gradient-2: #ffebf6;
+  --c-gradient-3: #f4f3b5;
+  --background-gradient: linear-gradient(
+    175deg,
+    var(--c-gradient-1),
+    var(--c-gradient-2),
+    var(--c-gradient-3)
+  );
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-gradient-1: #071449;
+    --c-gradient-2: #1a137c;
+    --c-gradient-3: #401049;
+    
+    --c-fg: rgba(255, 255, 255, 0.8);
+    --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
+  }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  color: var(--c-fg);
+  background: var(--background-gradient);
+  background-attachment: fixed; /* Keep gradient fixed while scrolling */
+  font-size: var(--fz-m);
+  line-height: 1.5;
+}
+
+h1 { font-size: var(--fz-xxl); margin-bottom: 1rem; }
+h2 { font-size: var(--fz-xl); margin-bottom: 1rem; }
+h3 { font-size: var(--fz-l); margin-bottom: 0.5rem; }
+p { margin-bottom: 1rem; }
+
+a {
+  color: var(--c-link-color);
+  font-weight: bold;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--btn-bg);
+  height: var(--btn-height);
+  line-height: var(--btn-height);
+  padding: 0 2rem;
+  border-radius: 30px;
+  font-size: var(--btn-fz);
+  color: var(--c-fg);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.1s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+    text-decoration: none;
+  }
+}

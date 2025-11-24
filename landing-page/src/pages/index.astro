@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Minded - Mindfulness Made Simple">
+	<main class="container">
+		<section class="hero">
+			<h1>Minded</h1>
+			<p class="subtitle">A mindful approach to your digital life.</p>
+			
+			<div class="cta-group">
+				<!-- Placeholder for store links or download -->
+				<a href="/blog" class="btn">Read our Blog</a>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	.hero {
+		text-align: center;
+		padding: 4rem 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 60vh;
+	}
+	
+	h1 {
+		font-size: 4rem;
+		margin-bottom: 0.5rem;
+	}
+	
+	.subtitle {
+		font-size: 1.5rem;
+		opacity: 0.8;
+		margin-bottom: 2rem;
+	}
+	
+	.cta-group {
+		display: flex;
+		gap: 1rem;
+	}
+</style>

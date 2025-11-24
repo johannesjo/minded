@@ -1,0 +1,65 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate?.valueOf() - a.data.pubDate?.valueOf()
+);
+---
+
+<Layout title="Minded Blog">
+	<main class="container">
+		<section>
+			<h1>Blog</h1>
+			<ul class="post-list">
+				{
+					posts.map((post) => (
+						<li>
+							<a href={`/blog/${post.slug}/`}>
+								<h2 class="title">{post.data.title}</h2>
+								<p class="date">
+									{post.data.pubDate?.toLocaleDateString('en-us', {
+										year: 'numeric',
+										month: 'short',
+										day: 'numeric',
+									})}
+								</p>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	.post-list {
+		list-style-type: none;
+		padding: 0;
+	}
+	.post-list li {
+		background: rgba(255, 255, 255, 0.2);
+		margin-bottom: 1rem;
+		padding: 1.5rem;
+		border-radius: var(--border-radius);
+		transition: background 0.2s;
+	}
+	.post-list li:hover {
+		background: rgba(255, 255, 255, 0.4);
+	}
+	.title {
+		margin: 0;
+		font-size: 1.5rem;
+		color: var(--c-fg);
+	}
+	.date {
+		margin: 0.5rem 0 0;
+		color: var(--c-fg-full-emphasis);
+		opacity: 0.7;
+		font-size: 0.9rem;
+	}
+	a {
+		text-decoration: none;
+	}
+</style>
