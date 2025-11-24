@@ -5,8 +5,6 @@ pubDate: 2025-11-22
 heroImage: "/blog/digital-minimalism.jpg"
 ---
 
-# The Subtle Art of Digital Minimalism
-
 In a world saturated with notifications, endless feeds, and the constant pressure to be online, "Digital Minimalism" has emerged as a necessary philosophy for modern life. But there is a common misconception: it’s not about being a Luddite. It’s not about rejecting technology entirely or moving to a cabin in the woods.
 
 Digital minimalism is about **intention**. It is the art of carefully curating your digital tools so they serve your real-world goals, rather than allowing them to use you.

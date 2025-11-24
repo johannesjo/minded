@@ -5,8 +5,6 @@ pubDate: 2025-11-20
 heroImage: "/blog/doomscrolling.jpg"
 ---
 
-# 5 Practical Tips to Beat Doom-Scrolling
-
 It starts innocently enough. You check a headline. Then you click a related article. Then you check the comments. Twenty minutes later, you are deep in a rabbit hole of bad news, feeling anxious, helpless, and exhausted. This is **doom-scrolling**.
 
 It’s not just a bad habit; it’s a biological response. Our brains are wired to pay attention to threats. When we see negative news, our "fight or flight" response triggers, keeping us glued to the screen in a misguided attempt to stay safe by "knowing everything."

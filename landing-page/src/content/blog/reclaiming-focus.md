@@ -5,8 +5,6 @@ pubDate: 2025-11-24
 heroImage: "/blog/reclaiming-focus.jpg"
 ---
 
-# How to Focus in a World Designed for Distraction
-
 In our modern economy, the ability to focus without distraction on a cognitively demanding task—what author Cal Newport calls "Deep Work"—is a superpower. It is the skill that allows you to learn difficult things quickly, produce high-quality work, and find meaning in your profession.
 
 Yet, this skill has never been rarer. We are living in a world that is actively hostile to focus. Our digital environment is a constant barrage of notifications, emails, and breaking news, all designed to fracture our attention into a thousand tiny pieces. We spend our days in a frantic state of "shallow work"—answering emails, attending meetings, and responding to pings—all while feeling busy but accomplishing very little of substance.
