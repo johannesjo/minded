@@ -38,6 +38,7 @@ const posts = (await getCollection('blog')).sort(
 		list-style-type: none;
 		padding: 0;
 	}
+	.post-list li {
 		background: rgba(255, 255, 255, 0.4);
     /* Dark mode specific background */
     @media (prefers-color-scheme: dark) {
