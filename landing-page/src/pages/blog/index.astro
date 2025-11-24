@@ -38,8 +38,12 @@ const posts = (await getCollection('blog')).sort(
 		list-style-type: none;
 		padding: 0;
 	}
-	.post-list li {
-		background: rgba(255, 255, 255, 0.2);
+		background: rgba(255, 255, 255, 0.4);
+    /* Dark mode specific background */
+    @media (prefers-color-scheme: dark) {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
 		margin-bottom: 1rem;
 		padding: 1.5rem;
 		border-radius: var(--border-radius);
@@ -47,6 +51,10 @@ const posts = (await getCollection('blog')).sort(
 	}
 	.post-list li:hover {
 		background: rgba(255, 255, 255, 0.4);
+    /* Dark mode specific background */
+    @media (prefers-color-scheme: dark) {
+      background: rgba(0, 0, 0, 0.6); /* Slightly darker on hover */
+    }
 	}
 	.title {
 		margin: 0;
