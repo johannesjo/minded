@@ -169,6 +169,13 @@ declare module 'astro:content' {
   collection: "blog";
   data: any
 } & { render(): Render[".md"] };
+"science-of-small-wins.md": {
+	id: "science-of-small-wins.md";
+  slug: "science-of-small-wins";
+  body: string;
+  collection: "blog";
+  data: any
+} & { render(): Render[".md"] };
 };
 
 	};
