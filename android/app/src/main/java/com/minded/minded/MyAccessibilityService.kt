@@ -13,6 +13,10 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.minded.minded.overlay.OverlayControllerService
 import android.content.pm.ApplicationInfo
+import com.minded.minded.detection.HybridAppDetector
+import com.minded.minded.detection.ConfidenceLevel
+import com.minded.minded.detection.DetectionConfidence
+import kotlinx.coroutines.*
 
 
 /**
@@ -34,21 +38,21 @@ class MyAccessibilityService : AccessibilityService() {
     private var lastEventTimestamp: Long = 0
     private val recentPackageHistory = mutableListOf<Pair<String, Long>>()
     private val PACKAGE_HISTORY_SIZE = 5
-    private val LAUNCHER_DEBOUNCE_MS: Long by lazy { 
-        getManufacturerDebounceTime() 
+    private val LAUNCHER_DEBOUNCE_MS: Long by lazy {
+        getManufacturerDebounceTime()
     }
-    
+
     // Track if minded overlay is active to prevent keyboard from closing it
     private var isMindedOverlayActive = false
-    
+
     // Dynamic launcher detection
     private var cachedLaunchers: Set<String>? = null
     private var lastLauncherCacheTime = 0L
-    
+
     // System app detection cache
     private val systemAppCache = mutableMapOf<String, Boolean>()
     private var lastSystemAppCacheClear = 0L
-    
+
     // Transition pattern tracking
     private data class AppTransition(
         val fromPackage: String?,
@@ -59,14 +63,18 @@ class MyAccessibilityService : AccessibilityService() {
     )
     private val transitionHistory = mutableListOf<AppTransition>()
     private var lastUserApp: String? = null
-    
+
     // Device manufacturer info
-    private val deviceManufacturer: String by lazy { 
+    private val deviceManufacturer: String by lazy {
         Build.MANUFACTURER?.lowercase() ?: "unknown"
     }
-    private val deviceModel: String by lazy { 
+    private val deviceModel: String by lazy {
         Build.MODEL?.lowercase() ?: "unknown"
     }
+
+    // Hybrid detection system
+    private var hybridDetector: HybridAppDetector? = null
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -149,14 +157,22 @@ class MyAccessibilityService : AccessibilityService() {
         } catch (e: Exception) {
             Log.e(TAG, "Error accessing device info", e)
         }
-        
+
         // Clear any stale state on service creation
         lastPackageName = null
         lastEventTimestamp = 0
         recentPackageHistory.clear()
         transitionHistory.clear()
         lastUserApp = null
-        
+
+        // Initialize hybrid detection system
+        hybridDetector = HybridAppDetector(this).apply {
+            healthMonitor.setOnUnhealthyCallback {
+                Log.e(TAG, "Service health monitor detected unhealthy state")
+                // Could notify user or attempt recovery here
+            }
+        }
+
         // Register broadcast receiver for home action
         val filter = android.content.IntentFilter("com.minded.ACTION_GO_HOME")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -184,6 +200,13 @@ class MyAccessibilityService : AccessibilityService() {
     
     override fun onDestroy() {
         super.onDestroy()
+
+        // Stop hybrid detection system
+        hybridDetector?.stop()
+        hybridDetector = null
+        serviceScope.cancel()
+        Log.d(TAG, "Hybrid detection system stopped")
+
         try {
             unregisterReceiver(homeActionReceiver)
         } catch (e: Exception) {
@@ -195,7 +218,7 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         Log.d(TAG, "onServiceConnected()")
         super.onServiceConnected()
-        
+
         // Configure the service programmatically to ensure it works reliably
         val config = AccessibilityServiceInfo().apply {
             eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
@@ -207,7 +230,11 @@ class MyAccessibilityService : AccessibilityService() {
                     AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
         }
         serviceInfo = config
-        
+
+        // Start hybrid detection system
+        hybridDetector?.start()
+        Log.d(TAG, "Hybrid detection system started")
+
         // Ensure OverlayControllerService is running
         ensureOverlayServiceRunning()
     }
@@ -516,12 +543,15 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         val packageName = event.packageName?.toString() ?: return
         val currentTime = System.currentTimeMillis()
-        
+
+        // Record event with health monitor
+        hybridDetector?.healthMonitor?.recordEvent()
+
         // Extract event context for better validation
         val className = event.className?.toString() ?: ""
         val eventText = event.text.joinToString(" ")
         val contentDesc = event.contentDescription?.toString() ?: ""
-        
+
         Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
         
         // Track if minded overlay is active
@@ -805,77 +835,125 @@ class MyAccessibilityService : AccessibilityService() {
         return false
     }
     
-    private fun shouldTriggerOverlay(packageName: String, currentTime: Long): Boolean {
+    /**
+     * Determines whether to trigger an overlay for the given package.
+     * Uses confidence scoring to make more reliable decisions.
+     *
+     * @return Pair of (shouldTrigger, confidence) for logging and debugging
+     */
+    private fun shouldTriggerOverlayWithConfidence(
+        packageName: String,
+        currentTime: Long
+    ): Pair<Boolean, DetectionConfidence> {
         // Don't trigger for launchers
         if (isLauncherPackage(packageName)) {
             Log.d(TAG, "Not triggering for launcher: $packageName")
-            return false
+            return false to DetectionConfidence()
         }
-        
+
         // Don't trigger if it's the same package
         if (packageName == lastPackageName) {
-            return false
+            return false to DetectionConfidence()
         }
-        
+
         // Analyze the transition pattern
         val pattern = analyzeTransitionPattern(packageName, currentTime)
         Log.d(TAG, "Transition pattern for $packageName: $pattern")
-        
-        return when (pattern) {
+
+        // Calculate pattern confidence
+        val patternConfidence = getPatternConfidence(pattern)
+        val confidence = DetectionConfidence.accessibilityOnly(patternConfidence)
+
+        val shouldTrigger = when (pattern) {
             TransitionPattern.FIRST_APP_LAUNCH -> {
-                // Always show overlay for first app launch
-                Log.d(TAG, "First app launch detected")
+                Log.d(TAG, "First app launch detected (confidence: ${confidence.overall})")
                 true
             }
-            
+
             TransitionPattern.LAUNCHER_TO_APP -> {
-                // Show overlay for direct launches from launcher
-                Log.d(TAG, "Direct launch from launcher detected")
+                Log.d(TAG, "Direct launch from launcher detected (confidence: ${confidence.overall})")
                 true
             }
-            
+
             TransitionPattern.APP_SWITCH_VIA_LAUNCHER -> {
-                // Show overlay when switching between apps via launcher/recents
-                Log.d(TAG, "App switch via launcher detected")
+                Log.d(TAG, "App switch via launcher detected (confidence: ${confidence.overall})")
                 true
             }
-            
+
             TransitionPattern.DIRECT_APP_SWITCH -> {
-                // Show overlay for direct app-to-app switches (e.g., via notifications)
-                Log.d(TAG, "Direct app switch detected")
+                Log.d(TAG, "Direct app switch detected (confidence: ${confidence.overall})")
                 true
             }
-            
+
             TransitionPattern.RETURNING_TO_APP -> {
-                // Don't show overlay when returning to same app
                 Log.d(TAG, "Returning to same app, not triggering")
                 false
             }
-            
+
             TransitionPattern.NOTIFICATION_PULL -> {
-                // Don't show overlay when returning from notification shade
                 Log.d(TAG, "Returning from notification shade, not triggering")
                 false
             }
-            
+
             TransitionPattern.RECENTS_BROWSING -> {
-                // Don't show overlay while browsing recents
                 Log.d(TAG, "User browsing recents, not triggering")
                 false
             }
-            
+
             TransitionPattern.QUICK_SETTINGS_PULL -> {
-                // Don't show overlay when returning from quick settings
                 Log.d(TAG, "Returning from quick settings, not triggering")
                 false
             }
-            
+
             TransitionPattern.UNKNOWN -> {
-                // For unknown patterns, use conservative approach
-                Log.d(TAG, "Unknown pattern, using time-based logic")
-                currentTime - lastEventTimestamp > LAUNCHER_DEBOUNCE_MS
+                // For unknown patterns, use confidence-based decision
+                Log.d(TAG, "Unknown pattern (confidence: ${confidence.overall})")
+                when (confidence.level) {
+                    ConfidenceLevel.HIGH, ConfidenceLevel.MEDIUM -> true
+                    ConfidenceLevel.LOW -> currentTime - lastEventTimestamp > LAUNCHER_DEBOUNCE_MS
+                    ConfidenceLevel.VERY_LOW -> false
+                }
             }
         }
+
+        return shouldTrigger to confidence
+    }
+
+    /**
+     * Returns a confidence score (0.0-1.0) for a given transition pattern.
+     */
+    private fun getPatternConfidence(pattern: TransitionPattern): Float {
+        return when (pattern) {
+            TransitionPattern.FIRST_APP_LAUNCH -> 0.95f
+            TransitionPattern.LAUNCHER_TO_APP -> 0.95f
+            TransitionPattern.APP_SWITCH_VIA_LAUNCHER -> 0.90f
+            TransitionPattern.DIRECT_APP_SWITCH -> 0.85f
+            TransitionPattern.RETURNING_TO_APP -> 0.20f
+            TransitionPattern.NOTIFICATION_PULL -> 0.15f
+            TransitionPattern.RECENTS_BROWSING -> 0.10f
+            TransitionPattern.QUICK_SETTINGS_PULL -> 0.15f
+            TransitionPattern.UNKNOWN -> 0.50f
+        }
+    }
+
+    /**
+     * Legacy method for backward compatibility.
+     * Delegates to the confidence-based implementation.
+     */
+    private fun shouldTriggerOverlay(packageName: String, currentTime: Long): Boolean {
+        val (shouldTrigger, confidence) = shouldTriggerOverlayWithConfidence(packageName, currentTime)
+
+        // Notify the hybrid detector for cross-validation
+        val pattern = analyzeTransitionPattern(packageName, currentTime)
+        serviceScope.launch {
+            hybridDetector?.onAccessibilityEvent(
+                packageName = packageName,
+                pattern = pattern.name,
+                patternConfidence = getPatternConfidence(pattern)
+            )
+        }
+
+        return shouldTrigger
     }
     
     private fun hideOverlayForBackgroundedApp() {
