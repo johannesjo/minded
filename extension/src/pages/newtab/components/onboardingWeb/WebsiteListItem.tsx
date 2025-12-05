@@ -27,7 +27,7 @@ export const WebsiteListItem: (props: {
         type="text"
         value={getValue()}
         onblur={() => props.update(getValue())}
-        oninput={(e) => setValue((e as any).currentTarget.value as string)}
+        oninput={(e) => setValue(e.currentTarget.value)}
       />
       <button class="btnIcoSmall" onClick={props.remove}>
         <Ico name="close" />

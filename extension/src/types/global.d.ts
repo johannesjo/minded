@@ -36,8 +36,9 @@ declare module "*.svg" {
 }
 
 declare module "*.svg?react" {
-  const ReactComponent: any;
-  export default ReactComponent;
+  import type { Component } from "solid-js";
+  const SvgComponent: Component<Record<string, unknown>>;
+  export default SvgComponent;
 }
 
 // Image declarations
@@ -105,6 +106,20 @@ declare module "*.webm" {
 
 // JSON declarations
 declare module "*.json" {
-  const content: any;
+  const content: unknown;
   export default content;
+}
+
+// Native bridge interfaces for Android/iOS
+import type {
+  AndroidMindedBridge,
+  IOSMindedBridge,
+} from "@src/dataInterface/dataInterface.types";
+
+declare global {
+  interface Window {
+    androidMinded?: AndroidMindedBridge;
+    iosMinded?: IOSMindedBridge;
+    IS_MAIN_MINDED_6622?: boolean;
+  }
 }

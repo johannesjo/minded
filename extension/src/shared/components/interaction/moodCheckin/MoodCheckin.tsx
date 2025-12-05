@@ -93,7 +93,7 @@ export const MoodCheckin: (props: {
           }
           autocomplete="true"
           maxlength="200"
-          onInput={(ev) => handleInputChange((ev.target as any).value)}
+          onInput={(ev) => handleInputChange(ev.currentTarget.value)}
           onKeyDown={(ev) => {
             if (ev.key === "Enter") {
               ev.preventDefault();

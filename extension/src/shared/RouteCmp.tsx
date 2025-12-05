@@ -1,6 +1,6 @@
-import { HashRouter, Route } from "@solidjs/router";
+import { HashRouter, Route, RouteSectionProps } from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
@@ -21,7 +21,7 @@ import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
 import InteractionIOS from "@src/ios/interaction/InteractionIOS";
 
-const MainWrapper = (props: { children: JSX.Element }): JSX.Element => {
+const MainWrapper = (props: RouteSectionProps) => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
     createSignal<boolean>(false);
 
@@ -76,7 +76,7 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
       {/*  resolve!*/}
       {/*</div>*/}
 
-      <HashRouter root={MainWrapper as any}>
+      <HashRouter root={MainWrapper}>
         <Route path="*" component={Dashboard} />
         <Route
           path="/questionCategory/:questionCategoryId"
