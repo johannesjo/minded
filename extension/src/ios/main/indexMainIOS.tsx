@@ -1,6 +1,6 @@
 import { setupUpdateInsets } from "@src/ios/shared/setupUpdateInsets";
 
-(window as any).IS_MAIN_MINDED_6622 = true;
+window.IS_MAIN_MINDED_6622 = true;
 
 import { render } from "solid-js/web";
 import "./indexMainIOS.scss";

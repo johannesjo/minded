@@ -95,7 +95,7 @@ export const AnswerEntry: (props: {
               }
             }}
             onInput={(ev) => {
-              setTitle((ev.target as any).value);
+              setTitle(ev.currentTarget.value);
             }}
             onblur={() => {
               if (getIsEditMode()) {

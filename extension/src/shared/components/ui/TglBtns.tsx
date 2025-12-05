@@ -22,8 +22,7 @@ const TglBtns = <T,>(props: {
                 : "btnToggleSelect"
             }
             onClick={() => {
-              // TODO find out why any is needed
-              setSelectedVal(option.val as any);
+              setSelectedVal(() => option.val);
               props.onSelect(option.val);
             }}
           >

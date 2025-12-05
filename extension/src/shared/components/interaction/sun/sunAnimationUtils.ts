@@ -158,13 +158,9 @@ export function easeOut(progress: number): number {
 
 export function triggerHaptic(type: "light" | "medium" | "heavy"): void {
   // Check if we're on Android and have the native interface available
-  if (
-    typeof window !== "undefined" &&
-    "androidMinded" in window &&
-    (window as any).androidMinded?.triggerHaptic
-  ) {
+  if (typeof window !== "undefined" && window.androidMinded?.triggerHaptic) {
     try {
-      (window as any).androidMinded.triggerHaptic(type);
+      window.androidMinded.triggerHaptic(type);
       console.log("Triggered Android haptic:", type);
       return;
     } catch (error) {

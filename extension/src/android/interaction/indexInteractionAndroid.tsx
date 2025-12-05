@@ -8,4 +8,4 @@ if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
-render(InteractionAndroid as any, appContainer);
+render(() => <InteractionAndroid />, appContainer);

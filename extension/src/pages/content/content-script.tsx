@@ -40,15 +40,14 @@ const CURRENT_URL = window.location.href;
         document.head.appendChild(styleTag);
 
         render(
-          () =>
-            (
-              <ContentScriptMain
-                isShowFullMinderInitially={isShowFullMinder(
-                  CURRENT_URL,
-                  syncData,
-                )}
-              />
-            ) as any,
+          () => (
+            <ContentScriptMain
+              isShowFullMinderInitially={isShowFullMinder(
+                CURRENT_URL,
+                syncData,
+              )}
+            />
+          ),
           wrapperEl,
         );
       }

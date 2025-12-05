@@ -7,4 +7,4 @@ if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
-render(OptionsPage as any, appContainer);
+render(() => <OptionsPage />, appContainer);
