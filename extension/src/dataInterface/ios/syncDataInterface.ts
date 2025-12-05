@@ -1,28 +1,49 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import { Preferences } from "@capacitor/preferences";
+import { handleDataError, DataStorageError } from "@src/dataInterface/errors";
+import { safeJsonParse } from "@src/util/safeJsonParse";
 
 const DB_KEY = "mindedSyncData";
 
 export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
-  return await Preferences.set({
-    key: DB_KEY,
-    value: JSON.stringify(syncData),
-  });
+  try {
+    await Preferences.set({
+      key: DB_KEY,
+      value: JSON.stringify(syncData),
+    });
+  } catch (error) {
+    handleDataError(
+      new DataStorageError("Failed to save sync data", "ios", "write", error),
+      "iOS: saveSyncDataN",
+      { alertUser: true },
+    );
+    throw error;
+  }
 };
 
 export const getSyncDataN = async (): Promise<SyncData> => {
-  const result = await Preferences.get({ key: DB_KEY });
-  if (!result.value) {
-    return DEFAULT_SYNC_DATA;
-  }
   try {
-    return {
-      ...DEFAULT_SYNC_DATA,
-      ...JSON.parse(result.value),
-    };
-  } catch (e) {
-    console.error(e);
+    const result = await Preferences.get({ key: DB_KEY });
+    if (!result.value) {
+      return DEFAULT_SYNC_DATA;
+    }
+
+    const parsed = safeJsonParse<Partial<SyncData>>(result.value);
+    if (parsed === undefined) {
+      handleDataError(
+        new Error("Invalid JSON in stored data"),
+        "iOS: getSyncDataN - failed to parse stored data",
+      );
+      return DEFAULT_SYNC_DATA;
+    }
+
+    return { ...DEFAULT_SYNC_DATA, ...parsed };
+  } catch (error) {
+    handleDataError(
+      new DataStorageError("Failed to read sync data", "ios", "read", error),
+      "iOS: getSyncDataN",
+    );
     return DEFAULT_SYNC_DATA;
   }
 };
@@ -33,8 +54,6 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
     return saveSyncDataN({
       ...syncData,
       answers: newAnswers,
-    }).then(() => {
-      // getSyncDataN().then(console.log);
     });
   });
 };

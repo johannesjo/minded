@@ -1,9 +1,25 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
+import { handleDataError, DataStorageError } from "@src/dataInterface/errors";
+import { safeJsonParse } from "@src/util/safeJsonParse";
 
 export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
-  androidInterface.saveDataString(JSON.stringify(syncData));
+  try {
+    androidInterface.saveDataString(JSON.stringify(syncData));
+  } catch (error) {
+    handleDataError(
+      new DataStorageError(
+        "Failed to save sync data",
+        "android",
+        "write",
+        error,
+      ),
+      "Android: saveSyncDataN",
+      { alertUser: true },
+    );
+    throw error;
+  }
 };
 
 export const getSyncDataN = async (): Promise<SyncData> => {
@@ -11,15 +27,17 @@ export const getSyncDataN = async (): Promise<SyncData> => {
   if (!str) {
     return DEFAULT_SYNC_DATA;
   }
-  try {
-    return {
-      ...DEFAULT_SYNC_DATA,
-      ...JSON.parse(str),
-    };
-  } catch (e) {
-    console.error(e);
+
+  const parsed = safeJsonParse<Partial<SyncData>>(str);
+  if (parsed === undefined) {
+    handleDataError(
+      new Error("Invalid JSON in stored data"),
+      "Android: getSyncDataN - failed to parse stored data",
+    );
     return DEFAULT_SYNC_DATA;
   }
+
+  return { ...DEFAULT_SYNC_DATA, ...parsed };
 };
 
 export const saveAnswerN = (answer: Answer): Promise<void> => {
