@@ -1,10 +1,29 @@
-import { SelfAssessmentEntry, StaticCfg, SyncData } from "./syncData";
+import {
+  FocusSchedule,
+  SelfAssessmentEntry,
+  StaticCfg,
+  SyncData,
+} from "./syncData";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export const DEFAULT_TS_VAL = 99;
+
+/** Default focus schedule: 9am-5pm on weekdays (Mon-Fri), disabled on weekends */
+export const DEFAULT_FOCUS_SCHEDULE: FocusSchedule = {
+  enabled: false, // Start disabled so current behavior is preserved
+  days: {
+    0: null, // Sunday - no blocking
+    1: { start: "09:00", end: "17:00" }, // Monday
+    2: { start: "09:00", end: "17:00" }, // Tuesday
+    3: { start: "09:00", end: "17:00" }, // Wednesday
+    4: { start: "09:00", end: "17:00" }, // Thursday
+    5: { start: "09:00", end: "17:00" }, // Friday
+    6: null, // Saturday - no blocking
+  },
+};
 
 export const DEFAULT_SYNC_DATA: SyncData = {
   cfg: {

@@ -1,32 +1,8 @@
-@import "../../../../styles/mixins/mixins";
-
 .WebsiteListItem {
   display: flex;
   align-items: center;
+  gap: 8px;
   max-width: 100%;
   min-height: 0;
   min-width: 0;
-
-  input {
-    @include formInput(var(--form-inputs-height-smaller));
-    background: transparent;
-    border-radius: var(--border-radius);
-    padding: 4px 12px;
-    transition: 0.1s;
-    flex: 1;
-    flex-shrink: 1;
-    margin-right: 8px;
-
-    &:focus {
-      transform: scale(1.05);
-      outline: none;
-    }
-
-
-  }
-
-  .btnIcoSmall {
-    flex-shrink: 1; // Add this line
-    margin-left: 16px;
-  }
 }

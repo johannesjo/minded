@@ -1,0 +1,22 @@
+@import "@src/styles/mixins/mixins";
+
+.TextInput {
+  @include formInput(var(--form-inputs-height-smaller));
+  background: transparent;
+  border-radius: var(--border-radius);
+  padding: 4px 12px;
+  transition: 0.1s;
+  flex: 1;
+  flex-shrink: 1;
+
+  &:focus {
+    transform: scale(1.02);
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+}

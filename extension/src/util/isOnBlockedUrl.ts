@@ -1,4 +1,5 @@
 import { SyncData } from "@src/dataInterface/syncData";
+import { isWithinFocusHours } from "@src/util/isWithinFocusHours";
 
 export const isOnBlockedUrl = (
   currentUrl: string,
@@ -6,6 +7,11 @@ export const isOnBlockedUrl = (
 ): boolean => {
   const host = cleanHostWWW(new URL(currentUrl).host);
   const cfg = syncData.cfg;
+
+  // Check if current time is within focus hours
+  if (!isWithinFocusHours(cfg.focusSchedule)) {
+    return false;
+  }
 
   return !!cfg.blockedHosts.find((blockedHost) =>
     isMatchingHost(host, blockedHost),
