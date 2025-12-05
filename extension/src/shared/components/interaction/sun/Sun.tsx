@@ -23,6 +23,7 @@ interface SunProps {
   onDragComplete: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
+  eventRoot?: ShadowRoot;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -422,12 +423,17 @@ export const Sun: Component<SunProps> = (props) => {
 
       const handleMouseUp = () => {
         handleEnd();
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
+        eventTarget.removeEventListener("mousemove", handleMouseMove);
+        eventTarget.removeEventListener("mouseup", handleMouseUp);
       };
 
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+      // Use shadow root if available, otherwise fall back to document
+      const eventTarget: EventTarget = props.eventRoot || document;
+      eventTarget.addEventListener(
+        "mousemove",
+        handleMouseMove as EventListener,
+      );
+      eventTarget.addEventListener("mouseup", handleMouseUp as EventListener);
     });
   };
 

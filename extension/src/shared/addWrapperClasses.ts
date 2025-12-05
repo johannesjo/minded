@@ -5,8 +5,11 @@ import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/commonSyncDataInterface";
 const DARK_MODE_START_HOUR = 19;
 const DARK_MODE_END_HOUR = 6;
 
-export const addWrapperClasses = () => {
-  const el = document.getElementById("minded-6622");
+export const addWrapperClasses = (shadowRoot?: ShadowRoot) => {
+  const el = shadowRoot
+    ? shadowRoot.getElementById("minded-6622")
+    : document.getElementById("minded-6622");
+
   if (!el) {
     console.error("minded-6622 wrapper element not found");
     return;

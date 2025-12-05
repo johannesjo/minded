@@ -8,7 +8,7 @@ import {
 import { ContentScriptMain } from "@src/pages/content/ContentScriptMain";
 // @ts-ignore
 import styleAsString from "./content-script.scss?inline";
-import { render } from "solid-js/web";
+import { render, delegateEvents } from "solid-js/web";
 import { isShowFullMinder } from "@src/util/isShowFullMinder";
 
 const CURRENT_URL = window.location.href;
@@ -27,17 +27,55 @@ const CURRENT_URL = window.location.href;
           return;
         }
 
-        // If we ever decide to go back to 2 files
-        // const src = bro.runtime.getURL("js/content-script-inner.js");
-        // const contentMain = await import(src);
-        // console.log(contentMain);
+        // Create Shadow DOM host element for complete style isolation
+        const hostEl = document.createElement("minded-app");
+        hostEl.id = "minded-6622-host";
+        document.body.appendChild(hostEl);
 
-        const wrapperEl = document.createElement("div");
-        wrapperEl.id = "minded-6622";
-        document.body.appendChild(wrapperEl);
+        // Use closed shadow DOM for security and isolation
+        const shadow = hostEl.attachShadow({ mode: "closed" });
+
+        // Inject styles into shadow DOM (completely isolated from host page)
         const styleTag = document.createElement("style");
         styleTag.textContent = styleAsString;
-        document.head.appendChild(styleTag);
+        shadow.appendChild(styleTag);
+
+        // Create wrapper inside shadow DOM
+        const wrapperEl = document.createElement("div");
+        wrapperEl.id = "minded-6622";
+        shadow.appendChild(wrapperEl);
+
+        // Manually delegate events to shadow root instead of document
+        // SolidJS's delegateEvents accepts a second parameter for the delegation root
+        delegateEvents(
+          [
+            "click",
+            "dblclick",
+            "input",
+            "change",
+            "focusin",
+            "focusout",
+            "keydown",
+            "keyup",
+            "mousedown",
+            "mouseup",
+            "mousemove",
+            "mouseenter",
+            "mouseleave",
+            "touchstart",
+            "touchmove",
+            "touchend",
+            "pointerdown",
+            "pointerup",
+            "pointermove",
+          ],
+          shadow as unknown as Document,
+        );
+
+        // Teardown function removes the entire shadow host
+        const teardownShadow = () => {
+          hostEl.remove();
+        };
 
         render(
           () => (
@@ -46,6 +84,8 @@ const CURRENT_URL = window.location.href;
                 CURRENT_URL,
                 syncData,
               )}
+              shadowRoot={shadow}
+              onTeardownShadow={teardownShadow}
             />
           ),
           wrapperEl,
