@@ -6,6 +6,7 @@ import {
   updateBlockedApps,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
+import { safeJsonParse } from "@src/util/safeJsonParse";
 import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";
 
@@ -25,7 +26,11 @@ export const SettingsAndroid = (props: {
 
   onMount(() => {
     t0 = setTimeout(() => {
-      setAvailableApps(JSON.parse(androidInterface.getAllApps()));
+      const apps = safeJsonParse<{ packageName: string; name: string }[]>(
+        androidInterface.getAllApps(),
+        [],
+      );
+      setAvailableApps(apps);
     });
 
     getSyncData().then((syncData) => {
