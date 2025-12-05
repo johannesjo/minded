@@ -2,32 +2,28 @@ import {
   Component,
   createEffect,
   createSignal,
-  Match,
+  onCleanup,
   onMount,
-  Switch,
 } from "solid-js";
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
-import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
-import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
-import { Question } from "@src/shared/components/interaction/Question";
-import { AppUsageOrBrowsingBehavior } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/AppUsageOrBrowsingBehavior";
 import {
   getInteractionMode,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
-import { getRndEntry } from "@src/util/getRndEntry";
-import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
-import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
-import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
-import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
+import {
+  createFadeAnimation,
+  calculateFadeProgress,
+  calculateOpacity,
+} from "@src/shared/components/interaction/useFadeAnimation";
+import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
 import "./InteractionCommon.scss";
 
 interface InteractionCommonProps {
@@ -46,16 +42,19 @@ interface InteractionCommonProps {
   isFromDashboard?: boolean;
 }
 
-const ADVICE = getRndEntry(ACTION_ADVICES);
-
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
+  // Data state
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getInitialQuestion, setInitialQuestion] = createSignal<
     QuestionForPrompt | undefined
   >();
-  const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
+  const [getPendingAnswer, setPendingAnswer] = createSignal<
+    Answer | undefined
+  >();
+
+  // UI state
   const [getInteractionOpacity, setInteractionOpacity] = createSignal(1);
   const [getIsContentReady, setIsContentReady] = createSignal(false);
   const [getIsSkipping, setIsSkipping] = createSignal(false);
@@ -63,89 +62,69 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsDragging, setIsDragging] = createSignal(false);
   const [getShowSunInstructions, setShowSunInstructions] = createSignal(false);
   const [getHasAnswered, setHasAnswered] = createSignal(false);
-  const [getPendingAnswer, setPendingAnswer] = createSignal<
-    Answer | undefined
-  >();
+  const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
 
-  // Handler for skip with fade-out animation
-  const handleSkip = () => {
-    if (getIsSkipping()) return; // Prevent multiple skip calls
+  let frameNr: number | undefined;
 
-    setIsSkipping(true);
+  // Fade animation for mobile content
+  const runFadeAnimation = (
+    duration: number,
+    onComplete: () => void,
+    startOpacity = getInteractionOpacity(),
+  ) => {
+    const startTime = Date.now();
 
-    // If we're showing instructions, complete the interaction instead
-    if (getShowSunInstructions()) {
-      props.onInteractionSubmitted?.();
-      cancelCountdown();
-      // Then proceed with normal skip
-    }
-
-    // Check if we have a wrapper element (web extension case)
-    if (props.wrapperEl) {
-      // Use the fadeOut utility for web extension
-      const { promise } = fadeOut(props.wrapperEl, 1000); // 1 second
-      promise.then(() => {
-        props.onSkip();
-      });
-    } else {
-      // Fade out the interaction content for mobile apps
-      let startTime = Date.now();
-      const fadeOutDuration = 1000; // 1 second
-
-      const fadeOutContent = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / fadeOutDuration, 1);
-        const opacity = 1 - progress;
-
-        setInteractionOpacity(opacity);
-
-        if (progress < 1) {
-          requestAnimationFrame(fadeOutContent);
-        } else {
-          // Call the original skip handler after fade out
-          props.onSkip();
-        }
-      };
-
-      fadeOutContent();
-    }
-  };
-
-  // Handler to trigger background animations from sun component
-  const handleStartBackgroundAnimation = (direction: "up" | "down") => {
-    // Mark final animation as started
-    setIsFinalAnimation(true);
-
-    // Fade out the interaction content first
-    let startTime = Date.now();
-    const fadeOutDuration = 1000; // 1 second
-    const startOpacity = getInteractionOpacity(); // Start from current opacity
-
-    const fadeOut = () => {
+    const animate = () => {
       const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / fadeOutDuration, 1);
-      const opacity = startOpacity * (1 - progress); // Fade from current opacity to 0
+      const progress = calculateFadeProgress(elapsed, duration);
+      const opacity = calculateOpacity(startOpacity, progress);
 
       setInteractionOpacity(opacity);
 
       if (progress < 1) {
-        requestAnimationFrame(fadeOut);
+        requestAnimationFrame(animate);
       } else {
-        // If we were showing instructions, complete the interaction
-        if (getShowSunInstructions()) {
-          props.onInteractionSubmitted?.();
-          cancelCountdown();
-        }
-
-        // Show "Be proud" message after a longer delay for better timing
-        setTimeout(() => {
-          setShowBeProudMessage(true);
-        }, 1000); // Additional 1 second delay after fade out
+        onComplete();
       }
     };
 
-    fadeOut();
+    requestAnimationFrame(animate);
+  };
+
+  const handleSkip = () => {
+    if (getIsSkipping()) return;
+    setIsSkipping(true);
+
+    if (getShowSunInstructions()) {
+      props.onInteractionSubmitted?.();
+      cancelCountdown();
+    }
+
+    if (props.wrapperEl) {
+      const { promise } = fadeOut(
+        props.wrapperEl,
+        ANIMATION_TIMING.fadeOut.standard,
+      );
+      promise.then(() => props.onSkip());
+    } else {
+      runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => props.onSkip());
+    }
+  };
+
+  const handleStartBackgroundAnimation = (direction: "up" | "down") => {
+    setIsFinalAnimation(true);
+
+    runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => {
+      if (getShowSunInstructions()) {
+        props.onInteractionSubmitted?.();
+        cancelCountdown();
+      }
+
+      setTimeout(() => {
+        setShowBeProudMessage(true);
+      }, ANIMATION_TIMING.delay.beProudMessage);
+    });
 
     const event = new CustomEvent("startBackgroundAnimation", {
       detail: { direction },
@@ -153,13 +132,65 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     window.dispatchEvent(event);
   };
 
-  let frameNr: number | undefined;
+  const onInteractionSuccess = (answerOrData?: Answer) => {
+    setHasAnswered(true);
+
+    runFadeAnimation(ANIMATION_TIMING.fadeOut.fast, () => {
+      if (answerOrData) {
+        setPendingAnswer(answerOrData);
+        props.onSetAnswer(answerOrData.val.toString());
+      }
+
+      setShowSunInstructions(true);
+      setTimeout(() => {
+        setInteractionOpacity(1);
+      }, ANIMATION_TIMING.delay.sunInstructionsFadeIn);
+    });
+  };
+
+  const cancelCountdown = () => {
+    if (!frameNr) return;
+    window.cancelAnimationFrame(frameNr);
+    if (props.wrapperEl) {
+      props.wrapperEl.style.transition = `opacity ${ANIMATION_TIMING.fadeOut.standard}ms ease-out`;
+      props.wrapperEl.style.opacity = "1";
+    }
+  };
+
+  const initFadeOut = () => {
+    const res = fadeOut(
+      props.wrapperEl,
+      ANIMATION_TIMING.fadeOut.wrapper,
+      ANIMATION_TIMING.delay.wrapperFadeStart,
+    );
+    frameNr = res.frameNr;
+    res.promise.then(() => {
+      if (+props.wrapperEl.style.opacity < 0.1) {
+        props.onAfterInteractionFadeout();
+      }
+    });
+  };
+
+  // Drag progress event handler
+  const handleDragProgress = (event: Event) => {
+    const customEvent = event as CustomEvent<{
+      isDragging: boolean;
+      resetToInitial?: boolean;
+    }>;
+    const { isDragging, resetToInitial } = customEvent.detail;
+
+    setIsDragging(isDragging);
+
+    if (isDragging) {
+      setInteractionOpacity(0);
+    } else if (resetToInitial) {
+      setInteractionOpacity(1);
+    }
+  };
 
   onMount(async () => {
     if (props.isInitFadeout) {
-      setTimeout(() => {
-        initFadeOut();
-      }, 200);
+      setTimeout(() => initFadeOut(), ANIMATION_TIMING.delay.initFadeOut);
     }
 
     getSyncData().then((syncData) => {
@@ -175,122 +206,39 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setMode(mode);
       }
 
-      // Trigger fade-in animation after content is ready
-      setTimeout(() => {
-        setIsContentReady(true);
-      }, 100);
+      setTimeout(
+        () => setIsContentReady(true),
+        ANIMATION_TIMING.delay.contentReady,
+      );
     });
-
-    // Listen for drag progress events to fade content
-    const handleDragProgress = (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        isDragging: boolean;
-        resetToInitial?: boolean;
-      }>;
-      const { isDragging, resetToInitial } = customEvent.detail;
-
-      setIsDragging(isDragging);
-
-      if (isDragging) {
-        // Fade out immediately when dragging starts (1s transition via CSS)
-        setInteractionOpacity(0);
-      } else if (resetToInitial) {
-        // Only fade back in when explicitly reset to initial (snap back case)
-        setInteractionOpacity(1);
-      }
-      // Otherwise, keep current opacity (for completion animation or threshold crossed)
-    };
 
     window.addEventListener(
       "dragProgress",
       handleDragProgress as EventListener,
     );
+  });
 
-    return () => {
-      window.removeEventListener(
-        "dragProgress",
-        handleDragProgress as EventListener,
-      );
-    };
+  onCleanup(() => {
+    window.removeEventListener(
+      "dragProgress",
+      handleDragProgress as EventListener,
+    );
   });
 
   createEffect(() => {
     const mode = getMode();
-    if (mode) {
-      props.onModeSet(mode);
-    }
+    if (mode) props.onModeSet(mode);
   });
 
   createEffect(() => {
     const question = getInitialQuestion();
-    if (question) {
-      props.onUpdateQuestion(question);
-    }
+    if (question) props.onUpdateQuestion(question);
   });
-
-  const onInteractionSuccess = (answerOrData?: Answer) => {
-    // Mark that user has answered
-    setHasAnswered(true);
-
-    // Fade out the interaction content first
-    let startTime = Date.now();
-    const fadeOutDuration = 700; // Faster fade out
-    const startOpacity = getInteractionOpacity(); // Start from current opacity
-
-    const fadeOut = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / fadeOutDuration, 1);
-      const opacity = startOpacity * (1 - progress); // Fade from current opacity to 0
-
-      setInteractionOpacity(opacity);
-
-      if (progress < 1) {
-        requestAnimationFrame(fadeOut);
-      } else {
-        // Save the answer for later
-        if (answerOrData) {
-          setPendingAnswer(answerOrData);
-          props.onSetAnswer(answerOrData.val.toString());
-        }
-
-        // Show sun instructions after answering
-        setShowSunInstructions(true);
-        // Fade instructions in after a longer delay for smoother transition
-        setTimeout(() => {
-          setInteractionOpacity(1);
-        }, 600);
-      }
-    };
-
-    fadeOut();
-  };
-
-  const cancelCountdown = () => {
-    if (!frameNr) {
-      return;
-    }
-    window.cancelAnimationFrame(frameNr);
-    if (props.wrapperEl) {
-      props.wrapperEl.style.transition = `opacity 1000ms ease-out`;
-      props.wrapperEl.style.opacity = "1";
-    }
-  };
-
-  const initFadeOut = () => {
-    const res = fadeOut(props.wrapperEl, 5000, 2000);
-    frameNr = res.frameNr;
-    res.promise.then(() => {
-      if (+props.wrapperEl.style.opacity < 0.1) {
-        props.onAfterInteractionFadeout();
-      }
-    });
-  };
 
   return (
     <>
       <BackgroundTransition dragThreshold={0.3} />
 
-      {/* Be proud message during final animation */}
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
       <div
@@ -314,87 +262,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 : "auto",
           }}
         >
-          <Switch>
-            <Match when={getMode() === "SELF_ASSESSMENT"}>
-              {getSyncDataI() && (
-                <SelfAssessmentInteraction
-                  syncData={getSyncDataI()!}
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onInteractionSuccess}
-                  onSkip={handleSkip}
-                />
-              )}
-            </Match>
-            <Match when={getMode() === "MOOD_CHECKIN"}>
-              <MoodCheckin
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onInteractionSuccess}
-                onSkip={handleSkip}
-              />
-            </Match>
-            <Match when={getMode() === "EMOJI_CHECKIN"}>
-              <EmojiCheckin
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onInteractionSuccess}
-                onSkip={handleSkip}
-              />
-            </Match>
-            <Match when={getMode() === "ACTION_ADVICE"}>
-              <div
-                id="minded-6622-action-advice"
-                class="txtBig"
-                style="pointer-events:none;"
-              >
-                <div>{ADVICE.txt}</div>
-                <div>{ADVICE.ico}</div>
-              </div>
-            </Match>
-            <Match when={getMode() === "ENERGY_LVL"}>
-              <EnergyLvlInteraction
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onInteractionSuccess}
-                onSkip={handleSkip}
-              />
-            </Match>
-            <Match when={getMode() === "SHOW_ALTERNATIVE"}>
-              {getSyncDataI() && (
-                <ShowAlternativeInteraction
-                  syncData={getSyncDataI()!}
-                  onCancelCountdown={cancelCountdown}
-                  onSkip={handleSkip}
-                />
-              )}
-            </Match>
-            <Match when={getMode() === "SET_ALTERNATIVE"}>
-              <SetAlternativeInteraction
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onInteractionSuccess}
-                onSkip={handleSkip}
-              />
-            </Match>
-            <Match when={getMode() === "APP_USAGE_OR_BROWSING_BEHAVIOR"}>
-              <AppUsageOrBrowsingBehavior
-                onCancelCountdown={cancelCountdown}
-                onSuccess={onInteractionSuccess}
-                onSkip={handleSkip}
-              />
-            </Match>
-            <Match when={getMode() === "QUESTION"}>
-              {getInitialQuestion() && (
-                <Question
-                  isChangeQuestion={true}
-                  initialQuestion={getInitialQuestion()!}
-                  answers={getAnswers()}
-                  onCancelCountdown={cancelCountdown}
-                  onSuccess={onInteractionSuccess}
-                  onUpdateQuestion={(question) =>
-                    props.onUpdateQuestion(question)
-                  }
-                  onSkip={handleSkip}
-                />
-              )}
-            </Match>
-          </Switch>
+          <InteractionModeSwitch
+            mode={getMode()}
+            syncData={getSyncDataI()}
+            initialQuestion={getInitialQuestion()}
+            answers={getAnswers()}
+            onCancelCountdown={cancelCountdown}
+            onSuccess={onInteractionSuccess}
+            onSkip={handleSkip}
+            onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
+          />
         </div>
 
         {/* Sun instructions overlay */}
