@@ -4,6 +4,7 @@ import {
   ANDROID_EV_RESUME,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
+import { safeJsonParse } from "@src/util/safeJsonParse";
 import { Ico } from "@src/shared/components/ui/Ico";
 
 export const MissingCapabilityView = (props: {
@@ -19,7 +20,10 @@ export const MissingCapabilityView = (props: {
   let t0: NodeJS.Timeout | undefined;
 
   const refreshMissingCapabilities = () => {
-    const mc = JSON.parse(androidInterface.getMissingCapabilities());
+    const mc = safeJsonParse<string[]>(
+      androidInterface.getMissingCapabilities(),
+      [],
+    );
     setMissingCapabilities(mc);
     console.log(mc);
 
