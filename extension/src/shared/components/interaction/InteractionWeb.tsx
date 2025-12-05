@@ -14,6 +14,7 @@ import { isDarkModeNow } from "@src/shared/addWrapperClasses";
 export const InteractionWeb: (props: {
   host: string;
   onHideAll: () => void;
+  shadowRoot?: ShadowRoot;
 }) => JSX.Element = (props) => {
   // const [getMode, setMode] = createSignal<InteractionMode | undefined>();
   const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
@@ -86,6 +87,7 @@ export const InteractionWeb: (props: {
               questionForPrompt={getQuestion()}
               isInitFadeout={false}
               wrapperEl={wrapperEl}
+              shadowRoot={props.shadowRoot}
               onSetAnswer={() => {}}
               onModeSet={() => {}}
               onAfterInteractionFadeout={() => {

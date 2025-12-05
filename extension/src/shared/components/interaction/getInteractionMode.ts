@@ -32,7 +32,7 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "SELF_ASSESSMENT";
   // return "SHOW_ALTERNATIVE";
   // return "SET_ALTERNATIVE";
-  
+
   const now = new Date();
   const nowTS = Date.now();
   const nowHours = now.getHours();

@@ -6,9 +6,13 @@
   bottom: 0;
   z-index: 1; // Behind all other content
   transition: none; // We handle transitions manually for smooth drag
+  pointer-events: none; // Allow clicks to pass through to interactive elements
 
   &.background-default {
-    background: var(--background-gradient, linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5));
+    background: var(
+      --background-gradient,
+      linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
+    );
   }
 
   &.background-overlay {
@@ -18,16 +22,18 @@
   }
 
   &.background-blue {
-    background: linear-gradient(to bottom, 
-      var(--bg-transition-bluesky-top, #3e88dd), 
+    background: linear-gradient(
+      to bottom,
+      var(--bg-transition-bluesky-top, #3e88dd),
       var(--bg-transition-bluesky-bottom, #66c5e4)
     );
   }
 
   &.background-sunset {
-    background: linear-gradient(to bottom, 
-      var(--bg-transition-sunset-top, #FF6B35), 
-      var(--bg-transition-sunset-bottom, #FFCC33)
+    background: linear-gradient(
+      to bottom,
+      var(--bg-transition-sunset-top, #ff6b35),
+      var(--bg-transition-sunset-bottom, #ffcc33)
     );
   }
 

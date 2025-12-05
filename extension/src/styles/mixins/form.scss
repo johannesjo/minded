@@ -1,17 +1,18 @@
+// Note: !important removed - Shadow DOM provides style isolation
 @mixin formInput($height: var(--form-inputs-height)) {
-  color: var(--c-fg-full-emphasis) !important;
-  background: var(--form-inputs-bg) !important;
-  box-shadow: none !important;
-  outline: none !important;
-  border: none !important;
-  border-radius: var(--border-radius) !important;
-  display: block !important;
-  line-height: 20px !important;
-  height: $height !important;
-  min-height: $height !important;
-  box-sizing: border-box !important;
-  font-size: var(--fz-m) !important;
-  padding: 16px !important;
+  color: var(--c-fg-full-emphasis);
+  background: var(--form-inputs-bg);
+  box-shadow: none;
+  outline: none;
+  border: none;
+  border-radius: var(--border-radius);
+  display: block;
+  line-height: 20px;
+  height: $height;
+  min-height: $height;
+  box-sizing: border-box;
+  font-size: var(--fz-m);
+  padding: 16px;
   width: 540px;
   min-width: 90px;
   max-width: 100%;

@@ -30,6 +30,7 @@ interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
   isInitFadeout: boolean;
   wrapperEl: HTMLElement;
+  shadowRoot?: ShadowRoot;
   onAfterInteractionFadeout: () => void;
   onSetAnswer: (txt: string) => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
@@ -308,6 +309,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 setIsCompletionStarted(started);
                 props.onCompletionStarted?.(started);
               }}
+              eventRoot={props.shadowRoot}
             />
           </div>
         )}

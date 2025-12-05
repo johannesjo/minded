@@ -15,14 +15,25 @@ const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 
 export const ContentScriptMain: (props: {
   isShowFullMinderInitially: boolean;
+  shadowRoot?: ShadowRoot;
+  onTeardownShadow?: () => void;
 }) => JSX.Element = (props) => {
   const host = getHostFromUrl(window.location.href);
   const [getIsShowFullMinder, setIsShowFullMinder] = createSignal(
     props.isShowFullMinderInitially,
   );
 
+  // Use shadow-aware teardown if available, otherwise fall back to document query
+  const teardown = () => {
+    if (props.onTeardownShadow) {
+      props.onTeardownShadow();
+    } else {
+      document.getElementById("minded-6622")?.remove();
+    }
+  };
+
   onMount(async () => {
-    addWrapperClasses();
+    addWrapperClasses(props.shadowRoot);
 
     if (props.isShowFullMinderInitially) {
       setTimeout(() => {
@@ -54,15 +65,14 @@ export const ContentScriptMain: (props: {
       {getIsShowFullMinder() ? (
         <InteractionWeb
           host={host}
-          onHideAll={() => document.getElementById("minded-6622")?.remove()}
+          onHideAll={teardown}
+          shadowRoot={props.shadowRoot}
         />
       ) : (
         <LittleSunComponent
           host={host}
-          wasAnswerGiven={false}
-          onShowQuestionAgain={() => undefined}
           onShowFreshInteraction={() => setIsShowFullMinder(true)}
-          teardown={() => document.getElementById("minded-6622")?.remove()}
+          teardown={teardown}
         ></LittleSunComponent>
       )}
     </>

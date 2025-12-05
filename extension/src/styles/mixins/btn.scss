@@ -125,11 +125,11 @@
   @include btnTxt;
 
   & {
-    background: none !important;
+    background: none;
     border: 1px solid var(--btn-outline-color);
   }
   &:hover {
-    background: var(--btn-bg) !important;
+    background: var(--btn-bg);
     //box-shadow: none;
     border-color: var(--btn-bg);
   }
