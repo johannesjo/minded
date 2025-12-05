@@ -2,6 +2,7 @@ import { createSignal, JSX } from "solid-js";
 // @ts-ignore
 import styles from "./WebsiteListItem.module.scss";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { TextInput } from "@src/shared/components/ui/TextInput";
 
 // List item component
 export const WebsiteListItem: (props: {
@@ -11,23 +12,12 @@ export const WebsiteListItem: (props: {
 }) => JSX.Element = (props) => {
   const [getValue, setValue] = createSignal(props.value);
 
-  // createEffect(
-  //   on(
-  //     getValue,
-  //     (v) => {
-  //       props.update(v);
-  //     },
-  //     { defer: true },
-  //   ),
-  // );
-
   return (
     <div class={styles.WebsiteListItem}>
-      <input
-        type="text"
+      <TextInput
         value={getValue()}
-        onblur={() => props.update(getValue())}
-        oninput={(e) => setValue(e.currentTarget.value)}
+        onBlur={() => props.update(getValue())}
+        onInput={(value) => setValue(value)}
       />
       <button class="btnIcoSmall" onClick={props.remove}>
         <Ico name="close" />
