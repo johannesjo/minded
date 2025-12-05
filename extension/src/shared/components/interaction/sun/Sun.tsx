@@ -19,8 +19,8 @@ import {
 
 interface SunProps {
   onSkip: () => void;
-  onSwipeDown: () => void;
-  onSwipeUp: () => void;
+  onFlingAway: () => void;
+  onDragComplete: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
 }
@@ -185,28 +185,17 @@ export const Sun: Component<SunProps> = (props) => {
       const isDownwardSwipe = offset.y > 0 && dragDistance >= DRAG_THRESHOLD_PX;
       const isFling = velocity.magnitude >= FLING_VELOCITY_THRESHOLD;
 
-      if (isDownwardSwipe && !isFling) {
-        // Keep existing downward swipe behavior (non-fling)
-        const direction = "down";
-        // Heavy haptic for completion
-        triggerHaptic("heavy");
-        // Disable all interactions once completion starts
-        setIsCompletionStarted(true);
-        props.onCompletionStarted?.(true);
-        props.onStartBackgroundAnimation?.(direction);
-        animateToCompletion(direction);
-      } else if (isFling) {
-        // New fling behavior for any direction
+      if (isFling) {
+        // Fling behavior - any direction triggers onFlingAway
         triggerHaptic("medium");
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
-        // Determine direction based on velocity for background animation
         const flingDirection = velocity.y > 0 ? "down" : "up";
         props.onStartBackgroundAnimation?.(flingDirection);
         animateFling(velocity);
-      } else if (dragDistance >= DRAG_THRESHOLD_PX && offset.y < 0) {
-        // Original upward drag behavior (non-fling)
-        const direction = "up";
+      } else if (dragDistance >= DRAG_THRESHOLD_PX) {
+        // Slow drag behavior (non-fling) - triggers onDragComplete
+        const direction = offset.y > 0 ? "down" : "up";
         triggerHaptic("heavy");
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
@@ -323,11 +312,7 @@ export const Sun: Component<SunProps> = (props) => {
           animationFrame = requestAnimationFrame(animate);
         } else {
           setIsAnimating(false);
-          if (direction === "down") {
-            props.onSwipeDown();
-          } else {
-            props.onSwipeUp();
-          }
+          props.onDragComplete();
         }
       };
 
@@ -397,12 +382,7 @@ export const Sun: Component<SunProps> = (props) => {
         // Complete after fixed duration
         if (animationComplete) {
           setIsAnimating(false);
-          // Call appropriate callback based on final direction
-          if (physicsState.position.y > window.innerHeight / 2) {
-            props.onSwipeDown();
-          } else {
-            props.onSwipeUp();
-          }
+          props.onFlingAway();
         } else {
           animationFrame = requestAnimationFrame(animate);
         }

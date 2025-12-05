@@ -41,8 +41,8 @@ export const InteractionOverlay: (props: {
           onUpdateQuestion={() => undefined}
           onModeSet={() => undefined}
           onSkip={handleHideWithFade}
-          onSwipeDown={handleHideWithFade}
-          onSwipeUp={handleHideWithFade}
+          onFlingAway={handleHideWithFade}
+          onDragComplete={handleHideWithFade}
         />
       </div>
     </div>

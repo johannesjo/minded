@@ -40,8 +40,8 @@ interface InteractionCommonProps {
   onModeSet: (mode: InteractionMode) => void;
   onInteractionSubmitted?: () => void;
   onSkip: () => void;
-  onSwipeDown: () => void;
-  onSwipeUp: () => void;
+  onFlingAway: () => void;
+  onDragComplete: () => void;
   onCompletionStarted?: (started: boolean) => void;
   isFromDashboard?: boolean;
 }
@@ -424,8 +424,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           <div class="sun-container">
             <Sun
               onSkip={handleSkip}
-              onSwipeDown={props.onSwipeDown}
-              onSwipeUp={props.onSwipeUp}
+              onFlingAway={props.onFlingAway}
+              onDragComplete={props.onDragComplete}
               onStartBackgroundAnimation={handleStartBackgroundAnimation}
               onCompletionStarted={(started) => {
                 setIsCompletionStarted(started);

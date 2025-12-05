@@ -100,13 +100,13 @@ export const InteractionWeb: (props: {
               onUpdateQuestion={(question) => {
                 setQuestion(question);
               }}
-              onSwipeDown={() => {
-                console.log("InteractionWeb: onSwipeDown called, closing tab");
+              onFlingAway={() => {
+                console.log("InteractionWeb: onFlingAway called, closing tab");
                 closeTab();
               }}
-              onSwipeUp={() => {
+              onDragComplete={() => {
                 console.log(
-                  "InteractionWeb: onSwipeUp called, showing little sun",
+                  "InteractionWeb: onDragComplete called, showing little sun",
                 );
                 setIsShowLittleSun(true);
               }}

@@ -31,11 +31,11 @@ const InteractionIOS = () => {
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {};
 
-  const onSwipeDown = () => {
+  const onFlingAway = () => {
     window.location.hash = "";
   };
 
-  const onSwipeUp = () => {
+  const onDragComplete = () => {
     window.location.hash = "";
   };
 
@@ -67,8 +67,8 @@ const InteractionIOS = () => {
         }}
         onSkip={() => MindedIOSPlugin.continueToApp()}
         onUpdateQuestion={onUpdateQuestion}
-        onSwipeDown={onSwipeDown}
-        onSwipeUp={onSwipeUp}
+        onFlingAway={onFlingAway}
+        onDragComplete={onDragComplete}
       />
     </div>
   );

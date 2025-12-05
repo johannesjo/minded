@@ -128,8 +128,8 @@ const InteractionAndroid = () => {
         }}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
-        onSwipeDown={() => androidInterface.closeCurrentApp()}
-        onSwipeUp={() => androidInterface.closeCurrentApp()}
+        onFlingAway={() => androidInterface.closeCurrentApp()}
+        onDragComplete={() => androidInterface.closeCurrentApp()}
       />
     </div>
   );
