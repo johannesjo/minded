@@ -87,16 +87,16 @@ class InteractionWindowJavaScriptInterface(
         Log.v(logTag, "closeCurrentApp() - closing current app and going to home")
         val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
         Log.d(logTag, "closeCurrentApp() - current app is: $currentApp")
-        
-        // Hide the window first to ensure smooth transition
-        win.hideWindow()
-        Log.d(logTag, "closeCurrentApp() - window hidden")
-        
-        // Small delay to ensure window is hidden before navigating
+
+        // Go to home screen first so blocked app is hidden before overlay disappears
+        ctrlSvc.goToHomeScreen()
+        Log.d(logTag, "closeCurrentApp() - home intent sent")
+
+        // Hide overlay after short delay to ensure home screen is visible
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            Log.d(logTag, "closeCurrentApp() - calling goToHomeScreen after delay")
-            ctrlSvc.goToHomeScreen()
-        }, 100)
+            Log.d(logTag, "closeCurrentApp() - hiding window after delay")
+            win.hideWindow()
+        }, 150)
     }
 
     @JavascriptInterface
