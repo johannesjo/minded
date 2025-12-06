@@ -4,7 +4,7 @@ import {
   updateHostsEntry,
   // @ts-ignore
 } from "@dataInterface/localDataInterface";
-// Removed closeTab import as it's no longer needed
+import { closeTab } from "@dataInterface/extensionApi";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -79,6 +79,10 @@ export const LittleSunComponent: (props: {
     }, 1000);
   };
 
+  const handleClick = () => {
+    closeTab();
+  };
+
   const handleDoubleClick = () => {
     setIsScalingOut(true);
     // Wait for animation to complete before tearing down
@@ -103,7 +107,11 @@ export const LittleSunComponent: (props: {
       }}
     >
       <div id="minded-6622-little-sun-sun-wrapper">
-        <div id="minded-6622-little-sun-sun" onDblClick={handleDoubleClick}>
+        <div
+          id="minded-6622-little-sun-sun"
+          onClick={handleClick}
+          onDblClick={handleDoubleClick}
+        >
           {formatSessionTime(getSessionTime())}
         </div>
       </div>
