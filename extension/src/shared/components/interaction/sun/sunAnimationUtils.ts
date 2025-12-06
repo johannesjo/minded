@@ -27,6 +27,7 @@ export interface AnimationConfig {
 export const DRAG_THRESHOLD_PX = 100;
 export const FLING_VELOCITY_THRESHOLD = 200;
 export const VELOCITY_SAMPLE_SIZE = 5;
+export const LONG_PRESS_DURATION_MS = 750;
 
 export const FLING_ANIMATION_CONFIG: AnimationConfig = {
   friction: 0.98,
