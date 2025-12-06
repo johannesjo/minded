@@ -19,6 +19,7 @@ $shadow: var(--little-sun-shadow);
   position: fixed;
   transform-origin: center center;
   z-index: 30;
+  pointer-events: none;
   transform: translate(-50%, -50%);
   transition:
     bottom 1s ease-out,
@@ -74,6 +75,7 @@ $shadow: var(--little-sun-shadow);
 #minded-6622-little-sun-sun {
   cursor: grab;
   transform-origin: center center;
+  pointer-events: auto;
   width: $sun-size;
   height: $sun-size;
   line-height: $sun-size;
