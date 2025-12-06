@@ -91,18 +91,28 @@ class InteractionWindow(
                     WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
             PixelFormat.TRANSLUCENT
         ).apply {
+            // Position at top-left corner to ensure full coverage
+            x = 0
+            y = 0
+
             // Add soft input mode to handle keyboard smoothly
-            // ADJUST_RESIZE with STATE_UNCHANGED to maintain keyboard state
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
-            
-            // Set window background color to dark to prevent white flashes
-            // This is different from the view background and helps during transitions
-            @Suppress("DEPRECATION")
-            this.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+
+            // Allow drawing into display cutout (notch) area
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
         }
+    }
+
+    override fun showWindow() {
+        super.showWindow()
+        // Apply system UI visibility flags to the view after it's created
+        @Suppress("DEPRECATION")
+        window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
     }
 }
 
