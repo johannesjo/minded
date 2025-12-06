@@ -33,7 +33,13 @@
       "Bash(adb:*)",
       "Bash(echo:*)",
       "Bash(echo:*)",
-      "Bash(adb logcat:*)"
+      "Bash(adb logcat:*)",
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(android): add hybrid app detection with confidence scoring\n\nImprove Android app detection robustness by combining AccessibilityService\nwith UsageStatsManager for cross-validation and fallback capability.\n\nChanges:\n- Fix getForegroundApp.kt query window from 1 hour to 5 seconds\n- Add structured ForegroundAppResult type with Success/Stale/Error states\n- Create HybridAppDetector for dual-source detection with automatic fallback\n- Add ServiceHealthMonitor to detect when AccessibilityService dies\n- Implement confidence scoring (HIGH/MEDIUM/LOW/VERY_LOW) for detections\n- Integrate hybrid detection into MyAccessibilityService lifecycle\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(wc:*)",
+      "WebFetch(domain:docs.solidjs.com)"
     ],
     "deny": []
   }
