@@ -7,14 +7,15 @@
   cursor: grab;
   transform-origin: center;
   will-change: transform, transition;
-  
+
   &.beyond-threshold {
-    box-shadow: var(--sun-shadow), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 60px rgba(255, 255, 255, 0.2);
+    box-shadow:
+      var(--sun-shadow),
+      0 0 20px rgba(255, 255, 255, 0.6),
+      0 0 60px rgba(255, 255, 255, 0.2);
     transition: box-shadow 0.2s ease-out;
   }
-  
-  
-  
+
   .tap-indicator {
     position: absolute;
     top: 100%;
@@ -26,12 +27,12 @@
     pointer-events: none;
     opacity: 0;
     transition: opacity 200ms;
-    
+
     &.active {
       opacity: 1;
     }
   }
-  
+
   .tap-dot {
     width: 10px;
     height: 10px;
