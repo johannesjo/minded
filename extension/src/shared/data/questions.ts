@@ -66,6 +66,13 @@ export interface QuestionForPrompt extends Question {
 
 export interface QuestionCategory {
   dashboardTxt: string;
+  /**
+   * Adjusts how often questions from this category appear.
+   * - Positive values (1, 2): Category appears more frequently
+   * - Negative values (-1): Category appears less frequently
+   * - 0 or undefined: Default frequency (no adjustment)
+   * Higher absolute values = stronger effect.
+   */
   frequencyModifier?: number;
   isTodayOnlyCategory?: boolean;
   isThisWeekOnlyCategory?: boolean;
@@ -107,7 +114,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH5,
-        t: "How would your ideal media consumption behavior look like",
+        t: "What would your ideal media consumption behavior look like",
       },
       {
         id: QID.HBH6,
@@ -117,7 +124,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH7,
-        t: "What is the purpose of visiting this website  now",
+        t: "What is the purpose of visiting this website now",
         prompt: "In this session I want to",
         isDontSaveAnswer: true,
         isSkipOnDashboard: true,
@@ -156,7 +163,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU5,
-        t: "How would your ideal media consumption behavior look like",
+        t: "What would your ideal media consumption behavior look like",
       },
       {
         id: QID.HAU6,
@@ -173,7 +180,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU8,
-        t: "What is a good reason why you want use this app less?",
+        t: "What is a good reason why you want to use this app less?",
         prompt: "I want to",
         isDontSaveAnswer: true,
         isSkipOnDashboard: true,
@@ -251,7 +258,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT8,
-        t: "What is the most easy and smallest task you could be working on now",
+        t: "What is the easiest and smallest task you could be working on now",
         prompt: "Right now, I can work on",
       },
       {
@@ -323,7 +330,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT5,
-        t: "What do I need to work well in terms of light, order, temperature, social and physical environment",
+        t: "What environment helps you work best? (consider light, noise, temperature, etc.)",
         prompt: "I need",
       },
       {
@@ -402,7 +409,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.GT9,
-        t: "What are you most proud for doing today",
+        t: "What are you most proud of doing today",
         prompt: "I am proud",
       },
     ],
@@ -508,7 +515,7 @@ export const QUESTION_CATEGORIES: {
       { id: QID.UP4, t: "What is hurting your focus" },
       {
         id: QID.UP5,
-        t: "In what situations do you have a hard time focussing and what contributes to it",
+        t: "In what situations do you have a hard time focusing and what contributes to it",
         prompt: "I find it hard to focus, when",
       },
       {
@@ -518,7 +525,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.UP7,
-        t: "What emotions are evoked by your current task",
+        t: "What emotions does this task bring up",
       },
     ],
     isMorningCategory: true,
