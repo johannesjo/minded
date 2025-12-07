@@ -15,6 +15,10 @@ import { fadeOut } from "@src/util/animation";
 import { getQuestionSmart } from "@src/util/getQuestionSmart";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
+import {
+  setSoundEnabled,
+  preloadSounds,
+} from "@src/shared/components/interaction/sun/sunAudio";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
@@ -197,6 +201,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     getSyncData().then((syncData) => {
       setSyncDataI(syncData);
       setAnswers(syncData.answers);
+
+      // Initialize sound settings (default to enabled)
+      const soundEnabled = syncData.cfg.soundEnabled ?? true;
+      setSoundEnabled(soundEnabled);
+      if (soundEnabled) {
+        preloadSounds();
+      }
+
       if (props.questionForPrompt) {
         setInitialQuestion(props.questionForPrompt);
         setMode("QUESTION");

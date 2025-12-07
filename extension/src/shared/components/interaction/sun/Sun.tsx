@@ -20,6 +20,7 @@ import {
   type VelocitySample,
   type PhysicsState,
 } from "./sunAnimationUtils";
+import { playCompletionSound } from "./sunAudio";
 
 interface SunProps {
   onSkip: () => void;
@@ -46,6 +47,8 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getRotation, setRotation] = createSignal(0);
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
+  const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 1 = warm (down)
+  const [getVelocityMagnitude, setVelocityMagnitude] = createSignal(0);
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -178,12 +181,21 @@ export const Sun: Component<SunProps> = (props) => {
       setDragProgress(effects.progress);
       setDragDirection(deltaY > 0 ? "down" : deltaY < 0 ? "up" : "none");
 
+      // Color temperature: cool (blue) when dragging up, warm (orange) when down
+      const normalizedProgress = dragDistance / DRAG_THRESHOLD_PX;
+      const tempIntensity = Math.min(normalizedProgress, 1);
+      setColorTemp(rawDeltaY > 0 ? tempIntensity : -tempIntensity);
+
       // Track velocity samples
       const now = Date.now();
       velocitySamples.push({ x: clientX, y: clientY, timestamp: now });
       if (velocitySamples.length > VELOCITY_SAMPLE_SIZE) {
         velocitySamples.shift();
       }
+
+      // Calculate current velocity for motion blur
+      const currentVelocity = calculateVelocity(velocitySamples);
+      setVelocityMagnitude(currentVelocity.magnitude);
 
       // Only emit drag progress events after drag intent is confirmed
       if (isDragIntent) {
@@ -238,6 +250,7 @@ export const Sun: Component<SunProps> = (props) => {
       if (isFling) {
         // Fling behavior - any direction triggers onFlingAway
         triggerHaptic("medium");
+        playCompletionSound();
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         const flingDirection = velocity.y > 0 ? "down" : "up";
@@ -247,6 +260,7 @@ export const Sun: Component<SunProps> = (props) => {
         // Slow drag behavior (non-fling) - triggers onDragComplete
         const direction = offset.y > 0 ? "down" : "up";
         triggerHapticPattern("completion"); // Satisfying heavy + light pattern
+        playCompletionSound();
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.(direction);
@@ -294,6 +308,7 @@ export const Sun: Component<SunProps> = (props) => {
 
         // Long press triggered - lock in and play completion
         triggerHapticPattern("completion"); // Satisfying heavy + light pattern
+        playCompletionSound();
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.("down");
@@ -321,6 +336,7 @@ export const Sun: Component<SunProps> = (props) => {
       const startOpacity = getOpacity();
       const startRotation = getRotation();
       const startGlow = getGlowIntensity();
+      const startColorTemp = getColorTemp();
 
       const duration = 600;
       const startTime = Date.now();
@@ -344,8 +360,9 @@ export const Sun: Component<SunProps> = (props) => {
         const currentRotation = startRotation * (1 - easedProgress);
         setRotation(currentRotation);
 
-        // Fade out glow during snap-back
+        // Fade out visual effects during snap-back
         setGlowIntensity(startGlow * (1 - progress));
+        setColorTemp(startColorTemp * (1 - progress));
 
         if (progress < 1) {
           animationFrame = requestAnimationFrame(animate);
@@ -521,10 +538,29 @@ export const Sun: Component<SunProps> = (props) => {
 
   // Calculate progressive glow based on drag intensity
   const glowIntensity = getGlowIntensity();
-  const progressiveGlow =
+  const colorTemp = getColorTemp();
+  const velocityMag = getVelocityMagnitude();
+
+  // Color temperature for corona: warm orange when down, cool blue when up
+  const glowColor =
+    colorTemp > 0.1
+      ? "255, 200, 100"
+      : colorTemp < -0.1
+        ? "200, 220, 255"
+        : "255, 255, 255";
+
+  // Corona effect: soft layered glow that grows with intensity
+  const coronaGlow =
     glowIntensity > 0
-      ? `var(--sun-shadow), 0 0 ${20 * glowIntensity}px rgba(255, 255, 255, ${0.6 * glowIntensity}), 0 0 ${60 * glowIntensity}px rgba(255, 255, 255, ${0.2 * glowIntensity})`
+      ? `var(--sun-shadow),
+         0 0 ${15 * glowIntensity}px rgba(${glowColor}, ${0.5 * glowIntensity}),
+         0 0 ${40 * glowIntensity}px rgba(${glowColor}, ${0.25 * glowIntensity}),
+         0 0 ${80 * glowIntensity}px rgba(${glowColor}, ${0.1 * glowIntensity})`
       : "var(--sun-shadow)";
+
+  // Subtle motion blur during fast movement
+  const blurAmount = Math.min(velocityMag / 1000, 1.5);
+  const motionBlur = blurAmount > 0.4 ? `blur(${blurAmount}px)` : "none";
 
   return (
     <div
@@ -533,11 +569,12 @@ export const Sun: Component<SunProps> = (props) => {
       style={{
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
-        "box-shadow": progressiveGlow,
+        "box-shadow": coronaGlow,
+        filter: motionBlur,
         transition:
           getIsDragging() || getIsAnimating()
             ? "none"
-            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out",
+            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out, filter 0.2s ease-out",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
       }}

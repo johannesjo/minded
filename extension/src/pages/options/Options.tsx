@@ -1,5 +1,6 @@
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
+import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 
 const Options = () => {
   const onAfterSave = () => {
@@ -15,6 +16,12 @@ const Options = () => {
         list of websites where <em>minded</em> is shown
       </h3>
       <WebsiteList onAfterSave={onAfterSave} />
+
+      <br />
+      <hr style="opacity: 0.2; margin: 32px 0;" />
+      <br />
+
+      <SoundSettings onAfterSave={onAfterSave} />
 
       <br />
       <hr style="opacity: 0.2; margin: 32px 0;" />
