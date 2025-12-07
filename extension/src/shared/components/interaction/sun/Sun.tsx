@@ -5,14 +5,17 @@ import {
   FLING_VELOCITY_THRESHOLD,
   VELOCITY_SAMPLE_SIZE,
   LONG_PRESS_DURATION_MS,
+  HAPTIC_PROGRESS_POINTS,
   FLING_ANIMATION_CONFIG,
   COMPLETION_ANIMATION_CONFIG,
   calculateVelocity,
   updatePhysics,
   calculateDragEffects,
   easeInOut,
-  easeOut,
+  easeOutBack,
   triggerHaptic,
+  triggerHapticPattern,
+  applyRubberBanding,
   getSunSize,
   type VelocitySample,
   type PhysicsState,
@@ -42,6 +45,7 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsBeyondThreshold, setIsBeyondThreshold] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getRotation, setRotation] = createSignal(0);
+  const [getGlowIntensity, setGlowIntensity] = createSignal(0);
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -79,6 +83,7 @@ export const Sun: Component<SunProps> = (props) => {
 
     let isDragIntent = false;
     let touchStartTime = 0;
+    let lastHapticPointIndex = -1;
 
     const handleStart = (clientX: number, clientY: number) => {
       // Prevent interactions once completion animation has started
@@ -98,21 +103,21 @@ export const Sun: Component<SunProps> = (props) => {
       // Immediately set dragging state to disable transitions
       setIsDragging(true);
       // Reset haptic threshold tracking
-      hasTriggeredThresholdHaptic = false;
+      lastHapticPointIndex = -1;
       // Start long press timer
       startLongPressTimer();
     };
-
-    let hasTriggeredThresholdHaptic = false;
 
     const handleMove = (clientX: number, clientY: number) => {
       // Prevent interactions once completion animation has started
       if (getIsCompletionStarted()) return;
 
-      const deltaX = clientX - startPos.x;
-      const deltaY = clientY - startPos.y;
+      const rawDeltaX = clientX - startPos.x;
+      const rawDeltaY = clientY - startPos.y;
 
-      const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const moveDistance = Math.sqrt(
+        rawDeltaX * rawDeltaX + rawDeltaY * rawDeltaY,
+      );
 
       // Cancel long press if moved beyond tolerance (10px allows for finger jitter)
       if (moveDistance > 10) {
@@ -123,18 +128,45 @@ export const Sun: Component<SunProps> = (props) => {
         isDragIntent = true;
       }
 
-      // Calculate drag progress and visual effects
-      const dragDistance = Math.abs(deltaY);
-      const effects = calculateDragEffects(deltaY, dragDistance);
+      // Apply rubber-banding for weighted feel
+      const deltaX = applyRubberBanding(rawDeltaX);
+      const deltaY = applyRubberBanding(rawDeltaY);
 
-      // Trigger haptic when crossing pixel threshold
-      if (dragDistance >= DRAG_THRESHOLD_PX && !hasTriggeredThresholdHaptic) {
-        triggerHaptic("medium");
-        hasTriggeredThresholdHaptic = true;
-        setIsBeyondThreshold(true);
-      } else if (dragDistance < DRAG_THRESHOLD_PX) {
-        hasTriggeredThresholdHaptic = false;
-        setIsBeyondThreshold(false);
+      // Calculate drag progress and visual effects (use raw values for threshold logic)
+      const dragDistance = Math.abs(rawDeltaY);
+      const effects = calculateDragEffects(rawDeltaY, dragDistance);
+
+      // Progressive glow: quadratic ramp from 0-100% of threshold
+      const glowProgress = Math.min(dragDistance / DRAG_THRESHOLD_PX, 1);
+      setGlowIntensity(glowProgress * glowProgress);
+
+      // Progressive haptics at 33%, 66%, 100% of threshold
+      const progressNormalized = dragDistance / DRAG_THRESHOLD_PX;
+      const currentPointIndex = HAPTIC_PROGRESS_POINTS.findIndex(
+        (point) => progressNormalized < point,
+      );
+      const effectiveIndex =
+        currentPointIndex === -1
+          ? HAPTIC_PROGRESS_POINTS.length - 1
+          : currentPointIndex - 1;
+
+      if (effectiveIndex > lastHapticPointIndex) {
+        // Crossed a new threshold going up
+        triggerHaptic(
+          effectiveIndex === HAPTIC_PROGRESS_POINTS.length - 1
+            ? "medium"
+            : "light",
+        );
+        lastHapticPointIndex = effectiveIndex;
+        if (dragDistance >= DRAG_THRESHOLD_PX) {
+          setIsBeyondThreshold(true);
+        }
+      } else if (effectiveIndex < lastHapticPointIndex) {
+        // Crossed back down
+        lastHapticPointIndex = effectiveIndex;
+        if (dragDistance < DRAG_THRESHOLD_PX) {
+          setIsBeyondThreshold(false);
+        }
       }
 
       // Batch all state updates together
@@ -214,7 +246,7 @@ export const Sun: Component<SunProps> = (props) => {
       } else if (dragDistance >= DRAG_THRESHOLD_PX) {
         // Slow drag behavior (non-fling) - triggers onDragComplete
         const direction = offset.y > 0 ? "down" : "up";
-        triggerHaptic("heavy");
+        triggerHapticPattern("completion"); // Satisfying heavy + light pattern
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.(direction);
@@ -261,7 +293,7 @@ export const Sun: Component<SunProps> = (props) => {
         if (getIsCompletionStarted()) return;
 
         // Long press triggered - lock in and play completion
-        triggerHaptic("heavy");
+        triggerHapticPattern("completion"); // Satisfying heavy + light pattern
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.("down");
@@ -280,12 +312,15 @@ export const Sun: Component<SunProps> = (props) => {
     };
 
     const animateSnapBack = () => {
+      triggerHaptic("light"); // Acknowledge the incomplete gesture
       setIsAnimating(true);
       setIsBeyondThreshold(false); // Reset glow when snapping back
+      setGlowIntensity(0); // Reset progressive glow
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
       const startRotation = getRotation();
+      const startGlow = getGlowIntensity();
 
       const duration = 600;
       const startTime = Date.now();
@@ -293,7 +328,7 @@ export const Sun: Component<SunProps> = (props) => {
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const easedProgress = easeOut(progress);
+        const easedProgress = easeOutBack(progress); // Subtle overshoot bounce
 
         const currentX = startOffset.x * (1 - easedProgress);
         const currentY = startOffset.y * (1 - easedProgress);
@@ -309,10 +344,14 @@ export const Sun: Component<SunProps> = (props) => {
         const currentRotation = startRotation * (1 - easedProgress);
         setRotation(currentRotation);
 
+        // Fade out glow during snap-back
+        setGlowIntensity(startGlow * (1 - progress));
+
         if (progress < 1) {
           animationFrame = requestAnimationFrame(animate);
         } else {
           setIsAnimating(false);
+          setGlowIntensity(0);
         }
       };
 
@@ -480,18 +519,25 @@ export const Sun: Component<SunProps> = (props) => {
 
   const sunSize = getSunSize(window.innerWidth);
 
+  // Calculate progressive glow based on drag intensity
+  const glowIntensity = getGlowIntensity();
+  const progressiveGlow =
+    glowIntensity > 0
+      ? `var(--sun-shadow), 0 0 ${20 * glowIntensity}px rgba(255, 255, 255, ${0.6 * glowIntensity}), 0 0 ${60 * glowIntensity}px rgba(255, 255, 255, ${0.2 * glowIntensity})`
+      : "var(--sun-shadow)";
+
   return (
     <div
       ref={sunEl!}
       class="minded-sun"
-      classList={{ "beyond-threshold": getIsBeyondThreshold() }}
       style={{
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
+        "box-shadow": progressiveGlow,
         transition:
           getIsDragging() || getIsAnimating()
-            ? "box-shadow 0.2s ease-out"
-            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            ? "none"
+            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
       }}
