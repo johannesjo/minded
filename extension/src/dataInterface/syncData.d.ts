@@ -23,6 +23,7 @@ export interface UserCfg {
   blockedHosts: string[];
   blockedApps: string[];
   focusSchedule?: FocusSchedule;
+  soundEnabled?: boolean; // Enable/disable completion sound (default: true)
 }
 
 export interface Answer {
