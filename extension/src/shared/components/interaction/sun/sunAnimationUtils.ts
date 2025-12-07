@@ -33,11 +33,11 @@ export const FLING_ANIMATION_CONFIG: AnimationConfig = {
   friction: 0.98,
   gravity: 0,
   rotationFactor: 0.0005,
-  duration: 5000,
+  duration: 3000,
 };
 
 export const COMPLETION_ANIMATION_CONFIG = {
-  duration: 5000,
+  duration: 3000,
   easing: {
     upward: {
       targetScale: 0.3,
