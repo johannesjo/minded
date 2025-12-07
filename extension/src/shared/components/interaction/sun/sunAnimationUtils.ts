@@ -28,6 +28,9 @@ export const DRAG_THRESHOLD_PX = 100;
 export const FLING_VELOCITY_THRESHOLD = 200;
 export const VELOCITY_SAMPLE_SIZE = 5;
 export const LONG_PRESS_DURATION_MS = 750;
+export const HAPTIC_PROGRESS_POINTS = [0.33, 0.66, 1.0]; // Trigger at 33px, 66px, 100px
+export const RUBBER_BAND_RANGE = 20;
+export const RUBBER_BAND_FACTOR = 0.7;
 
 export const FLING_ANIMATION_CONFIG: AnimationConfig = {
   friction: 0.98,
@@ -155,6 +158,36 @@ export function easeInOut(progress: number): number {
 
 export function easeOut(progress: number): number {
   return 1 - Math.pow(1 - progress, 3);
+}
+
+export function easeOutBack(progress: number): number {
+  const overshoot = 1.2; // Subtle overshoot (standard is 1.70158)
+  const c3 = overshoot + 1;
+  return (
+    1 + c3 * Math.pow(progress - 1, 3) + overshoot * Math.pow(progress - 1, 2)
+  );
+}
+
+export async function triggerHapticPattern(
+  pattern: "completion",
+): Promise<void> {
+  if (pattern === "completion") {
+    triggerHaptic("heavy");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    triggerHaptic("light");
+  }
+}
+
+export function applyRubberBanding(delta: number): number {
+  const abs = Math.abs(delta);
+  const sign = delta >= 0 ? 1 : -1;
+  if (abs <= RUBBER_BAND_RANGE) {
+    return delta * RUBBER_BAND_FACTOR;
+  }
+  // After rubber band range: full linear movement
+  const rubberedPortion = RUBBER_BAND_RANGE * RUBBER_BAND_FACTOR;
+  const linearPortion = abs - RUBBER_BAND_RANGE;
+  return sign * (rubberedPortion + linearPortion);
 }
 
 export function triggerHaptic(type: "light" | "medium" | "heavy"): void {
