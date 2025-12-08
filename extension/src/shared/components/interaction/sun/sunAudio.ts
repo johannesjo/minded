@@ -8,7 +8,7 @@ let audioContext: AudioContext | null = null;
 let gainNode: GainNode | null = null;
 let audioBuffers: Map<string, AudioBuffer> = new Map();
 let soundEnabled = true;
-const VOLUME = 0.5;
+const VOLUME = 0.75;
 
 // Get the correct URL for the audio file (handles extension context)
 function getAudioUrl(path: string): string {
@@ -88,7 +88,7 @@ export async function playCompletionSound(): Promise<void> {
   // Fallback to HTML Audio
   try {
     const audio = new Audio(getAudioUrl(soundPath));
-    audio.volume = 0.5;
+    audio.volume = 0.75;
     await audio.play();
   } catch (err) {
     console.log("HTML Audio failed:", err);
