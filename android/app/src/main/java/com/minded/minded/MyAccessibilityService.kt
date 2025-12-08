@@ -17,6 +17,7 @@ import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 
 
 /**
@@ -173,6 +174,15 @@ class MyAccessibilityService : AccessibilityService() {
             }
         }
 
+        // Subscribe to validated detections from the hybrid detector
+        // This is the SINGLE SOURCE OF TRUTH for triggering the overlay
+        serviceScope.launch {
+            hybridDetector?.validatedDetections?.collect { detection ->
+                Log.d(TAG, "Received validated detection: ${detection.packageName} (confidence: ${detection.confidence.overall})")
+                triggerOverlay(detection.packageName)
+            }
+        }
+
         // Register broadcast receiver for home action
         val filter = android.content.IntentFilter("com.minded.ACTION_GO_HOME")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -250,6 +260,30 @@ class MyAccessibilityService : AccessibilityService() {
             Log.d(TAG, "Started OverlayControllerService")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start OverlayControllerService", e)
+        }
+    }
+
+    private fun triggerOverlay(packageName: String) {
+        Log.d(TAG, "Triggering overlay for package: $packageName")
+        try {
+            val intent = Intent(this, OverlayControllerService::class.java).apply {
+                putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+            }
+            startService(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start OverlayControllerService for package: $packageName", e)
+            // Try to ensure service is running and retry
+            ensureOverlayServiceRunning()
+            Handler(Looper.getMainLooper()).postDelayed({
+                try {
+                    val retryIntent = Intent(this, OverlayControllerService::class.java).apply {
+                        putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+                    }
+                    startService(retryIntent)
+                } catch (retryException: Exception) {
+                    Log.e(TAG, "Retry failed for package: $packageName", retryException)
+                }
+            }, 500)
         }
     }
 
@@ -575,13 +609,17 @@ class MyAccessibilityService : AccessibilityService() {
             return
         }
         
-        // Check if we're leaving a blocked app (before updating lastPackageName)
+        // Check if we're leaving a blocked app OR our overlay (before updating lastPackageName)
         // Only hide overlay if we're moving to a non-blocked app or system app
+        val isLeavingBlockedApp = lastPackageName != null && 
+                                  !isSystemPackage(lastPackageName!!) && 
+                                  !isLauncherPackage(lastPackageName!!)
+        val isLeavingOverlay = lastPackageName == "com.minded.minded"
+        
         if (lastPackageName != null && 
             lastPackageName != packageName && 
-            packageName != "com.minded.minded" &&  // Don't process when our overlay is showing
-            !isSystemPackage(lastPackageName!!) &&
-            !isLauncherPackage(lastPackageName!!)) {
+            packageName != "com.minded.minded" &&  // Don't process when moving TO our overlay
+            (isLeavingBlockedApp || isLeavingOverlay)) {
             
             // Don't hide overlay when transitioning to keyboard/input method
             if (packageName.contains("inputmethod") || 
@@ -597,7 +635,7 @@ class MyAccessibilityService : AccessibilityService() {
             // This prevents hiding overlay when switching between blocked apps
             if (isSystemPackage(packageName) || isLauncherPackage(packageName)) {
                 // Moving to system/launcher, safe to hide overlay
-                Log.d(TAG, "Previous app going to background, moving to system/launcher: $lastPackageName -> $packageName")
+                Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
                 hideOverlayForBackgroundedApp()
             } else {
                 // Moving to another user app, let the overlay logic handle it
@@ -627,30 +665,23 @@ class MyAccessibilityService : AccessibilityService() {
         // Track transition
         trackTransition(packageName, currentTime, className)
         
-        // Check if this is a genuine app switch
-        if (shouldTriggerOverlay(packageName, currentTime)) {
-            Log.d(TAG, "Triggering overlay for package: $packageName")
-            
-            try {
-                val intent = Intent(this, OverlayControllerService::class.java).apply {
-                    putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
-                }
-                startService(intent)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to start OverlayControllerService for package: $packageName", e)
-                // Try to ensure service is running and retry
-                ensureOverlayServiceRunning()
-                Handler(Looper.getMainLooper()).postDelayed({
-                    try {
-                        val retryIntent = Intent(this, OverlayControllerService::class.java).apply {
-                            putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
-                        }
-                        startService(retryIntent)
-                    } catch (retryException: Exception) {
-                        Log.e(TAG, "Retry failed for package: $packageName", retryException)
-                    }
-                }, 500)
-            }
+        // Analyze pattern and confidence to feed the hybrid detector
+        val (shouldTrigger, confidence) = shouldTriggerOverlayWithConfidence(packageName, currentTime)
+        
+        if (shouldTrigger) {
+             val pattern = analyzeTransitionPattern(packageName, currentTime)
+             serviceScope.launch {
+                 hybridDetector?.onAccessibilityEvent(
+                     packageName = packageName,
+                     pattern = pattern.name,
+                     patternConfidence = getPatternConfidence(pattern)
+                 )
+             }
+        } else {
+            // Even if we wouldn't trigger, it might be useful to inform the detector
+            // but for now we only send candidates that pass the basic accessibility filter
+            // to avoid spamming the validation system
+            Log.d(TAG, "Filtered out by accessibility logic: $packageName (confidence: ${confidence.overall})")
         }
         
         lastPackageName = packageName
@@ -934,26 +965,6 @@ class MyAccessibilityService : AccessibilityService() {
             TransitionPattern.QUICK_SETTINGS_PULL -> 0.15f
             TransitionPattern.UNKNOWN -> 0.50f
         }
-    }
-
-    /**
-     * Legacy method for backward compatibility.
-     * Delegates to the confidence-based implementation.
-     */
-    private fun shouldTriggerOverlay(packageName: String, currentTime: Long): Boolean {
-        val (shouldTrigger, confidence) = shouldTriggerOverlayWithConfidence(packageName, currentTime)
-
-        // Notify the hybrid detector for cross-validation
-        val pattern = analyzeTransitionPattern(packageName, currentTime)
-        serviceScope.launch {
-            hybridDetector?.onAccessibilityEvent(
-                packageName = packageName,
-                pattern = pattern.name,
-                patternConfidence = getPatternConfidence(pattern)
-            )
-        }
-
-        return shouldTrigger
     }
     
     private fun hideOverlayForBackgroundedApp() {

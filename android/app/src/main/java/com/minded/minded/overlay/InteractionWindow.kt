@@ -97,7 +97,7 @@ class InteractionWindow(
 
             // Add soft input mode to handle keyboard smoothly
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
-                    WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
+                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
 
             // Allow drawing into display cutout (notch) area
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
