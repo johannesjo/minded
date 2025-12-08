@@ -1,6 +1,10 @@
 package com.minded.minded.ui.compose
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
@@ -21,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +43,7 @@ fun LittleSun(
     val remainingSeconds = elapsedSeconds % 60
     val clockString = String.format("%2d:%02d", minutes, remainingSeconds)
     val color = Color.White
+    val view = LocalView.current
 
     var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
@@ -47,8 +53,8 @@ fun LittleSun(
 
     AnimatedVisibility(
         visible = isOverlayVisible,
-        enter = scaleIn(),
-        exit = fadeOut(),
+        enter = scaleIn(animationSpec = spring(stiffness = Spring.StiffnessLow)),
+        exit = fadeOut(animationSpec = tween(500)),
     ) {
         Box(
             modifier = Modifier
@@ -75,7 +81,10 @@ fun LittleSun(
                 Box(
                     modifier = Modifier
                         .size(30.dp)
-                        .clickable(onClick = onSunTap)
+                        .clickable(onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            onSunTap()
+                        })
                 ) {
                     Surface(
                         shape = CircleShape,

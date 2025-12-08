@@ -1,6 +1,7 @@
 package com.minded.minded.ui.compose
 
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.minded.minded.ui.theme.StandardGradientDark
@@ -67,6 +69,8 @@ fun SuccessSun(
             easing = LinearEasing
         )
     )
+    
+    val view = LocalView.current
 
     Box(
         modifier = Modifier
@@ -77,7 +81,11 @@ fun SuccessSun(
             )
             .alpha(animatedBoxAlpha)
             .fillMaxSize()
-            .clickable(onClick = { onSunTap(); isClickTriggered = true; })
+            .clickable(onClick = { 
+                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                onSunTap()
+                isClickTriggered = true
+            })
             .background(
                 brush = Brush.verticalGradient(
                     colors = if (isDarkModeNow()) StandardGradientDark else StandardGradientLight
