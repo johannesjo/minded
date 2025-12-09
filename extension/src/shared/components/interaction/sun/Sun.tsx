@@ -244,6 +244,8 @@ export const Sun: Component<SunProps> = (props) => {
       // Flush the latest movement even if the release happened before the rAF tick
       allowFinalFrame = true;
       applyDragFrame();
+      // Capture isDragIntent before resetting - applyDragFrame may have set it
+      const wasDragIntent = isDragIntent;
       isDragIntent = false;
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
@@ -260,8 +262,9 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Don't reset rotation here - let it animate back smoothly
 
+      // Check for tap: no drag intent, short duration, minimal movement
       if (
-        !isDragIntent &&
+        !wasDragIntent &&
         duration < 300 &&
         Math.abs(offset.x) < 2 &&
         Math.abs(offset.y) < 2

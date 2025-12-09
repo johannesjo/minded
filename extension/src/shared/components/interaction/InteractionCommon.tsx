@@ -129,8 +129,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (props.onSetSessionLimit) {
       props.onSetSessionLimit(seconds);
     }
-    // Fade out and close
-    handleSkip();
+    // Note: Don't call handleSkip() here - the native side will hide the window
+    // after setSessionLimit() and show the Little Sun overlay
   };
 
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
@@ -290,15 +290,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       {getShowTimeSelection() && (
         <div
-          class="interaction-content time-selection-overlay"
+          class="time-selection-overlay"
           style={{
             position: "fixed",
             inset: "0",
             "z-index": 1100,
             display: "flex",
+            "flex-direction": "column",
             "align-items": "center",
             "justify-content": "center",
-            background: "rgba(0,0,0,0.85)",
+            "pointer-events": "auto",
           }}
         >
           <TimeSelection
@@ -324,7 +325,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <div
           class="interaction-content"
           classList={{
-            "fade-in": getIsContentReady(),
+            "fade-in": getIsContentReady() && !getShowTimeSelection(),
             dragging: getIsDragging(),
           }}
           style={{
@@ -333,6 +334,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               : getShowSunInstructions()
                 ? 0
                 : getInteractionOpacity(),
+            transition: getShowTimeSelection()
+              ? "opacity 0.3s ease-out"
+              : undefined,
             "pointer-events":
               getShowTimeSelection() ||
               getShowSunInstructions() ||
@@ -377,7 +381,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           )}
 
         {!props.isFromDashboard && (
-          <div class="sun-container">
+          <div
+            class="sun-container"
+            style={{
+              opacity: getShowTimeSelection() ? 0 : 1,
+              transition: "opacity 0.3s ease-out",
+              "pointer-events": getShowTimeSelection() ? "none" : "all",
+            }}
+          >
             <Sun
               onSkip={() => setShowTimeSelection(true)}
               onFlingAway={props.onFlingAway}

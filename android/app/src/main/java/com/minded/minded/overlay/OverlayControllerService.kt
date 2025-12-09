@@ -330,13 +330,18 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
             it > Instant.now().minusSeconds(GRACE_PERIOD_IN_S.toLong())
         } ?: false
+        
+        val isWithinSessionLimit = entryForCurrentApp?.sessionEndTime?.let {
+            it > Instant.now()
+        } ?: false
+        
         val isRecentAppSwitch = lastGoToAppTimestamp > 0 && 
             System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
         val isBlocked = isBlockedPackage(currentPackageName)
 
         Log.v(
             logTag,
-            "checkToShowOverlay() gracePeriod=$isInGracePeriod blocked=$isBlocked " +
+            "checkToShowOverlay() gracePeriod=$isInGracePeriod sessionLimit=$isWithinSessionLimit blocked=$isBlocked " +
             "package=$currentPackageName recentSwitch=$isRecentAppSwitch"
         )
 
@@ -373,8 +378,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     logTag,
                     "checkToShowOverlay() skip because one of the overlays is already shown"
                 )
-            } else if (isInGracePeriod) {
-                Log.v(logTag, "isInGracePeriod")
+            } else if (isInGracePeriod || isWithinSessionLimit) {
+                Log.v(logTag, "isInGracePeriod or isWithinSessionLimit")
                 if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
                     // Removed SMALL_MSG_OVERLAY - only show the little sun
@@ -462,6 +467,38 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 OverlayControllerService.Companion.OverlayName.SUCCESS_SUN_OVERLAY,
                 OverlayControllerService.Companion.OverlayMode.SUCCESS_SUN_OVERLAY__FINAL
             )
+        }
+    }
+
+    fun setSessionLimit(seconds: Int) {
+        Log.d(logTag, "setSessionLimit($seconds) called")
+        val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
+        Log.d(logTag, "setSessionLimit - currentApp: $currentApp")
+
+        if (currentApp == null) {
+            Log.e(logTag, "setSessionLimit - currentApp is null, cannot set session limit")
+            return
+        }
+
+        val endTime = if (seconds < 0) {
+            // End of day (Midnight of the next day)
+            Instant.now().atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate().plusDays(1)
+                .atStartOfDay(java.time.ZoneId.systemDefault())
+                .toInstant()
+        } else {
+            Instant.now().plusSeconds(seconds.toLong())
+        }
+
+        Log.d(logTag, "setSessionLimit - endTime: $endTime")
+        sharedOverlayViewModel.updateCurrentAppSessionEndTime(endTime)
+
+        // Hide interaction window and show Little Sun on main thread
+        Handler(Looper.getMainLooper()).post {
+            Log.d(logTag, "setSessionLimit - on main thread, hiding interaction window")
+            interactionOverlayWindow.hideWindow()
+            Log.d(logTag, "setSessionLimit - showing Little Sun overlay")
+            showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
         }
     }
 

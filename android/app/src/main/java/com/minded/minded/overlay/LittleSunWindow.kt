@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
+import java.time.Instant
 
 //val SMALL_MSG_CYCLE_DURATION = 6
 
@@ -49,12 +50,47 @@ class LittleSunWindow(
     private val handler = Handler(Looper.getMainLooper())
     private val runnable = object : Runnable {
         override fun run() {
+            val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
+            val appEntry = if (currentApp != null) sharedOverlayViewModel.sharedData.value.appMap[currentApp] else null
+            val endTime = appEntry?.sessionEndTime
+            val now = Instant.now()
+
             Log.v(
                 logTag,
                 "elapsedSeconds: $elapsedSeconds ${powerManager.isScreenOn} ${powerManager.isInteractive}"
             )
-            elapsedSeconds++
-            sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
+
+            if (endTime != null) {
+                if (now.isAfter(endTime)) {
+                    // Time limit reached
+                    hideWindow()
+                    // Clear the session limit so we don't get stuck in a loop if we cancel
+                    // actually checkToShowOverlay will handle it if we just trigger it
+                    if (currentApp != null) {
+                        OverlayControllerService.showOverlay(
+                            ctrlSvc,
+                            OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
+                            OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
+                            currentApp
+                        )
+                    }
+                    stopTimer()
+                    return
+                } else {
+                    // Countdown mode
+                    val remaining = java.time.Duration.between(now, endTime).seconds.toInt()
+                    // If more than 12 hours (e.g. Rest of Day), hide timer
+                    if (remaining > 12 * 3600) {
+                        elapsedSeconds = -1 // Signal to LittleSun to hide text
+                    } else {
+                        elapsedSeconds = remaining
+                    }
+                }
+            } else {
+                // Regular elapsed time mode
+                elapsedSeconds++
+                sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
+            }
 
             if (!powerManager.isScreenOn || !powerManager.isInteractive) {
                 hideWindow()
@@ -87,9 +123,11 @@ class LittleSunWindow(
     }
 
     override fun showWindow() {
+        Log.d(logTag, "showWindow() called for Little Sun")
         super.showWindow()
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
+        Log.d(logTag, "showWindow() completed, window=${window != null}")
     }
 
     override fun hideWindow() {

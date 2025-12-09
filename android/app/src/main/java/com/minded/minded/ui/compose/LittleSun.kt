@@ -39,9 +39,10 @@ fun LittleSun(
     onSunTap: () -> Unit = {},
     isInitiallyVisible: Boolean = false
 ) {
-    val minutes = elapsedSeconds / 60
-    val remainingSeconds = elapsedSeconds % 60
-    val clockString = String.format("%2d:%02d", minutes, remainingSeconds)
+    val showText = elapsedSeconds >= 0
+    val minutes = if (showText) elapsedSeconds / 60 else 0
+    val remainingSeconds = if (showText) elapsedSeconds % 60 else 0
+    val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
     val color = Color.White
     val view = LocalView.current
 

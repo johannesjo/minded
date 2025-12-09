@@ -14,6 +14,11 @@
     opacity: 1;
   }
 
+  &.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+  }
+
   // 1s transition during drag as requested
   &.dragging {
     transition: opacity 1s ease-out;
@@ -90,6 +95,12 @@
   justify-content: center;
   pointer-events: all;
   margin-top: 40px;
+  transition: opacity 0.3s ease-out;
+
+  &.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 .be-proud-message {

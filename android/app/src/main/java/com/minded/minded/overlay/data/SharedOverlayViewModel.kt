@@ -17,7 +17,8 @@ enum class InteractionMode {
 
 data class AppEntry(
     val lastUsed: Instant = Instant.now(),
-    var sessionDurationInS: Int = -1
+    var sessionDurationInS: Int = -1,
+    val sessionEndTime: Instant? = null
 )
 
 typealias AppMap = Map<String, AppEntry>
@@ -56,7 +57,7 @@ class SharedOverlayViewModel(
         answerTxt: String? = null,
         successSunTxt: String? = null,
     ) {
-        val currentData = sharedData.value ?: SharedOverlayData()
+        val currentData = sharedData.value
         val newSharedData = currentData.copy(
             currentApp = currentApp ?: currentData.currentApp,
             appMap = currentData.appMap,
@@ -103,6 +104,20 @@ class SharedOverlayViewModel(
             sessionDurationInS = durationInS
         )
         Log.v(lt, "updateCurrentAppSessionDuration() ${appName} ${appEntry}")
+        _sharedData.update { currentData.copy(appMap = newAppMap) }
+    }
+
+    fun updateCurrentAppSessionEndTime(endTime: Instant?) {
+        val appName =
+            sharedData.value.currentApp ?: return // Prevent crash if app not set
+        val currentData = sharedData.value
+        val newAppMap = currentData.appMap.toMutableMap()
+        val appEntry = newAppMap[appName] ?: AppEntry()
+        newAppMap[appName] = appEntry.copy(
+            lastUsed = Instant.now(),
+            sessionEndTime = endTime
+        )
+        Log.v(lt, "updateCurrentAppSessionEndTime() ${appName} $endTime")
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
 
