@@ -128,6 +128,9 @@ export const Sun: Component<SunProps> = (props) => {
       requestAnimationFrame(() => {
         isRafPending = false;
 
+        // Abort if drag has ended
+        if (!getIsDragging()) return;
+
         const rawDeltaX = latestClientX - startPos.x;
         const rawDeltaY = latestClientY - startPos.y;
 
@@ -224,6 +227,7 @@ export const Sun: Component<SunProps> = (props) => {
     };
 
     const handleEnd = () => {
+      isDragIntent = false;
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
       const velocity = calculateVelocity(velocitySamples);
