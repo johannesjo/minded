@@ -12,6 +12,10 @@ import {
   updateHostsEntry,
   loadDataForHost,
 } from "@dataInterface/localDataInterface";
+import {
+  updateSyncData,
+  getSyncData,
+} from "@src/dataInterface/commonSyncDataInterface";
 
 // NOTE: val also needs to be set in css
 
@@ -72,6 +76,13 @@ export const InteractionWeb: (props: {
           })()
         : now + seconds * 1000;
 
+    await updateSyncData({
+      activeTimer: {
+        endTS: endTs,
+        durationS: seconds,
+      },
+    });
+
     await updateHostsEntry(props.host, {
       sessionLimitInS: seconds,
       sessionEndTS: endTs,
@@ -87,6 +98,15 @@ export const InteractionWeb: (props: {
 
   onMount(async () => {
     // If there's already an active conscious intent session, start in Little Sun mode
+    const syncData = await getSyncData();
+    if (
+      syncData.activeTimer?.endTS &&
+      Date.now() < syncData.activeTimer.endTS
+    ) {
+      setIsShowLittleSun(true);
+      return;
+    }
+
     const data = await loadDataForHost(props.host);
     if (data?.sessionEndTS && Date.now() < data.sessionEndTS) {
       setIsShowLittleSun(true);

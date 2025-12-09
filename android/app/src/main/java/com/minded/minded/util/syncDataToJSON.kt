@@ -52,5 +52,12 @@ fun syncDataToJson(syncData: SyncData): String {
     }
     jsonObject.put("browsingBehaviorRating", browsingBehaviorRatingObject)
 
+    if (syncData.activeTimer != null) {
+        val timerObj = JSONObject()
+        timerObj.put("endTS", syncData.activeTimer.endTS)
+        timerObj.put("durationS", syncData.activeTimer.durationS)
+        jsonObject.put("activeTimer", timerObj)
+    }
+
     return jsonObject.toString()
 }

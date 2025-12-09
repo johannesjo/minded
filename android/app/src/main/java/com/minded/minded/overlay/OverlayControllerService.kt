@@ -29,6 +29,7 @@ import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseSyncData
+import com.minded.minded.util.ActiveTimer
 import java.time.Instant
 
 
@@ -77,6 +78,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         // NOTE: initialization should be enough to write data
         sharedPreferenceService = SharedPreferenceService(this)
         sharedPreferenceService.writeDefaultDataIfNecessary();
+        val syncData = sharedPreferenceService.getSyncData()
+        sharedOverlayViewModel.updateActiveTimer(syncData.activeTimer)
 
         interactionOverlayWindow =
             InteractionWindow(this, sharedOverlayViewModel, windowManager)
@@ -327,13 +330,18 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
         
         val entryForCurrentApp = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
+        val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
+        val now = Instant.now()
+        val activeTimerEndTime = activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
         val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
-            it > Instant.now().minusSeconds(GRACE_PERIOD_IN_S.toLong())
+            it > now.minusSeconds(GRACE_PERIOD_IN_S.toLong())
         } ?: false
-        
-        val isWithinSessionLimit = entryForCurrentApp?.sessionEndTime?.let {
-            it > Instant.now()
-        } ?: false
+        val sessionEndTime = entryForCurrentApp?.sessionEndTime ?: activeTimerEndTime
+        val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
+        if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
+            // Keep per-app map in sync so Little Sun countdown can restore after process restarts
+            sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
+        }
         
         val isRecentAppSwitch = lastGoToAppTimestamp > 0 && 
             System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
@@ -481,18 +489,25 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         val isRestOfDay = seconds < 0
-        val endTime = if (isRestOfDay) {
+        val now = System.currentTimeMillis()
+        val endTS = if (isRestOfDay) {
             // End of day (Midnight of the next day)
             Instant.now().atZone(java.time.ZoneId.systemDefault())
                 .toLocalDate().plusDays(1)
                 .atStartOfDay(java.time.ZoneId.systemDefault())
-                .toInstant()
+                .toInstant().toEpochMilli()
         } else {
-            Instant.now().plusSeconds(seconds.toLong())
+            now + seconds * 1000L
         }
 
-        Log.d(logTag, "setSessionLimit - endTime: $endTime, isRestOfDay: $isRestOfDay")
-        sharedOverlayViewModel.updateCurrentAppSessionEndTime(endTime)
+        val activeTimer = ActiveTimer(endTS, seconds)
+        sharedPreferenceService.updateSyncData {
+            copy(activeTimer = activeTimer)
+        }
+        sharedOverlayViewModel.updateActiveTimer(activeTimer)
+
+        Log.d(logTag, "setSessionLimit - endTS: $endTS, isRestOfDay: $isRestOfDay")
+        sharedOverlayViewModel.updateCurrentAppSessionEndTime(Instant.ofEpochMilli(endTS))
 
         // Hide interaction window on main thread
         Handler(Looper.getMainLooper()).post {
@@ -507,6 +522,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 Log.d(logTag, "setSessionLimit - Rest of Day selected, not showing Little Sun")
             }
         }
+    }
+
+    fun clearSession() {
+        sharedPreferenceService.updateSyncData {
+            copy(activeTimer = null)
+        }
+        sharedOverlayViewModel.updateActiveTimer(null)
+        // Also clear local session end time for current app to avoid confusion
+        sharedOverlayViewModel.updateCurrentAppSessionEndTime(null)
     }
 
     fun goToHomeScreen() {

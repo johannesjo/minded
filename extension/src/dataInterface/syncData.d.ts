@@ -73,6 +73,11 @@ export interface SyncData {
   selfAssessment: SelfAssessmentData;
   alternativeApps: string[];
   alternativeWebsites: string[];
+
+  activeTimer: {
+    endTS: number;
+    durationS: number;
+  } | null;
 }
 
 export interface StaticCfg {

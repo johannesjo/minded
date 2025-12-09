@@ -17,6 +17,11 @@ data class Answer(
     val ts: Long
 )
 
+data class ActiveTimer(
+    val endTS: Long,
+    val durationS: Int
+)
+
 data class SyncData(
     val cfg: UserCfg,
     val answers: List<Answer>,
@@ -30,7 +35,8 @@ data class SyncData(
     val sunTaps: Map<String, Int>,
     val attempts: Map<String, Int>,
     val lastBrowsingBehaviorRatingTS: Long,
-    val browsingBehaviorRating: Map<String, Int>
+    val browsingBehaviorRating: Map<String, Int>,
+    val activeTimer: ActiveTimer?
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -84,6 +90,13 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
             ratingObject.keys().asSequence().associateWith { ratingObject.getInt(it) }
         }
 
+    val activeTimer = jsonObject.optJSONObject("activeTimer")?.let { timerObj ->
+        ActiveTimer(
+            timerObj.getLong("endTS"),
+            timerObj.getInt("durationS")
+        )
+    }
+
     return SyncData(
         userCfg,
         answers,
@@ -97,6 +110,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         sunTaps,
         attempts,
         lastBrowsingBehaviorRatingTS,
-        browsingBehaviorRating
+        browsingBehaviorRating,
+        activeTimer
     )
 }

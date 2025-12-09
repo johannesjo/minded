@@ -4,6 +4,10 @@ import {
   updateHostsEntry,
   // @ts-ignore
 } from "@dataInterface/localDataInterface";
+import {
+  getSyncData,
+  updateSyncData,
+} from "@src/dataInterface/commonSyncDataInterface";
 import { closeTab } from "@dataInterface/extensionApi";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
@@ -29,10 +33,16 @@ export const LittleSunComponent: (props: {
 
   onMount(async () => {
     const d = await loadDataForHost(props.host);
+    const syncData = await getSyncData();
 
     const now = Date.now();
-    const sessionEnd = d?.sessionEndTS ?? null;
-    const sessionLimit = d?.sessionLimitInS ?? null;
+    let sessionEnd = d?.sessionEndTS ?? null;
+    let sessionLimit = d?.sessionLimitInS ?? null;
+
+    if (syncData.activeTimer?.endTS && syncData.activeTimer.endTS > now) {
+      sessionEnd = syncData.activeTimer.endTS;
+      sessionLimit = syncData.activeTimer.durationS;
+    }
 
     if (sessionEnd && sessionEnd > now) {
       setIsRestOfDay(sessionLimit === -1);
@@ -138,6 +148,7 @@ export const LittleSunComponent: (props: {
           sessionLimitInS: null,
           sessionDurationInS: 0,
         });
+        updateSyncData({ activeTimer: null });
         props.onShowFreshInteraction();
       }
     };
