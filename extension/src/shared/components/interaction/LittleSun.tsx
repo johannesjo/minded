@@ -16,6 +16,10 @@ export const LittleSunComponent: (props: {
   host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
+  const [getRemainingSeconds, setRemainingSeconds] = createSignal<
+    number | null
+  >(null);
+  const [getIsRestOfDay, setIsRestOfDay] = createSignal(false);
   const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
   const [getIsScalingOut, setIsScalingOut] = createSignal(false);
 
@@ -26,7 +30,24 @@ export const LittleSunComponent: (props: {
   onMount(async () => {
     const d = await loadDataForHost(props.host);
 
-    initCounter(d?.sessionDurationInS ?? 0);
+    const now = Date.now();
+    const sessionEnd = d?.sessionEndTS ?? null;
+    const sessionLimit = d?.sessionLimitInS ?? null;
+
+    if (sessionEnd && sessionEnd > now) {
+      setIsRestOfDay(sessionLimit === -1);
+      startCountdown(sessionEnd, sessionLimit);
+    } else {
+      // Fallback to legacy counted-up session timer if no conscious intent session is active
+      initCounter(d?.sessionDurationInS ?? 0);
+      // Clear any stale timing info
+      if (sessionEnd) {
+        updateHostsEntry(props.host, {
+          sessionEndTS: null,
+          sessionLimitInS: null,
+        });
+      }
+    }
 
     // FOR TESTING
     // setTimeout(() => {
@@ -44,6 +65,14 @@ export const LittleSunComponent: (props: {
   });
 
   const formatSessionTime = (seconds: number): string => {
+    // Rest of day hides the timer text
+    if (getIsRestOfDay()) return "";
+
+    if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
+    }
     if (seconds >= 60) {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
@@ -79,6 +108,44 @@ export const LittleSunComponent: (props: {
     }, 1000);
   };
 
+  const startCountdown = (
+    sessionEndTS: number,
+    sessionLimitInS: number | null,
+  ) => {
+    if (currentSessionInterval) {
+      window.clearInterval(currentSessionInterval);
+    }
+
+    const tick = () => {
+      const remaining = Math.max(
+        Math.floor((sessionEndTS - Date.now()) / 1000),
+        0,
+      );
+      setRemainingSeconds(remaining);
+
+      // Keep last-used timestamp fresh
+      updateHostsEntry(props.host, {
+        lastUsedTS: Date.now(),
+        sessionEndTS,
+        sessionLimitInS,
+      });
+
+      if (remaining <= 0) {
+        window.clearInterval(currentSessionInterval);
+        // Clear session window and trigger full intervention again
+        updateHostsEntry(props.host, {
+          sessionEndTS: null,
+          sessionLimitInS: null,
+          sessionDurationInS: 0,
+        });
+        props.onShowFreshInteraction();
+      }
+    };
+
+    tick();
+    currentSessionInterval = window.setInterval(tick, 1000);
+  };
+
   const handleClick = () => {
     closeTab();
   };
@@ -112,7 +179,9 @@ export const LittleSunComponent: (props: {
           onClick={handleClick}
           onDblClick={handleDoubleClick}
         >
-          {formatSessionTime(getSessionTime())}
+          {getRemainingSeconds() !== null
+            ? formatSessionTime(getRemainingSeconds()!)
+            : formatSessionTime(getSessionTime())}
         </div>
       </div>
     </div>

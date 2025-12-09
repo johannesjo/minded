@@ -8,6 +8,10 @@ import { closeTab } from "@src/dataInterface/extension/extensionApi";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { IS_MOUSE_PRIMARY } from "@src/util/touch";
 import { isDarkModeNow } from "@src/shared/addWrapperClasses";
+import {
+  updateHostsEntry,
+  loadDataForHost,
+} from "@dataInterface/localDataInterface";
 
 // NOTE: val also needs to be set in css
 
@@ -56,6 +60,38 @@ export const InteractionWeb: (props: {
       fadeOut(wrapperEl, 150);
     }
   };
+
+  const setSessionLimit = async (seconds: number) => {
+    const now = Date.now();
+    const endTs =
+      seconds < 0
+        ? (() => {
+            const endOfDay = new Date();
+            endOfDay.setHours(24, 0, 0, 0);
+            return endOfDay.getTime();
+          })()
+        : now + seconds * 1000;
+
+    await updateHostsEntry(props.host, {
+      sessionLimitInS: seconds,
+      sessionEndTS: endTs,
+      lastUsedTS: now,
+      sessionDurationInS: 0,
+    });
+
+    // Ensure we tear down any stale question state
+    setQuestion(undefined);
+    stopAllVideos();
+    setIsShowLittleSun(true);
+  };
+
+  onMount(async () => {
+    // If there's already an active conscious intent session, start in Little Sun mode
+    const data = await loadDataForHost(props.host);
+    if (data?.sessionEndTS && Date.now() < data.sessionEndTS) {
+      setIsShowLittleSun(true);
+    }
+  });
 
   return (
     <>
@@ -112,6 +148,7 @@ export const InteractionWeb: (props: {
                 );
                 setIsShowLittleSun(true);
               }}
+              onSetSessionLimit={setSessionLimit}
             />
           </div>
         </div>
