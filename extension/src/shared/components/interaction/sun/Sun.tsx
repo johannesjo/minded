@@ -88,6 +88,12 @@ export const Sun: Component<SunProps> = (props) => {
     let touchStartTime = 0;
     let lastHapticPointIndex = -1;
 
+    // Track pending rAF work so we only process one frame at a time
+    let isRafPending = false;
+    let latestClientX = 0;
+    let latestClientY = 0;
+    let allowFinalFrame = false;
+
     const handleStart = (clientX: number, clientY: number) => {
       // Prevent interactions once completion animation has started
       if (getIsCompletionStarted()) return;
@@ -111,9 +117,108 @@ export const Sun: Component<SunProps> = (props) => {
       startLongPressTimer();
     };
 
-    let isRafPending = false;
-    let latestClientX = 0;
-    let latestClientY = 0;
+    const applyDragFrame = () => {
+      // Abort if drag has ended unless we're flushing a final frame on release
+      if (!getIsDragging() && !allowFinalFrame) {
+        return;
+      }
+
+      const rawDeltaX = latestClientX - startPos.x;
+      const rawDeltaY = latestClientY - startPos.y;
+
+      const moveDistance = Math.sqrt(
+        rawDeltaX * rawDeltaX + rawDeltaY * rawDeltaY,
+      );
+
+      // Cancel long press if moved beyond tolerance (10px allows for finger jitter)
+      if (moveDistance > 10) {
+        cancelLongPressTimer();
+      }
+
+      if (moveDistance > 2 && !isDragIntent) {
+        isDragIntent = true;
+      }
+
+      // Apply rubber-banding for weighted feel
+      const deltaX = applyRubberBanding(rawDeltaX);
+      const deltaY = applyRubberBanding(rawDeltaY);
+
+      // Calculate drag progress and visual effects (use raw values for threshold logic)
+      const dragDistance = Math.abs(rawDeltaY);
+      const effects = calculateDragEffects(rawDeltaY, dragDistance);
+
+      // Progressive glow: quadratic ramp from 0-100% of threshold
+      const glowProgress = Math.min(dragDistance / DRAG_THRESHOLD_PX, 1);
+      setGlowIntensity(glowProgress * glowProgress);
+
+      // Progressive haptics at 33%, 66%, 100% of threshold
+      const progressNormalized = dragDistance / DRAG_THRESHOLD_PX;
+      const currentPointIndex = HAPTIC_PROGRESS_POINTS.findIndex(
+        (point) => progressNormalized < point,
+      );
+      const effectiveIndex =
+        currentPointIndex === -1
+          ? HAPTIC_PROGRESS_POINTS.length - 1
+          : currentPointIndex - 1;
+
+      if (effectiveIndex > lastHapticPointIndex) {
+        // Crossed a new threshold going up
+        triggerHaptic(
+          effectiveIndex === HAPTIC_PROGRESS_POINTS.length - 1
+            ? "medium"
+            : "light",
+        );
+        lastHapticPointIndex = effectiveIndex;
+        if (dragDistance >= DRAG_THRESHOLD_PX) {
+          setIsBeyondThreshold(true);
+        }
+      } else if (effectiveIndex < lastHapticPointIndex) {
+        // Crossed back down
+        lastHapticPointIndex = effectiveIndex;
+        if (dragDistance < DRAG_THRESHOLD_PX) {
+          setIsBeyondThreshold(false);
+        }
+      }
+
+      // Batch all state updates together
+      setDragOffset({ x: deltaX, y: deltaY });
+      setScale(effects.scale);
+      setOpacity(effects.opacity);
+
+      // Update progress and direction for visual indicators
+      setDragProgress(effects.progress);
+      setDragDirection(deltaY > 0 ? "down" : deltaY < 0 ? "up" : "none");
+
+      // Color temperature: cool (blue) when dragging up, warm (orange) when down
+      const normalizedProgress = dragDistance / DRAG_THRESHOLD_PX;
+      const tempIntensity = Math.min(normalizedProgress, 1);
+      setColorTemp(rawDeltaY > 0 ? tempIntensity : -tempIntensity);
+
+      // Track velocity samples
+      const now = Date.now();
+      velocitySamples.push({
+        x: latestClientX,
+        y: latestClientY,
+        timestamp: now,
+      });
+      if (velocitySamples.length > VELOCITY_SAMPLE_SIZE) {
+        velocitySamples.shift();
+      }
+
+      // Only emit drag progress events after drag intent is confirmed
+      if (isDragIntent) {
+        const direction = deltaY > 0 ? "down" : "up";
+        const intensity = getDragProgress();
+
+        const event = new CustomEvent("dragProgress", {
+          detail: { direction, intensity, isDragging: true },
+        });
+        window.dispatchEvent(event);
+      }
+
+      // Reset final-frame allowance so we don't keep processing after release
+      allowFinalFrame = false;
+    };
 
     const handleMove = (clientX: number, clientY: number) => {
       // Prevent interactions once completion animation has started
@@ -127,106 +232,14 @@ export const Sun: Component<SunProps> = (props) => {
       isRafPending = true;
       requestAnimationFrame(() => {
         isRafPending = false;
-
-        // Abort if drag has ended
-        if (!getIsDragging()) return;
-
-        const rawDeltaX = latestClientX - startPos.x;
-        const rawDeltaY = latestClientY - startPos.y;
-
-        const moveDistance = Math.sqrt(
-          rawDeltaX * rawDeltaX + rawDeltaY * rawDeltaY,
-        );
-
-        // Cancel long press if moved beyond tolerance (10px allows for finger jitter)
-        if (moveDistance > 10) {
-          cancelLongPressTimer();
-        }
-
-        if (moveDistance > 2 && !isDragIntent) {
-          isDragIntent = true;
-        }
-
-        // Apply rubber-banding for weighted feel
-        const deltaX = applyRubberBanding(rawDeltaX);
-        const deltaY = applyRubberBanding(rawDeltaY);
-
-        // Calculate drag progress and visual effects (use raw values for threshold logic)
-        const dragDistance = Math.abs(rawDeltaY);
-        const effects = calculateDragEffects(rawDeltaY, dragDistance);
-
-        // Progressive glow: quadratic ramp from 0-100% of threshold
-        const glowProgress = Math.min(dragDistance / DRAG_THRESHOLD_PX, 1);
-        setGlowIntensity(glowProgress * glowProgress);
-
-        // Progressive haptics at 33%, 66%, 100% of threshold
-        const progressNormalized = dragDistance / DRAG_THRESHOLD_PX;
-        const currentPointIndex = HAPTIC_PROGRESS_POINTS.findIndex(
-          (point) => progressNormalized < point,
-        );
-        const effectiveIndex =
-          currentPointIndex === -1
-            ? HAPTIC_PROGRESS_POINTS.length - 1
-            : currentPointIndex - 1;
-
-        if (effectiveIndex > lastHapticPointIndex) {
-          // Crossed a new threshold going up
-          triggerHaptic(
-            effectiveIndex === HAPTIC_PROGRESS_POINTS.length - 1
-              ? "medium"
-              : "light",
-          );
-          lastHapticPointIndex = effectiveIndex;
-          if (dragDistance >= DRAG_THRESHOLD_PX) {
-            setIsBeyondThreshold(true);
-          }
-        } else if (effectiveIndex < lastHapticPointIndex) {
-          // Crossed back down
-          lastHapticPointIndex = effectiveIndex;
-          if (dragDistance < DRAG_THRESHOLD_PX) {
-            setIsBeyondThreshold(false);
-          }
-        }
-
-        // Batch all state updates together
-        setDragOffset({ x: deltaX, y: deltaY });
-        setScale(effects.scale);
-        setOpacity(effects.opacity);
-
-        // Update progress and direction for visual indicators
-        setDragProgress(effects.progress);
-        setDragDirection(deltaY > 0 ? "down" : deltaY < 0 ? "up" : "none");
-
-        // Color temperature: cool (blue) when dragging up, warm (orange) when down
-        const normalizedProgress = dragDistance / DRAG_THRESHOLD_PX;
-        const tempIntensity = Math.min(normalizedProgress, 1);
-        setColorTemp(rawDeltaY > 0 ? tempIntensity : -tempIntensity);
-
-        // Track velocity samples
-        const now = Date.now();
-        velocitySamples.push({
-          x: latestClientX,
-          y: latestClientY,
-          timestamp: now,
-        });
-        if (velocitySamples.length > VELOCITY_SAMPLE_SIZE) {
-          velocitySamples.shift();
-        }
-
-        // Only emit drag progress events after drag intent is confirmed
-        if (isDragIntent) {
-          const direction = deltaY > 0 ? "down" : "up";
-          const intensity = getDragProgress();
-
-          const event = new CustomEvent("dragProgress", {
-            detail: { direction, intensity, isDragging: true },
-          });
-          window.dispatchEvent(event);
-        }
+        applyDragFrame();
       });
     };
 
     const handleEnd = () => {
+      // Flush the latest movement even if the release happened before the rAF tick
+      allowFinalFrame = true;
+      applyDragFrame();
       isDragIntent = false;
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
@@ -345,7 +358,8 @@ export const Sun: Component<SunProps> = (props) => {
     };
 
     const animateSnapBack = () => {
-      // setIsAnimating(true);
+      // Keep transitions disabled while JS drives the snap-back animation
+      setIsAnimating(true);
       setIsBeyondThreshold(false); // Reset glow when snapping back
       setGlowIntensity(0); // Reset progressive glow
       const startOffset = getDragOffset();
