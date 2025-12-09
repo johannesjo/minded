@@ -45,18 +45,30 @@ export const ContentScriptMain: (props: {
     }
 
     const dataForHost = await loadDataForHost(host);
+    const now = Date.now();
 
     if (
       dataForHost &&
-      Date.now() - RESET_WEBSITE_USAGE_DURATION_THRESHOLD >
-        dataForHost.lastUsedTS
+      now - RESET_WEBSITE_USAGE_DURATION_THRESHOLD > dataForHost.lastUsedTS
     ) {
       updateHostsEntry(host, {
-        lastUsedTS: Date.now(),
+        lastUsedTS: now,
         sessionDurationInS: 0,
+        sessionEndTS: null,
+        sessionLimitInS: null,
       });
     } else {
-      updateHostsEntry(host, { lastUsedTS: Date.now() });
+      updateHostsEntry(host, { lastUsedTS: now });
+    }
+
+    // If user already selected a conscious intent window that hasn't expired, stay in Little Sun mode
+    if (dataForHost?.sessionEndTS) {
+      if (now >= dataForHost.sessionEndTS) {
+        // Expired window: reset timing fields so we show the full intervention again
+        updateHostsEntry(host, { sessionEndTS: null, sessionLimitInS: null });
+      } else {
+        setIsShowFullMinder(false);
+      }
     }
   });
 

@@ -30,6 +30,8 @@ import {
 import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
 import "./InteractionCommon.scss";
 
+import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
+
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
   isInitFadeout: boolean;
@@ -44,6 +46,7 @@ interface InteractionCommonProps {
   onFlingAway: () => void;
   onDragComplete: () => void;
   onCompletionStarted?: (started: boolean) => void;
+  onSetSessionLimit?: (seconds: number) => void;
   isFromDashboard?: boolean;
 }
 
@@ -69,6 +72,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getHasAnswered, setHasAnswered] = createSignal(false);
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
+  const [getShowTimeSelection, setShowTimeSelection] = createSignal(false);
 
   let frameNr: number | undefined;
 
@@ -115,6 +119,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     } else {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => props.onSkip());
     }
+  };
+
+  const handleTimeSelection = (seconds: number) => {
+    setShowTimeSelection(false);
+    if (props.onSetSessionLimit) {
+      props.onSetSessionLimit(seconds);
+    }
+    // Fade out and close
+    handleSkip();
   };
 
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
@@ -272,11 +285,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
+      {getShowTimeSelection() && (
+        <div class="interaction-content time-selection-overlay">
+          <TimeSelection
+            onSelectTime={handleTimeSelection}
+            onCancel={() => {
+              setShowTimeSelection(false);
+            }}
+          />
+        </div>
+      )}
+
       <div
         id="minded-6622-interaction-wrapper-box"
         style={{
           "pointer-events":
-            getIsFinalAnimation() || getIsCompletionStarted() ? "none" : "auto",
+            getShowTimeSelection() ||
+            getIsFinalAnimation() ||
+            getIsCompletionStarted()
+              ? "none"
+              : "auto",
+          opacity: getShowTimeSelection() ? 0 : 1,
+          transition: "opacity 0.3s ease",
         }}
       >
         <div
@@ -323,7 +353,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               <div class="sun-instructions txtSmaller">
                 <p>Fling the sun away to let go.</p>
                 <p>Drag the sun down to ground yourself.</p>
-                <p>Tap the sun 5 times to proceed.</p>
+                <p>Tap the sun 3 times to proceed.</p>
               </div>
             </div>
           )}
@@ -331,7 +361,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         {!props.isFromDashboard && (
           <div class="sun-container">
             <Sun
-              onSkip={handleSkip}
+              onSkip={() => setShowTimeSelection(true)}
               onFlingAway={props.onFlingAway}
               onDragComplete={props.onDragComplete}
               onStartBackgroundAnimation={handleStartBackgroundAnimation}
@@ -340,6 +370,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 props.onCompletionStarted?.(started);
               }}
               eventRoot={props.shadowRoot}
+              tapThreshold={3}
             />
           </div>
         )}

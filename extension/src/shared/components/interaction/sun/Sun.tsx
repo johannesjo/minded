@@ -29,6 +29,7 @@ interface SunProps {
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
   eventRoot?: ShadowRoot;
+  tapThreshold?: number;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -322,7 +323,10 @@ export const Sun: Component<SunProps> = (props) => {
         tapTimer = null;
       }
 
-      if (currentTapCount >= 5) {
+      const threshold = props.tapThreshold || 5;
+      // console.log("Sun tap:", currentTapCount, "threshold:", threshold);
+
+      if (currentTapCount >= threshold) {
         props.onSkip();
         setTapCount(0);
       } else {
@@ -598,8 +602,11 @@ export const Sun: Component<SunProps> = (props) => {
       }}
     >
       <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div class="tap-dot" classList={{ filled: i <= getTapCount() }}></div>
+        {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (
+          <div
+            class="tap-dot"
+            classList={{ filled: i + 1 <= getTapCount() }}
+          ></div>
         ))}
       </div>
     </div>
