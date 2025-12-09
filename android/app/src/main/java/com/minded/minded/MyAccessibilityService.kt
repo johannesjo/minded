@@ -269,7 +269,11 @@ class MyAccessibilityService : AccessibilityService() {
             val intent = Intent(this, OverlayControllerService::class.java).apply {
                 putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
             }
-            startService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start OverlayControllerService for package: $packageName", e)
             // Try to ensure service is running and retry
@@ -279,7 +283,11 @@ class MyAccessibilityService : AccessibilityService() {
                     val retryIntent = Intent(this, OverlayControllerService::class.java).apply {
                         putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
                     }
-                    startService(retryIntent)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(retryIntent)
+                    } else {
+                        startService(retryIntent)
+                    }
                 } catch (retryException: Exception) {
                     Log.e(TAG, "Retry failed for package: $packageName", retryException)
                 }
@@ -575,117 +583,121 @@ class MyAccessibilityService : AccessibilityService() {
 
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        val packageName = event.packageName?.toString() ?: return
-        val currentTime = System.currentTimeMillis()
+        try {
+            val packageName = event.packageName?.toString() ?: return
+            val currentTime = System.currentTimeMillis()
 
-        // Record event with health monitor
-        hybridDetector?.healthMonitor?.recordEvent()
+            // Record event with health monitor
+            hybridDetector?.healthMonitor?.recordEvent()
 
-        // Extract event context for better validation
-        val className = event.className?.toString() ?: ""
-        val eventText = event.text.joinToString(" ")
-        val contentDesc = event.contentDescription?.toString() ?: ""
+            // Extract event context for better validation
+            val className = event.className?.toString() ?: ""
+            val eventText = event.text.joinToString(" ")
+            val contentDesc = event.contentDescription?.toString() ?: ""
 
-        Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
-        
-        // Track if minded overlay is active
-        if (packageName == "com.minded.minded") {
-            // Check if this is an overlay window (InteractionWindow)
-            if (className.contains("InteractionWindow") || 
-                className.contains("WebView") ||
-                event.toString().contains("InteractionWindow")) {
-                isMindedOverlayActive = true
-                Log.d(TAG, "Minded overlay is now active")
-            }
-        }
-        
-        // Skip keyboard/input method events when our overlay is active
-        if (isMindedOverlayActive && 
-            (packageName.contains("inputmethod") || 
-             packageName.contains("keyboard") ||
-             className.lowercase().contains("inputmethod") || 
-             className.lowercase().contains("keyboard"))) {
-            Log.d(TAG, "Ignoring keyboard event while minded overlay is active")
-            return
-        }
-        
-        // Check if we're leaving a blocked app OR our overlay (before updating lastPackageName)
-        // Only hide overlay if we're moving to a non-blocked app or system app
-        val isLeavingBlockedApp = lastPackageName != null && 
-                                  !isSystemPackage(lastPackageName!!) && 
-                                  !isLauncherPackage(lastPackageName!!)
-        val isLeavingOverlay = lastPackageName == "com.minded.minded"
-        
-        if (lastPackageName != null && 
-            lastPackageName != packageName && 
-            packageName != "com.minded.minded" &&  // Don't process when moving TO our overlay
-            (isLeavingBlockedApp || isLeavingOverlay)) {
+            Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
             
-            // Don't hide overlay when transitioning to keyboard/input method
-            if (packageName.contains("inputmethod") || 
-                packageName.contains("keyboard") ||
-                className.lowercase().contains("inputmethod") ||
-                className.lowercase().contains("keyboard") ||
-                className.lowercase().contains("softinput")) {
-                Log.d(TAG, "Ignoring transition to keyboard/input method: $lastPackageName -> $packageName")
+            // Track if minded overlay is active
+            if (packageName == "com.minded.minded") {
+                // Check if this is an overlay window (InteractionWindow)
+                if (className.contains("InteractionWindow") || 
+                    className.contains("WebView") ||
+                    event.toString().contains("InteractionWindow")) {
+                    isMindedOverlayActive = true
+                    Log.d(TAG, "Minded overlay is now active")
+                }
+            }
+            
+            // Skip keyboard/input method events when our overlay is active
+            if (isMindedOverlayActive && 
+                (packageName.contains("inputmethod") || 
+                 packageName.contains("keyboard") ||
+                 className.lowercase().contains("inputmethod") || 
+                 className.lowercase().contains("keyboard"))) {
+                Log.d(TAG, "Ignoring keyboard event while minded overlay is active")
                 return
             }
             
-            // Check if the new app is also blocked before hiding overlay
-            // This prevents hiding overlay when switching between blocked apps
-            if (isSystemPackage(packageName) || isLauncherPackage(packageName)) {
-                // Moving to system/launcher, safe to hide overlay
-                Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
-                hideOverlayForBackgroundedApp()
+            // Check if we're leaving a blocked app OR our overlay (before updating lastPackageName)
+            // Only hide overlay if we're moving to a non-blocked app or system app
+            val isLeavingBlockedApp = lastPackageName != null && 
+                                      !isSystemPackage(lastPackageName!!) && 
+                                      !isLauncherPackage(lastPackageName!!)
+            val isLeavingOverlay = lastPackageName == "com.minded.minded"
+            
+            if (lastPackageName != null && 
+                lastPackageName != packageName && 
+                packageName != "com.minded.minded" &&  // Don't process when moving TO our overlay
+                (isLeavingBlockedApp || isLeavingOverlay)) {
+                
+                // Don't hide overlay when transitioning to keyboard/input method
+                if (packageName.contains("inputmethod") || 
+                    packageName.contains("keyboard") ||
+                    className.lowercase().contains("inputmethod") ||
+                    className.lowercase().contains("keyboard") ||
+                    className.lowercase().contains("softinput")) {
+                    Log.d(TAG, "Ignoring transition to keyboard/input method: $lastPackageName -> $packageName")
+                    return
+                }
+                
+                // Check if the new app is also blocked before hiding overlay
+                // This prevents hiding overlay when switching between blocked apps
+                if (isSystemPackage(packageName) || isLauncherPackage(packageName)) {
+                    // Moving to system/launcher, safe to hide overlay
+                    Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
+                    hideOverlayForBackgroundedApp()
+                } else {
+                    // Moving to another user app, let the overlay logic handle it
+                    Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
+                }
+            }
+            
+            // Skip if this is a system package (but don't update lastPackageName for keyboards)
+            if (isSystemPackage(packageName)) {
+                Log.d(TAG, "Skipping system package: $packageName")
+                // Don't update lastPackageName for keyboard/input method packages
+                if (!packageName.contains("inputmethod") && !packageName.contains("keyboard")) {
+                    lastPackageName = packageName
+                }
+                return
+            }
+            
+            // Validate this is a genuine app window
+            if (!isValidAppWindow(className, eventText, contentDesc)) {
+                Log.d(TAG, "Skipping non-app window: $className")
+                return
+            }
+            
+            // Track package history for better launcher detection
+            updatePackageHistory(packageName, currentTime)
+            
+            // Track transition
+            trackTransition(packageName, currentTime, className)
+            
+            // Analyze pattern and confidence to feed the hybrid detector
+            val (shouldTrigger, confidence) = shouldTriggerOverlayWithConfidence(packageName, currentTime)
+            
+            if (shouldTrigger) {
+                 val pattern = analyzeTransitionPattern(packageName, currentTime)
+                 serviceScope.launch {
+                     hybridDetector?.onAccessibilityEvent(
+                         packageName = packageName,
+                         pattern = pattern.name,
+                         patternConfidence = getPatternConfidence(pattern)
+                     )
+                 }
             } else {
-                // Moving to another user app, let the overlay logic handle it
-                Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
+                // Even if we wouldn't trigger, it might be useful to inform the detector
+                // but for now we only send candidates that pass the basic accessibility filter
+                // to avoid spamming the validation system
+                Log.d(TAG, "Filtered out by accessibility logic: $packageName (confidence: ${confidence.overall})")
             }
+            
+            lastPackageName = packageName
+            lastEventTimestamp = currentTime
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in onAccessibilityEvent", e)
         }
-        
-        // Skip if this is a system package (but don't update lastPackageName for keyboards)
-        if (isSystemPackage(packageName)) {
-            Log.d(TAG, "Skipping system package: $packageName")
-            // Don't update lastPackageName for keyboard/input method packages
-            if (!packageName.contains("inputmethod") && !packageName.contains("keyboard")) {
-                lastPackageName = packageName
-            }
-            return
-        }
-        
-        // Validate this is a genuine app window
-        if (!isValidAppWindow(className, eventText, contentDesc)) {
-            Log.d(TAG, "Skipping non-app window: $className")
-            return
-        }
-        
-        // Track package history for better launcher detection
-        updatePackageHistory(packageName, currentTime)
-        
-        // Track transition
-        trackTransition(packageName, currentTime, className)
-        
-        // Analyze pattern and confidence to feed the hybrid detector
-        val (shouldTrigger, confidence) = shouldTriggerOverlayWithConfidence(packageName, currentTime)
-        
-        if (shouldTrigger) {
-             val pattern = analyzeTransitionPattern(packageName, currentTime)
-             serviceScope.launch {
-                 hybridDetector?.onAccessibilityEvent(
-                     packageName = packageName,
-                     pattern = pattern.name,
-                     patternConfidence = getPatternConfidence(pattern)
-                 )
-             }
-        } else {
-            // Even if we wouldn't trigger, it might be useful to inform the detector
-            // but for now we only send candidates that pass the basic accessibility filter
-            // to avoid spamming the validation system
-            Log.d(TAG, "Filtered out by accessibility logic: $packageName (confidence: ${confidence.overall})")
-        }
-        
-        lastPackageName = packageName
-        lastEventTimestamp = currentTime
     }
     
     private fun updatePackageHistory(packageName: String, timestamp: Long) {
@@ -972,7 +984,11 @@ class MyAccessibilityService : AccessibilityService() {
             val intent = Intent(this, OverlayControllerService::class.java).apply {
                 putExtra(INTENT_EXTRA_HIDE_OVERLAY, true)
             }
-            startService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
             isMindedOverlayActive = false
             Log.d(TAG, "Sent hide overlay signal for backgrounded app")
         } catch (e: Exception) {
