@@ -286,7 +286,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
       {getShowTimeSelection() && (
-        <div class="interaction-content time-selection-overlay">
+        <div
+          class="interaction-content time-selection-overlay"
+          style={{
+            position: "fixed",
+            inset: "0",
+            "z-index": 1100,
+            display: "flex",
+            "align-items": "center",
+            "justify-content": "center",
+            background: "rgba(0,0,0,0.85)",
+          }}
+        >
           <TimeSelection
             onSelectTime={handleTimeSelection}
             onCancel={() => {
@@ -305,8 +316,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             getIsCompletionStarted()
               ? "none"
               : "auto",
-          opacity: getShowTimeSelection() ? 0 : 1,
-          transition: "opacity 0.3s ease",
         }}
       >
         <div
@@ -316,9 +325,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             dragging: getIsDragging(),
           }}
           style={{
-            opacity: getShowSunInstructions() ? 0 : getInteractionOpacity(),
+            opacity: getShowTimeSelection()
+              ? 0
+              : getShowSunInstructions()
+                ? 0
+                : getInteractionOpacity(),
             "pointer-events":
-              getShowSunInstructions() || getIsCompletionStarted()
+              getShowTimeSelection() ||
+              getShowSunInstructions() ||
+              getIsCompletionStarted()
                 ? "none"
                 : "auto",
           }}
