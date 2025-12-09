@@ -3,6 +3,7 @@ package com.minded.minded.overlay.data
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.minded.minded.data.QuestionForPrompt
+import com.minded.minded.util.ActiveTimer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +29,8 @@ data class SharedOverlayData(
     var lastQuestionForPrompt: QuestionForPrompt? = null,
     var answerTxt: String? = null,
     var successSunTxt: String? = null,
-    var appMap: AppMap = emptyMap()
+    var appMap: AppMap = emptyMap(),
+    val activeTimer: ActiveTimer? = null
 )
 
 class SharedOverlayViewModel(
@@ -121,6 +123,12 @@ class SharedOverlayViewModel(
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
 
+
+    fun updateActiveTimer(activeTimer: ActiveTimer?) {
+        val currentData = sharedData.value
+        val newSharedData = currentData.copy(activeTimer = activeTimer)
+        _sharedData.update { newSharedData }
+    }
 
     fun resetAnswerTxt() {
         val currentData = sharedData.value ?: SharedOverlayData()

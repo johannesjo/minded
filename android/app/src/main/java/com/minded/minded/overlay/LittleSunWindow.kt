@@ -51,8 +51,10 @@ class LittleSunWindow(
     private val runnable = object : Runnable {
         override fun run() {
             val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
+            val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
             val appEntry = if (currentApp != null) sharedOverlayViewModel.sharedData.value.appMap[currentApp] else null
-            val endTime = appEntry?.sessionEndTime
+            
+            val endTime = if (activeTimer != null) Instant.ofEpochMilli(activeTimer.endTS) else appEntry?.sessionEndTime
             val now = Instant.now()
 
             Log.v(
@@ -64,7 +66,8 @@ class LittleSunWindow(
                 if (now.isAfter(endTime)) {
                     // Time limit reached
                     hideWindow()
-                    // Clear the session limit so we don't get stuck in a loop if we cancel
+                    // Clear the session limit
+                    ctrlSvc.clearSession()
                     // actually checkToShowOverlay will handle it if we just trigger it
                     if (currentApp != null) {
                         OverlayControllerService.showOverlay(

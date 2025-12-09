@@ -57,9 +57,10 @@ class SharedPreferenceService(context: Context) {
         saveDataString(syncDataToJson(syncData))
     }
 
-    fun updateSyncData(update: SyncData.() -> Unit) {
+    fun updateSyncData(update: SyncData.() -> SyncData) {
         val syncData = getSyncData()
-        saveSyncData(syncData.apply(update))
+        val updatedSyncData = syncData.update()
+        saveSyncData(updatedSyncData)
     }
 
     fun updateSyncDataCfg(update: UserCfg.() -> Unit) {
