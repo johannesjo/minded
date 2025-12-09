@@ -61,7 +61,10 @@ export const Sun: Component<SunProps> = (props) => {
     // This forces the browser to create the transform matrix early
     if (sunEl) {
       sunEl.style.transform = "translate(0px, 0px) scale(1)";
-      sunEl.style.willChange = "transform, box-shadow";
+      // Ensure we include filter to avoid jank when blur is applied
+      sunEl.style.willChange = "transform, box-shadow, filter";
+      // Prime the filter to force shader compilation
+      sunEl.style.filter = "blur(0px)";
       // Force a reflow to ensure the transform is applied
       sunEl.offsetHeight;
     }
