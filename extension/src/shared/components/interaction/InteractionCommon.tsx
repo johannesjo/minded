@@ -123,6 +123,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleTimeSelection = (seconds: number) => {
     setShowTimeSelection(false);
+    // Ensure any tap counters and interaction opacity are reset when we open the timer
+    setInteractionOpacity(1);
+    setShowSunInstructions(false);
     if (props.onSetSessionLimit) {
       props.onSetSessionLimit(seconds);
     }

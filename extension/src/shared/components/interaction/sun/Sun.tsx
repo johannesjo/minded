@@ -335,7 +335,7 @@ export const Sun: Component<SunProps> = (props) => {
       } else {
         tapTimer = window.setTimeout(() => {
           setTapCount(0);
-        }, 800);
+        }, 1500);
       }
     };
 
