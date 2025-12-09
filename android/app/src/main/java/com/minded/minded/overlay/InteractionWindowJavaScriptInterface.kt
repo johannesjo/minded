@@ -99,97 +99,68 @@ class InteractionWindowJavaScriptInterface(
         }, 150)
     }
 
+    private val vibrator: Vibrator by lazy {
+        val context = ctrlSvc.applicationContext
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+    }
+
     @JavascriptInterface
     fun triggerHaptic(type: String) {
-        Log.d(logTag, "triggerHaptic() called with type: $type")
+        // Log.d(logTag, "triggerHaptic() called with type: $type")
         
         try {
-            // Try using application context instead of service context
-            val context = ctrlSvc.applicationContext
-            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vibratorManager.defaultVibrator
-            } else {
-                @Suppress("DEPRECATION")
-                context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            }
-            
             if (!vibrator.hasVibrator()) {
-                Log.w(logTag, "Device does not support vibration")
                 return
             }
             
-            Log.d(logTag, "Vibrator available, proceeding with haptic feedback")
-        
-        val effect = when (type) {
-            "light" -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(30)
+            val effect = when (type) {
+                "light" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(30)
+                        return
+                    }
+                }
+                "medium" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(50)
+                        return
+                    }
+                }
+                "heavy" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator.vibrate(300)
+                        return
+                    }
+                }
+                else -> {
                     return
                 }
             }
-            "medium" -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(50)
-                    return
-                }
-            }
-            "heavy" -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(300)
-                    return
-                }
-            }
-            else -> {
-                Log.w(logTag, "Unknown haptic type: $type")
-                return
-            }
-        }
-        
+            
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(effect)
-                Log.d(logTag, "Haptic feedback triggered successfully with VibrationEffect")
             }
         } catch (e: Exception) {
-            Log.e(logTag, "Failed to trigger haptic feedback with application context", e)
-            
-            // Fallback: Try with a simple pattern
-            try {
-                val context = ctrlSvc.applicationContext
-                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                
-                // Use a simple vibration pattern that should work on all devices
-                val duration = when (type) {
-                    "light" -> 30L
-                    "medium" -> 50L
-                    "heavy" -> 100L
-                    else -> 50L
-                }
-                
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(duration)
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(duration)
-                }
-                Log.d(logTag, "Haptic feedback triggered with fallback method, duration: $duration")
-            } catch (fallbackError: Exception) {
-                Log.e(logTag, "Fallback haptic also failed", fallbackError)
-            }
+            Log.e(logTag, "Failed to trigger haptic feedback", e)
         }
     }
 }
