@@ -480,7 +480,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return
         }
 
-        val endTime = if (seconds < 0) {
+        val isRestOfDay = seconds < 0
+        val endTime = if (isRestOfDay) {
             // End of day (Midnight of the next day)
             Instant.now().atZone(java.time.ZoneId.systemDefault())
                 .toLocalDate().plusDays(1)
@@ -490,15 +491,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             Instant.now().plusSeconds(seconds.toLong())
         }
 
-        Log.d(logTag, "setSessionLimit - endTime: $endTime")
+        Log.d(logTag, "setSessionLimit - endTime: $endTime, isRestOfDay: $isRestOfDay")
         sharedOverlayViewModel.updateCurrentAppSessionEndTime(endTime)
 
-        // Hide interaction window and show Little Sun on main thread
+        // Hide interaction window on main thread
         Handler(Looper.getMainLooper()).post {
             Log.d(logTag, "setSessionLimit - on main thread, hiding interaction window")
             interactionOverlayWindow.hideWindow()
-            Log.d(logTag, "setSessionLimit - showing Little Sun overlay")
-            showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
+
+            // Only show Little Sun for timed sessions, not for "Rest of Day"
+            if (!isRestOfDay) {
+                Log.d(logTag, "setSessionLimit - showing Little Sun overlay")
+                showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
+            } else {
+                Log.d(logTag, "setSessionLimit - Rest of Day selected, not showing Little Sun")
+            }
         }
     }
 
