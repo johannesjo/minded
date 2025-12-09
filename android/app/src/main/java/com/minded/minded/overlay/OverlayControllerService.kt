@@ -140,6 +140,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Ensure we are in the foreground every time the service is started/commanded
+        startForegroundService()
+
         // Handle null intent (can happen during service restart)
         if (intent == null) {
             Log.v(logTag, "onStartCommand() with null intent - service restart")
@@ -523,7 +526,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             intent.putExtra(INTENT_EXTRA_OVERLAY_NAME, overlayName.name)
             intent.putExtra(INTENT_EXTRA_OVERLAY_MODE, overlayMode?.name)
             intent.putExtra(INTENT_EXTRA_APP_NAME, manualAppName)
-            context.startService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
         }
 
         internal fun hideOverlay(
@@ -532,7 +539,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             val intent = Intent(context, OverlayControllerService::class.java)
             intent.putExtra(INTENT_EXTRA_COMMAND_HIDE_OVERLAY, true)
             intent.putExtra(INTENT_EXTRA_OVERLAY_NAME, overlayName.name)
-            context.startService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
         }
     }
 }

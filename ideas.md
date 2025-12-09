@@ -1,12 +1,4 @@
 # IDEAS
-* Optimized Content Script Injection:
-    * Concept: Ensure the content script is as "invisible"
-      as possible until triggered.
-    * Benefit: Reduce memory footprint on heavy pages. Use
-      "Shadow DOM" extensively (if not already) to
-      completely isolate your UI styles from the host
-      page's CSS to prevent bleeding.
-
 
 * Personalized "Calm" Themes:
     * Concept: Allow users to unlock or select visual
@@ -22,17 +14,6 @@
         * Benefit: Pre-configure the "Blocked Sites" list and
           question categories based on their specific pain
           points.
-
-
-* "Focus Modes" / Scheduling:
-    * Concept: Allow users to define schedules (e.g., "Work
-      Hours", "Evening Wind-down").
-    * Benefit:
-        * Strict Mode: Harder blocks or longer breathing
-          exercises during work hours.
-        * Gentle Mode: Simple reminders or skip-able
-          prompts during free time.
-
 
 * "Urge Surfing" Toolkit:
     * Concept: A dedicated "SOS" feature for when a user
