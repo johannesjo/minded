@@ -99,6 +99,12 @@ class InteractionWindowJavaScriptInterface(
         }, 150)
     }
 
+    @JavascriptInterface
+    fun setSessionLimit(seconds: Int) {
+        Log.d(logTag, "setSessionLimit($seconds) called from JS interface")
+        ctrlSvc.setSessionLimit(seconds)
+    }
+
     private val vibrator: Vibrator by lazy {
         val context = ctrlSvc.applicationContext
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

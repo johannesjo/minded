@@ -84,8 +84,15 @@ const InteractionAndroid = () => {
   const showLittleSunAfter = () => {
     setTimeout(() => {
       androidInterface.hideWindow();
+
       androidInterface.showLittleSun();
     }, 100);
+  };
+
+  const onSetSessionLimit = (seconds: number) => {
+    console.log("onSetSessionLimit called with seconds:", seconds);
+    androidInterface.setSessionLimit(seconds);
+    console.log("androidInterface.setSessionLimit called");
   };
 
   return (
@@ -103,12 +110,14 @@ const InteractionAndroid = () => {
         onAfterInteractionFadeout={() => showLittleSunAfter()}
         onInteractionSubmitted={() => {
           // Called when user completes the interaction (answers question and drags sun)
+
           console.log("Interaction completed on Android");
         }}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
         onFlingAway={() => androidInterface.closeCurrentApp()}
         onDragComplete={() => androidInterface.closeCurrentApp()}
+        onSetSessionLimit={onSetSessionLimit}
       />
     </div>
   );

@@ -40,7 +40,9 @@
       "Bash(git commit:*)",
       "Bash(wc:*)",
       "WebFetch(domain:docs.solidjs.com)",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Bash(git -C /home/johannes/www/minded log --oneline -10 --all -- \"**/interaction/**\" \"**/overlay/**\" \"**/Time*\")",
+      "Bash(npm run buildDroid:*)"
     ],
     "deny": []
   }

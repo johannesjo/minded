@@ -16,6 +16,7 @@ interface InteractionWindowJavaScriptInterface {
   getMissingCapabilities: () => string;
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: "light" | "medium" | "heavy") => void;
+  setSessionLimit: (seconds: number) => void;
   test: () => void;
 }
 
