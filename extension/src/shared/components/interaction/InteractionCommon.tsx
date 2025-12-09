@@ -122,15 +122,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   const handleTimeSelection = (seconds: number) => {
-    setShowTimeSelection(false);
-    // Ensure any tap counters and interaction opacity are reset when we open the timer
-    setInteractionOpacity(1);
-    setShowSunInstructions(false);
-    if (props.onSetSessionLimit) {
-      props.onSetSessionLimit(seconds);
+    // Fade out the entire overlay before transitioning to Little Sun
+    if (props.wrapperEl) {
+      props.wrapperEl.style.transition = "opacity 300ms ease-out";
+      props.wrapperEl.style.opacity = "0";
     }
-    // Note: Don't call handleSkip() here - the native side will hide the window
-    // after setSessionLimit() and show the Little Sun overlay
+
+    // After fade out completes, call native side
+    setTimeout(() => {
+      setShowTimeSelection(false);
+      setInteractionOpacity(1);
+      setShowSunInstructions(false);
+      if (props.onSetSessionLimit) {
+        props.onSetSessionLimit(seconds);
+      }
+    }, 300);
   };
 
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
