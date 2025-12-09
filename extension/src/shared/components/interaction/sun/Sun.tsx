@@ -102,6 +102,9 @@ export const Sun: Component<SunProps> = (props) => {
       touchStartTime = Date.now();
       isDragIntent = false;
       startPos = { x: clientX, y: clientY };
+      // Initialize last-known position so release without movement doesn't create a fake drag
+      latestClientX = clientX;
+      latestClientY = clientY;
       // Reset velocity tracking
       velocitySamples = [
         {
