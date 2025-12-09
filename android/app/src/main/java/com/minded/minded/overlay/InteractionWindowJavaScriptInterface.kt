@@ -112,55 +112,56 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun triggerHaptic(type: String) {
-        // Log.d(logTag, "triggerHaptic() called with type: $type")
-        
-        try {
-            if (!vibrator.hasVibrator()) {
-                return
-            }
-            
-            val effect = when (type) {
-                "light" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(30)
-                        return
+        // Offload to background thread to avoid blocking JS thread
+        Thread {
+            try {
+                if (!vibrator.hasVibrator()) {
+                    return@Thread
+                }
+                
+                val effect = when (type) {
+                    "light" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            vibrator.vibrate(30)
+                            return@Thread
+                        }
+                    }
+                    "medium" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            vibrator.vibrate(50)
+                            return@Thread
+                        }
+                    }
+                    "heavy" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            vibrator.vibrate(300)
+                            return@Thread
+                        }
+                    }
+                    else -> {
+                        return@Thread
                     }
                 }
-                "medium" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(50)
-                        return
-                    }
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(effect)
                 }
-                "heavy" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
-                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        vibrator.vibrate(300)
-                        return
-                    }
-                }
-                else -> {
-                    return
-                }
+            } catch (e: Exception) {
+                Log.e(logTag, "Failed to trigger haptic feedback", e)
             }
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(effect)
-            }
-        } catch (e: Exception) {
-            Log.e(logTag, "Failed to trigger haptic feedback", e)
-        }
+        }.start()
     }
 }
