@@ -28,7 +28,7 @@ export const DRAG_THRESHOLD_PX = 100;
 export const FLING_VELOCITY_THRESHOLD = 200;
 export const VELOCITY_SAMPLE_SIZE = 5;
 export const LONG_PRESS_DURATION_MS = 750;
-export const HAPTIC_PROGRESS_POINTS = [0.33, 0.66, 1.0]; // Trigger at 33px, 66px, 100px
+export const HAPTIC_PROGRESS_POINTS = [1.0]; // Trigger only at 100%
 export const RUBBER_BAND_RANGE = 20;
 export const RUBBER_BAND_FACTOR = 0.7;
 
