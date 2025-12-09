@@ -2,11 +2,30 @@
   position: relative;
   background: var(--sun-bg);
   border-radius: 50%;
-  box-shadow: var(--sun-shadow);
+
+  --glow-intensity: 0;
+  --glow-color: 255, 255, 255;
+
+  box-shadow:
+    var(--sun-shadow),
+    0 0 calc(15px * var(--glow-intensity))
+      rgba(var(--glow-color), calc(0.5 * var(--glow-intensity))),
+    0 0 calc(40px * var(--glow-intensity))
+      rgba(var(--glow-color), calc(0.25 * var(--glow-intensity))),
+    0 0 calc(80px * var(--glow-intensity))
+      rgba(var(--glow-color), calc(0.1 * var(--glow-intensity)));
+
   z-index: 30;
   cursor: grab;
   transform-origin: center;
-  will-change: transform, box-shadow, filter;
+  will-change: transform, box-shadow;
+
+  /* Ensure box-shadow transitions smoothly even when JS updates the variables */
+  transition: box-shadow 0.1s linear;
+
+  &.dragging {
+    transition: none; /* Instant update during drag */
+  }
 
   .tap-indicator {
     position: absolute;

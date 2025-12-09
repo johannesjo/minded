@@ -543,29 +543,22 @@ export const Sun: Component<SunProps> = (props) => {
         ? "200, 220, 255"
         : "255, 255, 255";
 
-  // Corona effect: soft layered glow that grows with intensity
-  const coronaGlow =
-    glowIntensity > 0
-      ? `var(--sun-shadow),
-         0 0 ${15 * glowIntensity}px rgba(${glowColor}, ${0.5 * glowIntensity}),
-         0 0 ${40 * glowIntensity}px rgba(${glowColor}, ${0.25 * glowIntensity}),
-         0 0 ${80 * glowIntensity}px rgba(${glowColor}, ${0.1 * glowIntensity})`
-      : "var(--sun-shadow)";
-
   return (
     <div
       ref={sunEl!}
       class="minded-sun"
+      classList={{ dragging: getIsDragging() }}
       style={{
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
-        "box-shadow": coronaGlow,
         transition:
           getIsDragging() || getIsAnimating()
             ? "none"
-            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out",
+            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
+        "--glow-color": glowColor,
+        "--glow-intensity": glowIntensity,
       }}
     >
       <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
