@@ -48,7 +48,6 @@ export const Sun: Component<SunProps> = (props) => {
   const [getRotation, setRotation] = createSignal(0);
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 1 = warm (down)
-  const [getVelocityMagnitude, setVelocityMagnitude] = createSignal(0);
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -61,10 +60,8 @@ export const Sun: Component<SunProps> = (props) => {
     // This forces the browser to create the transform matrix early
     if (sunEl) {
       sunEl.style.transform = "translate(0px, 0px) scale(1)";
-      // Ensure we include filter to avoid jank when blur is applied
-      sunEl.style.willChange = "transform, box-shadow, filter";
-      // Prime the filter to force shader compilation
-      sunEl.style.filter = "blur(0px)";
+      // Ensure we include box-shadow to avoid jank
+      sunEl.style.willChange = "transform, box-shadow";
       // Force a reflow to ensure the transform is applied
       sunEl.offsetHeight;
     }
@@ -195,10 +192,6 @@ export const Sun: Component<SunProps> = (props) => {
       if (velocitySamples.length > VELOCITY_SAMPLE_SIZE) {
         velocitySamples.shift();
       }
-
-      // Calculate current velocity for motion blur
-      const currentVelocity = calculateVelocity(velocitySamples);
-      setVelocityMagnitude(currentVelocity.magnitude);
 
       // Only emit drag progress events after drag intent is confirmed
       if (isDragIntent) {
@@ -541,7 +534,6 @@ export const Sun: Component<SunProps> = (props) => {
   // Calculate progressive glow based on drag intensity
   const glowIntensity = getGlowIntensity();
   const colorTemp = getColorTemp();
-  const velocityMag = getVelocityMagnitude();
 
   // Color temperature for corona: warm orange when down, cool blue when up
   const glowColor =
@@ -560,10 +552,6 @@ export const Sun: Component<SunProps> = (props) => {
          0 0 ${80 * glowIntensity}px rgba(${glowColor}, ${0.1 * glowIntensity})`
       : "var(--sun-shadow)";
 
-  // Subtle motion blur during fast movement
-  const blurAmount = Math.min(velocityMag / 1000, 1.5);
-  const motionBlur = blurAmount > 0.4 ? `blur(${blurAmount}px)` : "none";
-
   return (
     <div
       ref={sunEl!}
@@ -572,11 +560,10 @@ export const Sun: Component<SunProps> = (props) => {
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
         "box-shadow": coronaGlow,
-        filter: motionBlur,
         transition:
           getIsDragging() || getIsAnimating()
             ? "none"
-            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out, filter 0.2s ease-out",
+            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease-out",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
       }}
