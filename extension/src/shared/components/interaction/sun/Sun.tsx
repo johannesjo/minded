@@ -327,8 +327,7 @@ export const Sun: Component<SunProps> = (props) => {
     };
 
     const animateSnapBack = () => {
-      triggerHaptic("light"); // Acknowledge the incomplete gesture
-      setIsAnimating(true);
+      // setIsAnimating(true);
       setIsBeyondThreshold(false); // Reset glow when snapping back
       setGlowIntensity(0); // Reset progressive glow
       const startOffset = getDragOffset();

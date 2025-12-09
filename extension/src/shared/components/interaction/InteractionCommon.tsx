@@ -146,10 +146,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         props.onSetAnswer(answerOrData.val.toString());
       }
 
-      setShowSunInstructions(true);
       setTimeout(() => {
-        setInteractionOpacity(1);
-      }, ANIMATION_TIMING.delay.sunInstructionsFadeIn);
+        setShowSunInstructions(true);
+        // Use a small delay to ensure the DOM has updated with opacity 0 before starting the fade in
+        requestAnimationFrame(() => {
+          // Manually animate fade in since runFadeAnimation is for fade out
+          const startTime = Date.now();
+          const duration = 2000;
+
+          const animateFadeIn = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            setInteractionOpacity(progress);
+
+            if (progress < 1) {
+              requestAnimationFrame(animateFadeIn);
+            }
+          };
+
+          requestAnimationFrame(animateFadeIn);
+        });
+      }, 1000);
     });
   };
 
