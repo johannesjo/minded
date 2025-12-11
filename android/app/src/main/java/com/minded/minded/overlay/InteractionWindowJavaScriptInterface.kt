@@ -92,11 +92,14 @@ class InteractionWindowJavaScriptInterface(
         ctrlSvc.goToHomeScreen()
         Log.d(logTag, "closeCurrentApp() - home intent sent")
 
-        // Hide overlay after short delay to ensure home screen is visible
+        // Hide overlay after delay to ensure home screen is visible.
+        // Using 300ms to account for slower devices and system load.
+        // The home intent is async and we don't have a reliable callback,
+        // so this delay is a pragmatic tradeoff between responsiveness and reliability.
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             Log.d(logTag, "closeCurrentApp() - hiding window after delay")
             win.hideWindow()
-        }, 150)
+        }, 300)
     }
 
     @JavascriptInterface
