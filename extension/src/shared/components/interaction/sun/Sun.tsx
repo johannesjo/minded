@@ -470,7 +470,7 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Safety check: ensure we have valid initial values
       if (!startOffset || startScale <= 0 || startOpacity <= 0) {
-        props.onSwipeUp();
+        props.onFlingAway();
         return;
       }
 
