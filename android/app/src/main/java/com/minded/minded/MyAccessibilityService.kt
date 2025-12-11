@@ -76,6 +76,7 @@ class MyAccessibilityService : AccessibilityService() {
     // Hybrid detection system
     private var hybridDetector: HybridAppDetector? = null
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var detectionCollectionJob: kotlinx.coroutines.Job? = null
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
@@ -174,15 +175,6 @@ class MyAccessibilityService : AccessibilityService() {
             }
         }
 
-        // Subscribe to validated detections from the hybrid detector
-        // This is the SINGLE SOURCE OF TRUTH for triggering the overlay
-        serviceScope.launch {
-            hybridDetector?.validatedDetections?.collect { detection ->
-                Log.d(TAG, "Received validated detection: ${detection.packageName} (confidence: ${detection.confidence.overall})")
-                triggerOverlay(detection.packageName)
-            }
-        }
-
         // Register broadcast receiver for home action
         val filter = android.content.IntentFilter("com.minded.ACTION_GO_HOME")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -210,6 +202,10 @@ class MyAccessibilityService : AccessibilityService() {
     
     override fun onDestroy() {
         super.onDestroy()
+
+        // Stop detection collection job first
+        detectionCollectionJob?.cancel()
+        detectionCollectionJob = null
 
         // Stop hybrid detection system
         hybridDetector?.stop()
@@ -244,6 +240,17 @@ class MyAccessibilityService : AccessibilityService() {
         // Start hybrid detection system
         hybridDetector?.start()
         Log.d(TAG, "Hybrid detection system started")
+
+        // Subscribe to validated detections from the hybrid detector
+        // This is the SINGLE SOURCE OF TRUTH for triggering the overlay
+        // Cancel any existing job first to prevent duplicate collectors on service reconnect
+        detectionCollectionJob?.cancel()
+        detectionCollectionJob = serviceScope.launch {
+            hybridDetector?.validatedDetections?.collect { detection ->
+                Log.d(TAG, "Received validated detection: ${detection.packageName} (confidence: ${detection.confidence.overall})")
+                triggerOverlay(detection.packageName)
+            }
+        }
 
         // Ensure OverlayControllerService is running
         ensureOverlayServiceRunning()
