@@ -10,6 +10,16 @@
   animation: timeSelectionFadeIn 0.25s ease-out forwards;
 }
 
+.time-selection-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+  padding: 48px 0;
+}
+
 .time-selection-container {
   display: flex;
   flex-direction: column;
@@ -19,6 +29,7 @@
   max-width: 420px;
   padding: 32px;
   text-align: center;
+  flex: 1;
 
   .txtBig {
     margin-bottom: 24px;
@@ -35,10 +46,6 @@
 }
 
 .time-selection-cancel {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
   pointer-events: all;
 }
 
