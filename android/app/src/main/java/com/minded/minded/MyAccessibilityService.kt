@@ -702,8 +702,18 @@ class MyAccessibilityService : AccessibilityService() {
             
             lastPackageName = packageName
             lastEventTimestamp = currentTime
+        } catch (e: SecurityException) {
+            // Permission-related issues - log but don't crash
+            Log.e(TAG, "Security exception in onAccessibilityEvent - check permissions", e)
+        } catch (e: IllegalStateException) {
+            // Service in invalid state - attempt to continue
+            Log.e(TAG, "Service in invalid state during onAccessibilityEvent", e)
+        } catch (e: NullPointerException) {
+            // Null safety issue - likely a race condition with event data
+            Log.w(TAG, "Null pointer in onAccessibilityEvent - event data may be stale", e)
         } catch (e: Exception) {
-            Log.e(TAG, "Error in onAccessibilityEvent", e)
+            // Unexpected error - log with full context for debugging
+            Log.e(TAG, "Unexpected error in onAccessibilityEvent: ${e.javaClass.simpleName}", e)
         }
     }
     
