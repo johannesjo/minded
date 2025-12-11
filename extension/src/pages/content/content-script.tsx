@@ -32,7 +32,9 @@ const CURRENT_URL = window.location.href;
         hostEl.id = "minded-6622-host";
         document.body.appendChild(hostEl);
 
-        // Use closed shadow DOM for security and isolation
+        // Use closed shadow DOM for style isolation from host page.
+        // Note: Closed mode prevents element.shadowRoot access but does not
+        // provide security boundaries - it's primarily for encapsulation.
         const shadow = hostEl.attachShadow({ mode: "closed" });
 
         // Inject styles into shadow DOM (completely isolated from host page)
