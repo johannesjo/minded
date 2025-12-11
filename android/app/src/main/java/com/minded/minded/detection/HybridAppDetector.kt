@@ -48,7 +48,7 @@ class HybridAppDetector(private val context: Context) {
     companion object {
         private const val TAG = "HybridAppDetector"
         private const val USAGE_STATS_POLL_INTERVAL_MS = 2000L // Poll every 2 seconds
-        private const val VALIDATION_TIMEOUT_MS = 500L // Wait up to 500ms for validation
+        private const val VALIDATION_RETRY_DELAY_MS = 200L // Delay before retrying validation
         private const val DISCREPANCY_LOG_SIZE = 20
     }
 
@@ -143,42 +143,79 @@ class HybridAppDetector(private val context: Context) {
 
     /**
      * Validates an AccessibilityService detection against UsageStatsManager.
+     * Retries once after a short delay if the initial result is stale or disagrees.
      */
-    private fun validateWithUsageStats(
+    private suspend fun validateWithUsageStats(
         packageName: String,
         initialConfidence: DetectionConfidence
     ): DetectionConfidence {
+        val result = validateWithUsageStatsOnce(packageName, initialConfidence)
+
+        // Retry if stale or disagreeing - UsageStats has inherent 500-2000ms delay
+        return when {
+            result.shouldRetry -> {
+                Log.v(TAG, "UsageStats validation inconclusive, retrying after ${VALIDATION_RETRY_DELAY_MS}ms")
+                delay(VALIDATION_RETRY_DELAY_MS)
+                val retryResult = validateWithUsageStatsOnce(packageName, initialConfidence)
+                retryResult.confidence
+            }
+            else -> result.confidence
+        }
+    }
+
+    /**
+     * Result of a single UsageStats validation attempt.
+     */
+    private data class ValidationResult(
+        val confidence: DetectionConfidence,
+        val shouldRetry: Boolean
+    )
+
+    /**
+     * Performs a single UsageStats validation attempt.
+     */
+    private fun validateWithUsageStatsOnce(
+        packageName: String,
+        initialConfidence: DetectionConfidence
+    ): ValidationResult {
         val usageStatsResult = getForegroundAppReliable(context)
 
         return when (usageStatsResult) {
             is ForegroundAppResult.Success -> {
                 if (usageStatsResult.packageName == packageName) {
-                    // Both sources agree - high confidence
+                    // Both sources agree - high confidence, no retry needed
                     Log.v(TAG, "UsageStats validates: $packageName")
-                    DetectionConfidence.hybridValidated()
+                    ValidationResult(DetectionConfidence.hybridValidated(), shouldRetry = false)
                 } else {
-                    // Sources disagree - log discrepancy but trust AccessibilityService
+                    // Sources disagree - worth retrying as UsageStats may be lagging
                     logDiscrepancy(packageName, usageStatsResult.packageName)
-                    initialConfidence.copy(crossValidation = 0.3f)
+                    ValidationResult(
+                        initialConfidence.copy(crossValidation = 0.3f),
+                        shouldRetry = true
+                    )
                 }
             }
             is ForegroundAppResult.Stale -> {
-                // UsageStats data is stale - can't validate, but don't penalize
-                Log.v(TAG, "UsageStats stale, using initial confidence")
-                initialConfidence
+                // UsageStats data is stale - retry to get fresher data
+                Log.v(TAG, "UsageStats stale, will retry")
+                ValidationResult(initialConfidence, shouldRetry = true)
             }
             is ForegroundAppResult.NoAppDetected -> {
-                // No recent app detected - unusual, slightly lower confidence
-                initialConfidence.copy(crossValidation = 0.4f)
+                // No recent app detected - retry once
+                ValidationResult(
+                    initialConfidence.copy(crossValidation = 0.4f),
+                    shouldRetry = true
+                )
             }
             is ForegroundAppResult.NoPermission -> {
-                // No permission - can't validate, use initial confidence
+                // No permission - can't validate, no point retrying
                 Log.w(TAG, "UsageStats permission not granted, cannot validate")
-                initialConfidence
+                ValidationResult(initialConfidence, shouldRetry = false)
             }
             is ForegroundAppResult.Error -> {
+                // Error - no point retrying
                 Log.e(TAG, "UsageStats error: ${usageStatsResult.message}")
-                initialConfidence
+                ValidationResult(initialConfidence, shouldRetry = false)
             }
         }
     }
