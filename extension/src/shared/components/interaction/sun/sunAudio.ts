@@ -88,10 +88,21 @@ export async function playCompletionSound(): Promise<void> {
   // Fallback to HTML Audio
   try {
     const audio = new Audio(getAudioUrl(soundPath));
-    audio.volume = 0.75;
-    await audio.play();
+    audio.volume = VOLUME;
+
+    try {
+      await audio.play();
+    } catch (playError) {
+      // NotAllowedError is expected when autoplay is blocked by browser policy
+      // This typically happens on first interaction before user gesture
+      if (playError instanceof Error && playError.name === "NotAllowedError") {
+        console.debug("Audio autoplay blocked by browser policy");
+      } else {
+        console.warn("Audio playback failed:", playError);
+      }
+    }
   } catch (err) {
-    console.log("HTML Audio failed:", err);
+    console.warn("HTML Audio initialization failed:", err);
   }
 }
 
