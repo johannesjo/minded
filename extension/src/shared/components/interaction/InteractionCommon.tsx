@@ -73,8 +73,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getShowTimeSelection, setShowTimeSelection] = createSignal(false);
+  const [getShowTimeSelectionOverlay, setShowTimeSelectionOverlay] =
+    createSignal(false);
 
   let frameNr: number | undefined;
+
+  createEffect(() => {
+    if (getShowTimeSelection()) {
+      const timer = setTimeout(() => setShowTimeSelectionOverlay(true), 500);
+      onCleanup(() => clearTimeout(timer));
+    } else {
+      setShowTimeSelectionOverlay(false);
+    }
+  });
 
   // Fade animation for mobile content
   const runFadeAnimation = (
@@ -294,7 +305,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
-      {getShowTimeSelection() && (
+      {getShowTimeSelectionOverlay() && (
         <div
           class="time-selection-overlay"
           style={{

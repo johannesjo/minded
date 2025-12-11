@@ -15,7 +15,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   ];
 
   return (
-    <>
+    <div class="time-selection-wrapper">
       <div class="time-selection-container">
         <div class="txtBig">How long do you need?</div>
 
@@ -38,6 +38,6 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
           cancel
         </button>
       </div>
-    </>
+    </div>
   );
 };
