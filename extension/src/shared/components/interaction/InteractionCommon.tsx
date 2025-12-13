@@ -382,12 +382,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <div
               class="interaction-content sun-instructions-overlay"
               classList={{
-                "fade-in": getShowSunInstructions(),
+                "fade-in": getShowSunInstructions() && !getShowTimeSelection(),
                 dragging: getIsDragging(),
               }}
               style={{
-                opacity: getInteractionOpacity(),
-                "pointer-events": getIsCompletionStarted() ? "none" : "auto",
+                opacity: getShowTimeSelection() ? 0 : getInteractionOpacity(),
+                transition: getShowTimeSelection()
+                  ? "opacity 0.3s ease-out"
+                  : undefined,
+                "pointer-events":
+                  getIsCompletionStarted() || getShowTimeSelection()
+                    ? "none"
+                    : "auto",
               }}
             >
               <div class="sun-instructions txtSmaller">
