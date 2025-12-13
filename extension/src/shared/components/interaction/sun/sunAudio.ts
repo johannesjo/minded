@@ -7,7 +7,7 @@ const completionSoundPaths = [warmBellsPath, warmBellsSequencePath];
 
 let audioContext: AudioContext | null = null;
 let gainNode: GainNode | null = null;
-let audioBuffers: Map<string, AudioBuffer> = new Map();
+const audioBuffers: Map<string, AudioBuffer> = new Map();
 let soundEnabled = true;
 const VOLUME = 0.75;
 
