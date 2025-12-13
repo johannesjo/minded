@@ -42,14 +42,6 @@ export const SettingsAndroid = (props: {
     window.clearTimeout(t0);
   });
 
-  const handleSelect = (app: { packageName: string; name: string }) => {
-    if (getSelectedApps().includes(app.packageName)) {
-      setSelectedApps(getSelectedApps().filter((a) => a !== app.packageName));
-    } else {
-      setSelectedApps([...getSelectedApps(), app.packageName]);
-    }
-  };
-
   const handleSave = () => {
     updateBlockedApps(getSelectedApps());
     navigate("/");
@@ -66,21 +58,27 @@ export const SettingsAndroid = (props: {
         <div style="margin: 16px;">Loading apps...</div>
       ) : (
         <>
-          <div class={styles.appList}>
+          <select
+            multiple
+            class={styles.appSelect}
+            onChange={(e) => {
+              const selected = Array.from(e.currentTarget.selectedOptions).map(
+                (opt) => opt.value,
+              );
+              setSelectedApps(selected);
+            }}
+          >
             <For each={getAvailableApps()}>
               {(app) => (
-                <div
-                  onClick={() => handleSelect(app)}
-                  class={`${styles.appEntry} ${getSelectedApps().includes(app.packageName) ? styles.selected : ""}`}
+                <option
+                  value={app.packageName}
+                  selected={getSelectedApps().includes(app.packageName)}
                 >
-                  {getSelectedApps().includes(app.packageName) && (
-                    <span>✓ </span>
-                  )}
                   {app.name}
-                </div>
+                </option>
               )}
             </For>
-          </div>
+          </select>
 
           <div>
             {props.isRouting && (
