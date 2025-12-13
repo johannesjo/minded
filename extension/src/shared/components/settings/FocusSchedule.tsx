@@ -99,7 +99,9 @@ export const FocusSchedule = (props: {
   return (
     <div class={styles.FocusSchedule}>
       <div class={styles.header}>
-        <h3 class="h3">When to Block</h3>
+        <h3 class="h3" style={{ margin: 0 }}>
+          When to Block
+        </h3>
         <Toggle
           checked={schedule().enabled}
           onChange={toggleEnabled}
