@@ -40,9 +40,18 @@ class LittleSunWindow(
         }
 
         LittleSun(elapsedSeconds, onSunTap = {
-            Log.v(logTag, "onSunTap()")
-            ctrlSvc.userDrivenClose();
+            Log.v(logTag, "onSunTap() - ending session and showing intervention")
             hideWindow()
+            ctrlSvc.clearSession()
+            val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
+            if (currentApp != null) {
+                OverlayControllerService.showOverlay(
+                    ctrlSvc,
+                    OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
+                    OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
+                    currentApp
+                )
+            }
         })
     }
 
@@ -80,17 +89,19 @@ class LittleSunWindow(
                     stopTimer()
                     return
                 } else {
-                    // Countdown mode
                     val remaining = java.time.Duration.between(now, endTime).seconds.toInt()
-                    // If more than 12 hours (e.g. Rest of Day), hide timer
+                    // If more than 12 hours (e.g. Rest of Day), show count-up timer
                     if (remaining > 12 * 3600) {
-                        elapsedSeconds = -1 // Signal to LittleSun to hide text
+                        // Count-up mode for rest-of-day sessions
+                        elapsedSeconds++
+                        sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
                     } else {
+                        // Countdown mode for timed sessions
                         elapsedSeconds = remaining
                     }
                 }
             } else {
-                // Regular elapsed time mode
+                // Regular elapsed time mode (fallback)
                 elapsedSeconds++
                 sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
             }

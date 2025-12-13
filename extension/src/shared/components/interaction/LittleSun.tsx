@@ -8,11 +8,9 @@ import {
   getSyncData,
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { closeTab } from "@dataInterface/extensionApi";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
-// const RE_QUESTION_INTERVAL_IN_S = 8;
 
 export const LittleSunComponent: (props: {
   teardown: () => void;
@@ -23,13 +21,10 @@ export const LittleSunComponent: (props: {
   const [getRemainingSeconds, setRemainingSeconds] = createSignal<
     number | null
   >(null);
-  const [getIsRestOfDay, setIsRestOfDay] = createSignal(false);
   const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
-  const [getIsScalingOut, setIsScalingOut] = createSignal(false);
 
   let currentSessionInterval: number;
   let t0: NodeJS.Timeout;
-  let sunEl: HTMLDivElement = undefined!;
 
   onMount(async () => {
     const d = await loadDataForHost(props.host);
@@ -45,10 +40,15 @@ export const LittleSunComponent: (props: {
     }
 
     if (sessionEnd && sessionEnd > now) {
-      setIsRestOfDay(sessionLimit === -1);
-      startCountdown(sessionEnd, sessionLimit);
+      if (sessionLimit === -1) {
+        // For rest-of-day: show count-up timer (elapsed session time)
+        initCounter(d?.sessionDurationInS ?? 0);
+      } else {
+        // For timed sessions: show countdown timer (time left)
+        startCountdown(sessionEnd, sessionLimit);
+      }
     } else {
-      // Fallback to legacy counted-up session timer if no conscious intent session is active
+      // No active session or session expired
       initCounter(d?.sessionDurationInS ?? 0);
       // Clear any stale timing info
       if (sessionEnd) {
@@ -58,11 +58,6 @@ export const LittleSunComponent: (props: {
         });
       }
     }
-
-    // FOR TESTING
-    // setTimeout(() => {
-    //   props.onShowFreshInteraction();
-    // }, 8000);
 
     t0 = setTimeout(() => {
       setIsMoveOutOfTheWay(true);
@@ -75,9 +70,6 @@ export const LittleSunComponent: (props: {
   });
 
   const formatSessionTime = (seconds: number): string => {
-    // Rest of day hides the timer text
-    if (getIsRestOfDay()) return "";
-
     if (seconds >= 3600) {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
@@ -158,38 +150,28 @@ export const LittleSunComponent: (props: {
   };
 
   const handleClick = () => {
-    closeTab();
-  };
-
-  const handleDoubleClick = () => {
-    setIsScalingOut(true);
-    // Wait for animation to complete before tearing down
-    sunEl.addEventListener(
-      "animationend",
-      () => {
-        props.teardown();
-      },
-      { once: true },
-    );
+    // End current session and show intervention
+    window.clearInterval(currentSessionInterval);
+    updateHostsEntry(props.host, {
+      sessionEndTS: null,
+      sessionLimitInS: null,
+      sessionDurationInS: 0,
+    });
+    updateSyncData({ activeTimer: null });
+    props.onShowFreshInteraction();
   };
 
   return (
     <div
       id="minded-6622-little-sun"
-      title="Double-click to hide"
-      ref={sunEl}
+      title="Tap to end session"
       classList={{
         ["bottomLeft"]: true,
         ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
-        ["scaling-out"]: getIsScalingOut(),
       }}
     >
       <div id="minded-6622-little-sun-sun-wrapper">
-        <div
-          id="minded-6622-little-sun-sun"
-          onClick={handleClick}
-          onDblClick={handleDoubleClick}
-        >
+        <div id="minded-6622-little-sun-sun" onClick={handleClick}>
           {getRemainingSeconds() !== null
             ? formatSessionTime(getRemainingSeconds()!)
             : formatSessionTime(getSessionTime())}

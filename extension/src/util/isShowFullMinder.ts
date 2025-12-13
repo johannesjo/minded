@@ -1,26 +1,21 @@
 import { SyncData } from "@src/dataInterface/syncData";
-import { STATIC_CFG } from "@src/dataInterface/syncData.const";
-import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
+/**
+ * Determines whether to show the full intervention or just the little sun.
+ * Simple logic: show full intervention if no active session, show little sun if session is active.
+ */
 export const isShowFullMinder = (
-  currentUrl: string,
+  _currentUrl: string,
   syncData: SyncData,
 ): boolean => {
-  const host = getHostFromUrl(currentUrl);
-  // TODO remove
-  console.log(
-    "isShowFullMinder()",
-    STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlockedTS ||
-      !syncData.lastBlockedUrl ||
-      host !== getHostFromUrl(syncData.lastBlockedUrl),
-    STATIC_CFG.ShowAgainThreshold,
-    Date.now() - syncData.lastBlockedTS,
-    !syncData.lastBlockedUrl,
-    host !== getHostFromUrl(syncData.lastBlockedUrl),
-  );
-  return (
-    STATIC_CFG.ShowAgainThreshold < Date.now() - syncData.lastBlockedTS ||
-    !syncData.lastBlockedUrl ||
-    host !== getHostFromUrl(syncData.lastBlockedUrl)
-  );
+  const now = Date.now();
+  const activeTimer = syncData.activeTimer;
+
+  // Show full intervention if no active session or session has expired
+  if (!activeTimer || activeTimer.endTS <= now) {
+    return true;
+  }
+
+  // Active session exists and hasn't expired → show little sun (not full intervention)
+  return false;
 };
