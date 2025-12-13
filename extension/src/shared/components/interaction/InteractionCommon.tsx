@@ -18,6 +18,7 @@ import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   setSoundEnabled,
   preloadSounds,
+  playInterventionSound,
 } from "@src/shared/components/interaction/sun/sunAudio";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { Ico } from "@src/shared/components/ui/Ico";
@@ -270,10 +271,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setMode(mode);
       }
 
-      setTimeout(
-        () => setIsContentReady(true),
-        ANIMATION_TIMING.delay.contentReady,
-      );
+      setTimeout(() => {
+        setIsContentReady(true);
+        playInterventionSound();
+      }, ANIMATION_TIMING.delay.contentReady);
     });
 
     window.addEventListener(

@@ -1,8 +1,9 @@
 // Audio for sun interaction completion
 import warmBellsPath from "@assets/warm-bells.mp3";
 import warmBellsSequencePath from "@assets/warm-bells-sequence.mp3";
+import singleBellPath from "@assets/single-bell.mp3";
 
-const soundPaths = [warmBellsPath, warmBellsSequencePath];
+const completionSoundPaths = [warmBellsPath, warmBellsSequencePath];
 
 let audioContext: AudioContext | null = null;
 let gainNode: GainNode | null = null;
@@ -20,9 +21,11 @@ function getAudioUrl(path: string): string {
   return path;
 }
 
-// Pick a random sound
-function getRandomSoundPath(): string {
-  return soundPaths[Math.floor(Math.random() * soundPaths.length)];
+// Pick a random completion sound
+function getRandomCompletionSoundPath(): string {
+  return completionSoundPaths[
+    Math.floor(Math.random() * completionSoundPaths.length)
+  ];
 }
 
 // Initialize Web Audio API and load a sound
@@ -77,7 +80,7 @@ export function setSoundEnabled(enabled: boolean): void {
 export async function playCompletionSound(): Promise<void> {
   if (!soundEnabled) return;
 
-  const soundPath = getRandomSoundPath();
+  const soundPath = getRandomCompletionSoundPath();
 
   // Try Web Audio API
   const buffer = await initWebAudio(soundPath);
@@ -106,7 +109,37 @@ export async function playCompletionSound(): Promise<void> {
   }
 }
 
-// Preload both sounds for faster playback
+export async function playInterventionSound(): Promise<void> {
+  if (!soundEnabled) return;
+
+  // Try Web Audio API
+  const buffer = await initWebAudio(singleBellPath);
+  if (buffer && playWithWebAudio(buffer)) {
+    return;
+  }
+
+  // Fallback to HTML Audio
+  try {
+    const audio = new Audio(getAudioUrl(singleBellPath));
+    audio.volume = VOLUME;
+
+    try {
+      await audio.play();
+    } catch (playError) {
+      if (playError instanceof Error && playError.name === "NotAllowedError") {
+        console.debug("Audio autoplay blocked by browser policy");
+      } else {
+        console.warn("Audio playback failed:", playError);
+      }
+    }
+  } catch (err) {
+    console.warn("HTML Audio initialization failed:", err);
+  }
+}
+
+// Preload all sounds for faster playback
 export async function preloadSounds(): Promise<void> {
-  await Promise.all(soundPaths.map((path) => initWebAudio(path)));
+  await Promise.all(
+    [...completionSoundPaths, singleBellPath].map((path) => initWebAudio(path)),
+  );
 }
