@@ -6,7 +6,9 @@ import {
 import { Toggle } from "@src/shared/components/ui/Toggle";
 
 export const SoundSettings = (props: {
-  onAfterSave: () => void;
+  onAfterSave?: () => void;
+  autoSave?: boolean;
+  onChange?: (enabled: boolean) => void;
 }): JSX.Element => {
   const [soundEnabled, setSoundEnabled] = createSignal(true);
 
@@ -19,8 +21,11 @@ export const SoundSettings = (props: {
   const toggleSound = async () => {
     const newValue = !soundEnabled();
     setSoundEnabled(newValue);
-    await updateUserCfg({ soundEnabled: newValue });
-    props.onAfterSave();
+    props.onChange?.(newValue);
+    if (props.autoSave !== false) {
+      await updateUserCfg({ soundEnabled: newValue });
+      props.onAfterSave?.();
+    }
   };
 
   return (

@@ -9,11 +9,14 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { safeJsonParse } from "@src/util/safeJsonParse";
 import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";
+import { Checkbox } from "@src/shared/components/ui/Checkbox";
 
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
   saveBtnTxt?: string;
   onSave?: () => void;
+  showButtons?: boolean;
+  onChange?: (apps: string[]) => void;
 }) => {
   let t0: NodeJS.Timeout | undefined;
   // const navigate = useNavigate();
@@ -42,6 +45,15 @@ export const SettingsAndroid = (props: {
     window.clearTimeout(t0);
   });
 
+  const handleToggleApp = (packageName: string) => {
+    const isSelected = getSelectedApps().includes(packageName);
+    const newSelected = isSelected
+      ? getSelectedApps().filter((a) => a !== packageName)
+      : [...getSelectedApps(), packageName];
+    setSelectedApps(newSelected);
+    props.onChange?.(newSelected);
+  };
+
   const handleSave = () => {
     updateBlockedApps(getSelectedApps());
     navigate("/");
@@ -58,47 +70,44 @@ export const SettingsAndroid = (props: {
         <div style="margin: 16px;">Loading apps...</div>
       ) : (
         <>
-          <select
-            multiple
-            class={styles.appSelect}
-            onChange={(e) => {
-              const selected = Array.from(e.currentTarget.selectedOptions).map(
-                (opt) => opt.value,
-              );
-              setSelectedApps(selected);
-            }}
-          >
+          <div class={styles.appList}>
             <For each={getAvailableApps()}>
               {(app) => (
-                <option
-                  value={app.packageName}
-                  selected={getSelectedApps().includes(app.packageName)}
+                <div
+                  class={styles.appEntry}
+                  onClick={() => handleToggleApp(app.packageName)}
                 >
-                  {app.name}
-                </option>
+                  <Checkbox
+                    checked={getSelectedApps().includes(app.packageName)}
+                    onChange={() => handleToggleApp(app.packageName)}
+                  />
+                  <span class={styles.appName}>{app.name}</span>
+                </div>
               )}
             </For>
-          </select>
+          </div>
 
-          <div>
-            {props.isRouting && (
+          {props.showButtons !== false && (
+            <div>
+              {props.isRouting && (
+                <button
+                  class="btnTxt"
+                  style="margin-right: 16px;"
+                  onClick={() => navigate("/")}
+                >
+                  <Ico name="arrowBack" /> Back
+                </button>
+              )}
+
               <button
                 class="btnTxt"
-                style="margin-right: 16px;"
-                onClick={() => navigate("/")}
+                disabled={!getSelectedApps()?.length}
+                onClick={handleSave}
               >
-                <Ico name="arrowBack" /> Back
+                <Ico name="send" /> {props.saveBtnTxt || "Save"}
               </button>
-            )}
-
-            <button
-              class="btnTxt"
-              disabled={!getSelectedApps()?.length}
-              onClick={handleSave}
-            >
-              <Ico name="send" /> {props.saveBtnTxt || "Save"}
-            </button>
-          </div>
+            </div>
+          )}
         </>
       )}
     </div>

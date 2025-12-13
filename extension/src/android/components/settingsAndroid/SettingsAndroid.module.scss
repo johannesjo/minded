@@ -1,22 +1,28 @@
-.appSelect {
-  display: block;
-  width: calc(100% - 32px);
+.appList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin: 16px;
-  padding: 8px;
-  font-size: var(--fz-m);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.appEntry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--dashboard-card-bg);
   border-radius: var(--border-radius);
-  border: 1px solid var(--btn-bg);
-  background: var(--bg);
-  color: var(--fg);
-  min-height: 200px;
+  cursor: pointer;
+  user-select: none;
 
-  option {
-    padding: 8px 12px;
-    border-radius: 4px;
-    margin: 2px 0;
-
-    &:checked {
-      background: var(--btn-bg);
-    }
+  &:active {
+    opacity: 0.8;
   }
+}
+
+.appName {
+  flex: 1;
+  font-size: var(--fz-m);
 }
