@@ -23,7 +23,9 @@ const DAY_NAMES = [
 ];
 
 export const FocusSchedule = (props: {
-  onAfterSave: () => void;
+  onAfterSave?: () => void;
+  showSaveButton?: boolean;
+  onChange?: (schedule: FocusScheduleType) => void;
 }): JSX.Element => {
   const [schedule, setSchedule] = createSignal<FocusScheduleType>(
     DEFAULT_FOCUS_SCHEDULE,
@@ -38,7 +40,11 @@ export const FocusSchedule = (props: {
   });
 
   const toggleEnabled = () => {
-    setSchedule((prev) => ({ ...prev, enabled: !prev.enabled }));
+    setSchedule((prev) => {
+      const newSchedule = { ...prev, enabled: !prev.enabled };
+      props.onChange?.(newSchedule);
+      return newSchedule;
+    });
   };
 
   const toggleDay = (dayIndex: number) => {
@@ -52,7 +58,9 @@ export const FocusSchedule = (props: {
         newDays[dayIndex] = null;
       }
 
-      return { ...prev, days: newDays };
+      const newSchedule = { ...prev, days: newDays };
+      props.onChange?.(newSchedule);
+      return newSchedule;
     });
   };
 
@@ -68,13 +76,15 @@ export const FocusSchedule = (props: {
       const newDays = { ...prev.days };
       newDays[dayIndex] = { ...currentDay, [field]: value };
 
-      return { ...prev, days: newDays };
+      const newSchedule = { ...prev, days: newDays };
+      props.onChange?.(newSchedule);
+      return newSchedule;
     });
   };
 
   const saveAndContinue = async () => {
     await updateUserCfg({ focusSchedule: schedule() });
-    props.onAfterSave();
+    props.onAfterSave?.();
   };
 
   const isDayEnabled = (dayIndex: number): boolean => {
@@ -138,11 +148,13 @@ export const FocusSchedule = (props: {
         </For>
       </div>
 
-      <div class={styles.controls}>
-        <button class="btnTxt" onClick={saveAndContinue}>
-          <Ico name="send" /> Save
-        </button>
-      </div>
+      {props.showSaveButton !== false && (
+        <div class={styles.controls}>
+          <button class="btnTxt" onClick={saveAndContinue}>
+            <Ico name="send" /> Save
+          </button>
+        </div>
+      )}
     </div>
   );
 };
