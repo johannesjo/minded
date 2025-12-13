@@ -40,18 +40,10 @@ class LittleSunWindow(
         }
 
         LittleSun(elapsedSeconds, onSunTap = {
-            Log.v(logTag, "onSunTap() - ending session and showing intervention")
+            Log.v(logTag, "onSunTap() - ending session and going to minded app")
             hideWindow()
             ctrlSvc.clearSession()
-            val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
-            if (currentApp != null) {
-                OverlayControllerService.showOverlay(
-                    ctrlSvc,
-                    OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
-                    OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
-                    currentApp
-                )
-            }
+            ctrlSvc.goToApp()
         })
     }
 
