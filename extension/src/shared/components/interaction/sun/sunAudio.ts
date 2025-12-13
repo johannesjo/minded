@@ -53,13 +53,13 @@ async function initWebAudio(soundPath: string): Promise<AudioBuffer | null> {
   }
 }
 
-function playWithWebAudio(buffer: AudioBuffer): boolean {
+async function playWithWebAudio(buffer: AudioBuffer): Promise<boolean> {
   if (!audioContext || !gainNode) return false;
 
   try {
     // Resume context if suspended (autoplay policy)
     if (audioContext.state === "suspended") {
-      audioContext.resume();
+      await audioContext.resume();
     }
 
     const source = audioContext.createBufferSource();
@@ -84,7 +84,7 @@ export async function playCompletionSound(): Promise<void> {
 
   // Try Web Audio API
   const buffer = await initWebAudio(soundPath);
-  if (buffer && playWithWebAudio(buffer)) {
+  if (buffer && (await playWithWebAudio(buffer))) {
     return;
   }
 
@@ -114,7 +114,7 @@ export async function playInterventionSound(): Promise<void> {
 
   // Try Web Audio API
   const buffer = await initWebAudio(singleBellPath);
-  if (buffer && playWithWebAudio(buffer)) {
+  if (buffer && (await playWithWebAudio(buffer))) {
     return;
   }
 
