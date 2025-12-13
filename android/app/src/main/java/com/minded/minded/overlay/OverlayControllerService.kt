@@ -36,7 +36,6 @@ import java.time.Instant
 class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     private val logTag = javaClass.simpleName
 
-    private val GRACE_PERIOD_IN_S = 30
     private val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 30 * 60
     private val MAX_OVERLAY_RETRY_ATTEMPTS = 3
     private val OVERLAY_RETRY_DELAY_MS = 500L
@@ -328,28 +327,25 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun checkToShowOverlay(currentPackageName: String) {
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
-        
+
         val entryForCurrentApp = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
         val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
         val now = Instant.now()
         val activeTimerEndTime = activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
-        val isInGracePeriod = entryForCurrentApp?.lastUsed?.let {
-            it > now.minusSeconds(GRACE_PERIOD_IN_S.toLong())
-        } ?: false
         val sessionEndTime = entryForCurrentApp?.sessionEndTime ?: activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
         if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
             // Keep per-app map in sync so Little Sun countdown can restore after process restarts
             sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
         }
-        
-        val isRecentAppSwitch = lastGoToAppTimestamp > 0 && 
+
+        val isRecentAppSwitch = lastGoToAppTimestamp > 0 &&
             System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
         val isBlocked = isBlockedPackage(currentPackageName)
 
         Log.v(
             logTag,
-            "checkToShowOverlay() gracePeriod=$isInGracePeriod sessionLimit=$isWithinSessionLimit blocked=$isBlocked " +
+            "checkToShowOverlay() sessionLimit=$isWithinSessionLimit blocked=$isBlocked " +
             "package=$currentPackageName recentSwitch=$isRecentAppSwitch"
         )
 
@@ -386,20 +382,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     logTag,
                     "checkToShowOverlay() skip because one of the overlays is already shown"
                 )
-            } else if (isInGracePeriod || isWithinSessionLimit) {
-                Log.v(logTag, "isInGracePeriod or isWithinSessionLimit")
+            } else if (isWithinSessionLimit) {
+                // Active session exists → show little sun
+                Log.v(logTag, "Active session exists, showing little sun")
                 if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
-                    // Removed SMALL_MSG_OVERLAY - only show the little sun
                 }
-                // since we also want to show the question overlay after the lock screen, we DON'T do this check
-//            } else if (lastForeGroundApp == currentPackageName) {
-//                Log.v(logTag, "lastForeGroundApp == currentPackageName => true")
-//                if (!littleSunOverlayWindow.isWindowShown()) {
-//                    showOverlay(OverlayName.AFTER_SUN_OVERLAY, null, currentPackageName)
-//                }
             } else {
-                Log.v(logTag, "SHOW FRESH INTERACTION OVERLAY for: $currentPackageName")
+                // No active session → show fresh intervention
+                Log.v(logTag, "No active session, SHOW FRESH INTERACTION OVERLAY for: $currentPackageName")
                 showOverlay(
                     OverlayName.INTERACTION_OVERLAY,
                     OverlayMode.INTERACTION_OVERLAY__FRESH,
@@ -514,13 +505,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             Log.d(logTag, "setSessionLimit - on main thread, hiding interaction window")
             interactionOverlayWindow.hideWindow()
 
-            // Only show Little Sun for timed sessions, not for "Rest of Day"
-            if (!isRestOfDay) {
-                Log.d(logTag, "setSessionLimit - showing Little Sun overlay")
-                showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
-            } else {
-                Log.d(logTag, "setSessionLimit - Rest of Day selected, not showing Little Sun")
-            }
+            // Always show Little Sun for all sessions (including Rest of Day)
+            Log.d(logTag, "setSessionLimit - showing Little Sun overlay (isRestOfDay: $isRestOfDay)")
+            showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
         }
     }
 
