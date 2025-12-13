@@ -17,6 +17,7 @@ open class CommonWindow(
 ) {
     open val logTag = javaClass.simpleName
     var window: View? = null
+    private var isHiding = false
 
     fun isWindowShown(): Boolean {
         return window != null
@@ -32,6 +33,7 @@ open class CommonWindow(
             Log.v(logTag, "overlay already shown - aborting")
             return
         }
+        isHiding = false
         window = ComposeView(ctrlSvc).apply {
             setViewTreeLifecycleOwner(ctrlSvc)
             setViewTreeSavedStateRegistryOwner(ctrlSvc)
@@ -44,19 +46,35 @@ open class CommonWindow(
             }
         }
         windowManager.addView(window, getLayoutParams())
+        // Fade in animation
+        window?.alpha = 0f
+        window?.animate()
+            ?.alpha(1f)
+            ?.setDuration(300)
+            ?.start()
     }
 
 
     open fun hideWindow() {
         Log.v(
-            logTag, "hideWindow() wasWindowShown ${window != null}"
+            logTag, "hideWindow() wasWindowShown ${window != null} isHiding $isHiding"
         )
-        if (window == null) {
+        if (window == null || isHiding) {
             return
         }
-        windowManager.removeView(window)
-        window = null
-
+        isHiding = true
+        // Fade out animation
+        window?.animate()
+            ?.alpha(0f)
+            ?.setDuration(300)
+            ?.withEndAction {
+                window?.let { view ->
+                    windowManager.removeView(view)
+                }
+                window = null
+                isHiding = false
+            }
+            ?.start()
     }
 
     open fun getLayoutParams(): WindowManager.LayoutParams {
