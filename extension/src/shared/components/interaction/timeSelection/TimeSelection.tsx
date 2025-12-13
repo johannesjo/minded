@@ -8,8 +8,10 @@ interface TimeSelectionProps {
 
 export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   const options = [
+    { label: "1 min", value: 60 },
     { label: "5 min", value: 300 },
     { label: "15 min", value: 900 },
+    { label: "30 min", value: 1800 },
     { label: "1 hour", value: 3600 },
     { label: "rest of day", value: -1 },
   ];
