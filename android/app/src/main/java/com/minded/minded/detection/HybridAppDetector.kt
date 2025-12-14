@@ -45,10 +45,22 @@ class HybridAppDetector(private val context: Context) {
     // Track detection discrepancies for debugging
     private val detectionDiscrepancies = mutableListOf<DetectionDiscrepancy>()
 
+    // Callback to check if an app is blocked (for fallback detection)
+    private var isBlockedAppCallback: ((String) -> Boolean)? = null
+
+    /**
+     * Sets a callback to check if an app is blocked.
+     * Used by fallback detection to only emit detections for blocked apps.
+     */
+    fun setBlockedAppChecker(checker: (String) -> Boolean) {
+        isBlockedAppCallback = checker
+    }
+
     companion object {
         private const val TAG = "HybridAppDetector"
-        private const val USAGE_STATS_POLL_INTERVAL_MS = 2000L // Poll every 2 seconds
-        private const val VALIDATION_RETRY_DELAY_MS = 200L // Delay before retrying validation
+        private const val USAGE_STATS_POLL_INTERVAL_MS = 500L // Poll every 500ms for faster detection of slow-loading apps
+        private const val VALIDATION_RETRY_DELAY_MS = 150L // Delay before retrying validation
+        private const val MISSED_DETECTION_THRESHOLD_MS = 800L // Trigger fallback after 800ms without A11y events
         private const val DISCREPANCY_LOG_SIZE = 20
     }
 
@@ -264,19 +276,28 @@ class HybridAppDetector(private val context: Context) {
 
     /**
      * Checks if AccessibilityService missed a detection that UsageStatsManager caught.
+     * For blocked apps, emits a fallback detection to ensure intervention triggers
+     * even for apps with long loading screens (OpenGL/Vulkan games) that don't
+     * generate accessibility events.
      */
     private suspend fun checkForMissedDetection(usageStatsApp: String) {
         val accessibilityApp = _accessibilityDetectedApp.value?.packageName
         val timeSinceAccessibilityEvent = healthMonitor.timeSinceLastEvent()
 
         // If AccessibilityService hasn't detected this app and hasn't had an event recently,
-        // it might have missed something
-        if (accessibilityApp != usageStatsApp && timeSinceAccessibilityEvent > 2000) {
+        // it might have missed something (e.g., slow-loading app with splash screen)
+        if (accessibilityApp != usageStatsApp && timeSinceAccessibilityEvent > MISSED_DETECTION_THRESHOLD_MS) {
             Log.w(TAG, "Possible missed detection: UsageStats=$usageStatsApp, A11y=$accessibilityApp, " +
                     "time since A11y event=${timeSinceAccessibilityEvent}ms")
 
-            // Don't auto-emit, but log for debugging
-            // In production, you might want to emit a lower-confidence detection here
+            // Only emit fallback detection for BLOCKED apps to avoid false positives
+            val isBlocked = isBlockedAppCallback?.invoke(usageStatsApp) ?: false
+            if (isBlocked) {
+                Log.i(TAG, "Emitting fallback detection for blocked app: $usageStatsApp")
+                emitFallbackDetection(usageStatsApp)
+            } else {
+                Log.d(TAG, "Skipping fallback detection for non-blocked app: $usageStatsApp")
+            }
         }
     }
 

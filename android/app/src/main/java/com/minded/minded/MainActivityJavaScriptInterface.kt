@@ -1,5 +1,8 @@
+package com.minded.minded
+
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import com.minded.minded.data.SharedPreferenceService
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.inputmethod.InputMethodManager

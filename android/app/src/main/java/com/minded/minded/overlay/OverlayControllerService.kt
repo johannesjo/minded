@@ -1,6 +1,6 @@
 package com.minded.minded.overlay
 
-import SharedPreferenceService
+import com.minded.minded.data.SharedPreferenceService
 import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -32,6 +32,7 @@ import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseSyncData
 import com.minded.minded.util.ActiveTimer
+import com.minded.minded.util.SyncData
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant

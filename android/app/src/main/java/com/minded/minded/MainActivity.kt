@@ -1,7 +1,6 @@
 package com.minded.minded
 
-import MainActivityJavaScriptInterface
-import SharedPreferenceService
+import com.minded.minded.data.SharedPreferenceService
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
