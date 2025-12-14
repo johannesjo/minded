@@ -98,33 +98,17 @@ class LittleSunWindow(
                 sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
             }
 
-            if (!powerManager.isScreenOn || !powerManager.isInteractive) {
-                // Just hide the window - OverlayControllerService's screen state receiver
-                // will restore the overlay when the screen turns back on
-                hideWindow()
+            // Always continue the timer - OverlayControllerService handles screen state changes
+            // via its broadcast receiver. We just skip updates when screen is off.
+            if (powerManager.isScreenOn && powerManager.isInteractive) {
+                // Normal operation - screen is on and interactive
             } else {
-//                Log.v(
-//                    logTag,
-//                    "elapsedSeconds: $elapsedSeconds + $initialTime) % $REQUESTION_CYCLE_DURATION_IN_S == 0 ${(elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0}"
-//                )
-//                if ((elapsedSeconds + initialTime) % REQUESTION_CYCLE_DURATION_IN_S == 0 && isWindowShown() && elapsedSeconds > 0) {
-//                    hideWindow()
-//                    OverlayControllerService.showOverlay(
-//                        ctrlSvc,
-//                        OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
-//                        OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
-//                        sharedOverlayViewModel.sharedData.value.currentApp
-//                    )
-//                } else
-//                if (sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt != null && (elapsedSeconds + initialTime) % SMALL_MSG_CYCLE_DURATION == 0 && isWindowShown() && elapsedSeconds > 0) {
-//                    OverlayControllerService.showOverlay(
-//                        ctrlSvc,
-//                        OverlayControllerService.Companion.OverlayName.SMALL_MSG_OVERLAY
-//                    )
-//                }
-                // restart timer
-                handler.postDelayed(this, 1000)
+                // Screen off or not interactive - skip this tick but keep timer running
+                Log.v(logTag, "Screen off/not interactive, skipping timer tick")
             }
+
+            // Always schedule next tick to keep timer alive
+            handler.postDelayed(this, 1000)
         }
     }
 
