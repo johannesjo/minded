@@ -99,9 +99,9 @@ class LittleSunWindow(
             }
 
             if (!powerManager.isScreenOn || !powerManager.isInteractive) {
+                // Just hide the window - OverlayControllerService's screen state receiver
+                // will restore the overlay when the screen turns back on
                 hideWindow()
-                // go to homescreen directly to prevent showing the overlay after screen is turned on
-                ctrlSvc.goToHomeScreen()
             } else {
 //                Log.v(
 //                    logTag,

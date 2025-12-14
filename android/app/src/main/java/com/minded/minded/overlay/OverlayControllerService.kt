@@ -7,8 +7,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Handler
@@ -30,6 +32,8 @@ import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseSyncData
 import com.minded.minded.util.ActiveTimer
+import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
 
 
@@ -48,6 +52,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val overlayRetryHandler = Handler(Looper.getMainLooper())
     private val pendingOverlayRetries = mutableMapOf<String, Int>()
 
+    // Screen state tracking for overlay restoration
+    private var overlayStateBeforeScreenOff: OverlayName? = null
+    private var appBeforeScreenOff: String? = null
+    private val screenStateHandler = Handler(Looper.getMainLooper())
+    private val SCREEN_ON_CHECK_DELAY_MS = 500L
+
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.create(this)
@@ -64,6 +74,62 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private lateinit var successSunOverlayWindow: SuccessSunWindow
     private lateinit var sharedPreferenceService: SharedPreferenceService
 
+    private val screenStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                Intent.ACTION_SCREEN_OFF -> {
+                    Log.d(logTag, "Screen turned OFF - saving overlay state")
+                    // Save which overlay was showing
+                    overlayStateBeforeScreenOff = when {
+                        littleSunOverlayWindow.isWindowShown() -> OverlayName.LITTLE_SUN_OVERLAY
+                        interactionOverlayWindow.isWindowShown() -> OverlayName.INTERACTION_OVERLAY
+                        else -> null
+                    }
+                    appBeforeScreenOff = sharedOverlayViewModel.sharedData.value.currentApp
+                    Log.d(logTag, "Saved state: overlay=$overlayStateBeforeScreenOff, app=$appBeforeScreenOff")
+                }
+                Intent.ACTION_SCREEN_ON -> {
+                    Log.d(logTag, "Screen turned ON - checking if overlay should be restored")
+                    // Delay check to let system settle after screen on
+                    screenStateHandler.postDelayed({
+                        restoreOverlayAfterScreenOn()
+                    }, SCREEN_ON_CHECK_DELAY_MS)
+                }
+            }
+        }
+    }
+
+    private fun restoreOverlayAfterScreenOn() {
+        val savedOverlay = overlayStateBeforeScreenOff
+        val savedApp = appBeforeScreenOff
+
+        if (savedOverlay == null || savedApp == null) {
+            Log.d(logTag, "No overlay to restore (savedOverlay=$savedOverlay, savedApp=$savedApp)")
+            return
+        }
+
+        // Check if user is still on a blocked app
+        val foregroundResult = getForegroundAppReliable(this, lookbackMs = 5000, staleThresholdMs = 3000)
+        val currentForegroundApp = when (foregroundResult) {
+            is ForegroundAppResult.Success -> foregroundResult.packageName
+            is ForegroundAppResult.Stale -> foregroundResult.packageName
+            else -> null
+        }
+
+        Log.d(logTag, "restoreOverlayAfterScreenOn: foreground=$currentForegroundApp, savedApp=$savedApp")
+
+        // If user is on a blocked app (either the same one or a different blocked one)
+        if (currentForegroundApp != null && isBlockedPackage(currentForegroundApp)) {
+            Log.d(logTag, "User on blocked app $currentForegroundApp, triggering overlay check")
+            checkToShowOverlay(currentForegroundApp)
+        } else {
+            Log.d(logTag, "User not on blocked app, clearing saved state")
+        }
+
+        // Clear saved state
+        overlayStateBeforeScreenOff = null
+        appBeforeScreenOff = null
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -89,8 +155,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+
+        // Register screen state receiver to restore overlays after lock/unlock
+        val screenFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(screenStateReceiver, screenFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(screenStateReceiver, screenFilter)
+        }
+        Log.d(logTag, "Screen state receiver registered")
     }
-    
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -415,17 +493,27 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     override fun onDestroy() {
         Log.d(logTag, "onDestroy() - Service is being destroyed")
-        
+
+        // Cancel any pending screen state checks
+        screenStateHandler.removeCallbacksAndMessages(null)
+
+        // Unregister screen state receiver
+        try {
+            unregisterReceiver(screenStateReceiver)
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to unregister screen state receiver", e)
+        }
+
         // Cancel any pending retry attempts
         overlayRetryHandler.removeCallbacksAndMessages(null)
         pendingOverlayRetries.clear()
-        
+
         // Hide all overlays before destruction
         hideAllBut()
-        
+
         super.onDestroy()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        
+
         // Schedule service restart to ensure continuous protection
         scheduleServiceRestart()
     }
