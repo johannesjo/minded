@@ -1,6 +1,5 @@
 package com.minded.minded.overlay
 
-import InteractionWindowJavaScriptInterface
 import android.annotation.SuppressLint
 import android.graphics.PixelFormat
 import android.util.Log

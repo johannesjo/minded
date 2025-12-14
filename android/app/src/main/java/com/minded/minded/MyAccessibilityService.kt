@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.minded.minded.overlay.OverlayControllerService
 import android.content.pm.ApplicationInfo
+import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
@@ -172,6 +173,20 @@ class MyAccessibilityService : AccessibilityService() {
             healthMonitor.setOnUnhealthyCallback {
                 Log.e(TAG, "Service health monitor detected unhealthy state")
                 // Could notify user or attempt recovery here
+            }
+        }
+
+        // Set up blocked apps checker for fallback detection
+        // This enables UsageStatsManager to trigger interventions for blocked apps
+        // that don't generate accessibility events (e.g., games with OpenGL splash screens)
+        val sharedPreferenceService = SharedPreferenceService(this)
+        hybridDetector?.setBlockedAppChecker { packageName ->
+            val blockedApps = sharedPreferenceService.getBlockedApps()
+            // Match OverlayControllerService.isBlockedPackage() logic
+            if (blockedApps.isEmpty()) {
+                packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
+            } else {
+                blockedApps.contains(packageName)
             }
         }
 

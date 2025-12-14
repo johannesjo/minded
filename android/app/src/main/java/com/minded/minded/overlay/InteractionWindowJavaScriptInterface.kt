@@ -1,3 +1,5 @@
+package com.minded.minded.overlay
+
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
@@ -7,8 +9,7 @@ import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import com.minded.minded.overlay.InteractionWindow
-import com.minded.minded.overlay.OverlayControllerService
+import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseJSONQuestion
 
