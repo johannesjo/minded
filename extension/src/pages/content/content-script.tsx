@@ -30,6 +30,20 @@ const CURRENT_URL = window.location.href;
         // Create Shadow DOM host element for complete style isolation
         const hostEl = document.createElement("minded-app");
         hostEl.id = "minded-6622-host";
+        // Apply critical styles inline to prevent host page CSS from hiding the element
+        // (e.g., Reddit sets visibility:hidden on elements which overrides :host styles)
+        hostEl.style.cssText = `
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          z-index: 2147483647 !important;
+          pointer-events: none !important;
+          visibility: visible !important;
+          display: block !important;
+          opacity: 1 !important;
+        `;
         document.body.appendChild(hostEl);
 
         // Use closed shadow DOM for style isolation from host page.

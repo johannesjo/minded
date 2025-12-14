@@ -1,14 +1,7 @@
 @import "@src/styles/sharedInteractionOnly";
 
-:host {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2147483647;
-  pointer-events: none;
-}
+// Note: Host element styles are applied inline in content-script.tsx
+// to ensure they cannot be overridden by host page CSS (e.g., Reddit)
 
 #minded-6622 {
   animation: minded6622fadeIn ease 0.2s;
