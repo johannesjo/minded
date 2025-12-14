@@ -650,9 +650,15 @@ class MyAccessibilityService : AccessibilityService() {
                 // Check if the new app is also blocked before hiding overlay
                 // This prevents hiding overlay when switching between blocked apps
                 if (isSystemPackage(packageName) || isLauncherPackage(packageName)) {
-                    // Moving to system/launcher, safe to hide overlay
-                    Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
-                    hideOverlayForBackgroundedApp()
+                    // Don't hide overlay for notification shade or quick settings
+                    // User is still "in" the app, just interacting with system UI
+                    if (isOverlayCompatibleSystemUI(packageName, className)) {
+                        Log.d(TAG, "Transitioning to overlay-compatible system UI, keeping overlay: $lastPackageName -> $packageName ($className)")
+                    } else {
+                        // Moving to system/launcher, safe to hide overlay
+                        Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
+                        hideOverlayForBackgroundedApp()
+                    }
                 } else {
                     // Moving to another user app, let the overlay logic handle it
                     Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
@@ -996,6 +1002,51 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
     
+    /**
+     * Checks if the system UI package/class represents a temporary overlay
+     * that the user can interact with while still "in" a blocked app.
+     * The overlay should remain visible for these cases.
+     *
+     * We're permissive here - if it's systemui and NOT the recents/task switcher,
+     * we assume it's overlay-compatible (notification shade, quick settings, etc.)
+     */
+    private fun isOverlayCompatibleSystemUI(packageName: String, className: String): Boolean {
+        val lowerClass = className.lowercase()
+        val lowerPackage = packageName.lowercase()
+
+        // Check if this is the recents/task switcher - NOT overlay compatible
+        // because user is actively choosing a different app
+        if (lowerClass.contains("recent") || lowerClass.contains("task")) {
+            return false
+        }
+
+        // SystemUI package (notification shade, quick settings, volume, etc.)
+        // These are temporary overlays - user is still "in" the blocked app
+        if (lowerPackage.contains("systemui")) {
+            return true
+        }
+
+        // Samsung system UI components
+        if (lowerPackage.contains("samsung") &&
+            (lowerClass.contains("notification") || lowerClass.contains("panel"))) {
+            return true
+        }
+
+        // MIUI system UI components
+        if (lowerPackage.contains("miui") &&
+            (lowerClass.contains("notification") || lowerClass.contains("panel"))) {
+            return true
+        }
+
+        // OnePlus/Oppo system UI
+        if ((lowerPackage.contains("oneplus") || lowerPackage.contains("oppo")) &&
+            lowerClass.contains("notification")) {
+            return true
+        }
+
+        return false
+    }
+
     private fun hideOverlayForBackgroundedApp() {
         try {
             val intent = Intent(this, OverlayControllerService::class.java).apply {

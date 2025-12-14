@@ -89,17 +89,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     Log.d(logTag, "Saved state: overlay=$overlayStateBeforeScreenOff, app=$appBeforeScreenOff")
                 }
                 Intent.ACTION_SCREEN_ON -> {
-                    Log.d(logTag, "Screen turned ON - checking if overlay should be restored")
-                    // Delay check to let system settle after screen on
+                    Log.d(logTag, "Screen turned ON - will wait for USER_PRESENT to restore overlay")
+                    // Don't restore here - wait for USER_PRESENT which fires after unlock
+                }
+                Intent.ACTION_USER_PRESENT -> {
+                    Log.d(logTag, "User unlocked device - restoring overlay if needed")
+                    // Delay slightly to let the foreground app detection settle
                     screenStateHandler.postDelayed({
-                        restoreOverlayAfterScreenOn()
+                        restoreOverlayAfterUnlock()
                     }, SCREEN_ON_CHECK_DELAY_MS)
                 }
             }
         }
     }
 
-    private fun restoreOverlayAfterScreenOn() {
+    private fun restoreOverlayAfterUnlock() {
         val savedOverlay = overlayStateBeforeScreenOff
         val savedApp = appBeforeScreenOff
 
@@ -116,12 +120,34 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             else -> null
         }
 
-        Log.d(logTag, "restoreOverlayAfterScreenOn: foreground=$currentForegroundApp, savedApp=$savedApp")
+        Log.d(logTag, "restoreOverlayAfterUnlock: foreground=$currentForegroundApp, savedApp=$savedApp, savedOverlay=$savedOverlay")
 
-        // If user is on a blocked app (either the same one or a different blocked one)
-        if (currentForegroundApp != null && isBlockedPackage(currentForegroundApp)) {
-            Log.d(logTag, "User on blocked app $currentForegroundApp, triggering overlay check")
-            checkToShowOverlay(currentForegroundApp)
+        // Determine which app to use for restoration
+        val appToRestore = when {
+            // If we can detect the foreground app and it's blocked, use it
+            currentForegroundApp != null && isBlockedPackage(currentForegroundApp) -> currentForegroundApp
+            // If foreground detection failed but saved app was blocked, use saved app
+            // This handles cases where UsageStats hasn't updated yet
+            isBlockedPackage(savedApp) -> savedApp
+            else -> null
+        }
+
+        if (appToRestore != null) {
+            Log.d(logTag, "Restoring overlay for app: $appToRestore (savedOverlay=$savedOverlay)")
+            // Directly restore the overlay that was showing before
+            when (savedOverlay) {
+                OverlayName.LITTLE_SUN_OVERLAY -> {
+                    showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, appToRestore)
+                }
+                OverlayName.INTERACTION_OVERLAY -> {
+                    // For interaction overlay, trigger fresh check as state may have changed
+                    checkToShowOverlay(appToRestore)
+                }
+                else -> {
+                    // For other overlays, do a regular check
+                    checkToShowOverlay(appToRestore)
+                }
+            }
         } else {
             Log.d(logTag, "User not on blocked app, clearing saved state")
         }
@@ -160,6 +186,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val screenFilter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_USER_PRESENT)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(screenStateReceiver, screenFilter, Context.RECEIVER_NOT_EXPORTED)
