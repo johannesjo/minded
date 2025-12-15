@@ -49,7 +49,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private var wasNoOverlaysBefore = false
     private var lastGoToAppTimestamp: Long = 0
+    private var lastHideAllTimestamp: Long = 0
     private val APP_SWITCH_DEBOUNCE_MS: Long = 1500L // Reduced from 2200ms for better UX
+    private val HIDE_TO_SHOW_DEBOUNCE_MS: Long = 500L
     private val overlayRetryHandler = Handler(Looper.getMainLooper())
     private val pendingOverlayRetries = mutableMapOf<String, Int>()
 
@@ -431,6 +433,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
+        // Debounce: skip if we recently hid all overlays (prevents flicker on app close)
+        val timeSinceHideAll = System.currentTimeMillis() - lastHideAllTimestamp
+        if (timeSinceHideAll < HIDE_TO_SHOW_DEBOUNCE_MS) {
+            Log.d(logTag, "checkToShowOverlay() - skipping due to recent hideAll (${timeSinceHideAll}ms ago)")
+            return
+        }
+
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
 
@@ -508,6 +517,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun hideAllBut(exclude: OverlayName? = null) {
+        // Track when we hide all overlays to debounce automatic show requests
+        if (exclude == null) {
+            lastHideAllTimestamp = System.currentTimeMillis()
+        }
         if (exclude != OverlayName.INTERACTION_OVERLAY) hideOverlay(OverlayName.INTERACTION_OVERLAY);
         if (exclude != OverlayName.SUCCESS_SUN_OVERLAY) hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
         if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);

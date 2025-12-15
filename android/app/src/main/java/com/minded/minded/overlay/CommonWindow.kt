@@ -10,8 +10,6 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 
-private const val POST_HIDE_DEBOUNCE_MS = 500L
-
 open class CommonWindow(
     private val ctrlSvc: OverlayControllerService,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
@@ -20,7 +18,6 @@ open class CommonWindow(
     open val logTag = javaClass.simpleName
     var window: View? = null
     private var isHiding = false
-    private var lastHideCompletedAt = 0L
 
     fun isWindowShown(): Boolean {
         return window != null
@@ -32,10 +29,8 @@ open class CommonWindow(
     }
 
     open fun showWindow() {
-        val timeSinceHide = System.currentTimeMillis() - lastHideCompletedAt
-        val isInDebounce = timeSinceHide < POST_HIDE_DEBOUNCE_MS
-        if (window != null || isHiding || isInDebounce) {
-            Log.v(logTag, "overlay already shown or hiding or in debounce - aborting (window=${window != null}, isHiding=$isHiding, timeSinceHide=${timeSinceHide}ms)")
+        if (window != null || isHiding) {
+            Log.v(logTag, "overlay already shown or hiding - aborting (window=${window != null}, isHiding=$isHiding)")
             return
         }
         window = ComposeView(ctrlSvc).apply {
@@ -77,7 +72,6 @@ open class CommonWindow(
                 }
                 window = null
                 isHiding = false
-                lastHideCompletedAt = System.currentTimeMillis()
             }
             ?.start()
     }
