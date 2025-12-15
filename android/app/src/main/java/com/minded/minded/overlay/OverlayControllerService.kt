@@ -433,6 +433,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
+        // Skip our own package - we don't want to hide overlays when detecting our own app
+        if (currentPackageName == "com.minded.minded") {
+            Log.d(logTag, "checkToShowOverlay() - skipping our own package")
+            return
+        }
+
         // Debounce: skip if we recently hid all overlays (prevents flicker on app close)
         val timeSinceHideAll = System.currentTimeMillis() - lastHideAllTimestamp
         if (timeSinceHideAll < HIDE_TO_SHOW_DEBOUNCE_MS) {
