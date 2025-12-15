@@ -182,7 +182,7 @@ Recent updates introduced sophisticated gesture interactions:
 // Sun component supports:
 - Swipe Up: Complete with "good" outcome (blue sky animation)
 - Swipe Down: Complete with "neutral" outcome (sunset animation)
-- Tap 4x: Skip current interaction
+- Tap 3x: Continue (opens next step)
 - Visual Feedback: Real-time gradient transitions based on drag
 ```
 

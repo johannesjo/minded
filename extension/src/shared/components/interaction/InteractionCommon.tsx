@@ -52,6 +52,8 @@ interface InteractionCommonProps {
 }
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
+  const SUN_TAP_THRESHOLD = 3;
+
   // Data state
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
@@ -76,12 +78,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowTimeSelection, setShowTimeSelection] = createSignal(false);
   const [getShowTimeSelectionOverlay, setShowTimeSelectionOverlay] =
     createSignal(false);
+  const [getSunHintStep, setSunHintStep] = createSignal(0);
 
   let frameNr: number | undefined;
   let fadeAnimationFrame: number | undefined;
   let timeSelectionTimeout: number | undefined;
   let successTimeout: number | undefined;
   let fadeInAnimationFrame: number | undefined;
+
+  createEffect(() => {
+    if (!getShowSunInstructions()) {
+      setSunHintStep(0);
+      return;
+    }
+
+    setSunHintStep(0);
+    const t1 = window.setTimeout(() => setSunHintStep(1), 1200);
+    const t2 = window.setTimeout(() => setSunHintStep(2), 2400);
+    onCleanup(() => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    });
+  });
 
   createEffect(() => {
     if (getShowTimeSelection()) {
@@ -420,9 +438,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
             >
               <div class="sun-instructions txtSmaller">
-                <p>Fling the sun away to let go.</p>
-                <p>Drag the sun down to ground yourself.</p>
-                <p>Tap the sun 3 times to proceed.</p>
+                <p>Tap the sun {SUN_TAP_THRESHOLD} times to continue.</p>
+                {getSunHintStep() >= 1 && <p>Fling it away to let go.</p>}
+                {getSunHintStep() >= 2 && (
+                  <p>Drag it down to ground yourself.</p>
+                )}
               </div>
             </div>
           )}
@@ -446,7 +466,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 props.onCompletionStarted?.(started);
               }}
               eventRoot={props.shadowRoot}
-              tapThreshold={3}
+              tapThreshold={SUN_TAP_THRESHOLD}
             />
           </div>
         )}
