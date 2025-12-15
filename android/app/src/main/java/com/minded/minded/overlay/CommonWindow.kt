@@ -29,11 +29,10 @@ open class CommonWindow(
     }
 
     open fun showWindow() {
-        if (window != null) {
-            Log.v(logTag, "overlay already shown - aborting")
+        if (window != null || isHiding) {
+            Log.v(logTag, "overlay already shown or hiding - aborting (window=${window != null}, isHiding=$isHiding)")
             return
         }
-        isHiding = false
         window = ComposeView(ctrlSvc).apply {
             setViewTreeLifecycleOwner(ctrlSvc)
             setViewTreeSavedStateRegistryOwner(ctrlSvc)
