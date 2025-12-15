@@ -1,6 +1,5 @@
-// import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
-// NOTE: for some reason the import above gives "cannot access before initialization" error
-import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/system";
+// @ts-ignore - path alias resolved at build time based on platform
+import { IS_APP, IS_WEB_EXT } from "@dataInterface/system";
 
 import { QID } from "@src/shared/data/questionId";
 
