@@ -43,6 +43,13 @@ export interface SelfAssessmentEntry {
   val: number;
 }
 
+/** Emotion labeling session data */
+export interface EmotionLabelingData {
+  ts: number;
+  emotions: string[];
+  bodyLocations: string[];
+}
+
 export interface SyncData {
   cfg: UserCfg;
   answers: Answer[];
@@ -78,6 +85,8 @@ export interface SyncData {
     endTS: number;
     durationS: number;
   } | null;
+
+  emotionLabeling: EmotionLabelingData | null;
 }
 
 export interface StaticCfg {

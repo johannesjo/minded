@@ -21,9 +21,11 @@ export type InteractionMode =
   | "SHOW_ALTERNATIVE"
   | "SET_ALTERNATIVE"
   | "MOOD_CHECKIN"
-  | "SELF_ASSESSMENT";
+  | "SELF_ASSESSMENT"
+  | "EMOTION_LABELING";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
+  // return "EMOTION_LABELING";
   // return "APP_USAGE_OR_BROWSING_BEHAVIOR";
   // return "ACTION_ADVICE";
   // return "MOOD_CHECKIN";
@@ -44,6 +46,10 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
 
   if (isXIn1(1 / 10)) {
     return "SELF_ASSESSMENT";
+  }
+
+  if (!isToday(syncData.emotionLabeling?.ts ?? 0) && isXIn1(1 / 10)) {
+    return "EMOTION_LABELING";
   }
 
   if (

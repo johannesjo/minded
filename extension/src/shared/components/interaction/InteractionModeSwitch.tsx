@@ -10,6 +10,7 @@ import { QuestionForPrompt } from "@src/shared/data/questions";
 import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
+import { EmotionLabeling } from "@src/shared/components/interaction/emotionLabeling/EmotionLabeling";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { getRndEntry } from "@src/util/getRndEntry";
 
@@ -45,6 +46,13 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
             onSkip={props.onSkip}
           />
         )}
+      </Match>
+      <Match when={props.mode === "EMOTION_LABELING"}>
+        <EmotionLabeling
+          onCancelCountdown={props.onCancelCountdown}
+          onSuccess={props.onSuccess}
+          onSkip={props.onSkip}
+        />
       </Match>
       <Match when={props.mode === "MOOD_CHECKIN"}>
         <MoodCheckin

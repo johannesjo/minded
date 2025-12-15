@@ -1,7 +1,5 @@
 @import "@src/styles/mixins/mixins";
 
-
-
 .btnIcoSmall {
   &,
   #minded-6622 & {
@@ -23,11 +21,10 @@
   }
 }
 
-
 .btnTxtBig {
   &,
   #minded-6622 & {
-    @include btnTxtBigger()
+    @include btnTxtBigger();
   }
 }
 
@@ -54,4 +51,8 @@
 
 .btnToggleSelect {
   @include btnToggleSelect();
+}
+
+.btnToggleSelectSmall {
+  @include btnToggleSelectSmall();
 }

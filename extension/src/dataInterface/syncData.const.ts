@@ -76,6 +76,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   alternativeApps: [],
   alternativeWebsites: [],
   activeTimer: null,
+  emotionLabeling: null,
 };
 
 export const STATIC_CFG: StaticCfg = {

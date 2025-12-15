@@ -3,6 +3,7 @@ import {
   DashboardGroup,
   DashboardGroupAppUsageHappiness,
   DashboardGroupBrowsingBehaviorHappiness,
+  DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupSelAssessment,
@@ -249,6 +250,18 @@ export const DashboardGroups: (props: {
                         your energy level today
                       </div>
                       <Rating isShowOnly={true} value={dge.energyLvl} />
+                    </div>
+                  );
+
+                case DashboardGroupType.EmotionLabeling:
+                  // eslint-disable-next-line no-case-declarations
+                  const dgEl = dg as DashboardGroupEmotionLabeling;
+                  return (
+                    <div>
+                      <div class="dashboardHeading">your emotions today</div>
+                      <div class="dashboardContent">
+                        {dgEl.emotions.join(", ")}
+                      </div>
                     </div>
                   );
 
