@@ -17,9 +17,11 @@ export const PRIMARY_EMOTIONS = [
 /** Body locations where emotions can be felt */
 export const BODY_LOCATIONS = [
   "head",
+  "neck",
+  "throat",
   "chest",
   "stomach",
-  "throat",
+  "back",
   "shoulders",
   "hands",
   "whole body",
