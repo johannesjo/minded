@@ -146,7 +146,8 @@
     color: var(--c-fg-full-emphasis);
     visibility: hidden;
     opacity: 0;
-    transition: opacity 320ms ease-out;
+    transition: opacity 900ms ease-in-out;
+    will-change: opacity;
 
     &.is-visible {
       visibility: visible;
