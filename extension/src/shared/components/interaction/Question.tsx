@@ -48,9 +48,29 @@ export const Question: (props: {
     setValue(q.prompt ? q.prompt + " " : "");
   });
 
+  const formatQuestionText = (txt: string): string => {
+    const trimmed = (txt || "").trim();
+    if (!trimmed) return "";
+    if (trimmed.includes("?")) return trimmed;
+    const lastChar = trimmed[trimmed.length - 1];
+    if (lastChar === "." || lastChar === "!" || lastChar === "…") {
+      return trimmed;
+    }
+    return trimmed + "?";
+  };
+
+  const normalizeAnswerText = (txt: string): string =>
+    (txt || "").replace(/\s+/g, " ").trim();
+
   const submitAnswer = async (answerTxt: string) => {
     console.log("Question: submitAnswer called with:", answerTxt);
     const q = getQuestion();
+    const normalizedVal = normalizeAnswerText(answerTxt);
+    const normalizedPrompt = q.prompt ? normalizeAnswerText(q.prompt) : "";
+    const remainderWhenPrefilled =
+      normalizedPrompt && normalizedVal.startsWith(normalizedPrompt)
+        ? normalizedVal.slice(normalizedPrompt.length).trim()
+        : normalizedVal;
     const answer = {
       questionCategoryId: q.categoryId,
       qid: q.id,
@@ -59,8 +79,12 @@ export const Question: (props: {
       id: nanoid(),
     };
 
-    if (!answer.val || (answer.val as string).length < 2) {
+    if (!normalizedVal || normalizedVal.length < 2) {
       console.log("Question: answer too short, returning");
+      return;
+    }
+    if (normalizedPrompt && remainderWhenPrefilled.length < 2) {
+      console.log("Question: answer equals prompt only, returning");
       return;
     }
     if (!q.isDontSaveAnswer) {
@@ -106,7 +130,7 @@ export const Question: (props: {
             }
           }}
         >
-          <span>{getQuestion().t}?</span>
+          <span>{formatQuestionText(getQuestion().t)}</span>
         </div>
 
         <div
