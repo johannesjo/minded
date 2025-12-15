@@ -48,4 +48,6 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Self-assessment is beneficial  as it encourages  to reflect, leading to increased self-awareness and understanding. This can help identify areas of improvement, manage stress, and promote healthier lifestyle choices, contributing to overall physical and mental well-being.",
   [QuestionCategoryId.XAppUsageHappiness]:
     "Monitoring your app usage behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your digital habits, leading to better productivity and time management.",
+  [QuestionCategoryId.XEmotionLabeling]:
+    "Labeling your emotions helps you develop emotional awareness and regulation skills. By identifying what you feel and where you feel it in your body, you can better understand your emotional patterns and respond to difficult feelings with greater clarity and self-compassion.",
 };
