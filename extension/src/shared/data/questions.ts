@@ -659,6 +659,10 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.XSelfAssessment]: {
     dashboardTxt: "Recently...",
   },
+  [QuestionCategoryId.XEmotionLabeling]: {
+    dashboardTxt: "Your Emotions Today",
+    isTodayOnlyCategory: true,
+  },
 };
 
 export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
