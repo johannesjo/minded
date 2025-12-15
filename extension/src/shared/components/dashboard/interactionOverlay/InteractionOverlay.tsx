@@ -17,6 +17,7 @@ export const InteractionOverlay: (props: {
   const handleHideWithFade = () => {
     const { promise } = fadeOut(wrapperEl, 800); // 0.8 second fade
     promise.then(() => {
+      props.onPossibleNewData(); // Always refresh dashboard when closing
       props.onHideInteraction();
     });
   };
