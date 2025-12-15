@@ -438,11 +438,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
             >
               <div class="sun-instructions txtSmaller">
-                <p>Tap the sun {SUN_TAP_THRESHOLD} times to continue.</p>
-                {getSunHintStep() >= 1 && <p>Fling it away to let go.</p>}
-                {getSunHintStep() >= 2 && (
-                  <p>Drag it down to ground yourself.</p>
-                )}
+                <p class="sun-instructions-line is-visible">
+                  Tap the sun {SUN_TAP_THRESHOLD} times to continue.
+                </p>
+                <p
+                  class="sun-instructions-line"
+                  classList={{ "is-visible": getSunHintStep() >= 1 }}
+                >
+                  Fling it away to let go.
+                </p>
+                <p
+                  class="sun-instructions-line"
+                  classList={{ "is-visible": getSunHintStep() >= 2 }}
+                >
+                  Drag it down to ground yourself.
+                </p>
               </div>
             </div>
           )}

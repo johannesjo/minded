@@ -141,10 +141,21 @@
   text-align: center;
   pointer-events: none;
 
-  p {
+  .sun-instructions-line {
     margin: 0.5em 0;
     color: var(--c-fg-full-emphasis);
-    opacity: 0.9;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 320ms ease-out,
+      transform 320ms ease-out;
+
+    &.is-visible {
+      visibility: visible;
+      opacity: 0.9;
+      transform: translateY(0);
+    }
   }
 }
 
