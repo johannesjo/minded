@@ -22,6 +22,8 @@ import java.time.Instant
 val SMALL_MSG_CYCLE_DURATION = 240
 val REQUESTION_CYCLE_DURATION_IN_S = SMALL_MSG_CYCLE_DURATION * 10
 
+private const val REVALIDATION_GRACE_PERIOD_MS = 3000L
+
 @Suppress("DEPRECATION")
 class LittleSunWindow(
     private val ctrlSvc: OverlayControllerService,
@@ -31,6 +33,7 @@ class LittleSunWindow(
     private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
     override val logTag = javaClass.simpleName
     private var initialTime = 0
+    private var windowShownAt = 0L
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
@@ -104,20 +107,25 @@ class LittleSunWindow(
             // via its broadcast receiver. We just skip updates when screen is off.
             if (powerManager.isScreenOn && powerManager.isInteractive) {
                 // Normal operation - screen is on and interactive
-                // Re-validate that user is still in a blocked app
-                val foregroundResult = getForegroundAppReliable(ctrlSvc)
-                when (foregroundResult) {
-                    is ForegroundAppResult.Success -> {
-                        if (!ctrlSvc.isBlockedPackage(foregroundResult.packageName)) {
-                            Log.d(logTag, "Re-validation: user left blocked app (now in ${foregroundResult.packageName}), hiding overlay")
-                            hideWindow()
-                            return
+                // Re-validate that user is still in a blocked app (with grace period)
+                val timeSinceShown = System.currentTimeMillis() - windowShownAt
+                if (timeSinceShown >= REVALIDATION_GRACE_PERIOD_MS) {
+                    val foregroundResult = getForegroundAppReliable(ctrlSvc)
+                    when (foregroundResult) {
+                        is ForegroundAppResult.Success -> {
+                            if (!ctrlSvc.isBlockedPackage(foregroundResult.packageName)) {
+                                Log.d(logTag, "Re-validation: user left blocked app (now in ${foregroundResult.packageName}), hiding overlay")
+                                hideWindow()
+                                return
+                            }
+                        }
+                        // Continue timer for Stale/Error/NoPermission - don't hide on uncertain data
+                        else -> {
+                            Log.v(logTag, "Re-validation: uncertain result ($foregroundResult), continuing")
                         }
                     }
-                    // Continue timer for Stale/Error/NoPermission - don't hide on uncertain data
-                    else -> {
-                        Log.v(logTag, "Re-validation: uncertain result ($foregroundResult), continuing")
-                    }
+                } else {
+                    Log.v(logTag, "Re-validation: skipping during grace period (${timeSinceShown}ms < ${REVALIDATION_GRACE_PERIOD_MS}ms)")
                 }
             } else {
                 // Screen off or not interactive - skip this tick but keep timer running
@@ -134,6 +142,7 @@ class LittleSunWindow(
         super.showWindow()
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
+        windowShownAt = System.currentTimeMillis()
         Log.d(logTag, "showWindow() completed, window=${window != null}")
     }
 
