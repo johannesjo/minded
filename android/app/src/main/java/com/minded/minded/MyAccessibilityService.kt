@@ -19,6 +19,7 @@ import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
+import java.util.Collections
 
 
 /**
@@ -63,7 +64,7 @@ class MyAccessibilityService : AccessibilityService() {
         val eventType: String = "window_state_changed",
         val className: String = ""
     )
-    private val transitionHistory = mutableListOf<AppTransition>()
+    private val transitionHistory = Collections.synchronizedList(mutableListOf<AppTransition>())
     private var lastUserApp: String? = null
 
     // Device manufacturer info
@@ -344,21 +345,49 @@ class MyAccessibilityService : AccessibilityService() {
         
         // Apps that should NEVER be considered system packages (even if pre-installed)
         val userAppsWhitelist = setOf(
+            // YouTube variants
             "com.google.android.youtube",
+            "com.google.android.youtube.tv",
+            "com.google.android.youtube.tvkids",
+            "com.google.android.youtube.kids",
+            "com.google.android.apps.youtube.music",
+            "com.google.android.apps.youtube.creator",
+
+            // Chrome variants
             "com.android.chrome",
             "com.chrome.canary",
             "com.chrome.dev",
             "com.chrome.beta",
+
+            // Other Chromium-based browsers
+            "com.microsoft.emmx",           // Edge
+            "com.brave.browser",            // Brave
+            "com.opera.browser",            // Opera
+            "com.opera.mini.native",        // Opera Mini
+            "org.chromium.chrome",          // Chromium
+            "com.sec.android.app.sbrowser", // Samsung Internet
+            "com.UCMobile.intl",            // UC Browser
+            "com.vivaldi.browser",          // Vivaldi
+
+            // Social media
             "com.facebook.katana",
-            "com.facebook.orca",
+            "com.facebook.orca",            // Messenger
+            "com.facebook.lite",
             "com.instagram.android",
+            "com.instagram.lite",
             "com.whatsapp",
+            "com.whatsapp.w4b",             // WhatsApp Business
             "com.twitter.android",
+            "com.twitter.android.lite",
             "com.snapchat.android",
-            "com.zhiliaoapp.musically", // TikTok
-            "com.ss.android.ugc.trill", // TikTok
+            "com.zhiliaoapp.musically",     // TikTok
+            "com.ss.android.ugc.trill",     // TikTok
+            "com.ss.android.ugc.aweme",     // TikTok (China)
             "com.reddit.frontpage",
-            "com.discord"
+            "com.discord",
+            "com.linkedin.android",
+            "com.pinterest",
+            "com.tumblr"
         )
         
         if (userAppsWhitelist.contains(packageName)) {

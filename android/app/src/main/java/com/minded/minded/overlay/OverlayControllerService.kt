@@ -116,21 +116,26 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         // Check if user is still on a blocked app
-        val foregroundResult = getForegroundAppReliable(this, lookbackMs = 5000, staleThresholdMs = 3000)
-        val currentForegroundApp = when (foregroundResult) {
+        // Only trust fresh data (Success) - stale data might be from before screen off
+        val foregroundResult = getForegroundAppReliable(this, lookbackMs = 5000, staleThresholdMs = 2000)
+        val freshForegroundApp = when (foregroundResult) {
             is ForegroundAppResult.Success -> foregroundResult.packageName
-            is ForegroundAppResult.Stale -> foregroundResult.packageName
+            is ForegroundAppResult.Stale -> {
+                Log.d(logTag, "restoreOverlayAfterUnlock: UsageStats data is stale (${foregroundResult.ageMs}ms), ignoring")
+                null
+            }
             else -> null
         }
 
-        Log.d(logTag, "restoreOverlayAfterUnlock: foreground=$currentForegroundApp, savedApp=$savedApp, savedOverlay=$savedOverlay")
+        Log.d(logTag, "restoreOverlayAfterUnlock: freshForeground=$freshForegroundApp, savedApp=$savedApp, savedOverlay=$savedOverlay")
 
         // Determine which app to use for restoration
         val appToRestore = when {
-            // If we can detect the foreground app and it's blocked, use it
-            currentForegroundApp != null && isBlockedPackage(currentForegroundApp) -> currentForegroundApp
-            // If foreground detection failed but saved app was blocked, use saved app
-            // This handles cases where UsageStats hasn't updated yet
+            // If we have fresh foreground data and it's blocked, use it
+            freshForegroundApp != null && isBlockedPackage(freshForegroundApp) -> freshForegroundApp
+            // If we have fresh foreground data but it's NOT blocked, user switched apps
+            freshForegroundApp != null && !isBlockedPackage(freshForegroundApp) -> null
+            // If no fresh data, fall back to saved app if it was blocked
             isBlockedPackage(savedApp) -> savedApp
             else -> null
         }
