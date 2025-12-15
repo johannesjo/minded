@@ -146,15 +146,11 @@
     color: var(--c-fg-full-emphasis);
     visibility: hidden;
     opacity: 0;
-    transform: translateY(6px);
-    transition:
-      opacity 320ms ease-out,
-      transform 320ms ease-out;
+    transition: opacity 320ms ease-out;
 
     &.is-visible {
       visibility: visible;
       opacity: 0.9;
-      transform: translateY(0);
     }
   }
 }
