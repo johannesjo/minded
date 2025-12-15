@@ -4,11 +4,15 @@ package com.minded.minded.detection
  * Represents confidence levels for app detection decisions.
  *
  * The overall confidence is calculated as a weighted average of multiple factors:
- * - patternMatch: How well the transition matches known patterns (30%)
+ * - patternMatch: How well the transition matches known patterns (45%)
  * - sourceReliability: How reliable the detection source is (25%)
- * - crossValidation: Whether backup detection agrees (25%)
- * - historicalMatch: Whether this matches recent history (10%)
- * - timelineCoherence: Whether timing makes sense (10%)
+ * - crossValidation: Whether backup detection agrees (15%)
+ * - historicalMatch: Whether this matches recent history (8%)
+ * - timelineCoherence: Whether timing makes sense (7%)
+ *
+ * Pattern match is weighted highest because the sophisticated pattern recognition
+ * system explicitly filters false positives. Cross-validation is weighted lower
+ * because it's not always available (AccessibilityService-only detections).
  */
 data class DetectionConfidence(
     val patternMatch: Float = 0f,
@@ -21,11 +25,11 @@ data class DetectionConfidence(
      * Overall confidence score (0.0 - 1.0)
      */
     val overall: Float
-        get() = (patternMatch * 0.30f +
+        get() = (patternMatch * 0.45f +
                 sourceReliability * 0.25f +
-                crossValidation * 0.25f +
-                historicalMatch * 0.10f +
-                timelineCoherence * 0.10f).coerceIn(0f, 1f)
+                crossValidation * 0.15f +
+                historicalMatch * 0.08f +
+                timelineCoherence * 0.07f).coerceIn(0f, 1f)
 
     /**
      * Returns the confidence level category.
@@ -39,9 +43,9 @@ data class DetectionConfidence(
         }
 
     companion object {
-        const val HIGH_THRESHOLD = 0.85f
-        const val MEDIUM_THRESHOLD = 0.65f
-        const val LOW_THRESHOLD = 0.45f
+        const val HIGH_THRESHOLD = 0.80f
+        const val MEDIUM_THRESHOLD = 0.60f
+        const val LOW_THRESHOLD = 0.40f
 
         /**
          * Creates a high-confidence result (AccessibilityService + UsageStats agree)
@@ -55,12 +59,14 @@ data class DetectionConfidence(
         )
 
         /**
-         * Creates a confidence result for AccessibilityService-only detection
+         * Creates a confidence result for AccessibilityService-only detection.
+         * Cross-validation is set to 0.7 (neutral) since we can't validate,
+         * but shouldn't be penalized for it.
          */
         fun accessibilityOnly(patternMatch: Float): DetectionConfidence = DetectionConfidence(
             patternMatch = patternMatch,
             sourceReliability = 0.95f,
-            crossValidation = 0.5f, // No validation
+            crossValidation = 0.70f, // Neutral - no validation available
             historicalMatch = 0.80f,
             timelineCoherence = 0.85f
         )
