@@ -417,7 +417,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
 
-    private fun isBlockedPackage(packageName: String): Boolean {
+    internal fun isBlockedPackage(packageName: String): Boolean {
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "isBlockedPackage() - checking $packageName against blocked apps: $blockedApps")
         
