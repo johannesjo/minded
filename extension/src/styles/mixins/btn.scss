@@ -190,3 +190,35 @@
     transform: scale(var(--btn-selected-scale));
   }
 }
+
+@mixin btnToggleSelectSmall() {
+  @include btnBase(36px);
+
+  & {
+    margin: 4px;
+    padding: 0 12px;
+    user-select: none;
+    text-transform: lowercase;
+    transition: 0.2s all;
+    background: var(--btn-bg-not-selected);
+    font-size: var(--fz-m);
+    font-weight: 300;
+    --extraClickArea: -4px;
+  }
+
+  @include onNonMobileScreens() {
+    margin: 6px;
+    --extraClickArea: -6px;
+  }
+
+  &:hover {
+    background: var(--btn-bg-selectable-hover);
+  }
+
+  &.isSelected {
+    background: var(--btn-bg-selected);
+    opacity: 1;
+    border-radius: 12px;
+    transform: scale(var(--btn-selected-scale));
+  }
+}

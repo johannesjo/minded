@@ -12,6 +12,7 @@ export enum DashboardGroupType {
   BrowsingBehaviorRating = "BrowsingBehaviorRating",
   AppUsageRating = "AppUsageRating",
   SelfAssessment = "SelfAssessment",
+  EmotionLabeling = "EmotionLabeling",
 }
 
 export interface DashboardGroupTxtQuestion {
@@ -62,6 +63,12 @@ export interface DashboardGroupSelAssessment {
   entries: SelfAssessmentEntryForDashboard[];
 }
 
+export interface DashboardGroupEmotionLabeling {
+  id: QuestionCategoryId.XEmotionLabeling;
+  type: DashboardGroupType.EmotionLabeling;
+  emotions: string[];
+}
+
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
   | DashboardGroupBrowsingBehaviorHappiness
@@ -70,4 +77,5 @@ export type DashboardGroup =
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
   | DashboardGroupSelAssessment
-  | DashboardGroupMood;
+  | DashboardGroupMood
+  | DashboardGroupEmotionLabeling;

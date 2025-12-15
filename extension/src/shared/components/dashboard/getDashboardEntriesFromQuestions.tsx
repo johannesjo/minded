@@ -3,6 +3,7 @@ import {
   DashboardGroup,
   DashboardGroupAppUsageHappiness,
   DashboardGroupBrowsingBehaviorHappiness,
+  DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
   DashboardGroupSelAssessment,
@@ -88,6 +89,15 @@ export const getDashboardEntriesFromQuestions = (
       type: DashboardGroupType.EnergyLvl,
       energyLvl: syncData.energyLvlVal,
     } as DashboardGroupEnergyLvl);
+    fixedEntriesIndexAndNr++;
+  }
+
+  if (isToday(syncData.emotionLabeling?.ts ?? 0) && syncData.emotionLabeling) {
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      id: QuestionCategoryId.XEmotionLabeling,
+      type: DashboardGroupType.EmotionLabeling,
+      emotions: syncData.emotionLabeling.emotions,
+    } as DashboardGroupEmotionLabeling);
     fixedEntriesIndexAndNr++;
   }
 

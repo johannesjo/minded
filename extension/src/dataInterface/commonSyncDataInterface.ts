@@ -134,5 +134,13 @@ export const saveSelfAssessment = async (
     },
   }));
 
+export const saveEmotionLabeling = (
+  emotions: string[],
+  bodyLocations: string[],
+): Promise<void> =>
+  updateSyncDataField(getSyncData, saveSyncData, () => ({
+    emotionLabeling: { ts: Date.now(), emotions, bodyLocations },
+  }));
+
 export const updateBlockedApps = (blockedApps: string[]): Promise<void> =>
   updateUserCfg({ blockedApps });

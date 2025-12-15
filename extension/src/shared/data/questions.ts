@@ -33,6 +33,7 @@ export enum QuestionCategoryId {
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
   XAppUsageHappiness = "XAppUsageHappiness",
   XSelfAssessment = "XSelfAssessment",
+  XEmotionLabeling = "XEmotionLabeling",
 
   // IDEAS
   // ---------
