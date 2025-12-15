@@ -78,6 +78,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     createSignal(false);
 
   let frameNr: number | undefined;
+  let fadeAnimationFrame: number | undefined;
+  let timeSelectionTimeout: number | undefined;
+  let successTimeout: number | undefined;
+  let fadeInAnimationFrame: number | undefined;
 
   createEffect(() => {
     if (getShowTimeSelection()) {
@@ -104,13 +108,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       setInteractionOpacity(opacity);
 
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        fadeAnimationFrame = requestAnimationFrame(animate);
       } else {
+        fadeAnimationFrame = undefined;
         onComplete();
       }
     };
 
-    requestAnimationFrame(animate);
+    fadeAnimationFrame = requestAnimationFrame(animate);
   };
 
   const handleSkip = () => {
@@ -141,7 +146,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     // After fade out completes, call native side
-    setTimeout(() => {
+    timeSelectionTimeout = window.setTimeout(() => {
+      timeSelectionTimeout = undefined;
       setShowTimeSelection(false);
       setInteractionOpacity(1);
       setShowSunInstructions(false);
@@ -180,10 +186,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         props.onSetAnswer(answerOrData.val.toString());
       }
 
-      setTimeout(() => {
+      successTimeout = window.setTimeout(() => {
+        successTimeout = undefined;
         setShowSunInstructions(true);
         // Use a small delay to ensure the DOM has updated with opacity 0 before starting the fade in
-        requestAnimationFrame(() => {
+        fadeInAnimationFrame = requestAnimationFrame(() => {
           // Manually animate fade in since runFadeAnimation is for fade out
           const startTime = Date.now();
           const duration = 2000;
@@ -195,11 +202,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             setInteractionOpacity(progress);
 
             if (progress < 1) {
-              requestAnimationFrame(animateFadeIn);
+              fadeInAnimationFrame = requestAnimationFrame(animateFadeIn);
+            } else {
+              fadeInAnimationFrame = undefined;
             }
           };
 
-          requestAnimationFrame(animateFadeIn);
+          fadeInAnimationFrame = requestAnimationFrame(animateFadeIn);
         });
       }, 1000);
     });
@@ -288,6 +297,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       "dragProgress",
       handleDragProgress as EventListener,
     );
+
+    // Clean up any pending animation frames and timeouts
+    if (fadeAnimationFrame) {
+      cancelAnimationFrame(fadeAnimationFrame);
+    }
+    if (fadeInAnimationFrame) {
+      cancelAnimationFrame(fadeInAnimationFrame);
+    }
+    if (timeSelectionTimeout) {
+      clearTimeout(timeSelectionTimeout);
+    }
+    if (successTimeout) {
+      clearTimeout(successTimeout);
+    }
   });
 
   createEffect(() => {

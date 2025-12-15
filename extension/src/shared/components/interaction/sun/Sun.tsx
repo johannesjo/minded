@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount } from "solid-js";
+import { Component, createSignal, onCleanup, onMount } from "solid-js";
 import "./Sun.scss";
 import {
   DRAG_THRESHOLD_PX,
@@ -56,6 +56,12 @@ export const Sun: Component<SunProps> = (props) => {
   let velocitySamples: VelocitySample[] = [];
   let longPressTimer: number | null = null;
 
+  // Store event handler references for cleanup
+  let touchStartHandler: EventListener | null = null;
+  let touchMoveHandler: EventListener | null = null;
+  let touchEndHandler: EventListener | null = null;
+  let mouseDownHandler: EventListener | null = null;
+
   onMount(() => {
     // Pre-initialize transform to eliminate initial jaggedness
     // This forces the browser to create the transform matrix early
@@ -68,18 +74,34 @@ export const Sun: Component<SunProps> = (props) => {
     }
 
     setupDragHandlers();
+  });
 
-    return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
+  onCleanup(() => {
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+    }
+    if (tapTimer) {
+      clearTimeout(tapTimer);
+    }
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+    }
+
+    // Clean up event listeners
+    if (sunEl) {
+      if (touchStartHandler) {
+        sunEl.removeEventListener("touchstart", touchStartHandler);
       }
-      if (tapTimer) {
-        clearTimeout(tapTimer);
+      if (touchMoveHandler) {
+        sunEl.removeEventListener("touchmove", touchMoveHandler);
       }
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
+      if (touchEndHandler) {
+        sunEl.removeEventListener("touchend", touchEndHandler);
       }
-    };
+      if (mouseDownHandler) {
+        sunEl.removeEventListener("mousedown", mouseDownHandler);
+      }
+    }
   });
 
   const setupDragHandlers = () => {
@@ -530,27 +552,28 @@ export const Sun: Component<SunProps> = (props) => {
       animate();
     };
 
-    sunEl.addEventListener("touchstart", (e) => {
+    // Store handlers for cleanup
+    touchStartHandler = ((e: TouchEvent) => {
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
       handleStart(touch.clientX, touch.clientY);
-    });
+    }) as EventListener;
 
-    sunEl.addEventListener("touchmove", (e) => {
+    touchMoveHandler = ((e: TouchEvent) => {
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
       handleMove(touch.clientX, touch.clientY);
-    });
+    }) as EventListener;
 
-    sunEl.addEventListener("touchend", (e) => {
+    touchEndHandler = ((e: TouchEvent) => {
       e.preventDefault();
       e.stopPropagation();
       handleEnd();
-    });
+    }) as EventListener;
 
-    sunEl.addEventListener("mousedown", (e) => {
+    mouseDownHandler = ((e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       handleStart(e.clientX, e.clientY);
@@ -572,7 +595,12 @@ export const Sun: Component<SunProps> = (props) => {
         handleMouseMove as EventListener,
       );
       eventTarget.addEventListener("mouseup", handleMouseUp as EventListener);
-    });
+    }) as EventListener;
+
+    sunEl.addEventListener("touchstart", touchStartHandler);
+    sunEl.addEventListener("touchmove", touchMoveHandler);
+    sunEl.addEventListener("touchend", touchEndHandler);
+    sunEl.addEventListener("mousedown", mouseDownHandler);
   };
 
   const sunSize = getSunSize(window.innerWidth);

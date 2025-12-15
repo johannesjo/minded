@@ -35,18 +35,25 @@ export const InteractionWeb: (props: {
   let wrapperEl: HTMLDivElement = undefined!;
 
   onMount(async () => {
-    // give a moment time for rendering
-    setTimeout(() => {
-      stopAllVideos();
-    }, 1000);
+    // Stop videos multiple times to catch delayed autoplay
+    setTimeout(() => stopAllVideos(), 1000);
+    setTimeout(() => stopAllVideos(), 2000);
+    setTimeout(() => stopAllVideos(), 5000);
 
-    setTimeout(() => {
-      stopAllVideos();
-    }, 2000);
+    // If there's already an active conscious intent session, start in Little Sun mode
+    const syncData = await getSyncData();
+    if (
+      syncData.activeTimer?.endTS &&
+      Date.now() < syncData.activeTimer.endTS
+    ) {
+      setIsShowLittleSun(true);
+      return;
+    }
 
-    setTimeout(() => {
-      stopAllVideos();
-    }, 5000);
+    const data = await loadDataForHost(props.host);
+    if (data?.sessionEndTS && Date.now() < data.sessionEndTS) {
+      setIsShowLittleSun(true);
+    }
   });
 
   onCleanup(() => {
@@ -97,23 +104,6 @@ export const InteractionWeb: (props: {
     setIsShowLittleSun(true);
   };
 
-  onMount(async () => {
-    // If there's already an active conscious intent session, start in Little Sun mode
-    const syncData = await getSyncData();
-    if (
-      syncData.activeTimer?.endTS &&
-      Date.now() < syncData.activeTimer.endTS
-    ) {
-      setIsShowLittleSun(true);
-      return;
-    }
-
-    const data = await loadDataForHost(props.host);
-    if (data?.sessionEndTS && Date.now() < data.sessionEndTS) {
-      setIsShowLittleSun(true);
-    }
-  });
-
   return (
     <>
       {getIsShowLittleSun() ? (
@@ -154,6 +144,7 @@ export const InteractionWeb: (props: {
                 console.log(
                   "InteractionWeb: onSkip called, showing little sun",
                 );
+                countSunTap();
                 setIsShowLittleSun(true);
               }}
               onUpdateQuestion={(question) => {
