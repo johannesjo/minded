@@ -13,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
+import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
 
 //val SMALL_MSG_CYCLE_DURATION = 6
@@ -102,6 +104,21 @@ class LittleSunWindow(
             // via its broadcast receiver. We just skip updates when screen is off.
             if (powerManager.isScreenOn && powerManager.isInteractive) {
                 // Normal operation - screen is on and interactive
+                // Re-validate that user is still in a blocked app
+                val foregroundResult = getForegroundAppReliable(ctrlSvc)
+                when (foregroundResult) {
+                    is ForegroundAppResult.Success -> {
+                        if (!ctrlSvc.isBlockedPackage(foregroundResult.packageName)) {
+                            Log.d(logTag, "Re-validation: user left blocked app (now in ${foregroundResult.packageName}), hiding overlay")
+                            hideWindow()
+                            return
+                        }
+                    }
+                    // Continue timer for Stale/Error/NoPermission - don't hide on uncertain data
+                    else -> {
+                        Log.v(logTag, "Re-validation: uncertain result ($foregroundResult), continuing")
+                    }
+                }
             } else {
                 // Screen off or not interactive - skip this tick but keep timer running
                 Log.v(logTag, "Screen off/not interactive, skipping timer tick")
