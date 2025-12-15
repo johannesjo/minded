@@ -15,6 +15,7 @@ import {
 import {
   updateSyncData,
   getSyncData,
+  countSunTap,
 } from "@src/dataInterface/commonSyncDataInterface";
 
 // NOTE: val also needs to be set in css
@@ -166,6 +167,7 @@ export const InteractionWeb: (props: {
                 console.log(
                   "InteractionWeb: onDragComplete called, showing little sun",
                 );
+                countSunTap();
                 setIsShowLittleSun(true);
               }}
               onSetSessionLimit={setSessionLimit}

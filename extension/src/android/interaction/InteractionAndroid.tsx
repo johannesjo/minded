@@ -5,6 +5,7 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
+import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {
@@ -110,7 +111,7 @@ const InteractionAndroid = () => {
         onAfterInteractionFadeout={() => showLittleSunAfter()}
         onInteractionSubmitted={() => {
           // Called when user completes the interaction (answers question and drags sun)
-
+          countSunTap();
           console.log("Interaction completed on Android");
         }}
         onSkip={onSkip}
