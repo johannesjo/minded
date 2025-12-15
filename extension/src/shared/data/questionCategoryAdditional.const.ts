@@ -4,27 +4,27 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [key in QuestionCategoryId]: string;
 } = {
   [QuestionCategoryId.HealthierBrowsingHabits]:
-    "Understanding and improving your browsing habits can significantly enhance your productivity and mental health. Spending time online wisely can prevent unnecessary stress and distractions, allowing you to focus on tasks that truly matter.",
+    "Improving your browsing habits can help you stay focused and reduce distractions. Being more intentional with your time online can support your productivity and well-being.",
   [QuestionCategoryId.HealthierAppUsage]:
-    "Understanding and improving your habits when using apps on your phone can significantly enhance your productivity and mental health. Spending your time more mindfully can prevent unnecessary stress and distractions, allowing you to focus on tasks that truly matter.",
+    "Improving your app-usage habits can help you stay focused and reduce distractions. Being more intentional with your phone time can support your productivity and well-being.",
   [QuestionCategoryId.PersonalResources]:
-    "Recognizing your personal resources, such as skills and strengths, can boost your self-esteem and confidence. It can also help you leverage these resources to overcome challenges and achieve your goals.",
+    "Recognizing your skills and strengths can support confidence and help you draw on them when facing challenges or working toward goals.",
   [QuestionCategoryId.TodayILearned]:
-    "Reflecting on what you've learned each day promotes continuous learning and intellectual growth. It can also enhance your memory and cognitive skills.",
+    "Reflecting on what you learned each day supports continuous growth and helps reinforce new insights and skills.",
   [QuestionCategoryId.RefocusHelperToday]:
-    "Having a clear focus each day can improve your productivity and sense of accomplishment. It helps you prioritize tasks and manage your time effectively.",
+    "Choosing a clear focus for the day can help you prioritize, manage your time, and feel more accomplished.",
   [QuestionCategoryId.Motivation]:
-    "Understanding what motivates you can drive you to take action and persist in the face of difficulties. It's crucial for achieving your goals and maintaining your mental well-being.",
+    "Understanding what motivates you can help you start and keep going when things get hard, which supports progress toward your goals.",
   [QuestionCategoryId.Gratitude]:
-    "Practicing gratitude can significantly improve your mental health. It helps you focus on positive aspects of your life, enhancing your happiness and reducing stress.",
+    "Practicing gratitude can support well-being by helping you notice positives, which may boost mood and reduce stress.",
   [QuestionCategoryId.HelpfulTools]:
     "Identifying tools that can help you work more efficiently can save you time and reduce stress. It can also enhance your skills and productivity.",
   [QuestionCategoryId.CalmingThoughts]:
-    "Cultivating calming thoughts can help manage stress and anxiety. It promotes relaxation and contributes to better mental and physical health.",
+    "Cultivating calming thoughts can help you manage stress and anxiety and support relaxation.",
   [QuestionCategoryId.PositiveThoughts]:
-    "Fostering positive thoughts can improve your mood and outlook on life. It can also reduce the likelihood of experiencing stress and depression.",
+    "Fostering helpful, realistic thoughts can support your mood and resilience and make stress feel more manageable.",
   [QuestionCategoryId.GoodToday]:
-    "Reflecting on the good aspects of your day can enhance your mood and overall mental health. It helps you appreciate the positive moments, no matter how small they may be.",
+    "Reflecting on the good aspects of your day can lift your mood and support well-being. It helps you appreciate positive moments, no matter how small they may be.",
   [QuestionCategoryId.GoodPlans]:
     "Making good plans can provide a sense of direction and reduce anxiety about the future. It can also increase your motivation to take action towards your goals.",
   [QuestionCategoryId.GoodPlansToday]:
@@ -34,18 +34,18 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.UnderstandingProcrastination]:
     "Understanding why you procrastinate can help you develop strategies to manage it. This can improve your productivity and reduce feelings of guilt and stress associated with procrastination.",
   [QuestionCategoryId.SelfDiscovery]:
-    "Self-discovery is crucial for understanding your needs, desires, and motivations. It can lead to better decision-making and improved mental health.",
+    "Self-discovery helps you understand your needs, desires, and motivations. It can support better decision-making and overall well-being.",
   [QuestionCategoryId.Insomnia]:
     "Understanding and addressing insomnia is crucial for your physical health and mental well-being. Good sleep is essential for cognitive function, mood regulation, and overall health.",
   [QuestionCategoryId.XEnergyLevelToday]:
-    "Monitoring your personal energy level is beneficial as it allows you to understand your body's natural rhythms and optimize your productivity. Additionally, it can help you recognize factors that drain your energy, enabling you to make necessary lifestyle adjustments.",
+    "Tracking your energy level can help you notice patterns (sleep, workload, habits) and plan demanding tasks for times when you tend to feel best.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:
     "Monitoring your browsing behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your online habits, leading to better productivity and time management.",
   // NO save questions
   [QuestionCategoryId.XMoodCheckin]:
-    "Mood tracking can be beneficial as it provides insights into emotional patterns and triggers, helping you better manage your mental health. By understanding your mood fluctuations, you can implement strategies to enhance positive emotions and mitigate negative ones.",
+    "Mood tracking can help you notice emotional patterns and triggers. Over time, this can inform coping strategies and helpful changes.",
   [QuestionCategoryId.XSelfAssessment]:
-    "Self-assessment is beneficial  as it encourages  to reflect, leading to increased self-awareness and understanding. This can help identify areas of improvement, manage stress, and promote healthier lifestyle choices, contributing to overall physical and mental well-being.",
+    "Self-assessment can help you reflect and build self-awareness. Over time, this can highlight areas to adjust, support stress management, and encourage healthier choices.",
   [QuestionCategoryId.XAppUsageHappiness]:
     "Monitoring your app usage behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your digital habits, leading to better productivity and time management.",
   [QuestionCategoryId.XEmotionLabeling]:
