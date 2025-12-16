@@ -156,10 +156,9 @@ export const InteractionWeb: (props: {
               }}
               onDragComplete={() => {
                 console.log(
-                  "InteractionWeb: onDragComplete called, showing little sun",
+                  "InteractionWeb: onDragComplete called, closing tab",
                 );
-                countSunTap();
-                setIsShowLittleSun(true);
+                closeTab();
               }}
               onSetSessionLimit={setSessionLimit}
             />
