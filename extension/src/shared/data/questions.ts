@@ -191,7 +191,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.WhyReduceBrowsing]: {
     dashboardTxt: "Why I Want to Change",
-    frequencyModifier: 1,
+    frequencyModifier: 2,
     limitTo: ["BrowserExtension"],
     questions: [
       {
@@ -223,7 +223,7 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.WhyReduceAppUsage]: {
     dashboardTxt: "Why I Want to Change",
-    frequencyModifier: 1,
+    frequencyModifier: 2,
     limitTo: ["MobileApp"],
     questions: [
       {
