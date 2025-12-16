@@ -116,6 +116,7 @@ export const InteractionWeb: (props: {
               setQuestion(undefined);
               stopAllVideos();
             }}
+            onTap={() => closeTab()}
           />
         </div>
       ) : (
