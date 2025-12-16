@@ -439,13 +439,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             >
               <div class="sun-instructions txtSmaller">
                 <p class="sun-instructions-line is-visible">
-                  Fling it away to let go.
+                  Fling the sun away to let go.
                 </p>
                 <p
                   class="sun-instructions-line"
                   classList={{ "is-visible": getSunHintStep() >= 1 }}
                 >
-                  Drag it down to ground yourself.
+                  Drag the sun down to ground yourself.
                 </p>
                 <p
                   class="sun-instructions-line"
