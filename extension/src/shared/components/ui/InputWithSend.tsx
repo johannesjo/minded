@@ -11,7 +11,6 @@ export const InputWithSend = (props: {
   maxLength?: number;
   onSubmit: (val: string) => Promise<void>;
   onCancelCountdown?: () => void;
-  onEscape: () => void;
 }): JSX.Element => {
   let inpEl: HTMLTextAreaElement;
   let t0: NodeJS.Timeout | undefined;
@@ -66,7 +65,8 @@ export const InputWithSend = (props: {
       ev.preventDefault();
       onSubmit((ev.target as HTMLTextAreaElement).value);
     } else if (ev.key === "Escape") {
-      props.onEscape();
+      // Just blur the input instead of skipping - input stays visible
+      inpEl.blur();
     } else if (ev.key !== "Control") {
       props.onCancelCountdown?.();
     }
