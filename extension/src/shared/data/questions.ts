@@ -6,6 +6,8 @@ import { QID } from "@src/shared/data/questionId";
 export enum QuestionCategoryId {
   HealthierBrowsingHabits = "HealthierBrowsingHabits",
   HealthierAppUsage = "HealthierAppUsage",
+  WhyReduceBrowsing = "WhyReduceBrowsing",
+  WhyReduceAppUsage = "WhyReduceAppUsage",
   Motivation = "Motivation",
   PersonalResources = "PersonalResources",
   RefocusHelperToday = "RefocusHelperToday",
@@ -184,6 +186,70 @@ export const QUESTION_CATEGORIES: {
         prompt: "I want to",
         isDontSaveAnswer: true,
         isSkipOnDashboard: true,
+      },
+    ],
+  },
+  [QuestionCategoryId.WhyReduceBrowsing]: {
+    dashboardTxt: "Why I Want to Change",
+    frequencyModifier: 1,
+    limitTo: ["BrowserExtension"],
+    questions: [
+      {
+        id: QID.WRB1,
+        t: "Why do you want to spend less time on these websites?",
+        prompt: "I want to spend less time online because",
+      },
+      {
+        id: QID.WRB2,
+        t: "What would you rather be doing instead of browsing?",
+        prompt: "Instead, I'd rather",
+      },
+      {
+        id: QID.WRB3,
+        t: "What do you miss out on when you browse too much?",
+        prompt: "I miss out on",
+      },
+      {
+        id: QID.WRB4,
+        t: "How would reducing your browsing time improve your life?",
+        prompt: "My life would improve by",
+      },
+      {
+        id: QID.WRB5,
+        t: "What matters more to you than these websites?",
+        prompt: "What matters more is",
+      },
+    ],
+  },
+  [QuestionCategoryId.WhyReduceAppUsage]: {
+    dashboardTxt: "Why I Want to Change",
+    frequencyModifier: 1,
+    limitTo: ["MobileApp"],
+    questions: [
+      {
+        id: QID.WRA1,
+        t: "Why do you want to spend less time on these apps?",
+        prompt: "I want to spend less time on apps because",
+      },
+      {
+        id: QID.WRA2,
+        t: "What would you rather be doing instead of using these apps?",
+        prompt: "Instead, I'd rather",
+      },
+      {
+        id: QID.WRA3,
+        t: "What do you miss out on when you use these apps too much?",
+        prompt: "I miss out on",
+      },
+      {
+        id: QID.WRA4,
+        t: "How would reducing your app usage improve your life?",
+        prompt: "My life would improve by",
+      },
+      {
+        id: QID.WRA5,
+        t: "What matters more to you than these apps?",
+        prompt: "What matters more is",
       },
     ],
   },
@@ -672,6 +738,8 @@ export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoalForTheWeek,
   QuestionCategoryId.HealthierAppUsage,
   QuestionCategoryId.HealthierBrowsingHabits,
+  QuestionCategoryId.WhyReduceAppUsage,
+  QuestionCategoryId.WhyReduceBrowsing,
 ];
 
 export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [

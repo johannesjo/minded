@@ -6,13 +6,17 @@ import { Question } from "@src/shared/components/interaction/Question";
 import { AppUsageOrBrowsingBehavior } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/AppUsageOrBrowsingBehavior";
 import { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import { Answer, SyncData } from "@src/dataInterface/syncData";
-import { QuestionForPrompt } from "@src/shared/data/questions";
+import {
+  QuestionCategoryId,
+  QuestionForPrompt,
+} from "@src/shared/data/questions";
 import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
 import { EmotionLabeling } from "@src/shared/components/interaction/emotionLabeling/EmotionLabeling";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { getRndEntry } from "@src/util/getRndEntry";
+import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 
 // Get random advice once at module load
 const ADVICE = getRndEntry(ACTION_ADVICES);
@@ -107,6 +111,27 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           onSuccess={props.onSuccess}
           onSkip={props.onSkip}
         />
+      </Match>
+      <Match when={props.mode === "SHOW_REASON"}>
+        {(() => {
+          const reasonAnswers =
+            props.syncData?.answers.filter(
+              (a) =>
+                a.questionCategoryId ===
+                (IS_APP
+                  ? QuestionCategoryId.WhyReduceAppUsage
+                  : QuestionCategoryId.WhyReduceBrowsing),
+            ) ?? [];
+          const reason = getRndEntry(reasonAnswers);
+          return reason ? (
+            <div class="txtBig" style="pointer-events:none;">
+              <div style="opacity: 0.7; font-size: 0.8em; margin-bottom: 0.5em;">
+                Remember why you're here
+              </div>
+              <div style="font-style: italic;">"{reason.val}"</div>
+            </div>
+          ) : null;
+        })()}
       </Match>
       <Match when={props.mode === "QUESTION"}>
         {props.initialQuestion && (
