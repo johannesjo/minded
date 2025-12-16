@@ -168,6 +168,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   //   isWorkDayToday,
   // });
 
+  if (questionsForCategory.length === 0) {
+    return getRndQuestionConsideringMain(QUESTIONS_FOR_DEVICE);
+  }
   return getRndQuestionConsideringMain(questionsForCategory);
 };
 
@@ -211,7 +214,10 @@ const getRndQuestionConsideringMain = (
   questions: QuestionForPrompt[],
 ): QuestionForPrompt => {
   if (isMain()) {
-    return getRndEntry(questions.filter((q) => !q.isSkipOnDashboard));
+    const filtered = questions.filter((q) => !q.isSkipOnDashboard);
+    if (filtered.length > 0) {
+      return getRndEntry(filtered);
+    }
   }
   return getRndEntry(questions);
 };
