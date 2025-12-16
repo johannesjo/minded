@@ -7,6 +7,10 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Improving your browsing habits can help you stay focused and reduce distractions. Being more intentional with your time online can support your productivity and well-being.",
   [QuestionCategoryId.HealthierAppUsage]:
     "Improving your app-usage habits can help you stay focused and reduce distractions. Being more intentional with your phone time can support your productivity and well-being.",
+  [QuestionCategoryId.WhyReduceBrowsing]:
+    "Remembering why you want to change is powerful. When temptation strikes, recalling your personal reasons can strengthen your resolve and keep you aligned with your values.",
+  [QuestionCategoryId.WhyReduceAppUsage]:
+    "Remembering why you want to change is powerful. When temptation strikes, recalling your personal reasons can strengthen your resolve and keep you aligned with your values.",
   [QuestionCategoryId.PersonalResources]:
     "Recognizing your skills and strengths can support confidence and help you draw on them when facing challenges or working toward goals.",
   [QuestionCategoryId.TodayILearned]:

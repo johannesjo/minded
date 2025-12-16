@@ -7,6 +7,7 @@ import { hasHappenedInLastXDay, isToday } from "@src/util/isToday";
 import { isXIn1 } from "@src/util/isXIn1";
 import { IS_ANDROID, IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import { isMain } from "@src/shared/isMain.const";
+import { QuestionCategoryId } from "@src/shared/data/questions";
 
 const LAST_MOOD_CHECKIN_MIN_GAP = 2 * 60 * 60 * 1000;
 const TODAY_START_HOUR = 5;
@@ -22,7 +23,8 @@ export type InteractionMode =
   | "SET_ALTERNATIVE"
   | "MOOD_CHECKIN"
   | "SELF_ASSESSMENT"
-  | "EMOTION_LABELING";
+  | "EMOTION_LABELING"
+  | "SHOW_REASON";
 
 export const getInteractionMode = (syncData: SyncData): InteractionMode => {
   // return "EMOTION_LABELING";
@@ -70,6 +72,18 @@ export const getInteractionMode = (syncData: SyncData): InteractionMode => {
       return "SHOW_ALTERNATIVE";
     }
     return "SET_ALTERNATIVE";
+  }
+
+  // Show a saved "why" reason as a reminder
+  const reasonAnswers = syncData.answers.filter(
+    (a) =>
+      a.questionCategoryId ===
+      (IS_APP
+        ? QuestionCategoryId.WhyReduceAppUsage
+        : QuestionCategoryId.WhyReduceBrowsing),
+  );
+  if (reasonAnswers.length > 0 && isXIn1(1 / 15)) {
+    return "SHOW_REASON";
   }
 
   if (

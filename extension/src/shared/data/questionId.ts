@@ -21,6 +21,18 @@ export enum QID {
   HAU8 = "HAU8",
   HAU9 = "HAU9",
 
+  WRB1 = "WRB1",
+  WRB2 = "WRB2",
+  WRB3 = "WRB3",
+  WRB4 = "WRB4",
+  WRB5 = "WRB5",
+
+  WRA1 = "WRA1",
+  WRA2 = "WRA2",
+  WRA3 = "WRA3",
+  WRA4 = "WRA4",
+  WRA5 = "WRA5",
+
   PR1 = "PR1",
   PR2 = "PR2",
 
