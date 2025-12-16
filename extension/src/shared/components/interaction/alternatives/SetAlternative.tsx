@@ -35,7 +35,6 @@ export const SetAlternativeInteraction: (props: {
       <InputWithSend
         isAutoFocus={true}
         type={IS_WEB_EXT ? "url" : "text"}
-        onEscape={props.onSkip}
         onCancelCountdown={props.onCancelCountdown}
         maxLength={500}
         onSubmit={onSave}

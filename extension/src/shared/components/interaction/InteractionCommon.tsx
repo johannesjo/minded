@@ -51,6 +51,21 @@ interface InteractionCommonProps {
   isFromDashboard?: boolean;
 }
 
+/** Check if there's a focused input/textarea with modified content */
+const isActivelyEditing = (): boolean => {
+  const activeEl = document.activeElement;
+  if (
+    activeEl instanceof HTMLTextAreaElement ||
+    activeEl instanceof HTMLInputElement
+  ) {
+    const value = activeEl.value.trim();
+    const placeholder = activeEl.placeholder || "";
+    // Has content beyond just whitespace and not just the placeholder
+    return value.length > 0 && value !== placeholder;
+  }
+  return false;
+};
+
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
 
@@ -138,6 +153,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleSkip = () => {
     if (getIsSkipping()) return;
+    // Don't skip if user is actively editing an input
+    if (isActivelyEditing()) return;
     setIsSkipping(true);
 
     if (getShowSunInstructions()) {
@@ -249,6 +266,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     );
     frameNr = res.frameNr;
     res.promise.then(() => {
+      // Don't proceed if user is actively editing
+      if (isActivelyEditing()) {
+        cancelCountdown();
+        return;
+      }
       if (+props.wrapperEl.style.opacity < 0.1) {
         props.onAfterInteractionFadeout();
       }

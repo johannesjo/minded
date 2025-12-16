@@ -140,7 +140,6 @@ export const Question: (props: {
           onClick={props.onCancelCountdown}
         >
           <InputWithSend
-            onEscape={props.onSkip}
             onCancelCountdown={props.onCancelCountdown}
             value={getValue()}
             maxLength={500}
