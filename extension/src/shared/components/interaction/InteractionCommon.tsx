@@ -12,7 +12,10 @@ import {
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { fadeOut } from "@src/util/animation";
-import { getQuestionSmart } from "@src/util/getQuestionSmart";
+import {
+  getQuestionSmart,
+  getQuestionSemiSmart,
+} from "@src/util/getQuestionSmart";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
@@ -299,32 +302,41 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       setTimeout(() => initFadeOut(), ANIMATION_TIMING.delay.initFadeOut);
     }
 
-    getSyncData().then((syncData) => {
-      setSyncDataI(syncData);
-      setAnswers(syncData.answers);
+    getSyncData()
+      .then((syncData) => {
+        setSyncDataI(syncData);
+        setAnswers(syncData.answers);
 
-      // Initialize sound settings (default to enabled)
-      const soundEnabled = syncData.cfg.soundEnabled ?? true;
-      setSoundEnabled(soundEnabled);
-      if (soundEnabled) {
-        preloadSounds();
-      }
+        // Initialize sound settings (default to enabled)
+        const soundEnabled = syncData.cfg.soundEnabled ?? true;
+        setSoundEnabled(soundEnabled);
+        if (soundEnabled) {
+          preloadSounds();
+        }
 
-      if (props.questionForPrompt) {
-        setInitialQuestion(props.questionForPrompt);
+        if (props.questionForPrompt) {
+          setInitialQuestion(props.questionForPrompt);
+          setMode("QUESTION");
+        } else {
+          const question = getQuestionSmart(syncData.answers);
+          const mode = getInteractionMode(syncData);
+          setInitialQuestion(question);
+          setMode(mode);
+        }
+
+        setTimeout(() => {
+          setIsContentReady(true);
+          playInterventionSound();
+        }, ANIMATION_TIMING.delay.contentReady);
+      })
+      .catch((error) => {
+        console.error("InteractionCommon: Failed to load sync data", error);
+        // Fallback to QUESTION mode with a default question
+        const fallbackQuestion = getQuestionSemiSmart();
+        setInitialQuestion(fallbackQuestion);
         setMode("QUESTION");
-      } else {
-        const question = getQuestionSmart(syncData.answers);
-        const mode = getInteractionMode(syncData);
-        setInitialQuestion(question);
-        setMode(mode);
-      }
-
-      setTimeout(() => {
         setIsContentReady(true);
-        playInterventionSound();
-      }, ANIMATION_TIMING.delay.contentReady);
-    });
+      });
 
     window.addEventListener(
       "dragProgress",

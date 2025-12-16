@@ -14,7 +14,7 @@ export function setupKeyboardScrolling(): void {
         target instanceof HTMLInputElement
       ) {
         setTimeout(() => {
-          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          target.scrollIntoView({ behavior: "instant", block: "center" });
         }, 300);
       }
     },
