@@ -15,6 +15,7 @@ const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 export const LittleSunComponent: (props: {
   teardown: () => void;
   onShowFreshInteraction: () => void;
+  onTap?: () => void;
   host: string;
 }) => JSX.Element = (props) => {
   const [getSessionTime, setSessionTime] = createSignal<number>(0);
@@ -150,7 +151,7 @@ export const LittleSunComponent: (props: {
   };
 
   const handleClick = () => {
-    // End current session and show intervention
+    // End current session
     window.clearInterval(currentSessionInterval);
     updateHostsEntry(props.host, {
       sessionEndTS: null,
@@ -158,7 +159,12 @@ export const LittleSunComponent: (props: {
       sessionDurationInS: 0,
     });
     updateSyncData({ activeTimer: null });
-    props.onShowFreshInteraction();
+
+    if (props.onTap) {
+      props.onTap();
+    } else {
+      props.onShowFreshInteraction();
+    }
   };
 
   return (
