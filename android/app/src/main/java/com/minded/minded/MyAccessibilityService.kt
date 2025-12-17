@@ -48,6 +48,11 @@ class MyAccessibilityService : AccessibilityService() {
     // Track if minded overlay is active to prevent keyboard from closing it
     private var isMindedOverlayActive = false
 
+    // Track when we last triggered overlay for a blocked app (for debouncing launcher events during app startup)
+    private var lastBlockedAppOverlayTimestamp: Long = 0
+    private var lastBlockedAppOverlayPackage: String? = null
+    private val BLOCKED_APP_STARTUP_DEBOUNCE_MS = 1000L // Don't hide for launcher during app startup
+
     // Dynamic launcher detection
     private var cachedLaunchers: Set<String>? = null
     private var lastLauncherCacheTime = 0L
@@ -288,6 +293,19 @@ class MyAccessibilityService : AccessibilityService() {
 
     private fun triggerOverlay(packageName: String) {
         Log.d(TAG, "Triggering overlay for package: $packageName")
+
+        // Track when we trigger overlay for user apps coming from launcher
+        // This helps debounce spurious launcher events during slow app startups
+        // Only set timestamp when coming FROM launcher (initial app launch)
+        if (!isSystemPackage(packageName) && !isLauncherPackage(packageName)) {
+            val comingFromLauncher = lastPackageName != null && isLauncherPackage(lastPackageName!!)
+            if (comingFromLauncher) {
+                lastBlockedAppOverlayTimestamp = System.currentTimeMillis()
+                lastBlockedAppOverlayPackage = packageName
+                Log.d(TAG, "Setting startup debounce for $packageName (launched from launcher)")
+            }
+        }
+
         try {
             val intent = Intent(this, OverlayControllerService::class.java).apply {
                 putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
@@ -699,16 +717,42 @@ class MyAccessibilityService : AccessibilityService() {
                     if (isOverlayCompatibleSystemUI(packageName, className)) {
                         Log.d(TAG, "Transitioning to overlay-compatible system UI, keeping overlay: $lastPackageName -> $packageName ($className)")
                     } else {
-                        // Moving to system/launcher, safe to hide overlay
-                        Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
-                        hideOverlayForBackgroundedApp()
+                        // Check if we recently triggered overlay for this specific app
+                        // This prevents hiding during slow app startups where launcher briefly appears
+                        val timeSinceBlockedAppOverlay = System.currentTimeMillis() - lastBlockedAppOverlayTimestamp
+                        val isSameAppAsOverlayTrigger = lastPackageName == lastBlockedAppOverlayPackage
+                        if (isSameAppAsOverlayTrigger && timeSinceBlockedAppOverlay < BLOCKED_APP_STARTUP_DEBOUNCE_MS) {
+                            Log.d(TAG, "Skipping hide for launcher - recently triggered overlay for $lastBlockedAppOverlayPackage (${timeSinceBlockedAppOverlay}ms ago)")
+                        } else {
+                            // Moving to system/launcher, safe to hide overlay
+                            Log.d(TAG, "Previous app/overlay going to background, moving to system/launcher: $lastPackageName -> $packageName")
+                            hideOverlayForBackgroundedApp()
+                        }
                     }
                 } else {
-                    // Moving to another user app, let the overlay logic handle it
+                    // Moving to another user app, trigger overlay check
+                    // This ensures blocked apps show the overlay even if pattern detection filters it out
                     Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
+                    triggerOverlay(packageName)
                 }
             }
-            
+
+            // Handle transition from system UI (notification shade, quick settings) to user app
+            // This catches the case where user taps a notification to open an unblocked app
+            // while the overlay is showing for a blocked app
+            // Important: exclude launcher as source - we only want notification shade, quick settings, etc.
+            // We use triggerOverlay instead of hideOverlayForBackgroundedApp so that
+            // checkToShowOverlay can decide based on whether the app is blocked or not
+            if (lastPackageName != null &&
+                isSystemPackage(lastPackageName!!) &&
+                !isLauncherPackage(lastPackageName!!) &&
+                !isSystemPackage(packageName) &&
+                !isLauncherPackage(packageName) &&
+                packageName != "com.minded.minded") {
+                Log.d(TAG, "Exiting system UI to user app: $packageName, triggering overlay check")
+                triggerOverlay(packageName)
+            }
+
             // Skip if this is a system package (but don't update lastPackageName for keyboards)
             if (isSystemPackage(packageName)) {
                 Log.d(TAG, "Skipping system package: $packageName")

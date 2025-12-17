@@ -1,0 +1,161 @@
+package com.minded.minded.detection
+
+import java.time.Instant
+
+/**
+ * Pure business logic for overlay display decisions.
+ *
+ * Extracted from OverlayControllerService for testability.
+ * Contains no Android dependencies.
+ */
+class OverlayDecisionEngine {
+
+    companion object {
+        /** Time threshold to reset session duration (in seconds) */
+        const val RESET_APP_USAGE_DURATION_THRESHOLD_IN_S = 20
+
+        /** Debounce time after hiding all overlays (in milliseconds) */
+        const val HIDE_TO_SHOW_DEBOUNCE_MS = 500L
+
+        /** Debounce time after app switch (in milliseconds) */
+        const val APP_SWITCH_DEBOUNCE_MS = 300L
+    }
+
+    /**
+     * Determines what overlay action to take for a given app.
+     *
+     * @param currentPackage The package name of the current foreground app
+     * @param state Current state of the overlay system
+     * @return The decision on what overlay action to take
+     */
+    fun decide(
+        currentPackage: String,
+        state: OverlayState
+    ): OverlayDecision {
+        // Skip our own package
+        if (currentPackage == state.ownPackage) {
+            return OverlayDecision.Skip(SkipReason.OWN_PACKAGE)
+        }
+
+        // Debounce: skip if we recently hid all overlays
+        val timeSinceHideAll = state.currentTime - state.lastHideAllTimestamp
+        if (timeSinceHideAll < HIDE_TO_SHOW_DEBOUNCE_MS) {
+            return OverlayDecision.Skip(SkipReason.RECENT_HIDE_ALL)
+        }
+
+        // Not a blocked app - hide overlays
+        if (!state.blockedApps.contains(currentPackage)) {
+            return OverlayDecision.HideAll
+        }
+
+        // Launcher package - hide overlays
+        if (isLauncherPackage(currentPackage)) {
+            return OverlayDecision.HideAll
+        }
+
+        // Skip if user just switched to the app (debounce)
+        if (state.lastGoToAppTimestamp > 0 &&
+            state.currentTime - state.lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
+        ) {
+            return OverlayDecision.Skip(SkipReason.RECENT_APP_SWITCH)
+        }
+
+        // Check if any overlay is already showing
+        if (state.isAnyOverlayShowing) {
+            return OverlayDecision.Skip(SkipReason.OVERLAY_ALREADY_SHOWING)
+        }
+
+        // Check if there's an active session (within time limit)
+        val sessionEndTime = state.appSessionEndTime ?: state.activeTimerEndTime
+        val isWithinSessionLimit = sessionEndTime?.let { it > state.currentTime } ?: false
+
+        return if (isWithinSessionLimit) {
+            // Active session exists - show little sun
+            OverlayDecision.ShowLittleSun
+        } else {
+            // No active session - show intervention
+            OverlayDecision.ShowIntervention
+        }
+    }
+
+    /**
+     * Determines if the session duration should be reset.
+     *
+     * @param lastUsedTime When the app was last used
+     * @param currentTime Current timestamp
+     * @return true if session duration should be reset to 0
+     */
+    fun shouldResetSessionDuration(lastUsedTime: Instant?, currentTime: Instant): Boolean {
+        if (lastUsedTime == null) return false
+        return lastUsedTime.isBefore(
+            currentTime.minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
+        )
+    }
+
+    private fun isLauncherPackage(packageName: String): Boolean {
+        return packageName.contains("launcher") || packageName.contains("home")
+    }
+}
+
+/**
+ * Current state of the overlay system.
+ */
+data class OverlayState(
+    /** Our own package name */
+    val ownPackage: String = "com.minded.minded",
+
+    /** Set of blocked app package names */
+    val blockedApps: Set<String>,
+
+    /** Current timestamp in milliseconds */
+    val currentTime: Long,
+
+    /** Timestamp when hideAll was last called */
+    val lastHideAllTimestamp: Long = 0L,
+
+    /** Timestamp when user last switched to an app via "Go to App" */
+    val lastGoToAppTimestamp: Long = 0L,
+
+    /** Whether any overlay is currently showing */
+    val isAnyOverlayShowing: Boolean = false,
+
+    /** Session end time for current app (if any) */
+    val appSessionEndTime: Long? = null,
+
+    /** Global active timer end time (if any) */
+    val activeTimerEndTime: Long? = null
+)
+
+/**
+ * Decision on what overlay action to take.
+ */
+sealed class OverlayDecision {
+    /** Show the intervention overlay */
+    object ShowIntervention : OverlayDecision()
+
+    /** Show the little sun overlay */
+    object ShowLittleSun : OverlayDecision()
+
+    /** Hide all overlays */
+    object HideAll : OverlayDecision()
+
+    /** Skip - do nothing */
+    data class Skip(val reason: SkipReason) : OverlayDecision()
+}
+
+/**
+ * Reasons for skipping overlay action.
+ */
+enum class SkipReason {
+    /** Current package is our own app */
+    OWN_PACKAGE,
+
+    /** Recently hid all overlays (debounce) */
+    RECENT_HIDE_ALL,
+
+    /** User recently switched to this app */
+    RECENT_APP_SWITCH,
+
+    /** An overlay is already showing */
+    OVERLAY_ALREADY_SHOWING
+}
