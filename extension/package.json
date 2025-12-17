@@ -44,6 +44,7 @@
     "@capacitor/cli": "^7.4.0",
     "@crxjs/vite-plugin": "^2.0.2",
     "@types/chrome": "0.0.328",
+    "@types/jest": "^30.0.0",
     "@types/webextension-polyfill": "^0.12.3",
     "@typescript-eslint/eslint-plugin": "^7.7.0",
     "eslint": "8.57.1",

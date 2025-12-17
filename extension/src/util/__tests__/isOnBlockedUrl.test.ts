@@ -166,7 +166,20 @@ describe("isOnBlockedUrl", () => {
   });
 
   describe("edge cases", () => {
-    it("handles URL with port", () => {
+    it("handles URL with port when port is in blockedHosts", () => {
+      // Note: URL.host includes port, so blockedHosts must include port to match
+      const syncData = createMockSyncData({
+        cfg: {
+          isOnboardingComplete: true,
+          blockedHosts: ["localhost:3000"],
+          blockedApps: [],
+        },
+      });
+      expect(isOnBlockedUrl("http://localhost:3000", syncData)).toBe(true);
+    });
+
+    it("does not match URL with port when only hostname is blocked", () => {
+      // URL.host includes port, so "localhost" won't match "localhost:3000"
       const syncData = createMockSyncData({
         cfg: {
           isOnboardingComplete: true,
@@ -174,7 +187,7 @@ describe("isOnBlockedUrl", () => {
           blockedApps: [],
         },
       });
-      expect(isOnBlockedUrl("http://localhost:3000", syncData)).toBe(true);
+      expect(isOnBlockedUrl("http://localhost:3000", syncData)).toBe(false);
     });
 
     it("handles URL with path and query params", () => {

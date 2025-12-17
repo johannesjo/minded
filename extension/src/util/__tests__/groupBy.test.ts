@@ -7,7 +7,8 @@ describe("groupBy", () => {
       { name: "banana", type: "fruit" },
       { name: "carrot", type: "vegetable" },
     ];
-    const result = groupBy(items, (item) => item.type);
+    // Use type assertion to work with the generic constraint
+    const result = groupBy(items, (item) => item.type as keyof object);
     expect(result).toEqual({
       fruit: [
         { name: "apple", type: "fruit" },
@@ -17,7 +18,7 @@ describe("groupBy", () => {
     });
   });
 
-  it("groups items by a number key", () => {
+  it("groups items by a derived key", () => {
     const items = [
       { id: 1, category: 1 },
       { id: 2, category: 2 },
@@ -25,25 +26,28 @@ describe("groupBy", () => {
     ];
     const result = groupBy(
       items,
-      (item) => item.category as unknown as "1" | "2",
+      (item) => String(item.category) as keyof object,
     );
     expect(result).toEqual({
-      1: [
+      "1": [
         { id: 1, category: 1 },
         { id: 3, category: 1 },
       ],
-      2: [{ id: 2, category: 2 }],
+      "2": [{ id: 2, category: 2 }],
     });
   });
 
   it("handles empty array", () => {
-    const result = groupBy([], () => "key" as const);
+    const result = groupBy(
+      [] as { value: string }[],
+      () => "key" as keyof object,
+    );
     expect(result).toEqual({});
   });
 
   it("handles single item", () => {
     const items = [{ value: "only" }];
-    const result = groupBy(items, () => "single" as const);
+    const result = groupBy(items, () => "single" as keyof object);
     expect(result).toEqual({
       single: [{ value: "only" }],
     });
@@ -51,7 +55,7 @@ describe("groupBy", () => {
 
   it("handles all items in one group", () => {
     const items = [{ n: 1 }, { n: 2 }, { n: 3 }];
-    const result = groupBy(items, () => "all" as const);
+    const result = groupBy(items, () => "all" as keyof object);
     expect(result).toEqual({
       all: [{ n: 1 }, { n: 2 }, { n: 3 }],
     });
@@ -59,8 +63,8 @@ describe("groupBy", () => {
 
   it("preserves order within groups", () => {
     const items = ["c", "a", "b", "a", "c"];
-    const result = groupBy(items, (item) => item as "a" | "b" | "c");
-    expect(result["a"]).toEqual(["a", "a"]);
-    expect(result["c"]).toEqual(["c", "c"]);
+    const result = groupBy(items, (item) => item as keyof object);
+    expect(result["a" as keyof typeof result]).toEqual(["a", "a"]);
+    expect(result["c" as keyof typeof result]).toEqual(["c", "c"]);
   });
 });
