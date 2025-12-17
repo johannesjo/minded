@@ -129,7 +129,15 @@ export const InteractionWeb: (props: {
               // Background click disabled - only gesture controls
               ev.stopPropagation();
             }}
-            ref={wrapperEl}
+            ref={(el) => {
+              wrapperEl = el;
+              // Reset inline styles when element is (re)created to ensure visibility
+              // This fixes the issue where previous opacity manipulation persists
+              if (el) {
+                el.style.opacity = "1";
+                el.style.transition = "";
+              }
+            }}
           >
             <InteractionCommon
               questionForPrompt={getQuestion()}
