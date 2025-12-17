@@ -298,10 +298,10 @@ describe("getInteractionMode", () => {
           },
         ],
       });
-      let callCount = 0;
-      mockedIsXIn1.mockImplementation(() => {
-        callCount++;
-        return callCount === 8; // Eighth probability check for EMOJI_CHECKIN
+      // EMOJI_CHECKIN is checked with isXIn1(1/100), which is the last check
+      // Return true only for the 1/100 probability
+      mockedIsXIn1.mockImplementation((prob: number) => {
+        return prob === 1 / 100;
       });
       expect(getInteractionMode(syncData)).toBe("EMOJI_CHECKIN");
     });

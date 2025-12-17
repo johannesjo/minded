@@ -73,7 +73,7 @@ describe("isWithinFocusHours", () => {
 
     it("returns false at midnight", () => {
       const mondayMidnight = new Date("2024-01-08T00:00:00");
-      expect(isWithinFocusHours(mondayMidnight, mondayMidnight)).toBe(false);
+      expect(isWithinFocusHours(mockSchedule, mondayMidnight)).toBe(false);
     });
   });
 

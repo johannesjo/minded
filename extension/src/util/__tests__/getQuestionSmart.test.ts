@@ -1,5 +1,5 @@
 import { getQuestionSmart, getQuestionSemiSmart } from "../getQuestionSmart";
-import { mockDate, mockRandom } from "@src/test-utils/mockHelpers";
+import { mockDate } from "@src/test-utils/mockHelpers";
 import { Answer } from "@src/dataInterface/syncData";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 
@@ -58,7 +58,7 @@ describe("getQuestionSmart", () => {
     it("returns a random question when no answers exist", () => {
       const result = getQuestionSmart([]);
       expect(result).toBeDefined();
-      expect(result.q).toBeDefined();
+      expect(result.t).toBeDefined(); // t is the question text
       expect(mockedGetRndEntry).toHaveBeenCalled();
     });
   });
@@ -78,7 +78,7 @@ describe("getQuestionSmart", () => {
     it("returns a question object with required properties", () => {
       const answers = [createAnswer(QuestionCategoryId.Gratitude)];
       const result = getQuestionSmart(answers);
-      expect(result).toHaveProperty("q");
+      expect(result).toHaveProperty("t");
       expect(result).toHaveProperty("categoryId");
     });
 
@@ -104,7 +104,8 @@ describe("getQuestionSmart", () => {
 
     it("handles this-week-only categories correctly", () => {
       mockedIsThisWeek.mockReturnValue(false);
-      const answers = [createAnswer(QuestionCategoryId.WeeklyReflection)];
+      // GoalForTheWeek is a week-based category
+      const answers = [createAnswer(QuestionCategoryId.GoalForTheWeek)];
       const result = getQuestionSmart(answers);
       expect(result).toBeDefined();
     });
@@ -178,7 +179,7 @@ describe("getQuestionSemiSmart", () => {
     const morningDate = new Date("2024-01-15T08:00:00");
     const result = getQuestionSemiSmart(morningDate);
     expect(result).toBeDefined();
-    expect(result.q).toBeDefined();
+    expect(result.t).toBeDefined();
   });
 
   it("filters out morning questions in evening", () => {
