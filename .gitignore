@@ -1,5 +1,6 @@
 /.idea/
 /android/.idea/
+/android/app/release/
 node_modules/
 dist/
 .DS_Store
