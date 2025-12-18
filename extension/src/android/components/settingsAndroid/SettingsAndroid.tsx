@@ -77,10 +77,10 @@ export const SettingsAndroid = (props: {
                   class={styles.appEntry}
                   onClick={() => handleToggleApp(app.packageName)}
                 >
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div style="pointer-events: none;">
                     <Checkbox
                       checked={getSelectedApps().includes(app.packageName)}
-                      onChange={() => handleToggleApp(app.packageName)}
+                      onChange={() => {}}
                     />
                   </div>
                   <span class={styles.appName}>{app.name}</span>
