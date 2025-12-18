@@ -16,6 +16,7 @@
   border-radius: var(--border-radius);
   cursor: pointer;
   user-select: none;
+  touch-action: manipulation;
 
   &:active {
     opacity: 0.8;
