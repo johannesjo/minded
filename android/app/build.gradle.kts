@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.minded.minded"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.minded.minded"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 8
         versionName = "3.0.0"
 
