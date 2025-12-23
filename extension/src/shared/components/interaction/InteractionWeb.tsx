@@ -56,21 +56,26 @@ export const InteractionWeb: (props: {
     }
   });
 
+  const escapeHandler = (ev: KeyboardEvent) => {
+    if (ev.key === "Escape") {
+      ev.stopPropagation();
+      fadeOut(wrapperEl, 150);
+    }
+  };
+
+  onMount(() => {
+    document.addEventListener("keydown", escapeHandler);
+  });
+
   onCleanup(() => {
-    document.removeEventListener("keypress", escapeHandler);
+    document.removeEventListener("keydown", escapeHandler);
   });
 
   const teardown = () => {
     console.log("InteractionWeb: teardown called - hiding interaction");
     console.trace("Teardown call stack");
-    document.removeEventListener("keypress", escapeHandler);
+    document.removeEventListener("keydown", escapeHandler);
     props.onHideAll();
-  };
-
-  const escapeHandler = (ev: KeyboardEvent) => {
-    if (ev.key === "Escape") {
-      fadeOut(wrapperEl, 150);
-    }
   };
 
   const setSessionLimit = async (seconds: number) => {

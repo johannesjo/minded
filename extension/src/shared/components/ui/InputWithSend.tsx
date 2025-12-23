@@ -61,6 +61,9 @@ export const InputWithSend = (props: {
   };
 
   const onKeyDown = (ev: KeyboardEvent): void => {
+    // Prevent keyboard events from reaching the host page (e.g., YouTube shortcuts)
+    ev.stopPropagation();
+
     if (ev.key === "Enter" && !ev.shiftKey) {
       ev.preventDefault();
       onSubmit((ev.target as HTMLTextAreaElement).value);

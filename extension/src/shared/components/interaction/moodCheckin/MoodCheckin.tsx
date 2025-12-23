@@ -93,8 +93,14 @@ export const MoodCheckin: (props: {
           }
           autocomplete="true"
           maxlength="200"
-          onInput={(ev) => handleInputChange(ev.currentTarget.value)}
+          onInput={(ev) => {
+            ev.stopPropagation();
+            handleInputChange(ev.currentTarget.value);
+          }}
           onKeyDown={(ev) => {
+            // Prevent keyboard events from reaching the host page (e.g., YouTube shortcuts)
+            ev.stopPropagation();
+
             if (ev.key === "Enter") {
               ev.preventDefault();
               // Save immediately on Enter
