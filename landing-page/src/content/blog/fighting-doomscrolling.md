@@ -5,14 +5,14 @@ pubDate: 2025-11-24
 heroImage: "/blog/doomscrolling.jpg"
 ---
 
-It starts innocently enough. You check a headline. Then you click a related article. Then you check the comments. Twenty minutes later, you are deep in a rabbit hole of bad news, feeling anxious, helpless, and exhausted. This is **doom-scrolling**.
+It starts innocently enough. You check a headline. Then you click a related article. Then you check the comments. Twenty minutes later, you are deep in a rabbit hole of bad news, feeling anxious, helpless, and exhausted. This is **doomscrolling**.
 
 It’s not just a bad habit; it’s a biological response. Our brains are wired to pay attention to threats. When we see negative news, our "fight or flight" response triggers, keeping us glued to the screen in a misguided attempt to stay safe by "knowing everything."
 
 Here is how to hack your brain back into a state of calm.
 
 ## 1. The "Why" Check
-We often doom-scroll to numb ourselves from difficult emotions like boredom, loneliness, or stress. The scrolling is a symptom, not the cause.
+We often doomscroll to numb ourselves from difficult emotions like boredom, loneliness, or stress. The scrolling is a symptom, not the cause.
 
 **The Fix:** Next time you reach for your phone, pause and ask: *"What am I feeling right now?"* If the answer is "anxious" or "bored," acknowledge that scrolling will likely make it worse, not better.
 
@@ -20,7 +20,7 @@ We often doom-scroll to numb ourselves from difficult emotions like boredom, lon
 If your phone is within reach, you *will* use it. This is the path of least resistance.
 
 **The Fix:** Establish physical boundaries. 
-*   **The Bedroom:** Buy a standard alarm clock and charge your phone in the kitchen overnight. This prevents the morning doom-scroll before you've even gotten out of bed.
+*   **The Bedroom:** Buy a standard alarm clock and charge your phone in the kitchen overnight. This prevents the morning doomscroll before you've even gotten out of bed.
 *   **The Dinner Table:** Make meals a screen-free time to focus on food and conversation.
 
 ## 3. Grayscale Mode
@@ -40,8 +40,8 @@ You are what you consume. If your feed is full of outrage, anger, and catastroph
 ## 5. Interrupt the Loop with Minded
 Sometimes, willpower isn't enough. We open a new tab or an app on autopilot, without even realizing it. We need an external "nudge" to wake us up.
 
-**The Fix:** This is exactly what **Minded** does. By intercepting that "new tab" moment and presenting you with a calming gradient, a mood tracker, or a simple question like *"What are you looking forward to?"*, it breaks the trance. It inserts a moment of mindfulness between the impulse and the action, giving you the choice to close the tab and breathe instead.
+**The Fix:** This is exactly what [**Minded**](/) does. By intercepting that "new tab" moment and presenting you with a calming gradient, a mood tracker, or a simple question like *"What are you looking forward to?"*, it breaks the trance. It inserts a moment of mindfulness between the impulse and the action, giving you the choice to close the tab and breathe instead.
 
 ---
 
-*Ready to stop scrolling and start living? Download Minded today.*
+*Ready to stop scrolling and start living? Try [Minded](/) on [Chrome](https://chromewebstore.google.com/detail/minded/obghjflblojheamhnchaklenibffehjk) or [Android](https://play.google.com/store/apps/details?id=com.minded.minded&hl=gsw).*

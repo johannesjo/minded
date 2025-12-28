@@ -26,7 +26,7 @@ We often think of apps as "free" because they don't cost money. But they cost so
 It's not enough to just use a "good" app; you must use it in a way that supports your values. 
 *   **Twitter/X** might be good for news, but is it good to check it 50 times a day? 
 *   **Instagram** might be good for keeping up with friends, but is the Explore page serving that purpose?
-Minimalists optimize *how* they use technology. They might remove the app from their phone and only check it on a desktop, or use tools like **Minded** to add a layer of friction before opening distracting sites.
+Minimalists optimize *how* they use technology. They might remove the app from their phone and only check it on a desktop, or use tools like [**Minded**](/) to add a layer of friction before opening distracting sites.
 
 ### 3. Solitude is Sacred
 In our hyper-connected world, we have lost the art of being alone with our thoughts. Solitude—the state where your mind is free from input from other minds—is essential for processing emotions, solving complex problems, and maintaining mental health. Unplugging is not a luxury; it's a necessity for clear thinking.
@@ -41,6 +41,6 @@ If you feel like your technology use is out of control, here is a simple process
 
 ## How Minded Fits In
 
-Minded was built to be a companion on this journey. We don't want to ban technology; we want to add **intentionality** to it. 
+[Minded](/) was built to be a companion on this journey. We don't want to ban technology; we want to add **intentionality** to it. 
 
 By replacing the mindless "new tab" reflex with a moment of pause—a deep breath, a mood check-in, or a reflective question—Minded breaks the loop of unconscious consumption. It gives you that split second you need to remember: *I am in control here.*

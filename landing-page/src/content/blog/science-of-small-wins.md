@@ -53,7 +53,7 @@ Since we live our lives online, here are three "small wins" you can start today 
 
 ## How Minded Automates Your Wins
 
-Willpower is a finite resource. You shouldn't have to rely on it for every decision. This is where **Minded** acts as your digital partner.
+Willpower is a finite resource. You shouldn't have to rely on it for every decision. This is where [**Minded**](/) acts as your digital partner.
 
 Minded intervenes at the critical **Cue** stage of the habit loop. When you open a new tab (the Cue), instead of falling into the Routine of mindless scrolling, Minded presents a gentle intervention.
 

@@ -52,7 +52,7 @@ Focus is a skill, and like any skill, it can be trained. The most effective way 
 
 ## Minded: Your Daily Focus Trainer
 
-Building these habits takes time. **Minded** is designed to be your daily training partner. Every time you open a new tab—a moment when you are most vulnerable to distraction—Minded provides a pattern interrupt.
+Building these habits takes time. [**Minded**](/) is designed to be your daily training partner. Every time you open a new tab—a moment when you are most vulnerable to distraction—Minded provides a pattern interrupt.
 
 Instead of a search bar that leads to a rabbit hole, you see a moment of calm. You are prompted to check in with your mood, to remember your intention for the day. This micro-moment of mindfulness, repeated dozens of times a day, helps you build the "attention muscle." It trains you to pause, breathe, and ask: "What is the most important thing for me to focus on right now?"
 

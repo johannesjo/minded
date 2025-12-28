@@ -68,4 +68,4 @@ After your detox period (at any level), don’t just dive back in. The goal is t
 
 This might mean setting a rule to only check social media after 5 PM, removing the apps from your phone and using the desktop version, or turning off all notifications permanently.
 
-This is where a tool like **Minded** becomes your long-term partner. By adding a moment of friction—a pause to check in with your mood or intention—Minded helps you maintain the awareness you cultivated during your detox. It’s the daily training that keeps your brain's reward system working for you, not against you.
+This is where a tool like [**Minded**](/) becomes your long-term partner. By adding a moment of friction—a pause to check in with your mood or intention—Minded helps you maintain the awareness you cultivated during your detox. It’s the daily training that keeps your brain's reward system working for you, not against you.
