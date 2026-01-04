@@ -80,14 +80,14 @@ export const InteractionWeb: (props: {
 
   const setSessionLimit = async (seconds: number) => {
     const now = Date.now();
-    const endTs =
-      seconds < 0
-        ? (() => {
-            const endOfDay = new Date();
-            endOfDay.setHours(24, 0, 0, 0);
-            return endOfDay.getTime();
-          })()
-        : now + seconds * 1000;
+    const isRestOfDay = seconds < 0;
+    const endTs = isRestOfDay
+      ? (() => {
+          const endOfDay = new Date();
+          endOfDay.setHours(24, 0, 0, 0);
+          return endOfDay.getTime();
+        })()
+      : now + seconds * 1000;
 
     await updateSyncData({
       activeTimer: {
@@ -106,7 +106,14 @@ export const InteractionWeb: (props: {
     // Ensure we tear down any stale question state
     setQuestion(undefined);
     stopAllVideos();
-    setIsShowLittleSun(true);
+
+    if (isRestOfDay) {
+      // Rest of day: hide everything completely
+      teardown();
+    } else {
+      // Timed session: show little sun countdown
+      setIsShowLittleSun(true);
+    }
   };
 
   return (

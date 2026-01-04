@@ -10,11 +10,20 @@ import { ContentScriptMain } from "@src/pages/content/ContentScriptMain";
 import styleAsString from "./content-script.scss?inline";
 import { render, delegateEvents } from "solid-js/web";
 import { isShowFullMinder } from "@src/util/isShowFullMinder";
+import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
+// @ts-ignore
+import { loadDataForHost } from "@dataInterface/localDataInterface";
+import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
 const CURRENT_URL = window.location.href;
 
 (function init() {
   getSyncData().then((syncData) => {
+    // Rest-of-day mode: hide everything, don't inject anything
+    if (isRestOfDayActive(syncData)) {
+      return;
+    }
+
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
     if (isOnBlockedUrl(CURRENT_URL, syncData)) {
       countOpeningAttempt();
@@ -26,6 +35,17 @@ const CURRENT_URL = window.location.href;
           }, 100);
           return;
         }
+
+        // Prevent duplicate injection
+        if (document.getElementById("minded-6622-host")) {
+          return;
+        }
+
+        // Load per-host data before render to avoid flickering
+        const host = getHostFromUrl(CURRENT_URL);
+        const dataForHost = await loadDataForHost(host);
+        const hasActiveSession =
+          dataForHost?.sessionEndTS && dataForHost.sessionEndTS > Date.now();
 
         // Create Shadow DOM host element for complete style isolation
         const hostEl = document.createElement("minded-app");
@@ -96,10 +116,9 @@ const CURRENT_URL = window.location.href;
         render(
           () => (
             <ContentScriptMain
-              isShowFullMinderInitially={isShowFullMinder(
-                CURRENT_URL,
-                syncData,
-              )}
+              isShowFullMinderInitially={
+                !hasActiveSession && isShowFullMinder(CURRENT_URL, syncData)
+              }
               shadowRoot={shadow}
               onTeardownShadow={teardownShadow}
             />

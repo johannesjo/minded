@@ -8,6 +8,7 @@ import {
   getSyncData,
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
+import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -30,6 +31,12 @@ export const LittleSunComponent: (props: {
   onMount(async () => {
     const d = await loadDataForHost(props.host);
     const syncData = await getSyncData();
+
+    // Rest-of-day mode: hide everything
+    if (isRestOfDayActive(syncData)) {
+      props.teardown();
+      return;
+    }
 
     const now = Date.now();
     let sessionEnd = d?.sessionEndTS ?? null;
