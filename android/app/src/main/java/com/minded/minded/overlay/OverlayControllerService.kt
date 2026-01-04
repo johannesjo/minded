@@ -458,6 +458,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
         val now = Instant.now()
         val activeTimerEndTime = activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
+
+        // Check for rest-of-day mode: hide everything
+        val isRestOfDayActive = activeTimer != null &&
+            activeTimer.durationS == -1 &&
+            activeTimerEndTime?.isAfter(now) == true
+        if (isRestOfDayActive) {
+            Log.d(logTag, "checkToShowOverlay() - rest-of-day mode active, hiding all overlays")
+            hideAllBut()
+            return
+        }
+
         val sessionEndTime = entryForCurrentApp?.sessionEndTime ?: activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
         if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
@@ -645,9 +656,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             Log.d(logTag, "setSessionLimit - on main thread, hiding interaction window")
             interactionOverlayWindow.hideWindow()
 
-            // Always show Little Sun for all sessions (including Rest of Day)
-            Log.d(logTag, "setSessionLimit - showing Little Sun overlay (isRestOfDay: $isRestOfDay)")
-            showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
+            if (isRestOfDay) {
+                // Rest of day: hide everything completely
+                Log.d(logTag, "setSessionLimit - rest-of-day mode, hiding all overlays")
+                hideAllBut()
+            } else {
+                // Timed session: show Little Sun countdown
+                Log.d(logTag, "setSessionLimit - showing Little Sun overlay")
+                showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
+            }
         }
     }
 

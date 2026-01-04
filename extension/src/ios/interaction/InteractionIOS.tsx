@@ -4,8 +4,12 @@ import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
+import {
+  countSunTap,
+  getSyncData,
+} from "@src/dataInterface/commonSyncDataInterface";
 import { MindedIOSPlugin } from "@src/ios/plugin/MindedIOSPlugin";
+import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {
@@ -26,6 +30,14 @@ const InteractionIOS = () => {
 
   onMount(async () => {
     addWrapperClasses();
+
+    // Rest-of-day mode: immediately continue to app
+    const syncData = await getSyncData();
+    if (isRestOfDayActive(syncData)) {
+      MindedIOSPlugin.continueToApp();
+      return;
+    }
+
     MindedIOSPlugin.continueToApp();
   });
 
