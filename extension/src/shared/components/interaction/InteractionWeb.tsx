@@ -17,6 +17,11 @@ import {
   getSyncData,
   countSunTap,
 } from "@src/dataInterface/commonSyncDataInterface";
+import { shouldPromptBudgetSetup, getBudgetState } from "@src/util/budget";
+import { BudgetSetupPrompt } from "@src/shared/components/interaction/budgetSetup/BudgetSetupPrompt";
+import { BudgetExhaustedMessage } from "@src/shared/components/interaction/BudgetExhaustedMessage";
+import { DailyBudget } from "@src/dataInterface/syncData";
+import { getIsoDate } from "@src/util/getIsoDate";
 
 // NOTE: val also needs to be set in css
 
@@ -31,6 +36,10 @@ export const InteractionWeb: (props: {
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
   const [getIsShowBlackScreen, setIsShowBlackScreen] = createSignal(false);
+  const [getIsShowBudgetPrompt, setIsShowBudgetPrompt] = createSignal(false);
+  const [getIsShowBudgetExhausted, setIsShowBudgetExhausted] =
+    createSignal(false);
+  const [getCurrentSkips, setCurrentSkips] = createSignal(0);
 
   let wrapperEl: HTMLDivElement = undefined!;
 
@@ -53,6 +62,13 @@ export const InteractionWeb: (props: {
     const data = await loadDataForHost(props.host);
     if (data?.sessionEndTS && Date.now() < data.sessionEndTS) {
       setIsShowLittleSun(true);
+      return;
+    }
+
+    // Check if budget is exhausted - show message briefly
+    const budgetState = getBudgetState(syncData, props.host);
+    if (budgetState.isActive && budgetState.remainingSeconds <= 0) {
+      setIsShowBudgetExhausted(true);
     }
   });
 
@@ -116,9 +132,36 @@ export const InteractionWeb: (props: {
     }
   };
 
+  const handleSetBudget = async (budget: DailyBudget) => {
+    await updateSyncData({ dailyBudget: budget });
+    setIsShowBudgetPrompt(false);
+    // After setting budget, show little sun in budget mode
+    setIsShowLittleSun(true);
+  };
+
+  const handleDismissBudgetPrompt = async () => {
+    await updateSyncData({ budgetPromptDismissedTS: Date.now() });
+    setIsShowBudgetPrompt(false);
+    setIsShowLittleSun(true);
+  };
+
   return (
     <>
-      {getIsShowLittleSun() ? (
+      {getIsShowBudgetPrompt() ? (
+        <div class="aniIn" style={{ opacity: "1" }}>
+          <div
+            id="minded-6622-coloured-wrapper-dynamic"
+            class={isDarkModeNow() ? "minded-6622-dark" : ""}
+            style={{ opacity: "1" }}
+          >
+            <BudgetSetupPrompt
+              currentSkips={getCurrentSkips()}
+              onSetBudget={handleSetBudget}
+              onDismiss={handleDismissBudgetPrompt}
+            />
+          </div>
+        </div>
+      ) : getIsShowLittleSun() ? (
         <div class="aniIn" style={{ opacity: "1" }}>
           <LittleSunComponent
             host={props.host}
@@ -161,12 +204,19 @@ export const InteractionWeb: (props: {
               onAfterInteractionFadeout={() => {
                 setIsShowLittleSun(true);
               }}
-              onSkip={() => {
-                console.log(
-                  "InteractionWeb: onSkip called, showing little sun",
-                );
-                countSunTap();
-                setIsShowLittleSun(true);
+              onSkip={async () => {
+                console.log("InteractionWeb: onSkip called");
+                await countSunTap();
+                const syncData = await getSyncData();
+
+                // Check if we should show budget setup prompt
+                if (shouldPromptBudgetSetup(syncData)) {
+                  const today = getIsoDate();
+                  setCurrentSkips(syncData.sunTaps[today] || 0);
+                  setIsShowBudgetPrompt(true);
+                } else {
+                  setIsShowLittleSun(true);
+                }
               }}
               onUpdateQuestion={(question) => {
                 setQuestion(question);
@@ -188,6 +238,12 @@ export const InteractionWeb: (props: {
       )}
 
       {getIsShowBlackScreen() && <div id="minded-6622-black-screen"></div>}
+
+      {getIsShowBudgetExhausted() && (
+        <BudgetExhaustedMessage
+          onComplete={() => setIsShowBudgetExhausted(false)}
+        />
+      )}
     </>
   );
 };

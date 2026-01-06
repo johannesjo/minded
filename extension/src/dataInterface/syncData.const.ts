@@ -77,6 +77,10 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   alternativeWebsites: [],
   activeTimer: null,
   emotionLabeling: null,
+  // Daily budget feature
+  dailyBudget: null,
+  dailyUsage: {},
+  budgetPromptDismissedTS: DEFAULT_TS_VAL,
 };
 
 export const STATIC_CFG: StaticCfg = {

@@ -87,8 +87,33 @@ export interface SyncData {
   } | null;
 
   emotionLabeling: EmotionLabelingData | null;
+
+  // Daily budget feature
+  dailyBudget: DailyBudget | null;
+  dailyUsage: {
+    [dateISO: string]: DailyUsage;
+  };
+  budgetPromptDismissedTS: number;
 }
 
 export interface StaticCfg {
   ShowAgainThreshold: number;
+}
+
+/** Daily usage budget configuration */
+export interface DailyBudget {
+  globalMinutes: number; // Total allowed minutes across all sites (e.g., 30)
+  perSiteMinutes?: {
+    // Optional per-site overrides
+    [host: string]: number;
+  };
+}
+
+/** Daily usage tracking */
+export interface DailyUsage {
+  totalSeconds: number; // Total time today across all blocked sites
+  perSite: {
+    // Per-site breakdown
+    [host: string]: number; // Seconds spent on this site today
+  };
 }
