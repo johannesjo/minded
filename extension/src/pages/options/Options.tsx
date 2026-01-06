@@ -16,7 +16,7 @@ const Options = () => {
       <h3 class="h3">
         list of websites where <em>minded</em> is shown
       </h3>
-      <WebsiteList onAfterSave={onAfterSave} />
+      <WebsiteList onAfterSave={onAfterSave} showSaveButton={false} />
 
       <br />
       <hr style="opacity: 0.2; margin: 32px 0;" />
