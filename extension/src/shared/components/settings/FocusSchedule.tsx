@@ -39,10 +39,18 @@ export const FocusSchedule = (props: {
     });
   });
 
+  const autoSave = async (newSchedule: FocusScheduleType) => {
+    if (props.showSaveButton === false) {
+      await updateUserCfg({ focusSchedule: newSchedule });
+      props.onAfterSave?.();
+    }
+  };
+
   const toggleEnabled = () => {
     setSchedule((prev) => {
       const newSchedule = { ...prev, enabled: !prev.enabled };
       props.onChange?.(newSchedule);
+      autoSave(newSchedule);
       return newSchedule;
     });
   };
@@ -60,6 +68,7 @@ export const FocusSchedule = (props: {
 
       const newSchedule = { ...prev, days: newDays };
       props.onChange?.(newSchedule);
+      autoSave(newSchedule);
       return newSchedule;
     });
   };
@@ -78,6 +87,7 @@ export const FocusSchedule = (props: {
 
       const newSchedule = { ...prev, days: newDays };
       props.onChange?.(newSchedule);
+      autoSave(newSchedule);
       return newSchedule;
     });
   };

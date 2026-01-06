@@ -34,7 +34,7 @@ const Options = () => {
       <hr style="opacity: 0.2; margin: 32px 0;" />
       <br />
 
-      <FocusSchedule onAfterSave={onAfterSave} />
+      <FocusSchedule onAfterSave={onAfterSave} showSaveButton={false} />
     </div>
   );
 };
