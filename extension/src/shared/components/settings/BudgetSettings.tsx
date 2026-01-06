@@ -78,12 +78,16 @@ export const BudgetSettings: Component<BudgetSettingsProps> = (props) => {
           <div class={styles.optionsGrid}>
             <For each={BUDGET_OPTIONS}>
               {(option) => (
-                <button
-                  class={`${styles.optionBtn} ${getBudget()?.globalMinutes === option.value ? styles.isSelected : ""}`}
+                <div
+                  class={
+                    getBudget()?.globalMinutes === option.value
+                      ? "btnToggleSelect isSelected"
+                      : "btnToggleSelect"
+                  }
                   onClick={() => setMinutes(option.value)}
                 >
                   {option.label}
-                </button>
+                </div>
               )}
             </For>
           </div>

@@ -102,3 +102,12 @@ Path aliases change based on build mode to load platform-specific code.
 **Data Storage:**
 - Always use dataInterface methods, never direct browser/platform APIs
 - Handle quota limits (especially for browser extension storage)
+
+## Styling Guidelines
+
+**Always use existing global styles for consistency:**
+- Buttons: `btnToggleSelect`, `btnTxt`, `btnIcoOnly`, `btnTxtOutline`
+- Selected state: Add `isSelected` class (e.g., `btnToggleSelect isSelected`)
+- Typography: `h2`, `h3`, `txtBig`
+- Global styles are in `src/styles/componentsShared/` and `src/styles/mixins/`
+- Only create component-specific SCSS modules for layout, not for recreating existing button/input styles
