@@ -9,9 +9,11 @@ import {
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
+import { getBudgetState, addBudgetUsage } from "@src/util/budget";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
+const BUDGET_USAGE_UPDATE_INTERVAL_S = 10; // Throttle storage writes
 
 export const LittleSunComponent: (props: {
   teardown: () => void;
@@ -24,8 +26,13 @@ export const LittleSunComponent: (props: {
     number | null
   >(null);
   const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
+  const [getIsBudgetMode, setIsBudgetMode] = createSignal(false);
+  const [getBudgetRemaining, setBudgetRemaining] = createSignal<number | null>(
+    null,
+  );
 
   let currentSessionInterval: number;
+  let budgetUsageAccumulator = 0; // Track seconds since last storage write
   let t0: NodeJS.Timeout;
 
   onMount(async () => {
@@ -39,6 +46,17 @@ export const LittleSunComponent: (props: {
     }
 
     const now = Date.now();
+
+    // Check for budget mode first
+    const budgetState = getBudgetState(syncData, props.host);
+    if (budgetState.isActive && budgetState.remainingSeconds > 0) {
+      setIsBudgetMode(true);
+      startBudgetCountdown(budgetState.remainingSeconds);
+      t0 = setTimeout(() => setIsMoveOutOfTheWay(true), 200);
+      return;
+    }
+
+    // Check for session mode
     let sessionEnd = d?.sessionEndTS ?? null;
     let sessionLimit = d?.sessionLimitInS ?? null;
 
@@ -157,6 +175,54 @@ export const LittleSunComponent: (props: {
     currentSessionInterval = window.setInterval(tick, 1000);
   };
 
+  const startBudgetCountdown = (initialRemaining: number) => {
+    if (currentSessionInterval) {
+      window.clearInterval(currentSessionInterval);
+    }
+
+    setBudgetRemaining(initialRemaining);
+    budgetUsageAccumulator = 0;
+
+    const tick = async () => {
+      const remaining = (getBudgetRemaining() ?? 0) - 1;
+      setBudgetRemaining(Math.max(remaining, 0));
+      budgetUsageAccumulator++;
+
+      // Keep last-used timestamp fresh
+      updateHostsEntry(props.host, { lastUsedTS: Date.now() });
+
+      // Throttle storage writes for budget usage
+      if (budgetUsageAccumulator >= BUDGET_USAGE_UPDATE_INTERVAL_S) {
+        const syncData = await getSyncData();
+        const usageUpdate = addBudgetUsage(
+          syncData,
+          props.host,
+          budgetUsageAccumulator,
+        );
+        await updateSyncData(usageUpdate);
+        budgetUsageAccumulator = 0;
+      }
+
+      if (remaining <= 0) {
+        window.clearInterval(currentSessionInterval);
+        // Save any remaining accumulated usage
+        if (budgetUsageAccumulator > 0) {
+          const syncData = await getSyncData();
+          const usageUpdate = addBudgetUsage(
+            syncData,
+            props.host,
+            budgetUsageAccumulator,
+          );
+          await updateSyncData(usageUpdate);
+        }
+        // Budget exhausted - trigger full intervention
+        props.onShowFreshInteraction();
+      }
+    };
+
+    currentSessionInterval = window.setInterval(tick, 1000);
+  };
+
   const handleClick = () => {
     // End current session
     window.clearInterval(currentSessionInterval);
@@ -174,21 +240,33 @@ export const LittleSunComponent: (props: {
     }
   };
 
+  const getDisplayTime = () => {
+    if (getIsBudgetMode() && getBudgetRemaining() !== null) {
+      return formatSessionTime(getBudgetRemaining()!);
+    }
+    if (getRemainingSeconds() !== null) {
+      return formatSessionTime(getRemainingSeconds()!);
+    }
+    return formatSessionTime(getSessionTime());
+  };
+
   return (
     <div
       id="minded-6622-little-sun"
-      title="Tap to end session"
+      title={
+        getIsBudgetMode() ? "Daily budget remaining" : "Tap to end session"
+      }
       classList={{
         ["bottomLeft"]: true,
         ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
+        ["budgetMode"]: getIsBudgetMode(),
       }}
     >
       <div id="minded-6622-little-sun-sun-wrapper">
         <div id="minded-6622-little-sun-sun" onClick={handleClick}>
-          {getRemainingSeconds() !== null
-            ? formatSessionTime(getRemainingSeconds()!)
-            : formatSessionTime(getSessionTime())}
+          {getDisplayTime()}
         </div>
+        {getIsBudgetMode() && <div class="minded-6622-budget-label">today</div>}
       </div>
     </div>
   );

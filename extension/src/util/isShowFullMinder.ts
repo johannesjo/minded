@@ -1,21 +1,31 @@
 import { SyncData } from "@src/dataInterface/syncData";
+import { hasBudgetRemaining } from "@src/util/budget";
+import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
 /**
  * Determines whether to show the full intervention or just the little sun.
- * Simple logic: show full intervention if no active session, show little sun if session is active.
+ * Returns false (skip full intervention) if:
+ * - Active session timer exists
+ * - Daily budget has remaining time
  */
 export const isShowFullMinder = (
-  _currentUrl: string,
+  currentUrl: string,
   syncData: SyncData,
 ): boolean => {
   const now = Date.now();
   const activeTimer = syncData.activeTimer;
 
-  // Show full intervention if no active session or session has expired
-  if (!activeTimer || activeTimer.endTS <= now) {
-    return true;
+  // Active session exists and hasn't expired → show little sun (not full intervention)
+  if (activeTimer && activeTimer.endTS > now) {
+    return false;
   }
 
-  // Active session exists and hasn't expired → show little sun (not full intervention)
-  return false;
+  // Check if daily budget has remaining time
+  const host = getHostFromUrl(currentUrl);
+  if (hasBudgetRemaining(syncData, host)) {
+    return false;
+  }
+
+  // No active session and no budget remaining → show full intervention
+  return true;
 };
