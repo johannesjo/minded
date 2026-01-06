@@ -1,4 +1,5 @@
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
+import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 
@@ -22,6 +23,12 @@ const Options = () => {
       <br />
 
       <SoundSettings onAfterSave={onAfterSave} />
+
+      <br />
+      <hr style="opacity: 0.2; margin: 32px 0;" />
+      <br />
+
+      <BudgetSettings onAfterSave={onAfterSave} />
 
       <br />
       <hr style="opacity: 0.2; margin: 32px 0;" />
