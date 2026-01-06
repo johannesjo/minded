@@ -5,7 +5,7 @@ import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 
 const Options = () => {
   const onAfterSave = () => {
-    alert("The settings have been saved!");
+    // Settings auto-save, no alert needed
   };
 
   return (
