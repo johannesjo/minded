@@ -33,25 +33,4 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-}
-
-.optionBtn {
-  padding: 8px 16px;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-  border-radius: var(--border-radius, 8px);
-  background: var(--card-bg, #fff);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--hover-bg, rgba(0, 0, 0, 0.05));
-  }
-
-  &.isSelected {
-    background: var(--accent-color, #4a90d9);
-    color: #fff;
-    border-color: var(--accent-color, #4a90d9);
-  }
 }
