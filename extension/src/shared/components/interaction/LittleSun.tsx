@@ -93,6 +93,18 @@ export const LittleSunComponent: (props: {
   onCleanup(() => {
     window.clearTimeout(t0);
     window.clearInterval(currentSessionInterval);
+
+    // Save accumulated budget usage on unmount
+    if (getIsBudgetMode() && budgetUsageAccumulator > 0) {
+      getSyncData().then((syncData) => {
+        const usageUpdate = addBudgetUsage(
+          syncData,
+          props.host,
+          budgetUsageAccumulator,
+        );
+        updateSyncData(usageUpdate);
+      });
+    }
   });
 
   const formatSessionTime = (seconds: number): string => {
