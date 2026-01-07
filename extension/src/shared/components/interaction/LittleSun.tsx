@@ -271,14 +271,12 @@ export const LittleSunComponent: (props: {
       classList={{
         ["bottomLeft"]: true,
         ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
-        ["budgetMode"]: getIsBudgetMode(),
       }}
     >
       <div id="minded-6622-little-sun-sun-wrapper">
         <div id="minded-6622-little-sun-sun" onClick={handleClick}>
           {getDisplayTime()}
         </div>
-        {getIsBudgetMode() && <div class="minded-6622-budget-label">today</div>}
       </div>
     </div>
   );

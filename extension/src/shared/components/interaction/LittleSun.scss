@@ -113,20 +113,3 @@ $shadow: var(--little-sun-shadow);
     opacity: 0;
   }
 }
-
-// Budget mode styling
-#minded-6622-little-sun.budgetMode {
-  #minded-6622-little-sun-sun {
-    background: var(--little-sun-budget-bg, #e8d4b8);
-  }
-}
-
-.minded-6622-budget-label {
-  font-size: 9px;
-  text-align: center;
-  color: #956969;
-  opacity: 0.7;
-  margin-top: 2px;
-  pointer-events: none;
-  user-select: none;
-}
