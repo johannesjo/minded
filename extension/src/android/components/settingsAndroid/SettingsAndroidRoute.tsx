@@ -1,6 +1,7 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { SettingsAndroid } from "./SettingsAndroid";
+import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { Toast } from "@src/shared/components/ui/Toast";
@@ -49,6 +50,10 @@ export const SettingsAndroidRoute = () => {
         autoSave={false}
         onChange={(enabled) => setPendingSound(enabled)}
       />
+
+      <hr style="opacity: 0.2; margin: 32px 16px;" />
+
+      <BudgetSettings />
 
       <hr style="opacity: 0.2; margin: 32px 16px;" />
 
