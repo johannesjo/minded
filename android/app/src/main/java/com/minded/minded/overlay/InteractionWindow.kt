@@ -1,6 +1,7 @@
 package com.minded.minded.overlay
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.graphics.PixelFormat
 import android.util.Log
 import android.view.View
@@ -79,6 +80,11 @@ class InteractionWindow(
     }
 
 
+    private fun isPhone(): Boolean {
+        val smallestWidth = ctrlSvc.resources.configuration.smallestScreenWidthDp
+        return smallestWidth < 600
+    }
+
     override fun getLayoutParams(): WindowManager.LayoutParams {
         @Suppress("DEPRECATION") return WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -102,6 +108,11 @@ class InteractionWindow(
             // Allow drawing into display cutout (notch) area
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+
+            // Lock to portrait on phones only (tablets have enough space for landscape)
+            if (isPhone()) {
+                screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
         }
     }
