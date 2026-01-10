@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { InteractionWeb } from "@src/shared/components/interaction/InteractionWeb";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
 import {
@@ -10,6 +10,8 @@ import {
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { updateSyncData } from "@src/dataInterface/commonSyncDataInterface";
+import { bro } from "@src/util/browser";
+import { SyncData } from "@src/dataInterface/syncData";
 
 const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 
@@ -32,8 +34,32 @@ export const ContentScriptMain: (props: {
     }
   };
 
+  // Listen for activeTimer changes from other tabs
+  const handleStorageChange = (
+    changes: { [key: string]: { newValue?: unknown; oldValue?: unknown } },
+    areaName: string,
+  ) => {
+    if (areaName !== "sync" || !("activeTimer" in changes)) return;
+
+    const newTimer = changes.activeTimer.newValue as SyncData["activeTimer"];
+    const now = Date.now();
+
+    if (newTimer && newTimer.endTS > now) {
+      // Timer was set (in this or another tab) → show LittleSun
+      if (getIsShowFullMinder()) {
+        setIsShowFullMinder(false);
+      }
+    } else if (!newTimer && !getIsShowFullMinder()) {
+      // Timer was cleared → show fresh intervention
+      setIsShowFullMinder(true);
+    }
+  };
+
   onMount(async () => {
     addWrapperClasses(props.shadowRoot);
+
+    // Register storage change listener for cross-tab sync
+    bro.storage.onChanged.addListener(handleStorageChange);
 
     if (props.isShowFullMinderInitially) {
       setTimeout(() => {
@@ -54,17 +80,14 @@ export const ContentScriptMain: (props: {
       updateHostsEntry(host, {
         lastUsedTS: now,
         sessionDurationInS: 0,
-        sessionEndTS: null,
-        sessionLimitInS: null,
       });
     } else {
       updateHostsEntry(host, { lastUsedTS: now });
     }
+  });
 
-    // If session expired, reset timing fields
-    if (dataForHost?.sessionEndTS && now >= dataForHost.sessionEndTS) {
-      updateHostsEntry(host, { sessionEndTS: null, sessionLimitInS: null });
-    }
+  onCleanup(() => {
+    bro.storage.onChanged.removeListener(handleStorageChange);
   });
 
   return (
