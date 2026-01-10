@@ -10,6 +10,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
 import { getBudgetState, addBudgetUsage } from "@src/util/budget";
+import { formatSessionTime } from "@src/util/formatTime";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -56,32 +57,23 @@ export const LittleSunComponent: (props: {
       return;
     }
 
-    // Check for session mode
-    let sessionEnd = d?.sessionEndTS ?? null;
-    let sessionLimit = d?.sessionLimitInS ?? null;
+    // Check for session mode using global timer
+    const activeTimer = syncData.activeTimer;
 
-    if (syncData.activeTimer?.endTS && syncData.activeTimer.endTS > now) {
-      sessionEnd = syncData.activeTimer.endTS;
-      sessionLimit = syncData.activeTimer.durationS;
-    }
-
-    if (sessionEnd && sessionEnd > now) {
-      if (sessionLimit === -1) {
+    if (activeTimer && activeTimer.endTS > now) {
+      if (activeTimer.durationS === -1) {
         // For rest-of-day: show count-up timer (elapsed session time)
         initCounter(d?.sessionDurationInS ?? 0);
       } else {
         // For timed sessions: show countdown timer (time left)
-        startCountdown(sessionEnd, sessionLimit);
+        startCountdown(activeTimer.endTS);
       }
     } else {
       // No active session or session expired
       initCounter(d?.sessionDurationInS ?? 0);
-      // Clear any stale timing info
-      if (sessionEnd) {
-        updateHostsEntry(props.host, {
-          sessionEndTS: null,
-          sessionLimitInS: null,
-        });
+      // Clear stale global timer if needed
+      if (activeTimer) {
+        updateSyncData({ activeTimer: null });
       }
     }
 
@@ -107,23 +99,6 @@ export const LittleSunComponent: (props: {
     }
   });
 
-  const formatSessionTime = (seconds: number): string => {
-    if (seconds >= 3600) {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      return `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
-    }
-    if (seconds >= 60) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
-    }
-    if (seconds >= 30) {
-      return "" + seconds;
-    }
-    return "";
-  };
-
   const initCounter = (initialValue: number) => {
     if (initialValue) {
       setSessionTime(initialValue);
@@ -148,10 +123,7 @@ export const LittleSunComponent: (props: {
     }, 1000);
   };
 
-  const startCountdown = (
-    sessionEndTS: number,
-    sessionLimitInS: number | null,
-  ) => {
+  const startCountdown = (sessionEndTS: number) => {
     if (currentSessionInterval) {
       window.clearInterval(currentSessionInterval);
     }
@@ -164,20 +136,12 @@ export const LittleSunComponent: (props: {
       setRemainingSeconds(remaining);
 
       // Keep last-used timestamp fresh
-      updateHostsEntry(props.host, {
-        lastUsedTS: Date.now(),
-        sessionEndTS,
-        sessionLimitInS,
-      });
+      updateHostsEntry(props.host, { lastUsedTS: Date.now() });
 
       if (remaining <= 0) {
         window.clearInterval(currentSessionInterval);
-        // Clear session window and trigger full intervention again
-        updateHostsEntry(props.host, {
-          sessionEndTS: null,
-          sessionLimitInS: null,
-          sessionDurationInS: 0,
-        });
+        // Clear session and trigger full intervention again
+        updateHostsEntry(props.host, { sessionDurationInS: 0 });
         updateSyncData({ activeTimer: null });
         props.onShowFreshInteraction();
       }
@@ -238,11 +202,7 @@ export const LittleSunComponent: (props: {
   const handleClick = () => {
     // End current session
     window.clearInterval(currentSessionInterval);
-    updateHostsEntry(props.host, {
-      sessionEndTS: null,
-      sessionLimitInS: null,
-      sessionDurationInS: 0,
-    });
+    updateHostsEntry(props.host, { sessionDurationInS: 0 });
     updateSyncData({ activeTimer: null });
 
     if (props.onTap) {

@@ -109,8 +109,6 @@ export const InteractionWeb: (props: {
     });
 
     await updateHostsEntry(props.host, {
-      sessionLimitInS: seconds,
-      sessionEndTS: endTs,
       lastUsedTS: now,
       sessionDurationInS: 0,
     });

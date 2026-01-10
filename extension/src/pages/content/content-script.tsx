@@ -11,9 +11,6 @@ import styleAsString from "./content-script.scss?inline";
 import { render, delegateEvents } from "solid-js/web";
 import { isShowFullMinder } from "@src/util/isShowFullMinder";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
-// @ts-ignore
-import { loadDataForHost } from "@dataInterface/localDataInterface";
-import { getHostFromUrl } from "@src/util/getHostFromUrl";
 
 const CURRENT_URL = window.location.href;
 
@@ -41,11 +38,9 @@ const CURRENT_URL = window.location.href;
           return;
         }
 
-        // Load per-host data before render to avoid flickering
-        const host = getHostFromUrl(CURRENT_URL);
-        const dataForHost = await loadDataForHost(host);
+        // Check for active session using global timer
         const hasActiveSession =
-          dataForHost?.sessionEndTS && dataForHost.sessionEndTS > Date.now();
+          syncData.activeTimer && syncData.activeTimer.endTS > Date.now();
 
         // Create Shadow DOM host element for complete style isolation
         const hostEl = document.createElement("minded-app");
