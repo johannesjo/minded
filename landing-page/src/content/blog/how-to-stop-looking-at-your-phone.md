@@ -29,7 +29,7 @@ The blocker becomes just another obstacle to work around. And [Roy Baumeister's 
 
 Here's why: **Your phone exploits variable reward schedules**—the same mechanism B.F. Skinner demonstrated makes slot machines so addictive. Sometimes you check and get nothing. Sometimes you get a like, a message, breaking news. That unpredictability keeps you checking compulsively.
 
-Research from Wendy Wood at Duke University found that 43% of our daily behaviors are habits—automatic actions we perform without conscious thought. Add the "brain drain" effect from Adrian Ward's 2017 study at the University of Texas, which found that merely having your phone nearby reduces available cognitive capacity, and you're fighting a losing battle.
+Research from Wendy Wood at the University of Southern California found that 43% of our daily behaviors are habits—automatic actions we perform without conscious thought. Add the "brain drain" effect from Adrian Ward's 2017 study at the University of Texas, which found that merely having your phone nearby reduces available cognitive capacity (though a 2022 replication found mixed results), and you're fighting a losing battle.
 
 > "The people with the best self-control are typically the ones who need to use it the least." — James Clear, *Atomic Habits*
 
