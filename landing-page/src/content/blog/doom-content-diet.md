@@ -1,5 +1,5 @@
 ---
-title: "The Doom Content Diet: How to Stop Feeding Your Brain Negativity"
+title: "Stop Feeding Your Brain Negativity: A Content Diet Guide"
 description: "Rage-bait, bad news, and outrage algorithms are hijacking your mood. Here's how to stay informed without drowning in doom."
 pubDate: 2025-01-15
 heroImage: "/blog/doom-content-diet.jpg"

@@ -7,7 +7,7 @@ heroImage: "/mood-checkin.png"
 
 We are addicted to the "overnight success" story. We imagine that changing our lives requires a massive, earth-shattering event. We wait for the "perfect time" to start a new diet, write a book, or overhaul our productivity. We rely on bursts of intense motivation, believing that sheer willpower will carry us across the finish line.
 
-But psychology—and neuroscience—tell a different story. Lasting change isn't the result of a single heroic effort; it's the product of **"small wins"**—tiny, consistent actions that compound over time to produce massive results.
+But psychology—and neuroscience—tell a different story. Lasting change isn't the result of a single heroic effort; it's the product of **"small wins"**—tiny, consistent actions that compound over time to produce massive results. Building habits that stick requires patience, not perfection.
 
 ## The Trap of the "Quantum Leap"
 

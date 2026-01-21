@@ -1,13 +1,13 @@
 ---
 title: "Breaking the Habit Loop: The Science of Changing Behavior"
-description: "Understanding how habits work is the first step to changing them. Learn about the cue-routine-reward loop and practical strategies to break unwanted digital habits."
+description: "Learn about the cue-routine-reward loop and practical strategies to break unwanted digital habits. Understanding habits is the first step to change."
 pubDate: 2025-12-28
 heroImage: "/blog/habit-loop.jpg"
 ---
 
 Every time you unlock your phone without thinking, check Instagram out of boredom, or open a new tab only to forget why—you're experiencing the power of habit loops. These automatic behaviors run on autopilot, often without our conscious awareness.
 
-But here's the good news: habits are not destiny. By understanding how they work, you can rewire them.
+But here's the good news: habits are not destiny. Breaking free from unwanted patterns starts with understanding how they work, and then you can rewire them.
 
 ## The Anatomy of a Habit
 

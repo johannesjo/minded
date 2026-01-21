@@ -1,13 +1,13 @@
 ---
-title: "Why Willpower Fails: Designing Your Environment for Digital Wellness"
-description: "Stop blaming yourself for checking your phone too much. The problem isn't your willpower—it's your environment. Learn how to design your surroundings to make good habits effortless."
+title: "Why Willpower Fails: Design Your Digital Environment"
+description: "The problem isn't your willpower—it's your environment. Learn how to design your surroundings to make good digital habits effortless."
 pubDate: 2025-12-22
 heroImage: "/blog/environment-design.jpg"
 ---
 
 Every time you give in to the urge to check your phone, a small voice whispers: *"You're weak. You have no discipline."* You promise yourself you'll do better tomorrow. You download another screen-time app. You set another goal. And then, inevitably, you fail again.
 
-Here's the truth that might set you free: **the problem isn't you. It's your environment.**
+Here's the truth that might set you free: **willpower fails when your digital environment is working against you.** The problem isn't you. It's your surroundings.
 
 ## The Willpower Myth
 
@@ -35,33 +35,33 @@ The goal isn't to fight your impulses—it's to remove the need to fight them in
 
 Your phone's physical location matters more than your intentions. A 2017 study from the University of Texas found that having your phone visible—even face-down and silenced—can reduce available cognitive capacity. The mere presence of the device occupies mental resources, even when you're not using it.
 
-*   **At work:** Put your phone in a drawer, a bag, or another room entirely.
-*   **At home:** Designate a "phone spot" that isn't your pocket or hand.
-*   **At night:** Charge your phone outside your bedroom.
+*   At work: Put your phone in a drawer, a bag, or another room entirely.
+*   At home: Designate a "phone spot" that isn't your pocket or hand.
+*   At night: Charge your phone outside your bedroom.
 
 ### 2. Add Friction to Bad Habits
 
 Every extra step between you and a bad habit reduces the likelihood you'll do it.
 
-*   **Delete social media apps** from your phone. You can still access them via browser—it's just annoying enough to break the autopilot.
-*   **Log out** of distracting websites. Having to enter a password creates a pause.
-*   **Use app blockers** that require a 30-second wait before opening certain apps.
+*   Delete social media apps from your phone. You can still access them via browser—it's just annoying enough to break the autopilot.
+*   Log out of distracting websites. Having to enter a password creates a pause.
+*   Use app blockers that require a 30-second wait before opening certain apps.
 
 ### 3. Remove Friction from Good Habits
 
 Make the right choice the easiest choice.
 
-*   **Put a book on your pillow** so it's the first thing you see at night.
-*   **Set your phone to grayscale**—it makes the screen less appealing.
-*   **Use "Do Not Disturb" by default**, not as an exception.
+*   Put a book on your pillow so it's the first thing you see at night.
+*   Set your phone to grayscale—it makes the screen less appealing.
+*   Use "Do Not Disturb" by default, not as an exception.
 
 ### 4. Design Your Defaults
 
 Most people never change default settings. Use this to your advantage.
 
-*   **Turn off all non-essential notifications.** If it's not a call or a text from a human, it can wait.
-*   **Remove your email app from your home screen.** Check email intentionally, not reactively.
-*   **Set your browser homepage** to something calm—a blank page, a to-do list, or a focus app.
+*   Turn off all non-essential notifications. If it's not a call or a text from a human, it can wait.
+*   Remove your email app from your home screen. Check email intentionally, not reactively.
+*   Set your browser homepage to something calm—a blank page, a to-do list, or a focus app.
 
 ## Minded: Environment Design in Action
 

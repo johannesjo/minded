@@ -1,13 +1,13 @@
 ---
 title: "Sleep and Screens: How Your Devices Are Stealing Your Rest"
-description: "Blue light, endless scrolling, and the 'one more video' trap are sabotaging your sleep. Learn the science behind screen-induced insomnia and practical strategies to reclaim your nights."
+description: "Blue light and endless scrolling sabotage your sleep. Learn the science behind screen-induced insomnia and how to reclaim your nights."
 pubDate: 2026-01-05
 heroImage: "/blog/sleep-screens.jpg"
 ---
 
 It's 11 PM. You told yourself you'd be asleep by now. But here you are, phone in hand, scrolling through videos you won't remember tomorrow. "Just five more minutes," you think—for the third time.
 
-Sound familiar? You're not alone. About 90% of adults use screens within an hour of bedtime at least a few nights per week, and most keep their phone in the bedroom. That habit is costing you more than just time.
+Sound familiar? You're not alone. About 90% of adults use screens within an hour of bedtime at least a few nights per week, and most keep their phone in the bedroom. That habit is stealing more than just time—it's stealing your rest.
 
 ## The Science of Screen-Disrupted Sleep
 

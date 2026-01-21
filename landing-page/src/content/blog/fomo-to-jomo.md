@@ -1,6 +1,6 @@
 ---
 title: "From FOMO to JOMO: Finding the Joy of Missing Out"
-description: "Fear of Missing Out keeps us glued to our screens. But what if missing out is actually the path to a richer life? Learn how to embrace JOMO and reclaim your peace."
+description: "FOMO keeps us glued to screens. What if missing out leads to a richer life? Learn to embrace JOMO and reclaim your peace."
 pubDate: 2025-12-27
 heroImage: "/blog/jomo.jpg"
 ---

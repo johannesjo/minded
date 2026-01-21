@@ -1,6 +1,6 @@
 ---
 title: "How to Focus in a World Designed for Distraction"
-description: "Deep work is a superpower in the 21st century. But how do you cultivate it when everything is trying to steal your attention? This article dives into the science of focus and provides a tactical guide to reclaiming it."
+description: "Deep work is a superpower. Learn the science of focus and get a tactical guide to reclaiming your attention in a distracted world."
 pubDate: 2025-11-24
 heroImage: "/blog/reclaiming-focus.jpg"
 ---

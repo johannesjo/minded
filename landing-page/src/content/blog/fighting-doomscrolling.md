@@ -5,11 +5,11 @@ pubDate: 2025-11-24
 heroImage: "/blog/doomscrolling.jpg"
 ---
 
-It starts innocently enough. You check a headline. Then you click a related article. Then you check the comments. Twenty minutes later, you are deep in a rabbit hole of bad news, feeling anxious, helpless, and exhausted. This is **doomscrolling**.
+It starts innocently enough. You check a headline. Then you click a related article. Then you check the comments. Twenty minutes later, you are deep in a rabbit hole of bad news, feeling anxious, helpless, and exhausted. This is **doom-scrolling**.
 
-It’s not just a bad habit; it’s a biological response. Our brains are wired to pay attention to threats. When we see negative news, our "fight or flight" response triggers, keeping us glued to the screen in a misguided attempt to stay safe by "knowing everything."
+It's not just a bad habit; it's a biological response. Our brains are wired to pay attention to threats. When we see negative news, our "fight or flight" response triggers, keeping us glued to the screen in a misguided attempt to stay safe by "knowing everything."
 
-Here is how to hack your brain back into a state of calm.
+Here are five practical tips to beat this cycle and hack your brain back into a state of calm.
 
 ## 1. The "Why" Check
 We often doomscroll to numb ourselves from difficult emotions like boredom, loneliness, or stress. The scrolling is a symptom, not the cause.

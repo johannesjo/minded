@@ -1,6 +1,6 @@
 ---
 title: "The Science of Boredom: Why Your Brain Needs Idle Time"
-description: "We've declared war on boredom—and our creativity, mental health, and self-awareness are paying the price. Here's why doing nothing might be the most productive thing you can do."
+description: "We've declared war on boredom—and our creativity is paying the price. Learn why doing nothing might be the most productive thing you can do."
 pubDate: 2025-12-22
 heroImage: "/blog/science-of-boredom.jpg"
 ---
@@ -9,7 +9,7 @@ When was the last time you were truly bored? Not restless-while-scrolling bored.
 
 If you can't remember, you're not alone. We've engineered boredom out of existence. Every elevator ride, every checkout line, every moment of silence gets filled with a glance at our phones. We treat empty moments like emergencies—gaps to be plugged as quickly as possible.
 
-But what if boredom isn't the enemy? What if it's exactly what your overstimulated brain is starving for?
+But what if boredom isn't the enemy? What if it's exactly what your overstimulated brain needs? The science is clear: your brain needs idle time to function at its best.
 
 ## Boredom Is a Signal, Not a Problem
 

@@ -1,13 +1,13 @@
 ---
 title: "Why You Can't Focus at Work Anymore (And How to Fix It)"
-description: "If deep focus feels impossible and your phone keeps pulling you away from work, you're not lazy—you're fighting a system designed to distract you. Here's how to fight back."
+description: "Deep focus feels impossible? Your phone pulls you from work? You're fighting a system designed to distract. Here's how to fight back."
 pubDate: 2025-01-15
 heroImage: "/blog/focus-at-work.jpg"
 ---
 
 You sit down to work on something important. Within minutes, you've checked your phone. You weren't even conscious of reaching for it. Now you're behind, frustrated, and somehow less motivated than before.
 
-If this sounds like your average workday, you're not alone—and you're not lazy. The modern knowledge worker faces an unprecedented attention crisis. The tools we need for work are the same tools designed to distract us. And our brains are losing the battle.
+If this sounds like your average workday, you're not alone—and you're not lazy. The modern knowledge worker faces an unprecedented attention crisis. You can't focus anymore not because you're broken, but because the tools we need for work are the same tools designed to distract us. The good news: there's a fix. You just need to understand what's happening to your brain.
 
 ## The Attention Crisis Is Real
 

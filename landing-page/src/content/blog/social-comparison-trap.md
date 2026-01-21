@@ -1,6 +1,6 @@
 ---
-title: "The Social Comparison Trap: Why Scrolling Makes You Feel Inadequate"
-description: "Social media feeds are highlight reels that trigger constant comparison. Learn why your brain compares, how platforms exploit this instinct, and practical ways to build self-worth beyond likes."
+title: "The Social Comparison Trap: Why Scrolling Hurts"
+description: "Social media triggers constant comparison. Learn why your brain compares, how platforms exploit it, and how to build self-worth beyond likes."
 pubDate: 2026-01-05
 heroImage: "/blog/comparison-trap.jpg"
 ---
