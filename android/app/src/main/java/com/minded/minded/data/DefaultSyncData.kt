@@ -22,5 +22,7 @@ val defaultSyncData = SyncData(
     attempts = emptyMap(),
     lastBrowsingBehaviorRatingTS = 99L,
     browsingBehaviorRating = emptyMap(),
-    activeTimer = null
+    activeTimer = null,
+    dailyBudget = null,
+    dailyUsage = emptyMap()
 )
