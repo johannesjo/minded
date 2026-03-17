@@ -59,5 +59,31 @@ fun syncDataToJson(syncData: SyncData): String {
         jsonObject.put("activeTimer", timerObj)
     }
 
+    if (syncData.dailyBudget != null) {
+        val budgetObj = JSONObject()
+        budgetObj.put("globalMinutes", syncData.dailyBudget.globalMinutes)
+        if (syncData.dailyBudget.perSiteMinutes != null) {
+            val perSiteObj = JSONObject()
+            syncData.dailyBudget.perSiteMinutes.forEach { (key, value) ->
+                perSiteObj.put(key, value)
+            }
+            budgetObj.put("perSiteMinutes", perSiteObj)
+        }
+        jsonObject.put("dailyBudget", budgetObj)
+    }
+
+    val dailyUsageObj = JSONObject()
+    syncData.dailyUsage.forEach { (dateKey, usage) ->
+        val usageObj = JSONObject()
+        usageObj.put("totalSeconds", usage.totalSeconds)
+        val perSiteObj = JSONObject()
+        usage.perSite.forEach { (host, seconds) ->
+            perSiteObj.put(host, seconds)
+        }
+        usageObj.put("perSite", perSiteObj)
+        dailyUsageObj.put(dateKey, usageObj)
+    }
+    jsonObject.put("dailyUsage", dailyUsageObj)
+
     return jsonObject.toString()
 }

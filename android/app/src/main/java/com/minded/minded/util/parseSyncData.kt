@@ -22,6 +22,16 @@ data class ActiveTimer(
     val durationS: Int
 )
 
+data class DailyBudget(
+    val globalMinutes: Int,
+    val perSiteMinutes: Map<String, Int>?
+)
+
+data class DailyUsage(
+    val totalSeconds: Int,
+    val perSite: Map<String, Int>
+)
+
 data class SyncData(
     val cfg: UserCfg,
     val answers: List<Answer>,
@@ -36,7 +46,9 @@ data class SyncData(
     val attempts: Map<String, Int>,
     val lastBrowsingBehaviorRatingTS: Long,
     val browsingBehaviorRating: Map<String, Int>,
-    val activeTimer: ActiveTimer?
+    val activeTimer: ActiveTimer?,
+    val dailyBudget: DailyBudget?,
+    val dailyUsage: Map<String, DailyUsage>
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -97,6 +109,25 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         )
     }
 
+    val dailyBudget = jsonObject.optJSONObject("dailyBudget")?.let { budgetObj ->
+        val globalMinutes = budgetObj.getInt("globalMinutes")
+        val perSiteMinutes = budgetObj.optJSONObject("perSiteMinutes")?.let { perSiteObj ->
+            perSiteObj.keys().asSequence().associateWith { perSiteObj.getInt(it) }
+        }
+        DailyBudget(globalMinutes, perSiteMinutes)
+    }
+
+    val dailyUsage = jsonObject.optJSONObject("dailyUsage")?.let { usageObj ->
+        usageObj.keys().asSequence().associateWith { dateKey ->
+            val dayObj = usageObj.getJSONObject(dateKey)
+            val totalSeconds = dayObj.getInt("totalSeconds")
+            val perSite = dayObj.optJSONObject("perSite")?.let { perSiteObj ->
+                perSiteObj.keys().asSequence().associateWith { perSiteObj.getInt(it) }
+            } ?: emptyMap()
+            DailyUsage(totalSeconds, perSite)
+        }
+    } ?: emptyMap()
+
     return SyncData(
         userCfg,
         answers,
@@ -111,6 +142,8 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         attempts,
         lastBrowsingBehaviorRatingTS,
         browsingBehaviorRating,
-        activeTimer
+        activeTimer,
+        dailyBudget,
+        dailyUsage
     )
 }
