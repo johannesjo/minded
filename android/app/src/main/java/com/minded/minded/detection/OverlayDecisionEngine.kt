@@ -72,8 +72,11 @@ class OverlayDecisionEngine {
         return if (isWithinSessionLimit) {
             // Active session exists - show little sun
             OverlayDecision.ShowLittleSun
+        } else if (state.hasBudgetRemaining) {
+            // Daily budget has remaining time - show little sun
+            OverlayDecision.ShowLittleSun
         } else {
-            // No active session - show intervention
+            // No active session and no budget remaining - show intervention
             OverlayDecision.ShowIntervention
         }
     }
@@ -123,7 +126,10 @@ data class OverlayState(
     val appSessionEndTime: Long? = null,
 
     /** Global active timer end time (if any) */
-    val activeTimerEndTime: Long? = null
+    val activeTimerEndTime: Long? = null,
+
+    /** Whether the daily budget has remaining time */
+    val hasBudgetRemaining: Boolean = false
 )
 
 /**
