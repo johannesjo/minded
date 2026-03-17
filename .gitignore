@@ -1,4 +1,5 @@
 /.idea/
+/.worktrees/
 /android/.idea/
 /android/app/release/
 node_modules/
