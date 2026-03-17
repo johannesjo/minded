@@ -133,6 +133,9 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     alternativeWebsites: [],
     activeTimer: null,
     emotionLabeling: null,
+    dailyBudget: null,
+    dailyUsage: {},
+    budgetPromptDismissedTS: DEFAULT_TS_VAL,
   };
 
   return {

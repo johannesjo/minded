@@ -3,6 +3,7 @@ import {
   DashboardGroup,
   DashboardGroupAppUsageHappiness,
   DashboardGroupBrowsingBehaviorHappiness,
+  DashboardGroupDailyBudgetRemaining,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
@@ -10,6 +11,7 @@ import {
   DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
+import { getBudgetState } from "@src/util/budget/getBudgetState";
 import {
   FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
   QUESTION_CATEGORIES,
@@ -63,6 +65,16 @@ export const getDashboardEntriesFromQuestions = (
 
   const sortedEntries: DashboardGroup[] = dashboardGroups;
   let fixedEntriesIndexAndNr = 0;
+
+  if (syncData.dailyBudget) {
+    const budgetState = getBudgetState(syncData);
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      type: DashboardGroupType.DailyBudgetRemaining,
+      remainingSeconds: budgetState.remainingSeconds,
+      totalBudgetSeconds: budgetState.totalBudgetSeconds,
+    } as DashboardGroupDailyBudgetRemaining);
+    fixedEntriesIndexAndNr++;
+  }
 
   if (syncData.sunTaps[ds] > 0) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
