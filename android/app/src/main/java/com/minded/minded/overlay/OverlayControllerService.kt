@@ -30,6 +30,8 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.util.getBudgetRemainingSeconds
+import com.minded.minded.util.hasBudgetRemaining
 import com.minded.minded.util.parseSyncData
 import com.minded.minded.util.ActiveTimer
 import com.minded.minded.util.SyncData
@@ -424,6 +426,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
 
+    internal fun getSharedPreferenceService(): SharedPreferenceService = sharedPreferenceService
+
     internal fun isBlockedPackage(packageName: String): Boolean {
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "isBlockedPackage() - checking $packageName against blocked apps: $blockedApps")
@@ -476,6 +480,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
         }
 
+        val syncData = sharedPreferenceService.getSyncData()
+        val budgetRemaining = hasBudgetRemaining(syncData)
+
         val isRecentAppSwitch = lastGoToAppTimestamp > 0 &&
             System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
         val isBlocked = isBlockedPackage(currentPackageName)
@@ -525,8 +532,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (!littleSunOverlayWindow.isWindowShown()) {
                     showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
                 }
+            } else if (budgetRemaining) {
+                // Daily budget has remaining time → show little sun with budget countdown
+                if (!littleSunOverlayWindow.isWindowShown()) {
+                    val remainingSeconds = getBudgetRemainingSeconds(syncData)
+                    Log.v(logTag, "Budget has ${remainingSeconds}s remaining, showing little sun (budget mode)")
+                    val budgetEndTime = Instant.now().plusSeconds(remainingSeconds.toLong())
+                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(budgetEndTime)
+                    showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
+                }
             } else {
-                // No active session → show fresh intervention
+                // No active session and no budget remaining → show fresh intervention
                 Log.v(logTag, "No active session, SHOW FRESH INTERACTION OVERLAY for: $currentPackageName")
                 showOverlay(
                     OverlayName.INTERACTION_OVERLAY,
