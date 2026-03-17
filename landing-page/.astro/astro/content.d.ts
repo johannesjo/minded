@@ -204,6 +204,20 @@ declare module 'astro:content' {
   collection: "blog";
   data: any
 } & { render(): Render[".md"] };
+"morning-phone-routine.md": {
+	id: "morning-phone-routine.md";
+  slug: "morning-phone-routine";
+  body: string;
+  collection: "blog";
+  data: any
+} & { render(): Render[".md"] };
+"notification-psychology.md": {
+	id: "notification-psychology.md";
+  slug: "notification-psychology";
+  body: string;
+  collection: "blog";
+  data: any
+} & { render(): Render[".md"] };
 "reclaiming-focus.md": {
 	id: "reclaiming-focus.md";
   slug: "reclaiming-focus";
