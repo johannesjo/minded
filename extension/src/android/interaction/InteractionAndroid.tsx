@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { onMount } from "solid-js";
+import { onCleanup, onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
@@ -61,8 +61,7 @@ const InteractionAndroid = () => {
       window.addEventListener("resize", handleViewportChange);
     }
 
-    // Cleanup
-    return () => {
+    onCleanup(() => {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener(
           "resize",
@@ -71,7 +70,7 @@ const InteractionAndroid = () => {
       } else {
         window.removeEventListener("resize", handleViewportChange);
       }
-    };
+    });
   });
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {

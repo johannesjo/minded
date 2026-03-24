@@ -1,6 +1,7 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
+import { mergeSyncDataWithDefaults } from "@src/dataInterface/mergeSyncDataWithDefaults";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 
 const ITEMS_DO_DELETE_IF_OVER_QUOTE = 15;
@@ -13,10 +14,9 @@ const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
 
 export const getSyncDataN = (): Promise<SyncData> => {
   if (bro.runtime?.id) {
-    return bro.storage.sync.get().then((syncData) => ({
-      ...DEFAULT_SYNC_DATA,
-      ...syncData,
-    }));
+    return bro.storage.sync.get().then((syncData) =>
+      mergeSyncDataWithDefaults(syncData),
+    );
   } else {
     throw new Error(
       "Extension was reloaded, please reload tab for it to work here again",

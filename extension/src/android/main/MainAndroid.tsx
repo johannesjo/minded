@@ -1,5 +1,5 @@
 import RoutesCmp from "@src/shared/RouteCmp";
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 import {
   ANDROID_EV_RESUME,
   androidInterface,
@@ -9,6 +9,7 @@ import {
   addWrapperClasses,
   setIsDarkModeIfApplies,
 } from "@src/shared/addWrapperClasses";
+import { safeJsonParse } from "@src/util/safeJsonParse";
 import { SyncData } from "@src/dataInterface/syncData";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
@@ -35,7 +36,7 @@ const MainAndroid = () => {
 
     setTimeout(() => {
       setMissingCapabilities(
-        JSON.parse(androidInterface.getMissingCapabilities()) as string[],
+        safeJsonParse<string[]>(androidInterface.getMissingCapabilities(), []),
       );
     });
   };
@@ -43,9 +44,14 @@ const MainAndroid = () => {
   onMount(() => {
     refresh();
 
-    window.addEventListener(ANDROID_EV_RESUME, () => {
+    const resumeHandler = () => {
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
       refresh();
+    };
+    window.addEventListener(ANDROID_EV_RESUME, resumeHandler);
+
+    onCleanup(() => {
+      window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
     });
   });
 

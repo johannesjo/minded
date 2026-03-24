@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
+import java.util.Collections
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.*
  */
 class HybridAppDetector(private val context: Context) {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     // Health monitoring
     val healthMonitor = ServiceHealthMonitor()
@@ -43,7 +44,7 @@ class HybridAppDetector(private val context: Context) {
     private var usageStatsPollingJob: Job? = null
 
     // Track detection discrepancies for debugging
-    private val detectionDiscrepancies = mutableListOf<DetectionDiscrepancy>()
+    private val detectionDiscrepancies = Collections.synchronizedList(mutableListOf<DetectionDiscrepancy>())
 
     // Callback to check if an app is blocked (for fallback detection)
     private var isBlockedAppCallback: ((String) -> Boolean)? = null
@@ -69,6 +70,11 @@ class HybridAppDetector(private val context: Context) {
      */
     fun start() {
         Log.d(TAG, "Starting hybrid app detector")
+        // Cancel previous scope if start() is called without stop()
+        if (scope.isActive) {
+            scope.cancel()
+        }
+        scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
         healthMonitor.startMonitoring()
         startUsageStatsPolling()
 
@@ -86,6 +92,7 @@ class HybridAppDetector(private val context: Context) {
         Log.d(TAG, "Stopping hybrid app detector")
         usageStatsPollingJob?.cancel()
         healthMonitor.stopMonitoring()
+        healthMonitor.cleanup()
         scope.cancel()
     }
 

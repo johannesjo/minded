@@ -1,5 +1,6 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
+import { mergeSyncDataWithDefaults } from "@src/dataInterface/mergeSyncDataWithDefaults";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { handleDataError, DataStorageError } from "@src/dataInterface/errors";
 import { safeJsonParse } from "@src/util/safeJsonParse";
@@ -37,7 +38,7 @@ export const getSyncDataN = async (): Promise<SyncData> => {
     return DEFAULT_SYNC_DATA;
   }
 
-  return { ...DEFAULT_SYNC_DATA, ...parsed };
+  return mergeSyncDataWithDefaults(parsed);
 };
 
 export const saveAnswerN = (answer: Answer): Promise<void> => {

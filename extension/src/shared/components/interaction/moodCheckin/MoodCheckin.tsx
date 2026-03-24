@@ -1,4 +1,4 @@
-import { createSignal, For, JSX } from "solid-js";
+import { createSignal, For, JSX, onCleanup } from "solid-js";
 import {
   MOOD_CHECKIN_FEEL_BETTER_OPTIONS,
   MOOD_CHECKIN_OPTIONS,
@@ -21,6 +21,13 @@ export const MoodCheckin: (props: {
   const [getSaveDelay, setSaveDelay] = createSignal<NodeJS.Timeout | null>(
     null,
   );
+
+  onCleanup(() => {
+    const pending = getSaveDelay();
+    if (pending) {
+      clearTimeout(pending);
+    }
+  });
 
   const onMoodSelect = async (mood: MoodCheckinVal) => {
     setSelectedMood(mood);

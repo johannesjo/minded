@@ -55,8 +55,8 @@ interface InteractionCommonProps {
 }
 
 /** Check if there's a focused input/textarea with modified content */
-const isActivelyEditing = (): boolean => {
-  const activeEl = document.activeElement;
+const isActivelyEditing = (shadowRoot?: ShadowRoot | null): boolean => {
+  const activeEl = shadowRoot?.activeElement ?? document.activeElement;
   if (
     activeEl instanceof HTMLTextAreaElement ||
     activeEl instanceof HTMLInputElement
@@ -157,7 +157,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const handleSkip = () => {
     if (getIsSkipping()) return;
     // Don't skip if user is actively editing an input
-    if (isActivelyEditing()) return;
+    if (isActivelyEditing(props.shadowRoot)) return;
     setIsSkipping(true);
 
     if (getShowSunInstructions()) {
@@ -270,7 +270,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     frameNr = res.frameNr;
     res.promise.then(() => {
       // Don't proceed if user is actively editing
-      if (isActivelyEditing()) {
+      if (isActivelyEditing(props.shadowRoot)) {
         cancelCountdown();
         return;
       }

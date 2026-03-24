@@ -1,3 +1,3 @@
 export const isXIn1 = (x: number) => {
-  return x >= Math.random();
+  return x > Math.random();
 };

@@ -11,9 +11,9 @@ describe("isXIn1", () => {
     expect(isXIn1(0.5)).toBe(true);
   });
 
-  it("returns true when random equals x", () => {
+  it("returns false when random equals x (strict greater-than)", () => {
     mockRandom(0.5);
-    expect(isXIn1(0.5)).toBe(true);
+    expect(isXIn1(0.5)).toBe(false);
   });
 
   it("returns false when random is greater than x", () => {

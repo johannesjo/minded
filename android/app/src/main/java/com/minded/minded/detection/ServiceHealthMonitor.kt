@@ -20,7 +20,7 @@ class ServiceHealthMonitor {
     val lastEventTime: StateFlow<Long> = _lastEventTime.asStateFlow()
 
     private var healthCheckJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private var onUnhealthyCallback: (() -> Unit)? = null
 
@@ -38,6 +38,11 @@ class ServiceHealthMonitor {
     fun startMonitoring() {
         Log.d(TAG, "Starting health monitoring")
         markHealthy()
+
+        // Recreate scope if it was previously cancelled by cleanup()
+        if (!scope.isActive) {
+            scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        }
 
         healthCheckJob?.cancel()
         healthCheckJob = scope.launch {

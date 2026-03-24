@@ -4,16 +4,20 @@ import {
   SelfAssessmentId,
   SelfAssessmentQuestion,
 } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
+import { getRndEntry } from "@src/util/getRndEntry";
 
 export const getSelfAssessmentQuestion = (
   syncData: SyncData,
 ): SelfAssessmentQuestion => {
   const unanswered = getLongestNonAssessedCategoryIds(syncData);
-  const randomIndex = Math.floor(Math.random() * unanswered.length);
-  const randomUnansweredId = unanswered[randomIndex];
-  return SELF_ASSESSMENT_QUESTIONS.find(
-    (q) => q.id === randomUnansweredId,
-  ) as SelfAssessmentQuestion;
+  if (unanswered.length === 0) {
+    return getRndEntry(SELF_ASSESSMENT_QUESTIONS);
+  }
+  const randomUnansweredId = getRndEntry(unanswered);
+  return (
+    SELF_ASSESSMENT_QUESTIONS.find((q) => q.id === randomUnansweredId) ??
+    getRndEntry(SELF_ASSESSMENT_QUESTIONS)
+  );
 };
 
 export const getLongestNonAssessedCategoryIds = (

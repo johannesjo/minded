@@ -14,7 +14,7 @@ const ButtonWrapper = (props: {
     <div
       // needed for parent styling in MoodCheckin
       class="btn-wrapper"
-      style={`text-align:center;  transition: 0.2s ease-out; ${!getIsVisible() ? "visibility: hidden; opacity: 0;" : "opacity: 1"}\``}
+      style={`text-align:center;  transition: 0.2s ease-out; ${!getIsVisible() ? "visibility: hidden; opacity: 0;" : "opacity: 1"}`}
     >
       <div style="padding-top: 32px; pointer-events:all; display: inline-block;">
         {props.children}

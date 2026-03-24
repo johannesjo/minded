@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import com.minded.minded.BuildConfig
 import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.parseJSONQuestion
@@ -54,9 +55,13 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun setQuestion(jsonString: String?) {
-        Log.v(logTag, "omQuestionSet() $jsonString")
-        val questionForPrompt = parseJSONQuestion(jsonString!!)
-        Log.v(logTag, "omQuestionSet() $questionForPrompt")
+        if (jsonString == null) {
+            Log.e(logTag, "setQuestion() received null")
+            return
+        }
+        if (BuildConfig.DEBUG) Log.v(logTag, "setQuestion() $jsonString")
+        val questionForPrompt = parseJSONQuestion(jsonString)
+        if (BuildConfig.DEBUG) Log.v(logTag, "setQuestion() $questionForPrompt")
         sharedOverlayViewModel.updateSharedData(
             questionForPrompt = questionForPrompt,
             // NOTE: that does not work :/
@@ -72,7 +77,7 @@ class InteractionWindowJavaScriptInterface(
 
     @JavascriptInterface
     fun setAnswerTxt(txt: String) {
-        Log.v(logTag, "setAnswerTxt() $txt")
+        if (BuildConfig.DEBUG) Log.v(logTag, "setAnswerTxt() $txt")
         sharedOverlayViewModel.updateSharedData(answerTxt = txt)
     }
 

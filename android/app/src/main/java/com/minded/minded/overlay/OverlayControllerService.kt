@@ -144,20 +144,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         if (appToRestore != null) {
             Log.d(logTag, "Restoring overlay for app: $appToRestore (savedOverlay=$savedOverlay)")
-            // Directly restore the overlay that was showing before
-            when (savedOverlay) {
-                OverlayName.LITTLE_SUN_OVERLAY -> {
-                    showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, appToRestore)
-                }
-                OverlayName.INTERACTION_OVERLAY -> {
-                    // For interaction overlay, trigger fresh check as state may have changed
-                    checkToShowOverlay(appToRestore)
-                }
-                else -> {
-                    // For other overlays, do a regular check
-                    checkToShowOverlay(appToRestore)
-                }
-            }
+            // Always use checkToShowOverlay to verify timer/budget state
+            // Timer or budget may have expired while the screen was off
+            checkToShowOverlay(appToRestore)
         } else {
             Log.d(logTag, "User not on blocked app, clearing saved state")
         }

@@ -38,12 +38,6 @@ export const Question: (props: {
   });
 
   createEffect(() => {
-    setValue(
-      props.initialQuestion.prompt ? props.initialQuestion.prompt + " " : "",
-    );
-  });
-
-  createEffect(() => {
     const q = getQuestion();
     setValue(q.prompt ? q.prompt + " " : "");
   });

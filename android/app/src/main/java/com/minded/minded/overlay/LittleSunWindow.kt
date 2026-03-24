@@ -36,7 +36,6 @@ class LittleSunWindow(
         private const val BUDGET_USAGE_UPDATE_INTERVAL_S = 10
     }
 
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
     override val logTag = javaClass.simpleName
     private var initialTime = 0
     private var windowShownAt = 0L
@@ -166,13 +165,13 @@ class LittleSunWindow(
     }
 
     override fun hideWindow() {
+        stopTimer()
         // Save remaining accumulated budget usage
         if (budgetUsageAccumulator > 0) {
             ctrlSvc.getSharedPreferenceService().addBudgetUsage(budgetUsageAccumulator)
             budgetUsageAccumulator = 0
         }
         super.hideWindow()
-        stopTimer()
     }
 
     private fun startTimer(initialTimeI: Int = 0) {
