@@ -29,7 +29,9 @@ open class MainActivityJavaScriptInterface(
 
     @JavascriptInterface
     fun saveDataString(value: String) {
-        Log.v(logTag, "saveString() $value")
+        if (BuildConfig.DEBUG) {
+            Log.v(logTag, "saveString() $value")
+        }
         sharedPreferenceService.saveDataString(value)
     }
 
@@ -50,7 +52,11 @@ open class MainActivityJavaScriptInterface(
     @JavascriptInterface
     fun onMissingCapabilityClick(capability: String) {
         Log.v(logTag, "onMissingCapabilityClick()")
-        onMissingCapabilityClickI(MissingCapability.valueOf(capability))
+        try {
+            onMissingCapabilityClickI(MissingCapability.valueOf(capability))
+        } catch (e: IllegalArgumentException) {
+            Log.e(logTag, "Unknown capability: $capability", e)
+        }
     }
 
     @JavascriptInterface

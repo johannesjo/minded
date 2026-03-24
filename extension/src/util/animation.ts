@@ -45,7 +45,6 @@ export function changeHeight(
   return {
     frameNr: window.requestAnimationFrame(() => {
       el.style.maxHeight = newHeight + "px";
-      el.style.maxHeight = "200px";
       el.style.borderRadius = "16px";
       el.style.width = "600px";
     }),

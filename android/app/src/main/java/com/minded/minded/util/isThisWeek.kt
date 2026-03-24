@@ -1,18 +1,14 @@
 package com.minded.minded.util
 
-import java.util.Calendar
-import java.util.Date
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.WeekFields
 
 fun isThisWeek(ts: Long): Boolean {
-    val date = Date(ts)
-    val currentCalendar = Calendar.getInstance()
-    val week = currentCalendar.get(Calendar.WEEK_OF_YEAR)
-    val year = currentCalendar.get(Calendar.YEAR)
-
-    val targetCalendar = Calendar.getInstance()
-    targetCalendar.time = date
-    val targetWeek = targetCalendar.get(Calendar.WEEK_OF_YEAR)
-    val targetYear = targetCalendar.get(Calendar.YEAR)
-
-    return week == targetWeek && year == targetYear
+    val date = Instant.ofEpochMilli(ts).atZone(ZoneId.systemDefault()).toLocalDate()
+    val today = LocalDate.now()
+    val weekFields = WeekFields.ISO
+    return date.get(weekFields.weekOfWeekBasedYear()) == today.get(weekFields.weekOfWeekBasedYear()) &&
+           date.get(weekFields.weekBasedYear()) == today.get(weekFields.weekBasedYear())
 }

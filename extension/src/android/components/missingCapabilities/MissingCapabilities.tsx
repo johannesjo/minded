@@ -35,8 +35,13 @@ export const MissingCapabilityView = (props: {
   onMount(() => {
     refreshMissingCapabilities();
 
-    window.addEventListener(ANDROID_EV_RESUME, () => {
+    const resumeHandler = () => {
       refreshMissingCapabilities();
+    };
+    window.addEventListener(ANDROID_EV_RESUME, resumeHandler);
+
+    onCleanup(() => {
+      window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
     });
   });
 

@@ -10,6 +10,10 @@ fun syncDataToJson(syncData: SyncData): String {
     cfgObject.put("isOnboardingComplete", syncData.cfg.isOnboardingComplete)
     cfgObject.put("blockedHosts", JSONArray(syncData.cfg.blockedHosts))
     cfgObject.put("blockedApps", JSONArray(syncData.cfg.blockedApps))
+    syncData.cfg.focusSchedule?.let { schedule ->
+        cfgObject.put("focusSchedule", JSONObject(schedule))
+    }
+    syncData.cfg.soundEnabled?.let { cfgObject.put("soundEnabled", it) }
     jsonObject.put("cfg", cfgObject)
 
     val answersArray = JSONArray()
@@ -51,6 +55,36 @@ fun syncDataToJson(syncData: SyncData): String {
         browsingBehaviorRatingObject.put(key, value)
     }
     jsonObject.put("browsingBehaviorRating", browsingBehaviorRatingObject)
+
+    jsonObject.put("dailyQuestionsMorningTS", syncData.dailyQuestionsMorningTS)
+    jsonObject.put("dailyQuestionsEveningTS", syncData.dailyQuestionsEveningTS)
+    jsonObject.put("lastAppUsageRatingTS", syncData.lastAppUsageRatingTS)
+
+    val appUsageRatingObj = JSONObject()
+    syncData.appUsageRating.forEach { (key, value) -> appUsageRatingObj.put(key, value) }
+    jsonObject.put("appUsageRating", appUsageRatingObj)
+
+    val selfAssessmentObj = JSONObject()
+    syncData.selfAssessment.forEach { (key, value) ->
+        val entryObj = JSONObject()
+        entryObj.put("ts", value["ts"])
+        entryObj.put("val", value["val"])
+        selfAssessmentObj.put(key, entryObj)
+    }
+    jsonObject.put("selfAssessment", selfAssessmentObj)
+
+    jsonObject.put("alternativeApps", JSONArray(syncData.alternativeApps))
+    jsonObject.put("alternativeWebsites", JSONArray(syncData.alternativeWebsites))
+
+    if (syncData.emotionLabeling != null) {
+        val elObj = JSONObject()
+        elObj.put("ts", syncData.emotionLabeling["ts"])
+        elObj.put("emotions", JSONArray(syncData.emotionLabeling["emotions"] as? List<*> ?: emptyList<String>()))
+        elObj.put("bodyLocations", JSONArray(syncData.emotionLabeling["bodyLocations"] as? List<*> ?: emptyList<String>()))
+        jsonObject.put("emotionLabeling", elObj)
+    }
+
+    jsonObject.put("budgetPromptDismissedTS", syncData.budgetPromptDismissedTS)
 
     if (syncData.activeTimer != null) {
         val timerObj = JSONObject()

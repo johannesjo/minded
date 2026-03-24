@@ -19,7 +19,6 @@ class SmallMsgWindow(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
     override val logTag = javaClass.simpleName
 
 
@@ -31,7 +30,7 @@ class SmallMsgWindow(
         val context = LocalContext.current
         val isQuestion: Boolean = sharedData.answerTxt == null
         val reminderTxt =
-            if (isQuestion) (sharedData.lastQuestionForPrompt?.t + '?') else sharedData.answerTxt
+            if (isQuestion) ((sharedData.lastQuestionForPrompt?.t ?: "") + "?") else sharedData.answerTxt
                 ?: ""
         Log.v(logTag, "Cmp() isQuestion ${isQuestion} reminderTxt:${sharedData.answerTxt}")
 

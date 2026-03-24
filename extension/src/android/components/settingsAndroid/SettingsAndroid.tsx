@@ -54,8 +54,8 @@ export const SettingsAndroid = (props: {
     props.onChange?.(newSelected);
   };
 
-  const handleSave = () => {
-    updateBlockedApps(getSelectedApps());
+  const handleSave = async () => {
+    await updateBlockedApps(getSelectedApps());
     navigate("/");
     props.onSave?.();
   };

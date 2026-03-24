@@ -1,4 +1,4 @@
-import { Component, onMount } from "solid-js";
+import { Component, onCleanup, onMount } from "solid-js";
 import "./BudgetExhaustedMessage.scss";
 
 interface BudgetExhaustedMessageProps {
@@ -11,9 +11,11 @@ export const BudgetExhaustedMessage: Component<BudgetExhaustedMessageProps> = (
   props,
 ) => {
   onMount(() => {
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       props.onComplete();
     }, DISPLAY_DURATION_MS);
+
+    onCleanup(() => clearTimeout(timeoutId));
   });
 
   return (

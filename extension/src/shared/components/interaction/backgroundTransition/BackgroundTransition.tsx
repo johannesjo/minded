@@ -59,7 +59,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       handleStartAnimation as EventListener,
     );
 
-    return () => {
+    onCleanup(() => {
       window.removeEventListener(
         "dragProgress",
         handleDragProgress as EventListener,
@@ -68,10 +68,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
         "startBackgroundAnimation",
         handleStartAnimation as EventListener,
       );
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-    };
+    });
   });
 
   onCleanup(() => {
@@ -79,7 +76,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       cancelAnimationFrame(animationFrame);
     }
   });
-
 
   const animateToDefault = () => {
     setIsAnimating(true);

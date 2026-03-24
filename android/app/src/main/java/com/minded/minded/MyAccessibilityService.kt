@@ -39,7 +39,7 @@ import java.util.Collections
 class MyAccessibilityService : AccessibilityService() {
     private var lastPackageName: String? = null
     private var lastEventTimestamp: Long = 0
-    private val recentPackageHistory = mutableListOf<Pair<String, Long>>()
+    private val recentPackageHistory = Collections.synchronizedList(mutableListOf<Pair<String, Long>>())
     private val PACKAGE_HISTORY_SIZE = 5
     private val LAUNCHER_DEBOUNCE_MS: Long by lazy {
         getManufacturerDebounceTime()
@@ -812,36 +812,39 @@ class MyAccessibilityService : AccessibilityService() {
     }
     
     private fun updatePackageHistory(packageName: String, timestamp: Long) {
-        recentPackageHistory.add(packageName to timestamp)
-        if (recentPackageHistory.size > PACKAGE_HISTORY_SIZE) {
-            recentPackageHistory.removeAt(0)
+        synchronized(recentPackageHistory) {
+            recentPackageHistory.add(packageName to timestamp)
+            if (recentPackageHistory.size > PACKAGE_HISTORY_SIZE) {
+                recentPackageHistory.removeAt(0)
+            }
         }
     }
     
     private fun trackTransition(toPackage: String, timestamp: Long, className: String = "") {
-        // Add new transition
         val transition = AppTransition(
             fromPackage = lastPackageName,
             toPackage = toPackage,
             timestamp = timestamp,
             className = className
         )
-        transitionHistory.add(transition)
-        
-        // Clean up old transitions
-        val cutoffTime = timestamp - TRANSITION_HISTORY_DURATION_MS
-        transitionHistory.removeAll { it.timestamp < cutoffTime }
-        
-        // Limit size
-        while (transitionHistory.size > TRANSITION_HISTORY_MAX_SIZE) {
-            transitionHistory.removeAt(0)
+        synchronized(transitionHistory) {
+            transitionHistory.add(transition)
+
+            // Clean up old transitions
+            val cutoffTime = timestamp - TRANSITION_HISTORY_DURATION_MS
+            transitionHistory.removeAll { it.timestamp < cutoffTime }
+
+            // Limit size
+            while (transitionHistory.size > TRANSITION_HISTORY_MAX_SIZE) {
+                transitionHistory.removeAt(0)
+            }
         }
-        
+
         // Update last user app if this is not a system package
         if (!isSystemPackage(toPackage) && !isLauncherPackage(toPackage)) {
             lastUserApp = toPackage
         }
-        
+
         Log.d(TAG, "Tracked transition: ${transition.fromPackage} -> ${transition.toPackage}")
     }
     
@@ -858,7 +861,9 @@ class MyAccessibilityService : AccessibilityService() {
             return TransitionPattern.FIRST_APP_LAUNCH
         }
         
-        val recentTransitions = transitionHistory.takeLast(RECENT_TRANSITIONS_TO_ANALYZE)
+        val recentTransitions = synchronized(transitionHistory) {
+            transitionHistory.takeLast(RECENT_TRANSITIONS_TO_ANALYZE)
+        }
         val lastTransition = recentTransitions.lastOrNull()
         
         // Check for notification shade pattern

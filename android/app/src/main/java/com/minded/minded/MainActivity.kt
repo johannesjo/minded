@@ -45,7 +45,9 @@ class MainActivity : AppCompatActivity() {
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
         sharedPreferenceService = SharedPreferenceService(this)
         sharedPreferenceService.writeDefaultDataIfNecessary()
-        WebView.setWebContentsDebuggingEnabled(true)
+        if (BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
 
         lifecycleScope.launch {
             setContent {
@@ -68,7 +70,12 @@ class MainActivity : AppCompatActivity() {
                                 settings.mediaPlaybackRequiresUserGesture = false
                                 // Disable caching to always load fresh content
                                 settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    // API 33+: forceDark is deprecated. Algorithmic darkening
+                                    // requires WebSettingsCompat from androidx.webkit dependency.
+                                    // Dark mode is handled by the web content's CSS instead.
+                                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    @Suppress("DEPRECATION")
                                     settings.forceDark = WebSettings.FORCE_DARK_ON
                                 }
                                 addJavascriptInterface(

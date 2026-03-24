@@ -118,8 +118,14 @@ describe("isThisWeek", () => {
 
   it("returns true for Date object in same week", () => {
     mockDate("2024-01-15T12:00:00"); // Monday
-    const sameWeek = new Date("2024-01-14T12:00:00"); // Sunday (same week)
+    const sameWeek = new Date("2024-01-19T12:00:00"); // Friday (same week)
     expect(isThisWeek(sameWeek)).toBe(true);
+  });
+
+  it("returns false for previous Sunday (ISO week starts Monday)", () => {
+    mockDate("2024-01-15T12:00:00"); // Monday Jan 15
+    const prevSunday = new Date("2024-01-14T12:00:00"); // Sunday Jan 14 (previous week)
+    expect(isThisWeek(prevSunday)).toBe(false);
   });
 
   it("returns false for last week", () => {
@@ -136,5 +142,17 @@ describe("isThisWeek", () => {
 
   it("throws for invalid date", () => {
     expect(() => isThisWeek(0)).toThrow("Invalid date passed");
+  });
+
+  it("handles year boundary correctly (Dec 30 Mon -> Jan 1 Wed same week)", () => {
+    mockDate("2025-01-01T12:00:00"); // Wednesday Jan 1 2025
+    const dec30 = new Date("2024-12-30T12:00:00").getTime(); // Monday Dec 30 2024 (same week)
+    expect(isThisWeek(dec30)).toBe(true);
+  });
+
+  it("returns false for same week number in different year", () => {
+    mockDate("2025-01-15T12:00:00"); // Wed Jan 15 2025
+    const lastYear = new Date("2024-01-15T12:00:00").getTime(); // Mon Jan 15 2024
+    expect(isThisWeek(lastYear)).toBe(false);
   });
 });

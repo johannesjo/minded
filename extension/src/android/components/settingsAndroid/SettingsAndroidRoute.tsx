@@ -24,7 +24,7 @@ export const SettingsAndroidRoute = () => {
 
   const handleSaveAll = async () => {
     if (pendingApps() !== null) {
-      updateBlockedApps(pendingApps()!);
+      await updateBlockedApps(pendingApps()!);
     }
     if (pendingSound() !== null) {
       await updateUserCfg({ soundEnabled: pendingSound()! });

@@ -84,7 +84,13 @@ class BudgetHelperTest {
         dailyUsage: Map<String, DailyUsage> = emptyMap()
     ): SyncData {
         return SyncData(
-            cfg = UserCfg(isOnboardingComplete = false, blockedHosts = emptyList(), blockedApps = emptyList()),
+            cfg = UserCfg(
+                isOnboardingComplete = false,
+                blockedHosts = emptyList(),
+                blockedApps = emptyList(),
+                focusSchedule = null,
+                soundEnabled = null
+            ),
             answers = emptyList(),
             lastBlockedTS = 99L,
             lastBlockedUrl = "",
@@ -97,6 +103,15 @@ class BudgetHelperTest {
             attempts = emptyMap(),
             lastBrowsingBehaviorRatingTS = 99L,
             browsingBehaviorRating = emptyMap(),
+            dailyQuestionsMorningTS = 99L,
+            dailyQuestionsEveningTS = 99L,
+            lastAppUsageRatingTS = 99L,
+            appUsageRating = emptyMap(),
+            selfAssessment = emptyMap(),
+            alternativeApps = emptyList(),
+            alternativeWebsites = emptyList(),
+            emotionLabeling = null,
+            budgetPromptDismissedTS = 99L,
             activeTimer = null,
             dailyBudget = dailyBudget,
             dailyUsage = dailyUsage

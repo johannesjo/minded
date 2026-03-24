@@ -605,17 +605,15 @@ export const Sun: Component<SunProps> = (props) => {
 
   const sunSize = getSunSize(window.innerWidth);
 
-  // Calculate progressive glow based on drag intensity
-  const glowIntensity = getGlowIntensity();
-  const colorTemp = getColorTemp();
-
-  // Color temperature for corona: warm orange when down, cool blue when up
-  const glowColor =
-    colorTemp > 0.1
+  // Reactive glow color based on drag color temperature
+  const getGlowColor = () => {
+    const ct = getColorTemp();
+    return ct > 0.1
       ? "255, 200, 100"
-      : colorTemp < -0.1
+      : ct < -0.1
         ? "200, 220, 255"
         : "255, 255, 255";
+  };
 
   return (
     <div
@@ -631,8 +629,8 @@ export const Sun: Component<SunProps> = (props) => {
             : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
-        "--glow-color": glowColor,
-        "--glow-intensity": glowIntensity,
+        "--glow-color": getGlowColor(),
+        "--glow-intensity": getGlowIntensity(),
       }}
     >
       <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>

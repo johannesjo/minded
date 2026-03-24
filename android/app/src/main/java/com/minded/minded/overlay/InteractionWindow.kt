@@ -19,9 +19,8 @@ class InteractionWindow(
     private val windowManager: WindowManager,
 //    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
-    private val selfEnum = OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY
-
     override val logTag = javaClass.simpleName
+    private var webViewRef: WebView? = null
 
 
     @SuppressLint("StateFlowValueCalledInComposition")
@@ -32,7 +31,7 @@ class InteractionWindow(
         Log.v(logTag, "questionId: $questionId")
 
         AndroidView(factory = { context ->
-            WebView(context).apply {
+            WebView(context).also { webViewRef = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -124,6 +123,16 @@ class InteractionWindow(
         window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+    }
+
+    override fun hideWindow() {
+        webViewRef?.stopLoading()
+        super.hideWindow()
+    }
+
+    override fun onWindowRemoved() {
+        webViewRef?.destroy()
+        webViewRef = null
     }
 }
 

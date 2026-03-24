@@ -41,13 +41,6 @@ export const hasHappenedInLastXDay = (
   return new Date(date) >= xDaysAgo;
 };
 
-const getWeekNumber = (d: Date): number => {
-  const start = new Date(d.getFullYear(), 0, 1);
-  const dayOfYear =
-    (d.getTime() - start.getTime() + /* ms per day = */ 86400000) / 86400000;
-  return Math.ceil((dayOfYear - d.getDay() + 1) / 7);
-};
-
 export const isThisWeek = (date: number | Date): boolean => {
   const d = new Date(date);
   const isValid = d.getTime() > 0;
@@ -55,5 +48,12 @@ export const isThisWeek = (date: number | Date): boolean => {
     throw new Error("Invalid date passed");
   }
   const today = new Date();
-  return getWeekNumber(d) === getWeekNumber(today);
+  // Get Monday of current week (Monday = start of week)
+  const monday = new Date(today);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+  // Get next Monday
+  const nextMonday = new Date(monday);
+  nextMonday.setDate(nextMonday.getDate() + 7);
+  return d >= monday && d < nextMonday;
 };

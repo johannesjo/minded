@@ -71,7 +71,7 @@ export const InteractionWeb: (props: {
   const escapeHandler = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
       ev.stopPropagation();
-      fadeOut(wrapperEl, 150);
+      fadeOut(wrapperEl, 150).promise.then(() => teardown());
     }
   };
 

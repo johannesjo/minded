@@ -7,7 +7,9 @@ val defaultSyncData = SyncData(
     cfg = UserCfg(
         isOnboardingComplete = false,
         blockedHosts = emptyList(),
-        blockedApps = emptyList()
+        blockedApps = emptyList(),
+        focusSchedule = null,
+        soundEnabled = null
     ),
     answers = emptyList(),
     // NOTE: 99 is set to pass isToday check
@@ -22,6 +24,15 @@ val defaultSyncData = SyncData(
     attempts = emptyMap(),
     lastBrowsingBehaviorRatingTS = 99L,
     browsingBehaviorRating = emptyMap(),
+    dailyQuestionsMorningTS = 99L,
+    dailyQuestionsEveningTS = 99L,
+    lastAppUsageRatingTS = 99L,
+    appUsageRating = emptyMap(),
+    selfAssessment = emptyMap(),
+    alternativeApps = emptyList(),
+    alternativeWebsites = emptyList(),
+    emotionLabeling = null,
+    budgetPromptDismissedTS = 99L,
     activeTimer = null,
     dailyBudget = null,
     dailyUsage = emptyMap()

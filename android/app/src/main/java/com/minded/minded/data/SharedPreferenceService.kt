@@ -3,6 +3,7 @@ package com.minded.minded.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.minded.minded.BuildConfig
 import com.minded.minded.data.defaultSyncData
 import com.minded.minded.util.DailyUsage
 import com.minded.minded.util.SyncData
@@ -27,6 +28,7 @@ class SharedPreferenceService(context: Context) {
         }
     }
 
+    @Synchronized
     fun saveDataString(value: String) {
         with(sharedPreferences.edit()) {
             putString(DB_KEY, value)
@@ -40,14 +42,15 @@ class SharedPreferenceService(context: Context) {
 
     fun hasNoData(): Boolean {
         val res = retrieveDataString();
-        Log.v(logTag, "hasNoData() $res")
+        if (BuildConfig.DEBUG) Log.v(logTag, "hasNoData() $res")
         return res == null || res == "{}"
     }
 
+    @Synchronized
     fun getSyncData(): SyncData {
         return try {
             val allStr = retrieveDataString()
-            Log.v(logTag, "getSyncData() allStr $allStr ")
+            if (BuildConfig.DEBUG) Log.v(logTag, "getSyncData() allStr $allStr ")
             parseSyncData(allStr!!)
         } catch (e: Exception) {
             // Log the exception if necessary
@@ -60,41 +63,40 @@ class SharedPreferenceService(context: Context) {
         saveDataString(syncDataToJson(syncData))
     }
 
+    @Synchronized
     fun updateSyncData(update: SyncData.() -> SyncData) {
         val syncData = getSyncData()
         val updatedSyncData = syncData.update()
         saveSyncData(updatedSyncData)
     }
 
-    fun updateSyncDataCfg(update: UserCfg.() -> Unit) {
+    @Synchronized
+    fun updateSyncDataCfg(update: UserCfg.() -> UserCfg) {
         val syncData = getSyncData()
-        syncData.apply {
-            cfg.update()
-        }
-        saveSyncData(syncData)
-
+        val updatedCfg = syncData.cfg.update()
+        saveSyncData(syncData.copy(cfg = updatedCfg))
     }
 
     fun getBlockedApps(): List<String> {
         val syncData = getSyncData()
-        Log.v(logTag, "getBlockedApps() syncData.cfg.blockedApps: ${syncData.cfg.blockedApps}")
+        if (BuildConfig.DEBUG) Log.v(logTag, "getBlockedApps() syncData.cfg.blockedApps: ${syncData.cfg.blockedApps}")
         return syncData.cfg.blockedApps
     }
 
     fun countUserDrivenClose() {
-        val syncData = getSyncData()
         val isoDateToday = getIsoDate()
-
-        val updatedSunTaps = syncData.sunTaps.toMutableMap().apply {
-            this[isoDateToday] = this.getOrDefault(isoDateToday, 0) + 1
+        updateSyncData {
+            val updatedSunTaps = sunTaps.toMutableMap().apply {
+                this[isoDateToday] = this.getOrDefault(isoDateToday, 0) + 1
+            }
+            if (BuildConfig.DEBUG) {
+                Log.v(logTag, "countUserDrivenClose() updatedSunTaps: $updatedSunTaps")
+            }
+            copy(sunTaps = updatedSunTaps)
         }
-        Log.v(logTag, "countUserDrivenClose() updatedSunTaps: $updatedSunTaps")
-        Log.v(logTag, "countUserDrivenClose() isoDateToday: $isoDateToday")
-        Log.v(logTag, "countUserDrivenClose() syncData: $syncData")
-        val updatedSyncData = syncData.copy(sunTaps = updatedSunTaps)
-        saveSyncData(updatedSyncData)
     }
 
+    @Synchronized
     fun addBudgetUsage(secondsToAdd: Int) {
         val today = getIsoDate()
         updateSyncData {
@@ -103,18 +105,16 @@ class SharedPreferenceService(context: Context) {
         }
     }
 
-    // TODO
     fun countAppUsageAttempt() {
-        val syncData = getSyncData()
         val isoDateToday = getIsoDate()
-
-        val updatedAttempts = syncData.attempts.toMutableMap().apply {
-            this[isoDateToday] = this.getOrDefault(isoDateToday, 0) + 1
+        updateSyncData {
+            val updatedAttempts = attempts.toMutableMap().apply {
+                this[isoDateToday] = this.getOrDefault(isoDateToday, 0) + 1
+            }
+            if (BuildConfig.DEBUG) {
+                Log.v(logTag, "countAppUsageAttempt() updatedAttempts: $updatedAttempts")
+            }
+            copy(attempts = updatedAttempts)
         }
-        Log.v(logTag, "countAttempt() updatedAttempts: $updatedAttempts")
-        Log.v(logTag, "countAttempt() isoDateToday: $isoDateToday")
-        Log.v(logTag, "countAttempt() syncData: $syncData")
-        val updatedSyncData = syncData.copy(attempts = updatedAttempts)
-        saveSyncData(updatedSyncData)
     }
 }

@@ -14,6 +14,9 @@ const BreathingExercise = () => {
   let intervalId: NodeJS.Timeout | null = null;
 
   const startExercise = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
     currentStageIndex = 0;
     setStage(stages[currentStageIndex].name);
     setTimeLeft(stages[currentStageIndex].duration);

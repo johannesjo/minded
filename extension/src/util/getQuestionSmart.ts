@@ -141,15 +141,18 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   );
 
   // if there is only one category with the lowest score, then add a 40% chance for another category to be chosen
-  if (categoriesLowestScore.length === 1) {
+  if (categoriesLowestScore.length === 1 && sortedEntries.length > 1) {
     if (isXIn1(0.4)) {
-      categoriesLowestScore = [
-        // next most likely entry has double the chance
-        sortedEntries[1],
-        sortedEntries[1],
-        sortedEntries[2],
-        sortedEntries[3],
-      ];
+      const candidates = sortedEntries
+        .slice(1, 4)
+        .filter((e) => e && e.val < FAKE_RULE_OUT_NR);
+      if (candidates.length > 0) {
+        categoriesLowestScore = [
+          candidates[0],
+          candidates[0],
+          ...candidates.slice(1),
+        ];
+      }
     }
   }
   const categoryToUse = getRndEntry(categoriesLowestScore).catId;

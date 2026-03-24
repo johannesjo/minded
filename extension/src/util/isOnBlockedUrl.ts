@@ -13,8 +13,8 @@ export const isOnBlockedUrl = (
     return false;
   }
 
-  return !!cfg.blockedHosts.find((blockedHost) =>
-    isMatchingHost(host, blockedHost),
+  return cfg.blockedHosts.some((blockedHost) =>
+    isMatchingHost(host, cleanHostWWW(blockedHost)),
   );
 };
 const cleanHostWWW = (host: string): string => {

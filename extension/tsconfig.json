@@ -23,7 +23,7 @@
       "@src/*": ["src/*"],
       "@assets/*": ["src/assets/*"],
       "@pages/*": ["src/pages/*"],
-      "@dataInterface/*": ["src/dataInterface/web/*"]
+      "@dataInterface/*": ["src/dataInterface/extension/*"]
     }
   }
 }
