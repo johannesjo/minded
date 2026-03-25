@@ -1,6 +1,6 @@
 {
   "name": "minded",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "'minded' will help you fight social media addiction, doom-scrolling and procrastination and to focus on what really counts.",
   "main": "index.js",
   "scripts": {
