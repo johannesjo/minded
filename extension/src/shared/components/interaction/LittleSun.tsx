@@ -11,6 +11,9 @@ import {
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
 import { getBudgetState, addBudgetUsage } from "@src/util/budget";
 import { formatSessionTime } from "@src/util/formatTime";
+import { DailyUsage, SyncData } from "@src/dataInterface/syncData";
+import { getIsoDate } from "@src/util/getIsoDate";
+import { bro } from "@src/util/browser";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -34,11 +37,41 @@ export const LittleSunComponent: (props: {
 
   let currentSessionInterval: number;
   let budgetUsageAccumulator = 0; // Track seconds since last storage write
+  // Cache dailyUsage so pagehide can flush without an async read — async
+  // getSyncData().then(...) chains don't complete during page unload.
+  let cachedDailyUsage: SyncData["dailyUsage"] = {};
   let t0: NodeJS.Timeout;
+
+  const flushBudgetUsageSync = () => {
+    if (!getIsBudgetMode() || budgetUsageAccumulator <= 0) return;
+
+    const today = getIsoDate();
+    const currentUsage = cachedDailyUsage[today] || {
+      totalSeconds: 0,
+      perSite: {},
+    };
+    const updatedUsage: DailyUsage = {
+      totalSeconds: currentUsage.totalSeconds + budgetUsageAccumulator,
+      perSite: {
+        ...currentUsage.perSite,
+        [props.host]:
+          (currentUsage.perSite[props.host] || 0) + budgetUsageAccumulator,
+      },
+    };
+    const updatedDailyUsage = { ...cachedDailyUsage, [today]: updatedUsage };
+    cachedDailyUsage = updatedDailyUsage;
+    budgetUsageAccumulator = 0;
+
+    // Fire-and-forget: the IPC to the service worker is dispatched
+    // synchronously here, so the write persists even if the returned
+    // Promise never resolves because the page context is torn down.
+    bro.storage.sync.set({ dailyUsage: updatedDailyUsage });
+  };
 
   onMount(async () => {
     const d = await loadDataForHost(props.host);
     const syncData = await getSyncData();
+    cachedDailyUsage = syncData.dailyUsage;
 
     // Rest-of-day mode: hide everything
     if (isRestOfDayActive(syncData)) {
@@ -53,6 +86,7 @@ export const LittleSunComponent: (props: {
     if (budgetState.isActive && budgetState.remainingSeconds > 0) {
       setIsBudgetMode(true);
       startBudgetCountdown(budgetState.remainingSeconds);
+      window.addEventListener("pagehide", flushBudgetUsageSync);
       t0 = setTimeout(() => setIsMoveOutOfTheWay(true), 200);
       return;
     }
@@ -85,18 +119,8 @@ export const LittleSunComponent: (props: {
   onCleanup(() => {
     window.clearTimeout(t0);
     window.clearInterval(currentSessionInterval);
-
-    // Save accumulated budget usage on unmount
-    if (getIsBudgetMode() && budgetUsageAccumulator > 0) {
-      getSyncData().then((syncData) => {
-        const usageUpdate = addBudgetUsage(
-          syncData,
-          props.host,
-          budgetUsageAccumulator,
-        );
-        updateSyncData(usageUpdate);
-      });
-    }
+    window.removeEventListener("pagehide", flushBudgetUsageSync);
+    flushBudgetUsageSync();
   });
 
   const initCounter = (initialValue: number) => {
@@ -175,6 +199,7 @@ export const LittleSunComponent: (props: {
           props.host,
           budgetUsageAccumulator,
         );
+        cachedDailyUsage = usageUpdate.dailyUsage;
         await updateSyncData(usageUpdate);
         budgetUsageAccumulator = 0;
       }
@@ -189,7 +214,9 @@ export const LittleSunComponent: (props: {
             props.host,
             budgetUsageAccumulator,
           );
+          cachedDailyUsage = usageUpdate.dailyUsage;
           await updateSyncData(usageUpdate);
+          budgetUsageAccumulator = 0;
         }
         // Budget exhausted - trigger full intervention
         props.onShowFreshInteraction();
