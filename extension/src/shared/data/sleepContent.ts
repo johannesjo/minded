@@ -16,7 +16,7 @@ A clock ticks in another room. The hands turn. One minute follows another. Nothi
 
 You are here. The day is over. There is nothing left to do. The work is done, or it is not done, and either way it can wait. The thoughts in your head are only thoughts. They come and they go.
 
-Breath in. Breath out. Slower now. The chest rises a little, and then it falls a little. Again. Again.
+Breathe in. Breathe out. Slower now. The chest rises a little, and then it falls a little. Again. Again.
 
 The room is quiet. The walls are still. Outside, the wind moves through the leaves, and then it stops, and then it moves again. A clock ticks somewhere. Nothing in particular is happening.
 

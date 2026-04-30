@@ -72,4 +72,41 @@ describe("resolveNightId", () => {
     // Mon 2024-01-15 23:30 — outside
     expect(resolveNightId(cfg, new Date(2024, 0, 15, 23, 30))).toBeNull();
   });
+
+  it("treats start === end as no window (zero-width)", () => {
+    const cfg: SleepWindDownCfg = {
+      enabled: true,
+      days: { 1: { start: "22:00", end: "22:00" } },
+    };
+    expect(resolveNightId(cfg, new Date(2024, 0, 15, 22, 30))).toBeNull();
+    expect(resolveNightId(cfg, new Date(2024, 0, 15, 9, 0))).toBeNull();
+    expect(resolveNightId(cfg, new Date(2024, 0, 16, 3, 0))).toBeNull();
+  });
+
+  it("ignores malformed time strings", () => {
+    const cfg: SleepWindDownCfg = {
+      enabled: true,
+      days: {
+        1: { start: "abc", end: "07:00" },
+        2: { start: "25:00", end: "07:00" },
+        3: { start: "22:00", end: "07:5" },
+      },
+    };
+    // Mon evening — start is malformed
+    expect(resolveNightId(cfg, new Date(2024, 0, 15, 23, 0))).toBeNull();
+    // Tue evening — start hour out of range
+    expect(resolveNightId(cfg, new Date(2024, 0, 16, 23, 0))).toBeNull();
+    // Wed evening — end is malformed
+    expect(resolveNightId(cfg, new Date(2024, 0, 17, 23, 0))).toBeNull();
+  });
+
+  it("handles dismiss-at-23:50 / unlock-at-00:05 producing same nightId", () => {
+    // This is the cross-midnight integrity check: the value the dismiss
+    // button writes at 23:50 must equal the value the receiver computes
+    // at 00:05 the next morning, otherwise the dismiss is silently lost.
+    const dismissAt = new Date(2024, 0, 15, 23, 50);
+    const unlockAt = new Date(2024, 0, 16, 0, 5);
+    expect(resolveNightId(everyDay22to07, dismissAt)).toBe("2024-01-15");
+    expect(resolveNightId(everyDay22to07, unlockAt)).toBe("2024-01-15");
+  });
 });

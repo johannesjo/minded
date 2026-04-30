@@ -73,10 +73,7 @@ export const SettingsAndroidRoute = () => {
 
       <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
 
-      <SleepWindDownSettings
-        showSaveButton={false}
-        onChange={(cfg) => setPendingSleepWindDown(cfg)}
-      />
+      <SleepWindDownSettings onChange={(cfg) => setPendingSleepWindDown(cfg)} />
 
       <div style={{ "text-align": "center", margin: "32px 16px" }}>
         <button

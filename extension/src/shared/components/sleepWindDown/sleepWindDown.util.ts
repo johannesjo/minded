@@ -1,9 +1,19 @@
 import { SleepWindDownCfg, TimeRange } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
 
+/**
+ * Parse a `HH:MM` 24-hour string into minutes-of-day. Returns NaN for any
+ * malformed input — callers must treat NaN as "no window" rather than
+ * silently propagating it through comparisons.
+ */
 const parseHHMM = (s: string): number => {
-  const [h, m] = s.split(":").map((n) => parseInt(n, 10));
-  return h * 60 + m;
+  if (typeof s !== "string") return NaN;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(s.trim());
+  if (!m) return NaN;
+  const h = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  if (h < 0 || h > 23 || mm < 0 || mm > 59) return NaN;
+  return h * 60 + mm;
 };
 
 /**
@@ -27,15 +37,17 @@ export const resolveNightId = (
   if (todayRange) {
     const start = parseHHMM(todayRange.start);
     const end = parseHHMM(todayRange.end);
-    if (end > start) {
-      // Same-day window
-      if (minutesNow >= start && minutesNow < end) {
-        return getIsoDate(at);
-      }
-    } else {
-      // Crosses midnight — only the "after start" half belongs to today's nightId
-      if (minutesNow >= start) {
-        return getIsoDate(at);
+    if (Number.isFinite(start) && Number.isFinite(end) && start !== end) {
+      if (end > start) {
+        // Same-day window
+        if (minutesNow >= start && minutesNow < end) {
+          return getIsoDate(at);
+        }
+      } else {
+        // Crosses midnight — only the "after start" half belongs to today's nightId
+        if (minutesNow >= start) {
+          return getIsoDate(at);
+        }
       }
     }
   }
@@ -48,7 +60,12 @@ export const resolveNightId = (
   if (yRange) {
     const start = parseHHMM(yRange.start);
     const end = parseHHMM(yRange.end);
-    if (end <= start && minutesNow < end) {
+    if (
+      Number.isFinite(start) &&
+      Number.isFinite(end) &&
+      end < start &&
+      minutesNow < end
+    ) {
       return getIsoDate(yesterday);
     }
   }

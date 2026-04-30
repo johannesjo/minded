@@ -101,6 +101,9 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   budgetPromptDismissedTS: DEFAULT_TS_VAL,
   sleepWindDownDismissedNightId: "",
   sleepWindDownSnoozeUntilTS: 0,
+  sleepWindDownProgressNightId: "",
+  sleepWindDownCompleted: [],
+  sleepWindDownBrainDumpDraft: "",
 };
 
 export const STATIC_CFG: StaticCfg = {

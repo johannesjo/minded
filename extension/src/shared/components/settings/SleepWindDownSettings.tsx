@@ -1,4 +1,5 @@
 import { createSignal, For, JSX, onMount } from "solid-js";
+import { useNavigate } from "@solidjs/router";
 import {
   getSyncData,
   updateUserCfg,
@@ -11,6 +12,7 @@ import { TimeInput } from "@src/shared/components/ui/TimeInput";
 import { DEFAULT_DAY_RANGE } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 // @ts-ignore — reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
+import { getIsoDate } from "@src/util/getIsoDate";
 
 const DAY_NAMES = [
   "Sunday",
@@ -23,57 +25,74 @@ const DAY_NAMES = [
 ];
 
 export const SleepWindDownSettings = (props: {
+  /**
+   * If true, persist each edit immediately. If false (the default), the
+   * parent is expected to stage changes via `onChange` and persist them
+   * itself (e.g. through a global Save button).
+   */
+  autoSave?: boolean;
   onChange?: (cfg: SleepWindDownCfg) => void;
-  showSaveButton?: boolean;
 }): JSX.Element => {
+  const navigate = useNavigate();
   const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
+  const [pausedTonight, setPausedTonight] = createSignal(false);
 
   onMount(() => {
     getSyncData().then((sd) => {
       if (sd.cfg.sleepWindDown) setCfg(sd.cfg.sleepWindDown);
+      // Surface the case where the user already skipped tonight; otherwise
+      // re-enabling the toggle looks like nothing happened.
+      const today = getIsoDate();
+      const yesterday = getIsoDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+      const dismissed = sd.sleepWindDownDismissedNightId;
+      setPausedTonight(dismissed === today || dismissed === yesterday);
     });
   });
 
-  const autoSave = async (next: SleepWindDownCfg) => {
-    if (props.showSaveButton === false) {
+  const persist = async (next: SleepWindDownCfg) => {
+    if (props.autoSave) {
       await updateUserCfg({ sleepWindDown: next });
     }
   };
 
-  const toggleEnabled = () => {
+  const apply = (mutate: (prev: SleepWindDownCfg) => SleepWindDownCfg) => {
     setCfg((prev) => {
-      const next = { ...prev, enabled: !prev.enabled };
+      const next = mutate(prev);
       props.onChange?.(next);
-      autoSave(next);
+      persist(next);
       return next;
     });
   };
 
+  const toggleEnabled = () => {
+    apply((prev) => ({ ...prev, enabled: !prev.enabled }));
+  };
+
   const toggleDay = (idx: number) => {
-    setCfg((prev) => {
+    apply((prev) => {
       const days = { ...prev.days };
+      // Preserve the previous range when re-enabling a day if available;
+      // otherwise seed with the default night window.
       days[idx] = days[idx] ? null : { ...DEFAULT_DAY_RANGE };
-      const next = { ...prev, days };
-      props.onChange?.(next);
-      autoSave(next);
-      return next;
+      return { ...prev, days };
     });
   };
 
   const updateTime = (idx: number, field: "start" | "end", value: string) => {
-    setCfg((prev) => {
+    apply((prev) => {
       const cur = prev.days[idx];
       if (!cur) return prev;
-      const days = { ...prev.days, [idx]: { ...cur, [field]: value } };
-      const next = { ...prev, days };
-      props.onChange?.(next);
-      autoSave(next);
-      return next;
+      return {
+        ...prev,
+        days: { ...prev.days, [idx]: { ...cur, [field]: value } },
+      };
     });
   };
 
   const isDayEnabled = (idx: number) => !!cfg().days[idx];
   const getRange = (idx: number) => cfg().days[idx] || DEFAULT_DAY_RANGE;
+  const enabledDayCount = () =>
+    Object.values(cfg().days).filter((r) => r !== null).length;
 
   return (
     <div class={styles.FocusSchedule}>
@@ -89,9 +108,16 @@ export const SleepWindDownSettings = (props: {
       </div>
       <p class={styles.description}>
         {cfg().enabled
-          ? "When you unlock the phone during these hours, minded will offer a wind-down."
+          ? enabledDayCount() === 0
+            ? "Wind-down is on, but no days are selected — turn at least one day on below."
+            : "When the time arrives, minded will gently prompt you to wind down."
           : "Enable to be gently prompted to wind down at bedtime."}
       </p>
+      {pausedTonight() && cfg().enabled && (
+        <p class={styles.description} style={{ "font-style": "italic" }}>
+          Paused for tonight — wind-down will resume tomorrow.
+        </p>
+      )}
       <div class={styles.daysList}>
         <For each={DAY_NAMES}>
           {(name, index) => (
@@ -125,6 +151,14 @@ export const SleepWindDownSettings = (props: {
             </div>
           )}
         </For>
+      </div>
+      <div style={{ "margin-top": "16px", "text-align": "center" }}>
+        <button
+          class="btnTxtOutline"
+          onClick={() => navigate("/sleepWindDown?preview=1")}
+        >
+          Try wind-down now
+        </button>
       </div>
     </div>
   );

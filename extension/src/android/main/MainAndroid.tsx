@@ -35,8 +35,12 @@ const MainAndroid = () => {
     if (!nightId) return;
     if (syncData.sleepWindDownDismissedNightId === nightId) return;
     if ((syncData.sleepWindDownSnoozeUntilTS ?? 0) > Date.now()) return;
-    // Already on the wind-down route? leave alone
-    if (window.location.hash.includes("/sleepWindDown")) return;
+    // Only auto-route from the dashboard root. If the user is mid-task in
+    // settings, feedback, an interaction, or already in the wind-down flow,
+    // don't yank them away on resume.
+    const hash = window.location.hash;
+    const atRoot = hash === "" || hash === "#" || hash === "#/";
+    if (!atRoot) return;
     window.location.hash = "#/sleepWindDown";
   };
 

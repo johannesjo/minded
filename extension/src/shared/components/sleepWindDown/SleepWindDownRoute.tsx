@@ -1,5 +1,5 @@
 import { createSignal, JSX, Match, onMount, Switch, For } from "solid-js";
-import { useNavigate } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
   getSyncData,
   updateSyncData,
@@ -34,36 +34,90 @@ const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
   { key: "tips", label: "Tips for good sleep", view: "tips" },
 ];
 
+/**
+ * Resolve the night id from the user's saved cfg. We always read the latest
+ * config rather than caching the value, because a stale `null` would cause
+ * dismiss/snooze to silently no-op. Falls back to today's iso date if cfg
+ * is missing — better to over-record than to skip recording the dismissal.
+ */
+const resolveNightIdFromStorage = async (): Promise<string> => {
+  const sd = await getSyncData();
+  const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
+  return resolveNightId(cfg) ?? new Date().toISOString().slice(0, 10);
+};
+
 export const SleepWindDownRoute = (): JSX.Element => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPreview = () => searchParams.preview === "1";
   const [view, setView] = createSignal<View>("prompt");
   const [completed, setCompleted] = createSignal<Set<ActivityKey>>(new Set());
+  const [brainDumpDraft, setBrainDumpDraft] = createSignal("");
+  const [hydrated, setHydrated] = createSignal(false);
 
-  let nightId: string | null = null;
+  let currentNightId: string | null = null;
 
-  onMount(() => {
-    getSyncData().then((sd) => {
-      const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
-      nightId = resolveNightId(cfg);
-    });
+  onMount(async () => {
+    const sd = await getSyncData();
+    const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
+    currentNightId = resolveNightId(cfg);
+    if (currentNightId && sd.sleepWindDownProgressNightId === currentNightId) {
+      setCompleted(new Set(sd.sleepWindDownCompleted as ActivityKey[]));
+      setBrainDumpDraft(sd.sleepWindDownBrainDumpDraft ?? "");
+    }
+    setHydrated(true);
   });
+
+  const persistCompleted = async (next: Set<ActivityKey>) => {
+    const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+    currentNightId = nightId;
+    await updateSyncData({
+      sleepWindDownProgressNightId: nightId,
+      sleepWindDownCompleted: Array.from(next),
+    });
+  };
 
   const markComplete = (key: ActivityKey) => {
     setCompleted((prev) => {
       const next = new Set(prev);
       next.add(key);
+      persistCompleted(next);
       return next;
     });
   };
 
+  const persistDraft = async (text: string) => {
+    const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+    currentNightId = nightId;
+    await updateSyncData({
+      sleepWindDownProgressNightId: nightId,
+      sleepWindDownBrainDumpDraft: text,
+    });
+  };
+
   const dismissForTonight = async () => {
-    if (nightId) {
-      await updateSyncData({ sleepWindDownDismissedNightId: nightId });
+    if (isPreview()) {
+      // Preview mode (entered via "Try wind-down now") never persists; we
+      // don't want a daytime preview to suppress tonight's real window.
+      navigate("/");
+      return;
     }
+    const nightId = await resolveNightIdFromStorage();
+    await updateSyncData({
+      sleepWindDownDismissedNightId: nightId,
+      // Clear the in-progress fields so tomorrow night starts fresh.
+      sleepWindDownProgressNightId: "",
+      sleepWindDownCompleted: [],
+      sleepWindDownBrainDumpDraft: "",
+    });
     navigate("/");
   };
 
   const snooze = async () => {
+    if (isPreview()) {
+      navigate("/");
+      return;
+    }
     await updateSyncData({
       sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
     });
@@ -100,10 +154,14 @@ export const SleepWindDownRoute = (): JSX.Element => {
               Snooze for 30 minutes, or skip the rest of tonight.
             </p>
             <div class={styles.btnRow}>
-              <button class="btnTxt" onClick={snooze}>
+              <button class="btnTxt" onClick={snooze} disabled={!hydrated()}>
                 Snooze 30 min
               </button>
-              <button class="btnTxtOutline" onClick={dismissForTonight}>
+              <button
+                class="btnTxtOutline"
+                onClick={dismissForTonight}
+                disabled={!hydrated()}
+              >
                 Skip tonight
               </button>
             </div>
@@ -151,8 +209,15 @@ export const SleepWindDownRoute = (): JSX.Element => {
 
         <Match when={view() === "brainDump"}>
           <BrainDump
+            initialText={brainDumpDraft()}
+            onDraftChange={(t) => {
+              setBrainDumpDraft(t);
+              persistDraft(t);
+            }}
             onDone={() => {
               markComplete("brainDump");
+              setBrainDumpDraft("");
+              persistDraft("");
               setView("menu");
             }}
             onBack={() => setView("menu")}

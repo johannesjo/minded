@@ -22,9 +22,16 @@ private fun isoDate(d: Date): String {
  */
 object SleepWindDownWindow {
 
-    private fun parseHHMM(s: String): Int {
-        val parts = s.split(":")
-        return parts[0].toInt() * 60 + parts[1].toInt()
+    /**
+     * Parse `HH:MM`. Returns null on any malformed input — callers must treat
+     * null as "no window" rather than crashing or silently using a wrong value.
+     */
+    private fun parseHHMM(s: String): Int? {
+        val m = Regex("""^(\d{1,2}):(\d{2})$""").matchEntire(s.trim()) ?: return null
+        val h = m.groupValues[1].toIntOrNull() ?: return null
+        val mm = m.groupValues[2].toIntOrNull() ?: return null
+        if (h !in 0..23 || mm !in 0..59) return null
+        return h * 60 + mm
     }
 
     /** Returns the parsed days map, or null if cfg is disabled / missing / malformed. */
@@ -53,7 +60,10 @@ object SleepWindDownWindow {
 
     private fun rangeFor(days: Map<String, Map<String, String>>, idx: Int): Pair<Int, Int>? {
         val r = days[idx.toString()] ?: return null
-        return parseHHMM(r["start"]!!) to parseHHMM(r["end"]!!)
+        val start = r["start"]?.let { parseHHMM(it) } ?: return null
+        val end = r["end"]?.let { parseHHMM(it) } ?: return null
+        if (start == end) return null
+        return start to end
     }
 
     /**
@@ -79,7 +89,7 @@ object SleepWindDownWindow {
             add(Calendar.DATE, -1)
         }.time
         rangeFor(days, dayIndex(yesterday))?.let { (start, end) ->
-            if (end <= start && minutesNow < end) return isoDate(yesterday)
+            if (end < start && minutesNow < end) return isoDate(yesterday)
         }
 
         return null

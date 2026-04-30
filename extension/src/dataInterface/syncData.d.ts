@@ -112,9 +112,15 @@ export interface SyncData {
    * Sleep wind-down — per-night state.
    * `nightId` is the ISO date of the day on which bedtime begins (so e.g.
    * unlocking at 02:00 still resolves to the previous evening's nightId).
+   *
+   * `*ProgressNightId` scopes the in-progress fields below it: when nightId
+   * differs from the current night, the progress is treated as stale.
    */
   sleepWindDownDismissedNightId: string;
   sleepWindDownSnoozeUntilTS: number;
+  sleepWindDownProgressNightId: string;
+  sleepWindDownCompleted: string[];
+  sleepWindDownBrainDumpDraft: string;
 }
 
 export interface StaticCfg {

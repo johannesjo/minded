@@ -1,4 +1,4 @@
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { saveAnswer } from "@src/dataInterface/commonSyncDataInterface";
 import { BRAIN_DUMP_PROMPTS } from "@src/shared/data/sleepContent";
 import { QuestionCategoryId } from "@src/shared/data/questions";
@@ -8,14 +8,43 @@ import styles from "../SleepWindDownRoute.module.scss";
 const pickPrompt = (): string =>
   BRAIN_DUMP_PROMPTS[Math.floor(Math.random() * BRAIN_DUMP_PROMPTS.length)];
 
+const DRAFT_DEBOUNCE_MS = 600;
+
 export const BrainDump = (props: {
+  initialText?: string;
+  onDraftChange?: (text: string) => void;
   onDone: () => void;
   onBack: () => void;
 }): JSX.Element => {
-  const [prompt, setPrompt] = createSignal(BRAIN_DUMP_PROMPTS[0]);
-  const [text, setText] = createSignal("");
+  // Initialize lazily so there's no flash of prompt[0] before the random pick.
+  const [prompt] = createSignal(pickPrompt());
+  const [text, setText] = createSignal(props.initialText ?? "");
 
-  onMount(() => setPrompt(pickPrompt()));
+  let debounceHandle: ReturnType<typeof setTimeout> | null = null;
+  const scheduleDraftWrite = (value: string) => {
+    if (!props.onDraftChange) return;
+    if (debounceHandle) clearTimeout(debounceHandle);
+    debounceHandle = setTimeout(() => {
+      props.onDraftChange?.(value);
+      debounceHandle = null;
+    }, DRAFT_DEBOUNCE_MS);
+  };
+
+  const flushDraft = () => {
+    if (!props.onDraftChange) return;
+    if (debounceHandle) {
+      clearTimeout(debounceHandle);
+      debounceHandle = null;
+    }
+    props.onDraftChange(text());
+  };
+
+  onMount(() => {
+    onCleanup(() => {
+      // Don't drop typed-but-not-yet-debounced text on unmount.
+      flushDraft();
+    });
+  });
 
   const submit = async () => {
     const trimmed = text().trim();
@@ -31,6 +60,11 @@ export const BrainDump = (props: {
     props.onDone();
   };
 
+  const back = () => {
+    flushDraft();
+    props.onBack();
+  };
+
   return (
     <div class={styles.activityBody}>
       <h3 class="h3" style={{ "text-align": "center", margin: 0 }}>
@@ -38,12 +72,16 @@ export const BrainDump = (props: {
       </h3>
       <textarea
         class={styles.brainDumpTextarea}
-        placeholder="Write whatever's on your mind. It stays here."
+        placeholder="Write whatever's on your mind. Saved with your journal."
         value={text()}
-        onInput={(e) => setText(e.currentTarget.value)}
+        onInput={(e) => {
+          const v = e.currentTarget.value;
+          setText(v);
+          scheduleDraftWrite(v);
+        }}
       />
       <div class={styles.activityActions}>
-        <button class="btnTxtOutline" onClick={props.onBack}>
+        <button class="btnTxtOutline" onClick={back}>
           Back
         </button>
         <button class="btnTxt" onClick={submit}>
