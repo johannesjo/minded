@@ -3,6 +3,8 @@ package com.minded.minded
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import com.minded.minded.data.SharedPreferenceService
+import com.minded.minded.sleepwinddown.SleepWindDownAlarmScheduler
+import com.minded.minded.sleepwinddown.SleepWindDownNotifier
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
@@ -78,6 +80,29 @@ open class MainActivityJavaScriptInterface(
             jsonArray.put(jsonObject)
         }
         return jsonArray.toString()
+    }
+
+    /**
+     * Re-evaluate and re-schedule the next sleep wind-down alarm based on
+     * the latest persisted cfg. The TS layer must call this after any
+     * change to `cfg.sleepWindDown` or to the snooze/dismiss state.
+     */
+    @JavascriptInterface
+    fun scheduleSleepWindDownAlarms() {
+        Log.v(logTag, "scheduleSleepWindDownAlarms()")
+        SleepWindDownAlarmScheduler.scheduleNext(context)
+    }
+
+    /**
+     * Cancel the next scheduled wind-down alarm and dismiss the
+     * notification (if visible). Called when the user disables wind-down
+     * or skips for tonight.
+     */
+    @JavascriptInterface
+    fun cancelSleepWindDownAlarms() {
+        Log.v(logTag, "cancelSleepWindDownAlarms()")
+        SleepWindDownAlarmScheduler.cancel(context)
+        SleepWindDownNotifier.cancel(context)
     }
 
     private fun getInstalledApps(): List<ApplicationInfo> {

@@ -17,6 +17,8 @@ interface InteractionWindowJavaScriptInterface {
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: "light" | "medium" | "heavy") => void;
   setSessionLimit: (seconds: number) => void;
+  scheduleSleepWindDownAlarms: () => void;
+  cancelSleepWindDownAlarms: () => void;
   test: () => void;
 }
 

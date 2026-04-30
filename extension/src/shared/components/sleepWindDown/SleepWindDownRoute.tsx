@@ -6,6 +6,10 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { resolveNightId, SNOOZE_MINUTES } from "./sleepWindDown.util";
+import {
+  cancelSleepWindDownAlarms,
+  refreshSleepWindDownAlarms,
+} from "./androidBridge";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
@@ -110,6 +114,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
       sleepWindDownCompleted: [],
       sleepWindDownBrainDumpDraft: "",
     });
+    cancelSleepWindDownAlarms();
     navigate("/");
   };
 
@@ -121,6 +126,8 @@ export const SleepWindDownRoute = (): JSX.Element => {
     await updateSyncData({
       sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
     });
+    // Re-arm the alarm at the snooze time.
+    refreshSleepWindDownAlarms();
     navigate("/");
   };
 

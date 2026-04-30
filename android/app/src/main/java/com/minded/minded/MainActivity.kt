@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.webkit.ValueCallback
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,11 @@ class MainActivity : AppCompatActivity() {
     private val webAppResumeEVName = "androidAppResume"
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
+
+    /** Set to true once the WebView has finished loading the SPA at least once. */
+    private var isPageReady = false
+    /** A pending hash route to push as soon as the SPA is ready. */
+    private var pendingHashTarget: String? = null
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -88,6 +94,13 @@ class MainActivity : AppCompatActivity() {
                                     ),
                                     jsInterfaceNameProp
                                 )
+                                webViewClient = object : WebViewClient() {
+                                    override fun onPageFinished(view: WebView?, url: String?) {
+                                        super.onPageFinished(view, url)
+                                        isPageReady = true
+                                        flushPendingHash()
+                                    }
+                                }
                                 loadUrl(buildLaunchUrl(intent))
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
@@ -110,12 +123,29 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (this::webView.isInitialized && shouldOpenSleepWindDown(intent)) {
-            webView.evaluateJavascript(
-                "(function(){window.location.hash='#/sleepWindDown';window.dispatchEvent(new Event('${webAppResumeEVName}'));})();",
-                ValueCallback<String?> {}
-            )
+        if (shouldOpenSleepWindDown(intent)) {
+            queueHashTarget("#/sleepWindDown")
+            // Consume the extra so a later resume-from-Recents doesn't re-fire it.
+            intent.removeExtra(SleepWindDownReceiver.EXTRA_OPEN_SLEEP_WIND_DOWN)
         }
+    }
+
+    private fun queueHashTarget(target: String) {
+        pendingHashTarget = target
+        if (this::webView.isInitialized && isPageReady) {
+            flushPendingHash()
+        }
+    }
+
+    private fun flushPendingHash() {
+        val target = pendingHashTarget ?: return
+        if (!this::webView.isInitialized) return
+        pendingHashTarget = null
+        webView.evaluateJavascript(
+            "(function(){window.location.hash='$target';" +
+                "window.dispatchEvent(new Event('${webAppResumeEVName}'));})();",
+            ValueCallback<String?> {}
+        )
     }
 
     private fun shouldOpenSleepWindDown(intent: Intent?): Boolean =

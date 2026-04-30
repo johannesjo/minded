@@ -15,6 +15,10 @@ import {
   FocusSchedule as FocusScheduleType,
   SleepWindDownCfg,
 } from "@src/dataInterface/syncData";
+import {
+  cancelSleepWindDownAlarms,
+  refreshSleepWindDownAlarms,
+} from "@src/shared/components/sleepWindDown/androidBridge";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
@@ -39,7 +43,14 @@ export const SettingsAndroidRoute = () => {
       await updateUserCfg({ focusSchedule: pendingSchedule()! });
     }
     if (pendingSleepWindDown() !== null) {
-      await updateUserCfg({ sleepWindDown: pendingSleepWindDown()! });
+      const next = pendingSleepWindDown()!;
+      await updateUserCfg({ sleepWindDown: next });
+      // Reschedule the alarm to match the new cfg, or cancel if disabled.
+      if (next.enabled) {
+        refreshSleepWindDownAlarms();
+      } else {
+        cancelSleepWindDownAlarms();
+      }
     }
     setShowToast(true);
   };
