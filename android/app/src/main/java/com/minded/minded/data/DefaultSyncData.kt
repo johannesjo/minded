@@ -9,7 +9,8 @@ val defaultSyncData = SyncData(
         blockedHosts = emptyList(),
         blockedApps = emptyList(),
         focusSchedule = null,
-        soundEnabled = null
+        soundEnabled = null,
+        sleepWindDown = null
     ),
     answers = emptyList(),
     // NOTE: 99 is set to pass isToday check
@@ -35,5 +36,7 @@ val defaultSyncData = SyncData(
     budgetPromptDismissedTS = 99L,
     activeTimer = null,
     dailyBudget = null,
-    dailyUsage = emptyMap()
+    dailyUsage = emptyMap(),
+    sleepWindDownDismissedNightId = "",
+    sleepWindDownSnoozeUntilTS = 0L
 )

@@ -1,0 +1,67 @@
+import { SleepWindDownCfg, TimeRange } from "@src/dataInterface/syncData";
+import { getIsoDate } from "@src/util/getIsoDate";
+
+const parseHHMM = (s: string): number => {
+  const [h, m] = s.split(":").map((n) => parseInt(n, 10));
+  return h * 60 + m;
+};
+
+/**
+ * Resolves the "night id" for a given moment — the ISO date of the day on which
+ * the wind-down window started. If now is past midnight but still before wake,
+ * the night id is yesterday's date.
+ *
+ * Returns null if the given moment is not inside any configured wind-down window.
+ */
+export const resolveNightId = (
+  cfg: SleepWindDownCfg,
+  at: Date = new Date(),
+): string | null => {
+  if (!cfg.enabled) return null;
+
+  const minutesNow = at.getHours() * 60 + at.getMinutes();
+  const todayIdx = at.getDay();
+  const todayRange = cfg.days[todayIdx];
+
+  // Window starting today (e.g. 22:00 today -> 07:00 tomorrow, or 22:00 -> 23:30 same day)
+  if (todayRange) {
+    const start = parseHHMM(todayRange.start);
+    const end = parseHHMM(todayRange.end);
+    if (end > start) {
+      // Same-day window
+      if (minutesNow >= start && minutesNow < end) {
+        return getIsoDate(at);
+      }
+    } else {
+      // Crosses midnight — only the "after start" half belongs to today's nightId
+      if (minutesNow >= start) {
+        return getIsoDate(at);
+      }
+    }
+  }
+
+  // Window that started yesterday and crosses midnight into today
+  const yesterday = new Date(at);
+  yesterday.setDate(at.getDate() - 1);
+  const yIdx = yesterday.getDay();
+  const yRange = cfg.days[yIdx];
+  if (yRange) {
+    const start = parseHHMM(yRange.start);
+    const end = parseHHMM(yRange.end);
+    if (end <= start && minutesNow < end) {
+      return getIsoDate(yesterday);
+    }
+  }
+
+  return null;
+};
+
+export const isInsideWindow = (
+  cfg: SleepWindDownCfg,
+  at: Date = new Date(),
+): boolean => resolveNightId(cfg, at) !== null;
+
+export const SNOOZE_MINUTES = 30;
+
+/** Empty range used when the user has no schedule yet but enables a day. */
+export const DEFAULT_DAY_RANGE: TimeRange = { start: "22:00", end: "07:00" };

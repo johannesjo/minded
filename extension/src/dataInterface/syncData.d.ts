@@ -18,12 +18,25 @@ export interface FocusSchedule {
   };
 }
 
+/**
+ * Sleep wind-down schedule. The TimeRange `start` is bedtime; `end` is wake time.
+ * If `end` <= `start`, the window crosses midnight (e.g. 22:00 -> 07:00).
+ * The day index refers to the day the bedtime begins on.
+ */
+export interface SleepWindDownCfg {
+  enabled: boolean;
+  days: {
+    [dayIndex: number]: TimeRange | null;
+  };
+}
+
 export interface UserCfg {
   isOnboardingComplete: boolean;
   blockedHosts: string[];
   blockedApps: string[];
   focusSchedule?: FocusSchedule;
   soundEnabled?: boolean; // Enable/disable completion sound (default: true)
+  sleepWindDown?: SleepWindDownCfg;
 }
 
 export interface Answer {
@@ -94,6 +107,14 @@ export interface SyncData {
     [dateISO: string]: DailyUsage;
   };
   budgetPromptDismissedTS: number;
+
+  /**
+   * Sleep wind-down — per-night state.
+   * `nightId` is the ISO date of the day on which bedtime begins (so e.g.
+   * unlocking at 02:00 still resolves to the previous evening's nightId).
+   */
+  sleepWindDownDismissedNightId: string;
+  sleepWindDownSnoozeUntilTS: number;
 }
 
 export interface StaticCfg {

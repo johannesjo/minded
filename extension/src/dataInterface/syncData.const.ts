@@ -1,6 +1,7 @@
 import {
   FocusSchedule,
   SelfAssessmentEntry,
+  SleepWindDownCfg,
   StaticCfg,
   SyncData,
 } from "./syncData";
@@ -10,6 +11,23 @@ import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export const DEFAULT_TS_VAL = 99;
+
+/**
+ * Default sleep wind-down: 22:00 -> 07:00 every day, disabled by default
+ * so users opt in with a single toggle.
+ */
+export const DEFAULT_SLEEP_WIND_DOWN: SleepWindDownCfg = {
+  enabled: false,
+  days: {
+    0: { start: "22:00", end: "07:00" },
+    1: { start: "22:00", end: "07:00" },
+    2: { start: "22:00", end: "07:00" },
+    3: { start: "22:00", end: "07:00" },
+    4: { start: "22:00", end: "07:00" },
+    5: { start: "22:00", end: "07:00" },
+    6: { start: "22:00", end: "07:00" },
+  },
+};
 
 /** Default focus schedule: 9am-5pm on weekdays (Mon-Fri), disabled on weekends */
 export const DEFAULT_FOCUS_SCHEDULE: FocusSchedule = {
@@ -81,6 +99,8 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   dailyBudget: null,
   dailyUsage: {},
   budgetPromptDismissedTS: DEFAULT_TS_VAL,
+  sleepWindDownDismissedNightId: "",
+  sleepWindDownSnoozeUntilTS: 0,
 };
 
 export const STATIC_CFG: StaticCfg = {

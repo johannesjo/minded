@@ -14,6 +14,7 @@ fun syncDataToJson(syncData: SyncData): String {
         cfgObject.put("focusSchedule", JSONObject(schedule))
     }
     syncData.cfg.soundEnabled?.let { cfgObject.put("soundEnabled", it) }
+    syncData.cfg.sleepWindDown?.let { cfgObject.put("sleepWindDown", JSONObject(it)) }
     jsonObject.put("cfg", cfgObject)
 
     val answersArray = JSONArray()
@@ -118,6 +119,9 @@ fun syncDataToJson(syncData: SyncData): String {
         dailyUsageObj.put(dateKey, usageObj)
     }
     jsonObject.put("dailyUsage", dailyUsageObj)
+
+    jsonObject.put("sleepWindDownDismissedNightId", syncData.sleepWindDownDismissedNightId)
+    jsonObject.put("sleepWindDownSnoozeUntilTS", syncData.sleepWindDownSnoozeUntilTS)
 
     return jsonObject.toString()
 }

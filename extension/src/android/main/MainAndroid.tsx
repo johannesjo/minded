@@ -14,6 +14,7 @@ import { SyncData } from "@src/dataInterface/syncData";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -27,11 +28,26 @@ const MainAndroid = () => {
     addWrapperClasses();
   });
 
+  const maybeTriggerSleepWindDown = (syncData: SyncData) => {
+    const cfg = syncData.cfg.sleepWindDown;
+    if (!cfg?.enabled) return;
+    const nightId = resolveNightId(cfg);
+    if (!nightId) return;
+    if (syncData.sleepWindDownDismissedNightId === nightId) return;
+    if ((syncData.sleepWindDownSnoozeUntilTS ?? 0) > Date.now()) return;
+    // Already on the wind-down route? leave alone
+    if (window.location.hash.includes("/sleepWindDown")) return;
+    window.location.hash = "#/sleepWindDown";
+  };
+
   const refresh = () => {
     setIsDarkModeIfApplies();
 
     getSyncData().then((syncData: SyncData) => {
       setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
+      if (syncData.cfg.isOnboardingComplete) {
+        maybeTriggerSleepWindDown(syncData);
+      }
     });
 
     setTimeout(() => {

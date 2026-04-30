@@ -4,13 +4,17 @@ import { SettingsAndroid } from "./SettingsAndroid";
 import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
+import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
 import { Toast } from "@src/shared/components/ui/Toast";
 import { Ico } from "@src/shared/components/ui/Ico";
 import {
   updateBlockedApps,
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { FocusSchedule as FocusScheduleType } from "@src/dataInterface/syncData";
+import {
+  FocusSchedule as FocusScheduleType,
+  SleepWindDownCfg,
+} from "@src/dataInterface/syncData";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
@@ -21,6 +25,8 @@ export const SettingsAndroidRoute = () => {
   const [pendingSound, setPendingSound] = createSignal<boolean | null>(null);
   const [pendingSchedule, setPendingSchedule] =
     createSignal<FocusScheduleType | null>(null);
+  const [pendingSleepWindDown, setPendingSleepWindDown] =
+    createSignal<SleepWindDownCfg | null>(null);
 
   const handleSaveAll = async () => {
     if (pendingApps() !== null) {
@@ -31,6 +37,9 @@ export const SettingsAndroidRoute = () => {
     }
     if (pendingSchedule() !== null) {
       await updateUserCfg({ focusSchedule: pendingSchedule()! });
+    }
+    if (pendingSleepWindDown() !== null) {
+      await updateUserCfg({ sleepWindDown: pendingSleepWindDown()! });
     }
     setShowToast(true);
   };
@@ -44,28 +53,35 @@ export const SettingsAndroidRoute = () => {
         onChange={(apps) => setPendingApps(apps)}
       />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
 
       <SoundSettings
         autoSave={false}
         onChange={(enabled) => setPendingSound(enabled)}
       />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
 
       <BudgetSettings />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
 
       <FocusSchedule
         showSaveButton={false}
         onChange={(schedule) => setPendingSchedule(schedule)}
       />
 
-      <div style="text-align: center; margin: 32px 16px;">
+      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
+
+      <SleepWindDownSettings
+        showSaveButton={false}
+        onChange={(cfg) => setPendingSleepWindDown(cfg)}
+      />
+
+      <div style={{ "text-align": "center", margin: "32px 16px" }}>
         <button
           class="btnTxt"
-          style="margin-right: 16px;"
+          style={{ "margin-right": "16px" }}
           onClick={() => navigate("/")}
         >
           <Ico name="arrowBack" /> Back

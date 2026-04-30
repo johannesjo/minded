@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
+import com.minded.minded.sleepwinddown.SleepWindDownReceiver
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
@@ -87,7 +88,7 @@ class MainActivity : AppCompatActivity() {
                                     ),
                                     jsInterfaceNameProp
                                 )
-                                loadUrl("file:///android_asset/web/src/android/main/index.html")
+                                loadUrl(buildLaunchUrl(intent))
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)
@@ -104,6 +105,25 @@ class MainActivity : AppCompatActivity() {
             MissingCapability.Accessibility -> askPermissionForAccessibility()
             MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (this::webView.isInitialized && shouldOpenSleepWindDown(intent)) {
+            webView.evaluateJavascript(
+                "(function(){window.location.hash='#/sleepWindDown';window.dispatchEvent(new Event('${webAppResumeEVName}'));})();",
+                ValueCallback<String?> {}
+            )
+        }
+    }
+
+    private fun shouldOpenSleepWindDown(intent: Intent?): Boolean =
+        intent?.getBooleanExtra(SleepWindDownReceiver.EXTRA_OPEN_SLEEP_WIND_DOWN, false) == true
+
+    private fun buildLaunchUrl(intent: Intent?): String {
+        val base = "file:///android_asset/web/src/android/main/index.html"
+        return if (shouldOpenSleepWindDown(intent)) "$base#/sleepWindDown" else base
     }
 
     override fun onBackPressed() {
