@@ -17,6 +17,7 @@ import {
 } from "@src/dataInterface/syncData";
 import {
   cancelSleepWindDownAlarms,
+  ensureNotificationPermission,
   refreshSleepWindDownAlarms,
 } from "@src/shared/components/sleepWindDown/androidBridge";
 
@@ -47,6 +48,10 @@ export const SettingsAndroidRoute = () => {
       await updateUserCfg({ sleepWindDown: next });
       // Reschedule the alarm to match the new cfg, or cancel if disabled.
       if (next.enabled) {
+        // The notification path needs runtime POST_NOTIFICATIONS on
+        // Android 13+. Ask the user the first time they enable wind-down,
+        // otherwise the feature is silently broken.
+        ensureNotificationPermission();
         refreshSleepWindDownAlarms();
       } else {
         cancelSleepWindDownAlarms();

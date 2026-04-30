@@ -17,11 +17,9 @@ class SleepWindDownAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null) return
         try {
-            when (intent?.action) {
-                Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_LOCKED_BOOT_COMPLETED -> {
-                    SleepWindDownAlarmScheduler.scheduleNext(context)
-                    return
-                }
+            if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+                SleepWindDownAlarmScheduler.scheduleNext(context)
+                return
             }
 
             val sp = SharedPreferenceService(context)
@@ -53,7 +51,16 @@ class SleepWindDownAlarmReceiver : BroadcastReceiver() {
             }
 
             SleepWindDownNotifier.show(context)
-            SleepWindDownAlarmScheduler.scheduleNext(context)
+            // Reschedule for the *next* bedtime (not the current one we just
+            // fired on) — otherwise computeNextBedtime would return now+5s
+            // again and we'd post the heads-up every 5 seconds.
+            val nextStrict = SleepWindDownAlarmScheduler
+                .computeNextFutureBedtime(syncData.cfg, System.currentTimeMillis())
+            if (nextStrict != null) {
+                SleepWindDownAlarmScheduler.scheduleAt(context, nextStrict)
+            } else {
+                SleepWindDownAlarmScheduler.cancel(context)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to handle alarm", e)
         }

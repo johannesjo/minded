@@ -90,7 +90,10 @@ data class SyncData(
     val dailyBudget: DailyBudget?,
     val dailyUsage: Map<String, DailyUsage>,
     val sleepWindDownDismissedNightId: String,
-    val sleepWindDownSnoozeUntilTS: Long
+    val sleepWindDownSnoozeUntilTS: Long,
+    val sleepWindDownProgressNightId: String,
+    val sleepWindDownCompleted: List<String>,
+    val sleepWindDownBrainDumpDraft: String
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -214,6 +217,11 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
 
     val sleepWindDownDismissedNightId = jsonObject.optString("sleepWindDownDismissedNightId", "")
     val sleepWindDownSnoozeUntilTS = jsonObject.optLong("sleepWindDownSnoozeUntilTS", 0L)
+    val sleepWindDownProgressNightId = jsonObject.optString("sleepWindDownProgressNightId", "")
+    val sleepWindDownCompleted = jsonObject.optJSONArray("sleepWindDownCompleted")?.let { arr ->
+        List(arr.length()) { arr.getString(it) }
+    } ?: emptyList()
+    val sleepWindDownBrainDumpDraft = jsonObject.optString("sleepWindDownBrainDumpDraft", "")
 
     return SyncData(
         userCfg,
@@ -242,6 +250,9 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         dailyBudget,
         dailyUsage,
         sleepWindDownDismissedNightId,
-        sleepWindDownSnoozeUntilTS
+        sleepWindDownSnoozeUntilTS,
+        sleepWindDownProgressNightId,
+        sleepWindDownCompleted,
+        sleepWindDownBrainDumpDraft
     )
 }

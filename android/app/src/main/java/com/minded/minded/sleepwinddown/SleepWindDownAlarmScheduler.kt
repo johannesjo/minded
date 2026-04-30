@@ -30,9 +30,19 @@ object SleepWindDownAlarmScheduler {
         Log.d(TAG, "Cancelled wind-down alarm")
     }
 
-    /** Schedule the next alarm given the user's current cfg. No-op if disabled. */
+    /**
+     * Schedule the next alarm given the user's current cfg.
+     *
+     * The target is whichever comes first:
+     *   - the active snooze deadline (if any), or
+     *   - the next configured bedtime.
+     *
+     * No-op (cancels the pending alarm) if wind-down is disabled, onboarding
+     * incomplete, or no day has a configured range.
+     */
     fun scheduleNext(context: Context) {
-        val cfg = SharedPreferenceService(context).getSyncData().cfg
+        val syncData = SharedPreferenceService(context).getSyncData()
+        val cfg = syncData.cfg
         if (cfg.sleepWindDown == null) {
             cancel(context)
             return
@@ -42,13 +52,21 @@ object SleepWindDownAlarmScheduler {
             cancel(context)
             return
         }
-        val nextMs = computeNextBedtime(cfg, System.currentTimeMillis())
-        if (nextMs == null) {
-            Log.d(TAG, "No future bedtime found in next 8 days")
+
+        val now = System.currentTimeMillis()
+        val snoozeUntil = syncData.sleepWindDownSnoozeUntilTS
+        val nextBedtime = computeNextBedtime(cfg, now)
+        val candidates = listOfNotNull(
+            nextBedtime,
+            snoozeUntil.takeIf { it > now },
+        )
+        val target = candidates.minOrNull()
+        if (target == null) {
+            Log.d(TAG, "No bedtime / snooze in the next 8 days; cancelling")
             cancel(context)
             return
         }
-        scheduleAt(context, nextMs)
+        scheduleAt(context, target)
     }
 
     /** Schedule an alarm at a specific epoch ms. Used by snooze and by scheduleNext. */
@@ -79,14 +97,33 @@ object SleepWindDownAlarmScheduler {
     }
 
     /**
-     * Find the next configured bedtime at or after `nowMs`. Walks up to 8
-     * days forward (covers the case where the user disables every day except
-     * one on the same week).
+     * Find the next configured bedtime at or after `nowMs`.
      *
-     * @return epoch ms of the next bedtime, or null if no day in the next
-     *   week has a configured range.
+     * If we are *currently* inside a wind-down window (whether that window
+     * started today or rolled over from yesterday), returns `nowMs + 5s` so
+     * the alarm fires immediately and the receiver can post the notification.
+     * Otherwise walks up to 8 days forward to find the next bedtime start.
+     *
+     * Returns null if no day in the next 8 days has a configured range.
      */
     internal fun computeNextBedtime(
+        cfg: com.minded.minded.util.UserCfg,
+        nowMs: Long,
+    ): Long? {
+        // If we're already inside any configured window (including yesterday's
+        // cross-midnight window bleeding into today), fire the alarm now.
+        if (SleepWindDownWindow.resolveNightId(cfg, nowMs) != null) {
+            return nowMs + 5_000L
+        }
+        return computeNextFutureBedtime(cfg, nowMs)
+    }
+
+    /**
+     * Like [computeNextBedtime] but never returns "fire now". Use after
+     * posting the notification, when we want the *next* bedtime, not a
+     * tight reschedule of the one that just fired.
+     */
+    internal fun computeNextFutureBedtime(
         cfg: com.minded.minded.util.UserCfg,
         nowMs: Long,
     ): Long? {
@@ -112,23 +149,7 @@ object SleepWindDownAlarmScheduler {
             cal.set(Calendar.SECOND, 0)
             cal.set(Calendar.MILLISECOND, 0)
 
-            if (cal.timeInMillis >= nowMs) return cal.timeInMillis
-
-            // For today, the bedtime may already be in the past — but the
-            // window may still be active (e.g. start was 22:00, now is
-            // 22:30); in that case fire immediately + a few seconds so the
-            // alarm fires once we return.
-            if (offset == 0) {
-                val nowCal = Calendar.getInstance().apply { timeInMillis = nowMs }
-                val nowMin = nowCal.get(Calendar.HOUR_OF_DAY) * 60 +
-                    nowCal.get(Calendar.MINUTE)
-                val insideSameDay = endMin > startMin && nowMin in startMin until endMin
-                val insideCrossMidnight = endMin < startMin && nowMin >= startMin
-                if (insideSameDay || insideCrossMidnight) {
-                    return nowMs + 5_000L
-                }
-            }
-            // Otherwise keep walking forward to the next day's bedtime.
+            if (cal.timeInMillis > nowMs) return cal.timeInMillis
         }
         return null
     }

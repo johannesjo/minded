@@ -1,15 +1,19 @@
 package com.minded.minded
 
+import android.app.Activity
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.sleepwinddown.SleepWindDownAlarmScheduler
 import com.minded.minded.sleepwinddown.SleepWindDownNotifier
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import com.minded.minded.MissingCapability
 import com.minded.minded.util.checkDrawOverlayPermission
@@ -103,6 +107,50 @@ open class MainActivityJavaScriptInterface(
         Log.v(logTag, "cancelSleepWindDownAlarms()")
         SleepWindDownAlarmScheduler.cancel(context)
         SleepWindDownNotifier.cancel(context)
+    }
+
+    /**
+     * Returns true if the app currently holds POST_NOTIFICATIONS or the
+     * platform doesn't require it (Android < 13). The TS layer can use this
+     * to decide whether to surface a pre-prompt before requesting.
+     */
+    @JavascriptInterface
+    fun hasNotificationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
+        return ContextCompat.checkSelfPermission(
+            context,
+            "android.permission.POST_NOTIFICATIONS",
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * Request POST_NOTIFICATIONS at runtime. No-op on Android < 13 or when
+     * already granted. Caller cannot wait for the user's answer here — the
+     * TS layer should re-check `hasNotificationPermission()` later or just
+     * trust that the OS has prompted.
+     */
+    @JavascriptInterface
+    fun requestNotificationPermission() {
+        Log.v(logTag, "requestNotificationPermission()")
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val activity = context as? Activity ?: run {
+            Log.w(logTag, "Cannot request notification permission without Activity")
+            return
+        }
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                "android.permission.POST_NOTIFICATIONS",
+            ) == PackageManager.PERMISSION_GRANTED
+        ) return
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf("android.permission.POST_NOTIFICATIONS"),
+            REQUEST_CODE_POST_NOTIFICATIONS,
+        )
+    }
+
+    companion object {
+        private const val REQUEST_CODE_POST_NOTIFICATIONS = 6624
     }
 
     private fun getInstalledApps(): List<ApplicationInfo> {

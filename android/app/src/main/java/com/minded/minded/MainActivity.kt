@@ -102,6 +102,11 @@ class MainActivity : AppCompatActivity() {
                                     }
                                 }
                                 loadUrl(buildLaunchUrl(intent))
+                                // Consume the extra so that a Recents
+                                // rehydration of the same intent doesn't
+                                // re-route to wind-down outside the window.
+                                intent?.removeExtra(SleepWindDownReceiver.EXTRA_OPEN_SLEEP_WIND_DOWN)
+                                setIntent(intent)
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)

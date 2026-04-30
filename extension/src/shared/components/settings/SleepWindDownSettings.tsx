@@ -9,10 +9,12 @@ import { SleepWindDownCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import { TimeInput } from "@src/shared/components/ui/TimeInput";
-import { DEFAULT_DAY_RANGE } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import {
+  DEFAULT_DAY_RANGE,
+  resolveNightId,
+} from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 // @ts-ignore — reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
-import { getIsoDate } from "@src/util/getIsoDate";
 
 const DAY_NAMES = [
   "Sunday",
@@ -39,13 +41,14 @@ export const SleepWindDownSettings = (props: {
 
   onMount(() => {
     getSyncData().then((sd) => {
+      const swd = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
       if (sd.cfg.sleepWindDown) setCfg(sd.cfg.sleepWindDown);
-      // Surface the case where the user already skipped tonight; otherwise
-      // re-enabling the toggle looks like nothing happened.
-      const today = getIsoDate();
-      const yesterday = getIsoDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+      // Only surface "Paused for tonight" while we're actually inside the
+      // dismissed window — otherwise the banner sits there all day after
+      // a 22:00 skip even when wind-down would not be active anyway.
       const dismissed = sd.sleepWindDownDismissedNightId;
-      setPausedTonight(dismissed === today || dismissed === yesterday);
+      const currentNightId = resolveNightId(swd);
+      setPausedTonight(!!currentNightId && dismissed === currentNightId);
     });
   });
 

@@ -21,17 +21,23 @@ export const BrainDump = (props: {
   const [text, setText] = createSignal(props.initialText ?? "");
 
   let debounceHandle: ReturnType<typeof setTimeout> | null = null;
+  // Once the user submits, we MUST NOT re-flush the local text — the parent
+  // has already cleared the draft and we'd otherwise overwrite "" with the
+  // text the user just submitted, causing it to reappear next mount.
+  let isSubmitted = false;
+
   const scheduleDraftWrite = (value: string) => {
-    if (!props.onDraftChange) return;
+    if (!props.onDraftChange || isSubmitted) return;
     if (debounceHandle) clearTimeout(debounceHandle);
     debounceHandle = setTimeout(() => {
+      if (isSubmitted) return;
       props.onDraftChange?.(value);
       debounceHandle = null;
     }, DRAFT_DEBOUNCE_MS);
   };
 
   const flushDraft = () => {
-    if (!props.onDraftChange) return;
+    if (!props.onDraftChange || isSubmitted) return;
     if (debounceHandle) {
       clearTimeout(debounceHandle);
       debounceHandle = null;
@@ -48,6 +54,11 @@ export const BrainDump = (props: {
 
   const submit = async () => {
     const trimmed = text().trim();
+    isSubmitted = true;
+    if (debounceHandle) {
+      clearTimeout(debounceHandle);
+      debounceHandle = null;
+    }
     if (trimmed.length > 0) {
       await saveAnswer({
         id: `sleep-${Date.now()}`,

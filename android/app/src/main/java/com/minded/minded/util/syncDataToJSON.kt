@@ -122,6 +122,9 @@ fun syncDataToJson(syncData: SyncData): String {
 
     jsonObject.put("sleepWindDownDismissedNightId", syncData.sleepWindDownDismissedNightId)
     jsonObject.put("sleepWindDownSnoozeUntilTS", syncData.sleepWindDownSnoozeUntilTS)
+    jsonObject.put("sleepWindDownProgressNightId", syncData.sleepWindDownProgressNightId)
+    jsonObject.put("sleepWindDownCompleted", JSONArray(syncData.sleepWindDownCompleted))
+    jsonObject.put("sleepWindDownBrainDumpDraft", syncData.sleepWindDownBrainDumpDraft)
 
     return jsonObject.toString()
 }

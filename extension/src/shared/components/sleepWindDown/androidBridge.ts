@@ -26,3 +26,19 @@ export const cancelSleepWindDownAlarms = (): void => {
     console.warn("cancelSleepWindDownAlarms failed", e);
   }
 };
+
+/**
+ * Trigger the runtime POST_NOTIFICATIONS prompt if needed. Without this the
+ * notification path is silently broken on Android 13+ — the system requires
+ * an explicit grant. No-op on non-Android, on Android < 13, or if already
+ * granted.
+ */
+export const ensureNotificationPermission = (): void => {
+  if (!IS_ANDROID) return;
+  try {
+    if (androidInterface.hasNotificationPermission?.()) return;
+    androidInterface.requestNotificationPermission?.();
+  } catch (e) {
+    console.warn("ensureNotificationPermission failed", e);
+  }
+};

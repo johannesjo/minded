@@ -38,5 +38,8 @@ val defaultSyncData = SyncData(
     dailyBudget = null,
     dailyUsage = emptyMap(),
     sleepWindDownDismissedNightId = "",
-    sleepWindDownSnoozeUntilTS = 0L
+    sleepWindDownSnoozeUntilTS = 0L,
+    sleepWindDownProgressNightId = "",
+    sleepWindDownCompleted = emptyList(),
+    sleepWindDownBrainDumpDraft = ""
 )

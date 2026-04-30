@@ -6,10 +6,8 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { resolveNightId, SNOOZE_MINUTES } from "./sleepWindDown.util";
-import {
-  cancelSleepWindDownAlarms,
-  refreshSleepWindDownAlarms,
-} from "./androidBridge";
+import { refreshSleepWindDownAlarms } from "./androidBridge";
+import { getIsoDate } from "@src/util/getIsoDate";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
@@ -41,13 +39,13 @@ const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
 /**
  * Resolve the night id from the user's saved cfg. We always read the latest
  * config rather than caching the value, because a stale `null` would cause
- * dismiss/snooze to silently no-op. Falls back to today's iso date if cfg
- * is missing — better to over-record than to skip recording the dismissal.
+ * dismiss/snooze to silently no-op. Falls back to today's local iso date if
+ * cfg is missing — better to over-record than to skip recording the dismissal.
  */
 const resolveNightIdFromStorage = async (): Promise<string> => {
   const sd = await getSyncData();
   const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
-  return resolveNightId(cfg) ?? new Date().toISOString().slice(0, 10);
+  return resolveNightId(cfg) ?? getIsoDate();
 };
 
 export const SleepWindDownRoute = (): JSX.Element => {
@@ -73,6 +71,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
   });
 
   const persistCompleted = async (next: Set<ActivityKey>) => {
+    if (isPreview()) return;
     const nightId = currentNightId ?? (await resolveNightIdFromStorage());
     currentNightId = nightId;
     await updateSyncData({
@@ -91,6 +90,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
   };
 
   const persistDraft = async (text: string) => {
+    if (isPreview()) return;
     const nightId = currentNightId ?? (await resolveNightIdFromStorage());
     currentNightId = nightId;
     await updateSyncData({
@@ -114,7 +114,9 @@ export const SleepWindDownRoute = (): JSX.Element => {
       sleepWindDownCompleted: [],
       sleepWindDownBrainDumpDraft: "",
     });
-    cancelSleepWindDownAlarms();
+    // Re-arm (don't cancel) so tomorrow's alarm is still scheduled.
+    // The alarm receiver gates on dismissedNightId and will skip tonight.
+    refreshSleepWindDownAlarms();
     navigate("/");
   };
 
@@ -126,7 +128,8 @@ export const SleepWindDownRoute = (): JSX.Element => {
     await updateSyncData({
       sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
     });
-    // Re-arm the alarm at the snooze time.
+    // Re-arm the alarm at the snooze time. The scheduler picks min(snooze,
+    // next bedtime), so the alarm will fire at the snooze deadline.
     refreshSleepWindDownAlarms();
     navigate("/");
   };
@@ -196,6 +199,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
                     <button
                       class={`btnToggleSelect ${isDone() ? "isSelected" : ""}`}
                       onClick={() => setView(a.view)}
+                      disabled={!hydrated()}
                     >
                       {isDone() && <Ico name="check" />}
                       <span style={{ "margin-left": isDone() ? "8px" : 0 }}>
@@ -207,7 +211,11 @@ export const SleepWindDownRoute = (): JSX.Element => {
               </For>
             </div>
             <div class={styles.menuFooter}>
-              <button class="btnTxt" onClick={() => setView("goodnight")}>
+              <button
+                class="btnTxt"
+                onClick={() => setView("goodnight")}
+                disabled={!hydrated()}
+              >
                 <Ico name="check" /> All done
               </button>
             </div>

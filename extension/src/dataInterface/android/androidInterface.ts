@@ -19,6 +19,8 @@ interface InteractionWindowJavaScriptInterface {
   setSessionLimit: (seconds: number) => void;
   scheduleSleepWindDownAlarms: () => void;
   cancelSleepWindDownAlarms: () => void;
+  hasNotificationPermission: () => boolean;
+  requestNotificationPermission: () => void;
   test: () => void;
 }
 
