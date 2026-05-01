@@ -89,7 +89,8 @@ class BudgetHelperTest {
                 blockedHosts = emptyList(),
                 blockedApps = emptyList(),
                 focusSchedule = null,
-                soundEnabled = null
+                soundEnabled = null,
+                sleepWindDown = null
             ),
             answers = emptyList(),
             lastBlockedTS = 99L,
@@ -114,7 +115,12 @@ class BudgetHelperTest {
             budgetPromptDismissedTS = 99L,
             activeTimer = null,
             dailyBudget = dailyBudget,
-            dailyUsage = dailyUsage
+            dailyUsage = dailyUsage,
+            sleepWindDownDismissedNightId = "",
+            sleepWindDownSnoozeUntilTS = 0L,
+            sleepWindDownProgressNightId = "",
+            sleepWindDownCompleted = emptyList(),
+            sleepWindDownBrainDumpDraft = ""
         )
     }
 }

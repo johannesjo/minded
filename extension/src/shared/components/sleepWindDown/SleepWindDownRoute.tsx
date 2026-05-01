@@ -1,4 +1,12 @@
-import { createSignal, For, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
+import {
+  createSignal,
+  For,
+  JSX,
+  Match,
+  onCleanup,
+  onMount,
+  Switch,
+} from "solid-js";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
   getSyncData,
@@ -14,10 +22,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import {
-  CALM_READ_TEXT,
-  SLEEP_TIPS,
-} from "@src/shared/data/sleepContent";
+import { CALM_READ_TEXT, SLEEP_TIPS } from "@src/shared/data/sleepContent";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
@@ -62,6 +67,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
   const [hydrated, setHydrated] = createSignal(false);
 
   let currentNightId: string | null = null;
+  let draftPersistPromise: Promise<void> = Promise.resolve();
 
   onMount(async () => {
     // The user is now attending to the wind-down — clear any heads-up that
@@ -98,14 +104,41 @@ export const SleepWindDownRoute = (): JSX.Element => {
     });
   };
 
-  const persistDraft = async (text: string) => {
+  const persistDraft = (text: string) => {
     if (isPreview()) return;
-    const nightId = currentNightId ?? (await resolveNightIdFromStorage());
-    currentNightId = nightId;
-    await updateSyncData({
-      sleepWindDownProgressNightId: nightId,
-      sleepWindDownBrainDumpDraft: text,
+    const nextPersist = draftPersistPromise
+      .catch(() => undefined)
+      .then(async () => {
+        const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+        currentNightId = nightId;
+        await updateSyncData({
+          sleepWindDownProgressNightId: nightId,
+          sleepWindDownBrainDumpDraft: text,
+        });
+      });
+    draftPersistPromise = nextPersist.catch((e) => {
+      console.warn("Failed to persist sleep wind-down draft", e);
     });
+  };
+
+  const completeBrainDump = async () => {
+    const next = new Set(completed());
+    next.add("brainDump");
+    setCompleted(next);
+    setBrainDumpDraft("");
+
+    if (!isPreview()) {
+      await draftPersistPromise;
+      const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+      currentNightId = nightId;
+      await updateSyncData({
+        sleepWindDownProgressNightId: nightId,
+        sleepWindDownCompleted: Array.from(next),
+        sleepWindDownBrainDumpDraft: "",
+      });
+    }
+
+    setView("menu");
   };
 
   const dismissForTonight = async () => {
@@ -249,12 +282,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
               setBrainDumpDraft(t);
               persistDraft(t);
             }}
-            onDone={() => {
-              markComplete("brainDump");
-              setBrainDumpDraft("");
-              persistDraft("");
-              setView("menu");
-            }}
+            onDone={completeBrainDump}
             onBack={() => setView("menu")}
           />
         </Match>

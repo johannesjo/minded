@@ -13,7 +13,7 @@ const DRAFT_DEBOUNCE_MS = 600;
 export const BrainDump = (props: {
   initialText?: string;
   onDraftChange?: (text: string) => void;
-  onDone: () => void;
+  onDone: () => void | Promise<void>;
   onBack: () => void;
 }): JSX.Element => {
   // Initialize lazily so there's no flash of prompt[0] before the random pick.
@@ -54,21 +54,26 @@ export const BrainDump = (props: {
 
   const submit = async () => {
     const trimmed = text().trim();
-    isSubmitted = true;
     if (debounceHandle) {
       clearTimeout(debounceHandle);
       debounceHandle = null;
     }
-    if (trimmed.length > 0) {
-      await saveAnswer({
-        id: `sleep-${Date.now()}`,
-        qid: null,
-        questionCategoryId: QuestionCategoryId.SleepWindDown,
-        val: trimmed,
-        ts: Date.now(),
-      });
+    try {
+      if (trimmed.length > 0) {
+        await saveAnswer({
+          id: `sleep-${Date.now()}`,
+          qid: null,
+          questionCategoryId: QuestionCategoryId.SleepWindDown,
+          val: trimmed,
+          ts: Date.now(),
+        });
+      }
+    } catch (e) {
+      console.warn("Failed to save sleep wind-down brain dump", e);
+      return;
     }
-    props.onDone();
+    isSubmitted = true;
+    await props.onDone();
   };
 
   const back = () => {

@@ -16,6 +16,20 @@ export const refreshSleepWindDownAlarms = (): void => {
 };
 
 /**
+ * Arm only the next future bedtime. Use when the app already opened the
+ * wind-down UI itself; the normal refresh would fire a duplicate notification
+ * immediately while inside the active window.
+ */
+export const scheduleNextFutureSleepWindDownAlarm = (): void => {
+  if (!IS_ANDROID) return;
+  try {
+    androidInterface.scheduleNextFutureSleepWindDownAlarm?.();
+  } catch (e) {
+    console.warn("scheduleNextFutureSleepWindDownAlarm failed", e);
+  }
+};
+
+/**
  * Dismiss the wind-down notification if visible. Use on route entry, after
  * skip-for-tonight, and after snooze so the heads-up doesn't linger while
  * the user is already attending to the prompt.

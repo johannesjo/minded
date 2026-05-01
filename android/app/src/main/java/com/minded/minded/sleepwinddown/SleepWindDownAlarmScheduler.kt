@@ -69,6 +69,33 @@ object SleepWindDownAlarmScheduler {
         scheduleAt(context, target)
     }
 
+    /**
+     * Schedule the next configured bedtime after the current active window.
+     *
+     * Use this when the app has already opened the wind-down route directly:
+     * scheduling with [scheduleNext] inside the active window would produce an
+     * immediate follow-up notification, but we still want tomorrow's alarm to
+     * be armed if the current alarm was stale or missing.
+     */
+    fun scheduleNextFuture(context: Context) {
+        val syncData = SharedPreferenceService(context).getSyncData()
+        val cfg = syncData.cfg
+        val swd = cfg.sleepWindDown
+        val enabled = swd?.get("enabled") as? Boolean ?: false
+        if (!enabled || !cfg.isOnboardingComplete) {
+            cancelAll(context)
+            return
+        }
+
+        val target = computeNextFutureBedtime(cfg, System.currentTimeMillis())
+        if (target == null) {
+            Log.d(TAG, "No future bedtime in the next 8 days; cancelling")
+            cancelAll(context)
+            return
+        }
+        scheduleAt(context, target)
+    }
+
     /** Cancel both the alarm and any visible notification. */
     private fun cancelAll(context: Context) {
         cancel(context)

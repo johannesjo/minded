@@ -114,6 +114,17 @@ open class MainActivityJavaScriptInterface(
     }
 
     /**
+     * Arm the next future bedtime only. This is used after the web layer has
+     * already opened the wind-down route directly, where scheduleNext() would
+     * otherwise post another notification for the current active window.
+     */
+    @JavascriptInterface
+    fun scheduleNextFutureSleepWindDownAlarm() {
+        Log.v(logTag, "scheduleNextFutureSleepWindDownAlarm()")
+        SleepWindDownAlarmScheduler.scheduleNextFuture(context)
+    }
+
+    /**
      * Dismiss the wind-down notification if visible. Called when the user
      * enters the wind-down route from any path (notification tap, app launch,
      * dismiss-for-tonight, snooze) so the heads-up doesn't linger in the
