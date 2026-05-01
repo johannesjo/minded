@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.webkit.ValueCallback
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,6 +51,11 @@ class MainActivity : AppCompatActivity() {
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                goBackOrFinish()
+            }
+        })
 
         lifecycleScope.launch {
             setContent {
@@ -132,11 +138,27 @@ class MainActivity : AppCompatActivity() {
         return if (shouldOpenSleepWindDown(intent)) "$base#/sleepWindDown" else base
     }
 
-    override fun onBackPressed() {
-        if (webView.canGoBack()) {
+    private fun goBackOrFinish() {
+        if (this::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
         } else {
-            super.onBackPressed()
+            finish()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == MainActivityJavaScriptInterface.REQUEST_CODE_POST_NOTIFICATIONS &&
+            this::webView.isInitialized
+        ) {
+            webView.evaluateJavascript(
+                "(function() { window.dispatchEvent(new Event('mindedNotificationPermissionChanged')); })();",
+                ValueCallback<String?> { }
+            )
         }
     }
 

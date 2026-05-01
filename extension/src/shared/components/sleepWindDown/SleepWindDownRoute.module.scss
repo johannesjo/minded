@@ -11,6 +11,12 @@
   box-sizing: border-box;
 }
 
+.viewPane {
+  width: 100%;
+  animation: sleepWindDownViewFade 260ms ease-out both;
+  will-change: opacity, transform;
+}
+
 .center {
   display: flex;
   flex-direction: column;
@@ -63,7 +69,7 @@
   cursor: pointer;
   font: inherit;
   padding: 8px 12px;
-  margin-top: 8px;
+  margin-top: 40px;
 
   &:hover {
     opacity: 0.85;
@@ -181,4 +187,21 @@
   gap: 12px;
   justify-content: center;
   margin-top: 8px;
+}
+
+@keyframes sleepWindDownViewFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewPane {
+    animation: none;
+  }
 }

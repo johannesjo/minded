@@ -177,7 +177,7 @@ open class MainActivityJavaScriptInterface(
     }
 
     companion object {
-        private const val REQUEST_CODE_POST_NOTIFICATIONS = 6624
+        const val REQUEST_CODE_POST_NOTIFICATIONS = 6624
     }
 
     private fun getInstalledApps(): List<ApplicationInfo> {

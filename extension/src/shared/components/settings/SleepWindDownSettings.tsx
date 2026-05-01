@@ -1,4 +1,4 @@
-import { createSignal, For, JSX, onMount } from "solid-js";
+import { createSignal, For, JSX, onCleanup, onMount } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import {
   getSyncData,
@@ -17,6 +17,7 @@ import {
   ensureNotificationPermission,
   hasNotificationPermission,
 } from "@src/shared/components/sleepWindDown/androidBridge";
+import { ANDROID_EV_RESUME } from "@src/dataInterface/android/androidInterface";
 // @ts-ignore — reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
 
@@ -44,7 +45,8 @@ export const SleepWindDownSettings = (props: {
   const [pausedTonight, setPausedTonight] = createSignal(false);
   const [notifGranted, setNotifGranted] = createSignal(true);
 
-  const refreshNotifGranted = () => setNotifGranted(hasNotificationPermission());
+  const refreshNotifGranted = () =>
+    setNotifGranted(hasNotificationPermission());
 
   onMount(() => {
     getSyncData().then((sd) => {
@@ -58,6 +60,19 @@ export const SleepWindDownSettings = (props: {
       setPausedTonight(!!currentNightId && dismissed === currentNightId);
     });
     refreshNotifGranted();
+    window.addEventListener(ANDROID_EV_RESUME, refreshNotifGranted);
+    window.addEventListener(
+      "mindedNotificationPermissionChanged",
+      refreshNotifGranted,
+    );
+  });
+
+  onCleanup(() => {
+    window.removeEventListener(ANDROID_EV_RESUME, refreshNotifGranted);
+    window.removeEventListener(
+      "mindedNotificationPermissionChanged",
+      refreshNotifGranted,
+    );
   });
 
   const persist = async (next: SleepWindDownCfg) => {

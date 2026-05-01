@@ -224,6 +224,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         props.onSetAnswer(answerOrData.val.toString());
       }
 
+      if (props.isFromDashboard) {
+        props.onInteractionSubmitted?.();
+        props.onAfterInteractionFadeout();
+        return;
+      }
+
       successTimeout = window.setTimeout(() => {
         successTimeout = undefined;
         setShowSunInstructions(true);

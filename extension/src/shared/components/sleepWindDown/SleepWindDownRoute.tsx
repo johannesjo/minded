@@ -5,6 +5,7 @@ import {
   Match,
   onCleanup,
   onMount,
+  Show,
   Switch,
 } from "solid-js";
 import { useNavigate, useSearchParams } from "@solidjs/router";
@@ -190,189 +191,207 @@ export const SleepWindDownRoute = (): JSX.Element => {
 
   return (
     <div class={`${styles.wrapper} pageTransitionIn`}>
-      <Switch>
-        <Match when={view() === "prompt"}>
-          <div class={styles.center}>
-            <h2 class="h2">Wind down for sleep?</h2>
-            <p class={styles.subtle}>
-              It's getting late — would you like to take a moment before bed?
-            </p>
-            <div class={styles.btnRow}>
-              <button
-                class="btnTxt"
-                onClick={() => setView("menu")}
-                disabled={!hydrated()}
-              >
-                <Ico name="check" /> Yes
-              </button>
-              <button
-                class="btnTxtOutline"
-                onClick={snooze}
-                disabled={!hydrated()}
-              >
-                Snooze 30 min
-              </button>
-              <button
-                class="btnTxtOutline"
-                onClick={dismissForTonight}
-                disabled={!hydrated()}
-              >
-                Skip tonight
-              </button>
-            </div>
-          </div>
-        </Match>
-
-        <Match when={view() === "menu"}>
-          <div class={styles.menu}>
-            <h2 class="h2">Choose anything that helps</h2>
-            <p class={styles.subtle}>
-              Pick in any order. Skip what you don't need.
-            </p>
-            <div class={styles.activityList}>
-              <For each={ACTIVITIES}>
-                {(a) => {
-                  const isDone = () => completed().has(a.key);
-                  return (
+      <Show when={view()} keyed>
+        {(currentView) => (
+          <div class={styles.viewPane}>
+            <Switch>
+              <Match when={currentView === "prompt"}>
+                <div class={styles.center}>
+                  <h2 class="h2">Wind down for sleep?</h2>
+                  <p class={styles.subtle}>
+                    It's getting late — would you like to take a moment before
+                    bed?
+                  </p>
+                  <div class={styles.btnRow}>
                     <button
-                      class={`btnToggleSelect ${isDone() ? "isSelected" : ""}`}
-                      onClick={() => setView(a.view)}
+                      class="btnTxtOutline"
+                      onClick={() => setView("menu")}
                       disabled={!hydrated()}
                     >
-                      {isDone() && (
-                        <span class={styles.activityCheck}>
-                          <Ico name="check" />
-                        </span>
-                      )}
-                      <span>{a.label}</span>
+                      Yes
                     </button>
-                  );
-                }}
-              </For>
-            </div>
-            <div class={styles.menuFooter}>
-              <button
-                class="btnTxt"
-                onClick={enterGoodnight}
-                disabled={!hydrated()}
-              >
-                {completed().size > 0 ? (
-                  <>
-                    <Ico name="check" /> All done
-                  </>
-                ) : (
-                  "Goodnight"
-                )}
-              </button>
-            </div>
-            <button
-              class={styles.tipsLink}
-              onClick={() => setView("tips")}
-              disabled={!hydrated()}
-            >
-              Tips for good sleep
-            </button>
-          </div>
-        </Match>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={snooze}
+                      disabled={!hydrated()}
+                    >
+                      Snooze 30 min
+                    </button>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={dismissForTonight}
+                      disabled={!hydrated()}
+                    >
+                      Skip tonight
+                    </button>
+                  </div>
+                </div>
+              </Match>
 
-        <Match when={view() === "brainDump"}>
-          <BrainDump
-            initialText={brainDumpDraft()}
-            onDraftChange={(t) => {
-              setBrainDumpDraft(t);
-              persistDraft(t);
-            }}
-            onDone={completeBrainDump}
-            onBack={() => setView("menu")}
-          />
-        </Match>
+              <Match when={currentView === "menu"}>
+                <div class={styles.menu}>
+                  <h2 class="h2">Choose anything that helps</h2>
+                  <p class={styles.subtle}>
+                    Pick in any order. Skip what you don't need.
+                  </p>
+                  <div class={styles.activityList}>
+                    <For each={ACTIVITIES}>
+                      {(a) => {
+                        const isDone = () => completed().has(a.key);
+                        return (
+                          <button
+                            class={`btnToggleSelect ${isDone() ? "isSelected" : ""}`}
+                            onClick={() => setView(a.view)}
+                            disabled={!hydrated()}
+                          >
+                            {isDone() && (
+                              <span class={styles.activityCheck}>
+                                <Ico name="check" />
+                              </span>
+                            )}
+                            <span>{a.label}</span>
+                          </button>
+                        );
+                      }}
+                    </For>
+                  </div>
+                  <div class={styles.menuFooter}>
+                    <button
+                      class="btnTxt"
+                      onClick={enterGoodnight}
+                      disabled={!hydrated()}
+                    >
+                      {completed().size > 0 ? (
+                        <>
+                          <Ico name="check" /> All done
+                        </>
+                      ) : (
+                        "Goodnight"
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    class={styles.tipsLink}
+                    onClick={() => setView("tips")}
+                    disabled={!hydrated()}
+                  >
+                    Tips for good sleep
+                  </button>
+                </div>
+              </Match>
 
-        <Match when={view() === "breathing"}>
-          <div class={styles.activityBody}>
-            <BreathingExercise />
-            <div class={styles.activityActions}>
-              <button class="btnTxtOutline" onClick={() => setView("menu")}>
-                Back
-              </button>
-              <button
-                class="btnTxtOutline"
-                onClick={() => {
-                  markComplete("breathing");
-                  setView("menu");
-                }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </Match>
+              <Match when={currentView === "brainDump"}>
+                <BrainDump
+                  initialText={brainDumpDraft()}
+                  onDraftChange={(t) => {
+                    setBrainDumpDraft(t);
+                    persistDraft(t);
+                  }}
+                  onDone={completeBrainDump}
+                  onBack={() => setView("menu")}
+                />
+              </Match>
 
-        <Match when={view() === "calmRead"}>
-          <div class={styles.activityBody}>
-            <p class={styles.calmRead}>{CALM_READ_TEXT}</p>
-            <div class={styles.activityActions}>
-              <button class="btnTxtOutline" onClick={() => setView("menu")}>
-                Back
-              </button>
-              <button
-                class="btnTxtOutline"
-                onClick={() => {
-                  markComplete("calmRead");
-                  setView("menu");
-                }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </Match>
+              <Match when={currentView === "breathing"}>
+                <div class={styles.activityBody}>
+                  <BreathingExercise />
+                  <div class={styles.activityActions}>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => setView("menu")}
+                    >
+                      Back
+                    </button>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => {
+                        markComplete("breathing");
+                        setView("menu");
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </Match>
 
-        <Match when={view() === "tips"}>
-          <div class={styles.activityBody}>
-            <h2 class={`h2 ${styles.activityTitle}`}>Tips for good sleep</h2>
-            <ul class={styles.tipsList}>
-              <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
-            </ul>
-            <div class={styles.activityActions}>
-              <button class="btnTxtOutline" onClick={() => setView("menu")}>
-                Back
-              </button>
-              <button
-                class="btnTxtOutline"
-                onClick={() => {
-                  markComplete("tips");
-                  setView("menu");
-                }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </Match>
+              <Match when={currentView === "calmRead"}>
+                <div class={styles.activityBody}>
+                  <p class={styles.calmRead}>{CALM_READ_TEXT}</p>
+                  <div class={styles.activityActions}>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => setView("menu")}
+                    >
+                      Back
+                    </button>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => {
+                        markComplete("calmRead");
+                        setView("menu");
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </Match>
 
-        <Match when={view() === "goodnight"}>
-          <div class={styles.goodnight}>
-            <div class={styles.sparkles} aria-hidden="true">
-              ✦ ✧ ✦
-            </div>
-            <h2 class="h2" style={{ margin: 0 }}>
-              Sleep well
-            </h2>
-            <p class={styles.subtle}>
-              Breathe out slowly, and let the phone rest.
-            </p>
-            <div
-              class={styles.goodnightProgress}
-              style={{
-                "--goodnight-duration": `${GOODNIGHT_AUTO_DISMISS_MS}ms`,
-              }}
-              aria-hidden="true"
-            >
-              <div class={styles.goodnightProgressBar} />
-            </div>
+              <Match when={currentView === "tips"}>
+                <div class={styles.activityBody}>
+                  <h2 class={`h2 ${styles.activityTitle}`}>
+                    Tips for good sleep
+                  </h2>
+                  <ul class={styles.tipsList}>
+                    <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
+                  </ul>
+                  <div class={styles.activityActions}>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => setView("menu")}
+                    >
+                      Back
+                    </button>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => {
+                        markComplete("tips");
+                        setView("menu");
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </Match>
+
+              <Match when={currentView === "goodnight"}>
+                <div class={styles.goodnight}>
+                  <div class={styles.sparkles} aria-hidden="true">
+                    ✦ ✧ ✦
+                  </div>
+                  <h2 class="h2" style={{ margin: 0 }}>
+                    Sleep well
+                  </h2>
+                  <p class={styles.subtle}>
+                    Breathe out slowly, and let the phone rest.
+                  </p>
+                  <div
+                    class={styles.goodnightProgress}
+                    style={{
+                      "--goodnight-duration": `${GOODNIGHT_AUTO_DISMISS_MS}ms`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <div class={styles.goodnightProgressBar} />
+                  </div>
+                </div>
+              </Match>
+            </Switch>
           </div>
-        </Match>
-      </Switch>
+        )}
+      </Show>
     </div>
   );
 };

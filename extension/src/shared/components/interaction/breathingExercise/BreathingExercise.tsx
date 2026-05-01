@@ -1,4 +1,5 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
+import styles from "./BreathingExercise.module.scss";
 
 const BreathingExercise = () => {
   const [stage, setStage] = createSignal("Ready");
@@ -39,12 +40,49 @@ const BreathingExercise = () => {
     }
   });
 
+  const currentDuration = () =>
+    stages.find((s) => s.name === stage())?.duration ?? 1;
+  const progress = () =>
+    timeLeft() > 0
+      ? 1 - Math.max(timeLeft() - 1, 0) / currentDuration()
+      : stage() === "Ready"
+        ? 0
+        : 1;
+  const cue = () => {
+    switch (stage()) {
+      case "Breathing in":
+        return "Let the breath arrive";
+      case "Hold":
+        return "Stay soft";
+      case "Breathing out":
+        return "Release slowly";
+      default:
+        return "4 - 7 - 8 breathing";
+    }
+  };
+
   return (
-    <div id="minded-6622-coloured-wrapper">
-      <h1>{stage()}</h1>
-      <p>{timeLeft()} seconds left</p>
-      <button onClick={startExercise} class="btnTxt">
-        Start
+    <div class={styles.BreathingExercise}>
+      <div
+        class={styles.orb}
+        classList={{
+          [styles.isReady]: stage() === "Ready",
+          [styles.isInhale]: stage() === "Breathing in",
+          [styles.isHold]: stage() === "Hold",
+          [styles.isExhale]: stage() === "Breathing out",
+        }}
+        style={{ "--progress": progress().toString() }}
+        aria-hidden="true"
+      >
+        <span class={styles.orbCore} />
+      </div>
+      <div class={styles.copy}>
+        <h1>{stage()}</h1>
+        <p>{cue()}</p>
+        <strong>{timeLeft() || ""}</strong>
+      </div>
+      <button onClick={startExercise} class="btnTxtOutline">
+        {stage() === "Ready" ? "Start" : "Restart"}
       </button>
     </div>
   );

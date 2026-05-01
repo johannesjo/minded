@@ -6,8 +6,10 @@ import "./indexMainAndroid.scss";
 import MainAndroid from "@src/android/main/MainAndroid";
 import { setupKeyboardScrolling } from "@src/dataInterface/android/setupKeyboardScrolling";
 import { setupAndroidInsets } from "@src/dataInterface/android/setupAndroidInsets";
+import { setupAndroidBackSwipe } from "@src/dataInterface/android/setupAndroidBackSwipe";
 
 setupKeyboardScrolling();
+setupAndroidBackSwipe();
 
 const appContainer = document.querySelector("#minded-6622");
 if (!appContainer) {
