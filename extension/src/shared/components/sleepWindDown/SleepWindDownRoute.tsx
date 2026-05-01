@@ -36,7 +36,6 @@ const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
   { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
   { key: "breathing", label: "Breathing exercise", view: "breathing" },
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
-  { key: "tips", label: "Tips for good sleep", view: "tips" },
 ];
 
 const GOODNIGHT_AUTO_DISMISS_MS = 8000;
@@ -207,10 +206,12 @@ export const SleepWindDownRoute = (): JSX.Element => {
                       onClick={() => setView(a.view)}
                       disabled={!hydrated()}
                     >
-                      {isDone() && <Ico name="check" />}
-                      <span style={{ "margin-left": isDone() ? "8px" : 0 }}>
-                        {a.label}
-                      </span>
+                      {isDone() && (
+                        <span class={styles.activityCheck}>
+                          <Ico name="check" />
+                        </span>
+                      )}
+                      <span>{a.label}</span>
                     </button>
                   );
                 }}
@@ -222,9 +223,22 @@ export const SleepWindDownRoute = (): JSX.Element => {
                 onClick={enterGoodnight}
                 disabled={!hydrated()}
               >
-                <Ico name="check" /> All done
+                {completed().size > 0 ? (
+                  <>
+                    <Ico name="check" /> All done
+                  </>
+                ) : (
+                  "Goodnight"
+                )}
               </button>
             </div>
+            <button
+              class={styles.tipsLink}
+              onClick={() => setView("tips")}
+              disabled={!hydrated()}
+            >
+              Tips for good sleep
+            </button>
           </div>
         </Match>
 
@@ -246,18 +260,22 @@ export const SleepWindDownRoute = (): JSX.Element => {
         </Match>
 
         <Match when={view() === "breathing"}>
-          <div class={styles.center}>
+          <div class={styles.activityBody}>
             <BreathingExercise />
-            <button
-              class="btnTxtOutline"
-              style={{ "margin-top": "24px" }}
-              onClick={() => {
-                markComplete("breathing");
-                setView("menu");
-              }}
-            >
-              Done
-            </button>
+            <div class={styles.activityActions}>
+              <button class="btnTxtOutline" onClick={() => setView("menu")}>
+                Back
+              </button>
+              <button
+                class="btnTxtOutline"
+                onClick={() => {
+                  markComplete("breathing");
+                  setView("menu");
+                }}
+              >
+                Done
+              </button>
+            </div>
           </div>
         </Match>
 
@@ -269,7 +287,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
                 Back
               </button>
               <button
-                class="btnTxt"
+                class="btnTxtOutline"
                 onClick={() => {
                   markComplete("calmRead");
                   setView("menu");
@@ -283,9 +301,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
 
         <Match when={view() === "tips"}>
           <div class={styles.activityBody}>
-            <h3 class="h3" style={{ "text-align": "center", margin: 0 }}>
-              Tips for good sleep
-            </h3>
+            <h2 class={`h2 ${styles.activityTitle}`}>Tips for good sleep</h2>
             <ul class={styles.tipsList}>
               <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
             </ul>
@@ -294,7 +310,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
                 Back
               </button>
               <button
-                class="btnTxt"
+                class="btnTxtOutline"
                 onClick={() => {
                   markComplete("tips");
                   setView("menu");
@@ -317,6 +333,15 @@ export const SleepWindDownRoute = (): JSX.Element => {
             <p class={styles.subtle}>
               Breathe out slowly, and let the phone rest.
             </p>
+            <div
+              class={styles.goodnightProgress}
+              style={{
+                "--goodnight-duration": `${GOODNIGHT_AUTO_DISMISS_MS}ms`,
+              }}
+              aria-hidden="true"
+            >
+              <div class={styles.goodnightProgressBar} />
+            </div>
           </div>
         </Match>
       </Switch>

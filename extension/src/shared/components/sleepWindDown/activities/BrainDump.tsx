@@ -78,9 +78,7 @@ export const BrainDump = (props: {
 
   return (
     <div class={styles.activityBody}>
-      <h3 class="h3" style={{ "text-align": "center", margin: 0 }}>
-        {prompt()}
-      </h3>
+      <h2 class={`h2 ${styles.activityTitle}`}>{prompt()}</h2>
       <textarea
         class={styles.brainDumpTextarea}
         placeholder="Write whatever's on your mind. Saved with your journal."
@@ -95,7 +93,7 @@ export const BrainDump = (props: {
         <button class="btnTxtOutline" onClick={back}>
           Back
         </button>
-        <button class="btnTxt" onClick={submit}>
+        <button class="btnTxtOutline" onClick={submit}>
           Done
         </button>
       </div>
