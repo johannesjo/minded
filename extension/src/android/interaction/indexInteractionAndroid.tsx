@@ -3,6 +3,7 @@ import "./indexInteractionAndroid.scss";
 // @ts-ignore
 import InteractionAndroid from "@src/android/interaction/InteractionAndroid";
 import { setupKeyboardScrolling } from "@src/dataInterface/android/setupKeyboardScrolling";
+import { setupAndroidInsets } from "@src/dataInterface/android/setupAndroidInsets";
 
 setupKeyboardScrolling();
 
@@ -11,4 +12,5 @@ if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
+setupAndroidInsets(appContainer as HTMLElement);
 render(() => <InteractionAndroid />, appContainer);

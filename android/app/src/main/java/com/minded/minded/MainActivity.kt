@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.sleepwinddown.SleepWindDownNotifier
 import com.minded.minded.ui.theme.MindedTheme
+import com.minded.minded.util.WebViewSafeAreaBridge
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
@@ -79,15 +80,14 @@ class MainActivity : AppCompatActivity() {
                                     @Suppress("DEPRECATION")
                                     settings.forceDark = WebSettings.FORCE_DARK_ON
                                 }
-                                addJavascriptInterface(
-                                    MainActivityJavaScriptInterface(
-                                        context,
-                                        this,
-                                        ::onMissingCapabilityTap,
-                                        ::getMissingCapabilities,
-                                    ),
-                                    jsInterfaceNameProp
+                                val jsInterface = MainActivityJavaScriptInterface(
+                                    context,
+                                    this,
+                                    ::onMissingCapabilityTap,
+                                    ::getMissingCapabilities,
                                 )
+                                addJavascriptInterface(jsInterface, jsInterfaceNameProp)
+                                WebViewSafeAreaBridge.attach(this, jsInterface.safeAreaInsets)
                                 loadUrl(buildLaunchUrl(intent))
                                 // Consume the extra so that a Recents
                                 // rehydration of the same intent doesn't

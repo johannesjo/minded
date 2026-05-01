@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewModelScope
 import com.minded.minded.MissingCapability
+import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +31,15 @@ open class MainActivityJavaScriptInterface(
     protected val getMissingCapabilitiesI: () -> List<MissingCapability> = { emptyList<MissingCapability>() },
 ) {
     private val sharedPreferenceService = SharedPreferenceService(context)
+
+    /**
+     * Latest system-bar + display-cutout insets, written by
+     * [com.minded.minded.util.WebViewSafeAreaBridge] and read by the web
+     * layer via [getSafeAreaInsets] on init. Each instance owns its own
+     * holder because the main and overlay WebViews live in different
+     * windows with independent insets.
+     */
+    val safeAreaInsets: SafeAreaInsetsHolder = SafeAreaInsetsHolder()
 
     var logTag = "MainActivityJavaScriptInterface"
 
@@ -64,6 +74,9 @@ open class MainActivityJavaScriptInterface(
             Log.e(logTag, "Unknown capability: $capability", e)
         }
     }
+
+    @JavascriptInterface
+    fun getSafeAreaInsets(): String = safeAreaInsets.toJsonString()
 
     @JavascriptInterface
     fun getMissingCapabilities(): String {

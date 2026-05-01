@@ -11,6 +11,7 @@ import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.util.WebViewSafeAreaBridge
 
 
 class InteractionWindow(
@@ -64,15 +65,14 @@ class InteractionWindow(
                     }
                 }
                 
-                addJavascriptInterface(
-                    InteractionWindowJavaScriptInterface(
-                        this,
-                        sharedOverlayViewModel,
-                        win,
-                        ctrlSvc
-                    ),
-                    "androidMinded"
+                val jsInterface = InteractionWindowJavaScriptInterface(
+                    this,
+                    sharedOverlayViewModel,
+                    win,
+                    ctrlSvc
                 )
+                addJavascriptInterface(jsInterface, "androidMinded")
+                WebViewSafeAreaBridge.attach(this, jsInterface.safeAreaInsets)
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html#${questionId}")
             }
         })

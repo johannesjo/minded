@@ -5,6 +5,7 @@ import "./indexMainAndroid.scss";
 // @ts-ignore
 import MainAndroid from "@src/android/main/MainAndroid";
 import { setupKeyboardScrolling } from "@src/dataInterface/android/setupKeyboardScrolling";
+import { setupAndroidInsets } from "@src/dataInterface/android/setupAndroidInsets";
 
 setupKeyboardScrolling();
 
@@ -13,4 +14,5 @@ if (!appContainer) {
   throw new Error("Can not find AppContainer");
 }
 
+setupAndroidInsets(appContainer as HTMLElement);
 render(() => <MainAndroid />, appContainer);

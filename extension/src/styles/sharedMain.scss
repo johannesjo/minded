@@ -8,10 +8,16 @@
 }
 
 .pageWrapper {
-  padding: 16px;
+  padding: max(16px, var(--safe-area-inset-top))
+    max(16px, var(--safe-area-inset-right))
+    max(16px, var(--safe-area-inset-bottom))
+    max(16px, var(--safe-area-inset-left));
 
-  @include onNonMobileScreens(){
-    padding: 32px;
+  @include onNonMobileScreens() {
+    padding: max(32px, var(--safe-area-inset-top))
+      max(32px, var(--safe-area-inset-right))
+      max(32px, var(--safe-area-inset-bottom))
+      max(32px, var(--safe-area-inset-left));
   }
 }
 

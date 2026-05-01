@@ -21,6 +21,7 @@ interface InteractionWindowJavaScriptInterface {
   dismissSleepWindDownNotification: () => void;
   hasNotificationPermission: () => boolean;
   requestNotificationPermission: () => void;
+  getSafeAreaInsets: () => string;
   test: () => void;
 }
 
