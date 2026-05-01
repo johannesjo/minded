@@ -204,7 +204,7 @@ class MyAccessibilityService : AccessibilityService() {
             registerReceiver(homeActionReceiver, filter)
         }
     }
-    
+
     private val homeActionReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, "Received ACTION_GO_HOME broadcast")

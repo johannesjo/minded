@@ -23,6 +23,7 @@ export enum QuestionCategoryId {
   Insomnia = "Insomnia",
   UnderstandingProcrastination = "UnderstandingProcrastination",
   SelfDiscovery = "SelfDiscovery",
+  SleepWindDown = "SleepWindDown",
   // NOTE: we filter out all questions from categories starting with X
 
   // TODO add self improvement category
@@ -704,6 +705,11 @@ export const QUESTION_CATEGORIES: {
         t: "Some quality I value in others is...",
       },
     ],
+  },
+  [QuestionCategoryId.SleepWindDown]: {
+    dashboardTxt: "Sleep Wind-Down",
+    isSkipOnDashboard: true,
+    limitTo: ["MobileApp"],
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
     dashboardTxt: "Energy Level",

@@ -1,0 +1,327 @@
+import { createSignal, For, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
+import { useNavigate, useSearchParams } from "@solidjs/router";
+import {
+  getSyncData,
+  updateSyncData,
+} from "@src/dataInterface/commonSyncDataInterface";
+import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
+import { resolveNightId, SNOOZE_MINUTES } from "./sleepWindDown.util";
+import {
+  dismissSleepWindDownNotification,
+  refreshSleepWindDownAlarms,
+} from "./androidBridge";
+import { getIsoDate } from "@src/util/getIsoDate";
+import { Ico } from "@src/shared/components/ui/Ico";
+import { BrainDump } from "./activities/BrainDump";
+import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
+import {
+  CALM_READ_TEXT,
+  SLEEP_TIPS,
+} from "@src/shared/data/sleepContent";
+// @ts-ignore
+import styles from "./SleepWindDownRoute.module.scss";
+
+type View =
+  | "prompt"
+  | "menu"
+  | "brainDump"
+  | "breathing"
+  | "calmRead"
+  | "tips"
+  | "goodnight";
+
+type ActivityKey = "brainDump" | "breathing" | "calmRead" | "tips";
+
+const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
+  { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
+  { key: "breathing", label: "Breathing exercise", view: "breathing" },
+  { key: "calmRead", label: "Something calm to read", view: "calmRead" },
+  { key: "tips", label: "Tips for good sleep", view: "tips" },
+];
+
+const GOODNIGHT_AUTO_DISMISS_MS = 8000;
+
+/**
+ * Resolve the night id from the user's saved cfg. We always read the latest
+ * config rather than caching the value, because a stale `null` would cause
+ * dismiss/snooze to silently no-op. Falls back to today's local iso date if
+ * cfg is missing — better to over-record than to skip recording the dismissal.
+ */
+const resolveNightIdFromStorage = async (): Promise<string> => {
+  const sd = await getSyncData();
+  const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
+  return resolveNightId(cfg) ?? getIsoDate();
+};
+
+export const SleepWindDownRoute = (): JSX.Element => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPreview = () => searchParams.preview === "1";
+  const [view, setView] = createSignal<View>("prompt");
+  const [completed, setCompleted] = createSignal<Set<ActivityKey>>(new Set());
+  const [brainDumpDraft, setBrainDumpDraft] = createSignal("");
+  const [hydrated, setHydrated] = createSignal(false);
+
+  let currentNightId: string | null = null;
+
+  onMount(async () => {
+    // The user is now attending to the wind-down — clear any heads-up that
+    // brought them here so it doesn't sit in the shade for the rest of the
+    // night.
+    dismissSleepWindDownNotification();
+
+    const sd = await getSyncData();
+    const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
+    currentNightId = resolveNightId(cfg);
+    if (currentNightId && sd.sleepWindDownProgressNightId === currentNightId) {
+      setCompleted(new Set(sd.sleepWindDownCompleted as ActivityKey[]));
+      setBrainDumpDraft(sd.sleepWindDownBrainDumpDraft ?? "");
+    }
+    setHydrated(true);
+  });
+
+  const persistCompleted = async (next: Set<ActivityKey>) => {
+    if (isPreview()) return;
+    const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+    currentNightId = nightId;
+    await updateSyncData({
+      sleepWindDownProgressNightId: nightId,
+      sleepWindDownCompleted: Array.from(next),
+    });
+  };
+
+  const markComplete = (key: ActivityKey) => {
+    setCompleted((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      persistCompleted(next);
+      return next;
+    });
+  };
+
+  const persistDraft = async (text: string) => {
+    if (isPreview()) return;
+    const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+    currentNightId = nightId;
+    await updateSyncData({
+      sleepWindDownProgressNightId: nightId,
+      sleepWindDownBrainDumpDraft: text,
+    });
+  };
+
+  const dismissForTonight = async () => {
+    if (isPreview()) {
+      // Preview mode (entered via "Try wind-down now") never persists; we
+      // don't want a daytime preview to suppress tonight's real window.
+      navigate("/");
+      return;
+    }
+    const nightId = await resolveNightIdFromStorage();
+    await updateSyncData({
+      sleepWindDownDismissedNightId: nightId,
+      // Clear the in-progress fields so tomorrow night starts fresh.
+      sleepWindDownProgressNightId: "",
+      sleepWindDownCompleted: [],
+      sleepWindDownBrainDumpDraft: "",
+      // Any past snooze deadline is moot now.
+      sleepWindDownSnoozeUntilTS: 0,
+    });
+    // Re-arm (don't cancel) so tomorrow's alarm is still scheduled.
+    // The alarm receiver gates on dismissedNightId and will skip tonight.
+    refreshSleepWindDownAlarms();
+    navigate("/");
+  };
+
+  const snooze = async () => {
+    if (isPreview()) {
+      navigate("/");
+      return;
+    }
+    await updateSyncData({
+      sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
+    });
+    // Re-arm the alarm at the snooze time. The scheduler picks min(snooze,
+    // next bedtime), so the alarm will fire at the snooze deadline.
+    refreshSleepWindDownAlarms();
+    navigate("/");
+  };
+
+  // Auto-dismiss the goodnight screen after a few seconds.
+  let goodnightTimer: ReturnType<typeof setTimeout> | null = null;
+  const enterGoodnight = () => {
+    setView("goodnight");
+    goodnightTimer = setTimeout(dismissForTonight, GOODNIGHT_AUTO_DISMISS_MS);
+  };
+  onCleanup(() => {
+    if (goodnightTimer) clearTimeout(goodnightTimer);
+  });
+
+  return (
+    <div class={`${styles.wrapper} pageTransitionIn`}>
+      <Switch>
+        <Match when={view() === "prompt"}>
+          <div class={styles.center}>
+            <h2 class="h2">Wind down for sleep?</h2>
+            <p class={styles.subtle}>
+              It's getting late — would you like to take a moment before bed?
+            </p>
+            <div class={styles.btnRow}>
+              <button
+                class="btnTxt"
+                onClick={() => setView("menu")}
+                disabled={!hydrated()}
+              >
+                <Ico name="check" /> Yes
+              </button>
+              <button
+                class="btnTxtOutline"
+                onClick={snooze}
+                disabled={!hydrated()}
+              >
+                Snooze 30 min
+              </button>
+              <button
+                class="btnTxtOutline"
+                onClick={dismissForTonight}
+                disabled={!hydrated()}
+              >
+                Skip tonight
+              </button>
+            </div>
+          </div>
+        </Match>
+
+        <Match when={view() === "menu"}>
+          <div class={styles.menu}>
+            <h2 class="h2">Choose anything that helps</h2>
+            <p class={styles.subtle}>
+              Pick in any order. Skip what you don't need.
+            </p>
+            <div class={styles.activityList}>
+              <For each={ACTIVITIES}>
+                {(a) => {
+                  const isDone = () => completed().has(a.key);
+                  return (
+                    <button
+                      class={`btnToggleSelect ${isDone() ? "isSelected" : ""}`}
+                      onClick={() => setView(a.view)}
+                      disabled={!hydrated()}
+                    >
+                      {isDone() && <Ico name="check" />}
+                      <span style={{ "margin-left": isDone() ? "8px" : 0 }}>
+                        {a.label}
+                      </span>
+                    </button>
+                  );
+                }}
+              </For>
+            </div>
+            <div class={styles.menuFooter}>
+              <button
+                class="btnTxt"
+                onClick={enterGoodnight}
+                disabled={!hydrated()}
+              >
+                <Ico name="check" /> All done
+              </button>
+            </div>
+          </div>
+        </Match>
+
+        <Match when={view() === "brainDump"}>
+          <BrainDump
+            initialText={brainDumpDraft()}
+            onDraftChange={(t) => {
+              setBrainDumpDraft(t);
+              persistDraft(t);
+            }}
+            onDone={() => {
+              markComplete("brainDump");
+              setBrainDumpDraft("");
+              persistDraft("");
+              setView("menu");
+            }}
+            onBack={() => setView("menu")}
+          />
+        </Match>
+
+        <Match when={view() === "breathing"}>
+          <div class={styles.center}>
+            <BreathingExercise />
+            <button
+              class="btnTxtOutline"
+              style={{ "margin-top": "24px" }}
+              onClick={() => {
+                markComplete("breathing");
+                setView("menu");
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </Match>
+
+        <Match when={view() === "calmRead"}>
+          <div class={styles.activityBody}>
+            <p class={styles.calmRead}>{CALM_READ_TEXT}</p>
+            <div class={styles.activityActions}>
+              <button class="btnTxtOutline" onClick={() => setView("menu")}>
+                Back
+              </button>
+              <button
+                class="btnTxt"
+                onClick={() => {
+                  markComplete("calmRead");
+                  setView("menu");
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </Match>
+
+        <Match when={view() === "tips"}>
+          <div class={styles.activityBody}>
+            <h3 class="h3" style={{ "text-align": "center", margin: 0 }}>
+              Tips for good sleep
+            </h3>
+            <ul class={styles.tipsList}>
+              <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
+            </ul>
+            <div class={styles.activityActions}>
+              <button class="btnTxtOutline" onClick={() => setView("menu")}>
+                Back
+              </button>
+              <button
+                class="btnTxt"
+                onClick={() => {
+                  markComplete("tips");
+                  setView("menu");
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </Match>
+
+        <Match when={view() === "goodnight"}>
+          <div class={styles.goodnight}>
+            <div class={styles.sparkles} aria-hidden="true">
+              ✦ ✧ ✦
+            </div>
+            <h2 class="h2" style={{ margin: 0 }}>
+              Sleep well
+            </h2>
+            <p class={styles.subtle}>
+              Breathe out slowly, and let the phone rest.
+            </p>
+          </div>
+        </Match>
+      </Switch>
+    </div>
+  );
+};
+
+export default SleepWindDownRoute;

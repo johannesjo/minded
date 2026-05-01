@@ -136,6 +136,11 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     dailyBudget: null,
     dailyUsage: {},
     budgetPromptDismissedTS: DEFAULT_TS_VAL,
+    sleepWindDownDismissedNightId: "",
+    sleepWindDownSnoozeUntilTS: 0,
+    sleepWindDownProgressNightId: "",
+    sleepWindDownCompleted: [],
+    sleepWindDownBrainDumpDraft: "",
   };
 
   return {

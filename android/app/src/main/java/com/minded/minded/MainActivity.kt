@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
+import com.minded.minded.sleepwinddown.SleepWindDownNotifier
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
@@ -87,7 +88,12 @@ class MainActivity : AppCompatActivity() {
                                     ),
                                     jsInterfaceNameProp
                                 )
-                                loadUrl("file:///android_asset/web/src/android/main/index.html")
+                                loadUrl(buildLaunchUrl(intent))
+                                // Consume the extra so that a Recents
+                                // rehydration of the same intent doesn't
+                                // re-route to wind-down outside the window.
+                                intent?.removeExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN)
+                                setIntent(intent)
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)
@@ -104,6 +110,26 @@ class MainActivity : AppCompatActivity() {
             MissingCapability.Accessibility -> askPermissionForAccessibility()
             MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (shouldOpenSleepWindDown(intent) && this::webView.isInitialized) {
+            // Reload the SPA at the wind-down hash. onResume will dispatch
+            // androidAppResume so any data signals refresh as usual.
+            webView.loadUrl(buildLaunchUrl(intent))
+            // Consume the extra so a later resume-from-Recents doesn't re-fire it.
+            intent.removeExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN)
+        }
+    }
+
+    private fun shouldOpenSleepWindDown(intent: Intent?): Boolean =
+        intent?.getBooleanExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN, false) == true
+
+    private fun buildLaunchUrl(intent: Intent?): String {
+        val base = "file:///android_asset/web/src/android/main/index.html"
+        return if (shouldOpenSleepWindDown(intent)) "$base#/sleepWindDown" else base
     }
 
     override fun onBackPressed() {

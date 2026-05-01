@@ -36,7 +36,8 @@ data class UserCfg(
     val blockedHosts: List<String>,
     val blockedApps: List<String>,
     val focusSchedule: Map<String, Any?>?,
-    val soundEnabled: Boolean?
+    val soundEnabled: Boolean?,
+    val sleepWindDown: Map<String, Any?>?
 )
 
 data class Answer(
@@ -87,7 +88,12 @@ data class SyncData(
     val budgetPromptDismissedTS: Long,
     val activeTimer: ActiveTimer?,
     val dailyBudget: DailyBudget?,
-    val dailyUsage: Map<String, DailyUsage>
+    val dailyUsage: Map<String, DailyUsage>,
+    val sleepWindDownDismissedNightId: String,
+    val sleepWindDownSnoozeUntilTS: Long,
+    val sleepWindDownProgressNightId: String,
+    val sleepWindDownCompleted: List<String>,
+    val sleepWindDownBrainDumpDraft: String
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -106,7 +112,8 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     }
     val focusSchedule = cfg.optJSONObject("focusSchedule")?.let { jsonObjectToMap(it) }
     val soundEnabled = if (cfg.has("soundEnabled")) cfg.getBoolean("soundEnabled") else null
-    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled)
+    val sleepWindDown = cfg.optJSONObject("sleepWindDown")?.let { jsonObjectToMap(it) }
+    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown)
 
     val answers = jsonObject.getJSONArray("answers").let { array ->
         List(array.length()) { i ->
@@ -208,6 +215,14 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         }
     } ?: emptyMap()
 
+    val sleepWindDownDismissedNightId = jsonObject.optString("sleepWindDownDismissedNightId", "")
+    val sleepWindDownSnoozeUntilTS = jsonObject.optLong("sleepWindDownSnoozeUntilTS", 0L)
+    val sleepWindDownProgressNightId = jsonObject.optString("sleepWindDownProgressNightId", "")
+    val sleepWindDownCompleted = jsonObject.optJSONArray("sleepWindDownCompleted")?.let { arr ->
+        List(arr.length()) { arr.getString(it) }
+    } ?: emptyList()
+    val sleepWindDownBrainDumpDraft = jsonObject.optString("sleepWindDownBrainDumpDraft", "")
+
     return SyncData(
         userCfg,
         answers,
@@ -233,6 +248,11 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         budgetPromptDismissedTS,
         activeTimer,
         dailyBudget,
-        dailyUsage
+        dailyUsage,
+        sleepWindDownDismissedNightId,
+        sleepWindDownSnoozeUntilTS,
+        sleepWindDownProgressNightId,
+        sleepWindDownCompleted,
+        sleepWindDownBrainDumpDraft
     )
 }

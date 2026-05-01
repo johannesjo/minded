@@ -14,6 +14,8 @@ import { SyncData } from "@src/dataInterface/syncData";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import { refreshSleepWindDownAlarms } from "@src/shared/components/sleepWindDown/androidBridge";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -27,11 +29,35 @@ const MainAndroid = () => {
     addWrapperClasses();
   });
 
+  const maybeTriggerSleepWindDown = (syncData: SyncData) => {
+    const cfg = syncData.cfg.sleepWindDown;
+    if (!cfg?.enabled) return;
+    const nightId = resolveNightId(cfg);
+    if (!nightId) return;
+    if (syncData.sleepWindDownDismissedNightId === nightId) return;
+    if ((syncData.sleepWindDownSnoozeUntilTS ?? 0) > Date.now()) return;
+    // Only auto-route from the dashboard root. If the user is mid-task in
+    // settings, feedback, an interaction, or already in the wind-down flow,
+    // don't yank them away on resume.
+    const hash = window.location.hash;
+    const atRoot = hash === "" || hash === "#" || hash === "#/";
+    if (!atRoot) return;
+    window.location.hash = "#/sleepWindDown";
+  };
+
   const refresh = () => {
     setIsDarkModeIfApplies();
 
     getSyncData().then((syncData: SyncData) => {
       setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
+      if (syncData.cfg.isOnboardingComplete) {
+        maybeTriggerSleepWindDown(syncData);
+        // Make sure the next bedtime alarm is armed in case the alarm
+        // was lost (uninstall/reinstall, force-stop, or stale schedule).
+        if (syncData.cfg.sleepWindDown?.enabled) {
+          refreshSleepWindDownAlarms();
+        }
+      }
     });
 
     setTimeout(() => {

@@ -1,0 +1,129 @@
+.wrapper {
+  max-width: 600px;
+  margin: auto;
+  padding: 32px 16px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.subtle {
+  opacity: 0.8;
+  margin: 0 0 16px;
+}
+
+.btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 16px 0 24px;
+}
+
+.menuFooter {
+  margin-top: 16px;
+}
+
+.linkBtn {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-decoration: underline;
+  opacity: 0.7;
+  cursor: pointer;
+  font: inherit;
+}
+
+.activityBody {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.calmRead {
+  white-space: pre-line;
+  line-height: 1.7;
+  opacity: 0.85;
+  font-size: 1.05em;
+}
+
+.tipsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+
+  li {
+    padding: 12px 16px;
+    background: var(--dashboard-card-bg);
+    border-radius: var(--border-radius);
+  }
+}
+
+.brainDumpTextarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px;
+  font: inherit;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--dashboard-card-bg);
+  color: inherit;
+  resize: vertical;
+}
+
+.goodnight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 64px 16px;
+  gap: 24px;
+}
+
+.sparkles {
+  font-size: 4em;
+  letter-spacing: 0.2em;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.activityActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}

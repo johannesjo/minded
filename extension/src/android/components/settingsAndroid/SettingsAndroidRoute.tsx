@@ -4,13 +4,22 @@ import { SettingsAndroid } from "./SettingsAndroid";
 import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
+import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
 import { Toast } from "@src/shared/components/ui/Toast";
 import { Ico } from "@src/shared/components/ui/Ico";
 import {
   updateBlockedApps,
+  updateSyncData,
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { FocusSchedule as FocusScheduleType } from "@src/dataInterface/syncData";
+import {
+  FocusSchedule as FocusScheduleType,
+  SleepWindDownCfg,
+} from "@src/dataInterface/syncData";
+import {
+  ensureNotificationPermission,
+  refreshSleepWindDownAlarms,
+} from "@src/shared/components/sleepWindDown/androidBridge";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
@@ -21,6 +30,8 @@ export const SettingsAndroidRoute = () => {
   const [pendingSound, setPendingSound] = createSignal<boolean | null>(null);
   const [pendingSchedule, setPendingSchedule] =
     createSignal<FocusScheduleType | null>(null);
+  const [pendingSleepWindDown, setPendingSleepWindDown] =
+    createSignal<SleepWindDownCfg | null>(null);
 
   const handleSaveAll = async () => {
     if (pendingApps() !== null) {
@@ -31,6 +42,23 @@ export const SettingsAndroidRoute = () => {
     }
     if (pendingSchedule() !== null) {
       await updateUserCfg({ focusSchedule: pendingSchedule()! });
+    }
+    if (pendingSleepWindDown() !== null) {
+      const next = pendingSleepWindDown()!;
+      await updateUserCfg({ sleepWindDown: next });
+      if (next.enabled) {
+        // The notification path needs runtime POST_NOTIFICATIONS on
+        // Android 13+. Ask the user the first time they enable wind-down,
+        // otherwise the feature is silently broken.
+        ensureNotificationPermission();
+      } else {
+        // Clear any stale snooze deadline so re-enabling later doesn't
+        // re-arm an alarm against a moot timestamp.
+        await updateSyncData({ sleepWindDownSnoozeUntilTS: 0 });
+      }
+      // refreshSleepWindDownAlarms picks up the new cfg: schedules at the
+      // next bedtime when enabled, cancels alarm + notification when not.
+      refreshSleepWindDownAlarms();
     }
     setShowToast(true);
   };
@@ -61,6 +89,10 @@ export const SettingsAndroidRoute = () => {
         showSaveButton={false}
         onChange={(schedule) => setPendingSchedule(schedule)}
       />
+
+      <hr style="opacity: 0.2; margin: 32px 16px;" />
+
+      <SleepWindDownSettings onChange={(cfg) => setPendingSleepWindDown(cfg)} />
 
       <div style="text-align: center; margin: 32px 16px;">
         <button
