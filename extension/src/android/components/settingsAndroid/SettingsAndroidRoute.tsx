@@ -9,6 +9,7 @@ import { Toast } from "@src/shared/components/ui/Toast";
 import { Ico } from "@src/shared/components/ui/Ico";
 import {
   updateBlockedApps,
+  updateSyncData,
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
 import {
@@ -16,7 +17,6 @@ import {
   SleepWindDownCfg,
 } from "@src/dataInterface/syncData";
 import {
-  cancelSleepWindDownAlarms,
   ensureNotificationPermission,
   refreshSleepWindDownAlarms,
 } from "@src/shared/components/sleepWindDown/androidBridge";
@@ -46,16 +46,19 @@ export const SettingsAndroidRoute = () => {
     if (pendingSleepWindDown() !== null) {
       const next = pendingSleepWindDown()!;
       await updateUserCfg({ sleepWindDown: next });
-      // Reschedule the alarm to match the new cfg, or cancel if disabled.
       if (next.enabled) {
         // The notification path needs runtime POST_NOTIFICATIONS on
         // Android 13+. Ask the user the first time they enable wind-down,
         // otherwise the feature is silently broken.
         ensureNotificationPermission();
-        refreshSleepWindDownAlarms();
       } else {
-        cancelSleepWindDownAlarms();
+        // Clear any stale snooze deadline so re-enabling later doesn't
+        // re-arm an alarm against a moot timestamp.
+        await updateSyncData({ sleepWindDownSnoozeUntilTS: 0 });
       }
+      // refreshSleepWindDownAlarms picks up the new cfg: schedules at the
+      // next bedtime when enabled, cancels alarm + notification when not.
+      refreshSleepWindDownAlarms();
     }
     setShowToast(true);
   };
@@ -69,32 +72,32 @@ export const SettingsAndroidRoute = () => {
         onChange={(apps) => setPendingApps(apps)}
       />
 
-      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
+      <hr style="opacity: 0.2; margin: 32px 16px;" />
 
       <SoundSettings
         autoSave={false}
         onChange={(enabled) => setPendingSound(enabled)}
       />
 
-      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
+      <hr style="opacity: 0.2; margin: 32px 16px;" />
 
       <BudgetSettings />
 
-      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
+      <hr style="opacity: 0.2; margin: 32px 16px;" />
 
       <FocusSchedule
         showSaveButton={false}
         onChange={(schedule) => setPendingSchedule(schedule)}
       />
 
-      <hr style={{ opacity: "0.2", margin: "32px 16px" }} />
+      <hr style="opacity: 0.2; margin: 32px 16px;" />
 
       <SleepWindDownSettings onChange={(cfg) => setPendingSleepWindDown(cfg)} />
 
-      <div style={{ "text-align": "center", margin: "32px 16px" }}>
+      <div style="text-align: center; margin: 32px 16px;">
         <button
           class="btnTxt"
-          style={{ "margin-right": "16px" }}
+          style="margin-right: 16px;"
           onClick={() => navigate("/")}
         >
           <Ico name="arrowBack" /> Back

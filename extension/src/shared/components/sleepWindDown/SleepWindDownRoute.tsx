@@ -1,4 +1,4 @@
-import { createSignal, JSX, Match, onMount, Switch, For } from "solid-js";
+import { createSignal, For, JSX, Match, onCleanup, onMount, Switch } from "solid-js";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
   getSyncData,
@@ -6,20 +6,23 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { resolveNightId, SNOOZE_MINUTES } from "./sleepWindDown.util";
-import { refreshSleepWindDownAlarms } from "./androidBridge";
+import {
+  dismissSleepWindDownNotification,
+  refreshSleepWindDownAlarms,
+} from "./androidBridge";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import { CalmRead } from "./activities/CalmRead";
-import { SleepTips } from "./activities/SleepTips";
-import { Goodnight } from "./activities/Goodnight";
+import {
+  CALM_READ_TEXT,
+  SLEEP_TIPS,
+} from "@src/shared/data/sleepContent";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
 type View =
   | "prompt"
-  | "snoozeOrSkip"
   | "menu"
   | "brainDump"
   | "breathing"
@@ -35,6 +38,8 @@ const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
   { key: "tips", label: "Tips for good sleep", view: "tips" },
 ];
+
+const GOODNIGHT_AUTO_DISMISS_MS = 8000;
 
 /**
  * Resolve the night id from the user's saved cfg. We always read the latest
@@ -60,6 +65,11 @@ export const SleepWindDownRoute = (): JSX.Element => {
   let currentNightId: string | null = null;
 
   onMount(async () => {
+    // The user is now attending to the wind-down — clear any heads-up that
+    // brought them here so it doesn't sit in the shade for the rest of the
+    // night.
+    dismissSleepWindDownNotification();
+
     const sd = await getSyncData();
     const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
     currentNightId = resolveNightId(cfg);
@@ -113,6 +123,8 @@ export const SleepWindDownRoute = (): JSX.Element => {
       sleepWindDownProgressNightId: "",
       sleepWindDownCompleted: [],
       sleepWindDownBrainDumpDraft: "",
+      // Any past snooze deadline is moot now.
+      sleepWindDownSnoozeUntilTS: 0,
     });
     // Re-arm (don't cancel) so tomorrow's alarm is still scheduled.
     // The alarm receiver gates on dismissedNightId and will skip tonight.
@@ -134,6 +146,16 @@ export const SleepWindDownRoute = (): JSX.Element => {
     navigate("/");
   };
 
+  // Auto-dismiss the goodnight screen after a few seconds.
+  let goodnightTimer: ReturnType<typeof setTimeout> | null = null;
+  const enterGoodnight = () => {
+    setView("goodnight");
+    goodnightTimer = setTimeout(dismissForTonight, GOODNIGHT_AUTO_DISMISS_MS);
+  };
+  onCleanup(() => {
+    if (goodnightTimer) clearTimeout(goodnightTimer);
+  });
+
   return (
     <div class={`${styles.wrapper} pageTransitionIn`}>
       <Switch>
@@ -144,27 +166,18 @@ export const SleepWindDownRoute = (): JSX.Element => {
               It's getting late — would you like to take a moment before bed?
             </p>
             <div class={styles.btnRow}>
-              <button class="btnTxt" onClick={() => setView("menu")}>
+              <button
+                class="btnTxt"
+                onClick={() => setView("menu")}
+                disabled={!hydrated()}
+              >
                 <Ico name="check" /> Yes
               </button>
               <button
                 class="btnTxtOutline"
-                onClick={() => setView("snoozeOrSkip")}
+                onClick={snooze}
+                disabled={!hydrated()}
               >
-                No
-              </button>
-            </div>
-          </div>
-        </Match>
-
-        <Match when={view() === "snoozeOrSkip"}>
-          <div class={styles.center}>
-            <h3 class="h3">Not right now?</h3>
-            <p class={styles.subtle}>
-              Snooze for 30 minutes, or skip the rest of tonight.
-            </p>
-            <div class={styles.btnRow}>
-              <button class="btnTxt" onClick={snooze} disabled={!hydrated()}>
                 Snooze 30 min
               </button>
               <button
@@ -175,13 +188,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
                 Skip tonight
               </button>
             </div>
-            <button
-              class={styles.linkBtn}
-              onClick={() => setView("prompt")}
-              style={{ "margin-top": "16px" }}
-            >
-              Back
-            </button>
           </div>
         </Match>
 
@@ -213,7 +219,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
             <div class={styles.menuFooter}>
               <button
                 class="btnTxt"
-                onClick={() => setView("goodnight")}
+                onClick={enterGoodnight}
                 disabled={!hydrated()}
               >
                 <Ico name="check" /> All done
@@ -256,27 +262,62 @@ export const SleepWindDownRoute = (): JSX.Element => {
         </Match>
 
         <Match when={view() === "calmRead"}>
-          <CalmRead
-            onDone={() => {
-              markComplete("calmRead");
-              setView("menu");
-            }}
-            onBack={() => setView("menu")}
-          />
+          <div class={styles.activityBody}>
+            <p class={styles.calmRead}>{CALM_READ_TEXT}</p>
+            <div class={styles.activityActions}>
+              <button class="btnTxtOutline" onClick={() => setView("menu")}>
+                Back
+              </button>
+              <button
+                class="btnTxt"
+                onClick={() => {
+                  markComplete("calmRead");
+                  setView("menu");
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </Match>
 
         <Match when={view() === "tips"}>
-          <SleepTips
-            onDone={() => {
-              markComplete("tips");
-              setView("menu");
-            }}
-            onBack={() => setView("menu")}
-          />
+          <div class={styles.activityBody}>
+            <h3 class="h3" style={{ "text-align": "center", margin: 0 }}>
+              Tips for good sleep
+            </h3>
+            <ul class={styles.tipsList}>
+              <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
+            </ul>
+            <div class={styles.activityActions}>
+              <button class="btnTxtOutline" onClick={() => setView("menu")}>
+                Back
+              </button>
+              <button
+                class="btnTxt"
+                onClick={() => {
+                  markComplete("tips");
+                  setView("menu");
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </Match>
 
         <Match when={view() === "goodnight"}>
-          <Goodnight onDone={dismissForTonight} />
+          <div class={styles.goodnight}>
+            <div class={styles.sparkles} aria-hidden="true">
+              ✦ ✧ ✦
+            </div>
+            <h2 class="h2" style={{ margin: 0 }}>
+              Sleep well
+            </h2>
+            <p class={styles.subtle}>
+              Breathe out slowly, and let the phone rest.
+            </p>
+          </div>
         </Match>
       </Switch>
     </div>

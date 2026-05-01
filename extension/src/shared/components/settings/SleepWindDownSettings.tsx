@@ -13,6 +13,10 @@ import {
   DEFAULT_DAY_RANGE,
   resolveNightId,
 } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import {
+  ensureNotificationPermission,
+  hasNotificationPermission,
+} from "@src/shared/components/sleepWindDown/androidBridge";
 // @ts-ignore — reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
 
@@ -38,6 +42,9 @@ export const SleepWindDownSettings = (props: {
   const navigate = useNavigate();
   const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
   const [pausedTonight, setPausedTonight] = createSignal(false);
+  const [notifGranted, setNotifGranted] = createSignal(true);
+
+  const refreshNotifGranted = () => setNotifGranted(hasNotificationPermission());
 
   onMount(() => {
     getSyncData().then((sd) => {
@@ -50,6 +57,7 @@ export const SleepWindDownSettings = (props: {
       const currentNightId = resolveNightId(swd);
       setPausedTonight(!!currentNightId && dismissed === currentNightId);
     });
+    refreshNotifGranted();
   });
 
   const persist = async (next: SleepWindDownCfg) => {
@@ -69,6 +77,14 @@ export const SleepWindDownSettings = (props: {
 
   const toggleEnabled = () => {
     apply((prev) => ({ ...prev, enabled: !prev.enabled }));
+    if (cfg().enabled) {
+      // Just turned on — make sure the OS-level notification grant is in
+      // place. Without it the alarm fires but the heads-up never shows.
+      ensureNotificationPermission();
+      // Re-poll shortly so the warning UI updates after the user answers
+      // the permission dialog.
+      setTimeout(refreshNotifGranted, 500);
+    }
   };
 
   const toggleDay = (idx: number) => {
@@ -119,6 +135,15 @@ export const SleepWindDownSettings = (props: {
       {pausedTonight() && cfg().enabled && (
         <p class={styles.description} style={{ "font-style": "italic" }}>
           Paused for tonight — wind-down will resume tomorrow.
+        </p>
+      )}
+      {cfg().enabled && !notifGranted() && (
+        <p
+          class={styles.description}
+          style={{ color: "var(--color-warning, #c66)" }}
+        >
+          Notifications are blocked, so the bedtime prompt won't show. Enable
+          notifications for minded in your system settings.
         </p>
       )}
       <div class={styles.daysList}>

@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.webkit.ValueCallback
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
-import com.minded.minded.sleepwinddown.SleepWindDownReceiver
+import com.minded.minded.sleepwinddown.SleepWindDownNotifier
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
@@ -39,11 +38,6 @@ class MainActivity : AppCompatActivity() {
     private val webAppResumeEVName = "androidAppResume"
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
-
-    /** Set to true once the WebView has finished loading the SPA at least once. */
-    private var isPageReady = false
-    /** A pending hash route to push as soon as the SPA is ready. */
-    private var pendingHashTarget: String? = null
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -94,18 +88,11 @@ class MainActivity : AppCompatActivity() {
                                     ),
                                     jsInterfaceNameProp
                                 )
-                                webViewClient = object : WebViewClient() {
-                                    override fun onPageFinished(view: WebView?, url: String?) {
-                                        super.onPageFinished(view, url)
-                                        isPageReady = true
-                                        flushPendingHash()
-                                    }
-                                }
                                 loadUrl(buildLaunchUrl(intent))
                                 // Consume the extra so that a Recents
                                 // rehydration of the same intent doesn't
                                 // re-route to wind-down outside the window.
-                                intent?.removeExtra(SleepWindDownReceiver.EXTRA_OPEN_SLEEP_WIND_DOWN)
+                                intent?.removeExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN)
                                 setIntent(intent)
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
@@ -128,33 +115,17 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (shouldOpenSleepWindDown(intent)) {
-            queueHashTarget("#/sleepWindDown")
+        if (shouldOpenSleepWindDown(intent) && this::webView.isInitialized) {
+            // Reload the SPA at the wind-down hash. onResume will dispatch
+            // androidAppResume so any data signals refresh as usual.
+            webView.loadUrl(buildLaunchUrl(intent))
             // Consume the extra so a later resume-from-Recents doesn't re-fire it.
-            intent.removeExtra(SleepWindDownReceiver.EXTRA_OPEN_SLEEP_WIND_DOWN)
+            intent.removeExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN)
         }
-    }
-
-    private fun queueHashTarget(target: String) {
-        pendingHashTarget = target
-        if (this::webView.isInitialized && isPageReady) {
-            flushPendingHash()
-        }
-    }
-
-    private fun flushPendingHash() {
-        val target = pendingHashTarget ?: return
-        if (!this::webView.isInitialized) return
-        pendingHashTarget = null
-        webView.evaluateJavascript(
-            "(function(){window.location.hash='$target';" +
-                "window.dispatchEvent(new Event('${webAppResumeEVName}'));})();",
-            ValueCallback<String?> {}
-        )
     }
 
     private fun shouldOpenSleepWindDown(intent: Intent?): Boolean =
-        intent?.getBooleanExtra(SleepWindDownReceiver.EXTRA_OPEN_SLEEP_WIND_DOWN, false) == true
+        intent?.getBooleanExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN, false) == true
 
     private fun buildLaunchUrl(intent: Intent?): String {
         val base = "file:///android_asset/web/src/android/main/index.html"

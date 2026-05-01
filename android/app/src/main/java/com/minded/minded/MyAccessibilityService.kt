@@ -17,7 +17,6 @@ import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
-import com.minded.minded.sleepwinddown.SleepWindDownReceiver
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import java.util.Collections
@@ -204,15 +203,6 @@ class MyAccessibilityService : AccessibilityService() {
         } else {
             registerReceiver(homeActionReceiver, filter)
         }
-
-        // Register sleep wind-down unlock receiver. Must be dynamic (Android 8+
-        // forbids declaring ACTION_USER_PRESENT in the manifest).
-        val unlockFilter = android.content.IntentFilter(Intent.ACTION_USER_PRESENT)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(sleepWindDownReceiver, unlockFilter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(sleepWindDownReceiver, unlockFilter)
-        }
     }
 
     private val homeActionReceiver = object : android.content.BroadcastReceiver() {
@@ -221,8 +211,6 @@ class MyAccessibilityService : AccessibilityService() {
             performGlobalAction(GLOBAL_ACTION_HOME)
         }
     }
-
-    private val sleepWindDownReceiver = SleepWindDownReceiver()
 
     override fun onInterrupt() {
         Log.d(TAG, "onInterrupt()")
@@ -250,11 +238,6 @@ class MyAccessibilityService : AccessibilityService() {
             unregisterReceiver(homeActionReceiver)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to unregister receiver", e)
-        }
-        try {
-            unregisterReceiver(sleepWindDownReceiver)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to unregister sleep wind-down receiver", e)
         }
     }
 

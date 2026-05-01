@@ -90,6 +90,9 @@ open class MainActivityJavaScriptInterface(
      * Re-evaluate and re-schedule the next sleep wind-down alarm based on
      * the latest persisted cfg. The TS layer must call this after any
      * change to `cfg.sleepWindDown` or to the snooze/dismiss state.
+     *
+     * If wind-down is disabled, this also dismisses any visible notification
+     * — see [SleepWindDownAlarmScheduler.scheduleNext].
      */
     @JavascriptInterface
     fun scheduleSleepWindDownAlarms() {
@@ -98,14 +101,14 @@ open class MainActivityJavaScriptInterface(
     }
 
     /**
-     * Cancel the next scheduled wind-down alarm and dismiss the
-     * notification (if visible). Called when the user disables wind-down
-     * or skips for tonight.
+     * Dismiss the wind-down notification if visible. Called when the user
+     * enters the wind-down route from any path (notification tap, app launch,
+     * dismiss-for-tonight, snooze) so the heads-up doesn't linger in the
+     * notification shade while the user is already attending to it.
      */
     @JavascriptInterface
-    fun cancelSleepWindDownAlarms() {
-        Log.v(logTag, "cancelSleepWindDownAlarms()")
-        SleepWindDownAlarmScheduler.cancel(context)
+    fun dismissSleepWindDownNotification() {
+        Log.v(logTag, "dismissSleepWindDownNotification()")
         SleepWindDownNotifier.cancel(context)
     }
 

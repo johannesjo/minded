@@ -3,6 +3,7 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 
 /**
  * Re-evaluate the next sleep wind-down alarm after a cfg or state change.
+ * If wind-down is disabled, this also dismisses any visible notification.
  * No-op on non-Android platforms.
  */
 export const refreshSleepWindDownAlarms = (): void => {
@@ -15,15 +16,28 @@ export const refreshSleepWindDownAlarms = (): void => {
 };
 
 /**
- * Cancel the next sleep wind-down alarm and dismiss the notification if any.
+ * Dismiss the wind-down notification if visible. Use on route entry, after
+ * skip-for-tonight, and after snooze so the heads-up doesn't linger while
+ * the user is already attending to the prompt.
  * No-op on non-Android platforms.
  */
-export const cancelSleepWindDownAlarms = (): void => {
+export const dismissSleepWindDownNotification = (): void => {
   if (!IS_ANDROID) return;
   try {
-    androidInterface.cancelSleepWindDownAlarms?.();
+    androidInterface.dismissSleepWindDownNotification?.();
   } catch (e) {
-    console.warn("cancelSleepWindDownAlarms failed", e);
+    console.warn("dismissSleepWindDownNotification failed", e);
+  }
+};
+
+/** True if POST_NOTIFICATIONS is granted (or not required on this platform). */
+export const hasNotificationPermission = (): boolean => {
+  if (!IS_ANDROID) return true;
+  try {
+    return androidInterface.hasNotificationPermission?.() ?? true;
+  } catch (e) {
+    console.warn("hasNotificationPermission failed", e);
+    return true;
   }
 };
 

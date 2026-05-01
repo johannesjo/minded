@@ -16,8 +16,7 @@ import java.util.Calendar
  * fuzz on a "wind down for the night" prompt is fine.
  *
  * The scheduler is the source of truth for "fire the wind-down at bedtime
- * even if the user hasn't unlocked the phone." The unlock receiver is a
- * complementary path for users who do unlock during the window.
+ * even if the user hasn't unlocked the phone."
  */
 object SleepWindDownAlarmScheduler {
     private const val TAG = "SleepWindDownAlarm"
@@ -37,19 +36,20 @@ object SleepWindDownAlarmScheduler {
      *   - the active snooze deadline (if any), or
      *   - the next configured bedtime.
      *
-     * No-op (cancels the pending alarm) if wind-down is disabled, onboarding
-     * incomplete, or no day has a configured range.
+     * No-op (cancels the pending alarm and dismisses any visible notification)
+     * if wind-down is disabled, onboarding is incomplete, or no day has a
+     * configured range.
      */
     fun scheduleNext(context: Context) {
         val syncData = SharedPreferenceService(context).getSyncData()
         val cfg = syncData.cfg
         if (cfg.sleepWindDown == null) {
-            cancel(context)
+            cancelAll(context)
             return
         }
         val enabled = cfg.sleepWindDown["enabled"] as? Boolean ?: false
         if (!enabled || !cfg.isOnboardingComplete) {
-            cancel(context)
+            cancelAll(context)
             return
         }
 
@@ -63,10 +63,16 @@ object SleepWindDownAlarmScheduler {
         val target = candidates.minOrNull()
         if (target == null) {
             Log.d(TAG, "No bedtime / snooze in the next 8 days; cancelling")
-            cancel(context)
+            cancelAll(context)
             return
         }
         scheduleAt(context, target)
+    }
+
+    /** Cancel both the alarm and any visible notification. */
+    private fun cancelAll(context: Context) {
+        cancel(context)
+        SleepWindDownNotifier.cancel(context)
     }
 
     /** Schedule an alarm at a specific epoch ms. Used by snooze and by scheduleNext. */
@@ -140,8 +146,8 @@ object SleepWindDownAlarmScheduler {
             val rangeMap = days[dayIdx] as? Map<*, *> ?: continue
             val startStr = rangeMap["start"] as? String ?: continue
             val endStr = rangeMap["end"] as? String ?: continue
-            val startMin = parseHHMM(startStr) ?: continue
-            val endMin = parseHHMM(endStr) ?: continue
+            val startMin = SleepWindDownWindow.parseHHMM(startStr) ?: continue
+            val endMin = SleepWindDownWindow.parseHHMM(endStr) ?: continue
             if (startMin == endMin) continue
 
             cal.set(Calendar.HOUR_OF_DAY, startMin / 60)
@@ -152,13 +158,5 @@ object SleepWindDownAlarmScheduler {
             if (cal.timeInMillis > nowMs) return cal.timeInMillis
         }
         return null
-    }
-
-    private fun parseHHMM(s: String): Int? {
-        val m = Regex("""^(\d{1,2}):(\d{2})$""").matchEntire(s.trim()) ?: return null
-        val h = m.groupValues[1].toInt()
-        val mm = m.groupValues[2].toInt()
-        if (h !in 0..23 || mm !in 0..59) return null
-        return h * 60 + mm
     }
 }

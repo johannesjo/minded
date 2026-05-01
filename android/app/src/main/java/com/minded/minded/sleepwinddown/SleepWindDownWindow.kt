@@ -26,7 +26,7 @@ object SleepWindDownWindow {
      * Parse `HH:MM`. Returns null on any malformed input — callers must treat
      * null as "no window" rather than crashing or silently using a wrong value.
      */
-    private fun parseHHMM(s: String): Int? {
+    internal fun parseHHMM(s: String): Int? {
         val m = Regex("""^(\d{1,2}):(\d{2})$""").matchEntire(s.trim()) ?: return null
         val h = m.groupValues[1].toIntOrNull() ?: return null
         val mm = m.groupValues[2].toIntOrNull() ?: return null
