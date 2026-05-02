@@ -30,6 +30,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.getBudgetRemainingSeconds
 import com.minded.minded.util.hasBudgetRemaining
 import com.minded.minded.util.parseSyncData
@@ -131,8 +132,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         Log.d(logTag, "restoreOverlayAfterUnlock: freshForeground=$freshForegroundApp, savedApp=$savedApp, savedOverlay=$savedOverlay")
 
+        // During wind-down, ANY foreground app should re-trigger the overlay check.
+        // Outside wind-down, only blocked apps re-trigger (existing behavior).
+        val windDownActive = isWindDownActive(sharedPreferenceService.getSyncData())
+
         // Determine which app to use for restoration
         val appToRestore = when {
+            // Wind-down: any fresh app re-triggers the check (let checkToShowOverlay decide)
+            windDownActive && freshForegroundApp != null -> freshForegroundApp
+            windDownActive -> savedApp
             // If we have fresh foreground data and it's blocked, use it
             freshForegroundApp != null && isBlockedPackage(freshForegroundApp) -> freshForegroundApp
             // If we have fresh foreground data but it's NOT blocked, user switched apps
@@ -417,6 +425,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     internal fun getSharedPreferenceService(): SharedPreferenceService = sharedPreferenceService
 
+    private fun isWindDownActive(syncData: SyncData): Boolean {
+        val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return false
+        if (syncData.sleepWindDownDismissedNightId == nightId) return false
+        if (syncData.sleepWindDownSnoozeUntilTS > System.currentTimeMillis()) return false
+        return true
+    }
+
     internal fun isBlockedPackage(packageName: String): Boolean {
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "isBlockedPackage() - checking $packageName against blocked apps: $blockedApps")
@@ -441,6 +456,33 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val timeSinceHideAll = System.currentTimeMillis() - lastHideAllTimestamp
         if (timeSinceHideAll < HIDE_TO_SHOW_DEBOUNCE_MS) {
             Log.d(logTag, "checkToShowOverlay() - skipping due to recent hideAll (${timeSinceHideAll}ms ago)")
+            return
+        }
+
+        val syncData = sharedPreferenceService.getSyncData()
+
+        // Wind-down: if the user is inside their configured bedtime window and hasn't
+        // dismissed/snoozed it, intervene on ANY non-launcher app — overrides blocked
+        // status, active session, daily budget, and rest-of-day. Bedtime > daytime rules.
+        if (isWindDownActive(syncData)) {
+            if (currentPackageName.contains("launcher") || currentPackageName.contains("home")) {
+                Log.v(logTag, "checkToShowOverlay() wind-down active, on launcher — hiding overlays")
+                hideAllBut()
+                return
+            }
+            if (isAnyWindowShown()) {
+                Log.v(logTag, "checkToShowOverlay() wind-down active, overlay already showing — skipping")
+                return
+            }
+            Log.v(
+                logTag,
+                "checkToShowOverlay() WIND-DOWN ACTIVE, showing fresh intervention for: $currentPackageName"
+            )
+            showOverlay(
+                OverlayName.INTERACTION_OVERLAY,
+                OverlayMode.INTERACTION_OVERLAY__FRESH,
+                currentPackageName
+            )
             return
         }
 
@@ -469,7 +511,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
         }
 
-        val syncData = sharedPreferenceService.getSyncData()
         val budgetRemaining = hasBudgetRemaining(syncData)
 
         val isRecentAppSwitch = lastGoToAppTimestamp > 0 &&
