@@ -6,10 +6,6 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { resolveNightId, SNOOZE_MINUTES } from "./sleepWindDown.util";
-import {
-  dismissSleepWindDownNotification,
-  refreshSleepWindDownAlarms,
-} from "./androidBridge";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
@@ -62,11 +58,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
   let draftPersistPromise: Promise<void> = Promise.resolve();
 
   onMount(async () => {
-    // The user is now attending to the wind-down — clear any heads-up that
-    // brought them here so it doesn't sit in the shade for the rest of the
-    // night.
-    dismissSleepWindDownNotification();
-
     const sd = await getSyncData();
     const cfg = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
     currentNightId = resolveNightId(cfg);
@@ -150,9 +141,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
       // Any past snooze deadline is moot now.
       sleepWindDownSnoozeUntilTS: 0,
     });
-    // Re-arm (don't cancel) so tomorrow's alarm is still scheduled.
-    // The alarm receiver gates on dismissedNightId and will skip tonight.
-    refreshSleepWindDownAlarms();
     navigate("/");
   };
 
@@ -164,9 +152,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
     await updateSyncData({
       sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
     });
-    // Re-arm the alarm at the snooze time. The scheduler picks min(snooze,
-    // next bedtime), so the alarm will fire at the snooze deadline.
-    refreshSleepWindDownAlarms();
     navigate("/");
   };
 

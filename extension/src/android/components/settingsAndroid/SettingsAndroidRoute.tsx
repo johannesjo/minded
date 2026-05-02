@@ -16,10 +16,6 @@ import {
   FocusSchedule as FocusScheduleType,
   SleepWindDownCfg,
 } from "@src/dataInterface/syncData";
-import {
-  ensureNotificationPermission,
-  refreshSleepWindDownAlarms,
-} from "@src/shared/components/sleepWindDown/androidBridge";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
@@ -46,19 +42,11 @@ export const SettingsAndroidRoute = () => {
     if (pendingSleepWindDown() !== null) {
       const next = pendingSleepWindDown()!;
       await updateUserCfg({ sleepWindDown: next });
-      if (next.enabled) {
-        // The notification path needs runtime POST_NOTIFICATIONS on
-        // Android 13+. Ask the user the first time they enable wind-down,
-        // otherwise the feature is silently broken.
-        ensureNotificationPermission();
-      } else {
+      if (!next.enabled) {
         // Clear any stale snooze deadline so re-enabling later doesn't
-        // re-arm an alarm against a moot timestamp.
+        // suppress the next configured window.
         await updateSyncData({ sleepWindDownSnoozeUntilTS: 0 });
       }
-      // refreshSleepWindDownAlarms picks up the new cfg: schedules at the
-      // next bedtime when enabled, cancels alarm + notification when not.
-      refreshSleepWindDownAlarms();
     }
     setShowToast(true);
   };

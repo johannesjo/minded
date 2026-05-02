@@ -15,10 +15,6 @@ import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
-import {
-  refreshSleepWindDownAlarms,
-  scheduleNextFutureSleepWindDownAlarm,
-} from "@src/shared/components/sleepWindDown/androidBridge";
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -55,16 +51,7 @@ const MainAndroid = () => {
     getSyncData().then((syncData: SyncData) => {
       setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
       if (syncData.cfg.isOnboardingComplete) {
-        const didOpenSleepWindDown = maybeTriggerSleepWindDown(syncData);
-        // Make sure the next bedtime alarm is armed in case the alarm
-        // was lost (uninstall/reinstall, force-stop, or stale schedule).
-        if (syncData.cfg.sleepWindDown?.enabled) {
-          if (didOpenSleepWindDown) {
-            scheduleNextFutureSleepWindDownAlarm();
-          } else {
-            refreshSleepWindDownAlarms();
-          }
-        }
+        maybeTriggerSleepWindDown(syncData);
       }
     });
 

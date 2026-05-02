@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
-import com.minded.minded.sleepwinddown.SleepWindDownNotifier
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.WebViewSafeAreaBridge
 import com.minded.minded.util.checkDrawOverlayPermission
@@ -94,12 +93,7 @@ class MainActivity : AppCompatActivity() {
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
                                 WebViewSafeAreaBridge.attach(this, jsInterface.safeAreaInsets)
-                                loadUrl(buildLaunchUrl(intent))
-                                // Consume the extra so that a Recents
-                                // rehydration of the same intent doesn't
-                                // re-route to wind-down outside the window.
-                                intent?.removeExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN)
-                                setIntent(intent)
+                                loadUrl("file:///android_asset/web/src/android/main/index.html")
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)
@@ -118,47 +112,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        if (shouldOpenSleepWindDown(intent) && this::webView.isInitialized) {
-            // Reload the SPA at the wind-down hash. onResume will dispatch
-            // androidAppResume so any data signals refresh as usual.
-            webView.loadUrl(buildLaunchUrl(intent))
-            // Consume the extra so a later resume-from-Recents doesn't re-fire it.
-            intent.removeExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN)
-        }
-    }
-
-    private fun shouldOpenSleepWindDown(intent: Intent?): Boolean =
-        intent?.getBooleanExtra(SleepWindDownNotifier.EXTRA_OPEN_SLEEP_WIND_DOWN, false) == true
-
-    private fun buildLaunchUrl(intent: Intent?): String {
-        val base = "file:///android_asset/web/src/android/main/index.html"
-        return if (shouldOpenSleepWindDown(intent)) "$base#/sleepWindDown" else base
-    }
-
     private fun goBackOrFinish() {
         if (this::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
         } else {
             finish()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == MainActivityJavaScriptInterface.REQUEST_CODE_POST_NOTIFICATIONS &&
-            this::webView.isInitialized
-        ) {
-            webView.evaluateJavascript(
-                "(function() { window.dispatchEvent(new Event('mindedNotificationPermissionChanged')); })();",
-                ValueCallback<String?> { }
-            )
         }
     }
 
