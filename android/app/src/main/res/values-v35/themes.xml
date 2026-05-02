@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      API 35+ enforces edge-to-edge, which makes android:windowSoftInputMode="adjustResize"
+      ineffective — the WebView extends behind the IME instead of resizing. Opting out
+      restores legacy resize-on-keyboard behavior.
+    -->
+    <style name="Theme.Minded" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+    <style name="Theme.MindedAppCompat" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+</resources>
