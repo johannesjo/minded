@@ -1,13 +1,4 @@
-import {
-  createSignal,
-  For,
-  JSX,
-  Match,
-  onCleanup,
-  onMount,
-  Show,
-  Switch,
-} from "solid-js";
+import { createSignal, For, JSX, Match, onMount, Show, Switch } from "solid-js";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
   getSyncData,
@@ -24,6 +15,8 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { CALM_READ_TEXT, SLEEP_TIPS } from "@src/shared/data/sleepContent";
+import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
+import Sun from "@src/shared/components/interaction/sun/Sun";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
@@ -43,8 +36,6 @@ const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
   { key: "breathing", label: "Breathing exercise", view: "breathing" },
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
 ];
-
-const GOODNIGHT_AUTO_DISMISS_MS = 8000;
 
 /**
  * Resolve the night id from the user's saved cfg. We always read the latest
@@ -179,15 +170,9 @@ export const SleepWindDownRoute = (): JSX.Element => {
     navigate("/");
   };
 
-  // Auto-dismiss the goodnight screen after a few seconds.
-  let goodnightTimer: ReturnType<typeof setTimeout> | null = null;
   const enterGoodnight = () => {
     setView("goodnight");
-    goodnightTimer = setTimeout(dismissForTonight, GOODNIGHT_AUTO_DISMISS_MS);
   };
-  onCleanup(() => {
-    if (goodnightTimer) clearTimeout(goodnightTimer);
-  });
 
   return (
     <div class={`${styles.wrapper} pageTransitionIn`}>
@@ -287,8 +272,8 @@ export const SleepWindDownRoute = (): JSX.Element => {
                     setBrainDumpDraft(t);
                     persistDraft(t);
                   }}
+                  onBeforeSubmit={() => draftPersistPromise}
                   onDone={completeBrainDump}
-                  onBack={() => setView("menu")}
                 />
               </Match>
 
@@ -296,12 +281,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
                 <div class={styles.activityBody}>
                   <BreathingExercise />
                   <div class={styles.activityActions}>
-                    <button
-                      class="btnTxtOutline"
-                      onClick={() => setView("menu")}
-                    >
-                      Back
-                    </button>
                     <button
                       class="btnTxtOutline"
                       onClick={() => {
@@ -319,12 +298,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
                 <div class={styles.activityBody}>
                   <p class={styles.calmRead}>{CALM_READ_TEXT}</p>
                   <div class={styles.activityActions}>
-                    <button
-                      class="btnTxtOutline"
-                      onClick={() => setView("menu")}
-                    >
-                      Back
-                    </button>
                     <button
                       class="btnTxtOutline"
                       onClick={() => {
@@ -349,12 +322,6 @@ export const SleepWindDownRoute = (): JSX.Element => {
                   <div class={styles.activityActions}>
                     <button
                       class="btnTxtOutline"
-                      onClick={() => setView("menu")}
-                    >
-                      Back
-                    </button>
-                    <button
-                      class="btnTxtOutline"
                       onClick={() => {
                         markComplete("tips");
                         setView("menu");
@@ -367,24 +334,38 @@ export const SleepWindDownRoute = (): JSX.Element => {
               </Match>
 
               <Match when={currentView === "goodnight"}>
-                <div class={styles.goodnight}>
-                  <div class={styles.sparkles} aria-hidden="true">
-                    ✦ ✧ ✦
-                  </div>
-                  <h2 class="h2" style={{ margin: 0 }}>
-                    Sleep well
-                  </h2>
-                  <p class={styles.subtle}>
-                    Breathe out slowly, and let the phone rest.
-                  </p>
-                  <div
-                    class={styles.goodnightProgress}
-                    style={{
-                      "--goodnight-duration": `${GOODNIGHT_AUTO_DISMISS_MS}ms`,
-                    }}
-                    aria-hidden="true"
-                  >
-                    <div class={styles.goodnightProgressBar} />
+                <div class={styles.goodnightGesture}>
+                  <BackgroundTransition />
+                  <div class={styles.goodnightContent}>
+                    <h2 class="h2" style={{ margin: 0 }}>
+                      Sleep well
+                    </h2>
+                    <p class={styles.subtle}>
+                      Drag the moon down to let the day go.
+                    </p>
+                    <div class={styles.moonContainer}>
+                      <Sun
+                        variant="moon"
+                        completionDirection="down"
+                        isTapEnabled={false}
+                        onSkip={dismissForTonight}
+                        onFlingAway={dismissForTonight}
+                        onDragComplete={dismissForTonight}
+                        onStartBackgroundAnimation={(direction) => {
+                          window.dispatchEvent(
+                            new CustomEvent("startBackgroundAnimation", {
+                              detail: { direction },
+                            }),
+                          );
+                        }}
+                      />
+                    </div>
+                    <button
+                      class={`btnTxtOutline ${styles.goodnightDone}`}
+                      onClick={dismissForTonight}
+                    >
+                      Done
+                    </button>
                   </div>
                 </div>
               </Match>

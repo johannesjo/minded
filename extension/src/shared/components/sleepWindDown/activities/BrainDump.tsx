@@ -1,7 +1,12 @@
 import { createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { saveAnswer } from "@src/dataInterface/commonSyncDataInterface";
 import { BRAIN_DUMP_PROMPTS } from "@src/shared/data/sleepContent";
-import { QuestionCategoryId } from "@src/shared/data/questions";
+import {
+  QuestionCategoryId,
+  QuestionForPrompt,
+} from "@src/shared/data/questions";
+import { Question } from "@src/shared/components/interaction/Question";
+import { QID } from "@src/shared/data/questionId";
 // @ts-ignore
 import styles from "../SleepWindDownRoute.module.scss";
 
@@ -9,16 +14,24 @@ const pickPrompt = (): string =>
   BRAIN_DUMP_PROMPTS[Math.floor(Math.random() * BRAIN_DUMP_PROMPTS.length)];
 
 const DRAFT_DEBOUNCE_MS = 600;
+const BRAIN_DUMP_MAX_LENGTH = 2000;
 
 export const BrainDump = (props: {
   initialText?: string;
   onDraftChange?: (text: string) => void;
+  onBeforeSubmit?: () => void | Promise<void>;
   onDone: () => void | Promise<void>;
-  onBack: () => void;
 }): JSX.Element => {
   // Initialize lazily so there's no flash of prompt[0] before the random pick.
   const [prompt] = createSignal(pickPrompt());
   const [text, setText] = createSignal(props.initialText ?? "");
+  const [isSubmitting, setIsSubmitting] = createSignal(false);
+  const question: QuestionForPrompt = {
+    id: QID.SWD1,
+    categoryId: QuestionCategoryId.SleepWindDown,
+    t: prompt(),
+    isDontSaveAnswer: true,
+  };
 
   let debounceHandle: ReturnType<typeof setTimeout> | null = null;
   // Once the user submits, we MUST NOT re-flush the local text — the parent
@@ -52,12 +65,15 @@ export const BrainDump = (props: {
     });
   });
 
-  const submit = async () => {
-    const trimmed = text().trim();
+  const submit = async (answerText: string) => {
+    if (isSubmitting()) return;
+    setIsSubmitting(true);
+    const trimmed = answerText.trim();
     if (debounceHandle) {
       clearTimeout(debounceHandle);
       debounceHandle = null;
     }
+    await props.onBeforeSubmit?.();
     try {
       if (trimmed.length > 0) {
         await saveAnswer({
@@ -70,35 +86,35 @@ export const BrainDump = (props: {
       }
     } catch (e) {
       console.warn("Failed to save sleep wind-down brain dump", e);
+      setIsSubmitting(false);
       return;
     }
     isSubmitted = true;
     await props.onDone();
   };
 
-  const back = () => {
-    flushDraft();
-    props.onBack();
-  };
-
   return (
-    <div class={styles.activityBody}>
-      <h2 class={`h2 ${styles.activityTitle}`}>{prompt()}</h2>
-      <textarea
-        class={styles.brainDumpTextarea}
-        placeholder="Write whatever's on your mind. Saved with your journal."
-        value={text()}
-        onInput={(e) => {
-          const v = e.currentTarget.value;
+    <div class={`${styles.activityBody} ${styles.brainDumpInteraction}`}>
+      <Question
+        initialQuestion={question}
+        answers={[]}
+        initialValue={text()}
+        maxLength={BRAIN_DUMP_MAX_LENGTH}
+        onCancelCountdown={() => undefined}
+        onSkip={() => undefined}
+        onUpdateQuestion={() => undefined}
+        onValueChange={(v) => {
           setText(v);
           scheduleDraftWrite(v);
         }}
+        onSuccess={(answer) => submit(answer.val.toString())}
       />
       <div class={styles.activityActions}>
-        <button class="btnTxtOutline" onClick={back}>
-          Back
-        </button>
-        <button class="btnTxtOutline" onClick={submit}>
+        <button
+          class="btnTxtOutline"
+          disabled={isSubmitting()}
+          onClick={() => submit(text())}
+        >
           Done
         </button>
       </div>

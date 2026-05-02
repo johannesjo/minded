@@ -41,6 +41,8 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Self-discovery helps you understand your needs, desires, and motivations. It can support better decision-making and overall well-being.",
   [QuestionCategoryId.Insomnia]:
     "Understanding and addressing insomnia is crucial for your physical health and mental well-being. Good sleep is essential for cognitive function, mood regulation, and overall health.",
+  [QuestionCategoryId.SleepWindDown]:
+    "Writing down loose thoughts before sleep can reduce the need to keep them in working memory and make it easier to leave the day alone for the night.",
   [QuestionCategoryId.XEnergyLevelToday]:
     "Tracking your energy level can help you notice patterns (sleep, workload, habits) and plan demanding tasks for times when you tend to feel best.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:

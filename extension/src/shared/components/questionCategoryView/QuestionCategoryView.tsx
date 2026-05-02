@@ -35,6 +35,9 @@ export const QuestionCategoryView: (props: {
   }
 
   const QUESTION_CATEGORY = QUESTION_CATEGORIES[questionCategoryId];
+  const isAnswerListCategory = () =>
+    !!QUESTION_CATEGORY.questions?.length ||
+    questionCategoryId === QuestionCategoryId.SleepWindDown;
 
   onMount(() => {
     getSyncData().then((syncData) => {
@@ -105,7 +108,7 @@ export const QuestionCategoryView: (props: {
         </Switch>
       )}
 
-      {QUESTION_CATEGORY.questions?.length && (
+      {isAnswerListCategory() && (
         <div class={styles.answers}>
           {/*<div class="h3">Your Answers</div>*/}
           <AnswerListEditable

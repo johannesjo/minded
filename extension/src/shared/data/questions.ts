@@ -707,8 +707,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.SleepWindDown]: {
-    dashboardTxt: "Sleep Wind-Down",
-    isSkipOnDashboard: true,
+    dashboardTxt: "Wind-Down Brain Dump",
     limitTo: ["MobileApp"],
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
@@ -746,6 +745,7 @@ export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.HealthierBrowsingHabits,
   QuestionCategoryId.WhyReduceAppUsage,
   QuestionCategoryId.WhyReduceBrowsing,
+  QuestionCategoryId.SleepWindDown,
 ];
 
 export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
