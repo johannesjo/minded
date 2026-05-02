@@ -150,5 +150,7 @@ export enum QID {
   SD24 = "SD24",
   SD25 = "SD25",
 
+  SWD1 = "SWD1",
+
   XP1 = "XP1",
 }

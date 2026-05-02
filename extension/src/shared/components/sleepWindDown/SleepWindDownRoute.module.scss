@@ -117,69 +117,49 @@
   }
 }
 
-.brainDumpTextarea {
-  @include formInput();
-  width: 100%;
-  display: block;
-  resize: none;
-  font-size: 16px;
-  line-height: 1.5;
-  padding: 12px;
-  font-family: inherit;
-  height: auto;
-  min-height: 180px;
+.brainDumpInteraction {
+  text-align: center;
 }
 
-.goodnight {
+.goodnightGesture {
+  --background-gradient: linear-gradient(175deg, #101b3f, #1a2455, #25305d);
+  --bg-transition-sunset-top: #050b1d;
+  --bg-transition-sunset-bottom: #101b3f;
+  --bg-transition-bluesky-top: #050b1d;
+  --bg-transition-bluesky-bottom: #101b3f;
+  --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
+  --c-fg: rgba(255, 255, 255, 0.86);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.goodnightContent {
+  position: relative;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 64px 16px;
-  gap: 24px;
+  gap: 12px;
+  color: var(--c-fg-full-emphasis);
 }
 
-.sparkles {
-  font-size: 4em;
-  letter-spacing: 0.2em;
-  animation: twinkle 3s ease-in-out infinite;
+.moonContainer {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
 }
 
-.goodnightProgress {
-  width: 120px;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--dashboard-card-bg);
-  overflow: hidden;
-  margin-top: 8px;
-}
-
-.goodnightProgressBar {
-  width: 100%;
-  height: 100%;
-  background: var(--c-fg-full-emphasis);
-  opacity: 0.5;
-  transform-origin: left center;
-  animation: goodnightFill var(--goodnight-duration, 8000ms) linear forwards;
-}
-
-@keyframes goodnightFill {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
+.goodnightDone {
+  margin-top: 40px;
 }
 
 .activityActions {

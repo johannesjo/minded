@@ -30,6 +30,9 @@ interface SunProps {
   onCompletionStarted?: (started: boolean) => void;
   eventRoot?: ShadowRoot;
   tapThreshold?: number;
+  isTapEnabled?: boolean;
+  variant?: "sun" | "moon";
+  completionDirection?: "any" | "down";
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -49,6 +52,9 @@ export const Sun: Component<SunProps> = (props) => {
   const [getRotation, setRotation] = createSignal(0);
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 1 = warm (down)
+  const isTapEnabled = () => props.isTapEnabled ?? true;
+  const canCompleteDirection = (direction: "up" | "down"): boolean =>
+    (props.completionDirection ?? "any") === "any" || direction === "down";
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -304,10 +310,9 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Check if drag distance exceeded pixel threshold OR velocity is high enough for fling
       const dragDistance = Math.abs(offset.y);
-      const isDownwardSwipe = offset.y > 0 && dragDistance >= DRAG_THRESHOLD_PX;
       const isFling = velocity.magnitude >= FLING_VELOCITY_THRESHOLD;
 
-      if (isFling) {
+      if (isFling && canCompleteDirection(velocity.y > 0 ? "down" : "up")) {
         // Fling behavior - any direction triggers onFlingAway
         triggerHaptic("medium");
         playCompletionSound();
@@ -316,7 +321,10 @@ export const Sun: Component<SunProps> = (props) => {
         const flingDirection = velocity.y > 0 ? "down" : "up";
         props.onStartBackgroundAnimation?.(flingDirection);
         animateFling(velocity);
-      } else if (dragDistance >= DRAG_THRESHOLD_PX) {
+      } else if (
+        dragDistance >= DRAG_THRESHOLD_PX &&
+        canCompleteDirection(offset.y > 0 ? "down" : "up")
+      ) {
         // Slow drag behavior (non-fling) - triggers onDragComplete
         const direction = offset.y > 0 ? "down" : "up";
         triggerHapticPattern("completion"); // Satisfying heavy + light pattern
@@ -342,6 +350,7 @@ export const Sun: Component<SunProps> = (props) => {
     const handleTap = () => {
       // Prevent interactions once completion animation has started
       if (getIsCompletionStarted()) return;
+      if (!isTapEnabled()) return;
 
       const currentTapCount = getTapCount() + 1;
       setTapCount(currentTapCount);
@@ -619,7 +628,10 @@ export const Sun: Component<SunProps> = (props) => {
     <div
       ref={sunEl!}
       class="minded-sun"
-      classList={{ dragging: getIsDragging() }}
+      classList={{
+        dragging: getIsDragging(),
+        moon: props.variant === "moon",
+      }}
       style={{
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
@@ -633,14 +645,16 @@ export const Sun: Component<SunProps> = (props) => {
         "--glow-intensity": getGlowIntensity(),
       }}
     >
-      <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
-        {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (
-          <div
-            class="tap-dot"
-            classList={{ filled: i + 1 <= getTapCount() }}
-          ></div>
-        ))}
-      </div>
+      {isTapEnabled() && (
+        <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
+          {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (
+            <div
+              class="tap-dot"
+              classList={{ filled: i + 1 <= getTapCount() }}
+            ></div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

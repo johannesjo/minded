@@ -27,6 +27,36 @@
     transition: none; /* Instant update during drag */
   }
 
+  &.moon {
+    background: radial-gradient(
+      circle at 34% 30%,
+      #ffffff 0 18%,
+      #dfe8ff 58%,
+      #a9b8dc 100%
+    );
+    box-shadow:
+      0 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 calc(20px * var(--glow-intensity))
+        rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
+      0 0 calc(56px * var(--glow-intensity))
+        rgba(190, 210, 255, calc(0.3 * var(--glow-intensity))),
+      0 0 36px 4px rgba(190, 210, 255, 0.24);
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at 62% 42%,
+        rgba(55, 70, 118, 0.28) 0 7%,
+        transparent 8% 100%
+      );
+      opacity: 0.7;
+      pointer-events: none;
+    }
+  }
+
   .tap-indicator {
     position: absolute;
     top: 100%;

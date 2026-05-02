@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { createEffect, createSignal, JSX, onCleanup } from "solid-js";
+import { createEffect, createSignal, JSX, onCleanup, untrack } from "solid-js";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
 import {
@@ -20,6 +20,9 @@ export const Question: (props: {
   onSkip: () => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
   onCancelCountdown: () => void;
+  initialValue?: string;
+  onValueChange?: (val: string) => void;
+  maxLength?: number;
 }) => JSX.Element = (props) => {
   // const [getIsInputDisabled, setIsInputDisabled] = createSignal(false);
   const [getQuestion, setQuestion] = createSignal(props.initialQuestion);
@@ -39,7 +42,8 @@ export const Question: (props: {
 
   createEffect(() => {
     const q = getQuestion();
-    setValue(q.prompt ? q.prompt + " " : "");
+    const initialValue = untrack(() => props.initialValue) ?? "";
+    setValue(q.prompt ? q.prompt + " " : initialValue);
   });
 
   const formatQuestionText = (txt: string): string => {
@@ -136,9 +140,10 @@ export const Question: (props: {
           <InputWithSend
             onCancelCountdown={props.onCancelCountdown}
             value={getValue()}
-            maxLength={500}
+            maxLength={props.maxLength ?? 500}
             isAutoFocus={!IS_ANDROID}
             setRef={setInpEl}
+            onInput={(val) => props.onValueChange?.(val)}
             onSubmit={submitAnswer}
           />
         </div>

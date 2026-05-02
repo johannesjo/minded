@@ -10,6 +10,7 @@ export const InputWithSend = (props: {
   setRef?: (el: HTMLTextAreaElement) => void;
   maxLength?: number;
   onSubmit: (val: string) => Promise<void>;
+  onInput?: (val: string) => void;
   onCancelCountdown?: () => void;
 }): JSX.Element => {
   let inpEl: HTMLTextAreaElement;
@@ -85,6 +86,7 @@ export const InputWithSend = (props: {
         maxlength={props.maxLength}
         rows={3}
         placeholder="Type your response..."
+        onInput={(ev) => props.onInput?.(ev.currentTarget.value)}
       />
       <button
         class="send-button"
