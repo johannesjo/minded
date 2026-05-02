@@ -2,6 +2,7 @@ import { createSignal, For, JSX, onMount } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import {
   getSyncData,
+  updateSyncData,
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
@@ -27,13 +28,8 @@ const DAY_NAMES = [
 ];
 
 export const SleepWindDownSettings = (props: {
-  /**
-   * If true, persist each edit immediately. If false (the default), the
-   * parent is expected to stage changes via `onChange` and persist them
-   * itself (e.g. through a global Save button).
-   */
+  /** If true, persist each edit immediately. */
   autoSave?: boolean;
-  onChange?: (cfg: SleepWindDownCfg) => void;
 }): JSX.Element => {
   const navigate = useNavigate();
   const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
@@ -53,15 +49,18 @@ export const SleepWindDownSettings = (props: {
   });
 
   const persist = async (next: SleepWindDownCfg) => {
-    if (props.autoSave) {
-      await updateUserCfg({ sleepWindDown: next });
+    if (!props.autoSave) return;
+    await updateUserCfg({ sleepWindDown: next });
+    if (!next.enabled) {
+      // Clear any stale snooze deadline so re-enabling later doesn't
+      // suppress the next configured window.
+      await updateSyncData({ sleepWindDownSnoozeUntilTS: 0 });
     }
   };
 
   const apply = (mutate: (prev: SleepWindDownCfg) => SleepWindDownCfg) => {
     setCfg((prev) => {
       const next = mutate(prev);
-      props.onChange?.(next);
       persist(next);
       return next;
     });

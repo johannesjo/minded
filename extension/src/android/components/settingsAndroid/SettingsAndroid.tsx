@@ -15,11 +15,14 @@ export const SettingsAndroid = (props: {
   isRouting?: boolean;
   saveBtnTxt?: string;
   onSave?: () => void;
-  showButtons?: boolean;
-  onChange?: (apps: string[]) => void;
+  /**
+   * When true, each app toggle persists immediately and the save/back
+   * buttons are hidden. Used by the settings screen. Onboarding leaves
+   * this off so the bottom button can act as "save & continue".
+   */
+  autoSave?: boolean;
 }) => {
   let t0: NodeJS.Timeout | undefined;
-  // const navigate = useNavigate();
   const [getAvailableApps, setAvailableApps] = createSignal<
     { packageName: string; name: string }[]
   >([]);
@@ -45,13 +48,15 @@ export const SettingsAndroid = (props: {
     window.clearTimeout(t0);
   });
 
-  const handleToggleApp = (packageName: string) => {
+  const handleToggleApp = async (packageName: string) => {
     const isSelected = getSelectedApps().includes(packageName);
     const newSelected = isSelected
       ? getSelectedApps().filter((a) => a !== packageName)
       : [...getSelectedApps(), packageName];
     setSelectedApps(newSelected);
-    props.onChange?.(newSelected);
+    if (props.autoSave) {
+      await updateBlockedApps(newSelected);
+    }
   };
 
   const handleSave = async () => {
@@ -89,7 +94,7 @@ export const SettingsAndroid = (props: {
             </For>
           </div>
 
-          {props.showButtons !== false && (
+          {!props.autoSave && (
             <div>
               {props.isRouting && (
                 <button
