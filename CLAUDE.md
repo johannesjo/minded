@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 minded is a multi-platform mindfulness and productivity application designed to help users fight social media addiction, doom-scrolling, and procrastination. It runs on:
 - Browser Extension (Chrome/Firefox with Manifest V3)
 - Android App (Native Kotlin + WebView)
-- iOS App (Native Swift + Capacitor)
+- iOS App (Native Swift + Capacitor) — **not actively developed**: iOS cannot deliver real interventions due to platform restrictions on inspecting/blocking other apps, so new features should target Browser Extension and Android only. Don't spend effort updating iOS code paths unless explicitly asked.
 
 ## Essential Commands
 
