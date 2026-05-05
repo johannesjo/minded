@@ -103,6 +103,12 @@ export default defineConfig(({ mode }): UserConfig => {
                   "interaction",
                   "index.html",
                 ),
+                sleepWindDown: resolve(
+                  root,
+                  "android",
+                  "sleepWindDown",
+                  "index.html",
+                ),
               },
               output: {
                 entryFileNames: "src/[name]/index.js",

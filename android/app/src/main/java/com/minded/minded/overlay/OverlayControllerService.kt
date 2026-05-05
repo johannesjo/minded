@@ -78,6 +78,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private lateinit var littleSunOverlayWindow: LittleSunWindow
     private lateinit var smallMsgOverlayWindow: SmallMsgWindow
     private lateinit var successSunOverlayWindow: SuccessSunWindow
+    private lateinit var sleepWindDownOverlayWindow: SleepWindDownOverlayWindow
     private lateinit var sharedPreferenceService: SharedPreferenceService
 
     private val screenStateReceiver = object : BroadcastReceiver() {
@@ -184,6 +185,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         littleSunOverlayWindow = LittleSunWindow(this, sharedOverlayViewModel, windowManager)
         smallMsgOverlayWindow = SmallMsgWindow(this, sharedOverlayViewModel, windowManager)
         successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)
+        sleepWindDownOverlayWindow =
+            SleepWindDownOverlayWindow(this, sharedOverlayViewModel, windowManager)
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -304,11 +307,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun isAnyWindowShown(): Boolean {
-        return interactionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()
+        return interactionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown() || sleepWindDownOverlayWindow.isWindowShown()
     }
 
     private fun isNoWindowShown(): Boolean {
-        return !interactionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown()
+        return !interactionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown() && !sleepWindDownOverlayWindow.isWindowShown()
     }
 
     private fun showOverlay(
@@ -372,6 +375,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 OverlayName.SMALL_MSG_OVERLAY -> {
                     smallMsgOverlayWindow.showWindow()
                 }
+
+                OverlayName.SLEEP_WIND_DOWN_OVERLAY -> {
+                    if (appName != null) {
+                        sharedOverlayViewModel.resetAll(appName)
+                    }
+                    sharedOverlayViewModel.updateLastAppUsage()
+                    sleepWindDownOverlayWindow.showWindow()
+                    hideAllBut(OverlayName.SLEEP_WIND_DOWN_OVERLAY)
+                }
             }
             
             // Clear retry count on successful show
@@ -411,6 +423,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.SUCCESS_SUN_OVERLAY -> successSunOverlayWindow.hideWindow()
             OverlayName.LITTLE_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
+            OverlayName.SLEEP_WIND_DOWN_OVERLAY -> sleepWindDownOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
@@ -460,34 +473,27 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         val syncData = sharedPreferenceService.getSyncData()
-
-        // Wind-down: if the user is inside their configured bedtime window and hasn't
-        // dismissed/snoozed it, intervene on ANY non-launcher app — overrides blocked
-        // status, active session, daily budget, and rest-of-day. Bedtime > daytime rules.
-        if (isWindDownActive(syncData)) {
-            if (currentPackageName.contains("launcher") || currentPackageName.contains("home")) {
-                Log.v(logTag, "checkToShowOverlay() wind-down active, on launcher — hiding overlays")
-                hideAllBut()
-                return
-            }
-            if (isAnyWindowShown()) {
-                Log.v(logTag, "checkToShowOverlay() wind-down active, overlay already showing — skipping")
-                return
-            }
-            Log.v(
-                logTag,
-                "checkToShowOverlay() WIND-DOWN ACTIVE, showing fresh intervention for: $currentPackageName"
-            )
-            showOverlay(
-                OverlayName.INTERACTION_OVERLAY,
-                OverlayMode.INTERACTION_OVERLAY__FRESH,
-                currentPackageName
-            )
-            return
-        }
+        val windDownActive = isWindDownActive(syncData)
 
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
+
+        // Wind-down on blocked apps takes precedence over rest-of-day, session, and
+        // budget — bedtime rules win. Launchers/home aren't "blocked" so they fall
+        // through and just hide overlays as usual.
+        if (windDownActive &&
+            isBlockedPackage(currentPackageName) &&
+            !currentPackageName.contains("launcher") &&
+            !currentPackageName.contains("home")
+        ) {
+            if (sleepWindDownOverlayWindow.isWindowShown()) {
+                Log.v(logTag, "checkToShowOverlay() wind-down overlay already showing — skipping")
+            } else {
+                Log.v(logTag, "Wind-down active for blocked app, showing wind-down overlay: $currentPackageName")
+                showOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY, null, currentPackageName)
+            }
+            return
+        }
 
         val entryForCurrentApp = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
         val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
@@ -593,6 +599,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (exclude != OverlayName.SUCCESS_SUN_OVERLAY) hideOverlay(OverlayName.SUCCESS_SUN_OVERLAY);
         if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);
         if (exclude != OverlayName.LITTLE_SUN_OVERLAY) hideOverlay(OverlayName.LITTLE_SUN_OVERLAY);
+        if (exclude != OverlayName.SLEEP_WIND_DOWN_OVERLAY) hideOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY);
     }
 
 
@@ -766,7 +773,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         public enum class OverlayName {
-            INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY
+            INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY, SLEEP_WIND_DOWN_OVERLAY
         }
 
         public enum class OverlayMode {
