@@ -11,11 +11,15 @@ const SleepWindDownAndroid = (): JSX.Element => {
     addWrapperClasses();
   });
 
-  // All exit paths (skip / snooze / done) hand the user back to a non-blocked
-  // surface. closeCurrentApp goes to minded itself first and then hides the
-  // overlay so the user doesn't briefly see the blocked app underneath.
-  const onDismiss = (_reason: SleepWindDownDismissReason) => {
-    androidInterface.closeCurrentApp();
+  // Snooze means "leave me alone for 30 min" — keep the user in the blocked
+  // app. Skip / done end the wind-down for the night and bounce the user back
+  // to minded so they don't sit on the blocked app with the overlay torn down.
+  const onDismiss = (reason: SleepWindDownDismissReason) => {
+    if (reason === "snooze") {
+      androidInterface.hideWindow();
+    } else {
+      androidInterface.closeCurrentApp();
+    }
   };
 
   return (

@@ -88,6 +88,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     Log.d(logTag, "Screen turned OFF - saving overlay state")
                     // Save which overlay was showing
                     overlayStateBeforeScreenOff = when {
+                        sleepWindDownOverlayWindow.isWindowShown() -> OverlayName.SLEEP_WIND_DOWN_OVERLAY
                         littleSunOverlayWindow.isWindowShown() -> OverlayName.LITTLE_SUN_OVERLAY
                         interactionOverlayWindow.isWindowShown() -> OverlayName.INTERACTION_OVERLAY
                         else -> null
@@ -438,6 +439,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     internal fun getSharedPreferenceService(): SharedPreferenceService = sharedPreferenceService
 
+    /**
+     * True when the user is inside their configured bedtime window AND the
+     * snooze deadline is still in the future. Distinct from [isWindDownActive],
+     * which excludes the snooze period — we use this one to suppress *all*
+     * overlays on blocked apps during the snooze, so "Snooze 30 min" really
+     * means 30 minutes of quiet rather than swapping wind-down for the regular
+     * intervention.
+     */
+    private fun isWindDownSnoozed(syncData: SyncData): Boolean {
+        val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return false
+        if (syncData.sleepWindDownDismissedNightId == nightId) return false
+        return syncData.sleepWindDownSnoozeUntilTS > System.currentTimeMillis()
+    }
+
     private fun isWindDownActive(syncData: SyncData): Boolean {
         val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return false
         if (syncData.sleepWindDownDismissedNightId == nightId) return false
@@ -474,24 +489,34 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         val syncData = sharedPreferenceService.getSyncData()
         val windDownActive = isWindDownActive(syncData)
+        val windDownSnoozed = isWindDownSnoozed(syncData)
 
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
 
+        val isLauncherOrHome = currentPackageName.contains("launcher") ||
+            currentPackageName.contains("home")
+
         // Wind-down on blocked apps takes precedence over rest-of-day, session, and
         // budget — bedtime rules win. Launchers/home aren't "blocked" so they fall
         // through and just hide overlays as usual.
-        if (windDownActive &&
-            isBlockedPackage(currentPackageName) &&
-            !currentPackageName.contains("launcher") &&
-            !currentPackageName.contains("home")
-        ) {
+        if (windDownActive && isBlockedPackage(currentPackageName) && !isLauncherOrHome) {
             if (sleepWindDownOverlayWindow.isWindowShown()) {
                 Log.v(logTag, "checkToShowOverlay() wind-down overlay already showing — skipping")
             } else {
                 Log.v(logTag, "Wind-down active for blocked app, showing wind-down overlay: $currentPackageName")
                 showOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY, null, currentPackageName)
             }
+            return
+        }
+
+        // Wind-down snoozed on a blocked app: hide all overlays and let the user
+        // stay in the app for the snooze duration. Without this they'd get the
+        // regular intervention immediately, which makes "Snooze 30 min" feel
+        // identical to "Skip tonight" plus an extra interruption.
+        if (windDownSnoozed && isBlockedPackage(currentPackageName) && !isLauncherOrHome) {
+            Log.v(logTag, "Wind-down snoozed, suppressing overlays on blocked app: $currentPackageName")
+            hideAllBut()
             return
         }
 
