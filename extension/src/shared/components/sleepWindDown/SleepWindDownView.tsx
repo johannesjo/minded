@@ -410,7 +410,7 @@ export const SleepWindDownView = (
                         setView("menu");
                       }}
                     >
-                      Done
+                      Back to wind-down
                     </button>
                   </div>
                 </div>
@@ -427,7 +427,7 @@ export const SleepWindDownView = (
                         setView("menu");
                       }}
                     >
-                      Done
+                      Back to wind-down
                     </button>
                   </div>
                 </div>
@@ -444,7 +444,7 @@ export const SleepWindDownView = (
                         setView("menu");
                       }}
                     >
-                      Done
+                      Back to wind-down
                     </button>
                   </div>
                 </div>
@@ -466,7 +466,7 @@ export const SleepWindDownView = (
                         setView("menu");
                       }}
                     >
-                      Done
+                      Back to wind-down
                     </button>
                   </div>
                 </div>

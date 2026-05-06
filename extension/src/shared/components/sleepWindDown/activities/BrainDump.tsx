@@ -118,7 +118,7 @@ export const BrainDump = (props: {
           disabled={isSubmitting()}
           onClick={() => submit(text())}
         >
-          Done
+          Back to wind-down
         </button>
       </div>
     </div>
