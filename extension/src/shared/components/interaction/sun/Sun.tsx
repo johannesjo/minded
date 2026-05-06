@@ -167,7 +167,7 @@ export const Sun: Component<SunProps> = (props) => {
         cancelLongPressTimer();
       }
 
-      if (moveDistance > 2 && !isDragIntent) {
+      if (moveDistance > 10 && !isDragIntent) {
         isDragIntent = true;
       }
 
@@ -294,8 +294,8 @@ export const Sun: Component<SunProps> = (props) => {
       if (
         !wasDragIntent &&
         duration < 300 &&
-        Math.abs(offset.x) < 2 &&
-        Math.abs(offset.y) < 2
+        Math.abs(offset.x) < 10 &&
+        Math.abs(offset.y) < 10
       ) {
         handleTap();
         return;
