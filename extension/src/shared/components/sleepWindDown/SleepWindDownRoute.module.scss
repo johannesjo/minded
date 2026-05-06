@@ -58,6 +58,14 @@
   width: 100%;
   max-width: 400px;
   margin: 16px 0 24px;
+
+  // btnToggleSelect bakes in 8/16px margins for use in toggle rows. In a
+  // vertical list those margins stack on top of the flex gap, making the
+  // items feel disconnected — strip the margin so the gap is the only
+  // spacing between cards.
+  > button {
+    margin: 0;
+  }
 }
 
 .menuFooter {
