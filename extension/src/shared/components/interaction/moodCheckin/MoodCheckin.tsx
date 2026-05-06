@@ -24,8 +24,15 @@ export const MoodCheckin: (props: {
 
   onCleanup(() => {
     const pending = getSaveDelay();
-    if (pending) {
-      clearTimeout(pending);
+    if (!pending) return;
+    clearTimeout(pending);
+    // The 3s timer is a window for the user to add a note, not to undo
+    // their pick. If we're unmounting with a pick still pending, flush the
+    // save so the user's choice isn't dropped (e.g. when they hit a "Done"
+    // button before the timer fires).
+    const mood = getSelectedMood();
+    if (mood) {
+      void saveMoodCheckIn(mood, getAdditionalTxt() || undefined);
     }
   });
 

@@ -7,8 +7,15 @@ export const SleepWindDownRoute = (): JSX.Element => {
   const [searchParams] = useSearchParams();
   const isPreview = searchParams.preview === "1";
 
+  // Preview is launched from settings ("Try wind-down now"). When the user
+  // exits, return them where they came from rather than to the dashboard.
+  const dismissTo = isPreview ? "/settings" : "/";
+
   return (
-    <SleepWindDownView isPreview={isPreview} onDismiss={() => navigate("/")} />
+    <SleepWindDownView
+      isPreview={isPreview}
+      onDismiss={() => navigate(dismissTo)}
+    />
   );
 };
 

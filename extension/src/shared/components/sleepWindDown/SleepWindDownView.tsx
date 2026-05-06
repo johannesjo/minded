@@ -402,6 +402,17 @@ export const SleepWindDownView = (
                     onSkip={() => undefined}
                     onCancelCountdown={() => undefined}
                   />
+                  <div class={styles.activityActions}>
+                    <button
+                      class="btnTxtOutline"
+                      onClick={() => {
+                        markComplete("mood");
+                        setView("menu");
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
                 </div>
               </Match>
 
