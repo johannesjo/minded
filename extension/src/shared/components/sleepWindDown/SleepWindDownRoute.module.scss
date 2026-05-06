@@ -14,7 +14,11 @@
 .viewPane {
   width: 100%;
   animation: sleepWindDownViewFade 260ms ease-out both;
-  will-change: opacity, transform;
+  // Intentionally NOT setting `will-change: transform` and the keyframe
+  // intentionally has no transform — both create a containing block, which
+  // would trap the goodnight gesture's `position: fixed; inset: 0` against
+  // .viewPane's collapsed box and render the screen as a tiny slit.
+  will-change: opacity;
 }
 
 .center {
@@ -89,9 +93,13 @@
 }
 
 .activityCheck {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
-  margin-right: 8px;
+  pointer-events: none;
 }
 
 .calmRead {
@@ -172,11 +180,9 @@
 @keyframes sleepWindDownViewFade {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

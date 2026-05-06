@@ -10,20 +10,23 @@ import { QID } from "@src/shared/data/questionId";
 // @ts-ignore
 import styles from "../SleepWindDownRoute.module.scss";
 
-const pickPrompt = (): string =>
-  BRAIN_DUMP_PROMPTS[Math.floor(Math.random() * BRAIN_DUMP_PROMPTS.length)];
+const pickPrompt = (prompts: string[]): string =>
+  prompts[Math.floor(Math.random() * prompts.length)];
 
 const DRAFT_DEBOUNCE_MS = 600;
 const BRAIN_DUMP_MAX_LENGTH = 2000;
 
 export const BrainDump = (props: {
   initialText?: string;
+  prompts?: string[];
   onDraftChange?: (text: string) => void;
   onBeforeSubmit?: () => void | Promise<void>;
   onDone: () => void | Promise<void>;
 }): JSX.Element => {
   // Initialize lazily so there's no flash of prompt[0] before the random pick.
-  const [prompt] = createSignal(pickPrompt());
+  const [prompt] = createSignal(
+    pickPrompt(props.prompts ?? BRAIN_DUMP_PROMPTS),
+  );
   const [text, setText] = createSignal(props.initialText ?? "");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const question: QuestionForPrompt = {

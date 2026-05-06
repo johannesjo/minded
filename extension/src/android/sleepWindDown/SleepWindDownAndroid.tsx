@@ -12,13 +12,18 @@ const SleepWindDownAndroid = (): JSX.Element => {
   });
 
   // Snooze means "leave me alone for 30 min" — keep the user in the blocked
-  // app. Skip / done end the wind-down for the night and bounce the user back
-  // to minded so they don't sit on the blocked app with the overlay torn down.
+  // app. Skip closes the overlay and bounces back to minded. Done means the
+  // user completed the wind-down gesture (drag/fling the moon down) — at
+  // that point they're going to bed, so close the overlay and lock the
+  // screen so the phone is dark when they put it down.
   const onDismiss = (reason: SleepWindDownDismissReason) => {
     if (reason === "snooze") {
       androidInterface.hideWindow();
-    } else {
-      androidInterface.closeCurrentApp();
+      return;
+    }
+    androidInterface.closeCurrentApp();
+    if (reason === "done") {
+      androidInterface.lockScreen();
     }
   };
 

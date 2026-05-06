@@ -11,6 +11,7 @@ interface InteractionWindowJavaScriptInterface {
   onSkip: () => void;
   hideWindow: () => void;
   closeCurrentApp: () => void;
+  lockScreen: () => void;
   requestFocusAndShowKeyboard: () => void;
   getAllApps: () => string;
   getMissingCapabilities: () => string;

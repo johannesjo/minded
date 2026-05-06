@@ -41,20 +41,6 @@
       0 0 calc(56px * var(--glow-intensity))
         rgba(190, 210, 255, calc(0.3 * var(--glow-intensity))),
       0 0 36px 4px rgba(190, 210, 255, 0.24);
-
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: radial-gradient(
-        circle at 62% 42%,
-        rgba(55, 70, 118, 0.28) 0 7%,
-        transparent 8% 100%
-      );
-      opacity: 0.7;
-      pointer-events: none;
-    }
   }
 
   .tap-indicator {

@@ -14,9 +14,9 @@ const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
 
 export const getSyncDataN = (): Promise<SyncData> => {
   if (bro.runtime?.id) {
-    return bro.storage.sync.get().then((syncData) =>
-      mergeSyncDataWithDefaults(syncData),
-    );
+    return bro.storage.sync
+      .get()
+      .then((syncData) => mergeSyncDataWithDefaults(syncData));
   } else {
     throw new Error(
       "Extension was reloaded, please reload tab for it to work here again",

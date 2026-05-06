@@ -80,5 +80,19 @@ export const isInsideWindow = (
 
 export const SNOOZE_MINUTES = 30;
 
+/**
+ * Maps a `nightId` string ("YYYY-MM-DD") to a stable index in `[0, length)`.
+ * Used to pick rotating content (e.g. calm-read passage) deterministically per
+ * night — same passage all night, different across nights.
+ *
+ * Returns 0 for empty inputs or zero-length pools.
+ */
+export const nightIdToIndex = (nightId: string, length: number): number => {
+  if (length <= 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < nightId.length; i++) sum += nightId.charCodeAt(i);
+  return sum % length;
+};
+
 /** Empty range used when the user has no schedule yet but enables a day. */
 export const DEFAULT_DAY_RANGE: TimeRange = { start: "22:00", end: "07:00" };

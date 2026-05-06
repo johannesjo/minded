@@ -141,6 +141,9 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     sleepWindDownProgressNightId: "",
     sleepWindDownCompleted: [],
     sleepWindDownBrainDumpDraft: "",
+    sleepWindDownGratitudeDraft: "",
+    sleepWindDownTomorrowDraft: "",
+    sleepWindDownMood: null,
   };
 
   return {

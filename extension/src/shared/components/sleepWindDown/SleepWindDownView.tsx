@@ -4,12 +4,24 @@ import {
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
-import { resolveNightId, SNOOZE_MINUTES } from "./sleepWindDown.util";
+import { SyncData } from "@src/dataInterface/syncData";
+import {
+  nightIdToIndex,
+  resolveNightId,
+  SNOOZE_MINUTES,
+} from "./sleepWindDown.util";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
+import { SleepMoodCheckin } from "./activities/SleepMoodCheckin";
+import { SleepMoodVal } from "./activities/sleepMood.const";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import { CALM_READ_TEXT, SLEEP_TIPS } from "@src/shared/data/sleepContent";
+import {
+  CALM_READ_PASSAGES,
+  GRATITUDE_PROMPTS,
+  SLEEP_TIPS,
+  TOMORROW_PROMPTS,
+} from "@src/shared/data/sleepContent";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 // @ts-ignore
@@ -19,15 +31,33 @@ type View =
   | "prompt"
   | "menu"
   | "brainDump"
+  | "gratitude"
+  | "tomorrow"
+  | "mood"
   | "breathing"
   | "calmRead"
   | "tips"
   | "goodnight";
 
-type ActivityKey = "brainDump" | "breathing" | "calmRead" | "tips";
+type ActivityKey =
+  | "brainDump"
+  | "gratitude"
+  | "tomorrow"
+  | "mood"
+  | "breathing"
+  | "calmRead"
+  | "tips";
+
+type DraftField =
+  | "sleepWindDownBrainDumpDraft"
+  | "sleepWindDownGratitudeDraft"
+  | "sleepWindDownTomorrowDraft";
 
 const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
   { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
+  { key: "gratitude", label: "Gratitude / reflection", view: "gratitude" },
+  { key: "tomorrow", label: "Tomorrow's top 3", view: "tomorrow" },
+  { key: "mood", label: "Mood check-in", view: "mood" },
   { key: "breathing", label: "Breathing exercise", view: "breathing" },
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
 ];
@@ -56,10 +86,22 @@ export const SleepWindDownView = (
   const [view, setView] = createSignal<View>("prompt");
   const [completed, setCompleted] = createSignal<Set<ActivityKey>>(new Set());
   const [brainDumpDraft, setBrainDumpDraft] = createSignal("");
+  const [gratitudeDraft, setGratitudeDraft] = createSignal("");
+  const [tomorrowDraft, setTomorrowDraft] = createSignal("");
   const [hydrated, setHydrated] = createSignal(false);
 
   let currentNightId: string | null = null;
-  let draftPersistPromise: Promise<void> = Promise.resolve();
+  // Serialize ALL writes through this chain — `updateSyncData` is a full-blob
+  // read-modify-write, so concurrent writes silently drop each other's deltas.
+  let pendingWritePromise: Promise<void> = Promise.resolve();
+
+  const enqueueWrite = (fn: () => Promise<void>): Promise<void> => {
+    const next = pendingWritePromise.catch(() => undefined).then(fn);
+    pendingWritePromise = next.catch((e) => {
+      console.warn("Failed to persist sleep wind-down state", e);
+    });
+    return next;
+  };
 
   onMount(async () => {
     const sd = await getSyncData();
@@ -68,17 +110,29 @@ export const SleepWindDownView = (
     if (currentNightId && sd.sleepWindDownProgressNightId === currentNightId) {
       setCompleted(new Set(sd.sleepWindDownCompleted as ActivityKey[]));
       setBrainDumpDraft(sd.sleepWindDownBrainDumpDraft ?? "");
+      setGratitudeDraft(sd.sleepWindDownGratitudeDraft ?? "");
+      setTomorrowDraft(sd.sleepWindDownTomorrowDraft ?? "");
     }
     setHydrated(true);
   });
 
-  const persistCompleted = async (next: Set<ActivityKey>) => {
-    if (props.isPreview) return;
-    const nightId = currentNightId ?? (await resolveNightIdFromStorage());
-    currentNightId = nightId;
-    await updateSyncData({
-      sleepWindDownProgressNightId: nightId,
-      sleepWindDownCompleted: Array.from(next),
+  const calmReadPassage = (): string => {
+    // hydrated() is read so this re-runs once the night id is known; before
+    // that it falls back to today's ISO date, which is also stable.
+    hydrated();
+    const nid = currentNightId ?? getIsoDate();
+    return CALM_READ_PASSAGES[nightIdToIndex(nid, CALM_READ_PASSAGES.length)];
+  };
+
+  const persistCompleted = (next: Set<ActivityKey>): Promise<void> => {
+    if (props.isPreview) return Promise.resolve();
+    return enqueueWrite(async () => {
+      const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+      currentNightId = nightId;
+      await updateSyncData({
+        sleepWindDownProgressNightId: nightId,
+        sleepWindDownCompleted: Array.from(next),
+      });
     });
   };
 
@@ -91,41 +145,53 @@ export const SleepWindDownView = (
     });
   };
 
-  const persistDraft = (text: string) => {
+  const persistDraft = (field: DraftField, text: string): void => {
     if (props.isPreview) return;
-    const nextPersist = draftPersistPromise
-      .catch(() => undefined)
-      .then(async () => {
-        const nightId = currentNightId ?? (await resolveNightIdFromStorage());
-        currentNightId = nightId;
-        await updateSyncData({
-          sleepWindDownProgressNightId: nightId,
-          sleepWindDownBrainDumpDraft: text,
-        });
-      });
-    draftPersistPromise = nextPersist.catch((e) => {
-      console.warn("Failed to persist sleep wind-down draft", e);
-    });
-  };
-
-  const completeBrainDump = async () => {
-    const next = new Set(completed());
-    next.add("brainDump");
-    setCompleted(next);
-    setBrainDumpDraft("");
-
-    if (!props.isPreview) {
-      await draftPersistPromise;
+    enqueueWrite(async () => {
       const nightId = currentNightId ?? (await resolveNightIdFromStorage());
       currentNightId = nightId;
       await updateSyncData({
         sleepWindDownProgressNightId: nightId,
-        sleepWindDownCompleted: Array.from(next),
-        sleepWindDownBrainDumpDraft: "",
+        [field]: text,
+      } as Partial<SyncData>);
+    });
+  };
+
+  const completePromptActivity = async (
+    key: ActivityKey,
+    draftField: DraftField,
+    clearLocalDraft: () => void,
+  ) => {
+    const next = new Set(completed());
+    next.add(key);
+    setCompleted(next);
+    clearLocalDraft();
+
+    if (!props.isPreview) {
+      await enqueueWrite(async () => {
+        const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+        currentNightId = nightId;
+        await updateSyncData({
+          sleepWindDownProgressNightId: nightId,
+          sleepWindDownCompleted: Array.from(next),
+          [draftField]: "",
+        } as Partial<SyncData>);
       });
     }
 
     setView("menu");
+  };
+
+  const persistMood = (val: SleepMoodVal): Promise<void> => {
+    if (props.isPreview) return Promise.resolve();
+    return enqueueWrite(async () => {
+      const nightId = currentNightId ?? (await resolveNightIdFromStorage());
+      currentNightId = nightId;
+      await updateSyncData({
+        sleepWindDownProgressNightId: nightId,
+        sleepWindDownMood: val,
+      });
+    });
   };
 
   const dismissForTonight = async () => {
@@ -133,13 +199,18 @@ export const SleepWindDownView = (
       props.onDismiss("done");
       return;
     }
-    const nightId = await resolveNightIdFromStorage();
-    await updateSyncData({
-      sleepWindDownDismissedNightId: nightId,
-      sleepWindDownProgressNightId: "",
-      sleepWindDownCompleted: [],
-      sleepWindDownBrainDumpDraft: "",
-      sleepWindDownSnoozeUntilTS: 0,
+    await enqueueWrite(async () => {
+      const nightId = await resolveNightIdFromStorage();
+      await updateSyncData({
+        sleepWindDownDismissedNightId: nightId,
+        sleepWindDownProgressNightId: "",
+        sleepWindDownCompleted: [],
+        sleepWindDownBrainDumpDraft: "",
+        sleepWindDownGratitudeDraft: "",
+        sleepWindDownTomorrowDraft: "",
+        sleepWindDownMood: null,
+        sleepWindDownSnoozeUntilTS: 0,
+      });
     });
     props.onDismiss("done");
   };
@@ -149,13 +220,18 @@ export const SleepWindDownView = (
       props.onDismiss("skip");
       return;
     }
-    const nightId = await resolveNightIdFromStorage();
-    await updateSyncData({
-      sleepWindDownDismissedNightId: nightId,
-      sleepWindDownProgressNightId: "",
-      sleepWindDownCompleted: [],
-      sleepWindDownBrainDumpDraft: "",
-      sleepWindDownSnoozeUntilTS: 0,
+    await enqueueWrite(async () => {
+      const nightId = await resolveNightIdFromStorage();
+      await updateSyncData({
+        sleepWindDownDismissedNightId: nightId,
+        sleepWindDownProgressNightId: "",
+        sleepWindDownCompleted: [],
+        sleepWindDownBrainDumpDraft: "",
+        sleepWindDownGratitudeDraft: "",
+        sleepWindDownTomorrowDraft: "",
+        sleepWindDownMood: null,
+        sleepWindDownSnoozeUntilTS: 0,
+      });
     });
     props.onDismiss("skip");
   };
@@ -165,8 +241,10 @@ export const SleepWindDownView = (
       props.onDismiss("snooze");
       return;
     }
-    await updateSyncData({
-      sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
+    await enqueueWrite(async () => {
+      await updateSyncData({
+        sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
+      });
     });
     props.onDismiss("snooze");
   };
@@ -271,10 +349,64 @@ export const SleepWindDownView = (
                   initialText={brainDumpDraft()}
                   onDraftChange={(t) => {
                     setBrainDumpDraft(t);
-                    persistDraft(t);
+                    persistDraft("sleepWindDownBrainDumpDraft", t);
                   }}
-                  onBeforeSubmit={() => draftPersistPromise}
-                  onDone={completeBrainDump}
+                  onBeforeSubmit={() => pendingWritePromise}
+                  onDone={() =>
+                    completePromptActivity(
+                      "brainDump",
+                      "sleepWindDownBrainDumpDraft",
+                      () => setBrainDumpDraft(""),
+                    )
+                  }
+                />
+              </Match>
+
+              <Match when={currentView === "gratitude"}>
+                <BrainDump
+                  initialText={gratitudeDraft()}
+                  prompts={GRATITUDE_PROMPTS}
+                  onDraftChange={(t) => {
+                    setGratitudeDraft(t);
+                    persistDraft("sleepWindDownGratitudeDraft", t);
+                  }}
+                  onBeforeSubmit={() => pendingWritePromise}
+                  onDone={() =>
+                    completePromptActivity(
+                      "gratitude",
+                      "sleepWindDownGratitudeDraft",
+                      () => setGratitudeDraft(""),
+                    )
+                  }
+                />
+              </Match>
+
+              <Match when={currentView === "tomorrow"}>
+                <BrainDump
+                  initialText={tomorrowDraft()}
+                  prompts={TOMORROW_PROMPTS}
+                  onDraftChange={(t) => {
+                    setTomorrowDraft(t);
+                    persistDraft("sleepWindDownTomorrowDraft", t);
+                  }}
+                  onBeforeSubmit={() => pendingWritePromise}
+                  onDone={() =>
+                    completePromptActivity(
+                      "tomorrow",
+                      "sleepWindDownTomorrowDraft",
+                      () => setTomorrowDraft(""),
+                    )
+                  }
+                />
+              </Match>
+
+              <Match when={currentView === "mood"}>
+                <SleepMoodCheckin
+                  onSelect={persistMood}
+                  onDone={() => {
+                    markComplete("mood");
+                    setView("menu");
+                  }}
                 />
               </Match>
 
@@ -297,7 +429,7 @@ export const SleepWindDownView = (
 
               <Match when={currentView === "calmRead"}>
                 <div class={styles.activityBody}>
-                  <p class={styles.calmRead}>{CALM_READ_TEXT}</p>
+                  <p class={styles.calmRead}>{calmReadPassage()}</p>
                   <div class={styles.activityActions}>
                     <button
                       class="btnTxtOutline"
@@ -361,12 +493,6 @@ export const SleepWindDownView = (
                         }}
                       />
                     </div>
-                    <button
-                      class={`btnTxtOutline ${styles.goodnightDone}`}
-                      onClick={dismissForTonight}
-                    >
-                      Done
-                    </button>
                   </div>
                 </div>
               </Match>

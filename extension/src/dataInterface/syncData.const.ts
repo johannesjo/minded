@@ -104,6 +104,9 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   sleepWindDownProgressNightId: "",
   sleepWindDownCompleted: [],
   sleepWindDownBrainDumpDraft: "",
+  sleepWindDownGratitudeDraft: "",
+  sleepWindDownTomorrowDraft: "",
+  sleepWindDownMood: null,
 };
 
 export const STATIC_CFG: StaticCfg = {

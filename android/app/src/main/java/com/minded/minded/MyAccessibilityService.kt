@@ -203,12 +203,29 @@ class MyAccessibilityService : AccessibilityService() {
         } else {
             registerReceiver(homeActionReceiver, filter)
         }
+
+        // Register broadcast receiver for screen-lock action — used by the
+        // wind-down completion gesture to put the phone to sleep.
+        val lockFilter = android.content.IntentFilter("com.minded.ACTION_LOCK_SCREEN")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(lockScreenReceiver, lockFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(lockScreenReceiver, lockFilter)
+        }
     }
 
     private val homeActionReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, "Received ACTION_GO_HOME broadcast")
             performGlobalAction(GLOBAL_ACTION_HOME)
+        }
+    }
+
+    private val lockScreenReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d(TAG, "Received ACTION_LOCK_SCREEN broadcast")
+            // GLOBAL_ACTION_LOCK_SCREEN is API 28+; minSdk is 29 so always present.
+            performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
         }
     }
 
@@ -238,6 +255,12 @@ class MyAccessibilityService : AccessibilityService() {
             unregisterReceiver(homeActionReceiver)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to unregister receiver", e)
+        }
+
+        try {
+            unregisterReceiver(lockScreenReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister lockScreenReceiver", e)
         }
     }
 

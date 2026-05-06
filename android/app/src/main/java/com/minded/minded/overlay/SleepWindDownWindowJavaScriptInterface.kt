@@ -1,6 +1,7 @@
 package com.minded.minded.overlay
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -39,6 +40,21 @@ class SleepWindDownWindowJavaScriptInterface(
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             win.hideWindow()
         }, 300)
+    }
+
+    /**
+     * Locks the device screen via the accessibility service's
+     * GLOBAL_ACTION_LOCK_SCREEN. Used when the user completes the wind-down
+     * gesture (drag/fling the moon down) — at that point they're putting the
+     * phone down to sleep, so locking immediately is the right behavior.
+     */
+    @JavascriptInterface
+    fun lockScreen() {
+        Log.v(logTag, "lockScreen() - completing wind-down")
+        val intent = Intent("com.minded.ACTION_LOCK_SCREEN").apply {
+            setPackage(ctrlSvc.packageName)
+        }
+        ctrlSvc.sendBroadcast(intent)
     }
 
     private val vibrator: Vibrator by lazy {
