@@ -10,6 +10,16 @@
   min-width: 134px;
   font-size: var(--fz-s) !important;
 
+  // On narrow phones the fixed 134px width forces the day-row to overflow
+  // (checkbox + label + two time inputs + "to" separator > viewport). Let
+  // the input shrink to fit; the native time picker still opens fine.
+  @include onSmallScreens() {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 4px 8px;
+  }
+
   &:focus {
     transform: scale(1.02);
     outline: none;

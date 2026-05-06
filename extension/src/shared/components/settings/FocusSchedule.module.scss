@@ -1,3 +1,5 @@
+@import "@src/styles/mixins/mixins";
+
 .FocusSchedule {
   max-width: 600px;
   margin: auto;
@@ -34,6 +36,14 @@
   &.isDisabled {
     opacity: 0.5;
   }
+
+  // On narrow phones the time inputs don't fit on the same row as the
+  // checkbox + day name. Wrap them to a second line so each piece keeps
+  // a comfortable size.
+  @include onSmallScreens() {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
 }
 
 .dayName {
@@ -45,6 +55,11 @@
   .isDisabled & {
     cursor: not-allowed;
   }
+
+  @include onSmallScreens() {
+    min-width: 0;
+    flex: 1;
+  }
 }
 
 .timeInputs {
@@ -53,6 +68,12 @@
   gap: 8px;
   flex: 1;
   justify-content: flex-end;
+  min-width: 0;
+
+  @include onSmallScreens() {
+    flex-basis: 100%;
+    justify-content: stretch;
+  }
 }
 
 .timeSeparator {
