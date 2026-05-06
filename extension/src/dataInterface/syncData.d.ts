@@ -2,7 +2,6 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
-import { SleepMoodVal } from "@src/shared/components/sleepWindDown/activities/sleepMood.const";
 
 /** Time range for a single day (24h format, e.g., "09:00" to "17:00") */
 export interface TimeRange {
@@ -124,7 +123,6 @@ export interface SyncData {
   sleepWindDownBrainDumpDraft: string;
   sleepWindDownGratitudeDraft: string;
   sleepWindDownTomorrowDraft: string;
-  sleepWindDownMood: SleepMoodVal | null;
 }
 
 export interface StaticCfg {

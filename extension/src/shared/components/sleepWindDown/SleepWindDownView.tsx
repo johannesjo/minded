@@ -13,8 +13,7 @@ import {
 import { getIsoDate } from "@src/util/getIsoDate";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { BrainDump } from "./activities/BrainDump";
-import { SleepMoodCheckin } from "./activities/SleepMoodCheckin";
-import { SleepMoodVal } from "./activities/sleepMood.const";
+import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import {
   CALM_READ_PASSAGES,
@@ -89,6 +88,12 @@ export const SleepWindDownView = (
   const [gratitudeDraft, setGratitudeDraft] = createSignal("");
   const [tomorrowDraft, setTomorrowDraft] = createSignal("");
   const [hydrated, setHydrated] = createSignal(false);
+  // Snooze/skip persist their state up front and then route through the
+  // goodnight gesture as a calming exit. We carry the chosen reason here so
+  // the moon-drag completion fires onDismiss with the original semantics
+  // (snooze hides overlay, skip exits, done locks screen on Android).
+  const [pendingReason, setPendingReason] =
+    createSignal<SleepWindDownDismissReason>("done");
 
   let currentNightId: string | null = null;
   // Serialize ALL writes through this chain — `updateSyncData` is a full-blob
@@ -182,74 +187,61 @@ export const SleepWindDownView = (
     setView("menu");
   };
 
-  const persistMood = (val: SleepMoodVal): Promise<void> => {
-    if (props.isPreview) return Promise.resolve();
-    return enqueueWrite(async () => {
-      const nightId = currentNightId ?? (await resolveNightIdFromStorage());
-      currentNightId = nightId;
-      await updateSyncData({
-        sleepWindDownProgressNightId: nightId,
-        sleepWindDownMood: val,
+  const completeGoodnight = async () => {
+    const reason = pendingReason();
+    // Snooze and skip already persisted their state when the user clicked
+    // them, so the goodnight gesture is just a visual exit for those. Only
+    // the "done" path (Goodnight from menu) needs the dismiss persistence.
+    if (reason === "done" && !props.isPreview) {
+      await enqueueWrite(async () => {
+        const nightId = await resolveNightIdFromStorage();
+        await updateSyncData({
+          sleepWindDownDismissedNightId: nightId,
+          sleepWindDownProgressNightId: "",
+          sleepWindDownCompleted: [],
+          sleepWindDownBrainDumpDraft: "",
+          sleepWindDownGratitudeDraft: "",
+          sleepWindDownTomorrowDraft: "",
+          sleepWindDownSnoozeUntilTS: 0,
+        });
       });
-    });
-  };
-
-  const dismissForTonight = async () => {
-    if (props.isPreview) {
-      props.onDismiss("done");
-      return;
     }
-    await enqueueWrite(async () => {
-      const nightId = await resolveNightIdFromStorage();
-      await updateSyncData({
-        sleepWindDownDismissedNightId: nightId,
-        sleepWindDownProgressNightId: "",
-        sleepWindDownCompleted: [],
-        sleepWindDownBrainDumpDraft: "",
-        sleepWindDownGratitudeDraft: "",
-        sleepWindDownTomorrowDraft: "",
-        sleepWindDownMood: null,
-        sleepWindDownSnoozeUntilTS: 0,
-      });
-    });
-    props.onDismiss("done");
+    props.onDismiss(reason);
   };
 
   const skipTonight = async () => {
-    if (props.isPreview) {
-      props.onDismiss("skip");
-      return;
-    }
-    await enqueueWrite(async () => {
-      const nightId = await resolveNightIdFromStorage();
-      await updateSyncData({
-        sleepWindDownDismissedNightId: nightId,
-        sleepWindDownProgressNightId: "",
-        sleepWindDownCompleted: [],
-        sleepWindDownBrainDumpDraft: "",
-        sleepWindDownGratitudeDraft: "",
-        sleepWindDownTomorrowDraft: "",
-        sleepWindDownMood: null,
-        sleepWindDownSnoozeUntilTS: 0,
+    setPendingReason("skip");
+    if (!props.isPreview) {
+      await enqueueWrite(async () => {
+        const nightId = await resolveNightIdFromStorage();
+        await updateSyncData({
+          sleepWindDownDismissedNightId: nightId,
+          sleepWindDownProgressNightId: "",
+          sleepWindDownCompleted: [],
+          sleepWindDownBrainDumpDraft: "",
+          sleepWindDownGratitudeDraft: "",
+          sleepWindDownTomorrowDraft: "",
+          sleepWindDownSnoozeUntilTS: 0,
+        });
       });
-    });
-    props.onDismiss("skip");
+    }
+    setView("goodnight");
   };
 
   const snooze = async () => {
-    if (props.isPreview) {
-      props.onDismiss("snooze");
-      return;
-    }
-    await enqueueWrite(async () => {
-      await updateSyncData({
-        sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
+    setPendingReason("snooze");
+    if (!props.isPreview) {
+      await enqueueWrite(async () => {
+        await updateSyncData({
+          sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
+        });
       });
-    });
-    props.onDismiss("snooze");
+    }
+    setView("goodnight");
   };
 
   const enterGoodnight = () => {
+    setPendingReason("done");
     setView("goodnight");
   };
 
@@ -401,13 +393,16 @@ export const SleepWindDownView = (
               </Match>
 
               <Match when={currentView === "mood"}>
-                <SleepMoodCheckin
-                  onSelect={persistMood}
-                  onDone={() => {
-                    markComplete("mood");
-                    setView("menu");
-                  }}
-                />
+                <div class={styles.activityBody}>
+                  <MoodCheckin
+                    onSuccess={() => {
+                      markComplete("mood");
+                      setView("menu");
+                    }}
+                    onSkip={() => undefined}
+                    onCancelCountdown={() => undefined}
+                  />
+                </div>
               </Match>
 
               <Match when={currentView === "breathing"}>
@@ -481,9 +476,9 @@ export const SleepWindDownView = (
                         variant="moon"
                         completionDirection="down"
                         isTapEnabled={false}
-                        onSkip={dismissForTonight}
-                        onFlingAway={dismissForTonight}
-                        onDragComplete={dismissForTonight}
+                        onSkip={completeGoodnight}
+                        onFlingAway={completeGoodnight}
+                        onDragComplete={completeGoodnight}
                         onStartBackgroundAnimation={(direction) => {
                           window.dispatchEvent(
                             new CustomEvent("startBackgroundAnimation", {
