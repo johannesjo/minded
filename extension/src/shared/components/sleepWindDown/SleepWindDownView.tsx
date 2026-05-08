@@ -88,10 +88,10 @@ export const SleepWindDownView = (
   const [gratitudeDraft, setGratitudeDraft] = createSignal("");
   const [tomorrowDraft, setTomorrowDraft] = createSignal("");
   const [hydrated, setHydrated] = createSignal(false);
-  // Snooze/skip persist their state up front and then route through the
-  // goodnight gesture as a calming exit. We carry the chosen reason here so
-  // the moon-drag completion fires onDismiss with the original semantics
-  // (snooze hides overlay, skip exits, done locks screen on Android).
+  // Skip persists its state up front and then routes through the goodnight
+  // gesture as a calming exit. We carry the chosen reason here so the moon-
+  // drag completion fires onDismiss with the original semantics (skip exits,
+  // done locks screen on Android). Snooze bypasses the gesture entirely.
   const [pendingReason, setPendingReason] =
     createSignal<SleepWindDownDismissReason>("done");
 
@@ -189,9 +189,9 @@ export const SleepWindDownView = (
 
   const completeGoodnight = async () => {
     const reason = pendingReason();
-    // Snooze and skip already persisted their state when the user clicked
-    // them, so the goodnight gesture is just a visual exit for those. Only
-    // the "done" path (Goodnight from menu) needs the dismiss persistence.
+    // Skip already persisted its state when the user clicked it, so the
+    // goodnight gesture is just a visual exit there. Only the "done" path
+    // (Goodnight from menu) needs the dismiss persistence here.
     if (reason === "done" && !props.isPreview) {
       await enqueueWrite(async () => {
         const nightId = await resolveNightIdFromStorage();
@@ -229,7 +229,6 @@ export const SleepWindDownView = (
   };
 
   const snooze = async () => {
-    setPendingReason("snooze");
     if (!props.isPreview) {
       await enqueueWrite(async () => {
         await updateSyncData({
@@ -237,7 +236,10 @@ export const SleepWindDownView = (
         });
       });
     }
-    setView("goodnight");
+    // Snooze means "leave me alone for 30 min" — return the user to whatever
+    // they were doing without the moon-drag gesture (which would block re-
+    // entry into the host app on Android).
+    props.onDismiss("snooze");
   };
 
   const enterGoodnight = () => {
