@@ -20,12 +20,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.theme.MindedTheme
-import com.minded.minded.util.WebViewSafeAreaBridge
+import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
+import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
@@ -38,6 +41,7 @@ enum class MissingCapability {
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var sharedPreferenceService: SharedPreferenceService
+    private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
     private val webAppResumeEVName = "androidAppResume"
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
@@ -45,11 +49,12 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Make edge-to-edge explicit on API 35+ so the WebView host receives
-        // system-bar + display-cutout insets and `WebViewSafeAreaBridge` can
-        // populate the `--safe-area-inset-*` CSS variables. The previously
-        // used `windowOptOutEdgeToEdgeEnforcement` opt-out silently zeroed
-        // those insets and is deprecated in Android 16.
+        // Make edge-to-edge explicit on API 35+ so Compose's WindowInsets
+        // observe system-bar + display-cutout insets and
+        // `ForwardSafeAreaInsetsToWebView` can populate the
+        // `--safe-area-inset-*` CSS variables. The previously used
+        // `windowOptOutEdgeToEdgeEnforcement` opt-out silently zeroed those
+        // insets and is deprecated in Android 16.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             enableEdgeToEdge()
         }
@@ -69,6 +74,8 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             setContent {
                 MindedTheme {
+                    val webViewState = remember { mutableStateOf<WebView?>(null) }
+                    ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
                     Surface(
                         modifier = Modifier.fillMaxSize().imePadding(),
                         color = MaterialTheme.colorScheme.background
@@ -100,13 +107,14 @@ class MainActivity : AppCompatActivity() {
                                     this,
                                     ::onMissingCapabilityTap,
                                     ::getMissingCapabilities,
+                                    safeAreaInsets = safeAreaInsetsHolder,
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
-                                WebViewSafeAreaBridge.attach(this, jsInterface.safeAreaInsets)
                                 loadUrl("file:///android_asset/web/src/android/main/index.html")
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)
+                            webViewState.value = webView
                             webView
                         })
                     }

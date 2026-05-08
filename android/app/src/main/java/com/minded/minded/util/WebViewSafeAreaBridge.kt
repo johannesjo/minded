@@ -1,68 +1,63 @@
 package com.minded.minded.util
 
 import android.webkit.WebView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 
 /**
- * Forwards system-bar + display-cutout insets from the OS into the WebView
- * as `--safe-area-inset-{top|right|bottom|left}` CSS variables on the
- * `#minded-6622` container — mirroring the iOS `capacitor-plugin-safe-area`
- * behavior so existing CSS like `padding-bottom: var(--safe-area-inset-bottom)`
- * works identically on Android.
+ * Forwards system-bar + display-cutout insets to the WebView as
+ * `--safe-area-inset-{top|right|bottom|left}` CSS variables on the
+ * `#minded-6622` container — mirroring iOS `capacitor-plugin-safe-area`
+ * so `padding-bottom: var(--safe-area-inset-bottom)` works identically on
+ * both platforms.
+ *
+ * The insets must be supplied in CSS pixels (DP) by the caller. The
+ * canonical caller is [ForwardSafeAreaInsetsToWebView], which reads them
+ * from Compose's `WindowInsets.systemBars` + `WindowInsets.displayCutout`
+ * — the same source that powers `imePadding`/`statusBarsPadding`. We
+ * deliberately don't use `ViewCompat.setOnApplyWindowInsetsListener` on
+ * the WebView itself: inside Compose's `AndroidView` interop tree the
+ * dispatch path runs through `AndroidViewHolder`, which transforms insets
+ * relative to the layout position and can leave the WebView listener with
+ * stale or zero values when the WebView is reparented during composition.
  *
  * The supplied [SafeAreaInsetsHolder] is updated in lockstep so the page
- * can pull the latest values synchronously on init via the JS interface
- * (the OS may fire its first dispatch after the page has begun parsing,
- * so `evaluateJavascript` alone can race the very first paint).
+ * can pull the latest values synchronously on init via
+ * `androidMinded.getSafeAreaInsets()` (boot-race protection — Compose may
+ * deliver the first inset update after the page has begun parsing, so
+ * `evaluateJavascript` alone can race the very first paint).
  *
  * The injected script also dispatches `androidSafeAreaChanged` with the
  * insets in `event.detail`, available for any JS code that wants to react
  * to changes without polling.
  */
 object WebViewSafeAreaBridge {
-    fun attach(webView: WebView, holder: SafeAreaInsetsHolder) {
-        var lastTopPx = Int.MIN_VALUE
-        var lastRightPx = Int.MIN_VALUE
-        var lastBottomPx = Int.MIN_VALUE
-        var lastLeftPx = Int.MIN_VALUE
-
-        ViewCompat.setOnApplyWindowInsetsListener(webView) { v, insetsCompat ->
-            val mask = WindowInsetsCompat.Type.systemBars() or
-                    WindowInsetsCompat.Type.displayCutout()
-            val insets = insetsCompat.getInsets(mask)
-            // Skip when nothing relevant changed — `onApplyWindowInsets`
-            // can fire per frame during IME / rotation animations.
-            if (insets.top == lastTopPx && insets.right == lastRightPx &&
-                insets.bottom == lastBottomPx && insets.left == lastLeftPx
-            ) {
-                return@setOnApplyWindowInsetsListener insetsCompat
-            }
-            lastTopPx = insets.top
-            lastRightPx = insets.right
-            lastBottomPx = insets.bottom
-            lastLeftPx = insets.left
-
-            val density = v.resources.displayMetrics.density
-            holder.top = insets.top / density
-            holder.right = insets.right / density
-            holder.bottom = insets.bottom / density
-            holder.left = insets.left / density
-
-            val js = "(function(){" +
-                "var d={top:${holder.top},right:${holder.right},bottom:${holder.bottom},left:${holder.left}};" +
-                "var r=document.getElementById('minded-6622');" +
-                "if(r){" +
-                "r.style.setProperty('--safe-area-inset-top',d.top+'px');" +
-                "r.style.setProperty('--safe-area-inset-right',d.right+'px');" +
-                "r.style.setProperty('--safe-area-inset-bottom',d.bottom+'px');" +
-                "r.style.setProperty('--safe-area-inset-left',d.left+'px');" +
-                "}" +
-                "window.dispatchEvent(new CustomEvent('androidSafeAreaChanged',{detail:d}));" +
-                "})();"
-            webView.evaluateJavascript(js, null)
-            insetsCompat
+    fun update(
+        webView: WebView,
+        holder: SafeAreaInsetsHolder,
+        topDp: Float,
+        rightDp: Float,
+        bottomDp: Float,
+        leftDp: Float,
+    ) {
+        if (holder.top == topDp && holder.right == rightDp &&
+            holder.bottom == bottomDp && holder.left == leftDp
+        ) {
+            return
         }
-        webView.requestApplyInsets()
+        holder.top = topDp
+        holder.right = rightDp
+        holder.bottom = bottomDp
+        holder.left = leftDp
+        val js = "(function(){" +
+            "var d={top:$topDp,right:$rightDp,bottom:$bottomDp,left:$leftDp};" +
+            "var r=document.getElementById('minded-6622');" +
+            "if(r){" +
+            "r.style.setProperty('--safe-area-inset-top',d.top+'px');" +
+            "r.style.setProperty('--safe-area-inset-right',d.right+'px');" +
+            "r.style.setProperty('--safe-area-inset-bottom',d.bottom+'px');" +
+            "r.style.setProperty('--safe-area-inset-left',d.left+'px');" +
+            "}" +
+            "window.dispatchEvent(new CustomEvent('androidSafeAreaChanged',{detail:d}));" +
+            "})();"
+        webView.evaluateJavascript(js, null)
     }
 }

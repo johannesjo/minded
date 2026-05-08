@@ -12,14 +12,16 @@ import android.webkit.WebView
 import com.minded.minded.BuildConfig
 import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.parseJSONQuestion
 
 class InteractionWindowJavaScriptInterface(
     override val webView: WebView,
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val win: InteractionWindow,
-    private val ctrlSvc: OverlayControllerService
-) : MainActivityJavaScriptInterface(ctrlSvc, webView) {
+    private val ctrlSvc: OverlayControllerService,
+    safeAreaInsets: SafeAreaInsetsHolder = SafeAreaInsetsHolder(),
+) : MainActivityJavaScriptInterface(ctrlSvc, webView, safeAreaInsets = safeAreaInsets) {
     
     @JavascriptInterface
     fun test() {

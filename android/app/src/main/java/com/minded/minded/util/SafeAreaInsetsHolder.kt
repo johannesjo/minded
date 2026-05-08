@@ -2,8 +2,9 @@ package com.minded.minded.util
 
 /**
  * Mutable holder for the latest system-bar + display-cutout insets in
- * CSS pixels. Written by [WebViewSafeAreaBridge] on the UI thread and
- * read from the WebView's JS-bridge thread via the `getSafeAreaInsets()`
+ * CSS pixels. Written by [WebViewSafeAreaBridge] from
+ * [ForwardSafeAreaInsetsToWebView] on the UI thread and read from the
+ * WebView's JS-bridge thread via the `getSafeAreaInsets()`
  * @JavascriptInterface method.
  */
 class SafeAreaInsetsHolder {

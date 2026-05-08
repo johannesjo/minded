@@ -11,10 +11,13 @@ import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
-import com.minded.minded.util.WebViewSafeAreaBridge
+import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
+import com.minded.minded.util.SafeAreaInsetsHolder
 
 
 class InteractionWindow(
@@ -25,6 +28,7 @@ class InteractionWindow(
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     override val logTag = javaClass.simpleName
     private var webViewRef: WebView? = null
+    private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
 
 
     @SuppressLint("StateFlowValueCalledInComposition")
@@ -34,10 +38,16 @@ class InteractionWindow(
         val questionId = sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt?.id;
         Log.v(logTag, "questionId: $questionId")
 
+        val webViewState = remember { mutableStateOf<WebView?>(null) }
+        ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
+
         AndroidView(
             modifier = Modifier.fillMaxSize().imePadding(),
             factory = { context ->
-            WebView(context).also { webViewRef = it }.apply {
+            WebView(context).also {
+                webViewRef = it
+                webViewState.value = it
+            }.apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -74,10 +84,10 @@ class InteractionWindow(
                     this,
                     sharedOverlayViewModel,
                     win,
-                    ctrlSvc
+                    ctrlSvc,
+                    safeAreaInsets = safeAreaInsetsHolder,
                 )
                 addJavascriptInterface(jsInterface, "androidMinded")
-                WebViewSafeAreaBridge.attach(this, jsInterface.safeAreaInsets)
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html#${questionId}")
             }
         })

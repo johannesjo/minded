@@ -6,5 +6,10 @@
   padding: 16px;
   border-radius: 8px;
   margin: 8px;
+  // Banner is rendered at the top of the page, above `.contentWrapper`,
+  // so it has to clear the status bar on its own (`.contentWrapper`'s
+  // own `margin-top: var(--safe-area-inset-top)` only covers the case
+  // where the banner is not shown).
+  margin-top: calc(var(--safe-area-inset-top) + 8px);
   margin-bottom: 0;
 }

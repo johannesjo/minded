@@ -11,6 +11,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.util.SafeAreaInsetsHolder
 
 /**
  * JavaScript bridge for [SleepWindDownOverlayWindow]. Smaller than the
@@ -22,8 +23,9 @@ class SleepWindDownWindowJavaScriptInterface(
     override val webView: WebView,
     @Suppress("unused") private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val win: SleepWindDownOverlayWindow,
-    private val ctrlSvc: OverlayControllerService
-) : MainActivityJavaScriptInterface(ctrlSvc, webView) {
+    private val ctrlSvc: OverlayControllerService,
+    safeAreaInsets: SafeAreaInsetsHolder = SafeAreaInsetsHolder(),
+) : MainActivityJavaScriptInterface(ctrlSvc, webView, safeAreaInsets = safeAreaInsets) {
 
     @JavascriptInterface
     fun hideWindow() {

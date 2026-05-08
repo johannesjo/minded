@@ -18,17 +18,17 @@ open class MainActivityJavaScriptInterface(
     protected open val webView: WebView,
     protected val onMissingCapabilityClickI: (MissingCapability) -> Unit = {},
     protected val getMissingCapabilitiesI: () -> List<MissingCapability> = { emptyList<MissingCapability>() },
-) {
-    private val sharedPreferenceService = SharedPreferenceService(context)
-
     /**
      * Latest system-bar + display-cutout insets, written by
-     * [com.minded.minded.util.WebViewSafeAreaBridge] and read by the web
-     * layer via [getSafeAreaInsets] on init. Each instance owns its own
-     * holder because the main and overlay WebViews live in different
-     * windows with independent insets.
+     * [com.minded.minded.util.ForwardSafeAreaInsetsToWebView] and read by
+     * the web layer via [getSafeAreaInsets] on init. Passed in by the
+     * caller so the same holder is shared with the Compose-side forwarder
+     * — the main activity and each overlay window own their own holder
+     * because they live in different windows with independent insets.
      */
-    val safeAreaInsets: SafeAreaInsetsHolder = SafeAreaInsetsHolder()
+    val safeAreaInsets: SafeAreaInsetsHolder = SafeAreaInsetsHolder(),
+) {
+    private val sharedPreferenceService = SharedPreferenceService(context)
 
     var logTag = "MainActivityJavaScriptInterface"
 
