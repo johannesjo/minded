@@ -14,6 +14,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,14 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Make edge-to-edge explicit on API 35+ so the WebView host receives
+        // system-bar + display-cutout insets and `WebViewSafeAreaBridge` can
+        // populate the `--safe-area-inset-*` CSS variables. The previously
+        // used `windowOptOutEdgeToEdgeEnforcement` opt-out silently zeroed
+        // those insets and is deprecated in Android 16.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            enableEdgeToEdge()
+        }
         super.onCreate(savedInstanceState)
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
         sharedPreferenceService = SharedPreferenceService(this)
