@@ -17,6 +17,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -69,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             setContent {
                 MindedTheme {
                     Surface(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().imePadding(),
                         color = MaterialTheme.colorScheme.background
                     ) {
                         AndroidView(factory = { context ->

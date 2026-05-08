@@ -8,7 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.WebViewSafeAreaBridge
@@ -31,7 +34,9 @@ class InteractionWindow(
         val questionId = sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt?.id;
         Log.v(logTag, "questionId: $questionId")
 
-        AndroidView(factory = { context ->
+        AndroidView(
+            modifier = Modifier.fillMaxSize().imePadding(),
+            factory = { context ->
             WebView(context).also { webViewRef = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
