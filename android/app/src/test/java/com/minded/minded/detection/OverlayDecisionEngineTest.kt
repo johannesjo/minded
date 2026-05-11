@@ -236,6 +236,109 @@ class OverlayDecisionEngineTest {
         assertEquals(OverlayDecision.ShowLittleSun, decision)
     }
 
+    // ==================== Sleep Wind-Down Tests ====================
+
+    @Test
+    fun `should show sleep wind down for blocked app when wind down is active`() {
+        val state = createState(
+            blockedApps = blockedApps,
+            isWindDownActive = true
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowSleepWindDown, decision)
+    }
+
+    @Test
+    fun `should show little sun timer for blocked app when wind down is snoozed`() {
+        val state = createState(
+            blockedApps = blockedApps,
+            isWindDownSnoozed = true
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowWindDownSnoozeTimer, decision)
+    }
+
+    @Test
+    fun `should show sleep wind down after snooze timer expires inside wind down window`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            activeTimerEndTime = currentTime - 1000,
+            isWindDownActive = true,
+            isWindDownSnoozed = false
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowSleepWindDown, decision)
+    }
+
+    @Test
+    fun `should skip when sleep wind down overlay is already showing`() {
+        val state = createState(
+            blockedApps = blockedApps,
+            isWindDownActive = true,
+            isSleepWindDownOverlayShowing = true
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.OVERLAY_ALREADY_SHOWING, decision.reason)
+    }
+
+    @Test
+    fun `wind down should take priority over rest of day timer`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            activeTimerEndTime = currentTime + 60000,
+            activeTimerDurationS = -1,
+            isWindDownActive = true
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowSleepWindDown, decision)
+    }
+
+    @Test
+    fun `wind down snooze should show little sun over rest of day timer`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            activeTimerEndTime = currentTime + 60000,
+            activeTimerDurationS = -1,
+            isWindDownSnoozed = true
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowWindDownSnoozeTimer, decision)
+    }
+
+    @Test
+    fun `should hide all for active rest of day timer outside wind down`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            activeTimerEndTime = currentTime + 60000,
+            activeTimerDurationS = -1
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.HideAll, decision)
+    }
+
     // ==================== shouldResetSessionDuration Tests ====================
 
     @Test
@@ -455,9 +558,13 @@ class OverlayDecisionEngineTest {
         lastHideAllTimestamp: Long = 0L,
         lastGoToAppTimestamp: Long = 0L,
         isAnyOverlayShowing: Boolean = false,
+        isSleepWindDownOverlayShowing: Boolean = false,
         appSessionEndTime: Long? = null,
         activeTimerEndTime: Long? = null,
-        hasBudgetRemaining: Boolean = false
+        activeTimerDurationS: Int? = null,
+        hasBudgetRemaining: Boolean = false,
+        isWindDownActive: Boolean = false,
+        isWindDownSnoozed: Boolean = false
     ): OverlayState {
         return OverlayState(
             ownPackage = mindedPackage,
@@ -466,9 +573,13 @@ class OverlayDecisionEngineTest {
             lastHideAllTimestamp = lastHideAllTimestamp,
             lastGoToAppTimestamp = lastGoToAppTimestamp,
             isAnyOverlayShowing = isAnyOverlayShowing,
+            isSleepWindDownOverlayShowing = isSleepWindDownOverlayShowing,
             appSessionEndTime = appSessionEndTime,
             activeTimerEndTime = activeTimerEndTime,
-            hasBudgetRemaining = hasBudgetRemaining
+            activeTimerDurationS = activeTimerDurationS,
+            hasBudgetRemaining = hasBudgetRemaining,
+            isWindDownActive = isWindDownActive,
+            isWindDownSnoozed = isWindDownSnoozed
         )
     }
 }

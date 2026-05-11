@@ -34,6 +34,12 @@ class SleepWindDownWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
+    fun snoozeWindDown(seconds: Int) {
+        Log.d(logTag, "snoozeWindDown($seconds)")
+        ctrlSvc.snoozeWindDown(seconds)
+    }
+
+    @JavascriptInterface
     fun closeCurrentApp() {
         Log.v(logTag, "closeCurrentApp() - leaving blocked app for minded")
         ctrlSvc.goToApp()

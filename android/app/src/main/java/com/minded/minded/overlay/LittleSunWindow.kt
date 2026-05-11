@@ -79,16 +79,8 @@ class LittleSunWindow(
                 if (now.isAfter(endTime)) {
                     // Time limit reached
                     hideWindow()
-                    // Clear the session limit
-                    ctrlSvc.clearSession()
-                    // actually checkToShowOverlay will handle it if we just trigger it
                     if (currentApp != null) {
-                        OverlayControllerService.showOverlay(
-                            ctrlSvc,
-                            OverlayControllerService.Companion.OverlayName.INTERACTION_OVERLAY,
-                            OverlayControllerService.Companion.OverlayMode.INTERACTION_OVERLAY__FRESH,
-                            currentApp
-                        )
+                        ctrlSvc.onLittleSunTimerExpired(currentApp)
                     }
                     stopTimer()
                     return
@@ -186,4 +178,3 @@ class LittleSunWindow(
         handler.removeCallbacks(runnable)
     }
 }
-

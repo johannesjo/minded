@@ -39,7 +39,7 @@ class OverlayDecisionEngine {
 
         // Debounce: skip if we recently hid all overlays
         val timeSinceHideAll = state.currentTime - state.lastHideAllTimestamp
-        if (timeSinceHideAll < HIDE_TO_SHOW_DEBOUNCE_MS) {
+        if (timeSinceHideAll < state.hideToShowDebounceMs) {
             return OverlayDecision.Skip(SkipReason.RECENT_HIDE_ALL)
         }
 
@@ -53,11 +53,30 @@ class OverlayDecisionEngine {
             return OverlayDecision.HideAll
         }
 
+        if (state.isWindDownActive) {
+            return if (state.isSleepWindDownOverlayShowing) {
+                OverlayDecision.Skip(SkipReason.OVERLAY_ALREADY_SHOWING)
+            } else {
+                OverlayDecision.ShowSleepWindDown
+            }
+        }
+
+        if (state.isWindDownSnoozed) {
+            return OverlayDecision.ShowWindDownSnoozeTimer
+        }
+
         // Skip if user just switched to the app (debounce)
         if (state.lastGoToAppTimestamp > 0 &&
-            state.currentTime - state.lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
+            state.currentTime - state.lastGoToAppTimestamp < state.appSwitchDebounceMs
         ) {
             return OverlayDecision.Skip(SkipReason.RECENT_APP_SWITCH)
+        }
+
+        val isRestOfDayActive = state.activeTimerDurationS == -1 &&
+            state.activeTimerEndTime?.let { it > state.currentTime } == true
+
+        if (isRestOfDayActive) {
+            return OverlayDecision.HideAll
         }
 
         // Check if any overlay is already showing
@@ -116,11 +135,20 @@ data class OverlayState(
     /** Timestamp when hideAll was last called */
     val lastHideAllTimestamp: Long = 0L,
 
+    /** Debounce after hiding all overlays */
+    val hideToShowDebounceMs: Long = OverlayDecisionEngine.HIDE_TO_SHOW_DEBOUNCE_MS,
+
     /** Timestamp when user last switched to an app via "Go to App" */
     val lastGoToAppTimestamp: Long = 0L,
 
+    /** Debounce after switching to the app through minded */
+    val appSwitchDebounceMs: Long = OverlayDecisionEngine.APP_SWITCH_DEBOUNCE_MS,
+
     /** Whether any overlay is currently showing */
     val isAnyOverlayShowing: Boolean = false,
+
+    /** Whether the sleep wind-down overlay is currently showing */
+    val isSleepWindDownOverlayShowing: Boolean = false,
 
     /** Session end time for current app (if any) */
     val appSessionEndTime: Long? = null,
@@ -128,8 +156,17 @@ data class OverlayState(
     /** Global active timer end time (if any) */
     val activeTimerEndTime: Long? = null,
 
+    /** Global active timer duration in seconds, or -1 for rest-of-day */
+    val activeTimerDurationS: Int? = null,
+
     /** Whether the daily budget has remaining time */
-    val hasBudgetRemaining: Boolean = false
+    val hasBudgetRemaining: Boolean = false,
+
+    /** Whether sleep wind-down should currently take over blocked apps */
+    val isWindDownActive: Boolean = false,
+
+    /** Whether sleep wind-down is snoozed and should show a timer instead */
+    val isWindDownSnoozed: Boolean = false
 )
 
 /**
@@ -141,6 +178,12 @@ sealed class OverlayDecision {
 
     /** Show the little sun overlay */
     object ShowLittleSun : OverlayDecision()
+
+    /** Show the sleep wind-down overlay */
+    object ShowSleepWindDown : OverlayDecision()
+
+    /** Show the little sun overlay for a wind-down snooze */
+    object ShowWindDownSnoozeTimer : OverlayDecision()
 
     /** Hide all overlays */
     object HideAll : OverlayDecision()

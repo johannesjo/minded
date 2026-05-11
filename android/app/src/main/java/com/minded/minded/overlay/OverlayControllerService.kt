@@ -29,11 +29,13 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
+import com.minded.minded.detection.OverlayDecision
+import com.minded.minded.detection.OverlayDecisionEngine
+import com.minded.minded.detection.OverlayState
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.getBudgetRemainingSeconds
 import com.minded.minded.util.hasBudgetRemaining
-import com.minded.minded.util.parseSyncData
 import com.minded.minded.util.ActiveTimer
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.ForegroundAppResult
@@ -55,8 +57,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private var lastHideAllTimestamp: Long = 0
     private val APP_SWITCH_DEBOUNCE_MS: Long = 1500L // Reduced from 2200ms for better UX
     private val HIDE_TO_SHOW_DEBOUNCE_MS: Long = 500L
+    private val OVERLAY_TRANSITION_DELAY_MS = 320L
+    private val FALLBACK_BLOCKED_APPS = setOf("com.android.chrome", "com.google.android.youtube")
     private val overlayRetryHandler = Handler(Looper.getMainLooper())
     private val pendingOverlayRetries = mutableMapOf<String, Int>()
+    private val overlayDecisionEngine = OverlayDecisionEngine()
 
     // Screen state tracking for overlay restoration
     private var overlayStateBeforeScreenOff: OverlayName? = null
@@ -442,10 +447,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     /**
      * True when the user is inside their configured bedtime window AND the
      * snooze deadline is still in the future. Distinct from [isWindDownActive],
-     * which excludes the snooze period — we use this one to suppress *all*
-     * overlays on blocked apps during the snooze, so "Snooze 30 min" really
-     * means 30 minutes of quiet rather than swapping wind-down for the regular
-     * intervention.
+     * which excludes the snooze period — during snooze we show the regular
+     * little-sun countdown instead of the full wind-down overlay.
      */
     private fun isWindDownSnoozed(syncData: SyncData): Boolean {
         val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return false
@@ -460,119 +463,138 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         return true
     }
 
+    private fun showWindDownSnoozeTimer(currentPackageName: String, syncData: SyncData) {
+        val snoozeEndTS = syncData.sleepWindDownSnoozeUntilTS
+        val snoozeEndTime = Instant.ofEpochMilli(snoozeEndTS)
+        val nowMs = System.currentTimeMillis()
+        val remainingSeconds = ((snoozeEndTS - nowMs) / 1000L).coerceAtLeast(1L).toInt()
+        val currentTimer = sharedOverlayViewModel.sharedData.value.activeTimer
+        val storedTimer = syncData.activeTimer
+        val isCurrentTimerStale =
+            currentTimer == null ||
+                currentTimer.endTS != snoozeEndTS ||
+                currentTimer.durationS == -1
+        val isStoredTimerStale =
+            storedTimer == null ||
+                storedTimer.endTS != snoozeEndTS ||
+                storedTimer.durationS == -1
+
+        if (isCurrentTimerStale || isStoredTimerStale) {
+            val snoozeTimer = ActiveTimer(snoozeEndTS, remainingSeconds)
+            sharedPreferenceService.updateSyncData {
+                copy(activeTimer = snoozeTimer)
+            }
+            sharedOverlayViewModel.updateActiveTimer(snoozeTimer)
+        }
+
+        sharedOverlayViewModel.updateSharedData(currentPackageName)
+        sharedOverlayViewModel.updateCurrentAppSessionEndTime(snoozeEndTime)
+
+        if (!littleSunOverlayWindow.isWindowShown()) {
+            showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
+        }
+        hideAllBut(OverlayName.LITTLE_SUN_OVERLAY)
+    }
+
+    fun snoozeWindDown(seconds: Int) {
+        Log.d(logTag, "snoozeWindDown($seconds) called")
+        val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
+        if (currentApp == null) {
+            Log.e(logTag, "snoozeWindDown - currentApp is null, cannot start snooze timer")
+            return
+        }
+
+        val now = System.currentTimeMillis()
+        var syncData = sharedPreferenceService.getSyncData()
+        val snoozeEndTS = if (syncData.sleepWindDownSnoozeUntilTS > now) {
+            syncData.sleepWindDownSnoozeUntilTS
+        } else {
+            now + seconds * 1000L
+        }
+
+        if (syncData.sleepWindDownSnoozeUntilTS != snoozeEndTS) {
+            sharedPreferenceService.updateSyncData {
+                copy(sleepWindDownSnoozeUntilTS = snoozeEndTS)
+            }
+            syncData = syncData.copy(sleepWindDownSnoozeUntilTS = snoozeEndTS)
+        }
+
+        showWindDownSnoozeTimer(currentApp, syncData)
+    }
+
+    fun onLittleSunTimerExpired(currentApp: String) {
+        Log.d(logTag, "onLittleSunTimerExpired($currentApp)")
+        clearSession()
+        Handler(Looper.getMainLooper()).postDelayed({
+            checkToShowOverlay(currentApp)
+        }, OVERLAY_TRANSITION_DELAY_MS)
+    }
+
+    private fun getEffectiveBlockedApps(): Set<String> {
+        val blockedApps = sharedPreferenceService.getBlockedApps()
+        return if (blockedApps.isEmpty()) FALLBACK_BLOCKED_APPS else blockedApps.toSet()
+    }
+
     internal fun isBlockedPackage(packageName: String): Boolean {
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "isBlockedPackage() - checking $packageName against blocked apps: $blockedApps")
         
         // If no apps are blocked in preferences, use hardcoded test apps
         if (blockedApps.isEmpty()) {
-            Log.d(logTag, "No blocked apps configured, using test apps: Chrome and YouTube")
-            return packageName == "com.android.chrome" || packageName == "com.google.android.youtube"
+            Log.d(logTag, "No blocked apps configured, using test apps: $FALLBACK_BLOCKED_APPS")
+            return FALLBACK_BLOCKED_APPS.contains(packageName)
         }
         
         return blockedApps.contains(packageName)
     }
 
     private fun checkToShowOverlay(currentPackageName: String) {
-        // Skip our own package - we don't want to hide overlays when detecting our own app
-        if (currentPackageName == "com.minded.minded") {
-            Log.d(logTag, "checkToShowOverlay() - skipping our own package")
-            return
-        }
-
-        // Debounce: skip if we recently hid all overlays (prevents flicker on app close)
-        val timeSinceHideAll = System.currentTimeMillis() - lastHideAllTimestamp
-        if (timeSinceHideAll < HIDE_TO_SHOW_DEBOUNCE_MS) {
-            Log.d(logTag, "checkToShowOverlay() - skipping due to recent hideAll (${timeSinceHideAll}ms ago)")
-            return
-        }
-
         val syncData = sharedPreferenceService.getSyncData()
-        val windDownActive = isWindDownActive(syncData)
-        val windDownSnoozed = isWindDownSnoozed(syncData)
-
-        val blockedApps = sharedPreferenceService.getBlockedApps()
+        val blockedApps = getEffectiveBlockedApps()
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
 
-        val isLauncherOrHome = currentPackageName.contains("launcher") ||
-            currentPackageName.contains("home")
-
-        // Wind-down on blocked apps takes precedence over rest-of-day, session, and
-        // budget — bedtime rules win. Launchers/home aren't "blocked" so they fall
-        // through and just hide overlays as usual.
-        if (windDownActive && isBlockedPackage(currentPackageName) && !isLauncherOrHome) {
-            if (sleepWindDownOverlayWindow.isWindowShown()) {
-                Log.v(logTag, "checkToShowOverlay() wind-down overlay already showing — skipping")
-            } else {
-                Log.v(logTag, "Wind-down active for blocked app, showing wind-down overlay: $currentPackageName")
-                showOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY, null, currentPackageName)
-            }
-            return
-        }
-
-        // Wind-down snoozed on a blocked app: hide all overlays and let the user
-        // stay in the app for the snooze duration. Without this they'd get the
-        // regular intervention immediately, which makes "Snooze 30 min" feel
-        // identical to "Skip tonight" plus an extra interruption.
-        if (windDownSnoozed && isBlockedPackage(currentPackageName) && !isLauncherOrHome) {
-            Log.v(logTag, "Wind-down snoozed, suppressing overlays on blocked app: $currentPackageName")
-            hideAllBut()
-            return
-        }
-
-        val entryForCurrentApp = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
-        val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
-        val now = Instant.now()
+        val currentData = sharedOverlayViewModel.sharedData.value
+        val entryForCurrentApp = currentData.appMap[currentPackageName]
+        val activeTimer = currentData.activeTimer
         val activeTimerEndTime = activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
-
-        // Check for rest-of-day mode: hide everything
-        val isRestOfDayActive = activeTimer != null &&
-            activeTimer.durationS == -1 &&
-            activeTimerEndTime?.isAfter(now) == true
-        if (isRestOfDayActive) {
-            Log.d(logTag, "checkToShowOverlay() - rest-of-day mode active, hiding all overlays")
-            hideAllBut()
-            return
-        }
-
+        val currentTimeMs = System.currentTimeMillis()
+        val now = Instant.ofEpochMilli(currentTimeMs)
         val sessionEndTime = entryForCurrentApp?.sessionEndTime ?: activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
-        if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
-            // Keep per-app map in sync so Little Sun countdown can restore after process restarts
-            sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
-        }
-
         val budgetRemaining = hasBudgetRemaining(syncData)
 
-        val isRecentAppSwitch = lastGoToAppTimestamp > 0 &&
-            System.currentTimeMillis() - lastGoToAppTimestamp < APP_SWITCH_DEBOUNCE_MS
-        val isBlocked = isBlockedPackage(currentPackageName)
+        val decision = overlayDecisionEngine.decide(
+            currentPackageName,
+            OverlayState(
+                ownPackage = packageName,
+                blockedApps = blockedApps,
+                currentTime = currentTimeMs,
+                lastHideAllTimestamp = lastHideAllTimestamp,
+                hideToShowDebounceMs = HIDE_TO_SHOW_DEBOUNCE_MS,
+                lastGoToAppTimestamp = lastGoToAppTimestamp,
+                appSwitchDebounceMs = APP_SWITCH_DEBOUNCE_MS,
+                isAnyOverlayShowing =
+                    littleSunOverlayWindow.isWindowShown() ||
+                        interactionOverlayWindow.isWindowShown() ||
+                        smallMsgOverlayWindow.isWindowShown() ||
+                        successSunOverlayWindow.isWindowShown(),
+                isSleepWindDownOverlayShowing = sleepWindDownOverlayWindow.isWindowShown(),
+                appSessionEndTime = entryForCurrentApp?.sessionEndTime?.toEpochMilli(),
+                activeTimerEndTime = activeTimer?.endTS,
+                activeTimerDurationS = activeTimer?.durationS,
+                hasBudgetRemaining = budgetRemaining,
+                isWindDownActive = isWindDownActive(syncData),
+                isWindDownSnoozed = isWindDownSnoozed(syncData),
+            )
+        )
 
         Log.v(
             logTag,
-            "checkToShowOverlay() sessionLimit=$isWithinSessionLimit blocked=$isBlocked " +
-            "package=$currentPackageName recentSwitch=$isRecentAppSwitch"
+            "checkToShowOverlay() decision=$decision sessionLimit=$isWithinSessionLimit " +
+                "blocked=${blockedApps.contains(currentPackageName)} package=$currentPackageName"
         )
 
-        // Skip if user just switched to the app (debounce)
-        if (isRecentAppSwitch) {
-            Log.d(logTag, "Skipping due to recent app switch")
-            return
-        }
-
-        if (!isBlockedPackage(currentPackageName)) {
-            hideAllBut()
-            return;
-        }
-
-        // Already handled by isSystemPackage in AccessibilityService, but double-check launchers
-        if (currentPackageName.contains("launcher") || currentPackageName.contains("home")) {
-            hideAllBut()
-            return
-        }
-
-        if (isBlockedPackage(currentPackageName)) {
-            // NOTE needs to be at the end to only update lastUsage after this
+        fun resetStaleSessionDurationIfNeeded() {
             val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
             if (currentAppData != null && currentAppData.lastUsed.isBefore(
                     Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
@@ -581,35 +603,48 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 Log.v(logTag, "reset sessionDurationInS to 0")
                 sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
             }
+        }
 
-            if (littleSunOverlayWindow.isWindowShown() || interactionOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown()) {
-                Log.v(
-                    logTag,
-                    "checkToShowOverlay() skip because one of the overlays is already shown"
-                )
-            } else if (isWithinSessionLimit) {
-                // Active session exists → show little sun
-                Log.v(logTag, "Active session exists, showing little sun")
-                if (!littleSunOverlayWindow.isWindowShown()) {
-                    showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
-                }
-            } else if (budgetRemaining) {
-                // Daily budget has remaining time → show little sun with budget countdown
-                if (!littleSunOverlayWindow.isWindowShown()) {
+        when (decision) {
+            OverlayDecision.HideAll -> hideAllBut()
+
+            OverlayDecision.ShowSleepWindDown -> {
+                Log.v(logTag, "Wind-down active for blocked app, showing wind-down overlay: $currentPackageName")
+                showOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY, null, currentPackageName)
+            }
+
+            OverlayDecision.ShowWindDownSnoozeTimer -> {
+                Log.v(logTag, "Wind-down snoozed, showing little sun timer for: $currentPackageName")
+                showWindDownSnoozeTimer(currentPackageName, syncData)
+            }
+
+            OverlayDecision.ShowLittleSun -> {
+                resetStaleSessionDurationIfNeeded()
+                if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
+                    // Keep per-app map in sync so Little Sun countdown can restore after process restarts.
+                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
+                } else if (!isWithinSessionLimit && budgetRemaining) {
                     val remainingSeconds = getBudgetRemainingSeconds(syncData)
                     Log.v(logTag, "Budget has ${remainingSeconds}s remaining, showing little sun (budget mode)")
-                    val budgetEndTime = Instant.now().plusSeconds(remainingSeconds.toLong())
-                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(budgetEndTime)
-                    showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
+                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(
+                        Instant.now().plusSeconds(remainingSeconds.toLong())
+                    )
                 }
-            } else {
-                // No active session and no budget remaining → show fresh intervention
+                showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
+            }
+
+            OverlayDecision.ShowIntervention -> {
+                resetStaleSessionDurationIfNeeded()
                 Log.v(logTag, "No active session, SHOW FRESH INTERACTION OVERLAY for: $currentPackageName")
                 showOverlay(
                     OverlayName.INTERACTION_OVERLAY,
                     OverlayMode.INTERACTION_OVERLAY__FRESH,
                     currentPackageName
                 )
+            }
+
+            is OverlayDecision.Skip -> {
+                Log.d(logTag, "checkToShowOverlay() - skipping: ${decision.reason}")
             }
         }
     }

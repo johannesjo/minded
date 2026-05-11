@@ -5,20 +5,22 @@ import {
   SleepWindDownView,
   SleepWindDownDismissReason,
 } from "@src/shared/components/sleepWindDown/SleepWindDownView";
+import { SNOOZE_MINUTES } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const SleepWindDownAndroid = (): JSX.Element => {
   onMount(() => {
     addWrapperClasses();
   });
 
-  // Snooze means "leave me alone for 30 min" — keep the user in the blocked
-  // app. Skip closes the overlay and bounces back to minded. Done means the
-  // user completed the wind-down gesture (drag/fling the moon down) — at
-  // that point they're going to bed, so close the overlay and lock the
-  // screen so the phone is dark when they put it down.
+  // Snooze starts a normal timed session and keeps the user in the blocked
+  // app with the little sun countdown visible. Skip closes the overlay and
+  // bounces back to minded. Done means the user completed the wind-down
+  // gesture (drag/fling the moon down) — at that point they're going to bed,
+  // so close the overlay and lock the screen so the phone is dark when they
+  // put it down.
   const onDismiss = (reason: SleepWindDownDismissReason) => {
     if (reason === "snooze") {
-      androidInterface.hideWindow();
+      androidInterface.snoozeWindDown(SNOOZE_MINUTES * 60);
       return;
     }
     androidInterface.closeCurrentApp();

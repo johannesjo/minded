@@ -236,9 +236,9 @@ export const SleepWindDownView = (
         });
       });
     }
-    // Snooze means "leave me alone for 30 min" — return the user to whatever
-    // they were doing without the moon-drag gesture (which would block re-
-    // entry into the host app on Android).
+    // Snooze returns the user to whatever they were doing without the moon-
+    // drag gesture. On Android the host turns this deadline into the regular
+    // little-sun countdown.
     props.onDismiss("snooze");
   };
 
