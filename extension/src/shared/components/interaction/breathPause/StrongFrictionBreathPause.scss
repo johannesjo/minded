@@ -11,29 +11,6 @@
   pointer-events: auto;
 }
 
-.strong-friction-breath-pause__sunWrap {
-  width: clamp(156px, 42vw, 240px);
-  height: clamp(156px, 42vw, 240px);
-  display: grid;
-  place-items: center;
-}
-
-.strong-friction-breath-pause__sun {
-  --breath-duration: 7s;
-  width: 72%;
-  height: 72%;
-  border-radius: 50%;
-  background: var(--sun-bg);
-  box-shadow:
-    var(--sun-shadow),
-    0 0 42px rgba(255, 255, 255, 0.24),
-    0 0 96px rgba(255, 214, 128, 0.14);
-  transform-origin: center;
-  animation: mindedStrongFrictionBreathSun var(--breath-duration) ease-in-out
-    forwards;
-  will-change: transform, box-shadow;
-}
-
 .strong-friction-breath-pause__copy {
   min-height: 92px;
   display: flex;
@@ -41,29 +18,4 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-}
-
-@keyframes mindedStrongFrictionBreathSun {
-  0% {
-    transform: scale(0.84);
-  }
-
-  46% {
-    transform: scale(1.16);
-    box-shadow:
-      var(--sun-shadow),
-      0 0 64px rgba(255, 255, 255, 0.32),
-      0 0 132px rgba(255, 214, 128, 0.2);
-  }
-
-  100% {
-    transform: scale(0.88);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .strong-friction-breath-pause__sun {
-    animation: none;
-    transform: scale(1);
-  }
 }

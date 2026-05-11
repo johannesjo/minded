@@ -1,0 +1,91 @@
+.breath-sun {
+  --breath-progress: 0;
+  --breath-duration: 7s;
+  width: clamp(156px, 42vw, 240px);
+  height: clamp(156px, 42vw, 240px);
+  display: grid;
+  place-items: center;
+}
+
+.breath-sun--compact {
+  width: clamp(136px, 36vw, 204px);
+  height: clamp(136px, 36vw, 204px);
+}
+
+.breath-sun--large {
+  width: clamp(204px, 58vw, 300px);
+  height: clamp(204px, 58vw, 300px);
+}
+
+.breath-sun__core {
+  width: 72%;
+  height: 72%;
+  border-radius: 50%;
+  background: var(--sun-bg);
+  box-shadow:
+    var(--sun-shadow),
+    0 0 42px rgba(255, 255, 255, 0.24),
+    0 0 96px rgba(255, 214, 128, 0.14);
+  transform: scale(0.9);
+  transform-origin: center;
+  transition:
+    transform 900ms ease-in-out,
+    box-shadow 900ms ease-in-out;
+  will-change: transform, box-shadow;
+}
+
+.breath-sun--large .breath-sun__core {
+  width: 82%;
+  height: 82%;
+}
+
+.breath-sun.is-inhale .breath-sun__core {
+  transform: scale(calc(0.9 + (var(--breath-progress) * 0.24)));
+}
+
+.breath-sun.is-hold .breath-sun__core {
+  transform: scale(1.14);
+  box-shadow:
+    var(--sun-shadow),
+    0 0 64px rgba(255, 255, 255, 0.32),
+    0 0 132px rgba(255, 214, 128, 0.2);
+}
+
+.breath-sun.is-exhale .breath-sun__core {
+  transform: scale(calc(1.14 - (var(--breath-progress) * 0.24)));
+}
+
+.breath-sun.is-cycle .breath-sun__core {
+  animation: mindedBreathSunCycle var(--breath-duration) ease-in-out forwards;
+}
+
+@keyframes mindedBreathSunCycle {
+  0% {
+    transform: scale(0.9);
+  }
+
+  46% {
+    transform: scale(1.14);
+    box-shadow:
+      var(--sun-shadow),
+      0 0 64px rgba(255, 255, 255, 0.32),
+      0 0 132px rgba(255, 214, 128, 0.2);
+  }
+
+  100% {
+    transform: scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breath-sun__core,
+  .breath-sun.is-inhale .breath-sun__core,
+  .breath-sun.is-hold .breath-sun__core,
+  .breath-sun.is-exhale .breath-sun__core,
+  .breath-sun.is-cycle .breath-sun__core {
+    animation: none;
+    transform: scale(1);
+    transition: none;
+    will-change: auto;
+  }
+}

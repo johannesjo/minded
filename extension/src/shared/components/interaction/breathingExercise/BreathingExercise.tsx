@@ -1,5 +1,7 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import styles from "./BreathingExercise.module.scss";
+import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
+import type { BreathSunPhase } from "@src/shared/components/interaction/breathSun/BreathSun";
 
 const BreathingExercise = () => {
   const [stage, setStage] = createSignal("Ready");
@@ -42,12 +44,26 @@ const BreathingExercise = () => {
 
   const currentDuration = () =>
     stages.find((s) => s.name === stage())?.duration ?? 1;
-  const progress = () =>
-    timeLeft() > 0
-      ? 1 - Math.max(timeLeft() - 1, 0) / currentDuration()
-      : stage() === "Ready"
-        ? 0
-        : 1;
+  const progress = () => {
+    if (stage() === "Ready") {
+      return 0;
+    }
+
+    const duration = currentDuration();
+    return Math.max(0, Math.min(1, (duration - timeLeft()) / duration));
+  };
+  const sunPhase = (): BreathSunPhase => {
+    switch (stage()) {
+      case "Breathing in":
+        return "inhale";
+      case "Hold":
+        return "hold";
+      case "Breathing out":
+        return "exhale";
+      default:
+        return "ready";
+    }
+  };
   const cue = () => {
     switch (stage()) {
       case "Breathing in":
@@ -63,19 +79,7 @@ const BreathingExercise = () => {
 
   return (
     <div class={styles.BreathingExercise}>
-      <div
-        class={styles.orb}
-        classList={{
-          [styles.isReady]: stage() === "Ready",
-          [styles.isInhale]: stage() === "Breathing in",
-          [styles.isHold]: stage() === "Hold",
-          [styles.isExhale]: stage() === "Breathing out",
-        }}
-        style={{ "--progress": progress().toString() }}
-        aria-hidden="true"
-      >
-        <span class={styles.orbCore} />
-      </div>
+      <BreathSun phase={sunPhase()} progress={progress()} size="large" />
       <div class={styles.copy}>
         <h1>{stage()}</h1>
         <p>{cue()}</p>
