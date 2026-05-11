@@ -5,8 +5,12 @@ import { Chart as ChartJSChart, ChartData } from "chart.js";
 import { APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/appUsageOrBrowsingBehavior.const";
 
 function Chart(props: { chartData: ChartData }) {
+  let chartEl: HTMLDivElement | undefined;
+
   onMount(() => {
-    const element = document.getElementById("minded-6622");
+    const element =
+      (chartEl?.closest("#minded-6622") as HTMLElement | null) ??
+      document.getElementById("minded-6622");
     if (!element) return;
     const style = getComputedStyle(element);
     const primCol = style.getPropertyValue("--c-graph-fg-full");
@@ -31,7 +35,7 @@ function Chart(props: { chartData: ChartData }) {
   };
 
   return (
-    <div>
+    <div ref={chartEl}>
       <div>
         <Line
           width={chartConfig.width}

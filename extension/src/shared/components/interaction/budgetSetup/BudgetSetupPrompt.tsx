@@ -1,6 +1,5 @@
 import { Component, For } from "solid-js";
 import { DailyBudget } from "@src/dataInterface/syncData";
-import "./BudgetSetupPrompt.scss";
 
 interface BudgetSetupPromptProps {
   currentSkips: number;

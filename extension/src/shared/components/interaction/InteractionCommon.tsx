@@ -32,8 +32,6 @@ import {
   calculateOpacity,
 } from "@src/shared/components/interaction/useFadeAnimation";
 import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
-import "./InteractionCommon.scss";
-
 import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
 
 interface InteractionCommonProps {
@@ -103,6 +101,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let timeSelectionTimeout: number | undefined;
   let successTimeout: number | undefined;
   let fadeInAnimationFrame: number | undefined;
+  let initFadeOutTimeout: number | undefined;
+  let contentReadyTimeout: number | undefined;
+  let beProudMessageTimeout: number | undefined;
+  let isDisposed = false;
+  const interactionEventTarget = props.shadowRoot ?? window;
 
   createEffect(() => {
     if (!getShowSunInstructions()) {
@@ -170,9 +173,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         props.wrapperEl,
         ANIMATION_TIMING.fadeOut.standard,
       );
-      promise.then(() => props.onSkip());
+      promise.then(() => {
+        if (!isDisposed) props.onSkip();
+      });
     } else {
-      runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => props.onSkip());
+      runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => {
+        if (!isDisposed) props.onSkip();
+      });
     }
   };
 
@@ -186,6 +193,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // After fade out completes, call native side
     timeSelectionTimeout = window.setTimeout(() => {
       timeSelectionTimeout = undefined;
+      if (isDisposed) return;
+
       setShowTimeSelection(false);
       setInteractionOpacity(1);
       setShowSunInstructions(false);
@@ -199,12 +208,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setIsFinalAnimation(true);
 
     runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => {
+      if (isDisposed) return;
+
       if (getShowSunInstructions()) {
         props.onInteractionSubmitted?.();
         cancelCountdown();
       }
 
-      setTimeout(() => {
+      beProudMessageTimeout = window.setTimeout(() => {
+        beProudMessageTimeout = undefined;
+        if (isDisposed) return;
+
         setShowBeProudMessage(true);
       }, ANIMATION_TIMING.delay.beProudMessage);
     });
@@ -212,13 +226,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     const event = new CustomEvent("startBackgroundAnimation", {
       detail: { direction },
     });
-    window.dispatchEvent(event);
+    interactionEventTarget.dispatchEvent(event);
   };
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
     setHasAnswered(true);
 
     runFadeAnimation(ANIMATION_TIMING.fadeOut.fast, () => {
+      if (isDisposed) return;
+
       if (answerOrData) {
         setPendingAnswer(answerOrData);
         props.onSetAnswer(answerOrData.val.toString());
@@ -232,14 +248,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       successTimeout = window.setTimeout(() => {
         successTimeout = undefined;
+        if (isDisposed) return;
+
         setShowSunInstructions(true);
         // Use a small delay to ensure the DOM has updated with opacity 0 before starting the fade in
         fadeInAnimationFrame = requestAnimationFrame(() => {
+          if (isDisposed) return;
+
           // Manually animate fade in since runFadeAnimation is for fade out
           const startTime = Date.now();
           const duration = 2000;
 
           const animateFadeIn = () => {
+            if (isDisposed) return;
+
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
@@ -275,6 +297,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     );
     frameNr = res.frameNr;
     res.promise.then(() => {
+      if (isDisposed) return;
+
       // Don't proceed if user is actively editing
       if (isActivelyEditing(props.shadowRoot)) {
         cancelCountdown();
@@ -305,11 +329,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   onMount(async () => {
     if (props.isInitFadeout) {
-      setTimeout(() => initFadeOut(), ANIMATION_TIMING.delay.initFadeOut);
+      initFadeOutTimeout = window.setTimeout(() => {
+        initFadeOutTimeout = undefined;
+        if (!isDisposed) {
+          initFadeOut();
+        }
+      }, ANIMATION_TIMING.delay.initFadeOut);
     }
 
     getSyncData()
       .then((syncData) => {
+        if (isDisposed) return;
+
         setSyncDataI(syncData);
         setAnswers(syncData.answers);
 
@@ -330,12 +361,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setMode(mode);
         }
 
-        setTimeout(() => {
+        contentReadyTimeout = window.setTimeout(() => {
+          contentReadyTimeout = undefined;
+          if (isDisposed) return;
+
           setIsContentReady(true);
           playInterventionSound();
         }, ANIMATION_TIMING.delay.contentReady);
       })
       .catch((error) => {
+        if (isDisposed) return;
+
         console.error("InteractionCommon: Failed to load sync data", error);
         // Fallback to QUESTION mode with a default question
         const fallbackQuestion = getQuestionSemiSmart();
@@ -344,14 +380,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setIsContentReady(true);
       });
 
-    window.addEventListener(
+    interactionEventTarget.addEventListener(
       "dragProgress",
       handleDragProgress as EventListener,
     );
   });
 
   onCleanup(() => {
-    window.removeEventListener(
+    isDisposed = true;
+
+    interactionEventTarget.removeEventListener(
       "dragProgress",
       handleDragProgress as EventListener,
     );
@@ -369,6 +407,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (successTimeout) {
       clearTimeout(successTimeout);
     }
+    if (initFadeOutTimeout) {
+      clearTimeout(initFadeOutTimeout);
+    }
+    if (contentReadyTimeout) {
+      clearTimeout(contentReadyTimeout);
+    }
+    if (beProudMessageTimeout) {
+      clearTimeout(beProudMessageTimeout);
+    }
   });
 
   createEffect(() => {
@@ -383,7 +430,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   return (
     <>
-      <BackgroundTransition dragThreshold={0.3} />
+      <BackgroundTransition dragThreshold={0.3} shadowRoot={props.shadowRoot} />
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 

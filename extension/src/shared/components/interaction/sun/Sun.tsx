@@ -1,5 +1,4 @@
 import { Component, createSignal, onCleanup, onMount } from "solid-js";
-import "./Sun.scss";
 import {
   DRAG_THRESHOLD_PX,
   FLING_VELOCITY_THRESHOLD,
@@ -55,6 +54,10 @@ export const Sun: Component<SunProps> = (props) => {
   const isTapEnabled = () => props.isTapEnabled ?? true;
   const canCompleteDirection = (direction: "up" | "down"): boolean =>
     (props.completionDirection ?? "any") === "any" || direction === "down";
+  const dispatchInteractionEvent = (name: string, detail: unknown) => {
+    const event = new CustomEvent(name, { detail });
+    (props.eventRoot ?? window).dispatchEvent(event);
+  };
 
   let tapTimer: number | null = null;
   let startPos = { x: 0, y: 0 };
@@ -242,10 +245,11 @@ export const Sun: Component<SunProps> = (props) => {
         const direction = deltaY > 0 ? "down" : "up";
         const intensity = getDragProgress();
 
-        const event = new CustomEvent("dragProgress", {
-          detail: { direction, intensity, isDragging: true },
+        dispatchInteractionEvent("dragProgress", {
+          direction,
+          intensity,
+          isDragging: true,
         });
-        window.dispatchEvent(event);
       }
 
       // Reset final-frame allowance so we don't keep processing after release
@@ -301,12 +305,11 @@ export const Sun: Component<SunProps> = (props) => {
         return;
       }
 
-      const screenHeight = window.innerHeight;
-
-      const clearEvent = new CustomEvent("dragProgress", {
-        detail: { direction: "none", intensity: 0, isDragging: false },
+      dispatchInteractionEvent("dragProgress", {
+        direction: "none",
+        intensity: 0,
+        isDragging: false,
       });
-      window.dispatchEvent(clearEvent);
 
       // Check if drag distance exceeded pixel threshold OR velocity is high enough for fling
       const dragDistance = Math.abs(offset.y);
@@ -334,15 +337,12 @@ export const Sun: Component<SunProps> = (props) => {
         props.onStartBackgroundAnimation?.(direction);
         animateToCompletion(direction);
       } else {
-        const resetEvent = new CustomEvent("dragProgress", {
-          detail: {
-            direction: "none",
-            intensity: 0,
-            isDragging: false,
-            resetToInitial: true,
-          },
+        dispatchInteractionEvent("dragProgress", {
+          direction: "none",
+          intensity: 0,
+          isDragging: false,
+          resetToInitial: true,
         });
-        window.dispatchEvent(resetEvent);
         animateSnapBack();
       }
     };
@@ -593,8 +593,14 @@ export const Sun: Component<SunProps> = (props) => {
 
       const handleMouseUp = () => {
         handleEnd();
-        eventTarget.removeEventListener("mousemove", handleMouseMove);
-        eventTarget.removeEventListener("mouseup", handleMouseUp);
+        eventTarget.removeEventListener(
+          "mousemove",
+          handleMouseMove as EventListener,
+        );
+        eventTarget.removeEventListener(
+          "mouseup",
+          handleMouseUp as EventListener,
+        );
       };
 
       // Use shadow root if available, otherwise fall back to document

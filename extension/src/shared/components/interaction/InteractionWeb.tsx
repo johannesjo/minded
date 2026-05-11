@@ -47,12 +47,17 @@ export const InteractionWeb: (props: {
   const [getCurrentSkips, setCurrentSkips] = createSignal(0);
 
   let wrapperEl: HTMLDivElement = undefined!;
+  let isDisposed = false;
+  let isDismissing = false;
+  const stopVideoTimeouts: number[] = [];
 
   onMount(async () => {
     // Stop videos multiple times to catch delayed autoplay
-    setTimeout(() => stopAllVideos(), 1000);
-    setTimeout(() => stopAllVideos(), 2000);
-    setTimeout(() => stopAllVideos(), 5000);
+    stopVideoTimeouts.push(
+      window.setTimeout(() => stopAllVideos(), 1000),
+      window.setTimeout(() => stopAllVideos(), 2000),
+      window.setTimeout(() => stopAllVideos(), 5000),
+    );
 
     // NOTE: Session checks (activeTimer, sessionEndTS) are intentionally NOT done here.
     // content-script.tsx and isShowFullMinder() already determine whether to show
@@ -62,31 +67,51 @@ export const InteractionWeb: (props: {
 
     // Check if budget is exhausted - show message briefly
     const syncData = await getSyncData();
+    if (isDisposed) return;
+
     const budgetState = getBudgetState(syncData, props.host);
     if (budgetState.isActive && budgetState.remainingSeconds <= 0) {
       setIsShowBudgetExhausted(true);
     }
   });
 
-  const escapeHandler = (ev: KeyboardEvent) => {
-    if (ev.key === "Escape") {
+  const escapeHandler: EventListener = (ev) => {
+    const keyboardEvent = ev as KeyboardEvent;
+
+    if (keyboardEvent.key === "Escape") {
       ev.stopPropagation();
-      fadeOut(wrapperEl, 150).promise.then(() => teardown());
+      ev.preventDefault();
+      if (isDismissing) return;
+
+      isDismissing = true;
+      if (wrapperEl) {
+        fadeOut(wrapperEl, 150).promise.then(() => teardown());
+      } else {
+        teardown();
+      }
     }
   };
 
+  const shadowKeyboardEventTarget = props.shadowRoot;
+
   onMount(() => {
-    document.addEventListener("keydown", escapeHandler);
+    // Capture on document so Escape also works while focus is still on the host page.
+    document.addEventListener("keydown", escapeHandler, true);
+    shadowKeyboardEventTarget?.addEventListener("keydown", escapeHandler);
   });
 
   onCleanup(() => {
-    document.removeEventListener("keydown", escapeHandler);
+    isDisposed = true;
+    stopVideoTimeouts.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    document.removeEventListener("keydown", escapeHandler, true);
+    shadowKeyboardEventTarget?.removeEventListener("keydown", escapeHandler);
   });
 
   const teardown = () => {
     console.log("InteractionWeb: teardown called - hiding interaction");
     console.trace("Teardown call stack");
-    document.removeEventListener("keydown", escapeHandler);
+    document.removeEventListener("keydown", escapeHandler, true);
+    shadowKeyboardEventTarget?.removeEventListener("keydown", escapeHandler);
     props.onHideAll();
   };
 

@@ -1,5 +1,4 @@
 import { Component, For } from "solid-js";
-import "./TimeSelection.scss";
 
 interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;

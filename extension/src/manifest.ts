@@ -35,12 +35,7 @@ const manifest = defineManifest(async () => ({
   host_permissions: ["<all_urls>"],
   web_accessible_resources: [
     {
-      resources: [
-        "assets/js/*.js",
-        "assets/css/*.css",
-        "assets/img/*",
-        "assets/mp3/*.mp3",
-      ],
+      resources: ["assets/js/*.js", "assets/img/*", "assets/mp3/*.mp3"],
       matches: ["*://*/*"],
     },
   ],

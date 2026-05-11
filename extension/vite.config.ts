@@ -125,7 +125,10 @@ export default defineConfig(({ mode }): UserConfig => {
           },
         }
       : {
-          plugins: [solidPlugin(), crx({ manifest })],
+          plugins: [
+            solidPlugin(),
+            crx({ manifest, contentScripts: { injectCss: false } }),
+          ],
           css: {
             preprocessorOptions: {
               scss: sassOptions,

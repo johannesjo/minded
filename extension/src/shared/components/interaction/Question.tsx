@@ -8,7 +8,6 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
-import "./Question.scss";
 
 // const MAX_SMART_QUESTION_ATTEMPTS = 3;
 

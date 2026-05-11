@@ -1,5 +1,4 @@
 import { Component, createSignal, For, onCleanup, onMount } from "solid-js";
-import "./Stars.scss";
 
 interface StarsProps {
   isActive: boolean;
@@ -64,7 +63,7 @@ const Stars: Component<StarsProps> = (props) => {
           />
         )}
       </For>
-      
+
       {/* Add some shooting stars for extra magic */}
       <div class="shooting-star shooting-star-1" />
       <div class="shooting-star shooting-star-2" />

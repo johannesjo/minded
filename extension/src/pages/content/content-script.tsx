@@ -103,12 +103,18 @@ const CURRENT_URL = window.location.href;
           shadow as unknown as Document,
         );
 
-        // Teardown function removes the entire shadow host
+        let dispose: (() => void) | undefined;
+        let isTornDown = false;
+
+        // Teardown function disposes Solid state/listeners, then removes the host
         const teardownShadow = () => {
+          if (isTornDown) return;
+          isTornDown = true;
+          dispose?.();
           hostEl.remove();
         };
 
-        render(
+        dispose = render(
           () => (
             <ContentScriptMain
               isShowFullMinderInitially={

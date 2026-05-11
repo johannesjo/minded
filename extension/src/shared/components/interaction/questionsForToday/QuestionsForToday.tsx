@@ -3,7 +3,6 @@ import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyL
 import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { Component } from "solid-js";
-import "./QuestionsForToday.scss";
 
 export const QuestionsForToday: Component<any> = (props) => {
   return (

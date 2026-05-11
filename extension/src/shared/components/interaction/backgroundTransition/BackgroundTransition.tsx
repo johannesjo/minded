@@ -1,9 +1,9 @@
 import { Component, createSignal, onCleanup, onMount } from "solid-js";
-import "./BackgroundTransition.scss";
 import Stars from "./Stars";
 
 interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
+  shadowRoot?: ShadowRoot;
 }
 
 export const BackgroundTransition: Component<BackgroundTransitionProps> = (
@@ -19,7 +19,9 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   let animationFrame: number;
 
   const checkDarkMode = () => {
-    const mindedWrapper = document.querySelector("#minded-6622");
+    const mindedWrapper =
+      props.shadowRoot?.getElementById("minded-6622") ??
+      document.getElementById("minded-6622");
     const isDark =
       mindedWrapper?.classList.contains("minded-6622-dark") || false;
     setIsDarkMode(isDark);
@@ -50,21 +52,23 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       animateToCompletion(direction);
     };
 
-    window.addEventListener(
+    const eventTarget = props.shadowRoot ?? window;
+
+    eventTarget.addEventListener(
       "dragProgress",
       handleDragProgress as EventListener,
     );
-    window.addEventListener(
+    eventTarget.addEventListener(
       "startBackgroundAnimation",
       handleStartAnimation as EventListener,
     );
 
     onCleanup(() => {
-      window.removeEventListener(
+      eventTarget.removeEventListener(
         "dragProgress",
         handleDragProgress as EventListener,
       );
-      window.removeEventListener(
+      eventTarget.removeEventListener(
         "startBackgroundAnimation",
         handleStartAnimation as EventListener,
       );

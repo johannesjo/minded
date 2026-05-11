@@ -1,5 +1,4 @@
 import { Component, onCleanup, onMount } from "solid-js";
-import "./BudgetExhaustedMessage.scss";
 
 interface BudgetExhaustedMessageProps {
   onComplete: () => void;
