@@ -41,5 +41,7 @@ val defaultSyncData = SyncData(
     sleepWindDownSnoozeUntilTS = 0L,
     sleepWindDownProgressNightId = "",
     sleepWindDownCompleted = emptyList(),
-    sleepWindDownBrainDumpDraft = ""
+    sleepWindDownBrainDumpDraft = "",
+    sleepWindDownGratitudeDraft = "",
+    sleepWindDownTomorrowDraft = ""
 )

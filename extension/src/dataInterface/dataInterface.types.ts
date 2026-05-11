@@ -51,6 +51,7 @@ export interface AndroidMindedBridge {
   getMissingCapabilities: () => string;
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: "light" | "medium" | "heavy") => void;
+  setSessionLimit: (payloadJson: string) => void;
   test: () => void;
 }
 

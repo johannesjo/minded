@@ -1,4 +1,4 @@
-.time-selection-wrapper {
+.intent-selection-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -8,31 +8,34 @@
   padding: 48px 0;
 }
 
-.time-selection-container {
+.intent-selection-container {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   padding: 32px;
   text-align: center;
-  flex: 1;
 
   .txtBig {
     margin-bottom: 24px;
   }
-
-  .time-options-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    // Offset the margin from btnToggleSelect
-    margin-left: -8px;
-    margin-right: -8px;
-  }
 }
 
-.time-selection-cancel {
+.intent-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.intent-selection-secondary {
+  margin-top: 16px;
+}
+
+.intent-selection-cancel {
   pointer-events: all;
 }

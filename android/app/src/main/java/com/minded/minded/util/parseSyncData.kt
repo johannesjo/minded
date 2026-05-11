@@ -48,9 +48,22 @@ data class Answer(
     val ts: Long
 )
 
+data class SessionIntent(
+    val id: String
+)
+
+data class SessionTarget(
+    val kind: String,
+    val id: String
+)
+
 data class ActiveTimer(
     val endTS: Long,
-    val durationS: Int
+    val durationS: Int,
+    val startedTS: Long? = null,
+    val target: SessionTarget? = null,
+    val platform: String? = null,
+    val intent: SessionIntent? = null
 )
 
 data class DailyBudget(
@@ -93,7 +106,9 @@ data class SyncData(
     val sleepWindDownSnoozeUntilTS: Long,
     val sleepWindDownProgressNightId: String,
     val sleepWindDownCompleted: List<String>,
-    val sleepWindDownBrainDumpDraft: String
+    val sleepWindDownBrainDumpDraft: String,
+    val sleepWindDownGratitudeDraft: String = "",
+    val sleepWindDownTomorrowDraft: String = ""
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -190,9 +205,28 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val budgetPromptDismissedTS = jsonObject.optLong("budgetPromptDismissedTS", 99L)
 
     val activeTimer = jsonObject.optJSONObject("activeTimer")?.let { timerObj ->
+        val startedTS = if (timerObj.has("startedTS") && !timerObj.isNull("startedTS")) {
+            timerObj.optLong("startedTS")
+        } else {
+            null
+        }
+        val target = timerObj.optJSONObject("target")?.let { targetObj ->
+            val kind = targetObj.optString("kind", "")
+            val id = targetObj.optString("id", "")
+            if (kind.isNotBlank() && id.isNotBlank()) SessionTarget(kind, id) else null
+        }
+        val platform = timerObj.optString("platform", "").takeIf { it.isNotBlank() }
+        val intent = timerObj.optJSONObject("intent")?.let { intentObj ->
+            intentObj.optString("id", "").takeIf { it.isNotBlank() }?.let { SessionIntent(it) }
+        }
+
         ActiveTimer(
             timerObj.optLong("endTS", 0L),
-            timerObj.optInt("durationS", 0)
+            timerObj.optInt("durationS", 0),
+            startedTS,
+            target,
+            platform,
+            intent
         )
     }
 
@@ -222,6 +256,8 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         List(arr.length()) { arr.getString(it) }
     } ?: emptyList()
     val sleepWindDownBrainDumpDraft = jsonObject.optString("sleepWindDownBrainDumpDraft", "")
+    val sleepWindDownGratitudeDraft = jsonObject.optString("sleepWindDownGratitudeDraft", "")
+    val sleepWindDownTomorrowDraft = jsonObject.optString("sleepWindDownTomorrowDraft", "")
 
     return SyncData(
         userCfg,
@@ -253,6 +289,8 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         sleepWindDownSnoozeUntilTS,
         sleepWindDownProgressNightId,
         sleepWindDownCompleted,
-        sleepWindDownBrainDumpDraft
+        sleepWindDownBrainDumpDraft,
+        sleepWindDownGratitudeDraft,
+        sleepWindDownTomorrowDraft
     )
 }

@@ -63,6 +63,32 @@ export interface EmotionLabelingData {
   bodyLocations: string[];
 }
 
+export type SessionIntentId =
+  | "reply_or_message"
+  | "check_one_thing"
+  | "take_short_break"
+  | "not_sure_yet";
+
+export interface SessionIntent {
+  id: SessionIntentId;
+}
+
+export interface SessionTarget {
+  kind: "host" | "app";
+  id: string;
+}
+
+export type SessionPlatform = "web" | "android" | "ios";
+
+export interface ActiveTimer {
+  endTS: number;
+  durationS: number;
+  startedTS?: number;
+  target?: SessionTarget;
+  platform?: SessionPlatform;
+  intent?: SessionIntent;
+}
+
 export interface SyncData {
   cfg: UserCfg;
   answers: Answer[];
@@ -94,10 +120,7 @@ export interface SyncData {
   alternativeApps: string[];
   alternativeWebsites: string[];
 
-  activeTimer: {
-    endTS: number;
-    durationS: number;
-  } | null;
+  activeTimer: ActiveTimer | null;
 
   emotionLabeling: EmotionLabelingData | null;
 

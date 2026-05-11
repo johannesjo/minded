@@ -25,8 +25,13 @@ import {
 import { shouldPromptBudgetSetup, getBudgetState } from "@src/util/budget";
 import { BudgetSetupPrompt } from "@src/shared/components/interaction/budgetSetup/BudgetSetupPrompt";
 import { BudgetExhaustedMessage } from "@src/shared/components/interaction/BudgetExhaustedMessage";
-import { DailyBudget } from "@src/dataInterface/syncData";
+import {
+  ActiveTimer,
+  DailyBudget,
+  SessionIntent,
+} from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
+import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
 
 // NOTE: val also needs to be set in css
 
@@ -115,23 +120,18 @@ export const InteractionWeb: (props: {
     props.onHideAll();
   };
 
-  const setSessionLimit = async (seconds: number) => {
+  const setSessionLimit = async (seconds: number, intent?: SessionIntent) => {
     const now = Date.now();
     const isRestOfDay = seconds < 0;
-    const endTs = isRestOfDay
-      ? (() => {
-          const endOfDay = new Date();
-          endOfDay.setHours(24, 0, 0, 0);
-          return endOfDay.getTime();
-        })()
-      : now + seconds * 1000;
-
-    await updateSyncData({
-      activeTimer: {
-        endTS: endTs,
-        durationS: seconds,
-      },
+    const activeTimer: ActiveTimer = createActiveTimer({
+      seconds,
+      now,
+      target: { kind: "host", id: props.host },
+      platform: "web",
+      intent,
     });
+
+    await updateSyncData({ activeTimer });
 
     await updateHostsEntry(props.host, {
       lastUsedTS: now,

@@ -6,6 +6,8 @@ import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
+import { SessionIntent } from "@src/dataInterface/syncData";
+import { createAndroidSessionLimitPayload } from "@src/shared/components/interaction/sessionLimit";
 
 const questionId = window.location.hash.replace("#", "");
 if (questionId) {
@@ -89,9 +91,11 @@ const InteractionAndroid = () => {
     }, 100);
   };
 
-  const onSetSessionLimit = (seconds: number) => {
+  const onSetSessionLimit = (seconds: number, intent?: SessionIntent) => {
     console.log("onSetSessionLimit called with seconds:", seconds);
-    androidInterface.setSessionLimit(seconds);
+    androidInterface.setSessionLimit(
+      createAndroidSessionLimitPayload(seconds, intent),
+    );
     console.log("androidInterface.setSessionLimit called");
   };
 

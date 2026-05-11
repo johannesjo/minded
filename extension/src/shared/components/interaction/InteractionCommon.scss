@@ -8,7 +8,7 @@
 
 .interaction-content {
   opacity: 0;
-  transition: opacity 0.8s ease-out;
+  transition: opacity 1s ease-out;
 
   &.fade-in {
     opacity: 1;
@@ -133,7 +133,31 @@
   padding-bottom: 64px;
 
   &.fade-in {
-    transition: opacity 1.2s ease-out; // Slower fade in for instructions
+    transition: opacity 1s ease-out;
+  }
+}
+
+.time-selection-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  animation: fadeIn var(--screen-transition-ms, 1000ms) ease-out forwards;
+}
+
+.post-sun-screen {
+  opacity: 1;
+  transition: opacity var(--screen-transition-ms, 1000ms) ease-out;
+  width: 100%;
+  height: 100%;
+
+  &.is-fading {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

@@ -37,6 +37,8 @@ import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.getBudgetRemainingSeconds
 import com.minded.minded.util.hasBudgetRemaining
 import com.minded.minded.util.ActiveTimer
+import com.minded.minded.util.SessionIntent
+import com.minded.minded.util.SessionTarget
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
@@ -736,7 +738,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
     }
 
-    fun setSessionLimit(seconds: Int) {
+    fun setSessionLimit(seconds: Int, intent: SessionIntent? = null) {
         Log.d(logTag, "setSessionLimit($seconds) called")
         val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
         Log.d(logTag, "setSessionLimit - currentApp: $currentApp")
@@ -758,7 +760,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             now + seconds * 1000L
         }
 
-        val activeTimer = ActiveTimer(endTS, seconds)
+        val activeTimer = ActiveTimer(
+            endTS = endTS,
+            durationS = seconds,
+            startedTS = now,
+            target = SessionTarget("app", currentApp),
+            platform = "android",
+            intent = intent
+        )
         sharedPreferenceService.updateSyncData {
             copy(activeTimer = activeTimer)
         }

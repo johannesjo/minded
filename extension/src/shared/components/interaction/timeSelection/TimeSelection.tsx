@@ -1,8 +1,11 @@
 import { Component, For } from "solid-js";
+import { SessionIntent } from "@src/dataInterface/syncData";
+import { getSessionIntentTimeQuestion } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
 
 interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;
   onCancel: () => void;
+  intent?: SessionIntent;
 }
 
 export const TimeSelection: Component<TimeSelectionProps> = (props) => {
@@ -18,7 +21,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   return (
     <div class="time-selection-wrapper">
       <div class="time-selection-container">
-        <div class="txtBig">How long do you intend to use the app?</div>
+        <div class="txtBig">{getSessionIntentTimeQuestion(props.intent)}</div>
 
         <div class="time-options-grid">
           <For each={options}>

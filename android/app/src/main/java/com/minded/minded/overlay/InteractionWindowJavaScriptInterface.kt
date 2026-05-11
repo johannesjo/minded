@@ -13,7 +13,33 @@ import com.minded.minded.BuildConfig
 import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.SafeAreaInsetsHolder
+import com.minded.minded.util.SessionIntent
 import com.minded.minded.util.parseJSONQuestion
+import org.json.JSONObject
+
+internal data class SessionLimitPayload(
+    val seconds: Int,
+    val intent: SessionIntent?
+)
+
+internal fun parseSessionLimitPayload(payloadJson: String): SessionLimitPayload? {
+    val trimmed = payloadJson.trim()
+    if (!trimmed.startsWith("{")) {
+        return trimmed.toIntOrNull()?.let { SessionLimitPayload(it, null) }
+    }
+
+    return try {
+        val payload = JSONObject(trimmed)
+        val intent = payload.optJSONObject("intent")
+            ?.optString("id", "")
+            ?.takeIf { it.isNotBlank() }
+            ?.let { SessionIntent(it) }
+
+        SessionLimitPayload(payload.getInt("seconds"), intent)
+    } catch (_: Exception) {
+        null
+    }
+}
 
 class InteractionWindowJavaScriptInterface(
     override val webView: WebView,
@@ -111,9 +137,14 @@ class InteractionWindowJavaScriptInterface(
     }
 
     @JavascriptInterface
-    fun setSessionLimit(seconds: Int) {
-        Log.d(logTag, "setSessionLimit($seconds) called from JS interface")
-        ctrlSvc.setSessionLimit(seconds)
+    fun setSessionLimit(payloadJson: String) {
+        Log.d(logTag, "setSessionLimit($payloadJson) called from JS interface")
+        val payload = parseSessionLimitPayload(payloadJson)
+        if (payload == null) {
+            Log.e(logTag, "setSessionLimit - invalid payload: $payloadJson")
+            return
+        }
+        ctrlSvc.setSessionLimit(payload.seconds, payload.intent)
     }
 
     private val vibrator: Vibrator by lazy {

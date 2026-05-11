@@ -91,6 +91,19 @@ fun syncDataToJson(syncData: SyncData): String {
         val timerObj = JSONObject()
         timerObj.put("endTS", syncData.activeTimer.endTS)
         timerObj.put("durationS", syncData.activeTimer.durationS)
+        syncData.activeTimer.startedTS?.let { timerObj.put("startedTS", it) }
+        syncData.activeTimer.target?.let { target ->
+            val targetObj = JSONObject()
+            targetObj.put("kind", target.kind)
+            targetObj.put("id", target.id)
+            timerObj.put("target", targetObj)
+        }
+        syncData.activeTimer.platform?.let { timerObj.put("platform", it) }
+        syncData.activeTimer.intent?.let { intent ->
+            val intentObj = JSONObject()
+            intentObj.put("id", intent.id)
+            timerObj.put("intent", intentObj)
+        }
         jsonObject.put("activeTimer", timerObj)
     }
 
@@ -125,6 +138,8 @@ fun syncDataToJson(syncData: SyncData): String {
     jsonObject.put("sleepWindDownProgressNightId", syncData.sleepWindDownProgressNightId)
     jsonObject.put("sleepWindDownCompleted", JSONArray(syncData.sleepWindDownCompleted))
     jsonObject.put("sleepWindDownBrainDumpDraft", syncData.sleepWindDownBrainDumpDraft)
+    jsonObject.put("sleepWindDownGratitudeDraft", syncData.sleepWindDownGratitudeDraft)
+    jsonObject.put("sleepWindDownTomorrowDraft", syncData.sleepWindDownTomorrowDraft)
 
     return jsonObject.toString()
 }
