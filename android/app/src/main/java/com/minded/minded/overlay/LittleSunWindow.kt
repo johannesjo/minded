@@ -41,6 +41,8 @@ class LittleSunWindow(
     private var windowShownAt = 0L
     private var budgetUsageAccumulator = 0
     private var isBudgetActive = false
+    private var pendingExpiredApp: String? = null
+    private var pendingExpiredWasWindDownSnooze = false
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
@@ -66,8 +68,11 @@ class LittleSunWindow(
             val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
             val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
             val appEntry = if (currentApp != null) sharedOverlayViewModel.sharedData.value.appMap[currentApp] else null
+            val windDownSnoozeEndTime = ctrlSvc.getWindDownSnoozeTimerEndTime()
             
-            val endTime = if (activeTimer != null) Instant.ofEpochMilli(activeTimer.endTS) else appEntry?.sessionEndTime
+            val endTime = windDownSnoozeEndTime
+                ?: activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
+                ?: appEntry?.sessionEndTime
             val now = Instant.now()
 
             Log.v(
@@ -78,10 +83,11 @@ class LittleSunWindow(
             if (endTime != null) {
                 if (now.isAfter(endTime)) {
                     // Time limit reached
-                    hideWindow()
                     if (currentApp != null) {
-                        ctrlSvc.onLittleSunTimerExpired(currentApp)
+                        pendingExpiredApp = currentApp
+                        pendingExpiredWasWindDownSnooze = windDownSnoozeEndTime != null
                     }
+                    hideWindow()
                     stopTimer()
                     return
                 } else {
@@ -164,6 +170,17 @@ class LittleSunWindow(
             budgetUsageAccumulator = 0
         }
         super.hideWindow()
+    }
+
+    override fun onWindowRemoved() {
+        val expiredApp = pendingExpiredApp ?: return
+        val wasWindDownSnooze = pendingExpiredWasWindDownSnooze
+        pendingExpiredApp = null
+        pendingExpiredWasWindDownSnooze = false
+
+        Handler(Looper.getMainLooper()).post {
+            ctrlSvc.onLittleSunTimerExpired(expiredApp, wasWindDownSnooze)
+        }
     }
 
     private fun startTimer(initialTimeI: Int = 0) {

@@ -57,7 +57,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private var lastHideAllTimestamp: Long = 0
     private val APP_SWITCH_DEBOUNCE_MS: Long = 1500L // Reduced from 2200ms for better UX
     private val HIDE_TO_SHOW_DEBOUNCE_MS: Long = 500L
-    private val OVERLAY_TRANSITION_DELAY_MS = 320L
     private val FALLBACK_BLOCKED_APPS = setOf("com.android.chrome", "com.google.android.youtube")
     private val overlayRetryHandler = Handler(Looper.getMainLooper())
     private val pendingOverlayRetries = mutableMapOf<String, Int>()
@@ -463,29 +462,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         return true
     }
 
+    internal fun getWindDownSnoozeTimerEndTime(): Instant? {
+        val syncData = sharedPreferenceService.getSyncData()
+        val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return null
+        if (syncData.sleepWindDownDismissedNightId == nightId) return null
+        val snoozeEndTS = syncData.sleepWindDownSnoozeUntilTS
+        return if (snoozeEndTS > 0) Instant.ofEpochMilli(snoozeEndTS) else null
+    }
+
     private fun showWindDownSnoozeTimer(currentPackageName: String, syncData: SyncData) {
         val snoozeEndTS = syncData.sleepWindDownSnoozeUntilTS
         val snoozeEndTime = Instant.ofEpochMilli(snoozeEndTS)
-        val nowMs = System.currentTimeMillis()
-        val remainingSeconds = ((snoozeEndTS - nowMs) / 1000L).coerceAtLeast(1L).toInt()
-        val currentTimer = sharedOverlayViewModel.sharedData.value.activeTimer
-        val storedTimer = syncData.activeTimer
-        val isCurrentTimerStale =
-            currentTimer == null ||
-                currentTimer.endTS != snoozeEndTS ||
-                currentTimer.durationS == -1
-        val isStoredTimerStale =
-            storedTimer == null ||
-                storedTimer.endTS != snoozeEndTS ||
-                storedTimer.durationS == -1
-
-        if (isCurrentTimerStale || isStoredTimerStale) {
-            val snoozeTimer = ActiveTimer(snoozeEndTS, remainingSeconds)
-            sharedPreferenceService.updateSyncData {
-                copy(activeTimer = snoozeTimer)
-            }
-            sharedOverlayViewModel.updateActiveTimer(snoozeTimer)
-        }
 
         sharedOverlayViewModel.updateSharedData(currentPackageName)
         sharedOverlayViewModel.updateCurrentAppSessionEndTime(snoozeEndTime)
@@ -497,6 +484,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     fun snoozeWindDown(seconds: Int) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler(Looper.getMainLooper()).post {
+                snoozeWindDown(seconds)
+            }
+            return
+        }
+
         Log.d(logTag, "snoozeWindDown($seconds) called")
         val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
         if (currentApp == null) {
@@ -522,12 +516,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         showWindDownSnoozeTimer(currentApp, syncData)
     }
 
-    fun onLittleSunTimerExpired(currentApp: String) {
-        Log.d(logTag, "onLittleSunTimerExpired($currentApp)")
-        clearSession()
-        Handler(Looper.getMainLooper()).postDelayed({
-            checkToShowOverlay(currentApp)
-        }, OVERLAY_TRANSITION_DELAY_MS)
+    fun onLittleSunTimerExpired(currentApp: String, wasWindDownSnooze: Boolean) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler(Looper.getMainLooper()).post {
+                onLittleSunTimerExpired(currentApp, wasWindDownSnooze)
+            }
+            return
+        }
+
+        Log.d(logTag, "onLittleSunTimerExpired($currentApp, wasWindDownSnooze=$wasWindDownSnooze)")
+        if (!wasWindDownSnooze) {
+            clearSession()
+        } else {
+            sharedOverlayViewModel.updateCurrentAppSessionEndTime(null)
+        }
+        checkToShowOverlay(currentApp)
     }
 
     private fun getEffectiveBlockedApps(): Set<String> {
@@ -538,13 +541,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     internal fun isBlockedPackage(packageName: String): Boolean {
         val blockedApps = sharedPreferenceService.getBlockedApps()
         Log.d(logTag, "isBlockedPackage() - checking $packageName against blocked apps: $blockedApps")
-        
+
         // If no apps are blocked in preferences, use hardcoded test apps
         if (blockedApps.isEmpty()) {
             Log.d(logTag, "No blocked apps configured, using test apps: $FALLBACK_BLOCKED_APPS")
             return FALLBACK_BLOCKED_APPS.contains(packageName)
         }
-        
+
         return blockedApps.contains(packageName)
     }
 

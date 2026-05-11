@@ -279,6 +279,37 @@ class OverlayDecisionEngineTest {
     }
 
     @Test
+    fun `should show sleep wind down after snooze expires even when an active timer remains`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            activeTimerEndTime = currentTime + 60000,
+            isWindDownActive = true,
+            isWindDownSnoozed = false
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowSleepWindDown, decision)
+    }
+
+    @Test
+    fun `wind down snooze should show little sun over active timer`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            activeTimerEndTime = currentTime + 60000,
+            isWindDownSnoozed = true
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowWindDownSnoozeTimer, decision)
+    }
+
+    @Test
     fun `should skip when sleep wind down overlay is already showing`() {
         val state = createState(
             blockedApps = blockedApps,
