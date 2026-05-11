@@ -6,7 +6,7 @@ import {
   onMount,
 } from "solid-js";
 import {
-  getInteractionMode,
+  getInteractionModeDecision,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
 import {
@@ -45,6 +45,9 @@ import {
   cancelIntentSelection,
   cancelTimeSelection,
 } from "@src/shared/components/interaction/sessionLimit";
+import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
+import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
+import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
@@ -89,6 +92,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
+  const [getFrictionLevel, setFrictionLevel] =
+    createSignal<FrictionLevel>("normal");
   const [getInitialQuestion, setInitialQuestion] = createSignal<
     QuestionForPrompt | undefined
   >();
@@ -106,6 +111,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getHasAnswered, setHasAnswered] = createSignal(false);
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
+  const [getShowBreathPause, setShowBreathPause] = createSignal(false);
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
@@ -117,7 +123,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     createSignal(false);
   const [getSunHintStep, setSunHintStep] = createSignal(0);
   const getShowPostSunOverlay = () =>
-    getShowIntentSelection() || getShowTimeSelection();
+    getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
 
   let frameNr: number | undefined;
   let fadeAnimationFrame: number | undefined;
@@ -207,6 +213,30 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
+  const handleSunContinue = () => {
+    cancelCountdown();
+    setPendingIntent(undefined);
+
+    if (getPostSunPauseSeconds(getFrictionLevel()) > 0) {
+      setShowBreathPause(true);
+      return;
+    }
+
+    setShowIntentSelection(true);
+  };
+
+  const handleBreathPauseComplete = () => {
+    if (isDisposed) return;
+    setShowBreathPause(false);
+    setShowIntentSelection(true);
+  };
+
+  const handleBreathPauseCancel = () => {
+    cancelCountdown();
+    setPendingIntent(undefined);
+    setShowBreathPause(false);
+  };
+
   const handleTimeSelection = (seconds: number) => {
     const intent = getPendingIntent();
     setIsPostSunScreenFading(true);
@@ -277,6 +307,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     setHasAnswered(true);
     setPendingIntent(undefined);
+    setShowBreathPause(false);
 
     runFadeAnimation(SCREEN_TRANSITION_MS, () => {
       if (isDisposed) return;
@@ -399,16 +430,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
         if (props.questionForPrompt) {
           setInitialQuestion(props.questionForPrompt);
+          setFrictionLevel("normal");
           setMode("QUESTION");
         } else {
           const question = getQuestionSmart(syncData.answers);
-          const mode = getInteractionMode(syncData, {
+          const modeDecision = getInteractionModeDecision(syncData, {
             target: props.interactionTarget,
             platform: props.interactionPlatform,
             isMainView: props.isFromDashboard,
           });
           setInitialQuestion(question);
-          setMode(mode);
+          setFrictionLevel(modeDecision.frictionLevel);
+          setMode(modeDecision.mode);
         }
 
         contentReadyTimeout = window.setTimeout(() => {
@@ -426,6 +459,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         // Fallback to QUESTION mode with a default question
         const fallbackQuestion = getQuestionSemiSmart();
         setInitialQuestion(fallbackQuestion);
+        setFrictionLevel("normal");
         setMode("QUESTION");
         setIsContentReady(true);
       });
@@ -506,7 +540,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             class="post-sun-screen"
             classList={{ "is-fading": getIsPostSunScreenFading() }}
           >
-            {getShowIntentSelection() ? (
+            {getShowBreathPause() ? (
+              <StrongFrictionBreathPause
+                seconds={getPostSunPauseSeconds(getFrictionLevel())}
+                onComplete={handleBreathPauseComplete}
+                onCancel={handleBreathPauseCancel}
+              />
+            ) : getShowIntentSelection() ? (
               <IntentSelection
                 onSelectIntent={showTimeSelectionAfterIntent}
                 onCancel={() => {
@@ -627,7 +667,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             }}
           >
             <Sun
-              onSkip={() => setShowIntentSelection(true)}
+              onSkip={handleSunContinue}
               onFlingAway={props.onFlingAway}
               onDragComplete={props.onDragComplete}
               onStartBackgroundAnimation={handleStartBackgroundAnimation}
