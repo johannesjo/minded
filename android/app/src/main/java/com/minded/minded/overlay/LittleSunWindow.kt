@@ -53,12 +53,7 @@ class LittleSunWindow(
             startTimer(initialTime)
         }
 
-        LittleSun(elapsedSeconds, onSunTap = {
-            Log.v(logTag, "onSunTap() - ending session and going to minded app")
-            hideWindow()
-            ctrlSvc.clearSession()
-            ctrlSvc.goToApp()
-        })
+        LittleSun(elapsedSeconds)
     }
 
     private var elapsedSeconds by mutableStateOf(0)
@@ -160,6 +155,12 @@ class LittleSunWindow(
         // Cache budget state at show time to avoid reading SharedPreferences every tick
         isBudgetActive = hasBudgetRemaining(ctrlSvc.getSharedPreferenceService().getSyncData())
         Log.d(logTag, "showWindow() completed, window=${window != null}")
+    }
+
+    override fun getLayoutParams(): WindowManager.LayoutParams {
+        return super.getLayoutParams().apply {
+            flags = flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        }
     }
 
     override fun hideWindow() {

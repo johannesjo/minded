@@ -1,6 +1,5 @@
 package com.minded.minded.ui.compose
 
-import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -8,8 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -25,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,7 +32,6 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun LittleSun(
     elapsedSeconds: Int = 0,
-    onSunTap: () -> Unit = {},
     isInitiallyVisible: Boolean = false
 ) {
     val showText = elapsedSeconds >= 0
@@ -44,7 +39,6 @@ fun LittleSun(
     val remainingSeconds = if (showText) elapsedSeconds % 60 else 0
     val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
     val color = Color.White
-    val view = LocalView.current
 
     var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
@@ -60,20 +54,20 @@ fun LittleSun(
         Box(
             modifier = Modifier
 //            .border(1.dp, Color.Black, CircleShape  )
-                .size(44.dp),
+                .size(36.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
             Box(
                 modifier = Modifier
 //                .border(1.dp, Color.Red, CircleShape  )
-                    .size(36.dp),
+                    .size(30.dp),
                 contentAlignment = Alignment.Center // This will center the inner Box
 
             ) {
                 val brush = Brush.radialGradient(listOf(Color.Red, Color.Transparent))
                 Canvas(
-                    modifier = Modifier.size(90.dp),
+                    modifier = Modifier.size(64.dp),
                     onDraw = {
                         drawCircle(brush)
                     }
@@ -81,11 +75,7 @@ fun LittleSun(
 
                 Box(
                     modifier = Modifier
-                        .size(30.dp)
-                        .clickable(onClick = {
-                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                            onSunTap()
-                        })
+                        .size(26.dp)
                 ) {
                     Surface(
                         shape = CircleShape,
