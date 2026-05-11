@@ -105,6 +105,7 @@ export interface SyncData {
   sunTaps: {
     [key: string]: number;
   };
+  sunTapTimestamps: number[];
   attempts: {
     [key: string]: number;
   };

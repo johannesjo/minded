@@ -4,6 +4,7 @@ import type {
   SyncData,
 } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
+import { getRecentSunTapTimestamps } from "@src/dataInterface/sunTapHistory";
 
 export type FrictionLevel = "soft" | "normal" | "strong";
 
@@ -31,6 +32,7 @@ export interface InteractionContext {
   hasAlternatives: boolean;
   todayOpeningAttempts: number;
   todaySunTaps: number;
+  recentSunTaps: number;
   todayUsageSeconds: number;
   targetUsageSeconds: number;
   budget: InteractionBudgetContext;
@@ -48,7 +50,7 @@ export interface InteractionContextInput {
 
 const FEW_ANSWERS_MAX = 1;
 const EVENING_START_HOUR = 20;
-const MANY_SKIPS_TODAY_THRESHOLD = 5;
+const MANY_RECENT_SUN_TAPS_THRESHOLD = 5;
 const MANY_ATTEMPTS_TODAY_THRESHOLD = 10;
 const HIGH_USAGE_TODAY_SECONDS = 20 * 60;
 
@@ -172,6 +174,10 @@ export const getInteractionContext = ({
     hasAlternatives: alternatives.length > 0,
     todayOpeningAttempts: syncData.attempts[dateISO] || 0,
     todaySunTaps: syncData.sunTaps[dateISO] || 0,
+    recentSunTaps: getRecentSunTapTimestamps(
+      syncData.sunTapTimestamps ?? [],
+      now,
+    ).length,
     todayUsageSeconds: todayUsage.totalSeconds,
     targetUsageSeconds,
     budget: getBudgetContext(syncData, dateISO, target, platform),
@@ -187,7 +193,7 @@ export const getFrictionLevel = (
 ): FrictionLevel => {
   if (
     context.budget.isExhausted ||
-    context.todaySunTaps >= MANY_SKIPS_TODAY_THRESHOLD ||
+    context.recentSunTaps >= MANY_RECENT_SUN_TAPS_THRESHOLD ||
     (context.todayOpeningAttempts >= MANY_ATTEMPTS_TODAY_THRESHOLD &&
       context.todaySunTaps > 0)
   ) {

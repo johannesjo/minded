@@ -16,6 +16,14 @@ jest.mock("@src/dataInterface/commonSyncDataInterface", () => ({
 const NOW = new Date("2026-05-11T10:00:00").getTime();
 const EVENING = new Date("2026-05-11T20:00:00").getTime();
 const TODAY = "2026-05-11";
+const ONE_HOUR = 60 * 60 * 1000;
+const RECENT_SUN_TAPS = [
+  NOW - 4 * ONE_HOUR,
+  NOW - 3 * ONE_HOUR,
+  NOW - 2 * ONE_HOUR,
+  NOW - ONE_HOUR,
+  NOW,
+];
 
 const sequenceRandom = (values: number[]): (() => number) => {
   let index = 0;
@@ -84,6 +92,7 @@ describe("getInteractionMode", () => {
           answer("2"),
         ],
         sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: RECENT_SUN_TAPS,
       }),
       { isMainView: false },
     );
@@ -100,6 +109,7 @@ describe("getInteractionMode", () => {
       baseSyncData({
         alternativeWebsites: ["https://example.com"],
         sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: RECENT_SUN_TAPS,
       }),
       { isMainView: false },
     );

@@ -84,6 +84,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   answers: [],
   attempts: {},
   sunTaps: {},
+  sunTapTimestamps: [],
   selfAssessment: Object.values(SelfAssessmentId).reduce(
     (acc, curr) => {
       acc[curr] = { ts: DEFAULT_TS_VAL, val: -1 };

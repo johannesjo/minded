@@ -5,6 +5,7 @@ import type { Answer } from "@src/dataInterface/syncData";
 
 const NOW = new Date("2026-05-11T10:00:00").getTime();
 const TODAY = "2026-05-11";
+const ONE_HOUR = 60 * 60 * 1000;
 
 const answers = (count: number): Answer[] =>
   Array.from({ length: count }, (_, index) => ({
@@ -60,6 +61,7 @@ describe("interaction context", () => {
       hasAlternatives: true,
       todayOpeningAttempts: 4,
       todaySunTaps: 2,
+      recentSunTaps: 0,
       todayUsageSeconds: 900,
       targetUsageSeconds: 300,
       budget: {
@@ -230,13 +232,20 @@ describe("friction level", () => {
     expect(getFrictionLevel(context)).toBe("strong");
   });
 
-  it("returns strong after many continuations today", () => {
+  it("returns strong after many continuations in the last five hours", () => {
     const context = getInteractionContext({
       syncData: createMockSyncData({
         answers: answers(3),
         moodCheckTS: NOW,
         energyLvlTS: NOW,
         sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: [
+          NOW - 4 * ONE_HOUR,
+          NOW - 3 * ONE_HOUR,
+          NOW - 2 * ONE_HOUR,
+          NOW - ONE_HOUR,
+          NOW,
+        ],
       }),
       now: NOW,
       target: { kind: "host", id: "reddit.com" },
@@ -244,6 +253,30 @@ describe("friction level", () => {
     });
 
     expect(getFrictionLevel(context)).toBe("strong");
+  });
+
+  it("does not return strong when today's continuations are outside the five-hour window", () => {
+    const context = getInteractionContext({
+      syncData: createMockSyncData({
+        answers: answers(3),
+        moodCheckTS: NOW,
+        energyLvlTS: NOW,
+        sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: [
+          NOW - 9 * ONE_HOUR,
+          NOW - 8 * ONE_HOUR,
+          NOW - 7 * ONE_HOUR,
+          NOW - 6 * ONE_HOUR,
+          NOW - 5 * ONE_HOUR - 1,
+        ],
+      }),
+      now: NOW,
+      target: { kind: "host", id: "reddit.com" },
+      platform: "web",
+    });
+
+    expect(context.recentSunTaps).toBe(0);
+    expect(getFrictionLevel(context)).toBe("normal");
   });
 
   it("keeps low-information situations at normal friction", () => {

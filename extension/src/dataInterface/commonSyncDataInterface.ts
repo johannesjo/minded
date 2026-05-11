@@ -17,10 +17,10 @@ import {
 
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+import { getRecentSunTapTimestamps } from "@src/dataInterface/sunTapHistory";
 import {
   updateSyncDataField,
   incrementDateKeyedCounter,
-  updateDateKeyedField,
 } from "@src/dataInterface/updateSyncDataHelpers";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
@@ -87,7 +87,22 @@ export const countOpeningAttempt = (): Promise<void> =>
   incrementDateKeyedCounter(getSyncData, saveSyncData, "attempts");
 
 export const countSunTap = (): Promise<void> =>
-  incrementDateKeyedCounter(getSyncData, saveSyncData, "sunTaps");
+  updateSyncDataField(getSyncData, saveSyncData, (syncData) => {
+    const now = Date.now();
+    const ds = getIsoDate(new Date(now));
+    const currentSunTaps = syncData.sunTaps[ds] || 0;
+
+    return {
+      sunTaps: {
+        ...syncData.sunTaps,
+        [ds]: currentSunTaps + 1,
+      },
+      sunTapTimestamps: [
+        ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
+        now,
+      ],
+    };
+  });
 
 export const rateCurrentBrowsingBehavior = async (
   val: number,

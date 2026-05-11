@@ -128,6 +128,7 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     answers: [],
     attempts: {},
     sunTaps: {},
+    sunTapTimestamps: [],
     selfAssessment: defaultSelfAssessment,
     alternativeApps: [],
     alternativeWebsites: [],
