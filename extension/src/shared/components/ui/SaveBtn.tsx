@@ -14,9 +14,9 @@ export const SaveBtn = (props: {
 
   return (
     <ButtonWrapper isVisible={getIsVisible()}>
-      <div class="btnTxtBig" onClick={() => props.onSave()}>
+      <button type="button" class="btnTxtBig" onClick={() => props.onSave()}>
         <Ico name="send" /> save
-      </div>
+      </button>
     </ButtonWrapper>
   );
 };

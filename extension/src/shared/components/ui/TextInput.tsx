@@ -11,6 +11,9 @@ export interface TextInputProps {
   disabled?: boolean;
   type?: "text" | "time";
   class?: string;
+  ariaLabel?: string;
+  ariaInvalid?: boolean;
+  ariaDescribedBy?: string;
 }
 
 export const TextInput = (props: TextInputProps): JSX.Element => {
@@ -21,6 +24,9 @@ export const TextInput = (props: TextInputProps): JSX.Element => {
       value={props.value}
       placeholder={props.placeholder}
       disabled={props.disabled}
+      aria-label={props.ariaLabel}
+      aria-invalid={props.ariaInvalid}
+      aria-describedby={props.ariaDescribedBy}
       onInput={(e) => props.onInput?.(e.currentTarget.value)}
       onBlur={(e) => props.onBlur?.(e.currentTarget.value)}
       onChange={(e) => props.onChange?.(e.currentTarget.value)}

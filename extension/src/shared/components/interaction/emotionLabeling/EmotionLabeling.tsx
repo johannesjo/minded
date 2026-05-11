@@ -69,7 +69,8 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
           <div>
             <For each={[...PRIMARY_EMOTIONS]}>
               {(emotion) => (
-                <div
+                <button
+                  type="button"
                   class={
                     getSelectedEmotions().has(emotion)
                       ? "btnToggleSelectSmall isSelected"
@@ -78,11 +79,12 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
                   onClick={() => toggleEmotion(emotion)}
                 >
                   {emotion}
-                </div>
+                </button>
               )}
             </For>
           </div>
           <button
+            type="button"
             class="btnToggleSelect"
             style={{
               "margin-top": "24px",
@@ -106,7 +108,8 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
           <div>
             <For each={[...BODY_LOCATIONS]}>
               {(location) => (
-                <div
+                <button
+                  type="button"
                   class={
                     getBodyLocations().has(location)
                       ? "btnToggleSelectSmall isSelected"
@@ -115,11 +118,12 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
                   onClick={() => toggleBodyLocation(location)}
                 >
                   {location}
-                </div>
+                </button>
               )}
             </For>
           </div>
           <button
+            type="button"
             class="btnToggleSelect"
             style={{
               "margin-top": "24px",

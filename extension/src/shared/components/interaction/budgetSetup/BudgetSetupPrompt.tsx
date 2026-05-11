@@ -32,19 +32,20 @@ export const BudgetSetupPrompt: Component<BudgetSetupPromptProps> = (props) => {
         <div class="budget-options-grid">
           <For each={budgetOptions}>
             {(option) => (
-              <div
+              <button
+                type="button"
                 class="btnToggleSelect"
                 onClick={() => handleSelectBudget(option.value)}
               >
                 {option.label}
-              </div>
+              </button>
             )}
           </For>
         </div>
       </div>
 
       <div class="budget-setup-dismiss">
-        <button class="btnTxt" onClick={props.onDismiss}>
+        <button type="button" class="btnTxt" onClick={props.onDismiss}>
           not now
         </button>
       </div>

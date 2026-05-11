@@ -25,9 +25,41 @@
   }
 }
 
-
 .controls {
   gap: 16px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+.status {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  min-height: 24px;
+  margin: -12px 32px 24px;
+  opacity: 0.75;
+  text-align: center;
+  font-size: var(--fz-s);
+}
+
+.isError {
+  opacity: 0.9;
+}
+
+.isSaved {
+  opacity: 0.65;
+}
+
+.undoButton {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--c-fg-full-emphasis);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 2px 4px;
+  text-decoration: underline;
 }

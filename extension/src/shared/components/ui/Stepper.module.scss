@@ -18,9 +18,9 @@
   }
 }
 
-
-
 .step {
+  appearance: none;
+  border: 0;
   color: var(--c-fg);
   width: var(--step-size);
   height: var(--step-size);
@@ -31,20 +31,26 @@
   justify-content: center;
   transition: background-color var(--transition-speed);
   position: relative;
-  opacity: .5;
-  cursor:  default;
+  opacity: 0.5;
+  cursor: default;
+  font: inherit;
+  padding: 0;
 
   &.active {
     background-color: var(--color-active);
     opacity: 1;
-    &::after{
-      opacity: .5;
+    &::after {
+      opacity: 0.5;
     }
   }
   &.done {
     background-color: var(--color-active);
     opacity: 1;
     cursor: pointer;
+  }
+
+  &:disabled {
+    cursor: default;
   }
 
   &:not(:last-child) {

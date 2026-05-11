@@ -8,11 +8,17 @@
 }
 
 .emoji {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-radius: var(--border-radius);
+  color: inherit;
   display: inline-block;
   font-size: 40px;
   padding: 4px;
   cursor: pointer;
   pointer-events: all;
+  line-height: 1;
 
   &:hover {
     transform: scale(1.3);

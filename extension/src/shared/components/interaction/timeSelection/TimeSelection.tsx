@@ -24,19 +24,20 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
         <div class="time-options-grid">
           <For each={options}>
             {(option) => (
-              <div
+              <button
+                type="button"
                 class="btnToggleSelect"
                 onClick={() => props.onSelectTime(option.value)}
               >
                 {option.label}
-              </div>
+              </button>
             )}
           </For>
         </div>
       </div>
 
       <div class="time-selection-cancel">
-        <button class="btnTxt" onClick={props.onCancel}>
+        <button type="button" class="btnTxt" onClick={props.onCancel}>
           cancel
         </button>
       </div>

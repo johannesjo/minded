@@ -1,0 +1,46 @@
+.Options {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px 96px;
+}
+
+.header {
+  margin: 0 auto 32px;
+  max-width: 680px;
+  text-align: center;
+
+  h2 {
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.72;
+  }
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.section {
+  border-top: 1px solid var(--btn-outline-color);
+  padding-top: 28px;
+}
+
+.sectionIntro {
+  margin: 0 auto 20px;
+  max-width: 640px;
+  text-align: center;
+
+  h3 {
+    margin: 0 0 6px;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.72;
+  }
+}

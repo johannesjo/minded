@@ -29,9 +29,15 @@ export const EmojiCheckin: (props: {
         {EMOIJI_CATEGORIES_SORTED.map((catid) => (
           <div class="emoji-category">
             {EMOIJI_CATEGORIES[catid].map((entry) => (
-              <div class="emoji" title={entry.d} onclick={props.onSuccess}>
+              <button
+                type="button"
+                class="emoji"
+                title={entry.d}
+                aria-label={entry.d}
+                onclick={props.onSuccess}
+              >
                 {entry.i}
-              </div>
+              </button>
             ))}
           </div>
         ))}

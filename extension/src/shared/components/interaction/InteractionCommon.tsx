@@ -525,6 +525,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       {props.isFromDashboard && (
         <div class="back-button-wrapper">
           <button
+            type="button"
             class="btnTxt"
             onClick={() => props.onSkip()}
             aria-label="Go back"

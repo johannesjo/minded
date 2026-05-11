@@ -1,4 +1,4 @@
-import { createSignal, JSX, onCleanup, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
 import {
   loadDataForHost,
   updateHostsEntry,
@@ -18,6 +18,7 @@ import { bro } from "@src/util/browser";
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 const BUDGET_USAGE_UPDATE_INTERVAL_S = 10; // Throttle storage writes
+const LITTLE_SUN_HINT_SEEN_KEY = "littleSunHintSeen";
 
 export const LittleSunComponent: (props: {
   teardown: () => void;
@@ -34,6 +35,7 @@ export const LittleSunComponent: (props: {
   const [getBudgetRemaining, setBudgetRemaining] = createSignal<number | null>(
     null,
   );
+  const [getShowHint, setShowHint] = createSignal(false);
 
   let currentSessionInterval: number;
   let budgetUsageAccumulator = 0; // Track seconds since last storage write
@@ -41,6 +43,17 @@ export const LittleSunComponent: (props: {
   // getSyncData().then(...) chains don't complete during page unload.
   let cachedDailyUsage: SyncData["dailyUsage"] = {};
   let t0: NodeJS.Timeout;
+  let hintTimeout: NodeJS.Timeout | undefined;
+
+  const maybeShowHint = async () => {
+    const data = await bro.storage.local.get(LITTLE_SUN_HINT_SEEN_KEY);
+    if (data[LITTLE_SUN_HINT_SEEN_KEY]) return;
+
+    hintTimeout = setTimeout(() => {
+      setShowHint(true);
+      hintTimeout = setTimeout(() => setShowHint(false), 6500);
+    }, 900);
+  };
 
   const flushBudgetUsageSync = () => {
     if (!getIsBudgetMode() || budgetUsageAccumulator <= 0) return;
@@ -88,6 +101,7 @@ export const LittleSunComponent: (props: {
       startBudgetCountdown(budgetState.remainingSeconds);
       window.addEventListener("pagehide", flushBudgetUsageSync);
       t0 = setTimeout(() => setIsMoveOutOfTheWay(true), 200);
+      void maybeShowHint();
       return;
     }
 
@@ -114,14 +128,22 @@ export const LittleSunComponent: (props: {
     t0 = setTimeout(() => {
       setIsMoveOutOfTheWay(true);
     }, 200);
+    void maybeShowHint();
   });
 
   onCleanup(() => {
     window.clearTimeout(t0);
+    window.clearTimeout(hintTimeout);
     window.clearInterval(currentSessionInterval);
     window.removeEventListener("pagehide", flushBudgetUsageSync);
     flushBudgetUsageSync();
   });
+
+  const dismissHint = () => {
+    setShowHint(false);
+    window.clearTimeout(hintTimeout);
+    bro.storage.local.set({ [LITTLE_SUN_HINT_SEEN_KEY]: true });
+  };
 
   const initCounter = (initialValue: number) => {
     if (initialValue) {
@@ -227,6 +249,7 @@ export const LittleSunComponent: (props: {
   };
 
   const handleClick = () => {
+    dismissHint();
     // End current session
     window.clearInterval(currentSessionInterval);
     updateHostsEntry(props.host, { sessionDurationInS: 0 });
@@ -249,21 +272,44 @@ export const LittleSunComponent: (props: {
     return formatSessionTime(getSessionTime());
   };
 
+  const getActionLabel = () => {
+    if (getIsBudgetMode()) return "Tap to review your budget";
+    if (getRemainingSeconds() !== null) return "Tap to end this session";
+    if (props.onTap) return "Tap to leave this site";
+    return "Tap to pause and choose again";
+  };
+
+  const getAccessibleLabel = () => {
+    const timeKind = getIsBudgetMode()
+      ? "budget remaining"
+      : getRemainingSeconds() !== null
+        ? "remaining"
+        : "elapsed";
+    return `${getDisplayTime()} ${timeKind}. ${getActionLabel()}.`;
+  };
+
   return (
     <div
       id="minded-6622-little-sun"
-      title={
-        getIsBudgetMode() ? "Daily budget remaining" : "Tap to end session"
-      }
+      title={getAccessibleLabel()}
       classList={{
         ["bottomLeft"]: true,
         ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
       }}
     >
+      <Show when={getShowHint()}>
+        <div id="minded-6622-little-sun-hint">{getActionLabel()}</div>
+      </Show>
       <div id="minded-6622-little-sun-sun-wrapper">
-        <div id="minded-6622-little-sun-sun" onClick={handleClick}>
+        <button
+          id="minded-6622-little-sun-sun"
+          type="button"
+          aria-label={getAccessibleLabel()}
+          onClick={handleClick}
+          onFocus={dismissHint}
+        >
           {getDisplayTime()}
-        </div>
+        </button>
       </div>
     </div>
   );

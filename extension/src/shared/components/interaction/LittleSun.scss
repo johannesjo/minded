@@ -73,6 +73,8 @@ $shadow: var(--little-sun-shadow);
 }
 
 #minded-6622-little-sun-sun {
+  appearance: none;
+  border: 0;
   cursor: grab;
   transform-origin: center center;
   pointer-events: auto;
@@ -90,6 +92,31 @@ $shadow: var(--little-sun-shadow);
   white-space: nowrap;
   font-size: var(--litle-sun-counter-fz);
   user-select: none;
+  padding: 0;
+
+  &:focus-visible {
+    outline: 2px solid var(--c-fg-full-emphasis);
+    outline-offset: 4px;
+  }
+}
+
+#minded-6622-little-sun-hint {
+  position: absolute;
+  left: 0;
+  bottom: calc(#{$sun-size} + 12px);
+  width: 180px;
+  max-width: calc(100vw - 32px);
+  padding: 8px 10px;
+  background: var(--btn-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  color: var(--c-fg);
+  font-size: var(--fz-s);
+  line-height: 1.3;
+  pointer-events: none;
+  text-align: left;
+  animation: minded6622littleSunHintIn 0.25s ease-out;
+  transform-origin: bottom left;
 }
 
 @keyframes minded6622littleSunIn {
@@ -111,5 +138,16 @@ $shadow: var(--little-sun-shadow);
   100% {
     transform: scale(0);
     opacity: 0;
+  }
+}
+
+@keyframes minded6622littleSunHintIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

@@ -1,3 +1,7 @@
+.WebsiteListItemWrapper {
+  min-width: 0;
+}
+
 .WebsiteListItem {
   display: flex;
   align-items: center;
@@ -5,4 +9,12 @@
   max-width: 100%;
   min-height: 0;
   min-width: 0;
+}
+
+.errorText {
+  color: var(--c-fg-full-emphasis);
+  font-size: var(--fz-s);
+  line-height: 1.3;
+  margin: 6px 48px 0 4px;
+  opacity: 0.8;
 }

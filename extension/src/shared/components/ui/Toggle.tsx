@@ -11,7 +11,11 @@ export interface ToggleProps {
 
 export const Toggle = (props: ToggleProps): JSX.Element => {
   return (
-    <div
+    <button
+      type="button"
+      role="switch"
+      aria-checked={props.checked}
+      disabled={props.disabled}
       class={`${styles.Toggle} ${props.disabled ? styles.isDisabled : ""}`}
       onClick={() => !props.disabled && props.onChange(!props.checked)}
     >
@@ -19,6 +23,6 @@ export const Toggle = (props: ToggleProps): JSX.Element => {
       <div
         class={`${styles.switch} ${props.checked ? styles.isChecked : ""}`}
       />
-    </div>
+    </button>
   );
 };

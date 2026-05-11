@@ -2,6 +2,7 @@ import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList"
 import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
+import styles from "./Options.module.scss";
 
 const Options = () => {
   const onAfterSave = () => {
@@ -9,32 +10,45 @@ const Options = () => {
   };
 
   return (
-    <div class="pageTransitionIn">
-      <h2 class="h2">minded – Settings</h2>
+    <div class={`pageTransitionIn ${styles.Options}`}>
+      <header class={styles.header}>
+        <h2 class="h2">Settings</h2>
+        <p>Choose where and when minded appears. Changes save automatically.</p>
+      </header>
 
-      <br />
-      <h3 class="h3">
-        list of websites where <em>minded</em> is shown
-      </h3>
-      <WebsiteList onAfterSave={onAfterSave} showSaveButton={false} />
+      <div class={styles.sections}>
+        <section class={styles.section}>
+          <div class={styles.sectionIntro}>
+            <h3 class="h3">Websites</h3>
+            <p>Add domains only, for example youtube.com or reddit.com.</p>
+          </div>
+          <WebsiteList onAfterSave={onAfterSave} showSaveButton={false} />
+        </section>
 
-      <br />
-      <hr style="opacity: 0.2; margin: 32px 0;" />
-      <br />
+        <section class={styles.section}>
+          <div class={styles.sectionIntro}>
+            <h3 class="h3">Sound</h3>
+            <p>Control whether interventions can play gentle audio cues.</p>
+          </div>
+          <SoundSettings onAfterSave={onAfterSave} />
+        </section>
 
-      <SoundSettings onAfterSave={onAfterSave} />
+        <section class={styles.section}>
+          <div class={styles.sectionIntro}>
+            <h3 class="h3">Daily Budget</h3>
+            <p>Give yourself uninterrupted time before interventions return.</p>
+          </div>
+          <BudgetSettings onAfterSave={onAfterSave} />
+        </section>
 
-      <br />
-      <hr style="opacity: 0.2; margin: 32px 0;" />
-      <br />
-
-      <BudgetSettings onAfterSave={onAfterSave} />
-
-      <br />
-      <hr style="opacity: 0.2; margin: 32px 0;" />
-      <br />
-
-      <FocusSchedule onAfterSave={onAfterSave} showSaveButton={false} />
+        <section class={styles.section}>
+          <div class={styles.sectionIntro}>
+            <h3 class="h3">Focus Hours</h3>
+            <p>Limit blocking to the parts of the week where it helps most.</p>
+          </div>
+          <FocusSchedule onAfterSave={onAfterSave} showSaveButton={false} />
+        </section>
+      </div>
     </div>
   );
 };

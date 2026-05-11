@@ -13,10 +13,11 @@ export const Rating: (props: {
     <div class={"rating " + (props.isShowOnly ? "showOnly" : "")}>
       <For each={Array.from({ length: 5 }, (_, i) => i + 1)}>
         {(value) => (
-          <img
-            class={
-              value <= rating() || value <= hoveredRating() ? "isFull" : ""
-            }
+          <button
+            type="button"
+            class="ratingButton"
+            disabled={props.isShowOnly}
+            aria-label={`Set rating to ${value}`}
             onClick={() => {
               if (props.isShowOnly) return;
               setRating(value);
@@ -27,8 +28,15 @@ export const Rating: (props: {
               setHoveredRating(value);
             }}
             onmouseleave={() => setHoveredRating(0)}
-            src={lightningSvg}
-          />
+          >
+            <img
+              class={
+                value <= rating() || value <= hoveredRating() ? "isFull" : ""
+              }
+              src={lightningSvg}
+              alt=""
+            />
+          </button>
         )}
       </For>
     </div>

@@ -89,7 +89,9 @@ export const InputWithSend = (props: {
         onInput={(ev) => props.onInput?.(ev.currentTarget.value)}
       />
       <button
+        type="button"
         class="send-button"
+        aria-label="Submit response"
         onclick={() => onSubmit(inpEl?.value)}
         disabled={getIsInputDisabled()}
       >

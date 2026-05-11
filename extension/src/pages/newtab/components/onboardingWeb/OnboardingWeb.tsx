@@ -24,7 +24,7 @@ export const OnboardingWeb: (props: {
           Welcome to <em>minded</em>
         </div>
         <div class={styles.infoText}>
-          <p>Which websites do you intent to use less?</p>
+          <p>Which websites do you intend to use less?</p>
         </div>
 
         <WebsiteList onAfterSave={onAfterSaveWebsites} />

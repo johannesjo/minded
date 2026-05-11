@@ -15,7 +15,8 @@ const TglBtns = <T,>(props: {
     <div style="margin-right: -8px; margin-left: -8px;">
       <For each={props.options}>
         {(option) => (
-          <div
+          <button
+            type="button"
             class={
               getSelectedVal() === option.val
                 ? "btnToggleSelect  isSelected"
@@ -27,7 +28,7 @@ const TglBtns = <T,>(props: {
             }}
           >
             {option.txt}
-          </div>
+          </button>
         )}
       </For>
     </div>

@@ -25,7 +25,9 @@ export const Stepper = (props: {
     >
       <For each={arr}>
         {(step) => (
-          <div
+          <button
+            type="button"
+            disabled={props.isNoGoBack || step >= getStep()}
             onClick={() => {
               if (props.isNoGoBack) {
                 return;
@@ -46,7 +48,7 @@ export const Stepper = (props: {
               : step < getStep()
                 ? "✓"
                 : step + 1}
-          </div>
+          </button>
         )}
       </For>
     </div>

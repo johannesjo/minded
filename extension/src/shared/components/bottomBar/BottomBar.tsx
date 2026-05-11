@@ -23,6 +23,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
       {getIsOnDashboard() ? (
         <>
           <button
+            type="button"
             class="btnIcoOnly"
             title="Get asked a question"
             onClick={() => {
@@ -32,7 +33,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
             <Ico name="questionOverlay" />
           </button>
           <A
-            title="Give us somet feedback"
+            title="Give us some feedback"
             class="btnIcoOnly"
             href="/feedback"
             activeClass="active"
