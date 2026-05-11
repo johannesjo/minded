@@ -34,6 +34,7 @@ export const InteractionOverlay: (props: {
           isInitFadeout={false}
           wrapperEl={wrapperEl!}
           isFromDashboard={true}
+          interactionPlatform="web"
           onInteractionSubmitted={() => {
             props.onPossibleNewData();
           }}

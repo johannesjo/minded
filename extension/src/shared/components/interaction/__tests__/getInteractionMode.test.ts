@@ -1,309 +1,275 @@
-import { getInteractionMode, InteractionMode } from "../getInteractionMode";
 import {
-  createMockSyncData,
-  mockDate,
-  mockRandom,
-} from "@src/test-utils/mockHelpers";
+  getInteractionMode,
+  getInteractionModeDecision,
+  InteractionModeDecisionOptions,
+} from "../getInteractionMode";
+import { createMockSyncData } from "@src/test-utils/mockHelpers";
 import { QuestionCategoryId } from "@src/shared/data/questions";
-
-// Mock dependencies
-jest.mock("@src/util/isToday", () => ({
-  isToday: jest.fn((ts: number) => ts > 1000), // Simple mock: > 1000 means "today"
-  hasHappenedInLastXDay: jest.fn(() => false),
-}));
-
-jest.mock("@src/util/isXIn1", () => ({
-  isXIn1: jest.fn(() => false),
-}));
+import type { Answer, SyncData } from "@src/dataInterface/syncData";
 
 jest.mock("@src/dataInterface/commonSyncDataInterface", () => ({
   IS_ANDROID: false,
   IS_APP: false,
+  IS_IOS: false,
 }));
 
-jest.mock("@src/shared/isMain.const", () => ({
-  isMain: jest.fn(() => true),
-}));
+const NOW = new Date("2026-05-11T10:00:00").getTime();
+const EVENING = new Date("2026-05-11T20:00:00").getTime();
+const TODAY = "2026-05-11";
 
-import { isToday, hasHappenedInLastXDay } from "@src/util/isToday";
-import { isXIn1 } from "@src/util/isXIn1";
-import { isMain } from "@src/shared/isMain.const";
+const sequenceRandom = (values: number[]): (() => number) => {
+  let index = 0;
+  return () => values[index++] ?? 0.99;
+};
 
-const mockedIsToday = isToday as jest.Mock;
-const mockedHasHappenedInLastXDay = hasHappenedInLastXDay as jest.Mock;
-const mockedIsXIn1 = isXIn1 as jest.Mock;
-const mockedIsMain = isMain as jest.Mock;
+const answer = (
+  id: string,
+  questionCategoryId = QuestionCategoryId.Gratitude,
+): Answer => ({
+  id,
+  qid: null,
+  questionCategoryId,
+  val: `answer ${id}`,
+  ts: NOW,
+});
+
+const baseSyncData = (overrides: Partial<SyncData> = {}): SyncData =>
+  createMockSyncData({
+    answers: [answer("1"), answer("2"), answer("3")],
+    moodCheckTS: NOW,
+    energyLvlTS: NOW,
+    emotionLabeling: { ts: NOW, emotions: [], bodyLocations: [] },
+    lastBrowsingBehaviorRatingTS: NOW,
+    lastAppUsageRatingTS: NOW,
+    ...overrides,
+  });
+
+const decide = (
+  syncData: SyncData,
+  options: InteractionModeDecisionOptions = {},
+) =>
+  getInteractionModeDecision(syncData, {
+    clock: () => NOW,
+    random: () => 0.99,
+    isMainView: true,
+    isApp: false,
+    isAndroid: false,
+    platform: "web",
+    ...options,
+  });
 
 describe("getInteractionMode", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockDate("2024-01-15T12:00:00"); // Monday noon
-    mockedIsToday.mockReturnValue(false);
-    mockedHasHappenedInLastXDay.mockReturnValue(false);
-    mockedIsXIn1.mockReturnValue(false);
-    mockedIsMain.mockReturnValue(true);
-  });
+  it("keeps the public wrapper returning only the selected mode", () => {
+    const syncData = createMockSyncData({ answers: [] });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  describe("first-time user", () => {
-    it("returns QUESTION when user has no answers", () => {
-      const syncData = createMockSyncData({ answers: [] });
-      expect(getInteractionMode(syncData)).toBe("QUESTION");
-    });
-
-    it("returns QUESTION when user has only 1 answer", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "test",
-            ts: 1,
-          },
-        ],
-      });
-      expect(getInteractionMode(syncData)).toBe("QUESTION");
+    expect(
+      getInteractionMode(syncData, {
+        clock: () => NOW,
+        isMainView: true,
+        platform: "web",
+      }),
+    ).toBe("QUESTION");
+    expect(decide(syncData)).toEqual({
+      mode: "QUESTION",
+      reason: "few_answers_question",
+      frictionLevel: "normal",
     });
   });
 
-  describe("SELF_ASSESSMENT mode", () => {
-    it("returns SELF_ASSESSMENT with 10% probability", () => {
-      const syncData = createMockSyncData({
+  it("uses saved reasons for strong friction when available", () => {
+    const decision = decide(
+      baseSyncData({
         answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
+          answer("1", QuestionCategoryId.WhyReduceBrowsing),
+          answer("2"),
         ],
-      });
-      mockedIsXIn1.mockImplementation((x: number) => x === 1 / 10);
-      expect(getInteractionMode(syncData)).toBe("SELF_ASSESSMENT");
+        sunTaps: { [TODAY]: 5 },
+      }),
+      { isMainView: false },
+    );
+
+    expect(decision).toEqual({
+      mode: "SHOW_REASON",
+      reason: "strong_friction_saved_reason",
+      frictionLevel: "strong",
     });
   });
 
-  describe("EMOTION_LABELING mode", () => {
-    it("returns EMOTION_LABELING when not done today and 10% probability", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-        emotionLabeling: { ts: 100, emotions: [], bodyLocations: [] }, // Not today (ts <= 1000)
-      });
-      mockedIsToday.mockImplementation((ts: number) => ts > 1000);
-      mockedIsXIn1.mockImplementation((x: number) => {
-        if (x === 1 / 10) return true;
-        return false;
-      });
-      // First call is for SELF_ASSESSMENT (return false), second for EMOTION_LABELING (return true)
-      let callCount = 0;
-      mockedIsXIn1.mockImplementation(() => {
-        callCount++;
-        return callCount === 2;
-      });
-      expect(getInteractionMode(syncData)).toBe("EMOTION_LABELING");
+  it("uses alternatives for strong friction when no saved reason exists", () => {
+    const decision = decide(
+      baseSyncData({
+        alternativeWebsites: ["https://example.com"],
+        sunTaps: { [TODAY]: 5 },
+      }),
+      { isMainView: false },
+    );
+
+    expect(decision).toEqual({
+      mode: "SHOW_ALTERNATIVE",
+      reason: "strong_friction_alternative",
+      frictionLevel: "strong",
     });
   });
 
-  describe("MOOD_CHECKIN mode", () => {
-    it("returns MOOD_CHECKIN when not done today and 33% probability", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-        moodCheckTS: 100, // Not today
-      });
-      mockedIsToday.mockReturnValue(false);
-      let callCount = 0;
-      mockedIsXIn1.mockImplementation(() => {
-        callCount++;
-        return callCount === 3; // Third probability check (after SELF_ASSESSMENT and EMOTION_LABELING)
-      });
-      expect(getInteractionMode(syncData)).toBe("MOOD_CHECKIN");
+  it("asks for missing mood data deterministically", () => {
+    expect(decide(baseSyncData({ moodCheckTS: 99 }))).toEqual({
+      mode: "MOOD_CHECKIN",
+      reason: "mood_missing",
+      frictionLevel: "normal",
     });
   });
 
-  describe("ENERGY_LVL mode", () => {
-    it("returns ENERGY_LVL during valid hours (5-19) when not done today", () => {
-      mockDate("2024-01-15T10:00:00"); // 10am
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-        energyLvlTS: 100, // Not today
-      });
-      mockedIsToday.mockReturnValue(false);
-      let callCount = 0;
-      mockedIsXIn1.mockImplementation(() => {
-        callCount++;
-        return callCount === 5; // Fifth probability check for ENERGY_LVL
-      });
-      expect(getInteractionMode(syncData)).toBe("ENERGY_LVL");
-    });
-
-    it("does not return ENERGY_LVL outside valid hours", () => {
-      mockDate("2024-01-15T20:00:00"); // 8pm - outside 5-19
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-        energyLvlTS: 100,
-      });
-      mockedIsToday.mockReturnValue(false);
-      mockedIsXIn1.mockReturnValue(false);
-      expect(getInteractionMode(syncData)).toBe("QUESTION");
+  it("asks for missing energy data during daytime after mood is fresh", () => {
+    expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
+      mode: "ENERGY_LVL",
+      reason: "energy_missing",
+      frictionLevel: "normal",
     });
   });
 
-  describe("APP_USAGE_OR_BROWSING_BEHAVIOR mode", () => {
-    it("returns APP_USAGE_OR_BROWSING_BEHAVIOR when not happened in last 2 days", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-        lastBrowsingBehaviorRatingTS: 100,
-      });
-      mockedHasHappenedInLastXDay.mockReturnValue(false);
-      let callCount = 0;
-      mockedIsXIn1.mockImplementation(() => {
-        callCount++;
-        return callCount === 6; // Sixth probability check
-      });
-      expect(getInteractionMode(syncData)).toBe(
-        "APP_USAGE_OR_BROWSING_BEHAVIOR",
-      );
+  it("uses low-cognitive-load action advice in the evening", () => {
+    expect(
+      decide(baseSyncData(), {
+        clock: () => EVENING,
+      }),
+    ).toEqual({
+      mode: "ACTION_ADVICE",
+      reason: "evening_action_advice",
+      frictionLevel: "normal",
     });
   });
 
-  describe("default fallback", () => {
-    it("returns QUESTION when no other mode is selected", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-      });
-      mockedIsXIn1.mockReturnValue(false);
-      expect(getInteractionMode(syncData)).toBe("QUESTION");
+  it("samples alternatives more often when they are contextually eligible", () => {
+    expect(
+      decide(
+        baseSyncData({
+          alternativeWebsites: ["https://example.com"],
+        }),
+        {
+          isMainView: false,
+          random: () => 0.2,
+        },
+      ),
+    ).toEqual({
+      mode: "SHOW_ALTERNATIVE",
+      reason: "contextual_alternative",
+      frictionLevel: "soft",
     });
   });
 
-  describe("EMOJI_CHECKIN mode", () => {
-    it("returns EMOJI_CHECKIN with 1% probability", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          {
-            id: "1",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "a",
-            ts: 1,
-          },
-          {
-            id: "2",
-            qid: null,
-            questionCategoryId: QuestionCategoryId.Gratitude,
-            val: "b",
-            ts: 2,
-          },
-        ],
-      });
-      // EMOJI_CHECKIN is checked with isXIn1(1/100), which is the last check
-      // Return true only for the 1/100 probability
-      mockedIsXIn1.mockImplementation((prob: number) => {
-        return prob === 1 / 100;
-      });
-      expect(getInteractionMode(syncData)).toBe("EMOJI_CHECKIN");
+  it("samples set-alternative prompts when no alternatives exist", () => {
+    expect(
+      decide(baseSyncData(), {
+        isMainView: false,
+        random: () => 0.05,
+      }),
+    ).toEqual({
+      mode: "SET_ALTERNATIVE",
+      reason: "contextual_set_alternative",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("keeps randomness injectable for fallback samples", () => {
+    expect(
+      decide(baseSyncData(), {
+        random: () => 0.05,
+      }),
+    ).toEqual({
+      mode: "SELF_ASSESSMENT",
+      reason: "self_assessment_sample",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("samples emotion labeling only when emotion data is not fresh", () => {
+    expect(
+      decide(
+        baseSyncData({
+          emotionLabeling: { ts: 99, emotions: [], bodyLocations: [] },
+        }),
+        {
+          random: sequenceRandom([0.99, 0.05]),
+        },
+      ),
+    ).toEqual({
+      mode: "EMOTION_LABELING",
+      reason: "emotion_labeling_sample",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("samples stale same-day mood checks without treating them as missing", () => {
+    expect(
+      decide(
+        baseSyncData({
+          moodCheckTS: NOW - 3 * 60 * 60 * 1000,
+        }),
+        {
+          random: sequenceRandom([0.99, 0.01]),
+        },
+      ),
+    ).toEqual({
+      mode: "MOOD_CHECKIN",
+      reason: "mood_checkin_stale_sample",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("samples saved reason reminders in otherwise stable context", () => {
+    expect(
+      decide(
+        baseSyncData({
+          answers: [
+            answer("1", QuestionCategoryId.WhyReduceBrowsing),
+            answer("2"),
+          ],
+        }),
+        {
+          random: sequenceRandom([0.99, 0.01]),
+        },
+      ),
+    ).toEqual({
+      mode: "SHOW_REASON",
+      reason: "saved_reason_sample",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("samples usage rating when the relevant rating is stale", () => {
+    expect(
+      decide(
+        baseSyncData({
+          lastBrowsingBehaviorRatingTS: 99,
+        }),
+        {
+          random: sequenceRandom([0.99, 0.01]),
+        },
+      ),
+    ).toEqual({
+      mode: "APP_USAGE_OR_BROWSING_BEHAVIOR",
+      reason: "usage_rating_due",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("samples emoji check-in as a final low-probability fallback", () => {
+    expect(
+      decide(baseSyncData(), {
+        random: sequenceRandom([0.99, 0.99, 0.005]),
+      }),
+    ).toEqual({
+      mode: "EMOJI_CHECKIN",
+      reason: "emoji_checkin_sample",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("falls back to a question when no contextual or sampled mode is selected", () => {
+    expect(decide(baseSyncData())).toEqual({
+      mode: "QUESTION",
+      reason: "fallback_question",
+      frictionLevel: "soft",
     });
   });
 });

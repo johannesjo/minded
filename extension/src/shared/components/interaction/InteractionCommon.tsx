@@ -9,7 +9,13 @@ import {
   getInteractionMode,
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
-import { Answer, SessionIntent, SyncData } from "@src/dataInterface/syncData";
+import {
+  Answer,
+  SessionIntent,
+  SessionPlatform,
+  SessionTarget,
+  SyncData,
+} from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { fadeOut } from "@src/util/animation";
 import {
@@ -55,6 +61,8 @@ interface InteractionCommonProps {
   onDragComplete: () => void;
   onCompletionStarted?: (started: boolean) => void;
   onSetSessionLimit?: (seconds: number, intent?: SessionIntent) => void;
+  interactionTarget?: SessionTarget;
+  interactionPlatform?: SessionPlatform;
   isFromDashboard?: boolean;
 }
 
@@ -394,7 +402,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setMode("QUESTION");
         } else {
           const question = getQuestionSmart(syncData.answers);
-          const mode = getInteractionMode(syncData);
+          const mode = getInteractionMode(syncData, {
+            target: props.interactionTarget,
+            platform: props.interactionPlatform,
+            isMainView: props.isFromDashboard,
+          });
           setInitialQuestion(question);
           setMode(mode);
         }

@@ -104,6 +104,7 @@ const InteractionAndroid = () => {
       <InteractionCommon
         isInitFadeout={false}
         wrapperEl={wrapperEl!}
+        interactionPlatform="android"
         onModeSet={(mode) => {
           if (mode !== "QUESTION") {
             androidInterface.unsetQuestion();

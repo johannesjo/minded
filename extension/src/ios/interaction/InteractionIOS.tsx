@@ -68,6 +68,7 @@ const InteractionIOS = () => {
       <InteractionCommon
         isInitFadeout={false}
         wrapperEl={wrapperEl!}
+        interactionPlatform="ios"
         onModeSet={() => undefined}
         questionForPrompt={question || undefined}
         onSetAnswer={() => undefined}

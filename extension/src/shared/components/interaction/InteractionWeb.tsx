@@ -223,6 +223,8 @@ export const InteractionWeb: (props: {
                 isInitFadeout={false}
                 wrapperEl={wrapperEl}
                 shadowRoot={props.shadowRoot}
+                interactionTarget={{ kind: "host", id: props.host }}
+                interactionPlatform="web"
                 onSetAnswer={() => {}}
                 onModeSet={() => {}}
                 onAfterInteractionFadeout={() => {
