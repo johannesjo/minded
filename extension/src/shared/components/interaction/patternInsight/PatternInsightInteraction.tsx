@@ -16,26 +16,26 @@ export const PatternInsightInteraction: (props: {
   let markedInsightId: string | undefined;
   const [getIsActionSubmitted, setIsActionSubmitted] = createSignal(false);
 
-  const markInsightShownOnce = () => {
+  const markInsightShownOnce = async (): Promise<void> => {
     const insight = props.insight;
     if (markedInsightId === insight.id) {
       return;
     }
 
     markedInsightId = insight.id;
-    void markPatternInsightShown(insight).catch((error) => {
+    await markPatternInsightShown(insight).catch((error) => {
       console.error("Failed to mark pattern insight shown", error);
     });
   };
 
-  const handleAction = (action: PatternInsightAction) => {
+  const handleAction = async (action: PatternInsightAction) => {
     if (getIsActionSubmitted()) {
       return;
     }
 
     setIsActionSubmitted(true);
     props.onCancelCountdown();
-    markInsightShownOnce();
+    await markInsightShownOnce();
 
     switch (action) {
       case "still_on_purpose":
@@ -62,7 +62,7 @@ export const PatternInsightInteraction: (props: {
             type="button"
             class="btnTxt"
             disabled={getIsActionSubmitted()}
-            onClick={() => handleAction(action)}
+            onClick={() => void handleAction(action)}
           >
             {getPatternInsightActionLabel(action)}
           </button>
