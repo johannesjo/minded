@@ -19,6 +19,10 @@ import {
   getFrictionLevel,
   getInteractionContext,
 } from "@src/shared/components/interaction/interactionContext";
+import {
+  getPatternInsightCandidate,
+  type PatternInsight,
+} from "@src/shared/components/interaction/patternInsight/patternInsight";
 import { getIsoDate } from "@src/util/getIsoDate";
 
 const LAST_MOOD_CHECKIN_MIN_GAP = 2 * 60 * 60 * 1000;
@@ -34,6 +38,7 @@ const USAGE_RATING_DUE_PROBABILITY = 1 / 3;
 const USAGE_RATING_TODAY_PROBABILITY = 1 / 20;
 const ACTION_ADVICE_PROBABILITY = 1 / 20;
 const EMOJI_CHECKIN_PROBABILITY = 1 / 100;
+const PATTERN_INSIGHT_PROBABILITY = 1 / 3;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -46,11 +51,13 @@ export type InteractionMode =
   | "MOOD_CHECKIN"
   | "SELF_ASSESSMENT"
   | "EMOTION_LABELING"
-  | "SHOW_REASON";
+  | "SHOW_REASON"
+  | "PATTERN_INSIGHT";
 
 export type InteractionModeReason =
   | "few_answers_question"
   | "strong_friction_saved_reason"
+  | "strong_friction_pattern_insight"
   | "strong_friction_alternative"
   | "strong_friction_question"
   | "expired_intent_saved_reason"
@@ -60,6 +67,7 @@ export type InteractionModeReason =
   | "evening_action_advice"
   | "contextual_alternative"
   | "contextual_set_alternative"
+  | "contextual_pattern_insight"
   | "self_assessment_sample"
   | "emotion_labeling_sample"
   | "mood_checkin_stale_sample"
@@ -75,6 +83,7 @@ export interface InteractionModeDecision {
   mode: InteractionMode;
   reason: InteractionModeReason;
   frictionLevel: FrictionLevel;
+  patternInsight?: PatternInsight;
 }
 
 export interface InteractionModeDecisionOptions {
@@ -91,7 +100,13 @@ const decision = (
   mode: InteractionMode,
   reason: InteractionModeReason,
   frictionLevel: FrictionLevel,
-): InteractionModeDecision => ({ mode, reason, frictionLevel });
+  patternInsight?: PatternInsight,
+): InteractionModeDecision => ({
+  mode,
+  reason,
+  frictionLevel,
+  ...(patternInsight ? { patternInsight } : {}),
+});
 
 const chance = (probability: number, random: () => number): boolean =>
   random() < probability;
@@ -162,12 +177,33 @@ export const getInteractionModeDecision = (
   const isActionAdviceEligible =
     context.localHour < ACTION_ADVICES_MAX_HOUR &&
     context.localHour >= ACTION_ADVICES_MIN_HOUR;
+  const patternInsight =
+    !isMainView && frictionLevel !== "soft"
+      ? getPatternInsightCandidate(context, syncData.patternInsightState)
+      : undefined;
 
   if (context.hasFewAnswers) {
     return decision("QUESTION", "few_answers_question", frictionLevel);
   }
 
+  if (!context.hasFreshMood) {
+    return decision("MOOD_CHECKIN", "mood_missing", frictionLevel);
+  }
+
+  if (isEnergyEligible && !context.hasFreshEnergy) {
+    return decision("ENERGY_LVL", "energy_missing", frictionLevel);
+  }
+
   if (frictionLevel === "strong") {
+    if (patternInsight) {
+      return decision(
+        "PATTERN_INSIGHT",
+        "strong_friction_pattern_insight",
+        frictionLevel,
+        patternInsight,
+      );
+    }
+
     if (hasReasonAnswers) {
       return decision(
         "SHOW_REASON",
@@ -202,21 +238,33 @@ export const getInteractionModeDecision = (
     }
   }
 
-  if (!context.hasFreshMood) {
-    return decision("MOOD_CHECKIN", "mood_missing", frictionLevel);
-  }
-
-  if (isEnergyEligible && !context.hasFreshEnergy) {
-    return decision("ENERGY_LVL", "energy_missing", frictionLevel);
-  }
-
   if (context.isEvening && isActionAdviceEligible) {
     return decision("ACTION_ADVICE", "evening_action_advice", frictionLevel);
   }
 
+  const contextualRoll =
+    patternInsight || canShowAlternative ? random() : undefined;
+
+  if (
+    patternInsight &&
+    contextualRoll !== undefined &&
+    contextualRoll < PATTERN_INSIGHT_PROBABILITY
+  ) {
+    return decision(
+      "PATTERN_INSIGHT",
+      "contextual_pattern_insight",
+      frictionLevel,
+      patternInsight,
+    );
+  }
+
   if (
     canShowAlternative &&
-    chance(CONTEXTUAL_ALTERNATIVE_PROBABILITY, random)
+    contextualRoll !== undefined &&
+    contextualRoll >= (patternInsight ? PATTERN_INSIGHT_PROBABILITY : 0) &&
+    contextualRoll <
+      (patternInsight ? PATTERN_INSIGHT_PROBABILITY : 0) +
+        CONTEXTUAL_ALTERNATIVE_PROBABILITY
   ) {
     return decision(
       "SHOW_ALTERNATIVE",

@@ -36,6 +36,7 @@ class SyncDataSerializationTest {
         assertNull(activeTimer?.platform)
         assertNull(activeTimer?.intent)
         assertEquals(emptyList(), syncData.alternatives)
+        assertEquals(emptyMap(), syncData.patternInsightState.shownInsightIdsByDate)
     }
 
     @Test
@@ -92,6 +93,42 @@ class SyncDataSerializationTest {
         assertEquals("brain", serialized.getString("sleepWindDownBrainDumpDraft"))
         assertEquals("gratitude", serialized.getString("sleepWindDownGratitudeDraft"))
         assertEquals("tomorrow", serialized.getString("sleepWindDownTomorrowDraft"))
+    }
+
+    @Test
+    fun `round trips pattern insight state`() {
+        val syncData = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {},
+              "patternInsightState": {
+                "shownInsightIdsByDate": {
+                  "2026-05-11": ["daily-usage:youtube.com", "budget-exhausted:youtube.com"]
+                }
+              }
+            }
+            """.trimIndent()
+        )
+
+        assertEquals(
+            listOf("daily-usage:youtube.com", "budget-exhausted:youtube.com"),
+            syncData.patternInsightState.shownInsightIdsByDate["2026-05-11"]
+        )
+
+        val serialized = JSONObject(syncDataToJson(syncData))
+        val shown = serialized
+            .getJSONObject("patternInsightState")
+            .getJSONObject("shownInsightIdsByDate")
+            .getJSONArray("2026-05-11")
+        assertEquals("daily-usage:youtube.com", shown.getString(0))
+        assertEquals("budget-exhausted:youtube.com", shown.getString(1))
     }
 
     @Test

@@ -94,6 +94,14 @@ fun syncDataToJson(syncData: SyncData): String {
     }
     jsonObject.put("alternatives", alternativesArray)
 
+    val patternInsightStateObj = JSONObject()
+    val shownInsightIdsByDateObj = JSONObject()
+    syncData.patternInsightState.shownInsightIdsByDate.forEach { (dateKey, insightIds) ->
+        shownInsightIdsByDateObj.put(dateKey, JSONArray(insightIds))
+    }
+    patternInsightStateObj.put("shownInsightIdsByDate", shownInsightIdsByDateObj)
+    jsonObject.put("patternInsightState", patternInsightStateObj)
+
     if (syncData.emotionLabeling != null) {
         val elObj = JSONObject()
         elObj.put("ts", syncData.emotionLabeling["ts"])

@@ -104,6 +104,103 @@ describe("getInteractionMode", () => {
     });
   });
 
+  it("uses pattern insights before other strong friction prompts when available", () => {
+    const decision = decide(
+      baseSyncData({
+        answers: [
+          answer("1", QuestionCategoryId.WhyReduceBrowsing),
+          answer("2"),
+        ],
+        alternativeWebsites: ["https://example.com"],
+        dailyBudget: {
+          globalMinutes: 10,
+        },
+        dailyUsage: {
+          [TODAY]: {
+            totalSeconds: 10 * 60,
+            perSite: {
+              "youtube.com": 10 * 60,
+            },
+          },
+        },
+      }),
+      {
+        isMainView: false,
+        target: { kind: "host", id: "youtube.com" },
+      },
+    );
+
+    expect(decision).toEqual({
+      mode: "PATTERN_INSIGHT",
+      reason: "strong_friction_pattern_insight",
+      frictionLevel: "strong",
+      patternInsight: {
+        id: "budget-exhausted:youtube.com",
+        dateISO: TODAY,
+        message: "You've used today's 10-minute budget.",
+        actions: ["still_on_purpose", "show_alternative", "leave_now"],
+      },
+    });
+  });
+
+  it("does not let pattern insights preempt required mood checks", () => {
+    const decision = decide(
+      baseSyncData({
+        moodCheckTS: 99,
+        dailyBudget: {
+          globalMinutes: 10,
+        },
+        dailyUsage: {
+          [TODAY]: {
+            totalSeconds: 10 * 60,
+            perSite: {
+              "youtube.com": 10 * 60,
+            },
+          },
+        },
+      }),
+      {
+        isMainView: false,
+        target: { kind: "host", id: "youtube.com" },
+      },
+    );
+
+    expect(decision).toEqual({
+      mode: "MOOD_CHECKIN",
+      reason: "mood_missing",
+      frictionLevel: "strong",
+    });
+  });
+
+  it("does not let strong friction preempt required energy checks", () => {
+    const decision = decide(
+      baseSyncData({
+        energyLvlTS: 99,
+        dailyBudget: {
+          globalMinutes: 10,
+        },
+        dailyUsage: {
+          [TODAY]: {
+            totalSeconds: 10 * 60,
+            perSite: {
+              "youtube.com": 10 * 60,
+            },
+          },
+        },
+      }),
+      {
+        isMainView: false,
+        target: { kind: "host", id: "youtube.com" },
+      },
+    );
+
+    expect(decision).toEqual({
+      mode: "ENERGY_LVL",
+      reason: "energy_missing",
+      frictionLevel: "strong",
+    });
+  });
+
   it("uses alternatives for strong friction when no saved reason exists", () => {
     const decision = decide(
       baseSyncData({
@@ -176,6 +273,93 @@ describe("getInteractionMode", () => {
     ).toEqual({
       mode: "SET_ALTERNATIVE",
       reason: "contextual_set_alternative",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("samples pattern insights in normal friction when enough data exists", () => {
+    expect(
+      decide(
+        baseSyncData({
+          attempts: { [TODAY]: 2 },
+          dailyUsage: {
+            [TODAY]: {
+              totalSeconds: 18 * 60,
+              perSite: {
+                "youtube.com": 18 * 60,
+              },
+            },
+          },
+        }),
+        {
+          isMainView: false,
+          target: { kind: "host", id: "youtube.com" },
+          random: () => 0.2,
+        },
+      ),
+    ).toEqual({
+      mode: "PATTERN_INSIGHT",
+      reason: "contextual_pattern_insight",
+      frictionLevel: "normal",
+      patternInsight: {
+        id: "daily-usage:youtube.com",
+        dateISO: TODAY,
+        message: "You've spent 18 minutes here today.",
+        actions: ["still_on_purpose", "leave_now"],
+      },
+    });
+  });
+
+  it("preserves contextual alternative sampling when a pattern insight misses", () => {
+    expect(
+      decide(
+        baseSyncData({
+          attempts: { [TODAY]: 2 },
+          alternativeWebsites: ["https://example.com"],
+          dailyUsage: {
+            [TODAY]: {
+              totalSeconds: 18 * 60,
+              perSite: {
+                "youtube.com": 18 * 60,
+              },
+            },
+          },
+        }),
+        {
+          isMainView: false,
+          target: { kind: "host", id: "youtube.com" },
+          random: () => 0.4,
+        },
+      ),
+    ).toEqual({
+      mode: "SHOW_ALTERNATIVE",
+      reason: "contextual_alternative",
+      frictionLevel: "normal",
+    });
+  });
+
+  it("does not show pattern insights in soft friction", () => {
+    expect(
+      decide(
+        baseSyncData({
+          dailyUsage: {
+            [TODAY]: {
+              totalSeconds: 18 * 60,
+              perSite: {
+                "youtube.com": 18 * 60,
+              },
+            },
+          },
+        }),
+        {
+          isMainView: false,
+          target: { kind: "host", id: "youtube.com" },
+          random: () => 0.2,
+        },
+      ),
+    ).toEqual({
+      mode: "QUESTION",
+      reason: "fallback_question",
       frictionLevel: "soft",
     });
   });

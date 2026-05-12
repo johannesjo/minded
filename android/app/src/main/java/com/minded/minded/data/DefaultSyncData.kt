@@ -2,6 +2,7 @@ package com.minded.minded.data
 
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
+import com.minded.minded.util.PatternInsightState
 
 val defaultSyncData = SyncData(
     cfg = UserCfg(
@@ -33,6 +34,7 @@ val defaultSyncData = SyncData(
     alternativeApps = emptyList(),
     alternativeWebsites = emptyList(),
     alternatives = emptyList(),
+    patternInsightState = PatternInsightState(emptyMap()),
     emotionLabeling = null,
     budgetPromptDismissedTS = 99L,
     activeTimer = null,

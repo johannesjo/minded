@@ -132,6 +132,9 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     selfAssessment: defaultSelfAssessment,
     alternativeApps: [],
     alternativeWebsites: [],
+    patternInsightState: {
+      shownInsightIdsByDate: {},
+    },
     activeTimer: null,
     emotionLabeling: null,
     dailyBudget: null,

@@ -94,6 +94,9 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   ),
   alternativeApps: [],
   alternativeWebsites: [],
+  patternInsightState: {
+    shownInsightIdsByDate: {},
+  },
   activeTimer: null,
   emotionLabeling: null,
   // Daily budget feature

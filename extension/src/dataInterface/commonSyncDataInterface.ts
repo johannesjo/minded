@@ -36,6 +36,10 @@ import {
   createUserAppAlternative,
   createUserWebsiteAlternative,
 } from "@src/shared/components/interaction/alternatives/getAlternatives";
+import {
+  markPatternInsightShownInState,
+  type PatternInsight,
+} from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
@@ -173,6 +177,17 @@ export const disableAlternative = (alternative: Alternative): Promise<void> =>
       syncData.alternatives,
       alternative,
       Date.now(),
+    ),
+  }));
+
+export const markPatternInsightShown = (
+  insight: PatternInsight,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
+    patternInsightState: markPatternInsightShownInState(
+      syncData.patternInsightState,
+      insight.id,
+      insight.dateISO,
     ),
   }));
 

@@ -49,6 +49,7 @@ import {
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
+import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 const ALTERNATIVE_STAY_BRIEFLY_SECONDS = 2 * 60;
 
@@ -99,6 +100,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     createSignal<FrictionLevel>("normal");
   const [getInitialQuestion, setInitialQuestion] = createSignal<
     QuestionForPrompt | undefined
+  >();
+  const [getPatternInsight, setPatternInsight] = createSignal<
+    PatternInsight | undefined
   >();
   const [getPendingAnswer, setPendingAnswer] = createSignal<
     Answer | undefined
@@ -513,6 +517,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           });
           setInitialQuestion(question);
           setFrictionLevel(modeDecision.frictionLevel);
+          setPatternInsight(modeDecision.patternInsight);
           setMode(modeDecision.mode);
         }
 
@@ -693,13 +698,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             syncData={getSyncDataI()}
             initialQuestion={getInitialQuestion()}
             answers={getAnswers()}
+            patternInsight={getPatternInsight()}
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
+            onLeaveNow={props.onFlingAway}
             onStayBriefly={() =>
               handleTimeSelection(ALTERNATIVE_STAY_BRIEFLY_SECONDS)
             }
             onAddBetterAlternative={() => setMode("SET_ALTERNATIVE")}
+            onShowAlternativeFromPatternInsight={() =>
+              setMode("SHOW_ALTERNATIVE")
+            }
             onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
           />
         </div>

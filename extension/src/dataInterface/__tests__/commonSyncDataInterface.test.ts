@@ -16,6 +16,7 @@ import {
   countSunTap,
   markAlternativeDismissed,
   markAlternativeOpenedAndCountSunTap,
+  markPatternInsightShown,
   saveStructuredAlternativeApp,
   saveStructuredAlternativeWebsite,
 } from "@src/dataInterface/commonSyncDataInterface";
@@ -266,6 +267,30 @@ describe("commonSyncDataInterface", () => {
               openedCount: 0,
             },
           ],
+        }),
+      );
+    });
+  });
+
+  describe("markPatternInsightShown", () => {
+    it("records a shown pattern insight for its date", async () => {
+      mockedGetSyncData.mockResolvedValue(createMockSyncData());
+      mockedSaveSyncData.mockResolvedValue();
+
+      await markPatternInsightShown({
+        id: "daily-usage:youtube.com",
+        dateISO: "2026-05-11",
+        message: "You've spent 18 minutes here today.",
+        actions: ["still_on_purpose", "leave_now"],
+      });
+
+      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patternInsightState: {
+            shownInsightIdsByDate: {
+              "2026-05-11": ["daily-usage:youtube.com"],
+            },
+          },
         }),
       );
     });

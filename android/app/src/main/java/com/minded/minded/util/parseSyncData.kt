@@ -90,6 +90,10 @@ data class Alternative(
     val disabledTS: Long? = null
 )
 
+data class PatternInsightState(
+    val shownInsightIdsByDate: Map<String, List<String>>
+)
+
 data class SyncData(
     val cfg: UserCfg,
     val answers: List<Answer>,
@@ -123,7 +127,8 @@ data class SyncData(
     val sleepWindDownBrainDumpDraft: String,
     val sleepWindDownGratitudeDraft: String = "",
     val sleepWindDownTomorrowDraft: String = "",
-    val alternatives: List<Alternative> = emptyList()
+    val alternatives: List<Alternative> = emptyList(),
+    val patternInsightState: PatternInsightState = PatternInsightState(emptyMap())
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -260,6 +265,21 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         mapOf<String, Any>("ts" to ts, "emotions" to emotions, "bodyLocations" to bodyLocations)
     }
 
+    val patternInsightState = jsonObject.optJSONObject("patternInsightState")?.let { stateObj ->
+        val shownObj = stateObj.optJSONObject("shownInsightIdsByDate")
+        val shownByDate = shownObj?.let { obj ->
+            obj.keys().asSequence().associateWith { dateKey ->
+                val ids = obj.optJSONArray(dateKey)
+                if (ids == null) {
+                    emptyList()
+                } else {
+                    List(ids.length()) { ids.getString(it) }
+                }
+            }
+        } ?: emptyMap()
+        PatternInsightState(shownByDate)
+    } ?: PatternInsightState(emptyMap())
+
     val budgetPromptDismissedTS = jsonObject.optLong("budgetPromptDismissedTS", 99L)
 
     val activeTimer = jsonObject.optJSONObject("activeTimer")?.let { timerObj ->
@@ -350,6 +370,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         sleepWindDownBrainDumpDraft,
         sleepWindDownGratitudeDraft,
         sleepWindDownTomorrowDraft,
-        alternatives
+        alternatives,
+        patternInsightState
     )
 }

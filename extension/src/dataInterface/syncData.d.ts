@@ -105,6 +105,12 @@ export interface Alternative {
   disabledTS?: number;
 }
 
+export interface PatternInsightState {
+  shownInsightIdsByDate: {
+    [dateISO: string]: string[];
+  };
+}
+
 export interface SyncData {
   cfg: UserCfg;
   answers: Answer[];
@@ -137,6 +143,7 @@ export interface SyncData {
   alternativeApps: string[];
   alternativeWebsites: string[];
   alternatives?: Alternative[];
+  patternInsightState: PatternInsightState;
 
   activeTimer: ActiveTimer | null;
 

@@ -17,6 +17,8 @@ import { EmotionLabeling } from "@src/shared/components/interaction/emotionLabel
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
+import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
+import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 // Get random advice once at module load
 const ADVICE = getRndEntry(ACTION_ADVICES);
@@ -26,11 +28,14 @@ export interface InteractionModeSwitchProps {
   syncData: SyncData | undefined;
   initialQuestion: QuestionForPrompt | undefined;
   answers: Answer[];
+  patternInsight: PatternInsight | undefined;
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
+  onLeaveNow: () => void;
   onStayBriefly?: () => void;
   onAddBetterAlternative?: () => void;
+  onShowAlternativeFromPatternInsight?: () => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
 }
 
@@ -136,6 +141,19 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
             </div>
           ) : null;
         })()}
+      </Match>
+      <Match when={props.mode === "PATTERN_INSIGHT"}>
+        {props.patternInsight && (
+          <PatternInsightInteraction
+            insight={props.patternInsight}
+            onCancelCountdown={props.onCancelCountdown}
+            onStillOnPurpose={() => props.onSuccess()}
+            onShowAlternative={() =>
+              props.onShowAlternativeFromPatternInsight?.()
+            }
+            onLeaveNow={props.onLeaveNow}
+          />
+        )}
       </Match>
       <Match when={props.mode === "QUESTION"}>
         {props.initialQuestion && (
