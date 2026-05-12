@@ -15,7 +15,7 @@ import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
 const CURRENT_URL = window.location.href;
 
 (function init() {
-  getSyncData().then((syncData) => {
+  getSyncData().then(async (syncData) => {
     // Rest-of-day mode: hide everything, don't inject anything
     if (isRestOfDayActive(syncData)) {
       return;
@@ -23,7 +23,11 @@ const CURRENT_URL = window.location.href;
 
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
     if (isOnBlockedUrl(CURRENT_URL, syncData)) {
-      countOpeningAttempt();
+      try {
+        await countOpeningAttempt();
+      } catch (error) {
+        console.error("Failed to count opening attempt", error);
+      }
 
       async function innerInit() {
         if (!document.body) {
