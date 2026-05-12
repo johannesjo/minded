@@ -76,6 +76,20 @@ data class DailyUsage(
     val perSite: Map<String, Int>
 )
 
+data class Alternative(
+    val id: String,
+    val kind: String,
+    val label: String,
+    val url: String? = null,
+    val packageName: String? = null,
+    val createdTS: Long,
+    val lastShownTS: Long? = null,
+    val shownCount: Int,
+    val dismissedCount: Int,
+    val openedCount: Int,
+    val disabledTS: Long? = null
+)
+
 data class SyncData(
     val cfg: UserCfg,
     val answers: List<Answer>,
@@ -108,7 +122,8 @@ data class SyncData(
     val sleepWindDownCompleted: List<String>,
     val sleepWindDownBrainDumpDraft: String,
     val sleepWindDownGratitudeDraft: String = "",
-    val sleepWindDownTomorrowDraft: String = ""
+    val sleepWindDownTomorrowDraft: String = "",
+    val alternatives: List<Alternative> = emptyList()
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -189,6 +204,49 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
 
     val alternativeWebsites = jsonObject.optJSONArray("alternativeWebsites")?.let { arr ->
         List(arr.length()) { arr.getString(it) }
+    } ?: emptyList()
+
+    val alternatives = jsonObject.optJSONArray("alternatives")?.let { arr ->
+        val result = mutableListOf<Alternative>()
+        for (i in 0 until arr.length()) {
+            val alternativeObj = arr.optJSONObject(i) ?: continue
+            val id = alternativeObj.optString("id", "")
+            val kind = alternativeObj.optString("kind", "")
+            val label = alternativeObj.optString("label", "")
+            if (id.isBlank() || kind.isBlank() || label.isBlank()) {
+                continue
+            }
+
+            val url = alternativeObj.optString("url", "").takeIf { it.isNotBlank() }
+            val packageName = alternativeObj.optString("packageName", "").takeIf { it.isNotBlank() }
+            val lastShownTS = if (alternativeObj.has("lastShownTS") && !alternativeObj.isNull("lastShownTS")) {
+                alternativeObj.optLong("lastShownTS")
+            } else {
+                null
+            }
+            val disabledTS = if (alternativeObj.has("disabledTS") && !alternativeObj.isNull("disabledTS")) {
+                alternativeObj.optLong("disabledTS")
+            } else {
+                null
+            }
+
+            result.add(
+                Alternative(
+                    id = id,
+                    kind = kind,
+                    label = label,
+                    url = url,
+                    packageName = packageName,
+                    createdTS = alternativeObj.optLong("createdTS", 0L),
+                    lastShownTS = lastShownTS,
+                    shownCount = alternativeObj.optInt("shownCount", 0),
+                    dismissedCount = alternativeObj.optInt("dismissedCount", 0),
+                    openedCount = alternativeObj.optInt("openedCount", 0),
+                    disabledTS = disabledTS
+                )
+            )
+        }
+        result
     } ?: emptyList()
 
     val emotionLabeling = jsonObject.optJSONObject("emotionLabeling")?.let { obj ->
@@ -291,6 +349,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         sleepWindDownCompleted,
         sleepWindDownBrainDumpDraft,
         sleepWindDownGratitudeDraft,
-        sleepWindDownTomorrowDraft
+        sleepWindDownTomorrowDraft,
+        alternatives
     )
 }

@@ -76,6 +76,23 @@ fun syncDataToJson(syncData: SyncData): String {
 
     jsonObject.put("alternativeApps", JSONArray(syncData.alternativeApps))
     jsonObject.put("alternativeWebsites", JSONArray(syncData.alternativeWebsites))
+    val alternativesArray = JSONArray()
+    syncData.alternatives.forEach { alternative ->
+        val alternativeObj = JSONObject()
+        alternativeObj.put("id", alternative.id)
+        alternativeObj.put("kind", alternative.kind)
+        alternativeObj.put("label", alternative.label)
+        alternative.url?.let { alternativeObj.put("url", it) }
+        alternative.packageName?.let { alternativeObj.put("packageName", it) }
+        alternativeObj.put("createdTS", alternative.createdTS)
+        alternative.lastShownTS?.let { alternativeObj.put("lastShownTS", it) }
+        alternativeObj.put("shownCount", alternative.shownCount)
+        alternativeObj.put("dismissedCount", alternative.dismissedCount)
+        alternativeObj.put("openedCount", alternative.openedCount)
+        alternative.disabledTS?.let { alternativeObj.put("disabledTS", it) }
+        alternativesArray.put(alternativeObj)
+    }
+    jsonObject.put("alternatives", alternativesArray)
 
     if (syncData.emotionLabeling != null) {
         val elObj = JSONObject()

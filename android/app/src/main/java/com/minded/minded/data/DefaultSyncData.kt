@@ -32,6 +32,7 @@ val defaultSyncData = SyncData(
     selfAssessment = emptyMap(),
     alternativeApps = emptyList(),
     alternativeWebsites = emptyList(),
+    alternatives = emptyList(),
     emotionLabeling = null,
     budgetPromptDismissedTS = 99L,
     activeTimer = null,

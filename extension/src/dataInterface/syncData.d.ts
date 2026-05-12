@@ -89,6 +89,22 @@ export interface ActiveTimer {
   intent?: SessionIntent;
 }
 
+export type AlternativeKind = "website" | "app" | "activity" | "custom";
+
+export interface Alternative {
+  id: string;
+  kind: AlternativeKind;
+  label: string;
+  url?: string;
+  packageName?: string;
+  createdTS: number;
+  lastShownTS?: number;
+  shownCount: number;
+  dismissedCount: number;
+  openedCount: number;
+  disabledTS?: number;
+}
+
 export interface SyncData {
   cfg: UserCfg;
   answers: Answer[];
@@ -120,6 +136,7 @@ export interface SyncData {
   selfAssessment: SelfAssessmentData;
   alternativeApps: string[];
   alternativeWebsites: string[];
+  alternatives?: Alternative[];
 
   activeTimer: ActiveTimer | null;
 

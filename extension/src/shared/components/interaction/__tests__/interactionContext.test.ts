@@ -107,6 +107,73 @@ describe("interaction context", () => {
     expect(context.hasAlternatives).toBe(true);
   });
 
+  it("counts only enabled structured alternatives", () => {
+    const syncData = createMockSyncData({
+      alternatives: [
+        {
+          id: "enabled",
+          kind: "website",
+          label: "Enabled",
+          url: "https://enabled.example",
+          createdTS: NOW,
+          shownCount: 0,
+          dismissedCount: 0,
+          openedCount: 0,
+        },
+        {
+          id: "disabled",
+          kind: "website",
+          label: "Disabled",
+          url: "https://disabled.example",
+          createdTS: NOW,
+          shownCount: 0,
+          dismissedCount: 0,
+          openedCount: 0,
+          disabledTS: NOW,
+        },
+      ],
+    });
+
+    const context = getInteractionContext({
+      syncData,
+      now: NOW,
+      target: { kind: "host", id: "reddit.com" },
+      platform: "web",
+    });
+
+    expect(context.alternativeCount).toBe(1);
+    expect(context.hasAlternatives).toBe(true);
+  });
+
+  it("does not count legacy alternatives after their structured copy is disabled", () => {
+    const syncData = createMockSyncData({
+      alternatives: [
+        {
+          id: "legacy-web:https://example.com",
+          kind: "website",
+          label: "example.com",
+          url: "https://example.com",
+          createdTS: 0,
+          shownCount: 1,
+          dismissedCount: 3,
+          openedCount: 0,
+          disabledTS: NOW,
+        },
+      ],
+      alternativeWebsites: ["https://example.com"],
+    });
+
+    const context = getInteractionContext({
+      syncData,
+      now: NOW,
+      target: { kind: "host", id: "reddit.com" },
+      platform: "web",
+    });
+
+    expect(context.alternativeCount).toBe(0);
+    expect(context.hasAlternatives).toBe(false);
+  });
+
   it("does not apply site budget state to app targets", () => {
     const syncData = createMockSyncData({
       dailyBudget: {

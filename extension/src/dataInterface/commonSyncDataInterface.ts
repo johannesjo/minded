@@ -1,5 +1,10 @@
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
-import { Answer, SyncData, UserCfg } from "@src/dataInterface/syncData";
+import type {
+  Alternative,
+  Answer,
+  SyncData,
+  UserCfg,
+} from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
 import {
   getSyncDataN,
@@ -22,6 +27,11 @@ import {
   updateSyncDataField,
   incrementDateKeyedCounter,
 } from "@src/dataInterface/updateSyncDataHelpers";
+import {
+  applyAlternativeDisabled,
+  applyAlternativeStatEvent,
+} from "@src/shared/components/interaction/alternatives/alternativeStats";
+import type { AlternativeStatEvent } from "@src/shared/components/interaction/alternatives/alternativeStats";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
@@ -64,6 +74,65 @@ export const saveAlternativeApp = (alternative: string): Promise<void> =>
 export const saveAlternativeWebsite = (alternative: string): Promise<void> =>
   updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
     alternativeWebsites: [...syncData.alternativeWebsites, alternative],
+  }));
+
+const markAlternative = (
+  alternative: Alternative,
+  event: AlternativeStatEvent,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
+    alternatives: applyAlternativeStatEvent(
+      syncData.alternatives,
+      alternative,
+      event,
+      Date.now(),
+    ),
+  }));
+
+export const markAlternativeShown = (alternative: Alternative): Promise<void> =>
+  markAlternative(alternative, "shown");
+
+export const markAlternativeOpened = (
+  alternative: Alternative,
+): Promise<void> => markAlternative(alternative, "opened");
+
+export const markAlternativeOpenedAndCountSunTap = (
+  alternative: Alternative,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, saveSyncData, (syncData) => {
+    const now = Date.now();
+    const ds = getIsoDate(new Date(now));
+    const currentSunTaps = syncData.sunTaps[ds] || 0;
+
+    return {
+      alternatives: applyAlternativeStatEvent(
+        syncData.alternatives,
+        alternative,
+        "opened",
+        now,
+      ),
+      sunTaps: {
+        ...syncData.sunTaps,
+        [ds]: currentSunTaps + 1,
+      },
+      sunTapTimestamps: [
+        ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
+        now,
+      ],
+    };
+  });
+
+export const markAlternativeDismissed = (
+  alternative: Alternative,
+): Promise<void> => markAlternative(alternative, "dismissed");
+
+export const disableAlternative = (alternative: Alternative): Promise<void> =>
+  updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
+    alternatives: applyAlternativeDisabled(
+      syncData.alternatives,
+      alternative,
+      Date.now(),
+    ),
   }));
 
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> =>

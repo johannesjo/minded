@@ -5,6 +5,7 @@ import type {
 } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { getRecentSunTapTimestamps } from "@src/dataInterface/sunTapHistory";
+import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
 
 export type FrictionLevel = "soft" | "normal" | "strong";
 
@@ -74,17 +75,6 @@ const isSameTimerScope = (
   isSameTarget(target, activeTimerTarget) &&
   (!platform || !activeTimerPlatform || platform === activeTimerPlatform);
 
-const getAlternativesForTarget = (
-  syncData: SyncData,
-  target: SessionTarget | undefined,
-  platform: SessionPlatform | undefined,
-): string[] => {
-  if (target?.kind === "app" || (!target && platform && platform !== "web")) {
-    return syncData.alternativeApps;
-  }
-  return syncData.alternativeWebsites;
-};
-
 const getBudgetContext = (
   syncData: SyncData,
   dateISO: string,
@@ -146,6 +136,9 @@ export const getInteractionContext = ({
   const targetUsageSeconds =
     target?.kind === "host" ? todayUsage.perSite[target.id] || 0 : 0;
   const alternatives = getAlternativesForTarget(syncData, target, platform);
+  const enabledAlternativeCount = alternatives.filter(
+    (alternative) => alternative.disabledTS === undefined,
+  ).length;
   const activeTimer = syncData.activeTimer;
   const activeTimerScopeMatches = isSameTimerScope(
     target,
@@ -170,8 +163,8 @@ export const getInteractionContext = ({
     moodCheckAgeMs,
     hasFreshEnergy: isSameDate(syncData.energyLvlTS, now),
     isEvening: nowDate.getHours() >= EVENING_START_HOUR,
-    alternativeCount: alternatives.length,
-    hasAlternatives: alternatives.length > 0,
+    alternativeCount: enabledAlternativeCount,
+    hasAlternatives: enabledAlternativeCount > 0,
     todayOpeningAttempts: syncData.attempts[dateISO] || 0,
     todaySunTaps: syncData.sunTaps[dateISO] || 0,
     recentSunTaps: getRecentSunTapTimestamps(
