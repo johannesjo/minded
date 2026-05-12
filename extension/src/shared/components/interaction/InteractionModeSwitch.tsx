@@ -29,6 +29,7 @@ export interface InteractionModeSwitchProps {
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
+  onStayBriefly?: () => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
 }
 
@@ -95,6 +96,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
             syncData={props.syncData}
             onCancelCountdown={props.onCancelCountdown}
             onSkip={props.onSkip}
+            onStayBriefly={props.onStayBriefly}
           />
         )}
       </Match>

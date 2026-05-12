@@ -23,6 +23,7 @@ import {
 
 export const ShowAlternativeInteraction: (props: {
   onSkip: () => void;
+  onStayBriefly?: () => void;
   onCancelCountdown: () => void;
   syncData: SyncData;
 }) => JSX.Element = (props) => {
@@ -80,6 +81,12 @@ export const ShowAlternativeInteraction: (props: {
     markCandidateShown(nextAlternative);
   };
 
+  const onStayBriefly = async () => {
+    props.onCancelCountdown();
+    await shownAlternativePromise;
+    props.onStayBriefly?.();
+  };
+
   const onGoToUrl = async (event: MouseEvent) => {
     event.preventDefault();
     const alternative = getAlternative();
@@ -119,6 +126,15 @@ export const ShowAlternativeInteraction: (props: {
               </>
             )}
           </div>
+          {props.onStayBriefly && (
+            <button
+              type="button"
+              class="btnTxt"
+              onClick={() => void onStayBriefly()}
+            >
+              Stay 2 min
+            </button>
+          )}
           <button
             type="button"
             class="btnTxt"

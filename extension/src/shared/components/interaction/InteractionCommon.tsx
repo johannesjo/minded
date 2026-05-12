@@ -49,6 +49,8 @@ import type { FrictionLevel } from "@src/shared/components/interaction/interacti
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 
+const ALTERNATIVE_STAY_BRIEFLY_SECONDS = 2 * 60;
+
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
   isInitFadeout: boolean;
@@ -612,6 +614,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
+            onStayBriefly={() =>
+              handleTimeSelection(ALTERNATIVE_STAY_BRIEFLY_SECONDS)
+            }
             onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
           />
         </div>
