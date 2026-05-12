@@ -9,10 +9,15 @@ export interface IntentSelectionProps {
   onSelectIntent: (intent: SessionIntent | undefined) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
+  isArmed: boolean;
 }
 
 export const IntentSelection: Component<IntentSelectionProps> = (props) => {
   const handleSelect = (intent: SessionIntent | undefined) => {
+    if (!props.isArmed) {
+      return;
+    }
+
     props.onCancelCountdown();
     props.onSelectIntent(intent);
   };
@@ -33,6 +38,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
               <button
                 type="button"
                 class="btnToggleSelect"
+                disabled={!props.isArmed}
                 onClick={() => handleSelect(intent)}
               >
                 {getSessionIntentLabel(intent)}
@@ -44,6 +50,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
         <button
           type="button"
           class="btnTxt intent-selection-secondary"
+          disabled={!props.isArmed}
           onClick={() => handleSelect(undefined)}
         >
           Continue without choosing

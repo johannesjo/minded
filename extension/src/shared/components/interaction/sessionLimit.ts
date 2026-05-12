@@ -5,6 +5,7 @@ import {
   SessionPlatform,
   SessionTarget,
 } from "@src/dataInterface/syncData";
+import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 
 type Setter<T> = (value: T) => unknown;
 
@@ -40,6 +41,9 @@ export const cancelTimeSelection = (
     setShowTimeSelection(false);
   });
 };
+
+export const shouldAskIntent = (frictionLevel: FrictionLevel): boolean =>
+  frictionLevel !== "soft";
 
 export const getSessionEndTS = (seconds: number, now: number): number => {
   if (seconds >= 0) {

@@ -6,6 +6,7 @@ interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;
   onCancel: () => void;
   intent?: SessionIntent;
+  isArmed: boolean;
 }
 
 export const TimeSelection: Component<TimeSelectionProps> = (props) => {
@@ -18,6 +19,14 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
     { label: "rest of day", value: -1 },
   ];
 
+  const handleSelect = (seconds: number) => {
+    if (!props.isArmed) {
+      return;
+    }
+
+    props.onSelectTime(seconds);
+  };
+
   return (
     <div class="time-selection-wrapper">
       <div class="time-selection-container">
@@ -29,7 +38,8 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
               <button
                 type="button"
                 class="btnToggleSelect"
-                onClick={() => props.onSelectTime(option.value)}
+                disabled={!props.isArmed}
+                onClick={() => handleSelect(option.value)}
               >
                 {option.label}
               </button>

@@ -44,6 +44,7 @@ import {
   advanceIntentSelectionToTime,
   cancelIntentSelection,
   cancelTimeSelection,
+  shouldAskIntent,
 } from "@src/shared/components/interaction/sessionLimit";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
@@ -123,6 +124,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowTimeSelection, setShowTimeSelection] = createSignal(false);
   const [getShowTimeSelectionOverlay, setShowTimeSelectionOverlay] =
     createSignal(false);
+  const [getIsIntentSelectionArmed, setIsIntentSelectionArmed] =
+    createSignal(false);
+  const [getIsTimeSelectionArmed, setIsTimeSelectionArmed] =
+    createSignal(false);
   const [getSunHintStep, setSunHintStep] = createSignal(0);
   const getShowPostSunOverlay = () =>
     getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
@@ -136,6 +141,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let initFadeOutTimeout: number | undefined;
   let contentReadyTimeout: number | undefined;
   let beProudMessageTimeout: number | undefined;
+  let intentSelectionArmTimeout: number | undefined;
+  let timeSelectionArmTimeout: number | undefined;
   let isDisposed = false;
   const interactionEventTarget = props.shadowRoot ?? window;
 
@@ -217,19 +224,30 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleSunContinue = () => {
     cancelCountdown();
+    clearIntentSelectionArmTimeout();
+    clearTimeSelectionArmTimeout();
     setPendingIntent(undefined);
+    setIsIntentSelectionArmed(false);
+    setIsTimeSelectionArmed(false);
 
     if (getPostSunPauseSeconds(getFrictionLevel()) > 0) {
       setShowBreathPause(true);
       return;
     }
 
-    setShowIntentSelection(true);
+    if (shouldAskIntent(getFrictionLevel())) {
+      showIntentSelectionAfterOverlayTransition();
+      return;
+    }
+
+    showTimeSelectionAfterOverlayTransition();
   };
 
   const handleBreathPauseComplete = () => {
     if (isDisposed) return;
+    clearIntentSelectionArmTimeout();
     setShowBreathPause(false);
+    setIsIntentSelectionArmed(true);
     setShowIntentSelection(true);
   };
 
@@ -237,10 +255,55 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     cancelCountdown();
     setPendingIntent(undefined);
     setShowBreathPause(false);
+    setIsIntentSelectionArmed(false);
+  };
+
+  const clearIntentSelectionArmTimeout = () => {
+    if (intentSelectionArmTimeout) {
+      window.clearTimeout(intentSelectionArmTimeout);
+      intentSelectionArmTimeout = undefined;
+    }
+  };
+
+  const showIntentSelectionAfterOverlayTransition = () => {
+    clearIntentSelectionArmTimeout();
+    setIsIntentSelectionArmed(false);
+    setShowIntentSelection(true);
+    intentSelectionArmTimeout = window.setTimeout(() => {
+      intentSelectionArmTimeout = undefined;
+      if (isDisposed) return;
+
+      setIsIntentSelectionArmed(true);
+    }, SCREEN_TRANSITION_MS);
+  };
+
+  const clearTimeSelectionArmTimeout = () => {
+    if (timeSelectionArmTimeout) {
+      window.clearTimeout(timeSelectionArmTimeout);
+      timeSelectionArmTimeout = undefined;
+    }
+  };
+
+  const armTimeSelectionAfterOverlayTransition = () => {
+    clearTimeSelectionArmTimeout();
+    setIsTimeSelectionArmed(false);
+    timeSelectionArmTimeout = window.setTimeout(() => {
+      timeSelectionArmTimeout = undefined;
+      if (isDisposed) return;
+
+      setIsTimeSelectionArmed(true);
+    }, SCREEN_TRANSITION_MS);
+  };
+
+  const showTimeSelectionAfterOverlayTransition = () => {
+    setShowTimeSelection(true);
+    armTimeSelectionAfterOverlayTransition();
   };
 
   const handleTimeSelection = (seconds: number) => {
     const intent = getPendingIntent();
+    clearTimeSelectionArmTimeout();
+    setIsTimeSelectionArmed(false);
     setIsPostSunScreenFading(true);
     // Fade out the entire overlay before transitioning to Little Sun
     if (props.wrapperEl) {
@@ -268,6 +331,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       window.clearTimeout(postSunScreenTransitionTimeout);
     }
 
+    clearIntentSelectionArmTimeout();
+    clearTimeSelectionArmTimeout();
+    setIsIntentSelectionArmed(false);
+    setIsTimeSelectionArmed(false);
     setIsPostSunScreenFading(true);
     postSunScreenTransitionTimeout = window.setTimeout(() => {
       postSunScreenTransitionTimeout = undefined;
@@ -277,6 +344,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setShowIntentSelection,
         setShowTimeSelection,
       );
+      armTimeSelectionAfterOverlayTransition();
       requestAnimationFrame(() => setIsPostSunScreenFading(false));
     }, SCREEN_TRANSITION_MS);
   };
@@ -309,6 +377,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const onInteractionSuccess = (answerOrData?: Answer) => {
     setHasAnswered(true);
     setPendingIntent(undefined);
+    setIsIntentSelectionArmed(false);
+    setIsTimeSelectionArmed(false);
     setShowBreathPause(false);
 
     runFadeAnimation(SCREEN_TRANSITION_MS, () => {
@@ -493,6 +563,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (postSunScreenTransitionTimeout) {
       clearTimeout(postSunScreenTransitionTimeout);
     }
+    if (intentSelectionArmTimeout) {
+      clearTimeout(intentSelectionArmTimeout);
+    }
+    if (timeSelectionArmTimeout) {
+      clearTimeout(timeSelectionArmTimeout);
+    }
     if (successTimeout) {
       clearTimeout(successTimeout);
     }
@@ -550,8 +626,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               />
             ) : getShowIntentSelection() ? (
               <IntentSelection
+                isArmed={getIsIntentSelectionArmed()}
                 onSelectIntent={showTimeSelectionAfterIntent}
                 onCancel={() => {
+                  setIsIntentSelectionArmed(false);
+                  clearIntentSelectionArmTimeout();
                   cancelIntentSelection(
                     setPendingIntent,
                     setShowIntentSelection,
@@ -561,9 +640,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               />
             ) : (
               <TimeSelection
+                isArmed={getIsTimeSelectionArmed()}
                 intent={getPendingIntent()}
                 onSelectTime={handleTimeSelection}
                 onCancel={() => {
+                  setIsTimeSelectionArmed(false);
+                  clearTimeSelectionArmTimeout();
                   cancelTimeSelection(setPendingIntent, setShowTimeSelection);
                 }}
               />

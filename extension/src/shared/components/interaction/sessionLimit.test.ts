@@ -4,6 +4,7 @@ import {
   cancelTimeSelection,
   createActiveTimer,
   createAndroidSessionLimitPayload,
+  shouldAskIntent,
 } from "./sessionLimit";
 import { SessionIntent } from "@src/dataInterface/syncData";
 
@@ -82,5 +83,11 @@ describe("sessionLimit helpers", () => {
     expect(JSON.parse(createAndroidSessionLimitPayload(300))).toEqual({
       seconds: 300,
     });
+  });
+
+  it("skips intent selection for soft friction", () => {
+    expect(shouldAskIntent("soft")).toBe(false);
+    expect(shouldAskIntent("normal")).toBe(true);
+    expect(shouldAskIntent("strong")).toBe(true);
   });
 });
