@@ -42,6 +42,41 @@ export const legacyAppToAlternative = (label: string): Alternative => ({
   openedCount: 0,
 });
 
+export const createUserWebsiteAlternative = (
+  url: string,
+  createdTS = Date.now(),
+): Alternative => {
+  const trimmedUrl = url.trim();
+
+  return {
+    id: `legacy-web:${trimmedUrl}`,
+    kind: "website",
+    label: beautifyAlternativeUrl(trimmedUrl) || trimmedUrl,
+    url: trimmedUrl,
+    createdTS,
+    shownCount: 0,
+    dismissedCount: 0,
+    openedCount: 0,
+  };
+};
+
+export const createUserAppAlternative = (
+  label: string,
+  createdTS = Date.now(),
+): Alternative => {
+  const trimmedLabel = label.trim();
+
+  return {
+    id: `legacy-app:${trimmedLabel}`,
+    kind: "app",
+    label: trimmedLabel,
+    createdTS,
+    shownCount: 0,
+    dismissedCount: 0,
+    openedCount: 0,
+  };
+};
+
 const isAlternativeInScope = (
   alternative: Alternative,
   isWebsiteScope: boolean,

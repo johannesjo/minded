@@ -617,6 +617,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onStayBriefly={() =>
               handleTimeSelection(ALTERNATIVE_STAY_BRIEFLY_SECONDS)
             }
+            onAddBetterAlternative={() => setMode("SET_ALTERNATIVE")}
             onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
           />
         </div>

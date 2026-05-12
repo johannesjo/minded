@@ -24,6 +24,7 @@ import {
 export const ShowAlternativeInteraction: (props: {
   onSkip: () => void;
   onStayBriefly?: () => void;
+  onAddBetterAlternative?: () => void;
   onCancelCountdown: () => void;
   syncData: SyncData;
 }) => JSX.Element = (props) => {
@@ -39,7 +40,11 @@ export const ShowAlternativeInteraction: (props: {
   const markCandidateShown = (candidate: Alternative | undefined) => {
     if (candidate && shownAlternativeId !== candidate.id) {
       shownAlternativeId = candidate.id;
-      shownAlternativePromise = markAlternativeShown(candidate);
+      shownAlternativePromise = markAlternativeShown(candidate).catch(
+        (error) => {
+          console.error("Failed to mark alternative shown", error);
+        },
+      );
       void shownAlternativePromise;
     }
   };
@@ -85,6 +90,12 @@ export const ShowAlternativeInteraction: (props: {
     props.onCancelCountdown();
     await shownAlternativePromise;
     props.onStayBriefly?.();
+  };
+
+  const onAddBetterAlternative = async () => {
+    props.onCancelCountdown();
+    await shownAlternativePromise;
+    props.onAddBetterAlternative?.();
   };
 
   const onGoToUrl = async (event: MouseEvent) => {
@@ -133,6 +144,15 @@ export const ShowAlternativeInteraction: (props: {
               onClick={() => void onStayBriefly()}
             >
               Stay 2 min
+            </button>
+          )}
+          {props.onAddBetterAlternative && (
+            <button
+              type="button"
+              class="btnTxt"
+              onClick={() => void onAddBetterAlternative()}
+            >
+              Add better option
             </button>
           )}
           <button

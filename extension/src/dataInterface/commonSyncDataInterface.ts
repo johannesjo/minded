@@ -32,6 +32,10 @@ import {
   applyAlternativeStatEvent,
 } from "@src/shared/components/interaction/alternatives/alternativeStats";
 import type { AlternativeStatEvent } from "@src/shared/components/interaction/alternatives/alternativeStats";
+import {
+  createUserAppAlternative,
+  createUserWebsiteAlternative,
+} from "@src/shared/components/interaction/alternatives/getAlternatives";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
@@ -75,6 +79,43 @@ export const saveAlternativeWebsite = (alternative: string): Promise<void> =>
   updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
     alternativeWebsites: [...syncData.alternativeWebsites, alternative],
   }));
+
+const upsertAlternative = (
+  alternatives: Alternative[] | undefined,
+  alternative: Alternative,
+): Alternative[] => {
+  const currentAlternatives = alternatives ?? [];
+  const updatedAlternatives = currentAlternatives.map((existingAlternative) =>
+    existingAlternative.id === alternative.id
+      ? removeAlternativeDisabledTS({ ...existingAlternative, ...alternative })
+      : existingAlternative,
+  );
+
+  return updatedAlternatives.some(
+    (existingAlternative) => existingAlternative.id === alternative.id,
+  )
+    ? updatedAlternatives
+    : [...updatedAlternatives, alternative];
+};
+
+const removeAlternativeDisabledTS = (alternative: Alternative): Alternative => {
+  const enabledAlternative = { ...alternative };
+  delete enabledAlternative.disabledTS;
+  return enabledAlternative;
+};
+
+export const saveAlternative = (alternative: Alternative): Promise<void> =>
+  updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
+    alternatives: upsertAlternative(syncData.alternatives, alternative),
+  }));
+
+export const saveStructuredAlternativeApp = (
+  alternative: string,
+): Promise<void> => saveAlternative(createUserAppAlternative(alternative));
+
+export const saveStructuredAlternativeWebsite = (
+  alternative: string,
+): Promise<void> => saveAlternative(createUserWebsiteAlternative(alternative));
 
 const markAlternative = (
   alternative: Alternative,

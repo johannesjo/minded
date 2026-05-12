@@ -3,8 +3,8 @@ import { JSX } from "solid-js";
 import {
   IS_APP,
   IS_WEB_EXT,
-  saveAlternativeApp,
-  saveAlternativeWebsite,
+  saveStructuredAlternativeApp,
+  saveStructuredAlternativeWebsite,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 
@@ -16,10 +16,15 @@ export const SetAlternativeInteraction: (props: {
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const onSave = async (val: string) => {
+    const alternative = val.trim();
+    if (!alternative || alternative === "https://") {
+      return;
+    }
+
     if (IS_APP) {
-      await saveAlternativeApp(val);
+      await saveStructuredAlternativeApp(alternative);
     } else {
-      await saveAlternativeWebsite(val);
+      await saveStructuredAlternativeWebsite(alternative);
     }
     props.onSuccess();
   };

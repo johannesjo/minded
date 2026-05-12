@@ -16,6 +16,8 @@ import {
   countSunTap,
   markAlternativeDismissed,
   markAlternativeOpenedAndCountSunTap,
+  saveStructuredAlternativeApp,
+  saveStructuredAlternativeWebsite,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { getSyncDataN, saveSyncDataN } from "@dataInterface/syncDataInterface";
 import { createMockSyncData } from "@src/test-utils/mockHelpers";
@@ -166,6 +168,102 @@ describe("commonSyncDataInterface", () => {
               ...alternative,
               dismissedCount: 3,
               disabledTS: now,
+            },
+          ],
+        }),
+      );
+    });
+  });
+
+  describe("saveStructuredAlternativeWebsite", () => {
+    it("stores a new website alternative in the structured alternatives list", async () => {
+      const now = new Date("2026-05-11T10:00:00").getTime();
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      mockedGetSyncData.mockResolvedValue(createMockSyncData());
+      mockedSaveSyncData.mockResolvedValue();
+
+      await saveStructuredAlternativeWebsite(" https://www.example.com/ ");
+
+      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              id: "legacy-web:https://www.example.com/",
+              kind: "website",
+              label: "example.com",
+              url: "https://www.example.com/",
+              createdTS: now,
+              shownCount: 0,
+              dismissedCount: 0,
+              openedCount: 0,
+            },
+          ],
+        }),
+      );
+    });
+
+    it("revives an existing structured alternative when it is saved again", async () => {
+      const now = new Date("2026-05-11T10:00:00").getTime();
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      const alternative = {
+        id: "legacy-web:https://example.com",
+        kind: "website" as const,
+        label: "example.com",
+        url: "https://example.com",
+        createdTS: 0,
+        shownCount: 4,
+        dismissedCount: 3,
+        openedCount: 1,
+        disabledTS: now - 1000,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({
+          alternatives: [alternative],
+        }),
+      );
+      mockedSaveSyncData.mockResolvedValue();
+
+      await saveStructuredAlternativeWebsite("https://example.com");
+
+      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              id: "legacy-web:https://example.com",
+              kind: "website",
+              label: "example.com",
+              url: "https://example.com",
+              createdTS: now,
+              shownCount: 0,
+              dismissedCount: 0,
+              openedCount: 0,
+            },
+          ],
+        }),
+      );
+    });
+  });
+
+  describe("saveStructuredAlternativeApp", () => {
+    it("stores a new app alternative in the structured alternatives list", async () => {
+      const now = new Date("2026-05-11T10:00:00").getTime();
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      mockedGetSyncData.mockResolvedValue(createMockSyncData());
+      mockedSaveSyncData.mockResolvedValue();
+
+      await saveStructuredAlternativeApp(" Reader ");
+
+      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              id: "legacy-app:Reader",
+              kind: "app",
+              label: "Reader",
+              createdTS: now,
+              shownCount: 0,
+              dismissedCount: 0,
+              openedCount: 0,
             },
           ],
         }),

@@ -2,6 +2,8 @@ import type { Alternative } from "@src/dataInterface/syncData";
 import { createMockSyncData } from "@src/test-utils/mockHelpers";
 import {
   beautifyAlternativeUrl,
+  createUserAppAlternative,
+  createUserWebsiteAlternative,
   getAlternativesForTarget,
 } from "./getAlternatives";
 
@@ -147,5 +149,34 @@ describe("beautifyAlternativeUrl", () => {
     expect(beautifyAlternativeUrl("https://www.example.com/")).toBe(
       "example.com",
     );
+  });
+});
+
+describe("user alternative factories", () => {
+  it("creates structured website alternatives with legacy-compatible IDs", () => {
+    expect(
+      createUserWebsiteAlternative(" https://www.example.com/ ", 123),
+    ).toEqual({
+      id: "legacy-web:https://www.example.com/",
+      kind: "website",
+      label: "example.com",
+      url: "https://www.example.com/",
+      createdTS: 123,
+      shownCount: 0,
+      dismissedCount: 0,
+      openedCount: 0,
+    });
+  });
+
+  it("creates structured app alternatives with legacy-compatible IDs", () => {
+    expect(createUserAppAlternative(" Reader ", 123)).toEqual({
+      id: "legacy-app:Reader",
+      kind: "app",
+      label: "Reader",
+      createdTS: 123,
+      shownCount: 0,
+      dismissedCount: 0,
+      openedCount: 0,
+    });
   });
 });
