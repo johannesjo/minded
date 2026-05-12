@@ -1,5 +1,8 @@
 import type { Alternative } from "@src/dataInterface/syncData";
-import { getAlternativeCandidate } from "./getAlternativeCandidate";
+import {
+  getAlternativeCandidate,
+  getNextAlternativeCandidate,
+} from "./getAlternativeCandidate";
 
 const NOW = new Date("2026-05-11T10:00:00").getTime();
 
@@ -91,5 +94,19 @@ describe("getAlternativeCandidate", () => {
         random: () => randomValues.shift() ?? 0.99,
       })?.id,
     ).toBe("second");
+  });
+
+  it("can select a replacement candidate excluding the current one", () => {
+    const current = alternative({ id: "current", label: "Current" });
+    const replacement = alternative({
+      id: "replacement",
+      label: "Replacement",
+    });
+
+    expect(
+      getNextAlternativeCandidate([current, replacement], "current", {
+        now: NOW,
+      })?.id,
+    ).toBe("replacement");
   });
 });

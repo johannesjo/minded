@@ -3,6 +3,7 @@ import { createEffect, createSignal, JSX } from "solid-js";
 import {
   IS_APP,
   IS_IOS,
+  markAlternativeDismissed,
   markAlternativeOpenedAndCountSunTap,
   markAlternativeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
@@ -13,7 +14,10 @@ import type {
 } from "@src/dataInterface/syncData";
 import { getAlternativeOpenUrl } from "@src/shared/components/interaction/alternatives/getAlternativeOpenUrl";
 import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
-import { getAlternativeCandidate } from "@src/shared/components/interaction/alternatives/getAlternativeCandidate";
+import {
+  getAlternativeCandidate,
+  getNextAlternativeCandidate,
+} from "@src/shared/components/interaction/alternatives/getAlternativeCandidate";
 
 // once on app load
 
@@ -28,28 +32,53 @@ export const ShowAlternativeInteraction: (props: {
   let shownAlternativeId: string | undefined;
   let shownAlternativePromise: Promise<void> | undefined;
 
+  const getPlatform = (): SessionPlatform =>
+    IS_APP ? (IS_IOS ? "ios" : "android") : "web";
+
+  const markCandidateShown = (candidate: Alternative | undefined) => {
+    if (candidate && shownAlternativeId !== candidate.id) {
+      shownAlternativeId = candidate.id;
+      shownAlternativePromise = markAlternativeShown(candidate);
+      void shownAlternativePromise;
+    }
+  };
+
   createEffect(() => {
     // Keep the candidate stable if the shown-stat write refreshes sync data.
     if (getAlternative()) {
       return;
     }
 
-    const platform: SessionPlatform = IS_APP
-      ? IS_IOS
-        ? "ios"
-        : "android"
-      : "web";
     const candidate = getAlternativeCandidate(
-      getAlternativesForTarget(props.syncData, undefined, platform),
+      getAlternativesForTarget(props.syncData, undefined, getPlatform()),
     );
     setAlternative(candidate);
-
-    if (candidate && shownAlternativeId !== candidate.id) {
-      shownAlternativeId = candidate.id;
-      shownAlternativePromise = markAlternativeShown(candidate);
-      void shownAlternativePromise;
-    }
+    markCandidateShown(candidate);
   });
+
+  const onDismissAlternative = async () => {
+    const alternative = getAlternative();
+    if (!alternative) {
+      return;
+    }
+
+    props.onCancelCountdown();
+    await shownAlternativePromise;
+    await markAlternativeDismissed(alternative);
+
+    const nextAlternative = getNextAlternativeCandidate(
+      getAlternativesForTarget(props.syncData, undefined, getPlatform()),
+      alternative.id,
+    );
+
+    if (!nextAlternative) {
+      props.onSkip();
+      return;
+    }
+
+    setAlternative(nextAlternative);
+    markCandidateShown(nextAlternative);
+  };
 
   const onGoToUrl = async (event: MouseEvent) => {
     event.preventDefault();
@@ -90,6 +119,13 @@ export const ShowAlternativeInteraction: (props: {
               </>
             )}
           </div>
+          <button
+            type="button"
+            class="btnTxt"
+            onClick={() => void onDismissAlternative()}
+          >
+            Not for me
+          </button>
         </div>
       )}
     </>

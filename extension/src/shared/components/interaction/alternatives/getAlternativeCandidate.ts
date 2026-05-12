@@ -45,3 +45,15 @@ export const getAlternativeCandidate = (
     return a.tieBreaker - b.tieBreaker;
   })[0].alternative;
 };
+
+export const getNextAlternativeCandidate = (
+  alternatives: Alternative[],
+  currentAlternativeId: string,
+  options: AlternativeCandidateOptions = {},
+): Alternative | undefined =>
+  getAlternativeCandidate(
+    alternatives.filter(
+      (alternative) => alternative.id !== currentAlternativeId,
+    ),
+    options,
+  );
