@@ -122,6 +122,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
+  // True while the interaction-content / sun is fading out before the
+  // post-sun overlay mounts. Lets us sequence: fade out first, then fade in.
+  const [getIsExitingInteraction, setIsExitingInteraction] =
+    createSignal(false);
   const [getPendingIntent, setPendingIntent] = createSignal<
     SessionIntent | undefined
   >();
@@ -171,6 +175,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     } else {
       setShowTimeSelectionOverlay(false);
       setIsPostSunScreenFading(false);
+      setIsExitingInteraction(false);
     }
   });
 
@@ -234,17 +239,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setIsIntentSelectionArmed(false);
     setIsTimeSelectionArmed(false);
 
-    if (getPostSunPauseSeconds(getFrictionLevel()) > 0) {
-      setShowBreathPause(true);
-      return;
+    // Fade interaction-content out first, then mount the post-sun overlay so
+    // its fade-in plays after — not concurrent with — the fade-out.
+    setIsExitingInteraction(true);
+    if (postSunScreenTransitionTimeout) {
+      window.clearTimeout(postSunScreenTransitionTimeout);
     }
+    postSunScreenTransitionTimeout = window.setTimeout(() => {
+      postSunScreenTransitionTimeout = undefined;
+      if (isDisposed) return;
 
-    if (shouldAskIntent(getFrictionLevel())) {
-      showIntentSelectionAfterOverlayTransition();
-      return;
-    }
+      if (getPostSunPauseSeconds(getFrictionLevel()) > 0) {
+        setShowBreathPause(true);
+        return;
+      }
 
-    showTimeSelectionAfterOverlayTransition();
+      if (shouldAskIntent(getFrictionLevel())) {
+        showIntentSelectionAfterOverlayTransition();
+        return;
+      }
+
+      showTimeSelectionAfterOverlayTransition();
+    }, SCREEN_TRANSITION_MS);
   };
 
   const handleBreathPauseComplete = () => {
@@ -665,6 +681,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         id="minded-6622-interaction-wrapper-box"
         style={{
           "pointer-events":
+            getIsExitingInteraction() ||
             getShowPostSunOverlay() ||
             getIsFinalAnimation() ||
             getIsCompletionStarted()
@@ -675,19 +692,25 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <div
           class="interaction-content"
           classList={{
-            "fade-in": getIsContentReady() && !getShowPostSunOverlay(),
+            "fade-in":
+              getIsContentReady() &&
+              !getShowPostSunOverlay() &&
+              !getIsExitingInteraction(),
             dragging: getIsDragging(),
           }}
           style={{
-            opacity: getShowPostSunOverlay()
-              ? 0
-              : getShowSunInstructions()
+            opacity:
+              getIsExitingInteraction() || getShowPostSunOverlay()
                 ? 0
-                : getInteractionOpacity(),
-            transition: getShowPostSunOverlay()
-              ? `opacity ${SCREEN_TRANSITION_MS}ms ease-out`
-              : undefined,
+                : getShowSunInstructions()
+                  ? 0
+                  : getInteractionOpacity(),
+            transition:
+              getIsExitingInteraction() || getShowPostSunOverlay()
+                ? `opacity ${SCREEN_TRANSITION_MS}ms ease-out`
+                : undefined,
             "pointer-events":
+              getIsExitingInteraction() ||
               getShowPostSunOverlay() ||
               getShowSunInstructions() ||
               getIsCompletionStarted()
@@ -723,16 +746,25 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <div
               class="interaction-content sun-instructions-overlay"
               classList={{
-                "fade-in": getShowSunInstructions() && !getShowPostSunOverlay(),
+                "fade-in":
+                  getShowSunInstructions() &&
+                  !getShowPostSunOverlay() &&
+                  !getIsExitingInteraction(),
                 dragging: getIsDragging(),
               }}
               style={{
-                opacity: getShowPostSunOverlay() ? 0 : getInteractionOpacity(),
-                transition: getShowPostSunOverlay()
-                  ? `opacity ${SCREEN_TRANSITION_MS}ms ease-out`
-                  : undefined,
+                opacity:
+                  getIsExitingInteraction() || getShowPostSunOverlay()
+                    ? 0
+                    : getInteractionOpacity(),
+                transition:
+                  getIsExitingInteraction() || getShowPostSunOverlay()
+                    ? `opacity ${SCREEN_TRANSITION_MS}ms ease-out`
+                    : undefined,
                 "pointer-events":
-                  getIsCompletionStarted() || getShowPostSunOverlay()
+                  getIsCompletionStarted() ||
+                  getIsExitingInteraction() ||
+                  getShowPostSunOverlay()
                     ? "none"
                     : "auto",
               }}
@@ -761,9 +793,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           <div
             class="sun-container"
             style={{
-              opacity: getShowPostSunOverlay() ? 0 : 1,
+              opacity:
+                getIsExitingInteraction() || getShowPostSunOverlay() ? 0 : 1,
               transition: `opacity ${SCREEN_TRANSITION_MS}ms ease-out`,
-              "pointer-events": getShowPostSunOverlay() ? "none" : "all",
+              "pointer-events":
+                getIsExitingInteraction() || getShowPostSunOverlay()
+                  ? "none"
+                  : "all",
             }}
           >
             <Sun
