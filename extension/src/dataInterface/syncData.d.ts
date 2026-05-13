@@ -66,8 +66,7 @@ export interface EmotionLabelingData {
 export type SessionIntentId =
   | "reply_or_message"
   | "check_one_thing"
-  | "take_short_break"
-  | "not_sure_yet";
+  | "take_short_break";
 
 export interface SessionIntent {
   id: SessionIntentId;
