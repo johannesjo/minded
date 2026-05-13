@@ -365,9 +365,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setShowTimeSelection,
       );
       armTimeSelectionAfterOverlayTransition();
-      // Snap container back to opacity 1 (no transition); the new page's
-      // own fade-in animations carry the visible reveal.
-      setIsPostSunScreenFading(false);
+      requestAnimationFrame(() => setIsPostSunScreenFading(false));
     }, SCREEN_TRANSITION_MS);
   };
 

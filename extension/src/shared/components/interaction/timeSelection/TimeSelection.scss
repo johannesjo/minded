@@ -28,8 +28,6 @@
 
   .txtBig {
     margin-bottom: 24px;
-    opacity: 0;
-    animation: minded6622fadeIn 500ms ease-out forwards;
   }
 
   .time-options-grid {
@@ -39,10 +37,6 @@
     // Offset the margin from btnToggleSelect
     margin-left: -8px;
     margin-right: -8px;
-
-    // 6 options × 100ms stagger + 500ms duration = ends at 1000ms, aligned
-    // with the SCREEN_TRANSITION_MS arm timer.
-    @include staggerFadeIn(100ms, 500ms);
   }
 }
 
