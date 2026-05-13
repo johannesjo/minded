@@ -29,7 +29,10 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
 
   return (
     <div class="intent-selection-wrapper">
-      <div class="intent-selection-container">
+      <div
+        class="intent-selection-container"
+        classList={{ "is-arming": !props.isArmed }}
+      >
         <div class="txtBig">What do you want to do here?</div>
 
         <div class="intent-options-grid">
@@ -38,7 +41,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
               <button
                 type="button"
                 class="btnToggleSelect"
-                disabled={!props.isArmed}
+                aria-disabled={!props.isArmed}
                 onClick={() => handleSelect(intent)}
               >
                 {getSessionIntentLabel(intent)}
@@ -50,7 +53,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
         <button
           type="button"
           class="btnTxt intent-selection-secondary"
-          disabled={!props.isArmed}
+          aria-disabled={!props.isArmed}
           onClick={() => handleSelect(undefined)}
         >
           Continue without choosing

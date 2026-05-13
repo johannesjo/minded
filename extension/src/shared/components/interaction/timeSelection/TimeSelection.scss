@@ -19,6 +19,13 @@
   text-align: center;
   flex: 1;
 
+  // Block clicks while the overlay fades in. Cancel stays outside this
+  // container so it remains tappable. Buttons look normal — the parent
+  // overlay/post-sun-screen fade carries the "not ready yet" cue.
+  &.is-arming {
+    pointer-events: none;
+  }
+
   .txtBig {
     margin-bottom: 24px;
   }

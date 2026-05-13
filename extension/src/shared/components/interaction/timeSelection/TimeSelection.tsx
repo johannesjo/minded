@@ -29,7 +29,10 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
 
   return (
     <div class="time-selection-wrapper">
-      <div class="time-selection-container">
+      <div
+        class="time-selection-container"
+        classList={{ "is-arming": !props.isArmed }}
+      >
         <div class="txtBig">{getSessionIntentTimeQuestion(props.intent)}</div>
 
         <div class="time-options-grid">
@@ -38,7 +41,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
               <button
                 type="button"
                 class="btnToggleSelect"
-                disabled={!props.isArmed}
+                aria-disabled={!props.isArmed}
                 onClick={() => handleSelect(option.value)}
               >
                 {option.label}
