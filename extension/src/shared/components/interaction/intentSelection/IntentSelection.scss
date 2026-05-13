@@ -37,10 +37,19 @@
   justify-content: center;
   margin-left: -8px;
   margin-right: -8px;
+
+  // 3 options × 250ms stagger + 500ms duration = ends at 1000ms, aligned with
+  // the SCREEN_TRANSITION_MS arm timer so buttons land as they become live.
+  @include staggerFadeIn(250ms, 500ms);
 }
 
 .intent-selection-secondary {
   margin-top: 16px;
+
+  // Fade in alongside the last option so the escape hatch doesn't beat the
+  // primary affordances to full opacity.
+  opacity: 0;
+  animation: minded6622fadeIn 500ms ease-out 500ms forwards;
 }
 
 .intent-selection-cancel {

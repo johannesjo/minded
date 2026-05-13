@@ -1,7 +1,27 @@
-@mixin standardPageTransitionIn (){
+@mixin standardPageTransitionIn() {
   animation: minded6622fadeIn ease 1000ms;
 
   :global {
     animation-name: minded6622fadeIn;
+  }
+}
+
+// Fade in each direct child in sequence. Use on a wrapper whose children
+// should appear one after another (option grids, button stacks).
+@mixin staggerFadeIn(
+  $stagger: 80ms,
+  $duration: 400ms,
+  $startDelay: 0ms,
+  $maxItems: 12
+) {
+  > * {
+    opacity: 0;
+    animation: minded6622fadeIn $duration ease-out forwards;
+  }
+
+  @for $i from 1 through $maxItems {
+    > *:nth-child(#{$i}) {
+      animation-delay: $startDelay + ($i - 1) * $stagger;
+    }
   }
 }
