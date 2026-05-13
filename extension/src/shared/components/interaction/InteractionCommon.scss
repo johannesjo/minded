@@ -151,13 +151,17 @@
 
 .post-sun-screen {
   opacity: 1;
-  transition: opacity var(--screen-transition-ms, 1000ms) ease-out;
   width: 100%;
   height: 100%;
 
+  // Transition lives inside .is-fading so removing the class snaps opacity
+  // back to 1 without animating. The new page's children fade in via their
+  // own animations (staggerFadeIn on grids, fadeIn on .txtBig), keeping the
+  // sequence strictly fade-out → fade-in.
   &.is-fading {
     opacity: 0;
     pointer-events: none;
+    transition: opacity var(--screen-transition-ms, 1000ms) ease-out;
   }
 }
 
