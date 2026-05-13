@@ -273,7 +273,6 @@ export const LittleSunComponent: (props: {
   };
 
   const getActionLabel = () => {
-    if (getIsBudgetMode()) return "Tap to review your budget";
     if (getRemainingSeconds() !== null) return "Tap to end this session";
     if (props.onTap) return "Tap to leave this site";
     return "Tap to pause and choose again";
