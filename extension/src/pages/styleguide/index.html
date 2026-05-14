@@ -37,7 +37,18 @@
         position: relative;
         min-height: 100vh;
         background: var(--background-gradient);
+        background-size: 180% 180%, 170% 170%, 200% 160%, 100% 100%;
+        background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%;
+        background-repeat: no-repeat;
+        animation: minded-sg-bg-drift 90s ease-in-out infinite alternate;
         color: var(--c-fg);
+      }
+      @keyframes minded-sg-bg-drift {
+        0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%; }
+        100% { background-position: 100% 100%, 0% 100%, 50% 0%, 0% 0%; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #minded-6622 { animation: none; }
       }
       #minded-6622::after {
         content: "";

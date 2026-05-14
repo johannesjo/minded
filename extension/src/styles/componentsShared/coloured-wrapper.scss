@@ -11,12 +11,24 @@
   text-align: center;
   background: var(--background-gradient);
   pointer-events: auto;
-  //background: radial-gradient(circle, var(--c-gradient-3), var(--c-gradient-2), var(--c-gradient-1));
 
-  background-size: 100% 100%;
+  // Each mesh blob has its own background-size and starting position;
+  // the linear base sits at 100% so it doesn't drift. The animation
+  // shifts only the three blob layers over a long, breathing-paced cycle.
+  background-size:
+    180% 180%,
+    170% 170%,
+    200% 160%,
+    100% 100%;
+  background-position:
+    0% 0%,
+    100% 0%,
+    50% 100%,
+    0% 0%;
+  background-repeat: no-repeat;
+  animation: minded6622bgDrift 90s ease-in-out infinite alternate;
+
   overflow: hidden;
-
-  // Ensure CSS variables are inherited for light mode
   color: var(--c-fg-full-emphasis);
 
   // ::after (not ::before) avoids colliding with Android's gradient ::before.
@@ -25,38 +37,35 @@
   @media (orientation: portrait) {
   }
 
-  // Dark mode specific styles
+  // Dark colours live in _variables.scss now — only override
+  // text/foreground here.
   &.minded-6622-dark {
-    --c-gradient-1: #071449;
-    --c-gradient-2: #1a137c;
-    --c-gradient-3: #401049;
-    --background-gradient: linear-gradient(
-      175deg,
-      var(--c-gradient-1),
-      var(--c-gradient-2),
-      var(--c-gradient-3)
-    );
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
   }
 }
 
-// TODO: maybe remove completely
-#minded-6622-coloured-wrapper-dynamic {
-  //background-size: 100% 150%;
-  //animation: minded6622gradient 6s ease-in infinite;
-  // NOTE currently conflicting with slow fadeout
-  //animation: minded6622gradient 8s ease-in infinite, minded6622fadeIn 1s ease ;
-}
-
-@keyframes minded6622gradient {
+@keyframes minded6622bgDrift {
   0% {
-    background-position: 0 0;
-  }
-  50% {
-    background-position: 0 100%;
+    background-position:
+      0% 0%,
+      100% 0%,
+      50% 100%,
+      0% 0%;
   }
   100% {
-    background-position: 0 0;
+    background-position:
+      100% 100%,
+      0% 100%,
+      50% 0%,
+      0% 0%;
+  }
+}
+
+// Respect users who turn motion off — freeze the drift, keep the look.
+@media (prefers-reduced-motion: reduce) {
+  #minded-6622-coloured-wrapper-dynamic,
+  #minded-6622-coloured-wrapper {
+    animation: none;
   }
 }
