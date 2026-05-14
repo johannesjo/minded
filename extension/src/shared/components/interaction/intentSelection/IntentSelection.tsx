@@ -52,7 +52,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
 
         <button
           type="button"
-          class="btnTxt intent-selection-secondary"
+          class="btnToggleSelect"
           aria-disabled={!props.isArmed}
           onClick={() => handleSelect(undefined)}
         >
