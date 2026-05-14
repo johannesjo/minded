@@ -273,7 +273,7 @@ export const SleepWindDownView = (
                       onClick={snooze}
                       disabled={!hydrated()}
                     >
-                      Snooze 30 min
+                      Snooze 15 min
                     </button>
                     <button
                       class="btnTxtOutline"

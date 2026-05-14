@@ -78,7 +78,7 @@ export const isInsideWindow = (
   at: Date = new Date(),
 ): boolean => resolveNightId(cfg, at) !== null;
 
-export const SNOOZE_MINUTES = 30;
+export const SNOOZE_MINUTES = 15;
 
 /**
  * Maps a `nightId` string ("YYYY-MM-DD") to a stable index in `[0, length)`.
