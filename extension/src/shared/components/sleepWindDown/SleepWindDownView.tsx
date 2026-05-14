@@ -512,15 +512,18 @@ export const SleepWindDownView = (
                     <h2 class="h2" style={{ margin: 0 }}>
                       15 more minutes
                     </h2>
-                    <p class={styles.subtle}>Drag the moon down to confirm.</p>
+                    <p class={styles.subtle}>
+                      Triple-tap to snooze, or drag the moon down to sleep now.
+                    </p>
                     <div class={styles.moonContainer}>
                       <Sun
                         variant="moon"
                         completionDirection="down"
-                        isTapEnabled={false}
+                        isTapEnabled={true}
+                        tapThreshold={3}
                         onSkip={snooze}
-                        onFlingAway={snooze}
-                        onDragComplete={snooze}
+                        onFlingAway={completeGoodnight}
+                        onDragComplete={completeGoodnight}
                         onStartBackgroundAnimation={(direction) => {
                           window.dispatchEvent(
                             new CustomEvent("startBackgroundAnimation", {

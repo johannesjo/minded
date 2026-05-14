@@ -30,6 +30,7 @@ interface SunProps {
   eventRoot?: ShadowRoot;
   tapThreshold?: number;
   isTapEnabled?: boolean;
+  isDragEnabled?: boolean;
   variant?: "sun" | "moon";
   completionDirection?: "any" | "down";
 }
@@ -52,6 +53,7 @@ export const Sun: Component<SunProps> = (props) => {
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 1 = warm (down)
   const isTapEnabled = () => props.isTapEnabled ?? true;
+  const isDragEnabled = () => props.isDragEnabled ?? true;
   const canCompleteDirection = (direction: "up" | "down"): boolean =>
     (props.completionDirection ?? "any") === "any" || direction === "down";
   const dispatchInteractionEvent = (name: string, detail: unknown) => {
@@ -149,7 +151,9 @@ export const Sun: Component<SunProps> = (props) => {
       // Reset haptic threshold tracking
       lastHapticPointIndex = -1;
       // Start long press timer
-      startLongPressTimer();
+      if (isDragEnabled()) {
+        startLongPressTimer();
+      }
     };
 
     const applyDragFrame = () => {
@@ -315,7 +319,18 @@ export const Sun: Component<SunProps> = (props) => {
       const dragDistance = Math.abs(offset.y);
       const isFling = velocity.magnitude >= FLING_VELOCITY_THRESHOLD;
 
-      if (isFling && canCompleteDirection(velocity.y > 0 ? "down" : "up")) {
+      if (!isDragEnabled()) {
+        dispatchInteractionEvent("dragProgress", {
+          direction: "none",
+          intensity: 0,
+          isDragging: false,
+          resetToInitial: true,
+        });
+        animateSnapBack();
+      } else if (
+        isFling &&
+        canCompleteDirection(velocity.y > 0 ? "down" : "up")
+      ) {
         // Fling behavior - any direction triggers onFlingAway
         triggerHaptic("medium");
         playCompletionSound();
