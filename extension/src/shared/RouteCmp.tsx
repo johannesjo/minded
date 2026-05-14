@@ -1,6 +1,6 @@
 import { HashRouter, Route, RouteSectionProps } from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
-import { createSignal, onMount } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
@@ -21,6 +21,12 @@ import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
 import InteractionIOS from "@src/ios/interaction/InteractionIOS";
 import SleepWindDownRoute from "@src/shared/components/sleepWindDown/SleepWindDownRoute";
+import Styleguide from "@src/shared/components/styleguide/Styleguide";
+
+// Vite replaces process.env.NODE_ENV at build time. `npm start` sets NODE_ENV=development,
+// so the styleguide route registers (and the import is kept). `npm run build` defaults to
+// production, so this evaluates to false and Rollup tree-shakes the import out.
+const IS_DEV: boolean = process.env.NODE_ENV !== "production";
 
 const MainWrapper = (props: RouteSectionProps) => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -93,6 +99,7 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         {IS_ANDROID && (
           <Route path="/sleepWindDown" component={SleepWindDownRoute} />
         )}
+        {IS_DEV && <Route path="/styleguide" component={Styleguide} />}
       </HashRouter>
     </div>
   );

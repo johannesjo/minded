@@ -1,0 +1,166 @@
+.styleguide {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: var(--c-fg);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bottom-bar-bg);
+  backdrop-filter: blur(8px);
+  margin: -24px -24px 24px;
+  padding: 16px 24px;
+  border-radius: 0 0 16px 16px;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+
+  h1 {
+    font-size: var(--fz-xl);
+    margin: 0;
+  }
+}
+
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -4px;
+}
+
+.section {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--btn-outline-color);
+
+  h2 {
+    font-size: var(--fz-l);
+    margin: 0 0 16px;
+  }
+}
+
+.subsection {
+  margin: 24px 0;
+}
+
+.subsectionLabel {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: var(--fz-s);
+  opacity: 0.6;
+}
+
+.subsectionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.swatchGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fz-s);
+
+  code {
+    font-size: 12px;
+  }
+
+  span {
+    opacity: 0.6;
+    font-size: 11px;
+  }
+}
+
+.swatchSample {
+  height: 56px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--btn-outline-color);
+}
+
+.fontList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.fontRow {
+  line-height: 1.2;
+
+  code {
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  span {
+    font-size: 12px;
+    opacity: 0.4;
+    margin-right: 8px;
+  }
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--btn-bg-not-selected);
+  font-size: var(--fz-s);
+  font-family: monospace;
+}
+
+.icoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.icoCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--dashboard-card-bg);
+  border-radius: var(--border-radius);
+
+  code {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+}
+
+.muted {
+  opacity: 0.6;
+  font-size: var(--fz-s);
+}
+
+.interactionFrame {
+  width: 100%;
+  min-height: 240px;
+  padding: 24px;
+  border: 1px dashed var(--btn-outline-color);
+  border-radius: var(--border-radius);
+  background: var(--dashboard-card-bg);
+  position: relative;
+}

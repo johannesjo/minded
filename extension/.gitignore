@@ -3,6 +3,7 @@ node_modules/
 dist/
 distDroid/
 distIOS/
+distStyleguide/
 tmp/
 /.idea
 minded.zip

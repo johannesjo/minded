@@ -7,6 +7,7 @@
     "start": "NODE_ENV=development npm run dev",
     "startDroid": "NODE_ENV=development vite build -w --mode android --emptyOutDir",
     "startIOS": "NODE_ENV=development vite build -w --mode ios --emptyOutDir",
+    "styleguide": "NODE_ENV=development vite build --mode styleguide && NODE_ENV=development vite preview --mode styleguide --port 5174",
     "dev": "vite build -w",
     "serve": "vite preview",
     "lint": "eslint .. --fix -c .eslintrc --ext js,ts --ignore-pattern='!.*'",
