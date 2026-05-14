@@ -6,3 +6,12 @@ node_modules/
 dist/
 .DS_Store
 **/.claude/settings.local.json
+
+# Claude Code session/local state (settings.json itself stays tracked)
+.claude/plans/
+.claude/scheduled_tasks.lock
+.claude/agents
+.claude/commands
+.claude/skills
+
+.vscode
