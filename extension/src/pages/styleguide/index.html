@@ -47,14 +47,14 @@
         z-index: -2;
         pointer-events: none;
         background: var(--background-gradient);
-        background-size: 180% 180%, 170% 170%, 200% 160%, 100% 100%;
-        background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%;
+        background-size: 240% 220%, 240% 220%, 100% 100%;
+        background-position: 5% 10%, 95% 90%, 0% 0%;
         background-repeat: no-repeat;
-        animation: minded-sg-bg-drift 90s ease-in-out infinite alternate;
+        animation: minded-sg-bg-drift 40s ease-in-out infinite alternate;
       }
       @keyframes minded-sg-bg-drift {
-        0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%; }
-        100% { background-position: 100% 100%, 0% 100%, 50% 0%, 0% 0%; }
+        0%   { background-position: 5% 10%, 95% 90%, 0% 0%; }
+        100% { background-position: 95% 90%, 5% 10%, 0% 0%; }
       }
       @media (prefers-reduced-motion: reduce) {
         #minded-6622::before { animation: none; }

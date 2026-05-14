@@ -92,31 +92,23 @@
   --c-gradient-1: #ccf1f6;
   --c-gradient-2: #ffebf6;
   --c-gradient-3: #f4f3b5;
-  // Mesh of three soft radial blobs over a linear base. Each layer's
-  // position is animated separately by coloured-wrapper.scss for ambient
-  // drift. Single source of truth for both light and dark.
+  // Two large soft orbs over a linear base. The orbs are centered in their
+  // own oversized tile and panned via background-position by
+  // coloured-wrapper.scss; positions are animated so they slowly cross the
+  // viewport, meeting through the middle. Single source of truth for light
+  // and dark.
   --background-gradient:
     radial-gradient(
-      70% 60% at 18% 18%,
+      closest-side at 50% 50%,
       var(--c-gradient-1) 0%,
-      transparent 65%
+      transparent 75%
     ),
     radial-gradient(
-      60% 70% at 85% 25%,
+      closest-side at 50% 50%,
       var(--c-gradient-3) 0%,
-      transparent 65%
+      transparent 75%
     ),
-    radial-gradient(
-      80% 55% at 50% 95%,
-      var(--c-gradient-2) 0%,
-      transparent 65%
-    ),
-    linear-gradient(
-      175deg,
-      var(--c-gradient-1),
-      var(--c-gradient-2),
-      var(--c-gradient-3)
-    );
+    linear-gradient(175deg, var(--c-gradient-2), var(--c-gradient-1));
 
   // Background transition target colors
   --bg-transition-bluesky-top: #0058c1;
@@ -140,26 +132,16 @@
     --c-gradient-3: #401049;
     --background-gradient:
       radial-gradient(
-        70% 60% at 18% 18%,
+        closest-side at 50% 50%,
         var(--c-gradient-1) 0%,
-        transparent 65%
+        transparent 75%
       ),
       radial-gradient(
-        60% 70% at 85% 25%,
+        closest-side at 50% 50%,
         var(--c-gradient-3) 0%,
-        transparent 65%
+        transparent 75%
       ),
-      radial-gradient(
-        80% 55% at 50% 95%,
-        var(--c-gradient-2) 0%,
-        transparent 65%
-      ),
-      linear-gradient(
-        175deg,
-        var(--c-gradient-1),
-        var(--c-gradient-2),
-        var(--c-gradient-3)
-      );
+      linear-gradient(175deg, var(--c-gradient-2), var(--c-gradient-1));
 
     // Background transition target colors (dark mode)
     --bg-transition-sunset-top: #020c25;

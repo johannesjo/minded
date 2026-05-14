@@ -12,21 +12,20 @@
   background: var(--background-gradient);
   pointer-events: auto;
 
-  // Each mesh blob has its own background-size and starting position;
-  // the linear base sits at 100% so it doesn't drift. The animation
-  // shifts only the three blob layers over a long, breathing-paced cycle.
+  // Two oversized soft orbs drift across the viewport on opposite vectors;
+  // the linear base stays pinned at 100% so it doesn't move. Cycle is short
+  // enough that motion is visible within a few seconds, while ease-in-out
+  // keeps the pacing calm.
   background-size:
-    180% 180%,
-    170% 170%,
-    200% 160%,
+    240% 220%,
+    240% 220%,
     100% 100%;
   background-position:
-    0% 0%,
-    100% 0%,
-    50% 100%,
+    5% 10%,
+    95% 90%,
     0% 0%;
   background-repeat: no-repeat;
-  animation: minded6622bgDrift 90s ease-in-out infinite alternate;
+  animation: minded6622bgDrift 40s ease-in-out infinite alternate;
 
   overflow: hidden;
   color: var(--c-fg-full-emphasis);
@@ -48,16 +47,14 @@
 @keyframes minded6622bgDrift {
   0% {
     background-position:
-      0% 0%,
-      100% 0%,
-      50% 100%,
+      5% 10%,
+      95% 90%,
       0% 0%;
   }
   100% {
     background-position:
-      100% 100%,
-      0% 100%,
-      50% 0%,
+      95% 90%,
+      5% 10%,
       0% 0%;
   }
 }
