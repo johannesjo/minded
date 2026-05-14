@@ -1,6 +1,7 @@
 import { createSignal, For, JSX, Match, onMount, Show, Switch } from "solid-js";
 import {
   getSyncData,
+  IS_ANDROID,
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
@@ -513,7 +514,9 @@ export const SleepWindDownView = (
                       15 more minutes
                     </h2>
                     <p class={styles.subtle}>
-                      Triple-tap to snooze, or drag the moon down to sleep now.
+                      {IS_ANDROID
+                        ? "Triple-tap to snooze, or drag the moon down to sleep now."
+                        : "Triple-tap to confirm."}
                     </p>
                     <div class={styles.moonContainer}>
                       <Sun
@@ -521,6 +524,7 @@ export const SleepWindDownView = (
                         completionDirection="down"
                         isTapEnabled={true}
                         tapThreshold={3}
+                        isDragEnabled={IS_ANDROID}
                         onSkip={snooze}
                         onFlingAway={completeGoodnight}
                         onDragComplete={completeGoodnight}
