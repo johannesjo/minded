@@ -265,7 +265,7 @@ export const SleepWindDownView = (
             <Switch>
               <Match when={currentView === "prompt"}>
                 <div class={styles.center}>
-                  <h2 class="h2">Wind down for sleep?</h2>
+                  <h2 class="h2 h2Mindful">Wind down for sleep?</h2>
                   <p class={styles.subtle}>
                     It's getting late — would you like to take a moment before
                     bed?
@@ -298,7 +298,7 @@ export const SleepWindDownView = (
 
               <Match when={currentView === "menu"}>
                 <div class={styles.menu}>
-                  <h2 class="h2">Choose anything that helps</h2>
+                  <h2 class="h2 h2Mindful">Choose anything that helps</h2>
                   <p class={styles.subtle}>
                     Pick in any order. Skip what you don't need.
                   </p>
@@ -464,7 +464,7 @@ export const SleepWindDownView = (
 
               <Match when={currentView === "tips"}>
                 <div class={styles.activityBody}>
-                  <h2 class={`h2 ${styles.activityTitle}`}>
+                  <h2 class={`h2 h2Mindful ${styles.activityTitle}`}>
                     Tips for good sleep
                   </h2>
                   <ul class={styles.tipsList}>
@@ -486,7 +486,7 @@ export const SleepWindDownView = (
 
               <Match when={currentView === "snoozeIntent"}>
                 <div class={styles.center}>
-                  <h2 class="h2">What's keeping you up?</h2>
+                  <h2 class="h2 h2Mindful">What's keeping you up?</h2>
                   <p class={styles.subtle}>
                     A moment of honesty before snoozing.
                   </p>
@@ -510,7 +510,7 @@ export const SleepWindDownView = (
                 <div class={styles.goodnightGesture}>
                   <BackgroundTransition />
                   <div class={styles.goodnightContent}>
-                    <h2 class="h2" style={{ margin: 0 }}>
+                    <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
                       15 more minutes
                     </h2>
                     <p class={styles.subtle}>
@@ -545,7 +545,7 @@ export const SleepWindDownView = (
                 <div class={styles.goodnightGesture}>
                   <BackgroundTransition />
                   <div class={styles.goodnightContent}>
-                    <h2 class="h2" style={{ margin: 0 }}>
+                    <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
                       Sleep well
                     </h2>
                     <p class={styles.subtle}>

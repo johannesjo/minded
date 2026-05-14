@@ -16,7 +16,11 @@
   pointer-events: all;
   position: relative;
   user-select: none;
-  transition: all 50ms;
+  transition:
+    transform var(--dur-quick) var(--ease-out),
+    box-shadow var(--dur-quick) var(--ease-out),
+    background var(--dur-quick) var(--ease-out),
+    border-color var(--dur-quick) var(--ease-out);
   font-weight: normal;
   text-decoration: none;
   vertical-align: middle;
@@ -35,10 +39,10 @@
   }
 
   &:active {
-    //opacity: .8;
-    transform: scale(0.95);
-    //box-shadow: var(--btn-box-shadow);
-    transition: all 10ms;
+    transform: scale(0.96);
+    transition:
+      transform var(--dur-instant) var(--ease-out),
+      box-shadow var(--dur-instant) var(--ease-out);
   }
 
   &:after {
@@ -169,7 +173,10 @@
     user-select: none;
     text-transform: lowercase;
     min-width: 100px;
-    transition: 0.2s all;
+    transition:
+      transform var(--dur-quick) var(--ease-out),
+      background var(--dur-quick) var(--ease-out),
+      border-radius var(--dur-quick) var(--ease-out);
     background: var(--btn-bg-not-selected);
   }
 
@@ -199,7 +206,10 @@
     padding: 0 12px;
     user-select: none;
     text-transform: lowercase;
-    transition: 0.2s all;
+    transition:
+      transform var(--dur-quick) var(--ease-out),
+      background var(--dur-quick) var(--ease-out),
+      border-radius var(--dur-quick) var(--ease-out);
     background: var(--btn-bg-not-selected);
     font-size: var(--fz-m);
     font-weight: 300;

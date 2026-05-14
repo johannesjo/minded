@@ -24,7 +24,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
         <Switch>
           <Match when={getStep() === 0}>
             <div class="pageWrapper pageTransitionIn">
-              <div class="h2">
+              <div class="h2 h2Mindful">
                 Welcome to <em>minded</em>! 😊
               </div>
               <div class="txtSlightlyBigger">
@@ -72,7 +72,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
           <Match when={getStep() >= 3}>
             {getPermissionNotGiven() ? (
               <div class="card pageTransitionIn" style="margin: 32px;">
-                <div class="h2">
+                <div class="h2 h2Mindful">
                   <em>minded</em> is not completely configured 🙁
                 </div>
                 <p>
@@ -101,7 +101,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
               </div>
             ) : (
               <div class="card pageTransitionIn" style="margin: 32px;">
-                <div class="h2">
+                <div class="h2 h2Mindful">
                   <em>minded</em> is now successfully configured! 🎉
                 </div>
                 <p>

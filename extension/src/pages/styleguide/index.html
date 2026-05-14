@@ -30,12 +30,29 @@
     <style>
       html, body { margin: 0; padding: 0; min-height: 100vh; }
       /* Standalone-only: in the real app this gradient lives on
-         #minded-6622-coloured-wrapper, which the styleguide entry skips. */
+         #minded-6622-coloured-wrapper, which the styleguide entry skips.
+         The grain --grain-tile is shared (defined in _variables.scss). */
       #minded-6622 {
         display: block;
+        position: relative;
         min-height: 100vh;
         background: var(--background-gradient);
         color: var(--c-fg);
+      }
+      #minded-6622::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+        opacity: 0.12;
+        mix-blend-mode: overlay;
+        background-image: var(--grain-tile);
+        background-size: 180px 180px;
+      }
+      #minded-6622.minded-6622-dark::after {
+        opacity: 0.18;
+        mix-blend-mode: screen;
       }
     </style>
   </head>

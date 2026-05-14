@@ -15,6 +15,24 @@
   --fz-s: 14px;
   //--fz-s: 18px;
 
+  // motion vocabulary — extend only when a second consumer needs it.
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-instant: 40ms; // tap acknowledgement — snap, no perceptible ramp
+  --dur-quick: 180ms; // small UI state shifts (background, transform)
+  --dur-soft: 480ms; // page-level fades
+
+  // Film grain tile — kills the plastic feel of pure gradients.
+  // Shared between coloured-wrapper.scss and the standalone styleguide page.
+  --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+
+  // typography stacks — display for headings, body for everything else
+  --font-display:
+    "Fraunces Variable", "Newsreader", "Iowan Old Style", "Charter", Georgia,
+    "Times New Roman", serif;
+  --font-body:
+    "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Helvetica Neue", sans-serif;
+
   --c-fg-full-emphasis: rgba(0, 0, 0, 0.85);
   --c-fg: rgba(0, 0, 0, 0.8);
 
@@ -166,6 +184,16 @@
     --dashboard-card-border-radius: 16px;
 
     --rating-size: 48px;
+  }
+}
+
+// Reduced-motion: zero out durations so any transition driven by our tokens
+// resolves instantly. Keeps the visual state changes, drops the animation.
+@media (prefers-reduced-motion: reduce) {
+  #minded-6622 {
+    --dur-instant: 0ms;
+    --dur-quick: 0ms;
+    --dur-soft: 0ms;
   }
 }
 

@@ -1,5 +1,6 @@
 @import "variablesSCSS";
 @import "variables";
+@import "fonts";
 @import "mixins/mixins";
 @import "componentsShared/componentsShared";
 @import "misc/sharedAnis";
@@ -24,13 +25,30 @@
     text-decoration: none;
   }
 
-  &,
+  // Body font lives on the root only so descendants inherit naturally —
+  // do NOT also set this on `*`, that prior version overrode the inherited
+  // Fraunces on nested elements inside `.txtBig`/`.h2Mindful`.
+  font-family: var(--font-body);
+
+  // box-sizing still needs to be universal so children adopt it.
   * {
-    font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
     box-sizing: border-box;
+  }
+
+  // Form controls don't inherit font-family from their parent in default UA
+  // styles; pull them back into the inherited stack so buttons/inputs match.
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+
+  // Display font — single Fraunces voice for mindful surfaces only.
+  // Descendants inherit it because we removed `*` from the body-font rule.
+  .txtBig,
+  .h2Mindful {
+    font-family: var(--font-display);
   }
 
   .hideOnXS {

@@ -7,7 +7,8 @@ import { Component } from "solid-js";
 export const QuestionsForToday: Component<any> = (props) => {
   return (
     <div id="minded-6622-questions-for-today">
-      <h2>Questions for Today</h2>
+      <h2 class="h2">Questions for Today</h2>
+
       <MoodCheckin
         onCancelCountdown={() => undefined}
         onSuccess={() => undefined}

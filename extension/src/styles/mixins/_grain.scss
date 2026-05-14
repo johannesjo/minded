@@ -1,0 +1,22 @@
+// Apply inside a rule with `position: relative|absolute|fixed` and
+// `overflow: hidden` — emits an ::after that tiles --grain-tile across the
+// element. z-index: -1 sits behind in-flow content so blend-mode tinting
+// doesn't reduce text contrast.
+@mixin grainOverlay() {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.12;
+    mix-blend-mode: overlay;
+    background-image: var(--grain-tile);
+    background-size: 180px 180px;
+  }
+
+  &.minded-6622-dark::after {
+    opacity: 0.18;
+    mix-blend-mode: screen;
+  }
+}

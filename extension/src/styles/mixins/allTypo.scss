@@ -1,3 +1,18 @@
+// The single Fraunces "voice" — same weight + tracking across every mindful
+// surface (intervention prompts, breath labels, success overlay, opt-in h2).
+// Size and line-height are set by the consumer.
+@mixin displayVoice() {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  // Fraunces ships only `normal`; reset em/i so the browser doesn't
+  // synthesize an oblique that looks visibly off vs a real italic master.
+  em,
+  i {
+    font-style: normal;
+  }
+}
+
 @mixin allTypo() {
   .h2 {
     font-weight: 200;
@@ -6,6 +21,14 @@
     user-select: none;
     pointer-events: all;
     text-transform: lowercase;
+  }
+
+  // Opt-in modifier for mindful contexts (sleep wind-down, onboarding).
+  // Pairs with .h2: `<h2 class="h2 h2Mindful">`. Only size differs from
+  // .txtBig — both share displayVoice().
+  .h2Mindful {
+    @include displayVoice;
+    text-transform: none;
   }
 
   .h3 {
@@ -17,8 +40,9 @@
   }
 
   .txtBig {
-    font-size: var(--fz-xl);
-    line-height: 1.5;
+    @include displayVoice;
+    font-size: calc(var(--fz-xl) + 2px);
+    line-height: 1.4;
     pointer-events: all;
   }
 
@@ -68,5 +92,4 @@
       font-size: var(--fz-m);
     }
   }
-
 }

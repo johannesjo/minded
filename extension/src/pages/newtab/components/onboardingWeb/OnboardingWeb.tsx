@@ -18,6 +18,7 @@ export const OnboardingWeb: (props: {
         <div
           classList={{
             ["h2"]: true,
+            ["h2Mindful"]: true,
             [styles.welcomeText]: true,
           }}
         >

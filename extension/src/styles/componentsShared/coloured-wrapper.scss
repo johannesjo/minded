@@ -19,6 +19,9 @@
   // Ensure CSS variables are inherited for light mode
   color: var(--c-fg-full-emphasis);
 
+  // ::after (not ::before) avoids colliding with Android's gradient ::before.
+  @include grainOverlay;
+
   @media (orientation: portrait) {
   }
 

@@ -1,0 +1,20 @@
+// Latin variable woff2 subsets copied from @fontsource-variable.
+// To refresh: `npm i @fontsource-variable/inter @fontsource-variable/fraunces`,
+// copy `inter-latin-wght-normal.woff2` and `fraunces-latin-wght-normal.woff2`
+// from each package's `files/` dir into `src/assets/fonts/`, then uninstall.
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@src/assets/fonts/inter-latin-variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fraunces Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@src/assets/fonts/fraunces-latin-variable.woff2") format("woff2");
+}

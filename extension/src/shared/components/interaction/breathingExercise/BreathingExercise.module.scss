@@ -1,3 +1,5 @@
+@import "@src/styles/mixins/allTypo";
+
 .BreathingExercise {
   min-height: min(520px, calc(100vh - 220px));
   width: 100%;
@@ -18,9 +20,9 @@
   min-height: 128px;
 
   h1 {
+    @include displayVoice;
     font-size: clamp(28px, 7vw, 42px);
-    line-height: 1.1;
-    font-weight: 300;
+    line-height: 1.15; // Fraunces ascenders need a touch more room
     margin: 0;
   }
 
