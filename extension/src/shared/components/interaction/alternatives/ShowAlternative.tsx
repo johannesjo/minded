@@ -137,31 +137,33 @@ export const ShowAlternativeInteraction: (props: {
               </>
             )}
           </div>
-          {props.onStayBriefly && (
+          <div class="show-alternative-actions">
+            {props.onStayBriefly && (
+              <button
+                type="button"
+                class="btnTxt"
+                onClick={() => void onStayBriefly()}
+              >
+                Stay 2 min
+              </button>
+            )}
+            {props.onAddBetterAlternative && (
+              <button
+                type="button"
+                class="btnTxt"
+                onClick={() => void onAddBetterAlternative()}
+              >
+                Add better option
+              </button>
+            )}
             <button
               type="button"
               class="btnTxt"
-              onClick={() => void onStayBriefly()}
+              onClick={() => void onDismissAlternative()}
             >
-              Stay 2 min
+              Not for me
             </button>
-          )}
-          {props.onAddBetterAlternative && (
-            <button
-              type="button"
-              class="btnTxt"
-              onClick={() => void onAddBetterAlternative()}
-            >
-              Add better option
-            </button>
-          )}
-          <button
-            type="button"
-            class="btnTxt"
-            onClick={() => void onDismissAlternative()}
-          >
-            Not for me
-          </button>
+          </div>
         </div>
       )}
     </>
