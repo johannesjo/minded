@@ -36,7 +36,16 @@ type View =
   | "breathing"
   | "calmRead"
   | "tips"
+  | "snoozeIntent"
+  | "snoozeGoodnight"
   | "goodnight";
+
+const SNOOZE_INTENT_OPTIONS = [
+  "Still working",
+  "Watching something",
+  "Talking with someone",
+  "Just not tired yet",
+];
 
 type ActivityKey =
   | "brainDump"
@@ -270,7 +279,7 @@ export const SleepWindDownView = (
                     </button>
                     <button
                       class="btnTxtOutline"
-                      onClick={snooze}
+                      onClick={() => setView("snoozeIntent")}
                       disabled={!hydrated()}
                     >
                       Snooze 15 min
@@ -470,6 +479,57 @@ export const SleepWindDownView = (
                     >
                       Done
                     </button>
+                  </div>
+                </div>
+              </Match>
+
+              <Match when={currentView === "snoozeIntent"}>
+                <div class={styles.center}>
+                  <h2 class="h2">What's keeping you up?</h2>
+                  <p class={styles.subtle}>
+                    A moment of honesty before snoozing.
+                  </p>
+                  <div class={styles.btnRow}>
+                    <For each={SNOOZE_INTENT_OPTIONS}>
+                      {(opt) => (
+                        <button
+                          class="btnToggleSelect"
+                          onClick={() => setView("snoozeGoodnight")}
+                          disabled={!hydrated()}
+                        >
+                          {opt}
+                        </button>
+                      )}
+                    </For>
+                  </div>
+                </div>
+              </Match>
+
+              <Match when={currentView === "snoozeGoodnight"}>
+                <div class={styles.goodnightGesture}>
+                  <BackgroundTransition />
+                  <div class={styles.goodnightContent}>
+                    <h2 class="h2" style={{ margin: 0 }}>
+                      15 more minutes
+                    </h2>
+                    <p class={styles.subtle}>Drag the moon down to confirm.</p>
+                    <div class={styles.moonContainer}>
+                      <Sun
+                        variant="moon"
+                        completionDirection="down"
+                        isTapEnabled={false}
+                        onSkip={snooze}
+                        onFlingAway={snooze}
+                        onDragComplete={snooze}
+                        onStartBackgroundAnimation={(direction) => {
+                          window.dispatchEvent(
+                            new CustomEvent("startBackgroundAnimation", {
+                              detail: { direction },
+                            }),
+                          );
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </Match>
