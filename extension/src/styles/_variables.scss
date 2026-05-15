@@ -2,7 +2,9 @@
 
 #minded-6622 {
   --border-radius: 8px;
-  --c-link-color: rgb(153, 23, 166);
+  --c-link-color: #006b72;
+  --c-link-hover-color: #00555d;
+  --c-link-underline-color: rgba(0, 107, 114, 0.35);
   // used to resize when keyboard is shown
   --app-height: 100%;
   // TODO maybe use this for bottom instead
@@ -154,6 +156,9 @@
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
+    --c-link-color: #8de9ee;
+    --c-link-hover-color: #c4fbff;
+    --c-link-underline-color: rgba(141, 233, 238, 0.5);
 
     --c-graph-fg-full: rgba(255, 255, 255, 0.8);
     --c-graph-fg-less: rgba(255, 255, 255, 0.5);

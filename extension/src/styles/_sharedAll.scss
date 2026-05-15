@@ -22,7 +22,26 @@
   a {
     color: var(--c-link-color);
     font-weight: bold;
-    text-decoration: none;
+    text-decoration-line: underline;
+    text-decoration-color: var(--c-link-underline-color);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+    transition:
+      color var(--dur-quick) var(--ease-out),
+      text-decoration-color var(--dur-quick) var(--ease-out);
+
+    @media (hover: hover) {
+      &:hover {
+        color: var(--c-link-hover-color);
+        text-decoration-color: currentColor;
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--c-link-color);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
   }
 
   // Body font lives on the root only so descendants inherit naturally —
