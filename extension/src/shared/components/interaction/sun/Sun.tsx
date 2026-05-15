@@ -21,6 +21,11 @@ import {
 } from "./sunAnimationUtils";
 import { playCompletionSound } from "./sunAudio";
 
+type SunPosition = {
+  x: number;
+  y: number;
+};
+
 interface SunProps {
   onSkip: () => void;
   onFlingAway: () => void;
@@ -66,6 +71,7 @@ export const Sun: Component<SunProps> = (props) => {
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
   let longPressTimer: number | null = null;
+  let resizeHandler: (() => void) | null = null;
 
   // Store event handler references for cleanup
   let touchStartHandler: EventListener | null = null;
@@ -82,7 +88,14 @@ export const Sun: Component<SunProps> = (props) => {
       sunEl.style.willChange = "transform, box-shadow";
       // Force a reflow to ensure the transform is applied
       sunEl.offsetHeight;
+
+      requestAnimationFrame(() => dispatchSunPosition());
     }
+
+    resizeHandler = () => {
+      requestAnimationFrame(() => dispatchSunPosition());
+    };
+    window.addEventListener("resize", resizeHandler);
 
     setupDragHandlers();
   });
@@ -96,6 +109,9 @@ export const Sun: Component<SunProps> = (props) => {
     }
     if (longPressTimer) {
       clearTimeout(longPressTimer);
+    }
+    if (resizeHandler) {
+      window.removeEventListener("resize", resizeHandler);
     }
 
     // Clean up event listeners
@@ -114,6 +130,26 @@ export const Sun: Component<SunProps> = (props) => {
       }
     }
   });
+
+  const getSunCenterForOffset = (
+    offset = getDragOffset(),
+  ): SunPosition | undefined => {
+    if (!sunEl) return undefined;
+
+    const rect = sunEl.getBoundingClientRect();
+    const currentOffset = getDragOffset();
+
+    return {
+      x: rect.left + rect.width / 2 - currentOffset.x + offset.x,
+      y: rect.top + rect.height / 2 - currentOffset.y + offset.y,
+    };
+  };
+
+  const dispatchSunPosition = (position = getSunCenterForOffset()) => {
+    if (!position) return;
+
+    dispatchInteractionEvent("sunPositionChanged", { sunPosition: position });
+  };
 
   const setupDragHandlers = () => {
     if (!sunEl) return;
@@ -248,11 +284,13 @@ export const Sun: Component<SunProps> = (props) => {
       if (isDragIntent) {
         const direction = deltaY > 0 ? "down" : "up";
         const intensity = getDragProgress();
+        const sunPosition = getSunCenterForOffset({ x: deltaX, y: deltaY });
 
         dispatchInteractionEvent("dragProgress", {
           direction,
           intensity,
           isDragging: true,
+          sunPosition,
         });
       }
 
@@ -313,6 +351,7 @@ export const Sun: Component<SunProps> = (props) => {
         direction: "none",
         intensity: 0,
         isDragging: false,
+        sunPosition: getSunCenterForOffset(offset),
       });
 
       // Check if drag distance exceeded pixel threshold OR velocity is high enough for fling
@@ -325,6 +364,7 @@ export const Sun: Component<SunProps> = (props) => {
           intensity: 0,
           isDragging: false,
           resetToInitial: true,
+          sunPosition: getSunCenterForOffset({ x: 0, y: 0 }),
         });
         animateSnapBack();
       } else if (
@@ -357,6 +397,7 @@ export const Sun: Component<SunProps> = (props) => {
           intensity: 0,
           isDragging: false,
           resetToInitial: true,
+          sunPosition: getSunCenterForOffset({ x: 0, y: 0 }),
         });
         animateSnapBack();
       }
@@ -435,7 +476,10 @@ export const Sun: Component<SunProps> = (props) => {
 
         const currentX = startOffset.x * (1 - easedProgress);
         const currentY = startOffset.y * (1 - easedProgress);
-        setDragOffset({ x: currentX, y: currentY });
+        const currentOffset = { x: currentX, y: currentY };
+        const sunPosition = getSunCenterForOffset(currentOffset);
+        setDragOffset(currentOffset);
+        dispatchSunPosition(sunPosition);
 
         const currentScale = startScale + (1 - startScale) * easedProgress;
         setScale(currentScale);
@@ -483,7 +527,10 @@ export const Sun: Component<SunProps> = (props) => {
 
         const currentY =
           startOffset.y + (targetY - startOffset.y) * easedProgress;
-        setDragOffset({ x: startOffset.x, y: currentY });
+        const currentOffset = { x: startOffset.x, y: currentY };
+        const sunPosition = getSunCenterForOffset(currentOffset);
+        setDragOffset(currentOffset);
+        dispatchSunPosition(sunPosition);
 
         const currentScale =
           startScale + (easing.targetScale - startScale) * easedProgress;
@@ -556,7 +603,9 @@ export const Sun: Component<SunProps> = (props) => {
         );
 
         // Apply state to UI
+        const sunPosition = getSunCenterForOffset(physicsState.position);
         setDragOffset(physicsState.position);
+        dispatchSunPosition(sunPosition);
         setScale(physicsState.scale);
         setOpacity(physicsState.opacity);
         setRotation(physicsState.rotation);

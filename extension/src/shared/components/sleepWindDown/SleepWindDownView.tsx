@@ -508,7 +508,7 @@ export const SleepWindDownView = (
 
               <Match when={currentView === "snoozeGoodnight"}>
                 <div class={styles.goodnightGesture}>
-                  <BackgroundTransition />
+                  <BackgroundTransition isSunGradientAttached={false} />
                   <div class={styles.goodnightContent}>
                     <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
                       15 more minutes
@@ -543,7 +543,7 @@ export const SleepWindDownView = (
 
               <Match when={currentView === "goodnight"}>
                 <div class={styles.goodnightGesture}>
-                  <BackgroundTransition />
+                  <BackgroundTransition isSunGradientAttached={false} />
                   <div class={styles.goodnightContent}>
                     <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
                       Sleep well
