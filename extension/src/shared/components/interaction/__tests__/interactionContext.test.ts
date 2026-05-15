@@ -272,6 +272,28 @@ describe("interaction context", () => {
     expect(crossPlatformContext.hasExpiredTimerForTarget).toBe(false);
     expect(crossPlatformContext.hasIntentOnExpiredTimerForTarget).toBe(false);
   });
+
+  it("does not treat another host's active timer as active for the current target", () => {
+    const syncData = createMockSyncData({
+      activeTimer: {
+        endTS: NOW + 300000,
+        durationS: 300,
+        startedTS: NOW,
+        target: { kind: "host", id: "youtube.com" },
+        platform: "web",
+      },
+    });
+
+    const context = getInteractionContext({
+      syncData,
+      now: NOW,
+      target: { kind: "host", id: "reddit.com" },
+      platform: "web",
+    });
+
+    expect(context.hasActiveTimer).toBe(false);
+    expect(context.hasExpiredTimerForTarget).toBe(false);
+  });
 });
 
 describe("friction level", () => {

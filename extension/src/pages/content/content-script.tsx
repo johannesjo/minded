@@ -11,18 +11,26 @@ import styleAsString from "./content-script.scss?inline";
 import { render, delegateEvents } from "solid-js/web";
 import { isShowFullMinder } from "@src/util/isShowFullMinder";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
+import { getHostFromUrl } from "@src/util/getHostFromUrl";
+import {
+  getWebHostSessionTarget,
+  hasActiveWebHostTimer,
+} from "@src/util/activeTimerScope";
 
 const CURRENT_URL = window.location.href;
 
 (function init() {
   getSyncData().then(async (syncData) => {
-    // Rest-of-day mode: hide everything, don't inject anything
-    if (isRestOfDayActive(syncData)) {
-      return;
-    }
-
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
     if (isOnBlockedUrl(CURRENT_URL, syncData)) {
+      const currentHost = getHostFromUrl(CURRENT_URL);
+      const currentTarget = getWebHostSessionTarget(currentHost);
+
+      // Rest-of-day mode: hide everything for the current host.
+      if (isRestOfDayActive(syncData, currentTarget, "web")) {
+        return;
+      }
+
       try {
         await countOpeningAttempt();
       } catch (error) {
@@ -43,8 +51,11 @@ const CURRENT_URL = window.location.href;
         }
 
         // Check for active session using global timer
-        const hasActiveSession =
-          syncData.activeTimer && syncData.activeTimer.endTS > Date.now();
+        const hasActiveSession = hasActiveWebHostTimer(
+          syncData,
+          currentHost,
+          Date.now(),
+        );
 
         // Create Shadow DOM host element for complete style isolation
         const hostEl = document.createElement("minded-app");

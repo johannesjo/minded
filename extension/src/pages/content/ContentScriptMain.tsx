@@ -12,6 +12,10 @@ import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import { updateSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { bro } from "@src/util/browser";
 import { SyncData } from "@src/dataInterface/syncData";
+import {
+  getWebHostSessionTarget,
+  isActiveTimerInScope,
+} from "@src/util/activeTimerScope";
 
 const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
 
@@ -42,14 +46,22 @@ export const ContentScriptMain: (props: {
     if (areaName !== "sync" || !("activeTimer" in changes)) return;
 
     const newTimer = changes.activeTimer.newValue as SyncData["activeTimer"];
+    const oldTimer = changes.activeTimer.oldValue as SyncData["activeTimer"];
     const now = Date.now();
+    const target = getWebHostSessionTarget(host);
+    const isNewTimerActiveForHost =
+      !!newTimer &&
+      newTimer.endTS > now &&
+      isActiveTimerInScope(newTimer, target, "web");
+    const wasOldTimerForHost =
+      !!oldTimer && isActiveTimerInScope(oldTimer, target, "web");
 
-    if (newTimer && newTimer.endTS > now) {
+    if (isNewTimerActiveForHost) {
       // Timer was set (in this or another tab) → show LittleSun
       if (getIsShowFullMinder()) {
         setIsShowFullMinder(false);
       }
-    } else if (!newTimer && !getIsShowFullMinder()) {
+    } else if (wasOldTimerForHost && !getIsShowFullMinder()) {
       // Timer was cleared → show fresh intervention
       setIsShowFullMinder(true);
     }

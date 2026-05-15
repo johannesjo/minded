@@ -9,11 +9,16 @@ import {
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
-import { getBudgetState, addBudgetUsage } from "@src/util/budget";
+import { addBudgetUsage } from "@src/util/budget";
 import { formatSessionTime } from "@src/util/formatTime";
 import { DailyUsage, SyncData } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { bro } from "@src/util/browser";
+import { getLittleSunTimerSource } from "@src/shared/components/interaction/littleSunTimerSource";
+import {
+  getWebHostSessionTarget,
+  isActiveTimerInScope,
+} from "@src/util/activeTimerScope";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -44,6 +49,8 @@ export const LittleSunComponent: (props: {
   let cachedDailyUsage: SyncData["dailyUsage"] = {};
   let t0: NodeJS.Timeout;
   let hintTimeout: NodeJS.Timeout | undefined;
+  let isDisposed = false;
+  let refreshSeq = 0;
 
   const maybeShowHint = async () => {
     const data = await bro.storage.local.get(LITTLE_SUN_HINT_SEEN_KEY);
@@ -81,60 +88,138 @@ export const LittleSunComponent: (props: {
     bro.storage.sync.set({ dailyUsage: updatedDailyUsage });
   };
 
+  const clearScopedActiveTimer = async (expectedEndTS?: number) => {
+    const syncData = await getSyncData();
+    const activeTimer = syncData.activeTimer;
+    if (!activeTimer) return;
+
+    const target = getWebHostSessionTarget(props.host);
+    if (
+      isActiveTimerInScope(activeTimer, target, "web") &&
+      (expectedEndTS === undefined || activeTimer.endTS === expectedEndTS)
+    ) {
+      await updateSyncData({ activeTimer: null });
+    }
+  };
+
+  const applyTimerSource = (
+    syncData: SyncData,
+    initialSessionDurationInS: number,
+  ): boolean => {
+    const target = getWebHostSessionTarget(props.host);
+
+    if (isRestOfDayActive(syncData, target, "web")) {
+      props.teardown();
+      return false;
+    }
+
+    const source = getLittleSunTimerSource(
+      syncData,
+      props.host,
+      initialSessionDurationInS,
+    );
+
+    if (source.type !== "budget") {
+      flushBudgetUsageSync();
+    }
+
+    if (source.type === "session") {
+      setIsBudgetMode(false);
+      setBudgetRemaining(null);
+      startCountdown(source.activeTimer.endTS);
+      return true;
+    }
+
+    if (source.type === "budget") {
+      const wasBudgetMode = getIsBudgetMode();
+      const unflushedUsageSeconds = wasBudgetMode ? budgetUsageAccumulator : 0;
+      setIsBudgetMode(true);
+      setRemainingSeconds(null);
+      startBudgetCountdown(
+        Math.max(source.remainingSeconds - unflushedUsageSeconds, 0),
+        { resetAccumulator: !wasBudgetMode },
+      );
+      return true;
+    }
+
+    if (source.type === "budget-exhausted") {
+      window.clearInterval(currentSessionInterval);
+      props.onShowFreshInteraction();
+      return true;
+    }
+
+    setIsBudgetMode(false);
+    setRemainingSeconds(null);
+    setBudgetRemaining(null);
+    initCounter(source.initialSeconds);
+
+    if (source.shouldClearExpiredTimer) {
+      void clearScopedActiveTimer();
+    }
+    return true;
+  };
+
+  const refreshTimerSource = async () => {
+    const seq = ++refreshSeq;
+    const [d, syncData] = await Promise.all([
+      loadDataForHost(props.host),
+      getSyncData(),
+    ]);
+    if (isDisposed || seq !== refreshSeq) return;
+
+    cachedDailyUsage = syncData.dailyUsage;
+    applyTimerSource(syncData, d?.sessionDurationInS ?? getSessionTime());
+  };
+
+  const handleStorageChange = (
+    changes: { [key: string]: { newValue?: unknown; oldValue?: unknown } },
+    areaName: string,
+  ) => {
+    if (areaName !== "sync") {
+      return;
+    }
+
+    if ("activeTimer" in changes) {
+      const target = getWebHostSessionTarget(props.host);
+      const oldTimer = changes.activeTimer.oldValue as SyncData["activeTimer"];
+      const newTimer = changes.activeTimer.newValue as SyncData["activeTimer"];
+      if (
+        !isActiveTimerInScope(oldTimer, target, "web") &&
+        !isActiveTimerInScope(newTimer, target, "web")
+      ) {
+        return;
+      }
+    } else if (!("dailyBudget" in changes) && !("dailyUsage" in changes)) {
+      return;
+    }
+
+    void refreshTimerSource();
+  };
+
   onMount(async () => {
     const d = await loadDataForHost(props.host);
     const syncData = await getSyncData();
+    if (isDisposed) return;
+
     cachedDailyUsage = syncData.dailyUsage;
-
-    // Rest-of-day mode: hide everything
-    if (isRestOfDayActive(syncData)) {
-      props.teardown();
+    if (!applyTimerSource(syncData, d?.sessionDurationInS ?? 0)) {
       return;
-    }
-
-    const now = Date.now();
-
-    // Check for budget mode first
-    const budgetState = getBudgetState(syncData, props.host);
-    if (budgetState.isActive && budgetState.remainingSeconds > 0) {
-      setIsBudgetMode(true);
-      startBudgetCountdown(budgetState.remainingSeconds);
-      window.addEventListener("pagehide", flushBudgetUsageSync);
-      t0 = setTimeout(() => setIsMoveOutOfTheWay(true), 200);
-      void maybeShowHint();
-      return;
-    }
-
-    // Check for session mode using global timer
-    const activeTimer = syncData.activeTimer;
-
-    if (activeTimer && activeTimer.endTS > now) {
-      if (activeTimer.durationS === -1) {
-        // For rest-of-day: show count-up timer (elapsed session time)
-        initCounter(d?.sessionDurationInS ?? 0);
-      } else {
-        // For timed sessions: show countdown timer (time left)
-        startCountdown(activeTimer.endTS);
-      }
-    } else {
-      // No active session or session expired
-      initCounter(d?.sessionDurationInS ?? 0);
-      // Clear stale global timer if needed
-      if (activeTimer) {
-        updateSyncData({ activeTimer: null });
-      }
     }
 
     t0 = setTimeout(() => {
       setIsMoveOutOfTheWay(true);
     }, 200);
     void maybeShowHint();
+    bro.storage.onChanged.addListener(handleStorageChange);
+    window.addEventListener("pagehide", flushBudgetUsageSync);
   });
 
   onCleanup(() => {
+    isDisposed = true;
     window.clearTimeout(t0);
     window.clearTimeout(hintTimeout);
     window.clearInterval(currentSessionInterval);
+    bro.storage.onChanged.removeListener(handleStorageChange);
     window.removeEventListener("pagehide", flushBudgetUsageSync);
     flushBudgetUsageSync();
   });
@@ -146,9 +231,7 @@ export const LittleSunComponent: (props: {
   };
 
   const initCounter = (initialValue: number) => {
-    if (initialValue) {
-      setSessionTime(initialValue);
-    }
+    setSessionTime(initialValue);
     if (currentSessionInterval) {
       window.clearInterval(currentSessionInterval);
     }
@@ -188,7 +271,7 @@ export const LittleSunComponent: (props: {
         window.clearInterval(currentSessionInterval);
         // Clear session and trigger full intervention again
         updateHostsEntry(props.host, { sessionDurationInS: 0 });
-        updateSyncData({ activeTimer: null });
+        void clearScopedActiveTimer(sessionEndTS);
         props.onShowFreshInteraction();
       }
     };
@@ -197,13 +280,18 @@ export const LittleSunComponent: (props: {
     currentSessionInterval = window.setInterval(tick, 1000);
   };
 
-  const startBudgetCountdown = (initialRemaining: number) => {
+  const startBudgetCountdown = (
+    initialRemaining: number,
+    options: { resetAccumulator: boolean } = { resetAccumulator: true },
+  ) => {
     if (currentSessionInterval) {
       window.clearInterval(currentSessionInterval);
     }
 
     setBudgetRemaining(initialRemaining);
-    budgetUsageAccumulator = 0;
+    if (options.resetAccumulator) {
+      budgetUsageAccumulator = 0;
+    }
 
     const tick = async () => {
       const remaining = (getBudgetRemaining() ?? 0) - 1;
@@ -253,7 +341,7 @@ export const LittleSunComponent: (props: {
     // End current session
     window.clearInterval(currentSessionInterval);
     updateHostsEntry(props.host, { sessionDurationInS: 0 });
-    updateSyncData({ activeTimer: null });
+    void clearScopedActiveTimer();
 
     if (props.onTap) {
       props.onTap();

@@ -6,6 +6,10 @@ import type {
 import { getIsoDate } from "@src/util/getIsoDate";
 import { getRecentSunTapTimestamps } from "@src/dataInterface/sunTapHistory";
 import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
+import {
+  hasActiveTimerInScope,
+  hasExpiredTimerInScope,
+} from "@src/util/activeTimerScope";
 
 export type FrictionLevel = "soft" | "normal" | "strong";
 
@@ -59,21 +63,6 @@ const isSameDate = (leftTS: number, rightTS: number): boolean => {
   if (leftTS <= 0) return false;
   return getIsoDate(new Date(leftTS)) === getIsoDate(new Date(rightTS));
 };
-
-const isSameTarget = (
-  left: SessionTarget | undefined,
-  right: SessionTarget | undefined,
-): boolean =>
-  !!left && !!right && left.kind === right.kind && left.id === right.id;
-
-const isSameTimerScope = (
-  target: SessionTarget | undefined,
-  platform: SessionPlatform | undefined,
-  activeTimerTarget: SessionTarget | undefined,
-  activeTimerPlatform: SessionPlatform | undefined,
-): boolean =>
-  isSameTarget(target, activeTimerTarget) &&
-  (!platform || !activeTimerPlatform || platform === activeTimerPlatform);
 
 const getBudgetContext = (
   syncData: SyncData,
@@ -140,14 +129,10 @@ export const getInteractionContext = ({
     (alternative) => alternative.disabledTS === undefined,
   ).length;
   const activeTimer = syncData.activeTimer;
-  const activeTimerScopeMatches = isSameTimerScope(
-    target,
-    platform,
-    activeTimer?.target,
-    activeTimer?.platform,
-  );
-  const hasExpiredTimerForTarget =
-    !!activeTimer && activeTimer.endTS <= now && activeTimerScopeMatches;
+  const canResolveTimerScope = !!target && !!platform;
+  const hasExpiredTimerForTarget = canResolveTimerScope
+    ? hasExpiredTimerInScope(syncData, target, platform, now)
+    : false;
   const moodCheckAgeMs =
     syncData.moodCheckTS > 0 ? Math.max(0, now - syncData.moodCheckTS) : null;
 
@@ -174,7 +159,9 @@ export const getInteractionContext = ({
     todayUsageSeconds: todayUsage.totalSeconds,
     targetUsageSeconds,
     budget: getBudgetContext(syncData, dateISO, target, platform),
-    hasActiveTimer: !!activeTimer && activeTimer.endTS > now,
+    hasActiveTimer: canResolveTimerScope
+      ? hasActiveTimerInScope(syncData, target, platform, now)
+      : !!activeTimer && activeTimer.endTS > now,
     hasExpiredTimerForTarget,
     hasIntentOnExpiredTimerForTarget:
       hasExpiredTimerForTarget && !!activeTimer?.intent,
