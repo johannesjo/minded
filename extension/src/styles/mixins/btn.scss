@@ -85,7 +85,7 @@
   }
 
   > .minded-6622-ico {
-    margin: 12px;
+    margin: 10px;
     flex: 1;
 
     @include inDarkMode() {
@@ -115,7 +115,7 @@
   @include btnBase;
 
   & {
-    padding: 0 16px;
+    padding: 0 14px;
     font-weight: 300;
   }
 
@@ -143,7 +143,7 @@
   @include btnBase(var(--btn-height-bigger));
 
   & {
-    padding: 0 20px;
+    padding: 0 18px;
     font-size: var(--btn-bigger-fz);
   }
 
@@ -172,7 +172,7 @@
     margin: 8px;
     user-select: none;
     text-transform: lowercase;
-    min-width: 100px;
+    min-width: 92px;
     transition:
       transform var(--dur-quick) var(--ease-out),
       background var(--dur-quick) var(--ease-out),
@@ -199,11 +199,11 @@
 }
 
 @mixin btnToggleSelectSmall() {
-  @include btnBase(36px);
+  @include btnBase(34px);
 
   & {
     margin: 4px;
-    padding: 0 12px;
+    padding: 0 10px;
     user-select: none;
     text-transform: lowercase;
     transition:
@@ -211,7 +211,7 @@
       background var(--dur-quick) var(--ease-out),
       border-radius var(--dur-quick) var(--ease-out);
     background: var(--btn-bg-not-selected);
-    font-size: var(--fz-m);
+    font-size: calc(var(--fz-m) - 1px);
     font-weight: 300;
     --extraClickArea: -4px;
   }
