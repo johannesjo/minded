@@ -91,6 +91,7 @@ const isActivelyEditing = (shadowRoot?: ShadowRoot | null): boolean => {
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
   const SCREEN_TRANSITION_MS = ANIMATION_TIMING.fadeOut.standard;
+  const ARM_WINDOW_MS = ANIMATION_TIMING.delay.armWindow;
 
   // Data state
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
@@ -294,7 +295,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       if (isDisposed) return;
 
       setIsIntentSelectionArmed(true);
-    }, SCREEN_TRANSITION_MS);
+    }, ARM_WINDOW_MS);
   };
 
   const clearTimeSelectionArmTimeout = () => {
@@ -312,7 +313,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       if (isDisposed) return;
 
       setIsTimeSelectionArmed(true);
-    }, SCREEN_TRANSITION_MS);
+    }, ARM_WINDOW_MS);
   };
 
   const showTimeSelectionAfterOverlayTransition = () => {

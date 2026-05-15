@@ -18,6 +18,13 @@ export const ANIMATION_TIMING = {
     beProudMessage: 1000,
     sunInstructionsFadeIn: 600,
     wrapperFadeStart: 2000,
+    /**
+     * How long intent/time option buttons stay pointer-events:none after
+     * the screen appears (anti-reflex "arming"). Kept shorter than the
+     * SCREEN_TRANSITION_MS fade so an early tap isn't silently swallowed
+     * for the full second.
+     */
+    armWindow: 750,
   },
 } as const;
 
