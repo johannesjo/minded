@@ -24,6 +24,7 @@
   transition: box-shadow 0.1s linear;
 
   &.dragging {
+    cursor: grabbing;
     transition: none; /* Instant update during drag */
   }
 

@@ -47,6 +47,7 @@ export const Sun: Component<SunProps> = (props) => {
   const [getOpacity, setOpacity] = createSignal(1);
   const [getScale, setScale] = createSignal(1);
   const [getIsDragging, setIsDragging] = createSignal(false);
+  const [getIsPointerOver, setIsPointerOver] = createSignal(false);
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getTapCount, setTapCount] = createSignal(0);
   const [getDragProgress, setDragProgress] = createSignal(0);
@@ -705,6 +706,17 @@ export const Sun: Component<SunProps> = (props) => {
         ? "200, 220, 255"
         : "255, 255, 255";
   };
+  const getInteractionScale = () => {
+    if (getIsCompletionStarted()) {
+      return 1;
+    }
+
+    if (getIsDragging()) {
+      return 1.06;
+    }
+
+    return getIsPointerOver() ? 1.04 : 1;
+  };
 
   return (
     <div
@@ -714,13 +726,15 @@ export const Sun: Component<SunProps> = (props) => {
         dragging: getIsDragging(),
         moon: props.variant === "moon",
       }}
+      onMouseEnter={() => setIsPointerOver(true)}
+      onMouseLeave={() => setIsPointerOver(false)}
       style={{
-        transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale()}) rotate(${getRotation()}deg)`,
+        transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale() * getInteractionScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
         transition:
           getIsDragging() || getIsAnimating()
             ? "none"
-            : "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         "--glow-color": getGlowColor(),
