@@ -47,8 +47,8 @@ export const COMPLETION_ANIMATION_CONFIG = {
       targetOpacity: 1, // Keep full opacity when moving upward
     },
     downward: {
-      targetScale: 5.0,
-      targetOpacity: 1,
+      targetScale: 1.15,
+      targetOpacity: 0.92,
     },
   },
 };
@@ -139,11 +139,11 @@ export function calculateDragEffects(
   let scale, opacity;
   if (deltaY < 0) {
     // Upward drag
-    scale = Math.max(0.7, 1 - dragProgress * 0.3);
+    scale = Math.max(0.88, 1 - dragProgress * 0.12);
     opacity = 1; // Keep full opacity when dragging up
   } else {
     // Downward drag
-    scale = Math.min(2, 1 + dragProgress * 1.5);
+    scale = Math.min(1.14, 1 + dragProgress * 0.14);
     opacity = 1;
   }
 

@@ -1,17 +1,11 @@
 import { Component, createSignal, onCleanup, onMount } from "solid-js";
 import Stars from "./Stars";
 
-type SunPosition = {
-  x: number;
-  y: number;
-};
-
 type DragProgressEventDetail = {
   direction: "up" | "down" | "none";
   intensity: number;
   isDragging: boolean;
   resetToInitial?: boolean;
-  sunPosition?: SunPosition;
 };
 
 interface BackgroundTransitionProps {
@@ -27,8 +21,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getShowStars, setShowStars] = createSignal(false);
   const [getIsDarkMode, setIsDarkMode] = createSignal(false);
-  const [getSunGradientPosition, setSunGradientPosition] =
-    createSignal<SunPosition>();
 
   // const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
 
@@ -43,44 +35,14 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     setIsDarkMode(isDark);
   };
 
-  const updateSunGradientPosition = (position?: SunPosition) => {
-    if (!position) return;
-
-    setSunGradientPosition({
-      x: Math.round(position.x),
-      y: Math.round(position.y),
-    });
-  };
-
-  const getSunGradientStyle = () => {
-    const position = getSunGradientPosition();
-    const viewportHeight = window.innerHeight || 0;
-    const warmY = position
-      ? Math.max(position.y + viewportHeight * 0.12, viewportHeight * 0.62)
-      : undefined;
-    const horizonY = position
-      ? Math.max(position.y + viewportHeight * 0.22, viewportHeight * 0.78)
-      : undefined;
-
-    return {
-      "--sun-gradient-x": position ? `${position.x}px` : "50vw",
-      "--sun-gradient-y": position ? `${position.y}px` : "54vh",
-      "--sun-warm-x": position ? `${position.x}px` : "50vw",
-      "--sun-warm-y": warmY ? `${Math.round(warmY)}px` : "68vh",
-      "--sun-horizon-y": horizonY ? `${Math.round(horizonY)}px` : "84vh",
-    };
-  };
-
   onMount(() => {
     // Check dark mode after a delay
     setTimeout(checkDarkMode, 100);
 
     // Listen for drag progress events from Sun component
     const handleDragProgress = (event: CustomEvent) => {
-      const { direction, intensity, isDragging, resetToInitial, sunPosition } =
+      const { direction, intensity, isDragging, resetToInitial } =
         event.detail as DragProgressEventDetail;
-
-      updateSunGradientPosition(sunPosition);
 
       if (resetToInitial) {
         animateToDefault();
@@ -99,11 +61,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       animateToCompletion(direction);
     };
 
-    const handleSunPositionChanged = (event: CustomEvent) => {
-      const { sunPosition } = event.detail as { sunPosition?: SunPosition };
-      updateSunGradientPosition(sunPosition);
-    };
-
     const eventTarget = props.shadowRoot ?? window;
 
     eventTarget.addEventListener(
@@ -114,10 +71,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       "startBackgroundAnimation",
       handleStartAnimation as EventListener,
     );
-    eventTarget.addEventListener(
-      "sunPositionChanged",
-      handleSunPositionChanged as EventListener,
-    );
 
     onCleanup(() => {
       eventTarget.removeEventListener(
@@ -127,10 +80,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       eventTarget.removeEventListener(
         "startBackgroundAnimation",
         handleStartAnimation as EventListener,
-      );
-      eventTarget.removeEventListener(
-        "sunPositionChanged",
-        handleSunPositionChanged as EventListener,
       );
     });
   });
@@ -210,9 +159,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
         class="background-transition background-default"
         classList={{
           animating: getIsAnimating(),
-          "sun-gradient-attached": props.isSunGradientAttached ?? true,
         }}
-        style={getSunGradientStyle()}
       />
       <div
         class="background-transition background-overlay background-blue"
