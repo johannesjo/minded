@@ -15,6 +15,40 @@
     );
   }
 
+  &.sun-gradient-attached {
+    --sun-gradient-x: 50vw;
+    --sun-gradient-y: 54vh;
+    --sun-warm-x: 50vw;
+    --sun-warm-y: 68vh;
+    --sun-horizon-y: 84vh;
+
+    background:
+      radial-gradient(
+        circle at var(--sun-gradient-x) var(--sun-gradient-y),
+        rgba(255, 255, 246, 0.84) 0,
+        rgba(255, 240, 139, 0.62) 5vmin,
+        rgba(248, 203, 83, 0.25) 15vmin,
+        transparent 28vmin
+      ),
+      radial-gradient(
+        ellipse 60vmin 32vmin at var(--sun-warm-x) var(--sun-warm-y),
+        rgba(248, 184, 83, 0.22) 0,
+        rgba(242, 126, 70, 0.11) 45%,
+        transparent 76%
+      ),
+      radial-gradient(
+        ellipse 96vmin 34vmin at var(--sun-warm-x) var(--sun-horizon-y),
+        rgba(205, 73, 42, 0.12) 0,
+        rgba(246, 124, 82, 0.06) 44%,
+        transparent 78%
+      ),
+      var(
+        --background-gradient,
+        linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
+      );
+    will-change: background;
+  }
+
   &.background-overlay {
     z-index: 2;
     opacity: 0;
@@ -40,4 +74,13 @@
   &.animating {
     // No CSS transition - using JS animation for precise control
   }
+}
+
+.minded-6622-dark
+  .background-transition.background-default.sun-gradient-attached {
+  background: var(
+    --background-gradient,
+    linear-gradient(175deg, #071449, #1a137c)
+  );
+  will-change: auto;
 }
