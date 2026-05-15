@@ -59,10 +59,20 @@ describe("sun animation utils", () => {
       ).toEqual({ type: "dragComplete", direction: "down" });
     });
 
-    it("flings when the release velocity is vertical", () => {
+    it("snaps back for short high-speed vertical releases", () => {
       expect(
         getSunReleaseAction({
           offset: { x: 20, y: -60 },
+          velocity: { x: 20, y: -240, magnitude: 241 },
+          isDragEnabled: true,
+        }),
+      ).toEqual({ type: "snapBack" });
+    });
+
+    it("flings when the release velocity is vertical after enough movement", () => {
+      expect(
+        getSunReleaseAction({
+          offset: { x: 20, y: -80 },
           velocity: { x: 20, y: -240, magnitude: 241 },
           isDragEnabled: true,
         }),

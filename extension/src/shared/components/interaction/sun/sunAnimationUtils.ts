@@ -33,6 +33,7 @@ export type SunReleaseAction =
 // Constants
 export const DRAG_THRESHOLD_PX = 100;
 export const FLING_VELOCITY_THRESHOLD = 200;
+export const FLING_MIN_DISTANCE_PX = 75;
 export const VELOCITY_SAMPLE_SIZE = 5;
 export const LONG_PRESS_DURATION_MS = 750;
 export const HAPTIC_PROGRESS_POINTS = [1.0]; // Trigger only at 100%
@@ -117,6 +118,7 @@ export function getSunReleaseAction({
   const hasVerticalDragIntent = hasVerticalCompletionIntent(offset);
   const hasVerticalFlingIntent = hasVerticalCompletionIntent(velocity);
   const hasHighReleaseSpeed = velocity.magnitude >= FLING_VELOCITY_THRESHOLD;
+  const hasEnoughFlingTravel = Math.abs(offset.y) >= FLING_MIN_DISTANCE_PX;
 
   if (hasHighReleaseSpeed && !hasVerticalFlingIntent) {
     return { type: "snapBack" };
@@ -125,6 +127,7 @@ export function getSunReleaseAction({
   const flingDirection = getVerticalDirection(velocity.y);
   const isFling =
     Math.abs(velocity.y) >= FLING_VELOCITY_THRESHOLD &&
+    hasEnoughFlingTravel &&
     hasVerticalDragIntent &&
     hasVerticalFlingIntent;
 
