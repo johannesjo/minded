@@ -8,3 +8,10 @@ export interface LocalData {
     [key: string]: EntryForHost;
   };
 }
+
+export interface LiveBudgetUsageEntry {
+  dateISO: string;
+  host: string;
+  seconds: number;
+  updatedTS: number;
+}

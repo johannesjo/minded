@@ -6,19 +6,26 @@ import {
 } from "@dataInterface/localDataInterface";
 import {
   getSyncData,
+  saveSyncData,
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
+import { updateSyncDataField } from "@src/dataInterface/updateSyncDataHelpers";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
 import { addBudgetUsage } from "@src/util/budget";
 import { formatSessionTime } from "@src/util/formatTime";
-import { DailyUsage, SyncData } from "@src/dataInterface/syncData";
-import { getIsoDate } from "@src/util/getIsoDate";
+import { SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
 import { getLittleSunTimerSource } from "@src/shared/components/interaction/littleSunTimerSource";
 import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
 } from "@src/util/activeTimerScope";
+import {
+  clearLiveBudgetUsage,
+  getLiveBudgetUsageEntries,
+  getLiveBudgetUsageSecondsForBudget,
+  setLiveBudgetUsage,
+} from "@src/util/budget/liveBudgetUsage";
 
 const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
@@ -44,13 +51,15 @@ export const LittleSunComponent: (props: {
 
   let currentSessionInterval: number;
   let budgetUsageAccumulator = 0; // Track seconds since last storage write
-  // Cache dailyUsage so pagehide can flush without an async read — async
-  // getSyncData().then(...) chains don't complete during page unload.
-  let cachedDailyUsage: SyncData["dailyUsage"] = {};
   let t0: NodeJS.Timeout;
   let hintTimeout: NodeJS.Timeout | undefined;
   let isDisposed = false;
+  let isPageHiding = false;
+  let isBudgetUsageFlushInFlight = false;
   let refreshSeq = 0;
+  const budgetUsageSessionId = `little-sun-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2)}`;
 
   const maybeShowHint = async () => {
     const data = await bro.storage.local.get(LITTLE_SUN_HINT_SEEN_KEY);
@@ -62,30 +71,47 @@ export const LittleSunComponent: (props: {
     }, 900);
   };
 
-  const flushBudgetUsageSync = () => {
+  const persistLiveBudgetUsage = (): Promise<void> =>
+    setLiveBudgetUsage(
+      budgetUsageSessionId,
+      props.host,
+      budgetUsageAccumulator,
+    );
+
+  const flushBudgetUsage = async () => {
     if (!getIsBudgetMode() || budgetUsageAccumulator <= 0) return;
+    if (isBudgetUsageFlushInFlight) return;
 
-    const today = getIsoDate();
-    const currentUsage = cachedDailyUsage[today] || {
-      totalSeconds: 0,
-      perSite: {},
-    };
-    const updatedUsage: DailyUsage = {
-      totalSeconds: currentUsage.totalSeconds + budgetUsageAccumulator,
-      perSite: {
-        ...currentUsage.perSite,
-        [props.host]:
-          (currentUsage.perSite[props.host] || 0) + budgetUsageAccumulator,
-      },
-    };
-    const updatedDailyUsage = { ...cachedDailyUsage, [today]: updatedUsage };
-    cachedDailyUsage = updatedDailyUsage;
-    budgetUsageAccumulator = 0;
+    isBudgetUsageFlushInFlight = true;
+    const secondsToFlush = budgetUsageAccumulator;
+    let didFlush = false;
 
-    // Fire-and-forget: the IPC to the service worker is dispatched
-    // synchronously here, so the write persists even if the returned
-    // Promise never resolves because the page context is torn down.
-    bro.storage.sync.set({ dailyUsage: updatedDailyUsage });
+    try {
+      await updateSyncDataField(getSyncData, saveSyncData, (syncData) => {
+        const usageUpdate = addBudgetUsage(
+          syncData,
+          props.host,
+          secondsToFlush,
+        );
+        return usageUpdate;
+      });
+      budgetUsageAccumulator = Math.max(
+        0,
+        budgetUsageAccumulator - secondsToFlush,
+      );
+      await persistLiveBudgetUsage();
+      didFlush = true;
+    } catch (error) {
+      console.error("Failed to flush budget usage", error);
+    } finally {
+      isBudgetUsageFlushInFlight = false;
+      if (
+        didFlush &&
+        budgetUsageAccumulator >= BUDGET_USAGE_UPDATE_INTERVAL_S
+      ) {
+        void flushBudgetUsage();
+      }
+    }
   };
 
   const clearScopedActiveTimer = async (expectedEndTS?: number) => {
@@ -105,6 +131,7 @@ export const LittleSunComponent: (props: {
   const applyTimerSource = (
     syncData: SyncData,
     initialSessionDurationInS: number,
+    pendingBudgetUsageSeconds: number,
   ): boolean => {
     const target = getWebHostSessionTarget(props.host);
 
@@ -117,10 +144,12 @@ export const LittleSunComponent: (props: {
       syncData,
       props.host,
       initialSessionDurationInS,
+      Date.now(),
+      pendingBudgetUsageSeconds,
     );
 
     if (source.type !== "budget") {
-      flushBudgetUsageSync();
+      void flushBudgetUsage();
     }
 
     if (source.type === "session") {
@@ -132,13 +161,11 @@ export const LittleSunComponent: (props: {
 
     if (source.type === "budget") {
       const wasBudgetMode = getIsBudgetMode();
-      const unflushedUsageSeconds = wasBudgetMode ? budgetUsageAccumulator : 0;
       setIsBudgetMode(true);
       setRemainingSeconds(null);
-      startBudgetCountdown(
-        Math.max(source.remainingSeconds - unflushedUsageSeconds, 0),
-        { resetAccumulator: !wasBudgetMode },
-      );
+      startBudgetCountdown(source.remainingSeconds, {
+        resetAccumulator: !wasBudgetMode,
+      });
       return true;
     }
 
@@ -161,14 +188,22 @@ export const LittleSunComponent: (props: {
 
   const refreshTimerSource = async () => {
     const seq = ++refreshSeq;
-    const [d, syncData] = await Promise.all([
+    const [d, syncData, liveBudgetUsageEntries] = await Promise.all([
       loadDataForHost(props.host),
       getSyncData(),
+      getLiveBudgetUsageEntries(),
     ]);
     if (isDisposed || seq !== refreshSeq) return;
 
-    cachedDailyUsage = syncData.dailyUsage;
-    applyTimerSource(syncData, d?.sessionDurationInS ?? getSessionTime());
+    applyTimerSource(
+      syncData,
+      d?.sessionDurationInS ?? getSessionTime(),
+      getLiveBudgetUsageSecondsForBudget(
+        syncData,
+        props.host,
+        liveBudgetUsageEntries,
+      ),
+    );
   };
 
   const handleStorageChange = (
@@ -196,13 +231,30 @@ export const LittleSunComponent: (props: {
     void refreshTimerSource();
   };
 
+  const handlePageHide = () => {
+    isPageHiding = true;
+    void persistLiveBudgetUsage();
+  };
+
   onMount(async () => {
-    const d = await loadDataForHost(props.host);
-    const syncData = await getSyncData();
+    const [d, syncData, liveBudgetUsageEntries] = await Promise.all([
+      loadDataForHost(props.host),
+      getSyncData(),
+      getLiveBudgetUsageEntries(),
+    ]);
     if (isDisposed) return;
 
-    cachedDailyUsage = syncData.dailyUsage;
-    if (!applyTimerSource(syncData, d?.sessionDurationInS ?? 0)) {
+    if (
+      !applyTimerSource(
+        syncData,
+        d?.sessionDurationInS ?? 0,
+        getLiveBudgetUsageSecondsForBudget(
+          syncData,
+          props.host,
+          liveBudgetUsageEntries,
+        ),
+      )
+    ) {
       return;
     }
 
@@ -211,7 +263,7 @@ export const LittleSunComponent: (props: {
     }, 200);
     void maybeShowHint();
     bro.storage.onChanged.addListener(handleStorageChange);
-    window.addEventListener("pagehide", flushBudgetUsageSync);
+    window.addEventListener("pagehide", handlePageHide);
   });
 
   onCleanup(() => {
@@ -220,8 +272,15 @@ export const LittleSunComponent: (props: {
     window.clearTimeout(hintTimeout);
     window.clearInterval(currentSessionInterval);
     bro.storage.onChanged.removeListener(handleStorageChange);
-    window.removeEventListener("pagehide", flushBudgetUsageSync);
-    flushBudgetUsageSync();
+    window.removeEventListener("pagehide", handlePageHide);
+    if (isPageHiding) {
+      void persistLiveBudgetUsage();
+    } else {
+      void flushBudgetUsage();
+      if (budgetUsageAccumulator <= 0) {
+        void clearLiveBudgetUsage(budgetUsageSessionId);
+      }
+    }
   });
 
   const dismissHint = () => {
@@ -297,37 +356,19 @@ export const LittleSunComponent: (props: {
       const remaining = (getBudgetRemaining() ?? 0) - 1;
       setBudgetRemaining(Math.max(remaining, 0));
       budgetUsageAccumulator++;
+      void persistLiveBudgetUsage();
 
       // Keep last-used timestamp fresh
       updateHostsEntry(props.host, { lastUsedTS: Date.now() });
 
       // Throttle storage writes for budget usage
       if (budgetUsageAccumulator >= BUDGET_USAGE_UPDATE_INTERVAL_S) {
-        const syncData = await getSyncData();
-        const usageUpdate = addBudgetUsage(
-          syncData,
-          props.host,
-          budgetUsageAccumulator,
-        );
-        cachedDailyUsage = usageUpdate.dailyUsage;
-        await updateSyncData(usageUpdate);
-        budgetUsageAccumulator = 0;
+        await flushBudgetUsage();
       }
 
       if (remaining <= 0) {
         window.clearInterval(currentSessionInterval);
-        // Save any remaining accumulated usage
-        if (budgetUsageAccumulator > 0) {
-          const syncData = await getSyncData();
-          const usageUpdate = addBudgetUsage(
-            syncData,
-            props.host,
-            budgetUsageAccumulator,
-          );
-          cachedDailyUsage = usageUpdate.dailyUsage;
-          await updateSyncData(usageUpdate);
-          budgetUsageAccumulator = 0;
-        }
+        await flushBudgetUsage();
         // Budget exhausted - trigger full intervention
         props.onShowFreshInteraction();
       }
@@ -343,11 +384,20 @@ export const LittleSunComponent: (props: {
     updateHostsEntry(props.host, { sessionDurationInS: 0 });
     void clearScopedActiveTimer();
 
-    if (props.onTap) {
-      props.onTap();
-    } else {
-      props.onShowFreshInteraction();
+    const finish = () => {
+      if (props.onTap) {
+        props.onTap();
+      } else {
+        props.onShowFreshInteraction();
+      }
+    };
+
+    if (getIsBudgetMode()) {
+      void flushBudgetUsage().finally(finish);
+      return;
     }
+
+    finish();
   };
 
   const getDisplayTime = () => {

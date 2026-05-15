@@ -17,6 +17,7 @@ export interface BudgetState {
 export const getBudgetState = (
   syncData: SyncData,
   host?: string,
+  additionalUsedSeconds = 0,
 ): BudgetState => {
   const noBudget: BudgetState = {
     isActive: false,
@@ -54,14 +55,19 @@ export const getBudgetState = (
     usedSeconds = todayUsage.totalSeconds;
   }
 
-  const remainingSeconds = Math.max(0, totalBudgetSeconds - usedSeconds);
-  const justExhausted = remainingSeconds === 0 && usedSeconds > 0;
+  const effectiveUsedSeconds =
+    usedSeconds + Math.max(0, Math.floor(additionalUsedSeconds));
+  const remainingSeconds = Math.max(
+    0,
+    totalBudgetSeconds - effectiveUsedSeconds,
+  );
+  const justExhausted = remainingSeconds === 0 && effectiveUsedSeconds > 0;
 
   return {
     isActive: true,
     remainingSeconds,
     totalBudgetSeconds,
-    usedSeconds,
+    usedSeconds: effectiveUsedSeconds,
     justExhausted,
   };
 };

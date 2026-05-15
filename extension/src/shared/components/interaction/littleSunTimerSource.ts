@@ -29,6 +29,7 @@ export const getLittleSunTimerSource = (
   host: string,
   initialElapsedSeconds: number,
   now: number = Date.now(),
+  pendingBudgetUsageSeconds = 0,
 ): LittleSunTimerSource => {
   const target = getWebHostSessionTarget(host);
   const activeTimer = getActiveTimerInScope(syncData, target, "web", now);
@@ -40,7 +41,7 @@ export const getLittleSunTimerSource = (
     };
   }
 
-  const budgetState = getBudgetState(syncData, host);
+  const budgetState = getBudgetState(syncData, host, pendingBudgetUsageSeconds);
   if (budgetState.isActive && budgetState.remainingSeconds > 0) {
     return {
       type: "budget",

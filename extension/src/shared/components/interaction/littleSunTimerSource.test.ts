@@ -68,6 +68,27 @@ describe("getLittleSunTimerSource", () => {
     });
   });
 
+  it("subtracts pending live budget usage before it is written to sync storage", () => {
+    mockDate(NOW);
+
+    const syncData = createMockSyncData({
+      dailyBudget: { globalMinutes: 30 },
+      dailyUsage: {
+        [TODAY]: {
+          totalSeconds: 10 * 60,
+          perSite: { "reddit.com": 10 * 60 },
+        },
+      },
+    });
+
+    expect(getLittleSunTimerSource(syncData, "reddit.com", 0, NOW, 12)).toEqual(
+      {
+        type: "budget",
+        remainingSeconds: 20 * 60 - 12,
+      },
+    );
+  });
+
   it("marks an expired scoped timer for cleanup when falling back to elapsed time", () => {
     mockDate(NOW);
 
