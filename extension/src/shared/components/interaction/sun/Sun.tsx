@@ -1,7 +1,6 @@
 import { Component, createSignal, onCleanup, onMount } from "solid-js";
 import {
   DRAG_THRESHOLD_PX,
-  FLING_VELOCITY_THRESHOLD,
   VELOCITY_SAMPLE_SIZE,
   LONG_PRESS_DURATION_MS,
   HAPTIC_PROGRESS_POINTS,
@@ -16,6 +15,8 @@ import {
   triggerHapticPattern,
   applyRubberBanding,
   getSunSize,
+  hasVerticalCompletionIntent,
+  getSunReleaseAction,
   type VelocitySample,
   type PhysicsState,
 } from "./sunAnimationUtils";
@@ -59,8 +60,6 @@ export const Sun: Component<SunProps> = (props) => {
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 1 = warm (down)
   const isTapEnabled = () => props.isTapEnabled ?? true;
   const isDragEnabled = () => props.isDragEnabled ?? true;
-  const canCompleteDirection = (direction: "up" | "down"): boolean =>
-    (props.completionDirection ?? "any") === "any" || direction === "down";
   const dispatchInteractionEvent = (name: string, detail: unknown) => {
     const event = new CustomEvent(name, { detail });
     (props.eventRoot ?? window).dispatchEvent(event);
@@ -227,9 +226,21 @@ export const Sun: Component<SunProps> = (props) => {
       // Apply rubber-banding for weighted feel
       const deltaX = applyRubberBanding(rawDeltaX);
       const deltaY = applyRubberBanding(rawDeltaY);
+      const hasVerticalDragIntent = hasVerticalCompletionIntent({
+        x: rawDeltaX,
+        y: rawDeltaY,
+      });
+      const dragDirection = hasVerticalDragIntent
+        ? deltaY > 0
+          ? "down"
+          : deltaY < 0
+            ? "up"
+            : "none"
+        : "none";
 
-      // Calculate drag progress and visual effects (use raw values for threshold logic)
-      const dragDistance = Math.abs(rawDeltaY);
+      // Calculate drag progress and visual effects (use raw values for threshold logic).
+      // Horizontal-dominant drags still move the sun, but they do not arm completion.
+      const dragDistance = hasVerticalDragIntent ? Math.abs(rawDeltaY) : 0;
       const effects = calculateDragEffects(rawDeltaY, dragDistance);
 
       // Progressive glow: quadratic ramp from 0-100% of threshold
@@ -272,12 +283,18 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Update progress and direction for visual indicators
       setDragProgress(effects.progress);
-      setDragDirection(deltaY > 0 ? "down" : deltaY < 0 ? "up" : "none");
+      setDragDirection(dragDirection);
 
       // Color temperature: cool (blue) when dragging up, warm (orange) when down
       const normalizedProgress = dragDistance / DRAG_THRESHOLD_PX;
       const tempIntensity = Math.min(normalizedProgress, 1);
-      setColorTemp(rawDeltaY > 0 ? tempIntensity : -tempIntensity);
+      setColorTemp(
+        dragDirection === "down"
+          ? tempIntensity
+          : dragDirection === "up"
+            ? -tempIntensity
+            : 0,
+      );
 
       // Track velocity samples
       const now = Date.now();
@@ -292,12 +309,11 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Only emit drag progress events after drag intent is confirmed
       if (isDragIntent) {
-        const direction = deltaY > 0 ? "down" : "up";
         const intensity = getDragProgress();
         const sunPosition = getSunCenterForOffset({ x: deltaX, y: deltaY });
 
         dispatchInteractionEvent("dragProgress", {
-          direction,
+          direction: dragDirection,
           intensity,
           isDragging: true,
           sunPosition,
@@ -364,11 +380,14 @@ export const Sun: Component<SunProps> = (props) => {
         sunPosition: getSunCenterForOffset(offset),
       });
 
-      // Check if drag distance exceeded pixel threshold OR velocity is high enough for fling
-      const dragDistance = Math.abs(offset.y);
-      const isFling = velocity.magnitude >= FLING_VELOCITY_THRESHOLD;
+      const releaseAction = getSunReleaseAction({
+        offset,
+        velocity,
+        isDragEnabled: isDragEnabled(),
+        completionDirection: props.completionDirection,
+      });
 
-      if (!isDragEnabled()) {
+      if (releaseAction.type === "snapBack") {
         dispatchInteractionEvent("dragProgress", {
           direction: "none",
           intensity: 0,
@@ -377,39 +396,22 @@ export const Sun: Component<SunProps> = (props) => {
           sunPosition: getSunCenterForOffset({ x: 0, y: 0 }),
         });
         animateSnapBack();
-      } else if (
-        isFling &&
-        canCompleteDirection(velocity.y > 0 ? "down" : "up")
-      ) {
-        // Fling behavior - any direction triggers onFlingAway
+      } else if (releaseAction.type === "fling") {
+        // Vertical fling behavior triggers onFlingAway.
         triggerHaptic("medium");
         playCompletionSound();
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
-        const flingDirection = velocity.y > 0 ? "down" : "up";
-        props.onStartBackgroundAnimation?.(flingDirection);
+        props.onStartBackgroundAnimation?.(releaseAction.direction);
         animateFling(velocity);
-      } else if (
-        dragDistance >= DRAG_THRESHOLD_PX &&
-        canCompleteDirection(offset.y > 0 ? "down" : "up")
-      ) {
+      } else if (releaseAction.type === "dragComplete") {
         // Slow drag behavior (non-fling) - triggers onDragComplete
-        const direction = offset.y > 0 ? "down" : "up";
         triggerHapticPattern("completion"); // Satisfying heavy + light pattern
         playCompletionSound();
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
-        props.onStartBackgroundAnimation?.(direction);
-        animateToCompletion(direction);
-      } else {
-        dispatchInteractionEvent("dragProgress", {
-          direction: "none",
-          intensity: 0,
-          isDragging: false,
-          resetToInitial: true,
-          sunPosition: getSunCenterForOffset({ x: 0, y: 0 }),
-        });
-        animateSnapBack();
+        props.onStartBackgroundAnimation?.(releaseAction.direction);
+        animateToCompletion(releaseAction.direction);
       }
     };
 

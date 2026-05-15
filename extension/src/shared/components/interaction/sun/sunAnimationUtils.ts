@@ -23,6 +23,13 @@ export interface AnimationConfig {
   duration: number;
 }
 
+export type SunCompletionDirection = "up" | "down";
+export type SunCompletionDirectionPolicy = "any" | "down";
+export type SunReleaseAction =
+  | { type: "snapBack" }
+  | { type: "fling"; direction: SunCompletionDirection }
+  | { type: "dragComplete"; direction: SunCompletionDirection };
+
 // Constants
 export const DRAG_THRESHOLD_PX = 100;
 export const FLING_VELOCITY_THRESHOLD = 200;
@@ -75,6 +82,68 @@ export function calculateVelocity(
   const magnitude = Math.sqrt(vx * vx + vy * vy);
 
   return { x: vx, y: vy, magnitude };
+}
+
+export function hasVerticalCompletionIntent(vector: Vector2D): boolean {
+  const absX = Math.abs(vector.x);
+  const absY = Math.abs(vector.y);
+
+  return absY > 0 && absY >= absX;
+}
+
+const getVerticalDirection = (y: number): SunCompletionDirection =>
+  y > 0 ? "down" : "up";
+
+const canCompleteDirection = (
+  direction: SunCompletionDirection,
+  completionDirection: SunCompletionDirectionPolicy = "any",
+): boolean => completionDirection === "any" || direction === "down";
+
+export function getSunReleaseAction({
+  offset,
+  velocity,
+  isDragEnabled,
+  completionDirection = "any",
+}: {
+  offset: Vector2D;
+  velocity: Vector2D & { magnitude: number };
+  isDragEnabled: boolean;
+  completionDirection?: SunCompletionDirectionPolicy;
+}): SunReleaseAction {
+  if (!isDragEnabled) {
+    return { type: "snapBack" };
+  }
+
+  const hasVerticalDragIntent = hasVerticalCompletionIntent(offset);
+  const hasVerticalFlingIntent = hasVerticalCompletionIntent(velocity);
+  const hasHighReleaseSpeed = velocity.magnitude >= FLING_VELOCITY_THRESHOLD;
+
+  if (hasHighReleaseSpeed && !hasVerticalFlingIntent) {
+    return { type: "snapBack" };
+  }
+
+  const flingDirection = getVerticalDirection(velocity.y);
+  const isFling =
+    Math.abs(velocity.y) >= FLING_VELOCITY_THRESHOLD &&
+    hasVerticalDragIntent &&
+    hasVerticalFlingIntent;
+
+  if (isFling && canCompleteDirection(flingDirection, completionDirection)) {
+    return { type: "fling", direction: flingDirection };
+  }
+
+  const dragDirection = getVerticalDirection(offset.y);
+  const isDragComplete =
+    Math.abs(offset.y) >= DRAG_THRESHOLD_PX && hasVerticalDragIntent;
+
+  if (
+    isDragComplete &&
+    canCompleteDirection(dragDirection, completionDirection)
+  ) {
+    return { type: "dragComplete", direction: dragDirection };
+  }
+
+  return { type: "snapBack" };
 }
 
 export function updatePhysics(
