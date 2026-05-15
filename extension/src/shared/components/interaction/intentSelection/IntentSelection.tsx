@@ -56,7 +56,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
           aria-disabled={!props.isArmed}
           onClick={() => handleSelect(undefined)}
         >
-          Continue without choosing
+          other
         </button>
       </div>
 
