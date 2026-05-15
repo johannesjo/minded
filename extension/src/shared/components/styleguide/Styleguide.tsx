@@ -50,6 +50,7 @@ const COLOR_TOKENS = [
   "--c-gradient-1",
   "--c-gradient-2",
   "--c-gradient-3",
+  "--c-gradient-4",
 ] as const;
 
 const FONT_TOKENS = [
