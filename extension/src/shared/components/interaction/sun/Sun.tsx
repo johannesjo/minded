@@ -72,6 +72,7 @@ export const Sun: Component<SunProps> = (props) => {
   let velocitySamples: VelocitySample[] = [];
   let longPressTimer: number | null = null;
   let resizeHandler: (() => void) | null = null;
+  let initialPositionTimeouts: number[] = [];
 
   // Store event handler references for cleanup
   let touchStartHandler: EventListener | null = null;
@@ -89,7 +90,13 @@ export const Sun: Component<SunProps> = (props) => {
       // Force a reflow to ensure the transform is applied
       sunEl.offsetHeight;
 
-      requestAnimationFrame(() => dispatchSunPosition());
+      const dispatchAfterLayout = () => {
+        requestAnimationFrame(() => dispatchSunPosition());
+      };
+      dispatchAfterLayout();
+      initialPositionTimeouts = [120, 360, 720].map((delay) =>
+        window.setTimeout(dispatchAfterLayout, delay),
+      );
     }
 
     resizeHandler = () => {
@@ -113,6 +120,9 @@ export const Sun: Component<SunProps> = (props) => {
     if (resizeHandler) {
       window.removeEventListener("resize", resizeHandler);
     }
+    initialPositionTimeouts.forEach((timeoutId) => {
+      window.clearTimeout(timeoutId);
+    });
 
     // Clean up event listeners
     if (sunEl) {

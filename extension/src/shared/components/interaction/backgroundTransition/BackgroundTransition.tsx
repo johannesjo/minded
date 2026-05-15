@@ -64,7 +64,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
     return {
       "--sun-gradient-x": position ? `${position.x}px` : "50vw",
-      "--sun-gradient-y": position ? `${position.y}px` : "54vh",
+      "--sun-gradient-y": position ? `${position.y}px` : "58vh",
       "--sun-warm-x": position ? `${position.x}px` : "50vw",
       "--sun-warm-y": warmY ? `${Math.round(warmY)}px` : "68vh",
       "--sun-horizon-y": horizonY ? `${Math.round(horizonY)}px` : "84vh",
