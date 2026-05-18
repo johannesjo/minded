@@ -50,4 +50,22 @@ describe("isShowFullMinder", () => {
       true,
     );
   });
+
+  it("shows the full minder when pending live budget usage exhausts the budget", () => {
+    mockDate(NOW);
+
+    const syncData = createMockSyncData({
+      dailyBudget: { globalMinutes: 10 },
+      dailyUsage: {
+        "2026-05-15": {
+          totalSeconds: 9 * 60 + 55,
+          perSite: { "reddit.com": 9 * 60 + 55 },
+        },
+      },
+    });
+
+    expect(isShowFullMinder("https://www.reddit.com/r/test", syncData, 6)).toBe(
+      true,
+    );
+  });
 });

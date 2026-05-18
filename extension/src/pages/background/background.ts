@@ -2,13 +2,24 @@ import { bro } from "@src/util/browser";
 import {
   countSunTap,
   getSyncData,
+  patchSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { formatBadgeTime } from "@src/util/formatTime";
 import { SyncData } from "@src/dataInterface/syncData";
+import { addBudgetUsage } from "@src/util/budget";
+import { updateSyncDataField } from "@src/dataInterface/updateSyncDataHelpers";
+import { isAddBudgetUsageMessage } from "@src/dataInterface/extension/extensionMessages";
 
 let badgeInterval: ReturnType<typeof setInterval> | null = null;
+let syncUpdateQueue: Promise<void> = Promise.resolve();
 
 type ActiveTimer = SyncData["activeTimer"];
+
+const enqueueSyncUpdate = (task: () => Promise<void>): Promise<void> => {
+  const nextTask = syncUpdateQueue.then(task, task);
+  syncUpdateQueue = nextTask.catch(() => undefined);
+  return nextTask;
+};
 
 function updateBadge(timer: ActiveTimer) {
   if (badgeInterval) {
@@ -80,5 +91,16 @@ bro.runtime.onMessage.addListener((request, sender) => {
   if (request.closeTab && sender.tab?.id) {
     countSunTap();
     bro.tabs.remove(sender.tab.id);
+    return undefined;
   }
+
+  if (isAddBudgetUsageMessage(request)) {
+    return enqueueSyncUpdate(() =>
+      updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
+        addBudgetUsage(syncData, request.host, request.seconds),
+      ),
+    );
+  }
+
+  return undefined;
 });

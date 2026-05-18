@@ -1,5 +1,5 @@
 import { SyncData } from "@src/dataInterface/syncData";
-import { hasBudgetRemaining } from "@src/util/budget";
+import { getBudgetState } from "@src/util/budget";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 import { hasActiveWebHostTimer } from "@src/util/activeTimerScope";
 
@@ -12,6 +12,7 @@ import { hasActiveWebHostTimer } from "@src/util/activeTimerScope";
 export const isShowFullMinder = (
   currentUrl: string,
   syncData: SyncData,
+  pendingBudgetUsageSeconds = 0,
 ): boolean => {
   const now = Date.now();
   const host = getHostFromUrl(currentUrl);
@@ -22,7 +23,8 @@ export const isShowFullMinder = (
   }
 
   // Check if daily budget has remaining time
-  if (hasBudgetRemaining(syncData, host)) {
+  const budgetState = getBudgetState(syncData, host, pendingBudgetUsageSeconds);
+  if (budgetState.isActive && budgetState.remainingSeconds > 0) {
     return false;
   }
 

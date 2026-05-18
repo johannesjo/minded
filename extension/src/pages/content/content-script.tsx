@@ -16,18 +16,22 @@ import {
   getWebHostSessionTarget,
   hasActiveWebHostTimer,
 } from "@src/util/activeTimerScope";
+import {
+  getLiveBudgetUsageEntries,
+  getLiveBudgetUsageSecondsForBudget,
+} from "@src/util/budget/liveBudgetUsage";
 
 const CURRENT_URL = window.location.href;
 
 (function init() {
-  getSyncData().then(async (syncData) => {
+  getSyncData().then(async (initialSyncData) => {
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
-    if (isOnBlockedUrl(CURRENT_URL, syncData)) {
+    if (isOnBlockedUrl(CURRENT_URL, initialSyncData)) {
       const currentHost = getHostFromUrl(CURRENT_URL);
       const currentTarget = getWebHostSessionTarget(currentHost);
 
       // Rest-of-day mode: hide everything for the current host.
-      if (isRestOfDayActive(syncData, currentTarget, "web")) {
+      if (isRestOfDayActive(initialSyncData, currentTarget, "web")) {
         return;
       }
 
@@ -35,6 +39,20 @@ const CURRENT_URL = window.location.href;
         await countOpeningAttempt();
       } catch (error) {
         console.error("Failed to count opening attempt", error);
+      }
+
+      const [syncData, liveBudgetUsageEntries] = await Promise.all([
+        getSyncData(),
+        getLiveBudgetUsageEntries(),
+      ]);
+      const pendingBudgetUsageSeconds = getLiveBudgetUsageSecondsForBudget(
+        syncData,
+        currentHost,
+        liveBudgetUsageEntries,
+      );
+
+      if (isRestOfDayActive(syncData, currentTarget, "web")) {
+        return;
       }
 
       async function innerInit() {
@@ -133,7 +151,12 @@ const CURRENT_URL = window.location.href;
           () => (
             <ContentScriptMain
               isShowFullMinderInitially={
-                !hasActiveSession && isShowFullMinder(CURRENT_URL, syncData)
+                !hasActiveSession &&
+                isShowFullMinder(
+                  CURRENT_URL,
+                  syncData,
+                  pendingBudgetUsageSeconds,
+                )
               }
               shadowRoot={shadow}
               onTeardownShadow={teardownShadow}

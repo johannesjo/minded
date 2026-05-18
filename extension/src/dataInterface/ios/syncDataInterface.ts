@@ -23,6 +23,13 @@ export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
   }
 };
 
+export const patchSyncDataN = async (
+  syncDataPatch: Partial<SyncData>,
+): Promise<void> => {
+  const syncData = await getSyncDataN();
+  return saveSyncDataN({ ...syncData, ...syncDataPatch });
+};
+
 export const getSyncDataN = async (): Promise<SyncData> => {
   try {
     const result = await Preferences.get({ key: DB_KEY });

@@ -34,12 +34,22 @@ export const saveSyncDataN = (syncData: SyncData): Promise<void> => {
   }
 };
 
+export const patchSyncDataN = (
+  syncDataPatch: Partial<SyncData>,
+): Promise<void> => {
+  if (bro.runtime?.id) {
+    return bro.storage.sync.set(syncDataPatch);
+  } else {
+    throw new Error(
+      "Extension was reloaded, please reload tab for it to work here again",
+    );
+  }
+};
+
 export const saveAnswerN = (answer: Answer): Promise<void> => {
   return getSyncDataN().then((syncData) => {
     const newAnswers = [...syncData.answers, answer];
-    return saveSyncDataN({
-      ...syncData,
-      // answers: newAnswers.slice(0, ITEMS_DO_DELETE_IF_OVER_QUOTE),
+    return patchSyncDataN({
       answers: newAnswers,
     }).catch((e) => {
       console.error(e);
@@ -64,8 +74,7 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
             "Minded Browser Extension: We are over the quota of allowed saved data in chrome extensions. But no problem! We will delete old answers to make room for new ones.",
           );
         }
-        return saveSyncDataN({
-          ...syncData,
+        return patchSyncDataN({
           answers: newAnswersSliced,
         });
       }

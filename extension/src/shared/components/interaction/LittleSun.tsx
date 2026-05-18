@@ -6,16 +6,14 @@ import {
 } from "@dataInterface/localDataInterface";
 import {
   getSyncData,
-  saveSyncData,
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { updateSyncDataField } from "@src/dataInterface/updateSyncDataHelpers";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
-import { addBudgetUsage } from "@src/util/budget";
 import { formatSessionTime } from "@src/util/formatTime";
 import { SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
 import { getLittleSunTimerSource } from "@src/shared/components/interaction/littleSunTimerSource";
+import { addBudgetUsageInBackground } from "@src/dataInterface/extension/extensionApi";
 import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
@@ -87,14 +85,7 @@ export const LittleSunComponent: (props: {
     let didFlush = false;
 
     try {
-      await updateSyncDataField(getSyncData, saveSyncData, (syncData) => {
-        const usageUpdate = addBudgetUsage(
-          syncData,
-          props.host,
-          secondsToFlush,
-        );
-        return usageUpdate;
-      });
+      await addBudgetUsageInBackground(props.host, secondsToFlush);
       budgetUsageAccumulator = Math.max(
         0,
         budgetUsageAccumulator - secondsToFlush,

@@ -9,7 +9,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 // Re-export getSyncData and saveSyncData for use in this module
 // These will be imported where needed to avoid circular dependencies
 type SyncDataGetter = () => Promise<SyncData>;
-type SyncDataSaver = (syncData: SyncData) => Promise<void>;
+type SyncDataPatchSaver = (syncDataPatch: Partial<SyncData>) => Promise<void>;
 
 /**
  * Generic helper to update SyncData fields.
@@ -21,19 +21,22 @@ type SyncDataSaver = (syncData: SyncData) => Promise<void>;
  * @returns Promise<void>
  *
  * @example
- * await updateSyncDataField(getSyncData, saveSyncData, () => ({
+ * await updateSyncDataField(getSyncData, patchSyncData, () => ({
  *   moodCheckTS: Date.now(),
  *   moodCheckVal: mood,
  * }));
  */
 export const updateSyncDataField = async (
   getSyncData: SyncDataGetter,
-  saveSyncData: SyncDataSaver,
+  patchSyncData: SyncDataPatchSaver,
   updater: (current: SyncData) => Partial<SyncData>,
 ): Promise<void> => {
+  // Use a fresh second snapshot so updates rebase onto storage writes that
+  // landed while this update was being prepared in another tab.
+  await getSyncData();
   const syncData = await getSyncData();
   const updates = updater(syncData);
-  return saveSyncData({ ...syncData, ...updates });
+  return patchSyncData(updates);
 };
 
 /**
@@ -57,14 +60,14 @@ type DateKeyedFields =
  */
 export const updateDateKeyedField = async (
   getSyncData: SyncDataGetter,
-  saveSyncData: SyncDataSaver,
+  patchSyncData: SyncDataPatchSaver,
   field: DateKeyedFields,
   value: number,
   date: Date = new Date(),
 ): Promise<void> => {
   const ds = getIsoDate(date);
 
-  return updateSyncDataField(getSyncData, saveSyncData, (syncData) => ({
+  return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
     [field]: {
       ...(syncData[field] as Record<string, number>),
       [ds]: value,
@@ -82,13 +85,13 @@ export const updateDateKeyedField = async (
  */
 export const incrementDateKeyedCounter = async (
   getSyncData: SyncDataGetter,
-  saveSyncData: SyncDataSaver,
+  patchSyncData: SyncDataPatchSaver,
   field: "attempts" | "sunTaps",
   date: Date = new Date(),
 ): Promise<void> => {
   const ds = getIsoDate(date);
 
-  return updateSyncDataField(getSyncData, saveSyncData, (syncData) => {
+  return updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
     const currentRecord = syncData[field] as Record<string, number>;
     const currentValue = currentRecord[ds] || 0;
     return {
