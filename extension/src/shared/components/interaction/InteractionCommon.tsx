@@ -140,6 +140,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getSunHintStep, setSunHintStep] = createSignal(0);
   const getShowPostSunOverlay = () =>
     getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
+  const getIsInteractionSunShown = () =>
+    !props.isFromDashboard &&
+    !getIsExitingInteraction() &&
+    !getShowPostSunOverlay();
 
   let frameNr: number | undefined;
   let fadeAnimationFrame: number | undefined;
@@ -627,7 +631,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   return (
     <>
-      <BackgroundTransition dragThreshold={0.3} shadowRoot={props.shadowRoot} />
+      <BackgroundTransition
+        dragThreshold={0.3}
+        shadowRoot={props.shadowRoot}
+        isSunGradientAttached={getIsInteractionSunShown()}
+      />
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
@@ -802,13 +810,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           <div
             class="sun-container"
             style={{
-              opacity:
-                getIsExitingInteraction() || getShowPostSunOverlay() ? 0 : 1,
+              opacity: getIsInteractionSunShown() ? 1 : 0,
               transition: `opacity ${SCREEN_TRANSITION_MS}ms ease-out`,
-              "pointer-events":
-                getIsExitingInteraction() || getShowPostSunOverlay()
-                  ? "none"
-                  : "all",
+              "pointer-events": getIsInteractionSunShown() ? "all" : "none",
             }}
           >
             <Sun
