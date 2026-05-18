@@ -104,6 +104,29 @@ describe("getInteractionMode", () => {
     });
   });
 
+  it("does not force saved reasons for dashboard-triggered strong friction interactions", () => {
+    const decision = decide(
+      baseSyncData({
+        answers: [
+          answer("1", QuestionCategoryId.WhyReduceBrowsing),
+          answer("2"),
+        ],
+        sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: RECENT_SUN_TAPS,
+      }),
+      {
+        isMainView: true,
+        random: () => 0.99,
+      },
+    );
+
+    expect(decision).toEqual({
+      mode: "QUESTION",
+      reason: "fallback_question",
+      frictionLevel: "strong",
+    });
+  });
+
   it("uses pattern insights before other strong friction prompts when available", () => {
     const decision = decide(
       baseSyncData({

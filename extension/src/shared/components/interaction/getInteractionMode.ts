@@ -168,6 +168,7 @@ export const getInteractionModeDecision = (
       ? options.target.kind === "app"
       : platform !== "web" || IS_APP);
   const isAndroidMode = options.isAndroid ?? platform === "android";
+  const canApplyInterventionFriction = !isMainView;
   const hasReasonAnswers = getReasonAnswerCount(syncData, isAppMode) > 0;
   const canShowAlternative = !isMainView && context.hasAlternatives;
   const canAskForAlternative = !isMainView && !context.hasAlternatives;
@@ -194,7 +195,7 @@ export const getInteractionModeDecision = (
     return decision("ENERGY_LVL", "energy_missing", frictionLevel);
   }
 
-  if (frictionLevel === "strong") {
+  if (canApplyInterventionFriction && frictionLevel === "strong") {
     if (patternInsight) {
       return decision(
         "PATTERN_INSIGHT",
@@ -221,7 +222,10 @@ export const getInteractionModeDecision = (
     return decision("QUESTION", "strong_friction_question", frictionLevel);
   }
 
-  if (context.hasIntentOnExpiredTimerForTarget) {
+  if (
+    canApplyInterventionFriction &&
+    context.hasIntentOnExpiredTimerForTarget
+  ) {
     if (hasReasonAnswers) {
       return decision(
         "SHOW_REASON",
