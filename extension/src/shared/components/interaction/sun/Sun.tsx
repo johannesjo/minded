@@ -17,8 +17,10 @@ import {
   getSunSize,
   hasVerticalCompletionIntent,
   getSunReleaseAction,
+  calculateDragColorTemperature,
   type VelocitySample,
   type PhysicsState,
+  type SunDragDirection,
 } from "./sunAnimationUtils";
 import { playCompletionSound } from "./sunAudio";
 
@@ -58,7 +60,7 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getRotation, setRotation] = createSignal(0);
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
-  const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 1 = warm (down)
+  const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 0 = neutral (down/none)
   const isTapEnabled = () => props.isTapEnabled ?? true;
   const isDragEnabled = () => props.isDragEnabled ?? true;
   const dispatchInteractionEvent = (name: string, detail: unknown) => {
@@ -231,7 +233,7 @@ export const Sun: Component<SunProps> = (props) => {
         x: rawDeltaX,
         y: rawDeltaY,
       });
-      const dragDirection = hasVerticalDragIntent
+      const dragDirection: SunDragDirection = hasVerticalDragIntent
         ? deltaY > 0
           ? "down"
           : deltaY < 0
@@ -286,16 +288,7 @@ export const Sun: Component<SunProps> = (props) => {
       setDragProgress(effects.progress);
       setDragDirection(dragDirection);
 
-      // Color temperature: cool (blue) when dragging up, warm (orange) when down
-      const normalizedProgress = dragDistance / DRAG_THRESHOLD_PX;
-      const tempIntensity = Math.min(normalizedProgress, 1);
-      setColorTemp(
-        dragDirection === "down"
-          ? tempIntensity
-          : dragDirection === "up"
-            ? -tempIntensity
-            : 0,
-      );
+      setColorTemp(calculateDragColorTemperature(dragDirection, dragDistance));
 
       // Track velocity samples
       const now = Date.now();
@@ -697,14 +690,10 @@ export const Sun: Component<SunProps> = (props) => {
 
   const sunSize = getSunSize(window.innerWidth);
 
-  // Reactive glow color based on drag color temperature
+  // Reactive glow color based on upward drag color temperature
   const getGlowColor = () => {
     const ct = getColorTemp();
-    return ct > 0.1
-      ? "255, 200, 100"
-      : ct < -0.1
-        ? "200, 220, 255"
-        : "255, 255, 255";
+    return ct < -0.1 ? "200, 220, 255" : "255, 255, 255";
   };
   const getInteractionScale = () => {
     if (getIsCompletionStarted()) {

@@ -24,6 +24,7 @@ export interface AnimationConfig {
 }
 
 export type SunCompletionDirection = "up" | "down";
+export type SunDragDirection = SunCompletionDirection | "none";
 export type SunCompletionDirectionPolicy = "any" | "down";
 export type SunReleaseAction =
   | { type: "snapBack" }
@@ -220,6 +221,18 @@ export function calculateDragEffects(
   }
 
   return { scale, opacity, progress: dragProgress };
+}
+
+export function calculateDragColorTemperature(
+  dragDirection: SunDragDirection,
+  dragDistance: number,
+  threshold: number = DRAG_THRESHOLD_PX,
+): number {
+  if (dragDirection !== "up" || threshold <= 0) {
+    return 0;
+  }
+
+  return -Math.min(dragDistance / threshold, 1);
 }
 
 export function easeInOut(progress: number): number {

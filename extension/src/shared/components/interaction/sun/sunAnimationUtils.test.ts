@@ -1,4 +1,5 @@
 import {
+  calculateDragColorTemperature,
   getSunReleaseAction,
   hasVerticalCompletionIntent,
 } from "./sunAnimationUtils";
@@ -88,6 +89,21 @@ describe("sun animation utils", () => {
           completionDirection: "down",
         }),
       ).toEqual({ type: "snapBack" });
+    });
+  });
+
+  describe("calculateDragColorTemperature", () => {
+    it("does not warm the sun during downward sunset drags", () => {
+      expect(calculateDragColorTemperature("down", 120)).toBe(0);
+    });
+
+    it("keeps the existing cool feedback for upward drags", () => {
+      expect(calculateDragColorTemperature("up", 50)).toBe(-0.5);
+      expect(calculateDragColorTemperature("up", 160)).toBe(-1);
+    });
+
+    it("keeps color neutral without a vertical drag direction", () => {
+      expect(calculateDragColorTemperature("none", 80)).toBe(0);
     });
   });
 });
