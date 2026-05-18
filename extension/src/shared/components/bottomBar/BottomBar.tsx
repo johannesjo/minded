@@ -4,6 +4,7 @@ import { A, useLocation, useNavigate } from "@solidjs/router";
 import { createEffect, createSignal } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
+import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
 
 const BottomBar = (props: { onShowQuestion: () => void }) => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
@@ -14,9 +15,18 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
     setIsOnDashboard(location.pathname === "/");
   });
 
+  const goBack = () => {
+    if (getIsOnDashboard()) return;
+    if (shouldUseWindDownHistoryBackForBottomBar(location.pathname)) {
+      window.history.back();
+      return;
+    }
+    navigate("/");
+  };
+
   return (
     <div
-      onClick={() => !getIsOnDashboard() && navigate("/")}
+      onClick={goBack}
       style={!getIsOnDashboard() ? { cursor: "pointer" } : {}}
       class={`${styles.bottomBarWrapper}  ${getIsOnDashboard() && styles.isOnDashboard} `}
     >
@@ -52,14 +62,21 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           )}
         </>
       ) : (
-        <A
-          title="Go to dashboard"
+        <button
+          type="button"
+          title={
+            shouldUseWindDownHistoryBackForBottomBar(location.pathname)
+              ? "Go back"
+              : "Go to dashboard"
+          }
           class="btnIcoOnly"
-          href="/"
-          activeClass="xxx"
+          onClick={(event) => {
+            event.stopPropagation();
+            goBack();
+          }}
         >
           <Ico name="arrowBack" />
-        </A>
+        </button>
       )}
     </div>
   );

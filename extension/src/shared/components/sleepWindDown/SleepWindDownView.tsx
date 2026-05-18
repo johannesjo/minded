@@ -1,4 +1,13 @@
-import { createSignal, For, JSX, Match, onMount, Show, Switch } from "solid-js";
+import {
+  createSignal,
+  For,
+  JSX,
+  Match,
+  onCleanup,
+  onMount,
+  Show,
+  Switch,
+} from "solid-js";
 import {
   getSyncData,
   IS_ANDROID,
@@ -26,24 +35,15 @@ import BackgroundTransition from "@src/shared/components/interaction/backgroundT
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import { createSleepWindDownDismissTransition } from "./sleepWindDownDismissTransition";
 import type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
+import {
+  shouldBackReturnToWindDownOverview,
+  SleepWindDownViewName,
+  WIND_DOWN_OVERVIEW_VIEW,
+} from "./sleepWindDownBackNavigation";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
 export type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
-
-type View =
-  | "prompt"
-  | "menu"
-  | "brainDump"
-  | "gratitude"
-  | "tomorrow"
-  | "mood"
-  | "breathing"
-  | "calmRead"
-  | "tips"
-  | "snoozeIntent"
-  | "snoozeGoodnight"
-  | "goodnight";
 
 const SNOOZE_INTENT_OPTIONS = [
   "Still working",
@@ -66,7 +66,11 @@ type DraftField =
   | "sleepWindDownGratitudeDraft"
   | "sleepWindDownTomorrowDraft";
 
-const ACTIVITIES: { key: ActivityKey; label: string; view: View }[] = [
+const ACTIVITIES: {
+  key: ActivityKey;
+  label: string;
+  view: SleepWindDownViewName;
+}[] = [
   { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
   { key: "gratitude", label: "Gratitude / reflection", view: "gratitude" },
   { key: "tomorrow", label: "Tomorrow's top 3", view: "tomorrow" },
@@ -94,7 +98,7 @@ export interface SleepWindDownViewProps {
 export const SleepWindDownView = (
   props: SleepWindDownViewProps,
 ): JSX.Element => {
-  const [view, setView] = createSignal<View>("prompt");
+  const [view, setView] = createSignal<SleepWindDownViewName>("prompt");
   const [completed, setCompleted] = createSignal<Set<ActivityKey>>(new Set());
   const [brainDumpDraft, setBrainDumpDraft] = createSignal("");
   const [gratitudeDraft, setGratitudeDraft] = createSignal("");
@@ -109,6 +113,7 @@ export const SleepWindDownView = (
 
   let currentNightId: string | null = null;
   let wrapperEl: HTMLDivElement | undefined;
+  let hasOverviewBackCheckpoint = false;
   // Serialize ALL writes through this chain — `updateSyncData` is a full-blob
   // read-modify-write, so concurrent writes silently drop each other's deltas.
   let pendingWritePromise: Promise<void> = Promise.resolve();
@@ -117,6 +122,45 @@ export const SleepWindDownView = (
     onDismiss: props.onDismiss,
   });
 
+  const pushOverviewBackCheckpoint = () => {
+    if (hasOverviewBackCheckpoint) return;
+    try {
+      window.history.pushState(
+        {
+          ...(typeof window.history.state === "object" &&
+          window.history.state !== null
+            ? window.history.state
+            : {}),
+          mindedSleepWindDownBackToOverview: true,
+        },
+        "",
+        window.location.href,
+      );
+      hasOverviewBackCheckpoint = true;
+    } catch (e) {
+      console.warn("Failed to arm sleep wind-down back navigation", e);
+    }
+  };
+
+  const goToView = (nextView: SleepWindDownViewName) => {
+    const currentView = view();
+    const isReturningToOverview =
+      nextView === WIND_DOWN_OVERVIEW_VIEW &&
+      hasOverviewBackCheckpoint &&
+      shouldBackReturnToWindDownOverview(currentView);
+
+    if (shouldBackReturnToWindDownOverview(nextView)) {
+      pushOverviewBackCheckpoint();
+    }
+
+    setView(nextView);
+
+    if (isReturningToOverview) {
+      hasOverviewBackCheckpoint = false;
+      window.history.back();
+    }
+  };
+
   const enqueueWrite = (fn: () => Promise<void>): Promise<void> => {
     const next = pendingWritePromise.catch(() => undefined).then(fn);
     pendingWritePromise = next.catch((e) => {
@@ -124,6 +168,23 @@ export const SleepWindDownView = (
     });
     return next;
   };
+
+  onMount(() => {
+    const handleBrowserBack = () => {
+      if (
+        hasOverviewBackCheckpoint &&
+        shouldBackReturnToWindDownOverview(view())
+      ) {
+        hasOverviewBackCheckpoint = false;
+        setView(WIND_DOWN_OVERVIEW_VIEW);
+      }
+    };
+
+    window.addEventListener("popstate", handleBrowserBack);
+    onCleanup(() => {
+      window.removeEventListener("popstate", handleBrowserBack);
+    });
+  });
 
   onMount(async () => {
     const sd = await getSyncData();
@@ -201,7 +262,7 @@ export const SleepWindDownView = (
       });
     }
 
-    setView("menu");
+    goToView(WIND_DOWN_OVERVIEW_VIEW);
   };
 
   const completeGoodnight = async () => {
@@ -242,7 +303,7 @@ export const SleepWindDownView = (
         });
       });
     }
-    setView("goodnight");
+    goToView("goodnight");
   };
 
   const snooze = async () => {
@@ -261,7 +322,7 @@ export const SleepWindDownView = (
 
   const enterGoodnight = () => {
     setPendingReason("done");
-    setView("goodnight");
+    goToView("goodnight");
   };
 
   return (
@@ -285,14 +346,14 @@ export const SleepWindDownView = (
                   <div class={styles.btnRow}>
                     <button
                       class="btnTxtOutline"
-                      onClick={() => setView("menu")}
+                      onClick={() => goToView(WIND_DOWN_OVERVIEW_VIEW)}
                       disabled={!hydrated()}
                     >
                       Yes
                     </button>
                     <button
                       class="btnTxtOutline"
-                      onClick={() => setView("snoozeIntent")}
+                      onClick={() => goToView("snoozeIntent")}
                       disabled={!hydrated()}
                     >
                       Snooze 15 min
@@ -321,7 +382,7 @@ export const SleepWindDownView = (
                         return (
                           <button
                             class={`btnToggleSelect ${isDone() ? "isSelected" : ""}`}
-                            onClick={() => setView(a.view)}
+                            onClick={() => goToView(a.view)}
                             disabled={!hydrated()}
                           >
                             {isDone() && (
@@ -352,7 +413,7 @@ export const SleepWindDownView = (
                   </div>
                   <button
                     class={styles.tipsLink}
-                    onClick={() => setView("tips")}
+                    onClick={() => goToView("tips")}
                     disabled={!hydrated()}
                   >
                     Tips for good sleep
@@ -421,7 +482,7 @@ export const SleepWindDownView = (
                   <MoodCheckin
                     onSuccess={() => {
                       markComplete("mood");
-                      setView("menu");
+                      goToView(WIND_DOWN_OVERVIEW_VIEW);
                     }}
                     onSkip={() => undefined}
                     onCancelCountdown={() => undefined}
@@ -431,7 +492,7 @@ export const SleepWindDownView = (
                       class="btnTxtOutline"
                       onClick={() => {
                         markComplete("mood");
-                        setView("menu");
+                        goToView(WIND_DOWN_OVERVIEW_VIEW);
                       }}
                     >
                       Done
@@ -448,7 +509,7 @@ export const SleepWindDownView = (
                       class="btnTxtOutline"
                       onClick={() => {
                         markComplete("breathing");
-                        setView("menu");
+                        goToView(WIND_DOWN_OVERVIEW_VIEW);
                       }}
                     >
                       Done
@@ -465,7 +526,7 @@ export const SleepWindDownView = (
                       class="btnTxtOutline"
                       onClick={() => {
                         markComplete("calmRead");
-                        setView("menu");
+                        goToView(WIND_DOWN_OVERVIEW_VIEW);
                       }}
                     >
                       Done
@@ -487,7 +548,7 @@ export const SleepWindDownView = (
                       class="btnTxtOutline"
                       onClick={() => {
                         markComplete("tips");
-                        setView("menu");
+                        goToView(WIND_DOWN_OVERVIEW_VIEW);
                       }}
                     >
                       Done
@@ -507,7 +568,7 @@ export const SleepWindDownView = (
                       {(opt) => (
                         <button
                           class="btnToggleSelect"
-                          onClick={() => setView("snoozeGoodnight")}
+                          onClick={() => goToView("snoozeGoodnight")}
                           disabled={!hydrated()}
                         >
                           {opt}
