@@ -24,8 +24,12 @@ import {
 } from "@src/shared/data/sleepContent";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import Sun from "@src/shared/components/interaction/sun/Sun";
+import { createSleepWindDownDismissTransition } from "./sleepWindDownDismissTransition";
+import type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
+
+export type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
 
 type View =
   | "prompt"
@@ -77,8 +81,6 @@ const resolveNightIdFromStorage = async (): Promise<string> => {
   return resolveNightId(cfg) ?? getIsoDate();
 };
 
-export type SleepWindDownDismissReason = "skip" | "snooze" | "done";
-
 export interface SleepWindDownViewProps {
   /** When true, no state is persisted (used for "Try wind-down now" preview). */
   isPreview?: boolean;
@@ -106,9 +108,14 @@ export const SleepWindDownView = (
     createSignal<SleepWindDownDismissReason>("done");
 
   let currentNightId: string | null = null;
+  let wrapperEl: HTMLDivElement | undefined;
   // Serialize ALL writes through this chain — `updateSyncData` is a full-blob
   // read-modify-write, so concurrent writes silently drop each other's deltas.
   let pendingWritePromise: Promise<void> = Promise.resolve();
+  const dismissWithFade = createSleepWindDownDismissTransition({
+    getWrapperEl: () => wrapperEl,
+    onDismiss: props.onDismiss,
+  });
 
   const enqueueWrite = (fn: () => Promise<void>): Promise<void> => {
     const next = pendingWritePromise.catch(() => undefined).then(fn);
@@ -216,7 +223,7 @@ export const SleepWindDownView = (
         });
       });
     }
-    props.onDismiss(reason);
+    await dismissWithFade(reason);
   };
 
   const skipTonight = async () => {
@@ -249,7 +256,7 @@ export const SleepWindDownView = (
     // Snooze returns the user to whatever they were doing without the moon-
     // drag gesture. On Android the host turns this deadline into the regular
     // little-sun countdown.
-    props.onDismiss("snooze");
+    await dismissWithFade("snooze");
   };
 
   const enterGoodnight = () => {
@@ -258,7 +265,12 @@ export const SleepWindDownView = (
   };
 
   return (
-    <div class={`${styles.wrapper} pageTransitionIn`}>
+    <div
+      ref={(el) => {
+        wrapperEl = el;
+      }}
+      class={`${styles.wrapper} pageTransitionIn`}
+    >
       <Show when={view()} keyed>
         {(currentView) => (
           <div class={styles.viewPane}>
