@@ -117,6 +117,33 @@ export const saveAlternative = (alternative: Alternative): Promise<void> =>
     alternatives: upsertAlternative(syncData.alternatives, alternative),
   }));
 
+const replaceAlternative = (
+  alternatives: Alternative[] | undefined,
+  currentAlternative: Alternative,
+  replacementAlternative: Alternative,
+  now: number,
+): Alternative[] => {
+  const updatedAlternatives =
+    currentAlternative.id === replacementAlternative.id
+      ? alternatives
+      : applyAlternativeDisabled(alternatives, currentAlternative, now);
+
+  return upsertAlternative(updatedAlternatives, replacementAlternative);
+};
+
+export const saveReplacementAlternative = (
+  currentAlternative: Alternative,
+  replacementAlternative: Alternative,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+    alternatives: replaceAlternative(
+      syncData.alternatives,
+      currentAlternative,
+      replacementAlternative,
+      Date.now(),
+    ),
+  }));
+
 export const saveStructuredAlternativeApp = (
   alternative: string,
 ): Promise<void> => saveAlternative(createUserAppAlternative(alternative));
@@ -124,6 +151,24 @@ export const saveStructuredAlternativeApp = (
 export const saveStructuredAlternativeWebsite = (
   alternative: string,
 ): Promise<void> => saveAlternative(createUserWebsiteAlternative(alternative));
+
+export const saveReplacementStructuredAlternativeApp = (
+  currentAlternative: Alternative,
+  replacement: string,
+): Promise<void> =>
+  saveReplacementAlternative(
+    currentAlternative,
+    createUserAppAlternative(replacement),
+  );
+
+export const saveReplacementStructuredAlternativeWebsite = (
+  currentAlternative: Alternative,
+  replacement: string,
+): Promise<void> =>
+  saveReplacementAlternative(
+    currentAlternative,
+    createUserWebsiteAlternative(replacement),
+  );
 
 const markAlternative = (
   alternative: Alternative,
@@ -140,49 +185,6 @@ const markAlternative = (
 
 export const markAlternativeShown = (alternative: Alternative): Promise<void> =>
   markAlternative(alternative, "shown");
-
-export const markAlternativeOpened = (
-  alternative: Alternative,
-): Promise<void> => markAlternative(alternative, "opened");
-
-export const markAlternativeOpenedAndCountSunTap = (
-  alternative: Alternative,
-): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
-    const now = Date.now();
-    const ds = getIsoDate(new Date(now));
-    const currentSunTaps = syncData.sunTaps[ds] || 0;
-
-    return {
-      alternatives: applyAlternativeStatEvent(
-        syncData.alternatives,
-        alternative,
-        "opened",
-        now,
-      ),
-      sunTaps: {
-        ...syncData.sunTaps,
-        [ds]: currentSunTaps + 1,
-      },
-      sunTapTimestamps: [
-        ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
-        now,
-      ],
-    };
-  });
-
-export const markAlternativeDismissed = (
-  alternative: Alternative,
-): Promise<void> => markAlternative(alternative, "dismissed");
-
-export const disableAlternative = (alternative: Alternative): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    alternatives: applyAlternativeDisabled(
-      syncData.alternatives,
-      alternative,
-      Date.now(),
-    ),
-  }));
 
 export const markPatternInsightShown = (
   insight: PatternInsight,

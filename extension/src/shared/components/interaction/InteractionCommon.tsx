@@ -10,6 +10,7 @@ import {
   InteractionMode,
 } from "@src/shared/components/interaction/getInteractionMode";
 import {
+  Alternative,
   Answer,
   SessionIntent,
   SessionPlatform,
@@ -50,8 +51,6 @@ import type { FrictionLevel } from "@src/shared/components/interaction/interacti
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
-
-const ALTERNATIVE_STAY_BRIEFLY_SECONDS = 2 * 60;
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
@@ -108,6 +107,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getPendingAnswer, setPendingAnswer] = createSignal<
     Answer | undefined
   >();
+  const [getAlternativeToReplace, setAlternativeToReplace] = createSignal<
+    Alternative | undefined
+  >();
+  const setModeWithoutReplacement = (mode: InteractionMode) => {
+    setAlternativeToReplace(undefined);
+    setMode(mode);
+  };
 
   // UI state
   const [getInteractionOpacity, setInteractionOpacity] = createSignal(1);
@@ -538,7 +544,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         if (props.questionForPrompt) {
           setInitialQuestion(props.questionForPrompt);
           setFrictionLevel("normal");
-          setMode("QUESTION");
+          setModeWithoutReplacement("QUESTION");
         } else {
           const question = getQuestionSmart(syncData.answers);
           const modeDecision = getInteractionModeDecision(syncData, {
@@ -549,7 +555,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setInitialQuestion(question);
           setFrictionLevel(modeDecision.frictionLevel);
           setPatternInsight(modeDecision.patternInsight);
-          setMode(modeDecision.mode);
+          setModeWithoutReplacement(modeDecision.mode);
         }
 
         contentReadyTimeout = window.setTimeout(() => {
@@ -568,7 +574,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         const fallbackQuestion = getQuestionSemiSmart();
         setInitialQuestion(fallbackQuestion);
         setFrictionLevel("normal");
-        setMode("QUESTION");
+        setModeWithoutReplacement("QUESTION");
         setIsContentReady(true);
       });
 
@@ -745,12 +751,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
             onLeaveNow={props.onFlingAway}
-            onStayBriefly={() =>
-              handleTimeSelection(ALTERNATIVE_STAY_BRIEFLY_SECONDS)
-            }
-            onAddBetterAlternative={() => setMode("SET_ALTERNATIVE")}
+            alternativeToReplace={getAlternativeToReplace()}
+            onAddBetterAlternative={(alternative) => {
+              setAlternativeToReplace(alternative);
+              setMode("SET_ALTERNATIVE");
+            }}
             onShowAlternativeFromPatternInsight={() =>
-              setMode("SHOW_ALTERNATIVE")
+              setModeWithoutReplacement("SHOW_ALTERNATIVE")
             }
             onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
           />

@@ -3,14 +3,18 @@ import { JSX } from "solid-js";
 import {
   IS_APP,
   IS_WEB_EXT,
+  saveReplacementStructuredAlternativeApp,
+  saveReplacementStructuredAlternativeWebsite,
   saveStructuredAlternativeApp,
   saveStructuredAlternativeWebsite,
 } from "@src/dataInterface/commonSyncDataInterface";
+import type { Alternative } from "@src/dataInterface/syncData";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 
 // once on app load
 
 export const SetAlternativeInteraction: (props: {
+  currentAlternative?: Alternative;
   onSuccess: () => void;
   onSkip: () => void;
   onCancelCountdown: () => void;
@@ -22,9 +26,23 @@ export const SetAlternativeInteraction: (props: {
     }
 
     if (IS_APP) {
-      await saveStructuredAlternativeApp(alternative);
+      if (props.currentAlternative) {
+        await saveReplacementStructuredAlternativeApp(
+          props.currentAlternative,
+          alternative,
+        );
+      } else {
+        await saveStructuredAlternativeApp(alternative);
+      }
     } else {
-      await saveStructuredAlternativeWebsite(alternative);
+      if (props.currentAlternative) {
+        await saveReplacementStructuredAlternativeWebsite(
+          props.currentAlternative,
+          alternative,
+        );
+      } else {
+        await saveStructuredAlternativeWebsite(alternative);
+      }
     }
     props.onSuccess();
   };

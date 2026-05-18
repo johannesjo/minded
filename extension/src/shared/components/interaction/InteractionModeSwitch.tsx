@@ -5,7 +5,7 @@ import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyL
 import { Question } from "@src/shared/components/interaction/Question";
 import { AppUsageOrBrowsingBehavior } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/AppUsageOrBrowsingBehavior";
 import { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
-import { Answer, SyncData } from "@src/dataInterface/syncData";
+import { Alternative, Answer, SyncData } from "@src/dataInterface/syncData";
 import {
   QuestionCategoryId,
   QuestionForPrompt,
@@ -33,8 +33,8 @@ export interface InteractionModeSwitchProps {
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
   onLeaveNow: () => void;
-  onStayBriefly?: () => void;
-  onAddBetterAlternative?: () => void;
+  alternativeToReplace?: Alternative;
+  onAddBetterAlternative?: (alternative: Alternative) => void;
   onShowAlternativeFromPatternInsight?: () => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
 }
@@ -101,14 +101,13 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           <ShowAlternativeInteraction
             syncData={props.syncData}
             onCancelCountdown={props.onCancelCountdown}
-            onSkip={props.onSkip}
-            onStayBriefly={props.onStayBriefly}
             onAddBetterAlternative={props.onAddBetterAlternative}
           />
         )}
       </Match>
       <Match when={props.mode === "SET_ALTERNATIVE"}>
         <SetAlternativeInteraction
+          currentAlternative={props.alternativeToReplace}
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={props.onSuccess}
           onSkip={props.onSkip}
