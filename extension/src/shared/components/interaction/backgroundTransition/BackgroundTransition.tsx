@@ -222,7 +222,11 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       />
       <div
         class="background-transition background-overlay background-sunset"
+        classList={{
+          "sun-gradient-attached": props.isSunGradientAttached ?? true,
+        }}
         style={{
+          ...getSunGradientStyle(),
           opacity: Math.max(0, getProgress() * 0.8),
         }}
       />

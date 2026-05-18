@@ -108,8 +108,10 @@
   // Background transition target colors
   --bg-transition-bluesky-top: #0058c1;
   --bg-transition-bluesky-bottom: #0a75bc;
-  --bg-transition-sunset-top: #cd492a;
-  --bg-transition-sunset-bottom: #ddb543;
+  --bg-transition-sunset-top: #4f78bb;
+  --bg-transition-sunset-mid: #f49f73;
+  --bg-transition-sunset-horizon: #ffd36a;
+  --bg-transition-sunset-bottom: #ef6f63;
 
   --safe-area-inset-bottom: 0;
   --safe-area-inset-top: 0;
@@ -140,6 +142,8 @@
 
     // Background transition target colors (dark mode)
     --bg-transition-sunset-top: #020c25;
+    --bg-transition-sunset-mid: #041735;
+    --bg-transition-sunset-horizon: #07244f;
     --bg-transition-sunset-bottom: #05214e;
     --bg-transition-bluesky-top: #020c25;
     --bg-transition-bluesky-bottom: #05214e;
