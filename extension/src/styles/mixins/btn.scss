@@ -101,8 +101,10 @@
     background: none;
   }
 
-  &:hover {
-    background: var(--btn-bg);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--btn-bg);
+    }
   }
 
   &.active {
@@ -132,10 +134,12 @@
     background: none;
     border: 1px solid var(--btn-outline-color);
   }
-  &:hover {
-    background: var(--btn-bg);
-    //box-shadow: none;
-    border-color: var(--btn-bg);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--btn-bg);
+      //box-shadow: none;
+      border-color: var(--btn-bg);
+    }
   }
 }
 
@@ -185,8 +189,10 @@
     --extraClickArea: -16px;
   }
 
-  &:hover {
-    background: var(--btn-bg-selectable-hover);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--btn-bg-selectable-hover);
+    }
   }
 
   &.isSelected {
@@ -221,8 +227,10 @@
     --extraClickArea: -6px;
   }
 
-  &:hover {
-    background: var(--btn-bg-selectable-hover);
+  @media (hover: hover) {
+    &:hover {
+      background: var(--btn-bg-selectable-hover);
+    }
   }
 
   &.isSelected {

@@ -19,12 +19,11 @@ export const ANIMATION_TIMING = {
     sunInstructionsFadeIn: 600,
     wrapperFadeStart: 2000,
     /**
-     * How long intent/time option buttons stay pointer-events:none after
-     * the screen appears (anti-reflex "arming"). Kept shorter than the
-     * SCREEN_TRANSITION_MS fade so an early tap isn't silently swallowed
-     * for the full second.
+     * Intent/time option buttons are actionable as soon as they are visible.
+     * A delayed arming window makes quick taps look focused/hovered while the
+     * click handler still returns before selecting.
      */
-    armWindow: 750,
+    armWindow: 0,
   },
 } as const;
 

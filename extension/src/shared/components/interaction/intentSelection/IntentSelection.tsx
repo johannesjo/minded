@@ -41,7 +41,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
               <button
                 type="button"
                 class="btnToggleSelect"
-                aria-disabled={!props.isArmed}
+                disabled={!props.isArmed}
                 onClick={() => handleSelect(intent)}
               >
                 {getSessionIntentLabel(intent)}
@@ -53,7 +53,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
         <button
           type="button"
           class="btnToggleSelect"
-          aria-disabled={!props.isArmed}
+          disabled={!props.isArmed}
           onClick={() => handleSelect(undefined)}
         >
           other

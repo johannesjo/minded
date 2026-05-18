@@ -41,7 +41,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
               <button
                 type="button"
                 class="btnToggleSelect"
-                aria-disabled={!props.isArmed}
+                disabled={!props.isArmed}
                 onClick={() => handleSelect(option.value)}
               >
                 {option.label}

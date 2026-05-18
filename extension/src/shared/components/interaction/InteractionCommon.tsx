@@ -288,8 +288,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const showIntentSelectionAfterOverlayTransition = () => {
     clearIntentSelectionArmTimeout();
-    setIsIntentSelectionArmed(false);
     setShowIntentSelection(true);
+    if (ARM_WINDOW_MS <= 0) {
+      setIsIntentSelectionArmed(true);
+      return;
+    }
+
+    setIsIntentSelectionArmed(false);
     intentSelectionArmTimeout = window.setTimeout(() => {
       intentSelectionArmTimeout = undefined;
       if (isDisposed) return;
@@ -307,6 +312,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const armTimeSelectionAfterOverlayTransition = () => {
     clearTimeSelectionArmTimeout();
+    if (ARM_WINDOW_MS <= 0) {
+      setIsTimeSelectionArmed(true);
+      return;
+    }
+
     setIsTimeSelectionArmed(false);
     timeSelectionArmTimeout = window.setTimeout(() => {
       timeSelectionArmTimeout = undefined;

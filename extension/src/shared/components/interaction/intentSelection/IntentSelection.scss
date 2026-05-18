@@ -19,9 +19,8 @@
   padding: 32px;
   text-align: center;
 
-  // Block clicks while the overlay fades in. Cancel stays outside this
-  // container so it remains tappable. Buttons look normal — the parent
-  // overlay's fade-in carries the "not ready yet" cue.
+  // Block option clicks if a caller deliberately renders the selector before
+  // it is armed. Cancel stays outside this container so it remains tappable.
   &.is-arming {
     pointer-events: none;
   }

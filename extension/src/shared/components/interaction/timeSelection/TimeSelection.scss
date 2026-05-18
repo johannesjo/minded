@@ -19,9 +19,8 @@
   text-align: center;
   flex: 1;
 
-  // Block clicks while the overlay fades in. Cancel stays outside this
-  // container so it remains tappable. Buttons look normal — the parent
-  // overlay/post-sun-screen fade carries the "not ready yet" cue.
+  // Block option clicks if a caller deliberately renders the selector before
+  // it is armed. Cancel stays outside this container so it remains tappable.
   &.is-arming {
     pointer-events: none;
   }
