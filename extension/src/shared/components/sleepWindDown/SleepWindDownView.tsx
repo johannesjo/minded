@@ -34,12 +34,14 @@ import {
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import { createSleepWindDownDismissTransition } from "./sleepWindDownDismissTransition";
+import { getSleepWindDownActivityAction } from "./sleepWindDownActivityActions";
 import type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
 import {
   shouldBackReturnToWindDownOverview,
   SleepWindDownViewName,
   WIND_DOWN_OVERVIEW_VIEW,
 } from "./sleepWindDownBackNavigation";
+import type { SleepWindDownActivityKey } from "./sleepWindDownActivityActions";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
@@ -53,14 +55,7 @@ const SNOOZE_INTENT_OPTIONS = [
   "I feel lonely",
 ];
 
-type ActivityKey =
-  | "brainDump"
-  | "gratitude"
-  | "tomorrow"
-  | "mood"
-  | "breathing"
-  | "calmRead"
-  | "tips";
+type ActivityKey = SleepWindDownActivityKey;
 
 type DraftField =
   | "sleepWindDownBrainDumpDraft"
@@ -326,6 +321,32 @@ export const SleepWindDownView = (
     goToView("goodnight");
   };
 
+  const activityActions = (activityKey: ActivityKey): JSX.Element => {
+    const action = getSleepWindDownActivityAction(activityKey);
+
+    return (
+      <div class={styles.activityActions}>
+        <button
+          class="btnTxtOutline"
+          onClick={() => {
+            if (action === "complete") {
+              markComplete(activityKey);
+            }
+            goToView(WIND_DOWN_OVERVIEW_VIEW);
+          }}
+        >
+          {action === "complete" ? (
+            "Done"
+          ) : (
+            <>
+              <Ico name="arrowBack" /> Back
+            </>
+          )}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div
       ref={(el) => {
@@ -488,51 +509,21 @@ export const SleepWindDownView = (
                     onSkip={() => undefined}
                     onCancelCountdown={() => undefined}
                   />
-                  <div class={styles.activityActions}>
-                    <button
-                      class="btnTxtOutline"
-                      onClick={() => {
-                        markComplete("mood");
-                        goToView(WIND_DOWN_OVERVIEW_VIEW);
-                      }}
-                    >
-                      Done
-                    </button>
-                  </div>
+                  {activityActions("mood")}
                 </div>
               </Match>
 
               <Match when={currentView === "breathing"}>
                 <div class={styles.activityBody}>
                   <BreathingExercise />
-                  <div class={styles.activityActions}>
-                    <button
-                      class="btnTxtOutline"
-                      onClick={() => {
-                        markComplete("breathing");
-                        goToView(WIND_DOWN_OVERVIEW_VIEW);
-                      }}
-                    >
-                      Done
-                    </button>
-                  </div>
+                  {activityActions("breathing")}
                 </div>
               </Match>
 
               <Match when={currentView === "calmRead"}>
                 <div class={styles.activityBody}>
                   <p class={styles.calmRead}>{calmReadPassage()}</p>
-                  <div class={styles.activityActions}>
-                    <button
-                      class="btnTxtOutline"
-                      onClick={() => {
-                        markComplete("calmRead");
-                        goToView(WIND_DOWN_OVERVIEW_VIEW);
-                      }}
-                    >
-                      Done
-                    </button>
-                  </div>
+                  {activityActions("calmRead")}
                 </div>
               </Match>
 
@@ -544,17 +535,7 @@ export const SleepWindDownView = (
                   <ul class={styles.tipsList}>
                     <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
                   </ul>
-                  <div class={styles.activityActions}>
-                    <button
-                      class="btnTxtOutline"
-                      onClick={() => {
-                        markComplete("tips");
-                        goToView(WIND_DOWN_OVERVIEW_VIEW);
-                      }}
-                    >
-                      Done
-                    </button>
-                  </div>
+                  {activityActions("tips")}
                 </div>
               </Match>
 
