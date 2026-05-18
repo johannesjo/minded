@@ -2,6 +2,7 @@ jest.mock("@dataInterface/syncDataInterface", () => ({
   getSyncDataN: jest.fn(),
   saveAnswerN: jest.fn(),
   saveSyncDataN: jest.fn(),
+  patchSyncDataN: jest.fn(),
 }));
 
 jest.mock("@dataInterface/system", () => ({
@@ -20,14 +21,14 @@ import {
   saveStructuredAlternativeApp,
   saveStructuredAlternativeWebsite,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { getSyncDataN, saveSyncDataN } from "@dataInterface/syncDataInterface";
+import { getSyncDataN, patchSyncDataN } from "@dataInterface/syncDataInterface";
 import { createMockSyncData } from "@src/test-utils/mockHelpers";
 
 const mockedGetSyncData = getSyncDataN as jest.MockedFunction<
   typeof getSyncDataN
 >;
-const mockedSaveSyncData = saveSyncDataN as jest.MockedFunction<
-  typeof saveSyncDataN
+const mockedPatchSyncData = patchSyncDataN as jest.MockedFunction<
+  typeof patchSyncDataN
 >;
 
 describe("commonSyncDataInterface", () => {
@@ -55,11 +56,11 @@ describe("commonSyncDataInterface", () => {
           ],
         }),
       );
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await countSunTap();
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           sunTaps: {
             "2026-05-10": 9,
@@ -79,11 +80,11 @@ describe("commonSyncDataInterface", () => {
           sunTapTimestamps: undefined,
         }),
       );
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await countSunTap();
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           sunTaps: {
             "2026-05-11": 1,
@@ -117,12 +118,12 @@ describe("commonSyncDataInterface", () => {
           sunTapTimestamps: [],
         }),
       );
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await markAlternativeOpenedAndCountSunTap(alternative);
 
-      expect(mockedSaveSyncData).toHaveBeenCalledTimes(1);
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledTimes(1);
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           alternatives: [
             {
@@ -158,11 +159,11 @@ describe("commonSyncDataInterface", () => {
           alternatives: [alternative],
         }),
       );
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await markAlternativeDismissed(alternative);
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           alternatives: [
             {
@@ -181,11 +182,11 @@ describe("commonSyncDataInterface", () => {
       const now = new Date("2026-05-11T10:00:00").getTime();
       jest.spyOn(Date, "now").mockReturnValue(now);
       mockedGetSyncData.mockResolvedValue(createMockSyncData());
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await saveStructuredAlternativeWebsite(" https://www.example.com/ ");
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           alternatives: [
             {
@@ -222,11 +223,11 @@ describe("commonSyncDataInterface", () => {
           alternatives: [alternative],
         }),
       );
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await saveStructuredAlternativeWebsite("https://example.com");
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           alternatives: [
             {
@@ -250,11 +251,11 @@ describe("commonSyncDataInterface", () => {
       const now = new Date("2026-05-11T10:00:00").getTime();
       jest.spyOn(Date, "now").mockReturnValue(now);
       mockedGetSyncData.mockResolvedValue(createMockSyncData());
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await saveStructuredAlternativeApp(" Reader ");
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           alternatives: [
             {
@@ -275,7 +276,7 @@ describe("commonSyncDataInterface", () => {
   describe("markPatternInsightShown", () => {
     it("records a shown pattern insight for its date", async () => {
       mockedGetSyncData.mockResolvedValue(createMockSyncData());
-      mockedSaveSyncData.mockResolvedValue();
+      mockedPatchSyncData.mockResolvedValue();
 
       await markPatternInsightShown({
         id: "daily-usage:youtube.com",
@@ -284,7 +285,7 @@ describe("commonSyncDataInterface", () => {
         actions: ["still_on_purpose", "leave_now"],
       });
 
-      expect(mockedSaveSyncData).toHaveBeenCalledWith(
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
           patternInsightState: {
             shownInsightIdsByDate: {
