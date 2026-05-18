@@ -1,7 +1,8 @@
 /* @refresh reload */
-import { createEffect, createSignal, JSX } from "solid-js";
+import { createEffect, createSignal, JSX, Show } from "solid-js";
 import {
   IS_APP,
+  IS_WEB_EXT,
   IS_IOS,
   markAlternativeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
@@ -10,7 +11,10 @@ import type {
   SessionPlatform,
   SyncData,
 } from "@src/dataInterface/syncData";
-import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
+import {
+  getAlternativesForTarget,
+  getWebsiteAlternativeHref,
+} from "@src/shared/components/interaction/alternatives/getAlternatives";
 import { getAlternativeCandidate } from "@src/shared/components/interaction/alternatives/getAlternativeCandidate";
 
 // once on app load
@@ -65,26 +69,46 @@ export const ShowAlternativeInteraction: (props: {
     props.onAddBetterAlternative?.(alternative);
   };
 
+  const renderAlternativeLabel = (alternative: Alternative): JSX.Element => {
+    const href = IS_WEB_EXT
+      ? getWebsiteAlternativeHref(alternative)
+      : undefined;
+
+    return href ? (
+      <a
+        class="show-alternative-link"
+        href={href}
+        onClick={props.onCancelCountdown}
+      >
+        {alternative.label}
+      </a>
+    ) : (
+      <strong>{alternative.label}</strong>
+    );
+  };
+
   return (
     <>
-      {getAlternative() && (
-        <div onmouseenter={props.onCancelCountdown}>
-          <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">
-            Try <strong>{getAlternative()?.label}</strong> instead?
+      <Show when={getAlternative()}>
+        {(alternative) => (
+          <div onmouseenter={props.onCancelCountdown}>
+            <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">
+              Try {renderAlternativeLabel(alternative())} instead?
+            </div>
+            <div class="show-alternative-actions">
+              {props.onAddBetterAlternative && (
+                <button
+                  type="button"
+                  class="btnTxt"
+                  onClick={() => void onAddBetterAlternative()}
+                >
+                  Add better option
+                </button>
+              )}
+            </div>
           </div>
-          <div class="show-alternative-actions">
-            {props.onAddBetterAlternative && (
-              <button
-                type="button"
-                class="btnTxt"
-                onClick={() => void onAddBetterAlternative()}
-              >
-                Add better option
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </Show>
     </>
   );
 };

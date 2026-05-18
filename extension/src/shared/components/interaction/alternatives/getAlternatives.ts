@@ -15,6 +15,30 @@ export const beautifyAlternativeUrl = (url: string): string => {
     .replace(/\/$/, "");
 };
 
+const toWebsiteHref = (url: string): string | undefined => {
+  const trimmed = url.trim();
+  const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(trimmed);
+  if (!trimmed || (hasScheme && !/^https?:\/\//i.test(trimmed))) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(hasScheme ? trimmed : `https://${trimmed}`);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:"
+      ? parsedUrl.href
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+export const getWebsiteAlternativeHref = (
+  alternative: Alternative,
+): string | undefined =>
+  alternative.kind === "website" && alternative.url
+    ? toWebsiteHref(alternative.url)
+    : undefined;
+
 export const isWebsiteAlternativeScope = (
   target?: SessionTarget,
   platform?: SessionPlatform,

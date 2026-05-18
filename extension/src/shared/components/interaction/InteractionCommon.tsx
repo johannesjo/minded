@@ -120,6 +120,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsContentReady, setIsContentReady] = createSignal(false);
   const [getIsSkipping, setIsSkipping] = createSignal(false);
   const [getIsFinalAnimation, setIsFinalAnimation] = createSignal(false);
+  const [getIsModeTransitioning, setIsModeTransitioning] = createSignal(false);
   const [getIsDragging, setIsDragging] = createSignal(false);
   const [getShowSunInstructions, setShowSunInstructions] = createSignal(false);
   const [getHasAnswered, setHasAnswered] = createSignal(false);
@@ -153,6 +154,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   let frameNr: number | undefined;
   let fadeAnimationFrame: number | undefined;
+  let modeTransitionTimeout: number | undefined;
+  let modeTransitionFadeInFrame: number | undefined;
   let timeSelectionTimeout: number | undefined;
   let postSunScreenTransitionTimeout: number | undefined;
   let successTimeout: number | undefined;
@@ -214,6 +217,33 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     };
 
     fadeAnimationFrame = requestAnimationFrame(animate);
+  };
+
+  const transitionToMode = (
+    mode: InteractionMode,
+    updateStateBeforeModeChange: () => void,
+  ) => {
+    if (getIsModeTransitioning()) return;
+
+    setIsModeTransitioning(true);
+    runFadeAnimation(SCREEN_TRANSITION_MS, () => {
+      if (isDisposed) return;
+
+      updateStateBeforeModeChange();
+      setMode(mode);
+
+      setInteractionOpacity(0);
+      modeTransitionFadeInFrame = requestAnimationFrame(() => {
+        modeTransitionFadeInFrame = undefined;
+        if (isDisposed) return;
+
+        setInteractionOpacity(1);
+        modeTransitionTimeout = window.setTimeout(() => {
+          modeTransitionTimeout = undefined;
+          if (!isDisposed) setIsModeTransitioning(false);
+        }, SCREEN_TRANSITION_MS);
+      });
+    });
   };
 
   const handleSkip = () => {
@@ -599,6 +629,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (fadeInAnimationFrame) {
       cancelAnimationFrame(fadeInAnimationFrame);
     }
+    if (modeTransitionFadeInFrame) {
+      cancelAnimationFrame(modeTransitionFadeInFrame);
+    }
+    if (modeTransitionTimeout) {
+      clearTimeout(modeTransitionTimeout);
+    }
     if (timeSelectionTimeout) {
       clearTimeout(timeSelectionTimeout);
     }
@@ -706,6 +742,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           "pointer-events":
             getIsExitingInteraction() ||
             getShowPostSunOverlay() ||
+            getIsModeTransitioning() ||
             getIsFinalAnimation() ||
             getIsCompletionStarted()
               ? "none"
@@ -735,6 +772,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             "pointer-events":
               getIsExitingInteraction() ||
               getShowPostSunOverlay() ||
+              getIsModeTransitioning() ||
               getShowSunInstructions() ||
               getIsCompletionStarted()
                 ? "none"
@@ -753,11 +791,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onLeaveNow={props.onFlingAway}
             alternativeToReplace={getAlternativeToReplace()}
             onAddBetterAlternative={(alternative) => {
-              setAlternativeToReplace(alternative);
-              setMode("SET_ALTERNATIVE");
+              transitionToMode("SET_ALTERNATIVE", () => {
+                setAlternativeToReplace(alternative);
+              });
             }}
             onShowAlternativeFromPatternInsight={() =>
-              setModeWithoutReplacement("SHOW_ALTERNATIVE")
+              transitionToMode("SHOW_ALTERNATIVE", () => {
+                setAlternativeToReplace(undefined);
+              })
             }
             onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
           />

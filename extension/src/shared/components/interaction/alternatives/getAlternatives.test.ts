@@ -5,7 +5,19 @@ import {
   createUserAppAlternative,
   createUserWebsiteAlternative,
   getAlternativesForTarget,
+  getWebsiteAlternativeHref,
 } from "./getAlternatives";
+
+const websiteAlternative = (url: string): Alternative => ({
+  id: `web:${url}`,
+  kind: "website",
+  label: "Example",
+  url,
+  createdTS: 0,
+  shownCount: 0,
+  dismissedCount: 0,
+  openedCount: 0,
+});
 
 describe("getAlternativesForTarget", () => {
   it("normalizes legacy website alternatives with deterministic IDs", () => {
@@ -149,6 +161,34 @@ describe("beautifyAlternativeUrl", () => {
     expect(beautifyAlternativeUrl("https://www.example.com/")).toBe(
       "example.com",
     );
+  });
+});
+
+describe("website alternative links", () => {
+  it("normalizes website alternatives to safe http links", () => {
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("example.com/read")),
+    ).toBe("https://example.com/read");
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("http://example.com")),
+    ).toBe("http://example.com/");
+  });
+
+  it("does not create hrefs for app alternatives or unsafe protocols", () => {
+    expect(
+      getWebsiteAlternativeHref({
+        id: "app",
+        kind: "app",
+        label: "Reader",
+        createdTS: 0,
+        shownCount: 0,
+        dismissedCount: 0,
+        openedCount: 0,
+      }),
+    ).toBeUndefined();
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("javascript:alert(1)")),
+    ).toBeUndefined();
   });
 });
 
