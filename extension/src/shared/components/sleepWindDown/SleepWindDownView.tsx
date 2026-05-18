@@ -42,10 +42,11 @@ type View =
   | "goodnight";
 
 const SNOOZE_INTENT_OPTIONS = [
-  "Still working",
-  "Watching something",
-  "Talking with someone",
-  "Just not tired yet",
+  "Something unfinished",
+  "My mind won't settle",
+  "I'm anxious, I won't fall asleep",
+  "I'm avoiding tomorrow",
+  "I feel lonely",
 ];
 
 type ActivityKey =
