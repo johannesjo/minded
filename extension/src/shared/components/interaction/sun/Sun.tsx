@@ -739,6 +739,7 @@ export const Sun: Component<SunProps> = (props) => {
         height: `${sunSize.size}px`,
         "--glow-color": getGlowColor(),
         "--glow-intensity": getGlowIntensity(),
+        "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >
       {isTapEnabled() && (

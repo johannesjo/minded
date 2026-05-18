@@ -66,9 +66,43 @@
   &.background-sunset {
     background: linear-gradient(
       to bottom,
-      var(--bg-transition-sunset-top, #ff6b35),
-      var(--bg-transition-sunset-bottom, #ffcc33)
+      var(--bg-transition-sunset-top, #4f78bb) 0%,
+      var(--bg-transition-sunset-top, #4f78bb) 14%,
+      var(--bg-transition-sunset-mid, #f49f73) 54%,
+      var(--bg-transition-sunset-horizon, #ffd36a) 78%,
+      var(--bg-transition-sunset-bottom, #ef6f63) 100%
     );
+
+    &.sun-gradient-attached {
+      background:
+        radial-gradient(
+          circle at var(--sun-gradient-x) var(--sun-gradient-y),
+          rgba(255, 248, 207, 0.9) 0,
+          rgba(255, 211, 106, 0.54) 8vmin,
+          rgba(242, 118, 70, 0.2) 18vmin,
+          transparent 32vmin
+        ),
+        radial-gradient(
+          ellipse 78vmin 34vmin at var(--sun-warm-x) var(--sun-warm-y),
+          rgba(255, 181, 84, 0.46) 0%,
+          rgba(242, 102, 74, 0.28) 48%,
+          transparent 78%
+        ),
+        radial-gradient(
+          ellipse 120vmin 36vmin at var(--sun-warm-x) var(--sun-horizon-y),
+          rgba(255, 211, 106, 0.36) 0%,
+          rgba(239, 111, 99, 0.18) 52%,
+          transparent 84%
+        ),
+        linear-gradient(
+          to bottom,
+          var(--bg-transition-sunset-top, #4f78bb) 0%,
+          var(--bg-transition-sunset-top, #4f78bb) 14%,
+          var(--bg-transition-sunset-mid, #f49f73) 54%,
+          var(--bg-transition-sunset-horizon, #ffd36a) 78%,
+          var(--bg-transition-sunset-bottom, #ef6f63) 100%
+        );
+    }
   }
 
   &.animating {
@@ -83,4 +117,15 @@
     linear-gradient(175deg, #071449, #1a137c)
   );
   will-change: auto;
+}
+
+.minded-6622-dark
+  .background-transition.background-sunset.sun-gradient-attached {
+  background: linear-gradient(
+    to bottom,
+    var(--bg-transition-sunset-top, #020c25) 0%,
+    var(--bg-transition-sunset-mid, #041735) 52%,
+    var(--bg-transition-sunset-horizon, #07244f) 76%,
+    var(--bg-transition-sunset-bottom, #05214e) 100%
+  );
 }
