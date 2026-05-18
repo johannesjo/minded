@@ -12,7 +12,7 @@ export const GRATITUDE_PROMPTS: string[] = [
   "Name one small win from today, however tiny.",
   "What's something you're glad happened today?",
   "Who made today a little easier?",
-  "What's one thing you'd be sad to lose, that you still have?",
+  "What's one thing you're glad to have in your life right now?",
 ];
 
 export const TOMORROW_PROMPTS: string[] = [
