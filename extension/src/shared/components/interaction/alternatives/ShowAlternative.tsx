@@ -4,6 +4,7 @@ import {
   IS_APP,
   IS_WEB_EXT,
   IS_IOS,
+  markAlternativeOpenedAndCountSunTap,
   markAlternativeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
 import type {
@@ -69,6 +70,36 @@ export const ShowAlternativeInteraction: (props: {
     props.onAddBetterAlternative?.(alternative);
   };
 
+  const onAlternativeLinkClick = async (
+    event: MouseEvent,
+    alternative: Alternative,
+    href: string,
+  ) => {
+    props.onCancelCountdown();
+
+    const shouldHandleNavigation =
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey;
+
+    if (shouldHandleNavigation) {
+      event.preventDefault();
+    }
+
+    try {
+      await shownAlternativePromise;
+      await markAlternativeOpenedAndCountSunTap(alternative);
+    } catch (error) {
+      console.error("Failed to mark alternative opened", error);
+    } finally {
+      if (shouldHandleNavigation) {
+        window.location.href = href;
+      }
+    }
+  };
+
   const renderAlternativeLabel = (alternative: Alternative): JSX.Element => {
     const href = IS_WEB_EXT
       ? getWebsiteAlternativeHref(alternative)
@@ -78,7 +109,9 @@ export const ShowAlternativeInteraction: (props: {
       <a
         class="show-alternative-link"
         href={href}
-        onClick={props.onCancelCountdown}
+        onClick={(event) =>
+          void onAlternativeLinkClick(event, alternative, href)
+        }
       >
         {alternative.label}
       </a>

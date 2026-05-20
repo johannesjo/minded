@@ -186,6 +186,32 @@ const markAlternative = (
 export const markAlternativeShown = (alternative: Alternative): Promise<void> =>
   markAlternative(alternative, "shown");
 
+export const markAlternativeOpenedAndCountSunTap = (
+  alternative: Alternative,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
+    const now = Date.now();
+    const ds = getIsoDate(new Date(now));
+    const currentSunTaps = syncData.sunTaps[ds] || 0;
+
+    return {
+      alternatives: applyAlternativeStatEvent(
+        syncData.alternatives,
+        alternative,
+        "opened",
+        now,
+      ),
+      sunTaps: {
+        ...syncData.sunTaps,
+        [ds]: currentSunTaps + 1,
+      },
+      sunTapTimestamps: [
+        ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
+        now,
+      ],
+    };
+  });
+
 export const markPatternInsightShown = (
   insight: PatternInsight,
 ): Promise<void> =>

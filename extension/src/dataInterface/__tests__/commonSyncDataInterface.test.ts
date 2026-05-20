@@ -15,6 +15,7 @@ jest.mock("@dataInterface/system", () => ({
 
 import {
   countSunTap,
+  markAlternativeOpenedAndCountSunTap,
   markPatternInsightShown,
   saveReplacementStructuredAlternativeApp,
   saveReplacementStructuredAlternativeWebsite,
@@ -86,6 +87,85 @@ describe("commonSyncDataInterface", () => {
 
       expect(mockedPatchSyncData).toHaveBeenCalledWith(
         expect.objectContaining({
+          sunTaps: {
+            "2026-05-11": 1,
+          },
+          sunTapTimestamps: [now],
+        }),
+      );
+    });
+  });
+
+  describe("markAlternativeOpenedAndCountSunTap", () => {
+    it("records opened alternative stats and sun tap state in one save", async () => {
+      const now = new Date("2026-05-11T10:00:00").getTime();
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      const alternative = {
+        id: "legacy-web:https://example.com",
+        kind: "website" as const,
+        label: "example.com",
+        url: "https://example.com",
+        createdTS: 0,
+        shownCount: 1,
+        dismissedCount: 0,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({
+          alternatives: [alternative],
+          sunTaps: {
+            "2026-05-11": 2,
+          },
+          sunTapTimestamps: [],
+        }),
+      );
+      mockedPatchSyncData.mockResolvedValue();
+
+      await markAlternativeOpenedAndCountSunTap(alternative);
+
+      expect(mockedPatchSyncData).toHaveBeenCalledTimes(1);
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              ...alternative,
+              openedCount: 1,
+            },
+          ],
+          sunTaps: {
+            "2026-05-11": 3,
+          },
+          sunTapTimestamps: [now],
+        }),
+      );
+    });
+
+    it("stores a legacy fallback alternative before recording an open", async () => {
+      const now = new Date("2026-05-11T10:00:00").getTime();
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      const alternative = {
+        id: "legacy-web:https://example.com",
+        kind: "website" as const,
+        label: "example.com",
+        url: "https://example.com",
+        createdTS: 0,
+        shownCount: 0,
+        dismissedCount: 0,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(createMockSyncData());
+      mockedPatchSyncData.mockResolvedValue();
+
+      await markAlternativeOpenedAndCountSunTap(alternative);
+
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              ...alternative,
+              openedCount: 1,
+            },
+          ],
           sunTaps: {
             "2026-05-11": 1,
           },

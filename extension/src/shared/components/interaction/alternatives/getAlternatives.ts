@@ -6,6 +6,10 @@ import type {
 } from "@src/dataInterface/syncData";
 
 const LEGACY_CREATED_TS = 0;
+const HTTP_URL_PATTERN = /^https?:\/\//i;
+const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
+const HOST_WITH_PORT_PATTERN =
+  /^(localhost|(?:[a-z0-9-]+\.)+[a-z0-9-]+|(?:\d{1,3}\.){3}\d{1,3}):\d+(?:[/?#].*)?$/i;
 
 export const beautifyAlternativeUrl = (url: string): string => {
   const trimmed = url.trim();
@@ -17,13 +21,17 @@ export const beautifyAlternativeUrl = (url: string): string => {
 
 const toWebsiteHref = (url: string): string | undefined => {
   const trimmed = url.trim();
-  const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(trimmed);
-  if (!trimmed || (hasScheme && !/^https?:\/\//i.test(trimmed))) {
+  const hasHttpScheme = HTTP_URL_PATTERN.test(trimmed);
+  const hasHostPort = HOST_WITH_PORT_PATTERN.test(trimmed);
+  const hasNonHttpScheme =
+    URL_SCHEME_PATTERN.test(trimmed) && !hasHttpScheme && !hasHostPort;
+
+  if (!trimmed || hasNonHttpScheme) {
     return undefined;
   }
 
   try {
-    const parsedUrl = new URL(hasScheme ? trimmed : `https://${trimmed}`);
+    const parsedUrl = new URL(hasHttpScheme ? trimmed : `https://${trimmed}`);
     return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:"
       ? parsedUrl.href
       : undefined;

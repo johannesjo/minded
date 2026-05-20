@@ -172,6 +172,12 @@ describe("website alternative links", () => {
     expect(
       getWebsiteAlternativeHref(websiteAlternative("http://example.com")),
     ).toBe("http://example.com/");
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("localhost:3000")),
+    ).toBe("https://localhost:3000/");
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("example.com:8080/path")),
+    ).toBe("https://example.com:8080/path");
   });
 
   it("does not create hrefs for app alternatives or unsafe protocols", () => {
@@ -188,6 +194,15 @@ describe("website alternative links", () => {
     ).toBeUndefined();
     expect(
       getWebsiteAlternativeHref(websiteAlternative("javascript:alert(1)")),
+    ).toBeUndefined();
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("javascript:1")),
+    ).toBeUndefined();
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("file:///tmp/example")),
+    ).toBeUndefined();
+    expect(
+      getWebsiteAlternativeHref(websiteAlternative("file:1")),
     ).toBeUndefined();
   });
 });
