@@ -1,4 +1,23 @@
 import {
+  getSyncData,
+  IS_ANDROID,
+  updateSyncData,
+} from "@src/dataInterface/commonSyncDataInterface";
+import { SyncData } from "@src/dataInterface/syncData";
+import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
+import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
+import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
+import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import { Ico } from "@src/shared/components/ui/Ico";
+import {
+  CALM_READ_PASSAGES,
+  GRATITUDE_PROMPTS,
+  SLEEP_TIPS,
+  TOMORROW_PROMPTS,
+} from "@src/shared/data/sleepContent";
+import { getIsoDate } from "@src/util/getIsoDate";
+import {
   createSignal,
   For,
   JSX,
@@ -8,40 +27,21 @@ import {
   Show,
   Switch,
 } from "solid-js";
-import {
-  getSyncData,
-  IS_ANDROID,
-  updateSyncData,
-} from "@src/dataInterface/commonSyncDataInterface";
-import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
-import { SyncData } from "@src/dataInterface/syncData";
+import { BrainDump } from "./activities/BrainDump";
 import {
   nightIdToIndex,
   resolveNightId,
   SNOOZE_MINUTES,
 } from "./sleepWindDown.util";
-import { getIsoDate } from "@src/util/getIsoDate";
-import { Ico } from "@src/shared/components/ui/Ico";
-import { BrainDump } from "./activities/BrainDump";
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
-import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import {
-  CALM_READ_PASSAGES,
-  GRATITUDE_PROMPTS,
-  SLEEP_TIPS,
-  TOMORROW_PROMPTS,
-} from "@src/shared/data/sleepContent";
-import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
-import Sun from "@src/shared/components/interaction/sun/Sun";
-import { createSleepWindDownDismissTransition } from "./sleepWindDownDismissTransition";
+import type { SleepWindDownActivityKey } from "./sleepWindDownActivityActions";
 import { getSleepWindDownActivityAction } from "./sleepWindDownActivityActions";
-import type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
 import {
   shouldBackReturnToWindDownOverview,
   SleepWindDownViewName,
   WIND_DOWN_OVERVIEW_VIEW,
 } from "./sleepWindDownBackNavigation";
-import type { SleepWindDownActivityKey } from "./sleepWindDownActivityActions";
+import type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
+import { createSleepWindDownDismissTransition } from "./sleepWindDownDismissTransition";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
@@ -50,7 +50,7 @@ export type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransitio
 const SNOOZE_INTENT_OPTIONS = [
   "Something unfinished",
   "My mind won't settle",
-  "I'm anxious, I won't fall asleep",
+  "Worried, I won't sleep",
   "I'm avoiding tomorrow",
   "I feel lonely",
 ];
