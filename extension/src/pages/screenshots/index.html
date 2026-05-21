@@ -9,39 +9,49 @@
         typeof globalThis.chrome === "undefined" ||
         !globalThis.chrome.runtime
       ) {
-        const getScreenshotData = () =>
-          globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ || {};
+        const getScreenshotData = (area) =>
+          area === "local"
+            ? globalThis.__MINDED_SCREENSHOT_LOCAL_DATA__ || {}
+            : globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ || {};
         const runCallback = (args, value) => {
           const callback = Array.from(args).find(
             (arg) => typeof arg === "function",
           );
           if (callback) window.setTimeout(() => callback(value), 0);
         };
-        const setScreenshotData = (patch, ...args) => {
-          globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ = {
-            ...getScreenshotData(),
+        const setScreenshotData = (area, patch, ...args) => {
+          const key =
+            area === "local"
+              ? "__MINDED_SCREENSHOT_LOCAL_DATA__"
+              : "__MINDED_SCREENSHOT_SYNC_DATA__";
+          globalThis[key] = {
+            ...getScreenshotData(area),
             ...patch,
           };
           runCallback(args);
           return Promise.resolve();
         };
-        const noopStorage = {
+        const createStorage = (area) => ({
           get: (...args) => {
-            const data = getScreenshotData();
+            const data = getScreenshotData(area);
             runCallback(args, data);
             return Promise.resolve(data);
           },
-          set: setScreenshotData,
+          set: (patch, ...args) => setScreenshotData(area, patch, ...args),
           remove: (...args) => {
             runCallback(args);
             return Promise.resolve();
           },
           clear: (...args) => {
-            globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ = {};
+            if (area === "local") {
+              globalThis.__MINDED_SCREENSHOT_LOCAL_DATA__ = {};
+            } else {
+              globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ = {};
+            }
             runCallback(args);
             return Promise.resolve();
           },
-        };
+        });
         globalThis.chrome = {
           runtime: {
             id: "screenshots-standalone",
@@ -53,7 +63,14 @@
               removeListener: () => undefined,
             },
           },
-          storage: { sync: noopStorage, local: noopStorage },
+          storage: {
+            onChanged: {
+              addListener: () => undefined,
+              removeListener: () => undefined,
+            },
+            sync: createStorage("sync"),
+            local: createStorage("local"),
+          },
         };
       }
     </script>

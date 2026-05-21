@@ -13,7 +13,10 @@ import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessm
 import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
-import Sun from "@src/shared/components/interaction/sun/Sun";
+import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
+import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
+import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
+import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
 
 // @ts-ignore
 import styles from "./screenshots.module.scss";
@@ -22,7 +25,9 @@ type ScreenshotTarget =
   | "dashboard"
   | "mood-checkin"
   | "energy-lvl"
-  | "sun"
+  | "intent-selection"
+  | "duration-selection"
+  | "active-session"
   | "q-something-i-am-looking-forward-to"
   | "q-this-week-i-will-do-my-best-to";
 
@@ -33,10 +38,15 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
   "mood-checkin",
   "energy-lvl",
-  "sun",
+  "intent-selection",
+  "duration-selection",
+  "active-session",
   "q-something-i-am-looking-forward-to",
   "q-this-week-i-will-do-my-best-to",
 ];
+
+const SCREENSHOT_SESSION_HOST = "reddit.com";
+const SCREENSHOT_SESSION_INTENT = { id: "check_one_thing" } as const;
 
 const getScreenshotTarget = (): ScreenshotTarget => {
   const target = new URLSearchParams(window.location.search).get("target");
@@ -82,7 +92,7 @@ const createDashboardAnswer = (
   ts,
 });
 
-const createScreenshotSyncData = (): SyncData => {
+const createScreenshotSyncData = (target: ScreenshotTarget): SyncData => {
   const now = Date.now();
   const hour = 60 * 60 * 1000;
   const selfAssessment = Object.values(SelfAssessmentId).reduce(
@@ -125,7 +135,16 @@ const createScreenshotSyncData = (): SyncData => {
     patternInsightState: {
       shownInsightIdsByDate: {},
     },
-    activeTimer: null,
+    activeTimer:
+      target === "active-session"
+        ? createActiveTimer({
+            seconds: 5 * 60,
+            now,
+            target: { kind: "host", id: SCREENSHOT_SESSION_HOST },
+            platform: "web",
+            intent: SCREENSHOT_SESSION_INTENT,
+          })
+        : null,
     emotionLabeling: null,
     dailyBudget: null,
     dailyUsage: {},
@@ -251,17 +270,18 @@ const ScreenshotQuestion = (props: { question: QuestionForPrompt }) => (
   />
 );
 
-const SunShot = () => (
-  <div class={styles.sunShot}>
-    <div class={styles.sunShowcase}>
-      <Sun
-        isDragEnabled={false}
-        isTapEnabled={false}
-        onDragComplete={() => undefined}
-        onFlingAway={() => undefined}
-        onSkip={() => undefined}
-      />
-    </div>
+const PostSunFlowFrame = (props: { children: JSX.Element }) => (
+  <div class={styles.postSunFlowFrame}>{props.children}</div>
+);
+
+const ActiveSessionShot = () => (
+  <div class={styles.activeSessionShot}>
+    <LittleSunComponent
+      host={SCREENSHOT_SESSION_HOST}
+      onShowFreshInteraction={() => undefined}
+      onTap={() => undefined}
+      teardown={() => undefined}
+    />
   </div>
 );
 
@@ -271,7 +291,12 @@ const Screenshots = (): JSX.Element => {
   const platform = getScreenshotPlatform();
 
   (window as any).IS_MAIN_MINDED_6622 = true;
-  (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ = createScreenshotSyncData();
+  (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ =
+    createScreenshotSyncData(target);
+  (window as any).__MINDED_SCREENSHOT_LOCAL_DATA__ = {
+    hostsData: {},
+    littleSunHintSeen: true,
+  };
   (window as any).__MINDED_SCREENSHOT_READY__ = false;
   sessionStorage.setItem("dashboardGroupShown", "true");
 
@@ -306,7 +331,29 @@ const Screenshots = (): JSX.Element => {
         />
       )}
 
-      {target === "sun" && <SunShot />}
+      {target === "intent-selection" && (
+        <PostSunFlowFrame>
+          <IntentSelection
+            isArmed={true}
+            onCancel={() => undefined}
+            onCancelCountdown={() => undefined}
+            onSelectIntent={() => undefined}
+          />
+        </PostSunFlowFrame>
+      )}
+
+      {target === "duration-selection" && (
+        <PostSunFlowFrame>
+          <TimeSelection
+            intent={SCREENSHOT_SESSION_INTENT}
+            isArmed={true}
+            onCancel={() => undefined}
+            onSelectTime={() => undefined}
+          />
+        </PostSunFlowFrame>
+      )}
+
+      {target === "active-session" && <ActiveSessionShot />}
 
       {target === "q-something-i-am-looking-forward-to" && (
         <ScreenshotQuestion
