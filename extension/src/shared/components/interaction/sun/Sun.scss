@@ -60,6 +60,7 @@
     );
     box-shadow:
       0 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 28px 3px rgba(255, 255, 255, 0.14),
       0 0 calc(20px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(56px * var(--glow-intensity))

@@ -12,9 +12,7 @@
   background: var(--background-gradient);
   pointer-events: auto;
 
-  // Light theme is a single static vertical morning-sky wash: cover the
-  // viewport, pinned, no motion. Dark theme reinstates the drifting orbs
-  // below.
+  // Light and dark theme backgrounds are static full-viewport washes.
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -28,48 +26,10 @@
   @media (orientation: portrait) {
   }
 
-  // Dark colours live in _variables.scss now — override text/foreground
-  // here, and reinstate the two-orb drift (light theme stays static).
+  // Dark colours live in _variables.scss now; keep the same pinned gradient
+  // across all dark screens.
   &.minded-6622-dark {
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
-
-    // Two oversized soft orbs drift across the viewport on opposite
-    // vectors; the linear base stays pinned at 100% so it doesn't move.
-    // Cycle is short enough that motion is visible within a few seconds,
-    // while ease-in-out keeps the pacing calm.
-    background-size:
-      240% 220%,
-      240% 220%,
-      100% 100%;
-    background-position:
-      5% 10%,
-      95% 90%,
-      0% 0%;
-    animation: minded6622bgDrift 40s ease-in-out infinite alternate;
-  }
-}
-
-@keyframes minded6622bgDrift {
-  0% {
-    background-position:
-      5% 10%,
-      95% 90%,
-      0% 0%;
-  }
-  100% {
-    background-position:
-      95% 90%,
-      5% 10%,
-      0% 0%;
-  }
-}
-
-// Respect users who turn motion off — freeze the drift, keep the look.
-// Matches the dark selector's specificity so it actually wins.
-@media (prefers-reduced-motion: reduce) {
-  #minded-6622-coloured-wrapper-dynamic.minded-6622-dark,
-  #minded-6622-coloured-wrapper.minded-6622-dark {
-    animation: none;
   }
 }

@@ -124,21 +124,25 @@
     //--c-gradient-2: #3c1171;
     //--c-gradient-3: #600f2a;
 
-    --c-gradient-1: #071449;
-    --c-gradient-2: #1a137c;
-    --c-gradient-3: #401049;
+    --c-gradient-1: #02091f;
+    --c-gradient-2: #0a2860;
+    --c-gradient-3: #49313b;
     --background-gradient:
       radial-gradient(
-        closest-side at 50% 50%,
+        ellipse 116vmin 32vmin at 50% 112%,
+        rgba(117, 54, 44, 0.34) 0%,
+        rgba(76, 43, 58, 0.2) 46%,
+        transparent 78%
+      ),
+      linear-gradient(
+        to bottom,
         var(--c-gradient-1) 0%,
-        transparent 75%
-      ),
-      radial-gradient(
-        closest-side at 50% 50%,
-        var(--c-gradient-3) 0%,
-        transparent 75%
-      ),
-      linear-gradient(175deg, var(--c-gradient-2), var(--c-gradient-1));
+        #041238 28%,
+        var(--c-gradient-2) 68%,
+        #123262 82%,
+        #233053 92%,
+        var(--c-gradient-3) 100%
+      );
 
     // Background transition target colors (dark mode)
     --bg-transition-sunset-top: #020c25;
