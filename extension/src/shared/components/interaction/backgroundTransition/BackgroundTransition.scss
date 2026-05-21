@@ -113,14 +113,26 @@
 .minded-6622-dark
   .background-transition.background-default.sun-gradient-attached {
   background:
+    radial-gradient(
+      ellipse 120vmin 72vmin at 18% -10%,
+      rgba(49, 123, 184, 0.3) 0%,
+      rgba(24, 75, 139, 0.18) 46%,
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 96vmin 62vmin at 92% 10%,
+      rgba(74, 96, 186, 0.22) 0%,
+      rgba(24, 54, 132, 0.12) 48%,
+      transparent 76%
+    ),
     linear-gradient(
       to bottom,
       transparent 0%,
-      transparent 82%,
-      rgba(122, 48, 88, 0.08) 92%,
-      rgba(205, 73, 42, 0.2) 100%
+      transparent 90%,
+      rgba(122, 48, 88, 0.06) 96%,
+      rgba(205, 73, 42, 0.16) 100%
     ),
-    var(--background-gradient, linear-gradient(175deg, #071449, #1a137c));
+    linear-gradient(180deg, #071a4c 0%, #061238 58%, #071b4a 100%);
   will-change: auto;
 }
 

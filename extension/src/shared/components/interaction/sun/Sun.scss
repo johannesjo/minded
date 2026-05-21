@@ -63,8 +63,7 @@
       0 0 calc(20px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(56px * var(--glow-intensity))
-        rgba(190, 210, 255, calc(0.3 * var(--glow-intensity))),
-      0 0 36px 4px rgba(190, 210, 255, 0.24);
+        rgba(190, 210, 255, calc(0.3 * var(--glow-intensity)));
 
     &::before {
       display: none;
