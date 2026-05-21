@@ -10,6 +10,12 @@ export const ACTION_ADVICES: {
   { ico: "🌞", txt: "How about some fresh air?" },
   { ico: "࿋", txt: "How about a deep breath?" },
   { ico: "🌊", txt: "How about some water?" },
+  { ico: "📵", txt: "How about a minute away from the screen?" },
+  { ico: "🍵", txt: "How about making a tea or coffee?" },
+  { ico: "👀", txt: "How about resting your eyes on something far away?" },
+  { ico: "🧹", txt: "How about tidying one small thing nearby?" },
+  { ico: "💬", txt: "Is there someone you've been meaning to reach out to?" },
+  { ico: "💧", txt: "How about washing your face with cold water?" },
   {
     ico: "🤔",
     txt: "Sometimes procrastination is an indicator that you actually should be doing something else than the task you are avoiding...",
