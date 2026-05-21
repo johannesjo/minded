@@ -11,3 +11,25 @@
   text-align: center;
   width: 100%;
 }
+
+.sunShot {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 360px;
+}
+
+.sunShowcase {
+  display: grid;
+  place-items: center;
+}
+
+.sunShowcase :global(.minded-sun) {
+  --glow-color: 255, 196, 86 !important;
+  --glow-intensity: 1 !important;
+  --sun-warmth: 1 !important;
+
+  cursor: default;
+  height: min(52vw, 220px) !important;
+  width: min(52vw, 220px) !important;
+}

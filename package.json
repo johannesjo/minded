@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "scripts": {
+    "screenshots": "npm --prefix extension run screenshots",
+    "screenshots:install": "npm --prefix extension run screenshots:install"
+  }
+}

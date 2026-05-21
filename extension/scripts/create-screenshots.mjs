@@ -45,6 +45,8 @@ const googlePlayPhoneShots = [
   { file: "dashboard.png", target: "dashboard", theme: "light" },
   { file: "mood-checkin.png", target: "mood-checkin", theme: "light" },
   { file: "energy-lvl.png", target: "energy-lvl", theme: "light" },
+  { file: "sun.png", target: "sun", theme: "light" },
+  { file: "sun-dark.png", target: "sun", theme: "dark" },
   {
     file: "question-looking-forward.png",
     target: "q-something-i-am-looking-forward-to",
@@ -103,6 +105,9 @@ const prepareShot = async (page, shot) => {
       break;
     case "energy-lvl":
       await page.getByRole("button", { name: "Set rating to 3" }).click();
+      break;
+    case "sun":
+      await page.waitForSelector(".minded-sun");
       break;
     case "q-something-i-am-looking-forward-to":
     case "q-this-week-i-will-do-my-best-to":

@@ -13,6 +13,7 @@ import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessm
 import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
+import Sun from "@src/shared/components/interaction/sun/Sun";
 
 // @ts-ignore
 import styles from "./screenshots.module.scss";
@@ -21,6 +22,7 @@ type ScreenshotTarget =
   | "dashboard"
   | "mood-checkin"
   | "energy-lvl"
+  | "sun"
   | "q-something-i-am-looking-forward-to"
   | "q-this-week-i-will-do-my-best-to";
 
@@ -31,6 +33,7 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
   "mood-checkin",
   "energy-lvl",
+  "sun",
   "q-something-i-am-looking-forward-to",
   "q-this-week-i-will-do-my-best-to",
 ];
@@ -248,6 +251,20 @@ const ScreenshotQuestion = (props: { question: QuestionForPrompt }) => (
   />
 );
 
+const SunShot = () => (
+  <div class={styles.sunShot}>
+    <div class={styles.sunShowcase}>
+      <Sun
+        isDragEnabled={false}
+        isTapEnabled={false}
+        onDragComplete={() => undefined}
+        onFlingAway={() => undefined}
+        onSkip={() => undefined}
+      />
+    </div>
+  </div>
+);
+
 const Screenshots = (): JSX.Element => {
   const target = getScreenshotTarget();
   const theme = getScreenshotTheme();
@@ -288,6 +305,8 @@ const Screenshots = (): JSX.Element => {
           onCancelCountdown={() => undefined}
         />
       )}
+
+      {target === "sun" && <SunShot />}
 
       {target === "q-something-i-am-looking-forward-to" && (
         <ScreenshotQuestion
