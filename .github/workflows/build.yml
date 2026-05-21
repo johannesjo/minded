@@ -4,6 +4,8 @@ on:
     inputs: null
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 #    tags:
 #      - v*
 
@@ -16,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 21
       - name: Check out Git repository
@@ -26,8 +28,7 @@ jobs:
 
       - name: Get npm cache directory
         id: npm-cache-dir
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
         with:
@@ -40,12 +41,11 @@ jobs:
         #  if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm i
 
-#      - name: Lint
-#        run: npm run lint
-#
-#      - name: Test Unit
-#        run: npm run test
+      - name: Lint
+        run: npm run lint
 
+      - name: Test Unit
+        run: npm test
 
       - name: Build
         run: npm run build
@@ -54,7 +54,8 @@ jobs:
         run: npm run pack
 
       - name: 'Upload Artifact'
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: minded-download
-          path: minded.zip
+          path: extension/minded.zip

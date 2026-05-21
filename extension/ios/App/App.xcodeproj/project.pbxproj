@@ -36,7 +36,7 @@
 		8F46FD232C1B1F3F0056AA6B /* MindedIOSPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindedIOSPlugin.swift; sourceTree = "<group>"; };
 		8F46FD2B2C1B20B50056AA6B /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
 		8F6474932C1B2816009079CC /* MindedIOSPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MindedIOSPlugin.m; sourceTree = "<group>"; };
-		8F6474952C1B3743009079CC /* InteractionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = InteractionIntent.swift; path = InteractionIntent.swift; sourceTree = "<absolute>"; };
+		8F6474952C1B3743009079CC /* InteractionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionIntent.swift; sourceTree = "<group>"; };
 		8FCAA6CE2C199D1F00220C8B /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		8FE2EC682C18619200939672 /* Intents.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = Intents.intentdefinition; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };

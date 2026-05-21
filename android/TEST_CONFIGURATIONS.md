@@ -40,7 +40,7 @@ After opening this project in Android Studio, you'll find the following test con
 You can also run these tests from the terminal:
 
 ```bash
-# Navigate to android directory
+# Navigate to android directory (from repo root)
 cd android
 
 # Run all tests

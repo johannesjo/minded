@@ -15,3 +15,8 @@ dist/
 .claude/skills
 
 .vscode
+
+# Private planning notes — kept locally, not for the public repo
+/PLAN.md
+/ideas.md
+/docs/ai/
