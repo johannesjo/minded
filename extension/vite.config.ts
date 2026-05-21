@@ -25,7 +25,34 @@ export default defineConfig(({ mode }): UserConfig => {
     quietDeps: true,
     silenceDeprecations: ["import", "mixed-decls"],
   };
-  return mode === "styleguide"
+  return mode === "screenshots"
+    ? {
+        // Standalone screenshot page — no CRXJS, no extension context.
+        // Used by `npm run screenshots` to render deterministic marketing
+        // screenshots with the real app components and styles.
+        plugins: [solidPlugin()],
+        css: {
+          preprocessorOptions: {
+            scss: sassOptions,
+          },
+        },
+        resolve: {
+          alias: {
+            "@src": root,
+            "@assets": assetsDir,
+            "@pages": pagesDir,
+            "@dataInterface": dataInterfaceExtension,
+          },
+        },
+        root: resolve(pagesDir, "screenshots"),
+        server: { host: "127.0.0.1", port: 5175, strictPort: false },
+        preview: { port: 5175, open: false },
+        build: {
+          outDir: resolve(__dirname, "distScreenshots"),
+          emptyOutDir: true,
+        },
+      }
+    : mode === "styleguide"
     ? {
         // Standalone styleguide page — no CRXJS, no extension context.
         // `npm run styleguide` does a one-shot build + vite preview at :5174.

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>minded — screenshots</title>
+    <script>
+      if (
+        typeof globalThis.chrome === "undefined" ||
+        !globalThis.chrome.runtime
+      ) {
+        const getScreenshotData = () =>
+          globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ || {};
+        const runCallback = (args, value) => {
+          const callback = Array.from(args).find(
+            (arg) => typeof arg === "function",
+          );
+          if (callback) window.setTimeout(() => callback(value), 0);
+        };
+        const setScreenshotData = (patch, ...args) => {
+          globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ = {
+            ...getScreenshotData(),
+            ...patch,
+          };
+          runCallback(args);
+          return Promise.resolve();
+        };
+        const noopStorage = {
+          get: (...args) => {
+            const data = getScreenshotData();
+            runCallback(args, data);
+            return Promise.resolve(data);
+          },
+          set: setScreenshotData,
+          remove: (...args) => {
+            runCallback(args);
+            return Promise.resolve();
+          },
+          clear: (...args) => {
+            globalThis.__MINDED_SCREENSHOT_SYNC_DATA__ = {};
+            runCallback(args);
+            return Promise.resolve();
+          },
+        };
+        globalThis.chrome = {
+          runtime: {
+            id: "screenshots-standalone",
+            getURL: (p) => p,
+            getManifest: () => ({}),
+            sendMessage: () => undefined,
+            onMessage: {
+              addListener: () => undefined,
+              removeListener: () => undefined,
+            },
+          },
+          storage: { sync: noopStorage, local: noopStorage },
+        };
+      }
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      #minded-6622,
+      #minded-6622 * {
+        animation-delay: 0s !important;
+        animation-duration: 0s !important;
+        caret-color: transparent !important;
+        transition-delay: 0s !important;
+        transition-duration: 0s !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="minded-6622"></div>
+    <script src="entry.tsx" type="module"></script>
+  </body>
+</html>

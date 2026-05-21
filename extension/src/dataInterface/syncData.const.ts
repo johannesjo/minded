@@ -5,8 +5,8 @@ import {
   StaticCfg,
   SyncData,
 } from "./syncData";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
+// @ts-ignore - path alias resolved at build time based on platform
+import { IS_ANDROID } from "@dataInterface/system";
 
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 

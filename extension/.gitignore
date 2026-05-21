@@ -4,7 +4,9 @@ dist/
 distDroid/
 distIOS/
 distStyleguide/
+distScreenshots/
 tmp/
+screenshots/google-play/
 /.idea
 minded.zip
 public/manifest.json
