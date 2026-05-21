@@ -4,7 +4,7 @@ import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { Component } from "solid-js";
 
-export const QuestionsForToday: Component<any> = (props) => {
+export const QuestionsForToday: Component = () => {
   return (
     <div id="minded-6622-questions-for-today">
       <h2 class="h2">Questions for Today</h2>
@@ -24,7 +24,6 @@ export const QuestionsForToday: Component<any> = (props) => {
         onSuccess={() => undefined}
         onSkip={() => undefined}
         onCancelCountdown={() => undefined}
-        isChangeQuestion={false}
         answers={[]}
         onUpdateQuestion={() => undefined}
       />
@@ -33,7 +32,6 @@ export const QuestionsForToday: Component<any> = (props) => {
         onSuccess={() => undefined}
         onSkip={() => undefined}
         onCancelCountdown={() => undefined}
-        isChangeQuestion={false}
         answers={[]}
         onUpdateQuestion={() => undefined}
       />

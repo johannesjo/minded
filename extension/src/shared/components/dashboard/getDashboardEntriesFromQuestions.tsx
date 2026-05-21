@@ -119,8 +119,6 @@ export const getDashboardEntriesFromQuestions = (
   );
   if (entriesForSelfAssessment.length >= 1) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
-      // sortedEntries.splice(8, 0, {
-      // sortedEntries.push({
       id: QuestionCategoryId.XSelfAssessment,
       type: DashboardGroupType.SelfAssessment,
       entries: entriesForSelfAssessment,
@@ -161,8 +159,6 @@ export const getDashboardEntriesFromQuestions = (
       type: DashboardGroupType.Quote,
     });
   }
-
-  // console.log({ syncData, sortedEntries });
 
   return sortedEntries;
 };

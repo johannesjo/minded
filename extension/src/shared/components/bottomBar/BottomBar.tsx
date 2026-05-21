@@ -36,6 +36,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
             type="button"
             class="btnIcoOnly"
             title="Get asked a question"
+            aria-label="Get asked a question"
             onClick={() => {
               props.onShowQuestion();
             }}
@@ -44,6 +45,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           </button>
           <A
             title="Give us some feedback"
+            aria-label="Give us some feedback"
             class="btnIcoOnly"
             href="/feedback"
             activeClass="active"
@@ -53,6 +55,7 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
           {!IS_IOS && (
             <A
               title="Go to settings page"
+              aria-label="Go to settings page"
               class="btnIcoOnly"
               href="/settings"
               activeClass="active"
@@ -65,6 +68,11 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
         <button
           type="button"
           title={
+            shouldUseWindDownHistoryBackForBottomBar(location.pathname)
+              ? "Go back"
+              : "Go to dashboard"
+          }
+          aria-label={
             shouldUseWindDownHistoryBackForBottomBar(location.pathname)
               ? "Go back"
               : "Go to dashboard"

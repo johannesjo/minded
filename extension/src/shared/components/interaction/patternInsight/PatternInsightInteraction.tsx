@@ -52,9 +52,7 @@ export const PatternInsightInteraction: (props: {
 
   return (
     <div onmouseenter={props.onCancelCountdown}>
-      <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">
-        {props.insight.message}
-      </div>
+      <div class="txtBig interaction-heading">{props.insight.message}</div>
 
       <For each={props.insight.actions}>
         {(action) => (

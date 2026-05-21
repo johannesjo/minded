@@ -423,7 +423,6 @@ export const Sun: Component<SunProps> = (props) => {
       }
 
       const threshold = props.tapThreshold || 5;
-      // console.log("Sun tap:", currentTapCount, "threshold:", threshold);
 
       if (currentTapCount >= threshold) {
         props.onSkip();

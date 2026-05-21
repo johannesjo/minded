@@ -5,7 +5,6 @@ import styles from "./Feedback.module.scss";
 import { IS_ANDROID, IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 
 const Feedback = () => {
-  // const navigate = useNavigate();
   const [mailtoLink, setMailtoLink] = createSignal("");
 
   onMount(() => {
@@ -43,11 +42,6 @@ Other comments:
           ♥ send us a quick email ♥
         </a>
       </div>
-      {/*<div style="margin-top: 16px">*/}
-      {/*  <button class="btn-txt" onClick={() => navigate("/")}>*/}
-      {/*    back*/}
-      {/*  </button>*/}
-      {/*</div>*/}
     </div>
   );
 };

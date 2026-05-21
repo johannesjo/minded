@@ -14,7 +14,6 @@ import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { closeTab } from "@src/dataInterface/extension/extensionApi";
 import { QuestionForPrompt } from "@src/shared/data/questions";
-import { IS_MOUSE_PRIMARY } from "@src/util/touch";
 import { isDarkModeNow } from "@src/shared/addWrapperClasses";
 import { updateHostsEntry } from "@dataInterface/localDataInterface";
 import {
@@ -40,12 +39,9 @@ export const InteractionWeb: (props: {
   onHideAll: () => void;
   shadowRoot?: ShadowRoot;
 }) => JSX.Element = (props) => {
-  // const [getMode, setMode] = createSignal<InteractionMode | undefined>();
-  const [getWasAnswerGiven, setWasAnswerGiven] = createSignal(false);
   const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
-  const [getIsShowBlackScreen, setIsShowBlackScreen] = createSignal(false);
   const [getIsShowBudgetPrompt, setIsShowBudgetPrompt] = createSignal(false);
   const [getIsShowBudgetExhausted, setIsShowBudgetExhausted] =
     createSignal(false);
@@ -113,8 +109,6 @@ export const InteractionWeb: (props: {
   });
 
   const teardown = () => {
-    console.log("InteractionWeb: teardown called - hiding interaction");
-    console.trace("Teardown call stack");
     document.removeEventListener("keydown", escapeHandler, true);
     shadowKeyboardEventTarget?.removeEventListener("keydown", escapeHandler);
     props.onHideAll();
@@ -231,7 +225,6 @@ export const InteractionWeb: (props: {
                   setIsShowLittleSun(true);
                 }}
                 onSkip={async () => {
-                  console.log("InteractionWeb: onSkip called");
                   await countSunTap();
                   const syncData = await getSyncData();
 
@@ -247,28 +240,14 @@ export const InteractionWeb: (props: {
                 onUpdateQuestion={(question) => {
                   setQuestion(question);
                 }}
-                onFlingAway={() => {
-                  console.log(
-                    "InteractionWeb: onFlingAway called, closing tab",
-                  );
-                  closeTab();
-                }}
-                onDragComplete={() => {
-                  console.log(
-                    "InteractionWeb: onDragComplete called, closing tab",
-                  );
-                  closeTab();
-                }}
+                onFlingAway={() => closeTab()}
+                onDragComplete={() => closeTab()}
                 onSetSessionLimit={setSessionLimit}
               />
             </div>
           </div>
         </Match>
       </Switch>
-
-      <Show when={getIsShowBlackScreen()}>
-        <div id="minded-6622-black-screen"></div>
-      </Show>
 
       <Show when={getIsShowBudgetExhausted()}>
         <BudgetExhaustedMessage

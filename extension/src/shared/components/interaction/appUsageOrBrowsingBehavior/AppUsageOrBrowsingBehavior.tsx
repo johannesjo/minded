@@ -66,7 +66,6 @@ export const AppUsageOrBrowsingBehavior: (props: {
           <div class="pageTransitionIn">
             <Question
               initialQuestion={rndQuestion}
-              isChangeQuestion={false}
               answers={[]}
               onCancelCountdown={props.onCancelCountdown}
               onSuccess={() => props.onSuccess()}

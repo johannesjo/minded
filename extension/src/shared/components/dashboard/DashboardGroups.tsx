@@ -60,7 +60,6 @@ export const DashboardGroups: (props: {
   const navigate = useNavigate();
 
   const refresh = () => {
-    console.log("REFRESH DASHBOARD");
     getSyncData().then((syncData) => {
       setIsShowDailyQuestionsBanner(isShowDailyQuestionsBanner(syncData));
 

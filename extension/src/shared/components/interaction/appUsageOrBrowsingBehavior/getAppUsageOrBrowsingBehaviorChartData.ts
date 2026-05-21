@@ -6,16 +6,12 @@ export const getAppUsageOrBrowsingBehaviorChartData = (data: {
 }): ChartData => {
   const values = Object.values(data);
   const dates = Object.keys(data).map((date) => date.substring(5));
-  // console.log(data);
 
   return {
     datasets: [
       {
         data: values,
         borderWidth: 2,
-        // pointStyle: "circle",
-        // pointRadius: 10,
-        // pointHoverRadius: 15,
       },
     ],
 

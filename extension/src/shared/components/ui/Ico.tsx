@@ -37,15 +37,18 @@ const STYLE = {
   "vertical-align": "middle",
 };
 
-export const Ico = (props: { name: IcoName; size?: number }): JSXElement => {
-  // const size = props.size || 24;
+export const Ico = (props: {
+  name: IcoName;
+  size?: number;
+  alt?: string;
+}): JSXElement => {
   const size = props.size || 24;
-  // Component's render function
   return (
     <img
       class="minded-6622-ico"
       src={ICO_MAP[props.name]}
-      alt={props.name}
+      alt={props.alt ?? ""}
+      aria-hidden={props.alt ? undefined : true}
       style={
         size ? { ...STYLE, width: size + "px", height: size + "px" } : STYLE
       }

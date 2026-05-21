@@ -1,7 +1,5 @@
 // NOTE: styles for initialQuestion work differently since we're using them for the content-script
 
-// TODO move all this to common
-
 #minded-6622-coloured-wrapper > * {
   cursor: auto;
 }
@@ -23,22 +21,6 @@
   &.dragging {
     transition: opacity 1s ease-out;
   }
-}
-
-// First .be-proud-message definition (remove duplicate later)
-
-#minded-6622-black-screen {
-  background: #000;
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  animation: minded6622fadeInOut 600ms;
-  animation-fill-mode: forwards;
-  opacity: 0;
-  z-index: 2147483647;
-  z-index: 9999999999999999;
 }
 
 #minded-6622-interaction-wrapper-box {
@@ -187,4 +169,25 @@
   transform: translateX(-50%);
   z-index: 10;
   pointer-events: all;
+}
+
+// Shared layout helpers for interaction-mode content blocks.
+// Keeps vertical rhythm and emphasis locked across modes the user cycles through.
+.interaction-heading {
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+.interaction-static-text {
+  pointer-events: none;
+}
+
+.interaction-caption {
+  opacity: 0.7;
+  font-size: 0.8em;
+  margin-bottom: 0.5em;
+}
+
+.interaction-quote {
+  font-style: italic;
 }

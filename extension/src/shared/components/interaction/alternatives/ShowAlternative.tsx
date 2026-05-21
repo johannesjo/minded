@@ -125,7 +125,7 @@ export const ShowAlternativeInteraction: (props: {
       <Show when={getAlternative()}>
         {(alternative) => (
           <div onmouseenter={props.onCancelCountdown}>
-            <div class="txtBig" style="padding-bottom:32px; padding-top: 32px;">
+            <div class="txtBig interaction-heading">
               Try {renderAlternativeLabel(alternative())} instead?
             </div>
             <div class="show-alternative-actions">
@@ -135,7 +135,7 @@ export const ShowAlternativeInteraction: (props: {
                   class="btnTxt"
                   onClick={() => void onAddBetterAlternative()}
                 >
-                  Add better option
+                  Suggest a better one
                 </button>
               )}
             </div>

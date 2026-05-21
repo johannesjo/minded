@@ -82,8 +82,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
       <Match when={props.mode === "ACTION_ADVICE"}>
         <div
           id="minded-6622-action-advice"
-          class="txtBig"
-          style="pointer-events:none;"
+          class="txtBig interaction-static-text"
         >
           <div>{ADVICE.txt}</div>
           <div>{ADVICE.ico}</div>
@@ -132,11 +131,9 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
             ) ?? [];
           const reason = getRndEntry(reasonAnswers);
           return reason ? (
-            <div class="txtBig" style="pointer-events:none;">
-              <div style="opacity: 0.7; font-size: 0.8em; margin-bottom: 0.5em;">
-                Remember why you're here
-              </div>
-              <div style="font-style: italic;">"{reason.val}"</div>
+            <div class="txtBig interaction-static-text">
+              <div class="interaction-caption">Remember why you're here</div>
+              <div class="interaction-quote">"{reason.val}"</div>
             </div>
           ) : null;
         })()}
@@ -157,7 +154,6 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
       <Match when={props.mode === "QUESTION"}>
         {props.initialQuestion && (
           <Question
-            isChangeQuestion={true}
             initialQuestion={props.initialQuestion}
             answers={props.answers}
             onCancelCountdown={props.onCancelCountdown}

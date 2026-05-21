@@ -25,34 +25,11 @@
       animation: slideUpFadeIn 0.6s ease-out 0.2s forwards;
     }
   }
-
-  &.isChangingQuestion {
-    #minded-6622-question > span {
-      opacity: 0;
-      transform: scale(0);
-      animation: none;
-    }
-  }
 }
-
-//@keyframes shimmer {
-//  100% {-webkit-mask-position:left}
-//}
 
 @keyframes slideUpFadeIn {
   0% {
     transform: translateY(15px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFadeIn {
-  0% {
-    transform: translateY(20px);
     opacity: 0;
   }
   100% {
@@ -121,11 +98,4 @@
     padding: 8px 12px;
     font-size: 14px;
   }
-}
-
-#minded-6622-change-question-btn {
-  @include btnIco();
-  margin: auto;
-  // use padding rather than margin to avoid taping in between leading to close the overlay
-  border-radius: 50%;
 }
