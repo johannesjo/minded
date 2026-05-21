@@ -87,6 +87,10 @@ const isActivelyEditing = (shadowRoot?: ShadowRoot | null): boolean => {
   return false;
 };
 
+const getInteractionRoot = (shadowRoot?: ShadowRoot) =>
+  shadowRoot?.getElementById("minded-6622") ??
+  document.getElementById("minded-6622");
+
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
   const SCREEN_TRANSITION_MS = ANIMATION_TIMING.fadeOut.standard;
@@ -145,6 +149,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsTimeSelectionArmed, setIsTimeSelectionArmed] =
     createSignal(false);
   const [getSunHintStep, setSunHintStep] = createSignal(0);
+  const [getDragObjectName, setDragObjectName] = createSignal<"sun" | "moon">(
+    "sun",
+  );
   const getShowPostSunOverlay = () =>
     getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
   const getIsInteractionSunShown = () =>
@@ -165,8 +172,30 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let beProudMessageTimeout: number | undefined;
   let intentSelectionArmTimeout: number | undefined;
   let timeSelectionArmTimeout: number | undefined;
+  let rootThemeObserver: MutationObserver | undefined;
+  let wrapperThemeObserver: MutationObserver | undefined;
   let isDisposed = false;
   const interactionEventTarget = props.shadowRoot ?? window;
+
+  const syncDragObjectNameWithTheme = () => {
+    const root = getInteractionRoot(props.shadowRoot);
+    const isDark =
+      root?.classList.contains("minded-6622-dark") ||
+      props.wrapperEl?.classList.contains("minded-6622-dark") ||
+      !!props.wrapperEl?.closest(".minded-6622-dark");
+
+    setDragObjectName(isDark ? "moon" : "sun");
+  };
+
+  const observeThemeClass = (
+    el: HTMLElement | undefined | null,
+  ): MutationObserver | undefined => {
+    if (!el || typeof MutationObserver === "undefined") return undefined;
+
+    const observer = new MutationObserver(syncDragObjectNameWithTheme);
+    observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+    return observer;
+  };
 
   createEffect(() => {
     if (!getShowSunInstructions()) {
@@ -548,6 +577,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   onMount(async () => {
+    syncDragObjectNameWithTheme();
+    rootThemeObserver = observeThemeClass(getInteractionRoot(props.shadowRoot));
+    wrapperThemeObserver = observeThemeClass(props.wrapperEl);
+
     if (props.isInitFadeout) {
       initFadeOutTimeout = window.setTimeout(() => {
         initFadeOutTimeout = undefined;
@@ -659,6 +692,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (beProudMessageTimeout) {
       clearTimeout(beProudMessageTimeout);
     }
+    rootThemeObserver?.disconnect();
+    wrapperThemeObserver?.disconnect();
   });
 
   createEffect(() => {
@@ -836,19 +871,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             >
               <div class="sun-instructions txtSmaller">
                 <p class="sun-instructions-line is-visible">
-                  Fling the sun away to let go.
+                  Fling the {getDragObjectName()} away to let go.
                 </p>
                 <p
                   class="sun-instructions-line"
                   classList={{ "is-visible": getSunHintStep() >= 1 }}
                 >
-                  Drag the sun down to ground yourself.
+                  Drag the {getDragObjectName()} down to ground yourself.
                 </p>
                 <p
                   class="sun-instructions-line"
                   classList={{ "is-visible": getSunHintStep() >= 2 }}
                 >
-                  Tap the sun {SUN_TAP_THRESHOLD} times to continue.
+                  Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
+                  continue.
                 </p>
               </div>
             </div>
@@ -864,6 +900,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             }}
           >
             <Sun
+              variant={getDragObjectName()}
               onSkip={handleSunContinue}
               onFlingAway={props.onFlingAway}
               onDragComplete={props.onDragComplete}

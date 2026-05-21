@@ -56,7 +56,7 @@ const googlePlayPhoneShots = [
     theme: "light",
   },
   {
-    file: "draggable-sun-dark.png",
+    file: "draggable-moon-dark.png",
     target: "draggable-sun",
     theme: "dark",
   },

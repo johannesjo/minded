@@ -264,36 +264,44 @@ const PostSunFlowFrame = (props: { children: JSX.Element }) => (
   <div class={styles.postSunFlowFrame}>{props.children}</div>
 );
 
-const DraggableSunShot = () => (
-  <div class={styles.draggableSunShot}>
-    <BackgroundTransition dragThreshold={0.3} isSunGradientAttached={true} />
-    <div class={styles.draggableSunContent}>
-      <div class="sun-instructions txtSmaller">
-        <p class="sun-instructions-line is-visible">
-          Fling the sun away to let go.
-        </p>
-        <p class="sun-instructions-line is-visible">
-          Drag the sun down to ground yourself.
-        </p>
-        <p class="sun-instructions-line is-visible">
-          Tap the sun 3 times to continue.
-        </p>
-      </div>
+const getDragObjectName = (theme: ScreenshotTheme): "sun" | "moon" =>
+  theme === "dark" ? "moon" : "sun";
 
-      <div
-        class="sun-container"
-        style={{ opacity: 1, "pointer-events": "all" }}
-      >
-        <Sun
-          onDragComplete={() => undefined}
-          onFlingAway={() => undefined}
-          onSkip={() => undefined}
-          tapThreshold={3}
-        />
+const DraggableSunShot = (props: { theme: ScreenshotTheme }) => {
+  const dragObjectName = getDragObjectName(props.theme);
+
+  return (
+    <div class={styles.draggableSunShot}>
+      <BackgroundTransition dragThreshold={0.3} isSunGradientAttached={true} />
+      <div class={styles.draggableSunContent}>
+        <div class="sun-instructions txtSmaller">
+          <p class="sun-instructions-line is-visible">
+            Fling the {dragObjectName} away to let go.
+          </p>
+          <p class="sun-instructions-line is-visible">
+            Drag the {dragObjectName} down to ground yourself.
+          </p>
+          <p class="sun-instructions-line is-visible">
+            Tap the {dragObjectName} 3 times to continue.
+          </p>
+        </div>
+
+        <div
+          class="sun-container"
+          style={{ opacity: 1, "pointer-events": "all" }}
+        >
+          <Sun
+            variant={dragObjectName}
+            onDragComplete={() => undefined}
+            onFlingAway={() => undefined}
+            onSkip={() => undefined}
+            tapThreshold={3}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Screenshots = (): JSX.Element => {
   const target = getScreenshotTarget();
@@ -340,7 +348,7 @@ const Screenshots = (): JSX.Element => {
         />
       )}
 
-      {target === "draggable-sun" && <DraggableSunShot />}
+      {target === "draggable-sun" && <DraggableSunShot theme={theme} />}
 
       {target === "intent-selection" && (
         <PostSunFlowFrame>
