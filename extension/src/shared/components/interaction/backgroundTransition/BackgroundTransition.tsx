@@ -54,20 +54,10 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
   const getSunGradientStyle = () => {
     const position = getSunGradientPosition();
-    const viewportHeight = window.innerHeight || 0;
-    const warmY = position
-      ? Math.max(position.y + viewportHeight * 0.12, viewportHeight * 0.62)
-      : undefined;
-    const horizonY = position
-      ? Math.max(position.y + viewportHeight * 0.22, viewportHeight * 0.78)
-      : undefined;
 
     return {
       "--sun-gradient-x": position ? `${position.x}px` : "50vw",
       "--sun-gradient-y": position ? `${position.y}px` : "58vh",
-      "--sun-warm-x": position ? `${position.x}px` : "50vw",
-      "--sun-warm-y": warmY ? `${Math.round(warmY)}px` : "68vh",
-      "--sun-horizon-y": horizonY ? `${Math.round(horizonY)}px` : "84vh",
     };
   };
 
