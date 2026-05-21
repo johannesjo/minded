@@ -6,7 +6,7 @@ distIOS/
 distStyleguide/
 distScreenshots/
 tmp/
-screenshots/google-play/
+screenshots/
 /.idea
 minded.zip
 public/manifest.json

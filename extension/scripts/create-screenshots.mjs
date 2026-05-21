@@ -33,6 +33,28 @@ const desktopShots = [
     target: "q-this-week-i-will-do-my-best-to",
     theme: "light",
   },
+  { file: "draggable-sun.png", target: "draggable-sun", theme: "light" },
+  { file: "intent-selection.png", target: "intent-selection", theme: "light" },
+  {
+    file: "duration-selection.png",
+    target: "duration-selection",
+    theme: "light",
+  },
+  {
+    file: "draggable-moon-dark.png",
+    target: "draggable-sun",
+    theme: "dark",
+  },
+  {
+    file: "intent-selection-dark.png",
+    target: "intent-selection",
+    theme: "dark",
+  },
+  {
+    file: "duration-selection-dark.png",
+    target: "duration-selection",
+    theme: "dark",
+  },
 ].map((shot) => ({
   ...shot,
   copyTo: [landingScreenshotsDir],
