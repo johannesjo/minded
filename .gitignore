@@ -20,3 +20,6 @@ dist/
 /PLAN.md
 /ideas.md
 /docs/ai/
+
+# Landing page lives in a separate repository (johannesjo/minded-landing-page)
+/landing-page/
