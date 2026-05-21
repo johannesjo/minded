@@ -11,7 +11,8 @@ jest.mock("@src/dataInterface/commonSyncDataInterface", () => ({
 
 describe("mergeSyncDataWithDefaults", () => {
   it("adds pattern insight state for old sync data", () => {
-    const { patternInsightState, ...oldSyncData } = DEFAULT_SYNC_DATA;
+    const { patternInsightState: _patternInsightState, ...oldSyncData } =
+      DEFAULT_SYNC_DATA;
 
     expect(
       mergeSyncDataWithDefaults(oldSyncData as Partial<SyncData>)

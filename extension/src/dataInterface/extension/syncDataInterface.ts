@@ -1,6 +1,5 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
-import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import { mergeSyncDataWithDefaults } from "@src/dataInterface/mergeSyncDataWithDefaults";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 

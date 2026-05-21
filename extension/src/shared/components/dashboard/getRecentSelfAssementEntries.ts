@@ -10,7 +10,7 @@ export const getRecentSelfAssessmentEntries = (
 ): SelfAssessmentEntryForDashboard[] => {
   const categoryEntries: SelfAssessmentEntryForDashboard[] = Object.entries(
     selfAssessmentData,
-  ).map(([key, entry], i) => ({
+  ).map(([key, entry]) => ({
     ...entry,
     selfAssessmentId: key as SelfAssessmentId,
   }));

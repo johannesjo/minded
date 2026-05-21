@@ -80,7 +80,7 @@ export class GestureHandler {
     }
   };
 
-  private handleEnd = (e: TouchEvent | MouseEvent) => {
+  private handleEnd = (_e: TouchEvent | MouseEvent) => {
     if (!this.startTime) return;
 
     const endTime = Date.now();
