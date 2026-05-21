@@ -15,8 +15,8 @@ import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyL
 import { Question } from "@src/shared/components/interaction/Question";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
-import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
-import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 
 // @ts-ignore
 import styles from "./screenshots.module.scss";
@@ -25,9 +25,9 @@ type ScreenshotTarget =
   | "dashboard"
   | "mood-checkin"
   | "energy-lvl"
+  | "draggable-sun"
   | "intent-selection"
   | "duration-selection"
-  | "active-session"
   | "q-something-i-am-looking-forward-to"
   | "q-this-week-i-will-do-my-best-to";
 
@@ -38,14 +38,13 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
   "mood-checkin",
   "energy-lvl",
+  "draggable-sun",
   "intent-selection",
   "duration-selection",
-  "active-session",
   "q-something-i-am-looking-forward-to",
   "q-this-week-i-will-do-my-best-to",
 ];
 
-const SCREENSHOT_SESSION_HOST = "reddit.com";
 const SCREENSHOT_SESSION_INTENT = { id: "check_one_thing" } as const;
 
 const getScreenshotTarget = (): ScreenshotTarget => {
@@ -92,7 +91,7 @@ const createDashboardAnswer = (
   ts,
 });
 
-const createScreenshotSyncData = (target: ScreenshotTarget): SyncData => {
+const createScreenshotSyncData = (): SyncData => {
   const now = Date.now();
   const hour = 60 * 60 * 1000;
   const selfAssessment = Object.values(SelfAssessmentId).reduce(
@@ -135,16 +134,7 @@ const createScreenshotSyncData = (target: ScreenshotTarget): SyncData => {
     patternInsightState: {
       shownInsightIdsByDate: {},
     },
-    activeTimer:
-      target === "active-session"
-        ? createActiveTimer({
-            seconds: 5 * 60,
-            now,
-            target: { kind: "host", id: SCREENSHOT_SESSION_HOST },
-            platform: "web",
-            intent: SCREENSHOT_SESSION_INTENT,
-          })
-        : null,
+    activeTimer: null,
     emotionLabeling: null,
     dailyBudget: null,
     dailyUsage: {},
@@ -274,14 +264,34 @@ const PostSunFlowFrame = (props: { children: JSX.Element }) => (
   <div class={styles.postSunFlowFrame}>{props.children}</div>
 );
 
-const ActiveSessionShot = () => (
-  <div class={styles.activeSessionShot}>
-    <LittleSunComponent
-      host={SCREENSHOT_SESSION_HOST}
-      onShowFreshInteraction={() => undefined}
-      onTap={() => undefined}
-      teardown={() => undefined}
-    />
+const DraggableSunShot = () => (
+  <div class={styles.draggableSunShot}>
+    <BackgroundTransition dragThreshold={0.3} isSunGradientAttached={true} />
+    <div class={styles.draggableSunContent}>
+      <div class="sun-instructions txtSmaller">
+        <p class="sun-instructions-line is-visible">
+          Fling the sun away to let go.
+        </p>
+        <p class="sun-instructions-line is-visible">
+          Drag the sun down to ground yourself.
+        </p>
+        <p class="sun-instructions-line is-visible">
+          Tap the sun 3 times to continue.
+        </p>
+      </div>
+
+      <div
+        class="sun-container"
+        style={{ opacity: 1, "pointer-events": "all" }}
+      >
+        <Sun
+          onDragComplete={() => undefined}
+          onFlingAway={() => undefined}
+          onSkip={() => undefined}
+          tapThreshold={3}
+        />
+      </div>
+    </div>
   </div>
 );
 
@@ -291,8 +301,7 @@ const Screenshots = (): JSX.Element => {
   const platform = getScreenshotPlatform();
 
   (window as any).IS_MAIN_MINDED_6622 = true;
-  (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ =
-    createScreenshotSyncData(target);
+  (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ = createScreenshotSyncData();
   (window as any).__MINDED_SCREENSHOT_LOCAL_DATA__ = {
     hostsData: {},
     littleSunHintSeen: true,
@@ -331,6 +340,8 @@ const Screenshots = (): JSX.Element => {
         />
       )}
 
+      {target === "draggable-sun" && <DraggableSunShot />}
+
       {target === "intent-selection" && (
         <PostSunFlowFrame>
           <IntentSelection
@@ -352,8 +363,6 @@ const Screenshots = (): JSX.Element => {
           />
         </PostSunFlowFrame>
       )}
-
-      {target === "active-session" && <ActiveSessionShot />}
 
       {target === "q-something-i-am-looking-forward-to" && (
         <ScreenshotQuestion

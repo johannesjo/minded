@@ -48,13 +48,18 @@ const googlePlayPhoneShots = [
     target: "q-something-i-am-looking-forward-to",
     theme: "light",
   },
+  { file: "draggable-sun.png", target: "draggable-sun", theme: "light" },
   { file: "intent-selection.png", target: "intent-selection", theme: "light" },
   {
     file: "duration-selection.png",
     target: "duration-selection",
     theme: "light",
   },
-  { file: "active-session.png", target: "active-session", theme: "light" },
+  {
+    file: "draggable-sun-dark.png",
+    target: "draggable-sun",
+    theme: "dark",
+  },
   {
     file: "intent-selection-dark.png",
     target: "intent-selection",
@@ -63,11 +68,6 @@ const googlePlayPhoneShots = [
   {
     file: "duration-selection-dark.png",
     target: "duration-selection",
-    theme: "dark",
-  },
-  {
-    file: "active-session-dark.png",
-    target: "active-session",
     theme: "dark",
   },
 ].map((shot) => ({
@@ -124,14 +124,14 @@ const prepareShot = async (page, shot) => {
     case "energy-lvl":
       await page.getByRole("button", { name: "Set rating to 3" }).click();
       break;
+    case "draggable-sun":
+      await page.waitForSelector(".sun-container .minded-sun");
+      break;
     case "intent-selection":
       await page.waitForSelector(".intent-selection-wrapper");
       break;
     case "duration-selection":
       await page.waitForSelector(".time-selection-wrapper");
-      break;
-    case "active-session":
-      await page.waitForSelector("#minded-6622-little-sun.isOutOfTheWay");
       break;
     case "q-something-i-am-looking-forward-to":
     case "q-this-week-i-will-do-my-best-to":
