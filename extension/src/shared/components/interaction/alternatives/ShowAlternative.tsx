@@ -135,7 +135,7 @@ export const ShowAlternativeInteraction: (props: {
                   class="btnTxt"
                   onClick={() => void onAddBetterAlternative()}
                 >
-                  Suggest a better one
+                  Suggest better alternative
                 </button>
               )}
             </div>
