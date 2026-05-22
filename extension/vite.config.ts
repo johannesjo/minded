@@ -53,35 +53,11 @@ export default defineConfig(({ mode }): UserConfig => {
         },
       }
     : mode === "styleguide"
-    ? {
-        // Standalone styleguide page — no CRXJS, no extension context.
-        // `npm run styleguide` does a one-shot build + vite preview at :5174.
-        // (vite's dev server hits a pre-existing TDZ in syncData.const ↔
-        // commonSyncDataInterface that build mode handles fine.)
-        plugins: [solidPlugin()],
-        css: {
-          preprocessorOptions: {
-            scss: sassOptions,
-          },
-        },
-        resolve: {
-          alias: {
-            "@src": root,
-            "@assets": assetsDir,
-            "@pages": pagesDir,
-            "@dataInterface": dataInterfaceExtension,
-          },
-        },
-        root: resolve(pagesDir, "styleguide"),
-        preview: { port: 5174, open: false },
-        build: {
-          outDir: resolve(__dirname, "distStyleguide"),
-          emptyOutDir: true,
-        },
-      }
-    : mode === "ios"
       ? {
-          // base: "file:///android_asset/web",
+          // Standalone styleguide page — no CRXJS, no extension context.
+          // `npm run styleguide` does a one-shot build + vite preview at :5174.
+          // (vite's dev server hits a pre-existing TDZ in syncData.const ↔
+          // commonSyncDataInterface that build mode handles fine.)
           plugins: [solidPlugin()],
           css: {
             preprocessorOptions: {
@@ -93,50 +69,19 @@ export default defineConfig(({ mode }): UserConfig => {
               "@src": root,
               "@assets": assetsDir,
               "@pages": pagesDir,
-              "@dataInterface": dataInterfaceIOS,
+              "@dataInterface": dataInterfaceExtension,
             },
           },
+          root: resolve(pagesDir, "styleguide"),
+          preview: { port: 5174, open: false },
           build: {
-            outDir: outDirIOS,
-            sourcemap: true,
-            rollupOptions: {
-              plugins: [
-                rollupCopy({
-                  targets: [
-                    {
-                      src: resolve(
-                        outDirIOS,
-                        "src",
-                        "ios",
-                        "main",
-                        "index.html",
-                      ),
-                      dest: outDirIOS,
-                    },
-                  ],
-                  hook: "writeBundle", // Ensures that the files are copied after the bundle is written
-                }),
-              ],
-              input: {
-                main: resolve(root, "ios", "main", "index.html"),
-              },
-              output: {
-                entryFileNames: "[name]/index.js",
-                chunkFileNames: isDev
-                  ? "assets/js/[name].js"
-                  : "assets/js/[name].[hash].js",
-                assetFileNames: (assetInfo) => {
-                  if (!assetInfo.name) return "assets/[ext]/[name].chunk.[ext]";
-                  const { name } = path.parse(assetInfo.name);
-                  return `assets/[ext]/${name}.chunk.[ext]`;
-                },
-              },
-            },
+            outDir: resolve(__dirname, "distStyleguide"),
+            emptyOutDir: true,
           },
         }
-      : mode === "android"
+      : mode === "ios"
         ? {
-            base: "file:///android_asset/web",
+            // base: "file:///android_asset/web",
             plugins: [solidPlugin()],
             css: {
               preprocessorOptions: {
@@ -148,30 +93,35 @@ export default defineConfig(({ mode }): UserConfig => {
                 "@src": root,
                 "@assets": assetsDir,
                 "@pages": pagesDir,
-                "@dataInterface": dataInterfaceDroid,
+                "@dataInterface": dataInterfaceIOS,
               },
             },
             build: {
-              outDir: outDirDroid,
+              outDir: outDirIOS,
               sourcemap: true,
               rollupOptions: {
+                plugins: [
+                  rollupCopy({
+                    targets: [
+                      {
+                        src: resolve(
+                          outDirIOS,
+                          "src",
+                          "ios",
+                          "main",
+                          "index.html",
+                        ),
+                        dest: outDirIOS,
+                      },
+                    ],
+                    hook: "writeBundle", // Ensures that the files are copied after the bundle is written
+                  }),
+                ],
                 input: {
-                  main: resolve(root, "android", "main", "index.html"),
-                  interaction: resolve(
-                    root,
-                    "android",
-                    "interaction",
-                    "index.html",
-                  ),
-                  sleepWindDown: resolve(
-                    root,
-                    "android",
-                    "sleepWindDown",
-                    "index.html",
-                  ),
+                  main: resolve(root, "ios", "main", "index.html"),
                 },
                 output: {
-                  entryFileNames: "src/[name]/index.js",
+                  entryFileNames: "[name]/index.js",
                   chunkFileNames: isDev
                     ? "assets/js/[name].js"
                     : "assets/js/[name].[hash].js",
@@ -185,57 +135,112 @@ export default defineConfig(({ mode }): UserConfig => {
               },
             },
           }
-        : {
-            plugins: [
-              solidPlugin(),
-              crx({ manifest, contentScripts: { injectCss: false } }),
-            ],
-            css: {
-              preprocessorOptions: {
-                scss: sassOptions,
-              },
-            },
-            resolve: {
-              alias: {
-                "@src": root,
-                "@assets": assetsDir,
-                "@pages": pagesDir,
-                "@dataInterface": dataInterfaceExtension,
-              },
-            },
-            publicDir,
-            server: {
-              watch: {
-                usePolling: true,
-              },
-              hmr: {
-                clientPort: 5173,
-              },
-            },
-            build: {
-              outDir,
-              sourcemap: true,
-              rollupOptions: {
-                input: {
-                  content: resolve(pagesDir, "content", "content-script.tsx"),
-                  background: resolve(pagesDir, "background", "background.ts"),
-                  popup: resolve(pagesDir, "popup", "index.html"),
-                  newtab: resolve(pagesDir, "newtab", "index.html"),
-                  options: resolve(pagesDir, "options", "index.html"),
+        : mode === "android"
+          ? {
+              base: "file:///android_asset/web",
+              plugins: [solidPlugin()],
+              css: {
+                preprocessorOptions: {
+                  scss: sassOptions,
                 },
-                output: {
-                  entryFileNames: "src/pages/[name]/index.js",
-                  chunkFileNames: isDev
-                    ? "assets/js/[name].js"
-                    : "assets/js/[name].[hash].js",
-                  assetFileNames: (assetInfo) => {
-                    if (!assetInfo.name)
-                      return "assets/[ext]/[name].chunk.[ext]";
-                    const { name } = path.parse(assetInfo.name);
-                    return `assets/[ext]/${name}.chunk.[ext]`;
+              },
+              resolve: {
+                alias: {
+                  "@src": root,
+                  "@assets": assetsDir,
+                  "@pages": pagesDir,
+                  "@dataInterface": dataInterfaceDroid,
+                },
+              },
+              build: {
+                outDir: outDirDroid,
+                sourcemap: true,
+                rollupOptions: {
+                  input: {
+                    main: resolve(root, "android", "main", "index.html"),
+                    interaction: resolve(
+                      root,
+                      "android",
+                      "interaction",
+                      "index.html",
+                    ),
+                    sleepWindDown: resolve(
+                      root,
+                      "android",
+                      "sleepWindDown",
+                      "index.html",
+                    ),
+                  },
+                  output: {
+                    entryFileNames: "src/[name]/index.js",
+                    chunkFileNames: isDev
+                      ? "assets/js/[name].js"
+                      : "assets/js/[name].[hash].js",
+                    assetFileNames: (assetInfo) => {
+                      if (!assetInfo.name)
+                        return "assets/[ext]/[name].chunk.[ext]";
+                      const { name } = path.parse(assetInfo.name);
+                      return `assets/[ext]/${name}.chunk.[ext]`;
+                    },
                   },
                 },
               },
-            },
-          };
+            }
+          : {
+              plugins: [
+                solidPlugin(),
+                crx({ manifest, contentScripts: { injectCss: false } }),
+              ],
+              css: {
+                preprocessorOptions: {
+                  scss: sassOptions,
+                },
+              },
+              resolve: {
+                alias: {
+                  "@src": root,
+                  "@assets": assetsDir,
+                  "@pages": pagesDir,
+                  "@dataInterface": dataInterfaceExtension,
+                },
+              },
+              publicDir,
+              server: {
+                watch: {
+                  usePolling: true,
+                },
+                hmr: {
+                  clientPort: 5173,
+                },
+              },
+              build: {
+                outDir,
+                sourcemap: true,
+                rollupOptions: {
+                  input: {
+                    content: resolve(pagesDir, "content", "content-script.tsx"),
+                    background: resolve(
+                      pagesDir,
+                      "background",
+                      "background.ts",
+                    ),
+                    popup: resolve(pagesDir, "popup", "index.html"),
+                    newtab: resolve(pagesDir, "newtab", "index.html"),
+                    options: resolve(pagesDir, "options", "index.html"),
+                  },
+                  output: {
+                    entryFileNames: "src/pages/[name]/index.js",
+                    chunkFileNames: isDev
+                      ? "assets/js/[name].js"
+                      : "assets/js/[name].[hash].js",
+                    assetFileNames: (assetInfo) => {
+                      if (!assetInfo.name)
+                        return "assets/[ext]/[name].chunk.[ext]";
+                      const { name } = path.parse(assetInfo.name);
+                      return `assets/[ext]/${name}.chunk.[ext]`;
+                    },
+                  },
+                },
+              },
+            };
 });
