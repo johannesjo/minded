@@ -39,6 +39,9 @@ const USAGE_RATING_TODAY_PROBABILITY = 1 / 20;
 const ACTION_ADVICE_PROBABILITY = 1 / 20;
 const EMOJI_CHECKIN_PROBABILITY = 1 / 100;
 const PATTERN_INSIGHT_PROBABILITY = 1 / 3;
+// Share of strong-friction Android interventions that ask for a screen-off
+// minute (the rest fall through to the existing strong-friction prompts).
+const SCREEN_OFF_PROBABILITY = 1 / 3;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -52,7 +55,8 @@ export type InteractionMode =
   | "SELF_ASSESSMENT"
   | "EMOTION_LABELING"
   | "SHOW_REASON"
-  | "PATTERN_INSIGHT";
+  | "PATTERN_INSIGHT"
+  | "SCREEN_OFF";
 
 export type InteractionModeReason =
   | "few_answers_question"
@@ -77,6 +81,7 @@ export type InteractionModeReason =
   | "usage_rating_due"
   | "action_advice_sample"
   | "emoji_checkin_sample"
+  | "screen_off_strong"
   | "fallback_question";
 
 export interface InteractionModeDecision {
@@ -196,6 +201,16 @@ export const getInteractionModeDecision = (
   }
 
   if (canApplyInterventionFriction && frictionLevel === "strong") {
+    // Intentionally reuses the action-advice hour window (5:00–22:00); both
+    // prompts should only fire during waking hours.
+    if (
+      isAndroidMode &&
+      isActionAdviceEligible &&
+      chance(SCREEN_OFF_PROBABILITY, random)
+    ) {
+      return decision("SCREEN_OFF", "screen_off_strong", frictionLevel);
+    }
+
     if (patternInsight) {
       return decision(
         "PATTERN_INSIGHT",

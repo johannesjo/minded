@@ -241,6 +241,54 @@ describe("getInteractionMode", () => {
     });
   });
 
+  describe("screen-off minute (strong friction, Android)", () => {
+    const strongAndroid = (options: InteractionModeDecisionOptions = {}) =>
+      decide(
+        baseSyncData({
+          sunTaps: { [TODAY]: 5 },
+          sunTapTimestamps: RECENT_SUN_TAPS,
+        }),
+        {
+          isMainView: false,
+          isAndroid: true,
+          platform: "android",
+          ...options,
+        },
+      );
+
+    it("offers a screen-off minute when the probability roll passes", () => {
+      expect(strongAndroid({ random: () => 0 })).toEqual({
+        mode: "SCREEN_OFF",
+        reason: "screen_off_strong",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("falls through to the usual strong-friction prompt when the roll fails", () => {
+      expect(strongAndroid({ random: () => 0.99 })).toEqual({
+        mode: "QUESTION",
+        reason: "strong_friction_question",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("never offers a screen-off minute on non-Android platforms", () => {
+      const decision = decide(
+        baseSyncData({
+          sunTaps: { [TODAY]: 5 },
+          sunTapTimestamps: RECENT_SUN_TAPS,
+        }),
+        { isMainView: false, random: () => 0 },
+      );
+
+      expect(decision).toEqual({
+        mode: "QUESTION",
+        reason: "strong_friction_question",
+        frictionLevel: "strong",
+      });
+    });
+  });
+
   it("asks for missing mood data deterministically", () => {
     expect(decide(baseSyncData({ moodCheckTS: 99 }))).toEqual({
       mode: "MOOD_CHECKIN",
