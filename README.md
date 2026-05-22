@@ -6,6 +6,32 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
 - **Android app** (native Kotlin host + shared web UI)
 - Shared SolidJS codebase across platforms
 
+<p align="center"><b>Browser extension</b></p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/intervention.png" alt="minded pausing a distracting site to ask what you actually came to do" /></td>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="minded dashboard showing the day's intentions and reflections" /></td>
+  </tr>
+  <tr>
+    <td align="center"><em>A pause before the scroll — name what you actually came to do.</em></td>
+    <td align="center"><em>A calm dashboard of the day's intentions and check-ins.</em></td>
+  </tr>
+</table>
+
+<p align="center"><b>Android</b></p>
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/screenshots/mobile/breathe.png" alt="minded's grounding breath on Android" /></td>
+    <td width="33%"><img src="docs/screenshots/mobile/check-in.png" alt="minded's daily check-in prompt on Android" /></td>
+    <td width="33%"><img src="docs/screenshots/mobile/intervention.png" alt="minded asking what you came to do on Android" /></td>
+  </tr>
+  <tr>
+    <td colspan="3" align="center"><em>The same gentle nudges on Android — a breath, a check-in, a moment to ask whether you meant to open this.</em></td>
+  </tr>
+</table>
+
 ## Install
 
 - **Chrome / Edge / Brave** — [Chrome Web Store](https://chromewebstore.google.com/detail/minded/obghjflblojheamhnchaklenibffehjk)
