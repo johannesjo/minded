@@ -18,6 +18,7 @@ import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
+import { ScreenOffInteraction } from "@src/shared/components/interaction/screenOff/ScreenOffInteraction";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 // Get random advice once at module load
@@ -87,6 +88,13 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           <div>{ADVICE.txt}</div>
           <div>{ADVICE.ico}</div>
         </div>
+      </Match>
+      <Match when={props.mode === "SCREEN_OFF"}>
+        <ScreenOffInteraction
+          onSkip={props.onSkip}
+          onCancelCountdown={props.onCancelCountdown}
+          onLeaveNow={props.onLeaveNow}
+        />
       </Match>
       <Match when={props.mode === "ENERGY_LVL"}>
         <EnergyLvlInteraction
