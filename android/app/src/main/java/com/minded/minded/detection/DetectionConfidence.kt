@@ -63,13 +63,25 @@ data class DetectionConfidence(
          * Cross-validation is set to 0.7 (neutral) since we can't validate,
          * but shouldn't be penalized for it.
          */
-        fun accessibilityOnly(patternMatch: Float): DetectionConfidence = DetectionConfidence(
-            patternMatch = patternMatch,
-            sourceReliability = 0.95f,
-            crossValidation = 0.70f, // Neutral - no validation available
-            historicalMatch = 0.80f,
-            timelineCoherence = 0.85f
-        )
+        fun accessibilityOnly(patternMatch: Float): DetectionConfidence {
+            if (patternMatch <= 0.10f) {
+                return DetectionConfidence(
+                    patternMatch = patternMatch,
+                    sourceReliability = 0.50f,
+                    crossValidation = 0.30f,
+                    historicalMatch = 0.40f,
+                    timelineCoherence = 0.40f
+                )
+            }
+
+            return DetectionConfidence(
+                patternMatch = patternMatch,
+                sourceReliability = 0.95f,
+                crossValidation = 0.70f, // Neutral - no validation available
+                historicalMatch = 0.80f,
+                timelineCoherence = 0.85f
+            )
+        }
 
         /**
          * Creates a confidence result for UsageStats-only detection (fallback mode)

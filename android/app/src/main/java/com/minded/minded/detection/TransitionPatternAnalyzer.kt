@@ -69,15 +69,6 @@ class TransitionPatternAnalyzer(
             return TransitionPattern.QUICK_SETTINGS_PULL
         }
 
-        // Check for launcher -> app pattern (direct app launch)
-        if (lastTransition != null &&
-            isLauncherPackage(lastTransition.fromPackage ?: "") &&
-            !isSystemPackage(currentPackage) &&
-            currentTime - lastTransition.timestamp < LAUNCHER_TO_APP_TIMEOUT_MS
-        ) {
-            return TransitionPattern.LAUNCHER_TO_APP
-        }
-
         // Check for app -> launcher -> app pattern (task switching)
         if (recentTransitions.size >= 2) {
             val secondLast = recentTransitions[recentTransitions.size - 2]
@@ -88,6 +79,15 @@ class TransitionPatternAnalyzer(
             ) {
                 return TransitionPattern.APP_SWITCH_VIA_LAUNCHER
             }
+        }
+
+        // Check for launcher -> app pattern (direct app launch)
+        if (lastTransition != null &&
+            isLauncherPackage(lastTransition.toPackage) &&
+            !isSystemPackage(currentPackage) &&
+            currentTime - lastTransition.timestamp < LAUNCHER_TO_APP_TIMEOUT_MS
+        ) {
+            return TransitionPattern.LAUNCHER_TO_APP
         }
 
         // Check for direct app-to-app switch
@@ -103,7 +103,8 @@ class TransitionPatternAnalyzer(
         // Check if returning to same app after brief launcher/recents visit
         val sameAppTransitions = recentTransitions.filter { it.toPackage == currentPackage }
         if (sameAppTransitions.isNotEmpty() &&
-            currentTime - sameAppTransitions.last().timestamp < RETURNING_TO_APP_TIMEOUT_MS
+            lastTransition != null &&
+            currentTime - lastTransition.timestamp < RETURNING_TO_APP_TIMEOUT_MS
         ) {
             return TransitionPattern.RETURNING_TO_APP
         }
