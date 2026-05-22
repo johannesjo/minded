@@ -12,8 +12,8 @@ android {
         applicationId = "com.minded.minded"
         minSdk = 29
         targetSdk = 35
-        versionCode = 11
-        versionName = "4.1.0"
+        versionCode = 12
+        versionName = "5.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
