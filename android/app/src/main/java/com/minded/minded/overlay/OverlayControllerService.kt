@@ -140,28 +140,29 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         Log.d(logTag, "restoreOverlayAfterUnlock: freshForeground=$freshForegroundApp, savedApp=$savedApp, savedOverlay=$savedOverlay")
 
-        // During wind-down, ANY foreground app should re-trigger the overlay check.
-        // Outside wind-down, only blocked apps re-trigger (existing behavior).
-        val windDownActive = isWindDownActive(sharedPreferenceService.getSyncData())
-
-        // Determine which app to use for restoration
-        val appToRestore = when {
-            // Wind-down: any fresh app re-triggers the check (let checkToShowOverlay decide)
-            windDownActive && freshForegroundApp != null -> freshForegroundApp
-            windDownActive -> savedApp
-            // If we have fresh foreground data and it's blocked, use it
-            freshForegroundApp != null && isBlockedPackage(freshForegroundApp) -> freshForegroundApp
-            // If we have fresh foreground data but it's NOT blocked, user switched apps
-            freshForegroundApp != null && !isBlockedPackage(freshForegroundApp) -> null
-            // If no fresh data, fall back to saved app if it was blocked
-            isBlockedPackage(savedApp) -> savedApp
-            else -> null
+        // Decide whether the user is still on a blocked app. Prefer fresh
+        // foreground data when available, otherwise trust the saved app.
+        val isOnBlockedApp = when {
+            freshForegroundApp != null -> isBlockedPackage(freshForegroundApp)
+            else -> isBlockedPackage(savedApp)
         }
 
-        if (appToRestore != null) {
-            Log.d(logTag, "Restoring overlay for app: $appToRestore (savedOverlay=$savedOverlay)")
-            // Always use checkToShowOverlay to verify timer/budget state
-            // Timer or budget may have expired while the screen was off
+        if (isOnBlockedApp && savedOverlay == OverlayName.INTERACTION_OVERLAY) {
+            // Unlocking straight into the intervention feels jarring. Background
+            // the blocked app; intervention will re-trigger via the normal
+            // accessibility flow if the user re-opens it. Hide the interaction
+            // window directly (not hideAllBut) so we don't bump the
+            // lastHideAllTimestamp debounce and accidentally swallow that
+            // re-trigger.
+            Log.d(logTag, "Backgrounding blocked app after unlock from intervention")
+            interactionOverlayWindow.hideWindow()
+            goToHomeScreen()
+        } else if (isOnBlockedApp) {
+            // For Little Sun (active timer) or wind-down, the user explicitly
+            // opted into that state — keep restoring it via the normal flow,
+            // which also handles timer/budget expiry while screen was off.
+            val appToRestore = freshForegroundApp ?: savedApp
+            Log.d(logTag, "Restoring overlay after unlock: savedOverlay=$savedOverlay app=$appToRestore")
             checkToShowOverlay(appToRestore)
         } else {
             Log.d(logTag, "User not on blocked app, clearing saved state")
