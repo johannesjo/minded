@@ -99,6 +99,14 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew bundleRelease
+      - name: Upload AAB as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.ref_name }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 14
+          if-no-files-found: ignore
       - name: Upload to Play Store (internal track)
         uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1
         with:
