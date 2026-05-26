@@ -46,8 +46,9 @@ npm run version patch    # or minor / major
 
 This:
 - bumps `package.json`, `android/app/build.gradle.kts` (`versionName` + `versionCode`), and `extension/ios/App/App.xcodeproj/project.pbxproj`
-- runs local builds as a pre-flight smoke test (catch breakage before CI)
 - creates `chore(release): bump version to X.Y.Z` commit and `vX.Y.Z` tag
+
+Builds run in CI on tag push — no local build is required.
 
 Then:
 

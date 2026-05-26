@@ -3,14 +3,15 @@
 /**
  * Version Release Automation Script
  *
- * Usage: npm run version [patch|minor|major] [--skip-build] [--skip-git]
+ * Usage: npm run version [patch|minor|major] [--skip-git]
  *
  * This script:
  * 1. Bumps version in package.json
  * 2. Syncs version to Android build.gradle.kts
  * 3. Syncs version to iOS project.pbxproj
- * 4. Builds all platforms
- * 5. Creates git commit and tag
+ * 4. Creates git commit and tag
+ *
+ * Builds run in CI on tag push (.github/workflows/release.yml).
  */
 
 import { readFileSync, writeFileSync } from 'fs';
@@ -103,19 +104,6 @@ function preflight() {
   }
 }
 
-function buildExtension() {
-  console.log('\nBuilding browser extension...');
-  execSync('npm run build', { cwd: EXT_ROOT, stdio: 'inherit' });
-}
-
-function buildAndroid() {
-  console.log('\nBuilding Android web assets...');
-  execSync('npm run buildDroid', { cwd: EXT_ROOT, stdio: 'inherit' });
-
-  console.log('\nBuilding Android AAB...');
-  execSync('./gradlew bundleRelease', { cwd: resolve(ROOT, 'android'), stdio: 'inherit' });
-}
-
 function gitCommitAndTag(version) {
   const tag = `v${version}`;
   console.log(`\nCreating git commit and tag ${tag}...`);
@@ -130,17 +118,16 @@ function gitCommitAndTag(version) {
   execSync(`git tag -a ${tag} -m "Release ${version}"`, { cwd: ROOT, stdio: 'inherit' });
 
   console.log(`\nCreated commit and tag ${tag}`);
-  console.log('Run "git push && git push --tags" to publish');
+  console.log('Run "git push --follow-tags" to trigger the CI release workflow');
 }
 
 function main() {
   const args = process.argv.slice(2);
   const versionType = args.find((arg) => ['patch', 'minor', 'major'].includes(arg));
-  const skipBuild = args.includes('--skip-build');
   const skipGit = args.includes('--skip-git');
 
   if (!versionType) {
-    console.error('Usage: npm run version [patch|minor|major] [--skip-build] [--skip-git]');
+    console.error('Usage: npm run version [patch|minor|major] [--skip-git]');
     process.exit(1);
   }
 
@@ -175,19 +162,6 @@ function main() {
   updateIOSPbxproj(newVersionStr, newIOSBuildNumber);
   console.log('  - project.pbxproj');
 
-  if (!skipBuild) {
-    try {
-      buildExtension();
-      buildAndroid();
-    } catch (error) {
-      console.error('\nBuild failed:', error.message);
-      console.error('Version files have been updated. Fix the build and run again with --skip-git');
-      process.exit(1);
-    }
-  } else {
-    console.log('\nSkipping builds (--skip-build)');
-  }
-
   if (!skipGit) {
     gitCommitAndTag(newVersionStr);
   } else {
@@ -196,12 +170,6 @@ function main() {
 
   console.log('\nVersion release complete!');
   console.log(`New version: ${newVersionStr}`);
-
-  if (!skipBuild) {
-    console.log(`\nOutput files:`);
-    console.log(`  Extension: extension/minded.zip`);
-    console.log(`  Android:   android/app/build/outputs/bundle/release/app-release.aab`);
-  }
 }
 
 main();
