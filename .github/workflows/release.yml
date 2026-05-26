@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: '21'
+  NODE_VERSION: '22'
 
 jobs:
   verify-version:
@@ -63,8 +63,7 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
           EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
-          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
-        run: npx --yes chrome-webstore-upload-cli@4 upload --source minded.zip
+        run: npx --yes chrome-webstore-upload-cli@3 upload --source minded.zip
 
   release-play:
     needs: verify-version
