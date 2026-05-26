@@ -24,6 +24,7 @@ import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard/getRecentSelfAssementEntries";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const MAX_ANSWERS = 4;
 const CENTER_INDEX = 4;
@@ -65,6 +66,17 @@ export const getDashboardEntriesFromQuestions = (
 
   const sortedEntries: DashboardGroup[] = dashboardGroups;
   let fixedEntriesIndexAndNr = 0;
+
+  // Wind-down is currently Android-only; show a tappable card while the user
+  // is inside their configured wind-down window so they can re-enter the flow
+  // even after snoozing or backing out to the dashboard.
+  const swdCfg = syncData.cfg.sleepWindDown;
+  if (IS_ANDROID && swdCfg?.enabled && resolveNightId(swdCfg, now) !== null) {
+    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
+      type: DashboardGroupType.SleepWindDown,
+    });
+    fixedEntriesIndexAndNr++;
+  }
 
   if (syncData.dailyBudget) {
     const budgetState = getBudgetState(syncData);

@@ -14,6 +14,7 @@ export enum DashboardGroupType {
   SelfAssessment = "SelfAssessment",
   EmotionLabeling = "EmotionLabeling",
   DailyBudgetRemaining = "DailyBudgetRemaining",
+  SleepWindDown = "SleepWindDown",
 }
 
 export interface DashboardGroupTxtQuestion {
@@ -76,6 +77,10 @@ export interface DashboardGroupDailyBudgetRemaining {
   totalBudgetSeconds: number;
 }
 
+export interface DashboardGroupSleepWindDown {
+  type: DashboardGroupType.SleepWindDown;
+}
+
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
   | DashboardGroupBrowsingBehaviorHappiness
@@ -86,4 +91,5 @@ export type DashboardGroup =
   | DashboardGroupSelAssessment
   | DashboardGroupMood
   | DashboardGroupEmotionLabeling
-  | DashboardGroupDailyBudgetRemaining;
+  | DashboardGroupDailyBudgetRemaining
+  | DashboardGroupSleepWindDown;

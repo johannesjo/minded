@@ -154,13 +154,18 @@ export const DashboardGroups: (props: {
       <For each={getDashboardGroups()}>
         {(dg) => (
           <div
-            onClick={() =>
-              "id" in dg && props.onQuestionCategorySelect?.(dg.id)
-            }
+            onClick={() => {
+              if (dg.type === DashboardGroupType.SleepWindDown) {
+                navigate("/sleepWindDown");
+                return;
+              }
+              if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);
+            }}
             classList={{
               ["cardDashboard"]: true,
               [styles.box]: true,
-              [styles.interactive]: "id" in dg,
+              [styles.interactive]:
+                "id" in dg || dg.type === DashboardGroupType.SleepWindDown,
               [styles.centerItem]:
                 dg.type !== DashboardGroupType.TxtQuestion &&
                 dg.type !== DashboardGroupType.BrowsingBehaviorRating &&
@@ -169,6 +174,13 @@ export const DashboardGroups: (props: {
           >
             {(() => {
               switch (dg.type) {
+                case DashboardGroupType.SleepWindDown:
+                  return (
+                    <div>
+                      <div class="dashboardHeading">wind down for sleep</div>
+                      <div class="fatTxt">it's getting late</div>
+                    </div>
+                  );
                 case DashboardGroupType.DailyBudgetRemaining:
                   // eslint-disable-next-line no-case-declarations
                   const dgBudget = dg as DashboardGroupDailyBudgetRemaining;
