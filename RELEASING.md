@@ -61,7 +61,7 @@ The tag triggers `.github/workflows/release.yml`. Steps:
 1. `verify-version` — passes automatically (no approval needed).
 2. `release-chrome` and `release-play` — **both wait for your approval** in the Actions UI (Environments → `production` → review).
 3. Once approved, each job builds and uploads:
-   - Chrome: extension is uploaded as a **draft**. Visit the Chrome Web Store dashboard → Submit for review.
+   - Chrome: extension is uploaded **and auto-submitted for review**. Google's review queue typically clears in minutes to days. No further action in the CWS dashboard.
    - Play: AAB is uploaded to the **internal** track. Visit Play Console → Internal testing → Promote → Production when ready.
 4. `github-release` creates a GitHub Release with auto-generated notes from commit messages.
 

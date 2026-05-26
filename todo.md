@@ -98,9 +98,8 @@ The internal track won't accept automated uploads until a production release exi
 - [ ] `git push --follow-tags`
 - [ ] Watch GitHub Actions → Release workflow
 - [ ] When both `release-chrome` and `release-play` pause for review, **read the logs carefully before approving**
-- [ ] Approve `release-chrome` → check Chrome Web Store dashboard for the new draft
+- [ ] Approve `release-chrome` → CWS auto-submits for review; check the CWS dashboard shows the new version "In review"
 - [ ] Approve `release-play` → check Play Console internal track for the new AAB
-- [ ] Submit Chrome draft for review (manual, in CWS dashboard)
 - [ ] Promote Play internal → production (manual, in Play Console)
 
 ## After first successful release

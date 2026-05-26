@@ -56,14 +56,14 @@ jobs:
           npm run lint
           npm test
           npm run build
-      - name: Upload to Chrome Web Store (draft — submit manually)
+      - name: Upload to Chrome Web Store (auto-submit for review)
         working-directory: extension
         env:
           CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
           EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
-        run: npx --yes chrome-webstore-upload-cli@3 upload --source minded.zip
+        run: npx --yes chrome-webstore-upload-cli@3 upload --source minded.zip --auto-publish
 
   release-play:
     needs: verify-version
