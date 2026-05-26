@@ -98,8 +98,20 @@ function preflight() {
       console.error('Error: Working directory has uncommitted changes. Commit or stash first.');
       process.exit(1);
     }
-  } catch {
-    console.error('Error: Git check failed');
+
+    execSync('git fetch --quiet origin main', { cwd: ROOT });
+    const behind = execSync('git rev-list --count HEAD..origin/main', {
+      cwd: ROOT,
+      encoding: 'utf8',
+    }).trim();
+    if (behind !== '0') {
+      console.error(
+        `Error: local main is ${behind} commit(s) behind origin/main. Pull first — otherwise the tag will point at an orphan commit after the next rebase.`
+      );
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error('Error: Git check failed', err.message);
     process.exit(1);
   }
 }
