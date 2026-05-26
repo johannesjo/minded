@@ -5,6 +5,8 @@ import {
   countOpeningAttempt,
   getSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
+// @ts-ignore
+import { loadDataForHost } from "@dataInterface/localDataInterface";
 import { ContentScriptMain } from "@src/pages/content/ContentScriptMain";
 // @ts-ignore
 import styleAsString from "./content-script.scss?inline";
@@ -20,6 +22,7 @@ import {
   getLiveBudgetUsageEntries,
   getLiveBudgetUsageSecondsForBudget,
 } from "@src/util/budget/liveBudgetUsage";
+import { getEffectiveSessionDurationS } from "@src/util/sessionDuration";
 
 const CURRENT_URL = window.location.href;
 
@@ -41,14 +44,21 @@ const CURRENT_URL = window.location.href;
         console.error("Failed to count opening attempt", error);
       }
 
-      const [syncData, liveBudgetUsageEntries] = await Promise.all([
-        getSyncData(),
-        getLiveBudgetUsageEntries(),
-      ]);
+      const [syncData, liveBudgetUsageEntries, dataForHost] = await Promise.all(
+        [
+          getSyncData(),
+          getLiveBudgetUsageEntries(),
+          loadDataForHost(currentHost),
+        ],
+      );
       const pendingBudgetUsageSeconds = getLiveBudgetUsageSecondsForBudget(
         syncData,
         currentHost,
         liveBudgetUsageEntries,
+      );
+      const sessionDurationS = getEffectiveSessionDurationS(
+        dataForHost,
+        Date.now(),
       );
 
       if (isRestOfDayActive(syncData, currentTarget, "web")) {
@@ -156,6 +166,7 @@ const CURRENT_URL = window.location.href;
                   CURRENT_URL,
                   syncData,
                   pendingBudgetUsageSeconds,
+                  sessionDurationS,
                 )
               }
               shadowRoot={shadow}

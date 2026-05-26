@@ -5,11 +5,16 @@ import {
   getWebHostSessionTarget,
   hasExpiredTimerInScope,
 } from "@src/util/activeTimerScope";
+import { getSessionGraceRemainingS } from "@src/util/sessionGrace";
 
 export type LittleSunTimerSource =
   | {
       type: "session";
       activeTimer: ActiveTimer;
+    }
+  | {
+      type: "grace";
+      remainingSeconds: number;
     }
   | {
       type: "budget";
@@ -38,6 +43,17 @@ export const getLittleSunTimerSource = (
     return {
       type: "session",
       activeTimer,
+    };
+  }
+
+  const graceRemaining = getSessionGraceRemainingS(
+    syncData,
+    initialElapsedSeconds,
+  );
+  if (graceRemaining > 0) {
+    return {
+      type: "grace",
+      remainingSeconds: graceRemaining,
     };
   }
 
