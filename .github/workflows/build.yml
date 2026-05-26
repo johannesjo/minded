@@ -1,4 +1,4 @@
-name: Build & Release
+name: CI
 on:
   workflow_dispatch:
     inputs: null
@@ -6,8 +6,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-#    tags:
-#      - v*
 
 defaults:
   run:
@@ -49,9 +47,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Pack
-        run: npm run pack
 
       - name: 'Upload Artifact'
         if: github.event_name != 'pull_request'
