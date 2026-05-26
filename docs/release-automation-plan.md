@@ -91,6 +91,16 @@ Concrete procedures, not hand-waving:
 4. **Secret rotation (quarterly + on suspicion).** Rotate CWS refresh token, Play service account key, keystore base64.
 5. **Lost keystore.** Play App Signing → reset upload key once via Play Console. Without Play App Signing, the app is dead.
 
+## Release commit + tag
+
+`npm version` would normally handle the version commit and tag itself, between the `version` and `postversion` hooks. We disable that and do it ourselves in `scripts/postversion.mjs`.
+
+**Why:** in this repo, npm v10's `npm version` silently skipped its commit + tag step — `postversion` ran but no commit existed and no tag was created. Likely cause: our `version` hook (`sync-platforms.mjs`) modifies files outside the package directory (`android/app/build.gradle.kts`, `extension/ios/App/App.xcodeproj/project.pbxproj`), and npm's commit logic appears to bail without an error when that happens. We chose not to dig into npm internals — the failure mode (half-bumped working tree, no tag) is bad enough that swapping to a predictable script is the better engineering call.
+
+**How it works now:** `.npmrc` sets `git-tag-version=false`, which disables npm's built-in commit + tag. `postversion.mjs` reads the new version from `package.json`, stages the four bumped files (package.json, package-lock.json, build.gradle.kts, project.pbxproj), creates a `chore(release): bump version to X.Y.Z` commit, and tags `vX.Y.Z`. The `npm version patch` user interface is unchanged.
+
+**Trade-off:** we lose npm's automatic `--message` handling and any future improvements to its lifecycle, in exchange for predictable behavior today. Worth revisiting if npm fixes the underlying issue or if our version hook ever stops touching files outside the package.
+
 ## Future-proofing (not in scope today)
 
 - **Firefox add-on.** Sibling `release-firefox` job using `npx web-ext sign` or AMO upload action. Same environment-gated pattern.

@@ -23,7 +23,7 @@
     "dev:nodemon": "nodemon",
     "preversion": "node scripts/preversion.mjs",
     "version": "node scripts/sync-platforms.mjs",
-    "postversion": "echo '\\nRun: git push --follow-tags'"
+    "postversion": "node scripts/postversion.mjs"
   },
   "author": "Johannes Millan",
   "repository": {

@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * version hook — runs after npm bumps package.json, before commit.
+ * version hook — runs after npm bumps package.json, before postversion.
  *
  * Syncs the new semver to Android (versionName + bumped versionCode)
- * and iOS (MARKETING_VERSION + bumped CURRENT_PROJECT_VERSION), then
- * stages them so they ride along in npm's version commit.
+ * and iOS (MARKETING_VERSION + bumped CURRENT_PROJECT_VERSION). Files
+ * are left unstaged; postversion.mjs stages and commits everything.
  */
 
 import { readFileSync, writeFileSync } from 'fs';
-import { execSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -38,8 +37,6 @@ const newBuild = currentBuild + 1;
 pbx = pbx.replace(/MARKETING_VERSION\s*=\s*[^;]+;/g, `MARKETING_VERSION = ${newVersion};`);
 pbx = pbx.replace(/CURRENT_PROJECT_VERSION\s*=\s*\d+;/g, `CURRENT_PROJECT_VERSION = ${newBuild};`);
 writeFileSync(PATHS.pbxproj, pbx);
-
-execSync(`git add ${PATHS.buildGradle} ${PATHS.pbxproj}`, { cwd: ROOT, stdio: 'inherit' });
 
 console.log(`\nSynced ${newVersion}`);
 console.log(`  Android versionCode: ${currentVersionCode} -> ${newVersionCode}`);
