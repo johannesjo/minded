@@ -85,7 +85,7 @@ Chrome upload uses `chrome-webstore-upload-cli` invoked directly via `npx` (no G
 
 Concrete procedures, not hand-waving:
 
-1. **Cutting a release.** `cd extension && npm run release patch|minor|major` → review diff → `git push --follow-tags` → approve both `production` env runs in the Actions UI → submit Chrome draft from dashboard → promote Play internal → production in Play Console.
+1. **Cutting a release.** `cd extension && npm version patch|minor|major` → review diff → `git push --follow-tags` → approve both `production` env runs in the Actions UI → submit Chrome draft from dashboard → promote Play internal → production in Play Console.
 2. **CWS source-code submission.** When prompted by review, provide tagged commit URL; note build command is `npm ci && npm run build` from `extension/`.
 3. **Rollback.** Neither store rolls back — fix-forward by publishing a higher version. Play: halt managed publishing rollout while diagnosing. Chrome: unpublish from dashboard.
 4. **Secret rotation (quarterly + on suspicion).** Rotate CWS refresh token, Play service account key, keystore base64.

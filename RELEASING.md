@@ -41,7 +41,7 @@ Must be done manually via Play Console (Internal testing → Create release → 
 
 ```bash
 cd extension
-npm run release patch    # or minor / major — note: `npm run release`, NOT `npm version`
+npm version patch    # or minor / major
 ```
 
 This:
@@ -83,7 +83,7 @@ Neither store supports true rollback. The fix is always **fix-forward** with a h
 ### Play Store
 
 - Play Console → Production → "Halt managed publishing rollout" to pause distribution while you ship a fix.
-- Cut a new version (`npm run release patch`), let the pipeline ship the fix to internal, promote to production.
+- Cut a new version (`npm version patch`), let the pipeline ship the fix to internal, promote to production.
 
 ### Chrome Web Store
 

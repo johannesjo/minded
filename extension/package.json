@@ -21,7 +21,9 @@
     "test": "jest",
     "test:android": "cd ../android && ./gradlew testDebugUnitTest --console=plain",
     "dev:nodemon": "nodemon",
-    "release": "node scripts/version.mjs"
+    "preversion": "node scripts/preversion.mjs",
+    "version": "node scripts/sync-platforms.mjs",
+    "postversion": "echo '\\nRun: git push --follow-tags'"
   },
   "author": "Johannes Millan",
   "repository": {

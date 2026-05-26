@@ -94,7 +94,7 @@ The internal track won't accept automated uploads until a production release exi
 
 ## 7. First end-to-end dry-run (~20 min)
 
-- [ ] Cut a real release: `cd extension && npm run release patch`
+- [ ] Cut a real release: `cd extension && npm version patch`
 - [ ] `git push --follow-tags`
 - [ ] Watch GitHub Actions → Release workflow
 - [ ] When both `release-chrome` and `release-play` pause for review, **read the logs carefully before approving**
