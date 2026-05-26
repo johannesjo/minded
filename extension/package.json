@@ -21,7 +21,7 @@
     "test": "jest",
     "test:android": "cd ../android && ./gradlew testDebugUnitTest --console=plain",
     "dev:nodemon": "nodemon",
-    "version": "node scripts/version.mjs"
+    "release": "node scripts/version.mjs"
   },
   "author": "Johannes Millan",
   "repository": {

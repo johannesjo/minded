@@ -3,7 +3,7 @@
 /**
  * Version Release Automation Script
  *
- * Usage: npm run version [patch|minor|major] [--skip-git]
+ * Usage: npm run release [patch|minor|major] [--skip-git]
  *
  * This script:
  * 1. Bumps version in package.json
@@ -139,7 +139,7 @@ function main() {
   const skipGit = args.includes('--skip-git');
 
   if (!versionType) {
-    console.error('Usage: npm run version [patch|minor|major] [--skip-git]');
+    console.error('Usage: npm run release [patch|minor|major] [--skip-git]');
     process.exit(1);
   }
 
