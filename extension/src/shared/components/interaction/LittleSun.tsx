@@ -30,6 +30,18 @@ const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 const BUDGET_USAGE_UPDATE_INTERVAL_S = 10; // Throttle storage writes
 const LITTLE_SUN_HINT_SEEN_KEY = "littleSunHintSeen";
 
+const isSessionGraceCfgChanged = (changes: {
+  [key: string]: { newValue?: unknown; oldValue?: unknown };
+}): boolean => {
+  if (!("cfg" in changes)) return false;
+  const oldCfg = changes.cfg.oldValue as SyncData["cfg"] | undefined;
+  const newCfg = changes.cfg.newValue as SyncData["cfg"] | undefined;
+  return (
+    JSON.stringify(oldCfg?.sessionGrace) !==
+    JSON.stringify(newCfg?.sessionGrace)
+  );
+};
+
 export const LittleSunComponent: (props: {
   teardown: () => void;
   onShowFreshInteraction: () => void;
@@ -177,7 +189,10 @@ export const LittleSunComponent: (props: {
       return true;
     }
 
-    if (source.type === "budget-exhausted") {
+    if (
+      source.type === "budget-exhausted" ||
+      source.type === "grace-exhausted"
+    ) {
       window.clearInterval(currentSessionInterval);
       props.onShowFreshInteraction();
       return true;
@@ -237,7 +252,7 @@ export const LittleSunComponent: (props: {
     } else if (
       !("dailyBudget" in changes) &&
       !("dailyUsage" in changes) &&
-      !("cfg" in changes)
+      !isSessionGraceCfgChanged(changes)
     ) {
       return;
     }
