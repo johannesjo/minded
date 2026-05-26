@@ -21,8 +21,21 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            // Sourced from env vars in CI (see .github/workflows/release.yml).
+            // Fallback path lets non-release Gradle tasks configure cleanly;
+            // bundleRelease/assembleRelease will fail loudly if env is unset.
+            storeFile = file(System.getenv("ANDROID_KEYSTORE_PATH") ?: "missing.jks")
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
