@@ -30,6 +30,18 @@ const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 const BUDGET_USAGE_UPDATE_INTERVAL_S = 10; // Throttle storage writes
 const LITTLE_SUN_HINT_SEEN_KEY = "littleSunHintSeen";
 
+const isSessionGraceCfgChanged = (changes: {
+  [key: string]: { newValue?: unknown; oldValue?: unknown };
+}): boolean => {
+  if (!("cfg" in changes)) return false;
+  const oldCfg = changes.cfg.oldValue as SyncData["cfg"] | undefined;
+  const newCfg = changes.cfg.newValue as SyncData["cfg"] | undefined;
+  return (
+    JSON.stringify(oldCfg?.sessionGrace) !==
+    JSON.stringify(newCfg?.sessionGrace)
+  );
+};
+
 export const LittleSunComponent: (props: {
   teardown: () => void;
   onShowFreshInteraction: () => void;
@@ -43,6 +55,10 @@ export const LittleSunComponent: (props: {
   const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
   const [getIsBudgetMode, setIsBudgetMode] = createSignal(false);
   const [getBudgetRemaining, setBudgetRemaining] = createSignal<number | null>(
+    null,
+  );
+  const [getIsGraceMode, setIsGraceMode] = createSignal(false);
+  const [getGraceRemaining, setGraceRemaining] = createSignal<number | null>(
     null,
   );
   const [getShowHint, setShowHint] = createSignal(false);
@@ -146,7 +162,18 @@ export const LittleSunComponent: (props: {
     if (source.type === "session") {
       setIsBudgetMode(false);
       setBudgetRemaining(null);
+      setIsGraceMode(false);
+      setGraceRemaining(null);
       startCountdown(source.activeTimer.endTS);
+      return true;
+    }
+
+    if (source.type === "grace") {
+      setIsBudgetMode(false);
+      setBudgetRemaining(null);
+      setIsGraceMode(true);
+      setRemainingSeconds(null);
+      startGraceCountdown(source.remainingSeconds, initialSessionDurationInS);
       return true;
     }
 
@@ -154,13 +181,18 @@ export const LittleSunComponent: (props: {
       const wasBudgetMode = getIsBudgetMode();
       setIsBudgetMode(true);
       setRemainingSeconds(null);
+      setIsGraceMode(false);
+      setGraceRemaining(null);
       startBudgetCountdown(source.remainingSeconds, {
         resetAccumulator: !wasBudgetMode,
       });
       return true;
     }
 
-    if (source.type === "budget-exhausted") {
+    if (
+      source.type === "budget-exhausted" ||
+      source.type === "grace-exhausted"
+    ) {
       window.clearInterval(currentSessionInterval);
       props.onShowFreshInteraction();
       return true;
@@ -169,6 +201,8 @@ export const LittleSunComponent: (props: {
     setIsBudgetMode(false);
     setRemainingSeconds(null);
     setBudgetRemaining(null);
+    setIsGraceMode(false);
+    setGraceRemaining(null);
     initCounter(source.initialSeconds);
 
     if (source.shouldClearExpiredTimer) {
@@ -215,7 +249,11 @@ export const LittleSunComponent: (props: {
       ) {
         return;
       }
-    } else if (!("dailyBudget" in changes) && !("dailyUsage" in changes)) {
+    } else if (
+      !("dailyBudget" in changes) &&
+      !("dailyUsage" in changes) &&
+      !isSessionGraceCfgChanged(changes)
+    ) {
       return;
     }
 
@@ -330,6 +368,38 @@ export const LittleSunComponent: (props: {
     currentSessionInterval = window.setInterval(tick, 1000);
   };
 
+  const startGraceCountdown = (
+    initialRemaining: number,
+    initialSessionDurationS: number,
+  ) => {
+    if (currentSessionInterval) {
+      window.clearInterval(currentSessionInterval);
+    }
+
+    setGraceRemaining(initialRemaining);
+    setSessionTime(initialSessionDurationS);
+
+    const tick = () => {
+      const nextSession = getSessionTime() + 1;
+      setSessionTime(nextSession);
+      updateHostsEntry(props.host, {
+        lastUsedTS: Date.now(),
+        sessionDurationInS: nextSession,
+      });
+
+      const nextRemaining = Math.max((getGraceRemaining() ?? 0) - 1, 0);
+      setGraceRemaining(nextRemaining);
+
+      if (nextRemaining <= 0) {
+        window.clearInterval(currentSessionInterval);
+        // Grace exhausted — fall through to budget or full intervention.
+        void refreshTimerSource();
+      }
+    };
+
+    currentSessionInterval = window.setInterval(tick, 1000);
+  };
+
   const startBudgetCountdown = (
     initialRemaining: number,
     options: { resetAccumulator: boolean } = { resetAccumulator: true },
@@ -392,6 +462,9 @@ export const LittleSunComponent: (props: {
   };
 
   const getDisplayTime = () => {
+    if (getIsGraceMode() && getGraceRemaining() !== null) {
+      return formatSessionTime(getGraceRemaining()!);
+    }
     if (getIsBudgetMode() && getBudgetRemaining() !== null) {
       return formatSessionTime(getBudgetRemaining()!);
     }
@@ -408,11 +481,13 @@ export const LittleSunComponent: (props: {
   };
 
   const getAccessibleLabel = () => {
-    const timeKind = getIsBudgetMode()
-      ? "budget remaining"
-      : getRemainingSeconds() !== null
-        ? "remaining"
-        : "elapsed";
+    const timeKind = getIsGraceMode()
+      ? "grace remaining"
+      : getIsBudgetMode()
+        ? "budget remaining"
+        : getRemainingSeconds() !== null
+          ? "remaining"
+          : "elapsed";
     return `${getDisplayTime()} ${timeKind}. ${getActionLabel()}.`;
   };
 

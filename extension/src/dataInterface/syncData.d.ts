@@ -37,6 +37,18 @@ export interface UserCfg {
   focusSchedule?: FocusSchedule;
   soundEnabled?: boolean; // Enable/disable completion sound (default: true)
   sleepWindDown?: SleepWindDownCfg;
+  sessionGrace?: SessionGraceCfg;
+}
+
+/**
+ * Per-session grace period. When enabled, the first `minutes` of active foreground
+ * use on a blocked host/app pass without intervention. Sessions reset after ~30
+ * minutes of inactivity (existing RESET_*_USAGE_DURATION_THRESHOLD), so each fresh
+ * open grants a new grace window.
+ */
+export interface SessionGraceCfg {
+  enabled: boolean;
+  minutes: number;
 }
 
 export interface Answer {

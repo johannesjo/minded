@@ -37,7 +37,13 @@ data class UserCfg(
     val blockedApps: List<String>,
     val focusSchedule: Map<String, Any?>?,
     val soundEnabled: Boolean?,
-    val sleepWindDown: Map<String, Any?>?
+    val sleepWindDown: Map<String, Any?>?,
+    val sessionGrace: SessionGraceCfg? = null
+)
+
+data class SessionGraceCfg(
+    val enabled: Boolean,
+    val minutes: Int
 )
 
 data class Answer(
@@ -148,7 +154,13 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val focusSchedule = cfg.optJSONObject("focusSchedule")?.let { jsonObjectToMap(it) }
     val soundEnabled = if (cfg.has("soundEnabled")) cfg.getBoolean("soundEnabled") else null
     val sleepWindDown = cfg.optJSONObject("sleepWindDown")?.let { jsonObjectToMap(it) }
-    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown)
+    val sessionGrace = cfg.optJSONObject("sessionGrace")?.let { graceObj ->
+        SessionGraceCfg(
+            enabled = graceObj.optBoolean("enabled", false),
+            minutes = graceObj.optInt("minutes", 0)
+        )
+    }
+    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown, sessionGrace)
 
     val answers = jsonObject.getJSONArray("answers").let { array ->
         List(array.length()) { i ->

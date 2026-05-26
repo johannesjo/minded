@@ -15,6 +15,12 @@ fun syncDataToJson(syncData: SyncData): String {
     }
     syncData.cfg.soundEnabled?.let { cfgObject.put("soundEnabled", it) }
     syncData.cfg.sleepWindDown?.let { cfgObject.put("sleepWindDown", JSONObject(it)) }
+    syncData.cfg.sessionGrace?.let { grace ->
+        val graceObj = JSONObject()
+        graceObj.put("enabled", grace.enabled)
+        graceObj.put("minutes", grace.minutes)
+        cfgObject.put("sessionGrace", graceObj)
+    }
     jsonObject.put("cfg", cfgObject)
 
     val answersArray = JSONArray()

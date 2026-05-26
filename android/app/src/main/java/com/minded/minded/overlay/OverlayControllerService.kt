@@ -569,6 +569,18 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
         val budgetRemaining = hasBudgetRemaining(syncData)
 
+        val sessionGrace = syncData.cfg.sessionGrace
+        val sessionGraceEnabled = sessionGrace?.enabled == true
+        val sessionGraceMinutes = sessionGrace?.minutes ?: 0
+        val isSessionStale = entryForCurrentApp?.lastUsed?.isBefore(
+            now.minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
+        ) == true
+        val currentSessionDurationS = when {
+            entryForCurrentApp == null -> 0
+            isSessionStale -> 0
+            else -> entryForCurrentApp.sessionDurationInS.coerceAtLeast(0)
+        }
+
         val decision = overlayDecisionEngine.decide(
             currentPackageName,
             OverlayState(
@@ -589,6 +601,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 activeTimerEndTime = activeTimer?.endTS,
                 activeTimerDurationS = activeTimer?.durationS,
                 hasBudgetRemaining = budgetRemaining,
+                sessionGraceEnabled = sessionGraceEnabled,
+                sessionGraceMinutes = sessionGraceMinutes,
+                currentSessionDurationS = currentSessionDurationS,
                 isWindDownActive = isWindDownActive(syncData),
                 isWindDownSnoozed = isWindDownSnoozed(syncData),
             )

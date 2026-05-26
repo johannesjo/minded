@@ -16,8 +16,7 @@ import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
 } from "@src/util/activeTimerScope";
-
-const RESET_WEBSITE_USAGE_DURATION_THRESHOLD = 30 * 60 * 1000;
+import { RESET_WEBSITE_USAGE_DURATION_THRESHOLD_MS } from "@src/util/sessionDuration";
 
 export const ContentScriptMain: (props: {
   isShowFullMinderInitially: boolean;
@@ -87,7 +86,7 @@ export const ContentScriptMain: (props: {
 
     if (
       dataForHost &&
-      now - RESET_WEBSITE_USAGE_DURATION_THRESHOLD > dataForHost.lastUsedTS
+      now - RESET_WEBSITE_USAGE_DURATION_THRESHOLD_MS > dataForHost.lastUsedTS
     ) {
       updateHostsEntry(host, {
         lastUsedTS: now,

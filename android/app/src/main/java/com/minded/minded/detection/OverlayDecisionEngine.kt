@@ -91,13 +91,22 @@ class OverlayDecisionEngine {
         return if (isWithinSessionLimit) {
             // Active session exists - show little sun
             OverlayDecision.ShowLittleSun
+        } else if (isWithinSessionGrace(state)) {
+            // Per-session grace period still has time - show little sun
+            OverlayDecision.ShowLittleSun
         } else if (state.hasBudgetRemaining) {
             // Daily budget has remaining time - show little sun
             OverlayDecision.ShowLittleSun
         } else {
-            // No active session and no budget remaining - show intervention
+            // No active session, no grace, no budget remaining - show intervention
             OverlayDecision.ShowIntervention
         }
+    }
+
+    private fun isWithinSessionGrace(state: OverlayState): Boolean {
+        if (!state.sessionGraceEnabled) return false
+        if (state.sessionGraceMinutes <= 0) return false
+        return state.currentSessionDurationS < state.sessionGraceMinutes * 60
     }
 
     /**
@@ -161,6 +170,15 @@ data class OverlayState(
 
     /** Whether the daily budget has remaining time */
     val hasBudgetRemaining: Boolean = false,
+
+    /** Whether the per-session grace period setting is enabled */
+    val sessionGraceEnabled: Boolean = false,
+
+    /** Grace minutes when enabled (matches SessionGraceCfg.minutes) */
+    val sessionGraceMinutes: Int = 0,
+
+    /** Foreground duration of the current app session, in seconds */
+    val currentSessionDurationS: Int = 0,
 
     /** Whether sleep wind-down should currently take over blocked apps */
     val isWindDownActive: Boolean = false,

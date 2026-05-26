@@ -5,11 +5,22 @@ import {
   getWebHostSessionTarget,
   hasExpiredTimerInScope,
 } from "@src/util/activeTimerScope";
+import {
+  getSessionGraceCfg,
+  getSessionGraceRemainingS,
+} from "@src/util/sessionGrace";
 
 export type LittleSunTimerSource =
   | {
       type: "session";
       activeTimer: ActiveTimer;
+    }
+  | {
+      type: "grace";
+      remainingSeconds: number;
+    }
+  | {
+      type: "grace-exhausted";
     }
   | {
       type: "budget";
@@ -41,6 +52,18 @@ export const getLittleSunTimerSource = (
     };
   }
 
+  const graceCfg = getSessionGraceCfg(syncData);
+  const graceRemaining = getSessionGraceRemainingS(
+    syncData,
+    initialElapsedSeconds,
+  );
+  if (graceRemaining > 0) {
+    return {
+      type: "grace",
+      remainingSeconds: graceRemaining,
+    };
+  }
+
   const budgetState = getBudgetState(syncData, host, pendingBudgetUsageSeconds);
   if (budgetState.isActive && budgetState.remainingSeconds > 0) {
     return {
@@ -52,6 +75,12 @@ export const getLittleSunTimerSource = (
     return {
       type: "budget-exhausted",
     };
+  }
+
+  // Grace was configured and is now exhausted, with no budget to fall back to —
+  // signal intervention rather than silently dropping into elapsed mode.
+  if (graceCfg) {
+    return { type: "grace-exhausted" };
   }
 
   return {
