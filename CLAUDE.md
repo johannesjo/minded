@@ -11,8 +11,11 @@ minded is a multi-platform mindfulness and productivity application designed to 
 
 ## Essential Commands
 
+All npm scripts live in `extension/package.json` — run them from the `extension/` directory.
+
 **Development:**
 ```bash
+cd extension
 npm start          # Browser extension development (watches files)
 npm run startDroid # Android development build (watches files)
 npm run startIOS   # iOS development build (watches files)

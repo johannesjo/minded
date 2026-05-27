@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-From the repository root or `extension/`, run `npm run screenshots:install` once
+From `extension/`, run `npm run screenshots:install` once
 if Playwright's Chromium browser is not installed yet. Then run
 `npm run screenshots` to regenerate the product screenshots in
 `extension/screenshots/` and mirror them into `landing-page/public/`.
