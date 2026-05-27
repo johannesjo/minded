@@ -1,0 +1,10 @@
+{
+  "name": "ci-scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CI-only scripts. Not part of the published extension or app.",
+  "dependencies": {
+    "googleapis": "144.0.0"
+  }
+}

@@ -107,6 +107,9 @@ jobs:
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 14
           if-no-files-found: ignore
+      - name: Install Play upload deps
+        working-directory: .github/scripts
+        run: npm install --no-audit --no-fund
       - name: Upload to Play Store (internal track)
         env:
           SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -114,7 +117,7 @@ jobs:
           AAB_PATH: android/app/build/outputs/bundle/release/app-release.aab
           TRACK: internal
           STATUS: completed
-        run: npx --yes -p googleapis@144 node .github/scripts/upload-play.mjs
+        run: node .github/scripts/upload-play.mjs
       - name: Cleanup keystore
         if: always()
         run: rm -f "$RUNNER_TEMP/upload.jks"
