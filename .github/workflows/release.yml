@@ -108,13 +108,13 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
       - name: Upload to Play Store (internal track)
-        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.minded.minded
-          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: internal
-          status: completed
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PACKAGE_NAME: com.minded.minded
+          AAB_PATH: android/app/build/outputs/bundle/release/app-release.aab
+          TRACK: internal
+          STATUS: completed
+        run: npx --yes -p googleapis@144 node .github/scripts/upload-play.mjs
       - name: Cleanup keystore
         if: always()
         run: rm -f "$RUNNER_TEMP/upload.jks"
