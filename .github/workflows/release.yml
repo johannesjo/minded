@@ -110,12 +110,12 @@ jobs:
       - name: Install Play upload deps
         working-directory: .github/scripts
         run: npm install --no-audit --no-fund
-      - name: Upload to Play Store (internal track)
+      - name: Upload to Play Store (production)
         env:
           SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           PACKAGE_NAME: com.minded.minded
           AAB_PATH: android/app/build/outputs/bundle/release/app-release.aab
-          TRACK: internal
+          TRACK: production
           STATUS: completed
         run: node .github/scripts/upload-play.mjs
       - name: Cleanup keystore
