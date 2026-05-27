@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-nocheck
 
 /**
  * Upload an AAB to the Google Play Developer API.
@@ -27,8 +28,15 @@ const {
   STATUS = 'completed',
 } = process.env;
 
-if (!SERVICE_ACCOUNT_JSON || !PACKAGE_NAME || !AAB_PATH) {
-  console.error('Missing required env: SERVICE_ACCOUNT_JSON, PACKAGE_NAME, AAB_PATH');
+const required = { SERVICE_ACCOUNT_JSON, PACKAGE_NAME, AAB_PATH };
+const missing = Object.entries(required)
+  .filter(([, v]) => !v)
+  .map(([k]) => k);
+if (missing.length) {
+  console.error(`Missing required env: ${missing.join(', ')}`);
+  for (const [k, v] of Object.entries(required)) {
+    console.error(`  ${k}: ${v ? `set (${v.length} chars)` : 'EMPTY'}`);
+  }
   process.exit(1);
 }
 
