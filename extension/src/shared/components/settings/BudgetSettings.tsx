@@ -1,4 +1,4 @@
-import { Component, createSignal, For, onMount } from "solid-js";
+import { createSignal, For, JSX, onMount } from "solid-js";
 import {
   getSyncData,
   updateSyncData,
@@ -15,7 +15,7 @@ const BUDGET_OPTIONS = [
   { label: "2 hours", value: 120 },
 ];
 
-export const BudgetSettings: Component = () => {
+export const BudgetSettings = (): JSX.Element => {
   const [getBudget, setBudget] = createSignal<DailyBudget | null>(null);
 
   onMount(async () => {

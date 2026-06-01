@@ -30,7 +30,7 @@ export const SettingsAndroidRoute = () => {
 
       <hr style="opacity: 0.2; margin: 32px 16px;" />
 
-      <FocusSchedule showSaveButton={false} />
+      <FocusSchedule />
 
       <hr style="opacity: 0.2; margin: 32px 16px;" />
 

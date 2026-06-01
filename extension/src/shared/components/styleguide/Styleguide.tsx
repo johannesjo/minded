@@ -19,7 +19,6 @@ import { Stepper } from "@src/shared/components/ui/Stepper";
 import { Toast } from "@src/shared/components/ui/Toast";
 import { Ico, IcoName } from "@src/shared/components/ui/Ico";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
-import { SaveBtn } from "@src/shared/components/ui/SaveBtn";
 import Chart from "@src/shared/components/ui/Chart";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
@@ -294,10 +293,6 @@ const Styleguide = (): JSX.Element => {
           <button type="button" class="btnIco" aria-label="disabled" disabled>
             <Ico name="delete" />
           </button>
-        </Subsection>
-
-        <Subsection label="<SaveBtn>">
-          <SaveBtn isVisible={true} onSave={() => setToastVisible(true)} />
         </Subsection>
       </Section>
 

@@ -1,4 +1,4 @@
-import { Component, createSignal, For, onMount } from "solid-js";
+import { createSignal, For, JSX, onMount } from "solid-js";
 import {
   getSyncData,
   updateUserCfg,
@@ -16,7 +16,7 @@ const GRACE_OPTIONS = [
 
 const DEFAULT_GRACE_MINUTES = 5;
 
-export const SessionGraceSettings: Component = () => {
+export const SessionGraceSettings = (): JSX.Element => {
   const [getGrace, setGrace] = createSignal<SessionGraceCfg | undefined>(
     undefined,
   );

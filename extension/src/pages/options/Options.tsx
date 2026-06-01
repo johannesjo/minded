@@ -54,7 +54,7 @@ const Options = () => {
             <h3 class="h3">Focus Hours</h3>
             <p>Limit blocking to the parts of the week where it helps most.</p>
           </div>
-          <FocusSchedule showSaveButton={false} />
+          <FocusSchedule />
         </section>
       </div>
     </div>

@@ -5,7 +5,6 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_FOCUS_SCHEDULE } from "@src/dataInterface/syncData.const";
 import { FocusSchedule as FocusScheduleType } from "@src/dataInterface/syncData";
-import { Ico } from "@src/shared/components/ui/Ico";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import { TimeInput } from "@src/shared/components/ui/TimeInput";
@@ -22,9 +21,7 @@ const DAY_NAMES = [
   "Saturday",
 ];
 
-export const FocusSchedule = (props: {
-  showSaveButton?: boolean;
-}): JSX.Element => {
+export const FocusSchedule = (): JSX.Element => {
   const [schedule, setSchedule] = createSignal<FocusScheduleType>(
     DEFAULT_FOCUS_SCHEDULE,
   );
@@ -38,9 +35,7 @@ export const FocusSchedule = (props: {
   });
 
   const autoSave = async (newSchedule: FocusScheduleType) => {
-    if (props.showSaveButton === false) {
-      await updateUserCfg({ focusSchedule: newSchedule });
-    }
+    await updateUserCfg({ focusSchedule: newSchedule });
   };
 
   const toggleEnabled = () => {
@@ -84,10 +79,6 @@ export const FocusSchedule = (props: {
       autoSave(newSchedule);
       return newSchedule;
     });
-  };
-
-  const saveAndContinue = async () => {
-    await updateUserCfg({ focusSchedule: schedule() });
   };
 
   const isDayEnabled = (dayIndex: number): boolean => {
@@ -152,14 +143,6 @@ export const FocusSchedule = (props: {
           )}
         </For>
       </div>
-
-      {props.showSaveButton !== false && (
-        <div class={styles.controls}>
-          <button class="btnTxt" onClick={saveAndContinue}>
-            <Ico name="send" /> Save
-          </button>
-        </div>
-      )}
     </div>
   );
 };
