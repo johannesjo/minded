@@ -5,10 +5,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 
-export const SoundSettings = (props: {
-  autoSave?: boolean;
-  onChange?: (enabled: boolean) => void;
-}): JSX.Element => {
+export const SoundSettings = (): JSX.Element => {
   const [soundEnabled, setSoundEnabled] = createSignal(true);
 
   onMount(() => {
@@ -20,10 +17,7 @@ export const SoundSettings = (props: {
   const toggleSound = async () => {
     const newValue = !soundEnabled();
     setSoundEnabled(newValue);
-    props.onChange?.(newValue);
-    if (props.autoSave !== false) {
-      await updateUserCfg({ soundEnabled: newValue });
-    }
+    await updateUserCfg({ soundEnabled: newValue });
   };
 
   return (

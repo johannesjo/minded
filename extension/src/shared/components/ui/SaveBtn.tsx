@@ -20,5 +20,3 @@ export const SaveBtn = (props: {
     </ButtonWrapper>
   );
 };
-
-export default SaveBtn;

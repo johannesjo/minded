@@ -24,7 +24,6 @@ const DAY_NAMES = [
 
 export const FocusSchedule = (props: {
   showSaveButton?: boolean;
-  onChange?: (schedule: FocusScheduleType) => void;
 }): JSX.Element => {
   const [schedule, setSchedule] = createSignal<FocusScheduleType>(
     DEFAULT_FOCUS_SCHEDULE,
@@ -47,7 +46,6 @@ export const FocusSchedule = (props: {
   const toggleEnabled = () => {
     setSchedule((prev) => {
       const newSchedule = { ...prev, enabled: !prev.enabled };
-      props.onChange?.(newSchedule);
       autoSave(newSchedule);
       return newSchedule;
     });
@@ -65,7 +63,6 @@ export const FocusSchedule = (props: {
       }
 
       const newSchedule = { ...prev, days: newDays };
-      props.onChange?.(newSchedule);
       autoSave(newSchedule);
       return newSchedule;
     });
@@ -84,7 +81,6 @@ export const FocusSchedule = (props: {
       newDays[dayIndex] = { ...currentDay, [field]: value };
 
       const newSchedule = { ...prev, days: newDays };
-      props.onChange?.(newSchedule);
       autoSave(newSchedule);
       return newSchedule;
     });

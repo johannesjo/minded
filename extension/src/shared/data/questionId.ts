@@ -115,7 +115,7 @@ export enum QID {
   IN4 = "IN4",
   IN5 = "IN5",
 
-  SD1 = "SD1",
+  SD1 = "SD1", // retired question; slot reserved so the id isn't reused
   SD2 = "SD2",
   SD3 = "SD3",
   SD4 = "SD4",

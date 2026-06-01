@@ -7,17 +7,15 @@ import type { JSX } from "solid-js";
  * @param component - Component thunk to render.
  * @param beforeRender - Optional hook run against the container before render
  *   (e.g. Android inset setup, which must apply before the first paint).
- * @returns The container element.
  */
 export const mountApp = (
   component: () => JSX.Element,
   beforeRender?: (container: HTMLElement) => void,
-): HTMLElement => {
+): void => {
   const appContainer = document.querySelector<HTMLElement>("#minded-6622");
   if (!appContainer) {
     throw new Error("Can not find AppContainer");
   }
   beforeRender?.(appContainer);
   render(component, appContainer);
-  return appContainer;
 };
