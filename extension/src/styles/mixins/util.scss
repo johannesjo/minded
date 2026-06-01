@@ -2,52 +2,36 @@
 
 @mixin onWebExtension() {
   :global(body.minded-6622-web-extension) & {
-    @content
-  }
-}
-
-@mixin onMobileApp() {
-  :global(body.minded-6622-mobile-app) & {
-    @content
+    @content;
   }
 }
 
 @mixin onSmallScreens() {
   @media (max-width: $bpMobileMax) {
-    @content
+    @content;
   }
 }
 
 @mixin onNonMobileScreens() {
   @media (min-width: $bpMobile) {
-    @content
+    @content;
   }
 }
-
 
 @mixin inDarkMode() {
   :global(#minded-6622.minded-6622-dark) & {
-    @content
+    @content;
   }
   #minded-6622.minded-6622-dark & {
-    @content
-  }
-}
-
-@mixin onTouchPrimary() {
-  :global(#minded-6622.minded-6622-touch-primary) & {
-    @content
-  }
-  #minded-6622.minded-6622-touch-primary & {
-    @content
+    @content;
   }
 }
 
 @mixin onMousePrimary() {
   :global(#minded-6622.minded-6622-mouse-primary) & {
-    @content
+    @content;
   }
   #minded-6622.minded-6622-mouse-primary & {
-    @content
+    @content;
   }
 }

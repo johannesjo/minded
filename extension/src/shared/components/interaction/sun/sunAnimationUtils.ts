@@ -241,10 +241,6 @@ export function easeInOut(progress: number): number {
     : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 }
 
-export function easeOut(progress: number): number {
-  return 1 - Math.pow(1 - progress, 3);
-}
-
 export function easeOutBack(progress: number): number {
   const overshoot = 1.2; // Subtle overshoot (standard is 1.70158)
   const c3 = overshoot + 1;

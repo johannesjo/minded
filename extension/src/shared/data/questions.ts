@@ -626,7 +626,6 @@ export const QUESTION_CATEGORIES: {
     frequencyModifier: 1,
     dashboardTxt: "Self Discovery",
     questions: [
-      // { id: QID.SD1, t: "Are you using your time wisely" },
       { id: QID.SD2, t: "What do you want in life" },
       {
         id: QID.SD3,
@@ -799,7 +798,6 @@ export const QUESTIONS_FOR_DEVICE: QuestionForPrompt[] = QUESTIONS.filter(
     return !isExcludedByLimitTo(categoryForQuestion);
   },
 );
-// console.log(JSON.stringify(QUESTIONS));
 
 /*
 IDEAS:

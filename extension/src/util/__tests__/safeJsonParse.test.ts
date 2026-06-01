@@ -1,4 +1,4 @@
-import { safeJsonParse, safeJsonParseResult } from "../safeJsonParse";
+import { safeJsonParse } from "../safeJsonParse";
 
 describe("safeJsonParse", () => {
   describe("with fallback", () => {
@@ -47,41 +47,5 @@ describe("safeJsonParse", () => {
       const result = safeJsonParse<object>("");
       expect(result).toBeUndefined();
     });
-  });
-});
-
-describe("safeJsonParseResult", () => {
-  it("returns success result for valid JSON", () => {
-    const result = safeJsonParseResult<{ value: number }>('{"value": 42}');
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({ value: 42 });
-    }
-  });
-
-  it("returns failure result for invalid JSON", () => {
-    const result = safeJsonParseResult<object>("not valid json");
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toBeInstanceOf(Error);
-      expect(result.raw).toBe("not valid json");
-    }
-  });
-
-  it("returns failure result for truncated JSON", () => {
-    const result = safeJsonParseResult<object>('{"incomplete":');
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toBeInstanceOf(Error);
-    }
-  });
-
-  it("parses nested objects", () => {
-    const json = '{"outer": {"inner": [1, 2, 3]}}';
-    const result = safeJsonParseResult<{ outer: { inner: number[] } }>(json);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.outer.inner).toEqual([1, 2, 3]);
-    }
   });
 });

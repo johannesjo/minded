@@ -23,7 +23,6 @@ const DAY_NAMES = [
 ];
 
 export const FocusSchedule = (props: {
-  onAfterSave?: () => void;
   showSaveButton?: boolean;
   onChange?: (schedule: FocusScheduleType) => void;
 }): JSX.Element => {
@@ -42,7 +41,6 @@ export const FocusSchedule = (props: {
   const autoSave = async (newSchedule: FocusScheduleType) => {
     if (props.showSaveButton === false) {
       await updateUserCfg({ focusSchedule: newSchedule });
-      props.onAfterSave?.();
     }
   };
 
@@ -94,7 +92,6 @@ export const FocusSchedule = (props: {
 
   const saveAndContinue = async () => {
     await updateUserCfg({ focusSchedule: schedule() });
-    props.onAfterSave?.();
   };
 
   const isDayEnabled = (dayIndex: number): boolean => {

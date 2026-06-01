@@ -25,7 +25,6 @@ export const MissingCapabilityView = (props: {
       [],
     );
     setMissingCapabilities(mc);
-    console.log(mc);
 
     if (mc.length === 0) {
       props.onAllConfigured?.();
@@ -46,7 +45,6 @@ export const MissingCapabilityView = (props: {
   });
 
   const onMissingCapabilityClick = (capability: string) => {
-    console.log(capability);
     t0 = setTimeout(() => {
       setIsShowManualInstructions(true);
     }, 1000);

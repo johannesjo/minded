@@ -71,14 +71,3 @@ export const getBudgetState = (
     justExhausted,
   };
 };
-
-/**
- * Check if budget has remaining time (shorthand helper)
- */
-export const hasBudgetRemaining = (
-  syncData: SyncData,
-  host?: string,
-): boolean => {
-  const state = getBudgetState(syncData, host);
-  return state.isActive && state.remainingSeconds > 0;
-};

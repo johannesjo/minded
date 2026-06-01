@@ -6,7 +6,6 @@ import {
 import { Toggle } from "@src/shared/components/ui/Toggle";
 
 export const SoundSettings = (props: {
-  onAfterSave?: () => void;
   autoSave?: boolean;
   onChange?: (enabled: boolean) => void;
 }): JSX.Element => {
@@ -24,7 +23,6 @@ export const SoundSettings = (props: {
     props.onChange?.(newValue);
     if (props.autoSave !== false) {
       await updateUserCfg({ soundEnabled: newValue });
-      props.onAfterSave?.();
     }
   };
 

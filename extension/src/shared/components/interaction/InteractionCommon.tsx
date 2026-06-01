@@ -34,7 +34,6 @@ import BackgroundTransition from "@src/shared/components/interaction/backgroundT
 import { Ico } from "@src/shared/components/ui/Ico";
 import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
 import {
-  createFadeAnimation,
   calculateFadeProgress,
   calculateOpacity,
 } from "@src/shared/components/interaction/useFadeAnimation";

@@ -7,10 +7,6 @@ import { SessionGraceCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import styles from "./BudgetSettings.module.scss";
 
-interface SessionGraceSettingsProps {
-  onAfterSave?: () => void;
-}
-
 const GRACE_OPTIONS = [
   { label: "1 min", value: 1 },
   { label: "5 min", value: 5 },
@@ -20,9 +16,7 @@ const GRACE_OPTIONS = [
 
 const DEFAULT_GRACE_MINUTES = 5;
 
-export const SessionGraceSettings: Component<SessionGraceSettingsProps> = (
-  props,
-) => {
+export const SessionGraceSettings: Component = () => {
   const [getGrace, setGrace] = createSignal<SessionGraceCfg | undefined>(
     undefined,
   );
@@ -39,7 +33,6 @@ export const SessionGraceSettings: Component<SessionGraceSettingsProps> = (
   const save = async (next: SessionGraceCfg) => {
     setGrace(next);
     await updateUserCfg({ sessionGrace: next });
-    props.onAfterSave?.();
   };
 
   const toggleEnabled = async () => {

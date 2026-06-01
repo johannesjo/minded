@@ -9,7 +9,6 @@ export enum QID {
   HBH6 = "HBH6",
   HBH7 = "HBH7",
   HBH8 = "HBH8",
-  HBH9 = "HBH9",
 
   HAU1 = "HAU1",
   HAU2 = "HAU2",
@@ -19,7 +18,6 @@ export enum QID {
   HAU6 = "HAU6",
   HAU7 = "HAU7",
   HAU8 = "HAU8",
-  HAU9 = "HAU9",
 
   WRB1 = "WRB1",
   WRB2 = "WRB2",
@@ -52,7 +50,6 @@ export enum QID {
   RFHT11 = "RFHT11",
   RFHT12 = "RFHT12",
   RFHT13 = "RFHT13",
-  RFHT14 = "RFHT14",
 
   MO1 = "MO1",
   MO2 = "MO2",
@@ -65,8 +62,6 @@ export enum QID {
   HT5 = "HT5",
   HT6 = "HT6",
   HT7 = "HT7",
-  HT8 = "HT8",
-  HT9 = "HT9",
 
   CT1 = "CT1",
   CT2 = "CT2",
@@ -113,16 +108,12 @@ export enum QID {
   UP5 = "UP5",
   UP6 = "UP6",
   UP7 = "UP7",
-  UP8 = "UP8",
-  UP9 = "UP9",
 
   IN1 = "IN1",
   IN2 = "IN2",
   IN3 = "IN3",
   IN4 = "IN4",
   IN5 = "IN5",
-  IN6 = "IN6",
-  IN7 = "IN7",
 
   SD1 = "SD1",
   SD2 = "SD2",
@@ -151,6 +142,4 @@ export enum QID {
   SD25 = "SD25",
 
   SWD1 = "SWD1",
-
-  XP1 = "XP1",
 }

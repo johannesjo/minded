@@ -7,10 +7,6 @@ import { DailyBudget } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import styles from "./BudgetSettings.module.scss";
 
-interface BudgetSettingsProps {
-  onAfterSave?: () => void;
-}
-
 const BUDGET_OPTIONS = [
   { label: "15 min", value: 15 },
   { label: "30 min", value: 30 },
@@ -19,7 +15,7 @@ const BUDGET_OPTIONS = [
   { label: "2 hours", value: 120 },
 ];
 
-export const BudgetSettings: Component<BudgetSettingsProps> = (props) => {
+export const BudgetSettings: Component = () => {
   const [getBudget, setBudget] = createSignal<DailyBudget | null>(null);
 
   onMount(async () => {
@@ -40,7 +36,6 @@ export const BudgetSettings: Component<BudgetSettingsProps> = (props) => {
       setBudget(newBudget);
       await updateSyncData({ dailyBudget: newBudget });
     }
-    props.onAfterSave?.();
   };
 
   const setMinutes = async (minutes: number) => {
@@ -50,7 +45,6 @@ export const BudgetSettings: Component<BudgetSettingsProps> = (props) => {
     };
     setBudget(newBudget);
     await updateSyncData({ dailyBudget: newBudget });
-    props.onAfterSave?.();
   };
 
   return (

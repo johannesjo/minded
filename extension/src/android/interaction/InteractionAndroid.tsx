@@ -3,16 +3,12 @@ import { onCleanup, onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
-import { fadeOut } from "@src/util/animation";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 import { SessionIntent } from "@src/dataInterface/syncData";
 import { createAndroidSessionLimitPayload } from "@src/shared/components/interaction/sessionLimit";
 
 const questionId = window.location.hash.replace("#", "");
-if (questionId) {
-  console.log("QUESTION ID FOUND", questionId);
-}
 
 const InteractionAndroid = () => {
   const question: QuestionForPrompt | null = questionId?.length
@@ -92,11 +88,9 @@ const InteractionAndroid = () => {
   };
 
   const onSetSessionLimit = (seconds: number, intent?: SessionIntent) => {
-    console.log("onSetSessionLimit called with seconds:", seconds);
     androidInterface.setSessionLimit(
       createAndroidSessionLimitPayload(seconds, intent),
     );
-    console.log("androidInterface.setSessionLimit called");
   };
 
   return (
@@ -116,7 +110,6 @@ const InteractionAndroid = () => {
         onInteractionSubmitted={() => {
           // Called when user completes the interaction (answers question and drags sun)
           countSunTap();
-          console.log("Interaction completed on Android");
         }}
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}

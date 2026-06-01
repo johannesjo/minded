@@ -55,8 +55,6 @@ export const IS_IOS: boolean = IS_IOS_N;
 export const IS_APP: boolean = IS_APP_N;
 export const IS_WEB_EXT: boolean = IS_WEB_EXT_N;
 
-console.log({ IS_ANDROID, IS_IOS, IS_WEB_EXT, IS_APP });
-
 export const updateSyncData = async (
   newSyncData: Partial<SyncData>,
 ): Promise<void> =>
@@ -76,16 +74,6 @@ export const saveEnergyLvl = (energyLvlVal: number): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, () => ({
     energyLvlTS: Date.now(),
     energyLvlVal,
-  }));
-
-export const saveAlternativeApp = (alternative: string): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    alternativeApps: [...syncData.alternativeApps, alternative],
-  }));
-
-export const saveAlternativeWebsite = (alternative: string): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    alternativeWebsites: [...syncData.alternativeWebsites, alternative],
   }));
 
 const upsertAlternative = (
@@ -186,14 +174,32 @@ const markAlternative = (
 export const markAlternativeShown = (alternative: Alternative): Promise<void> =>
   markAlternative(alternative, "shown");
 
+/**
+ * Build the sunTaps counter + recent-timestamps update for a single tap.
+ * Shared by countSunTap and markAlternativeOpenedAndCountSunTap.
+ */
+const bumpSunTap = (
+  syncData: SyncData,
+  now: number,
+): Pick<SyncData, "sunTaps" | "sunTapTimestamps"> => {
+  const ds = getIsoDate(new Date(now));
+  return {
+    sunTaps: {
+      ...syncData.sunTaps,
+      [ds]: (syncData.sunTaps[ds] || 0) + 1,
+    },
+    sunTapTimestamps: [
+      ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
+      now,
+    ],
+  };
+};
+
 export const markAlternativeOpenedAndCountSunTap = (
   alternative: Alternative,
 ): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
     const now = Date.now();
-    const ds = getIsoDate(new Date(now));
-    const currentSunTaps = syncData.sunTaps[ds] || 0;
-
     return {
       alternatives: applyAlternativeStatEvent(
         syncData.alternatives,
@@ -201,14 +207,7 @@ export const markAlternativeOpenedAndCountSunTap = (
         "opened",
         now,
       ),
-      sunTaps: {
-        ...syncData.sunTaps,
-        [ds]: currentSunTaps + 1,
-      },
-      sunTapTimestamps: [
-        ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
-        now,
-      ],
+      ...bumpSunTap(syncData, now),
     };
   });
 
@@ -244,22 +243,9 @@ export const countOpeningAttempt = (): Promise<void> =>
   incrementDateKeyedCounter(getSyncData, patchSyncData, "attempts");
 
 export const countSunTap = (): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
-    const now = Date.now();
-    const ds = getIsoDate(new Date(now));
-    const currentSunTaps = syncData.sunTaps[ds] || 0;
-
-    return {
-      sunTaps: {
-        ...syncData.sunTaps,
-        [ds]: currentSunTaps + 1,
-      },
-      sunTapTimestamps: [
-        ...getRecentSunTapTimestamps(syncData.sunTapTimestamps ?? [], now),
-        now,
-      ],
-    };
-  });
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
+    bumpSunTap(syncData, Date.now()),
+  );
 
 export const rateCurrentBrowsingBehavior = async (
   val: number,

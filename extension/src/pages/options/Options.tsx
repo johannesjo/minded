@@ -6,10 +6,6 @@ import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import styles from "./Options.module.scss";
 
 const Options = () => {
-  const onAfterSave = () => {
-    // Settings auto-save, no alert needed
-  };
-
   return (
     <div class={`pageTransitionIn ${styles.Options}`}>
       <header class={styles.header}>
@@ -23,7 +19,7 @@ const Options = () => {
             <h3 class="h3">Websites</h3>
             <p>Add domains only, for example youtube.com or reddit.com.</p>
           </div>
-          <WebsiteList onAfterSave={onAfterSave} showSaveButton={false} />
+          <WebsiteList showSaveButton={false} />
         </section>
 
         <section class={styles.section}>
@@ -31,7 +27,7 @@ const Options = () => {
             <h3 class="h3">Sound</h3>
             <p>Control whether interventions can play gentle audio cues.</p>
           </div>
-          <SoundSettings onAfterSave={onAfterSave} />
+          <SoundSettings />
         </section>
 
         <section class={styles.section}>
@@ -42,7 +38,7 @@ const Options = () => {
               session.
             </p>
           </div>
-          <SessionGraceSettings onAfterSave={onAfterSave} />
+          <SessionGraceSettings />
         </section>
 
         <section class={styles.section}>
@@ -50,7 +46,7 @@ const Options = () => {
             <h3 class="h3">Daily Budget</h3>
             <p>Give yourself uninterrupted time before interventions return.</p>
           </div>
-          <BudgetSettings onAfterSave={onAfterSave} />
+          <BudgetSettings />
         </section>
 
         <section class={styles.section}>
@@ -58,7 +54,7 @@ const Options = () => {
             <h3 class="h3">Focus Hours</h3>
             <p>Limit blocking to the parts of the week where it helps most.</p>
           </div>
-          <FocusSchedule onAfterSave={onAfterSave} showSaveButton={false} />
+          <FocusSchedule showSaveButton={false} />
         </section>
       </div>
     </div>
