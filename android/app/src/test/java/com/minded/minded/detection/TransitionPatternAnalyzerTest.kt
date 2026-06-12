@@ -135,7 +135,7 @@ class TransitionPatternAnalyzerTest {
         val pattern = analyzer.analyze(
             transitionHistory = history,
             currentPackage = instagramPackage,
-            currentTime = 1500L // Within 1000ms timeout
+            currentTime = 1500L // Within 2000ms timeout
         )
         assertEquals(TransitionPattern.DIRECT_APP_SWITCH, pattern)
     }
@@ -153,7 +153,7 @@ class TransitionPatternAnalyzerTest {
         val pattern = analyzer.analyze(
             transitionHistory = history,
             currentPackage = instagramPackage,
-            currentTime = 3000L // Beyond 1000ms timeout
+            currentTime = 3001L // Beyond 2000ms timeout
         )
         // Won't be DIRECT_APP_SWITCH because of timeout
         assertTrue(pattern == TransitionPattern.UNKNOWN || pattern == TransitionPattern.RETURNING_TO_APP)

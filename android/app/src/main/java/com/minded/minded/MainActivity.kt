@@ -29,13 +29,19 @@ import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.PowerManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.minded.minded.util.checkDrawOverlayPermission
+import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
 
 
 enum class MissingCapability {
-    Accessibility, SystemAlertWindow;
+    Accessibility, SystemAlertWindow, UsageStats, BatteryOptimization;
 }
 
 class MainActivity : AppCompatActivity() {
@@ -62,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
         sharedPreferenceService = SharedPreferenceService(this)
         sharedPreferenceService.writeDefaultDataIfNecessary()
+        maybeRequestNotificationPermission()
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
@@ -127,6 +134,8 @@ class MainActivity : AppCompatActivity() {
         when (capability) {
             MissingCapability.Accessibility -> askPermissionForAccessibility()
             MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
+            MissingCapability.UsageStats -> askPermissionForUsageStats()
+            MissingCapability.BatteryOptimization -> askToDisableBatteryOptimization()
         }
     }
 
@@ -181,6 +190,47 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun askPermissionForUsageStats() {
+        // No package URI: not officially supported for this action and crashes
+        // on some OEM settings apps
+        startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+    }
+
+    private fun askToDisableBatteryOptimization() {
+        try {
+            // Shows a direct allow/deny dialog for this app
+            @SuppressLint("BatteryLife")
+            val intent = Intent(
+                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(logTag, "Direct battery optimization request failed, opening settings list", e)
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        }
+    }
+
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    private fun maybeRequestNotificationPermission() {
+        // Needed so the foreground-service notification and the
+        // degraded-protection alert from MyAccessibilityService are visible
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                NOTIFICATION_PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+
     private fun getMissingCapabilities(): List<MissingCapability> {
         Log.v(
             logTag,
@@ -193,6 +243,16 @@ class MainActivity : AppCompatActivity() {
         if (!isAccessibilityServiceEnabled(this)) {
             missingCapabilities += MissingCapability.Accessibility
         }
+        if (!checkUsageStatsPermission(this)) {
+            missingCapabilities += MissingCapability.UsageStats
+        }
+        if (!isIgnoringBatteryOptimizations()) {
+            missingCapabilities += MissingCapability.BatteryOptimization
+        }
         return missingCapabilities
+    }
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 2001
     }
 }

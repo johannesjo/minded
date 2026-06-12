@@ -127,6 +127,37 @@ export const MissingCapabilityView = (props: {
             </button>
           </div>
         )}
+        {getMissingCapabilities().includes("UsageStats") && (
+          <div class="card">
+            <p class={styles.permissionText}>
+              <em>minded</em> uses usage access as a backup way to detect the
+              app in the foreground. Without it, detection is less reliable
+              for apps with long loading screens.
+            </p>
+            <button
+              class="btnTxt"
+              onClick={() => onMissingCapabilityClick("UsageStats")}
+            >
+              Enable Usage Access
+            </button>
+          </div>
+        )}
+        {getMissingCapabilities().includes("BatteryOptimization") && (
+          <div class="card">
+            <p class={styles.permissionText}>
+              Battery optimization can silently stop <em>minded</em> in the
+              background, so interventions no longer appear. Excluding{" "}
+              <em>minded</em> from battery optimization keeps the protection
+              running.
+            </p>
+            <button
+              class="btnTxt"
+              onClick={() => onMissingCapabilityClick("BatteryOptimization")}
+            >
+              Disable Battery Optimization
+            </button>
+          </div>
+        )}
 
         <button
           style="margin-top:  32px"

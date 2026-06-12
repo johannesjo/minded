@@ -156,6 +156,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             // re-trigger.
             Log.d(logTag, "Backgrounding blocked app after unlock from intervention")
             interactionOverlayWindow.hideWindow()
+            updateInputOverlayVisibleFlag()
             goToHomeScreen()
         } else if (isOnBlockedApp) {
             // For Little Sun (active timer) or wind-down, the user explicitly
@@ -397,11 +398,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             // Clear retry count on successful show
             val retryKey = "${overlayName}_${appName ?: ""}"
             pendingOverlayRetries.remove(retryKey)
-            
+
         } catch (e: Exception) {
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
             scheduleOverlayRetry(overlayName, overlayMode, appName)
         }
+        updateInputOverlayVisibleFlag()
+    }
+
+    private fun updateInputOverlayVisibleFlag() {
+        isInputOverlayVisible = interactionOverlayWindow.isWindowShown() ||
+            sleepWindDownOverlayWindow.isWindowShown()
     }
     
     private fun scheduleOverlayRetry(
@@ -441,6 +448,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             }
             wasNoOverlaysBefore = true
         }
+        updateInputOverlayVisibleFlag()
     }
 
 
@@ -796,6 +804,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         Handler(Looper.getMainLooper()).post {
             Log.d(logTag, "setSessionLimit - on main thread, hiding interaction window")
             interactionOverlayWindow.hideWindow()
+            updateInputOverlayVisibleFlag()
 
             if (isRestOfDay) {
                 // Rest of day: hide everything completely
@@ -854,6 +863,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     companion object {
+        /**
+         * Authoritative flag for "an overlay that takes text input is visible"
+         * (interaction or sleep wind-down window). Read by MyAccessibilityService
+         * to ignore keyboard events while the user types into an overlay -
+         * both services run in the same process, so a static is sufficient.
+         */
+        @Volatile
+        var isInputOverlayVisible: Boolean = false
+            private set
+
         const val INTENT_EXTRA_OVERLAY_NAME = "INTENT_EXTRA_OVERLAY_NAME"
         const val INTENT_EXTRA_OVERLAY_MODE = "INTENT_EXTRA_OVERLAY_MODE"
         const val INTENT_EXTRA_APP_NAME = "INTENT_EXTRA_APP_NAME"

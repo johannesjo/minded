@@ -22,7 +22,8 @@ class ServiceHealthMonitor {
     private var healthCheckJob: Job? = null
     private var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private var onUnhealthyCallback: (() -> Unit)? = null
+    private val onUnhealthyCallbacks = mutableListOf<() -> Unit>()
+    private val onRecoveredCallbacks = mutableListOf<() -> Unit>()
 
     companion object {
         private const val TAG = "ServiceHealthMonitor"
@@ -74,6 +75,7 @@ class ServiceHealthMonitor {
         if (!_isHealthy.value) {
             Log.i(TAG, "Service recovered - receiving events again")
             _isHealthy.value = true
+            onRecoveredCallbacks.forEach { it.invoke() }
         }
     }
 
@@ -94,14 +96,21 @@ class ServiceHealthMonitor {
     fun markUnhealthy(reason: String = "Unknown") {
         _isHealthy.value = false
         Log.w(TAG, "Service marked as unhealthy: $reason")
-        onUnhealthyCallback?.invoke()
+        onUnhealthyCallbacks.forEach { it.invoke() }
     }
 
     /**
-     * Sets a callback to be invoked when the service becomes unhealthy.
+     * Adds a callback to be invoked when the service becomes unhealthy.
      */
-    fun setOnUnhealthyCallback(callback: () -> Unit) {
-        onUnhealthyCallback = callback
+    fun addOnUnhealthyCallback(callback: () -> Unit) {
+        onUnhealthyCallbacks.add(callback)
+    }
+
+    /**
+     * Adds a callback to be invoked when the service recovers after being unhealthy.
+     */
+    fun addOnRecoveredCallback(callback: () -> Unit) {
+        onRecoveredCallbacks.add(callback)
     }
 
     /**
@@ -138,14 +147,14 @@ class ServiceHealthMonitor {
                 Log.e(TAG, "CRITICAL: No events in ${timeSinceLastEvent}ms - service likely dead")
                 if (_isHealthy.value) {
                     _isHealthy.value = false
-                    onUnhealthyCallback?.invoke()
+                    onUnhealthyCallbacks.forEach { it.invoke() }
                 }
             }
             timeSinceLastEvent > EVENT_TIMEOUT_MS -> {
                 Log.w(TAG, "WARNING: No events in ${timeSinceLastEvent}ms - service may be unhealthy")
                 if (_isHealthy.value) {
                     _isHealthy.value = false
-                    onUnhealthyCallback?.invoke()
+                    onUnhealthyCallbacks.forEach { it.invoke() }
                 }
             }
             else -> {
