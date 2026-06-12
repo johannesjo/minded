@@ -29,12 +29,11 @@ import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
-import android.content.Context
 import android.content.pm.PackageManager
-import android.os.PowerManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.minded.minded.util.checkDrawOverlayPermission
+import com.minded.minded.util.checkIgnoringBatteryOptimizations
 import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import kotlinx.coroutines.launch
@@ -211,11 +210,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isIgnoringBatteryOptimizations(): Boolean {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isIgnoringBatteryOptimizations(packageName)
-    }
-
     private fun maybeRequestNotificationPermission() {
         // Needed so the foreground-service notification and the
         // degraded-protection alert from MyAccessibilityService are visible
@@ -246,7 +240,7 @@ class MainActivity : AppCompatActivity() {
         if (!checkUsageStatsPermission(this)) {
             missingCapabilities += MissingCapability.UsageStats
         }
-        if (!isIgnoringBatteryOptimizations()) {
+        if (!checkIgnoringBatteryOptimizations(this)) {
             missingCapabilities += MissingCapability.BatteryOptimization
         }
         return missingCapabilities

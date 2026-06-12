@@ -420,6 +420,21 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     /**
+     * True when a different user app than [packageName] holds window focus -
+     * the event then came from a non-focused window (picture-in-picture,
+     * split-screen secondary) and must not trigger an overlay.
+     */
+    private fun isEventFromUnfocusedWindow(packageName: String, triggerName: String): Boolean {
+        val focusedApp = getFocusedAppPackage()
+        if (focusedApp != null && focusedApp != packageName) {
+            Log.d(TAG, "Skipping $triggerName trigger - event window not focused " +
+                    "(focused=$focusedApp, event=$packageName)")
+            return true
+        }
+        return false
+    }
+
+    /**
      * Notifies the user that detection is degraded (accessibility events have
      * stopped arriving - typically the service was killed by an aggressive
      * battery manager or disabled). Without this, protection silently degrades
@@ -903,14 +918,7 @@ class MyAccessibilityService : AccessibilityService() {
                 } else {
                     // Moving to another user app, trigger overlay check
                     // This ensures blocked apps show the overlay even if pattern detection filters it out
-                    // Skip if a different app window holds focus - the event then
-                    // came from a non-focused window (picture-in-picture,
-                    // split-screen secondary) and the user didn't switch apps
-                    val focusedApp = getFocusedAppPackage()
-                    if (focusedApp != null && focusedApp != packageName) {
-                        Log.d(TAG, "Skipping user-app switch trigger - event window not focused " +
-                                "(focused=$focusedApp, event=$packageName)")
-                    } else {
+                    if (!isEventFromUnfocusedWindow(packageName, "user-app switch")) {
                         Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
                         triggerOverlay(packageName)
                     }
@@ -929,11 +937,7 @@ class MyAccessibilityService : AccessibilityService() {
                 !isSystemPackage(packageName) &&
                 !isLauncherPackage(packageName) &&
                 packageName != "com.minded.minded") {
-                val focusedApp = getFocusedAppPackage()
-                if (focusedApp != null && focusedApp != packageName) {
-                    Log.d(TAG, "Skipping system-UI exit trigger - event window not focused " +
-                            "(focused=$focusedApp, event=$packageName)")
-                } else {
+                if (!isEventFromUnfocusedWindow(packageName, "system-UI exit")) {
                     Log.d(TAG, "Exiting system UI to user app: $packageName, triggering overlay check")
                     triggerOverlay(packageName)
                 }

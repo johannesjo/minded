@@ -156,7 +156,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             // re-trigger.
             Log.d(logTag, "Backgrounding blocked app after unlock from intervention")
             interactionOverlayWindow.hideWindow()
-            updateInputOverlayVisibleFlag()
             goToHomeScreen()
         } else if (isOnBlockedApp) {
             // For Little Sun (active timer) or wind-down, the user explicitly
@@ -213,6 +212,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             registerReceiver(screenStateReceiver, screenFilter)
         }
         Log.d(logTag, "Screen state receiver registered")
+
+        // Publish after windows are initialized (isInputOverlayVisible reads them)
+        instance = this
     }
 
     private fun createNotificationChannel() {
@@ -403,11 +405,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
             scheduleOverlayRetry(overlayName, overlayMode, appName)
         }
-        updateInputOverlayVisibleFlag()
     }
 
-    private fun updateInputOverlayVisibleFlag() {
-        isInputOverlayVisible = interactionOverlayWindow.isWindowShown() ||
+    private fun isInputOverlayShown(): Boolean {
+        // Guard lateinit: instance is published before windows exist only if
+        // onCreate ordering changes; be defensive
+        if (!::interactionOverlayWindow.isInitialized) return false
+        return interactionOverlayWindow.isWindowShown() ||
             sleepWindDownOverlayWindow.isWindowShown()
     }
     
@@ -448,7 +452,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             }
             wasNoOverlaysBefore = true
         }
-        updateInputOverlayVisibleFlag()
     }
 
 
@@ -699,6 +702,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     override fun onDestroy() {
         Log.d(logTag, "onDestroy() - Service is being destroyed")
 
+        if (instance === this) {
+            instance = null
+        }
+
         // Cancel any pending screen state checks
         screenStateHandler.removeCallbacksAndMessages(null)
 
@@ -804,7 +811,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         Handler(Looper.getMainLooper()).post {
             Log.d(logTag, "setSessionLimit - on main thread, hiding interaction window")
             interactionOverlayWindow.hideWindow()
-            updateInputOverlayVisibleFlag()
 
             if (isRestOfDay) {
                 // Rest of day: hide everything completely
@@ -863,15 +869,22 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     companion object {
+        // Live service instance so the flag below reflects actual window
+        // state; set in onCreate, cleared in onDestroy
+        @Volatile
+        private var instance: OverlayControllerService? = null
+
         /**
          * Authoritative flag for "an overlay that takes text input is visible"
          * (interaction or sleep wind-down window). Read by MyAccessibilityService
          * to ignore keyboard events while the user types into an overlay -
-         * both services run in the same process, so a static is sufficient.
+         * both services run in the same process, so querying the live window
+         * state is sufficient. Computed (not stored) because windows are also
+         * hidden directly by the JS interfaces, bypassing this service's
+         * show/hide methods.
          */
-        @Volatile
-        var isInputOverlayVisible: Boolean = false
-            private set
+        val isInputOverlayVisible: Boolean
+            get() = instance?.isInputOverlayShown() ?: false
 
         const val INTENT_EXTRA_OVERLAY_NAME = "INTENT_EXTRA_OVERLAY_NAME"
         const val INTENT_EXTRA_OVERLAY_MODE = "INTENT_EXTRA_OVERLAY_MODE"
