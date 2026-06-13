@@ -4,6 +4,7 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.util.Log
+import com.minded.minded.BuildConfig
 
 private const val TAG = "UsageStats"
 
@@ -150,13 +151,13 @@ private fun queryLastResumedApp(
     if (pausedAfterResume) {
         // The last foregrounded app was backgrounded again with nothing resumed
         // after it (e.g., screen off) - nothing is in the foreground
-        Log.v(TAG, "Last resumed app $lastResumedPackage was paused, no foreground app")
+        if (BuildConfig.DEBUG) Log.v(TAG, "Last resumed app $lastResumedPackage was paused, no foreground app")
         return ForegroundAppResult.NoAppDetected
     }
 
     // Resumed and never paused since means the app is still in the foreground,
     // regardless of age - no staleness ambiguity like with aggregated stats
     val ageMs = endTime - lastResumedTime
-    Log.v(TAG, "Foreground app (events): $lastResumedPackage, age: ${ageMs}ms")
+    if (BuildConfig.DEBUG) Log.v(TAG, "Foreground app (events): $lastResumedPackage, age: ${ageMs}ms")
     return ForegroundAppResult.Success(lastResumedPackage, ageMs)
 }

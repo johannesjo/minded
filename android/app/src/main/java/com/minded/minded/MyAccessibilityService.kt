@@ -2,6 +2,7 @@ package com.minded.minded
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.KeyguardManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -65,6 +66,17 @@ class MyAccessibilityService : AccessibilityService() {
     // Concurrent: accessed from the main thread and the focused-app provider
     private val systemAppCache = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
     private var lastSystemAppCacheClear = 0L
+
+    // Short-lived cache of the focused-app lookup. getWindows()/root are binder
+    // IPCs and a single accessibility event triggers several focus checks
+    // (direct guard + hybrid validation), so we collapse the duplicate reads
+    // within a short window. The TTL is below the validation retry delay so a
+    // retry still re-reads fresh ground truth. @Volatile snapshot: read from
+    // both the main thread and the focused-app provider's background thread.
+    private data class FocusSnapshot(val timeMs: Long, val packageName: String?)
+    @Volatile
+    private var focusSnapshot: FocusSnapshot? = null
+    private val FOCUS_SNAPSHOT_TTL_MS = 100L
 
     // Transition pattern tracking
     private data class AppTransition(
@@ -268,7 +280,12 @@ class MyAccessibilityService : AccessibilityService() {
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d(TAG, "Screen on/unlock - triggering polling burst")
+            // ACTION_SCREEN_ON also fires at the lock screen, where no app launch
+            // is possible yet. Only burst once the device is actually usable so
+            // we don't spend battery fast-polling against the keyguard.
+            val keyguard = getSystemService(KeyguardManager::class.java)
+            if (keyguard?.isKeyguardLocked == true) return
+            Log.d(TAG, "Screen on/unlock (device unlocked) - triggering polling burst")
             hybridDetector?.triggerPollingBurst()
         }
     }
@@ -400,6 +417,17 @@ class MyAccessibilityService : AccessibilityService() {
      * should fall back to other signals.
      */
     private fun getFocusedAppPackage(): String? {
+        val now = System.currentTimeMillis()
+        val cached = focusSnapshot
+        if (cached != null && now - cached.timeMs < FOCUS_SNAPSHOT_TTL_MS) {
+            return cached.packageName
+        }
+        val result = computeFocusedAppPackage()
+        focusSnapshot = FocusSnapshot(now, result)
+        return result
+    }
+
+    private fun computeFocusedAppPackage(): String? {
         return try {
             val focusedWindow = windows.firstOrNull {
                 it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused
@@ -427,8 +455,10 @@ class MyAccessibilityService : AccessibilityService() {
     private fun isEventFromUnfocusedWindow(packageName: String, triggerName: String): Boolean {
         val focusedApp = getFocusedAppPackage()
         if (focusedApp != null && focusedApp != packageName) {
-            Log.d(TAG, "Skipping $triggerName trigger - event window not focused " +
-                    "(focused=$focusedApp, event=$packageName)")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Skipping $triggerName trigger - event window not focused " +
+                        "(focused=$focusedApp, event=$packageName)")
+            }
             return true
         }
         return false

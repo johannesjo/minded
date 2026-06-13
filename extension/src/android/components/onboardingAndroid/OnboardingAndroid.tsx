@@ -58,6 +58,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
           <Match when={getStep() === 2}>
             <div class="pageWrapper pageTransitionIn">
               <MissingCapabilityView
+                requiredOnly={true}
                 onAllConfigured={() => {
                   setStep(3);
                   setPermissionNotGiven(false);

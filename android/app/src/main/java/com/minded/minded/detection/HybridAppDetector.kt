@@ -2,6 +2,7 @@ package com.minded.minded.detection
 
 import android.content.Context
 import android.util.Log
+import com.minded.minded.BuildConfig
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
 import java.util.Collections
@@ -58,6 +59,11 @@ class HybridAppDetector(private val context: Context) {
     @Volatile
     private var burstUntilTimestamp = 0L
 
+    // When the burst was last (re)armed. Used to rate-limit re-arming so a
+    // stream of launcher events doesn't hold fast polling on continuously.
+    @Volatile
+    private var lastBurstArmTime = 0L
+
     init {
         // Switch to fallback mode if AccessibilityService becomes unhealthy.
         // Registered once here (not in start()) so service reconnects don't
@@ -92,7 +98,13 @@ class HybridAppDetector(private val context: Context) {
      * are caught quickly without paying the battery cost of always polling fast.
      */
     fun triggerPollingBurst() {
-        burstUntilTimestamp = System.currentTimeMillis() + BURST_DURATION_MS
+        val now = System.currentTimeMillis()
+        // Rate-limit: repeated launcher events (e.g. scrolling the home screen)
+        // would otherwise keep pushing the burst window forward and pin polling
+        // at the fast interval the whole time the user browses the launcher.
+        if (now - lastBurstArmTime < BURST_REARM_MIN_INTERVAL_MS) return
+        lastBurstArmTime = now
+        burstUntilTimestamp = now + BURST_DURATION_MS
     }
 
     companion object {
@@ -100,6 +112,9 @@ class HybridAppDetector(private val context: Context) {
         private const val USAGE_STATS_POLL_INTERVAL_MS = 500L // Poll every 500ms for faster detection of slow-loading apps
         private const val BURST_POLL_INTERVAL_MS = 150L // Fast polling right after launch-likely moments
         private const val BURST_DURATION_MS = 3000L
+        // Minimum gap between burst re-arms; > BURST_DURATION_MS so sustained
+        // launcher activity yields at most one fast burst per interval.
+        private const val BURST_REARM_MIN_INTERVAL_MS = 5000L
         private const val VALIDATION_RETRY_DELAY_MS = 150L // Delay before retrying validation
         private const val MISSED_DETECTION_THRESHOLD_MS = 800L // Trigger fallback after 800ms without A11y events
         private const val DISCREPANCY_LOG_SIZE = 20
@@ -173,8 +188,10 @@ class HybridAppDetector(private val context: Context) {
                 emitValidatedDetection(packageName, initialConfidence, validated = false)
                 return
             }
-            Log.d(TAG, "High confidence detection contradicted by focused window " +
-                    "(focused=$focusedApp) - validating: $packageName")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "High confidence detection contradicted by focused window " +
+                        "(focused=$focusedApp) - validating: $packageName")
+            }
         }
 
         // For medium/low confidence, validate with UsageStatsManager
@@ -221,7 +238,9 @@ class HybridAppDetector(private val context: Context) {
                 if (retryResult.groundTruthDisagrees) {
                     // Focus has settled on a different user app - the event did
                     // not come from the focused window. Reject it outright.
-                    Log.d(TAG, "Focused window still disagrees after retry - rejecting: $packageName")
+                    if (BuildConfig.DEBUG) {
+                        Log.d(TAG, "Focused window still disagrees after retry - rejecting: $packageName")
+                    }
                     DetectionConfidence.rejected()
                 } else {
                     retryResult.confidence
@@ -253,13 +272,13 @@ class HybridAppDetector(private val context: Context) {
         val focusedApp = focusedAppProvider?.invoke()
         if (focusedApp != null) {
             return if (focusedApp == packageName) {
-                Log.v(TAG, "Focused window validates: $packageName")
+                if (BuildConfig.DEBUG) Log.v(TAG, "Focused window validates: $packageName")
                 ValidationResult(DetectionConfidence.hybridValidated(), shouldRetry = false)
             } else {
                 // A different app window is focused - the event likely came from
                 // a non-focused window (PiP, split-screen) or focus hasn't
                 // settled yet; retry once before rejecting.
-                Log.v(TAG, "Focused window disagrees: focused=$focusedApp, event=$packageName")
+                if (BuildConfig.DEBUG) Log.v(TAG, "Focused window disagrees: focused=$focusedApp, event=$packageName")
                 ValidationResult(
                     initialConfidence.copy(crossValidation = 0.2f),
                     shouldRetry = true,
@@ -372,8 +391,10 @@ class HybridAppDetector(private val context: Context) {
         // splash screens faster); contradiction means UsageStats is lagging.
         val focusedApp = focusedAppProvider?.invoke()
         if (focusedApp != null && focusedApp != usageStatsApp) {
-            Log.d(TAG, "Skipping missed-detection check - focused window is $focusedApp, " +
-                    "UsageStats=$usageStatsApp is likely stale")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Skipping missed-detection check - focused window is $focusedApp, " +
+                        "UsageStats=$usageStatsApp is likely stale")
+            }
             return
         }
         val isConfirmedByFocusedWindow = focusedApp == usageStatsApp

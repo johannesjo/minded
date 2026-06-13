@@ -7,9 +7,18 @@ import {
 import { safeJsonParse } from "@src/util/safeJsonParse";
 import { Ico } from "@src/shared/components/ui/Ico";
 
+// Capabilities minded cannot run without. Usage-access and battery-optimization
+// are advisory - they improve detection reliability but must NOT block
+// onboarding completion or the "fully configured" state - so they are
+// intentionally excluded here while still being surfaced as fixable cards below.
+const REQUIRED_CAPABILITIES = ["Accessibility", "SystemAlertWindow"];
+
 export const MissingCapabilityView = (props: {
   onAllConfigured?: () => void;
   onPermissionDenied?: () => void;
+  // When true, advisory capabilities (usage-access, battery-optimization) don't
+  // block onAllConfigured - used by onboarding so they don't gate completion.
+  requiredOnly?: boolean;
 }) => {
   const [getIsShowManualInstructions, setIsShowManualInstructions] =
     createSignal<boolean>(false);
@@ -26,7 +35,13 @@ export const MissingCapabilityView = (props: {
     );
     setMissingCapabilities(mc);
 
-    if (mc.length === 0) {
+    // In onboarding (requiredOnly) advance as soon as the required capabilities
+    // are granted so advisory ones don't trap the user; elsewhere (e.g. the
+    // dashboard banner) the view stays open until everything is resolved.
+    const blockingMissing = props.requiredOnly
+      ? mc.filter((c) => REQUIRED_CAPABILITIES.includes(c))
+      : mc;
+    if (blockingMissing.length === 0) {
       props.onAllConfigured?.();
     }
   };
