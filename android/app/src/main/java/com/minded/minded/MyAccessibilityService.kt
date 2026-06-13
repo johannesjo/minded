@@ -2,6 +2,10 @@ package com.minded.minded
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.KeyguardManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,6 +15,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityWindowInfo
+import androidx.core.app.NotificationCompat
 import com.minded.minded.overlay.OverlayControllerService
 import android.content.pm.ApplicationInfo
 import com.minded.minded.data.SharedPreferenceService
@@ -45,21 +51,32 @@ class MyAccessibilityService : AccessibilityService() {
         getManufacturerDebounceTime()
     }
 
-    // Track if minded overlay is active to prevent keyboard from closing it
-    private var isMindedOverlayActive = false
-
     // Track when we last triggered overlay for a blocked app (for debouncing launcher events during app startup)
     private var lastBlockedAppOverlayTimestamp: Long = 0
     private var lastBlockedAppOverlayPackage: String? = null
     private val BLOCKED_APP_STARTUP_DEBOUNCE_MS = 1000L // Don't hide for launcher during app startup
 
     // Dynamic launcher detection
+    // @Volatile: read from background threads via the focused-app provider
+    @Volatile
     private var cachedLaunchers: Set<String>? = null
     private var lastLauncherCacheTime = 0L
 
     // System app detection cache
-    private val systemAppCache = mutableMapOf<String, Boolean>()
+    // Concurrent: accessed from the main thread and the focused-app provider
+    private val systemAppCache = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
     private var lastSystemAppCacheClear = 0L
+
+    // Short-lived cache of the focused-app lookup. getWindows()/root are binder
+    // IPCs and a single accessibility event triggers several focus checks
+    // (direct guard + hybrid validation), so we collapse the duplicate reads
+    // within a short window. The TTL is below the validation retry delay so a
+    // retry still re-reads fresh ground truth. @Volatile snapshot: read from
+    // both the main thread and the focused-app provider's background thread.
+    private data class FocusSnapshot(val timeMs: Long, val packageName: String?)
+    @Volatile
+    private var focusSnapshot: FocusSnapshot? = null
+    private val FOCUS_SNAPSHOT_TTL_MS = 100L
 
     // Transition pattern tracking
     private data class AppTransition(
@@ -89,6 +106,8 @@ class MyAccessibilityService : AccessibilityService() {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
         private const val TAG = "MindedAccessibility"
+        private const val HEALTH_NOTIFICATION_CHANNEL_ID = "minded_health_alerts"
+        private const val HEALTH_NOTIFICATION_ID = 1002
         private const val LAUNCHER_CACHE_DURATION_MS = 60_000L // 1 minute
         private const val LAUNCHER_DEBOUNCE_DEFAULT_MS = 500L
         private const val SYSTEM_APP_CACHE_DURATION_MS = 300_000L // 5 minutes
@@ -98,7 +117,9 @@ class MyAccessibilityService : AccessibilityService() {
         // Transition detection timeouts
         private const val LAUNCHER_TO_APP_TIMEOUT_MS = 2000L
         private const val APP_SWITCH_VIA_LAUNCHER_TIMEOUT_MS = 3000L
-        private const val DIRECT_APP_SWITCH_TIMEOUT_MS = 1000L
+        // 2s (was 1s): slow devices and long window animations made real app
+        // switches exceed 1s and fall through to the UNKNOWN pattern
+        private const val DIRECT_APP_SWITCH_TIMEOUT_MS = 2000L
         private const val RETURNING_TO_APP_TIMEOUT_MS = 5000L
         private const val NOTIFICATION_RETURN_TIMEOUT_MS = 2000L
         
@@ -176,10 +197,17 @@ class MyAccessibilityService : AccessibilityService() {
 
         // Initialize hybrid detection system
         hybridDetector = HybridAppDetector(this).apply {
-            healthMonitor.setOnUnhealthyCallback {
+            healthMonitor.addOnUnhealthyCallback {
                 Log.e(TAG, "Service health monitor detected unhealthy state")
-                // Could notify user or attempt recovery here
+                showDegradedNotification()
             }
+            healthMonitor.addOnRecoveredCallback {
+                Log.i(TAG, "Service health recovered")
+                cancelDegradedNotification()
+            }
+            // Ground truth for validation: the package of the currently
+            // focused app window (null if focus is on system UI/launcher)
+            setFocusedAppProvider { getFocusedAppPackage() }
         }
 
         // Set up blocked apps checker for fallback detection
@@ -211,6 +239,54 @@ class MyAccessibilityService : AccessibilityService() {
             registerReceiver(lockScreenReceiver, lockFilter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(lockScreenReceiver, lockFilter)
+        }
+
+        // Invalidate the launcher and system-app caches when packages change,
+        // so newly (un)installed apps and launchers are classified correctly
+        // without waiting for the time-based cache expiry
+        val packageFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(packageChangeReceiver, packageFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(packageChangeReceiver, packageFilter)
+        }
+
+        // Burst-poll UsageStats right after unlock - an app launch is likely
+        // and slow-starting apps (splash screens) emit no accessibility events
+        val unlockFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_USER_PRESENT)
+            addAction(Intent.ACTION_SCREEN_ON)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(unlockReceiver, unlockFilter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(unlockReceiver, unlockFilter)
+        }
+    }
+
+    private val packageChangeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d(TAG, "Package change (${intent?.action}) - clearing detection caches")
+            systemAppCache.clear()
+            cachedLaunchers = null
+        }
+    }
+
+    private val unlockReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // ACTION_SCREEN_ON also fires at the lock screen, where no app launch
+            // is possible yet. Only burst once the device is actually usable so
+            // we don't spend battery fast-polling against the keyguard.
+            val keyguard = getSystemService(KeyguardManager::class.java)
+            if (keyguard?.isKeyguardLocked == true) return
+            Log.d(TAG, "Screen on/unlock (device unlocked) - triggering polling burst")
+            hybridDetector?.triggerPollingBurst()
         }
     }
 
@@ -262,6 +338,18 @@ class MyAccessibilityService : AccessibilityService() {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to unregister lockScreenReceiver", e)
         }
+
+        try {
+            unregisterReceiver(packageChangeReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister packageChangeReceiver", e)
+        }
+
+        try {
+            unregisterReceiver(unlockReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister unlockReceiver", e)
+        }
     }
 
 
@@ -276,8 +364,11 @@ class MyAccessibilityService : AccessibilityService() {
             notificationTimeout = 100
             // Monitor all packages
             packageNames = null
+            // FLAG_RETRIEVE_INTERACTIVE_WINDOWS is required for getWindows(),
+            // which we use as ground truth for the focused app window
             flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS or
-                    AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
+                    AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
+                    AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
         serviceInfo = config
 
@@ -311,6 +402,113 @@ class MyAccessibilityService : AccessibilityService() {
             Log.d(TAG, "Started OverlayControllerService")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start OverlayControllerService", e)
+        }
+    }
+
+    /**
+     * Returns the package of the currently focused application window, queried
+     * via getWindows(). This is ground truth for "which app is the user in":
+     * unlike accessibility events it is not affected by event ordering, and it
+     * correctly ignores non-focused windows (picture-in-picture, the secondary
+     * app in split-screen).
+     *
+     * Returns null when no clear user app holds focus (system UI, launcher,
+     * our own overlay, or window info unavailable), in which case callers
+     * should fall back to other signals.
+     */
+    private fun getFocusedAppPackage(): String? {
+        val now = System.currentTimeMillis()
+        val cached = focusSnapshot
+        if (cached != null && now - cached.timeMs < FOCUS_SNAPSHOT_TTL_MS) {
+            return cached.packageName
+        }
+        val result = computeFocusedAppPackage()
+        focusSnapshot = FocusSnapshot(now, result)
+        return result
+    }
+
+    private fun computeFocusedAppPackage(): String? {
+        return try {
+            val focusedWindow = windows.firstOrNull {
+                it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused
+            } ?: return null
+            val focusedPackage = focusedWindow.root?.packageName?.toString() ?: return null
+            if (focusedPackage == packageName ||
+                isSystemPackage(focusedPackage) ||
+                isLauncherPackage(focusedPackage)
+            ) {
+                null
+            } else {
+                focusedPackage
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read focused window", e)
+            null
+        }
+    }
+
+    /**
+     * True when a different user app than [packageName] holds window focus -
+     * the event then came from a non-focused window (picture-in-picture,
+     * split-screen secondary) and must not trigger an overlay.
+     */
+    private fun isEventFromUnfocusedWindow(packageName: String, triggerName: String): Boolean {
+        val focusedApp = getFocusedAppPackage()
+        if (focusedApp != null && focusedApp != packageName) {
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Skipping $triggerName trigger - event window not focused " +
+                        "(focused=$focusedApp, event=$packageName)")
+            }
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Notifies the user that detection is degraded (accessibility events have
+     * stopped arriving - typically the service was killed by an aggressive
+     * battery manager or disabled). Without this, protection silently degrades
+     * to UsageStats-only fallback mode.
+     */
+    private fun showDegradedNotification() {
+        try {
+            val notificationManager = getSystemService(NotificationManager::class.java) ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    HEALTH_NOTIFICATION_CHANNEL_ID,
+                    getString(R.string.health_notification_channel_name),
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            val intent = Intent(this, MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val notification = NotificationCompat.Builder(this, HEALTH_NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(getString(R.string.health_notification_title))
+                .setContentText(getString(R.string.health_notification_text))
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build()
+            notificationManager.notify(HEALTH_NOTIFICATION_ID, notification)
+        } catch (e: Exception) {
+            // POST_NOTIFICATIONS may be denied - degraded mode still works,
+            // the user just won't be alerted
+            Log.e(TAG, "Failed to show degraded-protection notification", e)
+        }
+    }
+
+    private fun cancelDegradedNotification() {
+        try {
+            getSystemService(NotificationManager::class.java)?.cancel(HEALTH_NOTIFICATION_ID)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to cancel degraded-protection notification", e)
         }
     }
 
@@ -574,10 +772,12 @@ class MyAccessibilityService : AccessibilityService() {
     private fun getInstalledLaunchers(): Set<String> {
         val currentTime = System.currentTimeMillis()
         
-        // Return cached launchers if still valid
-        if (cachedLaunchers != null && 
+        // Return cached launchers if still valid (local snapshot: the cache
+        // can be nulled concurrently by the package-change receiver)
+        val cached = cachedLaunchers
+        if (cached != null &&
             currentTime - lastLauncherCacheTime < LAUNCHER_CACHE_DURATION_MS) {
-            return cachedLaunchers!!
+            return cached
         }
         
         // Detect launchers dynamically
@@ -688,23 +888,16 @@ class MyAccessibilityService : AccessibilityService() {
             val contentDesc = event.contentDescription?.toString() ?: ""
 
             Log.d(TAG, "onAccessibilityEvent: package=$packageName, class=$className, lastPackage=$lastPackageName")
-            
-            // Track if minded overlay is active
-            if (packageName == "com.minded.minded") {
-                // Check if this is an overlay window (InteractionWindow)
-                if (className.contains("InteractionWindow") || 
-                    className.contains("WebView") ||
-                    event.toString().contains("InteractionWindow")) {
-                    isMindedOverlayActive = true
-                    Log.d(TAG, "Minded overlay is now active")
-                }
-            }
-            
-            // Skip keyboard/input method events when our overlay is active
-            if (isMindedOverlayActive && 
-                (packageName.contains("inputmethod") || 
+
+            // Skip keyboard/input method events when our overlay is active.
+            // OverlayControllerService is the authoritative owner of overlay
+            // visibility (it runs in the same process), so we read its state
+            // instead of inferring it from the event stream, which could get
+            // out of sync and let a keyboard event close an intervention.
+            if (OverlayControllerService.isInputOverlayVisible &&
+                (packageName.contains("inputmethod") ||
                  packageName.contains("keyboard") ||
-                 className.lowercase().contains("inputmethod") || 
+                 className.lowercase().contains("inputmethod") ||
                  className.lowercase().contains("keyboard"))) {
                 Log.d(TAG, "Ignoring keyboard event while minded overlay is active")
                 return
@@ -755,8 +948,10 @@ class MyAccessibilityService : AccessibilityService() {
                 } else {
                     // Moving to another user app, trigger overlay check
                     // This ensures blocked apps show the overlay even if pattern detection filters it out
-                    Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
-                    triggerOverlay(packageName)
+                    if (!isEventFromUnfocusedWindow(packageName, "user-app switch")) {
+                        Log.d(TAG, "Switching between user apps: $lastPackageName -> $packageName")
+                        triggerOverlay(packageName)
+                    }
                 }
             }
 
@@ -772,12 +967,20 @@ class MyAccessibilityService : AccessibilityService() {
                 !isSystemPackage(packageName) &&
                 !isLauncherPackage(packageName) &&
                 packageName != "com.minded.minded") {
-                Log.d(TAG, "Exiting system UI to user app: $packageName, triggering overlay check")
-                triggerOverlay(packageName)
+                if (!isEventFromUnfocusedWindow(packageName, "system-UI exit")) {
+                    Log.d(TAG, "Exiting system UI to user app: $packageName, triggering overlay check")
+                    triggerOverlay(packageName)
+                }
             }
 
             // Skip if this is a system package (but don't update lastPackageName for keyboards)
             if (isSystemPackage(packageName)) {
+                // User is at the launcher - an app launch is likely next, and
+                // slow-starting apps (games with splash screens) emit no
+                // accessibility events, so poll UsageStats faster for a moment
+                if (isLauncherPackage(packageName)) {
+                    hybridDetector?.triggerPollingBurst()
+                }
                 Log.d(TAG, "Skipping system package: $packageName")
                 // Don't update lastPackageName for keyboard/input method packages
                 if (!packageName.contains("inputmethod") && !packageName.contains("keyboard")) {
@@ -1173,7 +1376,6 @@ class MyAccessibilityService : AccessibilityService() {
             } else {
                 startService(intent)
             }
-            isMindedOverlayActive = false
             Log.d(TAG, "Sent hide overlay signal for backgrounded app")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to hide overlay for backgrounded app", e)

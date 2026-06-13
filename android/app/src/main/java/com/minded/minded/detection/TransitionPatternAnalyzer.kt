@@ -14,7 +14,9 @@ class TransitionPatternAnalyzer(
         // Transition detection timeouts
         const val LAUNCHER_TO_APP_TIMEOUT_MS = 2000L
         const val APP_SWITCH_VIA_LAUNCHER_TIMEOUT_MS = 3000L
-        const val DIRECT_APP_SWITCH_TIMEOUT_MS = 1000L
+        // 2s (was 1s): slow devices and long window animations made real app
+        // switches exceed 1s and fall through to the UNKNOWN pattern
+        const val DIRECT_APP_SWITCH_TIMEOUT_MS = 2000L
         const val RETURNING_TO_APP_TIMEOUT_MS = 5000L
         const val NOTIFICATION_RETURN_TIMEOUT_MS = 2000L
 

@@ -9,4 +9,7 @@
     <string name="notification_channel_description">Keeps the app protection service running</string>
     <string name="notification_title">Minded is protecting you</string>
     <string name="notification_text">Monitoring selected apps to help you stay mindful</string>
+    <string name="health_notification_channel_name">Protection alerts</string>
+    <string name="health_notification_title">minded protection is degraded</string>
+    <string name="health_notification_text">App detection stopped working reliably. Tap to open minded and fix it.</string>
 </resources>

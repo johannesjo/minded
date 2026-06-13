@@ -2,6 +2,7 @@ package com.minded.minded.detection
 
 import android.content.Context
 import android.util.Log
+import com.minded.minded.BuildConfig
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
 import java.util.Collections
@@ -49,6 +50,30 @@ class HybridAppDetector(private val context: Context) {
     // Callback to check if an app is blocked (for fallback detection)
     private var isBlockedAppCallback: ((String) -> Boolean)? = null
 
+    // Provider for the currently focused app window (ground truth from
+    // AccessibilityService.getWindows()). Real-time and more precise than
+    // UsageStats, but only available while the accessibility service is alive.
+    private var focusedAppProvider: (() -> String?)? = null
+
+    // End timestamp of the current fast-polling burst (0 = no burst active)
+    @Volatile
+    private var burstUntilTimestamp = 0L
+
+    // When the burst was last (re)armed. Used to rate-limit re-arming so a
+    // stream of launcher events doesn't hold fast polling on continuously.
+    @Volatile
+    private var lastBurstArmTime = 0L
+
+    init {
+        // Switch to fallback mode if AccessibilityService becomes unhealthy.
+        // Registered once here (not in start()) so service reconnects don't
+        // stack duplicate callbacks.
+        healthMonitor.addOnUnhealthyCallback {
+            Log.w(TAG, "AccessibilityService unhealthy - switching to fallback mode")
+            _detectionMode.value = DetectionMode.USAGE_STATS_FALLBACK
+        }
+    }
+
     /**
      * Sets a callback to check if an app is blocked.
      * Used by fallback detection to only emit detections for blocked apps.
@@ -57,9 +82,39 @@ class HybridAppDetector(private val context: Context) {
         isBlockedAppCallback = checker
     }
 
+    /**
+     * Sets a provider for the package of the currently focused app window,
+     * sourced from AccessibilityService.getWindows(). Returning null means
+     * no ground truth is available and validation falls back to UsageStats.
+     */
+    fun setFocusedAppProvider(provider: () -> String?) {
+        focusedAppProvider = provider
+    }
+
+    /**
+     * Temporarily speeds up UsageStats polling. Called at moments where an app
+     * launch is likely but might not generate accessibility events (leaving the
+     * launcher, unlocking the screen), so slow-starting apps with splash screens
+     * are caught quickly without paying the battery cost of always polling fast.
+     */
+    fun triggerPollingBurst() {
+        val now = System.currentTimeMillis()
+        // Rate-limit: repeated launcher events (e.g. scrolling the home screen)
+        // would otherwise keep pushing the burst window forward and pin polling
+        // at the fast interval the whole time the user browses the launcher.
+        if (now - lastBurstArmTime < BURST_REARM_MIN_INTERVAL_MS) return
+        lastBurstArmTime = now
+        burstUntilTimestamp = now + BURST_DURATION_MS
+    }
+
     companion object {
         private const val TAG = "HybridAppDetector"
         private const val USAGE_STATS_POLL_INTERVAL_MS = 500L // Poll every 500ms for faster detection of slow-loading apps
+        private const val BURST_POLL_INTERVAL_MS = 150L // Fast polling right after launch-likely moments
+        private const val BURST_DURATION_MS = 3000L
+        // Minimum gap between burst re-arms; > BURST_DURATION_MS so sustained
+        // launcher activity yields at most one fast burst per interval.
+        private const val BURST_REARM_MIN_INTERVAL_MS = 5000L
         private const val VALIDATION_RETRY_DELAY_MS = 150L // Delay before retrying validation
         private const val MISSED_DETECTION_THRESHOLD_MS = 800L // Trigger fallback after 800ms without A11y events
         private const val DISCREPANCY_LOG_SIZE = 20
@@ -77,12 +132,6 @@ class HybridAppDetector(private val context: Context) {
         scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
         healthMonitor.startMonitoring()
         startUsageStatsPolling()
-
-        // Switch to fallback mode if AccessibilityService becomes unhealthy
-        healthMonitor.setOnUnhealthyCallback {
-            Log.w(TAG, "AccessibilityService unhealthy - switching to fallback mode")
-            _detectionMode.value = DetectionMode.USAGE_STATS_FALLBACK
-        }
     }
 
     /**
@@ -128,11 +177,21 @@ class HybridAppDetector(private val context: Context) {
         // Calculate initial confidence based on pattern
         val initialConfidence = DetectionConfidence.accessibilityOnly(patternConfidence)
 
-        // For high confidence patterns, act immediately
+        // For high confidence patterns, act immediately - unless the focused
+        // window says a different user app holds focus (e.g. the event came
+        // from a picture-in-picture or split-screen window), in which case we
+        // fall through to validation.
         if (initialConfidence.level == ConfidenceLevel.HIGH) {
-            Log.d(TAG, "High confidence detection: $packageName (${initialConfidence.overall})")
-            emitValidatedDetection(packageName, initialConfidence, validated = false)
-            return
+            val focusedApp = focusedAppProvider?.invoke()
+            if (focusedApp == null || focusedApp == packageName) {
+                Log.d(TAG, "High confidence detection: $packageName (${initialConfidence.overall})")
+                emitValidatedDetection(packageName, initialConfidence, validated = false)
+                return
+            }
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "High confidence detection contradicted by focused window " +
+                        "(focused=$focusedApp) - validating: $packageName")
+            }
         }
 
         // For medium/low confidence, validate with UsageStatsManager
@@ -173,21 +232,31 @@ class HybridAppDetector(private val context: Context) {
         // Retry if stale or disagreeing - UsageStats has inherent 500-2000ms delay
         return when {
             result.shouldRetry -> {
-                Log.v(TAG, "UsageStats validation inconclusive, retrying after ${VALIDATION_RETRY_DELAY_MS}ms")
+                Log.v(TAG, "Validation inconclusive, retrying after ${VALIDATION_RETRY_DELAY_MS}ms")
                 delay(VALIDATION_RETRY_DELAY_MS)
                 val retryResult = validateWithUsageStatsOnce(packageName, initialConfidence)
-                retryResult.confidence
+                if (retryResult.groundTruthDisagrees) {
+                    // Focus has settled on a different user app - the event did
+                    // not come from the focused window. Reject it outright.
+                    if (BuildConfig.DEBUG) {
+                        Log.d(TAG, "Focused window still disagrees after retry - rejecting: $packageName")
+                    }
+                    DetectionConfidence.rejected()
+                } else {
+                    retryResult.confidence
+                }
             }
             else -> result.confidence
         }
     }
 
     /**
-     * Result of a single UsageStats validation attempt.
+     * Result of a single validation attempt.
      */
     private data class ValidationResult(
         val confidence: DetectionConfidence,
-        val shouldRetry: Boolean
+        val shouldRetry: Boolean,
+        val groundTruthDisagrees: Boolean = false
     )
 
     /**
@@ -197,6 +266,27 @@ class HybridAppDetector(private val context: Context) {
         packageName: String,
         initialConfidence: DetectionConfidence
     ): ValidationResult {
+        // Prefer the focused-window ground truth: it's real-time (no UsageStats
+        // lag) and correctly ignores non-focused windows like picture-in-picture
+        // or the secondary app in split-screen.
+        val focusedApp = focusedAppProvider?.invoke()
+        if (focusedApp != null) {
+            return if (focusedApp == packageName) {
+                if (BuildConfig.DEBUG) Log.v(TAG, "Focused window validates: $packageName")
+                ValidationResult(DetectionConfidence.hybridValidated(), shouldRetry = false)
+            } else {
+                // A different app window is focused - the event likely came from
+                // a non-focused window (PiP, split-screen) or focus hasn't
+                // settled yet; retry once before rejecting.
+                if (BuildConfig.DEBUG) Log.v(TAG, "Focused window disagrees: focused=$focusedApp, event=$packageName")
+                ValidationResult(
+                    initialConfidence.copy(crossValidation = 0.2f),
+                    shouldRetry = true,
+                    groundTruthDisagrees = true
+                )
+            }
+        }
+
         val usageStatsResult = getForegroundAppReliable(context)
 
         return when (usageStatsResult) {
@@ -247,7 +337,8 @@ class HybridAppDetector(private val context: Context) {
         usageStatsPollingJob?.cancel()
         usageStatsPollingJob = scope.launch {
             while (isActive) {
-                delay(USAGE_STATS_POLL_INTERVAL_MS)
+                val isBurstActive = System.currentTimeMillis() < burstUntilTimestamp
+                delay(if (isBurstActive) BURST_POLL_INTERVAL_MS else USAGE_STATS_POLL_INTERVAL_MS)
 
                 val result = getForegroundAppReliable(context)
                 when (result) {
@@ -291,11 +382,28 @@ class HybridAppDetector(private val context: Context) {
         val accessibilityApp = _accessibilityDetectedApp.value?.packageName
         val timeSinceAccessibilityEvent = healthMonitor.timeSinceLastEvent()
 
+        if (accessibilityApp == usageStatsApp) {
+            return
+        }
+
+        // Consult the focused-window ground truth before acting on UsageStats:
+        // confirmation lets us skip the wait-for-A11y threshold (catches slow
+        // splash screens faster); contradiction means UsageStats is lagging.
+        val focusedApp = focusedAppProvider?.invoke()
+        if (focusedApp != null && focusedApp != usageStatsApp) {
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Skipping missed-detection check - focused window is $focusedApp, " +
+                        "UsageStats=$usageStatsApp is likely stale")
+            }
+            return
+        }
+        val isConfirmedByFocusedWindow = focusedApp == usageStatsApp
+
         // If AccessibilityService hasn't detected this app and hasn't had an event recently,
         // it might have missed something (e.g., slow-loading app with splash screen)
-        if (accessibilityApp != usageStatsApp && timeSinceAccessibilityEvent > MISSED_DETECTION_THRESHOLD_MS) {
+        if (isConfirmedByFocusedWindow || timeSinceAccessibilityEvent > MISSED_DETECTION_THRESHOLD_MS) {
             Log.w(TAG, "Possible missed detection: UsageStats=$usageStatsApp, A11y=$accessibilityApp, " +
-                    "time since A11y event=${timeSinceAccessibilityEvent}ms")
+                    "focusedWindow=$focusedApp, time since A11y event=${timeSinceAccessibilityEvent}ms")
 
             // Only emit fallback detection for BLOCKED apps to avoid false positives
             val isBlocked = isBlockedAppCallback?.invoke(usageStatsApp) ?: false

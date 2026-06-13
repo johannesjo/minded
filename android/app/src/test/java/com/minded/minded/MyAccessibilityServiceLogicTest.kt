@@ -121,7 +121,7 @@ class MyAccessibilityServiceLogicTest {
         // Test that timeout constants make sense
         assertTrue(2000L >= 1000L) // LAUNCHER_TO_APP_TIMEOUT_MS >= reasonable minimum
         assertTrue(3000L >= 2000L) // APP_SWITCH_VIA_LAUNCHER_TIMEOUT_MS >= LAUNCHER_TO_APP_TIMEOUT_MS
-        assertTrue(1000L <= 2000L) // DIRECT_APP_SWITCH_TIMEOUT_MS <= LAUNCHER_TO_APP_TIMEOUT_MS
+        assertTrue(2000L <= 2000L) // DIRECT_APP_SWITCH_TIMEOUT_MS <= LAUNCHER_TO_APP_TIMEOUT_MS
         assertTrue(5000L >= 3000L) // RETURNING_TO_APP_TIMEOUT_MS >= APP_SWITCH_VIA_LAUNCHER_TIMEOUT_MS
         assertTrue(2000L >= 1000L) // NOTIFICATION_RETURN_TIMEOUT_MS >= reasonable minimum
     }

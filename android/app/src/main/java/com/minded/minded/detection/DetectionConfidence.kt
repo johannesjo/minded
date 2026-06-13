@@ -84,6 +84,19 @@ data class DetectionConfidence(
         }
 
         /**
+         * Creates a VERY_LOW confidence result for detections that were
+         * contradicted by ground truth (the focused window belongs to a
+         * different app). Guaranteed to be ignored.
+         */
+        fun rejected(): DetectionConfidence = DetectionConfidence(
+            patternMatch = 0.10f,
+            sourceReliability = 0.30f,
+            crossValidation = 0.0f,
+            historicalMatch = 0.20f,
+            timelineCoherence = 0.20f
+        )
+
+        /**
          * Creates a confidence result for UsageStats-only detection (fallback mode)
          */
         fun usageStatsOnly(): DetectionConfidence = DetectionConfidence(

@@ -8,4 +8,5 @@
         android:logo="@drawable/ic_launcher_foreground"
         android:accessibilityEventTypes="typeWindowStateChanged"
         android:accessibilityFeedbackType="feedbackVisual"
+        android:canRetrieveWindowContent="true"
         android:notificationTimeout="100" />

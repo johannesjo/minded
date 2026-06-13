@@ -38,6 +38,11 @@ fun checkDrawOverlayPermission(context: Context): Boolean {
     return Settings.canDrawOverlays(context)
 }
 
+fun checkIgnoringBatteryOptimizations(context: Context): Boolean {
+    val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+    return powerManager.isIgnoringBatteryOptimizations(context.packageName)
+}
+
 
 fun isAccessibilityServiceEnabled(
     context: Context,

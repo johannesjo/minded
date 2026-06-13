@@ -212,6 +212,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             registerReceiver(screenStateReceiver, screenFilter)
         }
         Log.d(logTag, "Screen state receiver registered")
+
+        // Publish after windows are initialized (isInputOverlayVisible reads them)
+        instance = this
     }
 
     private fun createNotificationChannel() {
@@ -397,11 +400,19 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             // Clear retry count on successful show
             val retryKey = "${overlayName}_${appName ?: ""}"
             pendingOverlayRetries.remove(retryKey)
-            
+
         } catch (e: Exception) {
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
             scheduleOverlayRetry(overlayName, overlayMode, appName)
         }
+    }
+
+    private fun isInputOverlayShown(): Boolean {
+        // Guard lateinit: instance is published before windows exist only if
+        // onCreate ordering changes; be defensive
+        if (!::interactionOverlayWindow.isInitialized) return false
+        return interactionOverlayWindow.isWindowShown() ||
+            sleepWindDownOverlayWindow.isWindowShown()
     }
     
     private fun scheduleOverlayRetry(
@@ -691,6 +702,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     override fun onDestroy() {
         Log.d(logTag, "onDestroy() - Service is being destroyed")
 
+        if (instance === this) {
+            instance = null
+        }
+
         // Cancel any pending screen state checks
         screenStateHandler.removeCallbacksAndMessages(null)
 
@@ -854,6 +869,23 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     companion object {
+        // Live service instance so the flag below reflects actual window
+        // state; set in onCreate, cleared in onDestroy
+        @Volatile
+        private var instance: OverlayControllerService? = null
+
+        /**
+         * Authoritative flag for "an overlay that takes text input is visible"
+         * (interaction or sleep wind-down window). Read by MyAccessibilityService
+         * to ignore keyboard events while the user types into an overlay -
+         * both services run in the same process, so querying the live window
+         * state is sufficient. Computed (not stored) because windows are also
+         * hidden directly by the JS interfaces, bypassing this service's
+         * show/hide methods.
+         */
+        val isInputOverlayVisible: Boolean
+            get() = instance?.isInputOverlayShown() ?: false
+
         const val INTENT_EXTRA_OVERLAY_NAME = "INTENT_EXTRA_OVERLAY_NAME"
         const val INTENT_EXTRA_OVERLAY_MODE = "INTENT_EXTRA_OVERLAY_MODE"
         const val INTENT_EXTRA_APP_NAME = "INTENT_EXTRA_APP_NAME"
