@@ -62,8 +62,8 @@ export const BudgetSettings = (): JSX.Element => {
 
       <p class={styles.description}>
         {isEnabled()
-          ? "Browse blocked sites freely within your daily budget. Interventions resume when time runs out."
-          : "Set a daily time budget for uninterrupted browsing on blocked sites."}
+          ? "Allow yourself a daily allowance on blocked sites before interventions kick in. Turn this off to block immediately."
+          : "Blocked sites are blocked immediately during Active Hours. Turn on for a daily allowance of uninterrupted browsing first."}
       </p>
 
       {isEnabled() && (

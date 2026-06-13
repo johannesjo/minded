@@ -94,7 +94,7 @@ export const FocusSchedule = (): JSX.Element => {
     <div class={styles.FocusSchedule}>
       <div class={styles.header}>
         <h3 class="h3" style={{ margin: 0 }}>
-          When to Block
+          Active Hours
         </h3>
         <Toggle
           checked={schedule().enabled}
@@ -105,8 +105,8 @@ export const FocusSchedule = (): JSX.Element => {
 
       <p class={styles.description}>
         {schedule().enabled
-          ? "Blocking is active only during the hours set below."
-          : "Blocking is always active. Enable schedule to set focus hours."}
+          ? "Your block rules apply only during these hours. Outside them, nothing is blocked."
+          : "Your block rules apply around the clock. Enable to limit blocking to set hours."}
       </p>
 
       <div class={styles.daysList}>
