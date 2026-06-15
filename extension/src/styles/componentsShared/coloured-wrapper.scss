@@ -23,15 +23,15 @@
   // ::after (not ::before) avoids colliding with Android's gradient ::before.
   @include grainOverlay;
 
-  // Light theme only: lay a faint warm orb over the morning-sky wash and let
-  // it drift very slowly. Paint-only, 60s one-way (~2min round trip with
-  // `alternate`) — enough to feel alive, slow enough to never distract. Dark
-  // theme keeps its own pinned two-orb gradient (see _variables.scss).
-  &:not(.minded-6622-dark) {
+  // Light theme only: a faint warm orb drifting over the morning-sky wash.
+  // Gated on the ROOT — `.minded-6622-dark` is set on `#minded-6622`, not on
+  // this wrapper, so gating on `&` would leak the orb into dark mode on the
+  // dashboard and every Android screen. Paint-only; ~2min round trip.
+  #minded-6622:not(.minded-6622-dark) & {
     background-image:
       radial-gradient(
         circle at 50% 50%,
-        rgba(255, 241, 204, 0.5) 0%,
+        rgba(255, 241, 204, 0.33) 0%,
         transparent 42%
       ),
       var(--background-gradient);
@@ -41,6 +41,11 @@
       center;
     background-repeat: no-repeat;
     animation: mindedBgDrift 60s ease-in-out infinite alternate;
+
+    // Same selector → the reduced-motion override is guaranteed to win.
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 
   @media (orientation: portrait) {
@@ -64,13 +69,5 @@
     background-position:
       64% 40%,
       center;
-  }
-}
-
-// Hold the orb still for anyone who's asked to reduce motion.
-@media (prefers-reduced-motion: reduce) {
-  #minded-6622-coloured-wrapper-dynamic,
-  #minded-6622-coloured-wrapper {
-    animation: none;
   }
 }

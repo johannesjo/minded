@@ -8,12 +8,8 @@
   // No fill-mode on purpose: once the entrance ends the transform reverts to
   // the element's own rules, so hover/active scales keep working.
 
-  // Honour reduced-motion by dropping the scale and fading only.
+  // Reduced-motion asks for instant, not a slow fade — drop the animation.
   @media (prefers-reduced-motion: reduce) {
-    animation-name: minded6622fadeIn;
-
-    :global {
-      animation-name: minded6622fadeIn;
-    }
+    animation: none;
   }
 }
