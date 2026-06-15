@@ -240,16 +240,30 @@ $aniDur: 1.5s;
 
   &.interactive {
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      transform var(--dur-quick) var(--ease-out),
+      box-shadow var(--dur-quick) var(--ease-out),
+      background var(--dur-quick) var(--ease-out);
 
     &:active {
       transform: scale(0.95);
+    }
+
+    // Keyboard focus gets the same calm teal ring used for links.
+    &:focus-visible {
+      outline: 2px solid var(--c-link-color);
+      outline-offset: 3px;
     }
 
     //@include onMousePrimary() {
     @media (hover: hover) {
       &:hover {
         background: var(--dashboard-card-bg-hover);
+        // Lift the glass: a small rise, a soft shadow, a touch more blur.
+        transform: translateY(-3px);
+        box-shadow: var(--dashboard-card-shadow-hover);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
       }
     }
   }

@@ -27,7 +27,7 @@
   background: var(--form-inputs-bg);
   border-radius: 13px;
   position: relative;
-  transition: background 0.2s;
+  transition: background var(--dur-quick) var(--ease-out);
 
   &::after {
     content: "";
@@ -38,7 +38,7 @@
     height: 20px;
     background: var(--c-fg-full-emphasis);
     border-radius: 50%;
-    transition: transform 0.2s;
+    transition: transform var(--dur-quick) var(--ease-out);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
