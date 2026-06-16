@@ -1,3 +1,11 @@
+// Registered so the idle-breath keyframes below can interpolate the value
+// smoothly — an unregistered custom property would jump between steps.
+@property --idle-glow {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
 .minded-sun {
   position: relative;
   background: var(--sun-bg);
@@ -6,15 +14,25 @@
   --glow-intensity: 0;
   --glow-color: 255, 255, 255;
   --sun-warmth: 0;
+  // Drives the resting halo (0 = none). Animated by mindedSunIdleBreath unless
+  // the sun is being dragged or the user prefers reduced motion.
+  --idle-glow: 0;
 
   box-shadow:
     var(--sun-shadow),
+    0 0 calc(26px * var(--idle-glow))
+      rgba(255, 240, 210, calc(0.22 * var(--idle-glow))),
+    0 0 calc(60px * var(--idle-glow))
+      rgba(255, 226, 170, calc(0.12 * var(--idle-glow))),
     0 0 calc(15px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.5 * var(--glow-intensity))),
     0 0 calc(40px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.25 * var(--glow-intensity))),
     0 0 calc(80px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.1 * var(--glow-intensity)));
+
+  // A slow, shallow breath — the sun feels alive while it waits.
+  animation: mindedSunIdleBreath 9s ease-in-out infinite;
 
   z-index: 30;
   cursor: grab;
@@ -49,6 +67,7 @@
   &.dragging {
     cursor: grabbing;
     transition: none; /* Instant update during drag */
+    animation: none; /* Let the drag glow own the box-shadow */
   }
 
   &.moon {
@@ -61,6 +80,8 @@
     box-shadow:
       0 0 1px 0 rgba(255, 255, 255, 0.9),
       0 0 28px 3px rgba(255, 255, 255, 0.14),
+      0 0 calc(34px * var(--idle-glow))
+        rgba(210, 224, 255, calc(0.22 * var(--idle-glow))),
       0 0 calc(20px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(56px * var(--glow-intensity))
@@ -98,5 +119,22 @@
     &.filled {
       background: rgba(255, 255, 255, 0.9);
     }
+  }
+}
+
+@keyframes mindedSunIdleBreath {
+  0%,
+  100% {
+    --idle-glow: 0.15;
+  }
+  50% {
+    --idle-glow: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minded-sun {
+    animation: none;
+    --idle-glow: 0.25;
   }
 }

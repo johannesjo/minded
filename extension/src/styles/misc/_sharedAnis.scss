@@ -7,6 +7,21 @@
   }
 }
 
+// Page-level entrance: fade paired with a barely-there scale so views feel
+// like they arrive rather than blink into place. Uses the independent `scale`
+// property (NOT `transform: scale()`) so it composes with any centering
+// `transform: translate(...)` instead of clobbering it. Kept tiny on purpose.
+@keyframes minded6622fadeInScale {
+  0% {
+    opacity: 0;
+    scale: 0.985;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
 @keyframes minded6622fadeInOut {
   0% {
     opacity: 0;

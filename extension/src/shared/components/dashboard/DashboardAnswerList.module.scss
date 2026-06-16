@@ -7,6 +7,29 @@
     @include onNonMobileScreens {
       margin-top: 16px;
     }
+
+    // Entries settle in one after another instead of all at once — a small
+    // stagger that makes the list feel composed rather than dumped.
+    animation: minded6622fadeIn var(--dur-soft) var(--ease-out) both;
+
+    // First .dashboardContent is the 2nd child (the title is 1st); start the
+    // cascade there and cap it so long lists don't drag on.
+    @for $i from 1 through 8 {
+      &:nth-child(#{$i + 1}) {
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
+
+    &:nth-child(n + 10) {
+      animation-delay: 0.45s;
+    }
+
+    // The delays above are literals, not tokens, so zeroing --dur-soft alone
+    // would still hold each entry at opacity 0 for up to 0.45s (fill-mode:
+    // both) before snapping in. Drop the stagger so they appear at once.
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 }
 

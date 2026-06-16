@@ -152,154 +152,172 @@ export const DashboardGroups: (props: {
       )}
 
       <For each={getDashboardGroups()}>
-        {(dg) => (
-          <div
-            onClick={() => {
-              if (dg.type === DashboardGroupType.SleepWindDown) {
-                navigate("/sleepWindDown");
-                return;
+        {(dg) => {
+          const isInteractive =
+            "id" in dg || dg.type === DashboardGroupType.SleepWindDown;
+          const activate = () => {
+            if (dg.type === DashboardGroupType.SleepWindDown) {
+              navigate("/sleepWindDown");
+              return;
+            }
+            if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);
+          };
+          return (
+            <div
+              onClick={activate}
+              role={isInteractive ? "button" : undefined}
+              tabindex={isInteractive ? 0 : undefined}
+              onKeyDown={
+                isInteractive
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        activate();
+                      }
+                    }
+                  : undefined
               }
-              if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);
-            }}
-            classList={{
-              ["cardDashboard"]: true,
-              [styles.box]: true,
-              [styles.interactive]:
-                "id" in dg || dg.type === DashboardGroupType.SleepWindDown,
-              [styles.centerItem]:
-                dg.type !== DashboardGroupType.TxtQuestion &&
-                dg.type !== DashboardGroupType.BrowsingBehaviorRating &&
-                dg.type !== DashboardGroupType.SelfAssessment,
-            }}
-          >
-            {(() => {
-              switch (dg.type) {
-                case DashboardGroupType.SleepWindDown:
-                  return (
-                    <div>
-                      <div class="dashboardHeading">wind down for sleep</div>
-                      <div class="fatTxt">it's getting late</div>
-                    </div>
-                  );
-                case DashboardGroupType.DailyBudgetRemaining:
-                  // eslint-disable-next-line no-case-declarations
-                  const dgBudget = dg as DashboardGroupDailyBudgetRemaining;
-                  // eslint-disable-next-line no-case-declarations
-                  const remainingMin = Math.ceil(
-                    dgBudget.remainingSeconds / 60,
-                  );
-                  return (
-                    <div>
-                      <div class="dashboardHeading">daily budget</div>
-                      <div class="fatTxt">
-                        {dgBudget.remainingSeconds > 0
-                          ? `${remainingMin} min left`
-                          : "Budget used up"}
+              classList={{
+                ["cardDashboard"]: true,
+                [styles.box]: true,
+                [styles.interactive]: isInteractive,
+                [styles.centerItem]:
+                  dg.type !== DashboardGroupType.TxtQuestion &&
+                  dg.type !== DashboardGroupType.BrowsingBehaviorRating &&
+                  dg.type !== DashboardGroupType.SelfAssessment,
+              }}
+            >
+              {(() => {
+                switch (dg.type) {
+                  case DashboardGroupType.SleepWindDown:
+                    return (
+                      <div>
+                        <div class="dashboardHeading">wind down for sleep</div>
+                        <div class="fatTxt">it's getting late</div>
                       </div>
-                    </div>
-                  );
-                case DashboardGroupType.AppUsageRating:
-                case DashboardGroupType.BrowsingBehaviorRating:
-                  // eslint-disable-next-line no-case-declarations
-                  const rd = (
-                    dg as
-                      | DashboardGroupBrowsingBehaviorHappiness
-                      | DashboardGroupAppUsageHappiness
-                  ).data;
-                  return (
-                    <div class={styles.browsingBehaviorGraph}>
-                      <div class="dashboardHeading">
-                        {IS_ANDROID
-                          ? "bad app usage rating over time"
-                          : "browsing behavior over time"}
+                    );
+                  case DashboardGroupType.DailyBudgetRemaining:
+                    // eslint-disable-next-line no-case-declarations
+                    const dgBudget = dg as DashboardGroupDailyBudgetRemaining;
+                    // eslint-disable-next-line no-case-declarations
+                    const remainingMin = Math.ceil(
+                      dgBudget.remainingSeconds / 60,
+                    );
+                    return (
+                      <div>
+                        <div class="dashboardHeading">daily budget</div>
+                        <div class="fatTxt">
+                          {dgBudget.remainingSeconds > 0
+                            ? `${remainingMin} min left`
+                            : "Budget used up"}
+                        </div>
                       </div>
-                      <Chart
-                        chartData={getAppUsageOrBrowsingBehaviorChartData(rd)}
+                    );
+                  case DashboardGroupType.AppUsageRating:
+                  case DashboardGroupType.BrowsingBehaviorRating:
+                    // eslint-disable-next-line no-case-declarations
+                    const rd = (
+                      dg as
+                        | DashboardGroupBrowsingBehaviorHappiness
+                        | DashboardGroupAppUsageHappiness
+                    ).data;
+                    return (
+                      <div class={styles.browsingBehaviorGraph}>
+                        <div class="dashboardHeading">
+                          {IS_ANDROID
+                            ? "bad app usage rating over time"
+                            : "browsing behavior over time"}
+                        </div>
+                        <Chart
+                          chartData={getAppUsageOrBrowsingBehaviorChartData(rd)}
+                        />
+                      </div>
+                    );
+                  case DashboardGroupType.Stats:
+                    // eslint-disable-next-line no-case-declarations
+                    const dgs = dg as DashboardGroupStats;
+                    return (
+                      <div class={styles.stats}>
+                        <div
+                          class="dashboardHeading"
+                          title="'minded' decisions are counted every time when you leave a website by clicking the sun."
+                        >
+                          minded decisions today
+                        </div>
+                        <div
+                          class="fatTxt"
+                          title={
+                            dgs.attempts +
+                            " website visit attempts today in total"
+                          }
+                        >
+                          {dgs.sunTaps}
+                        </div>
+                      </div>
+                    );
+                  case DashboardGroupType.MoodCheckin:
+                    // eslint-disable-next-line no-case-declarations
+                    const dgm = dg as DashboardGroupMood;
+                    // eslint-disable-next-line no-case-declarations
+                    const additionalTxt =
+                      dgm.additionalTxt === "null" ? null : dgm.additionalTxt;
+                    return (
+                      <div class={styles.moodCheckinWidget}>
+                        <div class="dashboardHeading">
+                          you feel <span class="fatTxt">{dgm.mood}</span> today!
+                        </div>
+                        <div class="dashboardContent">
+                          {additionalTxt}
+                          {!additionalTxt &&
+                            (dgm.mood === MoodCheckinVal.Awful ||
+                              dgm.mood === MoodCheckinVal.Bad) &&
+                            "Be very kind to yourself!"}
+                        </div>
+                      </div>
+                    );
+                  case DashboardGroupType.Quote:
+                    return <RndQuote />;
+
+                  case DashboardGroupType.SelfAssessment:
+                    // eslint-disable-next-line no-case-declarations
+                    const dgSA = dg as DashboardGroupSelAssessment;
+                    return (
+                      <SelfAssessmentCard
+                        selfAssessmentEntries={dgSA.entries}
                       />
-                    </div>
-                  );
-                case DashboardGroupType.Stats:
-                  // eslint-disable-next-line no-case-declarations
-                  const dgs = dg as DashboardGroupStats;
-                  return (
-                    <div class={styles.stats}>
-                      <div
-                        class="dashboardHeading"
-                        title="'minded' decisions are counted every time when you leave a website by clicking the sun."
-                      >
-                        minded decisions today
-                      </div>
-                      <div
-                        class="fatTxt"
-                        title={
-                          dgs.attempts +
-                          " website visit attempts today in total"
-                        }
-                      >
-                        {dgs.sunTaps}
-                      </div>
-                    </div>
-                  );
-                case DashboardGroupType.MoodCheckin:
-                  // eslint-disable-next-line no-case-declarations
-                  const dgm = dg as DashboardGroupMood;
-                  // eslint-disable-next-line no-case-declarations
-                  const additionalTxt =
-                    dgm.additionalTxt === "null" ? null : dgm.additionalTxt;
-                  return (
-                    <div class={styles.moodCheckinWidget}>
-                      <div class="dashboardHeading">
-                        you feel <span class="fatTxt">{dgm.mood}</span> today!
-                      </div>
-                      <div class="dashboardContent">
-                        {additionalTxt}
-                        {!additionalTxt &&
-                          (dgm.mood === MoodCheckinVal.Awful ||
-                            dgm.mood === MoodCheckinVal.Bad) &&
-                          "Be very kind to yourself!"}
-                      </div>
-                    </div>
-                  );
-                case DashboardGroupType.Quote:
-                  return <RndQuote />;
+                    );
 
-                case DashboardGroupType.SelfAssessment:
-                  // eslint-disable-next-line no-case-declarations
-                  const dgSA = dg as DashboardGroupSelAssessment;
-                  return (
-                    <SelfAssessmentCard selfAssessmentEntries={dgSA.entries} />
-                  );
-
-                case DashboardGroupType.EnergyLvl:
-                  // eslint-disable-next-line no-case-declarations
-                  const dge = dg as DashboardGroupEnergyLvl;
-                  return (
-                    <div class={styles.energyLvl}>
-                      <div class="dashboardHeading">
-                        your energy level today
+                  case DashboardGroupType.EnergyLvl:
+                    // eslint-disable-next-line no-case-declarations
+                    const dge = dg as DashboardGroupEnergyLvl;
+                    return (
+                      <div class={styles.energyLvl}>
+                        <div class="dashboardHeading">
+                          your energy level today
+                        </div>
+                        <Rating isShowOnly={true} value={dge.energyLvl} />
                       </div>
-                      <Rating isShowOnly={true} value={dge.energyLvl} />
-                    </div>
-                  );
+                    );
 
-                case DashboardGroupType.EmotionLabeling:
-                  // eslint-disable-next-line no-case-declarations
-                  const dgEl = dg as DashboardGroupEmotionLabeling;
-                  return (
-                    <div>
-                      <div class="dashboardHeading">your emotions today</div>
-                      <div class="dashboardContent">
-                        {dgEl.emotions.join(", ")}
+                  case DashboardGroupType.EmotionLabeling:
+                    // eslint-disable-next-line no-case-declarations
+                    const dgEl = dg as DashboardGroupEmotionLabeling;
+                    return (
+                      <div>
+                        <div class="dashboardHeading">your emotions today</div>
+                        <div class="dashboardContent">
+                          {dgEl.emotions.join(", ")}
+                        </div>
                       </div>
-                    </div>
-                  );
+                    );
 
-                default:
-                  return <DashboardAnswerList dashboardGroup={dg} />;
-              }
-            })()}
-          </div>
-        )}
+                  default:
+                    return <DashboardAnswerList dashboardGroup={dg} />;
+                }
+              })()}
+            </div>
+          );
+        }}
       </For>
     </div>
   );

@@ -32,7 +32,7 @@
     pointer-events: all;
     display: inline-block;
     line-height: var(--rating-size);
-    transition: all ease-in 0.1s;
+    transition: transform var(--dur-quick) var(--ease-out);
 
     &:disabled {
       cursor: default;
@@ -54,7 +54,7 @@
     width: var(--rating-size);
     height: var(--rating-size);
     opacity: var(--rating-inactive-opacity);
-    transition: opacity ease-in 0.1s;
+    transition: opacity var(--dur-quick) var(--ease-out);
 
     &.isFull {
       color: var(--c-fg-full-emphasis);

@@ -195,6 +195,12 @@ $aniDur: 1.5s;
     :global {
       animation-name: minded6622fadeIn;
     }
+
+    // This re-asserts the entrance after the mixin above, which would otherwise
+    // out-order the mixin's own reduced-motion reset — restore it here too.
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 
   &:nth-child(n + 7) {
@@ -240,16 +246,30 @@ $aniDur: 1.5s;
 
   &.interactive {
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      transform var(--dur-quick) var(--ease-out),
+      box-shadow var(--dur-quick) var(--ease-out),
+      background var(--dur-quick) var(--ease-out);
 
     &:active {
       transform: scale(0.95);
     }
 
+    // Keyboard focus gets the same calm teal ring used for links.
+    &:focus-visible {
+      outline: 2px solid var(--c-link-color);
+      outline-offset: 3px;
+    }
+
     //@include onMousePrimary() {
     @media (hover: hover) {
       &:hover {
+        // Lift the glass: a small rise, a soft shadow, a brighter fill. The
+        // bg-opacity bump already reads as "frosted"; no backdrop-filter toggle
+        // (it can't ease and forces a full backdrop repaint on hover).
         background: var(--dashboard-card-bg-hover);
+        transform: translateY(-3px);
+        box-shadow: var(--dashboard-card-shadow-hover);
       }
     }
   }

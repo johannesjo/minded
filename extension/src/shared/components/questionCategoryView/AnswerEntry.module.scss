@@ -53,7 +53,9 @@
   z-index: 1;
   visibility: hidden;
   opacity: 0;
-  transition: 0.2s all ease-in-out;
+  transition:
+    opacity var(--dur-quick) var(--ease-out),
+    visibility var(--dur-quick) var(--ease-out);
 
   .AnswerEntry:hover & {
     visibility: visible;
