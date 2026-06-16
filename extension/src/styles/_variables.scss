@@ -83,12 +83,21 @@
   --rating-size: 48px;
   --rating-size-small: 24px;
 
-  --little-sun-bg: #fff;
+  // A solid, warm little sun — the same companion that was just on screen,
+  // resting in the corner. A bright top-left sheen over a warm amber body so it
+  // reads unmistakably as a sun (not a pale, washed-out disc) on any page.
+  --little-sun-bg:
+    radial-gradient(
+      circle at 34% 28%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0) 42%
+    ),
+    radial-gradient(circle at 50% 56%, #ffe487 0%, #ffb24f 55%, #f2823c 100%);
   --little-sun-shadow: 0 0 6px 1px #e9843a;
   --litle-sun-txt-fz: 13px;
   --litle-sun-counter-fz: 12px;
   --litle-sun-btn-fz: 16px;
-  --little-sun-txt-c: rgba(0, 0, 0, 0.6);
+  --little-sun-txt-c: #5a3210;
 
   --success-sun-txt-c: rgba(0, 0, 0, 0.6);
 

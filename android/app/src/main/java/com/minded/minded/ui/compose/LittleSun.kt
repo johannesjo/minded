@@ -7,11 +7,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +40,17 @@ fun LittleSun(
     val minutes = if (showText) elapsedSeconds / 60 else 0
     val remainingSeconds = if (showText) elapsedSeconds % 60 else 0
     val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
-    val color = Color.White
+    // A solid, warm little sun rather than a pale white disc — a bright center
+    // fading to a warm amber edge so it reads as a sun companion on any
+    // wallpaper.
+    val sunBrush = Brush.radialGradient(
+        colorStops = arrayOf(
+            0.0f to Color(0xFFFFF0C2),
+            0.55f to Color(0xFFFFB24F),
+            1.0f to Color(0xFFF2823C),
+        ),
+    )
+    val textColor = Color(0xFF5A3210)
 
     var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
@@ -65,37 +77,31 @@ fun LittleSun(
                 contentAlignment = Alignment.Center // This will center the inner Box
 
             ) {
-                val brush = Brush.radialGradient(listOf(Color.Red, Color.Transparent))
+                val glowBrush = Brush.radialGradient(
+                    listOf(Color(0xCCF2823C), Color.Transparent)
+                )
                 Canvas(
                     modifier = Modifier.size(64.dp),
                     onDraw = {
-                        drawCircle(brush)
+                        drawCircle(glowBrush)
                     }
                 )
 
                 Box(
                     modifier = Modifier
                         .size(26.dp)
+                        .clip(CircleShape)
+                        .background(sunBrush),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = color,
-                        modifier = Modifier
-                            .matchParentSize()
-//                    .shadow(elevation = 4.dp, shape = CircleShape) // Add shadow here
-
-                    ) {
-
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = clockString,
-                                fontSize = 10.sp,
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Normal,
-                                maxLines = 1
-                            )
-                        }
-                    }
+                    Text(
+                        text = clockString,
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor,
+                        maxLines = 1
+                    )
                 }
             }
         }

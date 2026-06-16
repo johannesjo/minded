@@ -87,7 +87,8 @@ $shadow: var(--little-sun-shadow);
   box-shadow: $shadow;
 
   text-align: center;
-  color: #956969;
+  color: var(--little-sun-txt-c);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   font-weight: 700;
   white-space: nowrap;
   font-size: var(--litle-sun-counter-fz);
