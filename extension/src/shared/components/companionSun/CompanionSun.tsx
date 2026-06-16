@@ -18,8 +18,6 @@ interface CompanionSunProps {
   variant: "sun" | "moon";
   /** The persistent sun is the global "get asked a question" trigger. */
   onTap: () => void;
-  /** Disabled while the sun is being used as a visual handoff/anchor. */
-  interactive: boolean;
 }
 
 /**
@@ -36,21 +34,16 @@ export const CompanionSun: Component<CompanionSunProps> = (props) => {
     <button
       type="button"
       class={styles.companionSun}
-      classList={{
-        [styles.isHidden]: !props.visible,
-        [styles.isStatic]: props.visible && !props.interactive,
-      }}
+      classList={{ [styles.isHidden]: !props.visible }}
       style={{
         "--c-x": props.home.centerX,
         "--c-y": props.home.centerY,
         "--c-scale": props.home.scale,
       }}
       aria-label="Get asked a question"
-      aria-hidden={!props.visible || !props.interactive}
-      tabindex={props.visible && props.interactive ? 0 : -1}
-      onClick={() => {
-        if (props.interactive) props.onTap();
-      }}
+      aria-hidden={!props.visible}
+      tabindex={props.visible ? 0 : -1}
+      onClick={() => props.onTap()}
     >
       <span class="minded-sun" classList={{ moon: props.variant === "moon" }} />
     </button>

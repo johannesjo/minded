@@ -47,6 +47,10 @@
     height: 100%;
     cursor: pointer;
     pointer-events: none; // taps land on the button, not the disc
+    // Permanently mounted, so don't keep a compositor layer alive for the glow:
+    // box-shadow can't be composited (only transform glides). Overrides the
+    // inherited `will-change: transform, box-shadow` from Sun.scss.
+    will-change: transform;
     // Keep the inherited box-shadow easing (the idle-breath glow) alongside the
     // hover transform; overriding `transition` outright would drop it.
     transition:
@@ -73,15 +77,6 @@
   // idle breath so we aren't repainting an invisible disc behind the overlay.
   :global(.minded-sun) {
     animation-play-state: paused;
-  }
-}
-
-.isStatic {
-  pointer-events: none;
-  cursor: default;
-
-  :global(.minded-sun) {
-    cursor: default;
   }
 }
 
