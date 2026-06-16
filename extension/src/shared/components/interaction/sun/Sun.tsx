@@ -63,6 +63,14 @@ export interface SunSettle {
   anchorYRatio?: number;
   /** Horizontal resting point as a fraction of viewport width (default 0.5). */
   anchorXRatio?: number;
+  /**
+   * Fixed horizontal resting point in px from the left edge. Overrides
+   * anchorXRatio when set. Use to land on a fixed-px element (the Little Sun
+   * corner) so the two don't drift apart on wide viewports.
+   */
+  anchorXPx?: number;
+  /** Fixed vertical resting point in px from the bottom edge. Overrides anchorYRatio when set. */
+  anchorYPxFromBottom?: number;
   /** Resting scale relative to the sun's base size. */
   scale?: number;
   /** Run one slow inhale→exhale while settled. */
@@ -213,17 +221,20 @@ export const Sun: Component<SunProps> = (props) => {
     }
   };
 
-  // Offset that places the sun's center on a viewport anchor, given as
-  // fractions of viewport width/height (x defaults to centered).
+  // Offset that places the sun's center on a resting anchor. The anchor is a
+  // fraction of viewport width/height (x defaults to centered), unless a fixed
+  // px anchor is given — px wins so the sun can land exactly on a fixed-px
+  // element (the Little Sun corner) without drifting on wide viewports.
   const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
     if (!rest) return getDragOffset();
-    return {
-      x: window.innerWidth * (settle.anchorXRatio ?? 0.5) - rest.x,
-      y:
-        window.innerHeight * (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO) -
-        rest.y,
-    };
+    const anchorX =
+      settle.anchorXPx ?? window.innerWidth * (settle.anchorXRatio ?? 0.5);
+    const anchorY =
+      settle.anchorYPxFromBottom != null
+        ? window.innerHeight - settle.anchorYPxFromBottom
+        : window.innerHeight * (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO);
+    return { x: anchorX - rest.x, y: anchorY - rest.y };
   };
 
   // Ease the offset and scale toward a target, dispatching the sun's position

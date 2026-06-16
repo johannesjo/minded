@@ -24,13 +24,24 @@ export const SUN_REST_SETTLE: SunSettle = {
 };
 
 /**
+ * The Little Sun's center sits ~40px in from the bottom-left corner
+ * (`left: 40px`, `$sun-size: 40px` in LittleSun.scss). Keep this in sync with
+ * that corner so the hand-off stays seamless.
+ */
+const LITTLE_SUN_CORNER_PX = 40;
+
+/**
  * Time chosen → the sun glides to the bottom-left corner and shrinks to roughly
- * the Little Sun's size, so the persistent timer reads as the same sun settling
- * in (it appears at this corner; see LittleSun). Tuned to ~the Little Sun's spot.
+ * the Little Sun's size, then the Little Sun blooms in place where it lands, so
+ * the persistent timer reads as the very same sun settling in.
+ *
+ * Anchored in fixed px (not viewport ratios) to match the Little Sun's fixed
+ * corner exactly — otherwise the two drift apart on wide monitors (a 5vw anchor
+ * is 64px at 1280px but 128px at 2560px, while the Little Sun stays at 40px).
  */
 export const SUN_DEPART_SETTLE: SunSettle = {
-  anchorXRatio: 0.05,
-  anchorYRatio: 0.94,
+  anchorXPx: LITTLE_SUN_CORNER_PX,
+  anchorYPxFromBottom: LITTLE_SUN_CORNER_PX,
   scale: 0.34,
   breathe: false,
 };
