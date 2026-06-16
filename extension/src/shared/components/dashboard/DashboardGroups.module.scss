@@ -21,6 +21,20 @@ $aniDur: 1.5s;
   --hero-reserve: var(--companion-top-bar-height);
   padding-top: var(--hero-reserve);
 
+  // Fade content out as it scrolls up into the companion sun's zone, instead of
+  // letting cards collide hard with the disc (looks bad, especially on mobile).
+  // The mask is anchored to the scroll viewport, not the moving content, so the
+  // fade stays pinned at the top edge while content scrolls into it. The fade
+  // spans --hero-reserve so it always matches the sun's reserved footprint.
+  $hero-fade: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0, 0, 0, 0.55) calc(var(--hero-reserve) * 0.55),
+    #000 var(--hero-reserve)
+  );
+  -webkit-mask-image: $hero-fade;
+  mask-image: $hero-fade;
+
   @media (min-width: $bpDashboardMoreThan1Col) {
     display: grid;
     position: absolute;
