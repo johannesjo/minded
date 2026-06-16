@@ -20,4 +20,19 @@
   margin-top: calc(
     var(--safe-area-inset-top) + var(--companion-top-bar-height)
   );
+
+  // The companion sun sits just above this scroll viewport, so content used to
+  // hit the top edge with a hard cut when scrolling. Feather the top edge so
+  // content dissolves into the sun's bar instead. The mask is anchored to the
+  // scroll viewport (not the moving content), so the fade stays pinned at the
+  // top while content scrolls into it. Matches the dashboard's hero fade.
+  --top-fade: clamp(28px, 5vh, 48px);
+  $top-fade: linear-gradient(
+    to bottom,
+    transparent 0,
+    rgba(0, 0, 0, 0.55) calc(var(--top-fade) * 0.55),
+    #000 var(--top-fade)
+  );
+  -webkit-mask-image: $top-fade;
+  mask-image: $top-fade;
 }
