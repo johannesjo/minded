@@ -6,10 +6,10 @@
   position: fixed;
   top: 0;
   left: 0;
-  // Above page content. It does not need to out-rank the interaction overlay:
-  // while the overlay is open the sun is hidden (opacity 0 + pointer-events
-  // none), so it never competes with the interaction for taps.
-  z-index: 10;
+  // Above page content and the dashboard question overlay. During the overlay
+  // handoff it is click-through and out of the a11y tree, so it never competes
+  // with the interaction for taps or focus.
+  z-index: 30;
   margin: 0;
   padding: 0;
   border: none;
@@ -24,16 +24,13 @@
   // breakpoints) — the companion is a separate, lighter element, so an exact
   // match isn't needed for the cross-fade. Revisit if Phase 2 morphs one
   // element through both.
-  width: clamp(68px, 11vh, 96px);
-  height: clamp(68px, 11vh, 96px);
+  width: clamp(58px, 9.5vh, 88px);
+  height: clamp(58px, 9.5vh, 88px);
 
-  // Position the sun's center on a viewport anchor and scale it per home; the
-  // transition turns each home change into a glide. translate's percentages
+  // Position the sun's center on a viewport/shell anchor and scale it per home;
+  // the transition turns each home change into a glide. translate's percentages
   // refer to the button's own box, so it self-centers on the anchor.
-  transform: translate(
-      calc(var(--cx) * 100vw - 50%),
-      calc(var(--cy) * 100vh - 50%)
-    )
+  transform: translate(calc(var(--c-x) - 50%), calc(var(--c-y) - 50%))
     scale(var(--c-scale));
   transition:
     transform 650ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -79,23 +76,13 @@
   }
 }
 
-.label {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-top: 16px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  color: inherit;
-  font-size: var(--fz-s);
-  letter-spacing: 0.08em;
-  opacity: 0;
+.isStatic {
   pointer-events: none;
-  transition: opacity 400ms ease;
-}
+  cursor: default;
 
-.labelVisible {
-  opacity: 0.65;
+  :global(.minded-sun) {
+    cursor: default;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

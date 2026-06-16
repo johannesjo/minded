@@ -41,17 +41,22 @@ import Styleguide from "@src/shared/components/styleguide/Styleguide";
 const IS_DEV: boolean = process.env.NODE_ENV !== "production";
 
 // The persistent companion sun's resting "homes". It glides between them as the
-// route changes (see CompanionSun). The dashboard hero sits near the top; the
-// cards are kept clear of it via --hero-reserve in DashboardGroups.
+// route changes (see CompanionSun). The dashboard hero sits near the top; other
+// pages reserve a transparent top bar for the smaller shell companion.
 const DASHBOARD_SUN_HOME: CompanionHome = {
-  xRatio: 0.5,
-  yRatio: 0.16,
-  scale: 1,
+  centerX: "50vw",
+  centerY: "11vh",
+  scale: 0.86,
 };
-const PAGE_SUN_HOME: CompanionHome = {
-  xRatio: 0.88,
-  yRatio: 0.12,
-  scale: 0.42,
+const TOP_BAR_SUN_HOME: CompanionHome = {
+  centerX: "50vw",
+  centerY: "var(--companion-top-bar-center-y)",
+  scale: 0.66,
+};
+const QUESTION_OVERLAY_SUN_HOME: CompanionHome = {
+  centerX: "50vw",
+  centerY: "19vh",
+  scale: 0.72,
 };
 
 const MainWrapper = (props: RouteSectionProps) => {
@@ -70,7 +75,12 @@ const MainWrapper = (props: RouteSectionProps) => {
   );
   // Reactive via location; cheap enough to be a plain accessor (no memo needed).
   const companionHome = (): CompanionHome =>
-    isDashboard() ? DASHBOARD_SUN_HOME : PAGE_SUN_HOME;
+    getIsShowQuestionOverlay()
+      ? QUESTION_OVERLAY_SUN_HOME
+      : isDashboard()
+        ? DASHBOARD_SUN_HOME
+        : TOP_BAR_SUN_HOME;
+  const isCompanionInteractive = () => !getIsShowQuestionOverlay();
 
   // const navigate = useNavigate();
 
@@ -97,13 +107,18 @@ const MainWrapper = (props: RouteSectionProps) => {
 
   return (
     <>
-      <main class={styles.contentWrapper}>{props.children}</main>
+      <main
+        class={styles.contentWrapper}
+        classList={{ [styles.withCompanionBar]: !isDashboard() }}
+      >
+        {props.children}
+      </main>
 
       <CompanionSun
         home={companionHome()}
-        visible={!getIsShowQuestionOverlay()}
+        visible={true}
+        interactive={isCompanionInteractive()}
         variant={getSunVariant()}
-        showLabel={isDashboard()}
         onTap={() => setIsShowQuestionOverlay(true)}
       />
 
