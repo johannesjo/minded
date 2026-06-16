@@ -431,10 +431,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // the overlay fades, so the persistent timer reads as the same sun settling
     // in rather than a new element popping up.
     setSunPhase("departing");
-    // Fade out the entire overlay before transitioning to Little Sun
+    // Reveal the page beneath by fading the sky and the choices — but NOT the
+    // sun. Fading the whole wrapper's opacity (the old approach) faded the sun
+    // along with it, so by the time it reached the corner it had all but
+    // dissolved. `is-departing` fades only the background layers, leaving the
+    // sun fully opaque so it reads as a companion gliding into the corner to
+    // settle in as the Little Sun.
     if (props.wrapperEl) {
-      props.wrapperEl.style.transition = `opacity ${SCREEN_TRANSITION_MS}ms ease-out`;
-      props.wrapperEl.style.opacity = "0";
+      props.wrapperEl.classList.add("is-departing");
     }
 
     // After fade out completes, call native side

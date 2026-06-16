@@ -54,6 +54,26 @@
     }
   }
 
+  // Time chosen → the overlay hands off to the persistent Little Sun. We fade
+  // the sky (this wrapper's gradient, the drifting orb, the grain, and the
+  // BackgroundTransition layers) to reveal the page beneath, while leaving the
+  // sun untouched so it can glide into the corner fully opaque. Fading the
+  // wrapper's own opacity instead would take the sun down with it.
+  &.is-departing {
+    background: transparent;
+
+    &::before,
+    &::after {
+      opacity: 0;
+      transition: opacity 1000ms ease-out;
+    }
+
+    .background-transition.background-default {
+      opacity: 0;
+      transition: opacity 1000ms ease-out;
+    }
+  }
+
   @media (orientation: portrait) {
   }
 

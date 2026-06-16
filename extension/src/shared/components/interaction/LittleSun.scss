@@ -87,16 +87,41 @@ $shadow: var(--little-sun-shadow);
   box-shadow: $shadow;
 
   text-align: center;
-  color: #956969;
+  color: var(--little-sun-txt-c);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   font-weight: 700;
   white-space: nowrap;
   font-size: var(--litle-sun-counter-fz);
   user-select: none;
   padding: 0;
 
+  // It's the same sun that was just on screen, now keeping you company in the
+  // corner — so it stays alive: a slow, warm breath in its halo.
+  animation: minded6622littleSunBreath 9s ease-in-out infinite;
+
   &:focus-visible {
     outline: 2px solid var(--c-fg-full-emphasis);
     outline-offset: 4px;
+  }
+}
+
+@keyframes minded6622littleSunBreath {
+  0%,
+  100% {
+    box-shadow:
+      0 0 6px 1px rgba(233, 132, 58, 0.55),
+      0 0 14px 3px rgba(233, 132, 58, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 10px 2px rgba(233, 132, 58, 0.85),
+      0 0 28px 7px rgba(233, 132, 58, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #minded-6622-little-sun-sun {
+    animation: none;
   }
 }
 
@@ -123,6 +148,12 @@ $shadow: var(--little-sun-shadow);
   0% {
     transform: translate(-50%, -50%) scale(0.1);
     opacity: 0;
+  }
+  // A soft overshoot then settle — the sun lands and nestles in rather than
+  // snapping to size.
+  70% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 1;
   }
   100% {
     transform: translate(-50%, -50%) scale(1);
