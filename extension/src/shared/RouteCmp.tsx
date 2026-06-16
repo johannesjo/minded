@@ -10,10 +10,7 @@ import {
   addWrapperClasses,
   isDarkModeNow,
 } from "@src/shared/addWrapperClasses";
-import {
-  CompanionSun,
-  CompanionHome,
-} from "@src/shared/components/companionSun/CompanionSun";
+import { CompanionSun } from "@src/shared/components/companionSun/CompanionSun";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
 import {
@@ -39,16 +36,6 @@ import Styleguide from "@src/shared/components/styleguide/Styleguide";
 // so the styleguide route registers (and the import is kept). `npm run build` defaults to
 // production, so this evaluates to false and Rollup tree-shakes the import out.
 const IS_DEV: boolean = process.env.NODE_ENV !== "production";
-
-// The companion sun rests in the same compact top-bar spot on every route — the
-// dashboard included — so it takes identical space everywhere. centerY reads a
-// CSS var defined on .mainWrapper (RouteCmp.module.scss); the fixed-position sun
-// inherits it.
-const COMPANION_HOME: CompanionHome = {
-  centerX: "50vw",
-  centerY: "var(--companion-top-bar-center-y)",
-  scale: 0.66,
-};
 
 const MainWrapper = (props: RouteSectionProps) => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
@@ -100,7 +87,6 @@ const MainWrapper = (props: RouteSectionProps) => {
       </main>
 
       <CompanionSun
-        home={COMPANION_HOME}
         // Hidden while the question overlay owns the screen — the overlay shows
         // its own interactive sun, so the companion steps aside (never 2 suns).
         visible={!getIsShowQuestionOverlay()}

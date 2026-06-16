@@ -27,14 +27,16 @@
   width: clamp(58px, 9.5vh, 88px);
   height: clamp(58px, 9.5vh, 88px);
 
-  // Position the sun's center on a viewport/shell anchor and scale it per home;
-  // the transition turns each home change into a glide. translate's percentages
+  // Rests in the top bar on every route: centered horizontally, vertically on
+  // --companion-top-bar-center-y (RouteCmp.module.scss). translate's percentages
   // refer to the button's own box, so it self-centers on the anchor.
-  transform: translate(calc(var(--c-x) - 50%), calc(var(--c-y) - 50%))
-    scale(var(--c-scale));
-  transition:
-    transform 650ms cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 500ms ease;
+  transform: translate(
+      calc(50vw - 50%),
+      calc(var(--companion-top-bar-center-y) - 50%)
+    )
+    scale(0.66);
+  // Only opacity animates now (the overlay fade); the position is static.
+  transition: opacity 500ms ease;
 
   &:focus-visible {
     outline: 2px solid var(--c-link-color);

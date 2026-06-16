@@ -24,9 +24,10 @@ export const SUN_REST_SETTLE: SunSettle = {
 };
 
 /**
- * The Little Sun's center sits ~40px in from the bottom-left corner
- * (`left: 40px`, `$sun-size: 40px` in LittleSun.scss). Keep this in sync with
- * that corner so the hand-off stays seamless.
+ * The Little Sun's disc rests with its center 40px in from both the left and
+ * bottom edges — measured from LittleSun.scss (`left: 40px`, `bottom: 0`, a 40px
+ * disc centered by its bloom transform). The departing sun lands here so the
+ * hand-off is seamless; keep in sync if that corner moves.
  */
 const LITTLE_SUN_CORNER_PX = 40;
 
