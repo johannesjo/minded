@@ -26,20 +26,26 @@
   // Light theme only: a faint warm orb drifting over the morning-sky wash.
   // Gated on the ROOT — `.minded-6622-dark` is set on `#minded-6622`, not on
   // this wrapper, so gating on `&` would leak the orb into dark mode on the
-  // dashboard and every Android screen. Paint-only; ~2min round trip.
-  #minded-6622:not(.minded-6622-dark) & {
-    background-image:
-      radial-gradient(
-        circle at 50% 50%,
-        rgba(255, 241, 204, 0.33) 0%,
-        transparent 42%
-      ),
-      var(--background-gradient);
-    background-size: 160% 160%, cover;
-    background-position:
-      18% 12%,
-      center;
-    background-repeat: no-repeat;
+  // dashboard and every Android screen.
+  //
+  // The orb is its own oversized layer drifted with a composited `transform`
+  // rather than animating `background-position` on the full-viewport wrapper —
+  // background-position never composites, so that approach repaints the entire
+  // viewport every frame for the whole (multi-minute) life of the screen.
+  #minded-6622:not(.minded-6622-dark) &::before {
+    content: "";
+    position: absolute;
+    // Oversized and clipped by the wrapper's overflow:hidden, so the drift
+    // never exposes an edge. Sits below the grain (::after) and the content.
+    inset: -30%;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 241, 204, 0.33) 0%,
+      transparent 42%
+    );
+    will-change: transform;
     animation: mindedBgDrift 60s ease-in-out infinite alternate;
 
     // Same selector → the reduced-motion override is guaranteed to win.
@@ -61,13 +67,9 @@
 
 @keyframes mindedBgDrift {
   from {
-    background-position:
-      18% 12%,
-      center;
+    transform: translate3d(-10%, -8%, 0);
   }
   to {
-    background-position:
-      64% 40%,
-      center;
+    transform: translate3d(14%, 12%, 0);
   }
 }

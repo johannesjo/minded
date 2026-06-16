@@ -1,12 +1,11 @@
 @mixin standardPageTransitionIn() {
+  // No fill-mode on purpose: once the entrance ends the scale reverts to the
+  // element's own rules, so hover/active scales keep working.
   animation: minded6622fadeInScale ease 1000ms;
 
   :global {
     animation-name: minded6622fadeInScale;
   }
-
-  // No fill-mode on purpose: once the entrance ends the transform reverts to
-  // the element's own rules, so hover/active scales keep working.
 
   // Reduced-motion asks for instant, not a slow fade — drop the animation.
   @media (prefers-reduced-motion: reduce) {

@@ -195,6 +195,12 @@ $aniDur: 1.5s;
     :global {
       animation-name: minded6622fadeIn;
     }
+
+    // This re-asserts the entrance after the mixin above, which would otherwise
+    // out-order the mixin's own reduced-motion reset — restore it here too.
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 
   &:nth-child(n + 7) {

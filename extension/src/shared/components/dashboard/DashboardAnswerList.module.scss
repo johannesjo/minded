@@ -23,6 +23,13 @@
     &:nth-child(n + 10) {
       animation-delay: 0.45s;
     }
+
+    // The delays above are literals, not tokens, so zeroing --dur-soft alone
+    // would still hold each entry at opacity 0 for up to 0.45s (fill-mode:
+    // both) before snapping in. Drop the stagger so they appear at once.
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 }
 
