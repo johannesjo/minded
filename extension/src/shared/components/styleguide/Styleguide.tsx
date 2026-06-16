@@ -25,11 +25,14 @@ import Chart from "@src/shared/components/ui/Chart";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
-import Sun, {
-  type SunSettle,
-} from "@src/shared/components/interaction/sun/Sun";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import {
+  getSunSettleForPhase,
+  type SunPhase,
+} from "@src/shared/components/interaction/sun/sunSettle";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
+import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
@@ -549,36 +552,25 @@ const Subsection = (props: {
   </div>
 );
 
-type SunStagePhase = "interactive" | "breathing" | "resting";
-
 // Full-screen harness for the persistent-sun morph. Drives the real <Sun> with
-// the same `settle` targets InteractionCommon uses, alongside the real
-// background + post-sun content, so the glide / breath / rest can be felt and
-// tuned without having to trigger a strong-friction intervention.
+// the exact `settle` targets InteractionCommon uses (via getSunSettleForPhase),
+// alongside the real background + post-sun content, so the glide / breath / rest
+// can be felt and tuned without triggering a strong-friction intervention.
 const SunMorphHarness = (): JSX.Element => {
   const [isOpen, setIsOpen] = createSignal(false);
-  const [phase, setPhase] = createSignal<SunStagePhase>("interactive");
+  const [phase, setPhase] = createSignal<SunPhase>("interactive");
 
-  // Mirrors InteractionCommon.getSunSettle — keep in sync when tuning.
-  const settle = (): SunSettle | null => {
-    switch (phase()) {
-      case "breathing":
-        return {
-          anchorYRatio: 0.4,
-          scale: 0.82,
-          breathe: true,
-          breathSeconds: 7,
-        };
-      case "resting":
-        return { anchorYRatio: 0.26, scale: 0.56, breathe: false };
-      default:
-        return null;
-    }
-  };
+  const settle = () =>
+    getSunSettleForPhase(phase(), STRONG_FRICTION_BREATH_PAUSE_SECONDS);
 
   const isInteractive = () => phase() === "interactive";
 
-  const PHASES: SunStagePhase[] = ["interactive", "breathing", "resting"];
+  const PHASES: SunPhase[] = [
+    "interactive",
+    "breathing",
+    "resting",
+    "departing",
+  ];
 
   return (
     <>
@@ -596,6 +588,15 @@ const SunMorphHarness = (): JSX.Element => {
       <Show when={isOpen()}>
         <div class={styles.sunStage}>
           <BackgroundTransition isSunGradientAttached={true} />
+
+          {/* Marks where the Little Sun lives, to check the departing sun lands
+              on its corner. Harness-only. */}
+          <Show when={phase() === "departing"}>
+            <div
+              class={styles.sunStageLittleSunMarker}
+              title="Little Sun home"
+            />
+          </Show>
 
           <Show when={phase() === "breathing"}>
             <div class="time-selection-overlay" style={{ "z-index": 1100 }}>

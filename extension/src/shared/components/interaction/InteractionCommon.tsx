@@ -24,9 +24,11 @@ import {
   getQuestionSemiSmart,
 } from "@src/util/getQuestionSmart";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import Sun, {
-  type SunSettle,
-} from "@src/shared/components/interaction/sun/Sun";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import {
+  getSunSettleForPhase,
+  type SunPhase,
+} from "@src/shared/components/interaction/sun/sunSettle";
 import {
   setSoundEnabled,
   preloadSounds,
@@ -134,27 +136,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowBreathPause, setShowBreathPause] = createSignal(false);
   // The sun's lifecycle phase. "interactive" = draggable; "breathing" and
   // "resting" keep it on screen and transform it through the post-sun flow
-  // (breath pause → intent/time) instead of hiding and replacing it.
-  type SunPhase = "interactive" | "breathing" | "resting";
+  // (breath pause → intent/time) instead of hiding and replacing it. The
+  // phase → settle-target mapping lives in sunSettle.ts, shared with the
+  // styleguide harness so the two can't drift.
   const [getSunPhase, setSunPhase] = createSignal<SunPhase>("interactive");
 
-  const getSunSettle = (): SunSettle | null => {
-    switch (getSunPhase()) {
-      case "breathing":
-        return {
-          anchorYRatio: 0.4,
-          scale: 0.82,
-          breathe: true,
-          breathSeconds: getPostSunPauseSeconds(getFrictionLevel()),
-        };
-      case "resting":
-        // A small, calm anchor in the upper third while the choices sit beneath
-        // it (the overlay gets `has-resting-sun` top padding to clear the sun).
-        return { anchorYRatio: 0.26, scale: 0.56, breathe: false };
-      default:
-        return null;
-    }
-  };
+  const getSunSettle = () =>
+    getSunSettleForPhase(
+      getSunPhase(),
+      getPostSunPauseSeconds(getFrictionLevel()),
+    );
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
@@ -436,6 +427,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     clearTimeSelectionArmTimeout();
     setIsTimeSelectionArmed(false);
     setIsPostSunScreenFading(true);
+    // Send the sun gliding to the bottom-left corner (the Little Sun's home) as
+    // the overlay fades, so the persistent timer reads as the same sun settling
+    // in rather than a new element popping up.
+    setSunPhase("departing");
     // Fade out the entire overlay before transitioning to Little Sun
     if (props.wrapperEl) {
       props.wrapperEl.style.transition = `opacity ${SCREEN_TRANSITION_MS}ms ease-out`;

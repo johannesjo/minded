@@ -52,7 +52,9 @@ export const LittleSunComponent: (props: {
   const [getRemainingSeconds, setRemainingSeconds] = createSignal<
     number | null
   >(null);
-  const [getIsMoveOutOfTheWay, setIsMoveOutOfTheWay] = createSignal(false);
+  // Mount directly at the corner (no center → corner crawl): the interaction
+  // sun already glides here as it departs, so the Little Sun blooms in place.
+  const [getIsMoveOutOfTheWay] = createSignal(true);
   const [getIsBudgetMode, setIsBudgetMode] = createSignal(false);
   const [getBudgetRemaining, setBudgetRemaining] = createSignal<number | null>(
     null,
@@ -65,7 +67,6 @@ export const LittleSunComponent: (props: {
 
   let currentSessionInterval: number;
   let budgetUsageAccumulator = 0; // Track seconds since last storage write
-  let t0: NodeJS.Timeout;
   let hintTimeout: NodeJS.Timeout | undefined;
   let isDisposed = false;
   let isPageHiding = false;
@@ -287,9 +288,6 @@ export const LittleSunComponent: (props: {
       return;
     }
 
-    t0 = setTimeout(() => {
-      setIsMoveOutOfTheWay(true);
-    }, 200);
     void maybeShowHint();
     bro.storage.onChanged.addListener(handleStorageChange);
     window.addEventListener("pagehide", handlePageHide);
@@ -297,7 +295,6 @@ export const LittleSunComponent: (props: {
 
   onCleanup(() => {
     isDisposed = true;
-    window.clearTimeout(t0);
     window.clearTimeout(hintTimeout);
     window.clearInterval(currentSessionInterval);
     bro.storage.onChanged.removeListener(handleStorageChange);

@@ -61,6 +61,8 @@ interface SunProps {
 export interface SunSettle {
   /** Vertical resting point as a fraction of viewport height (0 = top). */
   anchorYRatio?: number;
+  /** Horizontal resting point as a fraction of viewport width (default 0.5). */
+  anchorXRatio?: number;
   /** Resting scale relative to the sun's base size. */
   scale?: number;
   /** Run one slow inhale→exhale while settled. */
@@ -211,14 +213,16 @@ export const Sun: Component<SunProps> = (props) => {
     }
   };
 
-  // Offset that places the sun's center on a viewport anchor (x centered,
-  // y as a fraction of viewport height).
-  const getAnchorOffset = (anchorYRatio: number): SunPosition => {
+  // Offset that places the sun's center on a viewport anchor, given as
+  // fractions of viewport width/height (x defaults to centered).
+  const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
     if (!rest) return getDragOffset();
     return {
-      x: window.innerWidth / 2 - rest.x,
-      y: window.innerHeight * anchorYRatio - rest.y,
+      x: window.innerWidth * (settle.anchorXRatio ?? 0.5) - rest.x,
+      y:
+        window.innerHeight * (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO) -
+        rest.y,
     };
   };
 
@@ -285,9 +289,8 @@ export const Sun: Component<SunProps> = (props) => {
 
   const enterSettle = (settle: SunSettle) => {
     setIsDragging(false);
-    const anchorYRatio = settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO;
     const restScale = settle.scale ?? DEFAULT_REST_SCALE;
-    const target = getAnchorOffset(anchorYRatio);
+    const target = getAnchorOffset(settle);
 
     if (prefersReducedMotion()) {
       cancelBreathFrame();
@@ -326,7 +329,7 @@ export const Sun: Component<SunProps> = (props) => {
     const settle = props.settle ?? null; // the only reactive dependency
     untrack(() => {
       const key = settle
-        ? `${settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO}:${settle.scale ?? DEFAULT_REST_SCALE}:${settle.breathe ? 1 : 0}:${settle.breathSeconds ?? 0}`
+        ? `${settle.anchorXRatio ?? 0.5}:${settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO}:${settle.scale ?? DEFAULT_REST_SCALE}:${settle.breathe ? 1 : 0}:${settle.breathSeconds ?? 0}`
         : null;
       if (key === lastSettleKey) return;
       lastSettleKey = key;

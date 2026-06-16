@@ -185,6 +185,19 @@
   z-index: 1101;
 }
 
+.sunStageLittleSunMarker {
+  position: fixed;
+  bottom: 0;
+  left: 40px;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px dashed rgba(0, 0, 0, 0.45);
+  z-index: 1102;
+  pointer-events: none;
+}
+
 .sunStageControls {
   position: fixed;
   bottom: 24px;
