@@ -52,9 +52,6 @@ export const LittleSunComponent: (props: {
   const [getRemainingSeconds, setRemainingSeconds] = createSignal<
     number | null
   >(null);
-  // Mount directly at the corner (no center → corner crawl): the interaction
-  // sun already glides here as it departs, so the Little Sun blooms in place.
-  const [getIsMoveOutOfTheWay] = createSignal(true);
   const [getIsBudgetMode, setIsBudgetMode] = createSignal(false);
   const [getBudgetRemaining, setBudgetRemaining] = createSignal<number | null>(
     null,
@@ -492,9 +489,11 @@ export const LittleSunComponent: (props: {
     <div
       id="minded-6622-little-sun"
       title={getAccessibleLabel()}
+      // Always at the corner: it blooms in place (the interaction sun glides
+      // here as it departs), so no center → corner crawl.
       classList={{
         ["bottomLeft"]: true,
-        ["isOutOfTheWay"]: getIsMoveOutOfTheWay(),
+        ["isOutOfTheWay"]: true,
       }}
     >
       <Show when={getShowHint()}>

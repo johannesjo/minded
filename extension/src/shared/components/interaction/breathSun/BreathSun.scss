@@ -55,34 +55,11 @@
   transform: scale(calc(1.14 - (var(--breath-progress) * 0.24)));
 }
 
-.breath-sun.is-cycle .breath-sun__core {
-  animation: mindedBreathSunCycle var(--breath-duration) ease-in-out forwards;
-}
-
-@keyframes mindedBreathSunCycle {
-  0% {
-    transform: scale(0.9);
-  }
-
-  46% {
-    transform: scale(1.14);
-    box-shadow:
-      var(--sun-shadow),
-      0 0 64px rgba(255, 255, 255, 0.32),
-      0 0 132px rgba(255, 214, 128, 0.2);
-  }
-
-  100% {
-    transform: scale(0.9);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .breath-sun__core,
   .breath-sun.is-inhale .breath-sun__core,
   .breath-sun.is-hold .breath-sun__core,
-  .breath-sun.is-exhale .breath-sun__core,
-  .breath-sun.is-cycle .breath-sun__core {
+  .breath-sun.is-exhale .breath-sun__core {
     animation: none;
     transform: scale(1);
     transition: none;

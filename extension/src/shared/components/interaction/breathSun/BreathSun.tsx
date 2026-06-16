@@ -1,6 +1,6 @@
 import type { Component } from "solid-js";
 
-export type BreathSunPhase = "ready" | "inhale" | "hold" | "exhale" | "cycle";
+export type BreathSunPhase = "ready" | "inhale" | "hold" | "exhale";
 
 interface BreathSunProps {
   phase: BreathSunPhase;
@@ -25,7 +25,6 @@ export const BreathSun: Component<BreathSunProps> = (props) => {
         "is-inhale": props.phase === "inhale",
         "is-hold": props.phase === "hold",
         "is-exhale": props.phase === "exhale",
-        "is-cycle": props.phase === "cycle",
       }}
       style={{
         "--breath-progress": progress().toString(),

@@ -589,15 +589,6 @@ const SunMorphHarness = (): JSX.Element => {
         <div class={styles.sunStage}>
           <BackgroundTransition isSunGradientAttached={true} />
 
-          {/* Marks where the Little Sun lives, to check the departing sun lands
-              on its corner. Harness-only. */}
-          <Show when={phase() === "departing"}>
-            <div
-              class={styles.sunStageLittleSunMarker}
-              title="Little Sun home"
-            />
-          </Show>
-
           <Show when={phase() === "breathing"}>
             <div class="time-selection-overlay" style={{ "z-index": 1100 }}>
               <div class="post-sun-screen">

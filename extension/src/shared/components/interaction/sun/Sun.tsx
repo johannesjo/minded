@@ -2,9 +2,9 @@ import {
   Component,
   createEffect,
   createSignal,
+  on,
   onCleanup,
   onMount,
-  untrack,
 } from "solid-js";
 import {
   DRAG_THRESHOLD_PX,
@@ -103,7 +103,7 @@ export const Sun: Component<SunProps> = (props) => {
   let longPressTimer: number | null = null;
   let resizeHandler: (() => void) | null = null;
   let initialPositionTimeouts: number[] = [];
-  let breathFrame: number | undefined;
+  let settleFrame: number | undefined;
 
   // Store event handler references for cleanup
   let touchStartHandler: EventListener | null = null;
@@ -142,7 +142,7 @@ export const Sun: Component<SunProps> = (props) => {
     if (animationFrame) {
       cancelAnimationFrame(animationFrame);
     }
-    cancelBreathFrame();
+    cancelSettleFrame();
     if (tapTimer) {
       clearTimeout(tapTimer);
     }
@@ -206,10 +206,10 @@ export const Sun: Component<SunProps> = (props) => {
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const cancelBreathFrame = () => {
-    if (breathFrame) {
-      cancelAnimationFrame(breathFrame);
-      breathFrame = undefined;
+  const cancelSettleFrame = () => {
+    if (settleFrame) {
+      cancelAnimationFrame(settleFrame);
+      settleFrame = undefined;
     }
   };
 
@@ -237,6 +237,9 @@ export const Sun: Component<SunProps> = (props) => {
     setIsAnimating(true); // suppress the CSS transform-transition while JS drives it
     const startOffset = getDragOffset();
     const startScale = getScale();
+    // The rest center is invariant during the glide — read the rect once here
+    // rather than every frame (the per-frame read forced a layout reflow).
+    const baseCenter = getSunCenterForOffset({ x: 0, y: 0 });
     const startTime = Date.now();
 
     const step = () => {
@@ -248,18 +251,23 @@ export const Sun: Component<SunProps> = (props) => {
       };
       setDragOffset(offset);
       setScale(startScale + (targetScale - startScale) * eased);
-      dispatchSunPosition(getSunCenterForOffset(offset));
+      if (baseCenter) {
+        dispatchSunPosition({
+          x: baseCenter.x + offset.x,
+          y: baseCenter.y + offset.y,
+        });
+      }
 
       if (progress < 1) {
-        breathFrame = requestAnimationFrame(step);
+        settleFrame = requestAnimationFrame(step);
       } else {
-        breathFrame = undefined;
+        settleFrame = undefined;
         onDone?.();
       }
     };
 
-    cancelBreathFrame();
-    breathFrame = requestAnimationFrame(step);
+    cancelSettleFrame();
+    settleFrame = requestAnimationFrame(step);
   };
 
   // One slow inhale→exhale over the pause, peaking at the midpoint — matching
@@ -275,16 +283,16 @@ export const Sun: Component<SunProps> = (props) => {
       setScale(restScale + (peak - restScale) * wave);
 
       if (t < 1) {
-        breathFrame = requestAnimationFrame(step);
+        settleFrame = requestAnimationFrame(step);
       } else {
-        breathFrame = undefined;
+        settleFrame = undefined;
         setScale(restScale);
         setIsAnimating(false);
       }
     };
 
-    cancelBreathFrame();
-    breathFrame = requestAnimationFrame(step);
+    cancelSettleFrame();
+    settleFrame = requestAnimationFrame(step);
   };
 
   const enterSettle = (settle: SunSettle) => {
@@ -293,7 +301,7 @@ export const Sun: Component<SunProps> = (props) => {
     const target = getAnchorOffset(settle);
 
     if (prefersReducedMotion()) {
-      cancelBreathFrame();
+      cancelSettleFrame();
       setDragOffset(target);
       setScale(restScale);
       dispatchSunPosition(getSunCenterForOffset(target));
@@ -311,7 +319,7 @@ export const Sun: Component<SunProps> = (props) => {
   };
 
   const exitSettle = () => {
-    cancelBreathFrame();
+    cancelSettleFrame();
     if (prefersReducedMotion()) {
       setDragOffset({ x: 0, y: 0 });
       setScale(1);
@@ -322,21 +330,21 @@ export const Sun: Component<SunProps> = (props) => {
     animateOffsetScaleTo({ x: 0, y: 0 }, 1, 500, () => setIsAnimating(false));
   };
 
-  // Re-settle only when the target meaningfully changes (e.g. breath →
-  // resting), not on every render that passes a fresh settle object.
-  let lastSettleKey: string | null = null;
-  createEffect(() => {
-    const settle = props.settle ?? null; // the only reactive dependency
-    untrack(() => {
-      const key = settle
-        ? `${settle.anchorXRatio ?? 0.5}:${settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO}:${settle.scale ?? DEFAULT_REST_SCALE}:${settle.breathe ? 1 : 0}:${settle.breathSeconds ?? 0}`
-        : null;
-      if (key === lastSettleKey) return;
-      lastSettleKey = key;
-      if (settle) enterSettle(settle);
-      else exitSettle();
-    });
-  });
+  // Re-settle when the target changes (phases map to stable settle objects, so
+  // identity tracks "did the target change"). `on` keeps the per-frame writes
+  // inside enter/exitSettle from re-triggering this; `defer` skips the initial
+  // interactive/null state so no spurious glide fires on mount.
+  createEffect(
+    on(
+      () => props.settle ?? null,
+      (settle, prevSettle) => {
+        if (settle === prevSettle) return;
+        if (settle) enterSettle(settle);
+        else exitSettle();
+      },
+      { defer: true },
+    ),
+  );
 
   const setupDragHandlers = () => {
     if (!sunEl) return;

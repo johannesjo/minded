@@ -167,7 +167,7 @@
 
 // Full-screen stage for the persistent-sun morph harness. The real
 // BackgroundTransition (position: fixed) paints the gradient; the sun layer
-// sits above the post-sun overlay (z-index 999) so it is never occluded.
+// sits above the post-sun overlay (z-index 1100) so it is never occluded.
 .sunStage {
   position: fixed;
   inset: 0;
@@ -183,19 +183,6 @@
   justify-content: center;
   // Above the post-sun overlay (z-index 1100), mirroring InteractionCommon.
   z-index: 1101;
-}
-
-.sunStageLittleSunMarker {
-  position: fixed;
-  bottom: 0;
-  left: 40px;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px dashed rgba(0, 0, 0, 0.45);
-  z-index: 1102;
-  pointer-events: none;
 }
 
 .sunStageControls {
