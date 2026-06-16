@@ -6,7 +6,7 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
 
-const BottomBar = (props: { onShowQuestion: () => void }) => {
+const BottomBar = () => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,17 +32,6 @@ const BottomBar = (props: { onShowQuestion: () => void }) => {
     >
       {getIsOnDashboard() ? (
         <>
-          <button
-            type="button"
-            class="btnIcoOnly"
-            title="Get asked a question"
-            aria-label="Get asked a question"
-            onClick={() => {
-              props.onShowQuestion();
-            }}
-          >
-            <Ico name="questionOverlay" />
-          </button>
           <A
             title="Give us some feedback"
             aria-label="Give us some feedback"

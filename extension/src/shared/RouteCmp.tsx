@@ -1,7 +1,19 @@
-import { HashRouter, Route, RouteSectionProps } from "@solidjs/router";
+import {
+  HashRouter,
+  Route,
+  RouteSectionProps,
+  useLocation,
+} from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import { createSignal, JSX, onMount } from "solid-js";
-import { addWrapperClasses } from "@src/shared/addWrapperClasses";
+import {
+  addWrapperClasses,
+  isDarkModeNow,
+} from "@src/shared/addWrapperClasses";
+import {
+  CompanionSun,
+  CompanionHome,
+} from "@src/shared/components/companionSun/CompanionSun";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
 import {
@@ -28,14 +40,50 @@ import Styleguide from "@src/shared/components/styleguide/Styleguide";
 // production, so this evaluates to false and Rollup tree-shakes the import out.
 const IS_DEV: boolean = process.env.NODE_ENV !== "production";
 
+// The persistent companion sun's resting "homes". It glides between them as the
+// route changes (see CompanionSun). The dashboard hero sits near the top; the
+// cards are kept clear of it via --hero-reserve in DashboardGroups.
+const DASHBOARD_SUN_HOME: CompanionHome = {
+  xRatio: 0.5,
+  yRatio: 0.16,
+  scale: 1,
+};
+const PAGE_SUN_HOME: CompanionHome = {
+  xRatio: 0.88,
+  yRatio: 0.12,
+  scale: 0.42,
+};
+
 const MainWrapper = (props: RouteSectionProps) => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
     createSignal<boolean>(false);
+
+  const location = useLocation();
+  const isDashboard = () => location.pathname === "/";
+  // Day/night for the sun. Seed from the time-based rule for the first paint,
+  // then (in onMount, after addWrapperClasses applies it) mirror the actual
+  // `.minded-6622-dark` class so the companion can't disagree with the rendered
+  // theme. The class is set once on mount and never flips mid-session, so no
+  // observer is needed.
+  const [getSunVariant, setSunVariant] = createSignal<"sun" | "moon">(
+    isDarkModeNow() ? "moon" : "sun",
+  );
+  // Reactive via location; cheap enough to be a plain accessor (no memo needed).
+  const companionHome = (): CompanionHome =>
+    isDashboard() ? DASHBOARD_SUN_HOME : PAGE_SUN_HOME;
 
   // const navigate = useNavigate();
 
   onMount(() => {
     addWrapperClasses();
+    // addWrapperClasses just set (or cleared) the dark class — read the real
+    // value so the sun matches the wrapper exactly.
+    const wrapperEl = document.getElementById("minded-6622");
+    if (wrapperEl) {
+      setSunVariant(
+        wrapperEl.classList.contains("minded-6622-dark") ? "moon" : "sun",
+      );
+    }
     // getSyncData().then((syncData: SyncData) => {
     //   if (
     //     !syncData || IS_ANDROID
@@ -51,11 +99,15 @@ const MainWrapper = (props: RouteSectionProps) => {
     <>
       <main class={styles.contentWrapper}>{props.children}</main>
 
-      <BottomBar
-        onShowQuestion={() => {
-          setIsShowQuestionOverlay(true);
-        }}
+      <CompanionSun
+        home={companionHome()}
+        visible={!getIsShowQuestionOverlay()}
+        variant={getSunVariant()}
+        showLabel={isDashboard()}
+        onTap={() => setIsShowQuestionOverlay(true)}
       />
+
+      <BottomBar />
 
       {getIsShowQuestionOverlay() && (
         <InteractionOverlay

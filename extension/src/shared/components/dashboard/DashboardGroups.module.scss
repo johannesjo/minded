@@ -14,15 +14,23 @@ $aniDur: 1.5s;
   overflow: auto;
   padding-bottom: 72px;
 
+  // The persistent companion sun greets from the top of the dashboard (it lives
+  // in the app shell). Reserve room so the cards stay clear of its hero
+  // footprint. The centered grid below shifts down by the same amount.
+  --hero-reserve: clamp(150px, 24vh, 220px);
+  padding-top: var(--hero-reserve);
+
   @media (min-width: $bpDashboardMoreThan1Col) {
     display: grid;
     position: absolute;
     width: 100%;
-    top: 50%;
+    // Centered in the space below the hero sun: nudge the midpoint down by half
+    // the reserve and trim the available height by the full reserve.
+    top: calc(50% + var(--hero-reserve) / 2);
     left: 50%;
     right: auto;
     bottom: auto;
-    max-height: 100%;
+    max-height: calc(100% - var(--hero-reserve));
     min-height: 50%;
     transform: translate(-50%, -50%);
     overflow-y: auto;
@@ -80,6 +88,13 @@ $aniDur: 1.5s;
       :global(.dashboardContent) {
         font-size: var(--fz-m);
       }
+    }
+
+    // With 3–4 items this layout stops centering and flows from the top, so it
+    // needs the hero reserve as padding instead of the centered shift above.
+    &[nr-of-items="3"],
+    &[nr-of-items="4"] {
+      padding-top: calc(var(--hero-reserve) + 8px);
     }
   }
 

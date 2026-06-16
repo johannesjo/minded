@@ -1,0 +1,105 @@
+// Layout only — the sun's look (fill, glow, idle breath) comes from the global
+// `.minded-sun` class so the companion is visually the same sun as the
+// interaction. This file just positions it and glides it between homes.
+
+.companionSun {
+  position: fixed;
+  top: 0;
+  left: 0;
+  // Above page content. It does not need to out-rank the interaction overlay:
+  // while the overlay is open the sun is hidden (opacity 0 + pointer-events
+  // none), so it never competes with the interaction for taps.
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+
+  // Sized independently of the interaction sun's getSunSize() (width-based
+  // breakpoints) — the companion is a separate, lighter element, so an exact
+  // match isn't needed for the cross-fade. Revisit if Phase 2 morphs one
+  // element through both.
+  width: clamp(68px, 11vh, 96px);
+  height: clamp(68px, 11vh, 96px);
+
+  // Position the sun's center on a viewport anchor and scale it per home; the
+  // transition turns each home change into a glide. translate's percentages
+  // refer to the button's own box, so it self-centers on the anchor.
+  transform: translate(
+      calc(var(--cx) * 100vw - 50%),
+      calc(var(--cy) * 100vh - 50%)
+    )
+    scale(var(--c-scale));
+  transition:
+    transform 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 500ms ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 6px;
+  }
+
+  :global(.minded-sun) {
+    display: block; // it's a <span> here; needs block to take width/height
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    pointer-events: none; // taps land on the button, not the disc
+    // Keep the inherited box-shadow easing (the idle-breath glow) alongside the
+    // hover transform; overriding `transition` outright would drop it.
+    transition:
+      transform 200ms var(--ease-out, ease-out),
+      box-shadow 0.1s linear;
+  }
+
+  // It replaces a button, so give it a tappable lift on hover-capable devices.
+  @media (hover: hover) {
+    &:hover :global(.minded-sun) {
+      transform: scale(1.06);
+    }
+    &:active :global(.minded-sun) {
+      transform: scale(0.97);
+    }
+  }
+}
+
+.isHidden {
+  opacity: 0;
+  pointer-events: none;
+
+  // While the interaction owns the sun, stop the (paint-heavy, box-shadow-based)
+  // idle breath so we aren't repainting an invisible disc behind the overlay.
+  :global(.minded-sun) {
+    animation-play-state: paused;
+  }
+}
+
+.label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-top: 16px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: inherit;
+  font-size: var(--fz-s);
+  letter-spacing: 0.08em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease;
+}
+
+.labelVisible {
+  opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companionSun {
+    transition: opacity 300ms ease;
+  }
+}
