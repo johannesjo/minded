@@ -12,4 +12,6 @@
     <string name="health_notification_channel_name">Protection alerts</string>
     <string name="health_notification_title">minded protection is degraded</string>
     <string name="health_notification_text">App detection stopped working reliably. Tap to open minded and fix it.</string>
+    <string name="sun_companion_widget_label">minded sun</string>
+    <string name="sun_companion_widget_description">A little sun that reflects your day. Tap for a mindful moment.</string>
 </resources>

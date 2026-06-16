@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Solid disc (tinted at render time to convey mood). -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,24 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 z" />
+    <!-- Eight rays, drawn as rounded strokes. -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:pathData="M24,3 L24,8 M24,40 L24,45 M3,24 L8,24 M40,24 L45,24 M9.2,9.2 L12.7,12.7 M35.3,35.3 L38.8,38.8 M38.8,9.2 L35.3,12.7 M9.2,38.8 L12.7,35.3" />
+</vector>

@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Crescent: a full disc with an offset disc subtracted via even-odd fill. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M11,24 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 z M19,20 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0 z" />
+</vector>
