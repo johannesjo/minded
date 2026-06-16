@@ -224,7 +224,6 @@ export default defineConfig(({ mode }): UserConfig => {
                       "background",
                       "background.ts",
                     ),
-                    popup: resolve(pagesDir, "popup", "index.html"),
                     newtab: resolve(pagesDir, "newtab", "index.html"),
                     options: resolve(pagesDir, "options", "index.html"),
                   },
