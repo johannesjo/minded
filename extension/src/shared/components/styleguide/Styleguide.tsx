@@ -6,6 +6,7 @@ import {
   JSX,
   onCleanup,
   onMount,
+  Show,
 } from "solid-js";
 
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
@@ -24,6 +25,11 @@ import Chart from "@src/shared/components/ui/Chart";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
+import Sun, {
+  type SunSettle,
+} from "@src/shared/components/interaction/sun/Sun";
+import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
+import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
@@ -507,6 +513,16 @@ const Styleguide = (): JSX.Element => {
             />
           </div>
         </Subsection>
+
+        <Subsection label="Persistent sun — post-interaction morph">
+          <p class={styles.muted}>
+            The same sun is never hidden: it glides down + breathes for the
+            pause, then glides up + shrinks into a calm anchor for the choices,
+            with the background light tracking it. Step through the phases —
+            opens a full-screen stage.
+          </p>
+          <SunMorphHarness />
+        </Subsection>
       </Section>
     </div>
   );
@@ -532,5 +548,121 @@ const Subsection = (props: {
     <div class={styles.subsectionRow}>{props.children}</div>
   </div>
 );
+
+type SunStagePhase = "interactive" | "breathing" | "resting";
+
+// Full-screen harness for the persistent-sun morph. Drives the real <Sun> with
+// the same `settle` targets InteractionCommon uses, alongside the real
+// background + post-sun content, so the glide / breath / rest can be felt and
+// tuned without having to trigger a strong-friction intervention.
+const SunMorphHarness = (): JSX.Element => {
+  const [isOpen, setIsOpen] = createSignal(false);
+  const [phase, setPhase] = createSignal<SunStagePhase>("interactive");
+
+  // Mirrors InteractionCommon.getSunSettle — keep in sync when tuning.
+  const settle = (): SunSettle | null => {
+    switch (phase()) {
+      case "breathing":
+        return {
+          anchorYRatio: 0.4,
+          scale: 0.82,
+          breathe: true,
+          breathSeconds: 7,
+        };
+      case "resting":
+        return { anchorYRatio: 0.26, scale: 0.56, breathe: false };
+      default:
+        return null;
+    }
+  };
+
+  const isInteractive = () => phase() === "interactive";
+
+  const PHASES: SunStagePhase[] = ["interactive", "breathing", "resting"];
+
+  return (
+    <>
+      <button
+        type="button"
+        class="btnTxtOutline"
+        onClick={() => {
+          setPhase("interactive");
+          setIsOpen(true);
+        }}
+      >
+        open sun stage
+      </button>
+
+      <Show when={isOpen()}>
+        <div class={styles.sunStage}>
+          <BackgroundTransition isSunGradientAttached={true} />
+
+          <Show when={phase() === "breathing"}>
+            <div class="time-selection-overlay" style={{ "z-index": 1100 }}>
+              <div class="post-sun-screen">
+                <StrongFrictionBreathPause
+                  seconds={7}
+                  onComplete={() => undefined}
+                  onCancel={() => setPhase("interactive")}
+                />
+              </div>
+            </div>
+          </Show>
+
+          <Show when={phase() === "resting"}>
+            <div
+              class="time-selection-overlay has-resting-sun"
+              style={{ "z-index": 1100 }}
+            >
+              <div class="post-sun-screen">
+                <IntentSelection
+                  isArmed={true}
+                  onSelectIntent={() => undefined}
+                  onCancel={() => setPhase("interactive")}
+                  onCancelCountdown={() => undefined}
+                />
+              </div>
+            </div>
+          </Show>
+
+          <div
+            class={styles.sunStageSun}
+            style={{ "pointer-events": isInteractive() ? "auto" : "none" }}
+          >
+            <Sun
+              settle={settle()}
+              onSkip={() => undefined}
+              onFlingAway={() => undefined}
+              onDragComplete={() => undefined}
+              tapThreshold={3}
+            />
+          </div>
+
+          <div class={styles.sunStageControls}>
+            <For each={PHASES}>
+              {(p) => (
+                <button
+                  type="button"
+                  class="btnToggleSelectSmall"
+                  classList={{ isSelected: phase() === p }}
+                  onClick={() => setPhase(p)}
+                >
+                  {p}
+                </button>
+              )}
+            </For>
+            <button
+              type="button"
+              class="btnTxtOutline"
+              onClick={() => setIsOpen(false)}
+            >
+              close
+            </button>
+          </div>
+        </div>
+      </Show>
+    </>
+  );
+};
 
 export default Styleguide;

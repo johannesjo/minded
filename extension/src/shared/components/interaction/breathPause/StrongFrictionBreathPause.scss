@@ -11,6 +11,13 @@
   pointer-events: auto;
 }
 
+// Reserves the footprint the breathing sun occupies (it is rendered by the
+// persistent <Sun>, not here), so the cue copy keeps its vertical position.
+.strong-friction-breath-pause__sun-space {
+  width: clamp(156px, 42vw, 240px);
+  height: clamp(156px, 42vw, 240px);
+}
+
 .strong-friction-breath-pause__copy {
   min-height: 92px;
   display: flex;

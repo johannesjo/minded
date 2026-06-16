@@ -24,7 +24,9 @@ import {
   getQuestionSemiSmart,
 } from "@src/util/getQuestionSmart";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import Sun from "@src/shared/components/interaction/sun/Sun";
+import Sun, {
+  type SunSettle,
+} from "@src/shared/components/interaction/sun/Sun";
 import {
   setSoundEnabled,
   preloadSounds,
@@ -130,6 +132,29 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getShowBreathPause, setShowBreathPause] = createSignal(false);
+  // The sun's lifecycle phase. "interactive" = draggable; "breathing" and
+  // "resting" keep it on screen and transform it through the post-sun flow
+  // (breath pause → intent/time) instead of hiding and replacing it.
+  type SunPhase = "interactive" | "breathing" | "resting";
+  const [getSunPhase, setSunPhase] = createSignal<SunPhase>("interactive");
+
+  const getSunSettle = (): SunSettle | null => {
+    switch (getSunPhase()) {
+      case "breathing":
+        return {
+          anchorYRatio: 0.4,
+          scale: 0.82,
+          breathe: true,
+          breathSeconds: getPostSunPauseSeconds(getFrictionLevel()),
+        };
+      case "resting":
+        // A small, calm anchor in the upper third while the choices sit beneath
+        // it (the overlay gets `has-resting-sun` top padding to clear the sun).
+        return { anchorYRatio: 0.26, scale: 0.56, breathe: false };
+      default:
+        return null;
+    }
+  };
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
@@ -155,8 +180,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
   const getIsInteractionSunShown = () =>
     !props.isFromDashboard &&
-    !getIsExitingInteraction() &&
-    !getShowPostSunOverlay();
+    (getSunPhase() !== "interactive" ||
+      (!getIsExitingInteraction() && !getShowPostSunOverlay()));
 
   let frameNr: number | undefined;
   let fadeAnimationFrame: number | undefined;
@@ -311,6 +336,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Fade interaction-content out first, then mount the post-sun overlay so
     // its fade-in plays after — not concurrent with — the fade-out.
     setIsExitingInteraction(true);
+    const willBreathe = getPostSunPauseSeconds(getFrictionLevel()) > 0;
+    // Keep the sun on screen and let it morph through the post-sun flow instead
+    // of fading it out and replacing it with a separate sun.
+    setSunPhase(willBreathe ? "breathing" : "resting");
     if (postSunScreenTransitionTimeout) {
       window.clearTimeout(postSunScreenTransitionTimeout);
     }
@@ -318,7 +347,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       postSunScreenTransitionTimeout = undefined;
       if (isDisposed) return;
 
-      if (getPostSunPauseSeconds(getFrictionLevel()) > 0) {
+      if (willBreathe) {
         setShowBreathPause(true);
         return;
       }
@@ -336,6 +365,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (isDisposed) return;
     clearIntentSelectionArmTimeout();
     setShowBreathPause(false);
+    // Glide the same sun up to its smaller resting anchor for the choices.
+    setSunPhase("resting");
     setIsIntentSelectionArmed(true);
     setShowIntentSelection(true);
   };
@@ -344,6 +375,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     cancelCountdown();
     setPendingIntent(undefined);
     setShowBreathPause(false);
+    setSunPhase("interactive");
     setIsIntentSelectionArmed(false);
   };
 
@@ -718,6 +750,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       {getShowTimeSelectionOverlay() && (
         <div
           class="time-selection-overlay"
+          classList={{ "has-resting-sun": getSunPhase() === "resting" }}
           style={{
             position: "fixed",
             inset: "0",
@@ -747,6 +780,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onCancel={() => {
                   setIsIntentSelectionArmed(false);
                   clearIntentSelectionArmTimeout();
+                  setSunPhase("interactive");
                   cancelIntentSelection(
                     setPendingIntent,
                     setShowIntentSelection,
@@ -762,6 +796,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onCancel={() => {
                   setIsTimeSelectionArmed(false);
                   clearTimeSelectionArmTimeout();
+                  setSunPhase("interactive");
                   cancelTimeSelection(setPendingIntent, setShowTimeSelection);
                 }}
               />
@@ -781,6 +816,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             getIsCompletionStarted()
               ? "none"
               : "auto",
+          // While the sun is settled (breathing/resting), lift the wrapper
+          // above the post-sun overlay (z-index 1100 below) so the persistent
+          // sun stays visible over the breath copy and the choices. The wrapper
+          // is click-through here (pointer-events: none), so the buttons beneath
+          // still receive taps.
+          "z-index": getSunPhase() !== "interactive" ? 1101 : undefined,
         }}
       >
         <div
@@ -895,7 +936,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             style={{
               opacity: getIsInteractionSunShown() ? 1 : 0,
               transition: `opacity ${SCREEN_TRANSITION_MS}ms ease-out`,
-              "pointer-events": getIsInteractionSunShown() ? "all" : "none",
+              "pointer-events":
+                getIsInteractionSunShown() && getSunPhase() === "interactive"
+                  ? "all"
+                  : "none",
             }}
           >
             <Sun
@@ -910,6 +954,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
+              settle={getSunSettle()}
             />
           </div>
         )}

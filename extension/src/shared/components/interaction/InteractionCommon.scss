@@ -131,6 +131,12 @@
   animation: fadeIn var(--screen-transition-ms, 1000ms) ease-out forwards;
 }
 
+// When the sun rests at the top for the intent/time choices, pad the overlay
+// so the centered choices sit clearly beneath the sun rather than under it.
+.time-selection-overlay.has-resting-sun {
+  padding-top: 22vh;
+}
+
 .post-sun-screen {
   opacity: 1;
   transition: opacity var(--screen-transition-ms, 1000ms) ease-out;

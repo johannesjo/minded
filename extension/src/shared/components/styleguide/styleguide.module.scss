@@ -164,3 +164,39 @@
   background: var(--dashboard-card-bg);
   position: relative;
 }
+
+// Full-screen stage for the persistent-sun morph harness. The real
+// BackgroundTransition (position: fixed) paints the gradient; the sun layer
+// sits above the post-sun overlay (z-index 999) so it is never occluded.
+.sunStage {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+}
+
+.sunStageSun {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Above the post-sun overlay (z-index 1100), mirroring InteractionCommon.
+  z-index: 1101;
+}
+
+.sunStageControls {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  // Above the sun layer (1101) so the harness controls stay clickable.
+  z-index: 1300;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}

@@ -1,4 +1,11 @@
-import { Component, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  untrack,
+} from "solid-js";
 import {
   DRAG_THRESHOLD_PX,
   VELOCITY_SAMPLE_SIZE,
@@ -41,6 +48,25 @@ interface SunProps {
   isDragEnabled?: boolean;
   variant?: "sun" | "moon";
   completionDirection?: "any" | "down";
+  /**
+   * Post-interaction resting state. When set, the sun glides to a viewport
+   * anchor and holds there (optionally breathing) instead of being hidden —
+   * the same element transforms across the breath pause and the intent/time
+   * choices, so it is never swapped out. null returns it to its interactive
+   * position.
+   */
+  settle?: SunSettle | null;
+}
+
+export interface SunSettle {
+  /** Vertical resting point as a fraction of viewport height (0 = top). */
+  anchorYRatio?: number;
+  /** Resting scale relative to the sun's base size. */
+  scale?: number;
+  /** Run one slow inhale→exhale while settled. */
+  breathe?: boolean;
+  /** Length of the inhale→exhale in seconds. */
+  breathSeconds?: number;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -75,6 +101,7 @@ export const Sun: Component<SunProps> = (props) => {
   let longPressTimer: number | null = null;
   let resizeHandler: (() => void) | null = null;
   let initialPositionTimeouts: number[] = [];
+  let breathFrame: number | undefined;
 
   // Store event handler references for cleanup
   let touchStartHandler: EventListener | null = null;
@@ -113,6 +140,7 @@ export const Sun: Component<SunProps> = (props) => {
     if (animationFrame) {
       cancelAnimationFrame(animationFrame);
     }
+    cancelBreathFrame();
     if (tapTimer) {
       clearTimeout(tapTimer);
     }
@@ -162,6 +190,150 @@ export const Sun: Component<SunProps> = (props) => {
 
     dispatchInteractionEvent("sunPositionChanged", { sunPosition: position });
   };
+
+  // --- Post-interaction settle: the sun stays on screen and transforms across
+  // the breath pause and the intent/time choices instead of being hidden and
+  // replaced by a separate sun. ---
+  const GLIDE_DURATION_MS = 650;
+  const BREATH_PEAK_BONUS = 0.22; // inhale grows the rest scale by this much
+  const DEFAULT_ANCHOR_Y_RATIO = 0.4;
+  const DEFAULT_REST_SCALE = 0.82;
+
+  const prefersReducedMotion = () =>
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const cancelBreathFrame = () => {
+    if (breathFrame) {
+      cancelAnimationFrame(breathFrame);
+      breathFrame = undefined;
+    }
+  };
+
+  // Offset that places the sun's center on a viewport anchor (x centered,
+  // y as a fraction of viewport height).
+  const getAnchorOffset = (anchorYRatio: number): SunPosition => {
+    const rest = getSunCenterForOffset({ x: 0, y: 0 });
+    if (!rest) return getDragOffset();
+    return {
+      x: window.innerWidth / 2 - rest.x,
+      y: window.innerHeight * anchorYRatio - rest.y,
+    };
+  };
+
+  // Ease the offset and scale toward a target, dispatching the sun's position
+  // each frame so the background's warm light glides along with it.
+  const animateOffsetScaleTo = (
+    targetOffset: SunPosition,
+    targetScale: number,
+    duration: number,
+    onDone?: () => void,
+  ) => {
+    setIsAnimating(true); // suppress the CSS transform-transition while JS drives it
+    const startOffset = getDragOffset();
+    const startScale = getScale();
+    const startTime = Date.now();
+
+    const step = () => {
+      const progress = Math.min((Date.now() - startTime) / duration, 1);
+      const eased = easeInOut(progress);
+      const offset = {
+        x: startOffset.x + (targetOffset.x - startOffset.x) * eased,
+        y: startOffset.y + (targetOffset.y - startOffset.y) * eased,
+      };
+      setDragOffset(offset);
+      setScale(startScale + (targetScale - startScale) * eased);
+      dispatchSunPosition(getSunCenterForOffset(offset));
+
+      if (progress < 1) {
+        breathFrame = requestAnimationFrame(step);
+      } else {
+        breathFrame = undefined;
+        onDone?.();
+      }
+    };
+
+    cancelBreathFrame();
+    breathFrame = requestAnimationFrame(step);
+  };
+
+  // One slow inhale→exhale over the pause, peaking at the midpoint — matching
+  // the cue copy that flips from "Breathe in" to "Breathe out" halfway through.
+  const startBreathCycle = (restScale: number, seconds: number) => {
+    const durationMs = Math.max(1, seconds) * 1000;
+    const peak = restScale + BREATH_PEAK_BONUS;
+    const startTime = Date.now();
+
+    const step = () => {
+      const t = Math.min((Date.now() - startTime) / durationMs, 1);
+      const wave = 0.5 - 0.5 * Math.cos(2 * Math.PI * t);
+      setScale(restScale + (peak - restScale) * wave);
+
+      if (t < 1) {
+        breathFrame = requestAnimationFrame(step);
+      } else {
+        breathFrame = undefined;
+        setScale(restScale);
+        setIsAnimating(false);
+      }
+    };
+
+    cancelBreathFrame();
+    breathFrame = requestAnimationFrame(step);
+  };
+
+  const enterSettle = (settle: SunSettle) => {
+    setIsDragging(false);
+    const anchorYRatio = settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO;
+    const restScale = settle.scale ?? DEFAULT_REST_SCALE;
+    const target = getAnchorOffset(anchorYRatio);
+
+    if (prefersReducedMotion()) {
+      cancelBreathFrame();
+      setDragOffset(target);
+      setScale(restScale);
+      dispatchSunPosition(getSunCenterForOffset(target));
+      setIsAnimating(false);
+      return;
+    }
+
+    animateOffsetScaleTo(target, restScale, GLIDE_DURATION_MS, () => {
+      if (settle.breathe) {
+        startBreathCycle(restScale, settle.breathSeconds ?? 7);
+      } else {
+        setIsAnimating(false);
+      }
+    });
+  };
+
+  const exitSettle = () => {
+    cancelBreathFrame();
+    if (prefersReducedMotion()) {
+      setDragOffset({ x: 0, y: 0 });
+      setScale(1);
+      dispatchSunPosition(getSunCenterForOffset({ x: 0, y: 0 }));
+      setIsAnimating(false);
+      return;
+    }
+    animateOffsetScaleTo({ x: 0, y: 0 }, 1, 500, () => setIsAnimating(false));
+  };
+
+  // Re-settle only when the target meaningfully changes (e.g. breath →
+  // resting), not on every render that passes a fresh settle object.
+  let lastSettleKey: string | null = null;
+  createEffect(() => {
+    const settle = props.settle ?? null; // the only reactive dependency
+    untrack(() => {
+      const key = settle
+        ? `${settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO}:${settle.scale ?? DEFAULT_REST_SCALE}:${settle.breathe ? 1 : 0}:${settle.breathSeconds ?? 0}`
+        : null;
+      if (key === lastSettleKey) return;
+      lastSettleKey = key;
+      if (settle) enterSettle(settle);
+      else exitSettle();
+    });
+  });
 
   const setupDragHandlers = () => {
     if (!sunEl) return;

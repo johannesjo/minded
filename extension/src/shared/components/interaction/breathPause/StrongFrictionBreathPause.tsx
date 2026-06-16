@@ -5,8 +5,6 @@ import {
   createSignal,
   onCleanup,
 } from "solid-js";
-import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
-
 interface StrongFrictionBreathPauseProps {
   seconds: number;
   onComplete: () => void;
@@ -56,7 +54,10 @@ export const StrongFrictionBreathPause: Component<
 
   return (
     <div class="strong-friction-breath-pause">
-      <BreathSun phase="cycle" durationSeconds={Math.max(1, props.seconds)} />
+      {/* The persistent interaction sun (owned by InteractionCommon) glides in
+          and breathes over this space — see the `breathe` prop on <Sun>. The
+          spacer reserves its footprint so the cue copy keeps its position. */}
+      <div class="strong-friction-breath-pause__sun-space" aria-hidden="true" />
 
       <div class="strong-friction-breath-pause__copy">
         <div class="txtBig">{getCue()}</div>
