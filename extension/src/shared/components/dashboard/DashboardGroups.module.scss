@@ -164,6 +164,24 @@ $aniDur: 1.5s;
     }
   }
 
+  // On desktop the grid used to float as a centred island (min-height: 50%),
+  // leaving the sun room overhead. The companion sun now rests on the bottom
+  // bar, so that overhead is free — let the grid fill the whole band above the
+  // reserve instead. With min-height == max-height the existing centring math
+  // (top: 50% - reserve/2, translate -50%) lands the top edge at 0.
+  //
+  // grid-auto-rows: 1fr is what makes that fill *consistent* across item
+  // counts. The per-count templates below only declare 2 explicit rows, but
+  // 7–9 cards need a 3rd, which falls to an implicit row. Implicit rows default
+  // to auto (content height), so the two 1fr rows swallowed the whole band and
+  // the content row stayed short — too much height up top, not enough at the
+  // bottom. Sizing implicit rows at 1fr too makes every row an equal share, so
+  // the cards always fill the available height evenly whatever the count.
+  @media (min-width: $bpDashboardMoreThan2Col) {
+    min-height: calc(100% - var(--hero-reserve));
+    grid-auto-rows: 1fr;
+  }
+
   // fade in one entry if there is enough stuff to show and space for three columns
   @media (min-width: $bpDashboardMoreThan2Col) {
     &[nr-of-items="5"],
