@@ -16,6 +16,22 @@ export type SunPhase =
   | "resting"
   | "departing";
 
+/**
+ * Interactive intervention: rest on the measured placeholder centre (full size,
+ * no breath) so the draggable disc sits exactly in the slot the content flow
+ * reserved for it. The anchor is a live viewport-px point (the disc follows the
+ * layout), so unlike the other phases this settle can't be a static constant.
+ */
+export const sunInteractiveSettle = (anchor: {
+  x: number;
+  y: number;
+}): SunSettle => ({
+  anchorXPx: anchor.x,
+  anchorYPxFromTop: anchor.y,
+  scale: 1,
+  breathe: false,
+});
+
 /** Breath pause: upper-middle, scaled down, one inhale→exhale over the pause. */
 export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
   anchorYRatio: 0.4, // upper-middle, leaving room for the breath cue beneath

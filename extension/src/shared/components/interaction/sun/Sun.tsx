@@ -262,10 +262,16 @@ export const Sun: Component<SunProps> = (props) => {
   // replaced by a separate sun. ---
   const GLIDE_DURATION_MS = 650;
   const EXIT_GLIDE_MS = 500;
-  // Opening from the dashboard companion (bottom-bar rest rising into the
-  // interaction) gets a gentler, slower glide than other returns to interactive
-  // (e.g. cancelling the intent/time choices), which keep the snappier default.
-  const COMPANION_EXIT_GLIDE_MS = 900;
+  // Glides to/from the dashboard companion (the bottom-bar rest rising into the
+  // interaction, and the return home) get a gentler, slower duration than other
+  // transitions (e.g. cancelling the intent/time choices), which keep the
+  // snappier default.
+  const COMPANION_GLIDE_MS = 900;
+  // The companion is the only settle anchored by a fixed bottom px with no fixed
+  // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
+  // departing, top-px interactive). Used to give its glides the slower duration.
+  const isCompanionSettle = (settle?: SunSettle | null): boolean =>
+    settle?.anchorYPxFromBottom != null && settle.anchorXPx == null;
   const BREATH_PEAK_BONUS = 0.22; // inhale grows the rest scale by this much
   const DEFAULT_ANCHOR_Y_RATIO = 0.4;
   const DEFAULT_REST_SCALE = 0.82;
@@ -369,13 +375,17 @@ export const Sun: Component<SunProps> = (props) => {
     settleFrame = requestAnimationFrame(step);
   };
 
-  const enterSettle = (settle: SunSettle) => {
+  const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
     const restScale = settle.scale ?? DEFAULT_REST_SCALE;
     const target = getAnchorOffset(settle);
     // This anchor is now the disc's rest, so a drag release snaps back here
     // (the interactive shell sun rests on its placeholder, not the base).
     setRestOffset(target);
+    // The rise out of the companion (dashboard → intervention) glides slower.
+    const duration = isCompanionSettle(fromSettle)
+      ? COMPANION_GLIDE_MS
+      : GLIDE_DURATION_MS;
 
     if (prefersReducedMotion()) {
       cancelSettleFrame();
@@ -386,7 +396,7 @@ export const Sun: Component<SunProps> = (props) => {
       return;
     }
 
-    animateOffsetScaleTo(target, restScale, GLIDE_DURATION_MS, () => {
+    animateOffsetScaleTo(target, restScale, duration, () => {
       if (settle.breathe) {
         startBreathCycle(restScale, settle.breathSeconds ?? 7);
       } else {
@@ -397,16 +407,12 @@ export const Sun: Component<SunProps> = (props) => {
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
     cancelSettleFrame();
-    // The companion rest is the only settle anchored by a fixed bottom px with no
-    // fixed x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
-    // departing). Detect it so its rise into the interaction glides slower than a
-    // plain cancel-back-to-interactive.
-    const cameFromCompanion =
-      fromSettle?.anchorYPxFromBottom != null && fromSettle.anchorXPx == null;
-    const duration = cameFromCompanion
-      ? COMPANION_EXIT_GLIDE_MS
+    // Returns the disc to its untransformed base (e.g. the plain interactive sun
+    // with no placeholder). A return from the companion keeps the slower glide.
+    const duration = isCompanionSettle(fromSettle)
+      ? COMPANION_GLIDE_MS
       : EXIT_GLIDE_MS;
-    // Returning to the untransformed base, which becomes the rest again.
+    // The base becomes the rest again.
     setRestOffset({ x: 0, y: 0 });
     if (prefersReducedMotion()) {
       setDragOffset({ x: 0, y: 0 });
@@ -429,7 +435,7 @@ export const Sun: Component<SunProps> = (props) => {
       () => props.settle ?? null,
       (settle, prevSettle) => {
         if (settle === prevSettle) return;
-        if (settle) enterSettle(settle);
+        if (settle) enterSettle(settle, prevSettle);
         else exitSettle(prevSettle);
       },
       { defer: true },

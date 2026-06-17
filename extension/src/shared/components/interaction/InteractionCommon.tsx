@@ -671,9 +671,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   // Publish the placeholder's live centre so the shell sun rests there. Re-measure
   // on any reflow (answers/mode change, the async question load) and on resize;
-  // the disc glides to the new centre automatically (the settle tracks it).
+  // the disc glides to the new centre automatically (the settle tracks it). Skip
+  // mid-drag so a stray reflow can't yank the disc out from under the user.
   const measureSunPlaceholder = () => {
-    if (!sunPlaceholderEl) return;
+    if (!sunPlaceholderEl || getIsDragging()) return;
     const rect = sunPlaceholderEl.getBoundingClientRect();
     setInteractiveSunAnchor({
       x: rect.left + rect.width / 2,
@@ -683,11 +684,23 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   onMount(() => {
     if (!props.useShellSun || !sunPlaceholderEl) return;
-    requestAnimationFrame(measureSunPlaceholder);
-    sunPlaceholderObserver = new ResizeObserver(() => measureSunPlaceholder());
-    sunPlaceholderObserver.observe(sunPlaceholderEl);
+    // Measure the slot first, *then* flip the role: the disc rises out of the
+    // companion straight onto its placeholder in one slow glide (no detour via
+    // the base while the anchor is still unmeasured).
+    requestAnimationFrame(() => {
+      measureSunPlaceholder();
+      setSunRole("interactive");
+    });
+    // Observe the content box (not the fixed-height placeholder): its reflow is
+    // what shifts the slot's position. The placeholder's own size only changes at
+    // the media breakpoints, which the resize listener already covers.
     const box = document.getElementById("minded-6622-interaction-wrapper-box");
-    if (box) sunPlaceholderObserver.observe(box);
+    if (box) {
+      sunPlaceholderObserver = new ResizeObserver(() =>
+        measureSunPlaceholder(),
+      );
+      sunPlaceholderObserver.observe(box);
+    }
     window.addEventListener("resize", measureSunPlaceholder);
     onCleanup(() => {
       sunPlaceholderObserver?.disconnect();

@@ -142,7 +142,9 @@ const MainWrapper = (props: RouteSectionProps) => {
             }
           />
         </div>
-        <Show when={getSunRole() === "companion"}>
+        <Show
+          when={getSunRole() === "companion" && !getIsShowQuestionOverlay()}
+        >
           <button
             type="button"
             class={styles.companionTapTarget}
@@ -150,10 +152,10 @@ const MainWrapper = (props: RouteSectionProps) => {
             onMouseEnter={() => setIsCompanionHovered(true)}
             onMouseLeave={() => setIsCompanionHovered(false)}
             onClick={() => {
-              // Hand the same disc into the intervention: it glides from the
-              // top bar to centre (role → interactive) as the overlay opens.
+              // Open the overlay; the interaction measures its sun placeholder
+              // and *then* flips the role, so the disc rises from the bottom bar
+              // straight onto its slot in one slow glide (no base detour).
               setIsCompanionHovered(false);
-              setSunRole("interactive");
               setIsShowQuestionOverlay(true);
             }}
           />

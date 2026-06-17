@@ -3,6 +3,7 @@ import type { SunSettle } from "./Sun";
 import {
   DEFAULT_COMPANION_BOTTOM_Y_PX,
   getSunSettleForPhase,
+  sunInteractiveSettle,
   type SunPhase,
 } from "./sunSettle";
 
@@ -84,7 +85,12 @@ const [getBreathSeconds, setBreathSeconds] = createSignal(0);
  * is no interaction on screen.
  */
 const [getInteractiveSunAnchor, setInteractiveSunAnchor] =
-  createSignal<SunPosition | null>(null);
+  createSignal<SunPosition | null>(null, {
+    // Value-equality: identical re-measurements (the common case — the slot is
+    // stable once laid out) must not churn a fresh object and re-fire the sun's
+    // settle glide. Only a real move re-targets the disc.
+    equals: (a, b) => a?.x === b?.x && a?.y === b?.y,
+  });
 
 export {
   getSunRole,
@@ -120,14 +126,7 @@ export const getSunSettleForCurrentRole = (): SunSettle | null => {
   // Until the placeholder is measured, fall back to the untransformed base.
   if (role === "interactive") {
     const anchor = getInteractiveSunAnchor();
-    return anchor
-      ? {
-          anchorXPx: anchor.x,
-          anchorYPxFromTop: anchor.y,
-          scale: 1,
-          breathe: false,
-        }
-      : null;
+    return anchor ? sunInteractiveSettle(anchor) : null;
   }
   return getSunSettleForPhase(role, getBreathSeconds());
 };
