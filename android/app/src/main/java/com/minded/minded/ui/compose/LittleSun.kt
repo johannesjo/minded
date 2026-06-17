@@ -40,17 +40,11 @@ fun LittleSun(
     val minutes = if (showText) elapsedSeconds / 60 else 0
     val remainingSeconds = if (showText) elapsedSeconds % 60 else 0
     val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
-    // A solid, warm little sun rather than a pale white disc — a bright center
-    // fading to a warm amber edge so it reads as a sun companion on any
-    // wallpaper.
-    val sunBrush = Brush.radialGradient(
-        colorStops = arrayOf(
-            0.0f to Color(0xFFFFF0C2),
-            0.55f to Color(0xFFFFB24F),
-            1.0f to Color(0xFFF2823C),
-        ),
-    )
-    val textColor = Color(0xFF5A3210)
+    // Match the web extension's little sun: a solid white disc with a soft,
+    // warm amber glow around it.
+    val sunColor = Color.White
+    val textColor = Color(0xFF956969)
+    val glowColor = Color(0xFFE9843A) // #e9843a — the same warm amber as the web glow
 
     var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
@@ -66,43 +60,46 @@ fun LittleSun(
         Box(
             modifier = Modifier
 //            .border(1.dp, Color.Black, CircleShape  )
-                .size(36.dp),
+                .size(60.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
+            // Soft amber glow, drawn behind the disc so only the warm halo
+            // around the white body shows — mirrors the web extension's
+            // box-shadow glow. The disc radius is 0.5 of the glow radius, so
+            // the amber is saturated right where the white edge sits and then
+            // feathers to fully transparent before the layout bound (0.9), so
+            // the wrap-content window never hard-cuts the halo.
+            val glowBrush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.5f to glowColor.copy(alpha = 0.85f),
+                    0.7f to glowColor.copy(alpha = 0.30f),
+                    0.9f to Color.Transparent,
+                ),
+            )
+            Canvas(
+                modifier = Modifier.size(60.dp),
+                onDraw = {
+                    drawCircle(glowBrush)
+                }
+            )
+
+            // Solid, opaque white sun body.
             Box(
                 modifier = Modifier
-//                .border(1.dp, Color.Red, CircleShape  )
-                    .size(30.dp),
-                contentAlignment = Alignment.Center // This will center the inner Box
-
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(sunColor),
+                contentAlignment = Alignment.Center
             ) {
-                val glowBrush = Brush.radialGradient(
-                    listOf(Color(0xCCF2823C), Color.Transparent)
+                Text(
+                    text = clockString,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+                    maxLines = 1
                 )
-                Canvas(
-                    modifier = Modifier.size(64.dp),
-                    onDraw = {
-                        drawCircle(glowBrush)
-                    }
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(26.dp)
-                        .clip(CircleShape)
-                        .background(sunBrush),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = clockString,
-                        fontSize = 10.sp,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor,
-                        maxLines = 1
-                    )
-                }
             }
         }
     }
