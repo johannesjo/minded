@@ -27,6 +27,14 @@ class InteractionWindow(
 //    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     override val logTag = javaClass.simpleName
+
+    // Appear as an instantly-opaque shield: the interaction overlay covers the
+    // blocked app the user just opened, so it must never be semi-transparent
+    // while fading in (which would let a tempting post show through). The smooth
+    // appearance happens in the web content (#minded-6622 / .interaction-content
+    // fades) that plays on top of this already-solid dark shield.
+    override val fadeInDurationMs: Long = 0L
+
     private var webViewRef: WebView? = null
     private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
 
