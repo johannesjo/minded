@@ -1,6 +1,5 @@
 .breath-sun {
   --breath-progress: 0;
-  --breath-duration: 7s;
   // The breath swings between a deep-exhale low and an inhale peak. The low is
   // set well below the peak so the out-breath reads as a real release — the sun
   // empties right down before the next inhale fills it again.
@@ -33,8 +32,8 @@
   cursor: default;
   // Rest at the deep-exhale low so the loop (exhale-end → next inhale-start) is
   // seamless and the pre-start state already reads as a calm, emptied breath.
+  // (transform-origin: center comes from `.minded-sun`.)
   transform: scale(var(--breath-min));
-  transform-origin: center;
   // Slow ease guides the breath; keep the inherited box-shadow easing so the
   // idle-breath glow still pulses.
   transition:

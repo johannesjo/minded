@@ -5,9 +5,8 @@ export type BreathSunPhase = "ready" | "inhale" | "hold" | "exhale";
 interface BreathSunProps {
   phase: BreathSunPhase;
   progress?: number;
-  durationSeconds?: number;
   size?: "compact" | "large";
-  /** Mirror the always-visible companion sun (a moon once it's dark). */
+  /** "sun" (default) or "moon" — picks the matching `.minded-sun` look. */
   variant?: "sun" | "moon";
 }
 
@@ -28,16 +27,13 @@ export const BreathSun: Component<BreathSunProps> = (props) => {
         "is-hold": props.phase === "hold",
         "is-exhale": props.phase === "exhale",
       }}
-      style={{
-        "--breath-progress": progress().toString(),
-        "--breath-duration": `${props.durationSeconds ?? 7}s`,
-      }}
+      style={{ "--breath-progress": progress().toString() }}
       aria-hidden="true"
     >
       {/* The very same disc as the always-visible companion sun (global
-          `.minded-sun`: warm shadow, idle-breath glow, moon-at-night). Here it
-          is simply guided through the 4-7-8 breath via scale, so the wind-down
-          reads as the same sun the user always sees. */}
+          `.minded-sun`: warm shadow, idle-breath glow, sun/moon variants).
+          Here it is simply guided through the 4-7-8 breath via scale, so the
+          wind-down reads as the same sun the user always sees. */}
       <span class="minded-sun" classList={{ moon: props.variant === "moon" }} />
     </div>
   );
