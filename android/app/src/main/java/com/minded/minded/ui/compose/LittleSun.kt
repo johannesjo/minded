@@ -6,7 +6,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -70,39 +69,23 @@ fun LittleSun(
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
+            // Solid, fully opaque sun — no translucent glow halo, so app
+            // content never shows through it (e.g. while scrolling).
             Box(
                 modifier = Modifier
-//                .border(1.dp, Color.Red, CircleShape  )
-                    .size(30.dp),
-                contentAlignment = Alignment.Center // This will center the inner Box
-
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(sunBrush),
+                contentAlignment = Alignment.Center
             ) {
-                val glowBrush = Brush.radialGradient(
-                    listOf(Color(0xCCF2823C), Color.Transparent)
+                Text(
+                    text = clockString,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+                    maxLines = 1
                 )
-                Canvas(
-                    modifier = Modifier.size(64.dp),
-                    onDraw = {
-                        drawCircle(glowBrush)
-                    }
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(26.dp)
-                        .clip(CircleShape)
-                        .background(sunBrush),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = clockString,
-                        fontSize = 10.sp,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        color = textColor,
-                        maxLines = 1
-                    )
-                }
             }
         }
     }
