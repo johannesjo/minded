@@ -152,9 +152,14 @@ export const Sun: Component<SunProps> = (props) => {
       // If we mount already in a settled role (the shell companion rests in the
       // top bar from the first paint), snap straight to it — no glide. The
       // settle effect is deferred, so it only animates later role changes.
+      // Suppress the CSS transform-transition for this frame; otherwise the
+      // jump from the base (centre) to the anchor would glide in over 160ms on
+      // load. Restore the transition next frame so later moves still ease.
       if (props.settle) {
+        setIsAnimating(true);
         setDragOffset(getAnchorOffset(props.settle));
         setScale(props.settle.scale ?? DEFAULT_REST_SCALE);
+        requestAnimationFrame(() => setIsAnimating(false));
       }
 
       const dispatchAfterLayout = () => {
