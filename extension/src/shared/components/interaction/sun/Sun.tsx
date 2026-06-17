@@ -109,6 +109,11 @@ export interface SunSettle {
 export const Sun: Component<SunProps> = (props) => {
   let sunEl: HTMLDivElement;
   const [getDragOffset, setDragOffset] = createSignal({ x: 0, y: 0 });
+  // The offset the disc rests at when not being dragged. {0,0} (the base) for the
+  // plain interactive sun, but the shell sun's interactive rest is the measured
+  // placeholder anchor — drags add to this and a release snaps back to it, so the
+  // disc is draggable from wherever it actually rests.
+  const [getRestOffset, setRestOffset] = createSignal({ x: 0, y: 0 });
   const [getOpacity, setOpacity] = createSignal(1);
   const [getScale, setScale] = createSignal(1);
   const [getIsDragging, setIsDragging] = createSignal(false);
@@ -166,8 +171,10 @@ export const Sun: Component<SunProps> = (props) => {
       // jump from the base (centre) to the anchor would glide in over 160ms on
       // load. Restore the transition next frame so later moves still ease.
       if (props.settle) {
+        const target = getAnchorOffset(props.settle);
         setIsAnimating(true);
-        setDragOffset(getAnchorOffset(props.settle));
+        setDragOffset(target);
+        setRestOffset(target);
         setScale(props.settle.scale ?? DEFAULT_REST_SCALE);
         requestAnimationFrame(() => setIsAnimating(false));
       }
@@ -254,6 +261,11 @@ export const Sun: Component<SunProps> = (props) => {
   // the breath pause and the intent/time choices instead of being hidden and
   // replaced by a separate sun. ---
   const GLIDE_DURATION_MS = 650;
+  const EXIT_GLIDE_MS = 500;
+  // Opening from the dashboard companion (bottom-bar rest rising into the
+  // interaction) gets a gentler, slower glide than other returns to interactive
+  // (e.g. cancelling the intent/time choices), which keep the snappier default.
+  const COMPANION_EXIT_GLIDE_MS = 900;
   const BREATH_PEAK_BONUS = 0.22; // inhale grows the rest scale by this much
   const DEFAULT_ANCHOR_Y_RATIO = 0.4;
   const DEFAULT_REST_SCALE = 0.82;
@@ -361,6 +373,9 @@ export const Sun: Component<SunProps> = (props) => {
     setIsDragging(false);
     const restScale = settle.scale ?? DEFAULT_REST_SCALE;
     const target = getAnchorOffset(settle);
+    // This anchor is now the disc's rest, so a drag release snaps back here
+    // (the interactive shell sun rests on its placeholder, not the base).
+    setRestOffset(target);
 
     if (prefersReducedMotion()) {
       cancelSettleFrame();
@@ -380,8 +395,19 @@ export const Sun: Component<SunProps> = (props) => {
     });
   };
 
-  const exitSettle = () => {
+  const exitSettle = (fromSettle?: SunSettle | null) => {
     cancelSettleFrame();
+    // The companion rest is the only settle anchored by a fixed bottom px with no
+    // fixed x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
+    // departing). Detect it so its rise into the interaction glides slower than a
+    // plain cancel-back-to-interactive.
+    const cameFromCompanion =
+      fromSettle?.anchorYPxFromBottom != null && fromSettle.anchorXPx == null;
+    const duration = cameFromCompanion
+      ? COMPANION_EXIT_GLIDE_MS
+      : EXIT_GLIDE_MS;
+    // Returning to the untransformed base, which becomes the rest again.
+    setRestOffset({ x: 0, y: 0 });
     if (prefersReducedMotion()) {
       setDragOffset({ x: 0, y: 0 });
       setScale(1);
@@ -389,7 +415,9 @@ export const Sun: Component<SunProps> = (props) => {
       setIsAnimating(false);
       return;
     }
-    animateOffsetScaleTo({ x: 0, y: 0 }, 1, 500, () => setIsAnimating(false));
+    animateOffsetScaleTo({ x: 0, y: 0 }, 1, duration, () =>
+      setIsAnimating(false),
+    );
   };
 
   // Re-settle when the target changes (phases map to stable settle objects, so
@@ -402,7 +430,7 @@ export const Sun: Component<SunProps> = (props) => {
       (settle, prevSettle) => {
         if (settle === prevSettle) return;
         if (settle) enterSettle(settle);
-        else exitSettle();
+        else exitSettle(prevSettle);
       },
       { defer: true },
     ),
@@ -524,8 +552,11 @@ export const Sun: Component<SunProps> = (props) => {
         }
       }
 
-      // Batch all state updates together
-      setDragOffset({ x: deltaX, y: deltaY });
+      // Batch all state updates together. Drags are relative to the disc's rest
+      // (the placeholder anchor for the shell sun, else the base), so the disc
+      // moves from where it actually sits rather than snapping to the base first.
+      const rest = getRestOffset();
+      setDragOffset({ x: rest.x + deltaX, y: rest.y + deltaY });
       setScale(effects.scale);
       setOpacity(effects.opacity);
 
@@ -549,7 +580,10 @@ export const Sun: Component<SunProps> = (props) => {
       // Only emit drag progress events after drag intent is confirmed
       if (isDragIntent) {
         const intensity = getDragProgress();
-        const sunPosition = getSunCenterForOffset({ x: deltaX, y: deltaY });
+        const sunPosition = getSunCenterForOffset({
+          x: rest.x + deltaX,
+          y: rest.y + deltaY,
+        });
 
         dispatchInteractionEvent("dragProgress", {
           direction: dragDirection,
@@ -588,6 +622,11 @@ export const Sun: Component<SunProps> = (props) => {
       isDragIntent = false;
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
+      // Movement relative to the rest, so tap detection and release thresholds
+      // measure the actual drag — not the (possibly large) placeholder anchor the
+      // shell sun rests at.
+      const rest = getRestOffset();
+      const dragDelta = { x: offset.x - rest.x, y: offset.y - rest.y };
       const velocity = calculateVelocity(velocitySamples);
 
       // Cancel long press timer
@@ -605,8 +644,8 @@ export const Sun: Component<SunProps> = (props) => {
       if (
         !wasDragIntent &&
         duration < 300 &&
-        Math.abs(offset.x) < 10 &&
-        Math.abs(offset.y) < 10
+        Math.abs(dragDelta.x) < 10 &&
+        Math.abs(dragDelta.y) < 10
       ) {
         handleTap();
         return;
@@ -620,7 +659,7 @@ export const Sun: Component<SunProps> = (props) => {
       });
 
       const releaseAction = getSunReleaseAction({
-        offset,
+        offset: dragDelta,
         velocity,
         isDragEnabled: isDragEnabled(),
         completionDirection: props.completionDirection,
@@ -632,7 +671,7 @@ export const Sun: Component<SunProps> = (props) => {
           intensity: 0,
           isDragging: false,
           resetToInitial: true,
-          sunPosition: getSunCenterForOffset({ x: 0, y: 0 }),
+          sunPosition: getSunCenterForOffset(rest),
         });
         animateSnapBack();
       } else if (releaseAction.type === "fling") {
@@ -724,8 +763,13 @@ export const Sun: Component<SunProps> = (props) => {
         const progress = Math.min(elapsed / duration, 1);
         const easedProgress = easeOutBack(progress); // Subtle overshoot bounce
 
-        const currentX = startOffset.x * (1 - easedProgress);
-        const currentY = startOffset.y * (1 - easedProgress);
+        // Ease back to the rest offset (the placeholder anchor for the shell sun,
+        // else the base), not a hard {0,0}.
+        const rest = getRestOffset();
+        const currentX =
+          rest.x + (startOffset.x - rest.x) * (1 - easedProgress);
+        const currentY =
+          rest.y + (startOffset.y - rest.y) * (1 - easedProgress);
         const currentOffset = { x: currentX, y: currentY };
         const sunPosition = getSunCenterForOffset(currentOffset);
         setDragOffset(currentOffset);
@@ -995,7 +1039,7 @@ export const Sun: Component<SunProps> = (props) => {
             <div
               class="tap-dot"
               classList={{ filled: i + 1 <= getTapCount() }}
-            ></div>
+            />
           ))}
         </div>
       )}

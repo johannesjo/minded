@@ -43,13 +43,13 @@
   }
 }
 
-// The sun's untransformed base. Pushed below viewport centre so the interactive
-// rest sits beneath the centred question prompt (matching the prior in-flow
-// position) instead of covering it. Companion + the settled phases use absolute
-// anchors, so only the interactive (offset 0) rest is affected.
+// The sun's untransformed base is viewport centre (the flex-centred layer). Every
+// rest is reached as an offset from here: the companion via its bottom-bar anchor,
+// and the interactive intervention via the measured placeholder centre (the disc
+// settles onto the empty slot the content flow reserves for it — see
+// InteractionCommon). So nothing here is a fixed guess.
 .shellSunSlot {
   pointer-events: none;
-  transform: translateY(14vh);
 }
 
 .shellSunLayer.isHidden {

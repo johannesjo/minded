@@ -76,6 +76,16 @@ const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
 /** Breath-pause length (seconds) for the "breathing" settle; set by the interaction. */
 const [getBreathSeconds, setBreathSeconds] = createSignal(0);
 
+/**
+ * Measured viewport-px centre of the interaction's sun placeholder — the empty
+ * slot the content flow reserves for the disc (see InteractionCommon). While
+ * interactive, the shell sun rests exactly here, so it always lands in the gap
+ * the real layout left for it (rather than a fixed CSS guess). null when there
+ * is no interaction on screen.
+ */
+const [getInteractiveSunAnchor, setInteractiveSunAnchor] =
+  createSignal<SunPosition | null>(null);
+
 export {
   getSunRole,
   setSunRole,
@@ -85,6 +95,8 @@ export {
   setCompanionBottomYPx,
   getBreathSeconds,
   setBreathSeconds,
+  getInteractiveSunAnchor,
+  setInteractiveSunAnchor,
 };
 
 /**
@@ -100,9 +112,24 @@ export {
  */
 export const getSunSettleForCurrentRole = (): SunSettle | null => {
   const role = getSunRole();
-  return role === "companion" || role === "departing"
-    ? getSunSettleForPhase("companion", 0, getCompanionBottomYPx())
-    : getSunSettleForPhase(role, getBreathSeconds());
+  if (role === "companion" || role === "departing") {
+    return getSunSettleForPhase("companion", 0, getCompanionBottomYPx());
+  }
+  // Interactive: rest on the measured placeholder centre (full size, no breath)
+  // so the draggable disc sits exactly in the slot the content reserved for it.
+  // Until the placeholder is measured, fall back to the untransformed base.
+  if (role === "interactive") {
+    const anchor = getInteractiveSunAnchor();
+    return anchor
+      ? {
+          anchorXPx: anchor.x,
+          anchorYPxFromTop: anchor.y,
+          scale: 1,
+          breathe: false,
+        }
+      : null;
+  }
+  return getSunSettleForPhase(role, getBreathSeconds());
 };
 
 // --- Outcome handler registry ------------------------------------------------

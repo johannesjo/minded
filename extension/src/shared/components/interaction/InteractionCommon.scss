@@ -78,6 +78,24 @@
   margin-top: 40px;
 }
 
+// Reserves the shell sun's footprint in the content flow. The disc itself is a
+// fixed overlay measured to this slot's centre (see measureSunPlaceholder), so
+// the answers sit directly above it and the whole group centres together. Height
+// ≈ the interactive disc (120/100/80px by width) plus a little breathing room.
+.shell-sun-placeholder {
+  width: 1px;
+  height: 168px;
+  margin: 12px auto 0;
+  pointer-events: none;
+
+  @media (max-width: 1023px) {
+    height: 148px;
+  }
+  @media (max-width: 599px) {
+    height: 124px;
+  }
+}
+
 .be-proud-message {
   @include displayVoice;
   position: fixed;

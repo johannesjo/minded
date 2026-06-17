@@ -34,6 +34,7 @@ import {
   getSunRole,
   registerSunInteraction,
   setBreathSeconds,
+  setInteractiveSunAnchor,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
 import {
@@ -227,6 +228,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let timeSelectionArmTimeout: number | undefined;
   let rootThemeObserver: MutationObserver | undefined;
   let wrapperThemeObserver: MutationObserver | undefined;
+  // Empty slot the content flow reserves for the shell sun; the disc (a fixed
+  // overlay) is measured to this element's centre so it always rests in the gap
+  // the real layout left for it. Shell flow only.
+  let sunPlaceholderEl: HTMLDivElement | undefined;
+  let sunPlaceholderObserver: ResizeObserver | undefined;
   let isDisposed = false;
   const interactionEventTarget = props.shadowRoot ?? window;
 
@@ -663,6 +669,34 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     onCleanup(unregister);
   });
 
+  // Publish the placeholder's live centre so the shell sun rests there. Re-measure
+  // on any reflow (answers/mode change, the async question load) and on resize;
+  // the disc glides to the new centre automatically (the settle tracks it).
+  const measureSunPlaceholder = () => {
+    if (!sunPlaceholderEl) return;
+    const rect = sunPlaceholderEl.getBoundingClientRect();
+    setInteractiveSunAnchor({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    });
+  };
+
+  onMount(() => {
+    if (!props.useShellSun || !sunPlaceholderEl) return;
+    requestAnimationFrame(measureSunPlaceholder);
+    sunPlaceholderObserver = new ResizeObserver(() => measureSunPlaceholder());
+    sunPlaceholderObserver.observe(sunPlaceholderEl);
+    const box = document.getElementById("minded-6622-interaction-wrapper-box");
+    if (box) sunPlaceholderObserver.observe(box);
+    window.addEventListener("resize", measureSunPlaceholder);
+    onCleanup(() => {
+      sunPlaceholderObserver?.disconnect();
+      window.removeEventListener("resize", measureSunPlaceholder);
+      // Drop the anchor so a later phase / the next open re-measures from scratch.
+      setInteractiveSunAnchor(null);
+    });
+  });
+
   onMount(async () => {
     syncDragObjectNameWithTheme();
     rootThemeObserver = observeThemeClass(getInteractionRoot(props.shadowRoot));
@@ -937,6 +971,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onUpdateQuestion={(question) => props.onUpdateQuestion(question)}
           />
         </div>
+
+        {/* Reserves the shell sun's footprint in the content flow so the answers
+            sit directly above the disc as one centred group; the sun is measured
+            to this slot's centre and rests there (see measureSunPlaceholder). */}
+        {props.useShellSun && (
+          <div
+            ref={sunPlaceholderEl}
+            class="shell-sun-placeholder"
+            aria-hidden="true"
+          />
+        )}
 
         {/* Sun instructions overlay */}
         {getShowSunInstructions() &&
