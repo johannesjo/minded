@@ -79,7 +79,14 @@ const BreathingExercise = () => {
 
   return (
     <div class={styles.BreathingExercise}>
-      <BreathSun phase={sunPhase()} progress={progress()} size="large" />
+      {/* The wind-down is a sleep flow, so it re-uses the same moon as the
+          rest of it (the "Sleep well" screen) — not a time-of-day sun/moon. */}
+      <BreathSun
+        phase={sunPhase()}
+        progress={progress()}
+        size="large"
+        variant="moon"
+      />
       <div class={styles.copy}>
         <h1>{stage()}</h1>
         <p>{cue()}</p>
