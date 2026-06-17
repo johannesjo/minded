@@ -60,22 +60,25 @@ fun LittleSun(
         Box(
             modifier = Modifier
 //            .border(1.dp, Color.Black, CircleShape  )
-                .size(50.dp),
+                .size(60.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
             // Soft amber glow, drawn behind the disc so only the warm halo
             // around the white body shows — mirrors the web extension's
-            // box-shadow glow.
+            // box-shadow glow. The disc radius is 0.5 of the glow radius, so
+            // the amber is saturated right where the white edge sits and then
+            // feathers to fully transparent before the layout bound (0.9), so
+            // the wrap-content window never hard-cuts the halo.
             val glowBrush = Brush.radialGradient(
                 colorStops = arrayOf(
-                    0.6f to glowColor.copy(alpha = 0.55f),
-                    0.8f to glowColor.copy(alpha = 0.20f),
-                    1.0f to Color.Transparent,
+                    0.5f to glowColor.copy(alpha = 0.85f),
+                    0.7f to glowColor.copy(alpha = 0.30f),
+                    0.9f to Color.Transparent,
                 ),
             )
             Canvas(
-                modifier = Modifier.size(50.dp),
+                modifier = Modifier.size(60.dp),
                 onDraw = {
                     drawCircle(glowBrush)
                 }
