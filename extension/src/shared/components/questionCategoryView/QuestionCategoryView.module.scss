@@ -14,7 +14,9 @@
 }
 
 .categoryTitle {
-  margin-top: 32px;
+  // No top margin: the companion sun's reserved top-bar space already sits
+  // above this title, so the old 32px just pushed it down further.
+  margin-top: 0;
   margin-bottom: 20px;
   position: relative;
   display: inline-block;
