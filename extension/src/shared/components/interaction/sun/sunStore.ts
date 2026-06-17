@@ -40,9 +40,24 @@ const [getSunRole, setSunRole] = createSignal<SunPhase>("companion");
 const [getSunPosition, setSunPosition] = createSignal<SunPosition | undefined>(
   undefined,
 );
-/** Measured top-bar anchor (px from top) for the companion rest. */
+/**
+ * Top-bar anchor (px from top) for the companion rest, computed to mirror the
+ * `--companion-top-bar-center-y` CSS var (RouteCmp.module.scss): safe-area-inset
+ * (0 on the web new tab, the only place the shell sun lives) + the
+ * `clamp(64px, 10vh, 88px)` band / 2.
+ *
+ * Computed (not DOM-measured) so it's exact from the very first paint — measuring
+ * it post-mount risked the sun snapping to a placeholder anchor and then gliding
+ * to the real one on load. Keep in sync with that SCSS var.
+ */
+export const computeCompanionTopYPx = (): number => {
+  if (typeof window === "undefined") return DEFAULT_COMPANION_TOP_Y_PX;
+  const band = Math.min(88, Math.max(64, window.innerHeight * 0.1));
+  return band / 2;
+};
+
 const [getCompanionTopYPx, setCompanionTopYPx] = createSignal(
-  DEFAULT_COMPANION_TOP_Y_PX,
+  computeCompanionTopYPx(),
 );
 /** Breath-pause length (seconds) for the "breathing" settle; set by the interaction. */
 const [getBreathSeconds, setBreathSeconds] = createSignal(0);

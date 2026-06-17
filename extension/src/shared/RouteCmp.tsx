@@ -12,6 +12,7 @@ import {
 } from "@src/shared/addWrapperClasses";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
+  computeCompanionTopYPx,
   getSunHandlers,
   getSunRole,
   getSunSettleForCurrentRole,
@@ -64,21 +65,6 @@ const MainWrapper = (props: RouteSectionProps) => {
 
   // const navigate = useNavigate();
 
-  // Resolve `--companion-top-bar-center-y` to px so the shell sun can rest
-  // exactly on the top-bar anchor. The var is a calc()/clamp(), which
-  // getComputedStyle won't resolve, so measure it with a hidden probe under the
-  // element that defines it.
-  const measureCompanionAnchor = () => {
-    const host = document.getElementById("minded-6622-coloured-wrapper");
-    if (!host) return;
-    const probe = document.createElement("div");
-    probe.style.cssText =
-      "position:absolute;visibility:hidden;pointer-events:none;height:var(--companion-top-bar-center-y);";
-    host.appendChild(probe);
-    setCompanionTopYPx(probe.getBoundingClientRect().height);
-    probe.remove();
-  };
-
   onMount(() => {
     addWrapperClasses();
     // addWrapperClasses just set (or cleared) the dark class — read the real
@@ -90,19 +76,12 @@ const MainWrapper = (props: RouteSectionProps) => {
       );
     }
 
-    measureCompanionAnchor();
-    // Debounce: the probe forces a synchronous reflow, and resize fires in
-    // bursts. The companion anchor doesn't need sub-frame accuracy mid-drag.
-    let resizeTimer: number | undefined;
-    const onResize = () => {
-      if (resizeTimer) clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(measureCompanionAnchor, 150);
-    };
+    // The companion anchor is already exact from the store's computed initial
+    // value, so the sun rests in place from first paint; just keep it in sync
+    // with the viewport on resize.
+    const onResize = () => setCompanionTopYPx(computeCompanionTopYPx());
     window.addEventListener("resize", onResize);
-    onCleanup(() => {
-      window.removeEventListener("resize", onResize);
-      if (resizeTimer) clearTimeout(resizeTimer);
-    });
+    onCleanup(() => window.removeEventListener("resize", onResize));
     // getSyncData().then((syncData: SyncData) => {
     //   if (
     //     !syncData || IS_ANDROID
