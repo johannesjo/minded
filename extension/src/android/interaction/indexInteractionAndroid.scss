@@ -1,6 +1,12 @@
 @import "@src/styles/sharedInteractionOnly";
 
-// Set the minded gradient background to prevent white flashes
+// Keep the WebView document transparent before the interaction mounts so the
+// opaque dark shield behind it (InteractionWindow's ComposeView/WebView
+// background) shows through. The gradient is then brought in by #minded-6622's
+// fade-in (via #minded-6622-coloured-wrapper-dynamic::before) so it rises out
+// of the dark shield instead of popping dark -> light in a single frame.
+// Previously this painted `--background-gradient` immediately, which guarded
+// against a white flash; the dark shield now serves that purpose.
 html {
   position: fixed;
   top: 0;
@@ -9,7 +15,7 @@ html {
   bottom: 0;
   min-height: 100vh;
   min-height: 100dvh; // Dynamic viewport height
-  background: var(--background-gradient) fixed;
+  background: transparent;
   overflow: hidden;
 }
 
