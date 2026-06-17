@@ -71,8 +71,6 @@
   --dashboard-card-bg: rgba(255, 255, 255, 0.35);
   --dashboard-card-bg-hover: rgba(255, 255, 255, 0.7);
   --dashboard-card-border-radius: var(--radius-xl);
-  // Soft lift on hover — a low, wide shadow reads as "floating", not "boxed".
-  --dashboard-card-shadow-hover: 0 8px 28px -10px rgba(0, 0, 0, 0.22);
 
   --sun-bg: #fff;
   --sun-shadow: 0 0 1px 0 rgba(233, 132, 58, 0.5);
@@ -185,8 +183,6 @@
 
     --dashboard-card-bg: rgba(0, 0, 0, 0.35);
     --dashboard-card-bg-hover: rgba(0, 0, 0, 0.6);
-    // Dark surfaces swallow drop shadows — lean deeper so the lift still reads.
-    --dashboard-card-shadow-hover: 0 8px 30px -8px rgba(0, 0, 0, 0.6);
 
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, 0.95);

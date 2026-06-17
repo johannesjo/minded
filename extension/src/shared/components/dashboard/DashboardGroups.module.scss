@@ -282,7 +282,6 @@ $aniDur: 1.5s;
     cursor: pointer;
     transition:
       transform var(--dur-quick) var(--ease-out),
-      box-shadow var(--dur-quick) var(--ease-out),
       background var(--dur-quick) var(--ease-out);
 
     &:active {
@@ -298,12 +297,10 @@ $aniDur: 1.5s;
     //@include onMousePrimary() {
     @media (hover: hover) {
       &:hover {
-        // Lift the glass: a small rise, a soft shadow, a brighter fill. The
+        // Brighten the frosted fill on hover — no lift or shadow. The
         // bg-opacity bump already reads as "frosted"; no backdrop-filter toggle
         // (it can't ease and forces a full backdrop repaint on hover).
         background: var(--dashboard-card-bg-hover);
-        transform: translateY(-3px);
-        box-shadow: var(--dashboard-card-shadow-hover);
       }
     }
   }
