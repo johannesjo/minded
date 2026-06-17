@@ -19,6 +19,16 @@ open class CommonWindow(
     var window: View? = null
     private var isHiding = false
 
+    /**
+     * Duration of the native window alpha fade-in. While the window animates
+     * from alpha 0 -> 1 it is semi-transparent, so whatever is behind it (e.g.
+     * the blocked app the user just opened) shows through for this long.
+     * Overlays that cover a tempting app should set this to 0 so the shield is
+     * opaque the instant it is added and nothing shows through; the graceful
+     * appearance then happens in the web content that fades in on top.
+     */
+    open val fadeInDurationMs: Long = 300L
+
     fun isWindowShown(): Boolean {
         return window != null
     }
@@ -46,12 +56,18 @@ open class CommonWindow(
                 }
             }
             windowManager.addView(window, getLayoutParams())
-            // Fade in animation
-            window?.alpha = 0f
-            window?.animate()
-                ?.alpha(1f)
-                ?.setDuration(300)
-                ?.start()
+            if (fadeInDurationMs > 0L) {
+                // Fade in animation
+                window?.alpha = 0f
+                window?.animate()
+                    ?.alpha(1f)
+                    ?.setDuration(fadeInDurationMs)
+                    ?.start()
+            } else {
+                // Show fully opaque immediately so the blocked app is never
+                // visible through a semi-transparent overlay while it fades in.
+                window?.alpha = 1f
+            }
         }
     }
 
