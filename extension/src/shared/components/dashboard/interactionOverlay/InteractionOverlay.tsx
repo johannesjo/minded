@@ -2,6 +2,7 @@ import { JSX, onMount } from "solid-js";
 import { fadeOut } from "@src/util/animation";
 import styles from "./InteractionOverlay.module.scss";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
+import { setSunRole } from "@src/shared/components/interaction/sun/sunStore";
 import { ON_SHOW_INTERACTION_OVERLAY_EV } from "@src/ev.const";
 
 export const InteractionOverlay: (props: {
@@ -15,6 +16,11 @@ export const InteractionOverlay: (props: {
   });
 
   const handleHideWithFade = () => {
+    // Send the shell sun (which lives above the overlay sky, z-30 over z-20)
+    // gliding back to its companion rest *now*, so it travels home while the
+    // sky fades out beneath it — instead of sitting still through the whole
+    // fade and only starting to move once the overlay is gone.
+    setSunRole("companion");
     const { promise } = fadeOut(wrapperEl, 800); // 0.8 second fade
     promise.then(() => {
       props.onPossibleNewData(); // Always refresh dashboard when closing
