@@ -23,10 +23,7 @@ import {
   getQuestionSmart,
   getQuestionSemiSmart,
 } from "@src/util/getQuestionSmart";
-import {
-  getSyncData,
-  IS_ANDROID,
-} from "@src/dataInterface/commonSyncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   getSunSettleForPhase,
@@ -172,11 +169,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   );
   const getShowPostSunOverlay = () =>
     getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
-  // The web/extension dashboard skips the friction sun and goes straight to the
-  // question. On Android the sun stays in the dashboard flow too, so tapping the
+  // The sun stays in the dashboard flow on every platform now: tapping the
   // companion sun hands off to the interactive sun (it moves like a regular
-  // intervention) instead of just vanishing.
-  const getIsSunInFlow = () => !props.isFromDashboard || IS_ANDROID;
+  // intervention) instead of just vanishing straight into the question.
+  const getIsSunInFlow = () => true;
   const getIsInteractionSunShown = () =>
     getIsSunInFlow() &&
     (getSunPhase() !== "interactive" ||
