@@ -17,52 +17,47 @@
   height: clamp(204px, 58vw, 300px);
 }
 
-.breath-sun__core {
+// Re-use the always-visible sun (global `.minded-sun`) as the breathing visual
+// so the wind-down reads as the very same sun — we only size it and guide it
+// through the 4-7-8 breath via scale. Its look (fill, warm shadow, idle-breath
+// glow, moon variant) all comes from Sun.scss.
+.breath-sun .minded-sun {
   width: 72%;
   height: 72%;
-  border-radius: 50%;
-  background: var(--sun-bg);
-  box-shadow:
-    var(--sun-shadow),
-    0 0 42px rgba(255, 255, 255, 0.24),
-    0 0 96px rgba(255, 214, 128, 0.14);
+  // It's a display-only disc here, not the draggable interaction sun.
+  cursor: default;
   transform: scale(0.9);
   transform-origin: center;
+  // Slow ease guides the breath; keep the inherited box-shadow easing so the
+  // idle-breath glow still pulses.
   transition:
     transform 900ms ease-in-out,
-    box-shadow 900ms ease-in-out;
-  will-change: transform, box-shadow;
+    box-shadow 0.1s linear;
 }
 
-.breath-sun--large .breath-sun__core {
+.breath-sun--large .minded-sun {
   width: 82%;
   height: 82%;
 }
 
-.breath-sun.is-inhale .breath-sun__core {
+.breath-sun.is-inhale .minded-sun {
   transform: scale(calc(0.9 + (var(--breath-progress) * 0.24)));
 }
 
-.breath-sun.is-hold .breath-sun__core {
+.breath-sun.is-hold .minded-sun {
   transform: scale(1.14);
-  box-shadow:
-    var(--sun-shadow),
-    0 0 64px rgba(255, 255, 255, 0.32),
-    0 0 132px rgba(255, 214, 128, 0.2);
 }
 
-.breath-sun.is-exhale .breath-sun__core {
+.breath-sun.is-exhale .minded-sun {
   transform: scale(calc(1.14 - (var(--breath-progress) * 0.24)));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .breath-sun__core,
-  .breath-sun.is-inhale .breath-sun__core,
-  .breath-sun.is-hold .breath-sun__core,
-  .breath-sun.is-exhale .breath-sun__core {
-    animation: none;
+  .breath-sun .minded-sun,
+  .breath-sun.is-inhale .minded-sun,
+  .breath-sun.is-hold .minded-sun,
+  .breath-sun.is-exhale .minded-sun {
     transform: scale(1);
     transition: none;
-    will-change: auto;
   }
 }

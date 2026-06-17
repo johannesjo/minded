@@ -7,6 +7,8 @@ interface BreathSunProps {
   progress?: number;
   durationSeconds?: number;
   size?: "compact" | "large";
+  /** Mirror the always-visible companion sun (a moon once it's dark). */
+  variant?: "sun" | "moon";
 }
 
 export const BreathSun: Component<BreathSunProps> = (props) => {
@@ -32,7 +34,11 @@ export const BreathSun: Component<BreathSunProps> = (props) => {
       }}
       aria-hidden="true"
     >
-      <div class="breath-sun__core" />
+      {/* The very same disc as the always-visible companion sun (global
+          `.minded-sun`: warm shadow, idle-breath glow, moon-at-night). Here it
+          is simply guided through the 4-7-8 breath via scale, so the wind-down
+          reads as the same sun the user always sees. */}
+      <span class="minded-sun" classList={{ moon: props.variant === "moon" }} />
     </div>
   );
 };
