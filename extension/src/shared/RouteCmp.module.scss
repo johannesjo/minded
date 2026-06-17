@@ -19,6 +19,69 @@
   margin-top: var(--safe-area-inset-top);
 }
 
+// The single shell-owned sun lives here. Fixed + viewport-centred so the sun's
+// untransformed base is screen-centre (its interactive rest); the companion
+// settle offsets it up to the top bar. The layer is click-through — only the
+// disc (when interactive) or the companion tap-target receives input.
+.shellSunLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+
+  :global(.minded-sun) {
+    pointer-events: none;
+  }
+
+  // Interactive role: the sun handles its own drag/tap.
+  &.isInteractive :global(.minded-sun) {
+    pointer-events: auto;
+  }
+}
+
+// The sun's untransformed base. Pushed below viewport centre so the interactive
+// rest sits beneath the centred question prompt (matching the prior in-flow
+// position) instead of covering it. Companion + the settled phases use absolute
+// anchors, so only the interactive (offset 0) rest is affected.
+.shellSunSlot {
+  pointer-events: none;
+  transform: translateY(14vh);
+}
+
+.shellSunLayer.isHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+// Sits exactly on the companion's top-bar anchor (the disc settles to the same
+// spot) and opens the question flow on tap. Only present while resting.
+.companionTapTarget {
+  position: fixed;
+  top: var(--companion-top-bar-center-y);
+  left: 50vw;
+  transform: translate(-50%, -50%);
+  width: clamp(58px, 9.5vh, 88px);
+  height: clamp(58px, 9.5vh, 88px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 6px;
+  }
+}
+
 .withCompanionBar {
   margin-top: calc(
     var(--safe-area-inset-top) + var(--companion-top-bar-height)

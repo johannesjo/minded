@@ -43,6 +43,12 @@ interface SunProps {
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
   eventRoot?: ShadowRoot;
+  /**
+   * Opt-in live position sink. When provided (the shell sun), the sun's center
+   * is pushed here every frame in addition to the `sunPositionChanged` event,
+   * so a consumer can read it from a signal instead of the event bus.
+   */
+  onPositionChange?: (position: SunPosition) => void;
   tapThreshold?: number;
   isTapEnabled?: boolean;
   isDragEnabled?: boolean;
@@ -69,6 +75,12 @@ export interface SunSettle {
   anchorXPx?: number;
   /** Fixed vertical resting point in px from the bottom edge. Overrides anchorYRatio when set. */
   anchorYPxFromBottom?: number;
+  /**
+   * Fixed vertical resting point in px from the top edge. Overrides anchorYRatio
+   * (but not anchorYPxFromBottom). Used to land on the top-bar companion anchor
+   * (--companion-top-bar-center-y) without drifting on tall viewports.
+   */
+  anchorYPxFromTop?: number;
   /** Resting scale relative to the sun's base size. */
   scale?: number;
   /** Run one slow inhale→exhale while settled. */
@@ -126,6 +138,14 @@ export const Sun: Component<SunProps> = (props) => {
       sunEl.style.willChange = "transform, box-shadow";
       // Force a reflow to ensure the transform is applied
       sunEl.offsetHeight;
+
+      // If we mount already in a settled role (the shell companion rests in the
+      // top bar from the first paint), snap straight to it — no glide. The
+      // settle effect is deferred, so it only animates later role changes.
+      if (props.settle) {
+        setDragOffset(getAnchorOffset(props.settle));
+        setScale(props.settle.scale ?? DEFAULT_REST_SCALE);
+      }
 
       const dispatchAfterLayout = () => {
         requestAnimationFrame(() => dispatchSunPosition());
@@ -196,7 +216,13 @@ export const Sun: Component<SunProps> = (props) => {
   const dispatchSunPosition = (position = getSunCenterForOffset()) => {
     if (!position) return;
 
-    dispatchInteractionEvent("sunPositionChanged", { sunPosition: position });
+    if (props.onPositionChange) {
+      // Shell sun: position flows through the store; skip the window event so we
+      // don't double-drive consumers (and no global event leaks per frame).
+      props.onPositionChange(position);
+    } else {
+      dispatchInteractionEvent("sunPositionChanged", { sunPosition: position });
+    }
   };
 
   // --- Post-interaction settle: the sun stays on screen and transforms across
@@ -230,7 +256,10 @@ export const Sun: Component<SunProps> = (props) => {
     const anchorY =
       settle.anchorYPxFromBottom != null
         ? window.innerHeight - settle.anchorYPxFromBottom
-        : window.innerHeight * (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO);
+        : settle.anchorYPxFromTop != null
+          ? settle.anchorYPxFromTop
+          : window.innerHeight *
+            (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO);
     return { x: anchorX - rest.x, y: anchorY - rest.y };
   };
 

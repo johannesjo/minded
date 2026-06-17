@@ -6,7 +6,15 @@ import type { SunSettle } from "./Sun";
  * Tune the morph here.
  */
 
-export type SunPhase = "interactive" | "breathing" | "resting" | "departing";
+// "companion" is the idle home in the app shell (top-bar rest); the rest are the
+// in-intervention phases. The shell sun and the interaction drive this same union
+// through the sunStore, so one disc covers every state.
+export type SunPhase =
+  | "companion"
+  | "interactive"
+  | "breathing"
+  | "resting"
+  | "departing";
 
 /** Breath pause: upper-middle, scaled down, one inhale→exhale over the pause. */
 export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
@@ -48,15 +56,34 @@ export const SUN_DEPART_SETTLE: SunSettle = {
 };
 
 /**
+ * Companion rest: the idle home in the app-shell top bar. Anchored in fixed px
+ * from the top (the measured `--companion-top-bar-center-y`) so it lands on the
+ * top-bar anchor. No JS breath — the CSS idle-breath glow on `.minded-sun`
+ * resumes on its own once the sun settles.
+ */
+export const sunCompanionSettle = (topBarCenterYPx: number): SunSettle => ({
+  anchorYPxFromTop: topBarCenterYPx,
+  // ~0.42 of the interaction sun's base lands the companion at ~50px — the
+  // footprint the top-bar band is centred around — rather than the 0.66 that
+  // would nearly fill the band and crowd the dashboard cards.
+  scale: 0.42,
+  breathe: false,
+});
+
+/**
  * Map a sun phase to its settle target. `interactive` returns null (the sun is
  * draggable, not settled). Pure so it can be unit-tested and reused verbatim by
- * the styleguide harness.
+ * the styleguide harness. `companionTopYPx` is the measured top-bar anchor,
+ * needed only for the "companion" phase.
  */
 export const getSunSettleForPhase = (
   phase: SunPhase,
   breathSeconds: number,
+  companionTopYPx = 44,
 ): SunSettle | null => {
   switch (phase) {
+    case "companion":
+      return sunCompanionSettle(companionTopYPx);
     case "breathing":
       return sunBreatheSettle(breathSeconds);
     case "resting":

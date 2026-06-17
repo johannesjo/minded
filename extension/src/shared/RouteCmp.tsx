@@ -5,12 +5,20 @@ import {
   useLocation,
 } from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
 import {
   addWrapperClasses,
   isDarkModeNow,
 } from "@src/shared/addWrapperClasses";
-import { CompanionSun } from "@src/shared/components/companionSun/CompanionSun";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import {
+  getSunHandlers,
+  getSunRole,
+  getSunSettleForCurrentRole,
+  setCompanionTopYPx,
+  setSunPosition,
+  setSunRole,
+} from "@src/shared/components/interaction/sun/sunStore";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
 import {
@@ -56,6 +64,21 @@ const MainWrapper = (props: RouteSectionProps) => {
 
   // const navigate = useNavigate();
 
+  // Resolve `--companion-top-bar-center-y` to px so the shell sun can rest
+  // exactly on the top-bar anchor. The var is a calc()/clamp(), which
+  // getComputedStyle won't resolve, so measure it with a hidden probe under the
+  // element that defines it.
+  const measureCompanionAnchor = () => {
+    const host = document.getElementById("minded-6622-coloured-wrapper");
+    if (!host) return;
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:absolute;visibility:hidden;pointer-events:none;height:var(--companion-top-bar-center-y);";
+    host.appendChild(probe);
+    setCompanionTopYPx(probe.getBoundingClientRect().height);
+    probe.remove();
+  };
+
   onMount(() => {
     addWrapperClasses();
     // addWrapperClasses just set (or cleared) the dark class — read the real
@@ -66,6 +89,11 @@ const MainWrapper = (props: RouteSectionProps) => {
         wrapperEl.classList.contains("minded-6622-dark") ? "moon" : "sun",
       );
     }
+
+    measureCompanionAnchor();
+    const onResize = () => measureCompanionAnchor();
+    window.addEventListener("resize", onResize);
+    onCleanup(() => window.removeEventListener("resize", onResize));
     // getSyncData().then((syncData: SyncData) => {
     //   if (
     //     !syncData || IS_ANDROID
@@ -86,13 +114,54 @@ const MainWrapper = (props: RouteSectionProps) => {
         {props.children}
       </main>
 
-      <CompanionSun
-        // Hidden while the question overlay owns the screen — the overlay shows
-        // its own interactive sun, so the companion steps aside (never 2 suns).
-        visible={!getIsShowQuestionOverlay()}
-        variant={getSunVariant()}
-        onTap={() => setIsShowQuestionOverlay(true)}
-      />
+      {/*
+        One persistent sun for the whole shell: it rests as the companion in the
+        top bar and (Phase 2) transforms into the interactive intervention —
+        never swapped for a second element. The layer is fixed + viewport-centred
+        so the sun's base is screen-centre (interactive rest); the companion
+        settle offsets it up to the top bar. Click-through except the disc / the
+        companion tap-target.
+        Phase 1: still hidden while the overlay shows its own sun.
+      */}
+      <div
+        class={styles.shellSunLayer}
+        classList={{
+          [styles.isInteractive]: getSunRole() === "interactive",
+        }}
+      >
+        <div class={styles.shellSunSlot}>
+          <Sun
+            variant={getSunVariant()}
+            settle={getSunSettleForCurrentRole()}
+            onPositionChange={setSunPosition}
+            isDragEnabled={getSunRole() === "interactive"}
+            isTapEnabled={getSunRole() === "interactive"}
+            tapThreshold={getSunHandlers()?.tapThreshold ?? 3}
+            onSkip={() => getSunHandlers()?.onSkip()}
+            onFlingAway={() => getSunHandlers()?.onFlingAway()}
+            onDragComplete={() => getSunHandlers()?.onDragComplete()}
+            onStartBackgroundAnimation={(d) =>
+              getSunHandlers()?.onStartBackgroundAnimation?.(d)
+            }
+            onCompletionStarted={(s) =>
+              getSunHandlers()?.onCompletionStarted?.(s)
+            }
+          />
+        </div>
+        <Show when={getSunRole() === "companion"}>
+          <button
+            type="button"
+            class={styles.companionTapTarget}
+            aria-label="Get asked a question"
+            onClick={() => {
+              // Hand the same disc into the intervention: it glides from the
+              // top bar to centre (role → interactive) as the overlay opens.
+              setSunRole("interactive");
+              setIsShowQuestionOverlay(true);
+            }}
+          />
+        </Show>
+      </div>
 
       <BottomBar />
 
@@ -102,6 +171,9 @@ const MainWrapper = (props: RouteSectionProps) => {
             window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
           }}
           onHideInteraction={() => {
+            // The overlay (sky + choices) is gone; send the same disc gliding
+            // back to its companion rest in the top bar.
+            setSunRole("companion");
             setIsShowQuestionOverlay(false);
           }}
         />

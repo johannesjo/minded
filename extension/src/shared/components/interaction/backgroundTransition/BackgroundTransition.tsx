@@ -1,4 +1,10 @@
-import { Component, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import Stars from "./Stars";
 
 type SunPosition = {
@@ -18,6 +24,12 @@ interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
   shadowRoot?: ShadowRoot;
   isSunGradientAttached?: boolean;
+  /**
+   * Opt-in: read the sun's live center from a signal instead of the
+   * `sunPositionChanged` event (the shell sun pushes its position to the
+   * sunStore). When set, the event listener is skipped.
+   */
+  positionSource?: () => SunPosition | undefined;
 }
 
 export const BackgroundTransition: Component<BackgroundTransitionProps> = (
@@ -60,6 +72,12 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       "--sun-gradient-y": position ? `${position.y}px` : "58vh",
     };
   };
+
+  // Shell path: track the sun's center from the signal. No-op when the prop is
+  // absent (every other runtime still gets position via the event below).
+  createEffect(() => {
+    if (props.positionSource) updateSunGradientPosition(props.positionSource());
+  });
 
   onMount(() => {
     // Check dark mode after a delay
@@ -104,10 +122,13 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       "startBackgroundAnimation",
       handleStartAnimation as EventListener,
     );
-    eventTarget.addEventListener(
-      "sunPositionChanged",
-      handleSunPositionChanged as EventListener,
-    );
+    // Skipped on the shell path, where position comes from `positionSource`.
+    if (!props.positionSource) {
+      eventTarget.addEventListener(
+        "sunPositionChanged",
+        handleSunPositionChanged as EventListener,
+      );
+    }
 
     onCleanup(() => {
       eventTarget.removeEventListener(

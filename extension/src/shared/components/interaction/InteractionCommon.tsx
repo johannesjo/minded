@@ -30,6 +30,13 @@ import {
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
 import {
+  getSunPosition,
+  getSunRole,
+  registerSunInteraction,
+  setBreathSeconds,
+  setSunRole,
+} from "@src/shared/components/interaction/sun/sunStore";
+import {
   setSoundEnabled,
   preloadSounds,
   playInterventionSound,
@@ -73,6 +80,13 @@ interface InteractionCommonProps {
   interactionTarget?: SessionTarget;
   interactionPlatform?: SessionPlatform;
   isFromDashboard?: boolean;
+  /**
+   * Use the single shell-owned sun (new-tab app shell) instead of rendering an
+   * own <Sun>. When true, this drives the sunStore role and registers its
+   * terminal-outcome handlers there. Default false → self-owned sun (content
+   * script / Android / iOS / styleguide unchanged).
+   */
+  useShellSun?: boolean;
 }
 
 /** Check if there's a focused input/textarea with modified content */
@@ -139,7 +153,27 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // (breath pause → intent/time) instead of hiding and replacing it. The
   // phase → settle-target mapping lives in sunSettle.ts, shared with the
   // styleguide harness so the two can't drift.
-  const [getSunPhase, setSunPhase] = createSignal<SunPhase>("interactive");
+  const [getLocalSunPhase, setLocalSunPhase] =
+    createSignal<SunPhase>("interactive");
+
+  // With the shell sun (new-tab app shell) the phase IS the shared store role,
+  // so the single persistent disc morphs through the flow; otherwise it's this
+  // component's own signal driving its own <Sun>. Every call site uses these two
+  // transparently, so the rest of the flow logic is identical in both modes.
+  const getSunPhase = (): SunPhase =>
+    props.useShellSun ? getSunRole() : getLocalSunPhase();
+  const setSunPhase = (phase: SunPhase) => {
+    if (props.useShellSun) {
+      // The breathing settle needs the pause length; feed it to the store before
+      // the role flip so the shell sun glides to the right anchor.
+      if (phase === "breathing") {
+        setBreathSeconds(getPostSunPauseSeconds(getFrictionLevel()));
+      }
+      setSunRole(phase);
+    } else {
+      setLocalSunPhase(phase);
+    }
+  };
 
   const getSunSettle = () =>
     getSunSettleForPhase(
@@ -610,6 +644,25 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
+  // Shell-sun mode: route the single shell-owned disc's terminal outcomes back
+  // to this interaction. These are the exact closures the own <Sun> is wired to
+  // below — just relocated. Last registration wins; cleared on unmount.
+  onMount(() => {
+    if (!props.useShellSun) return;
+    const unregister = registerSunInteraction({
+      onSkip: handleSunContinue,
+      onFlingAway: props.onFlingAway,
+      onDragComplete: props.onDragComplete,
+      onStartBackgroundAnimation: handleStartBackgroundAnimation,
+      onCompletionStarted: (started) => {
+        setIsCompletionStarted(started);
+        props.onCompletionStarted?.(started);
+      },
+      tapThreshold: SUN_TAP_THRESHOLD,
+    });
+    onCleanup(unregister);
+  });
+
   onMount(async () => {
     syncDragObjectNameWithTheme();
     rootThemeObserver = observeThemeClass(getInteractionRoot(props.shadowRoot));
@@ -746,6 +799,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         dragThreshold={0.3}
         shadowRoot={props.shadowRoot}
         isSunGradientAttached={getIsInteractionSunShown()}
+        // Shell sun lives outside this tree, so read its position from the store
+        // instead of the window event it no longer dispatches.
+        positionSource={props.useShellSun ? getSunPosition : undefined}
       />
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
@@ -933,7 +989,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             </div>
           )}
 
-        {getIsSunInFlow() && (
+        {getIsSunInFlow() && !props.useShellSun && (
           <div
             class="sun-container"
             style={{
