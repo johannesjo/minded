@@ -6,6 +6,7 @@ import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
 import com.minded.minded.util.getIsoDate
 import org.junit.Test
+import java.util.TimeZone
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -25,7 +26,24 @@ class SunCompanionStateTest {
             syncData(dailyBudget = DailyBudget(globalMinutes = 60, perSiteMinutes = null)),
         )
         assertEquals(SunMood.RADIANT, state.mood)
-        assertEquals("60m", state.label)
+        // 60 minutes remaining renders in hours (see formatRemainingLabel / "2h30m" case).
+        assertEquals("1h", state.label)
+    }
+
+    @Test
+    fun `just over half budget stays radiant`() {
+        // 60m budget, 29m used -> 31m remaining -> fraction ~0.517 (> 0.5).
+        val state = computeSunCompanionState(usedSyncData(budgetMin = 60, usedSec = 29 * 60))
+        assertEquals(SunMood.RADIANT, state.mood)
+        assertEquals("31m", state.label)
+    }
+
+    @Test
+    fun `exactly half budget dims`() {
+        // 60m budget, 30m used -> fraction exactly 0.5 (<= DIMMING_THRESHOLD).
+        val state = computeSunCompanionState(usedSyncData(budgetMin = 60, usedSec = 30 * 60))
+        assertEquals(SunMood.DIMMING, state.mood)
+        assertEquals("30m", state.label)
     }
 
     @Test
@@ -34,6 +52,14 @@ class SunCompanionStateTest {
         val state = computeSunCompanionState(usedSyncData(budgetMin = 60, usedSec = 40 * 60))
         assertEquals(SunMood.DIMMING, state.mood)
         assertEquals("20m", state.label)
+    }
+
+    @Test
+    fun `exactly at the low threshold reads as low`() {
+        // 60m budget, 51m used -> 9m remaining -> fraction exactly 0.15 (<= LOW_THRESHOLD).
+        val state = computeSunCompanionState(usedSyncData(budgetMin = 60, usedSec = 51 * 60))
+        assertEquals(SunMood.LOW, state.mood)
+        assertEquals("9m", state.label)
     }
 
     @Test
@@ -62,6 +88,29 @@ class SunCompanionStateTest {
     }
 
     @Test
+    fun `inside the wind-down window shows night regardless of budget`() {
+        // Pin the clock to a fixed UTC instant (22:00) so the local-time window
+        // check is deterministic; an all-days schedule removes day-of-week from
+        // the picture. Budget is full, so this proves night wins over budget.
+        val prevTz = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+        try {
+            val at2200Utc = 1_609_538_400_000L // 2021-01-01 22:00:00 UTC
+            val state = computeSunCompanionState(
+                syncData(
+                    dailyBudget = DailyBudget(globalMinutes = 60, perSiteMinutes = null),
+                    sleepWindDown = windDownEveryDay(start = "20:00", end = "23:00"),
+                ),
+                nowMs = at2200Utc,
+            )
+            assertEquals(SunMood.NIGHT, state.mood)
+            assertEquals("", state.label)
+        } finally {
+            TimeZone.setDefault(prevTz)
+        }
+    }
+
+    @Test
     fun `sub-minute budget shows less-than-one-minute`() {
         val state = computeSunCompanionState(usedSyncData(budgetMin = 60, usedSec = 60 * 60 - 30))
         assertEquals(SunMood.LOW, state.mood)
@@ -81,9 +130,16 @@ class SunCompanionStateTest {
         dailyUsage = mapOf(getIsoDate() to DailyUsage(totalSeconds = usedSec, perSite = emptyMap())),
     )
 
+    /** A wind-down schedule with the same window every day, so day-of-week is irrelevant. */
+    private fun windDownEveryDay(start: String, end: String): Map<String, Any?> = mapOf(
+        "enabled" to true,
+        "days" to (0..6).associate { it.toString() to mapOf("start" to start, "end" to end) },
+    )
+
     private fun syncData(
         dailyBudget: DailyBudget? = null,
         dailyUsage: Map<String, DailyUsage> = emptyMap(),
+        sleepWindDown: Map<String, Any?>? = null,
     ): SyncData = SyncData(
         cfg = UserCfg(
             isOnboardingComplete = false,
@@ -91,7 +147,7 @@ class SunCompanionStateTest {
             blockedApps = emptyList(),
             focusSchedule = null,
             soundEnabled = null,
-            sleepWindDown = null,
+            sleepWindDown = sleepWindDown,
         ),
         answers = emptyList(),
         lastBlockedTS = 99L,
