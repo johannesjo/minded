@@ -59,6 +59,12 @@ interface SunProps {
   tapThreshold?: number;
   isTapEnabled?: boolean;
   isDragEnabled?: boolean;
+  /**
+   * Companion-rest hover. The resting disc is pointer-transparent, so the
+   * bottom-bar tap target relays its hover here to lift + glow the sun, matching
+   * the bottom-bar buttons' hover affordance.
+   */
+  isHovered?: boolean;
   variant?: "sun" | "moon";
   completionDirection?: "any" | "down";
   /**
@@ -933,6 +939,13 @@ export const Sun: Component<SunProps> = (props) => {
     const ct = getColorTemp();
     return ct < -0.1 ? "200, 220, 255" : "255, 255, 255";
   };
+  // Hover lift + halo for the resting companion, echoing the bottom-bar buttons'
+  // hover feedback. The lift is slight; the glow reuses the drag box-shadow (see
+  // the inline --glow-intensity), pushed past its 0..1 drag range so the inner
+  // layer (15px·i blur @ 0.5·i alpha) reaches ~the app's strong --btn-box-shadow
+  // glow (0 0 30px rgba(255,255,255,0.9)) — i.e. as bold as a button's hover.
+  const COMPANION_HOVER_SCALE = 1.06;
+  const COMPANION_HOVER_GLOW = 1.8;
   const getInteractionScale = () => {
     if (getIsCompletionStarted()) {
       return 1;
@@ -940,6 +953,10 @@ export const Sun: Component<SunProps> = (props) => {
 
     if (getIsDragging()) {
       return 1.06;
+    }
+
+    if (props.isHovered) {
+      return COMPANION_HOVER_SCALE;
     }
 
     return getIsPointerOver() ? 1.04 : 1;
@@ -961,11 +978,14 @@ export const Sun: Component<SunProps> = (props) => {
         transition:
           getIsDragging() || getIsAnimating()
             ? "none"
-            : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 160ms ease-out",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         "--glow-color": getGlowColor(),
-        "--glow-intensity": getGlowIntensity(),
+        "--glow-intensity": Math.max(
+          getGlowIntensity(),
+          props.isHovered ? COMPANION_HOVER_GLOW : 0,
+        ),
         "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >

@@ -49,6 +49,10 @@ const IS_DEV: boolean = process.env.NODE_ENV !== "production";
 const MainWrapper = (props: RouteSectionProps) => {
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
     createSignal<boolean>(false);
+  // Pointer hover over the resting companion (relayed from its tap target, since
+  // the disc itself is pointer-transparent) — lifts + glows the sun.
+  const [getIsCompanionHovered, setIsCompanionHovered] =
+    createSignal<boolean>(false);
 
   const location = useLocation();
   const isDashboard = () => location.pathname === "/";
@@ -125,6 +129,7 @@ const MainWrapper = (props: RouteSectionProps) => {
             minimizeWillChange={true}
             isDragEnabled={getSunRole() === "interactive"}
             isTapEnabled={getSunRole() === "interactive"}
+            isHovered={getSunRole() === "companion" && getIsCompanionHovered()}
             tapThreshold={getSunHandlers()?.tapThreshold ?? 3}
             onSkip={() => getSunHandlers()?.onSkip()}
             onFlingAway={() => getSunHandlers()?.onFlingAway()}
@@ -142,9 +147,12 @@ const MainWrapper = (props: RouteSectionProps) => {
             type="button"
             class={styles.companionTapTarget}
             aria-label="Get asked a question"
+            onMouseEnter={() => setIsCompanionHovered(true)}
+            onMouseLeave={() => setIsCompanionHovered(false)}
             onClick={() => {
               // Hand the same disc into the intervention: it glides from the
               // top bar to centre (role → interactive) as the overlay opens.
+              setIsCompanionHovered(false);
               setSunRole("interactive");
               setIsShowQuestionOverlay(true);
             }}
