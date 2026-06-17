@@ -3,8 +3,11 @@
   flex-direction: column;
   overflow: hidden !important;
   --companion-top-bar-height: clamp(64px, 10vh, 88px);
+  // Centre the sun in the reserved top band by deriving its resting Y from the
+  // band height itself (half of it), rather than a separate clamp that only
+  // approximately tracks the band and drifts off-centre at some viewport sizes.
   --companion-top-bar-center-y: calc(
-    var(--safe-area-inset-top) + clamp(32px, 5vh, 42px)
+    var(--safe-area-inset-top) + var(--companion-top-bar-height) / 2
   );
 }
 

@@ -99,6 +99,14 @@
   --litle-sun-btn-fz: 16px;
   --little-sun-txt-c: #5a3210;
 
+  // The warm amber face solved a wash-out problem specific to the Android
+  // overlay sitting over arbitrary app content. In the extension the little sun
+  // reads fine as a pale disc, so keep it (mostly) white there.
+  &.minded-6622-web-extension {
+    --little-sun-bg: #fff;
+    --little-sun-txt-c: #956969;
+  }
+
   --success-sun-txt-c: rgba(0, 0, 0, 0.6);
 
   --rating-active-opacity: 0.55;

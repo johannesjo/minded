@@ -15,10 +15,14 @@ $aniDur: 1.5s;
   padding-bottom: 72px;
 
   // The companion sun sits in the same top-bar spot on the dashboard as on every
-  // other page, so reserve the same height the rest of the app does
-  // (--companion-top-bar-height; see RouteCmp.module.scss / .withCompanionBar),
-  // making the sun's footprint identical on the dashboard and elsewhere.
-  --hero-reserve: var(--companion-top-bar-height);
+  // other page (--companion-top-bar-height; see RouteCmp.module.scss /
+  // .withCompanionBar). But this grid adds its own top padding (32px) plus the
+  // first row's card margin (16px) inside the container, so reserving the full
+  // bar height would push the cards ~48px below the rest of the app's content
+  // top — stranding the sun high above them instead of centred in the free
+  // space. Trim the reserve by that intrinsic offset so the cards' top lands at
+  // --companion-top-bar-height and the sun sits centred in the gap above them.
+  --hero-reserve: calc(var(--companion-top-bar-height) - 48px);
   padding-top: var(--hero-reserve);
 
   // Fade content out as it scrolls up into the companion sun's zone, instead of
