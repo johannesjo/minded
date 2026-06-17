@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -39,17 +40,11 @@ fun LittleSun(
     val minutes = if (showText) elapsedSeconds / 60 else 0
     val remainingSeconds = if (showText) elapsedSeconds % 60 else 0
     val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
-    // A solid, warm little sun rather than a pale white disc — a bright center
-    // fading to a warm amber edge so it reads as a sun companion on any
-    // wallpaper.
-    val sunBrush = Brush.radialGradient(
-        colorStops = arrayOf(
-            0.0f to Color(0xFFFFF0C2),
-            0.55f to Color(0xFFFFB24F),
-            1.0f to Color(0xFFF2823C),
-        ),
-    )
-    val textColor = Color(0xFF5A3210)
+    // Match the web extension's little sun: a solid white disc with a soft,
+    // warm amber glow around it.
+    val sunColor = Color.White
+    val textColor = Color(0xFF956969)
+    val glowColor = Color(0xFFE9843A) // #e9843a — the same warm amber as the web glow
 
     var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
@@ -65,17 +60,33 @@ fun LittleSun(
         Box(
             modifier = Modifier
 //            .border(1.dp, Color.Black, CircleShape  )
-                .size(36.dp),
+                .size(50.dp),
             contentAlignment = Alignment.Center // This will center the inner Box
 
         ) {
-            // Solid, fully opaque sun — no translucent glow halo, so app
-            // content never shows through it (e.g. while scrolling).
+            // Soft amber glow, drawn behind the disc so only the warm halo
+            // around the white body shows — mirrors the web extension's
+            // box-shadow glow.
+            val glowBrush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.6f to glowColor.copy(alpha = 0.55f),
+                    0.8f to glowColor.copy(alpha = 0.20f),
+                    1.0f to Color.Transparent,
+                ),
+            )
+            Canvas(
+                modifier = Modifier.size(50.dp),
+                onDraw = {
+                    drawCircle(glowBrush)
+                }
+            )
+
+            // Solid, opaque white sun body.
             Box(
                 modifier = Modifier
                     .size(30.dp)
                     .clip(CircleShape)
-                    .background(sunBrush),
+                    .background(sunColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
