@@ -1,11 +1,3 @@
-// Registered so the idle-breath keyframes below can interpolate the value
-// smoothly — an unregistered custom property would jump between steps.
-@property --idle-glow {
-  syntax: "<number>";
-  inherits: false;
-  initial-value: 0;
-}
-
 .minded-sun {
   position: relative;
   background: var(--sun-bg);
@@ -14,25 +6,19 @@
   --glow-intensity: 0;
   --glow-color: 255, 255, 255;
   --sun-warmth: 0;
-  // Drives the resting halo (0 = none). Animated by mindedSunIdleBreath unless
-  // the sun is being dragged or the user prefers reduced motion.
-  --idle-glow: 0;
 
+  // Only the drag glow (--glow-intensity, JS-driven and transient) lives on
+  // box-shadow now. The resting idle-breath halo moved to ::after, which pulses
+  // its opacity — a compositor-only property — so a permanently-mounted sun no
+  // longer re-rasterises a blurred shadow every frame.
   box-shadow:
     var(--sun-shadow),
-    0 0 calc(26px * var(--idle-glow))
-      rgba(255, 240, 210, calc(0.22 * var(--idle-glow))),
-    0 0 calc(60px * var(--idle-glow))
-      rgba(255, 226, 170, calc(0.12 * var(--idle-glow))),
     0 0 calc(15px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.5 * var(--glow-intensity))),
     0 0 calc(40px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.25 * var(--glow-intensity))),
     0 0 calc(80px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.1 * var(--glow-intensity)));
-
-  // A slow, shallow breath — the sun feels alive while it waits.
-  animation: mindedSunIdleBreath 9s ease-in-out infinite;
 
   z-index: 30;
   cursor: grab;
@@ -64,10 +50,34 @@
     transition: opacity 120ms linear;
   }
 
+  // Resting idle-breath halo. The glow is rasterised once at peak blur; the
+  // breath only pulses its opacity (0.15 ↔ 0.5 — the same range the old
+  // --idle-glow used), which the compositor handles without re-rastering the
+  // shadow each frame. Sits behind the sun face (z-index: -1).
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      0 0 13px rgba(255, 240, 210, 0.22),
+      0 0 30px rgba(255, 226, 170, 0.12);
+    opacity: 0.15;
+    animation: mindedSunIdleBreath 9s ease-in-out infinite;
+    will-change: opacity;
+  }
+
   &.dragging {
     cursor: grabbing;
     transition: none; /* Instant update during drag */
-    animation: none; /* Let the drag glow own the box-shadow */
+
+    // The drag glow on box-shadow owns the halo; hide the resting one.
+    &::after {
+      animation: none;
+      opacity: 0;
+    }
   }
 
   &.moon {
@@ -80,8 +90,6 @@
     box-shadow:
       0 0 1px 0 rgba(255, 255, 255, 0.9),
       0 0 28px 3px rgba(255, 255, 255, 0.14),
-      0 0 calc(34px * var(--idle-glow))
-        rgba(210, 224, 255, calc(0.22 * var(--idle-glow))),
       0 0 calc(20px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(56px * var(--glow-intensity))
@@ -89,6 +97,11 @@
 
     &::before {
       display: none;
+    }
+
+    // Cool resting halo for the moon (mirrors the sun's ::after).
+    &::after {
+      box-shadow: 0 0 17px rgba(210, 224, 255, 0.22);
     }
   }
 
@@ -125,16 +138,16 @@
 @keyframes mindedSunIdleBreath {
   0%,
   100% {
-    --idle-glow: 0.15;
+    opacity: 0.15;
   }
   50% {
-    --idle-glow: 0.5;
+    opacity: 0.5;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .minded-sun {
+  .minded-sun::after {
     animation: none;
-    --idle-glow: 0.25;
+    opacity: 0.25;
   }
 }
