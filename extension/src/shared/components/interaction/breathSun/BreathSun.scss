@@ -1,6 +1,11 @@
 .breath-sun {
   --breath-progress: 0;
   --breath-duration: 7s;
+  // The breath swings between a deep-exhale low and an inhale peak. The low is
+  // set well below the peak so the out-breath reads as a real release — the sun
+  // empties right down before the next inhale fills it again.
+  --breath-min: 0.5;
+  --breath-max: 1.15;
   width: clamp(156px, 42vw, 240px);
   height: clamp(156px, 42vw, 240px);
   display: grid;
@@ -26,7 +31,9 @@
   height: 72%;
   // It's a display-only disc here, not the draggable interaction sun.
   cursor: default;
-  transform: scale(0.9);
+  // Rest at the deep-exhale low so the loop (exhale-end → next inhale-start) is
+  // seamless and the pre-start state already reads as a calm, emptied breath.
+  transform: scale(var(--breath-min));
   transform-origin: center;
   // Slow ease guides the breath; keep the inherited box-shadow easing so the
   // idle-breath glow still pulses.
@@ -41,15 +48,25 @@
 }
 
 .breath-sun.is-inhale .minded-sun {
-  transform: scale(calc(0.9 + (var(--breath-progress) * 0.24)));
+  transform: scale(
+    calc(
+      var(--breath-min) +
+        (var(--breath-progress) * (var(--breath-max) - var(--breath-min)))
+    )
+  );
 }
 
 .breath-sun.is-hold .minded-sun {
-  transform: scale(1.14);
+  transform: scale(var(--breath-max));
 }
 
 .breath-sun.is-exhale .minded-sun {
-  transform: scale(calc(1.14 - (var(--breath-progress) * 0.24)));
+  transform: scale(
+    calc(
+      var(--breath-max) -
+        (var(--breath-progress) * (var(--breath-max) - var(--breath-min)))
+    )
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
