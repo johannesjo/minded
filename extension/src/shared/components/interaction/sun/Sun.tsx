@@ -45,10 +45,17 @@ interface SunProps {
   eventRoot?: ShadowRoot;
   /**
    * Opt-in live position sink. When provided (the shell sun), the sun's center
-   * is pushed here every frame in addition to the `sunPositionChanged` event,
-   * so a consumer can read it from a signal instead of the event bus.
+   * is pushed here every frame *instead of* dispatching the `sunPositionChanged`
+   * window event, so a consumer can read it from a signal off the event bus.
    */
   onPositionChange?: (position: SunPosition) => void;
+  /**
+   * Opt-in for a permanently-mounted sun (the shell sun): keep box-shadow out of
+   * `will-change` so the browser doesn't hold a compositor-layer hint alive for
+   * the app's lifetime (box-shadow can't be GPU-composited anyway). The old
+   * CompanionSun did exactly this.
+   */
+  minimizeWillChange?: boolean;
   tapThreshold?: number;
   isTapEnabled?: boolean;
   isDragEnabled?: boolean;
@@ -134,8 +141,11 @@ export const Sun: Component<SunProps> = (props) => {
     // This forces the browser to create the transform matrix early
     if (sunEl) {
       sunEl.style.transform = "translate(0px, 0px) scale(1)";
-      // Ensure we include box-shadow to avoid jank
-      sunEl.style.willChange = "transform, box-shadow";
+      // Ensure we include box-shadow to avoid jank — except for a permanently
+      // mounted sun, where holding a box-shadow layer hint alive isn't worth it.
+      sunEl.style.willChange = props.minimizeWillChange
+        ? "transform"
+        : "transform, box-shadow";
       // Force a reflow to ensure the transform is applied
       sunEl.offsetHeight;
 

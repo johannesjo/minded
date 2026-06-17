@@ -61,6 +61,9 @@ export const SUN_DEPART_SETTLE: SunSettle = {
  * top-bar anchor. No JS breath — the CSS idle-breath glow on `.minded-sun`
  * resumes on its own once the sun settles.
  */
+/** Placeholder top-bar anchor used until MainWrapper measures the real px. */
+export const DEFAULT_COMPANION_TOP_Y_PX = 44;
+
 export const sunCompanionSettle = (topBarCenterYPx: number): SunSettle => ({
   anchorYPxFromTop: topBarCenterYPx,
   // ~0.42 of the interaction sun's base lands the companion at ~50px — the
@@ -79,7 +82,7 @@ export const sunCompanionSettle = (topBarCenterYPx: number): SunSettle => ({
 export const getSunSettleForPhase = (
   phase: SunPhase,
   breathSeconds: number,
-  companionTopYPx = 44,
+  companionTopYPx = DEFAULT_COMPANION_TOP_Y_PX,
 ): SunSettle | null => {
   switch (phase) {
     case "companion":

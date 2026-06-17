@@ -1,6 +1,10 @@
 import { createSignal } from "solid-js";
 import type { SunSettle } from "./Sun";
-import { getSunSettleForPhase, type SunPhase } from "./sunSettle";
+import {
+  DEFAULT_COMPANION_TOP_Y_PX,
+  getSunSettleForPhase,
+  type SunPhase,
+} from "./sunSettle";
 
 /**
  * Single source of truth for the one shell-owned sun on the new tab. The sun
@@ -26,7 +30,7 @@ export interface SunOutcomeHandlers {
   onDragComplete: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
-  /** Taps to "continue" while interactive (companion uses 1 to open). */
+  /** Taps to "continue" while interactive (the companion opens via its own tap-target). */
   tapThreshold?: number;
 }
 
@@ -37,7 +41,9 @@ const [getSunPosition, setSunPosition] = createSignal<SunPosition | undefined>(
   undefined,
 );
 /** Measured top-bar anchor (px from top) for the companion rest. */
-const [getCompanionTopYPx, setCompanionTopYPx] = createSignal(44);
+const [getCompanionTopYPx, setCompanionTopYPx] = createSignal(
+  DEFAULT_COMPANION_TOP_Y_PX,
+);
 /** Breath-pause length (seconds) for the "breathing" settle; set by the interaction. */
 const [getBreathSeconds, setBreathSeconds] = createSignal(0);
 
@@ -52,9 +58,23 @@ export {
   setBreathSeconds,
 };
 
-/** Settle target for the current role, fed the measured companion anchor + breath length. */
-export const getSunSettleForCurrentRole = (): SunSettle | null =>
-  getSunSettleForPhase(getSunRole(), getBreathSeconds(), getCompanionTopYPx());
+/**
+ * Settle target for the current role.
+ *
+ * - companionTopYPx is read ONLY in the companion branch so that a resize —
+ *   which re-measures it — re-anchors the resting companion without spuriously
+ *   re-firing the glide for an in-flight interaction phase (e.g. restarting the
+ *   breath pause).
+ * - "departing" maps to the companion rest: the new-tab shell has no Little Sun
+ *   corner to hand off to, so the disc glides straight home as the overlay
+ *   fades instead of darting to the corner and springing back to the top bar.
+ */
+export const getSunSettleForCurrentRole = (): SunSettle | null => {
+  const role = getSunRole();
+  return role === "companion" || role === "departing"
+    ? getSunSettleForPhase("companion", 0, getCompanionTopYPx())
+    : getSunSettleForPhase(role, getBreathSeconds());
+};
 
 // --- Outcome handler registry ------------------------------------------------
 // The active interaction registers its terminal-outcome handlers on mount and

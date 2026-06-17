@@ -91,9 +91,18 @@ const MainWrapper = (props: RouteSectionProps) => {
     }
 
     measureCompanionAnchor();
-    const onResize = () => measureCompanionAnchor();
+    // Debounce: the probe forces a synchronous reflow, and resize fires in
+    // bursts. The companion anchor doesn't need sub-frame accuracy mid-drag.
+    let resizeTimer: number | undefined;
+    const onResize = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(measureCompanionAnchor, 150);
+    };
     window.addEventListener("resize", onResize);
-    onCleanup(() => window.removeEventListener("resize", onResize));
+    onCleanup(() => {
+      window.removeEventListener("resize", onResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
+    });
     // getSyncData().then((syncData: SyncData) => {
     //   if (
     //     !syncData || IS_ANDROID
@@ -134,6 +143,7 @@ const MainWrapper = (props: RouteSectionProps) => {
             variant={getSunVariant()}
             settle={getSunSettleForCurrentRole()}
             onPositionChange={setSunPosition}
+            minimizeWillChange={true}
             isDragEnabled={getSunRole() === "interactive"}
             isTapEnabled={getSunRole() === "interactive"}
             tapThreshold={getSunHandlers()?.tapThreshold ?? 3}
