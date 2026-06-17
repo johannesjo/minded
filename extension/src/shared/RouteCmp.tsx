@@ -12,11 +12,11 @@ import {
 } from "@src/shared/addWrapperClasses";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
-  computeCompanionTopYPx,
+  computeCompanionBottomYPx,
   getSunHandlers,
   getSunRole,
   getSunSettleForCurrentRole,
-  setCompanionTopYPx,
+  setCompanionBottomYPx,
   setSunPosition,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
@@ -79,7 +79,7 @@ const MainWrapper = (props: RouteSectionProps) => {
     // The companion anchor is already exact from the store's computed initial
     // value, so the sun rests in place from first paint; just keep it in sync
     // with the viewport on resize.
-    const onResize = () => setCompanionTopYPx(computeCompanionTopYPx());
+    const onResize = () => setCompanionBottomYPx(computeCompanionBottomYPx());
     window.addEventListener("resize", onResize);
     onCleanup(() => window.removeEventListener("resize", onResize));
     // getSyncData().then((syncData: SyncData) => {
@@ -103,12 +103,12 @@ const MainWrapper = (props: RouteSectionProps) => {
       </main>
 
       {/*
-        One persistent sun for the whole shell: it rests as the companion in the
-        top bar and (Phase 2) transforms into the interactive intervention —
-        never swapped for a second element. The layer is fixed + viewport-centred
+        One persistent sun for the whole shell: it rests as the companion over
+        the bottom bar and (Phase 2) transforms into the interactive intervention
+        — never swapped for a second element. The layer is fixed + viewport-centred
         so the sun's base is screen-centre (interactive rest); the companion
-        settle offsets it up to the top bar. Click-through except the disc / the
-        companion tap-target.
+        settle offsets it down to the bottom bar. Click-through except the disc /
+        the companion tap-target.
         Phase 1: still hidden while the overlay shows its own sun.
       */}
       <div

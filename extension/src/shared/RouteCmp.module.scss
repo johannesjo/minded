@@ -2,12 +2,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden !important;
-  --companion-top-bar-height: clamp(64px, 10vh, 88px);
-  // Centre the sun in the reserved top band by deriving its resting Y from the
-  // band height itself (half of it), rather than a separate clamp that only
-  // approximately tracks the band and drifts off-centre at some viewport sizes.
-  --companion-top-bar-center-y: calc(
-    var(--safe-area-inset-top) + var(--companion-top-bar-height) / 2
+  --companion-bar-height: clamp(64px, 10vh, 88px);
+  // Centre the sun in the bottom band by deriving its resting Y (measured from
+  // the bottom edge) from the band height itself (half of it), above the system
+  // safe-area inset. Mirrors computeCompanionBottomYPx in sunStore.ts.
+  --companion-bar-center-y: calc(
+    var(--safe-area-inset-bottom) + var(--companion-bar-height) / 2
   );
 }
 
@@ -21,8 +21,8 @@
 
 // The single shell-owned sun lives here. Fixed + viewport-centred so the sun's
 // untransformed base is screen-centre (its interactive rest); the companion
-// settle offsets it up to the top bar. The layer is click-through — only the
-// disc (when interactive) or the companion tap-target receives input.
+// settle offsets it down to the bottom bar. The layer is click-through — only
+// the disc (when interactive) or the companion tap-target receives input.
 .shellSunLayer {
   position: fixed;
   inset: 0;
@@ -57,13 +57,13 @@
   pointer-events: none;
 }
 
-// Sits exactly on the companion's top-bar anchor (the disc settles to the same
-// spot) and opens the question flow on tap. Only present while resting.
+// Sits exactly on the companion's bottom-bar anchor (the disc settles to the
+// same spot) and opens the question flow on tap. Only present while resting.
 .companionTapTarget {
   position: fixed;
-  top: var(--companion-top-bar-center-y);
+  bottom: var(--companion-bar-center-y);
   left: 50vw;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, 50%);
   width: clamp(58px, 9.5vh, 88px);
   height: clamp(58px, 9.5vh, 88px);
   margin: 0;
@@ -83,22 +83,19 @@
 }
 
 .withCompanionBar {
-  margin-top: calc(
-    var(--safe-area-inset-top) + var(--companion-top-bar-height)
-  );
-
-  // The companion sun sits just above this scroll viewport, so content used to
-  // hit the top edge with a hard cut when scrolling. Feather the top edge so
+  // The companion sun now rests over the bottom bar (a flex sibling that already
+  // reserves the band height below this scroll viewport), so content hits the
+  // bottom edge with a hard cut when scrolling. Feather the bottom edge so
   // content dissolves into the sun's bar instead. The mask is anchored to the
   // scroll viewport (not the moving content), so the fade stays pinned at the
-  // top while content scrolls into it. Matches the dashboard's hero fade.
-  --top-fade: clamp(28px, 5vh, 48px);
-  $top-fade: linear-gradient(
-    to bottom,
+  // bottom while content scrolls into it. Matches the dashboard's hero fade.
+  --bottom-fade: clamp(28px, 5vh, 48px);
+  $bottom-fade: linear-gradient(
+    to top,
     transparent 0,
-    rgba(0, 0, 0, 0.55) calc(var(--top-fade) * 0.55),
-    #000 var(--top-fade)
+    rgba(0, 0, 0, 0.55) calc(var(--bottom-fade) * 0.55),
+    #000 var(--bottom-fade)
   );
-  -webkit-mask-image: $top-fade;
-  mask-image: $top-fade;
+  -webkit-mask-image: $bottom-fade;
+  mask-image: $bottom-fade;
 }

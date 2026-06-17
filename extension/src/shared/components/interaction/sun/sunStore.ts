@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 import type { SunSettle } from "./Sun";
 import {
-  DEFAULT_COMPANION_TOP_Y_PX,
+  DEFAULT_COMPANION_BOTTOM_Y_PX,
   getSunSettleForPhase,
   type SunPhase,
 } from "./sunSettle";
@@ -41,23 +41,37 @@ const [getSunPosition, setSunPosition] = createSignal<SunPosition | undefined>(
   undefined,
 );
 /**
- * Top-bar anchor (px from top) for the companion rest, computed to mirror the
- * `--companion-top-bar-center-y` CSS var (RouteCmp.module.scss): safe-area-inset
- * (0 on the web new tab, the only place the shell sun lives) + the
- * `clamp(64px, 10vh, 88px)` band / 2.
+ * Bottom-bar anchor (px from the bottom edge) for the companion rest, computed to
+ * mirror the `--companion-bar-center-y` CSS var (RouteCmp.module.scss):
+ * `--safe-area-inset-bottom` + the `clamp(64px, 10vh, 88px)` band / 2.
  *
- * Computed (not DOM-measured) so it's exact from the very first paint — measuring
- * it post-mount risked the sun snapping to a placeholder anchor and then gliding
- * to the real one on load. Keep in sync with that SCSS var.
+ * The bottom inset is non-zero on Android (the system nav/gesture bar), so unlike
+ * the old top anchor we can't assume 0 — read it from the same CSS var the layout
+ * uses (set on #minded-6622 by setupAndroidInsets) so the disc lands exactly on
+ * the bar centre on every platform. Computed (not DOM-measured) so it's exact
+ * from the very first paint. Keep in sync with that SCSS var.
  */
-export const computeCompanionTopYPx = (): number => {
-  if (typeof window === "undefined") return DEFAULT_COMPANION_TOP_Y_PX;
-  const band = Math.min(88, Math.max(64, window.innerHeight * 0.1));
-  return band / 2;
+const readSafeAreaInsetBottomPx = (): number => {
+  const appEl =
+    typeof document !== "undefined"
+      ? document.getElementById("minded-6622")
+      : null;
+  if (!appEl) return 0;
+  const raw = getComputedStyle(appEl)
+    .getPropertyValue("--safe-area-inset-bottom")
+    .trim();
+  const parsed = parseFloat(raw);
+  return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const [getCompanionTopYPx, setCompanionTopYPx] = createSignal(
-  computeCompanionTopYPx(),
+export const computeCompanionBottomYPx = (): number => {
+  if (typeof window === "undefined") return DEFAULT_COMPANION_BOTTOM_Y_PX;
+  const band = Math.min(88, Math.max(64, window.innerHeight * 0.1));
+  return readSafeAreaInsetBottomPx() + band / 2;
+};
+
+const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
+  computeCompanionBottomYPx(),
 );
 /** Breath-pause length (seconds) for the "breathing" settle; set by the interaction. */
 const [getBreathSeconds, setBreathSeconds] = createSignal(0);
@@ -67,8 +81,8 @@ export {
   setSunRole,
   getSunPosition,
   setSunPosition,
-  getCompanionTopYPx,
-  setCompanionTopYPx,
+  getCompanionBottomYPx,
+  setCompanionBottomYPx,
   getBreathSeconds,
   setBreathSeconds,
 };
@@ -76,18 +90,18 @@ export {
 /**
  * Settle target for the current role.
  *
- * - companionTopYPx is read ONLY in the companion branch so that a resize —
+ * - companionBottomYPx is read ONLY in the companion branch so that a resize —
  *   which re-measures it — re-anchors the resting companion without spuriously
  *   re-firing the glide for an in-flight interaction phase (e.g. restarting the
  *   breath pause).
  * - "departing" maps to the companion rest: the new-tab shell has no Little Sun
  *   corner to hand off to, so the disc glides straight home as the overlay
- *   fades instead of darting to the corner and springing back to the top bar.
+ *   fades instead of darting to the corner and springing back to the bottom bar.
  */
 export const getSunSettleForCurrentRole = (): SunSettle | null => {
   const role = getSunRole();
   return role === "companion" || role === "departing"
-    ? getSunSettleForPhase("companion", 0, getCompanionTopYPx())
+    ? getSunSettleForPhase("companion", 0, getCompanionBottomYPx())
     : getSunSettleForPhase(role, getBreathSeconds());
 };
 

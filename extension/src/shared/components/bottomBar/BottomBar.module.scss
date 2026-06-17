@@ -1,11 +1,22 @@
-@import '@src/styles/mixins/mixins';
+@import "@src/styles/mixins/mixins";
 
 .bottomBarWrapper {
   display: flex;
-  justify-content: center;
-  background: var(--bottom-bar-bg);
+  // Push the icons out to the edges so the companion sun (a fixed overlay
+  // centred over this bar) has the middle to itself. The horizontal padding
+  // keeps them off the very screen edge and clear of any display-cutout inset.
+  justify-content: space-between;
+  align-items: center;
+  // Match the reserved bottom band so the bar centre lines up with the sun's
+  // resting anchor (--companion-bar-center-y).
+  min-height: var(--companion-bar-height);
+  padding-left: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-left));
+  padding-right: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-right));
+  // Transparent on every platform now (mobile included): the bottom fade on the
+  // scroll content carries the legibility the solid bar used to, so the sun and
+  // icons float free over the background.
+  background: transparent;
   padding-bottom: var(--safe-area-inset-bottom);
-
 
   :global(.androidKeyboardOpen) & {
     display: none !important;
@@ -14,7 +25,6 @@
   //@include onNonMobileScreens {
   &.isOnDashboard {
     @media (min-width: $bpMobile) {
-      background: transparent;
       opacity: 0;
       animation: minded6622fadeIn ease 2s;
       animation-iteration-count: 1;
@@ -31,11 +41,9 @@
     }
   }
 
-
   > a,
   > div,
   > button {
-    margin-left: 16px !important;
     position: relative;
     z-index: 1;
     animation: minded6622fadeIn ease 200ms;
@@ -43,10 +51,6 @@
 
     :global {
       animation-name: minded6622fadeIn;
-    }
-
-    &:first-child {
-      margin-left: 0 !important;
     }
   }
 }
@@ -67,4 +71,3 @@
 //  0 0 60px 5px var(--c-pastel-yellow);
 //  transition: 2s;
 //}
-

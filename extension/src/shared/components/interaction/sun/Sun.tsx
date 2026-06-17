@@ -80,12 +80,16 @@ export interface SunSettle {
    * two don't drift apart on wide viewports.
    */
   anchorXPx?: number;
-  /** Fixed vertical resting point in px from the bottom edge. Overrides anchorYRatio when set. */
+  /**
+   * Fixed vertical resting point in px from the bottom edge. Overrides
+   * anchorYRatio when set. Used to land on the bottom-bar companion anchor
+   * (--companion-bar-center-y) without drifting on tall viewports.
+   */
   anchorYPxFromBottom?: number;
   /**
    * Fixed vertical resting point in px from the top edge. Overrides anchorYRatio
-   * (but not anchorYPxFromBottom). Used to land on the top-bar companion anchor
-   * (--companion-top-bar-center-y) without drifting on tall viewports.
+   * (but not anchorYPxFromBottom). Provided as the mirror of anchorYPxFromBottom
+   * for any future top-anchored settle.
    */
   anchorYPxFromTop?: number;
   /** Resting scale relative to the sun's base size. */

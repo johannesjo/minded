@@ -12,26 +12,24 @@ $aniDur: 1.5s;
   right: 0;
   left: 0;
   overflow: auto;
+
+  // The companion sun now rests over the bottom bar (--companion-bar-height; see
+  // RouteCmp.module.scss / .withCompanionBar). This grid adds its own bottom
+  // padding (32px) plus the last row's card margin (16px) inside the container,
+  // so reserving the full bar height would strand the cards ~48px above it. Trim
+  // the reserve by that intrinsic offset so the cards' bottom lands at
+  // --companion-bar-height and the sun sits centred in the gap below them.
+  --hero-reserve: calc(var(--companion-bar-height) - 48px);
   padding-bottom: 72px;
 
-  // The companion sun sits in the same top-bar spot on the dashboard as on every
-  // other page (--companion-top-bar-height; see RouteCmp.module.scss /
-  // .withCompanionBar). But this grid adds its own top padding (32px) plus the
-  // first row's card margin (16px) inside the container, so reserving the full
-  // bar height would push the cards ~48px below the rest of the app's content
-  // top — stranding the sun high above them instead of centred in the free
-  // space. Trim the reserve by that intrinsic offset so the cards' top lands at
-  // --companion-top-bar-height and the sun sits centred in the gap above them.
-  --hero-reserve: calc(var(--companion-top-bar-height) - 48px);
-  padding-top: var(--hero-reserve);
-
-  // Fade content out as it scrolls up into the companion sun's zone, instead of
-  // letting cards collide hard with the disc (looks bad, especially on mobile).
-  // The mask is anchored to the scroll viewport, not the moving content, so the
-  // fade stays pinned at the top edge while content scrolls into it. The fade
-  // spans --hero-reserve so it always matches the sun's reserved footprint.
+  // Fade content out as it scrolls down into the companion sun's zone, instead
+  // of letting cards collide hard with the disc (looks bad, especially on
+  // mobile). The mask is anchored to the scroll viewport, not the moving
+  // content, so the fade stays pinned at the bottom edge while content scrolls
+  // into it. The fade spans --hero-reserve so it always matches the sun's
+  // reserved footprint.
   $hero-fade: linear-gradient(
-    to bottom,
+    to top,
     transparent 0,
     rgba(0, 0, 0, 0.55) calc(var(--hero-reserve) * 0.55),
     #000 var(--hero-reserve)
@@ -43,9 +41,9 @@ $aniDur: 1.5s;
     display: grid;
     position: absolute;
     width: 100%;
-    // Centered in the space below the hero sun: nudge the midpoint down by half
+    // Centered in the space above the hero sun: nudge the midpoint up by half
     // the reserve and trim the available height by the full reserve.
-    top: calc(50% + var(--hero-reserve) / 2);
+    top: calc(50% - var(--hero-reserve) / 2);
     left: 50%;
     right: auto;
     bottom: auto;
@@ -110,10 +108,12 @@ $aniDur: 1.5s;
     }
 
     // With 3–4 items this layout stops centering and flows from the top, so it
-    // needs the hero reserve as padding instead of the centered shift above.
+    // needs the hero reserve as bottom padding (clearing the sun's bar) instead
+    // of the centered shift above. The top no longer holds the sun, so it keeps
+    // only its base 8px content padding.
     &[nr-of-items="3"],
     &[nr-of-items="4"] {
-      padding-top: calc(var(--hero-reserve) + 8px);
+      padding-bottom: calc(var(--hero-reserve) + 8px);
     }
   }
 

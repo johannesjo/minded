@@ -56,19 +56,21 @@ export const SUN_DEPART_SETTLE: SunSettle = {
 };
 
 /**
- * Companion rest: the idle home in the app-shell top bar. Anchored in fixed px
- * from the top (the measured `--companion-top-bar-center-y`) so it lands on the
- * top-bar anchor. No JS breath — the CSS idle-breath glow on `.minded-sun`
- * resumes on its own once the sun settles.
+ * Companion rest: the idle home in the app shell, centred over the bottom bar.
+ * Anchored in fixed px from the bottom (the measured `--companion-bar-center-y`)
+ * so it lands on the bottom-bar anchor. No JS breath — the CSS idle-breath glow
+ * on `.minded-sun` resumes on its own once the sun settles.
  */
-/** Placeholder top-bar anchor used until MainWrapper measures the real px. */
-export const DEFAULT_COMPANION_TOP_Y_PX = 44;
+/** Placeholder bottom-bar anchor used until MainWrapper measures the real px. */
+export const DEFAULT_COMPANION_BOTTOM_Y_PX = 44;
 
-export const sunCompanionSettle = (topBarCenterYPx: number): SunSettle => ({
-  anchorYPxFromTop: topBarCenterYPx,
+export const sunCompanionSettle = (
+  barCenterYPxFromBottom: number,
+): SunSettle => ({
+  anchorYPxFromBottom: barCenterYPxFromBottom,
   // ~0.42 of the interaction sun's base lands the companion at ~50px — the
-  // footprint the top-bar band is centred around — rather than the 0.66 that
-  // would nearly fill the band and crowd the dashboard cards.
+  // footprint the bottom-bar band is centred around — rather than the 0.66 that
+  // would nearly fill the band and crowd the icons either side.
   scale: 0.42,
   breathe: false,
 });
@@ -76,17 +78,17 @@ export const sunCompanionSettle = (topBarCenterYPx: number): SunSettle => ({
 /**
  * Map a sun phase to its settle target. `interactive` returns null (the sun is
  * draggable, not settled). Pure so it can be unit-tested and reused verbatim by
- * the styleguide harness. `companionTopYPx` is the measured top-bar anchor,
+ * the styleguide harness. `companionBottomYPx` is the measured bottom-bar anchor,
  * needed only for the "companion" phase.
  */
 export const getSunSettleForPhase = (
   phase: SunPhase,
   breathSeconds: number,
-  companionTopYPx = DEFAULT_COMPANION_TOP_Y_PX,
+  companionBottomYPx = DEFAULT_COMPANION_BOTTOM_Y_PX,
 ): SunSettle | null => {
   switch (phase) {
     case "companion":
-      return sunCompanionSettle(companionTopYPx);
+      return sunCompanionSettle(companionBottomYPx);
     case "breathing":
       return sunBreatheSettle(breathSeconds);
     case "resting":
