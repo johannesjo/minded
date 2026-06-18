@@ -17,6 +17,7 @@ import {
   getSunHandlers,
   getSunRole,
   getSunSettleForCurrentRole,
+  isShellSunInteractive,
   setCompanionBottomYPx,
   setSunPosition,
   setSunRole,
@@ -73,7 +74,7 @@ const MainWrapper = (props: RouteSectionProps) => {
   // (z-30, above the overlay) would grab taps meant for the choices that mount
   // before the deferred role flip (see getIsSunHandoffInFlight).
   const isSunInteractive = () =>
-    getSunRole() === "interactive" && !getIsSunHandoffInFlight();
+    isShellSunInteractive(getSunRole(), getIsSunHandoffInFlight());
 
   // const navigate = useNavigate();
 

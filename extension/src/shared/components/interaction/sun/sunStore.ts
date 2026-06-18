@@ -119,6 +119,19 @@ const [getRestingSunAnchor, setRestingSunAnchor] =
     equals: (a, b) => a?.x === b?.x && a?.y === b?.y,
   });
 
+/**
+ * The shell disc accepts pointer input (drag/tap, `pointer-events: auto`) only
+ * while its role is the live "interactive" phase AND no hand-off to the post-sun
+ * choices is in flight. The second term is what stops the centred, full-size disc
+ * from grabbing taps meant for the choices that mount before the deferred role
+ * flip (see getIsSunHandoffInFlight). Pure (no signal reads) so RouteCmp's gating
+ * can't drift from this rule and the truth table is unit-tested.
+ */
+export const isShellSunInteractive = (
+  role: SunPhase,
+  isHandoffInFlight: boolean,
+): boolean => role === "interactive" && !isHandoffInFlight;
+
 export {
   getSunRole,
   setSunRole,
