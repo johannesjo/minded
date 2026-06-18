@@ -267,7 +267,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.PR3,
-        t: "What is a challenge you overcame, and what did it reveal about your strength",
+        t: "What is a challenge you overcame",
       },
     ],
   },
@@ -349,7 +349,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT14,
-        t: "What would make today feel like a success, even if nothing else gets done",
+        t: "What would make today feel like a success",
         prompt: "Today is a success if",
       },
     ],
@@ -381,7 +381,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.GR2,
-        t: "What is something you usually take for granted that you are grateful for",
+        t: "What is something you take for granted",
         prompt: "I am grateful for",
       },
     ],
@@ -428,7 +428,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT8,
-        t: "What is one distraction you could remove from your environment right now",
+        t: "What distraction could you remove right now",
       },
     ],
   },
@@ -447,7 +447,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.CT4,
-        t: "Where in your body do you feel tension right now, and can you let it soften",
+        t: "Where do you feel tension in your body right now",
       },
     ],
     dashboardTxt: "Calming Thoughts",
@@ -542,7 +542,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.GP7,
-        t: "What is a small experiment you could run this week to improve your life",
+        t: "What is something new you could try this week",
         prompt: "This week I could try",
       },
     ],
@@ -758,7 +758,7 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.SI1,
-        t: "What is one thing you could do tomorrow to be a slightly better version of yourself",
+        t: "What could you do tomorrow to be a little better",
         prompt: "Tomorrow I could",
       },
       {
@@ -768,23 +768,23 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.SI3,
-        t: "If you changed nothing, what would your life look like in three months? How does that make you feel",
+        t: "What do you want to be different a year from now",
       },
       {
         id: QID.SI4,
-        t: "When negative thoughts arise, how do you deal with them",
+        t: "How do you deal with negative thoughts",
       },
       {
         id: QID.SI5,
-        t: "What situations make you feel terrible, and what do they have in common",
+        t: "What situations tend to drain you",
       },
       {
         id: QID.SI6,
-        t: "What small habit, kept for a year, would change your life the most",
+        t: "What small habit would improve your life",
       },
       {
         id: QID.SI7,
-        t: "What would the person you want to become do right now",
+        t: "Who do you want to become",
       },
     ],
   },
@@ -793,16 +793,16 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.REL1,
-        t: "Who is someone that makes you feel supported",
+        t: "Who makes you feel supported",
         prompt: "I feel supported by",
       },
       {
         id: QID.REL2,
-        t: "What is a small way you could show someone you care today",
+        t: "How could you show someone you care today",
       },
       {
         id: QID.REL3,
-        t: "Who would you like to reconnect with, and what is one step toward it",
+        t: "Who would you like to reconnect with",
         prompt: "I'd like to reconnect with",
       },
       {
@@ -816,15 +816,16 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.REL6,
-        t: "Is there a conversation you have been putting off? What is holding you back",
+        t: "Is there a conversation you have been avoiding",
       },
       {
         id: QID.REL7,
-        t: "How could you be a better listener to the people around you",
+        t: "How could you be a better listener",
       },
       {
         id: QID.REL8,
-        t: "Who deserves a thank-you from you, and what for",
+        t: "Who would you like to thank",
+        prompt: "I want to thank",
       },
     ],
   },
@@ -834,11 +835,11 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.ME1,
-        t: "What kind of meal makes you feel good afterward",
+        t: "What meal makes you feel good afterward",
       },
       {
         id: QID.ME2,
-        t: "What could you do to enjoy your meals more",
+        t: "What could help you enjoy your meals more",
       },
       {
         id: QID.ME3,
@@ -847,16 +848,16 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.ME4,
-        t: "Are you truly hungry right now, or is it another feeling asking to be fed",
+        t: "Besides hunger, what makes you reach for food",
       },
       {
         id: QID.ME5,
-        t: "What is a food that genuinely makes you happy",
+        t: "What food makes you happy",
         prompt: "I enjoy",
       },
       {
         id: QID.ME6,
-        t: "How could you slow down and savor your next meal",
+        t: "What helps you eat more slowly",
       },
     ],
   },
