@@ -32,6 +32,7 @@ export const MissingCapabilityView = (props: {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
+  const [getCanContinue, setCanContinue] = createSignal<boolean>(false);
   let t0: NodeJS.Timeout | undefined;
 
   const refreshMissingCapabilities = () => {
@@ -41,13 +42,17 @@ export const MissingCapabilityView = (props: {
     );
     setMissingCapabilities(mc);
 
-    // In onboarding (requiredOnly) advance as soon as the required capabilities
-    // are granted so advisory ones don't trap the user; elsewhere (e.g. the
-    // dashboard banner) the view stays open until everything is resolved.
     const blockingMissing = props.requiredOnly
       ? mc.filter((c) => REQUIRED_CAPABILITIES.includes(c))
       : mc;
-    if (blockingMissing.length === 0) {
+    setCanContinue(blockingMissing.length === 0);
+
+    // Onboarding (requiredOnly) surfaces a Continue button instead of
+    // auto-advancing: granting the required permissions must not skip past the
+    // optional/recommended ones before the user can act on them. Elsewhere
+    // (e.g. the dashboard banner) the view still auto-closes once everything
+    // is resolved.
+    if (blockingMissing.length === 0 && !props.requiredOnly) {
       props.onAllConfigured?.();
     }
   };
@@ -185,13 +190,25 @@ export const MissingCapabilityView = (props: {
                 </p>
                 <button
                   class="btnTxt"
-                  onClick={() => onMissingCapabilityClick("BatteryOptimization")}
+                  onClick={() =>
+                    onMissingCapabilityClick("BatteryOptimization")
+                  }
                 >
                   Disable Battery Optimization
                 </button>
               </div>
             )}
           </div>
+        )}
+
+        {props.requiredOnly && getCanContinue() && (
+          <button
+            style="margin-top: 32px"
+            class="btnTxtBig"
+            onClick={() => props.onAllConfigured?.()}
+          >
+            continue
+          </button>
         )}
 
         <button
