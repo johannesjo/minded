@@ -119,6 +119,10 @@ const getInteractionRoot = (shadowRoot?: ShadowRoot) =>
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
   const SCREEN_TRANSITION_MS = ANIMATION_TIMING.fadeOut.standard;
+  // The question fades out quickly once the user advances past it (triple tap),
+  // so it's gone before the choices arrive — no slow lingering, no overlap. The
+  // post-tap hand-off waits this long so the choices fade in only after it.
+  const QUESTION_FADE_OUT_MS = 400;
   const ARM_WINDOW_MS = ANIMATION_TIMING.delay.armWindow;
 
   // Data state
@@ -152,6 +156,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsModeTransitioning, setIsModeTransitioning] = createSignal(false);
   const [getIsDragging, setIsDragging] = createSignal(false);
   const [getShowSunInstructions, setShowSunInstructions] = createSignal(false);
+  // True from the triple tap until the choices mount: the question is fading out
+  // but no breath/choices screen has appeared yet. Keeps the persistent sun on
+  // screen (and inert) through that gap instead of letting it blink out.
+  const [getIsAdvancingToChoices, setIsAdvancingToChoices] =
+    createSignal(false);
   const [getHasAnswered, setHasAnswered] = createSignal(false);
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
@@ -236,6 +245,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const getIsInteractionSunShown = () =>
     getIsSunInFlow() &&
     (getSunPhase() !== "interactive" ||
+      getIsAdvancingToChoices() ||
       (!getIsExitingInteraction() && !getShowPostSunOverlay()));
 
   let frameNr: number | undefined;
@@ -397,32 +407,58 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setIsIntentSelectionArmed(false);
     setIsTimeSelectionArmed(false);
 
-    // Fade interaction-content out first, then mount the post-sun overlay so
-    // its fade-in plays after — not concurrent with — the fade-out.
+    // Fade the interaction content out; the sun stays on screen and morphs
+    // through the post-sun flow instead of being replaced by a separate sun.
     setIsExitingInteraction(true);
     const willBreathe = getPostSunPauseSeconds(getFrictionLevel()) > 0;
-    // Keep the sun on screen and let it morph through the post-sun flow instead
-    // of fading it out and replacing it with a separate sun.
-    setSunPhase(willBreathe ? "breathing" : "resting");
+    if (willBreathe) {
+      // Glide the sun up to its breath anchor, then show the breath pause after
+      // the interaction content has faded out (sequential, not concurrent).
+      setSunPhase("breathing");
+      if (postSunScreenTransitionTimeout) {
+        window.clearTimeout(postSunScreenTransitionTimeout);
+      }
+      postSunScreenTransitionTimeout = window.setTimeout(() => {
+        postSunScreenTransitionTimeout = undefined;
+        if (isDisposed) return;
+        setShowBreathPause(true);
+      }, SCREEN_TRANSITION_MS);
+      return;
+    }
+
+    // No breath pause: let the question fade out first (the sun stays put and
+    // visible via isAdvancingToChoices), THEN reveal the choices and glide the
+    // sun to its reserved slot in one motion. Sequential — the question is gone
+    // before the choices arrive, so they never overlap (no misclicks) — and the
+    // sun never detours via the static fallback.
+    setIsAdvancingToChoices(true);
     if (postSunScreenTransitionTimeout) {
       window.clearTimeout(postSunScreenTransitionTimeout);
     }
     postSunScreenTransitionTimeout = window.setTimeout(() => {
       postSunScreenTransitionTimeout = undefined;
       if (isDisposed) return;
-
-      if (willBreathe) {
-        setShowBreathPause(true);
-        return;
-      }
-
       if (shouldAskIntent(getFrictionLevel())) {
         showIntentSelectionAfterOverlayTransition();
-        return;
+      } else {
+        showTimeSelectionAfterOverlayTransition();
       }
+      enterRestingForChoices();
+    }, QUESTION_FADE_OUT_MS);
+  };
 
-      showTimeSelectionAfterOverlayTransition();
-    }, SCREEN_TRANSITION_MS);
+  // The choices (and their reserved sun slot) are mounting now. Measure the slot
+  // on the next frame, then flip to resting, so the disc glides straight to its
+  // spot in one motion rather than detouring via the static fallback (down, then
+  // back up). Clearing the advancing flag only after the resting phase is set
+  // keeps the sun continuously visible across the hand-off.
+  const enterRestingForChoices = () => {
+    requestAnimationFrame(() => {
+      if (isDisposed) return;
+      measureRestingSunAnchor({ force: true });
+      setSunPhase("resting");
+      setIsAdvancingToChoices(false);
+    });
   };
 
   const handleBreathPauseComplete = () => {
@@ -431,15 +467,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setShowBreathPause(false);
     setIsIntentSelectionArmed(true);
     setShowIntentSelection(true);
-    // Measure the choices' reserved sun slot first, then flip to resting, so the
-    // disc glides from the breath anchor straight to its slot in one motion
-    // instead of detouring via the static fallback (down, then back up). The sun
-    // stays visible as "breathing" for the one frame until the slot is laid out.
-    requestAnimationFrame(() => {
-      if (isDisposed) return;
-      measureRestingSunAnchor({ force: true });
-      setSunPhase("resting");
-    });
+    // Same one-motion hand-off as the no-breath path: the sun stays visible as
+    // "breathing" for the one frame until the slot is measured, then glides to it.
+    enterRestingForChoices();
   };
 
   const handleBreathPauseCancel = () => {
@@ -1039,6 +1069,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               !getShowPostSunOverlay() &&
               !getIsExitingInteraction(),
             dragging: getIsDragging(),
+            // Hand-off in progress: make the faded question click-through so the
+            // choices above it (and their hovers) receive the pointer.
+            "is-dismissed":
+              getShowPostSunOverlay() || getIsExitingInteraction(),
           }}
           style={{
             opacity:
@@ -1047,9 +1081,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 : getShowSunInstructions()
                   ? 0
                   : getInteractionOpacity(),
+            // Fade the question out quickly when advancing past it (triple tap).
             transition:
               getIsExitingInteraction() || getShowPostSunOverlay()
-                ? `opacity ${SCREEN_TRANSITION_MS}ms ease-out`
+                ? `opacity ${QUESTION_FADE_OUT_MS}ms ease-out`
                 : undefined,
             "pointer-events":
               getIsExitingInteraction() ||
@@ -1115,9 +1150,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                   getIsExitingInteraction() || getShowPostSunOverlay()
                     ? 0
                     : getInteractionOpacity(),
+                // Match the question's quick fade-out when advancing past it.
                 transition:
                   getIsExitingInteraction() || getShowPostSunOverlay()
-                    ? `opacity ${SCREEN_TRANSITION_MS}ms ease-out`
+                    ? `opacity ${QUESTION_FADE_OUT_MS}ms ease-out`
                     : undefined,
                 "pointer-events":
                   getIsCompletionStarted() ||
@@ -1154,8 +1190,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             style={{
               opacity: getIsInteractionSunShown() ? 1 : 0,
               transition: `opacity ${SCREEN_TRANSITION_MS}ms ease-out`,
+              // Draggable only during the live interaction — not once the gesture
+              // is done and we're advancing/exiting (the disc is just gliding).
               "pointer-events":
-                getIsInteractionSunShown() && getSunPhase() === "interactive"
+                getIsInteractionSunShown() &&
+                getSunPhase() === "interactive" &&
+                !getIsExitingInteraction()
                   ? "all"
                   : "none",
             }}

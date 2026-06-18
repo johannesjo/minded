@@ -8,6 +8,17 @@
   opacity: 0;
   transition: opacity 1s ease-out;
 
+  // Once we've handed off to the post-sun overlay (breath / choices), the faded
+  // question must not intercept taps or hovers meant for the choices above it:
+  // the wrapper box sits at z-index 1101, above the overlay (1100), so any
+  // descendant that opts back into pointer events (e.g. #minded-6622-inp:
+  // `pointer-events: all`) would otherwise swallow them. Force the whole subtree
+  // click-through while dismissed.
+  &.is-dismissed,
+  &.is-dismissed * {
+    pointer-events: none !important;
+  }
+
   &.fade-in {
     opacity: 1;
   }
@@ -158,6 +169,8 @@
 .time-selection-overlay {
   .resting-sun-spacer {
     height: 132px;
+    // Extra breathing room between the options and the sun resting beneath them.
+    margin-top: 24px;
     pointer-events: none;
   }
 
