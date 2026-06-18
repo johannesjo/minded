@@ -13,6 +13,12 @@ import { Ico } from "@src/shared/components/ui/Ico";
 // intentionally excluded here while still being surfaced as fixable cards below.
 const REQUIRED_CAPABILITIES = ["Accessibility", "SystemAlertWindow"];
 
+// Advisory capabilities - granting them improves detection reliability, but
+// minded works without them (accessibility + overlay are enough). They are
+// rendered below the required ones and clearly flagged as optional so users
+// don't mistake them for mandatory setup steps.
+const OPTIONAL_CAPABILITIES = ["UsageStats", "BatteryOptimization"];
+
 export const MissingCapabilityView = (props: {
   onAllConfigured?: () => void;
   onPermissionDenied?: () => void;
@@ -58,6 +64,9 @@ export const MissingCapabilityView = (props: {
       window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
     });
   });
+
+  const hasOptionalMissing = () =>
+    getMissingCapabilities().some((c) => OPTIONAL_CAPABILITIES.includes(c));
 
   const onMissingCapabilityClick = (capability: string) => {
     t0 = setTimeout(() => {
@@ -142,35 +151,46 @@ export const MissingCapabilityView = (props: {
             </button>
           </div>
         )}
-        {getMissingCapabilities().includes("UsageStats") && (
-          <div class="card">
-            <p class={styles.permissionText}>
-              <em>minded</em> uses usage access as a backup way to detect the
-              app in the foreground. Without it, detection is less reliable
-              for apps with long loading screens.
+        {hasOptionalMissing() && (
+          <div class={styles.optionalSection}>
+            <p class={styles.optionalHeading}>
+              Optional — these are <strong>not required</strong>. Accessibility
+              and the overlay permission are enough for <em>minded</em> to work;
+              the steps below only make detection more reliable.
             </p>
-            <button
-              class="btnTxt"
-              onClick={() => onMissingCapabilityClick("UsageStats")}
-            >
-              Enable Usage Access
-            </button>
-          </div>
-        )}
-        {getMissingCapabilities().includes("BatteryOptimization") && (
-          <div class="card">
-            <p class={styles.permissionText}>
-              Battery optimization can silently stop <em>minded</em> in the
-              background, so interventions no longer appear. Excluding{" "}
-              <em>minded</em> from battery optimization keeps the protection
-              running.
-            </p>
-            <button
-              class="btnTxt"
-              onClick={() => onMissingCapabilityClick("BatteryOptimization")}
-            >
-              Disable Battery Optimization
-            </button>
+            {getMissingCapabilities().includes("UsageStats") && (
+              <div class="card">
+                <span class={styles.optionalBadge}>Optional</span>
+                <p class={styles.permissionText}>
+                  <em>minded</em> uses usage access as a backup way to detect
+                  the app in the foreground. Without it, detection is less
+                  reliable for apps with long loading screens.
+                </p>
+                <button
+                  class="btnTxtOutline"
+                  onClick={() => onMissingCapabilityClick("UsageStats")}
+                >
+                  Enable Usage Access
+                </button>
+              </div>
+            )}
+            {getMissingCapabilities().includes("BatteryOptimization") && (
+              <div class="card">
+                <span class={styles.optionalBadge}>Optional</span>
+                <p class={styles.permissionText}>
+                  Battery optimization can silently stop <em>minded</em> in the
+                  background, so interventions no longer appear. Excluding{" "}
+                  <em>minded</em> from battery optimization keeps the protection
+                  running.
+                </p>
+                <button
+                  class="btnTxtOutline"
+                  onClick={() => onMissingCapabilityClick("BatteryOptimization")}
+                >
+                  Disable Battery Optimization
+                </button>
+              </div>
+            )}
           </div>
         )}
 
