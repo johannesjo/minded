@@ -489,8 +489,9 @@ export const LittleSunComponent: (props: {
     <div
       id="minded-6622-little-sun"
       title={getAccessibleLabel()}
-      // Always at the corner: it blooms in place (the interaction sun glides
-      // here as it departs), so no center → corner crawl.
+      // Always at the corner: it appears in place (the interaction sun glides
+      // here as it departs and hands off), so no reveal animation or
+      // center → corner crawl.
       classList={{
         ["bottomLeft"]: true,
         ["isOutOfTheWay"]: true,

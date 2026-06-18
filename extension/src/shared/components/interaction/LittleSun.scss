@@ -26,9 +26,6 @@ $shadow: var(--little-sun-shadow);
     top 1s ease-out,
     left 1s ease-out,
     transform 1s ease-out;
-  animation: minded6622littleSunIn 0.8s;
-  animation-fill-mode: forwards;
-  animation-iteration-count: 1;
 
   // TODO cleanup and fix class names
   &.topRight {
@@ -36,11 +33,16 @@ $shadow: var(--little-sun-shadow);
     left: 50%;
 
     &.isOutOfTheWay {
-      // Calculate the exact position to move from center to bottom-right
-      // Using calc to maintain smooth transition from center
-      bottom: 0;
+      // Pin the disc *centre* to the corner point — 40px in from the left and
+      // bottom edges — exactly where the departing interaction sun lands, so the
+      // hand-off is seamless (see sunSettle.ts LITTLE_SUN_CORNER_PX_WEB).
+      // Anchoring the centre (offset by ±50% of the box) keeps it on that point
+      // regardless of the disc's box size, instead of relying on the box being
+      // exactly 40px tall (bottom: 0 lands the centre at box-height from the
+      // edge, which only matched the 40px corner by coincidence).
+      bottom: 40px;
       left: 40px;
-      transform: translate(0, 0);
+      transform: translate(-50%, 50%);
     }
   }
 
@@ -49,11 +51,12 @@ $shadow: var(--little-sun-shadow);
     left: 50%;
 
     &.isOutOfTheWay {
-      // Calculate the exact position to move from center to bottom-left
-      // Using calc to maintain smooth transition from center
-      bottom: 0;
+      // Same bottom-left corner as topRight: pin the disc *centre* 40px in from
+      // both edges (size-independent) where the departing sun lands, for a
+      // seamless hand-off (see sunSettle.ts LITTLE_SUN_CORNER_PX_WEB).
+      bottom: 40px;
       left: 40px;
-      transform: translate(0, 0);
+      transform: translate(-50%, 50%);
     }
   }
 
@@ -142,23 +145,6 @@ $shadow: var(--little-sun-shadow);
   text-align: left;
   animation: minded6622littleSunHintIn 0.25s ease-out;
   transform-origin: bottom left;
-}
-
-@keyframes minded6622littleSunIn {
-  0% {
-    transform: translate(-50%, -50%) scale(0.1);
-    opacity: 0;
-  }
-  // A soft overshoot then settle — the sun lands and nestles in rather than
-  // snapping to size.
-  70% {
-    transform: translate(-50%, -50%) scale(1.08);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
 }
 
 @keyframes minded6622littleSunOut {

@@ -111,7 +111,7 @@ export const LITTLE_SUN_CORNER_PX_ANDROID = 30;
 
 /**
  * Time chosen → the sun glides to the bottom-left corner and shrinks to roughly
- * the Little Sun's size, then the Little Sun blooms in place where it lands, so
+ * the Little Sun's size, then the Little Sun appears in place where it lands, so
  * the persistent timer reads as the very same sun settling in.
  *
  * Anchored in fixed px (not viewport ratios) to match the Little Sun's fixed

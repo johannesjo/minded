@@ -1,11 +1,9 @@
 package com.minded.minded.ui.compose
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -54,7 +52,9 @@ fun LittleSun(
 
     AnimatedVisibility(
         visible = isOverlayVisible,
-        enter = scaleIn(animationSpec = spring(stiffness = Spring.StiffnessLow)),
+        // No reveal animation: the departing interaction sun already glides to
+        // this corner, so the native sun just appears in place as it hands off.
+        enter = EnterTransition.None,
         exit = fadeOut(animationSpec = tween(500)),
     ) {
         Box(
