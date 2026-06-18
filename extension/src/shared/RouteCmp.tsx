@@ -13,6 +13,7 @@ import {
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   computeCompanionBottomYPx,
+  getIsSunHandoffInFlight,
   getSunHandlers,
   getSunRole,
   getSunSettleForCurrentRole,
@@ -67,6 +68,13 @@ const MainWrapper = (props: RouteSectionProps) => {
     isDarkModeNow() ? "moon" : "sun",
   );
 
+  // The disc is interactive only while the role is "interactive" AND no hand-off
+  // to the post-sun choices is in flight — otherwise the centred, full-size disc
+  // (z-30, above the overlay) would grab taps meant for the choices that mount
+  // before the deferred role flip (see getIsSunHandoffInFlight).
+  const isSunInteractive = () =>
+    getSunRole() === "interactive" && !getIsSunHandoffInFlight();
+
   // const navigate = useNavigate();
 
   onMount(() => {
@@ -118,7 +126,7 @@ const MainWrapper = (props: RouteSectionProps) => {
       <div
         class={styles.shellSunLayer}
         classList={{
-          [styles.isInteractive]: getSunRole() === "interactive",
+          [styles.isInteractive]: isSunInteractive(),
         }}
       >
         <div class={styles.shellSunSlot}>
@@ -127,8 +135,8 @@ const MainWrapper = (props: RouteSectionProps) => {
             settle={getSunSettleForCurrentRole()}
             onPositionChange={setSunPosition}
             minimizeWillChange={true}
-            isDragEnabled={getSunRole() === "interactive"}
-            isTapEnabled={getSunRole() === "interactive"}
+            isDragEnabled={isSunInteractive()}
+            isTapEnabled={isSunInteractive()}
             isHovered={getSunRole() === "companion" && getIsCompanionHovered()}
             tapThreshold={getSunHandlers()?.tapThreshold ?? 3}
             onSkip={() => getSunHandlers()?.onSkip()}

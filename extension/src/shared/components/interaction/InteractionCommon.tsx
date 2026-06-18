@@ -41,6 +41,7 @@ import {
   registerSunInteraction,
   setBreathSeconds,
   setInteractiveSunAnchor,
+  setIsSunHandoffInFlight,
   setRestingSunAnchor,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
@@ -326,6 +327,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       setIsExitingInteraction(false);
     }
   });
+
+  // Tell the shell sun to go inert the moment we begin handing off to the choices
+  // (isExitingInteraction flips true at the top of handleSunContinue, ~400ms
+  // before the buttons mount). Without this the disc stays interactive — and so
+  // pointer-grabbing — over the just-shown choices until the deferred rAF flips
+  // the role to "resting", swallowing taps (see getIsSunHandoffInFlight).
+  if (props.useShellSun) {
+    createEffect(() => setIsSunHandoffInFlight(getIsExitingInteraction()));
+    onCleanup(() => setIsSunHandoffInFlight(false));
+  }
 
   // Fade animation for mobile content
   const runFadeAnimation = (

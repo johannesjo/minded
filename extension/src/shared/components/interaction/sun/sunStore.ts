@@ -38,6 +38,20 @@ export interface SunOutcomeHandlers {
 
 /** Current role. "companion" is the idle home; the rest are intervention phases. */
 const [getSunRole, setSunRole] = createSignal<SunPhase>("companion");
+/**
+ * True while an in-flight interaction is handing off to the post-sun choices but
+ * the role hasn't yet flipped out of "interactive". The flip is deferred to a
+ * requestAnimationFrame (InteractionCommon's enterRestingForChoices) so the disc
+ * glides to the measured choices slot in one motion — but the choice buttons mount
+ * a tick earlier, on a setTimeout. During that window the full-size, viewport-
+ * centred disc sits right over the just-shown buttons; if it stays interactive
+ * (pointer-events: auto, z-30 above the overlay) it silently eats their taps. This
+ * is worst on a backgrounded/throttled tab, where the rAF that flips the role is
+ * paused while the setTimeout-driven buttons already rendered. Mirrors the
+ * self-owned sun's `!getIsExitingInteraction()` guard so the shell disc goes inert
+ * the moment the hand-off begins — without touching the role (hence the glide).
+ */
+const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
 /** Live center of the disc, pushed by the shell sun each frame. */
 const [getSunPosition, setSunPosition] = createSignal<SunPosition | undefined>(
   undefined,
@@ -108,6 +122,8 @@ const [getRestingSunAnchor, setRestingSunAnchor] =
 export {
   getSunRole,
   setSunRole,
+  getIsSunHandoffInFlight,
+  setIsSunHandoffInFlight,
   getSunPosition,
   setSunPosition,
   getCompanionBottomYPx,
