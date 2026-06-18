@@ -19,13 +19,16 @@ import { getRndEntry } from "@src/util/getRndEntry";
 import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
 import { ScreenOffInteraction } from "@src/shared/components/interaction/screenOff/ScreenOffInteraction";
+import { UrgeSurfing } from "@src/shared/components/interaction/urgeSurfing/UrgeSurfing";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 
 // Get random advice once at module load
 const ADVICE = getRndEntry(ACTION_ADVICES);
 
 export interface InteractionModeSwitchProps {
   mode: InteractionMode | undefined;
+  frictionLevel: FrictionLevel;
   syncData: SyncData | undefined;
   initialQuestion: QuestionForPrompt | undefined;
   answers: Answer[];
@@ -94,6 +97,14 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           onSkip={props.onSkip}
           onCancelCountdown={props.onCancelCountdown}
           onLeaveNow={props.onLeaveNow}
+        />
+      </Match>
+      <Match when={props.mode === "URGE_SURFING"}>
+        <UrgeSurfing
+          frictionLevel={props.frictionLevel}
+          onCancelCountdown={props.onCancelCountdown}
+          onSuccess={() => props.onSuccess()}
+          onSkip={props.onSkip}
         />
       </Match>
       <Match when={props.mode === "ENERGY_LVL"}>

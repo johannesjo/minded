@@ -1143,6 +1143,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         >
           <InteractionModeSwitch
             mode={getMode()}
+            frictionLevel={getFrictionLevel()}
             syncData={getSyncDataI()}
             initialQuestion={getInitialQuestion()}
             answers={getAnswers()}
