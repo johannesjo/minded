@@ -508,7 +508,7 @@ export const LittleSunComponent: (props: {
           onClick={handleClick}
           onFocus={dismissHint}
         >
-          {getDisplayTime()}
+          <span id="minded-6622-little-sun-time">{getDisplayTime()}</span>
         </button>
       </div>
     </div>

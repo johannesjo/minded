@@ -108,6 +108,24 @@ $shadow: var(--little-sun-shadow);
   }
 }
 
+#minded-6622-little-sun-time {
+  // The disc glides in from the intervention and lands as the Little Sun; once
+  // it has settled, the timer gently fades in so the number reads as the sun
+  // arriving rather than popping in alongside it. Runs once on mount — the
+  // per-second text update mutates this span in place, it isn't remounted.
+  // Kept inline (no display change) so the disc's text centring is unaffected.
+  animation: minded6622littleSunTextIn 0.7s ease-out 0.15s both;
+}
+
+@keyframes minded6622littleSunTextIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes minded6622littleSunBreath {
   0%,
   100% {
@@ -123,7 +141,8 @@ $shadow: var(--little-sun-shadow);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #minded-6622-little-sun-sun {
+  #minded-6622-little-sun-sun,
+  #minded-6622-little-sun-time {
     animation: none;
   }
 }
