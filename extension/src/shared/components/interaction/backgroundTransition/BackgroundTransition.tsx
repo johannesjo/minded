@@ -73,6 +73,15 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     };
   };
 
+  // The warm sun-glow is anchored to the sun's live center. Until the sun has
+  // reported a position we have no real anchor, and painting the glow at the
+  // placeholder default (50vw/58vh) drops a second, misplaced "sun" — a small
+  // haloed disc above the real one — for the first frames of each intervention.
+  // Hold the glow back until we know where the sun actually is; it then blooms in
+  // directly under the disc instead of jumping down onto it.
+  const getIsSunGradientAttached = () =>
+    (props.isSunGradientAttached ?? true) && !!getSunGradientPosition();
+
   // Shell path: track the sun's center from the signal. No-op when the prop is
   // absent (every other runtime still gets position via the event below).
   createEffect(() => {
@@ -221,7 +230,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
         class="background-transition background-default"
         classList={{
           animating: getIsAnimating(),
-          "sun-gradient-attached": props.isSunGradientAttached ?? true,
+          "sun-gradient-attached": getIsSunGradientAttached(),
         }}
         style={getSunGradientStyle()}
       />
@@ -234,7 +243,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       <div
         class="background-transition background-overlay background-sunset"
         classList={{
-          "sun-gradient-attached": props.isSunGradientAttached ?? true,
+          "sun-gradient-attached": getIsSunGradientAttached(),
         }}
         style={{
           ...getSunGradientStyle(),
