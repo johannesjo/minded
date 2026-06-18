@@ -6,7 +6,10 @@
 export const ANIMATION_TIMING = {
   /** Fade out animation durations in milliseconds */
   fadeOut: {
-    standard: 1000,
+    // Drives every intervention screen-to-screen fade (SCREEN_TRANSITION_MS).
+    // Kept just above the sun's 650ms corner glide (GLIDE_DURATION_MS) so the
+    // departing disc lands before the overlay hands off to the Little Sun.
+    standard: 700,
     fast: 700,
     wrapper: 5000,
   },
