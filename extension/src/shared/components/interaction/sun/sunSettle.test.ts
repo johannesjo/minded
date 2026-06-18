@@ -1,5 +1,7 @@
 import {
   getSunSettleForPhase,
+  LITTLE_SUN_CORNER_PX_ANDROID,
+  LITTLE_SUN_CORNER_PX_WEB,
   SUN_REST_SETTLE,
   sunBreatheSettle,
 } from "./sunSettle";
@@ -39,5 +41,26 @@ describe("getSunSettleForPhase", () => {
   it("keeps the resting sun clear of the very top edge so it stays visible", () => {
     // Regression: an anchor of ~0.16 sat too high and clipped on short windows.
     expect(SUN_REST_SETTLE.anchorYRatio!).toBeGreaterThanOrEqual(0.22);
+  });
+
+  it("departs to the web Little Sun corner by default (square bottom-left anchor)", () => {
+    const settle = getSunSettleForPhase("departing", 7)!;
+    expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_WEB);
+    expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_WEB);
+    expect(settle.breathe).toBe(false);
+  });
+
+  it("departs to a smaller corner when handed the Android native Little Sun inset", () => {
+    // The native overlay's disc centre sits closer to the corner than the web
+    // extension's, so the departing sun must aim lower-left to avoid a jump.
+    expect(LITTLE_SUN_CORNER_PX_ANDROID).toBeLessThan(LITTLE_SUN_CORNER_PX_WEB);
+    const settle = getSunSettleForPhase(
+      "departing",
+      7,
+      undefined,
+      LITTLE_SUN_CORNER_PX_ANDROID,
+    )!;
+    expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_ANDROID);
+    expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_ANDROID);
   });
 });
