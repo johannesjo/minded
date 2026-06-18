@@ -25,6 +25,14 @@
   transform-origin: center;
   will-change: transform, box-shadow;
 
+  // A slow idle float — a gentle 4px rise and fall, in step with the ::after
+  // breath halo (same 9s) so the resting disc subtly inhales rather than sitting
+  // dead still. Driven on the independent `translate` property, not `transform`,
+  // which the drag/settle physics own via the inline style — the two compose,
+  // so the float never fights the JS-driven motion. Paused while dragging and
+  // under reduced motion (below).
+  animation: mindedSunIdleFloat 9s ease-in-out infinite;
+
   /* Ensure box-shadow transitions smoothly even when JS updates the variables */
   transition: box-shadow 0.1s linear;
 
@@ -72,6 +80,11 @@
   &.dragging {
     cursor: grabbing;
     transition: none; /* Instant update during drag */
+
+    // Hold the float still while the finger owns the disc, so the idle bob can't
+    // add a stray wobble to the drag.
+    animation: none;
+    translate: none;
 
     // The drag glow on box-shadow owns the halo; hide the resting one.
     &::after {
@@ -145,7 +158,22 @@
   }
 }
 
+@keyframes mindedSunIdleFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .minded-sun {
+    animation: none;
+    translate: none;
+  }
+
   .minded-sun::after {
     animation: none;
     opacity: 0.25;

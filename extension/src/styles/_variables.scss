@@ -75,7 +75,18 @@
   --dashboard-card-bg-hover: rgba(255, 255, 255, 0.7);
   --dashboard-card-border-radius: var(--radius-xl);
 
-  --sun-bg: #fff;
+  // The sun's resting face. A soft cream core warming to a gentle amber rim,
+  // under a bright top-left sheen, so the disc reads as a dimensional sun rather
+  // than the flat white circle it used to be (the corner --little-sun-bg solves
+  // the same wash-out more boldly for its tiny size). The richer, saturated
+  // drag-state face layers on top via .minded-sun::before as --sun-warmth ramps.
+  --sun-bg:
+    radial-gradient(
+      circle at 34% 30%,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 255, 255, 0) 46%
+    ),
+    radial-gradient(circle at 50% 54%, #fffaf0 0%, #ffeec2 46%, #ffd486 100%);
   --sun-shadow: 0 0 1px 0 rgba(233, 132, 58, 0.5);
 
   --c-graph-fg-full: rgba(0, 0, 0, 0.5);
