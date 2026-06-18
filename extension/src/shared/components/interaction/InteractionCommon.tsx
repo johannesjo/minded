@@ -71,6 +71,7 @@ import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postS
 import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/interactionSuccessGuard";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
+import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 interface InteractionCommonProps {
@@ -171,6 +172,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     createSignal(false);
   const [getHasAnswered, setHasAnswered] = createSignal(false);
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
+  // Dashboard only: dragging the sun *down* opens the "Stay a while?" grounding
+  // offer (meditate / be present) instead of completing. Up still = let go.
+  const [getShowGroundingOffer, setShowGroundingOffer] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getShowBreathPause, setShowBreathPause] = createSignal(false);
   // The sun's lifecycle phase. "interactive" = draggable; "breathing" and
@@ -281,7 +285,33 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let restingOverlayEl: HTMLDivElement | undefined;
   let restingSunObserver: ResizeObserver | undefined;
   let isDisposed = false;
+  // The direction of the just-completed sun gesture. The terminal outcome
+  // callbacks (onFlingAway/onDragComplete) carry no direction, so we stash it
+  // here from handleStartBackgroundAnimation, which fires first.
+  let lastCompletionDirection: "up" | "down" | undefined;
   const interactionEventTarget = props.shadowRoot ?? window;
+
+  // Dashboard down-drag opens the grounding offer and keeps the interaction
+  // mounted, so the sun's terminal close (fade + unmount) must not fire. Every
+  // other case closes as before.
+  const runTerminalOutcome = (close: () => void) => {
+    if (
+      props.isFromDashboard &&
+      lastCompletionDirection === "down" &&
+      getShowGroundingOffer()
+    ) {
+      return;
+    }
+    close();
+  };
+
+  // Finish the dashboard interaction the same way its single-question success
+  // does (refresh dashboard data, then unmount).
+  const finishGrounding = () => {
+    setShowGroundingOffer(false);
+    props.onInteractionSubmitted?.();
+    props.onAfterInteractionFadeout();
+  };
 
   const syncDragObjectNameWithTheme = () => {
     const root = getInteractionRoot(props.shadowRoot);
@@ -619,7 +649,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
+    lastCompletionDirection = direction;
     setIsFinalAnimation(true);
+
+    // Direction picks the ritual on the dashboard: down = ground yourself
+    // (offer to meditate / be present) instead of completing. The sky still
+    // warms as the disc settles toward the viewer.
+    if (props.isFromDashboard && direction === "down") {
+      runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
+      interactionEventTarget.dispatchEvent(
+        new CustomEvent("startBackgroundAnimation", { detail: { direction } }),
+      );
+      setShowGroundingOffer(true);
+      return;
+    }
 
     runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => {
       if (isDisposed) return;
@@ -766,8 +809,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (!props.useShellSun) return;
     const unregister = registerSunInteraction({
       onSkip: handleSunContinue,
-      onFlingAway: props.onFlingAway,
-      onDragComplete: props.onDragComplete,
+      onFlingAway: () => runTerminalOutcome(props.onFlingAway),
+      onDragComplete: () => runTerminalOutcome(props.onDragComplete),
       onStartBackgroundAnimation: handleStartBackgroundAnimation,
       onCompletionStarted: (started) => {
         setIsCompletionStarted(started);
@@ -1012,6 +1055,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
+      {getShowGroundingOffer() && (
+        <GroundingOverlay
+          variant={getDragObjectName()}
+          onClose={finishGrounding}
+        />
+      )}
+
       {getShowTimeSelectionOverlay() && (
         <div
           class="time-selection-overlay"
@@ -1248,8 +1298,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <Sun
               variant={getDragObjectName()}
               onSkip={handleSunContinue}
-              onFlingAway={props.onFlingAway}
-              onDragComplete={props.onDragComplete}
+              onFlingAway={() => runTerminalOutcome(props.onFlingAway)}
+              onDragComplete={() => runTerminalOutcome(props.onDragComplete)}
               onStartBackgroundAnimation={handleStartBackgroundAnimation}
               onCompletionStarted={(started) => {
                 setIsCompletionStarted(started);
