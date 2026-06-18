@@ -33,6 +33,7 @@ export enum QID {
 
   PR1 = "PR1",
   PR2 = "PR2",
+  PR3 = "PR3",
 
   TIL1 = "TIL1",
   TIL2 = "TIL2",
@@ -50,11 +51,15 @@ export enum QID {
   RFHT11 = "RFHT11",
   RFHT12 = "RFHT12",
   RFHT13 = "RFHT13",
+  RFHT14 = "RFHT14",
 
   MO1 = "MO1",
   MO2 = "MO2",
+  MO3 = "MO3",
 
   GR1 = "GR1",
+  GR2 = "GR2",
+
   HT1 = "HT1",
   HT2 = "HT2",
   HT3 = "HT3",
@@ -62,9 +67,12 @@ export enum QID {
   HT5 = "HT5",
   HT6 = "HT6",
   HT7 = "HT7",
+  HT8 = "HT8",
 
   CT1 = "CT1",
   CT2 = "CT2",
+  CT3 = "CT3",
+  CT4 = "CT4",
 
   PT1 = "PT1",
   PT2 = "PT2",
@@ -88,6 +96,7 @@ export enum QID {
   GP4 = "GP4",
   GP5 = "GP5",
   GP6 = "GP6",
+  GP7 = "GP7",
 
   GPT1 = "GPT1",
   GPT2 = "GPT2",
@@ -140,6 +149,32 @@ export enum QID {
   SD23 = "SD23",
   SD24 = "SD24",
   SD25 = "SD25",
+  SD26 = "SD26",
+  SD27 = "SD27",
 
   SWD1 = "SWD1",
+
+  REL1 = "REL1",
+  REL2 = "REL2",
+  REL3 = "REL3",
+  REL4 = "REL4",
+  REL5 = "REL5",
+  REL6 = "REL6",
+  REL7 = "REL7",
+  REL8 = "REL8",
+
+  ME1 = "ME1",
+  ME2 = "ME2",
+  ME3 = "ME3",
+  ME4 = "ME4",
+  ME5 = "ME5",
+  ME6 = "ME6",
+
+  SI1 = "SI1",
+  SI2 = "SI2",
+  SI3 = "SI3",
+  SI4 = "SI4",
+  SI5 = "SI5",
+  SI6 = "SI6",
+  SI7 = "SI7",
 }

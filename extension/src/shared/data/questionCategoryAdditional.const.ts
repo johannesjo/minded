@@ -43,6 +43,12 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Understanding and addressing insomnia is crucial for your physical health and mental well-being. Good sleep is essential for cognitive function, mood regulation, and overall health.",
   [QuestionCategoryId.SleepWindDown]:
     "Writing down loose thoughts before sleep can reduce the need to keep them in working memory and make it easier to leave the day alone for the night.",
+  [QuestionCategoryId.SelfImprovement]:
+    "Small, intentional changes compound over time. Reflecting on who you want to become can help you take meaningful steps and stay aligned with your values.",
+  [QuestionCategoryId.Relationships]:
+    "Strong relationships are one of the biggest contributors to a happy life. Reflecting on the people around you can help you nurture connection, set boundaries, and feel more supported.",
+  [QuestionCategoryId.MindfulEating]:
+    "Paying attention to how and what you eat can help you notice hunger and fullness cues, enjoy your food more, and build a healthier relationship with eating.",
   [QuestionCategoryId.XEnergyLevelToday]:
     "Tracking your energy level can help you notice patterns (sleep, workload, habits) and plan demanding tasks for times when you tend to feel best.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:

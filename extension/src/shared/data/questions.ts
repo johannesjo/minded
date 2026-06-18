@@ -24,11 +24,10 @@ export enum QuestionCategoryId {
   UnderstandingProcrastination = "UnderstandingProcrastination",
   SelfDiscovery = "SelfDiscovery",
   SleepWindDown = "SleepWindDown",
+  SelfImprovement = "SelfImprovement",
+  Relationships = "Relationships",
+  MindfulEating = "MindfulEating",
   // NOTE: we filter out all questions from categories starting with X
-
-  // TODO add self improvement category
-  // TODO add relationships category
-  // TODO add mindful eating category
 
   XMoodCheckin = "XMoodCheckin",
   XEnergyLevelToday = "XEnergyLevelToday",
@@ -266,6 +265,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.PR2,
         t: "What is a strength of yours",
       },
+      {
+        id: QID.PR3,
+        t: "What is a challenge you overcame",
+      },
     ],
   },
   [QuestionCategoryId.TodayILearned]: {
@@ -344,6 +347,11 @@ export const QUESTION_CATEGORIES: {
         id: QID.RFHT13,
         t: "What is the most interesting thing I could work on today",
       },
+      {
+        id: QID.RFHT14,
+        t: "What would make today feel like a success",
+        prompt: "Today is a success if",
+      },
     ],
   },
   [QuestionCategoryId.Motivation]: {
@@ -356,6 +364,10 @@ export const QUESTION_CATEGORIES: {
         t: "What motivates you to make progress",
         prompt: "I am motivated by",
       },
+      {
+        id: QID.MO3,
+        t: "Who or what are you really doing this for",
+      },
     ],
   },
   [QuestionCategoryId.Gratitude]: {
@@ -365,6 +377,11 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.GR1,
         t: "What is something you are grateful for",
+        prompt: "I am grateful for",
+      },
+      {
+        id: QID.GR2,
+        t: "What is something you take for granted",
         prompt: "I am grateful for",
       },
     ],
@@ -409,6 +426,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.HT7,
         t: "How can you eliminate or reduce distractions",
       },
+      {
+        id: QID.HT8,
+        t: "What distraction could you remove right now",
+      },
     ],
   },
   [QuestionCategoryId.CalmingThoughts]: {
@@ -419,6 +440,15 @@ export const QUESTION_CATEGORIES: {
         prompt: "I feel at ease when",
       },
       { id: QID.CT2, t: "Can you describe a calm place you might like" },
+      {
+        id: QID.CT3,
+        t: "What helps you feel safe and at peace",
+        prompt: "I feel at peace when",
+      },
+      {
+        id: QID.CT4,
+        t: "Where do you feel tension in your body right now",
+      },
     ],
     dashboardTxt: "Calming Thoughts",
   },
@@ -509,6 +539,11 @@ export const QUESTION_CATEGORIES: {
         id: QID.GP6,
         t: "What is something you'd like to learn",
         prompt: "I want to learn",
+      },
+      {
+        id: QID.GP7,
+        t: "What is something new you could try this week",
+        prompt: "This week I could try",
       },
     ],
     dashboardTxt: "Good Plans",
@@ -703,11 +738,128 @@ export const QUESTION_CATEGORIES: {
         id: QID.SD25,
         t: "Some quality I value in others is...",
       },
+      {
+        id: QID.SD26,
+        t: "What would you attempt if you knew you could not fail",
+      },
+      {
+        id: QID.SD27,
+        t: "What part of your life feels most alive right now",
+      },
     ],
   },
   [QuestionCategoryId.SleepWindDown]: {
     dashboardTxt: "Wind-Down Brain Dump",
     limitTo: ["MobileApp"],
+  },
+  [QuestionCategoryId.SelfImprovement]: {
+    frequencyModifier: 1,
+    dashboardTxt: "Becoming Your Best Self",
+    questions: [
+      {
+        id: QID.SI1,
+        t: "What could you do tomorrow to be a little better",
+        prompt: "Tomorrow I could",
+      },
+      {
+        id: QID.SI2,
+        t: "When are you at your best",
+        prompt: "I am at my best when",
+      },
+      {
+        id: QID.SI3,
+        t: "What do you want to be different a year from now",
+      },
+      {
+        id: QID.SI4,
+        t: "How do you deal with negative thoughts",
+      },
+      {
+        id: QID.SI5,
+        t: "What situations tend to drain you",
+      },
+      {
+        id: QID.SI6,
+        t: "What small habit would improve your life",
+      },
+      {
+        id: QID.SI7,
+        t: "Who do you want to become",
+      },
+    ],
+  },
+  [QuestionCategoryId.Relationships]: {
+    dashboardTxt: "Relationships",
+    questions: [
+      {
+        id: QID.REL1,
+        t: "Who makes you feel supported",
+        prompt: "I feel supported by",
+      },
+      {
+        id: QID.REL2,
+        t: "How could you show someone you care today",
+      },
+      {
+        id: QID.REL3,
+        t: "Who would you like to reconnect with",
+        prompt: "I'd like to reconnect with",
+      },
+      {
+        id: QID.REL4,
+        t: "What does a good relationship look like to you",
+      },
+      {
+        id: QID.REL5,
+        t: "Who brings out the best in you",
+        prompt: "I am at my best around",
+      },
+      {
+        id: QID.REL6,
+        t: "Is there a conversation you have been avoiding",
+      },
+      {
+        id: QID.REL7,
+        t: "How could you be a better listener",
+      },
+      {
+        id: QID.REL8,
+        t: "Who would you like to thank",
+        prompt: "I want to thank",
+      },
+    ],
+  },
+  [QuestionCategoryId.MindfulEating]: {
+    dashboardTxt: "Mindful Eating",
+    frequencyModifier: -1,
+    questions: [
+      {
+        id: QID.ME1,
+        t: "What meal makes you feel good afterward",
+      },
+      {
+        id: QID.ME2,
+        t: "What could help you enjoy your meals more",
+      },
+      {
+        id: QID.ME3,
+        t: "What would you like to change about your eating habits",
+        prompt: "I want to change",
+      },
+      {
+        id: QID.ME4,
+        t: "Besides hunger, what makes you reach for food",
+      },
+      {
+        id: QID.ME5,
+        t: "What food makes you happy",
+        prompt: "I enjoy",
+      },
+      {
+        id: QID.ME6,
+        t: "What helps you eat more slowly",
+      },
+    ],
   },
   [QuestionCategoryId.XEnergyLevelToday]: {
     dashboardTxt: "Energy Level",
@@ -755,6 +907,9 @@ export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.Gratitude,
   QuestionCategoryId.UnderstandingProcrastination,
   QuestionCategoryId.SelfDiscovery,
+  QuestionCategoryId.SelfImprovement,
+  QuestionCategoryId.Relationships,
+  QuestionCategoryId.MindfulEating,
   QuestionCategoryId.Insomnia,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.CalmingThoughts,
