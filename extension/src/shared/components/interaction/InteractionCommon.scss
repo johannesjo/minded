@@ -12,10 +12,17 @@
   // question must not intercept taps or hovers meant for the choices above it:
   // the wrapper box sits at z-index 1101, above the overlay (1100), so any
   // descendant that opts back into pointer events (e.g. #minded-6622-inp:
-  // `pointer-events: all`) would otherwise swallow them. Force the whole subtree
-  // click-through while dismissed.
+  // `pointer-events: all`, or every `.btnToggleSelect::after` hit-area expander —
+  // see btn.scss) would otherwise swallow them. The `*` selector does NOT match
+  // pseudo-elements, so the `::after`/`::before` pseudos must be listed
+  // explicitly or stale dismissed buttons keep eating taps meant for the choices.
+  // Force the whole subtree — elements and pseudos — click-through while dismissed.
   &.is-dismissed,
-  &.is-dismissed * {
+  &.is-dismissed *,
+  &.is-dismissed::before,
+  &.is-dismissed::after,
+  &.is-dismissed *::before,
+  &.is-dismissed *::after {
     pointer-events: none !important;
   }
 
