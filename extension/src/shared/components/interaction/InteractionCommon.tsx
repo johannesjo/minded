@@ -1,4 +1,5 @@
 import {
+  batch,
   Component,
   createEffect,
   createSignal,
@@ -155,6 +156,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsSkipping, setIsSkipping] = createSignal(false);
   const [getIsFinalAnimation, setIsFinalAnimation] = createSignal(false);
   const [getIsModeTransitioning, setIsModeTransitioning] = createSignal(false);
+  // Suppresses the content's opacity transition for a single commit so the
+  // outgoing block can be hidden instantly (no fade-out) before the new one
+  // fades in — see transitionToMode.
+  const [getIsContentSwapInstant, setIsContentSwapInstant] =
+    createSignal(false);
   const [getIsDragging, setIsDragging] = createSignal(false);
   const [getShowSunInstructions, setShowSunInstructions] = createSignal(false);
   // True from the triple tap until the choices mount: the question is fading out
@@ -354,13 +360,24 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (getIsModeTransitioning()) return;
 
     setIsModeTransitioning(true);
-    runFadeAnimation(SCREEN_TRANSITION_MS, () => {
-      if (isDisposed) return;
 
+    // Swap straight to the new block while it's hidden, then fade only the new
+    // block in — no fade-out of the outgoing one. The hide is instant (the
+    // content transition is suppressed for this commit) and the content swaps in
+    // the same commit, so the old block is never shown mid-fade. Restoring the
+    // transition a frame before raising opacity lets the fade-in actually play.
+    batch(() => {
       updateStateBeforeModeChange();
       setMode(mode);
-
+      setIsContentSwapInstant(true);
       setInteractionOpacity(0);
+    });
+
+    modeTransitionFadeInFrame = requestAnimationFrame(() => {
+      modeTransitionFadeInFrame = undefined;
+      if (isDisposed) return;
+
+      setIsContentSwapInstant(false);
       modeTransitionFadeInFrame = requestAnimationFrame(() => {
         modeTransitionFadeInFrame = undefined;
         if (isDisposed) return;
@@ -1096,9 +1113,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 : getShowSunInstructions()
                   ? 0
                   : getInteractionOpacity(),
-            // Fade the question out quickly when advancing past it (triple tap).
-            transition:
-              getIsExitingInteraction() || getShowPostSunOverlay()
+            // Swap blocks instantly (no fade-out) during a mode change; fade the
+            // question out quickly when advancing past it (triple tap).
+            transition: getIsContentSwapInstant()
+              ? "none"
+              : getIsExitingInteraction() || getShowPostSunOverlay()
                 ? `opacity ${QUESTION_FADE_OUT_MS}ms ease-out`
                 : undefined,
             "pointer-events":
