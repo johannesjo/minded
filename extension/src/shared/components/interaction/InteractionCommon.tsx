@@ -66,6 +66,7 @@ import {
 } from "@src/shared/components/interaction/sessionLimit";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
+import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/interactionSuccessGuard";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
@@ -615,6 +616,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
+    // A deferred success (e.g. MoodCheckin's 3s save timer) can land after the
+    // user triple-tapped past the question to the choices. The answer is already
+    // saved by the caller; acting on it here would disarm the choices without
+    // re-arming or advancing them, freezing them with every button greyed.
+    if (
+      shouldIgnoreStaleSuccess({
+        hasAnswered: getHasAnswered(),
+        showSunInstructions: getShowSunInstructions(),
+        showPostSunOverlay: getShowPostSunOverlay(),
+      })
+    ) {
+      return;
+    }
+
     setHasAnswered(true);
     setPendingIntent(undefined);
     setIsIntentSelectionArmed(false);
