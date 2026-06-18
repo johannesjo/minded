@@ -28,11 +28,14 @@ import { IntentSelection } from "@src/shared/components/interaction/intentSelect
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   getSunSettleForPhase,
+  restingSunAnchorFromRect,
+  sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
@@ -559,9 +562,40 @@ const Subsection = (props: {
 const SunMorphHarness = (): JSX.Element => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [phase, setPhase] = createSignal<SunPhase>("interactive");
+  // Mirror the real flow: the resting disc tucks just beneath the measured
+  // choices block rather than sitting at a fixed ratio.
+  const [restingAnchor, setRestingAnchor] = createSignal<{
+    x: number;
+    y: number;
+  } | null>(null);
 
-  const settle = () =>
-    getSunSettleForPhase(phase(), STRONG_FRICTION_BREATH_PAUSE_SECONDS);
+  const settle = () => {
+    if (phase() === "resting") {
+      const anchor = restingAnchor();
+      if (anchor) return sunRestingSettle(anchor);
+    }
+    return getSunSettleForPhase(phase(), STRONG_FRICTION_BREATH_PAUSE_SECONDS);
+  };
+
+  const measureRestingAnchor = () => {
+    if (prefersReducedMotion()) {
+      setRestingAnchor(null);
+      return;
+    }
+    const spacer = document.querySelector(
+      ".time-selection-overlay .resting-sun-spacer",
+    );
+    if (!spacer) return;
+    setRestingAnchor(restingSunAnchorFromRect(spacer.getBoundingClientRect()));
+  };
+
+  createEffect(() => {
+    if (phase() !== "resting") {
+      setRestingAnchor(null);
+      return;
+    }
+    requestAnimationFrame(measureRestingAnchor);
+  });
 
   const isInteractive = () => phase() === "interactive";
 

@@ -4,6 +4,7 @@ import {
   DEFAULT_COMPANION_BOTTOM_Y_PX,
   getSunSettleForPhase,
   sunInteractiveSettle,
+  sunRestingSettle,
   type SunPhase,
 } from "./sunSettle";
 
@@ -92,6 +93,18 @@ const [getInteractiveSunAnchor, setInteractiveSunAnchor] =
     equals: (a, b) => a?.x === b?.x && a?.y === b?.y,
   });
 
+/**
+ * Measured viewport-px centre for the resting sun — the point just beneath the
+ * live intent/time choices block (see InteractionCommon). While the choices are
+ * up the disc tucks under the options here, gliding down when the taller time
+ * options replace the intent ones. null when no choices are on screen, in which
+ * case the resting role falls back to the static SUN_REST_SETTLE.
+ */
+const [getRestingSunAnchor, setRestingSunAnchor] =
+  createSignal<SunPosition | null>(null, {
+    equals: (a, b) => a?.x === b?.x && a?.y === b?.y,
+  });
+
 export {
   getSunRole,
   setSunRole,
@@ -103,6 +116,8 @@ export {
   setBreathSeconds,
   getInteractiveSunAnchor,
   setInteractiveSunAnchor,
+  getRestingSunAnchor,
+  setRestingSunAnchor,
 };
 
 /**
@@ -127,6 +142,14 @@ export const getSunSettleForCurrentRole = (): SunSettle | null => {
   if (role === "interactive") {
     const anchor = getInteractiveSunAnchor();
     return anchor ? sunInteractiveSettle(anchor) : null;
+  }
+  // Resting: tuck under the measured choices block; fall back to the static
+  // rest target until the choices are measured (or when none are showing).
+  if (role === "resting") {
+    const anchor = getRestingSunAnchor();
+    return anchor
+      ? sunRestingSettle(anchor)
+      : getSunSettleForPhase("resting", getBreathSeconds());
   }
   return getSunSettleForPhase(role, getBreathSeconds());
 };

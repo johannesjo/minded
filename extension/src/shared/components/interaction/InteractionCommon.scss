@@ -149,10 +149,34 @@
   animation: fadeIn var(--screen-transition-ms, 1000ms) ease-out forwards;
 }
 
-// When the sun rests at the top for the intent/time choices, pad the overlay
-// so the centered choices sit clearly beneath the sun rather than under it.
-.time-selection-overlay.has-resting-sun {
-  padding-top: 22vh;
+// During the intent/time choices the resting sun rests in a reserved spacer
+// beneath the options, so the whole group — question, options, and sun — centres
+// on the page as one unit (the sun is a fixed overlay measured to the spacer's
+// centre; see measureRestingSunAnchor). The spacer is gated on the overlay, not
+// the resting phase, so its height is already in place the moment the choices
+// mount — letting the sun be measured and glided straight to its slot.
+.time-selection-overlay {
+  .resting-sun-spacer {
+    height: 132px;
+    pointer-events: none;
+  }
+
+  // Pin cancel to the bottom out of the flow so the choices group centres on the
+  // full page height rather than the space above the cancel link.
+  .intent-selection-cancel,
+  .time-selection-cancel {
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+}
+
+// Outside the intervention overlay (e.g. the marketing screenshots) the spacer
+// adds no height — the sun only appears in the real flow.
+.resting-sun-spacer {
+  height: 0;
 }
 
 .post-sun-screen {

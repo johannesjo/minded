@@ -29,14 +29,18 @@ import {
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
+  restingSunAnchorFromRect,
+  sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
 import {
+  getRestingSunAnchor,
   getSunPosition,
   getSunRole,
   registerSunInteraction,
   setBreathSeconds,
   setInteractiveSunAnchor,
+  setRestingSunAnchor,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
 import {
@@ -62,6 +66,7 @@ import {
 } from "@src/shared/components/interaction/sessionLimit";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
@@ -178,8 +183,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
-  const getSunSettle = () =>
-    getSunSettleForPhase(
+  const getSunSettle = () => {
+    // Resting: tuck under the measured choices block (mirrors the shell sun's
+    // getSunSettleForCurrentRole), falling back to the static rest target until
+    // the choices are measured.
+    if (getSunPhase() === "resting") {
+      const anchor = getRestingSunAnchor();
+      if (anchor) return sunRestingSettle(anchor);
+    }
+    return getSunSettleForPhase(
       getSunPhase(),
       getPostSunPauseSeconds(getFrictionLevel()),
       // companionBottomYPx is only read for the "companion" phase, which the
@@ -193,6 +205,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         ? LITTLE_SUN_CORNER_PX_ANDROID
         : LITTLE_SUN_CORNER_PX_WEB,
     );
+  };
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
@@ -245,6 +258,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // the real layout left for it. Shell flow only.
   let sunPlaceholderEl: HTMLDivElement | undefined;
   let sunPlaceholderObserver: ResizeObserver | undefined;
+  // The intent/time choices overlay; the resting sun is measured to sit just
+  // beneath the choices block inside it (see measureRestingSunAnchor).
+  let restingOverlayEl: HTMLDivElement | undefined;
+  let restingSunObserver: ResizeObserver | undefined;
   let isDisposed = false;
   const interactionEventTarget = props.shadowRoot ?? window;
 
@@ -412,10 +429,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (isDisposed) return;
     clearIntentSelectionArmTimeout();
     setShowBreathPause(false);
-    // Glide the same sun up to its smaller resting anchor for the choices.
-    setSunPhase("resting");
     setIsIntentSelectionArmed(true);
     setShowIntentSelection(true);
+    // Measure the choices' reserved sun slot first, then flip to resting, so the
+    // disc glides from the breath anchor straight to its slot in one motion
+    // instead of detouring via the static fallback (down, then back up). The sun
+    // stays visible as "breathing" for the one frame until the slot is laid out.
+    requestAnimationFrame(() => {
+      if (isDisposed) return;
+      measureRestingSunAnchor({ force: true });
+      setSunPhase("resting");
+    });
   };
 
   const handleBreathPauseCancel = () => {
@@ -722,6 +746,56 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     });
   });
 
+  // Resting sun: measure the live choices block (question + options) and publish
+  // a centre just beneath it so the disc tucks under whatever options are showing
+  // — the 4-option intent screen or the taller 6-option time screen — and glides
+  // down when they swap. Skip mid-drag so a reflow can't yank the disc.
+  // `force` measures even before the phase flips to "resting", so the anchor is
+  // ready when the glide starts and the disc moves to its slot in one motion
+  // (used as the choices mount; see handleBreathPauseComplete).
+  const measureRestingSunAnchor = (opts?: { force?: boolean }) => {
+    if ((!opts?.force && getSunPhase() !== "resting") || getIsDragging())
+      return;
+    // Reduced motion has no glide to track the slot, and the snap from the static
+    // fallback to a measured px anchor strands the disc; keep the static rest
+    // target (still beneath the intent options) in that mode.
+    if (prefersReducedMotion()) {
+      setRestingSunAnchor(null);
+      return;
+    }
+    const spacer = restingOverlayEl?.querySelector(".resting-sun-spacer");
+    if (!spacer) return;
+    setRestingSunAnchor(
+      restingSunAnchorFromRect(spacer.getBoundingClientRect()),
+    );
+  };
+
+  // Re-measure when the choices mount and when intent↔time swaps the option
+  // count; clear the anchor when the choices leave so the resting role falls back
+  // to the static target and other phases keep their own settle.
+  createEffect(() => {
+    const overlayShown = getShowTimeSelectionOverlay();
+    const intentShown = getShowIntentSelection();
+    const timeShown = getShowTimeSelection();
+    const isResting = getSunPhase() === "resting";
+    if (!overlayShown || !isResting || (!intentShown && !timeShown)) {
+      setRestingSunAnchor(null);
+      return;
+    }
+    // Measure after layout so the just-mounted choices have their final position.
+    requestAnimationFrame(() => measureRestingSunAnchor());
+  });
+
+  onMount(() => {
+    const onResize = () => measureRestingSunAnchor();
+    window.addEventListener("resize", onResize);
+    onCleanup(() => {
+      window.removeEventListener("resize", onResize);
+      restingSunObserver?.disconnect();
+      setRestingSunAnchor(null);
+    });
+  });
+
   onMount(async () => {
     syncDragObjectNameWithTheme();
     rootThemeObserver = observeThemeClass(getInteractionRoot(props.shadowRoot));
@@ -869,6 +943,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <div
           class="time-selection-overlay"
           classList={{ "has-resting-sun": getSunPhase() === "resting" }}
+          ref={(el) => {
+            restingOverlayEl = el;
+            restingSunObserver?.disconnect();
+            if (el) {
+              // Observe the overlay so the choices reflow inside it (intent↔time,
+              // async copy) re-measures the slot. The observer also fires once on
+              // observe() — after layout, with the overlay attached — which is the
+              // initial measurement (a synchronous read here would see a
+              // detached, zero-size element).
+              restingSunObserver = new ResizeObserver(() =>
+                measureRestingSunAnchor(),
+              );
+              restingSunObserver.observe(el);
+            }
+          }}
           style={{
             position: "fixed",
             inset: "0",

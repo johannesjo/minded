@@ -49,6 +49,11 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
             )}
           </For>
         </div>
+
+        {/* Reserves the resting sun's footprint beneath the options so the disc
+            sits inside the centred choices group (see measureRestingSunAnchor).
+            Collapsed to 0 height outside the intervention overlay. */}
+        <div class="resting-sun-spacer" aria-hidden="true" />
       </div>
 
       <div class="time-selection-cancel">

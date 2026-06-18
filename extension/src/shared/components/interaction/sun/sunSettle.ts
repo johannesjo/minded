@@ -40,12 +40,56 @@ export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
   breathSeconds,
 });
 
-/** Intent/time choices: a smaller, calmer anchor in the upper third. */
+/**
+ * Intent/time choices: the question + options ride at the top of the screen and
+ * the sun settles into the open space beneath them (see the `.has-resting-sun`
+ * layout). A smaller, calmer disc that reads as a steady companion below the
+ * choices rather than a banner above them.
+ *
+ * This static target is only the fallback used until the choices block is
+ * measured; the live flow replaces it with `sunRestingSettle` anchored just
+ * beneath the measured options (see `restingSunAnchorFromRect`), so the disc
+ * tucks under both the 4-option intent screen and the taller 6-option time
+ * screen and glides down when the extra options appear.
+ */
 export const SUN_REST_SETTLE: SunSettle = {
-  anchorYRatio: 0.26, // choices sit beneath it (see .has-resting-sun padding)
-  scale: 0.56,
+  anchorYRatio: 0.74, // sits below the question + options
+  scale: 0.5,
   breathe: false,
 };
+
+/**
+ * Resting choices, measured variant: rest at the point measured just beneath the
+ * live choices block so the disc tucks under whatever options are showing. Keeps
+ * SUN_REST_SETTLE's scale so the morph size is identical to the static fallback.
+ */
+export const sunRestingSettle = (anchor: {
+  x: number;
+  y: number;
+}): SunSettle => ({
+  anchorXPx: anchor.x,
+  anchorYPxFromTop: anchor.y,
+  scale: SUN_REST_SETTLE.scale,
+  breathe: false,
+});
+
+/**
+ * Disc centre for the resting sun: the centre of the reserved spacer that sits
+ * beneath the options inside the centred choices group (see the
+ * `.resting-sun-spacer` element / measureRestingSunAnchor). Because the spacer
+ * lives in the flow, the disc lands inside the centred group and tracks it across
+ * intent↔time and viewport changes without any clamping. Pure so the real flow
+ * and the styleguide harness compute the same point and can't drift.
+ */
+export const restingSunAnchorFromRect = (spacerRect: {
+  left: number;
+  width: number;
+  top: number;
+  height: number;
+}): { x: number; y: number } => ({
+  x: spacerRect.left + spacerRect.width / 2,
+  y: spacerRect.top + spacerRect.height / 2,
+});
 
 /**
  * The Little Sun's disc rests with its center this many px in from both the left
