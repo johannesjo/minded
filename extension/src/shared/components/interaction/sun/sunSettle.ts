@@ -48,12 +48,22 @@ export const SUN_REST_SETTLE: SunSettle = {
 };
 
 /**
- * The Little Sun's disc rests with its center 40px in from both the left and
- * bottom edges — measured from LittleSun.scss (`left: 40px`, `bottom: 0`, a 40px
- * disc centered by its bloom transform). The departing sun lands here so the
- * hand-off is seamless; keep in sync if that corner moves.
+ * The Little Sun's disc rests with its center this many px in from both the left
+ * and bottom edges; the departing sun lands there so the hand-off is seamless.
+ *
+ * The corner differs per platform because a different Little Sun takes over once
+ * the interaction closes:
+ * - Web extension: the SolidJS Little Sun (LittleSun.scss: `left: 40px`,
+ *   `bottom: 0`, a 40px disc) → its centre sits ~40px in from both edges.
+ * - Android: the *native* Little Sun overlay (LittleSun.kt / LittleSunWindow.kt)
+ *   is a 60dp box pinned to the bottom-left corner (gravity START|BOTTOM, no
+ *   offset) with a 30dp disc centred inside it → the disc centre sits ~30px in
+ *   from both edges. The web extension's 40px target landed the departing sun
+ *   ~10px too far right and up, so the native sun visibly jumped when it bloomed
+ *   in. Keep these in sync if either Little Sun's corner moves.
  */
-const LITTLE_SUN_CORNER_PX = 40;
+export const LITTLE_SUN_CORNER_PX_WEB = 40;
+export const LITTLE_SUN_CORNER_PX_ANDROID = 30;
 
 /**
  * Time chosen → the sun glides to the bottom-left corner and shrinks to roughly
@@ -62,14 +72,19 @@ const LITTLE_SUN_CORNER_PX = 40;
  *
  * Anchored in fixed px (not viewport ratios) to match the Little Sun's fixed
  * corner exactly — otherwise the two drift apart on wide monitors (a 5vw anchor
- * is 64px at 1280px but 128px at 2560px, while the Little Sun stays at 40px).
+ * is 64px at 1280px but 128px at 2560px, while the Little Sun stays put).
  */
-export const SUN_DEPART_SETTLE: SunSettle = {
-  anchorXPx: LITTLE_SUN_CORNER_PX,
-  anchorYPxFromBottom: LITTLE_SUN_CORNER_PX,
+export const sunDepartSettle = (
+  cornerPx: number = LITTLE_SUN_CORNER_PX_WEB,
+): SunSettle => ({
+  anchorXPx: cornerPx,
+  anchorYPxFromBottom: cornerPx,
   scale: 0.34,
   breathe: false,
-};
+});
+
+/** Default departing target (the web extension's SolidJS Little Sun corner). */
+export const SUN_DEPART_SETTLE: SunSettle = sunDepartSettle();
 
 /**
  * Companion rest: the idle home in the app shell, centred over the bottom bar.
@@ -95,12 +110,15 @@ export const sunCompanionSettle = (
  * Map a sun phase to its settle target. `interactive` returns null (the sun is
  * draggable, not settled). Pure so it can be unit-tested and reused verbatim by
  * the styleguide harness. `companionBottomYPx` is the measured bottom-bar anchor,
- * needed only for the "companion" phase.
+ * needed only for the "companion" phase. `departCornerPx` is the Little Sun's
+ * corner inset, needed only for the "departing" phase (defaults to the web
+ * extension's corner; Android passes its native Little Sun's smaller corner).
  */
 export const getSunSettleForPhase = (
   phase: SunPhase,
   breathSeconds: number,
   companionBottomYPx = DEFAULT_COMPANION_BOTTOM_Y_PX,
+  departCornerPx: number = LITTLE_SUN_CORNER_PX_WEB,
 ): SunSettle | null => {
   switch (phase) {
     case "companion":
@@ -110,7 +128,7 @@ export const getSunSettleForPhase = (
     case "resting":
       return SUN_REST_SETTLE;
     case "departing":
-      return SUN_DEPART_SETTLE;
+      return sunDepartSettle(departCornerPx);
     default:
       return null;
   }

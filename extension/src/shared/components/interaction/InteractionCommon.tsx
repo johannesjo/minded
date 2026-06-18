@@ -27,6 +27,8 @@ import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   getSunSettleForPhase,
+  LITTLE_SUN_CORNER_PX_ANDROID,
+  LITTLE_SUN_CORNER_PX_WEB,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
 import {
@@ -180,6 +182,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     getSunSettleForPhase(
       getSunPhase(),
       getPostSunPauseSeconds(getFrictionLevel()),
+      // companionBottomYPx is only read for the "companion" phase, which the
+      // local (non-shell) sun never enters — keep the default.
+      undefined,
+      // The departing sun hands off to a different Little Sun per platform:
+      // Android shows the native overlay (a smaller 30px corner), the web
+      // extension its own 40px-corner Little Sun. Match the right one so the
+      // disc doesn't jump when the persistent timer blooms in.
+      props.interactionPlatform === "android"
+        ? LITTLE_SUN_CORNER_PX_ANDROID
+        : LITTLE_SUN_CORNER_PX_WEB,
     );
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
