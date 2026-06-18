@@ -459,6 +459,26 @@ export const Sun: Component<SunProps> = (props) => {
       // Prevent interactions once completion animation has started
       if (getIsCompletionStarted()) return;
 
+      // Grabbing the sun mid-animation (a settle glide, the breath cycle, or a
+      // snap-back) used to leave the animation's rAF loop running alongside the
+      // drag's — both write dragOffset/scale/opacity every frame and fight each
+      // other. Worse, the drag anchors its delta to getRestOffset(), which a
+      // settle glide has already advanced to its final anchor while the disc is
+      // still mid-glide, so the first drag frame teleports the sun and the two
+      // loops can shove it off-screen or shrink/fade it to nothing. Take over
+      // cleanly: stop any running animation and re-anchor the rest to wherever
+      // the disc actually sits right now so the drag (and its snap-back) starts
+      // from what's on screen.
+      if (getIsAnimating()) {
+        cancelSettleFrame();
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+          animationFrame = 0;
+        }
+        setRestOffset(getDragOffset());
+        setIsAnimating(false);
+      }
+
       touchStartTime = Date.now();
       isDragIntent = false;
       startPos = { x: clientX, y: clientY };
