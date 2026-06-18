@@ -90,6 +90,13 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     }
   };
 
+  const skipNow = (): void => {
+    // Stop the wave timer up front so a pending tick can't push us to
+    // "rateAfter" after the parent has already torn the interaction down.
+    stopTimer();
+    props.onSkip();
+  };
+
   const reflection = (): string => {
     const before = getBefore();
     const after = getAfter();
@@ -139,11 +146,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           >
             Surf it
           </button>
-          <button
-            type="button"
-            class="btnTxtOutline"
-            onClick={() => props.onSkip()}
-          >
+          <button type="button" class="btnTxtOutline" onClick={skipNow}>
             Not now
           </button>
         </Match>
@@ -176,11 +179,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
         <Match when={getPhase() === "surf"}>
           <BreathSun phase={sunPhase()} progress={sunProgress()} size="large" />
           <p class={styles.cue}>{getSurfCue(getFraction())}</p>
-          <button
-            type="button"
-            class={styles.skip}
-            onClick={() => props.onSkip()}
-          >
+          <button type="button" class={styles.skip} onClick={skipNow}>
             Skip
           </button>
         </Match>
