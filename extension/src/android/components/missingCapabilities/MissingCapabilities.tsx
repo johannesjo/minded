@@ -154,9 +154,9 @@ export const MissingCapabilityView = (props: {
         {hasOptionalMissing() && (
           <div class={styles.optionalSection}>
             <p class={styles.optionalHeading}>
-              Optional — these are <strong>not required</strong>. Accessibility
-              and the overlay permission are enough for <em>minded</em> to work;
-              the steps below only make detection more reliable.
+              Recommended — <em>minded</em> already works with the permissions
+              above. The steps below are optional and make detection even more
+              reliable.
             </p>
             {getMissingCapabilities().includes("UsageStats") && (
               <div class="card">
@@ -167,7 +167,7 @@ export const MissingCapabilityView = (props: {
                   reliable for apps with long loading screens.
                 </p>
                 <button
-                  class="btnTxtOutline"
+                  class="btnTxt"
                   onClick={() => onMissingCapabilityClick("UsageStats")}
                 >
                   Enable Usage Access
@@ -184,7 +184,7 @@ export const MissingCapabilityView = (props: {
                   running.
                 </p>
                 <button
-                  class="btnTxtOutline"
+                  class="btnTxt"
                   onClick={() => onMissingCapabilityClick("BatteryOptimization")}
                 >
                   Disable Battery Optimization
