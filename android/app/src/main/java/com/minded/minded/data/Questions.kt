@@ -32,6 +32,9 @@ enum class QuestionCategoryId {
     Insomnia,
     UnderstandingProcrastination,
     SelfDiscovery,
+    SelfImprovement,
+    Relationships,
+    MindfulEating,
 
     // NOTE: we filter out all questions from categories starting with X
     XEnergyLevelToday,
