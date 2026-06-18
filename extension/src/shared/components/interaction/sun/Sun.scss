@@ -58,10 +58,12 @@
     transition: opacity 120ms linear;
   }
 
-  // Resting idle-breath halo. The glow is rasterised once at peak blur; the
-  // breath only pulses its opacity (0.15 ↔ 0.5 — the same range the old
-  // --idle-glow used), which the compositor handles without re-rastering the
-  // shadow each frame. Sits behind the sun face (z-index: -1).
+  // Resting idle-breath halo — the disc's own glow, so it reads as the light
+  // source (the big warm wash in the background stays purely ambient). Three
+  // soft warm rings emanate from the face: a bright core, a warm mid, and a wide
+  // faint outer. The glow is rasterised once at peak blur; the breath only pulses
+  // its opacity (0.2 ↔ 0.6), which the compositor handles without re-rastering
+  // the shadow each frame. Sits behind the sun face (z-index: -1).
   &::after {
     content: "";
     position: absolute;
@@ -70,9 +72,10 @@
     border-radius: inherit;
     pointer-events: none;
     box-shadow:
-      0 0 13px rgba(255, 240, 210, 0.22),
-      0 0 30px rgba(255, 226, 170, 0.12);
-    opacity: 0.15;
+      0 0 16px 1px rgba(255, 243, 214, 0.36),
+      0 0 40px 6px rgba(255, 222, 158, 0.2),
+      0 0 76px 12px rgba(255, 202, 124, 0.11);
+    opacity: 0.2;
     animation: mindedSunIdleBreath 9s ease-in-out infinite;
     will-change: opacity;
   }
@@ -114,7 +117,10 @@
 
     // Cool resting halo for the moon (mirrors the sun's ::after).
     &::after {
-      box-shadow: 0 0 17px rgba(210, 224, 255, 0.22);
+      box-shadow:
+        0 0 18px 1px rgba(216, 229, 255, 0.32),
+        0 0 46px 8px rgba(178, 202, 255, 0.17),
+        0 0 84px 14px rgba(150, 182, 246, 0.1);
     }
   }
 
@@ -151,10 +157,10 @@
 @keyframes mindedSunIdleBreath {
   0%,
   100% {
-    opacity: 0.15;
+    opacity: 0.2;
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }
 
@@ -176,6 +182,6 @@
 
   .minded-sun::after {
     animation: none;
-    opacity: 0.25;
+    opacity: 0.4;
   }
 }
