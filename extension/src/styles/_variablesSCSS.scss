@@ -7,7 +7,11 @@ $bpDashboardMoreThan2ColMax: 998px;
 
 // Below this viewport height a third dashboard row gets too cramped, so the
 // desktop grid falls back to two rows (hiding items 7+, like the tablet layout).
-$bpDashboardShortViewport: 700px;
+// The threshold sits above the raw three-row height because the layout also
+// gives up ~100px to the companion-sun reserve at the bottom: three rows only
+// stay comfortable from ~820px up, so the cramped band starts there, not at the
+// point where three rows technically still fit.
+$bpDashboardShortViewport: 820px;
 
 $pageWrapperMaxWidth: 1200px;
 $txtMaxWidth: 900px;
