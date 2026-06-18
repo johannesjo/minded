@@ -44,6 +44,9 @@
   --c-fg-full-emphasis: rgba(0, 0, 0, 0.85);
   --c-fg: rgba(0, 0, 0, 0.8);
 
+  // Slim, low-contrast scrollbar thumb — see the scrollbar rule in _sharedAll.scss.
+  --scrollbar-thumb: rgba(0, 0, 0, 0.22);
+
   // global components
   --form-inputs-bg: rgba(255, 255, 255, 0.55);
   --form-inputs-height: var(--btn-height);
@@ -172,6 +175,7 @@
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.28);
     --c-link-color: #8de9ee;
     --c-link-hover-color: #c4fbff;
     --c-link-underline-color: rgba(141, 233, 238, 0.5);

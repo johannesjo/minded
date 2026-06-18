@@ -19,6 +19,13 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: none; /*  makes (hopefully) the active pseudo class appear quicker */
 
+  // Slim, low-contrast scrollbar instead of the chunky OS default — the latter
+  // looks jarring inside our injected overlay. These standard properties are
+  // inherited, so a single rule here styles every scroll container (content
+  // viewport, dashboard, settings…) in modern Chrome and Firefox.
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+
   a {
     color: var(--c-link-color);
     font-weight: bold;
