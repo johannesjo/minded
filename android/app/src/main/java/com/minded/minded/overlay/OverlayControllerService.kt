@@ -233,6 +233,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
     }
     
+    // TODO(#21): this foreground service exists only to stay resident for overlay
+    // hosting; the always-on accessibility service could own that instead, dropping
+    // the FGS and its notification entirely. See johannesjo/minded#21.
     private fun startForegroundService() {
         val notification = createNotification()
         

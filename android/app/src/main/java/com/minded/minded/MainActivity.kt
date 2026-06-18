@@ -29,9 +29,6 @@ import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.checkIgnoringBatteryOptimizations
 import com.minded.minded.util.checkUsageStatsPermission
@@ -67,7 +64,6 @@ class MainActivity : AppCompatActivity() {
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
         sharedPreferenceService = SharedPreferenceService(this)
         sharedPreferenceService.writeDefaultDataIfNecessary()
-        maybeRequestNotificationPermission()
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
@@ -210,21 +206,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun maybeRequestNotificationPermission() {
-        // Needed so the foreground-service notification and the
-        // degraded-protection alert from MyAccessibilityService are visible
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                NOTIFICATION_PERMISSION_REQUEST_CODE
-            )
-        }
-    }
-
     private fun getMissingCapabilities(): List<MissingCapability> {
         Log.v(
             logTag,
@@ -244,9 +225,5 @@ class MainActivity : AppCompatActivity() {
             missingCapabilities += MissingCapability.BatteryOptimization
         }
         return missingCapabilities
-    }
-
-    companion object {
-        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 2001
     }
 }
