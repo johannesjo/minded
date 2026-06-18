@@ -5,6 +5,10 @@ $bpDashboardMoreThan1Col: 375px;
 $bpDashboardMoreThan2Col: 999px;
 $bpDashboardMoreThan2ColMax: 998px;
 
+// Below this viewport height a third dashboard row gets too cramped, so the
+// desktop grid falls back to two rows (hiding items 7+, like the tablet layout).
+$bpDashboardShortViewport: 700px;
+
 $pageWrapperMaxWidth: 1200px;
 $txtMaxWidth: 900px;
 

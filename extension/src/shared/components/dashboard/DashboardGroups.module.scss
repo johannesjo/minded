@@ -266,6 +266,18 @@ $aniDur: 1.5s;
     @media (min-width: $bpDashboardMoreThan2Col) {
       display: block;
     }
+
+    // Desktop normally fits three rows, but on a short viewport that third row
+    // gets cramped. Fall back to the same two-row layout tablet uses (items 7+
+    // hidden) so the remaining six cards keep a comfortable height. Android
+    // still shows everything (it scrolls), matching the tablet rule above.
+    @media (min-width: $bpDashboardMoreThan2Col) and (max-height: $bpDashboardShortViewport) {
+      display: none;
+
+      :global(.minded-6622-android) & {
+        display: block;
+      }
+    }
   }
 
   @media (min-width: $bpDashboardMoreThan2Col) {
