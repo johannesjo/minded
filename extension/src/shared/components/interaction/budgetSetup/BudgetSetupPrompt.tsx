@@ -1,5 +1,6 @@
 import { Component, For } from "solid-js";
 import { DailyBudget } from "@src/dataInterface/syncData";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 interface BudgetSetupPromptProps {
   currentSkips: number;
@@ -44,8 +45,13 @@ export const BudgetSetupPrompt: Component<BudgetSetupPromptProps> = (props) => {
       </div>
 
       <div class="budget-setup-dismiss">
-        <button type="button" class="btnTxt" onClick={props.onDismiss}>
-          not now
+        <button
+          type="button"
+          class="btnIcoOnly"
+          onClick={props.onDismiss}
+          aria-label="Not now"
+        >
+          <Ico name="arrowBack" />
         </button>
       </div>
     </div>

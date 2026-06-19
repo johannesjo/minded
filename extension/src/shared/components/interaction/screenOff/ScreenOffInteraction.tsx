@@ -1,6 +1,7 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, Switch } from "solid-js";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
+import { Ico } from "@src/shared/components/ui/Ico";
 import {
   evaluateScreenOff,
   SCREEN_OFF_TARGET_MS,
@@ -113,8 +114,13 @@ export const ScreenOffInteraction: (props: {
           <button type="button" class="btnTxt" onClick={arm}>
             Lock my phone for a minute
           </button>
-          <button type="button" class="btnTxt" onClick={() => props.onSkip()}>
-            Not now
+          <button
+            type="button"
+            class="btnIcoOnly"
+            onClick={() => props.onSkip()}
+            aria-label="Not now"
+          >
+            <Ico name="arrowBack" />
           </button>
         </Match>
 

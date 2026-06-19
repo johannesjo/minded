@@ -6,6 +6,7 @@ import {
   Show,
 } from "solid-js";
 import styles from "./GroundingOverlay.module.scss";
+import { Ico } from "@src/shared/components/ui/Ico";
 import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
 import { playGong } from "@src/shared/components/interaction/sun/sunAudio";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
@@ -195,8 +196,13 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
               {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}
             </button>
           </div>
-          <button type="button" class="btnTxt" onClick={close}>
-            Not now
+          <button
+            type="button"
+            class="btnIcoOnly"
+            onClick={close}
+            aria-label="Not now"
+          >
+            <Ico name="arrowBack" />
           </button>
         </div>
       </Show>
@@ -221,8 +227,13 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
               </button>
             ))}
           </div>
-          <button type="button" class="btnTxt" onClick={close}>
-            Not now
+          <button
+            type="button"
+            class="btnIcoOnly"
+            onClick={close}
+            aria-label="Not now"
+          >
+            <Ico name="arrowBack" />
           </button>
         </div>
       </Show>
