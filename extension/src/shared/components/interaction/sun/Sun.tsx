@@ -379,6 +379,14 @@ export const Sun: Component<SunProps> = (props) => {
     setIsBeyondThreshold(false);
     setDragProgress(0);
     setDragDirection("none");
+    // Drop any in-flight tap streak (and its pending 1.5s reset) so a partial
+    // tap count from the just-ended interaction can't linger as indicator dots
+    // on the idle companion or bleed into the next interaction's tap-to-continue.
+    if (tapTimer) {
+      clearTimeout(tapTimer);
+      tapTimer = null;
+    }
+    setTapCount(0);
   };
 
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
