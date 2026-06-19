@@ -106,6 +106,55 @@ describe("pattern insights", () => {
     ).toBe("return-loop");
   });
 
+  it("stays the only insight for the day once shown, while the loop is active", () => {
+    // The return loop leads the candidate list and there is no fall-through, so
+    // once it has been shown it intentionally suppresses the usage/budget stats
+    // for the rest of the day while it stays eligible — the gentler noticing
+    // wins. This documents that deliberate precedence.
+    const state: PatternInsightState = {
+      shownInsightIdsByDate: {
+        "2026-05-11": ["return-loop"],
+      },
+    };
+
+    expect(
+      getPatternInsightCandidate(
+        baseContext({
+          recentSunTaps: 3,
+          targetUsageSeconds: 30 * 60,
+          budget: {
+            isActive: true,
+            remainingSeconds: 0,
+            totalBudgetSeconds: 20 * 60,
+            usedSeconds: 20 * 60,
+            isExhausted: true,
+          },
+        }),
+        state,
+      ),
+    ).toBeUndefined();
+  });
+
+  it("lets usage insights resurface once the return loop is no longer active", () => {
+    // Suppression is bounded: when recentSunTaps drops back below the threshold
+    // the return loop is no longer a candidate, so the usage insight returns.
+    const state: PatternInsightState = {
+      shownInsightIdsByDate: {
+        "2026-05-11": ["return-loop"],
+      },
+    };
+
+    expect(
+      getPatternInsightCandidate(
+        baseContext({
+          recentSunTaps: 1,
+          targetUsageSeconds: 18 * 60,
+        }),
+        state,
+      )?.id,
+    ).toBe("daily-usage:youtube.com");
+  });
+
   it("creates a concrete daily usage insight once enough target usage exists", () => {
     expect(
       getPatternInsightCandidate(

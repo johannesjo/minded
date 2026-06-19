@@ -98,6 +98,10 @@ const getInsightCandidates = (
   // now. It is not target-scoped (it reflects the whole recent session) and
   // works on every platform, so it leads the list. The count is left vague
   // ("a few times") on purpose — a gentle noticing, never a tally to beat.
+  // Because candidate selection has no fall-through (see getPatternInsightCandidate),
+  // leading the list means that once shown it is intentionally the only insight
+  // while it stays eligible that day: the gentler noticing takes precedence over
+  // the usage/budget stats, which resurface once the loop lapses.
   if (context.recentSunTaps >= RETURN_LOOP_MIN_RECENT_SUN_TAPS) {
     candidates.push(
       createInsight(

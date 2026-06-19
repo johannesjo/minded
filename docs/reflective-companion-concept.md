@@ -32,7 +32,7 @@ We cannot *measure* helpfulness — all data is local, there is no telemetry and
 no A/B test. So the only way to hold the 90% line is **structural**:
 
 1. **State observed behaviour, never inferred feeling.** "You've come back a few
-   times tonight" is a counted fact. "You're feeling anxious" is a guess.
+   times in a short while" is a counted fact. "You're feeling anxious" is a guess.
 2. **Present moment only, never a stale timestamp.** A feeling from two hours ago
    is not a fact about now.
 3. **Never manufacture anxiety, scarcity, or guilt.** No counts-as-failure, no
@@ -47,7 +47,7 @@ If a candidate can't pass all five, it doesn't exist.
 
 | Candidate | Verdict | Why |
 |---|---|---|
-| **Present-session return loop** — "you've come back a few times tonight" | ✅ In | We counted the taps/attempts this session. Definitionally true, present, can't be stale. It *is* the moment the loop is active. Cross-platform. |
+| **Present-session return loop** — shipped copy: "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it." | ✅ In (shipped) | We counted the taps/attempts this session. Definitionally true, present, can't be stale. It *is* the moment the loop is active. Cross-platform. Wording stays time-neutral ("in a short while") because the ~5h sun-tap window isn't evening-gated. |
 | **Time-of-day pattern (Android)** — "this is often when this app pulls at you" | ✅ In, gated | See "Android time data" below. A real *observed* pattern from OS usage history, behind a strong evidence gate. Android only. |
 | Mood linkage — "earlier you felt low" | ❌ Cut | Infers a present feeling from an old timestamp. Emotions change fast; a wrong guess is actively damaging. |
 | Emotion echo — "last time here you named anxiety" | ❌ Cut | Worse — projects a *past session's* emotion onto now. |
@@ -134,7 +134,7 @@ wind-down) and what fails the 90% bar (mood/emotion inference, budget-anxiety),
 the genuinely-new, trustworthy surface is small — just two insights:
 
 1. **Present-session return-loop** noticing — the one bulletproof cross-platform
-   observation ("you've come back a few times tonight").
+   observation ("you've come back a few times in a short while"). **Shipped.**
 2. **Android time-of-day** pattern — native usage-history harvest + rolling
    histogram + strong evidence gate. Largest effort; Android only.
 
