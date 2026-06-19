@@ -13,6 +13,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import Btn from "@src/shared/components/ui/Btn";
 import {
   getSurfCue,
   getSurfDurationMs,
@@ -216,13 +217,11 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           {/* No "skip" here: triple-tapping (or flinging) the persistent sun is
               the universal way out of any interaction, so a second button would
               be redundant. */}
-          <button
-            type="button"
-            class="btnTxt"
+          <Btn
             onClick={() => goToPhase("rateBefore")}
           >
             Surf it
-          </button>
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
@@ -236,13 +235,13 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           <div class="urge-surfing-scale">
             <For each={[...URGE_INTENSITY_STEPS]}>
               {(step) => (
-                <button
-                  type="button"
-                  class="btnToggleSelect isSmall"
+                <Btn
+                  variant="toggle"
+                  small
                   onClick={() => handleRate(step)}
                 >
                   {step}
-                </button>
+                </Btn>
               )}
             </For>
           </div>
@@ -271,13 +270,11 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
 
         <Match when={getPhase() === "done"}>
           <div class="txtBig interaction-heading">{reflection()}</div>
-          <button
-            type="button"
-            class="btnTxt"
+          <Btn
             onClick={() => props.onSuccess()}
           >
             Continue
-          </button>
+          </Btn>
         </Match>
       </Switch>
     </div>

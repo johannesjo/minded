@@ -3,6 +3,7 @@ import { createSignal, onMount } from "solid-js";
 import styles from "./Feedback.module.scss";
 // @ts-ignore
 import { IS_ANDROID, IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
+import Btn from "@src/shared/components/ui/Btn";
 
 const Feedback = () => {
   const [mailtoLink, setMailtoLink] = createSignal("");
@@ -38,9 +39,9 @@ Other comments:
       </p>
 
       <div>
-        <a href={mailtoLink()} class="btnTxt" target="_blank">
+        <Btn href={mailtoLink()} target="_blank">
           ♥ send us a quick email ♥
-        </a>
+        </Btn>
       </div>
     </div>
   );

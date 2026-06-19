@@ -6,6 +6,7 @@ import {
   QuestionForPrompt,
 } from "@src/shared/data/questions";
 import { Question } from "@src/shared/components/interaction/Question";
+import Btn from "@src/shared/components/ui/Btn";
 import { QID } from "@src/shared/data/questionId";
 // @ts-ignore
 import styles from "../SleepWindDownRoute.module.scss";
@@ -113,13 +114,13 @@ export const BrainDump = (props: {
         onSuccess={(answer) => submit(answer.val.toString())}
       />
       <div class={styles.activityActions}>
-        <button
-          class="btnTxt isOutline"
+        <Btn
+          outline
           disabled={isSubmitting()}
           onClick={() => submit(text())}
         >
           Done
-        </button>
+        </Btn>
       </div>
     </div>
   );

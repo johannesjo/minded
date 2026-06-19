@@ -18,6 +18,7 @@ import {
   QUIET_MINUTE_OPTIONS,
   TIMER_MINUTE_OPTIONS,
 } from "@src/shared/components/interaction/grounding/grounding.const";
+import Btn from "@src/shared/components/ui/Btn";
 
 type Phase = "offer" | "duration" | "session" | "praise" | "androidLock";
 type Mode = "timer" | "quiet";
@@ -180,24 +181,16 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           <h2 class={styles.title}>Stay a while?</h2>
           <p class={styles.subtitle}>Take a moment to ground yourself.</p>
           <div class={styles.choices}>
-            <button
-              type="button"
-              class="btnTxt isOutline"
-              onClick={() => chooseMode("timer")}
-            >
+            <Btn outline onClick={() => chooseMode("timer")}>
               Meditate with a timer
-            </button>
-            <button
-              type="button"
-              class="btnTxt isOutline"
-              onClick={() => chooseMode("quiet")}
-            >
+            </Btn>
+            <Btn outline onClick={() => chooseMode("quiet")}>
               {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}
-            </button>
+            </Btn>
           </div>
-          <button type="button" class="btnTxt" onClick={close}>
+          <Btn onClick={close}>
             Not now
-          </button>
+          </Btn>
         </div>
       </Show>
 
@@ -212,18 +205,14 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
               ? TIMER_MINUTE_OPTIONS
               : QUIET_MINUTE_OPTIONS
             ).map((min) => (
-              <button
-                type="button"
-                class="btnToggleSelect"
-                onClick={() => startSession(min)}
-              >
+              <Btn variant="toggle" onClick={() => startSession(min)}>
                 {min} min
-              </button>
+              </Btn>
             ))}
           </div>
-          <button type="button" class="btnTxt" onClick={close}>
+          <Btn onClick={close}>
             Not now
-          </button>
+          </Btn>
         </div>
       </Show>
 
@@ -256,9 +245,9 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
             </div>
           </div>
           <p class={styles.remaining}>{remainingLabel()}</p>
-          <button type="button" class="btnTxt" onClick={finishSession}>
+          <Btn onClick={finishSession}>
             End
-          </button>
+          </Btn>
         </div>
       </Show>
 
@@ -267,9 +256,9 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         <div class={styles.session}>
           <p class={styles.quietCue}>Rest your eyes.</p>
           <p class={styles.quietSub}>The bell will call you back.</p>
-          <button type="button" class="btnTxt" onClick={finishSession}>
+          <Btn onClick={finishSession}>
             End
-          </button>
+          </Btn>
         </div>
       </Show>
 

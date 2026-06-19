@@ -5,6 +5,7 @@ import {
   BodyLocation,
 } from "./emotionLabeling.const";
 import { saveEmotionLabeling } from "@src/dataInterface/commonSyncDataInterface";
+import Btn from "@src/shared/components/ui/Btn";
 
 interface EmotionLabelingProps {
   onSuccess: () => void;
@@ -69,23 +70,19 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
           <div>
             <For each={[...PRIMARY_EMOTIONS]}>
               {(emotion) => (
-                <button
-                  type="button"
-                  class={
-                    getSelectedEmotions().has(emotion)
-                      ? "btnToggleSelect isSmall isSelected"
-                      : "btnToggleSelect isSmall"
-                  }
+                <Btn
+                  variant="toggle"
+                  small
+                  selected={getSelectedEmotions().has(emotion)}
                   onClick={() => toggleEmotion(emotion)}
                 >
                   {emotion}
-                </button>
+                </Btn>
               )}
             </For>
           </div>
-          <button
-            type="button"
-            class="btnToggleSelect"
+          <Btn
+            variant="toggle"
             style={{
               "margin-top": "24px",
               visibility: getSelectedEmotions().size > 0 ? "visible" : "hidden",
@@ -93,7 +90,7 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
             onClick={() => setStep(1)}
           >
             continue
-          </button>
+          </Btn>
         </Match>
 
         {/* Step 1: Body Location */}
@@ -108,23 +105,19 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
           <div>
             <For each={[...BODY_LOCATIONS]}>
               {(location) => (
-                <button
-                  type="button"
-                  class={
-                    getBodyLocations().has(location)
-                      ? "btnToggleSelect isSmall isSelected"
-                      : "btnToggleSelect isSmall"
-                  }
+                <Btn
+                  variant="toggle"
+                  small
+                  selected={getBodyLocations().has(location)}
                   onClick={() => toggleBodyLocation(location)}
                 >
                   {location}
-                </button>
+                </Btn>
               )}
             </For>
           </div>
-          <button
-            type="button"
-            class="btnToggleSelect"
+          <Btn
+            variant="toggle"
             style={{
               "margin-top": "24px",
               visibility: getBodyLocations().size > 0 ? "visible" : "hidden",
@@ -132,7 +125,7 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
             onClick={handleComplete}
           >
             done
-          </button>
+          </Btn>
         </Match>
       </Switch>
     </div>

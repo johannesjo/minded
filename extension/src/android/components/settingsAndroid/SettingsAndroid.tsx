@@ -10,6 +10,7 @@ import { safeJsonParse } from "@src/util/safeJsonParse";
 import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
+import Btn from "@src/shared/components/ui/Btn";
 
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
@@ -97,22 +98,14 @@ export const SettingsAndroid = (props: {
           {!props.autoSave && (
             <div>
               {props.isRouting && (
-                <button
-                  class="btnTxt"
-                  style="margin-right: 16px;"
-                  onClick={() => navigate("/")}
-                >
+                <Btn style="margin-right: 16px;" onClick={() => navigate("/")}>
                   <Ico name="arrowBack" /> Back
-                </button>
+                </Btn>
               )}
 
-              <button
-                class="btnTxt"
-                disabled={!getSelectedApps()?.length}
-                onClick={handleSave}
-              >
+              <Btn disabled={!getSelectedApps()?.length} onClick={handleSave}>
                 <Ico name="send" /> {props.saveBtnTxt || "Save"}
-              </button>
+              </Btn>
             </div>
           )}
         </>

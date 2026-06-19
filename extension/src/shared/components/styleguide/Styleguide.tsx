@@ -20,6 +20,7 @@ import { Stepper } from "@src/shared/components/ui/Stepper";
 import { Toast } from "@src/shared/components/ui/Toast";
 import { Ico, IcoName } from "@src/shared/components/ui/Ico";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import Btn from "@src/shared/components/ui/Btn";
 import Chart from "@src/shared/components/ui/Chart";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
@@ -172,25 +173,24 @@ const Styleguide = (): JSX.Element => {
       <header class={styles.header}>
         <div class={styles.headerTop}>
           <h1>styleguide</h1>
-          <button
-            type="button"
-            class="btnTxt isOutline"
+          <Btn
+            outline
             onClick={() => setIsDark((v) => !v)}
             aria-pressed={isDark()}
           >
             {isDark() ? "light mode" : "dark mode"}
-          </button>
+          </Btn>
         </div>
         <nav class={styles.toc}>
           <For each={TOC}>
             {(item) => (
-              <button
-                type="button"
-                class="btnToggleSelect isSmall"
+              <Btn
+                variant="toggle"
+                small
                 onClick={() => scrollTo(item.id)}
               >
                 {item.label}
-              </button>
+              </Btn>
             )}
           </For>
         </nav>
@@ -245,77 +245,69 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="buttons" title="Buttons">
         <p class={styles.muted}>
-          Three bases — <code>.btnTxt</code>, <code>.btnIco</code>,{" "}
-          <code>.btnToggleSelect</code> — composed with shared modifiers:{" "}
-          <code>.isOutline</code>, <code>.isBig</code>, <code>.isPlain</code>,{" "}
-          <code>.isSmall</code>, <code>.isSelected</code>. Reach for a modifier
-          before adding a new variant.
+          Every button is the <code>&lt;Btn&gt;</code> component. Three bases —{" "}
+          text (default), <code>variant="icon"</code> and{" "}
+          <code>variant="toggle"</code> — each with a small, typed set of
+          modifiers. The type system only permits these combinations, so there's
+          no way to stack one-off looks.
         </p>
 
-        <Subsection label=".btnTxt">
-          <button type="button" class="btnTxt">
-            default
-          </button>
-          <button type="button" class="btnTxt" disabled>
-            disabled
-          </button>
+        <Subsection label="<Btn>">
+          <Btn>default</Btn>
+          <Btn disabled>disabled</Btn>
         </Subsection>
 
-        <Subsection label=".btnTxt.isOutline">
-          <button type="button" class="btnTxt isOutline">
-            default
-          </button>
-          <button type="button" class="btnTxt isOutline" disabled>
+        <Subsection label="<Btn outline>">
+          <Btn outline>default</Btn>
+          <Btn outline disabled>
             disabled
-          </button>
+          </Btn>
         </Subsection>
 
-        <Subsection label=".btnTxt.isBig (primary CTA size)">
-          <button type="button" class="btnTxt isBig">
+        <Subsection label="<Btn big> (primary CTA size)">
+          <Btn big>
             <Ico name="send" /> save
-          </button>
-          <button type="button" class="btnTxt isBig" disabled>
+          </Btn>
+          <Btn big disabled>
             disabled
-          </button>
+          </Btn>
         </Subsection>
 
-        <Subsection label=".btnToggleSelect">
-          <button type="button" class="btnToggleSelect">
-            unselected
-          </button>
-          <button type="button" class="btnToggleSelect isSelected">
+        <Subsection label='<Btn variant="toggle">'>
+          <Btn variant="toggle">unselected</Btn>
+          <Btn variant="toggle" selected>
             selected
-          </button>
-          <button type="button" class="btnToggleSelect" disabled>
+          </Btn>
+          <Btn variant="toggle" disabled>
             disabled
-          </button>
+          </Btn>
         </Subsection>
 
-        <Subsection label=".btnToggleSelect.isSmall">
-          <button type="button" class="btnToggleSelect isSmall">
+        <Subsection label='<Btn variant="toggle" small>'>
+          <Btn variant="toggle" small>
             unselected
-          </button>
-          <button type="button" class="btnToggleSelect isSmall isSelected">
+          </Btn>
+          <Btn variant="toggle" small selected>
             selected
-          </button>
-          <button type="button" class="btnToggleSelect isSmall" disabled>
+          </Btn>
+          <Btn variant="toggle" small disabled>
             disabled
-          </button>
+          </Btn>
         </Subsection>
 
-        <Subsection label=".btnIco / .isSmall / .isPlain">
-          <button type="button" class="btnIco" aria-label="settings">
+        <Subsection label='<Btn variant="icon"> / small / plain'>
+          <Btn variant="icon" aria-label="settings">
             <Ico name="settings" />
-          </button>
-          <button type="button" class="btnIco isSmall" aria-label="close">
+          </Btn>
+          <Btn variant="icon" small aria-label="close">
             <Ico name="close" />
-          </button>
-          <button type="button" class="btnIco isPlain" aria-label="info">
+          </Btn>
+          <Btn variant="icon" plain aria-label="info">
             <Ico name="info" />
-          </button>
-          <button type="button" class="btnIco" aria-label="disabled" disabled>
+          </Btn>
+          <Btn variant="icon" aria-label="disabled" disabled>
             <Ico name="delete" />
-          </button>
+          </Btn>
         </Subsection>
       </Section>
 
@@ -408,31 +400,19 @@ const Styleguide = (): JSX.Element => {
             onSetStep={setStepperStep}
           />
           <div>
-            <button
-              type="button"
-              class="btnTxt"
-              onClick={() => setStepperStep((s) => Math.max(0, s - 1))}
-            >
+            <Btn onClick={() => setStepperStep((s) => Math.max(0, s - 1))}>
               prev
-            </button>
-            <button
-              type="button"
-              class="btnTxt"
-              onClick={() => setStepperStep((s) => Math.min(3, s + 1))}
-            >
+            </Btn>
+            <Btn onClick={() => setStepperStep((s) => Math.min(3, s + 1))}>
               next
-            </button>
+            </Btn>
           </div>
         </Subsection>
 
         <Subsection label="<Toast>">
-          <button
-            type="button"
-            class="btnTxt isOutline"
-            onClick={() => setToastVisible(true)}
-          >
+          <Btn outline onClick={() => setToastVisible(true)}>
             show toast
-          </button>
+          </Btn>
           <Toast
             message="saved!"
             visible={toastVisible()}
@@ -441,17 +421,11 @@ const Styleguide = (): JSX.Element => {
         </Subsection>
 
         <Subsection label="<ButtonWrapper> (fade in/out)">
-          <button
-            type="button"
-            class="btnTxt isOutline"
-            onClick={() => setWrapperVisible((v) => !v)}
-          >
+          <Btn outline onClick={() => setWrapperVisible((v) => !v)}>
             toggle visibility
-          </button>
+          </Btn>
           <ButtonWrapper isVisible={wrapperVisible()}>
-            <button type="button" class="btnTxt">
-              i fade in and out
-            </button>
+            <Btn>i fade in and out</Btn>
           </ButtonWrapper>
         </Subsection>
       </Section>
@@ -515,13 +489,9 @@ const Styleguide = (): JSX.Element => {
 
         <Subsection label="<IntentSelection>">
           <div class={styles.interactionFrame}>
-            <button
-              type="button"
-              class="btnTxt isOutline"
-              onClick={() => setIntentArmed((v) => !v)}
-            >
+            <Btn outline onClick={() => setIntentArmed((v) => !v)}>
               isArmed: {String(intentArmed())}
-            </button>
+            </Btn>
             <IntentSelection
               isArmed={intentArmed()}
               onSelectIntent={(i) => console.log("intent:", i)}
@@ -539,13 +509,9 @@ const Styleguide = (): JSX.Element => {
             locks). A gentle offer — declining is easy and ignoring it dismisses
             it. Opens a full-screen stage.
           </p>
-          <button
-            type="button"
-            class="btnTxt isOutline"
-            onClick={() => setGroundingOpen(true)}
-          >
+          <Btn outline onClick={() => setGroundingOpen(true)}>
             Open grounding offer
-          </button>
+          </Btn>
           {groundingOpen() && (
             <GroundingOverlay
               variant={isDark() ? "moon" : "sun"}
@@ -649,16 +615,15 @@ const SunMorphHarness = (): JSX.Element => {
 
   return (
     <>
-      <button
-        type="button"
-        class="btnTxt isOutline"
+      <Btn
+        outline
         onClick={() => {
           setPhase("interactive");
           setIsOpen(true);
         }}
       >
         open sun stage
-      </button>
+      </Btn>
 
       <Show when={isOpen()}>
         <div class={styles.sunStage}>
@@ -709,23 +674,19 @@ const SunMorphHarness = (): JSX.Element => {
           <div class={styles.sunStageControls}>
             <For each={PHASES}>
               {(p) => (
-                <button
-                  type="button"
-                  class="btnToggleSelect isSmall"
-                  classList={{ isSelected: phase() === p }}
+                <Btn
+                  variant="toggle"
+                  small
+                  selected={phase() === p}
                   onClick={() => setPhase(p)}
                 >
                   {p}
-                </button>
+                </Btn>
               )}
             </For>
-            <button
-              type="button"
-              class="btnTxt isOutline"
-              onClick={() => setIsOpen(false)}
-            >
+            <Btn outline onClick={() => setIsOpen(false)}>
               close
-            </button>
+            </Btn>
           </div>
         </div>
       </Show>

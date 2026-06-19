@@ -6,6 +6,7 @@ import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 import styles from "./OnboardingAndroid.module.scss";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import { Stepper } from "@src/shared/components/ui/Stepper";
+import Btn from "@src/shared/components/ui/Btn";
 
 export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
   const [getStep, setStep] = createSignal<number>(0);
@@ -39,9 +40,9 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
               </div>
 
               <ButtonWrapper isVisible={true}>
-                <div class="btnTxt isBig" onClick={() => setStep(1)}>
+                <Btn big onClick={() => setStep(1)}>
                   let's start!
-                </div>
+                </Btn>
               </ButtonWrapper>
             </div>
           </Match>
@@ -82,22 +83,20 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
                   <strong>not work as intended</strong>.
                 </p>
                 <div style="margin-top: 32px;">
-                  <button
-                    class="btnTxt"
+                  <Btn
                     onClick={() => {
                       setStep(2);
                       setPermissionNotGiven(false);
                     }}
                   >
                     back
-                  </button>
-                  <button
-                    class="btnTxt"
+                  </Btn>
+                  <Btn
                     onClick={() => props.onGoDashboard()}
                     style="margin-left: 16px;"
                   >
                     continue anyway
-                  </button>
+                  </Btn>
                 </div>
               </div>
             ) : (

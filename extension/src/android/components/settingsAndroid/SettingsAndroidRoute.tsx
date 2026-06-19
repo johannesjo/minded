@@ -6,6 +6,7 @@ import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
@@ -37,9 +38,9 @@ export const SettingsAndroidRoute = () => {
       <SleepWindDownSettings autoSave={true} />
 
       <div style="text-align: center; margin: 32px 16px;">
-        <button class="btnTxt" onClick={() => navigate("/")}>
+        <Btn onClick={() => navigate("/")}>
           <Ico name="arrowBack" /> Back
-        </button>
+        </Btn>
       </div>
     </div>
   );

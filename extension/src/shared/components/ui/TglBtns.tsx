@@ -1,4 +1,5 @@
 import { createSignal, For, JSX } from "solid-js";
+import Btn from "@src/shared/components/ui/Btn";
 
 export interface TglBtnOption<T> {
   val: T;
@@ -15,20 +16,16 @@ const TglBtns = <T,>(props: {
     <div style="margin-right: -8px; margin-left: -8px;">
       <For each={props.options}>
         {(option) => (
-          <button
-            type="button"
-            class={
-              getSelectedVal() === option.val
-                ? "btnToggleSelect  isSelected"
-                : "btnToggleSelect"
-            }
+          <Btn
+            variant="toggle"
+            selected={getSelectedVal() === option.val}
             onClick={() => {
               setSelectedVal(() => option.val);
               props.onSelect(option.val);
             }}
           >
             {option.txt}
-          </button>
+          </Btn>
         )}
       </For>
     </div>

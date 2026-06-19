@@ -6,6 +6,7 @@ import {
 } from "@src/dataInterface/android/androidInterface";
 import { safeJsonParse } from "@src/util/safeJsonParse";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 
 // Capabilities minded cannot run without. Usage-access and battery-optimization
 // are advisory - they improve detection reliability but must NOT block
@@ -119,12 +120,9 @@ export const MissingCapabilityView = (props: {
             {/*Enabling the shortcut is{" "}*/}
             {/*<strong>not</strong> required or recommended.*/}
             {/*</p>*/}
-            <button
-              class="btnTxt"
-              onClick={() => onMissingCapabilityClick("Accessibility")}
-            >
+            <Btn onClick={() => onMissingCapabilityClick("Accessibility")}>
               Enable Accessibility Service
-            </button>
+            </Btn>
 
             {getIsShowManualInstructions() && (
               <>
@@ -148,12 +146,9 @@ export const MissingCapabilityView = (props: {
               To display its overlays, <em>minded </em>needs the overlay
               permission.
             </p>
-            <button
-              class="btnTxt"
-              onClick={() => onMissingCapabilityClick("SystemAlertWindow")}
-            >
+            <Btn onClick={() => onMissingCapabilityClick("SystemAlertWindow")}>
               Enable Overlay Permission
-            </button>
+            </Btn>
           </div>
         )}
         {hasOptionalMissing() && (
@@ -171,12 +166,9 @@ export const MissingCapabilityView = (props: {
                   the app in the foreground. Without it, detection is less
                   reliable for apps with long loading screens.
                 </p>
-                <button
-                  class="btnTxt"
-                  onClick={() => onMissingCapabilityClick("UsageStats")}
-                >
+                <Btn onClick={() => onMissingCapabilityClick("UsageStats")}>
                   Enable Usage Access
-                </button>
+                </Btn>
               </div>
             )}
             {getMissingCapabilities().includes("BatteryOptimization") && (
@@ -188,36 +180,35 @@ export const MissingCapabilityView = (props: {
                   <em>minded</em> from battery optimization keeps the protection
                   running.
                 </p>
-                <button
-                  class="btnTxt"
+                <Btn
                   onClick={() =>
                     onMissingCapabilityClick("BatteryOptimization")
                   }
                 >
                   Disable Battery Optimization
-                </button>
+                </Btn>
               </div>
             )}
           </div>
         )}
 
         {props.requiredOnly && getCanContinue() && (
-          <button
+          <Btn
+            big
             style="margin-top: 32px"
-            class="btnTxt isBig"
             onClick={() => props.onAllConfigured?.()}
           >
             continue
-          </button>
+          </Btn>
         )}
 
-        <button
+        <Btn
+          outline
           style="margin-top:  32px"
-          class="btnTxt isOutline"
           onClick={() => props.onPermissionDenied?.()}
         >
           <Ico name="close" /> don't give permission
-        </button>
+        </Btn>
       </div>
     </div>
   );

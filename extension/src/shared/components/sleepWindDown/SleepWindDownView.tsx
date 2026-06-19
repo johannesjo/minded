@@ -10,6 +10,7 @@ import BreathingExercise from "@src/shared/components/interaction/breathingExerc
 import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 import {
   CALM_READ_PASSAGES,
   GRATITUDE_PROMPTS,
@@ -326,8 +327,8 @@ export const SleepWindDownView = (
 
     return (
       <div class={styles.activityActions}>
-        <button
-          class="btnTxt isOutline"
+        <Btn
+          outline
           onClick={() => {
             if (action === "complete") {
               markComplete(activityKey);
@@ -342,7 +343,7 @@ export const SleepWindDownView = (
               <Ico name="arrowBack" /> Back
             </>
           )}
-        </button>
+        </Btn>
       </div>
     );
   };
@@ -366,27 +367,27 @@ export const SleepWindDownView = (
                     bed?
                   </p>
                   <div class={styles.btnRow}>
-                    <button
-                      class="btnTxt isOutline"
+                    <Btn
+                      outline
                       onClick={() => goToView(WIND_DOWN_OVERVIEW_VIEW)}
                       disabled={!hydrated()}
                     >
                       Yes
-                    </button>
-                    <button
-                      class="btnTxt isOutline"
+                    </Btn>
+                    <Btn
+                      outline
                       onClick={() => goToView("snoozeIntent")}
                       disabled={!hydrated()}
                     >
                       Snooze 15 min
-                    </button>
-                    <button
-                      class="btnTxt isOutline"
+                    </Btn>
+                    <Btn
+                      outline
                       onClick={skipTonight}
                       disabled={!hydrated()}
                     >
                       Skip tonight
-                    </button>
+                    </Btn>
                   </div>
                 </div>
               </Match>
@@ -402,8 +403,9 @@ export const SleepWindDownView = (
                       {(a) => {
                         const isDone = () => completed().has(a.key);
                         return (
-                          <button
-                            class={`btnToggleSelect ${isDone() ? "isSelected" : ""}`}
+                          <Btn
+                            variant="toggle"
+                            selected={isDone()}
                             onClick={() => goToView(a.view)}
                             disabled={!hydrated()}
                           >
@@ -413,14 +415,13 @@ export const SleepWindDownView = (
                               </span>
                             )}
                             <span>{a.label}</span>
-                          </button>
+                          </Btn>
                         );
                       }}
                     </For>
                   </div>
                   <div class={styles.menuFooter}>
-                    <button
-                      class="btnTxt"
+                    <Btn
                       onClick={enterGoodnight}
                       disabled={!hydrated()}
                     >
@@ -431,7 +432,7 @@ export const SleepWindDownView = (
                       ) : (
                         "Goodnight"
                       )}
-                    </button>
+                    </Btn>
                   </div>
                   <button
                     class={styles.tipsLink}
@@ -548,13 +549,13 @@ export const SleepWindDownView = (
                   <div class={styles.btnRow}>
                     <For each={SNOOZE_INTENT_OPTIONS}>
                       {(opt) => (
-                        <button
-                          class="btnToggleSelect"
+                        <Btn
+                          variant="toggle"
                           onClick={() => goToView("snoozeGoodnight")}
                           disabled={!hydrated()}
                         >
                           {opt}
-                        </button>
+                        </Btn>
                       )}
                     </For>
                   </div>

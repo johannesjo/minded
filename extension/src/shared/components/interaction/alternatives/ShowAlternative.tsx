@@ -17,6 +17,7 @@ import {
   getWebsiteAlternativeHref,
 } from "@src/shared/components/interaction/alternatives/getAlternatives";
 import { getAlternativeCandidate } from "@src/shared/components/interaction/alternatives/getAlternativeCandidate";
+import Btn from "@src/shared/components/ui/Btn";
 
 // once on app load
 
@@ -130,13 +131,9 @@ export const ShowAlternativeInteraction: (props: {
             </div>
             <div class="show-alternative-actions">
               {props.onAddBetterAlternative && (
-                <button
-                  type="button"
-                  class="btnTxt"
-                  onClick={() => void onAddBetterAlternative()}
-                >
+                <Btn onClick={() => void onAddBetterAlternative()}>
                   Suggest better alternative
-                </button>
+                </Btn>
               )}
             </div>
           </div>

@@ -7,6 +7,7 @@ import {
 import { useBreathClock } from "@src/shared/components/interaction/useBreathClock";
 import { getBreathStartedAt } from "@src/shared/components/interaction/sun/sunStore";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import Btn from "@src/shared/components/ui/Btn";
 
 interface StrongFrictionBreathPauseProps {
   seconds: number;
@@ -72,9 +73,9 @@ export const StrongFrictionBreathPause: Component<
         <div class="txtSmaller">{getCount()}</div>
       </div>
 
-      <button type="button" class="btnTxt" onClick={() => props.onCancel()}>
+      <Btn onClick={() => props.onCancel()}>
         cancel
-      </button>
+      </Btn>
     </div>
   );
 };
