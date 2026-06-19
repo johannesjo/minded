@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo, Show } from "solid-js";
 import styles from "./BreathingExercise.module.scss";
 import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
 import {
@@ -57,9 +57,13 @@ const BreathingExercise = () => {
         <p style={{ opacity: opacity() }}>{cue()}</p>
         <strong>{count()}</strong>
       </div>
-      <button onClick={() => clock.start()} class="btnTxtOutline">
-        {clock.isStarted() ? "Restart" : "Start"}
-      </button>
+      {/* Start only — no restart: once the breath is flowing we don't offer to
+          yank the user back to the beginning of a wind-down meditation. */}
+      <Show when={!clock.isStarted()}>
+        <button onClick={() => clock.start()} class="btnTxtOutline">
+          Start
+        </button>
+      </Show>
     </div>
   );
 };
