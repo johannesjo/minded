@@ -1,0 +1,170 @@
+@import "@src/styles/mixins/allTypo";
+
+.grounding {
+  position: fixed;
+  inset: 0;
+  // Above the interaction layer (overlay 1100, settled wrapper 1101): the
+  // grounding stage fully replaces the dashboard sun flow while it is open.
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--c-fg-full-emphasis);
+  // Warm light backdrop — the sky the sun settles into when pulled close.
+  background: radial-gradient(
+    120% 120% at 50% 35%,
+    #fdf3e6 0%,
+    #f6e3cf 100%
+  );
+  animation: groundingIn var(--grounding-fade-ms, 600ms) ease-out forwards;
+
+  &.isDark {
+    background: radial-gradient(120% 120% at 50% 35%, #1a1f2e 0%, #0c0e16 100%);
+  }
+
+  // Screen-free sit: dim almost to black so the eyes can truly rest.
+  &.isQuiet {
+    background: #060709;
+    color: rgba(255, 255, 255, 0.82);
+    transition: background var(--grounding-fade-ms, 600ms) ease;
+  }
+
+  &.isClosing {
+    opacity: 0;
+    transition: opacity var(--grounding-fade-ms, 600ms) ease;
+  }
+}
+
+@keyframes groundingIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 420px;
+}
+
+.title {
+  @include displayVoice;
+  font-size: clamp(28px, 6vw, 40px);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0;
+  opacity: 0.72;
+  font-size: var(--fz-m);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.durations {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.session {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.ring {
+  position: relative;
+  width: min(300px, 70vw);
+  height: min(300px, 70vw);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); // start the progress at 12 o'clock
+}
+
+.ringTrack {
+  fill: none;
+  stroke: rgba(150, 130, 90, 0.18);
+  stroke-width: 4;
+}
+
+.ringProgress {
+  fill: none;
+  stroke: #e8b765;
+  stroke-width: 4;
+  stroke-linecap: round;
+  // Driven by stroke-dashoffset from the component; a short transition keeps
+  // the per-frame updates from looking jittery.
+  transition: stroke-dashoffset 0.3s linear;
+}
+
+.ringInner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remaining {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.quietCue {
+  @include displayVoice;
+  font-size: clamp(26px, 6vw, 38px);
+  margin: 0;
+}
+
+.quietSub {
+  margin: 0;
+  opacity: 0.6;
+  font-size: var(--fz-m);
+}
+
+.praise {
+  @include displayVoice;
+  font-size: calc(var(--fz-xl) + 2px);
+  line-height: 1.4;
+  animation: groundingIn 0.8s ease-in forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grounding {
+    animation: none;
+  }
+  .ringProgress {
+    transition: none;
+  }
+  .praise {
+    animation: none;
+  }
+}

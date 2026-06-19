@@ -34,6 +34,7 @@ import {
 } from "@src/shared/components/interaction/sun/sunSettle";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
+import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
@@ -153,6 +154,7 @@ const Styleguide = (): JSX.Element => {
   const [timeVal, setTimeVal] = createSignal("09:00");
   const [wrapperVisible, setWrapperVisible] = createSignal(true);
   const [intentArmed, setIntentArmed] = createSignal(true);
+  const [groundingOpen, setGroundingOpen] = createSignal(false);
 
   onMount(() => {
     setTokenSnapshot((n) => n + 1);
@@ -518,6 +520,29 @@ const Styleguide = (): JSX.Element => {
               onCancelCountdown={() => undefined}
             />
           </div>
+        </Subsection>
+
+        <Subsection label="<GroundingOverlay> — dashboard down-drag">
+          <p class={styles.muted}>
+            On the dashboard, dragging the sun down offers a moment to ground
+            yourself: a timed meditation (still sun + start/end gong) or a
+            screen-free sit (on the web the screen dims; on Android the phone
+            locks). A gentle offer — declining is easy and ignoring it dismisses
+            it. Opens a full-screen stage.
+          </p>
+          <button
+            type="button"
+            class="btnTxtOutline"
+            onClick={() => setGroundingOpen(true)}
+          >
+            Open grounding offer
+          </button>
+          {groundingOpen() && (
+            <GroundingOverlay
+              variant={isDark() ? "moon" : "sun"}
+              onClose={() => setGroundingOpen(false)}
+            />
+          )}
         </Subsection>
 
         <Subsection label="Persistent sun — post-interaction morph">
