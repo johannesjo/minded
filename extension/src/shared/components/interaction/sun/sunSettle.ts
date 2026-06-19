@@ -1,4 +1,8 @@
 import type { SunSettle } from "./Sun";
+import {
+  BREATH_PAUSE_PATTERN,
+  SURF_WAVE_PATTERN,
+} from "@src/shared/components/interaction/breathTimeline";
 
 /**
  * Settle targets for the post-interaction sun, shared by the real flow
@@ -33,12 +37,15 @@ export const sunInteractiveSettle = (anchor: {
   breathe: false,
 });
 
-/** Breath pause: upper-middle, scaled down, one inhale→exhale over the pause. */
+/** Breath pause: upper-middle, scaled down, one inhale→hold→exhale over the pause. */
 export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
   anchorYRatio: 0.4, // upper-middle, leaving room for the breath cue beneath
   scale: 0.82,
   breathe: true,
   breathSeconds,
+  // Shape the breath from the same pattern the cue copy reads, so the disc and
+  // the "Breathe in / Hold / Breathe out" text move on the same beats.
+  breathPattern: BREATH_PAUSE_PATTERN,
 });
 
 /**
@@ -56,9 +63,10 @@ export const sunSurfSettle = (): SunSettle => ({
   scale: 1,
   breathe: true,
   // A gentle, continuous pulse for the meditation: every few seconds the disc
-  // eases inward and back. Negative so it contracts (breathes in) rather than
-  // swelling out.
-  breathSeconds: 5,
+  // eases inward and back. The 5s symmetric wave (no held top) keeps this a
+  // flowing rise-and-fall, distinct from the paused intervention breath.
+  // Negative peak so it contracts (breathes in) rather than swelling out.
+  breathPattern: SURF_WAVE_PATTERN,
   breathLoop: true,
   breathPeakBonus: -0.13,
 });

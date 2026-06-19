@@ -1,99 +1,79 @@
-import { createEffect, createSignal, onCleanup } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
 import styles from "./BreathingExercise.module.scss";
 import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
-import type { BreathSunPhase } from "@src/shared/components/interaction/breathSun/BreathSun";
+import {
+  getBreathStateAt,
+  getCueOpacity,
+  WIND_DOWN_PATTERN,
+  type BreathPhaseName,
+} from "@src/shared/components/interaction/breathTimeline";
+
+const PHASE_LABEL: Record<BreathPhaseName, string> = {
+  inhale: "Breathing in",
+  hold: "Hold",
+  exhale: "Breathing out",
+};
+
+const PHASE_CUE: Record<BreathPhaseName, string> = {
+  inhale: "Let the breath arrive",
+  hold: "Stay soft",
+  exhale: "Release slowly",
+};
 
 const BreathingExercise = () => {
-  const [stage, setStage] = createSignal("Ready");
-  const [timeLeft, setTimeLeft] = createSignal(0);
+  const [isRunning, setIsRunning] = createSignal(false);
+  const [fill, setFill] = createSignal(0);
+  const [phase, setPhase] = createSignal<BreathPhaseName>("inhale");
+  const [secondsLeft, setSecondsLeft] = createSignal(0);
+  const [cueFade, setCueFade] = createSignal(1);
 
-  const stages = [
-    { name: "Breathing in", duration: 4 },
-    { name: "Hold", duration: 7 },
-    { name: "Breathing out", duration: 8 },
-  ];
+  let frame: number | undefined;
+  let startTime = 0;
 
-  let currentStageIndex = -1;
-  let intervalId: NodeJS.Timeout | null = null;
+  const stop = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = undefined;
+  };
+  onCleanup(stop);
 
-  const startExercise = () => {
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
-    currentStageIndex = 0;
-    setStage(stages[currentStageIndex].name);
-    setTimeLeft(stages[currentStageIndex].duration);
-    intervalId = setInterval(() => {
-      setTimeLeft((t) => t - 1);
-    }, 1000);
+  // One clock drives the sun, the stage label, the cue and the countdown, so
+  // they can't drift apart — and the sun is updated every frame, so it tracks
+  // the count exactly instead of lagging behind a CSS transition. The cue fade
+  // dips to 0 on each phase turn so the label fades out before the next fades in.
+  const tick = () => {
+    const state = getBreathStateAt(Date.now() - startTime, WIND_DOWN_PATTERN, {
+      loop: true,
+    });
+    setFill(state.fill);
+    setPhase(state.phase);
+    setSecondsLeft(state.phaseSecondsLeft);
+    setCueFade(getCueOpacity(state));
+    frame = requestAnimationFrame(tick);
   };
 
-  onCleanup(() => {
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
-  });
-
-  createEffect(() => {
-    if (timeLeft() === 0 && currentStageIndex !== -1) {
-      currentStageIndex = (currentStageIndex + 1) % stages.length;
-      setStage(stages[currentStageIndex].name);
-      setTimeLeft(stages[currentStageIndex].duration);
-    }
-  });
-
-  const currentDuration = () =>
-    stages.find((s) => s.name === stage())?.duration ?? 1;
-  const progress = () => {
-    if (stage() === "Ready") {
-      return 0;
-    }
-
-    const duration = currentDuration();
-    return Math.max(0, Math.min(1, (duration - timeLeft()) / duration));
-  };
-  const sunPhase = (): BreathSunPhase => {
-    switch (stage()) {
-      case "Breathing in":
-        return "inhale";
-      case "Hold":
-        return "hold";
-      case "Breathing out":
-        return "exhale";
-      default:
-        return "ready";
-    }
-  };
-  const cue = () => {
-    switch (stage()) {
-      case "Breathing in":
-        return "Let the breath arrive";
-      case "Hold":
-        return "Stay soft";
-      case "Breathing out":
-        return "Release slowly";
-      default:
-        return "4 - 7 - 8 breathing";
-    }
+  const start = () => {
+    stop();
+    startTime = Date.now();
+    setIsRunning(true);
+    tick();
   };
 
   return (
     <div class={styles.BreathingExercise}>
       {/* The wind-down is a sleep flow, so it re-uses the same moon as the
           rest of it (the "Sleep well" screen) — not a time-of-day sun/moon. */}
-      <BreathSun
-        phase={sunPhase()}
-        progress={progress()}
-        size="large"
-        variant="moon"
-      />
+      <BreathSun fill={isRunning() ? fill() : 0} size="large" variant="moon" />
       <div class={styles.copy}>
-        <h1>{stage()}</h1>
-        <p>{cue()}</p>
-        <strong>{timeLeft() || ""}</strong>
+        <h1 style={{ opacity: isRunning() ? cueFade() : 1 }}>
+          {isRunning() ? PHASE_LABEL[phase()] : "Ready"}
+        </h1>
+        <p style={{ opacity: isRunning() ? cueFade() : 1 }}>
+          {isRunning() ? PHASE_CUE[phase()] : "4 - 7 - 8 breathing"}
+        </p>
+        <strong>{isRunning() ? secondsLeft() : ""}</strong>
       </div>
-      <button onClick={startExercise} class="btnTxtOutline">
-        {stage() === "Ready" ? "Start" : "Restart"}
+      <button onClick={start} class="btnTxtOutline">
+        {isRunning() ? "Restart" : "Start"}
       </button>
     </div>
   );

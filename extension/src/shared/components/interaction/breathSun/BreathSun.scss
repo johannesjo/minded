@@ -1,5 +1,5 @@
 .breath-sun {
-  --breath-progress: 0;
+  --breath-fill: 0;
   // The breath swings between a deep-exhale low and an inhale peak. The low is
   // set well below the peak so the out-breath reads as a real release — the sun
   // empties right down before the next inhale fills it again.
@@ -23,22 +23,25 @@
 
 // Re-use the always-visible sun (global `.minded-sun`) as the breathing visual
 // so the wind-down reads as the very same sun — we only size it and guide it
-// through the 4-7-8 breath via scale. Its look (fill, warm shadow, idle-breath
-// glow, moon variant) all comes from Sun.scss.
+// through the breath via scale. Its look (fill, warm shadow, idle-breath glow,
+// moon variant) all comes from Sun.scss.
 .breath-sun .minded-sun {
   width: 72%;
   height: 72%;
   // It's a display-only disc here, not the draggable interaction sun.
   cursor: default;
-  // Rest at the deep-exhale low so the loop (exhale-end → next inhale-start) is
-  // seamless and the pre-start state already reads as a calm, emptied breath.
-  // (transform-origin: center comes from `.minded-sun`.)
-  transform: scale(var(--breath-min));
-  // Slow ease guides the breath; keep the inherited box-shadow easing so the
-  // idle-breath glow still pulses.
-  transition:
-    transform 900ms ease-in-out,
-    box-shadow 0.1s linear;
+  // Scale is mapped straight from the eased breath fill (0 → min, 1 → max). The
+  // caller updates `--breath-fill` every animation frame, so the disc tracks the
+  // breath clock exactly — no transform transition (it would lag the breath a
+  // frame behind itself). (transform-origin: center comes from `.minded-sun`.)
+  transform: scale(
+    calc(
+      var(--breath-min) +
+        (var(--breath-fill) * (var(--breath-max) - var(--breath-min)))
+    )
+  );
+  // Keep the inherited box-shadow easing so the idle-breath glow still pulses.
+  transition: box-shadow 0.1s linear;
 }
 
 .breath-sun--large .minded-sun {
@@ -46,33 +49,8 @@
   height: 82%;
 }
 
-.breath-sun.is-inhale .minded-sun {
-  transform: scale(
-    calc(
-      var(--breath-min) +
-        (var(--breath-progress) * (var(--breath-max) - var(--breath-min)))
-    )
-  );
-}
-
-.breath-sun.is-hold .minded-sun {
-  transform: scale(var(--breath-max));
-}
-
-.breath-sun.is-exhale .minded-sun {
-  transform: scale(
-    calc(
-      var(--breath-max) -
-        (var(--breath-progress) * (var(--breath-max) - var(--breath-min)))
-    )
-  );
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .breath-sun .minded-sun,
-  .breath-sun.is-inhale .minded-sun,
-  .breath-sun.is-hold .minded-sun,
-  .breath-sun.is-exhale .minded-sun {
+  .breath-sun .minded-sun {
     transform: scale(1);
     transition: none;
   }

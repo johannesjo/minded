@@ -30,6 +30,12 @@ import {
   type SunDragDirection,
 } from "./sunAnimationUtils";
 import { playCompletionSound } from "./sunAudio";
+import {
+  breathCycleMs,
+  getBreathStateAt,
+  BREATH_PAUSE_PATTERN,
+  type BreathPattern,
+} from "@src/shared/components/interaction/breathTimeline";
 
 type SunPosition = {
   x: number;
@@ -100,14 +106,16 @@ export interface SunSettle {
   anchorYPxFromTop?: number;
   /** Resting scale relative to the sun's base size. */
   scale?: number;
-  /** Run one slow inhale→exhale while settled. */
+  /** Run one slow inhale→hold→exhale while settled. */
   breathe?: boolean;
-  /** Length of the inhale→exhale in seconds. */
+  /** Length of the breath in seconds (the pattern's full cycle). */
   breathSeconds?: number;
   /** Loop the breath continuously (a gentle meditation pulse) instead of once. */
   breathLoop?: boolean;
   /** Override the peak swell of the breath (default BREATH_PEAK_BONUS); smaller = gentler. */
   breathPeakBonus?: number;
+  /** Shape of the breath; defaults to the intervention-pause pattern. */
+  breathPattern?: BreathPattern;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -354,23 +362,25 @@ export const Sun: Component<SunProps> = (props) => {
     settleFrame = requestAnimationFrame(step);
   };
 
-  // One slow inhale→exhale over the pause, peaking at the midpoint — matching
-  // the cue copy that flips from "Breathe in" to "Breathe out" halfway through.
+  // One slow inhale → hold → exhale over the pause, driven by the shared breath
+  // model so the disc's scale and the cue copy ("Breathe in / Hold / Breathe
+  // out") move through the same phases on the same beats. Loops as a gentle
+  // meditation pulse when opts.loop is set; opts.peakBonus tunes the swell.
   const startBreathCycle = (
     restScale: number,
-    seconds: number,
+    pattern: BreathPattern,
     opts?: { loop?: boolean; peakBonus?: number },
   ) => {
-    const durationMs = Math.max(1, seconds) * 1000;
+    const durationMs = breathCycleMs(pattern);
     const peak = restScale + (opts?.peakBonus ?? BREATH_PEAK_BONUS);
     let startTime = Date.now();
 
     const step = () => {
-      const t = Math.min((Date.now() - startTime) / durationMs, 1);
-      const wave = 0.5 - 0.5 * Math.cos(2 * Math.PI * t);
-      setScale(restScale + (peak - restScale) * wave);
+      const elapsed = Date.now() - startTime;
+      const { fill } = getBreathStateAt(elapsed, pattern);
+      setScale(restScale + (peak - restScale) * fill);
 
-      if (t < 1) {
+      if (elapsed < durationMs) {
         settleFrame = requestAnimationFrame(step);
       } else if (opts?.loop) {
         // Gentle meditation pulse: start the next inhale→exhale immediately. The
@@ -411,7 +421,7 @@ export const Sun: Component<SunProps> = (props) => {
 
     animateOffsetScaleTo(target, restScale, duration, () => {
       if (settle.breathe) {
-        startBreathCycle(restScale, settle.breathSeconds ?? 7, {
+        startBreathCycle(restScale, settle.breathPattern ?? BREATH_PAUSE_PATTERN, {
           loop: settle.breathLoop,
           peakBonus: settle.breathPeakBonus,
         });

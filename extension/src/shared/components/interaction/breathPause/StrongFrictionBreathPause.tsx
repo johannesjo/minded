@@ -5,29 +5,46 @@ import {
   createSignal,
   onCleanup,
 } from "solid-js";
+import {
+  BREATH_PAUSE_PATTERN,
+  getBreathStateAt,
+  getCueOpacity,
+  type BreathPhaseName,
+} from "@src/shared/components/interaction/breathTimeline";
 interface StrongFrictionBreathPauseProps {
   seconds: number;
   onComplete: () => void;
   onCancel: () => void;
 }
 
+const PHASE_CUE: Record<BreathPhaseName, string> = {
+  inhale: "Breathe in",
+  hold: "Hold",
+  exhale: "Breathe out",
+};
+
 export const StrongFrictionBreathPause: Component<
   StrongFrictionBreathPauseProps
 > = (props) => {
   const [getRemainingSeconds, setRemainingSeconds] = createSignal(0);
-  const [getElapsedRatio, setElapsedRatio] = createSignal(0);
+  const [getElapsedMs, setElapsedMs] = createSignal(0);
 
-  let intervalId: number | undefined;
+  let frame: number | undefined;
   let timeoutId: number | undefined;
 
-  const getCue = createMemo(() =>
-    getElapsedRatio() < 0.48 ? "Breathe in" : "Breathe out",
+  // The cue text and its fade both read from the same breath model that scales
+  // the sun, so the copy and the disc move through inhale → hold → exhale on
+  // exactly the same beats, and the label fades out before the next fades in.
+  const getBreath = createMemo(() =>
+    getBreathStateAt(getElapsedMs(), BREATH_PAUSE_PATTERN),
   );
+  const getCue = createMemo(() => PHASE_CUE[getBreath().phase]);
+  const getCueFade = createMemo(() => getCueOpacity(getBreath()));
 
   const clearTimers = () => {
-    if (intervalId) window.clearInterval(intervalId);
+    if (frame) window.cancelAnimationFrame(frame);
     if (timeoutId) window.clearTimeout(timeoutId);
-    intervalId = undefined;
+    frame = undefined;
     timeoutId = undefined;
   };
 
@@ -38,14 +55,21 @@ export const StrongFrictionBreathPause: Component<
     const durationMs = durationSeconds * 1000;
 
     setRemainingSeconds(durationSeconds);
-    setElapsedRatio(0);
+    setElapsedMs(0);
 
-    intervalId = window.setInterval(() => {
+    // rAF (not a coarse interval) so the cue's cross-fade lands cleanly at ~0
+    // opacity on each phase turn instead of popping mid-fade.
+    const tick = () => {
       const elapsedMs = Date.now() - startedAt;
-      const remainingMs = Math.max(0, durationMs - elapsedMs);
-      setRemainingSeconds(Math.ceil(remainingMs / 1000));
-      setElapsedRatio(Math.min(1, elapsedMs / durationMs));
-    }, 100);
+      setElapsedMs(elapsedMs);
+      setRemainingSeconds(
+        Math.ceil(Math.max(0, durationMs - elapsedMs) / 1000),
+      );
+      if (elapsedMs < durationMs) {
+        frame = window.requestAnimationFrame(tick);
+      }
+    };
+    frame = window.requestAnimationFrame(tick);
 
     timeoutId = window.setTimeout(onComplete, durationMs);
 
@@ -60,7 +84,9 @@ export const StrongFrictionBreathPause: Component<
       <div class="strong-friction-breath-pause__sun-space" aria-hidden="true" />
 
       <div class="strong-friction-breath-pause__copy">
-        <div class="txtBig">{getCue()}</div>
+        <div class="txtBig" style={{ opacity: getCueFade() }}>
+          {getCue()}
+        </div>
         <div class="txtSmaller">Continue in {getRemainingSeconds()}</div>
       </div>
 
