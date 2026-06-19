@@ -38,6 +38,25 @@ body {
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   min-height: 100vh;
+
+  // Safety-net sky floor. The gradient is normally painted by the
+  // SolidJS-rendered #minded-6622-coloured-wrapper-dynamic, so if that app
+  // fails to mount — a freshly created overlay WebView occasionally never
+  // paints its content on first open — nothing covers the opaque dark native
+  // shield and the intervention sticks on a black screen until the user
+  // reopens the app. #minded-6622 lives in the static HTML and carries the
+  // gradient variables, so this ::before still renders the sky with no JS,
+  // and rides #minded-6622's fade-in so it rises out of the shield (matching
+  // the intended reveal) instead of popping. When the app does mount, the
+  // coloured wrapper (huge z-index) covers this identically.
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--background-gradient);
+    pointer-events: none;
+  }
 }
 
 // Smooth keyboard transitions

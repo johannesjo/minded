@@ -19,7 +19,7 @@
 // pocket.
 @mixin bottomFadeWithSunPocket($linear) {
   $sun-fade: radial-gradient(
-    circle var(--sun-fade-radius, clamp(80px, 13vh, 140px)) at 50% 100%,
+    circle var(--sun-fade-radius, clamp(44px, 6vh, 64px)) at 50% 100%,
     transparent 0,
     rgba(0, 0, 0, 0.55) 55%,
     #000 100%

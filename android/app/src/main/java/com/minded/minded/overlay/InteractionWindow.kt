@@ -86,6 +86,45 @@ class InteractionWindow(
                             view.setBackgroundColor(0x00000000)
                         }, 100)
                     }
+
+                    // Diagnostics for the "stuck on a black screen" reports: the web
+                    // layer goes transparent ~100ms after load, so if it never paints
+                    // the dark native shield is what the user sees. A main-frame load
+                    // error means the interaction app never booted at all — log it so a
+                    // logcat from a repro tells us this is the failure mode.
+                    override fun onReceivedError(
+                        view: android.webkit.WebView?,
+                        request: android.webkit.WebResourceRequest?,
+                        error: android.webkit.WebResourceError?,
+                    ) {
+                        super.onReceivedError(view, request, error)
+                        if (request?.isForMainFrame == true) {
+                            Log.e(
+                                logTag,
+                                "onReceivedError main-frame: code=${error?.errorCode} desc=${error?.description} url=${request.url}",
+                            )
+                        }
+                    }
+
+                    // A gone render process leaves a blank WebView that only recovers on
+                    // a fresh instance — which matches the "clears on reopen" symptom.
+                    // Without this override the whole host app process is killed when it
+                    // happens; survive it, log whether it crashed vs was reclaimed, and
+                    // tear the window down so the user isn't left staring at a dead black
+                    // overlay (reopening the app yields a fresh interaction).
+                    // shortcut: log-and-teardown — auto re-show the intervention here
+                    // once a repro confirms this is the cause.
+                    override fun onRenderProcessGone(
+                        view: android.webkit.WebView?,
+                        detail: android.webkit.RenderProcessGoneDetail?,
+                    ): Boolean {
+                        Log.e(
+                            logTag,
+                            "onRenderProcessGone didCrash=${detail?.didCrash()} priorityAtExit=${detail?.rendererPriorityAtExit()}",
+                        )
+                        win.hideWindow()
+                        return true
+                    }
                 }
                 
                 val jsInterface = InteractionWindowJavaScriptInterface(
