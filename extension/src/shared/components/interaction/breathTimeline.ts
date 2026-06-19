@@ -102,6 +102,18 @@ export const getCueOpacity = (
   clamp01(Math.min(state.phaseElapsedMs, state.phaseRemainingMs) / fadeMs);
 
 /**
+ * Cue opacity with reduced-motion folded in: holds the copy steady at full
+ * opacity when motion is reduced (the sun is frozen then, so a pulsing label
+ * would be out of place), and otherwise cross-fades it via {@link getCueOpacity}.
+ * One place for the choice both breath-paced flows used to inline.
+ */
+export const cueOpacity = (
+  state: BreathState,
+  reducedMotion: boolean,
+  fadeMs: number = CUE_FADE_MS,
+): number => (reducedMotion ? 1 : getCueOpacity(state, fadeMs));
+
+/**
  * Intervention breath pause (strong friction): one full breath with a longer
  * exhale than inhale, and a held top. Calming, and — with three distinct phases
  * — the cue copy and the sun line up on legible beats instead of a single

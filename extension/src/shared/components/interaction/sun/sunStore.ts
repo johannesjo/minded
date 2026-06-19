@@ -114,6 +114,19 @@ const [getRestingSunAnchor, setRestingSunAnchor] =
   });
 
 /**
+ * `Date.now()` at the instant the breath-pause sun actually begins its breath —
+ * published by the sun when its glide lands (see Sun's `onBreathStart`). The
+ * StrongFrictionBreathPause cue reads the same origin so the disc's scale and the
+ * cue copy share one clock and can't drift (GitHub #27). `undefined` means the
+ * breath hasn't started yet (the glide is still in flight, or there is no pause);
+ * cleared back to `undefined` when leaving the breathing phase so a re-opened
+ * pause starts fresh rather than from a stale origin.
+ */
+const [getBreathStartedAt, setBreathStartedAt] = createSignal<
+  number | undefined
+>(undefined);
+
+/**
  * The shell disc accepts pointer input (drag/tap, `pointer-events: auto`) only
  * while its role is the live "interactive" phase AND no hand-off to the post-sun
  * choices is in flight. The second term is what stops the centred, full-size disc
@@ -137,6 +150,8 @@ export {
   setInteractiveSunAnchor,
   getRestingSunAnchor,
   setRestingSunAnchor,
+  getBreathStartedAt,
+  setBreathStartedAt,
 };
 
 /**

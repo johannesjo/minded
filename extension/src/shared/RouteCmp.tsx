@@ -18,6 +18,7 @@ import {
   getSunRole,
   getSunSettleForCurrentRole,
   isShellSunInteractive,
+  setBreathStartedAt,
   setCompanionBottomYPx,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
@@ -137,6 +138,7 @@ const MainWrapper = (props: RouteSectionProps) => {
           <Sun
             variant={getSunVariant()}
             settle={getSunSettleForCurrentRole()}
+            onBreathStart={setBreathStartedAt}
             minimizeWillChange={true}
             isDragEnabled={isSunInteractive()}
             isTapEnabled={isSunInteractive()}
@@ -184,6 +186,8 @@ const MainWrapper = (props: RouteSectionProps) => {
             // The overlay (sky + choices) is gone; send the same disc gliding
             // back to its companion rest in the top bar.
             setSunRole("companion");
+            // Drop any breath origin so the next pause starts from a fresh clock.
+            setBreathStartedAt(undefined);
             setIsShowQuestionOverlay(false);
           }}
         />

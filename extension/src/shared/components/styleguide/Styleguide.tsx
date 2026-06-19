@@ -32,6 +32,7 @@ import {
   sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
+import { setBreathStartedAt } from "@src/shared/components/interaction/sun/sunStore";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
@@ -622,6 +623,13 @@ const SunMorphHarness = (): JSX.Element => {
     requestAnimationFrame(measureRestingAnchor);
   });
 
+  // Mirror the real flow's clear-on-leave: drop the shared breath origin whenever
+  // we're not breathing, so re-entering "breathing" re-glides and publishes a
+  // fresh clock for the cue rather than reading a stale one.
+  createEffect(() => {
+    if (phase() !== "breathing") setBreathStartedAt(undefined);
+  });
+
   const isInteractive = () => phase() === "interactive";
 
   const PHASES: SunPhase[] = [
@@ -685,6 +693,7 @@ const SunMorphHarness = (): JSX.Element => {
               onSkip={() => undefined}
               onFlingAway={() => undefined}
               onDragComplete={() => undefined}
+              onBreathStart={setBreathStartedAt}
               tapThreshold={3}
             />
           </div>

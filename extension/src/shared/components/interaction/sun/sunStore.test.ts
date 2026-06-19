@@ -1,4 +1,8 @@
-import { isShellSunInteractive } from "./sunStore";
+import {
+  getBreathStartedAt,
+  isShellSunInteractive,
+  setBreathStartedAt,
+} from "./sunStore";
 import type { SunPhase } from "./sunSettle";
 
 // Regression guard for the shell-sun hand-off race: when the sun interaction
@@ -31,5 +35,27 @@ describe("isShellSunInteractive", () => {
       expect(isShellSunInteractive(role, false)).toBe(false);
       expect(isShellSunInteractive(role, true)).toBe(false);
     }
+  });
+});
+
+// The shared breath origin (GitHub #27): the sun publishes its breath start here
+// and the breath-pause cue reads the same value, so the disc and the cue can't
+// drift. Its lifecycle is start-on-glide, clear-on-leave-breathing.
+describe("breathStartedAt", () => {
+  afterEach(() => setBreathStartedAt(undefined));
+
+  it("starts unset (the breath has not begun)", () => {
+    expect(getBreathStartedAt()).toBeUndefined();
+  });
+
+  it("carries the published origin once the breath begins", () => {
+    setBreathStartedAt(1_234);
+    expect(getBreathStartedAt()).toBe(1_234);
+  });
+
+  it("clears back to undefined when leaving the breathing phase", () => {
+    setBreathStartedAt(1_234);
+    setBreathStartedAt(undefined);
+    expect(getBreathStartedAt()).toBeUndefined();
   });
 });

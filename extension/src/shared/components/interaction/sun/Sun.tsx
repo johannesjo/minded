@@ -50,6 +50,15 @@ interface SunProps {
   onCompletionStarted?: (started: boolean) => void;
   eventRoot?: ShadowRoot;
   /**
+   * Opt-in: fired with `Date.now()` at the instant a once-through breath actually
+   * begins — i.e. after the glide lands, when `startBreathCycle` captures its
+   * origin. A cue (the strong-friction breath pause) can share this exact
+   * timestamp so its copy and the disc breathe on one clock (GitHub #27). NOT
+   * fired for a looping breath (the surf pulse), whose cue is fraction-based and
+   * never reads the breath model.
+   */
+  onBreathStart?: (startedAt: number) => void;
+  /**
    * Opt-in for a permanently-mounted sun (the shell sun): keep box-shadow out of
    * `will-change` so the browser doesn't hold a compositor-layer hint alive for
    * the app's lifetime (box-shadow can't be GPU-composited anyway). The old
@@ -324,6 +333,10 @@ export const Sun: Component<SunProps> = (props) => {
     const durationMs = breathCycleMs(pattern);
     const peak = restScale + (opts?.peakBonus ?? BREATH_PEAK_BONUS);
     let startTime = Date.now();
+    // Publish the breath's origin so a cue can share this exact clock (GitHub
+    // #27). Only the once-through breath (the pause) does this; the looping surf
+    // pulse re-captures startTime each cycle and has no phase-aligned cue to sync.
+    if (!opts?.loop) props.onBreathStart?.(startTime);
 
     const step = () => {
       const elapsed = Date.now() - startTime;

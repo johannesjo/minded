@@ -2,6 +2,7 @@ import {
   BREATH_PAUSE_PATTERN,
   breathCycleMs,
   breathCycleSeconds,
+  cueOpacity,
   CUE_FADE_MS,
   getBreathStateAt,
   getCueOpacity,
@@ -94,6 +95,21 @@ describe("breathTimeline", () => {
       expect(getCueOpacity(getBreathStateAt(CUE_FADE_MS, PATTERN))).toBeCloseTo(
         1,
       );
+    });
+  });
+
+  describe("cueOpacity", () => {
+    it("holds the copy steady at 1 when motion is reduced", () => {
+      // Even mid-fade (at a phase boundary), reduced motion keeps it fully shown.
+      expect(cueOpacity(getBreathStateAt(0, PATTERN), true)).toBe(1);
+      expect(cueOpacity(getBreathStateAt(4000, PATTERN), true)).toBe(1);
+    });
+
+    it("delegates to getCueOpacity when motion is not reduced", () => {
+      const state = getBreathStateAt(0, PATTERN);
+      expect(cueOpacity(state, false)).toBe(getCueOpacity(state));
+      const mid = getBreathStateAt(2000, PATTERN);
+      expect(cueOpacity(mid, false)).toBe(getCueOpacity(mid));
     });
   });
 });

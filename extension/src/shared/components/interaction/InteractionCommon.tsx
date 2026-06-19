@@ -38,6 +38,7 @@ import {
   getRestingSunAnchor,
   getSunRole,
   registerSunInteraction,
+  setBreathStartedAt,
   setInteractiveSunAnchor,
   setIsSunHandoffInFlight,
   setRestingSunAnchor,
@@ -525,6 +526,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const handleBreathPauseComplete = () => {
     if (isDisposed) return;
     clearIntentSelectionArmTimeout();
+    // Drop the breath origin now the pause is over, so a re-opened pause glides
+    // in and re-publishes a fresh clock rather than reading this stale one.
+    setBreathStartedAt(undefined);
     setShowBreathPause(false);
     setIsIntentSelectionArmed(true);
     setShowIntentSelection(true);
@@ -536,6 +540,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const handleBreathPauseCancel = () => {
     cancelCountdown();
     setPendingIntent(undefined);
+    setBreathStartedAt(undefined);
     setShowBreathPause(false);
     setSunPhase("interactive");
     setIsIntentSelectionArmed(false);
@@ -988,6 +993,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   onCleanup(() => {
     isDisposed = true;
 
+    // Reset the shared breath origin so the next interaction's pause starts from
+    // a fresh clock rather than this one's stale timestamp.
+    setBreathStartedAt(undefined);
+
     interactionEventTarget.removeEventListener(
       "dragProgress",
       handleDragProgress as EventListener,
@@ -1310,6 +1319,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
               settle={getSunSettle()}
+              onBreathStart={setBreathStartedAt}
             />
           </div>
         )}
