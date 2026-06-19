@@ -34,8 +34,8 @@ $aniDur: 1.5s;
     rgba(0, 0, 0, 0.55) calc(var(--hero-reserve) * 0.55),
     #000 var(--hero-reserve)
   );
-  -webkit-mask-image: $hero-fade;
-  mask-image: $hero-fade;
+  // Flat hero band, plus a soft round pocket around the resting sun.
+  @include bottomFadeWithSunPocket($hero-fade);
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     display: grid;
