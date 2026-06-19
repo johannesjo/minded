@@ -52,10 +52,6 @@ const [getSunRole, setSunRole] = createSignal<SunPhase>("companion");
  * the moment the hand-off begins — without touching the role (hence the glide).
  */
 const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
-/** Live center of the disc, pushed by the shell sun each frame. */
-const [getSunPosition, setSunPosition] = createSignal<SunPosition | undefined>(
-  undefined,
-);
 /**
  * Bottom-bar anchor (px from the bottom edge) for the companion rest, computed to
  * mirror the `--companion-bar-center-y` CSS var (RouteCmp.module.scss):
@@ -135,8 +131,6 @@ export {
   setSunRole,
   getIsSunHandoffInFlight,
   setIsSunHandoffInFlight,
-  getSunPosition,
-  setSunPosition,
   getCompanionBottomYPx,
   setCompanionBottomYPx,
   getInteractiveSunAnchor,

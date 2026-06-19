@@ -50,12 +50,6 @@ interface SunProps {
   onCompletionStarted?: (started: boolean) => void;
   eventRoot?: ShadowRoot;
   /**
-   * Opt-in live position sink. When provided (the shell sun), the sun's center
-   * is pushed here every frame *instead of* dispatching the `sunPositionChanged`
-   * window event, so a consumer can read it from a signal off the event bus.
-   */
-  onPositionChange?: (position: SunPosition) => void;
-  /**
    * Opt-in for a permanently-mounted sun (the shell sun): keep box-shadow out of
    * `will-change` so the browser doesn't hold a compositor-layer hint alive for
    * the app's lifetime (box-shadow can't be GPU-composited anyway). The old
@@ -151,8 +145,6 @@ export const Sun: Component<SunProps> = (props) => {
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
   let longPressTimer: number | null = null;
-  let resizeHandler: (() => void) | null = null;
-  let initialPositionTimeouts: number[] = [];
   let settleFrame: number | undefined;
 
   // Store event handler references for cleanup
@@ -188,20 +180,7 @@ export const Sun: Component<SunProps> = (props) => {
         setScale(props.settle.scale ?? DEFAULT_REST_SCALE);
         requestAnimationFrame(() => setIsAnimating(false));
       }
-
-      const dispatchAfterLayout = () => {
-        requestAnimationFrame(() => dispatchSunPosition());
-      };
-      dispatchAfterLayout();
-      initialPositionTimeouts = [120, 360, 720].map((delay) =>
-        window.setTimeout(dispatchAfterLayout, delay),
-      );
     }
-
-    resizeHandler = () => {
-      requestAnimationFrame(() => dispatchSunPosition());
-    };
-    window.addEventListener("resize", resizeHandler);
 
     setupDragHandlers();
   });
@@ -217,12 +196,6 @@ export const Sun: Component<SunProps> = (props) => {
     if (longPressTimer) {
       clearTimeout(longPressTimer);
     }
-    if (resizeHandler) {
-      window.removeEventListener("resize", resizeHandler);
-    }
-    initialPositionTimeouts.forEach((timeoutId) => {
-      window.clearTimeout(timeoutId);
-    });
 
     // Clean up event listeners
     if (sunEl) {
@@ -253,18 +226,6 @@ export const Sun: Component<SunProps> = (props) => {
       x: rect.left + rect.width / 2 - currentOffset.x + offset.x,
       y: rect.top + rect.height / 2 - currentOffset.y + offset.y,
     };
-  };
-
-  const dispatchSunPosition = (position = getSunCenterForOffset()) => {
-    if (!position) return;
-
-    if (props.onPositionChange) {
-      // Shell sun: position flows through the store; skip the window event so we
-      // don't double-drive consumers (and no global event leaks per frame).
-      props.onPositionChange(position);
-    } else {
-      dispatchInteractionEvent("sunPositionChanged", { sunPosition: position });
-    }
   };
 
   // --- Post-interaction settle: the sun stays on screen and transforms across
@@ -316,8 +277,8 @@ export const Sun: Component<SunProps> = (props) => {
     return { x: anchorX - rest.x, y: anchorY - rest.y };
   };
 
-  // Ease the offset and scale toward a target, dispatching the sun's position
-  // each frame so the background's warm light glides along with it.
+  // Ease the offset and scale toward a target. The disc's warm glow rides the
+  // disc transform (Sun.scss `.sun-glow`), so nothing needs the per-frame center.
   const animateOffsetScaleTo = (
     targetOffset: SunPosition,
     targetScale: number,
@@ -327,9 +288,6 @@ export const Sun: Component<SunProps> = (props) => {
     setIsAnimating(true); // suppress the CSS transform-transition while JS drives it
     const startOffset = getDragOffset();
     const startScale = getScale();
-    // The rest center is invariant during the glide — read the rect once here
-    // rather than every frame (the per-frame read forced a layout reflow).
-    const baseCenter = getSunCenterForOffset({ x: 0, y: 0 });
     const startTime = Date.now();
 
     const step = () => {
@@ -341,12 +299,6 @@ export const Sun: Component<SunProps> = (props) => {
       };
       setDragOffset(offset);
       setScale(startScale + (targetScale - startScale) * eased);
-      if (baseCenter) {
-        dispatchSunPosition({
-          x: baseCenter.x + offset.x,
-          y: baseCenter.y + offset.y,
-        });
-      }
 
       if (progress < 1) {
         settleFrame = requestAnimationFrame(step);
@@ -412,7 +364,6 @@ export const Sun: Component<SunProps> = (props) => {
       cancelSettleFrame();
       setDragOffset(target);
       setScale(restScale);
-      dispatchSunPosition(getSunCenterForOffset(target));
       setIsAnimating(false);
       return;
     }
@@ -445,7 +396,6 @@ export const Sun: Component<SunProps> = (props) => {
     if (prefersReducedMotion()) {
       setDragOffset({ x: 0, y: 0 });
       setScale(1);
-      dispatchSunPosition(getSunCenterForOffset({ x: 0, y: 0 }));
       setIsAnimating(false);
       return;
     }
@@ -634,16 +584,10 @@ export const Sun: Component<SunProps> = (props) => {
       // Only emit drag progress events after drag intent is confirmed
       if (isDragIntent) {
         const intensity = getDragProgress();
-        const sunPosition = getSunCenterForOffset({
-          x: rest.x + deltaX,
-          y: rest.y + deltaY,
-        });
-
         dispatchInteractionEvent("dragProgress", {
           direction: dragDirection,
           intensity,
           isDragging: true,
-          sunPosition,
         });
       }
 
@@ -709,7 +653,6 @@ export const Sun: Component<SunProps> = (props) => {
         direction: "none",
         intensity: 0,
         isDragging: false,
-        sunPosition: getSunCenterForOffset(offset),
       });
 
       const releaseAction = getSunReleaseAction({
@@ -725,7 +668,6 @@ export const Sun: Component<SunProps> = (props) => {
           intensity: 0,
           isDragging: false,
           resetToInitial: true,
-          sunPosition: getSunCenterForOffset(rest),
         });
         animateSnapBack();
       } else if (releaseAction.type === "fling") {
@@ -825,9 +767,7 @@ export const Sun: Component<SunProps> = (props) => {
         const currentY =
           rest.y + (startOffset.y - rest.y) * (1 - easedProgress);
         const currentOffset = { x: currentX, y: currentY };
-        const sunPosition = getSunCenterForOffset(currentOffset);
         setDragOffset(currentOffset);
-        dispatchSunPosition(sunPosition);
 
         const currentScale = startScale + (1 - startScale) * easedProgress;
         setScale(currentScale);
@@ -876,9 +816,7 @@ export const Sun: Component<SunProps> = (props) => {
         const currentY =
           startOffset.y + (targetY - startOffset.y) * easedProgress;
         const currentOffset = { x: startOffset.x, y: currentY };
-        const sunPosition = getSunCenterForOffset(currentOffset);
         setDragOffset(currentOffset);
-        dispatchSunPosition(sunPosition);
 
         const currentScale =
           startScale + (easing.targetScale - startScale) * easedProgress;
@@ -951,9 +889,7 @@ export const Sun: Component<SunProps> = (props) => {
         );
 
         // Apply state to UI
-        const sunPosition = getSunCenterForOffset(physicsState.position);
         setDragOffset(physicsState.position);
-        dispatchSunPosition(sunPosition);
         setScale(physicsState.scale);
         setOpacity(physicsState.opacity);
         setRotation(physicsState.rotation);

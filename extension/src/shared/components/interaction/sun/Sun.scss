@@ -136,6 +136,12 @@
       display: none;
     }
 
+    // The warm wash is the sun's light; the night scene stays cool, so the moon
+    // carries only its cool ::after halo (below), no warm bloom.
+    & > .sun-glow {
+      display: none;
+    }
+
     // Cool resting halo for the moon (mirrors the sun's ::after).
     &::after {
       box-shadow:

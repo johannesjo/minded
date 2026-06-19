@@ -36,7 +36,6 @@ import {
 } from "@src/shared/components/interaction/sun/sunSettle";
 import {
   getRestingSunAnchor,
-  getSunPosition,
   getSunRole,
   registerSunInteraction,
   setInteractiveSunAnchor,
@@ -1008,9 +1007,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         dragThreshold={0.3}
         shadowRoot={props.shadowRoot}
         isSunGradientAttached={getIsInteractionSunShown()}
-        // Shell sun lives outside this tree, so read its position from the store
-        // instead of the window event it no longer dispatches.
-        positionSource={props.useShellSun ? getSunPosition : undefined}
       />
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
