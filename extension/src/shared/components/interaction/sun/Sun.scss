@@ -80,6 +80,27 @@
     will-change: opacity;
   }
 
+  // The broad warm wash the sun casts on the scene — the light source's bloom,
+  // formerly a viewport-fixed background layer (BackgroundTransition) whose
+  // center JS had to keep chasing the disc. Living inside the disc, it rides the
+  // exact same transform as the face, so the two can never sit apart. Sits behind
+  // the face and the ::after rim halo. The inset/stops are tuned to roughly
+  // match the old wash's reach and are safe to nudge purely by eye.
+  & > .sun-glow {
+    position: absolute;
+    inset: -175%; // grows the wash to ~4.5× the disc, centered on it
+    z-index: -2;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 246, 0.84) 0%,
+      rgba(255, 240, 139, 0.55) 14%,
+      rgba(248, 203, 83, 0.2) 30%,
+      transparent 52%
+    );
+  }
+
   &.dragging {
     cursor: grabbing;
     transition: none; /* Instant update during drag */
@@ -112,6 +133,12 @@
         rgba(190, 210, 255, calc(0.3 * var(--glow-intensity)));
 
     &::before {
+      display: none;
+    }
+
+    // The warm wash is the sun's light; the night scene stays cool, so the moon
+    // carries only its cool ::after halo (below), no warm bloom.
+    & > .sun-glow {
       display: none;
     }
 

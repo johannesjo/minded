@@ -1,35 +1,17 @@
-import {
-  Component,
-  createEffect,
-  createSignal,
-  onCleanup,
-  onMount,
-} from "solid-js";
+import { Component, createSignal, onCleanup, onMount } from "solid-js";
 import Stars from "./Stars";
-
-type SunPosition = {
-  x: number;
-  y: number;
-};
 
 type DragProgressEventDetail = {
   direction: "up" | "down" | "none";
   intensity: number;
   isDragging: boolean;
   resetToInitial?: boolean;
-  sunPosition?: SunPosition;
 };
 
 interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
   shadowRoot?: ShadowRoot;
   isSunGradientAttached?: boolean;
-  /**
-   * Opt-in: read the sun's live center from a signal instead of the
-   * `sunPositionChanged` event (the shell sun pushes its position to the
-   * sunStore). When set, the event listener is skipped.
-   */
-  positionSource?: () => SunPosition | undefined;
 }
 
 export const BackgroundTransition: Component<BackgroundTransitionProps> = (
@@ -39,8 +21,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getShowStars, setShowStars] = createSignal(false);
   const [getIsDarkMode, setIsDarkMode] = createSignal(false);
-  const [getSunGradientPosition, setSunGradientPosition] =
-    createSignal<SunPosition>();
 
   // const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
 
@@ -55,38 +35,9 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     setIsDarkMode(isDark);
   };
 
-  const updateSunGradientPosition = (position?: SunPosition) => {
-    if (!position) return;
-
-    setSunGradientPosition({
-      x: Math.round(position.x),
-      y: Math.round(position.y),
-    });
-  };
-
-  const getSunGradientStyle = () => {
-    const position = getSunGradientPosition();
-
-    return {
-      "--sun-gradient-x": position ? `${position.x}px` : "50vw",
-      "--sun-gradient-y": position ? `${position.y}px` : "58vh",
-    };
-  };
-
-  // The warm sun-glow is anchored to the sun's live center. Until the sun has
-  // reported a position we have no real anchor, and painting the glow at the
-  // placeholder default (50vw/58vh) drops a second, misplaced "sun" — a small
-  // haloed disc above the real one — for the first frames of each intervention.
-  // Hold the glow back until we know where the sun actually is; it then blooms in
-  // directly under the disc instead of jumping down onto it.
-  const getIsSunGradientAttached = () =>
-    (props.isSunGradientAttached ?? true) && !!getSunGradientPosition();
-
-  // Shell path: track the sun's center from the signal. No-op when the prop is
-  // absent (every other runtime still gets position via the event below).
-  createEffect(() => {
-    if (props.positionSource) updateSunGradientPosition(props.positionSource());
-  });
+  // The warm glow now rides the sun disc itself (Sun.scss `.sun-glow`), so this
+  // layer only adds the static scene vignette — no sun position to track.
+  const getIsSunGradientAttached = () => props.isSunGradientAttached ?? true;
 
   onMount(() => {
     // Check dark mode after a delay
@@ -94,10 +45,8 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
     // Listen for drag progress events from Sun component
     const handleDragProgress = (event: CustomEvent) => {
-      const { direction, intensity, isDragging, resetToInitial, sunPosition } =
+      const { direction, intensity, isDragging, resetToInitial } =
         event.detail as DragProgressEventDetail;
-
-      updateSunGradientPosition(sunPosition);
 
       if (resetToInitial) {
         animateToDefault();
@@ -116,11 +65,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       animateToCompletion(direction);
     };
 
-    const handleSunPositionChanged = (event: CustomEvent) => {
-      const { sunPosition } = event.detail as { sunPosition?: SunPosition };
-      updateSunGradientPosition(sunPosition);
-    };
-
     const eventTarget = props.shadowRoot ?? window;
 
     eventTarget.addEventListener(
@@ -131,13 +75,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       "startBackgroundAnimation",
       handleStartAnimation as EventListener,
     );
-    // Skipped on the shell path, where position comes from `positionSource`.
-    if (!props.positionSource) {
-      eventTarget.addEventListener(
-        "sunPositionChanged",
-        handleSunPositionChanged as EventListener,
-      );
-    }
 
     onCleanup(() => {
       eventTarget.removeEventListener(
@@ -147,10 +84,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       eventTarget.removeEventListener(
         "startBackgroundAnimation",
         handleStartAnimation as EventListener,
-      );
-      eventTarget.removeEventListener(
-        "sunPositionChanged",
-        handleSunPositionChanged as EventListener,
       );
     });
   });
@@ -232,7 +165,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
           animating: getIsAnimating(),
           "sun-gradient-attached": getIsSunGradientAttached(),
         }}
-        style={getSunGradientStyle()}
       />
       <div
         class="background-transition background-overlay background-blue"
@@ -246,7 +178,6 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
           "sun-gradient-attached": getIsSunGradientAttached(),
         }}
         style={{
-          ...getSunGradientStyle(),
           opacity: Math.max(0, getProgress() * 0.8),
         }}
       />

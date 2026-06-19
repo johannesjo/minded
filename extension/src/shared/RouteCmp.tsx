@@ -19,7 +19,6 @@ import {
   getSunSettleForCurrentRole,
   isShellSunInteractive,
   setCompanionBottomYPx,
-  setSunPosition,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
@@ -138,7 +137,6 @@ const MainWrapper = (props: RouteSectionProps) => {
           <Sun
             variant={getSunVariant()}
             settle={getSunSettleForCurrentRole()}
-            onPositionChange={setSunPosition}
             minimizeWillChange={true}
             isDragEnabled={isSunInteractive()}
             isTapEnabled={isSunInteractive()}

@@ -15,32 +15,24 @@
     );
   }
 
+  // The warm sun glow now rides the disc itself (Sun.scss `.sun-glow`), so it
+  // can never drift from the sun the way this background-layer wash did. What
+  // stays here is the static scene depth: a faint cool vignette over the pastel.
   &.sun-gradient-attached {
-    --sun-gradient-x: 50vw;
-    --sun-gradient-y: 54vh;
-
     background:
-      radial-gradient(
-        circle at var(--sun-gradient-x) var(--sun-gradient-y),
-        rgba(255, 255, 246, 0.84) 0,
-        rgba(255, 240, 139, 0.62) 5vmin,
-        rgba(248, 203, 83, 0.25) 15vmin,
-        transparent 28vmin
-      ),
       // Faint vignette: deepen the corners with a cool atmospheric tint so the
       // flat pastel reads with the depth the dark scene gets for free from its
-      // baked-in radial. Sits below the sun glow so the bright core stays clean,
-      // and only here — the dashboard light gradient is deliberately static.
+      // baked-in radial. Only here — the dashboard light gradient is static.
+
       radial-gradient(
-          ellipse 124% 110% at 50% 44%,
-          transparent 46%,
-          rgba(56, 84, 134, 0.16) 100%
-        ),
+        ellipse 124% 110% at 50% 44%,
+        transparent 46%,
+        rgba(56, 84, 134, 0.16) 100%
+      ),
       var(
         --background-gradient,
         linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
       );
-    will-change: background;
   }
 
   &.background-overlay {
@@ -66,25 +58,9 @@
       var(--bg-transition-sunset-horizon, #ffd36a) 78%,
       var(--bg-transition-sunset-bottom, #ef6f63) 100%
     );
-
-    &.sun-gradient-attached {
-      background:
-        radial-gradient(
-          circle at var(--sun-gradient-x) var(--sun-gradient-y),
-          rgba(255, 248, 207, 0.9) 0,
-          rgba(255, 211, 106, 0.54) 8vmin,
-          rgba(242, 118, 70, 0.2) 18vmin,
-          transparent 32vmin
-        ),
-        linear-gradient(
-          to bottom,
-          var(--bg-transition-sunset-top, #4f78bb) 0%,
-          var(--bg-transition-sunset-top, #4f78bb) 14%,
-          var(--bg-transition-sunset-mid, #f49f73) 54%,
-          var(--bg-transition-sunset-horizon, #ffd36a) 78%,
-          var(--bg-transition-sunset-bottom, #ef6f63) 100%
-        );
-    }
+    // No sun-gradient-attached override here anymore: the sun's warm glow rides
+    // the disc (Sun.scss `.sun-glow`) and sinks with it into the sunset, so the
+    // sky overlay just needs its plain gradient.
   }
 
   &.animating {
