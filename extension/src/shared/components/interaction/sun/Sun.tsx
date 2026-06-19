@@ -361,8 +361,29 @@ export const Sun: Component<SunProps> = (props) => {
     settleFrame = requestAnimationFrame(step);
   };
 
+  // The shell sun is permanently mounted and reused for every interaction, so a
+  // finished gesture's terminal state (set in handleEnd/long-press and never
+  // otherwise cleared) would otherwise persist into the next one: the disc stays
+  // "completion started" — its drag/tap handlers early-return, so it's frozen and
+  // can't be dragged down to ground again — and the completion animation leaves it
+  // faded/rotated. Clear all of that when it glides back to its idle companion
+  // home, the single point every interaction returns through, so the next one
+  // starts from a clean, fully interactive disc. Self-owned suns (interventions)
+  // unmount instead of returning home, so they never hit this and are unaffected.
+  const resetTerminalStateForReuse = () => {
+    setIsCompletionStarted(false);
+    setOpacity(1);
+    setRotation(0);
+    setGlowIntensity(0);
+    setColorTemp(0);
+    setIsBeyondThreshold(false);
+    setDragProgress(0);
+    setDragDirection("none");
+  };
+
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+    if (isCompanionSettle(settle)) resetTerminalStateForReuse();
     const restScale = settle.scale ?? DEFAULT_REST_SCALE;
     const target = getAnchorOffset(settle);
     // This anchor is now the disc's rest, so a drag release snaps back here
