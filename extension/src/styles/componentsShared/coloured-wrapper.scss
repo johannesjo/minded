@@ -26,13 +26,16 @@
   @include grainOverlay;
 
   // Time chosen → the overlay hands off to the persistent Little Sun. We fade
-  // the sky (this wrapper's gradient, the grain, and the BackgroundTransition
-  // layers) to reveal the page beneath, while leaving the sun untouched so it
-  // can glide into the corner fully opaque. Fading the wrapper's own opacity
-  // instead would take the sun down with it.
+  // the sky (this wrapper's gradient, the grain ::after, the Android backstop
+  // gradient ::before, and the BackgroundTransition layers) to reveal the page
+  // beneath, while leaving the sun untouched so it can glide into the corner
+  // fully opaque. Fading the wrapper's own opacity instead would take the sun
+  // down with it. The ::before fade is a no-op on web (no ::before there) but
+  // is what dissolves Android's backstop gradient (indexInteractionAndroid.scss).
   &.is-departing {
     background: transparent;
 
+    &::before,
     &::after {
       opacity: 0;
       transition: opacity 1000ms ease-out;

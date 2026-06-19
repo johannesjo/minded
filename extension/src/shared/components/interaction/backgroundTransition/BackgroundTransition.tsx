@@ -35,8 +35,10 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     setIsDarkMode(isDark);
   };
 
-  // The warm glow now rides the sun disc itself (Sun.scss `.sun-glow`), so this
-  // layer only adds the static scene vignette — no sun position to track.
+  // The warm glow now rides the sun disc itself (Sun.scss `.sun-glow`), so in
+  // light mode this layer just shows the plain gradient (no vignette, no sun
+  // position to track). The class still drives the dark-mode gradient/sunset
+  // overrides in BackgroundTransition.scss, so it stays attached by default.
   const getIsSunGradientAttached = () => props.isSunGradientAttached ?? true;
 
   onMount(() => {
