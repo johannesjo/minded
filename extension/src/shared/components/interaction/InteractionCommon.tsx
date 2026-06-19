@@ -1329,11 +1329,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <div class="back-button-wrapper">
           <button
             type="button"
-            class="btnTxt"
+            class="btnIcoOnly"
             onClick={() => props.onSkip()}
             aria-label="Go back"
           >
-            <Ico name="arrowBack" /> Back
+            <Ico name="arrowBack" />
           </button>
         </div>
       )}
