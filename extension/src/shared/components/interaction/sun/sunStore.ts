@@ -172,6 +172,8 @@ export const getSunSettleForCurrentRole = (): SunSettle | null => {
     const anchor = getInteractiveSunAnchor();
     return anchor ? sunInteractiveSettle(anchor) : null;
   }
+  // Surfing (the meditation) uses a fixed upper-third position, not the content
+  // placeholder, so it falls through to getSunSettleForPhase below.
   // Resting: tuck under the measured choices block; fall back to the static
   // rest target until the choices are measured (or when none are showing).
   if (role === "resting") {

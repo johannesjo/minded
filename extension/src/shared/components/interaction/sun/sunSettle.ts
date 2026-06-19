@@ -13,6 +13,7 @@ export type SunPhase =
   | "companion"
   | "interactive"
   | "breathing"
+  | "surfing"
   | "resting"
   | "departing";
 
@@ -38,6 +39,28 @@ export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
   scale: 0.82,
   breathe: true,
   breathSeconds,
+});
+
+/**
+ * Urge-surfing wave: ride the swell on the interactive disc itself. Breathe in
+ * place on the measured interactive anchor (full size, no reposition) so the one
+ * sun the user always sees does the rise-and-fall over the whole wave, rather
+ * than a second disc being drawn over it.
+ */
+export const sunSurfSettle = (): SunSettle => ({
+  // The meditation sun sits just above viewport centre; the cue is dropped to the
+  // bottom of its box just below, so the disc + halo and the guidance read as one
+  // group straddling the centre. A fixed viewport ratio (not the content
+  // placeholder) keeps its position predictable.
+  anchorYRatio: 0.38,
+  scale: 1,
+  breathe: true,
+  // A gentle, continuous pulse for the meditation: every few seconds the disc
+  // eases inward and back. Negative so it contracts (breathes in) rather than
+  // swelling out.
+  breathSeconds: 5,
+  breathLoop: true,
+  breathPeakBonus: -0.13,
 });
 
 /**
@@ -169,6 +192,8 @@ export const getSunSettleForPhase = (
       return sunCompanionSettle(companionBottomYPx);
     case "breathing":
       return sunBreatheSettle(breathSeconds);
+    case "surfing":
+      return sunSurfSettle();
     case "resting":
       return SUN_REST_SETTLE;
     case "departing":

@@ -23,6 +23,7 @@ describe("isShellSunInteractive", () => {
     const others: SunPhase[] = [
       "companion",
       "breathing",
+      "surfing",
       "resting",
       "departing",
     ];

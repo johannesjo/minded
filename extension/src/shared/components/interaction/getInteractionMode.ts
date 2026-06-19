@@ -42,6 +42,10 @@ const PATTERN_INSIGHT_PROBABILITY = 1 / 3;
 // Share of strong-friction Android interventions that ask for a screen-off
 // minute (the rest fall through to the existing strong-friction prompts).
 const SCREEN_OFF_PROBABILITY = 1 / 3;
+// Share of (remaining) strong-friction interventions that offer urge surfing.
+// Strong friction means the pull is highest — exactly when riding the urge out
+// is the right practice. Cross-platform, unlike the Android-only screen-off.
+const URGE_SURFING_PROBABILITY = 1 / 3;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -56,7 +60,8 @@ export type InteractionMode =
   | "EMOTION_LABELING"
   | "SHOW_REASON"
   | "PATTERN_INSIGHT"
-  | "SCREEN_OFF";
+  | "SCREEN_OFF"
+  | "URGE_SURFING";
 
 export type InteractionModeReason =
   | "few_answers_question"
@@ -82,6 +87,7 @@ export type InteractionModeReason =
   | "action_advice_sample"
   | "emoji_checkin_sample"
   | "screen_off_strong"
+  | "urge_surfing_strong"
   | "fallback_question";
 
 export interface InteractionModeDecision {
@@ -209,6 +215,10 @@ export const getInteractionModeDecision = (
       chance(SCREEN_OFF_PROBABILITY, random)
     ) {
       return decision("SCREEN_OFF", "screen_off_strong", frictionLevel);
+    }
+
+    if (isActionAdviceEligible && chance(URGE_SURFING_PROBABILITY, random)) {
+      return decision("URGE_SURFING", "urge_surfing_strong", frictionLevel);
     }
 
     if (patternInsight) {

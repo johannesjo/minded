@@ -41,6 +41,15 @@
   &.isInteractive :global(.minded-sun) {
     pointer-events: auto;
   }
+
+  // During any intervention (anything but the resting companion) hold the disc's
+  // idle float still: it would wander the disc's centre ±4px off the point the
+  // background glow is anchored to, so the two visibly drift apart. The ::after
+  // halo breath (opacity only, not positional) keeps the gentle pulse going.
+  &.isIntervention :global(.minded-sun) {
+    animation: none;
+    translate: none;
+  }
 }
 
 // The sun's untransformed base is viewport centre (the flex-centred layer). Every

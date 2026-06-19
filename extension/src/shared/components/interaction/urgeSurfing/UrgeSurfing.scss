@@ -1,0 +1,88 @@
+// Global interaction styles (injected via _sharedGlobalInteraction.scss). A CSS
+// module would not reach the interaction's render context, so everything is
+// scoped under the root `.urge-surfing` class instead.
+.urge-surfing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  color: var(--c-fg-full-emphasis);
+  // Cross-screen fade between intro → rate → surf → after → reflection. The
+  // opacity itself is driven from the component (getScreenOpacity).
+  transition: opacity 240ms ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  // Meditation screen: the sun sits just above centre (see sunSurfSettle), so
+  // drop the cue to the very bottom of its box — just below the disc and its halo
+  // — so the two read as one group around the centre. No bottom padding here (that
+  // gap is only for the rating screens, whose sun rests below the content).
+  &.is-surf {
+    justify-content: flex-end;
+    padding-bottom: 0;
+  }
+
+  // Hold a constant height across every screen so the sun's slot (the
+  // InteractionCommon placeholder that follows this content) never shifts as the
+  // copy changes — that shift is what made the disc jump between screens (and what
+  // desynced its background glow, which tracks the disc's position). For this to
+  // hold, every screen's content must stay under min-height; the heading-padding
+  // trim and the wider sub below keep the tallest screen (intro) comfortably under
+  // it. box-sizing is border-box, so this includes the padding-bottom.
+  min-height: 320px;
+  // Push the sun's slot down so the disc, and its soft glow halo, sit clearly
+  // below the copy above instead of crowding it.
+  padding-bottom: 52px;
+
+  // The shared interaction heading carries 64px of its own padding — far more than
+  // these compact screens need, and enough to push intro past min-height (which
+  // reintroduces the jump). The 18px flex gap already spaces the heading; trim its
+  // padding so every screen stays well under the fixed box.
+  .interaction-heading {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .urge-surfing-sub {
+    margin: 0 0 4px;
+    opacity: 0.76;
+    // Wide enough to keep the sub to ~2 lines, so intro stays under min-height.
+    max-width: 42ch;
+  }
+
+  .urge-surfing-cue {
+    margin: 0;
+    min-height: 48px;
+    // Give the guidance plenty of horizontal room where the viewport allows,
+    // capped only so it never overflows narrow screens.
+    max-width: min(54ch, 92vw);
+    // A touch larger than the body default for the meditation guidance.
+    font-size: calc(var(--fz-m) + 2px);
+    // Opacity and its slow, soft crossfade transition are driven inline from the
+    // component (CUE_FADE_MS) so the cues ease into one another rather than snap.
+  }
+
+  // The intensity buttons (btnToggleSelectSmall) carry their own margins, so the
+  // row just centres and wraps; the shared max-width keeps the row and its end
+  // labels ("barely"/"intense") aligned.
+  .urge-surfing-scale {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 260px;
+  }
+
+  .urge-surfing-scale-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 260px;
+    margin-top: 2px;
+    font-size: 13px;
+    opacity: 0.6;
+  }
+}

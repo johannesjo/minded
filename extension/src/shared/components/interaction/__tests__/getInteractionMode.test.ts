@@ -273,6 +273,9 @@ describe("getInteractionMode", () => {
     });
 
     it("never offers a screen-off minute on non-Android platforms", () => {
+      // With every roll at 0 the screen-off gate is the only thing that could
+      // fire it; on web it is skipped, falling through to the cross-platform
+      // urge-surfing practice instead.
       const decision = decide(
         baseSyncData({
           sunTaps: { [TODAY]: 5 },
@@ -281,11 +284,61 @@ describe("getInteractionMode", () => {
         { isMainView: false, random: () => 0 },
       );
 
+      expect(decision.mode).not.toBe("SCREEN_OFF");
       expect(decision).toEqual({
+        mode: "URGE_SURFING",
+        reason: "urge_surfing_strong",
+        frictionLevel: "strong",
+      });
+    });
+  });
+
+  describe("urge surfing (strong friction, any platform)", () => {
+    const strongWeb = (options: InteractionModeDecisionOptions = {}) =>
+      decide(
+        baseSyncData({
+          sunTaps: { [TODAY]: 5 },
+          sunTapTimestamps: RECENT_SUN_TAPS,
+        }),
+        { isMainView: false, ...options },
+      );
+
+    it("offers urge surfing when the probability roll passes", () => {
+      expect(strongWeb({ random: () => 0 })).toEqual({
+        mode: "URGE_SURFING",
+        reason: "urge_surfing_strong",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("offers it on Android once the screen-off roll has failed", () => {
+      // First roll fails the screen-off gate, second roll passes urge surfing.
+      expect(
+        strongWeb({
+          isAndroid: true,
+          platform: "android",
+          random: sequenceRandom([0.99, 0]),
+        }),
+      ).toEqual({
+        mode: "URGE_SURFING",
+        reason: "urge_surfing_strong",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("falls through to the usual strong-friction prompt when the roll fails", () => {
+      expect(strongWeb({ random: () => 0.99 })).toEqual({
         mode: "QUESTION",
         reason: "strong_friction_question",
         frictionLevel: "strong",
       });
+    });
+
+    it("does not fire outside waking hours", () => {
+      const lateNight = new Date("2026-05-11T03:00:00").getTime();
+      expect(
+        strongWeb({ clock: () => lateNight, random: () => 0 }).mode,
+      ).not.toBe("URGE_SURFING");
     });
   });
 

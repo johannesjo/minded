@@ -180,6 +180,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // styleguide harness so the two can't drift.
   const [getLocalSunPhase, setLocalSunPhase] =
     createSignal<SunPhase>("interactive");
+  // When a mode (urge surfing) rides its wave on the real sun, it asks for a
+  // breath this many seconds long. Overrides the friction-derived breath-pause
+  // length so the one disc can swell slowly through the whole wave instead of a
+  // second sun being drawn over it. Undefined = the normal breath-pause length.
+  const [getSurfBreathSeconds, setSurfBreathSeconds] = createSignal<
+    number | undefined
+  >(undefined);
+  const getActiveBreathSeconds = (): number =>
+    getSurfBreathSeconds() ?? getPostSunPauseSeconds(getFrictionLevel());
 
   // With the shell sun (new-tab app shell) the phase IS the shared store role,
   // so the single persistent disc morphs through the flow; otherwise it's this
@@ -191,8 +200,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (props.useShellSun) {
       // The breathing settle needs the pause length; feed it to the store before
       // the role flip so the shell sun glides to the right anchor.
-      if (phase === "breathing") {
-        setBreathSeconds(getPostSunPauseSeconds(getFrictionLevel()));
+      if (phase === "breathing" || phase === "surfing") {
+        setBreathSeconds(getActiveBreathSeconds());
       }
       setSunRole(phase);
     } else {
@@ -210,7 +219,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
     return getSunSettleForPhase(
       getSunPhase(),
-      getPostSunPauseSeconds(getFrictionLevel()),
+      getActiveBreathSeconds(),
       // companionBottomYPx is only read for the "companion" phase, which the
       // local (non-shell) sun never enters — keep the default.
       undefined,
@@ -223,6 +232,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         : LITTLE_SUN_CORNER_PX_WEB,
     );
   };
+  // A mode rides its own animation on the real sun: glide the single disc into a
+  // slow breath that lasts `seconds`, so the wave reads as the same sun the user
+  // always sees rather than a second one drawn on top. The breath cycle (Sun.tsx)
+  // runs once over this duration; the mode ends it when its wave is done.
+  const startSunWave = (seconds: number) => {
+    setSurfBreathSeconds(seconds);
+    setSunPhase("surfing");
+  };
+  const endSunWave = () => {
+    setSunPhase("interactive");
+    setSurfBreathSeconds(undefined);
+  };
+
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
@@ -1143,6 +1165,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         >
           <InteractionModeSwitch
             mode={getMode()}
+            frictionLevel={getFrictionLevel()}
             syncData={getSyncDataI()}
             initialQuestion={getInitialQuestion()}
             answers={getAnswers()}
@@ -1151,6 +1174,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
             onLeaveNow={props.onFlingAway}
+            onSunWaveStart={startSunWave}
+            onSunWaveEnd={endSunWave}
             alternativeToReplace={getAlternativeToReplace()}
             onAddBetterAlternative={(alternative) => {
               transitionToMode("SET_ALTERNATIVE", () => {

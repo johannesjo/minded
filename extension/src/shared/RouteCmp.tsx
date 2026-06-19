@@ -128,6 +128,10 @@ const MainWrapper = (props: RouteSectionProps) => {
         class={styles.shellSunLayer}
         classList={{
           [styles.isInteractive]: isSunInteractive(),
+          // Any non-companion role is a live intervention: hold the idle float
+          // still there so the disc's centre stays exactly on the point the
+          // background glow tracks (see the SCSS note).
+          [styles.isIntervention]: getSunRole() !== "companion",
         }}
       >
         <div class={styles.shellSunSlot}>
