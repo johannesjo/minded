@@ -7,6 +7,7 @@ import {
   WIND_DOWN_PATTERN,
   type BreathPhaseName,
 } from "@src/shared/components/interaction/breathTimeline";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 const PHASE_LABEL: Record<BreathPhaseName, string> = {
   inhale: "Breathing in",
@@ -58,16 +59,22 @@ const BreathingExercise = () => {
     tick();
   };
 
+  // Hold the copy steady (no fade) before the exercise starts and when the user
+  // asked for reduced motion — the sun is frozen in that mode, so a pulsing
+  // label would be out of place.
+  const cueOpacity = () =>
+    isRunning() && !prefersReducedMotion() ? cueFade() : 1;
+
   return (
     <div class={styles.BreathingExercise}>
       {/* The wind-down is a sleep flow, so it re-uses the same moon as the
           rest of it (the "Sleep well" screen) — not a time-of-day sun/moon. */}
       <BreathSun fill={isRunning() ? fill() : 0} size="large" variant="moon" />
       <div class={styles.copy}>
-        <h1 style={{ opacity: isRunning() ? cueFade() : 1 }}>
+        <h1 style={{ opacity: cueOpacity() }}>
           {isRunning() ? PHASE_LABEL[phase()] : "Ready"}
         </h1>
-        <p style={{ opacity: isRunning() ? cueFade() : 1 }}>
+        <p style={{ opacity: cueOpacity() }}>
           {isRunning() ? PHASE_CUE[phase()] : "4 - 7 - 8 breathing"}
         </p>
         <strong>{isRunning() ? secondsLeft() : ""}</strong>

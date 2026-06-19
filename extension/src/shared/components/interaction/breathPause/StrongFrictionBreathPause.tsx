@@ -11,6 +11,7 @@ import {
   getCueOpacity,
   type BreathPhaseName,
 } from "@src/shared/components/interaction/breathTimeline";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 interface StrongFrictionBreathPauseProps {
   seconds: number;
   onComplete: () => void;
@@ -39,7 +40,11 @@ export const StrongFrictionBreathPause: Component<
     getBreathStateAt(getElapsedMs(), BREATH_PAUSE_PATTERN),
   );
   const getCue = createMemo(() => PHASE_CUE[getBreath().phase]);
-  const getCueFade = createMemo(() => getCueOpacity(getBreath()));
+  // Hold the cue steady (no fade) when the user asked for reduced motion — the
+  // sun is already frozen in that mode, so a pulsing label would be out of place.
+  const getCueFade = createMemo(() =>
+    prefersReducedMotion() ? 1 : getCueOpacity(getBreath()),
+  );
 
   const clearTimers = () => {
     if (frame) window.cancelAnimationFrame(frame);
