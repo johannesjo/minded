@@ -51,6 +51,61 @@ describe("pattern insights", () => {
     ).toBeUndefined();
   });
 
+  it("notices a present-session return loop once enough recent returns exist", () => {
+    expect(
+      getPatternInsightCandidate(
+        baseContext({
+          recentSunTaps: 3,
+        }),
+      ),
+    ).toEqual({
+      id: "return-loop",
+      dateISO: "2026-05-11",
+      message:
+        "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
+      actions: ["still_on_purpose", "leave_now"],
+    });
+  });
+
+  it("does not notice a return loop below the threshold", () => {
+    expect(
+      getPatternInsightCandidate(
+        baseContext({
+          recentSunTaps: 2,
+        }),
+      ),
+    ).toBeUndefined();
+  });
+
+  it("notices a return loop even on an app target with no host scope", () => {
+    expect(
+      getPatternInsightCandidate(
+        baseContext({
+          target: { kind: "app", id: "com.example" },
+          recentSunTaps: 4,
+        }),
+      )?.id,
+    ).toBe("return-loop");
+  });
+
+  it("prioritizes the present-session return loop over usage and budget insights", () => {
+    expect(
+      getPatternInsightCandidate(
+        baseContext({
+          recentSunTaps: 3,
+          targetUsageSeconds: 30 * 60,
+          budget: {
+            isActive: true,
+            remainingSeconds: 0,
+            totalBudgetSeconds: 20 * 60,
+            usedSeconds: 20 * 60,
+            isExhausted: true,
+          },
+        }),
+      )?.id,
+    ).toBe("return-loop");
+  });
+
   it("creates a concrete daily usage insight once enough target usage exists", () => {
     expect(
       getPatternInsightCandidate(

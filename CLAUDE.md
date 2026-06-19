@@ -9,6 +9,46 @@ minded is a multi-platform mindfulness and productivity application designed to 
 - Android App (Native Kotlin + WebView)
 - iOS App (Native Swift + Capacitor) — **not actively developed**: iOS cannot deliver real interventions due to platform restrictions on inspecting/blocking other apps, so new features should target Browser Extension and Android only. Don't spend effort updating iOS code paths unless explicitly asked.
 
+## Conceptual Fundamentals
+
+These are the load-bearing ideas behind the product. They shape almost every
+feature decision — read them before proposing changes to interventions.
+
+- **Mindfulness app first, not a productivity tracker.** The goal is *awareness
+  without judgment*, not "be more efficient" or "scroll less and prove it."
+  Anything that reintroduces striving betrays the premise. Deliberately avoid:
+  streaks, "days clean", "minutes saved", efficiency scores, success/failure
+  tallies, daily goals, trend-up graphs, social comparison — and anything that
+  manufactures scarcity, urgency, or guilt (e.g. "you've used up your budget").
+
+- **The sun is the central mechanic and *is* the pause.** When an intervention
+  fires, a draggable animated sun appears; tapping/flinging it is the universal,
+  always-available escape hatch. The sun also delivers the calming pause itself:
+  `InteractionCommon.tsx` glides it to a "breathing" anchor and runs
+  `StrongFrictionBreathPause`, with the pause length scaled by friction via
+  `getPostSunPauseSeconds()`. Don't add separate "take a breath" UI — the pause
+  already exists in the sun. The sun rests on the dashboard bottom bar as a
+  companion; drag up → intervention, drag down → optional grounding offer.
+
+- **Interrupt → reflect → redirect, gently and never forced.** Grounding and
+  similar offers are invitations ("Stay a while?"), auto-dismiss if ignored, and
+  never block. Match this tone in any new surface.
+
+- **Intervention routing is already context-driven, not random.**
+  `getInteractionMode.ts` branches on a rich present-moment read
+  (`interactionContext.ts`: friction level, mood/energy freshness, evening,
+  recent returns, usage, expired intent, alternatives) *before* any probability
+  is rolled; the randomness mostly adds variety among already-eligible options.
+  Friction levels are `soft` / `normal` / `strong` (`getFrictionLevel`).
+
+- **The bar for anything we *say* to the user: ~90% sure it helps.** We can't
+  measure helpfulness (all data is local; no telemetry, no A/B). So hold the line
+  structurally: state **observed behaviour, never inferred feeling**; the
+  **present moment, never a stale timestamp**; never induce anxiety; keep it rare
+  and dismissible. A single wrong guess makes the whole app feel like it doesn't
+  know the user. See `docs/reflective-companion-concept.md` for the worked
+  example (and the cut list of ideas that failed this bar).
+
 ## Essential Commands
 
 All npm scripts live in `extension/package.json` — run them from the `extension/` directory.
