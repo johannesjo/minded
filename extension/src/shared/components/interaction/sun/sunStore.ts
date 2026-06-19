@@ -5,6 +5,7 @@ import {
   getSunSettleForPhase,
   sunInteractiveSettle,
   sunRestingSettle,
+  sunSurfSettle,
   type SunPhase,
 } from "./sunSettle";
 
@@ -171,6 +172,14 @@ export const getSunSettleForCurrentRole = (): SunSettle | null => {
   if (role === "interactive") {
     const anchor = getInteractiveSunAnchor();
     return anchor ? sunInteractiveSettle(anchor) : null;
+  }
+  // Surfing: swell in place on the same interactive slot (full size, breathing)
+  // so the wave reads as the one disc the user always sees, not a second sun.
+  if (role === "surfing") {
+    const anchor = getInteractiveSunAnchor();
+    return anchor
+      ? sunSurfSettle(anchor, getBreathSeconds())
+      : getSunSettleForPhase("surfing", getBreathSeconds());
   }
   // Resting: tuck under the measured choices block; fall back to the static
   // rest target until the choices are measured (or when none are showing).

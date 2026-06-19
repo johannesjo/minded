@@ -1,7 +1,7 @@
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 
 /**
- * "Urge surfing" — a mindfulness technique for working with cravings: instead
+ * "Urge surfing": a mindfulness technique for working with cravings. Instead
  * of acting on the urge to open a distracting site, the user watches it rise,
  * crest and fall like a wave, noticing it change on its own. The stronger the
  * friction (i.e. the stronger the pull), the longer the wave we ride.
@@ -27,7 +27,7 @@ export const SURF_CUES: ReadonlyArray<{ untilFraction: number; text: string }> =
     { untilFraction: 0.25, text: "Notice where you feel it in your body." },
     {
       untilFraction: 0.5,
-      text: "You don't have to push it away — just watch.",
+      text: "You don't have to push it away, just watch.",
     },
     {
       untilFraction: 0.75,

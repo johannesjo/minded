@@ -1,0 +1,55 @@
+// Global interaction styles (injected via _sharedGlobalInteraction.scss). A CSS
+// module would not reach the interaction's render context, so everything is
+// scoped under the root `.urge-surfing` class instead.
+.urge-surfing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  color: var(--c-fg-full-emphasis);
+
+  .urge-surfing-sub {
+    margin: 0 0 4px;
+    opacity: 0.76;
+    max-width: 30ch;
+  }
+
+  .urge-surfing-cue {
+    margin: 0;
+    min-height: 48px;
+    opacity: 0.82;
+    max-width: 30ch;
+  }
+
+  // Stack the intro's primary/secondary actions as a distinct pair, set apart
+  // from the copy above them.
+  .urge-surfing-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  // The intensity buttons (btnToggleSelectSmall) carry their own margins, so the
+  // row just centres and wraps; the shared max-width keeps the row and its end
+  // labels ("barely"/"intense") aligned.
+  .urge-surfing-scale {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 260px;
+  }
+
+  .urge-surfing-scale-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 260px;
+    margin-top: 2px;
+    font-size: 13px;
+    opacity: 0.6;
+  }
+}

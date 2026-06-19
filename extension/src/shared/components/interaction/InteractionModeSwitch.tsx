@@ -37,6 +37,10 @@ export interface InteractionModeSwitchProps {
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
   onLeaveNow: () => void;
+  /** Drive the real sun through a slow breath of `seconds` (urge surfing's wave). */
+  onSunWaveStart: (seconds: number) => void;
+  /** Return the real sun from its wave breath to the interactive disc. */
+  onSunWaveEnd: () => void;
   alternativeToReplace?: Alternative;
   onAddBetterAlternative?: (alternative: Alternative) => void;
   onShowAlternativeFromPatternInsight?: () => void;
@@ -105,6 +109,8 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={() => props.onSuccess()}
           onSkip={props.onSkip}
+          onSunWaveStart={props.onSunWaveStart}
+          onSunWaveEnd={props.onSunWaveEnd}
         />
       </Match>
       <Match when={props.mode === "ENERGY_LVL"}>

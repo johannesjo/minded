@@ -13,6 +13,7 @@ export type SunPhase =
   | "companion"
   | "interactive"
   | "breathing"
+  | "surfing"
   | "resting"
   | "departing";
 
@@ -36,6 +37,23 @@ export const sunInteractiveSettle = (anchor: {
 export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
   anchorYRatio: 0.4, // upper-middle, leaving room for the breath cue beneath
   scale: 0.82,
+  breathe: true,
+  breathSeconds,
+});
+
+/**
+ * Urge-surfing wave: ride the swell on the interactive disc itself. Breathe in
+ * place on the measured interactive anchor (full size, no reposition) so the one
+ * sun the user always sees does the rise-and-fall over the whole wave, rather
+ * than a second disc being drawn over it.
+ */
+export const sunSurfSettle = (
+  anchor: { x: number; y: number },
+  breathSeconds: number,
+): SunSettle => ({
+  anchorXPx: anchor.x,
+  anchorYPxFromTop: anchor.y,
+  scale: 1,
   breathe: true,
   breathSeconds,
 });
@@ -168,6 +186,11 @@ export const getSunSettleForPhase = (
     case "companion":
       return sunCompanionSettle(companionBottomYPx);
     case "breathing":
+      return sunBreatheSettle(breathSeconds);
+    case "surfing":
+      // Static fallback (no measured anchor, e.g. the self-owned sun): swell from
+      // the same upper-middle the breath pause uses. The live shell flow overrides
+      // this with sunSurfSettle so the disc swells in place on its slot.
       return sunBreatheSettle(breathSeconds);
     case "resting":
       return SUN_REST_SETTLE;

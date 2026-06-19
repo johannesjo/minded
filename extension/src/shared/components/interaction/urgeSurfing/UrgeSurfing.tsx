@@ -1,7 +1,4 @@
 import { createSignal, For, JSX, Match, onCleanup, Switch } from "solid-js";
-import styles from "./UrgeSurfing.module.scss";
-import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
-import type { BreathSunPhase } from "@src/shared/components/interaction/breathSun/BreathSun";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import {
@@ -13,7 +10,7 @@ import {
 /**
  * Urge surfing: rather than acting on the pull to open a distracting site, the
  * user rates how strong it feels, watches it crest and fall like a wave, then
- * notices how it changed. The before/after ratings stay in local state — their
+ * notices how it changed. The before/after ratings stay in local state; their
  * value is the in-the-moment realisation that the urge passes on its own, not a
  * stored metric.
  */
@@ -22,15 +19,16 @@ type UrgeSurfingPhase = "intro" | "rateBefore" | "surf" | "rateAfter" | "done";
 
 /** How often the wave timer ticks while surfing. */
 const TICK_MS = 200;
-// Fractions of the wave spent rising / cresting before it falls.
-const RISE_UNTIL = 0.4;
-const CREST_UNTIL = 0.55;
 
 interface UrgeSurfingProps {
   frictionLevel: FrictionLevel;
   onSuccess: () => void;
   onSkip: () => void;
   onCancelCountdown: () => void;
+  /** Swell the real sun through a slow breath of `seconds` as the wave rides. */
+  onSunWaveStart: (seconds: number) => void;
+  /** Settle the real sun back from its wave breath to the interactive disc. */
+  onSunWaveEnd: () => void;
 }
 
 export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
@@ -49,22 +47,27 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   };
 
   const startSurf = (): void => {
-    // Capture the callback outside the interval so the reactive `props` access
+    // Capture the callbacks outside the interval so the reactive `props` access
     // does not trip the solid/reactivity lint rule (as ScreenOff does).
     const onCancelCountdown = props.onCancelCountdown;
+    const onSunWaveEnd = props.onSunWaveEnd;
     const durationMs = getSurfDurationMs(props.frictionLevel);
+    // Ride the wave on the one real sun: ask it to swell through a single slow
+    // breath that lasts exactly as long as the wave timer below.
+    props.onSunWaveStart(durationMs / 1000);
     const startTS = Date.now();
     setFraction(0);
     setPhase("surf");
     stopTimer();
     intervalId = setInterval(() => {
-      // Keep the parent's auto-dismiss timer at bay — the wave runs without any
+      // Keep the parent's auto-dismiss timer at bay; the wave runs without any
       // pointer input, so nothing else would reset the countdown.
       onCancelCountdown();
       const fraction = Math.min(1, (Date.now() - startTS) / durationMs);
       setFraction(fraction);
       if (fraction >= 1) {
         stopTimer();
+        onSunWaveEnd();
         setPhase("rateAfter");
       }
     }, TICK_MS);
@@ -94,6 +97,8 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     // Stop the wave timer up front so a pending tick can't push us to
     // "rateAfter" after the parent has already torn the interaction down.
     stopTimer();
+    // Settle the sun back only if we'd actually set it swelling (the surf phase).
+    if (getPhase() === "surf") props.onSunWaveEnd();
     props.onSkip();
   };
 
@@ -101,63 +106,48 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     const before = getBefore();
     const after = getAfter();
     if (after < before) {
-      return `The wave passed — it eased from ${before} to ${after}.`;
+      return `The wave passed. It eased from ${before} to ${after}.`;
     }
     if (after === before) {
       return "You stayed with it instead of acting. That's the practice.";
     }
-    return "Tougher than it looked — and you still didn't act on it. That's the practice.";
-  };
-
-  const sunPhase = (): BreathSunPhase => {
-    const f = getFraction();
-    if (f < RISE_UNTIL) return "inhale";
-    if (f < CREST_UNTIL) return "hold";
-    return "exhale";
-  };
-
-  const sunProgress = (): number => {
-    const f = getFraction();
-    if (f < RISE_UNTIL) return f / RISE_UNTIL;
-    if (f < CREST_UNTIL) return 1;
-    return (f - CREST_UNTIL) / (1 - CREST_UNTIL);
+    return "Tougher than it looked, and you still didn't act on it. That's the practice.";
   };
 
   onCleanup(stopTimer);
 
   return (
-    <div
-      class={styles.UrgeSurfing}
-      onMouseMove={() => props.onCancelCountdown()}
-    >
+    <div class="urge-surfing" onMouseMove={() => props.onCancelCountdown()}>
       <Switch>
         <Match when={getPhase() === "intro"}>
           <div class="txtBig interaction-heading">
             There's an urge to open this. 🌊
           </div>
-          <p class={styles.sub}>
-            Instead of feeding it, let's watch it — urges rise and pass on their
+          <p class="urge-surfing-sub">
+            Instead of feeding it, let's watch it. Urges rise and pass on their
             own.
           </p>
-          <button
-            type="button"
-            class="btnTxt"
-            onClick={() => setPhase("rateBefore")}
-          >
-            Surf it
-          </button>
-          <button type="button" class="btnTxtOutline" onClick={skipNow}>
-            Not now
-          </button>
+          <div class="urge-surfing-actions">
+            <button
+              type="button"
+              class="btnTxt"
+              onClick={() => setPhase("rateBefore")}
+            >
+              Surf it
+            </button>
+            <button type="button" class="btnTxtOutline" onClick={skipNow}>
+              Not now
+            </button>
+          </div>
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
           <div class="txtBig interaction-heading">
             {getPhase() === "rateBefore"
               ? "How strong is the pull right now?"
-              : "And now — how strong is it?"}
+              : "And now, how strong is it?"}
           </div>
-          <div class={styles.scale}>
+          <div class="urge-surfing-scale">
             <For each={[...URGE_INTENSITY_STEPS]}>
               {(step) => (
                 <button
@@ -170,16 +160,17 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
               )}
             </For>
           </div>
-          <div class={styles.scaleLabels}>
+          <div class="urge-surfing-scale-labels">
             <span>barely</span>
             <span>intense</span>
           </div>
         </Match>
 
         <Match when={getPhase() === "surf"}>
-          <BreathSun phase={sunPhase()} progress={sunProgress()} size="large" />
-          <p class={styles.cue}>{getSurfCue(getFraction())}</p>
-          <button type="button" class={styles.skip} onClick={skipNow}>
+          {/* No disc here: the one real sun (driven via onSunWaveStart) does the
+              swell, so the wave reads as the same sun the user always sees. */}
+          <p class="urge-surfing-cue">{getSurfCue(getFraction())}</p>
+          <button type="button" class="btnTxtOutline" onClick={skipNow}>
             Skip
           </button>
         </Match>
