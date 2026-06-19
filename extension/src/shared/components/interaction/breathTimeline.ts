@@ -101,6 +101,14 @@ export const getCueOpacity = (
   clamp01(Math.min(state.phaseElapsedMs, state.phaseRemainingMs) / fadeMs);
 
 /**
+ * The 1-based second the breath is on within the current phase, counting up so
+ * the user can breathe along: 1, 2, 3, 4 across a four-second inhale. Resets to
+ * 1 at the start of each phase.
+ */
+export const getBreathCount = (state: BreathState): number =>
+  Math.floor(state.phaseElapsedMs / 1000) + 1;
+
+/**
  * Intervention breath pause (strong friction): one full breath with a longer
  * exhale than inhale, and a held top. Calming, and — with three distinct phases
  * — the cue copy and the sun line up on legible beats instead of a single

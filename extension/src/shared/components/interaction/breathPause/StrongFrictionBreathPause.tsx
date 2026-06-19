@@ -7,6 +7,7 @@ import {
 } from "solid-js";
 import {
   BREATH_PAUSE_PATTERN,
+  getBreathCount,
   getBreathStateAt,
   getCueOpacity,
   type BreathPhaseName,
@@ -27,20 +28,23 @@ const PHASE_CUE: Record<BreathPhaseName, string> = {
 export const StrongFrictionBreathPause: Component<
   StrongFrictionBreathPauseProps
 > = (props) => {
-  const [getRemainingSeconds, setRemainingSeconds] = createSignal(0);
   const [getElapsedMs, setElapsedMs] = createSignal(0);
 
   let frame: number | undefined;
   let timeoutId: number | undefined;
 
-  // The cue text and its fade both read from the same breath model that scales
-  // the sun, so the copy and the disc move through inhale → hold → exhale on
-  // exactly the same beats, and the label fades out before the next fades in.
+  // The cue text, its count and its fade all read from the same breath model
+  // that scales the sun, so the copy and the disc move through inhale → hold →
+  // exhale on exactly the same beats, and the label fades out before the next
+  // fades in.
   const getBreath = createMemo(() =>
     getBreathStateAt(getElapsedMs(), BREATH_PAUSE_PATTERN),
   );
   const getCue = createMemo(() => PHASE_CUE[getBreath().phase]);
-  // Hold the cue steady (no fade) when the user asked for reduced motion — the
+  // Count up through the current phase (1, 2, 3, 4…) so the user can breathe
+  // along, instead of a "time left" countdown.
+  const getCount = createMemo(() => getBreathCount(getBreath()));
+  // Hold the copy steady (no fade) when the user asked for reduced motion — the
   // sun is already frozen in that mode, so a pulsing label would be out of place.
   const getCueFade = createMemo(() =>
     prefersReducedMotion() ? 1 : getCueOpacity(getBreath()),
@@ -54,12 +58,10 @@ export const StrongFrictionBreathPause: Component<
   };
 
   createEffect(() => {
-    const durationSeconds = Math.max(1, props.seconds);
+    const durationMs = Math.max(1, props.seconds) * 1000;
     const onComplete = props.onComplete;
     const startedAt = Date.now();
-    const durationMs = durationSeconds * 1000;
 
-    setRemainingSeconds(durationSeconds);
     setElapsedMs(0);
 
     // rAF (not a coarse interval) so the cue's cross-fade lands cleanly at ~0
@@ -67,9 +69,6 @@ export const StrongFrictionBreathPause: Component<
     const tick = () => {
       const elapsedMs = Date.now() - startedAt;
       setElapsedMs(elapsedMs);
-      setRemainingSeconds(
-        Math.ceil(Math.max(0, durationMs - elapsedMs) / 1000),
-      );
       if (elapsedMs < durationMs) {
         frame = window.requestAnimationFrame(tick);
       }
@@ -88,11 +87,14 @@ export const StrongFrictionBreathPause: Component<
           spacer reserves its footprint so the cue copy keeps its position. */}
       <div class="strong-friction-breath-pause__sun-space" aria-hidden="true" />
 
-      <div class="strong-friction-breath-pause__copy">
-        <div class="txtBig" style={{ opacity: getCueFade() }}>
-          {getCue()}
-        </div>
-        <div class="txtSmaller">Continue in {getRemainingSeconds()}</div>
+      {/* The whole block cross-fades together on each phase turn, so the count
+          resets while invisible and never pops from 6 back to 1. */}
+      <div
+        class="strong-friction-breath-pause__copy"
+        style={{ opacity: getCueFade() }}
+      >
+        <div class="txtBig">{getCue()}</div>
+        <div class="txtSmaller">{getCount()}</div>
       </div>
 
       <button type="button" class="btnTxt" onClick={() => props.onCancel()}>

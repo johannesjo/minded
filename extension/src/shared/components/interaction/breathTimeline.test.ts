@@ -3,6 +3,7 @@ import {
   breathCycleMs,
   breathCycleSeconds,
   CUE_FADE_MS,
+  getBreathCount,
   getBreathStateAt,
   getCueOpacity,
   type BreathPattern,
@@ -70,6 +71,28 @@ describe("breathTimeline", () => {
 
   it("ships a 12s intervention-pause preset", () => {
     expect(breathCycleSeconds(BREATH_PAUSE_PATTERN)).toBe(12);
+  });
+
+  describe("getBreathCount", () => {
+    it("counts up from 1 across each phase and resets at the boundary", () => {
+      expect(getBreathCount(getBreathStateAt(0, PATTERN))).toBe(1); // inhale 1s
+      expect(getBreathCount(getBreathStateAt(999, PATTERN))).toBe(1);
+      expect(getBreathCount(getBreathStateAt(1000, PATTERN))).toBe(2);
+      expect(getBreathCount(getBreathStateAt(3999, PATTERN))).toBe(4); // last inhale count
+      expect(getBreathCount(getBreathStateAt(4000, PATTERN))).toBe(1); // hold resets to 1
+      expect(getBreathCount(getBreathStateAt(6000, PATTERN))).toBe(1); // exhale resets to 1
+      expect(getBreathCount(getBreathStateAt(11999, PATTERN))).toBe(6); // last exhale count
+    });
+
+    it("never exceeds the phase's whole-second length", () => {
+      // 4s inhale tops out at 4, 2s hold at 2, 6s exhale at 6 — no off-by-one.
+      expect(
+        getBreathCount(getBreathStateAt(3500, PATTERN)),
+      ).toBeLessThanOrEqual(4);
+      expect(
+        getBreathCount(getBreathStateAt(5500, PATTERN)),
+      ).toBeLessThanOrEqual(2);
+    });
   });
 
   describe("getCueOpacity", () => {
