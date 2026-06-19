@@ -76,39 +76,28 @@ intended, not a shortfall.
   this insight is Android-only — acceptable given the project targets Extension +
   Android.
 
-## Where the value really is: the parts that make no claim
+## Things I initially proposed that already exist (do not rebuild)
 
-The insight work (above) is where all the gimmick risk lives. The two pieces
-below carry most of the *mindfulness value* while asserting **nothing** about the
-user that could be wrong — so they are both safer and, honestly, the heart of the
-concept.
+Two ideas from the first draft turned out to already be in the app. Recording
+them so we don't reinvent them:
 
-### Workstream A — "Take a breath" as an option
+### "Take a breath" — already the core mechanic
 
-Today every button at an intervention pushes a decision *about the website*:
-"Still on purpose / Show alternative / Leave now" (`patternInsight.ts` actions).
+The sun *is* the pause. `InteractionCommon.tsx` already glides the sun to a
+"breathing" anchor and runs `StrongFrictionBreathPause`, with duration scaled by
+friction via `getPostSunPauseSeconds()`. Adding a separate "take a breath" button
+would duplicate the app's central interaction. **Nothing to build here.**
 
-Add one option that isn't about the website at all: a single guided breath
-(reusing the breathing component already used in grounding and sleep wind-down).
-The user breathes once, then lands back exactly where they were — no "did you
-succeed", no judgment. **The pause itself is the practice.** It states nothing, so
-it cannot be wrong.
+### Attunement — the routing is already largely context-driven
 
-### Workstream B — Attunement (replace dice with legible rules)
-
-At a high-pull moment the code currently rolls dice to pick which gentle thing to
-show — `SCREEN_OFF_PROBABILITY = 1/3`, `URGE_SURFING_PROBABILITY = 1/3`
-(`getInteractionMode.ts`). Replace the dice with simple, readable rules keyed off
-what we plainly observe:
-
-- late at night → offer screen-off / wind-down
-- many rapid returns → offer urge-surfing or a breath
-- calm first visit → the lightest possible touch (often just the sun)
-
-This is **not** AI, not learning, not optimizing a metric. It is "show the option
-that fits this moment" instead of random. It never *tells* the user anything; it
-only changes *which* gentle option appears. Lowest risk of the three, fully
-deterministic, and testable.
+`getInteractionMode.ts` is **not** "rolling dice." It branches on friction level,
+mood freshness, energy, evening, expired intent, and alternatives *before* any
+randomness; the probabilities mostly add *variety* among already-eligible
+options. Sleep wind-down isn't even routed here — it's a separate scheduled flow.
+So "replace the dice with attunement rules" overstates how random the system is;
+the app is already substantially attuned. At most there's a marginal tweak to
+which gentle option appears at the highest-pull moments — not a headline feature,
+and possibly not worth the churn.
 
 ## What we will deliberately NOT build
 
@@ -138,29 +127,29 @@ Each of these re-imports the striving minded exists to dissolve.
   `interactionContext.test.ts`, decision tests) — so this work extends an
   existing safety net rather than building on the untested critical path.
 
-## Rough phasing (if it proceeds)
+## What actually survives scrutiny
 
-1. **Reframe tone** of any surviving factual insight to present, invitational,
-   non-anxious language. No new claims.
-2. **Workstream A** — the "take a breath" option.
-3. **Workstream B** — attunement rules.
-4. **Present-session return-loop** insight (the one bulletproof cross-platform
-   noticing).
-5. **Android time-of-day** insight — native usage-history harvest + rolling
+After subtracting what already exists (the sun-pause, the context-driven routing,
+wind-down) and what fails the 90% bar (mood/emotion inference, budget-anxiety),
+the genuinely-new, trustworthy surface is small — just two insights:
+
+1. **Present-session return-loop** noticing — the one bulletproof cross-platform
+   observation ("you've come back a few times tonight").
+2. **Android time-of-day** pattern — native usage-history harvest + rolling
    histogram + strong evidence gate. Largest effort; Android only.
-6. *(Maybe, later)* a calm dashboard "noticings" surface — a single gentle weekly
-   reflection, self-knowledge framed, no charts.
 
-Note the ordering: the no-claim work (A, B) comes first; the claim-making work is
-trimmed to bulletproof cases and back-loaded.
+That is honestly the whole of it. The smallness is a sign the app already
+embodies these principles well, not a shortfall — but it also means this concept
+may not be the biggest available improvement. See the next section.
 
-## Open questions
+## Open questions / is this even the right bet?
 
-- **Copy voice.** The reflection lines *are* the product — they need sign-off in
-  the app's existing gentle voice before any wiring.
+- **Is the surviving set worth it?** Two insights — one simple, one a real chunk
+  of native work — may not justify the design risk. It is legitimate to conclude
+  the app already does mindful presence well and that effort is better spent
+  elsewhere (e.g. the untested critical path / silent data-loss on storage quota,
+  which threaten *all* interventions regardless of polish).
+- **Copy voice.** If we do build the return-loop noticing, its wording *is* the
+  product and needs sign-off in the app's existing gentle voice before wiring.
 - **Evidence gate for the Android pattern.** What N (days, occurrences-per-hour)
   is enough to call something "a pattern" without false positives on thin data?
-- **How conservative is too conservative?** If the surviving set is one or two
-  insights, is the insight half worth the effort, or should we ship only
-  Workstreams A + B (which carry value with zero claim risk) and leave insights
-  for later?
