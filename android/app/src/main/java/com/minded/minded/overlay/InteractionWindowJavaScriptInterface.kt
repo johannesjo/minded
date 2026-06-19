@@ -126,14 +126,15 @@ class InteractionWindowJavaScriptInterface(
         ctrlSvc.goToApp()
         Log.d(logTag, "closeCurrentApp() - goToApp intent sent")
 
-        // Hide overlay after delay to ensure minded app is visible.
-        // Using 300ms to account for slower devices and system load.
-        // The app intent is async and we don't have a reliable callback,
-        // so this delay is a pragmatic tradeoff between responsiveness and reliability.
+        // Hide overlay after a delay. Two purposes: ensure the minded app has
+        // surfaced before the overlay disappears (the app intent is async with no
+        // reliable callback, so this is a pragmatic tradeoff that also covers
+        // slower devices), and let the celebratory "Be proud!" message + warm sky
+        // linger a beat longer before we transition away.
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             Log.d(logTag, "closeCurrentApp() - hiding window after delay")
             win.hideWindow()
-        }, 300)
+        }, 1300)
     }
 
     @JavascriptInterface
