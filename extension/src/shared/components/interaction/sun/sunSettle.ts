@@ -48,17 +48,19 @@ export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
  * than a second disc being drawn over it.
  */
 export const sunSurfSettle = (): SunSettle => ({
-  // The meditation sun floats in the upper third as the focal point, clear above
-  // the guidance cue (which is pushed to the lower part of its box). A fixed
-  // viewport ratio (not the content placeholder) so its position is predictable.
-  anchorYRatio: 0.3,
+  // The meditation sun sits just above viewport centre; the cue is dropped to the
+  // bottom of its box just below, so the disc + halo and the guidance read as one
+  // group straddling the centre. A fixed viewport ratio (not the content
+  // placeholder) keeps its position predictable.
+  anchorYRatio: 0.38,
   scale: 1,
   breathe: true,
-  // A gentle, continuous pulse for the meditation: a small swell every few
-  // seconds rather than one slow rise over the whole wave.
+  // A gentle, continuous pulse for the meditation: every few seconds the disc
+  // eases inward and back. Negative so it contracts (breathes in) rather than
+  // swelling out.
   breathSeconds: 5,
   breathLoop: true,
-  breathPeakBonus: 0.08,
+  breathPeakBonus: -0.13,
 });
 
 /**

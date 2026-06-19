@@ -24,7 +24,10 @@ export const URGE_INTENSITY_STEPS = [1, 2, 3, 4, 5] as const;
  */
 export const SURF_CUES: ReadonlyArray<{ untilFraction: number; text: string }> =
   [
-    { untilFraction: 0.25, text: "Notice where you feel it in your body." },
+    {
+      untilFraction: 0.25,
+      text: "Notice where you feel the urge in your body.",
+    },
     {
       untilFraction: 0.5,
       text: "You don't have to push it away, just watch.",

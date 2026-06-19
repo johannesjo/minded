@@ -53,6 +53,12 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   const [getScreenOpacity, setScreenOpacity] = createSignal(1);
 
   const FADE_MS = 240;
+  // Hold the first surf cue back this long so the pulsing sun reads on its own
+  // for a beat before the guidance arrives.
+  const FIRST_CUE_DELAY_MS = 1400;
+  // The surf cues ease into one another slowly and softly — much gentler than the
+  // quick screen fade.
+  const CUE_FADE_MS = 900;
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -105,7 +111,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     const next = getSurfCue(getFraction());
     if (next === shownCue) return;
     shownCue = next;
-    const fadeMs = prefersReducedMotion() ? 0 : FADE_MS;
+    const fadeMs = prefersReducedMotion() ? 0 : CUE_FADE_MS;
     clearCueFade();
     setCueOpacity(0);
     cueFadeTimeout = setTimeout(() => {
@@ -126,6 +132,16 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     props.onSunWaveStart(durationMs / 1000);
     const startTS = Date.now();
     setFraction(0);
+    // Hold the first instruction back a moment so the pulsing sun reads first,
+    // then fade it in.
+    clearCueFade();
+    shownCue = getSurfCue(0);
+    setCueText(shownCue);
+    setCueOpacity(0);
+    cueFadeTimeout = setTimeout(() => {
+      cueFadeTimeout = undefined;
+      setCueOpacity(CUE_OPACITY);
+    }, FIRST_CUE_DELAY_MS);
     stopTimer();
     intervalId = setInterval(() => {
       // Keep the parent's auto-dismiss timer at bay; the wave runs without any
@@ -240,7 +256,15 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           {/* No disc and no skip here: the one real sun (driven via
               onSunWaveStart) gently pulses in place and is the focus; the short
               wave simply plays out. */}
-          <p class="urge-surfing-cue" style={{ opacity: getCueOpacity() }}>
+          <p
+            class="urge-surfing-cue"
+            style={{
+              opacity: getCueOpacity(),
+              transition: prefersReducedMotion()
+                ? "none"
+                : `opacity ${CUE_FADE_MS}ms ease-in-out`,
+            }}
+          >
             {getCueText()}
           </p>
         </Match>

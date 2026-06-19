@@ -17,11 +17,13 @@
     transition: none;
   }
 
-  // Meditation screen: the sun floats in the upper third (see sunSurfSettle), so
-  // drop the cue to the lower part of the box to sit clearly below the disc and
-  // its halo rather than under it.
+  // Meditation screen: the sun sits just above centre (see sunSurfSettle), so
+  // drop the cue to the very bottom of its box — just below the disc and its halo
+  // — so the two read as one group around the centre. No bottom padding here (that
+  // gap is only for the rating screens, whose sun rests below the content).
   &.is-surf {
     justify-content: flex-end;
+    padding-bottom: 0;
   }
 
   // Hold a constant height across every screen so the sun's slot (the
@@ -55,14 +57,13 @@
   .urge-surfing-cue {
     margin: 0;
     min-height: 48px;
-    max-width: 30ch;
-    // Opacity (resting ~0.82) is driven from the component so the cues can
-    // crossfade into one another rather than snapping.
-    transition: opacity 240ms ease;
-
-    @media (prefers-reduced-motion: reduce) {
-      transition: none;
-    }
+    // Give the guidance plenty of horizontal room where the viewport allows,
+    // capped only so it never overflows narrow screens.
+    max-width: min(54ch, 92vw);
+    // A touch larger than the body default for the meditation guidance.
+    font-size: calc(var(--fz-m) + 2px);
+    // Opacity and its slow, soft crossfade transition are driven inline from the
+    // component (CUE_FADE_MS) so the cues ease into one another rather than snap.
   }
 
   // The intensity buttons (btnToggleSelectSmall) carry their own margins, so the
