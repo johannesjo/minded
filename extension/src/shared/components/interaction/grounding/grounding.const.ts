@@ -21,3 +21,11 @@ export const GROUNDING_FADE_MS = 600;
 
 /** How long "Be proud!" lingers after a finished timed sit before closing. */
 export const PRAISE_DURATION_MS = 2600;
+
+/**
+ * On Android the screen-free sit gets the screen out of the way entirely: a
+ * "put your phone down" message and an opening gong show for this long, then
+ * the phone locks. Locking immediately would swallow the gong and the message;
+ * lingering any longer undercuts the point of stepping away.
+ */
+export const ANDROID_LOCK_DELAY_MS = 1600;

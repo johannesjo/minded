@@ -8,7 +8,10 @@ import {
 import styles from "./GroundingOverlay.module.scss";
 import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
 import { playGong } from "@src/shared/components/interaction/sun/sunAudio";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import {
+  ANDROID_LOCK_DELAY_MS,
   GROUNDING_FADE_MS,
   OFFER_AUTO_DISMISS_MS,
   PRAISE_DURATION_MS,
@@ -16,7 +19,7 @@ import {
   TIMER_MINUTE_OPTIONS,
 } from "@src/shared/components/interaction/grounding/grounding.const";
 
-type Phase = "offer" | "duration" | "session" | "praise";
+type Phase = "offer" | "duration" | "session" | "praise" | "androidLock";
 type Mode = "timer" | "quiet";
 
 interface GroundingOverlayProps {
@@ -45,6 +48,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   let rafId: number | undefined;
   let closeTimeout: number | undefined;
   let praiseTimeout: number | undefined;
+  let lockTimeout: number | undefined;
   let isDisposed = false;
 
   const stopRaf = () => {
@@ -74,7 +78,26 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
 
   const chooseMode = (mode: Mode) => {
     setMode(mode);
+    // The most grounding thing on a phone is getting the screen out of the way
+    // entirely, so the screen-free sit locks the phone rather than running an
+    // on-screen timer. Lock right away (after the gong); a timer you can't see
+    // is pointless. On the web there's no phone to put away — dim instead.
+    if (mode === "quiet" && IS_ANDROID) {
+      startAndroidLock();
+      return;
+    }
     setPhase("duration");
+  };
+
+  const startAndroidLock = () => {
+    setPhase("androidLock");
+    void playGong();
+    lockTimeout = window.setTimeout(() => {
+      lockTimeout = undefined;
+      if (isDisposed) return;
+      if (IS_ANDROID) androidInterface.lockScreen();
+      close();
+    }, ANDROID_LOCK_DELAY_MS);
   };
 
   const startSession = (minutes: number) => {
@@ -121,6 +144,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     stopRaf();
     if (closeTimeout) window.clearTimeout(closeTimeout);
     if (praiseTimeout) window.clearTimeout(praiseTimeout);
+    if (lockTimeout) window.clearTimeout(lockTimeout);
   });
 
   const remainingLabel = () => {
@@ -135,7 +159,9 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       class={styles.grounding}
       classList={{
         [styles.isDark]: props.variant === "moon",
-        [styles.isQuiet]: getMode() === "quiet" && getPhase() === "session",
+        [styles.isQuiet]:
+          getMode() === "quiet" &&
+          (getPhase() === "session" || getPhase() === "androidLock"),
         [styles.isClosing]: getIsClosing(),
       }}
       style={{ "--grounding-fade-ms": `${GROUNDING_FADE_MS}ms` }}
@@ -158,7 +184,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
               class="btnTxtOutline"
               onClick={() => chooseMode("quiet")}
             >
-              Be present, screen-free
+              {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}
             </button>
           </div>
           <button type="button" class="btnTxt" onClick={close}>
@@ -171,7 +197,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       <Show when={getPhase() === "duration"}>
         <div class={styles.panel}>
           <h2 class={styles.title}>
-            {getMode() === "timer" ? "How long?" : "Phone down for…"}
+            {getMode() === "timer" ? "How long?" : "Be present for…"}
           </h2>
           <div class={styles.durations}>
             {(getMode() === "timer"
@@ -236,6 +262,14 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           <button type="button" class="btnTxt" onClick={finishSession}>
             End
           </button>
+        </div>
+      </Show>
+
+      {/* Android: a brief send-off before the phone locks. */}
+      <Show when={getPhase() === "androidLock"}>
+        <div class={styles.session}>
+          <p class={styles.quietCue}>Put your phone down.</p>
+          <p class={styles.quietSub}>Be present for a little while.</p>
         </div>
       </Show>
 

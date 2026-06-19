@@ -526,8 +526,9 @@ const Styleguide = (): JSX.Element => {
           <p class={styles.muted}>
             On the dashboard, dragging the sun down offers a moment to ground
             yourself: a timed meditation (still sun + start/end gong) or a
-            screen-free sit. A gentle offer — declining is easy and ignoring it
-            dismisses it. Opens a full-screen stage.
+            screen-free sit (on the web the screen dims; on Android the phone
+            locks). A gentle offer — declining is easy and ignoring it dismisses
+            it. Opens a full-screen stage.
           </p>
           <button
             type="button"
