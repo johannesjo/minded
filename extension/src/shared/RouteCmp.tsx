@@ -141,7 +141,9 @@ const MainWrapper = (props: RouteSectionProps) => {
             onBreathStart={setBreathStartedAt}
             minimizeWillChange={true}
             isDragEnabled={isSunInteractive()}
-            isTapEnabled={isSunInteractive()}
+            isTapEnabled={
+              isSunInteractive() && (getSunHandlers()?.isTapEnabled ?? true)
+            }
             isHovered={getSunRole() === "companion" && getIsCompanionHovered()}
             tapThreshold={getSunHandlers()?.tapThreshold ?? 3}
             onSkip={() => getSunHandlers()?.onSkip()}
