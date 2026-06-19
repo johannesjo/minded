@@ -419,10 +419,14 @@ export const Sun: Component<SunProps> = (props) => {
 
     animateOffsetScaleTo(target, restScale, duration, () => {
       if (settle.breathe) {
-        startBreathCycle(restScale, settle.breathPattern ?? BREATH_PAUSE_PATTERN, {
-          loop: settle.breathLoop,
-          peakBonus: settle.breathPeakBonus,
-        });
+        startBreathCycle(
+          restScale,
+          settle.breathPattern ?? BREATH_PAUSE_PATTERN,
+          {
+            loop: settle.breathLoop,
+            peakBonus: settle.breathPeakBonus,
+          },
+        );
       } else {
         setIsAnimating(false);
       }
@@ -1083,6 +1087,13 @@ export const Sun: Component<SunProps> = (props) => {
         "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >
+      {/* The sun's own warm light. As a child of the disc it inherits every
+          transform the disc gets — drag, settle glide, idle float, breath scale
+          — so it can never drift out of step with the face. (The old wash was a
+          separate viewport-fixed layer whose center we had to chase via JS; any
+          pure-CSS motion — the idle float, the 160ms ease — slipped past it.)
+          Sun-only; the moon scene stays cool (hidden in Sun.scss). */}
+      <span class="sun-glow" aria-hidden="true" />
       {isTapEnabled() && (
         <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
           {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (

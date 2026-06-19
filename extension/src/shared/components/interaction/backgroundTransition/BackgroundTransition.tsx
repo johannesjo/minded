@@ -73,12 +73,12 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     };
   };
 
-  // The warm sun-glow is anchored to the sun's live center. Until the sun has
-  // reported a position we have no real anchor, and painting the glow at the
-  // placeholder default (50vw/58vh) drops a second, misplaced "sun" — a small
-  // haloed disc above the real one — for the first frames of each intervention.
-  // Hold the glow back until we know where the sun actually is; it then blooms in
-  // directly under the disc instead of jumping down onto it.
+  // The warm glow itself now rides the sun disc (Sun.scss `.sun-glow`), so this
+  // layer only adds the static scene vignette. We still hold it back until the
+  // sun has reported a position so the vignette blooms in together with the disc
+  // rather than a frame ahead of it. (The position plumbing below is now used
+  // only for this on/off gate — it no longer needs the live center, so it could
+  // later collapse to a single "sun is placed" boolean.)
   const getIsSunGradientAttached = () =>
     (props.isSunGradientAttached ?? true) && !!getSunGradientPosition();
 
