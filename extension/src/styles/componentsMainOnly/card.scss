@@ -3,17 +3,17 @@
   user-select: none;
   background: var(--dashboard-card-bg);
   border-radius: var(--dashboard-card-border-radius);
-  padding: 16px;
+  padding: var(--space-md);
 
   @include onNonMobileScreens() {
-    padding: 32px;
+    padding: var(--space-xl);
   }
 }
 
 .cardDashboard {
-  padding: 18px 8px;
+  padding: var(--space-md) var(--space-sm);
 
   @include onNonMobileScreens() {
-    padding: 32px;
+    padding: var(--space-xl);
   }
 }
