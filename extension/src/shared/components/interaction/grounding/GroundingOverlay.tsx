@@ -45,16 +45,22 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const [getProgress, setProgress] = createSignal(0);
   const [getRemainingMs, setRemainingMs] = createSignal(0);
 
-  let rafId: number | undefined;
+  let intervalId: number | undefined;
+  let endTimeout: number | undefined;
   let closeTimeout: number | undefined;
   let praiseTimeout: number | undefined;
   let lockTimeout: number | undefined;
   let isDisposed = false;
 
-  const stopRaf = () => {
-    if (rafId) {
-      cancelAnimationFrame(rafId);
-      rafId = undefined;
+  // Stop the timed sit's 1 Hz countdown and its authoritative end timer.
+  const stopTimers = () => {
+    if (intervalId) {
+      window.clearInterval(intervalId);
+      intervalId = undefined;
+    }
+    if (endTimeout) {
+      window.clearTimeout(endTimeout);
+      endTimeout = undefined;
     }
   };
 
@@ -70,7 +76,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const close = () => {
     if (getIsClosing()) return;
     setIsClosing(true);
-    stopRaf();
+    stopTimers();
     closeTimeout = window.setTimeout(() => {
       if (!isDisposed) props.onClose();
     }, GROUNDING_FADE_MS);
@@ -108,24 +114,26 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     // A clear tone marks the threshold into stillness.
     void playGong();
 
+    // A 1 Hz interval is all the countdown needs: the label only changes once a
+    // second and the ring has a 0.3s CSS transition that smooths each step, so
+    // sampling per animation frame (~60x/sec) would repaint for no visible gain.
     const startTs = Date.now();
-    const tick = () => {
+    intervalId = window.setInterval(() => {
       const elapsed = Date.now() - startTs;
-      const progress = Math.min(1, elapsed / durationMs);
-      setProgress(progress);
+      setProgress(Math.min(1, elapsed / durationMs));
       setRemainingMs(Math.max(0, durationMs - elapsed));
-      if (progress >= 1) {
-        rafId = undefined;
-        finishSession();
-        return;
-      }
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
+    }, 1000);
+    // The end is its own timer, not a branch of the interval: a backgrounded tab
+    // throttles or pauses the visual ticks, but setTimeout still fires, so the
+    // closing gong reliably calls you back even if the countdown was frozen.
+    endTimeout = window.setTimeout(finishSession, durationMs);
   };
 
   const finishSession = () => {
-    stopRaf();
+    // Idempotent: the "End" tap and the end timer can both land (or End can be
+    // double-tapped); only the first call should ring the gong and advance.
+    if (getIsClosing() || getPhase() === "praise") return;
+    stopTimers();
     // The gong calls you back.
     void playGong();
     if (getMode() === "timer") {
@@ -141,7 +149,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
 
   onCleanup(() => {
     isDisposed = true;
-    stopRaf();
+    stopTimers();
     if (closeTimeout) window.clearTimeout(closeTimeout);
     if (praiseTimeout) window.clearTimeout(praiseTimeout);
     if (lockTimeout) window.clearTimeout(lockTimeout);
@@ -244,7 +252,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
               />
             </svg>
             <div class={styles.ringInner}>
-              <BreathSun phase="ready" size="large" variant={props.variant} />
+              <BreathSun fill={1} size="large" variant={props.variant} />
             </div>
           </div>
           <p class={styles.remaining}>{remainingLabel()}</p>

@@ -3,6 +3,8 @@
 .grounding {
   position: fixed;
   inset: 0;
+  // Above the interaction layer (overlay 1100, settled wrapper 1101): the
+  // grounding stage fully replaces the dashboard sun flow while it is open.
   z-index: 1200;
   display: flex;
   flex-direction: column;
@@ -161,5 +163,8 @@
   }
   .ringProgress {
     transition: none;
+  }
+  .praise {
+    animation: none;
   }
 }
