@@ -1,0 +1,31 @@
+// Feather the bottom edge of a scroll viewport so content dissolves into the
+// companion sun's bottom bar instead of cutting off hard against it.
+//
+// Two masks composited with `intersect` (their alphas multiply, so content is
+// hidden where *either* mask hides it):
+//   1. $linear — the caller's flat bottom-band fade. Its height/feather differ
+//      per site, so it stays the caller's to define.
+//   2. a radial "pocket" centred on the bottom-centre, where the sun rests, so
+//      content also dissolves in a soft circle around the disc — lifting the
+//      fade upward right where the sun sits. Same 0.55 midpoint as the linear
+//      fade so the softness matches.
+//
+// The pocket radius is the shared `--sun-fade-radius` (declared once on the
+// shell wrapper — see RouteCmp.module.scss `.mainWrapper` — and inherited by
+// every call site, so they all open the same pocket). The fallback mirrors that
+// default and only guards the edge case where the var is out of scope: an
+// undefined custom property is invalid at computed-value time, which would void
+// the whole `mask-image` and silently drop the fade entirely, not just the
+// pocket.
+@mixin bottomFadeWithSunPocket($linear) {
+  $sun-fade: radial-gradient(
+    circle var(--sun-fade-radius, clamp(80px, 13vh, 140px)) at 50% 100%,
+    transparent 0,
+    rgba(0, 0, 0, 0.55) 55%,
+    #000 100%
+  );
+  -webkit-mask-image: $linear, $sun-fade;
+  mask-image: $linear, $sun-fade;
+  -webkit-mask-composite: source-in; // legacy WebKit spelling of `intersect`
+  mask-composite: intersect;
+}

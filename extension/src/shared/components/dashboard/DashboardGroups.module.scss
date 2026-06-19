@@ -34,22 +34,8 @@ $aniDur: 1.5s;
     rgba(0, 0, 0, 0.55) calc(var(--hero-reserve) * 0.55),
     #000 var(--hero-reserve)
   );
-  // A second, radial mask centred on the bottom edge (where the companion sun
-  // rests) opens a soft round pocket around the disc so cards dissolve in a
-  // circle around it, not just along the flat hero band. Composited with the
-  // linear fade via `intersect` (alphas multiply), so content is hidden where
-  // either mask hides it. --sun-fade-radius is inherited from the shell wrapper
-  // (RouteCmp.module.scss) so this matches the route content wrapper's pocket.
-  $sun-fade: radial-gradient(
-    circle var(--sun-fade-radius) at 50% 100%,
-    transparent 0,
-    rgba(0, 0, 0, 0.55) 55%,
-    #000 100%
-  );
-  -webkit-mask-image: $hero-fade, $sun-fade;
-  mask-image: $hero-fade, $sun-fade;
-  -webkit-mask-composite: source-in; // legacy WebKit spelling of `intersect`
-  mask-composite: intersect;
+  // Flat hero band, plus a soft round pocket around the resting sun.
+  @include bottomFadeWithSunPocket($hero-fade);
 
   @media (min-width: $bpDashboardMoreThan1Col) {
     display: grid;

@@ -1,3 +1,5 @@
+@import "./../styles/mixins/mixins";
+
 .mainWrapper {
   display: flex;
   flex-direction: column;
@@ -14,7 +16,9 @@
   // in a circle around the disc, extending the flat bottom fade upward right
   // where the sun sits. A bit larger than the ~50px companion footprint so the
   // halo clears the disc. Shared so the dashboard grid (DashboardGroups) and the
-  // route content wrapper open the same pocket — both inherit it from here.
+  // route content wrapper open the same pocket — both inherit it from here. A
+  // matching fallback lives in the bottomFadeWithSunPocket mixin for the edge
+  // case where this is ever out of scope.
   --sun-fade-radius: clamp(80px, 13vh, 140px);
 }
 
@@ -103,20 +107,6 @@
     rgba(0, 0, 0, 0.55) calc(var(--bottom-fade) * 0.55),
     #000 var(--bottom-fade)
   );
-  // A second, radial mask centred on the bottom edge (where the sun rests)
-  // carves a soft circular pocket of the same feather. Composited with the flat
-  // bottom fade via `intersect` (alphas multiply), so content is hidden where
-  // *either* mask hides it: the normal bottom band everywhere, plus a round
-  // halo rising around the disc. Same 0.55 midpoint as the linear fade so the
-  // softness matches.
-  $sun-fade: radial-gradient(
-    circle var(--sun-fade-radius) at 50% 100%,
-    transparent 0,
-    rgba(0, 0, 0, 0.55) 55%,
-    #000 100%
-  );
-  -webkit-mask-image: $bottom-fade, $sun-fade;
-  mask-image: $bottom-fade, $sun-fade;
-  -webkit-mask-composite: source-in; // legacy WebKit spelling of `intersect`
-  mask-composite: intersect;
+  // Flat bottom band, plus a soft round pocket around the resting sun.
+  @include bottomFadeWithSunPocket($bottom-fade);
 }
