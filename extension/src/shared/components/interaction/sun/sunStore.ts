@@ -89,8 +89,6 @@ export const computeCompanionBottomYPx = (): number => {
 const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
   computeCompanionBottomYPx(),
 );
-/** Breath-pause length (seconds) for the "breathing" settle; set by the interaction. */
-const [getBreathSeconds, setBreathSeconds] = createSignal(0);
 
 /**
  * Measured viewport-px centre of the interaction's sun placeholder — the empty
@@ -141,8 +139,6 @@ export {
   setSunPosition,
   getCompanionBottomYPx,
   setCompanionBottomYPx,
-  getBreathSeconds,
-  setBreathSeconds,
   getInteractiveSunAnchor,
   setInteractiveSunAnchor,
   getRestingSunAnchor,
@@ -163,7 +159,7 @@ export {
 export const getSunSettleForCurrentRole = (): SunSettle | null => {
   const role = getSunRole();
   if (role === "companion" || role === "departing") {
-    return getSunSettleForPhase("companion", 0, getCompanionBottomYPx());
+    return getSunSettleForPhase("companion", getCompanionBottomYPx());
   }
   // Interactive: rest on the measured placeholder centre (full size, no breath)
   // so the draggable disc sits exactly in the slot the content reserved for it.
@@ -178,11 +174,9 @@ export const getSunSettleForCurrentRole = (): SunSettle | null => {
   // rest target until the choices are measured (or when none are showing).
   if (role === "resting") {
     const anchor = getRestingSunAnchor();
-    return anchor
-      ? sunRestingSettle(anchor)
-      : getSunSettleForPhase("resting", getBreathSeconds());
+    return anchor ? sunRestingSettle(anchor) : getSunSettleForPhase("resting");
   }
-  return getSunSettleForPhase(role, getBreathSeconds());
+  return getSunSettleForPhase(role);
 };
 
 // --- Outcome handler registry ------------------------------------------------

@@ -108,13 +108,11 @@ export interface SunSettle {
   scale?: number;
   /** Run one slow inhale→hold→exhale while settled. */
   breathe?: boolean;
-  /** Length of the breath in seconds (the pattern's full cycle). */
-  breathSeconds?: number;
   /** Loop the breath continuously (a gentle meditation pulse) instead of once. */
   breathLoop?: boolean;
   /** Override the peak swell of the breath (default BREATH_PEAK_BONUS); smaller = gentler. */
   breathPeakBonus?: number;
-  /** Shape of the breath; defaults to the intervention-pause pattern. */
+  /** Shape and duration of the breath; defaults to the intervention-pause pattern. */
   breathPattern?: BreathPattern;
 }
 

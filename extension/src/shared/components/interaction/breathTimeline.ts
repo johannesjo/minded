@@ -30,9 +30,10 @@ export interface BreathState {
 
 const clamp01 = (n: number): number => Math.max(0, Math.min(1, n));
 
-// Smooth S-curve 0→1 so the breath eases in and settles at the turn rather than
-// snapping — the same ease on the way up and (mirrored) on the way down.
-const easeInOut = (p: number): number =>
+// Eases the breath in and settles it gently at the turn rather than snapping.
+// Named distinctly from sunAnimationUtils' (quadratic) easeInOut — this is the
+// cosine breath curve, used only here.
+const easeBreath = (p: number): number =>
   0.5 - 0.5 * Math.cos(Math.PI * clamp01(p));
 
 export const breathCycleMs = (pattern: BreathPattern): number =>
@@ -61,7 +62,7 @@ export const getBreathStateAt = (
   if (t < inhaleMs) {
     return {
       phase: "inhale",
-      fill: easeInOut(t / inhaleMs),
+      fill: easeBreath(t / inhaleMs),
       phaseSecondsLeft: Math.ceil((inhaleMs - t) / 1000),
       phaseElapsedMs: t,
       phaseRemainingMs: inhaleMs - t,
@@ -78,7 +79,7 @@ export const getBreathStateAt = (
   }
   return {
     phase: "exhale",
-    fill: 1 - easeInOut((t - holdEnd) / exhaleMs),
+    fill: 1 - easeBreath((t - holdEnd) / exhaleMs),
     phaseSecondsLeft: Math.ceil((cycle - t) / 1000),
     phaseElapsedMs: t - holdEnd,
     phaseRemainingMs: cycle - t,
@@ -99,14 +100,6 @@ export const getCueOpacity = (
   fadeMs: number = CUE_FADE_MS,
 ): number =>
   clamp01(Math.min(state.phaseElapsedMs, state.phaseRemainingMs) / fadeMs);
-
-/**
- * The 1-based second the breath is on within the current phase, counting up so
- * the user can breathe along: 1, 2, 3, 4 across a four-second inhale. Resets to
- * 1 at the start of each phase.
- */
-export const getBreathCount = (state: BreathState): number =>
-  Math.floor(state.phaseElapsedMs / 1000) + 1;
 
 /**
  * Intervention breath pause (strong friction): one full breath with a longer

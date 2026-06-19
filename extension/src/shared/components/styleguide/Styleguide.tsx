@@ -574,7 +574,7 @@ const SunMorphHarness = (): JSX.Element => {
       const anchor = restingAnchor();
       if (anchor) return sunRestingSettle(anchor);
     }
-    return getSunSettleForPhase(phase(), STRONG_FRICTION_BREATH_PAUSE_SECONDS);
+    return getSunSettleForPhase(phase());
   };
 
   const measureRestingAnchor = () => {
@@ -627,7 +627,7 @@ const SunMorphHarness = (): JSX.Element => {
             <div class="time-selection-overlay" style={{ "z-index": 1100 }}>
               <div class="post-sun-screen">
                 <StrongFrictionBreathPause
-                  seconds={7}
+                  seconds={STRONG_FRICTION_BREATH_PAUSE_SECONDS}
                   onComplete={() => undefined}
                   onCancel={() => setPhase("interactive")}
                 />

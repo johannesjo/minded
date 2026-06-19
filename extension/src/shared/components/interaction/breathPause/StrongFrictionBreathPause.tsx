@@ -7,7 +7,6 @@ import {
 } from "solid-js";
 import {
   BREATH_PAUSE_PATTERN,
-  getBreathCount,
   getBreathStateAt,
   getCueOpacity,
   type BreathPhaseName,
@@ -30,6 +29,10 @@ export const StrongFrictionBreathPause: Component<
 > = (props) => {
   const [getElapsedMs, setElapsedMs] = createSignal(0);
 
+  // Read once: it can't meaningfully change during a ~12s pause, and reading it
+  // per frame would re-run matchMedia 60×/s on the hot path.
+  const reducedMotion = prefersReducedMotion();
+
   let frame: number | undefined;
   let timeoutId: number | undefined;
 
@@ -41,13 +44,13 @@ export const StrongFrictionBreathPause: Component<
     getBreathStateAt(getElapsedMs(), BREATH_PAUSE_PATTERN),
   );
   const getCue = createMemo(() => PHASE_CUE[getBreath().phase]);
-  // Count up through the current phase (1, 2, 3, 4…) so the user can breathe
-  // along, instead of a "time left" countdown.
-  const getCount = createMemo(() => getBreathCount(getBreath()));
+  // Count down the seconds left in the current phase (4, 3, 2, 1) so the user
+  // can pace the breath, matching the wind-down exercise's countdown.
+  const getCount = createMemo(() => getBreath().phaseSecondsLeft);
   // Hold the copy steady (no fade) when the user asked for reduced motion — the
   // sun is already frozen in that mode, so a pulsing label would be out of place.
   const getCueFade = createMemo(() =>
-    prefersReducedMotion() ? 1 : getCueOpacity(getBreath()),
+    reducedMotion ? 1 : getCueOpacity(getBreath()),
   );
 
   const clearTimers = () => {
@@ -60,6 +63,11 @@ export const StrongFrictionBreathPause: Component<
   createEffect(() => {
     const durationMs = Math.max(1, props.seconds) * 1000;
     const onComplete = props.onComplete;
+    // This clock starts on mount; the sun's breath clock (Sun.startBreathCycle)
+    // starts when its glide lands — a few tens of ms apart. Both read the same
+    // BREATH_PAUSE_PATTERN, and the cue cross-fade (CUE_FADE_MS) is far longer
+    // than that gap, so the small offset is invisible at the phase turns. Keep
+    // CUE_FADE_MS comfortably above the glide/transition delta if either moves.
     const startedAt = Date.now();
 
     setElapsedMs(0);
@@ -88,7 +96,7 @@ export const StrongFrictionBreathPause: Component<
       <div class="strong-friction-breath-pause__sun-space" aria-hidden="true" />
 
       {/* The whole block cross-fades together on each phase turn, so the count
-          resets while invisible and never pops from 6 back to 1. */}
+          resets to the next phase's length while invisible, never mid-jump. */}
       <div
         class="strong-friction-breath-pause__copy"
         style={{ opacity: getCueFade() }}

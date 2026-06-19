@@ -10,11 +10,11 @@ import {
 
 describe("getSunSettleForPhase", () => {
   it("returns null for the interactive phase (the sun is draggable, not settled)", () => {
-    expect(getSunSettleForPhase("interactive", 7)).toBeNull();
+    expect(getSunSettleForPhase("interactive")).toBeNull();
   });
 
   it("breathing settles in the upper half, scaled down, and breathes", () => {
-    const settle = getSunSettleForPhase("breathing", 7);
+    const settle = getSunSettleForPhase("breathing");
     expect(settle).not.toBeNull();
     expect(settle!.breathe).toBe(true);
     expect(settle!.anchorYRatio).toBeGreaterThan(0);
@@ -22,19 +22,20 @@ describe("getSunSettleForPhase", () => {
     expect(settle!.scale).toBeLessThan(1);
   });
 
-  it("breathing passes the pause duration through as the breath length", () => {
-    expect(getSunSettleForPhase("breathing", 12)!.breathSeconds).toBe(12);
-    expect(getSunSettleForPhase("breathing", 4)!.breathSeconds).toBe(4);
+  it("breathing carries a breath pattern for the sun to follow", () => {
+    // Shape and duration live on the pattern (the single source of truth the
+    // cue copy reads too), not a separate seconds field.
+    expect(getSunSettleForPhase("breathing")!.breathPattern).toBeDefined();
   });
 
   it("resting returns the shared rest target and does not breathe", () => {
-    const settle = getSunSettleForPhase("resting", 7);
+    const settle = getSunSettleForPhase("resting");
     expect(settle).toEqual(SUN_REST_SETTLE);
     expect(settle!.breathe).toBe(false);
   });
 
   it("resting sits lower than breathing — beneath the choices — and smaller", () => {
-    const breathing = sunBreatheSettle(7);
+    const breathing = sunBreatheSettle();
     // The choices ride at the top now, so the rest target drops below the breath
     // anchor (larger anchorYRatio == closer to the bottom) while staying smaller.
     expect(SUN_REST_SETTLE.anchorYRatio!).toBeGreaterThan(
@@ -50,7 +51,7 @@ describe("getSunSettleForPhase", () => {
   });
 
   it("departs to the web Little Sun corner by default (square bottom-left anchor)", () => {
-    const settle = getSunSettleForPhase("departing", 7)!;
+    const settle = getSunSettleForPhase("departing")!;
     expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_WEB);
     expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_WEB);
     expect(settle.breathe).toBe(false);
@@ -62,7 +63,6 @@ describe("getSunSettleForPhase", () => {
     expect(LITTLE_SUN_CORNER_PX_ANDROID).toBeLessThan(LITTLE_SUN_CORNER_PX_WEB);
     const settle = getSunSettleForPhase(
       "departing",
-      7,
       undefined,
       LITTLE_SUN_CORNER_PX_ANDROID,
     )!;

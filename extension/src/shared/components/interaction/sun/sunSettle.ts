@@ -38,13 +38,13 @@ export const sunInteractiveSettle = (anchor: {
 });
 
 /** Breath pause: upper-middle, scaled down, one inhale→hold→exhale over the pause. */
-export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
+export const sunBreatheSettle = (): SunSettle => ({
   anchorYRatio: 0.4, // upper-middle, leaving room for the breath cue beneath
   scale: 0.82,
   breathe: true,
-  breathSeconds,
-  // Shape the breath from the same pattern the cue copy reads, so the disc and
-  // the "Breathe in / Hold / Breathe out" text move on the same beats.
+  // Shape (and duration) of the breath come entirely from the pattern the cue
+  // copy reads too, so the disc and the "Breathe in / Hold / Breathe out" text
+  // move on the same beats.
   breathPattern: BREATH_PAUSE_PATTERN,
 });
 
@@ -191,7 +191,6 @@ export const sunCompanionSettle = (
  */
 export const getSunSettleForPhase = (
   phase: SunPhase,
-  breathSeconds: number,
   companionBottomYPx = DEFAULT_COMPANION_BOTTOM_Y_PX,
   departCornerPx: number = LITTLE_SUN_CORNER_PX_WEB,
 ): SunSettle | null => {
@@ -199,7 +198,7 @@ export const getSunSettleForPhase = (
     case "companion":
       return sunCompanionSettle(companionBottomYPx);
     case "breathing":
-      return sunBreatheSettle(breathSeconds);
+      return sunBreatheSettle();
     case "surfing":
       return sunSurfSettle();
     case "resting":
