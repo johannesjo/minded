@@ -92,12 +92,19 @@
     z-index: -2;
     border-radius: 50%;
     pointer-events: none;
+    // This layer sits at z-index -2 but still composites *over* the element's
+    // own white #fff background (negative-z descendants paint above the parent's
+    // background), so any colour across the disc's footprint tints the face
+    // yellow. The disc fills only the central ~16% of this oversized layer's
+    // radius, so hold the wash fully clear (alpha 0) out to ~17% — the white face
+    // shows through — and ramp the warm bloom in only beyond the rim. A warm hue
+    // at alpha 0 (not `transparent`) avoids a grey fringe at the ramp.
     background: radial-gradient(
       circle,
-      rgba(255, 255, 246, 0.84) 0%,
-      rgba(255, 240, 139, 0.55) 14%,
-      rgba(248, 203, 83, 0.2) 30%,
-      transparent 52%
+      rgba(255, 239, 170, 0) 17%,
+      rgba(255, 239, 170, 0.34) 27%,
+      rgba(250, 205, 105, 0.14) 41%,
+      rgba(250, 205, 105, 0) 62%
     );
   }
 
