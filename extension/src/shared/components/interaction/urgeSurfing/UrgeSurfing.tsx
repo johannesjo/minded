@@ -1,6 +1,18 @@
-import { createSignal, For, JSX, Match, onCleanup, Switch } from "solid-js";
-import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
+import {
+  createEffect,
+  createSignal,
+  For,
+  JSX,
+  Match,
+  onCleanup,
+  Switch,
+} from "solid-js";
+import {
+  countSunTap,
+  IS_APP,
+} from "@src/dataInterface/commonSyncDataInterface";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import {
   getSurfCue,
   getSurfDurationMs,
@@ -36,8 +48,13 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   const [getFraction, setFraction] = createSignal(0);
   const [getBefore, setBefore] = createSignal(0);
   const [getAfter, setAfter] = createSignal(0);
+  // Drives the cross-screen fade: drop to 0, swap the screen while hidden, then
+  // back to 1 (see .urge-surfing's opacity transition).
+  const [getScreenOpacity, setScreenOpacity] = createSignal(1);
 
+  const FADE_MS = 240;
   let intervalId: ReturnType<typeof setInterval> | undefined;
+  let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
 
   const stopTimer = (): void => {
     if (intervalId !== undefined) {
@@ -45,6 +62,58 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
       intervalId = undefined;
     }
   };
+
+  const clearFade = (): void => {
+    if (fadeTimeout !== undefined) {
+      clearTimeout(fadeTimeout);
+      fadeTimeout = undefined;
+    }
+  };
+
+  // Fade the current screen out, swap to `next` while hidden, then fade in. The
+  // optional `onHidden` runs at the swap so sun/timer changes land with the new
+  // screen rather than before the old one has faded.
+  const goToPhase = (next: UrgeSurfingPhase, onHidden?: () => void): void => {
+    const fadeMs = prefersReducedMotion() ? 0 : FADE_MS;
+    clearFade();
+    setScreenOpacity(0);
+    fadeTimeout = setTimeout(() => {
+      fadeTimeout = undefined;
+      onHidden?.();
+      setPhase(next);
+      setScreenOpacity(1);
+    }, fadeMs);
+  };
+
+  // Crossfade the surf cues into one another as the wave moves through its
+  // phases, rather than snapping each new line in.
+  // Resting opacity of the cue (slightly dimmed); the crossfade drops to 0.
+  const CUE_OPACITY = 0.82;
+  const [getCueText, setCueText] = createSignal(getSurfCue(0));
+  const [getCueOpacity, setCueOpacity] = createSignal(CUE_OPACITY);
+  let cueFadeTimeout: ReturnType<typeof setTimeout> | undefined;
+  let shownCue = getSurfCue(0);
+
+  const clearCueFade = (): void => {
+    if (cueFadeTimeout !== undefined) {
+      clearTimeout(cueFadeTimeout);
+      cueFadeTimeout = undefined;
+    }
+  };
+
+  createEffect(() => {
+    const next = getSurfCue(getFraction());
+    if (next === shownCue) return;
+    shownCue = next;
+    const fadeMs = prefersReducedMotion() ? 0 : FADE_MS;
+    clearCueFade();
+    setCueOpacity(0);
+    cueFadeTimeout = setTimeout(() => {
+      cueFadeTimeout = undefined;
+      setCueText(next);
+      setCueOpacity(CUE_OPACITY);
+    }, fadeMs);
+  });
 
   const startSurf = (): void => {
     // Capture the callbacks outside the interval so the reactive `props` access
@@ -57,7 +126,6 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     props.onSunWaveStart(durationMs / 1000);
     const startTS = Date.now();
     setFraction(0);
-    setPhase("surf");
     stopTimer();
     intervalId = setInterval(() => {
       // Keep the parent's auto-dismiss timer at bay; the wave runs without any
@@ -67,14 +135,13 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
       setFraction(fraction);
       if (fraction >= 1) {
         stopTimer();
-        onSunWaveEnd();
-        setPhase("rateAfter");
+        // Settle the sun back as the surf screen fades to the after-rating.
+        goToPhase("rateAfter", onSunWaveEnd);
       }
     }, TICK_MS);
   };
 
   const finish = (): void => {
-    setPhase("done");
     // Reward the completed practice with a sun tap, like the screen-off minute.
     // Fire-and-forget: the reflection screen gives the write ample time to flush.
     void countSunTap().catch((error: unknown) => {
@@ -86,20 +153,14 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     props.onCancelCountdown();
     if (getPhase() === "rateBefore") {
       setBefore(value);
+      // Start the wave now (the sun begins its swell); the screen cross-fades
+      // from the rating to the surf cue over it.
       startSurf();
+      goToPhase("surf");
     } else {
       setAfter(value);
-      finish();
+      goToPhase("done", finish);
     }
-  };
-
-  const skipNow = (): void => {
-    // Stop the wave timer up front so a pending tick can't push us to
-    // "rateAfter" after the parent has already torn the interaction down.
-    stopTimer();
-    // Settle the sun back only if we'd actually set it swelling (the surf phase).
-    if (getPhase() === "surf") props.onSunWaveEnd();
-    props.onSkip();
   };
 
   const reflection = (): string => {
@@ -114,10 +175,19 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     return "Tougher than it looked, and you still didn't act on it. That's the practice.";
   };
 
-  onCleanup(stopTimer);
+  onCleanup(() => {
+    stopTimer();
+    clearFade();
+    clearCueFade();
+  });
 
   return (
-    <div class="urge-surfing" onMouseMove={() => props.onCancelCountdown()}>
+    <div
+      class="urge-surfing"
+      classList={{ "is-surf": getPhase() === "surf" }}
+      style={{ opacity: getScreenOpacity() }}
+      onMouseMove={() => props.onCancelCountdown()}
+    >
       <Switch>
         <Match when={getPhase() === "intro"}>
           <div class="txtBig interaction-heading">
@@ -127,24 +197,24 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
             Instead of feeding it, let's watch it. Urges rise and pass on their
             own.
           </p>
-          <div class="urge-surfing-actions">
-            <button
-              type="button"
-              class="btnTxt"
-              onClick={() => setPhase("rateBefore")}
-            >
-              Surf it
-            </button>
-            <button type="button" class="btnTxtOutline" onClick={skipNow}>
-              Not now
-            </button>
-          </div>
+          {/* No "skip" here: triple-tapping (or flinging) the persistent sun is
+              the universal way out of any interaction, so a second button would
+              be redundant. */}
+          <button
+            type="button"
+            class="btnTxt"
+            onClick={() => goToPhase("rateBefore")}
+          >
+            Surf it
+          </button>
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
           <div class="txtBig interaction-heading">
             {getPhase() === "rateBefore"
-              ? "How strong is the pull right now?"
+              ? IS_APP
+                ? "How strong is the pull to open this app right now?"
+                : "How strong is the pull to open this website right now?"
               : "And now, how strong is it?"}
           </div>
           <div class="urge-surfing-scale">
@@ -167,12 +237,12 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
         </Match>
 
         <Match when={getPhase() === "surf"}>
-          {/* No disc here: the one real sun (driven via onSunWaveStart) does the
-              swell, so the wave reads as the same sun the user always sees. */}
-          <p class="urge-surfing-cue">{getSurfCue(getFraction())}</p>
-          <button type="button" class="btnTxtOutline" onClick={skipNow}>
-            Skip
-          </button>
+          {/* No disc and no skip here: the one real sun (driven via
+              onSunWaveStart) gently pulses in place and is the focus; the short
+              wave simply plays out. */}
+          <p class="urge-surfing-cue" style={{ opacity: getCueOpacity() }}>
+            {getCueText()}
+          </p>
         </Match>
 
         <Match when={getPhase() === "done"}>

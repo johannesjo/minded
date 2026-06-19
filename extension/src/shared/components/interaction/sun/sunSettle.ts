@@ -47,15 +47,18 @@ export const sunBreatheSettle = (breathSeconds: number): SunSettle => ({
  * sun the user always sees does the rise-and-fall over the whole wave, rather
  * than a second disc being drawn over it.
  */
-export const sunSurfSettle = (
-  anchor: { x: number; y: number },
-  breathSeconds: number,
-): SunSettle => ({
-  anchorXPx: anchor.x,
-  anchorYPxFromTop: anchor.y,
+export const sunSurfSettle = (): SunSettle => ({
+  // The meditation sun floats in the upper third as the focal point, clear above
+  // the guidance cue (which is pushed to the lower part of its box). A fixed
+  // viewport ratio (not the content placeholder) so its position is predictable.
+  anchorYRatio: 0.3,
   scale: 1,
   breathe: true,
-  breathSeconds,
+  // A gentle, continuous pulse for the meditation: a small swell every few
+  // seconds rather than one slow rise over the whole wave.
+  breathSeconds: 5,
+  breathLoop: true,
+  breathPeakBonus: 0.08,
 });
 
 /**
@@ -188,10 +191,7 @@ export const getSunSettleForPhase = (
     case "breathing":
       return sunBreatheSettle(breathSeconds);
     case "surfing":
-      // Static fallback (no measured anchor, e.g. the self-owned sun): swell from
-      // the same upper-middle the breath pause uses. The live shell flow overrides
-      // this with sunSurfSettle so the disc swells in place on its slot.
-      return sunBreatheSettle(breathSeconds);
+      return sunSurfSettle();
     case "resting":
       return SUN_REST_SETTLE;
     case "departing":

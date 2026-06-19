@@ -104,6 +104,10 @@ export interface SunSettle {
   breathe?: boolean;
   /** Length of the inhale→exhale in seconds. */
   breathSeconds?: number;
+  /** Loop the breath continuously (a gentle meditation pulse) instead of once. */
+  breathLoop?: boolean;
+  /** Override the peak swell of the breath (default BREATH_PEAK_BONUS); smaller = gentler. */
+  breathPeakBonus?: number;
 }
 
 export const Sun: Component<SunProps> = (props) => {
@@ -352,10 +356,14 @@ export const Sun: Component<SunProps> = (props) => {
 
   // One slow inhale→exhale over the pause, peaking at the midpoint — matching
   // the cue copy that flips from "Breathe in" to "Breathe out" halfway through.
-  const startBreathCycle = (restScale: number, seconds: number) => {
+  const startBreathCycle = (
+    restScale: number,
+    seconds: number,
+    opts?: { loop?: boolean; peakBonus?: number },
+  ) => {
     const durationMs = Math.max(1, seconds) * 1000;
-    const peak = restScale + BREATH_PEAK_BONUS;
-    const startTime = Date.now();
+    const peak = restScale + (opts?.peakBonus ?? BREATH_PEAK_BONUS);
+    let startTime = Date.now();
 
     const step = () => {
       const t = Math.min((Date.now() - startTime) / durationMs, 1);
@@ -363,6 +371,11 @@ export const Sun: Component<SunProps> = (props) => {
       setScale(restScale + (peak - restScale) * wave);
 
       if (t < 1) {
+        settleFrame = requestAnimationFrame(step);
+      } else if (opts?.loop) {
+        // Gentle meditation pulse: start the next inhale→exhale immediately. The
+        // loop is cancelled when the next settle (e.g. back to interactive) runs.
+        startTime = Date.now();
         settleFrame = requestAnimationFrame(step);
       } else {
         settleFrame = undefined;
@@ -398,7 +411,10 @@ export const Sun: Component<SunProps> = (props) => {
 
     animateOffsetScaleTo(target, restScale, duration, () => {
       if (settle.breathe) {
-        startBreathCycle(restScale, settle.breathSeconds ?? 7);
+        startBreathCycle(restScale, settle.breathSeconds ?? 7, {
+          loop: settle.breathLoop,
+          peakBonus: settle.breathPeakBonus,
+        });
       } else {
         setIsAnimating(false);
       }

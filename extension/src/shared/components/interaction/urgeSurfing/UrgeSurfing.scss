@@ -9,28 +9,60 @@
   gap: 18px;
   text-align: center;
   color: var(--c-fg-full-emphasis);
+  // Cross-screen fade between intro → rate → surf → after → reflection. The
+  // opacity itself is driven from the component (getScreenOpacity).
+  transition: opacity 240ms ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  // Meditation screen: the sun floats in the upper third (see sunSurfSettle), so
+  // drop the cue to the lower part of the box to sit clearly below the disc and
+  // its halo rather than under it.
+  &.is-surf {
+    justify-content: flex-end;
+  }
+
+  // Hold a constant height across every screen so the sun's slot (the
+  // InteractionCommon placeholder that follows this content) never shifts as the
+  // copy changes — that shift is what made the disc jump between screens (and what
+  // desynced its background glow, which tracks the disc's position). For this to
+  // hold, every screen's content must stay under min-height; the heading-padding
+  // trim and the wider sub below keep the tallest screen (intro) comfortably under
+  // it. box-sizing is border-box, so this includes the padding-bottom.
+  min-height: 320px;
+  // Push the sun's slot down so the disc, and its soft glow halo, sit clearly
+  // below the copy above instead of crowding it.
+  padding-bottom: 52px;
+
+  // The shared interaction heading carries 64px of its own padding — far more than
+  // these compact screens need, and enough to push intro past min-height (which
+  // reintroduces the jump). The 18px flex gap already spaces the heading; trim its
+  // padding so every screen stays well under the fixed box.
+  .interaction-heading {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 
   .urge-surfing-sub {
     margin: 0 0 4px;
     opacity: 0.76;
-    max-width: 30ch;
+    // Wide enough to keep the sub to ~2 lines, so intro stays under min-height.
+    max-width: 42ch;
   }
 
   .urge-surfing-cue {
     margin: 0;
     min-height: 48px;
-    opacity: 0.82;
     max-width: 30ch;
-  }
+    // Opacity (resting ~0.82) is driven from the component so the cues can
+    // crossfade into one another rather than snapping.
+    transition: opacity 240ms ease;
 
-  // Stack the intro's primary/secondary actions as a distinct pair, set apart
-  // from the copy above them.
-  .urge-surfing-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 
   // The intensity buttons (btnToggleSelectSmall) carry their own margins, so the
