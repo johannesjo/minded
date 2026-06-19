@@ -11,7 +11,8 @@
 }
 
 .cardDashboard {
-  padding: 18px 8px;
+  // Roomier interior on phones so content isn't pressed against the card edges.
+  padding: 18px 14px;
 
   @include onNonMobileScreens() {
     padding: 32px;

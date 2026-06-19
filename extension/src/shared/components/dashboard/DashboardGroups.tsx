@@ -106,9 +106,11 @@ export const DashboardGroups: (props: {
     setIsDailyQuestionsBannerBeingRemoved(true);
     setDailyQuestionsDoneForToday(getDailyQuestionsMode());
     window.clearTimeout(t0);
+    // Matches the --dur-soft fade-out on .isBeingRemoved so the node stays
+    // mounted for the full fade instead of being pulled out mid-transition.
     t0 = setTimeout(() => {
       setIsShowDailyQuestionsBanner(false);
-    }, 300);
+    }, 480);
   };
 
   return (
@@ -208,8 +210,8 @@ export const DashboardGroups: (props: {
                         <div class="dashboardHeading">daily budget</div>
                         <div class="fatTxt">
                           {dgBudget.remainingSeconds > 0
-                            ? `${remainingMin} min left`
-                            : "Budget used up"}
+                            ? `${remainingMin} min remaining`
+                            : "Budget reached for today"}
                         </div>
                       </div>
                     );
