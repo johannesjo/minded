@@ -39,8 +39,8 @@ export const StrongFrictionBreathPause: Component<
     pattern: BREATH_PAUSE_PATTERN,
     originAt: getBreathStartedAt,
     reducedMotion,
-    // props.seconds is fixed for a given pause (getPostSunPauseSeconds), so read
-    // it once, untracked — the duration never changes mid-pause.
+    // Snapshot the duration once: the pause length is fixed for a given pause
+    // (getPostSunPauseSeconds), so read it untracked — it never changes mid-pause.
     durationMs: untrack(() => Math.max(1, props.seconds) * 1000),
     onComplete: () => props.onComplete(),
   });

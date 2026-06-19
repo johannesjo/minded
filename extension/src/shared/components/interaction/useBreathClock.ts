@@ -4,7 +4,6 @@ import {
   createMemo,
   createSignal,
   onCleanup,
-  onMount,
 } from "solid-js";
 import {
   type BreathPattern,
@@ -19,20 +18,21 @@ import {
  * countdown all read the same elapsed time and can't drift.
  *
  * Two modes:
- * - **owned** (no `originAt`): the clock starts its own origin on `start()`
- *   (or on mount with `autoStart`) — e.g. the wind-down exercise's Start button.
+ * - **owned** (no `originAt`): the clock starts its own origin on `start()` —
+ *   e.g. the wind-down exercise's Start button.
  * - **follow** (`originAt` given): the clock reads an external start timestamp —
  *   e.g. the strong-friction pause reads the sun's `breathStartedAt`, so the
- *   sun's disc and the cue share one origin (GitHub #27).
+ *   sun's disc and the cue share one origin (GitHub #27). It begins ticking only
+ *   once that origin lands, and fires `onComplete` `durationMs` later.
  */
 export interface UseBreathClockOptions {
   pattern: BreathPattern;
-  /** Repeat the cycle (wind-down / surf) rather than clamping at the final exhale. */
+  /** Repeat the cycle (wind-down) rather than clamping at the final exhale. */
   loop?: boolean;
   /**
    * Follow an external start origin. While it returns `undefined` the breath has
-   * not begun: elapsed clamps to 0 (the pre-start hold during the sun's glide-in).
-   * Omit to own the origin via `start()` / `autoStart`.
+   * not begun: elapsed clamps to 0 (the pre-start hold during the sun's glide-in)
+   * and the clock stays idle. Omit to own the origin via `start()`.
    */
   originAt?: Accessor<number | undefined>;
   /**
@@ -41,40 +41,30 @@ export interface UseBreathClockOptions {
    * the countdown still ticks to completion.
    */
   reducedMotion?: boolean;
-  /** Owned mode: start the clock on mount. */
-  autoStart?: boolean;
-  /** Fire `onComplete` this long after the breath begins, then stop. */
+  /** Follow mode: fire `onComplete` this long after the breath begins, then stop. */
   durationMs?: number;
   onComplete?: () => void;
 }
 
 export interface BreathClock {
   breath: Accessor<BreathState>;
-  elapsedMs: Accessor<number>;
   /** Whether the breath has begun, so the cue should show rather than pre-start-hold. */
   isStarted: Accessor<boolean>;
+  /** Owned mode: (re)start the clock from now. */
   start: () => void;
-  stop: () => void;
 }
 
 /**
- * Pure: the elapsed time to sample the breath at, given the resolved origin.
- * Falls back to `fallbackOrigin` when the primary origin is unset (the
- * reduced-motion countdown in follow mode); with no origin at all the breath
- * sits at elapsed 0 (the pre-start hold). Never negative.
+ * Pure: elapsed time to sample the breath at. Clamps to 0 before the breath has
+ * an origin (the pre-start hold) and never goes negative.
  */
 export const breathElapsedMs = (
   now: number,
   origin: number | undefined,
-  fallbackOrigin?: number,
-): number => {
-  const resolved = origin ?? fallbackOrigin;
-  return resolved === undefined ? 0 : Math.max(0, now - resolved);
-};
+): number => (origin === undefined ? 0 : Math.max(0, now - origin));
 
 export const useBreathClock = (options: UseBreathClockOptions): BreathClock => {
-  const { pattern, loop, originAt, reducedMotion, autoStart, durationMs } =
-    options;
+  const { pattern, loop, originAt, reducedMotion, durationMs } = options;
   // Capture once so callbacks don't re-read the (possibly reactive) options.
   const onComplete = options.onComplete;
   const mountOrigin = Date.now();
@@ -97,29 +87,25 @@ export const useBreathClock = (options: UseBreathClockOptions): BreathClock => {
     timeoutId = undefined;
   };
 
-  // The reduced-motion fallback only applies in follow mode: the sun is frozen
-  // and never publishes an origin, yet the cue must keep counting down, so it
-  // runs off the mount origin. Owned mode just waits for start().
-  const fallbackOrigin = (): number | undefined =>
-    originAt && reducedMotion ? mountOrigin : undefined;
+  // The effective origin the breath is measured from. In follow mode under
+  // reduced motion the sun is frozen and never publishes one, so it falls back to
+  // the mount origin (the countdown still ticks); owned mode just waits for start().
+  const effectiveOrigin = (): number | undefined => {
+    const o = originAt ? originAt() : ownedOrigin();
+    if (o !== undefined) return o;
+    return originAt && reducedMotion ? mountOrigin : undefined;
+  };
 
-  const origin = (): number | undefined =>
-    originAt ? originAt() : ownedOrigin();
+  const isStarted = (): boolean => effectiveOrigin() !== undefined;
 
-  const isStarted = (): boolean =>
-    origin() !== undefined || (originAt !== undefined && !!reducedMotion);
-
-  const elapsedMs = createMemo(() =>
-    breathElapsedMs(now(), origin(), fallbackOrigin()),
-  );
+  const elapsedMs = createMemo(() => breathElapsedMs(now(), effectiveOrigin()));
   const breath = createMemo(() =>
     getBreathStateAt(elapsedMs(), pattern, { loop }),
   );
 
   // rAF (not a coarse interval) so a cue cross-fade lands cleanly at ~0 opacity
-  // on each phase turn instead of popping mid-fade. Stops ticking once the breath
-  // has run its `durationMs` (a single pause) so it doesn't spin past the end; a
-  // looping clock (no durationMs) keeps going until stop()/cleanup.
+  // on each phase turn instead of popping mid-fade. Stops once a `durationMs`
+  // breath has run (a single pause); a looping clock keeps going until cleanup.
   const tick = () => {
     setNow(Date.now());
     if (durationMs !== undefined && elapsedMs() >= durationMs) {
@@ -135,42 +121,35 @@ export const useBreathClock = (options: UseBreathClockOptions): BreathClock => {
   };
 
   const start = () => {
-    clearTimer();
     setOwnedOrigin(Date.now());
     runLoop();
-    if (durationMs !== undefined) {
-      timeoutId = window.setTimeout(() => onComplete?.(), durationMs);
-    }
   };
 
-  const stop = () => {
-    cancelFrame();
-    clearTimer();
-  };
-
-  // Follow mode completion: fire once, measured from the effective origin (the
-  // sun's, or the mount origin under reduced motion) so the wall time matches the
-  // visible breath. A setTimeout (not the rAF) so a backgrounded tab still ends.
-  if (originAt && durationMs !== undefined) {
-    let scheduled = false;
+  // Follow mode: begin ticking and schedule completion the moment the breath
+  // actually starts — when the origin lands, or immediately under reduced motion.
+  // Gating on the origin means no frames are spent during the sun's glide-in, and
+  // both visuals and completion read one origin. Fires once (the origin is
+  // published a single time per pause). A setTimeout (not the rAF) so a
+  // backgrounded tab still completes.
+  if (originAt) {
+    let started = false;
     createEffect(() => {
-      if (scheduled) return;
-      const effective = origin() ?? fallbackOrigin();
-      if (effective === undefined) return;
-      scheduled = true;
-      const remaining = Math.max(0, effective + durationMs - Date.now());
-      timeoutId = window.setTimeout(() => onComplete?.(), remaining);
+      if (started) return;
+      const origin = effectiveOrigin();
+      if (origin === undefined) return;
+      started = true;
+      runLoop();
+      if (durationMs !== undefined) {
+        const remaining = Math.max(0, origin + durationMs - Date.now());
+        timeoutId = window.setTimeout(() => onComplete?.(), remaining);
+      }
     });
   }
 
-  onMount(() => {
-    // Follow mode ticks from mount so the visuals track the shared origin the
-    // instant it lands; owned mode waits for start() unless autoStart is set.
-    if (originAt) runLoop();
-    else if (autoStart) start();
+  onCleanup(() => {
+    cancelFrame();
+    clearTimer();
   });
 
-  onCleanup(stop);
-
-  return { breath, elapsedMs, isStarted, start, stop };
+  return { breath, isStarted, start };
 };
