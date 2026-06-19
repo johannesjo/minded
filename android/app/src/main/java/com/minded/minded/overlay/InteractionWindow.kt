@@ -73,10 +73,17 @@ class InteractionWindow(
                 
                 // Initially set a dark background to prevent white flash
                 this.setBackgroundColor(0xFF1a1a1a.toInt())
-                
-                // Force hardware acceleration for smoother rendering
-                this.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                
+
+                // Deliberately do NOT force LAYER_TYPE_HARDWARE here: a WebView is
+                // already hardware-accelerated at the window level, and forcing it
+                // onto its own hardware layer inside a TYPE_APPLICATION_OVERLAY +
+                // translucent window makes a freshly-created overlay WebView often
+                // never composite its first frame — leaving the user on the opaque
+                // dark shield (the "black screen on first open, clears on reopen"
+                // reports). Let the WebView use the default layer so the first frame
+                // paints. If first-paint flakiness remains, invalidate() after load
+                // before reaching for a hardware layer again.
+
                 // Set transparent background after page starts loading
                 this.webViewClient = object : android.webkit.WebViewClient() {
                     override fun onPageStarted(view: android.webkit.WebView?, url: String?, favicon: android.graphics.Bitmap?) {
