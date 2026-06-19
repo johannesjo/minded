@@ -204,7 +204,7 @@ export const MissingCapabilityView = (props: {
         {props.requiredOnly && getCanContinue() && (
           <button
             style="margin-top: 32px"
-            class="btnTxtBig"
+            class="btnTxt isBig"
             onClick={() => props.onAllConfigured?.()}
           >
             continue
@@ -213,7 +213,7 @@ export const MissingCapabilityView = (props: {
 
         <button
           style="margin-top:  32px"
-          class="btnTxtOutline"
+          class="btnTxt isOutline"
           onClick={() => props.onPermissionDenied?.()}
         >
           <Ico name="close" /> don't give permission

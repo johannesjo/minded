@@ -327,7 +327,7 @@ export const SleepWindDownView = (
     return (
       <div class={styles.activityActions}>
         <button
-          class="btnTxtOutline"
+          class="btnTxt isOutline"
           onClick={() => {
             if (action === "complete") {
               markComplete(activityKey);
@@ -367,21 +367,21 @@ export const SleepWindDownView = (
                   </p>
                   <div class={styles.btnRow}>
                     <button
-                      class="btnTxtOutline"
+                      class="btnTxt isOutline"
                       onClick={() => goToView(WIND_DOWN_OVERVIEW_VIEW)}
                       disabled={!hydrated()}
                     >
                       Yes
                     </button>
                     <button
-                      class="btnTxtOutline"
+                      class="btnTxt isOutline"
                       onClick={() => goToView("snoozeIntent")}
                       disabled={!hydrated()}
                     >
                       Snooze 15 min
                     </button>
                     <button
-                      class="btnTxtOutline"
+                      class="btnTxt isOutline"
                       onClick={skipTonight}
                       disabled={!hydrated()}
                     >

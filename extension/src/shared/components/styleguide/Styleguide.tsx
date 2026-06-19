@@ -174,7 +174,7 @@ const Styleguide = (): JSX.Element => {
           <h1>styleguide</h1>
           <button
             type="button"
-            class="btnTxtOutline"
+            class="btnTxt isOutline"
             onClick={() => setIsDark((v) => !v)}
             aria-pressed={isDark()}
           >
@@ -186,7 +186,7 @@ const Styleguide = (): JSX.Element => {
             {(item) => (
               <button
                 type="button"
-                class="btnToggleSelectSmall"
+                class="btnToggleSelect isSmall"
                 onClick={() => scrollTo(item.id)}
               >
                 {item.label}
@@ -244,6 +244,14 @@ const Styleguide = (): JSX.Element => {
       </Section>
 
       <Section id="buttons" title="Buttons">
+        <p class={styles.muted}>
+          Three bases — <code>.btnTxt</code>, <code>.btnIco</code>,{" "}
+          <code>.btnToggleSelect</code> — composed with shared modifiers:{" "}
+          <code>.isOutline</code>, <code>.isBig</code>, <code>.isPlain</code>,{" "}
+          <code>.isSmall</code>, <code>.isSelected</code>. Reach for a modifier
+          before adding a new variant.
+        </p>
+
         <Subsection label=".btnTxt">
           <button type="button" class="btnTxt">
             default
@@ -253,20 +261,20 @@ const Styleguide = (): JSX.Element => {
           </button>
         </Subsection>
 
-        <Subsection label=".btnTxtOutline">
-          <button type="button" class="btnTxtOutline">
+        <Subsection label=".btnTxt.isOutline">
+          <button type="button" class="btnTxt isOutline">
             default
           </button>
-          <button type="button" class="btnTxtOutline" disabled>
+          <button type="button" class="btnTxt isOutline" disabled>
             disabled
           </button>
         </Subsection>
 
-        <Subsection label=".btnTxtBig (primary CTA size)">
-          <button type="button" class="btnTxtBig">
+        <Subsection label=".btnTxt.isBig (primary CTA size)">
+          <button type="button" class="btnTxt isBig">
             <Ico name="send" /> save
           </button>
-          <button type="button" class="btnTxtBig" disabled>
+          <button type="button" class="btnTxt isBig" disabled>
             disabled
           </button>
         </Subsection>
@@ -283,26 +291,26 @@ const Styleguide = (): JSX.Element => {
           </button>
         </Subsection>
 
-        <Subsection label=".btnToggleSelectSmall">
-          <button type="button" class="btnToggleSelectSmall">
+        <Subsection label=".btnToggleSelect.isSmall">
+          <button type="button" class="btnToggleSelect isSmall">
             unselected
           </button>
-          <button type="button" class="btnToggleSelectSmall isSelected">
+          <button type="button" class="btnToggleSelect isSmall isSelected">
             selected
           </button>
-          <button type="button" class="btnToggleSelectSmall" disabled>
+          <button type="button" class="btnToggleSelect isSmall" disabled>
             disabled
           </button>
         </Subsection>
 
-        <Subsection label=".btnIco / .btnIcoSmall / .btnIcoOnly">
+        <Subsection label=".btnIco / .isSmall / .isPlain">
           <button type="button" class="btnIco" aria-label="settings">
             <Ico name="settings" />
           </button>
-          <button type="button" class="btnIcoSmall" aria-label="close">
+          <button type="button" class="btnIco isSmall" aria-label="close">
             <Ico name="close" />
           </button>
-          <button type="button" class="btnIcoOnly" aria-label="info">
+          <button type="button" class="btnIco isPlain" aria-label="info">
             <Ico name="info" />
           </button>
           <button type="button" class="btnIco" aria-label="disabled" disabled>
@@ -420,7 +428,7 @@ const Styleguide = (): JSX.Element => {
         <Subsection label="<Toast>">
           <button
             type="button"
-            class="btnTxtOutline"
+            class="btnTxt isOutline"
             onClick={() => setToastVisible(true)}
           >
             show toast
@@ -435,7 +443,7 @@ const Styleguide = (): JSX.Element => {
         <Subsection label="<ButtonWrapper> (fade in/out)">
           <button
             type="button"
-            class="btnTxtOutline"
+            class="btnTxt isOutline"
             onClick={() => setWrapperVisible((v) => !v)}
           >
             toggle visibility
@@ -509,7 +517,7 @@ const Styleguide = (): JSX.Element => {
           <div class={styles.interactionFrame}>
             <button
               type="button"
-              class="btnTxtOutline"
+              class="btnTxt isOutline"
               onClick={() => setIntentArmed((v) => !v)}
             >
               isArmed: {String(intentArmed())}
@@ -533,7 +541,7 @@ const Styleguide = (): JSX.Element => {
           </p>
           <button
             type="button"
-            class="btnTxtOutline"
+            class="btnTxt isOutline"
             onClick={() => setGroundingOpen(true)}
           >
             Open grounding offer
@@ -643,7 +651,7 @@ const SunMorphHarness = (): JSX.Element => {
     <>
       <button
         type="button"
-        class="btnTxtOutline"
+        class="btnTxt isOutline"
         onClick={() => {
           setPhase("interactive");
           setIsOpen(true);
@@ -703,7 +711,7 @@ const SunMorphHarness = (): JSX.Element => {
               {(p) => (
                 <button
                   type="button"
-                  class="btnToggleSelectSmall"
+                  class="btnToggleSelect isSmall"
                   classList={{ isSelected: phase() === p }}
                   onClick={() => setPhase(p)}
                 >
@@ -713,7 +721,7 @@ const SunMorphHarness = (): JSX.Element => {
             </For>
             <button
               type="button"
-              class="btnTxtOutline"
+              class="btnTxt isOutline"
               onClick={() => setIsOpen(false)}
             >
               close

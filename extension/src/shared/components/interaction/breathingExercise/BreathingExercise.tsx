@@ -60,7 +60,7 @@ const BreathingExercise = () => {
       {/* Start only — no restart: once the breath is flowing we don't offer to
           yank the user back to the beginning of a wind-down meditation. */}
       <Show when={!clock.isStarted()}>
-        <button onClick={() => clock.start()} class="btnTxtOutline">
+        <button onClick={() => clock.start()} class="btnTxt isOutline">
           Start
         </button>
       </Show>

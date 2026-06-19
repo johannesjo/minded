@@ -71,14 +71,14 @@ export const AnswerEntry: (props: {
       {!getIsEditMode() && (
         <div class={styles.editBar}>
           <button
-            class="btnIcoSmall"
+            class="btnIco isSmall"
             aria-label="Edit answer"
             onClick={triggerEdit}
           >
             <Ico name="edit" />
           </button>
           <button
-            class="btnIcoSmall"
+            class="btnIco isSmall"
             aria-label="Delete answer"
             onClick={props.onRemove}
           >
@@ -121,7 +121,7 @@ export const AnswerEntry: (props: {
           />
 
           <button
-            class="btnIcoSmall"
+            class="btnIco isSmall"
             aria-label="Confirm edit"
             onClick={() => {}}
           >

@@ -182,14 +182,14 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           <div class={styles.choices}>
             <button
               type="button"
-              class="btnTxtOutline"
+              class="btnTxt isOutline"
               onClick={() => chooseMode("timer")}
             >
               Meditate with a timer
             </button>
             <button
               type="button"
-              class="btnTxtOutline"
+              class="btnTxt isOutline"
               onClick={() => chooseMode("quiet")}
             >
               {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}

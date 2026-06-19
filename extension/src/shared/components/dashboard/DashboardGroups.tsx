@@ -136,13 +136,13 @@ export const DashboardGroups: (props: {
           </div>
           <div class={styles.cardDailyQuestionsBtns}>
             <button
-              class="btnTxtOutline"
+              class="btnTxt isOutline"
               onClick={() => navigate("/dailyQuestions")}
             >
               let's go
             </button>
             <button
-              class="btnTxtOutline"
+              class="btnTxt isOutline"
               onClick={() => removeDailyQuestionsBanner()}
             >
               no

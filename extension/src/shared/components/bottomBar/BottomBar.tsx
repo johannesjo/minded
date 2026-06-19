@@ -35,7 +35,7 @@ const BottomBar = () => {
           <A
             title="Give us some feedback"
             aria-label="Give us some feedback"
-            class="btnIcoOnly"
+            class="btnIco isPlain"
             href="/feedback"
             activeClass="active"
           >
@@ -45,7 +45,7 @@ const BottomBar = () => {
             <A
               title="Go to settings page"
               aria-label="Go to settings page"
-              class="btnIcoOnly"
+              class="btnIco isPlain"
               href="/settings"
               activeClass="active"
             >
@@ -66,7 +66,7 @@ const BottomBar = () => {
               ? "Go back"
               : "Go to dashboard"
           }
-          class="btnIcoOnly"
+          class="btnIco isPlain"
           onClick={(event) => {
             event.stopPropagation();
             goBack();

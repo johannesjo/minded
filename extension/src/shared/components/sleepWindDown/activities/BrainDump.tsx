@@ -114,7 +114,7 @@ export const BrainDump = (props: {
       />
       <div class={styles.activityActions}>
         <button
-          class="btnTxtOutline"
+          class="btnTxt isOutline"
           disabled={isSubmitting()}
           onClick={() => submit(text())}
         >

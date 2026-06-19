@@ -1,9 +1,28 @@
 @import "@src/styles/mixins/mixins";
 
-.btnIcoSmall {
+// Three button bases — text, icon, toggle — plus a small set of shared
+// modifiers (.isOutline, .isBig, .isPlain, .isSmall, .isSelected). Prefer
+// composing a base with a modifier over adding a new variant; fewer variants
+// keep screens consistent.
+//
+// The `#minded-6622 &` selectors raise specificity so the buttons survive
+// inside the content-script root; modifiers repeat the pattern so they still
+// win over the base there.
+
+.btnTxt {
   &,
   #minded-6622 & {
-    @include btnIco(var(--btn-small));
+    @include btnTxt();
+  }
+
+  &.isOutline,
+  #minded-6622 &.isOutline {
+    @include btnTxtOutlineModifier();
+  }
+
+  &.isBig,
+  #minded-6622 &.isBig {
+    @include btnTxtBigModifier();
   }
 }
 
@@ -12,47 +31,22 @@
   #minded-6622 & {
     @include btnIco(var(--btn-height));
   }
-}
 
-.btnIcoOnly {
-  &,
-  #minded-6622 & {
-    @include btnIcoOnly(var(--btn-height));
+  &.isSmall,
+  #minded-6622 &.isSmall {
+    @include btnIcoSmallModifier();
+  }
+
+  &.isPlain,
+  #minded-6622 &.isPlain {
+    @include btnIcoPlainModifier();
   }
 }
-
-.btnTxtBig {
-  &,
-  #minded-6622 & {
-    @include btnTxtBigger();
-  }
-}
-
-.btnTxt {
-  &,
-  #minded-6622 & {
-    @include btnTxt();
-  }
-}
-
-.btnTxtOutline {
-  &,
-  #minded-6622 & {
-    @include btnTxtOutline();
-  }
-}
-
-//.btnTxtSlightlySmaller {
-//  &,
-//  #minded-6622 & {
-//    @include btnTxtSlightlySmaller();
-//  }
-//}
 
 .btnToggleSelect {
   @include btnToggleSelect();
-}
 
-.btnToggleSelectSmall {
-  @include btnToggleSelectSmall();
+  &.isSmall {
+    @include btnToggleSelectSmallModifier();
+  }
 }

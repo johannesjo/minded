@@ -94,12 +94,17 @@
   }
 }
 
-@mixin btnIcoOnly($height: var(--btn-height)) {
-  @include btnIco($height);
+// Modifier (.btnIco.isSmall): shrink an icon button to the small size.
+@mixin btnIcoSmallModifier() {
+  height: var(--btn-small);
+  width: var(--btn-small);
+  line-height: var(--btn-small);
+}
 
-  & {
-    background: none;
-  }
+// Modifier (.btnIco.isPlain): drop the resting background; it returns on
+// hover / when active. Replaces the old .btnIcoOnly variant.
+@mixin btnIcoPlainModifier() {
+  background: none;
 
   @media (hover: hover) {
     &:hover {
@@ -127,13 +132,12 @@
   }
 }
 
-@mixin btnTxtOutline() {
-  @include btnTxt;
+// Modifier (.btnTxt.isOutline): outlined / ghost text button — no resting
+// background, just a border that fills in on hover. Replaces .btnTxtOutline.
+@mixin btnTxtOutlineModifier() {
+  background: none;
+  border: 1px solid var(--btn-outline-color);
 
-  & {
-    background: none;
-    border: 1px solid var(--btn-outline-color);
-  }
   @media (hover: hover) {
     &:hover {
       background: var(--btn-bg);
@@ -143,18 +147,13 @@
   }
 }
 
-@mixin btnTxtBigger() {
-  @include btnBase(var(--btn-height-bigger));
-
-  & {
-    padding: 0 18px;
-    font-size: var(--btn-bigger-fz);
-  }
-
-  .minded-6622-ico {
-    opacity: var(--btn-opacity);
-    margin-bottom: 2px;
-  }
+// Modifier (.btnTxt.isBig): larger primary-CTA size. Replaces .btnTxtBig.
+@mixin btnTxtBigModifier() {
+  height: var(--btn-height-bigger);
+  line-height: var(--btn-height-bigger);
+  padding: 0 18px;
+  font-size: var(--btn-bigger-fz);
+  font-weight: normal;
 }
 
 //@mixin btnTxtSlightlySmaller() {
@@ -204,39 +203,24 @@
   }
 }
 
-@mixin btnToggleSelectSmall() {
-  @include btnBase(34px);
-
-  & {
-    margin: 4px;
-    padding: 0 10px;
-    user-select: none;
-    text-transform: lowercase;
-    transition:
-      transform var(--dur-quick) var(--ease-out),
-      background var(--dur-quick) var(--ease-out),
-      border-radius var(--dur-quick) var(--ease-out);
-    background: var(--btn-bg-not-selected);
-    font-size: calc(var(--fz-m) - 1px);
-    font-weight: 300;
-    --extraClickArea: -4px;
-  }
+// Modifier (.btnToggleSelect.isSmall): compact toggle for dense rows. Only the
+// size-related deltas from the base toggle — colors, hover and the selected
+// scale are inherited. Replaces the old .btnToggleSelectSmall variant.
+@mixin btnToggleSelectSmallModifier() {
+  height: 34px;
+  line-height: 34px;
+  min-width: 0;
+  margin: 4px;
+  padding: 0 10px;
+  font-size: calc(var(--fz-m) - 1px);
+  --extraClickArea: -4px;
 
   @include onNonMobileScreens() {
     margin: 6px;
     --extraClickArea: -6px;
   }
 
-  @media (hover: hover) {
-    &:hover {
-      background: var(--btn-bg-selectable-hover);
-    }
-  }
-
   &.isSelected {
-    background: var(--btn-bg-selected);
-    opacity: 1;
     border-radius: 12px;
-    transform: scale(var(--btn-selected-scale));
   }
 }

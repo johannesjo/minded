@@ -39,7 +39,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
               </div>
 
               <ButtonWrapper isVisible={true}>
-                <div class="btnTxtBig" onClick={() => setStep(1)}>
+                <div class="btnTxt isBig" onClick={() => setStep(1)}>
                   let's start!
                 </div>
               </ButtonWrapper>

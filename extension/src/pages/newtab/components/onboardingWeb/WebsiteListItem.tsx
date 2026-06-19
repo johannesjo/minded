@@ -34,7 +34,7 @@ export const WebsiteListItem: (props: {
         />
         <button
           type="button"
-          class="btnIcoSmall"
+          class="btnIco isSmall"
           title="Remove website"
           aria-label={`Remove ${getValue() || "website"}`}
           onClick={props.remove}

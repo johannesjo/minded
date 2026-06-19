@@ -156,7 +156,7 @@ export const SleepWindDownSettings = (props: {
       </div>
       <div style={{ "margin-top": "16px", "text-align": "center" }}>
         <button
-          class="btnTxtOutline"
+          class="btnTxt isOutline"
           onClick={() => navigate("/sleepWindDown?preview=1")}
         >
           Try wind-down now

@@ -238,7 +238,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
               {(step) => (
                 <button
                   type="button"
-                  class="btnToggleSelectSmall"
+                  class="btnToggleSelect isSmall"
                   onClick={() => handleRate(step)}
                 >
                   {step}
