@@ -28,7 +28,7 @@ For Android, run `npm run startDroid` from `extension/` and open `/android` in A
 - **Shared UI** lives in `extension/src/shared/`. Reuse it across platforms.
 - **Platform code** lives in `extension/src/dataInterface/{extension,android,ios}/` behind a common interface.
 - **State**: local with SolidJS signals, global via the dataInterface.
-- **Styling**: use the shared button/typography classes (`btnToggleSelect`, `btnTxt`, `h2`, etc.) before writing new SCSS modules. Layout-only modules are fine.
+- **Styling**: use the shared `<Btn>` component for buttons and the shared typography classes (`h2`, `txtBig`, etc.) before writing new SCSS modules. Layout-only modules are fine.
 
 ## Code style
 

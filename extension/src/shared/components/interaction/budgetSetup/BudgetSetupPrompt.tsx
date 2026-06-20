@@ -1,5 +1,6 @@
 import { Component, For } from "solid-js";
 import { DailyBudget } from "@src/dataInterface/syncData";
+import Btn from "@src/shared/components/ui/Btn";
 
 interface BudgetSetupPromptProps {
   currentSkips: number;
@@ -31,22 +32,21 @@ export const BudgetSetupPrompt: Component<BudgetSetupPromptProps> = (props) => {
         <div class="budget-options-grid">
           <For each={budgetOptions}>
             {(option) => (
-              <button
-                type="button"
-                class="btnToggleSelect"
+              <Btn
+                variant="toggle"
                 onClick={() => handleSelectBudget(option.value)}
               >
                 {option.label}
-              </button>
+              </Btn>
             )}
           </For>
         </div>
       </div>
 
       <div class="budget-setup-dismiss">
-        <button type="button" class="btnTxt" onClick={props.onDismiss}>
+        <Btn onClick={props.onDismiss}>
           not now
-        </button>
+        </Btn>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 
 type SaveState = {
   type: "idle" | "saving" | "saved" | "error";
@@ -291,19 +292,17 @@ export const WebsiteList: (props: {
       </Show>
 
       <div class={styles.controls}>
-        <button class="btnTxt" type="button" onClick={addItem}>
+        <Btn onClick={addItem}>
           <Ico name="add" /> Add item
-        </button>
+        </Btn>
 
         {props.showSaveButton !== false && (
-          <button
-            class="btnTxt"
-            type="button"
+          <Btn
             disabled={saveState().type === "saving"}
             onClick={saveAndContinue}
           >
             <Ico name="send" /> Save & Continue
-          </button>
+          </Btn>
         )}
       </div>
     </div>

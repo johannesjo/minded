@@ -1,6 +1,7 @@
 import { Component, For } from "solid-js";
 import { SessionIntent } from "@src/dataInterface/syncData";
 import { getSessionIntentTimeQuestion } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
+import Btn from "@src/shared/components/ui/Btn";
 
 interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;
@@ -38,14 +39,13 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
         <div class="time-options-grid">
           <For each={options}>
             {(option) => (
-              <button
-                type="button"
-                class="btnToggleSelect"
+              <Btn
+                variant="toggle"
                 disabled={!props.isArmed}
                 onClick={() => handleSelect(option.value)}
               >
                 {option.label}
-              </button>
+              </Btn>
             )}
           </For>
         </div>
@@ -57,9 +57,9 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
       </div>
 
       <div class="time-selection-cancel">
-        <button type="button" class="btnTxt" onClick={props.onCancel}>
+        <Btn onClick={props.onCancel}>
           cancel
-        </button>
+        </Btn>
       </div>
     </div>
   );

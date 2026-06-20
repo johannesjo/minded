@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 
 export const AnswerListEditable: (props: {
   isShowAdd: boolean;
@@ -56,9 +57,9 @@ export const AnswerListEditable: (props: {
             />
           ) : (
             <div style="text-align:center;">
-              <button class="btnTxt" onClick={() => setIsAddMode(true)}>
+              <Btn onClick={() => setIsAddMode(true)}>
                 <Ico name="add" /> Add
-              </button>
+              </Btn>
             </div>
           )}
         </div>

@@ -5,6 +5,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DailyBudget } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
+import Btn from "@src/shared/components/ui/Btn";
 import styles from "./BudgetSettings.module.scss";
 
 const BUDGET_OPTIONS = [
@@ -72,17 +73,13 @@ export const BudgetSettings = (): JSX.Element => {
           <div class={styles.optionsGrid}>
             <For each={BUDGET_OPTIONS}>
               {(option) => (
-                <button
-                  type="button"
-                  class={
-                    getBudget()?.globalMinutes === option.value
-                      ? "btnToggleSelect isSelected"
-                      : "btnToggleSelect"
-                  }
+                <Btn
+                  variant="toggle"
+                  selected={getBudget()?.globalMinutes === option.value}
                   onClick={() => setMinutes(option.value)}
                 >
                   {option.label}
-                </button>
+                </Btn>
               )}
             </For>
           </div>

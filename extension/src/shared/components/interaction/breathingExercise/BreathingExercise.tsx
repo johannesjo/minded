@@ -7,6 +7,7 @@ import {
 } from "@src/shared/components/interaction/breathTimeline";
 import { useBreathClock } from "@src/shared/components/interaction/useBreathClock";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import Btn from "@src/shared/components/ui/Btn";
 
 const PHASE_LABEL = {
   inhale: "Breathing in",
@@ -60,9 +61,9 @@ const BreathingExercise = () => {
       {/* Start only — no restart: once the breath is flowing we don't offer to
           yank the user back to the beginning of a wind-down meditation. */}
       <Show when={!clock.isStarted()}>
-        <button onClick={() => clock.start()} class="btnTxtOutline">
+        <Btn outline onClick={() => clock.start()}>
           Start
-        </button>
+        </Btn>
       </Show>
     </div>
   );

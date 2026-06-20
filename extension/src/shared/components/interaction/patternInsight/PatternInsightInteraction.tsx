@@ -5,6 +5,7 @@ import {
   type PatternInsight,
   type PatternInsightAction,
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import Btn from "@src/shared/components/ui/Btn";
 
 export const PatternInsightInteraction: (props: {
   insight: PatternInsight;
@@ -56,14 +57,12 @@ export const PatternInsightInteraction: (props: {
 
       <For each={props.insight.actions}>
         {(action) => (
-          <button
-            type="button"
-            class="btnTxt"
+          <Btn
             disabled={getIsActionSubmitted()}
             onClick={() => void handleAction(action)}
           >
             {getPatternInsightActionLabel(action)}
-          </button>
+          </Btn>
         )}
       </For>
     </div>

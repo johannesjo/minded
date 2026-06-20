@@ -149,8 +149,12 @@ Path aliases change based on build mode to load platform-specific code.
 ## Styling Guidelines
 
 **Always use existing global styles for consistency:**
-- Buttons: `btnToggleSelect`, `btnTxt`, `btnIcoOnly`, `btnTxtOutline`
-- Selected state: Add `isSelected` class (e.g., `btnToggleSelect isSelected`)
+- Buttons: use the `<Btn>` component (`src/shared/components/ui/Btn.tsx`) — never write raw `<button class="btn…">`. It has three typed bases and a curated, type-checked set of modifiers, so screens can't sprout one-off button looks:
+  - `<Btn>` (text, default) with `outline` / `big`
+  - `<Btn variant="icon">` with `small` / `plain`
+  - `<Btn variant="toggle">` with `small` / `selected`
+  - `href` renders a link (router `<A>` for internal routes, plain `<a>` for external/mailto)
+  - The underlying `btnTxt` / `btnIco` / `btnToggleSelect` SCSS classes (in `src/styles/`) are an implementation detail of `<Btn>`
 - Typography: `h2`, `h3`, `txtBig`
 - Global styles are in `src/styles/componentsShared/` and `src/styles/mixins/`
 - Only create component-specific SCSS modules for layout, not for recreating existing button/input styles

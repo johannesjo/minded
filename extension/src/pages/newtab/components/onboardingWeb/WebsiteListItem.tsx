@@ -2,6 +2,7 @@ import { createEffect, createSignal, JSX, Show } from "solid-js";
 // @ts-ignore
 import styles from "./WebsiteListItem.module.scss";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 import { TextInput } from "@src/shared/components/ui/TextInput";
 
 // List item component
@@ -32,15 +33,15 @@ export const WebsiteListItem: (props: {
           onBlur={() => props.update(getValue())}
           onInput={(value) => setValue(value)}
         />
-        <button
-          type="button"
-          class="btnIcoSmall"
+        <Btn
+          variant="icon"
+          small
           title="Remove website"
           aria-label={`Remove ${getValue() || "website"}`}
           onClick={props.remove}
         >
           <Ico name="close" />
-        </button>
+        </Btn>
       </div>
       <Show when={props.error}>
         <div id={errorId()} class={styles.errorText}>

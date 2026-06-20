@@ -51,6 +51,7 @@ import {
 } from "@src/shared/components/interaction/sun/sunAudio";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
 import {
   calculateFadeProgress,
@@ -1331,14 +1332,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       {props.isFromDashboard && (
         <div class="back-button-wrapper">
-          <button
-            type="button"
-            class="btnIcoOnly"
-            onClick={() => props.onSkip()}
-            aria-label="Go back"
-          >
+          <Btn variant="icon" plain onClick={() => props.onSkip()} aria-label="Go back">
             <Ico name="arrowBack" />
-          </button>
+          </Btn>
         </div>
       )}
     </>

@@ -4,6 +4,7 @@ import {
   getSessionIntentLabel,
   SESSION_INTENT_OPTIONS,
 } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
+import Btn from "@src/shared/components/ui/Btn";
 
 export interface IntentSelectionProps {
   onSelectIntent: (intent: SessionIntent | undefined) => void;
@@ -38,26 +39,24 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
         <div class="intent-options-grid">
           <For each={SESSION_INTENT_OPTIONS}>
             {(intent) => (
-              <button
-                type="button"
-                class="btnToggleSelect"
+              <Btn
+                variant="toggle"
                 disabled={!props.isArmed}
                 onClick={() => handleSelect(intent)}
               >
                 {getSessionIntentLabel(intent)}
-              </button>
+              </Btn>
             )}
           </For>
         </div>
 
-        <button
-          type="button"
-          class="btnToggleSelect"
+        <Btn
+          variant="toggle"
           disabled={!props.isArmed}
           onClick={() => handleSelect(undefined)}
         >
           other
-        </button>
+        </Btn>
 
         {/* Reserves the resting sun's footprint beneath the options so the disc
             sits inside the centred choices group (see measureRestingSunAnchor).
@@ -66,9 +65,9 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
       </div>
 
       <div class="intent-selection-cancel">
-        <button type="button" class="btnTxt" onClick={handleCancel}>
+        <Btn onClick={handleCancel}>
           cancel
-        </button>
+        </Btn>
       </div>
     </div>
   );

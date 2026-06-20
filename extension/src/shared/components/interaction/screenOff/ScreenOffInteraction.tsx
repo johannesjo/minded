@@ -1,6 +1,7 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, Switch } from "solid-js";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
+import Btn from "@src/shared/components/ui/Btn";
 import {
   evaluateScreenOff,
   SCREEN_OFF_TARGET_MS,
@@ -110,33 +111,33 @@ export const ScreenOffInteraction: (props: {
           <div class="txtBig interaction-heading">
             Put your phone down for a minute? 📵
           </div>
-          <button type="button" class="btnTxt" onClick={arm}>
+          <Btn onClick={arm}>
             Lock my phone for a minute
-          </button>
-          <button type="button" class="btnTxt" onClick={() => props.onSkip()}>
+          </Btn>
+          <Btn onClick={() => props.onSkip()}>
             Not now
-          </button>
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "armed"}>
           <div class="txtBig interaction-heading">
             Lock your phone now — come back in a minute.
           </div>
-          <button type="button" class="btnTxt" onClick={() => props.onSkip()}>
+          <Btn onClick={() => props.onSkip()}>
             Just go in
-          </button>
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "tooEarly"}>
           <div class="txtBig interaction-heading">
             Almost — {Math.ceil(getRemainingMs() / 1000)}s more away.
           </div>
-          <button type="button" class="btnTxt" onClick={arm}>
+          <Btn onClick={arm}>
             Try again
-          </button>
-          <button type="button" class="btnTxt" onClick={() => props.onSkip()}>
+          </Btn>
+          <Btn onClick={() => props.onSkip()}>
             Just go in
-          </button>
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "done"}>

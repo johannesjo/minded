@@ -1,8 +1,9 @@
 import styles from "./BottomBar.module.scss";
 
-import { A, useLocation, useNavigate } from "@solidjs/router";
+import { useLocation, useNavigate } from "@solidjs/router";
 import { createEffect, createSignal } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
 
@@ -32,30 +33,33 @@ const BottomBar = () => {
     >
       {getIsOnDashboard() ? (
         <>
-          <A
+          <Btn
+            variant="icon"
+            plain
             title="Give us some feedback"
             aria-label="Give us some feedback"
-            class="btnIcoOnly"
             href="/feedback"
             activeClass="active"
           >
             <Ico name="feedback" />
-          </A>
+          </Btn>
           {!IS_IOS && (
-            <A
+            <Btn
+              variant="icon"
+              plain
               title="Go to settings page"
               aria-label="Go to settings page"
-              class="btnIcoOnly"
               href="/settings"
               activeClass="active"
             >
               <Ico name="settings" />
-            </A>
+            </Btn>
           )}
         </>
       ) : (
-        <button
-          type="button"
+        <Btn
+          variant="icon"
+          plain
           title={
             shouldUseWindDownHistoryBackForBottomBar(location.pathname)
               ? "Go back"
@@ -66,14 +70,13 @@ const BottomBar = () => {
               ? "Go back"
               : "Go to dashboard"
           }
-          class="btnIcoOnly"
           onClick={(event) => {
             event.stopPropagation();
             goBack();
           }}
         >
           <Ico name="arrowBack" />
-        </button>
+        </Btn>
       )}
     </div>
   );

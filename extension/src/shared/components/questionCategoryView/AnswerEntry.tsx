@@ -2,6 +2,7 @@ import { Answer } from "@src/dataInterface/syncData";
 import { createSignal, JSX } from "solid-js";
 import styles from "@src/shared/components/questionCategoryView/AnswerEntry.module.scss";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 import { QUESTIONS } from "@src/shared/data/questions";
 
 export const AnswerEntry: (props: {
@@ -70,20 +71,22 @@ export const AnswerEntry: (props: {
 
       {!getIsEditMode() && (
         <div class={styles.editBar}>
-          <button
-            class="btnIcoSmall"
+          <Btn
+            variant="icon"
+            small
             aria-label="Edit answer"
             onClick={triggerEdit}
           >
             <Ico name="edit" />
-          </button>
-          <button
-            class="btnIcoSmall"
+          </Btn>
+          <Btn
+            variant="icon"
+            small
             aria-label="Delete answer"
             onClick={props.onRemove}
           >
             <Ico name="deleteForever" />
-          </button>
+          </Btn>
         </div>
       )}
 
@@ -120,13 +123,14 @@ export const AnswerEntry: (props: {
             maxlength={500}
           />
 
-          <button
-            class="btnIcoSmall"
+          <Btn
+            variant="icon"
+            small
             aria-label="Confirm edit"
             onClick={() => {}}
           >
             <Ico name="check" />
-          </button>
+          </Btn>
         </div>
       )}
     </div>

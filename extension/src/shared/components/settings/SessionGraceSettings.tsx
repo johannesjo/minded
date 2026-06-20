@@ -5,6 +5,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { SessionGraceCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
+import Btn from "@src/shared/components/ui/Btn";
 import styles from "./BudgetSettings.module.scss";
 
 const GRACE_OPTIONS = [
@@ -68,17 +69,13 @@ export const SessionGraceSettings = (): JSX.Element => {
           <div class={styles.optionsGrid}>
             <For each={GRACE_OPTIONS}>
               {(option) => (
-                <button
-                  type="button"
-                  class={
-                    minutes() === option.value
-                      ? "btnToggleSelect isSelected"
-                      : "btnToggleSelect"
-                  }
+                <Btn
+                  variant="toggle"
+                  selected={minutes() === option.value}
                   onClick={() => setMinutes(option.value)}
                 >
                   {option.label}
-                </button>
+                </Btn>
               )}
             </For>
           </div>

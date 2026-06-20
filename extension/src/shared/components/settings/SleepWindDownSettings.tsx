@@ -10,6 +10,7 @@ import { SleepWindDownCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import { TimeInput } from "@src/shared/components/ui/TimeInput";
+import Btn from "@src/shared/components/ui/Btn";
 import {
   DEFAULT_DAY_RANGE,
   resolveNightId,
@@ -155,12 +156,9 @@ export const SleepWindDownSettings = (props: {
         </For>
       </div>
       <div style={{ "margin-top": "16px", "text-align": "center" }}>
-        <button
-          class="btnTxtOutline"
-          onClick={() => navigate("/sleepWindDown?preview=1")}
-        >
+        <Btn outline onClick={() => navigate("/sleepWindDown?preview=1")}>
           Try wind-down now
-        </button>
+        </Btn>
       </div>
     </div>
   );

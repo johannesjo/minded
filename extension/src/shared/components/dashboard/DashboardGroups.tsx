@@ -19,6 +19,7 @@ import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
+import Btn from "@src/shared/components/ui/Btn";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import Chart from "@src/shared/components/ui/Chart";
@@ -134,18 +135,12 @@ export const DashboardGroups: (props: {
               : "Would you like to reflect on your day?"}
           </div>
           <div class={styles.cardDailyQuestionsBtns}>
-            <button
-              class="btnTxtOutline"
-              onClick={() => navigate("/dailyQuestions")}
-            >
+            <Btn outline onClick={() => navigate("/dailyQuestions")}>
               let's go
-            </button>
-            <button
-              class="btnTxtOutline"
-              onClick={() => removeDailyQuestionsBanner()}
-            >
+            </Btn>
+            <Btn outline onClick={() => removeDailyQuestionsBanner()}>
               no
-            </button>
+            </Btn>
           </div>
         </div>
       )}
