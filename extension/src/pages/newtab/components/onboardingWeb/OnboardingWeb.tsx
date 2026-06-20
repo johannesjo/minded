@@ -27,12 +27,18 @@ export const OnboardingWeb: (props: {
             </div>
             <div class={styles.infoText}>
               <p>
-                <em>minded</em> isn't here to police your browsing. It's a small
-                practice of presence: when you reach for a habit on autopilot, a
-                calm little sun appears, so you can pause, notice, and choose —
-                no scolding, no streaks, no scores.
+                This little sun is your anchor. When you reach for a habit on
+                autopilot, it appears — something calm to come back to. Pause
+                with it, and the pull loosens. You can fling it away anytime; it
+                never blocks you. No streaks, no scores — just awareness.
               </p>
-              <p>The sun is always one gesture away. That's the whole idea.</p>
+              <p>
+                Why a sun and not a blocker? Blockers and willpower work right up
+                until you route around them. Mindfulness — simply noticing,
+                without judgment — is one of the few things that actually holds
+                up over months and years, because it builds a capacity in you
+                instead of a wall around you.
+              </p>
             </div>
             <ButtonWrapper isVisible={true}>
               <Btn big onClick={() => setStep(1)}>

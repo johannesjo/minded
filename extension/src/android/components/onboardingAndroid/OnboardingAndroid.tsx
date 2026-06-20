@@ -8,10 +8,26 @@ import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import { Stepper } from "@src/shared/components/ui/Stepper";
 import Btn from "@src/shared/components/ui/Btn";
 
-export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
-  const [getStep, setStep] = createSignal<number>(0);
+export const OnboardingAndroid = (props: {
+  onGoDashboard: () => void;
+  /**
+   * Where to enter the flow. First run starts at 0 (the sun intro); the
+   * dashboard's "finish setup" invitation re-enters at 1 (the app picker),
+   * skipping the welcome the user has already seen.
+   */
+  initialStep?: number;
+}) => {
+  const [getStep, setStep] = createSignal<number>(props.initialStep ?? 0);
   const [getPermissionNotGiven, setPermissionNotGiven] =
     createSignal<boolean>(false);
+
+  // Deferral: meeting the sun must never be gated behind the setup chore.
+  // Skipping marks onboarding seen (so it won't reappear) and drops the user
+  // on the dashboard; the incomplete state is recoverable from there.
+  const handleSkipForNow = async () => {
+    await updateUserCfg({ isOnboardingComplete: true });
+    props.onGoDashboard();
+  };
 
   createEffect(() => {
     if (getStep() === 3) {
@@ -30,10 +46,17 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
               </div>
               <div class="txtSlightlyBigger">
                 <p>
-                  <em>minded</em> isn't here to lock you out of anything. It's a
-                  small practice of presence: when you open an app on autopilot,
-                  a calm little sun appears, so you can pause, notice, and choose
-                  — no scolding, no streaks, no scores.
+                  This little sun is your anchor. When you open an app on
+                  autopilot, it appears — something calm to come back to. Pause
+                  with it, and the pull loosens. You can fling it away anytime;
+                  it never blocks you. No streaks, no scores — just awareness.
+                </p>
+                <p>
+                  Why a sun and not a blocker? Blockers and willpower work right
+                  up until you route around them. Mindfulness — simply noticing,
+                  without judgment — is one of the few things that actually holds
+                  up over months and years, because it builds a capacity in you
+                  instead of a wall around you.
                 </p>
                 <p>
                   To meet you in those moments, <em>minded</em> needs a couple of
@@ -47,6 +70,12 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
                   begin
                 </Btn>
               </ButtonWrapper>
+
+              <div style="margin-top: 16px;">
+                <Btn outline onClick={handleSkipForNow}>
+                  I'll set this up later
+                </Btn>
+              </div>
             </div>
           </Match>
 
@@ -117,6 +146,11 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
                   You can always fling it away in a single gesture. It's an
                   invitation, never a wall.
                 </p>
+                <div style="margin-top: 32px;">
+                  <Btn big onClick={() => props.onGoDashboard()}>
+                    continue
+                  </Btn>
+                </div>
               </div>
             )}
           </Match>
