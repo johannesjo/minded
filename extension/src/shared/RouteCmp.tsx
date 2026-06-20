@@ -211,7 +211,14 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
       {/*</div>*/}
 
       <HashRouter root={MainWrapper}>
-        <Route path="*" component={Dashboard} />
+        <Route path="*" component={() => <Dashboard />} />
+        {/*
+          The "show all" / look-back view: the full grid of every tile, as its
+          own route so it behaves exactly like settings — the global bottom bar
+          shows its back arrow (and Android's hardware back returns here) instead
+          of stranding the user in the expanded grid with no way back.
+        */}
+        <Route path="/lookBack" component={() => <Dashboard forceRevealed />} />
         <Route
           path="/questionCategory/:questionCategoryId"
           component={QuestionCategoryView}

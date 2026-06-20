@@ -51,6 +51,9 @@ const REVEAL_FADE_MS = 480;
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
+  // When true (the /lookBack route) the full grid renders directly, skipping the
+  // calm greeting. "show all" routes here so the view is a real, back-able page.
+  forceRevealed?: boolean;
 }) => JSX.Element = (props) => {
   let t0: NodeJS.Timeout | undefined;
   let revealT0: NodeJS.Timeout | undefined;
@@ -65,8 +68,10 @@ export const DashboardGroups: (props: {
 
   // Arrival is calm: a single greeting card (the centre pick — a random
   // reflection, or the quote when there's little to show) instead of the full
-  // wall of cards. The rest stay tucked away until you choose to "look back".
-  const [getIsRevealed, setIsRevealed] = createSignal<boolean>(false);
+  // wall of cards. The rest stay tucked away until you choose to "look back",
+  // which routes to the full grid (the /lookBack page) rather than toggling an
+  // internal flag — so the grid is a real, back-able view. `isRevealing` just
+  // drives the greeting's soft fade-out before that navigation.
   const [getIsRevealing, setIsRevealing] = createSignal<boolean>(false);
 
   const [getDashboardGroups, setDashboardGroups] = createSignal<
@@ -111,12 +116,14 @@ export const DashboardGroups: (props: {
     window.clearTimeout(revealT0);
   });
 
-  // Fade the calm greeting out, then mount the full set so it eases in rather
-  // than hard-cutting (see the "transitions — always soft" styling rule).
+  // Fade the calm greeting out, then route to the full "look back" grid so it
+  // eases over rather than hard-cutting (see the "transitions — always soft"
+  // styling rule). Routing (not an internal flag) makes it a real page: the
+  // global bottom bar shows its back arrow there, exactly like settings.
   const revealAll = () => {
     setIsRevealing(true);
     window.clearTimeout(revealT0);
-    revealT0 = setTimeout(() => setIsRevealed(true), REVEAL_FADE_MS);
+    revealT0 = setTimeout(() => navigate("/lookBack"), REVEAL_FADE_MS);
   };
 
   const removeDailyQuestionsBanner = () => {
@@ -301,7 +308,7 @@ export const DashboardGroups: (props: {
 
   return (
     <Show
-      when={getIsRevealed()}
+      when={props.forceRevealed}
       fallback={
         <div
           classList={{
