@@ -31,9 +31,10 @@ const MainAndroid = () => {
     createSignal(false);
   // Setup deferral state. `getHasBlockedApps` starts true so the invitation
   // never flashes before the first read. `getIsShowSetup` re-opens the setup
-  // flow (app picker onwards) from the dashboard invitation. The dismiss is
-  // per-session by design: a quiet, recurring invitation, never a permanent
-  // hide that would bury setup.
+  // flow (app picker onwards) from the dashboard invitation. Dismiss is a quiet
+  // "not now": it hides the invitation for the current visit and is reset when
+  // the user returns to the app (see the resume handler), so it recurs gently
+  // and is never a permanent hide that would bury setup.
   const [getHasBlockedApps, setHasBlockedApps] = createSignal(true);
   const [getIsShowSetup, setIsShowSetup] = createSignal(false);
   const [getIsInviteDismissed, setIsInviteDismissed] = createSignal(false);
@@ -89,6 +90,10 @@ const MainAndroid = () => {
     refresh();
 
     const resumeHandler = () => {
+      // A fresh return to the app re-offers the (dismissible) setup invitation;
+      // the render still gates it on there being no blocked apps.
+      setIsInviteDismissed(false);
+      setIsInviteDismissing(false);
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
       refresh();
     };
@@ -130,7 +135,15 @@ const MainAndroid = () => {
               >
                 <div
                   class="setupInvitationMsgText"
+                  role="button"
+                  tabindex="0"
                   onClick={() => setIsShowSetup(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setIsShowSetup(true);
+                    }
+                  }}
                 >
                   The sun rests here whenever you open <em>minded</em>. To have
                   it meet you in your apps too, tell it where to appear.
@@ -139,14 +152,18 @@ const MainAndroid = () => {
                   variant="icon"
                   plain
                   class="setupInvitationMsgClose"
-                  aria-label="Dismiss setup reminder"
+                  aria-label="Dismiss"
                   onClick={dismissInvite}
                 >
                   <Ico name="close" />
                 </Btn>
               </div>
             )
-          ) : getMissingCapabilities().length > 0 ? (
+          ) : /* No apps configured means permissions are moot (nothing to
+                intervene on), so the missing-permissions banner is intentionally
+                suppressed until at least one app is chosen — the invitation above
+                is the single, calm entry point into setup. */
+          getMissingCapabilities().length > 0 ? (
             <div
               onClick={() => setIsShowMissingCapabilities(true)}
               class="missingCapabilitiesMsg"

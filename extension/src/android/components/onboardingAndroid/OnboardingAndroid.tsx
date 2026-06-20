@@ -53,7 +53,7 @@ export const OnboardingAndroid = (props: {
                 </p>
                 <p>
                   Why a sun and not a blocker? A blocker is a wall, and walls
-                  get routed around — willpower too. Mindfulness works
+                  get routed around, and so does sheer willpower. Mindfulness works
                   differently: simply noticing, without judgment, builds a small
                   capacity in you — catching the pull before you act on it.
                   That's the kind of thing that tends to stay with you.
@@ -108,12 +108,12 @@ export const OnboardingAndroid = (props: {
             {getPermissionNotGiven() ? (
               <div class="card pageTransitionIn" style="margin: 32px;">
                 <div class="h2 h2Mindful">
-                  <em>minded</em> is not completely configured 🙁
+                  Almost there 🌤️
                 </div>
                 <p>
-                  You did not configure all the permissions needed. You might
-                  still be able to use <em>minded</em>, but it will{" "}
-                  <strong>not work as intended</strong>.
+                  Some permissions are still missing, so the sun may not be able
+                  to meet you everywhere yet. You can finish anytime — it'll be
+                  here.
                 </p>
                 <div style="margin-top: 32px;">
                   <Btn
@@ -122,13 +122,13 @@ export const OnboardingAndroid = (props: {
                       setPermissionNotGiven(false);
                     }}
                   >
-                    back
+                    finish setting up
                   </Btn>
                   <Btn
                     onClick={() => props.onGoDashboard()}
                     style="margin-left: 16px;"
                   >
-                    continue anyway
+                    later
                   </Btn>
                 </div>
               </div>
@@ -166,7 +166,7 @@ export const OnboardingAndroid = (props: {
         isNoGoBack={(props.initialStep ?? 0) > 0}
         onSetStep={(step) => setStep(step)}
         labelFn={(step) =>
-          step === 3 ? (getPermissionNotGiven() ? "🙁" : "🌞") : undefined
+          step === 3 ? (getPermissionNotGiven() ? "🌤️" : "🌞") : undefined
         }
       />
     </div>

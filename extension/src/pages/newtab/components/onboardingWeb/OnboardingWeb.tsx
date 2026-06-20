@@ -34,7 +34,7 @@ export const OnboardingWeb: (props: {
               </p>
               <p>
                 Why a sun and not a blocker? A blocker is a wall, and walls get
-                routed around — willpower too. Mindfulness works differently:
+                routed around, and so does sheer willpower. Mindfulness works differently:
                 simply noticing, without judgment, builds a small capacity in
                 you — catching the pull before you act on it. That's the kind of
                 thing that tends to stay with you.
