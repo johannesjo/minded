@@ -25,6 +25,15 @@ const RECENT_SUN_TAPS = [
   NOW,
 ];
 
+// Forces strong friction via the "many attempts today" path so a test can
+// exercise the other strong-friction prompts without also tripping the
+// present-session return-loop noticing (which keys off recentSunTaps).
+const strongFrictionViaAttempts = (): Partial<SyncData> => ({
+  attempts: { [TODAY]: 10 },
+  sunTaps: { [TODAY]: 1 },
+  sunTapTimestamps: [NOW],
+});
+
 const sequenceRandom = (values: number[]): (() => number) => {
   let index = 0;
   return () => values[index++] ?? 0.99;
@@ -91,8 +100,7 @@ describe("getInteractionMode", () => {
           answer("1", QuestionCategoryId.WhyReduceBrowsing),
           answer("2"),
         ],
-        sunTaps: { [TODAY]: 5 },
-        sunTapTimestamps: RECENT_SUN_TAPS,
+        ...strongFrictionViaAttempts(),
       }),
       { isMainView: false },
     );
@@ -166,6 +174,27 @@ describe("getInteractionMode", () => {
     });
   });
 
+  it("gently names a present-session return loop in strong friction", () => {
+    // Strong friction here comes from repeated recent returns, which is exactly
+    // what the return-loop noticing observes — so it surfaces (once per day)
+    // ahead of the saved-reason / alternative / question prompts.
+    const decision = decide(
+      baseSyncData({
+        answers: [
+          answer("1", QuestionCategoryId.WhyReduceBrowsing),
+          answer("2"),
+        ],
+        sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: RECENT_SUN_TAPS,
+      }),
+      { isMainView: false },
+    );
+
+    expect(decision.mode).toBe("PATTERN_INSIGHT");
+    expect(decision.patternInsight?.id).toBe("return-loop");
+    expect(decision.frictionLevel).toBe("strong");
+  });
+
   it("does not let pattern insights preempt required mood checks", () => {
     const decision = decide(
       baseSyncData({
@@ -228,8 +257,7 @@ describe("getInteractionMode", () => {
     const decision = decide(
       baseSyncData({
         alternativeWebsites: ["https://example.com"],
-        sunTaps: { [TODAY]: 5 },
-        sunTapTimestamps: RECENT_SUN_TAPS,
+        ...strongFrictionViaAttempts(),
       }),
       { isMainView: false },
     );
@@ -245,8 +273,7 @@ describe("getInteractionMode", () => {
     const strongAndroid = (options: InteractionModeDecisionOptions = {}) =>
       decide(
         baseSyncData({
-          sunTaps: { [TODAY]: 5 },
-          sunTapTimestamps: RECENT_SUN_TAPS,
+          ...strongFrictionViaAttempts(),
         }),
         {
           isMainView: false,
@@ -297,8 +324,7 @@ describe("getInteractionMode", () => {
     const strongWeb = (options: InteractionModeDecisionOptions = {}) =>
       decide(
         baseSyncData({
-          sunTaps: { [TODAY]: 5 },
-          sunTapTimestamps: RECENT_SUN_TAPS,
+          ...strongFrictionViaAttempts(),
         }),
         { isMainView: false, ...options },
       );
