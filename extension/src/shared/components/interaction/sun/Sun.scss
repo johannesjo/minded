@@ -9,11 +9,12 @@
 
   // The white halo lives on box-shadow, scaled by --glow-intensity (JS-driven).
   // The resting sun holds it at the hover intensity (Sun.tsx COMPANION_REST_GLOW),
-  // so the idle disc already wears the bold hover glow rather than a dimmer one;
-  // dragging hands --glow-intensity back to the 0..1 drag ramp. It's a static
-  // shadow at rest (constant intensity → rasterised once, not per frame); the
-  // gentle breath is carried separately by the ::after opacity pulse below (a
-  // compositor-only property). The glow is white throughout.
+  // so the idle disc already wears the bold hover glow rather than a dimmer one —
+  // and Sun.tsx floors the value there, so the 0..1 drag ramp (always dimmer)
+  // can't dim it mid-drag. It's a static shadow at rest (constant intensity →
+  // rasterised once, not per frame); the gentle breath is carried separately by
+  // the ::after opacity pulse below (a compositor-only property). The glow is
+  // white throughout.
   box-shadow:
     var(--sun-shadow),
     0 0 calc(15px * var(--glow-intensity))

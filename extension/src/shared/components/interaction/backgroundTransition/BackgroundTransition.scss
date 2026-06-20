@@ -15,9 +15,9 @@
     );
   }
 
-  // The warm sun glow now rides the disc itself (Sun.scss `.sun-glow`), so it
-  // can never drift from the sun the way this background-layer wash did. The
-  // sky here is just the plain gradient — no cool vignette layered on top, so
+  // The sun glow now rides the disc's own box-shadow (Sun.scss `.minded-sun`),
+  // so it can never drift from the sun the way this background-layer wash did.
+  // The sky here is just the plain gradient — no cool vignette layered on top, so
   // the light scene stays as flat and quiet as it reads.
   &.sun-gradient-attached {
     background: var(
@@ -49,9 +49,9 @@
       var(--bg-transition-sunset-horizon, #ffd36a) 78%,
       var(--bg-transition-sunset-bottom, #ef6f63) 100%
     );
-    // No sun-gradient-attached override here anymore: the sun's warm glow rides
-    // the disc (Sun.scss `.sun-glow`) and sinks with it into the sunset, so the
-    // sky overlay just needs its plain gradient.
+    // No sun-gradient-attached override here anymore: the sun's glow rides the
+    // disc's own box-shadow (Sun.scss `.minded-sun`) and sinks with it into the
+    // sunset, so the sky overlay just needs its plain gradient.
   }
 
   &.animating {

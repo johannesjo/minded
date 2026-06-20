@@ -134,10 +134,10 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getTapCount, setTapCount] = createSignal(0);
   const [getDragProgress, setDragProgress] = createSignal(0);
-  const [getDragDirection, setDragDirection] = createSignal<
-    "up" | "down" | "none"
-  >("none");
-  const [getIsBeyondThreshold, setIsBeyondThreshold] = createSignal(false);
+  // Write-only: the setters feed the drag bookkeeping below, but nothing reads
+  // these back (the glow no longer gates on them), so the getters are omitted.
+  const [, setDragDirection] = createSignal<"up" | "down" | "none">("none");
+  const [, setIsBeyondThreshold] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getRotation, setRotation] = createSignal(0);
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
