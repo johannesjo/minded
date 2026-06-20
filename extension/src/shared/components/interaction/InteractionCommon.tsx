@@ -72,6 +72,7 @@ import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/int
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
+import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 interface InteractionCommonProps {
@@ -173,8 +174,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getHasAnswered, setHasAnswered] = createSignal(false);
   const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   // Dashboard only: dragging the sun *down* opens the "Stay a while?" grounding
-  // offer (meditate / be present) instead of completing. Up still = let go.
+  // offer (meditate / be present), and flinging it *up/away* opens the "What do
+  // you want to let go of?" reflection — instead of just completing. The gesture
+  // direction picks the ritual; randomness never enters here.
   const [getShowGroundingOffer, setShowGroundingOffer] = createSignal(false);
+  const [getShowLetGoOffer, setShowLetGoOffer] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getShowBreathPause, setShowBreathPause] = createSignal(false);
   // The sun's lifecycle phase. "interactive" = draggable; "breathing" and
@@ -295,9 +299,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let lastCompletionDirection: "up" | "down" | undefined;
   const interactionEventTarget = props.shadowRoot ?? window;
 
-  // Dashboard down-drag opens the grounding offer and keeps the interaction
-  // mounted, so the sun's terminal close (fade + unmount) must not fire. Every
-  // other case closes as before.
+  // Dashboard down-drag opens the grounding offer (and up/away the let-go offer)
+  // while keeping the interaction mounted, so the sun's terminal close (fade +
+  // unmount) must not fire. Every other case closes as before.
   const runTerminalOutcome = (close: () => void) => {
     if (
       props.isFromDashboard &&
@@ -306,14 +310,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     ) {
       return;
     }
+    if (
+      props.isFromDashboard &&
+      lastCompletionDirection === "up" &&
+      getShowLetGoOffer()
+    ) {
+      return;
+    }
     close();
   };
 
-  // Finish the dashboard interaction the same way its single-question success
-  // does (refresh dashboard data, then unmount).
+  // Close a dashboard offer (grounding / let-go) and fade home. Nothing is
+  // "submitted" on these paths, and onAfterInteractionFadeout now fades the sky
+  // out via handleHideWithFade, which already refreshes the dashboard once the
+  // fade lands — so we don't also call onInteractionSubmitted here (that would
+  // refresh twice per close).
   const finishGrounding = () => {
     setShowGroundingOffer(false);
-    props.onInteractionSubmitted?.();
+    props.onAfterInteractionFadeout();
+  };
+
+  const finishLetGo = () => {
+    setShowLetGoOffer(false);
     props.onAfterInteractionFadeout();
   };
 
@@ -661,14 +679,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setIsFinalAnimation(true);
 
     // Direction picks the ritual on the dashboard: down = ground yourself
-    // (offer to meditate / be present) instead of completing. The sky still
-    // warms as the disc settles toward the viewer.
-    if (props.isFromDashboard && direction === "down") {
+    // (offer to meditate / be present), up/away = let go (offer the "What do you
+    // want to let go of?" reflection) — instead of completing. Either way the
+    // interaction content fades out, the sky warms, and the offer takes over;
+    // the just-flung sun glides home hidden behind the offer's full-screen layer.
+    if (props.isFromDashboard && (direction === "down" || direction === "up")) {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
       interactionEventTarget.dispatchEvent(
         new CustomEvent("startBackgroundAnimation", { detail: { direction } }),
       );
-      setShowGroundingOffer(true);
+      if (direction === "down") {
+        setShowGroundingOffer(true);
+      } else {
+        setShowLetGoOffer(true);
+      }
       return;
     }
 
@@ -1074,6 +1098,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         />
       )}
 
+      {getShowLetGoOffer() && (
+        <LetGoOverlay
+          variant={getDragObjectName()}
+          answers={getAnswers()}
+          onClose={finishLetGo}
+        />
+      )}
+
       {getShowTimeSelectionOverlay() && (
         <div
           class="time-selection-overlay"
@@ -1332,7 +1364,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       {props.isFromDashboard && (
         <div class="back-button-wrapper">
-          <Btn variant="icon" plain onClick={() => props.onSkip()} aria-label="Go back">
+          <Btn
+            variant="icon"
+            plain
+            onClick={() => props.onSkip()}
+            aria-label="Go back"
+          >
             <Ico name="arrowBack" />
           </Btn>
         </div>

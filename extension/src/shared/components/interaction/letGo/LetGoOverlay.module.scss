@@ -1,0 +1,52 @@
+.letGo {
+  position: fixed;
+  inset: 0;
+  // Above the interaction layer (overlay 1100, settled wrapper 1101), same as
+  // the grounding stage: it fully replaces the dashboard sun flow — and hides
+  // the just-flung shell sun gliding home behind it — while it is open.
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--c-fg-full-emphasis);
+  // Warm light backdrop — the sky the sun is released into. Mirrors grounding so
+  // the two gesture rituals (up = let go, down = ground) feel like one system.
+  background: radial-gradient(120% 120% at 50% 35%, #fdf3e6 0%, #f6e3cf 100%);
+  animation: letGoIn var(--let-go-fade-ms, 600ms) ease-out forwards;
+
+  &.isDark {
+    background: radial-gradient(120% 120% at 50% 35%, #1a1f2e 0%, #0c0e16 100%);
+  }
+
+  &.isClosing {
+    opacity: 0;
+    transition: opacity var(--let-go-fade-ms, 600ms) ease;
+  }
+}
+
+@keyframes letGoIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 480px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letGo {
+    animation: none;
+  }
+}

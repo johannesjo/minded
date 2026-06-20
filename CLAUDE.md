@@ -158,3 +158,11 @@ Path aliases change based on build mode to load platform-specific code.
 - Typography: `h2`, `h3`, `txtBig`
 - Global styles are in `src/styles/componentsShared/` and `src/styles/mixins/`
 - Only create component-specific SCSS modules for layout, not for recreating existing button/input styles
+
+**Transitions — always soft, never hard cuts:**
+- Every overlay and page transition (open, close, decline, "Not now", success)
+  must fade — never snap in or out. Calmness is the product; an abrupt cut reads
+  as a jolt and betrays the premise. Reuse the existing fade helpers
+  (`fadeOut` in `src/util/animation.ts`, `ANIMATION_TIMING`) and the established
+  patterns (e.g. `InteractionOverlay`'s `handleHideWithFade`) rather than
+  unmounting straight to the next surface.
