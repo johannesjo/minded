@@ -1,13 +1,5 @@
 /* @refresh reload */
-import {
-  createSignal,
-  JSX,
-  onCleanup,
-  onMount,
-  Show,
-  Switch,
-  Match,
-} from "solid-js";
+import { createSignal, JSX, onCleanup, onMount, Switch, Match } from "solid-js";
 import { fadeOut } from "@src/util/animation";
 import { stopAllVideos } from "@src/util/stopAllVideos";
 import { LittleSunComponent } from "@src/shared/components/interaction/LittleSun";
@@ -18,18 +10,9 @@ import { isDarkModeNow } from "@src/shared/addWrapperClasses";
 import { updateHostsEntry } from "@dataInterface/localDataInterface";
 import {
   updateSyncData,
-  getSyncData,
   countSunTap,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { shouldPromptBudgetSetup, getBudgetState } from "@src/util/budget";
-import { BudgetSetupPrompt } from "@src/shared/components/interaction/budgetSetup/BudgetSetupPrompt";
-import { BudgetExhaustedMessage } from "@src/shared/components/interaction/BudgetExhaustedMessage";
-import {
-  ActiveTimer,
-  DailyBudget,
-  SessionIntent,
-} from "@src/dataInterface/syncData";
-import { getIsoDate } from "@src/util/getIsoDate";
+import { ActiveTimer, SessionIntent } from "@src/dataInterface/syncData";
 import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
 
 // NOTE: val also needs to be set in css
@@ -42,17 +25,12 @@ export const InteractionWeb: (props: {
   const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
-  const [getIsShowBudgetPrompt, setIsShowBudgetPrompt] = createSignal(false);
-  const [getIsShowBudgetExhausted, setIsShowBudgetExhausted] =
-    createSignal(false);
-  const [getCurrentSkips, setCurrentSkips] = createSignal(0);
 
   let wrapperEl: HTMLDivElement = undefined!;
-  let isDisposed = false;
   let isDismissing = false;
   const stopVideoTimeouts: number[] = [];
 
-  onMount(async () => {
+  onMount(() => {
     // Stop videos multiple times to catch delayed autoplay
     stopVideoTimeouts.push(
       window.setTimeout(() => stopAllVideos(), 1000),
@@ -65,15 +43,6 @@ export const InteractionWeb: (props: {
     // InteractionWeb vs LittleSun before rendering. Re-checking here with async data
     // loads creates a race condition where the state can toggle and cause the
     // intervention to show twice.
-
-    // Check if budget is exhausted - show message briefly
-    const syncData = await getSyncData();
-    if (isDisposed) return;
-
-    const budgetState = getBudgetState(syncData, props.host);
-    if (budgetState.isActive && budgetState.remainingSeconds <= 0) {
-      setIsShowBudgetExhausted(true);
-    }
   });
 
   const escapeHandler: EventListener = (ev) => {
@@ -102,7 +71,6 @@ export const InteractionWeb: (props: {
   });
 
   onCleanup(() => {
-    isDisposed = true;
     stopVideoTimeouts.forEach((timeoutId) => window.clearTimeout(timeoutId));
     document.removeEventListener("keydown", escapeHandler, true);
     shadowKeyboardEventTarget?.removeEventListener("keydown", escapeHandler);
@@ -145,39 +113,11 @@ export const InteractionWeb: (props: {
     }
   };
 
-  const handleSetBudget = async (budget: DailyBudget) => {
-    await updateSyncData({ dailyBudget: budget });
-    setIsShowBudgetPrompt(false);
-    // After setting budget, show little sun in budget mode
-    setIsShowLittleSun(true);
-  };
-
-  const handleDismissBudgetPrompt = async () => {
-    await updateSyncData({ budgetPromptDismissedTS: Date.now() });
-    setIsShowBudgetPrompt(false);
-    setIsShowLittleSun(true);
-  };
-
   return (
     <>
       {/* Use Switch/Match for exclusive conditional rendering to prevent
           component recreation when unrelated signals change */}
       <Switch>
-        <Match when={getIsShowBudgetPrompt()}>
-          <div class="aniIn" style={{ opacity: "1" }}>
-            <div
-              id="minded-6622-coloured-wrapper-dynamic"
-              class={isDarkModeNow() ? "minded-6622-dark" : ""}
-              style={{ opacity: "1" }}
-            >
-              <BudgetSetupPrompt
-                currentSkips={getCurrentSkips()}
-                onSetBudget={handleSetBudget}
-                onDismiss={handleDismissBudgetPrompt}
-              />
-            </div>
-          </div>
-        </Match>
         <Match when={getIsShowLittleSun()}>
           <div class="aniIn" style={{ opacity: "1" }}>
             <LittleSunComponent
@@ -226,16 +166,7 @@ export const InteractionWeb: (props: {
                 }}
                 onSkip={async () => {
                   await countSunTap();
-                  const syncData = await getSyncData();
-
-                  // Check if we should show budget setup prompt
-                  if (shouldPromptBudgetSetup(syncData)) {
-                    const today = getIsoDate();
-                    setCurrentSkips(syncData.sunTaps[today] || 0);
-                    setIsShowBudgetPrompt(true);
-                  } else {
-                    setIsShowLittleSun(true);
-                  }
+                  setIsShowLittleSun(true);
                 }}
                 onUpdateQuestion={(question) => {
                   setQuestion(question);
@@ -248,12 +179,6 @@ export const InteractionWeb: (props: {
           </div>
         </Match>
       </Switch>
-
-      <Show when={getIsShowBudgetExhausted()}>
-        <BudgetExhaustedMessage
-          onComplete={() => setIsShowBudgetExhausted(false)}
-        />
-      </Show>
     </>
   );
 };

@@ -143,14 +143,12 @@ describe("getInteractionMode", () => {
           answer("2"),
         ],
         alternativeWebsites: ["https://example.com"],
-        dailyBudget: {
-          globalMinutes: 10,
-        },
+        ...strongFrictionViaAttempts(),
         dailyUsage: {
           [TODAY]: {
-            totalSeconds: 10 * 60,
+            totalSeconds: 20 * 60,
             perSite: {
-              "youtube.com": 10 * 60,
+              "youtube.com": 20 * 60,
             },
           },
         },
@@ -166,9 +164,9 @@ describe("getInteractionMode", () => {
       reason: "strong_friction_pattern_insight",
       frictionLevel: "strong",
       patternInsight: {
-        id: "budget-exhausted:youtube.com",
+        id: "daily-usage:youtube.com",
         dateISO: TODAY,
-        message: "You've used today's 10-minute budget.",
+        message: "You've spent 20 minutes here today.",
         actions: ["still_on_purpose", "show_alternative", "leave_now"],
       },
     });
@@ -199,17 +197,7 @@ describe("getInteractionMode", () => {
     const decision = decide(
       baseSyncData({
         moodCheckTS: 99,
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
+        ...strongFrictionViaAttempts(),
       }),
       {
         isMainView: false,
@@ -228,17 +216,7 @@ describe("getInteractionMode", () => {
     const decision = decide(
       baseSyncData({
         energyLvlTS: 99,
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
+        ...strongFrictionViaAttempts(),
       }),
       {
         isMainView: false,

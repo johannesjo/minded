@@ -14,8 +14,6 @@ export interface PatternInsight {
 }
 
 const MIN_TARGET_USAGE_SECONDS = 15 * 60;
-const BUDGET_NEAR_LIMIT_SECONDS = 5 * 60;
-const MIN_BUDGET_USED_SECONDS = 5 * 60;
 const MAX_SHOWN_DATE_BUCKETS = 60;
 // How many recent returns (sun taps inside the ~5h window, see sunTapHistory.ts)
 // it takes before we gently name the loop. The current visit isn't counted yet
@@ -66,9 +64,6 @@ const formatMinutes = (seconds: number): string => {
   return `${minutes} minute${minutes === 1 ? "" : "s"}`;
 };
 
-const formatMinuteAdjective = (seconds: number): string =>
-  `${Math.max(1, Math.ceil(seconds / 60))}-minute`;
-
 const getActions = (context: InteractionContext): PatternInsightAction[] =>
   context.hasAlternatives
     ? ["still_on_purpose", "show_alternative", "leave_now"]
@@ -101,7 +96,7 @@ const getInsightCandidates = (
   // Because candidate selection has no fall-through (see getPatternInsightCandidate),
   // leading the list means that once shown it is intentionally the only insight
   // while it stays eligible that day: the gentler noticing takes precedence over
-  // the usage/budget stats, which resurface once the loop lapses.
+  // the usage stats, which resurface once the loop lapses.
   if (context.recentSunTaps >= RETURN_LOOP_MIN_RECENT_SUN_TAPS) {
     candidates.push(
       createInsight(
@@ -115,33 +110,6 @@ const getInsightCandidates = (
   const targetId = getScopedTargetId(context);
   if (!targetId) {
     return candidates;
-  }
-
-  if (context.budget.isActive && context.budget.isExhausted) {
-    candidates.push(
-      createInsight(
-        context,
-        `budget-exhausted:${targetId}`,
-        `You've used today's ${formatMinuteAdjective(
-          context.budget.totalBudgetSeconds,
-        )} budget.`,
-      ),
-    );
-  } else if (
-    context.budget.isActive &&
-    context.budget.usedSeconds >= MIN_BUDGET_USED_SECONDS &&
-    context.budget.remainingSeconds > 0 &&
-    context.budget.remainingSeconds <= BUDGET_NEAR_LIMIT_SECONDS
-  ) {
-    candidates.push(
-      createInsight(
-        context,
-        `budget-near-limit:${targetId}`,
-        `You have ${formatMinutes(
-          context.budget.remainingSeconds,
-        )} left in your budget today.`,
-      ),
-    );
   }
 
   if (context.targetUsageSeconds >= MIN_TARGET_USAGE_SECONDS) {

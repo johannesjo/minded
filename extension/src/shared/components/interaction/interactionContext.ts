@@ -13,14 +13,6 @@ import {
 
 export type FrictionLevel = "soft" | "normal" | "strong";
 
-export interface InteractionBudgetContext {
-  isActive: boolean;
-  remainingSeconds: number;
-  totalBudgetSeconds: number;
-  usedSeconds: number;
-  isExhausted: boolean;
-}
-
 export interface InteractionContext {
   now: number;
   dateISO: string;
@@ -40,7 +32,6 @@ export interface InteractionContext {
   recentSunTaps: number;
   todayUsageSeconds: number;
   targetUsageSeconds: number;
-  budget: InteractionBudgetContext;
   hasActiveTimer: boolean;
   hasExpiredTimerForTarget: boolean;
   hasIntentOnExpiredTimerForTarget: boolean;
@@ -62,52 +53,6 @@ const HIGH_USAGE_TODAY_SECONDS = 20 * 60;
 const isSameDate = (leftTS: number, rightTS: number): boolean => {
   if (leftTS <= 0) return false;
   return getIsoDate(new Date(leftTS)) === getIsoDate(new Date(rightTS));
-};
-
-const getBudgetContext = (
-  syncData: SyncData,
-  dateISO: string,
-  target: SessionTarget | undefined,
-  platform: SessionPlatform | undefined,
-): InteractionBudgetContext => {
-  if (
-    !syncData.dailyBudget ||
-    target?.kind === "app" ||
-    (platform !== undefined && platform !== "web")
-  ) {
-    return {
-      isActive: false,
-      remainingSeconds: 0,
-      totalBudgetSeconds: 0,
-      usedSeconds: 0,
-      isExhausted: false,
-    };
-  }
-
-  const todayUsage = syncData.dailyUsage[dateISO] || {
-    totalSeconds: 0,
-    perSite: {},
-  };
-  const host = target?.kind === "host" ? target.id : undefined;
-  const siteBudgetMinutes =
-    host && syncData.dailyBudget.perSiteMinutes?.[host] !== undefined
-      ? syncData.dailyBudget.perSiteMinutes[host]
-      : undefined;
-  const totalBudgetSeconds =
-    (siteBudgetMinutes ?? syncData.dailyBudget.globalMinutes) * 60;
-  const usedSeconds =
-    siteBudgetMinutes !== undefined && host
-      ? todayUsage.perSite[host] || 0
-      : todayUsage.totalSeconds;
-  const remainingSeconds = Math.max(0, totalBudgetSeconds - usedSeconds);
-
-  return {
-    isActive: true,
-    remainingSeconds,
-    totalBudgetSeconds,
-    usedSeconds,
-    isExhausted: remainingSeconds === 0,
-  };
 };
 
 export const getInteractionContext = ({
@@ -158,7 +103,6 @@ export const getInteractionContext = ({
     ).length,
     todayUsageSeconds: todayUsage.totalSeconds,
     targetUsageSeconds,
-    budget: getBudgetContext(syncData, dateISO, target, platform),
     hasActiveTimer: canResolveTimerScope
       ? hasActiveTimerInScope(syncData, target, platform, now)
       : !!activeTimer && activeTimer.endTS > now,
@@ -172,7 +116,6 @@ export const getFrictionLevel = (
   context: InteractionContext,
 ): FrictionLevel => {
   if (
-    context.budget.isExhausted ||
     context.recentSunTaps >= MANY_RECENT_SUN_TAPS_THRESHOLD ||
     (context.todayOpeningAttempts >= MANY_ATTEMPTS_TODAY_THRESHOLD &&
       context.todaySunTaps > 0)

@@ -26,13 +26,6 @@ const baseContext = (
   recentSunTaps: 1,
   todayUsageSeconds: 0,
   targetUsageSeconds: 0,
-  budget: {
-    isActive: false,
-    remainingSeconds: 0,
-    totalBudgetSeconds: 0,
-    usedSeconds: 0,
-    isExhausted: false,
-  },
   hasActiveTimer: false,
   hasExpiredTimerForTarget: false,
   hasIntentOnExpiredTimerForTarget: false,
@@ -88,19 +81,12 @@ describe("pattern insights", () => {
     ).toBe("return-loop");
   });
 
-  it("prioritizes the present-session return loop over usage and budget insights", () => {
+  it("prioritizes the present-session return loop over usage insights", () => {
     expect(
       getPatternInsightCandidate(
         baseContext({
           recentSunTaps: 3,
           targetUsageSeconds: 30 * 60,
-          budget: {
-            isActive: true,
-            remainingSeconds: 0,
-            totalBudgetSeconds: 20 * 60,
-            usedSeconds: 20 * 60,
-            isExhausted: true,
-          },
         }),
       )?.id,
     ).toBe("return-loop");
@@ -108,9 +94,9 @@ describe("pattern insights", () => {
 
   it("stays the only insight for the day once shown, while the loop is active", () => {
     // The return loop leads the candidate list and there is no fall-through, so
-    // once it has been shown it intentionally suppresses the usage/budget stats
-    // for the rest of the day while it stays eligible — the gentler noticing
-    // wins. This documents that deliberate precedence.
+    // once it has been shown it intentionally suppresses the usage stats for the
+    // rest of the day while it stays eligible — the gentler noticing wins. This
+    // documents that deliberate precedence.
     const state: PatternInsightState = {
       shownInsightIdsByDate: {
         "2026-05-11": ["return-loop"],
@@ -122,13 +108,6 @@ describe("pattern insights", () => {
         baseContext({
           recentSunTaps: 3,
           targetUsageSeconds: 30 * 60,
-          budget: {
-            isActive: true,
-            remainingSeconds: 0,
-            totalBudgetSeconds: 20 * 60,
-            usedSeconds: 20 * 60,
-            isExhausted: true,
-          },
         }),
         state,
       ),
@@ -181,44 +160,6 @@ describe("pattern insights", () => {
     ).toBeUndefined();
   });
 
-  it("prioritizes exhausted budget insights over usage insights", () => {
-    expect(
-      getPatternInsightCandidate(
-        baseContext({
-          targetUsageSeconds: 30 * 60,
-          budget: {
-            isActive: true,
-            remainingSeconds: 0,
-            totalBudgetSeconds: 20 * 60,
-            usedSeconds: 20 * 60,
-            isExhausted: true,
-          },
-        }),
-      )?.message,
-    ).toBe("You've used today's 20-minute budget.");
-  });
-
-  it("creates a near-budget insight when little budget remains", () => {
-    expect(
-      getPatternInsightCandidate(
-        baseContext({
-          budget: {
-            isActive: true,
-            remainingSeconds: 4 * 60,
-            totalBudgetSeconds: 30 * 60,
-            usedSeconds: 26 * 60,
-            isExhausted: false,
-          },
-        }),
-      ),
-    ).toEqual({
-      id: "budget-near-limit:youtube.com",
-      dateISO: "2026-05-11",
-      message: "You have 4 minutes left in your budget today.",
-      actions: ["still_on_purpose", "leave_now"],
-    });
-  });
-
   it("skips insights already shown on the same date", () => {
     const state: PatternInsightState = {
       shownInsightIdsByDate: {
@@ -230,30 +171,6 @@ describe("pattern insights", () => {
       getPatternInsightCandidate(
         baseContext({
           targetUsageSeconds: 18 * 60,
-        }),
-        state,
-      ),
-    ).toBeUndefined();
-  });
-
-  it("does not fall through to lower priority insights after showing the current top insight", () => {
-    const state: PatternInsightState = {
-      shownInsightIdsByDate: {
-        "2026-05-11": ["budget-exhausted:youtube.com"],
-      },
-    };
-
-    expect(
-      getPatternInsightCandidate(
-        baseContext({
-          targetUsageSeconds: 30 * 60,
-          budget: {
-            isActive: true,
-            remainingSeconds: 0,
-            totalBudgetSeconds: 20 * 60,
-            usedSeconds: 20 * 60,
-            isExhausted: true,
-          },
         }),
         state,
       ),

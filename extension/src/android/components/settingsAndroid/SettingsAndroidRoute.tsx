@@ -1,6 +1,5 @@
 import { useNavigate } from "@solidjs/router";
 import { SettingsAndroid } from "./SettingsAndroid";
-import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
@@ -24,10 +23,6 @@ export const SettingsAndroidRoute = () => {
       <hr style="opacity: 0.2; margin: 32px 16px;" />
 
       <SessionGraceSettings />
-
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
-
-      <BudgetSettings />
 
       <hr style="opacity: 0.2; margin: 32px 16px;" />
 

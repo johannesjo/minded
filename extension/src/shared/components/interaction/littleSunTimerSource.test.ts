@@ -1,16 +1,14 @@
 import { createMockSyncData, mockDate } from "@src/test-utils/mockHelpers";
-import { getIsoDate } from "@src/util/getIsoDate";
 import { getLittleSunTimerSource } from "./littleSunTimerSource";
 
 describe("getLittleSunTimerSource", () => {
   const NOW = new Date("2026-05-15T10:00:00").getTime();
-  const TODAY = getIsoDate(new Date(NOW));
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it("prefers a scoped active session over daily budget", () => {
+  it("prefers a scoped active session over elapsed time", () => {
     mockDate(NOW);
 
     const syncData = createMockSyncData({
@@ -20,13 +18,6 @@ describe("getLittleSunTimerSource", () => {
         startedTS: NOW,
         target: { kind: "host", id: "reddit.com" },
         platform: "web",
-      },
-      dailyBudget: { globalMinutes: 30 },
-      dailyUsage: {
-        [TODAY]: {
-          totalSeconds: 10 * 60,
-          perSite: { "reddit.com": 10 * 60 },
-        },
       },
     });
 
@@ -42,51 +33,41 @@ describe("getLittleSunTimerSource", () => {
     });
   });
 
-  it("uses budget when the active timer belongs to another host", () => {
+  it("returns grace while the per-session grace window has time left", () => {
     mockDate(NOW);
 
     const syncData = createMockSyncData({
-      activeTimer: {
-        endTS: NOW + 2 * 60 * 1000,
-        durationS: 2 * 60,
-        startedTS: NOW,
-        target: { kind: "host", id: "youtube.com" },
-        platform: "web",
-      },
-      dailyBudget: { globalMinutes: 30 },
-      dailyUsage: {
-        [TODAY]: {
-          totalSeconds: 10 * 60,
-          perSite: { "reddit.com": 10 * 60 },
-        },
-      },
+      cfg: { sessionGrace: { enabled: true, minutes: 5 } },
     });
 
-    expect(getLittleSunTimerSource(syncData, "reddit.com", 0, NOW)).toEqual({
-      type: "budget",
-      remainingSeconds: 20 * 60,
+    expect(getLittleSunTimerSource(syncData, "reddit.com", 60, NOW)).toEqual({
+      type: "grace",
+      remainingSeconds: 5 * 60 - 60,
     });
   });
 
-  it("subtracts pending live budget usage before it is written to sync storage", () => {
+  it("returns grace-exhausted when a configured grace window has run out", () => {
     mockDate(NOW);
 
     const syncData = createMockSyncData({
-      dailyBudget: { globalMinutes: 30 },
-      dailyUsage: {
-        [TODAY]: {
-          totalSeconds: 10 * 60,
-          perSite: { "reddit.com": 10 * 60 },
-        },
-      },
+      cfg: { sessionGrace: { enabled: true, minutes: 5 } },
     });
 
-    expect(getLittleSunTimerSource(syncData, "reddit.com", 0, NOW, 12)).toEqual(
-      {
-        type: "budget",
-        remainingSeconds: 20 * 60 - 12,
-      },
-    );
+    expect(
+      getLittleSunTimerSource(syncData, "reddit.com", 5 * 60, NOW),
+    ).toEqual({ type: "grace-exhausted" });
+  });
+
+  it("falls back to elapsed time when no session or grace applies", () => {
+    mockDate(NOW);
+
+    const syncData = createMockSyncData();
+
+    expect(getLittleSunTimerSource(syncData, "reddit.com", 42, NOW)).toEqual({
+      type: "elapsed",
+      initialSeconds: 42,
+      shouldClearExpiredTimer: false,
+    });
   });
 
   it("marks an expired scoped timer for cleanup when falling back to elapsed time", () => {
@@ -106,24 +87,6 @@ describe("getLittleSunTimerSource", () => {
       type: "elapsed",
       initialSeconds: 42,
       shouldClearExpiredTimer: true,
-    });
-  });
-
-  it("returns budget-exhausted when budget is active with no remaining time", () => {
-    mockDate(NOW);
-
-    const syncData = createMockSyncData({
-      dailyBudget: { globalMinutes: 10 },
-      dailyUsage: {
-        [TODAY]: {
-          totalSeconds: 10 * 60,
-          perSite: { "reddit.com": 10 * 60 },
-        },
-      },
-    });
-
-    expect(getLittleSunTimerSource(syncData, "reddit.com", 42, NOW)).toEqual({
-      type: "budget-exhausted",
     });
   });
 

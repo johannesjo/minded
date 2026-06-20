@@ -17,7 +17,7 @@ const answers = (count: number): Answer[] =>
   }));
 
 describe("interaction context", () => {
-  it("derives daily counters, freshness, alternatives, and budget state", () => {
+  it("derives daily counters, freshness, alternatives, and usage", () => {
     const syncData = createMockSyncData({
       answers: answers(3),
       moodCheckTS: NOW,
@@ -25,12 +25,6 @@ describe("interaction context", () => {
       alternativeWebsites: ["wikipedia.org", "example.com"],
       attempts: { [TODAY]: 4 },
       sunTaps: { [TODAY]: 2 },
-      dailyBudget: {
-        globalMinutes: 30,
-        perSiteMinutes: {
-          "reddit.com": 10,
-        },
-      },
       dailyUsage: {
         [TODAY]: {
           totalSeconds: 900,
@@ -64,13 +58,6 @@ describe("interaction context", () => {
       recentSunTaps: 0,
       todayUsageSeconds: 900,
       targetUsageSeconds: 300,
-      budget: {
-        isActive: true,
-        remainingSeconds: 300,
-        totalBudgetSeconds: 600,
-        usedSeconds: 300,
-        isExhausted: false,
-      },
     });
   });
 
@@ -174,36 +161,6 @@ describe("interaction context", () => {
     expect(context.hasAlternatives).toBe(false);
   });
 
-  it("does not apply site budget state to app targets", () => {
-    const syncData = createMockSyncData({
-      dailyBudget: {
-        globalMinutes: 5,
-      },
-      dailyUsage: {
-        [TODAY]: {
-          totalSeconds: 300,
-          perSite: {},
-        },
-      },
-    });
-
-    const context = getInteractionContext({
-      syncData,
-      now: NOW,
-      target: { kind: "app", id: "com.social.app" },
-      platform: "android",
-    });
-
-    expect(context.budget).toEqual({
-      isActive: false,
-      remainingSeconds: 0,
-      totalBudgetSeconds: 0,
-      usedSeconds: 0,
-      isExhausted: false,
-    });
-    expect(getFrictionLevel(context)).not.toBe("strong");
-  });
-
   it("identifies expired timers for the current target and platform", () => {
     const syncData = createMockSyncData({
       activeTimer: {
@@ -297,30 +254,6 @@ describe("interaction context", () => {
 });
 
 describe("friction level", () => {
-  it("returns strong when the daily budget is exhausted", () => {
-    const context = getInteractionContext({
-      syncData: createMockSyncData({
-        answers: answers(3),
-        moodCheckTS: NOW,
-        energyLvlTS: NOW,
-        dailyBudget: {
-          globalMinutes: 5,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 300,
-            perSite: {},
-          },
-        },
-      }),
-      now: NOW,
-      target: { kind: "host", id: "reddit.com" },
-      platform: "web",
-    });
-
-    expect(getFrictionLevel(context)).toBe("strong");
-  });
-
   it("returns strong after many continuations in the last five hours", () => {
     const context = getInteractionContext({
       syncData: createMockSyncData({
