@@ -110,7 +110,7 @@ class SyncDataSerializationTest {
               "attempts": {},
               "patternInsightState": {
                 "shownInsightIdsByDate": {
-                  "2026-05-11": ["daily-usage:youtube.com", "budget-exhausted:youtube.com"]
+                  "2026-05-11": ["return-loop"]
                 }
               }
             }
@@ -118,7 +118,7 @@ class SyncDataSerializationTest {
         )
 
         assertEquals(
-            listOf("daily-usage:youtube.com", "budget-exhausted:youtube.com"),
+            listOf("return-loop"),
             syncData.patternInsightState.shownInsightIdsByDate["2026-05-11"]
         )
 
@@ -127,8 +127,7 @@ class SyncDataSerializationTest {
             .getJSONObject("patternInsightState")
             .getJSONObject("shownInsightIdsByDate")
             .getJSONArray("2026-05-11")
-        assertEquals("daily-usage:youtube.com", shown.getString(0))
-        assertEquals("budget-exhausted:youtube.com", shown.getString(1))
+        assertEquals("return-loop", shown.getString(0))
     }
 
     @Test

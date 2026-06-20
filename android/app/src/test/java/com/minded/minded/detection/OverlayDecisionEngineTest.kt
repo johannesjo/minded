@@ -520,67 +520,6 @@ class OverlayDecisionEngineTest {
         assertEquals(SkipReason.RECENT_HIDE_ALL, decision.reason)
     }
 
-    // ==================== Daily Budget Tests ====================
-
-    @Test
-    fun `should show little sun when budget has remaining time and no active session`() {
-        val state = createState(
-            blockedApps = blockedApps,
-            appSessionEndTime = null,
-            activeTimerEndTime = null,
-            hasBudgetRemaining = true
-        )
-
-        val decision = engine.decide(youtubePackage, state)
-
-        assertEquals(OverlayDecision.ShowLittleSun, decision)
-    }
-
-    @Test
-    fun `should show intervention when budget exhausted and no active session`() {
-        val state = createState(
-            blockedApps = blockedApps,
-            appSessionEndTime = null,
-            activeTimerEndTime = null,
-            hasBudgetRemaining = false
-        )
-
-        val decision = engine.decide(youtubePackage, state)
-
-        assertEquals(OverlayDecision.ShowIntervention, decision)
-    }
-
-    @Test
-    fun `should show little sun when both session active and budget remaining`() {
-        val currentTime = System.currentTimeMillis()
-        val state = createState(
-            blockedApps = blockedApps,
-            currentTime = currentTime,
-            appSessionEndTime = currentTime + 60000,
-            hasBudgetRemaining = true
-        )
-
-        val decision = engine.decide(youtubePackage, state)
-
-        assertEquals(OverlayDecision.ShowLittleSun, decision)
-    }
-
-    @Test
-    fun `BUG SCENARIO - day change with budget should show little sun not intervention`() {
-        val currentTime = System.currentTimeMillis()
-        val state = createState(
-            blockedApps = blockedApps,
-            currentTime = currentTime,
-            appSessionEndTime = null,
-            activeTimerEndTime = null,
-            hasBudgetRemaining = true
-        )
-
-        val decision = engine.decide(youtubePackage, state)
-
-        assertEquals(OverlayDecision.ShowLittleSun, decision)
-    }
-
     // ==================== Helper Functions ====================
 
     private fun createState(
@@ -593,7 +532,6 @@ class OverlayDecisionEngineTest {
         appSessionEndTime: Long? = null,
         activeTimerEndTime: Long? = null,
         activeTimerDurationS: Int? = null,
-        hasBudgetRemaining: Boolean = false,
         isWindDownActive: Boolean = false,
         isWindDownSnoozed: Boolean = false
     ): OverlayState {
@@ -608,7 +546,6 @@ class OverlayDecisionEngineTest {
             appSessionEndTime = appSessionEndTime,
             activeTimerEndTime = activeTimerEndTime,
             activeTimerDurationS = activeTimerDurationS,
-            hasBudgetRemaining = hasBudgetRemaining,
             isWindDownActive = isWindDownActive,
             isWindDownSnoozed = isWindDownSnoozed
         )
