@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cold-start window background. Approximates the web --background-gradient
+  (extension/src/styles/_variables.scss) so launching no longer flashes white
+  before the WebView paints. <shape> gradients allow only 3 stops, so this is a
+  close approximation of the multi-stop web gradient; the Compose Box gradient in
+  MainActivity (full stops) takes over once the activity draws. Light is the
+  static default; MainActivity swaps to the dark variant at night.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:type="linear"
+        android:startColor="#CFE4F5"
+        android:centerColor="#F5EFC8"
+        android:endColor="#F6DCD2" />
+</shape>

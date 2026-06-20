@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Minded" parent="android:Theme.Material.Light.NoActionBar" />
-    <style name="Theme.MindedAppCompat" parent="Theme.AppCompat.Light.NoActionBar" />
+    <!-- windowBackground paints the loading sky on cold start (before the WebView
+         draws) instead of white. Light is the static default; MainActivity swaps
+         to the dark drawable at night to match the app's time-based dark mode. -->
+    <style name="Theme.MindedAppCompat" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/loading_gradient_light</item>
+    </style>
 </resources>

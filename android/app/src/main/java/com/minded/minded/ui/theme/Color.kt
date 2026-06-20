@@ -32,3 +32,23 @@ val StandardGradientDark = listOf(
     DarkGradColor2,
     DarkGradColor3,
 )
+
+// Launch/loading sky. Mirrors --background-gradient in
+// extension/src/styles/_variables.scss so the native loading screen matches the
+// web dashboard's gradient and hands off to it without a colour jump. Light vs.
+// dark is chosen by clock (isDarkModeNow), matching how the web app decides.
+// Keep these values in sync with _variables.scss.
+val AppBgGradientLight = listOf(
+    Color(0xFFCFE4F5), // sky blue (top)
+    Color(0xFFD8ECD6), // soft green
+    Color(0xFFF5EFC8), // yellow
+    Color(0xFFF6DCD2), // warm coral (bottom)
+)
+val AppBgGradientDark = listOf(
+    Color(0xFF02091F),
+    Color(0xFF041238),
+    Color(0xFF0A2860),
+    Color(0xFF123262),
+    Color(0xFF233053),
+    Color(0xFF49313B),
+)
