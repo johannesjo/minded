@@ -1,0 +1,42 @@
+<!-- Static home-screen companion sun, matched to the app's resting sun: a white
+     disc (the sun-bg var is #fff; the warm orange face only fades in mid-interaction
+     via the sun-warmth var) wrapped in a soft warm glow. Tuned against the live
+     in-app sun, not guessed. Night variant (moon) is in res/drawable-night/. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:aapt="http://schemas.android.com/aapt"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+
+    <!-- Soft warm glow (the sun's bloom + idle-breath halo), gentle and low-alpha -->
+    <path android:pathData="M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="53">
+                <item android:offset="0.0" android:color="#00FFD877" />
+                <item android:offset="0.56" android:color="#00FFD877" />
+                <item android:offset="0.74" android:color="#47FFD673" />
+                <item android:offset="1.0" android:color="#00FFCB5A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The white disc, warming to the faintest gold only at the very rim -->
+    <path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="36">
+                <item android:offset="0.0" android:color="#FFFFFFFF" />
+                <item android:offset="0.84" android:color="#FFFFFFFF" />
+                <item android:offset="1.0" android:color="#FFFFF5DC" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

@@ -1,37 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!-- The companion sun widget: a small (1x1) home-screen sun. Static content, so
+     no periodic update. The breathing pause it opens lives in the app. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-        android:minWidth="2dp"
-        android:minHeight="1dp"
-        android:updatePeriodMillis="86400000"
-        android:resizeMode="horizontal|vertical"
+        android:minWidth="40dp"
+        android:minHeight="40dp"
+        android:targetCellWidth="1"
+        android:targetCellHeight="1"
+        android:updatePeriodMillis="0"
+        android:resizeMode="none"
         android:widgetCategory="home_screen"
+        android:description="@string/widget_sun_description"
+        android:previewImage="@drawable/ic_sun_widget"
         android:initialLayout="@layout/glance_default_loading_layout" />
-
-        <!--<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"-->
-        <!--        android:minWidth="2dp"-->
-        <!--        android:minHeight="1dp"-->
-        <!--        android:targetCellWidth="2"-->
-        <!--        android:targetCellHeight="1"-->
-        <!--        android:updatePeriodMillis="86400000"-->
-        <!--        android:resizeMode="horizontal|vertical"-->
-        <!--        android:widgetCategory="home_screen"-->
-        <!--        android:initialLayout="@layout/glance_default_loading_layout"-->
-        <!--        android:widgetFeatures="reconfigurable|configuration_optional" />-->
-
-
-        <!--<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"-->
-        <!--android:minWidth="40dp"-->
-        <!--android:minHeight="40dp"-->
-        <!--android:targetCellWidth="1"-->
-        <!--android:targetCellHeight="1"-->
-        <!--android:maxResizeWidth="250dp"-->
-        <!--android:maxResizeHeight="120dp"-->
-        <!--android:updatePeriodMillis="86400000"-->
-        <!--android:previewLayout="@layout/example_appwidget_preview"-->
-        <!--android:initialLayout="@layout/example_loading_appwidget"-->
-        <!--android:configure="com.example.android.ExampleAppWidgetConfigurationActivity"-->
-        <!--android:resizeMode="horizontal|vertical"-->
-        <!--android:widgetCategory="home_screen"-->
-        <!--android:widgetFeatures="reconfigurable|configuration_optional">-->
-        <!--</appwidget-provider>-->

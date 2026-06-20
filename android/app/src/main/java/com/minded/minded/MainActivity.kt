@@ -47,6 +47,29 @@ class MainActivity : AppCompatActivity() {
     private val webAppResumeEVName = "androidAppResume"
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
+    private val baseUrl = "file:///android_asset/web/src/android/main/index.html"
+
+    companion object {
+        /** Intent extra naming a hash route to open on launch (allow-listed below). */
+        const val EXTRA_LAUNCH_ROUTE = "launch_route"
+        /**
+         * The home-screen sun widget opens the dashboard with this hash, which the
+         * web shell reads to fire the same interaction overlay as tapping the
+         * in-app companion sun (see RouteCmp's `?sun=open` effect).
+         */
+        const val OPEN_SUN_HASH = "/?sun=open"
+    }
+
+    /**
+     * The hash requested by the launching intent, if any — currently only the
+     * widget's sun hash. Allow-listed (not passed through verbatim) so a crafted
+     * intent can't drive the WebView to an arbitrary location.
+     */
+    private fun routeFromIntent(intent: Intent?): String? =
+        when (intent?.getStringExtra(EXTRA_LAUNCH_ROUTE)) {
+            OPEN_SUN_HASH -> OPEN_SUN_HASH
+            else -> null
+        }
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -112,7 +135,11 @@ class MainActivity : AppCompatActivity() {
                                     safeAreaInsets = safeAreaInsetsHolder,
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
-                                loadUrl("file:///android_asset/web/src/android/main/index.html")
+                                // Cold start: if launched from the widget, load the
+                                // dashboard with the sun hash so the shell opens the
+                                // interaction overlay on first paint.
+                                val route = routeFromIntent(intent)
+                                loadUrl(if (route != null) "$baseUrl#$route" else baseUrl)
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)
@@ -166,6 +193,22 @@ class MainActivity : AppCompatActivity() {
 //        )
     }
 
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // singleTask: a re-tap of the widget while the app is alive arrives here,
+        // not in onCreate. Set the live WebView's hash so the shell opens the sun
+        // interaction. The resume → maybeTriggerSleepWindDown redirect only fires
+        // from root, so it won't clobber this.
+        setIntent(intent)
+        val route = routeFromIntent(intent) ?: return
+        if (this::webView.isInitialized) {
+            webView.evaluateJavascript(
+                "(function() { window.location.hash = '#$route'; })();",
+                ValueCallback<String?> { },
+            )
+        }
+    }
 
     private fun askPermissionForOverlay() {
         startActivity(

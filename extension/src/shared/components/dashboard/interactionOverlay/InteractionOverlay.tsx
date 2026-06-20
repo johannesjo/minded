@@ -8,6 +8,12 @@ import { ON_SHOW_INTERACTION_OVERLAY_EV } from "@src/ev.const";
 export const InteractionOverlay: (props: {
   onHideInteraction: () => void;
   onPossibleNewData: () => void;
+  /**
+   * Open with no entrance fade. Used when launched from the home-screen sun
+   * widget so we land straight in the interaction rather than fading the
+   * dashboard out behind it.
+   */
+  instant?: boolean;
 }) => JSX.Element = (props) => {
   let wrapperEl: HTMLDivElement = undefined!;
 
@@ -31,6 +37,7 @@ export const InteractionOverlay: (props: {
   return (
     <div
       class={styles.interactionOverlay}
+      classList={{ [styles.instant]: props.instant }}
       id="minded-6622-coloured-wrapper"
       ref={wrapperEl}
     >

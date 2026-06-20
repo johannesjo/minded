@@ -17,6 +17,16 @@
   :global {
     animation-name: minded6622fadeIn !important;
   }
+
+  // Launched from the home-screen sun widget: skip the entrance fade entirely so
+  // the interaction is opaque from the first frame and the dashboard never shows
+  // through behind it.
+  &.instant {
+    animation: none !important;
+    :global {
+      animation-name: none !important;
+    }
+  }
 }
 
 .interactionWrapper {

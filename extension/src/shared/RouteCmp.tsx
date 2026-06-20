@@ -3,9 +3,17 @@ import {
   Route,
   RouteSectionProps,
   useLocation,
+  useSearchParams,
 } from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
-import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  JSX,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import {
   addWrapperClasses,
   isDarkModeNow,
@@ -49,8 +57,21 @@ import Styleguide from "@src/shared/components/styleguide/Styleguide";
 const IS_DEV: boolean = process.env.NODE_ENV !== "production";
 
 const MainWrapper = (props: RouteSectionProps) => {
+  // A widget cold-start arrives with `?sun=open` already in the hash. Read it
+  // synchronously here so the interaction overlay is part of the FIRST render —
+  // otherwise the dashboard paints for a frame before a post-mount effect could
+  // open it. (Warm re-taps are handled by the effect below.)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openedFromWidgetAtLaunch = searchParams.sun === "open";
+
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
-    createSignal<boolean>(false);
+    createSignal<boolean>(openedFromWidgetAtLaunch);
+  // Open with no entrance fade when it came from the widget, so we land straight
+  // in the interaction instead of fading the dashboard out behind it. A normal
+  // companion tap keeps the gentle fade.
+  const [getIsOverlayInstant, setIsOverlayInstant] = createSignal<boolean>(
+    openedFromWidgetAtLaunch,
+  );
   // Pointer hover over the resting companion (relayed from its tap target, since
   // the disc itself is pointer-transparent) — lifts + glows the sun.
   const [getIsCompanionHovered, setIsCompanionHovered] =
@@ -77,6 +98,23 @@ const MainWrapper = (props: RouteSectionProps) => {
     isShellSunInteractive(getSunRole(), getIsSunHandoffInFlight());
 
   // const navigate = useNavigate();
+
+  // The home-screen sun widget (Android now, iOS later) launches the app with
+  // `?sun=open` to mirror tapping the in-app companion: it opens the very same
+  // interaction overlay, and the existing flow handles the exit identically. A
+  // warm re-tap (native sets the hash on the already-live page) is handled here;
+  // a cold start is handled synchronously above so the overlay is in the first
+  // render. The flag is cleared once consumed so a resume can't reopen it.
+  createEffect(() => {
+    if (searchParams.sun !== "open") return;
+    // Only while the sun is resting as the companion — never cut into an
+    // interaction that's already in flight.
+    if (getSunRole() === "companion" && !getIsShowQuestionOverlay()) {
+      setIsOverlayInstant(true);
+      setIsShowQuestionOverlay(true);
+    }
+    setSearchParams({ sun: undefined }, { replace: true });
+  });
 
   onMount(() => {
     addWrapperClasses();
@@ -171,6 +209,7 @@ const MainWrapper = (props: RouteSectionProps) => {
               // and *then* flips the role, so the disc rises from the bottom bar
               // straight onto its slot in one slow glide (no base detour).
               setIsCompanionHovered(false);
+              setIsOverlayInstant(false); // in-app tap keeps the gentle fade
               setIsShowQuestionOverlay(true);
             }}
           />
@@ -181,6 +220,7 @@ const MainWrapper = (props: RouteSectionProps) => {
 
       {getIsShowQuestionOverlay() && (
         <InteractionOverlay
+          instant={getIsOverlayInstant()}
           onPossibleNewData={() => {
             window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
           }}
@@ -191,6 +231,7 @@ const MainWrapper = (props: RouteSectionProps) => {
             // Drop any breath origin so the next pause starts from a fresh clock.
             setBreathStartedAt(undefined);
             setIsShowQuestionOverlay(false);
+            setIsOverlayInstant(false);
           }}
         />
       )}
