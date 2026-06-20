@@ -52,11 +52,11 @@ export const OnboardingAndroid = (props: {
                   it never blocks you. No streaks, no scores — just awareness.
                 </p>
                 <p>
-                  Why a sun and not a blocker? Blockers and willpower work right
-                  up until you route around them. Mindfulness — simply noticing,
-                  without judgment — is one of the few things that actually holds
-                  up over months and years, because it builds a capacity in you
-                  instead of a wall around you.
+                  Why a sun and not a blocker? A blocker is a wall, and walls
+                  get routed around — willpower too. Mindfulness works
+                  differently: simply noticing, without judgment, builds a small
+                  capacity in you — catching the pull before you act on it.
+                  That's the kind of thing that tends to stay with you.
                 </p>
                 <p>
                   To meet you in those moments, <em>minded</em> needs a couple of
