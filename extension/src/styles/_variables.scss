@@ -7,6 +7,18 @@
   --radius-lg: 16px;
   --radius-xl: 24px;
 
+  // Spacing scale — a strict 8px rhythm (with a 4px half-step for fine
+  // alignment) so padding and gaps stay in tune across surfaces, the same way
+  // the radius/motion/type vocabularies do. Reach for a token instead of a raw
+  // px value; extend only when a new step earns its place. Off-grid one-offs
+  // (12/18/20/28…) should snap to the nearest step rather than add a token.
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
   --border-radius: var(--radius-sm);
   --c-link-color: #006b72;
   --c-link-hover-color: #00555d;

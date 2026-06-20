@@ -16,23 +16,14 @@
   }
 
   // The warm sun glow now rides the disc itself (Sun.scss `.sun-glow`), so it
-  // can never drift from the sun the way this background-layer wash did. What
-  // stays here is the static scene depth: a faint cool vignette over the pastel.
+  // can never drift from the sun the way this background-layer wash did. The
+  // sky here is just the plain gradient — no cool vignette layered on top, so
+  // the light scene stays as flat and quiet as it reads.
   &.sun-gradient-attached {
-    background:
-      // Faint vignette: deepen the corners with a cool atmospheric tint so the
-      // flat pastel reads with the depth the dark scene gets for free from its
-      // baked-in radial. Only here — the dashboard light gradient is static.
-
-      radial-gradient(
-        ellipse 124% 110% at 50% 44%,
-        transparent 46%,
-        rgba(56, 84, 134, 0.16) 100%
-      ),
-      var(
-        --background-gradient,
-        linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
-      );
+    background: var(
+      --background-gradient,
+      linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
+    );
   }
 
   &.background-overlay {

@@ -3,10 +3,10 @@
   user-select: none;
   background: var(--dashboard-card-bg);
   border-radius: var(--dashboard-card-border-radius);
-  padding: 16px;
+  padding: var(--space-md);
 
   @include onNonMobileScreens() {
-    padding: 32px;
+    padding: var(--space-xl);
   }
 }
 
@@ -15,6 +15,6 @@
   padding: 18px 14px;
 
   @include onNonMobileScreens() {
-    padding: 32px;
+    padding: var(--space-xl);
   }
 }
