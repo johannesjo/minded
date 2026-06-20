@@ -26,22 +26,25 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
           <Match when={getStep() === 0}>
             <div class="pageWrapper pageTransitionIn">
               <div class="h2 h2Mindful">
-                Welcome to <em>minded</em>! 😊
+                Meet <em>minded</em> 🌞
               </div>
               <div class="txtSlightlyBigger">
                 <p>
-                  <em>minded</em> will help you to reduce the usage of apps that
-                  you aim to use less frequently, but struggle to do so.
+                  <em>minded</em> isn't here to lock you out of anything. It's a
+                  small practice of presence: when you open an app on autopilot,
+                  a calm little sun appears, so you can pause, notice, and choose
+                  — no scolding, no streaks, no scores.
                 </p>
                 <p>
-                  Before we can start there are some small things we need to set
-                  up.
+                  To meet you in those moments, <em>minded</em> needs a couple of
+                  permissions and the apps where you'd like it to show up. Let's
+                  set that up together.
                 </p>
               </div>
 
               <ButtonWrapper isVisible={true}>
                 <Btn big onClick={() => setStep(1)}>
-                  let's start!
+                  begin
                 </Btn>
               </ButtonWrapper>
             </div>
@@ -51,6 +54,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
             <div class="pageTransitionIn">
               <SettingsAndroid
                 isRouting={false}
+                heading="Where would you like the sun to meet you? Pick at least one app where it should appear."
                 saveBtnTxt="save & continue"
                 onSave={() => setStep(2)}
               />
@@ -102,18 +106,17 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
             ) : (
               <div class="card pageTransitionIn" style="margin: 32px;">
                 <div class="h2 h2Mindful">
-                  <em>minded</em> is now successfully configured! 🎉
+                  The sun is ready 🌞
                 </div>
                 <p>
-                  Whenever you open one of the apps you configured a short
-                  interaction prompt will appear.
+                  From now on, when you open one of those apps, the sun will
+                  appear — a small moment to pause and notice before you carry
+                  on.
                 </p>
                 <p>
-                  This will help you break your automatic patterns to use those
-                  apps more often than you like.
+                  You can always fling it away in a single gesture. It's an
+                  invitation, never a wall.
                 </p>
-
-                <p>Come back here, once you answered a couple of those.</p>
               </div>
             )}
           </Match>
