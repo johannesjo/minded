@@ -160,6 +160,10 @@ export const OnboardingAndroid = (props: {
       <Stepper
         nrOfSteps={4}
         activeStep={getStep()}
+        // On re-entry from the dashboard invitation (initialStep > 0) the
+        // welcome — with its "set this up later" skip — is behind us; don't let
+        // the stepper walk back into it.
+        isNoGoBack={(props.initialStep ?? 0) > 0}
         onSetStep={(step) => setStep(step)}
         labelFn={(step) =>
           step === 3 ? (getPermissionNotGiven() ? "🙁" : "🌞") : undefined

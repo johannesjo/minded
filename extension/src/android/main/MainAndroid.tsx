@@ -16,6 +16,11 @@ import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/Onb
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
+
+// Kept in sync with the `.setupInvitationMsg` opacity transition in
+// indexMainAndroid.scss so the element finishes fading before it unmounts.
+const INVITE_FADE_MS = 300;
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -34,10 +39,12 @@ const MainAndroid = () => {
   const [getIsInviteDismissed, setIsInviteDismissed] = createSignal(false);
   const [getIsInviteDismissing, setIsInviteDismissing] = createSignal(false);
 
+  let dismissT: NodeJS.Timeout | undefined;
   const dismissInvite = () => {
     setIsInviteDismissing(true);
-    setTimeout(() => setIsInviteDismissed(true), 300);
+    dismissT = setTimeout(() => setIsInviteDismissed(true), INVITE_FADE_MS);
   };
+  onCleanup(() => clearTimeout(dismissT));
 
   onMount(() => {
     addWrapperClasses();
@@ -128,14 +135,15 @@ const MainAndroid = () => {
                   The sun rests here whenever you open <em>minded</em>. To have
                   it meet you in your apps too, tell it where to appear.
                 </div>
-                <button
-                  type="button"
+                <Btn
+                  variant="icon"
+                  plain
                   class="setupInvitationMsgClose"
-                  aria-label="dismiss"
+                  aria-label="Dismiss setup reminder"
                   onClick={dismissInvite}
                 >
                   <Ico name="close" />
-                </button>
+                </Btn>
               </div>
             )
           ) : getMissingCapabilities().length > 0 ? (
