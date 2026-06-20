@@ -45,7 +45,11 @@ export const InteractionOverlay: (props: {
           onInteractionSubmitted={() => {
             props.onPossibleNewData();
           }}
-          onAfterInteractionFadeout={() => props.onHideInteraction()}
+          // Grounding finish ("Not now" / a completed sit), let-go finish, and
+          // dashboard success all land here. Fade the sky out (sun gliding home)
+          // instead of cutting, so we return to the dashboard softly like every
+          // overlay.
+          onAfterInteractionFadeout={handleHideWithFade}
           onSetAnswer={() => undefined}
           onUpdateQuestion={() => undefined}
           onModeSet={() => undefined}

@@ -7,10 +7,13 @@
   --glow-color: 255, 255, 255;
   --sun-warmth: 0;
 
-  // Only the drag glow (--glow-intensity, JS-driven and transient) lives on
-  // box-shadow now. The resting idle-breath halo moved to ::after, which pulses
-  // its opacity — a compositor-only property — so a permanently-mounted sun no
-  // longer re-rasterises a blurred shadow every frame.
+  // The white halo lives on box-shadow, scaled by --glow-intensity (JS-driven).
+  // The resting sun holds it at the hover intensity (Sun.tsx COMPANION_REST_GLOW),
+  // so the idle disc already wears the bold hover glow rather than a dimmer one;
+  // dragging hands --glow-intensity back to the 0..1 drag ramp. It's a static
+  // shadow at rest (constant intensity → rasterised once, not per frame); the
+  // gentle breath is carried separately by the ::after opacity pulse below (a
+  // compositor-only property). The glow is white throughout.
   box-shadow:
     var(--sun-shadow),
     0 0 calc(15px * var(--glow-intensity))
@@ -58,12 +61,13 @@
     transition: opacity 120ms linear;
   }
 
-  // Resting idle-breath halo — the disc's own glow, so it reads as the light
-  // source (the big warm wash in the background stays purely ambient). Three
-  // soft warm rings emanate from the face: a bright core, a warm mid, and a wide
-  // faint outer. The glow is rasterised once at peak blur; the breath only pulses
-  // its opacity (0.2 ↔ 0.6), which the compositor handles without re-rastering
-  // the shadow each frame. Sits behind the sun face (z-index: -1).
+  // The sun's resting glow is the box-shadow above (held at the hover intensity),
+  // so the sun face needs no halo of its own here — a second ring layered on the
+  // box-shadow bloom just reads as an unwanted double halo. This ::after is kept
+  // purely as the carrier for the *moon's* cool resting halo (.moon override
+  // below): the moon doesn't take the box-shadow rest glow, so it breathes its
+  // halo through this pseudo-element's opacity (compositor-only). For the sun it
+  // has no box-shadow and stays invisible.
   &::after {
     content: "";
     position: absolute;
@@ -71,41 +75,9 @@
     z-index: -1;
     border-radius: inherit;
     pointer-events: none;
-    box-shadow:
-      0 0 16px 1px rgba(255, 243, 214, 0.36),
-      0 0 40px 6px rgba(255, 222, 158, 0.2),
-      0 0 76px 12px rgba(255, 202, 124, 0.11);
     opacity: 0.2;
     animation: mindedSunIdleBreath 9s ease-in-out infinite;
     will-change: opacity;
-  }
-
-  // The broad warm wash the sun casts on the scene — the light source's bloom,
-  // formerly a viewport-fixed background layer (BackgroundTransition) whose
-  // center JS had to keep chasing the disc. Living inside the disc, it rides the
-  // exact same transform as the face, so the two can never sit apart. Sits behind
-  // the face and the ::after rim halo. The inset/stops are tuned to roughly
-  // match the old wash's reach and are safe to nudge purely by eye.
-  & > .sun-glow {
-    position: absolute;
-    inset: -175%; // grows the wash to ~4.5× the disc, centered on it
-    z-index: -2;
-    border-radius: 50%;
-    pointer-events: none;
-    // This layer sits at z-index -2 but still composites *over* the element's
-    // own white #fff background (negative-z descendants paint above the parent's
-    // background), so any colour across the disc's footprint tints the face
-    // yellow. The disc fills only the central ~16% of this oversized layer's
-    // radius, so hold the wash fully clear (alpha 0) out to ~17% — the white face
-    // shows through — and ramp the warm bloom in only beyond the rim. A warm hue
-    // at alpha 0 (not `transparent`) avoids a grey fringe at the ramp.
-    background: radial-gradient(
-      circle,
-      rgba(255, 239, 170, 0) 17%,
-      rgba(255, 239, 170, 0.34) 27%,
-      rgba(250, 205, 105, 0.14) 41%,
-      rgba(250, 205, 105, 0) 62%
-    );
   }
 
   &.dragging {
@@ -143,13 +115,9 @@
       display: none;
     }
 
-    // The warm wash is the sun's light; the night scene stays cool, so the moon
-    // carries only its cool ::after halo (below), no warm bloom.
-    & > .sun-glow {
-      display: none;
-    }
-
-    // Cool resting halo for the moon (mirrors the sun's ::after).
+    // The night scene stays cool, so the moon carries only this cool ::after halo,
+    // no warm bloom. It is the moon's resting glow (the moon doesn't take the
+    // sun's box-shadow rest glow), breathing via the shared ::after opacity pulse.
     &::after {
       box-shadow:
         0 0 18px 1px rgba(216, 229, 255, 0.32),

@@ -25,8 +25,26 @@ import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const MAX_ANSWERS = 4;
-const CENTER_INDEX = 4;
+// The slot the centre pick (or the fallback quote) is moved to — also the card
+// the dashboard greets you with before you reveal the rest. Exported so the view
+// can identify the greeting without re-deriving the placement logic.
+export const CENTER_INDEX = 4;
 const MAX_SELF_ASSESSMENTS = 3;
+
+// The card types that may *greet* you on arrival (the centre pick). The greeting
+// reflects — your own answers, mood, energy, emotions — or offers a calm quote;
+// it never *measures*. The minded-decisions counter, the behaviour/app-usage
+// charts and the wind-down CTA are deliberately excluded so the first card is
+// never a tally, a trend, or a call to action. They still appear in the full
+// grid once it's revealed. (The quote is handled separately as an always-present
+// extra option, so it can greet on full days and is the natural empty fallback.)
+const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
+  DashboardGroupType.TxtQuestion,
+  DashboardGroupType.MoodCheckin,
+  DashboardGroupType.EnergyLvl,
+  DashboardGroupType.EmotionLabeling,
+  DashboardGroupType.SelfAssessment,
+]);
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -142,19 +160,30 @@ export const getDashboardEntriesFromQuestions = (
     } as DashboardGroupAppUsageHappiness);
   }
 
-  // center one rnd entry
-  if (sortedEntries.length >= 5) {
-    if (!isSkipRndEntry) {
-      // NOTE: start val needs to be bigger than the fixed added entries
-      const rndIndex = getRndInt(
-        fixedEntriesIndexAndNr,
-        sortedEntries.length - 1,
-      );
-      const rndEntry = { ...sortedEntries[rndIndex] };
-      sortedEntries.splice(rndIndex, 1);
-      sortedEntries.splice(CENTER_INDEX, 0, rndEntry as DashboardGroup);
+  // Move the greeting (the centre pick the dashboard opens on) to CENTER_INDEX.
+  // The pick is drawn only from the reflective/self-report cards
+  // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
+  // option — so a calm quote can greet you even on a full day, and is the
+  // natural fallback when nothing reflective qualifies yet (an empty eligible
+  // pool always lands on the quote). The random pick is web-only; Android keeps
+  // its simpler fixed arrangement, with the quote fallback only when there's
+  // little to show.
+  if (!isSkipRndEntry) {
+    const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
+      if (GREETING_ELIGIBLE_TYPES.has(entry.type)) acc.push(i);
+      return acc;
+    }, []);
+
+    const pick = getRndInt(0, eligibleIndexes.length);
+    if (pick === eligibleIndexes.length) {
+      sortedEntries.splice(CENTER_INDEX, 0, {
+        type: DashboardGroupType.Quote,
+      });
+    } else {
+      const [greeting] = sortedEntries.splice(eligibleIndexes[pick], 1);
+      sortedEntries.splice(CENTER_INDEX, 0, greeting);
     }
-  } else {
+  } else if (sortedEntries.length < 5) {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });

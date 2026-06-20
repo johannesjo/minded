@@ -247,6 +247,10 @@ export const Sun: Component<SunProps> = (props) => {
   // transitions (e.g. cancelling the intent/time choices), which keep the
   // snappier default.
   const COMPANION_GLIDE_MS = 900;
+  // Returning home *after a fling* doesn't glide — the disc is off-screen, so a
+  // glide would streak it across the whole screen. It fades in at the rest over
+  // this instead (see settleInAtRest).
+  const COMPANION_FADE_IN_MS = 500;
   // The companion is the only settle anchored by a fixed bottom px with no fixed
   // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
   // departing, top-px interactive). Used to give its glides the slower duration.
@@ -286,8 +290,8 @@ export const Sun: Component<SunProps> = (props) => {
     return { x: anchorX - rest.x, y: anchorY - rest.y };
   };
 
-  // Ease the offset and scale toward a target. The disc's warm glow rides the
-  // disc transform (Sun.scss `.sun-glow`), so nothing needs the per-frame center.
+  // Ease the offset and scale toward a target. The disc's glow is its own
+  // box-shadow, so it rides the disc transform and nothing needs the per-frame center.
   const animateOffsetScaleTo = (
     targetOffset: SunPosition,
     targetScale: number,
@@ -389,8 +393,48 @@ export const Sun: Component<SunProps> = (props) => {
     setTapCount(0);
   };
 
+  // Bring a disc that was flung off-screen home *without* streaking it across the
+  // whole screen: place it straight on its rest and gently fade (with a touch of
+  // scale) it in there. Used when an offer opened by a fling (let-go up /
+  // grounding down) is dismissed and the disc returns to the bottom bar — a glide
+  // from its off-screen position would zip back unpleasantly fast (worst for the
+  // let-go offer, flung all the way up then declined).
+  const settleInAtRest = (
+    target: SunPosition,
+    restScale: number,
+    onDone?: () => void,
+  ) => {
+    cancelSettleFrame();
+    setIsAnimating(true);
+    setDragOffset(target); // snap home — no cross-screen glide
+    const startScale = restScale * 0.6;
+    setScale(startScale);
+    setOpacity(0);
+    const startTime = Date.now();
+    const step = () => {
+      const eased = easeInOut(
+        Math.min((Date.now() - startTime) / COMPANION_FADE_IN_MS, 1),
+      );
+      setOpacity(eased);
+      setScale(startScale + (restScale - startScale) * eased);
+      if (eased < 1) {
+        settleFrame = requestAnimationFrame(step);
+      } else {
+        settleFrame = undefined;
+        onDone?.();
+      }
+    };
+    settleFrame = requestAnimationFrame(step);
+  };
+
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+    // A terminal gesture (fling / drag-complete) leaves the disc flung off-screen.
+    // Capture that BEFORE resetTerminalStateForReuse clears the flag, so the
+    // return home can fade in at the rest instead of streaking back across the
+    // whole screen.
+    const wasFlungOffScreen =
+      isCompanionSettle(settle) && getIsCompletionStarted();
     if (isCompanionSettle(settle)) resetTerminalStateForReuse();
     const restScale = settle.scale ?? DEFAULT_REST_SCALE;
     const target = getAnchorOffset(settle);
@@ -402,15 +446,7 @@ export const Sun: Component<SunProps> = (props) => {
       ? COMPANION_GLIDE_MS
       : GLIDE_DURATION_MS;
 
-    if (prefersReducedMotion()) {
-      cancelSettleFrame();
-      setDragOffset(target);
-      setScale(restScale);
-      setIsAnimating(false);
-      return;
-    }
-
-    animateOffsetScaleTo(target, restScale, duration, () => {
+    const onSettled = () => {
       if (settle.breathe) {
         startBreathCycle(
           restScale,
@@ -423,7 +459,22 @@ export const Sun: Component<SunProps> = (props) => {
       } else {
         setIsAnimating(false);
       }
-    });
+    };
+
+    if (prefersReducedMotion()) {
+      cancelSettleFrame();
+      setDragOffset(target);
+      setScale(restScale);
+      setIsAnimating(false);
+      return;
+    }
+
+    if (wasFlungOffScreen) {
+      settleInAtRest(target, restScale, onSettled);
+      return;
+    }
+
+    animateOffsetScaleTo(target, restScale, duration, onSettled);
   };
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
@@ -1022,6 +1073,14 @@ export const Sun: Component<SunProps> = (props) => {
   // glow (0 0 30px rgba(255,255,255,0.9)) — i.e. as bold as a button's hover.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
+  // The sun carries that same bold halo at all times — the disc's box-shadow glow
+  // at the hover intensity — so the idle sun already looks like the (liked) hover
+  // state, and, crucially, the glow never drops out while it's being dragged or
+  // tapped (both reset getGlowIntensity toward 0). We floor at this baseline rather
+  // than gate on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so
+  // letting it take over would only make the sun fade the moment you touch it. Sun
+  // only; the moon keeps its own cooler resting halo (Sun.scss).
+  const COMPANION_REST_GLOW = COMPANION_HOVER_GLOW;
   const getInteractionScale = () => {
     if (getIsCompletionStarted()) {
       return 1;
@@ -1058,20 +1117,16 @@ export const Sun: Component<SunProps> = (props) => {
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         "--glow-color": getGlowColor(),
-        "--glow-intensity": Math.max(
-          getGlowIntensity(),
-          props.isHovered ? COMPANION_HOVER_GLOW : 0,
-        ),
+        "--glow-intensity":
+          props.variant === "moon"
+            ? Math.max(
+                getGlowIntensity(),
+                props.isHovered ? COMPANION_HOVER_GLOW : 0,
+              )
+            : Math.max(getGlowIntensity(), COMPANION_REST_GLOW),
         "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >
-      {/* The sun's own warm light. As a child of the disc it inherits every
-          transform the disc gets — drag, settle glide, idle float, breath scale
-          — so it can never drift out of step with the face. (The old wash was a
-          separate viewport-fixed layer whose center we had to chase via JS; any
-          pure-CSS motion — the idle float, the 160ms ease — slipped past it.)
-          Sun-only; the moon scene stays cool (hidden in Sun.scss). */}
-      <span class="sun-glow" aria-hidden="true" />
       {isTapEnabled() && (
         <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
           {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (

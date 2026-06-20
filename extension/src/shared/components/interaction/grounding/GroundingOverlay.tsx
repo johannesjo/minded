@@ -181,14 +181,12 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           <h2 class={styles.title}>Stay a while?</h2>
           <p class={styles.subtitle}>Take a moment to ground yourself.</p>
           <div class={styles.choices}>
-            <Btn outline onClick={() => chooseMode("timer")}>
-              Meditate with a timer
-            </Btn>
-            <Btn outline onClick={() => chooseMode("quiet")}>
+            <Btn onClick={() => chooseMode("timer")}>Meditate with a timer</Btn>
+            <Btn onClick={() => chooseMode("quiet")}>
               {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}
             </Btn>
           </div>
-          <Btn onClick={close}>
+          <Btn outline onClick={close}>
             Not now
           </Btn>
         </div>
@@ -210,9 +208,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
               </Btn>
             ))}
           </div>
-          <Btn onClick={close}>
-            Not now
-          </Btn>
+          <Btn onClick={close}>Not now</Btn>
         </div>
       </Show>
 
@@ -245,9 +241,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
             </div>
           </div>
           <p class={styles.remaining}>{remainingLabel()}</p>
-          <Btn onClick={finishSession}>
-            End
-          </Btn>
+          <Btn onClick={finishSession}>End</Btn>
         </div>
       </Show>
 
@@ -256,9 +250,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         <div class={styles.session}>
           <p class={styles.quietCue}>Rest your eyes.</p>
           <p class={styles.quietSub}>The bell will call you back.</p>
-          <Btn onClick={finishSession}>
-            End
-          </Btn>
+          <Btn onClick={finishSession}>End</Btn>
         </div>
       </Show>
 

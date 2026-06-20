@@ -53,6 +53,33 @@
       animation-name: minded6622fadeIn;
     }
   }
+
+  // The dashboard's feedback & settings icons (its only > a children) reveal
+  // slowly — a gentle settle on arrival — rather than snapping in at the 200ms
+  // default above. Re-declares the animation with the same global-keyframe
+  // workaround the rest of this file uses.
+  &.isOnDashboard > a {
+    animation: minded6622fadeIn ease 2.5s;
+
+    :global {
+      animation-name: minded6622fadeIn;
+    }
+
+    // Quiet the icons so they read as gentle, secondary affordances rather than
+    // competing with the greeting card and the resting sun — full strength only
+    // on hover. The resting opacity sits on the icon (an <img>), not the <a>, so
+    // it doesn't fight the link's own opacity fade-in above.
+    :global(.minded-6622-ico) {
+      opacity: 0.8;
+      transition: opacity var(--dur-quick) var(--ease-out);
+    }
+
+    @media (hover: hover) {
+      &:hover :global(.minded-6622-ico) {
+        opacity: 1;
+      }
+    }
+  }
 }
 
 //.bottomBarWrapper::after {

@@ -37,6 +37,7 @@ import { setBreathStartedAt } from "@src/shared/components/interaction/sun/sunSt
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
+import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
@@ -157,6 +158,7 @@ const Styleguide = (): JSX.Element => {
   const [wrapperVisible, setWrapperVisible] = createSignal(true);
   const [intentArmed, setIntentArmed] = createSignal(true);
   const [groundingOpen, setGroundingOpen] = createSignal(false);
+  const [letGoOpen, setLetGoOpen] = createSignal(false);
 
   onMount(() => {
     setTokenSnapshot((n) => n + 1);
@@ -184,11 +186,7 @@ const Styleguide = (): JSX.Element => {
         <nav class={styles.toc}>
           <For each={TOC}>
             {(item) => (
-              <Btn
-                variant="toggle"
-                small
-                onClick={() => scrollTo(item.id)}
-              >
+              <Btn variant="toggle" small onClick={() => scrollTo(item.id)}>
                 {item.label}
               </Btn>
             )}
@@ -516,6 +514,26 @@ const Styleguide = (): JSX.Element => {
             <GroundingOverlay
               variant={isDark() ? "moon" : "sun"}
               onClose={() => setGroundingOpen(false)}
+            />
+          )}
+        </Subsection>
+
+        <Subsection label="<LetGoOverlay> — dashboard fling-away">
+          <p class={styles.muted}>
+            The sibling of the grounding offer: flinging the sun up/away ("let
+            go") offers the standard intervention question "What do you want to
+            let go of?". A gentle offer — declining is easy and ignoring it
+            dismisses it. Opens a full-screen stage that hides the just-flung
+            sun gliding home behind it.
+          </p>
+          <Btn outline onClick={() => setLetGoOpen(true)}>
+            Open let-go offer
+          </Btn>
+          {letGoOpen() && (
+            <LetGoOverlay
+              variant={isDark() ? "moon" : "sun"}
+              answers={[]}
+              onClose={() => setLetGoOpen(false)}
             />
           )}
         </Subsection>

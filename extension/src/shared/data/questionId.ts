@@ -177,4 +177,9 @@ export enum QID {
   SI5 = "SI5",
   SI6 = "SI6",
   SI7 = "SI7",
+
+  // The reflective question offered when the dashboard sun is flung away ("let
+  // go"). Standalone (not part of any random category pool) — surfaced only by
+  // that gesture. See interaction/letGo/letGo.const.ts.
+  LETGO1 = "LETGO1",
 }

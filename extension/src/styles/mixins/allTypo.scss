@@ -83,13 +83,14 @@
   }
 
   .dashboardContent {
-    font-size: var(--fz-s);
-    line-height: 1.3;
-    font-weight: 300;
+    // Readability close to the detail page's answer text (--fz-m at every size),
+    // but kept gentle for the calm dashboard: Inter is variable, so weight sits
+    // at ~350 — between the old faint 300 and a full 400 (clear but a touch
+    // harsh) — and a slightly opener line-height lets the block breathe. The
+    // light-200 lowercase headings stay as the dashboard's ambient signature.
+    font-size: var(--fz-m);
+    line-height: 1.4;
+    font-weight: 350;
     pointer-events: all;
-
-    @include onNonMobileScreens {
-      font-size: var(--fz-m);
-    }
   }
 }
