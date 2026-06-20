@@ -189,7 +189,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  // Roomy breathing space between the greeting card and the reveal affordance,
+  // so the invitation sits clearly apart from the card rather than crowding it.
+  gap: 36px;
   box-sizing: border-box;
   overflow-y: auto;
 
