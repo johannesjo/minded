@@ -2,6 +2,9 @@ $bpMobile: 650px;
 $bpMobileMax: 599px;
 
 $bpDashboardMoreThan1Col: 375px;
+// Below this phones keep a single roomy dashboard column; two cramped columns
+// read busier (and less calm) than one with breathing room.
+$bpDashboardPhone2Col: 430px;
 $bpDashboardMoreThan2Col: 999px;
 $bpDashboardMoreThan2ColMax: 998px;
 

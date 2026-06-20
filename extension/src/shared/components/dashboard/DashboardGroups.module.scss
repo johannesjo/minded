@@ -20,7 +20,9 @@ $aniDur: 1.5s;
   // the reserve by that intrinsic offset so the cards' bottom lands at
   // --companion-bar-height and the sun sits centred in the gap below them.
   --hero-reserve: calc(var(--companion-bar-height) - 48px);
-  padding-bottom: 72px;
+  // Keep a calm edge gutter on the narrowest phones (<375px), where the block
+  // layout applies before the grid padding below takes over.
+  padding: 0 14px 72px;
 
   // Fade content out as it scrolls down into the companion sun's zone, instead
   // of letting cards collide hard with the disc (looks bad, especially on
@@ -55,7 +57,9 @@ $aniDur: 1.5s;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-flow: row;
     box-sizing: border-box;
-    padding: 4px;
+    // Roomier edge gutter on phones for a calmer, less edge-to-edge feel
+    // (≥650px overrides this to 16px, ≥999px to 32px).
+    padding: 14px;
   }
 
   @media (min-width: $bpMobile) {
@@ -71,8 +75,16 @@ $aniDur: 1.5s;
   }
 
   @media (min-width: $bpDashboardMoreThan1Col) and (max-width: $bpMobile - 1px) {
+    // Single roomy column on narrow phones; the second column only returns once
+    // there's width to spare (≥430px). Two cramped columns read busier.
     & {
-      grid-template-columns: repeat(2, 1fr) !important;
+      grid-template-columns: 1fr !important;
+    }
+
+    @media (min-width: $bpDashboardPhone2Col) {
+      & {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
     }
 
     &[nr-of-items="3"],
@@ -229,7 +241,8 @@ $aniDur: 1.5s;
   // NOTE: padding leads to scrollbars
   @include standardPageTransitionIn();
   min-width: 0;
-  margin: 4px;
+  // Wider gutter between cards on phones for breathing room (≥650px bumps to 16px).
+  margin: 10px;
   //overflow: auto;
   //text-overflow: ellipsis;
 
@@ -390,10 +403,16 @@ $aniDur: 1.5s;
     padding-right: 16px !important;
   }
 
+  // Soft fade-out on dismiss instead of an instant snap-to-tiny. The entrance
+  // animation is disabled while removing so it doesn't fight the transition.
+  transition:
+    opacity var(--dur-soft) var(--ease-out),
+    transform var(--dur-soft) var(--ease-out);
+
   &.isBeingRemoved {
     animation: none !important;
-    opacity: 0.3 !important;
-    transform: scale(0.01);
+    opacity: 0 !important;
+    transform: scale(0.98);
   }
 }
 
