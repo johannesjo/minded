@@ -75,6 +75,11 @@
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <!-- Re-render + re-arm the phase alarm when the clock or timezone
+                     changes (manual set, DST, travel). Both are on the implicit-
+                     broadcast allowlist, so no extra permission is required. -->
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
 
             <meta-data

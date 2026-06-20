@@ -24,9 +24,18 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = MyAppWidget()
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == ACTION_REFRESH_SUN) {
-            refreshAndReschedule(context)
-            return
+        when (intent.action) {
+            // Our per-phase alarm, plus the clock/timezone changes that would
+            // otherwise strand the sun on the wrong phase (manual clock set, DST,
+            // travel). A reboot is covered by onUpdate — the host calls it when it
+            // rebinds the widget after boot — so no BOOT_COMPLETED receiver (and
+            // its permission) is needed.
+            ACTION_REFRESH_SUN,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED -> {
+                refreshAndReschedule(context)
+                return
+            }
         }
         super.onReceive(context, intent)
     }
@@ -66,8 +75,11 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             now.get(Calendar.MINUTE),
         )
         val triggerAt = System.currentTimeMillis() + minutes * 60_000L
-        // Inexact + allow-while-idle: no SCHEDULE_EXACT_ALARM permission, and a
-        // few minutes of drift is invisible on a sun that changes warmth, not time.
+        // Inexact + allow-while-idle: no SCHEDULE_EXACT_ALARM permission, and a few
+        // minutes of drift is invisible on a sun that changes warmth, not time.
+        // RTC, not RTC_WAKEUP: never wake the device to repaint a widget nobody is
+        // looking at — an overdue phase change is delivered the moment the device
+        // next wakes, i.e. right when someone glances at the phone.
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC,
             triggerAt,

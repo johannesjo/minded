@@ -93,9 +93,10 @@ for you. That is exactly why it fits the product's soft approach where the iOS
 - **`MyAppWidgetReceiver.kt`**: the Glance receiver, plus a per-phase refresh. It
   arms one inexact `setAndAllowWhileIdle` alarm at the next boundary and re-arms
   when it fires (a self-targeted `ACTION_REFRESH_SUN` broadcast → `updateAll`);
-  it also re-arms on `onUpdate` (add / host request / reboot) and cancels on
-  `onDisabled`. No exact-alarm permission needed; a few minutes of drift is
-  invisible on a sun that changes warmth, not time.
+  it also re-arms on `onUpdate` (add / host request / reboot) and on `TIME_SET` /
+  `TIMEZONE_CHANGED` (manual clock set, DST, travel), and cancels on `onDisabled`.
+  No exact-alarm or boot permission needed; a few minutes of drift is invisible on
+  a sun that changes warmth, not time.
 - **`app_widget_info.xml`**: a 1×1 home-screen widget with a sun preview;
   `updatePeriodMillis=0` (the alarm drives refreshes, not the host poll).
 - **`MainActivity.kt`**: reads `EXTRA_LAUNCH_ROUTE` (allow-listed to the sun
