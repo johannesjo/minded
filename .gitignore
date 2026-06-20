@@ -13,6 +13,7 @@ dist/
 .claude/agents
 .claude/commands
 .claude/skills
+.claude/hooks
 
 .vscode
 
