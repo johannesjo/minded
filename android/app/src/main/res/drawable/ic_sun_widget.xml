@@ -17,25 +17,25 @@
                     android:centerX="54"
                     android:centerY="54"
                     android:gradientRadius="53">
-                <item android:offset="0.0" android:color="#00FFE7B4" />
-                <item android:offset="0.62" android:color="#00FFE7B4" />
-                <item android:offset="0.82" android:color="#33FFE7B4" />
-                <item android:offset="1.0" android:color="#00FFE0A2" />
+                <item android:offset="0.0" android:color="#00FFD877" />
+                <item android:offset="0.56" android:color="#00FFD877" />
+                <item android:offset="0.74" android:color="#47FFD673" />
+                <item android:offset="1.0" android:color="#00FFCB5A" />
             </gradient>
         </aapt:attr>
     </path>
 
     <!-- The white disc, warming to the faintest gold only at the very rim -->
-    <path android:pathData="M54,54 m-42,0 a42,42 0 1,0 84,0 a42,42 0 1,0 -84,0">
+    <path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0">
         <aapt:attr name="android:fillColor">
             <gradient
                     android:type="radial"
                     android:centerX="54"
                     android:centerY="54"
-                    android:gradientRadius="42">
+                    android:gradientRadius="36">
                 <item android:offset="0.0" android:color="#FFFFFFFF" />
-                <item android:offset="0.86" android:color="#FFFFFFFF" />
-                <item android:offset="1.0" android:color="#FFFFF7E4" />
+                <item android:offset="0.84" android:color="#FFFFFFFF" />
+                <item android:offset="1.0" android:color="#FFFFF5DC" />
             </gradient>
         </aapt:attr>
     </path>
