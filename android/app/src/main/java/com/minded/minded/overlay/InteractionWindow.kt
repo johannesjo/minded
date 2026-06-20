@@ -26,6 +26,14 @@ class InteractionWindow(
     private val windowManager: WindowManager,
 //    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
+    companion object {
+        // How long to keep nudging the freshly-loaded overlay WebView to paint
+        // its first frame. Long enough to bridge the gap until the web content's
+        // own fade-in animation starts driving frames, short enough to add no
+        // meaningful battery/CPU cost.
+        private const val FIRST_FRAME_PUMP_MS = 800L
+    }
+
     override val logTag = javaClass.simpleName
 
     // Appear as an instantly-opaque shield: the interaction overlay covers the
@@ -81,8 +89,9 @@ class InteractionWindow(
                 // never composite its first frame — leaving the user on the opaque
                 // dark shield (the "black screen on first open, clears on reopen"
                 // reports). Let the WebView use the default layer so the first frame
-                // paints. If first-paint flakiness remains, invalidate() after load
-                // before reaching for a hardware layer again.
+                // paints. We also pump invalidate()s after load (see pumpFirstFrame /
+                // onPageFinished) to force that first composite without a tap; only
+                // reach for a hardware layer if first-paint flakiness still remains.
 
                 // Set transparent background after page starts loading
                 this.webViewClient = object : android.webkit.WebViewClient() {
@@ -92,6 +101,20 @@ class InteractionWindow(
                         view?.postDelayed({
                             view.setBackgroundColor(0x00000000)
                         }, 100)
+                    }
+
+                    // Guarantee the first frame composites without needing a tap.
+                    // This overlay is a TYPE_APPLICATION_OVERLAY + TRANSLUCENT window
+                    // with fadeInDurationMs = 0L, so — unlike the other overlays — no
+                    // native alpha animation runs after addView to drive a frame. With
+                    // nothing invalidating, a hardware-accelerated overlay WebView can
+                    // fail to schedule its first composite and the user is left on the
+                    // opaque dark shield; the next touch schedules a frame, which is the
+                    // "black screen until I tap it" report. Pump a short burst of
+                    // invalidates after load so the first frame paints on its own.
+                    override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        view?.let { pumpFirstFrame(it) }
                     }
 
                     // Diagnostics for the "stuck on a black screen" reports: the web
@@ -147,6 +170,25 @@ class InteractionWindow(
         })
     }
 
+
+    // Re-post an invalidate on each animation frame for a short window after the
+    // page loads, so the overlay WebView is forced to schedule and present its
+    // first composite even though no native fade animation is driving frames.
+    // The web content's own fade-in (driven by JS a beat after load) takes over
+    // once it starts animating, so a brief pump is enough to cover the gap.
+    private fun pumpFirstFrame(view: WebView) {
+        val deadline = System.currentTimeMillis() + FIRST_FRAME_PUMP_MS
+        val pump = object : Runnable {
+            override fun run() {
+                if (webViewRef !== view) return
+                view.invalidate()
+                if (System.currentTimeMillis() < deadline) {
+                    view.postOnAnimation(this)
+                }
+            }
+        }
+        view.postOnAnimation(pump)
+    }
 
     private fun isPhone(): Boolean {
         val smallestWidth = ctrlSvc.resources.configuration.smallestScreenWidthDp
