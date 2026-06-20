@@ -16,16 +16,19 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
+import com.minded.minded.ui.theme.AppBgGradientDarkStops
+import com.minded.minded.ui.theme.AppBgGradientLightStops
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
@@ -33,6 +36,7 @@ import com.minded.minded.util.checkDrawOverlayPermission
 import com.minded.minded.util.checkIgnoringBatteryOptimizations
 import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
+import com.minded.minded.util.isDarkModeNow
 import kotlinx.coroutines.launch
 
 
@@ -84,6 +88,13 @@ class MainActivity : AppCompatActivity() {
             enableEdgeToEdge()
         }
         super.onCreate(savedInstanceState)
+        // Paint the loading sky behind the WebView to match the app's time-based
+        // dark mode (the theme's windowBackground covers the very first frame in
+        // light). Keep in sync with isDarkModeNow (19:00–06:00).
+        window.setBackgroundDrawableResource(
+            if (isDarkModeNow()) R.drawable.loading_gradient_dark
+            else R.drawable.loading_gradient_light
+        )
         Log.v(logTag, "ON_CREATE MAIN ACTIVITY")
         sharedPreferenceService = SharedPreferenceService(this)
         sharedPreferenceService.writeDefaultDataIfNecessary()
@@ -101,9 +112,16 @@ class MainActivity : AppCompatActivity() {
                 MindedTheme {
                     val webViewState = remember { mutableStateOf<WebView?>(null) }
                     ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
-                    Surface(
-                        modifier = Modifier.fillMaxSize().imePadding(),
-                        color = MaterialTheme.colorScheme.background
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .imePadding()
+                            .background(
+                                Brush.verticalGradient(
+                                    *(if (isDarkModeNow()) AppBgGradientDarkStops
+                                    else AppBgGradientLightStops)
+                                )
+                            )
                     ) {
                         AndroidView(factory = { context ->
                             webView = MyWebView(context).apply {
@@ -111,6 +129,10 @@ class MainActivity : AppCompatActivity() {
                                     ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.MATCH_PARENT
                                 )
+                                // Transparent until the web content paints, so the
+                                // gradient behind shows during load instead of the
+                                // WebView's default white.
+                                setBackgroundColor(android.graphics.Color.TRANSPARENT)
                                 settings.javaScriptEnabled = true
                                 settings.allowFileAccess = true
                                 settings.allowFileAccessFromFileURLs = true

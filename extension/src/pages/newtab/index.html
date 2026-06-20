@@ -6,6 +6,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <title>minded - New Tab</title>
+
+    <!--
+      Loading-screen sky. Paints the app's background gradient on the document
+      before the JS/CSS bundle loads, so booting no longer flashes a blank page.
+      The root <html> background propagates to the whole viewport. Light/dark is
+      chosen by clock (not OS theme) to match how the app itself decides — keep
+      the rule in sync with isDarkModeNow() (src/shared/addWrapperClasses.ts) and
+      the gradients with --background-gradient (src/styles/_variables.scss).
+    -->
+    <style>
+      html {
+        background: linear-gradient(
+          to bottom,
+          #cfe4f5 0%,
+          #cfe4f5 18%,
+          #d8ecd6 36%,
+          #f5efc8 54%,
+          #f6dcd2 100%
+        );
+      }
+      html.minded-loading-dark {
+        background:
+          radial-gradient(
+            ellipse 116vmin 32vmin at 50% 112%,
+            rgba(117, 54, 44, 0.34) 0%,
+            rgba(76, 43, 58, 0.2) 46%,
+            transparent 78%
+          ),
+          linear-gradient(
+            to bottom,
+            #02091f 0%,
+            #041238 28%,
+            #0a2860 68%,
+            #123262 82%,
+            #233053 92%,
+            #49313b 100%
+          );
+      }
+    </style>
+    <script>
+      // Runs synchronously in <head>, before first paint, so the gradient is
+      // correct on the very first frame (no light->dark pop when the app mounts).
+      var h = new Date().getHours();
+      if (h >= 19 || h < 6) {
+        document.documentElement.className += " minded-loading-dark";
+      }
+    </script>
 </head>
 
 <body>
