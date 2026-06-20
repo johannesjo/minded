@@ -3,9 +3,17 @@ import {
   Route,
   RouteSectionProps,
   useLocation,
+  useSearchParams,
 } from "@solidjs/router";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
-import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  JSX,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import {
   addWrapperClasses,
   isDarkModeNow,
@@ -77,6 +85,23 @@ const MainWrapper = (props: RouteSectionProps) => {
     isShellSunInteractive(getSunRole(), getIsSunHandoffInFlight());
 
   // const navigate = useNavigate();
+
+  // The home-screen sun widget (Android now, iOS later) launches the app with
+  // `?sun=open` to mirror tapping the in-app companion: it opens the very same
+  // interaction overlay, and the existing flow handles the exit identically.
+  // Reactive so it fires both on a cold start (flag in the initial hash) and on
+  // a warm re-tap (native sets the hash on the live page). The flag is cleared
+  // once consumed so a resume / re-render can't reopen it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  createEffect(() => {
+    if (searchParams.sun !== "open") return;
+    // Only while the sun is resting as the companion — never cut into an
+    // interaction that's already in flight.
+    if (getSunRole() === "companion" && !getIsShowQuestionOverlay()) {
+      setIsShowQuestionOverlay(true);
+    }
+    setSearchParams({ sun: undefined }, { replace: true });
+  });
 
   onMount(() => {
     addWrapperClasses();

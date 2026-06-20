@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 minded is a multi-platform mindfulness and productivity application designed to help users fight social media addiction, doom-scrolling, and procrastination. It runs on:
 - Browser Extension (Chrome/Firefox with Manifest V3)
 - Android App (Native Kotlin + WebView)
-- iOS App (Native Swift + Capacitor) — **not actively developed**: iOS cannot deliver real interventions due to platform restrictions on inspecting/blocking other apps, so new features should target Browser Extension and Android only. Don't spend effort updating iOS code paths unless explicitly asked.
+- iOS App (Native Swift + Capacitor) — **not actively developed**: iOS *can* technically block apps (the Screen Time API — `FamilyControls`/`ManagedSettings`/`DeviceActivity` — the way one sec/Opal do), so "iOS can't intervene" is false. The real blocker is conceptual: that primitive is a parental-controls *wall*, and iOS gives no way to deliver the sun *as* the interrupt. The only effective interrupt (a shield) is the wrong shape for minded's soft, never-forced approach; the only on-philosophy alternative (a dismissible notification) is too weak to interrupt a doom-scroll. So new features target Browser Extension and Android only. Don't spend effort updating iOS code paths unless explicitly asked. Full reasoning: `docs/ios-platform-fit.md`.
 
 ## Conceptual Fundamentals
 
