@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Cold-start window background. Approximates the web --background-gradient
+  Cold-start window background. Approximates the web background gradient
   (extension/src/styles/_variables.scss) so launching no longer flashes white
   before the WebView paints. <shape> gradients allow only 3 stops, so this is a
   close approximation of the multi-stop web gradient; the Compose Box gradient in

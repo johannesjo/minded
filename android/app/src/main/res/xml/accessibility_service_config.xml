@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--- NOTE android:packageNames="" should not be set or with no value in order to work with all apps -->
-<!--- maybe the same applies to  android:settingsActivity="com.minded.minded.AccessibilityConfigActivity" -->
+<!-- NOTE: Leave android:packageNames unset so the service can work with all apps. -->
+<!-- NOTE: Verify later whether android:settingsActivity should also stay unset. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
         android:description="@string/accessibility_service_description"
         android:label="@string/accessibility_service_description"
