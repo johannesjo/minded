@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dark variant of loading_gradient_light.xml; see that file for rationale. -->
+<!--
+  Dark variant of loading_gradient_light.xml; see that file for rationale. Stops
+  map to web ~0% / 68% / 82% — all deep blue. A 3-stop <shape> can't reproduce
+  the web sky's "blue until 92%, maroon only at the very bottom", and an evenly
+  spaced maroon endColor would wash the bottom half warm, so this brief cold-start
+  frame stays a calm night blue; the maroon glow arrives with the Compose Box /
+  WebView (which carry the full stops).
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
@@ -7,5 +14,5 @@
         android:type="linear"
         android:startColor="#02091F"
         android:centerColor="#0A2860"
-        android:endColor="#49313B" />
+        android:endColor="#123262" />
 </shape>

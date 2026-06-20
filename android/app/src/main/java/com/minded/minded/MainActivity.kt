@@ -27,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
-import com.minded.minded.ui.theme.AppBgGradientDark
-import com.minded.minded.ui.theme.AppBgGradientLight
+import com.minded.minded.ui.theme.AppBgGradientDarkStops
+import com.minded.minded.ui.theme.AppBgGradientLightStops
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
@@ -95,8 +95,8 @@ class MainActivity : AppCompatActivity() {
                             .imePadding()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = if (isDarkModeNow()) AppBgGradientDark
-                                    else AppBgGradientLight
+                                    *(if (isDarkModeNow()) AppBgGradientDarkStops
+                                    else AppBgGradientLightStops)
                                 )
                             )
                     ) {
