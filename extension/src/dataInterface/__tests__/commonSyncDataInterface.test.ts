@@ -430,9 +430,10 @@ describe("commonSyncDataInterface", () => {
       mockedPatchSyncData.mockResolvedValue();
 
       await markPatternInsightShown({
-        id: "daily-usage:youtube.com",
+        id: "return-loop",
         dateISO: "2026-05-11",
-        message: "You've spent 18 minutes here today.",
+        message:
+          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "leave_now"],
       });
 
@@ -440,7 +441,7 @@ describe("commonSyncDataInterface", () => {
         expect.objectContaining({
           patternInsightState: {
             shownInsightIdsByDate: {
-              "2026-05-11": ["daily-usage:youtube.com"],
+              "2026-05-11": ["return-loop"],
             },
           },
         }),

@@ -57,7 +57,6 @@ describe("interaction context", () => {
       todaySunTaps: 2,
       recentSunTaps: 0,
       todayUsageSeconds: 900,
-      targetUsageSeconds: 300,
     });
   });
 

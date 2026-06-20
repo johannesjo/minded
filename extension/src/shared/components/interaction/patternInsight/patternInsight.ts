@@ -13,7 +13,6 @@ export interface PatternInsight {
   actions: PatternInsightAction[];
 }
 
-const MIN_TARGET_USAGE_SECONDS = 15 * 60;
 const MAX_SHOWN_DATE_BUCKETS = 60;
 // How many recent returns (sun taps inside the ~5h window, see sunTapHistory.ts)
 // it takes before we gently name the loop. The current visit isn't counted yet
@@ -59,11 +58,6 @@ export const markPatternInsightShownInState = (
   );
 };
 
-const formatMinutes = (seconds: number): string => {
-  const minutes = Math.max(1, Math.ceil(seconds / 60));
-  return `${minutes} minute${minutes === 1 ? "" : "s"}`;
-};
-
 const getActions = (context: InteractionContext): PatternInsightAction[] =>
   context.hasAlternatives
     ? ["still_on_purpose", "show_alternative", "leave_now"]
@@ -80,44 +74,25 @@ const createInsight = (
   actions: getActions(context),
 });
 
-const getScopedTargetId = (context: InteractionContext): string | undefined =>
-  context.target?.kind === "host" ? context.target.id : undefined;
-
 const getInsightCandidates = (
   context: InteractionContext,
 ): PatternInsight[] => {
   const candidates: PatternInsight[] = [];
 
-  // Present-session return loop. The one noticing that is true by observation,
-  // not inference: we counted these returns ourselves and they are happening
-  // now. It is not target-scoped (it reflects the whole recent session) and
-  // works on every platform, so it leads the list. The count is left vague
-  // ("a few times") on purpose — a gentle noticing, never a tally to beat.
-  // Because candidate selection has no fall-through (see getPatternInsightCandidate),
-  // leading the list means that once shown it is intentionally the only insight
-  // while it stays eligible that day: the gentler noticing takes precedence over
-  // the usage stats, which resurface once the loop lapses.
+  // Present-session return loop — currently the only pattern insight. It is the
+  // one noticing that is true by observation, not inference: we counted these
+  // returns ourselves and they are happening now. It is not target-scoped (it
+  // reflects the whole recent session) and works on every platform. The count
+  // is left vague ("a few times") on purpose — a gentle noticing, never a tally
+  // to beat. Candidate selection has no fall-through (see
+  // getPatternInsightCandidate), so once shown it is intentionally suppressed
+  // for the rest of the day while it stays eligible.
   if (context.recentSunTaps >= RETURN_LOOP_MIN_RECENT_SUN_TAPS) {
     candidates.push(
       createInsight(
         context,
         "return-loop",
         "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
-      ),
-    );
-  }
-
-  const targetId = getScopedTargetId(context);
-  if (!targetId) {
-    return candidates;
-  }
-
-  if (context.targetUsageSeconds >= MIN_TARGET_USAGE_SECONDS) {
-    candidates.push(
-      createInsight(
-        context,
-        `daily-usage:${targetId}`,
-        `You've spent ${formatMinutes(context.targetUsageSeconds)} here today.`,
       ),
     );
   }

@@ -31,7 +31,6 @@ export interface InteractionContext {
   todaySunTaps: number;
   recentSunTaps: number;
   todayUsageSeconds: number;
-  targetUsageSeconds: number;
   hasActiveTimer: boolean;
   hasExpiredTimerForTarget: boolean;
   hasIntentOnExpiredTimerForTarget: boolean;
@@ -67,8 +66,6 @@ export const getInteractionContext = ({
     totalSeconds: 0,
     perSite: {},
   };
-  const targetUsageSeconds =
-    target?.kind === "host" ? todayUsage.perSite[target.id] || 0 : 0;
   const alternatives = getAlternativesForTarget(syncData, target, platform);
   const enabledAlternativeCount = alternatives.filter(
     (alternative) => alternative.disabledTS === undefined,
@@ -102,7 +99,6 @@ export const getInteractionContext = ({
       now,
     ).length,
     todayUsageSeconds: todayUsage.totalSeconds,
-    targetUsageSeconds,
     hasActiveTimer: canResolveTimerScope
       ? hasActiveTimerInScope(syncData, target, platform, now)
       : !!activeTimer && activeTimer.endTS > now,

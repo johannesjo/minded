@@ -1,7 +1,33 @@
 import type { SyncData } from "@src/dataInterface/syncData";
-import { addBudgetUsage } from "@src/util/budget";
 import { createMockSyncData, mockDate } from "@src/test-utils/mockHelpers";
 import { updateSyncDataField } from "./updateSyncDataHelpers";
+
+// A representative same-field updater: merges added seconds onto whatever
+// dailyUsage already exists, so the test can verify updateSyncDataField rebases
+// onto writes made after its initial read.
+const addUsage = (
+  syncData: SyncData,
+  host: string,
+  seconds: number,
+  dateISO: string,
+): Pick<SyncData, "dailyUsage"> => {
+  const current = syncData.dailyUsage[dateISO] ?? {
+    totalSeconds: 0,
+    perSite: {},
+  };
+  return {
+    dailyUsage: {
+      ...syncData.dailyUsage,
+      [dateISO]: {
+        totalSeconds: current.totalSeconds + seconds,
+        perSite: {
+          ...current.perSite,
+          [host]: (current.perSite[host] ?? 0) + seconds,
+        },
+      },
+    },
+  };
+};
 
 describe("updateSyncDataField", () => {
   afterEach(() => {
@@ -60,7 +86,7 @@ describe("updateSyncDataField", () => {
       .mockResolvedValue();
 
     await updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
-      addBudgetUsage(syncData, "reddit.com", 10),
+      addUsage(syncData, "reddit.com", 10, "2026-05-18"),
     );
 
     expect(patchSyncData).toHaveBeenCalledWith({
