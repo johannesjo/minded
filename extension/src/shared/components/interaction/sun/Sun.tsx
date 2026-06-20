@@ -290,8 +290,8 @@ export const Sun: Component<SunProps> = (props) => {
     return { x: anchorX - rest.x, y: anchorY - rest.y };
   };
 
-  // Ease the offset and scale toward a target. The disc's warm glow rides the
-  // disc transform (Sun.scss `.sun-glow`), so nothing needs the per-frame center.
+  // Ease the offset and scale toward a target. The disc's glow is its own
+  // box-shadow, so it rides the disc transform and nothing needs the per-frame center.
   const animateOffsetScaleTo = (
     targetOffset: SunPosition,
     targetScale: number,
@@ -1073,6 +1073,14 @@ export const Sun: Component<SunProps> = (props) => {
   // glow (0 0 30px rgba(255,255,255,0.9)) — i.e. as bold as a button's hover.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
+  // The sun carries that same bold halo at all times — the disc's box-shadow glow
+  // at the hover intensity — so the idle sun already looks like the (liked) hover
+  // state, and, crucially, the glow never drops out while it's being dragged or
+  // tapped (both reset getGlowIntensity toward 0). We floor at this baseline rather
+  // than gate on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so
+  // letting it take over would only make the sun fade the moment you touch it. Sun
+  // only; the moon keeps its own cooler resting halo (Sun.scss).
+  const COMPANION_REST_GLOW = COMPANION_HOVER_GLOW;
   const getInteractionScale = () => {
     if (getIsCompletionStarted()) {
       return 1;
@@ -1109,20 +1117,16 @@ export const Sun: Component<SunProps> = (props) => {
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         "--glow-color": getGlowColor(),
-        "--glow-intensity": Math.max(
-          getGlowIntensity(),
-          props.isHovered ? COMPANION_HOVER_GLOW : 0,
-        ),
+        "--glow-intensity":
+          props.variant === "moon"
+            ? Math.max(
+                getGlowIntensity(),
+                props.isHovered ? COMPANION_HOVER_GLOW : 0,
+              )
+            : Math.max(getGlowIntensity(), COMPANION_REST_GLOW),
         "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >
-      {/* The sun's own warm light. As a child of the disc it inherits every
-          transform the disc gets — drag, settle glide, idle float, breath scale
-          — so it can never drift out of step with the face. (The old wash was a
-          separate viewport-fixed layer whose center we had to chase via JS; any
-          pure-CSS motion — the idle float, the 160ms ease — slipped past it.)
-          Sun-only; the moon scene stays cool (hidden in Sun.scss). */}
-      <span class="sun-glow" aria-hidden="true" />
       {isTapEnabled() && (
         <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
           {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (
