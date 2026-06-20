@@ -824,6 +824,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         props.onCompletionStarted?.(started);
       },
       tapThreshold: SUN_TAP_THRESHOLD,
+      // Shown from inside the app (not a real intervention): the triple-tap
+      // continue makes no sense here — a back button is shown instead.
+      isTapEnabled: !props.isFromDashboard,
     });
     onCleanup(unregister);
   });
@@ -1318,6 +1321,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
+              isTapEnabled={!props.isFromDashboard}
               settle={getSunSettle()}
               onBreathStart={setBreathStartedAt}
             />
@@ -1329,11 +1333,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <div class="back-button-wrapper">
           <button
             type="button"
-            class="btnTxt"
+            class="btnIcoOnly"
             onClick={() => props.onSkip()}
             aria-label="Go back"
           >
-            <Ico name="arrowBack" /> Back
+            <Ico name="arrowBack" />
           </button>
         </div>
       )}

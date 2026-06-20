@@ -3,7 +3,6 @@ import {
   DashboardGroup,
   DashboardGroupAppUsageHappiness,
   DashboardGroupBrowsingBehaviorHappiness,
-  DashboardGroupDailyBudgetRemaining,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
@@ -196,23 +195,6 @@ export const DashboardGroups: (props: {
                       <div>
                         <div class="dashboardHeading">wind down for sleep</div>
                         <div class="fatTxt">it's getting late</div>
-                      </div>
-                    );
-                  case DashboardGroupType.DailyBudgetRemaining:
-                    // eslint-disable-next-line no-case-declarations
-                    const dgBudget = dg as DashboardGroupDailyBudgetRemaining;
-                    // eslint-disable-next-line no-case-declarations
-                    const remainingMin = Math.ceil(
-                      dgBudget.remainingSeconds / 60,
-                    );
-                    return (
-                      <div>
-                        <div class="dashboardHeading">daily budget</div>
-                        <div class="fatTxt">
-                          {dgBudget.remainingSeconds > 0
-                            ? `${remainingMin} min remaining`
-                            : "Budget reached for today"}
-                        </div>
                       </div>
                     );
                   case DashboardGroupType.AppUsageRating:

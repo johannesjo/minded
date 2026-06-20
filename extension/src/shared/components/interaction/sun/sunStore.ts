@@ -34,6 +34,13 @@ export interface SunOutcomeHandlers {
   onCompletionStarted?: (started: boolean) => void;
   /** Taps to "continue" while interactive (the companion opens via its own tap-target). */
   tapThreshold?: number;
+  /**
+   * Whether the triple-tap-to-continue affordance is active. Defaults to true.
+   * Disabled when the interaction is shown from inside the app (not as a real
+   * intervention) — tapping to skip makes no sense there (a back button is shown
+   * instead).
+   */
+  isTapEnabled?: boolean;
 }
 
 /** Current role. "companion" is the idle home; the rest are intervention phases. */

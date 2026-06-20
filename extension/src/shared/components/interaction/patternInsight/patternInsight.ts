@@ -17,6 +17,11 @@ const MIN_TARGET_USAGE_SECONDS = 15 * 60;
 const BUDGET_NEAR_LIMIT_SECONDS = 5 * 60;
 const MIN_BUDGET_USED_SECONDS = 5 * 60;
 const MAX_SHOWN_DATE_BUCKETS = 60;
+// How many recent returns (sun taps inside the ~5h window, see sunTapHistory.ts)
+// it takes before we gently name the loop. The current visit isn't counted yet
+// at decision time, so 3 prior returns means the user is here for at least the
+// fourth time — a real, observed pull, not a fluke.
+const RETURN_LOOP_MIN_RECENT_SUN_TAPS = 3;
 
 const getShownInsightIdsForDate = (
   state: PatternInsightState | undefined,
@@ -86,12 +91,31 @@ const getScopedTargetId = (context: InteractionContext): string | undefined =>
 const getInsightCandidates = (
   context: InteractionContext,
 ): PatternInsight[] => {
-  const targetId = getScopedTargetId(context);
-  if (!targetId) {
-    return [];
+  const candidates: PatternInsight[] = [];
+
+  // Present-session return loop. The one noticing that is true by observation,
+  // not inference: we counted these returns ourselves and they are happening
+  // now. It is not target-scoped (it reflects the whole recent session) and
+  // works on every platform, so it leads the list. The count is left vague
+  // ("a few times") on purpose — a gentle noticing, never a tally to beat.
+  // Because candidate selection has no fall-through (see getPatternInsightCandidate),
+  // leading the list means that once shown it is intentionally the only insight
+  // while it stays eligible that day: the gentler noticing takes precedence over
+  // the usage/budget stats, which resurface once the loop lapses.
+  if (context.recentSunTaps >= RETURN_LOOP_MIN_RECENT_SUN_TAPS) {
+    candidates.push(
+      createInsight(
+        context,
+        "return-loop",
+        "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
+      ),
+    );
   }
 
-  const candidates: PatternInsight[] = [];
+  const targetId = getScopedTargetId(context);
+  if (!targetId) {
+    return candidates;
+  }
 
   if (context.budget.isActive && context.budget.isExhausted) {
     candidates.push(
