@@ -64,6 +64,21 @@
     :global {
       animation-name: minded6622fadeIn;
     }
+
+    // Quiet the icons so they read as gentle, secondary affordances rather than
+    // competing with the greeting card and the resting sun — full strength only
+    // on hover. The resting opacity sits on the icon (an <img>), not the <a>, so
+    // it doesn't fight the link's own opacity fade-in above.
+    :global(.minded-6622-ico) {
+      opacity: 0.8;
+      transition: opacity var(--dur-quick) var(--ease-out);
+    }
+
+    @media (hover: hover) {
+      &:hover :global(.minded-6622-ico) {
+        opacity: 1;
+      }
+    }
   }
 }
 
