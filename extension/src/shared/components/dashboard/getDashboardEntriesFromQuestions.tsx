@@ -25,7 +25,10 @@ import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const MAX_ANSWERS = 4;
-const CENTER_INDEX = 4;
+// The slot the centre pick (or the fallback quote) is moved to — also the card
+// the dashboard greets you with before you reveal the rest. Exported so the view
+// can identify the greeting without re-deriving the placement logic.
+export const CENTER_INDEX = 4;
 const MAX_SELF_ASSESSMENTS = 3;
 
 export const getDashboardEntriesFromQuestions = (

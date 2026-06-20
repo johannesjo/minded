@@ -1,305 +1,69 @@
 @import "./../../../styles/mixins/mixins";
 @import "./../../../styles/variablesSCSS.scss";
 
-$aniDurQuick: 0.3s;
-$aniDur: 1.5s;
-
 .DashboardGroups {
-  max-width: 1400px;
+  // The revealed "everything" view: a responsive grid of *all* tiles that
+  // scrolls — no card cap, no fixed-height squeeze. (The calm arrival is the
+  // separate .collapsed view below.)
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  overflow: auto;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  max-width: 1400px;
+  margin: 0 auto;
 
-  // The companion sun now rests over the bottom bar (--companion-bar-height; see
-  // RouteCmp.module.scss / .withCompanionBar). This grid adds its own bottom
-  // padding (32px) plus the last row's card margin (16px) inside the container,
-  // so reserving the full bar height would strand the cards ~48px above it. Trim
-  // the reserve by that intrinsic offset so the cards' bottom lands at
-  // --companion-bar-height and the sun sits centred in the gap below them.
+  // Reserve the resting sun's footprint at the bottom so cards clear the disc
+  // (see RouteCmp.module.scss / .withCompanionBar for --companion-bar-height).
   --hero-reserve: calc(var(--companion-bar-height) - 48px);
-  // Keep a calm edge gutter on the narrowest phones (<375px), where the block
-  // layout applies before the grid padding below takes over.
-  padding: 0 14px 72px;
+  padding: 16px 16px calc(var(--hero-reserve) + 16px);
 
-  // Fade content out as it scrolls down into the companion sun's zone, instead
-  // of letting cards collide hard with the disc (looks bad, especially on
-  // mobile). The mask is anchored to the scroll viewport, not the moving
-  // content, so the fade stays pinned at the bottom edge while content scrolls
-  // into it. The fade spans --hero-reserve so it always matches the sun's
-  // reserved footprint.
+  // One column on phones, two once there's room, three on wide screens —
+  // matching the old dashboard's column feel, but scrollable and uncapped.
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-content: start;
+
+  // Fade content into the sun's zone as it scrolls past the bottom edge. The
+  // mask is anchored to the scroll viewport, so it stays pinned at the bottom
+  // while content scrolls into it.
   $hero-fade: linear-gradient(
     to top,
     transparent 0,
     rgba(0, 0, 0, 0.55) calc(var(--hero-reserve) * 0.55),
     #000 var(--hero-reserve)
   );
-  // Flat hero band, plus a soft round pocket around the resting sun.
+  // Flat bottom band, plus a soft round pocket around the resting sun.
   @include bottomFadeWithSunPocket($hero-fade);
 
-  @media (min-width: $bpDashboardMoreThan1Col) {
-    display: grid;
-    position: absolute;
-    width: 100%;
-    // Centered in the space above the hero sun: nudge the midpoint up by half
-    // the reserve and trim the available height by the full reserve.
-    top: calc(50% - var(--hero-reserve) / 2);
-    left: 50%;
-    right: auto;
-    bottom: auto;
-    max-height: calc(100% - var(--hero-reserve));
-    min-height: 50%;
-    transform: translate(-50%, -50%);
-    overflow-y: auto;
-    grid-template-rows: repeat(3, fit-content(100%));
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-flow: row;
-    box-sizing: border-box;
-    // Roomier edge gutter on phones for a calmer, less edge-to-edge feel
-    // (≥650px overrides this to 16px, ≥999px to 32px).
-    padding: 14px;
+  @media (min-width: $bpDashboardPhone2Col) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @media (min-width: $bpMobile) {
-    padding: 16px;
+    gap: 24px;
+    padding: 24px 24px calc(var(--hero-reserve) + 24px);
   }
 
-  @media (min-width: #{$bpDashboardMoreThan2Col + 32px}) {
-    padding: 32px;
-  }
-
-  @media (min-width: #{$bpDashboardMoreThan2Col + 128px}) {
-    padding: 32px 64px;
-  }
-
-  @media (min-width: $bpDashboardMoreThan1Col) and (max-width: $bpMobile - 1px) {
-    // Single roomy column on narrow phones; the second column only returns once
-    // there's width to spare (≥430px). Two cramped columns read busier.
-    & {
-      grid-template-columns: 1fr !important;
-    }
-
-    @media (min-width: $bpDashboardPhone2Col) {
-      & {
-        grid-template-columns: repeat(2, 1fr) !important;
-      }
-    }
-
-    &[nr-of-items="3"],
-    &[nr-of-items="4"] {
-      // stop centering at 3 items
-      position: relative;
-      width: auto;
-      top: auto;
-      left: auto;
-      bottom: auto;
-      right: auto;
-      transform: none;
-    }
-
-    &[nr-of-items="1"],
-    &[nr-of-items="2"],
-    &[nr-of-items="3"],
-    &[nr-of-items="4"] {
-      display: block;
-      min-height: 0;
-      padding: 8px;
-      grid-auto-flow: row !important;
-
-      .box {
-        margin: 16px !important;
-        padding: 32px !important;
-      }
-
-      :global(.dashboardHeading),
-      :global(.dashboardContent) {
-        font-size: var(--fz-m);
-      }
-    }
-
-    // With 3–4 items this layout stops centering and flows from the top, so it
-    // needs the hero reserve as bottom padding (clearing the sun's bar) instead
-    // of the centered shift above. The top no longer holds the sun, so it keeps
-    // only its base 8px content padding.
-    &[nr-of-items="3"],
-    &[nr-of-items="4"] {
-      padding-bottom: calc(var(--hero-reserve) + 8px);
-    }
-  }
-
-  @media (min-width: $bpDashboardMoreThan1Col) {
-    &[nr-of-items="1"] {
-      grid-template-rows: repeat(1, minmax(0, 1fr));
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-      max-width: $txtMaxWidth;
-    }
-
-    &[nr-of-items="2"] {
-      grid-template-rows: repeat(2, minmax(0, 1fr));
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-      max-width: $txtMaxWidth;
-    }
-
-    &[nr-of-items="3"] {
-      grid-template-rows: repeat(2, minmax(0, 1fr));
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-
-      > :last-child {
-        grid-column-start: 1;
-        grid-column-end: 3;
-      }
-    }
-
-    &[nr-of-items="4"] {
-      grid-template-rows: repeat(2, 1fr);
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    &[nr-of-items="5"],
-    &[nr-of-items="6"],
-    &[nr-of-items="7"],
-    &[nr-of-items="8"],
-    &[nr-of-items="9"],
-    &[nr-of-items="10"],
-    &[nr-of-items="11"],
-    &[nr-of-items="12"],
-    &[nr-of-items="13"],
-    &[nr-of-items="14"],
-    &[nr-of-items="15"],
-    &[nr-of-items="16"],
-    &[nr-of-items="17"],
-    &[nr-of-items="18"] {
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-    }
-  }
-
-  // On desktop the grid used to float as a centred island (min-height: 50%),
-  // leaving the sun room overhead. The companion sun now rests on the bottom
-  // bar, so that overhead is free — let the grid fill the whole band above the
-  // reserve instead. With min-height == max-height the existing centring math
-  // (top: 50% - reserve/2, translate -50%) lands the top edge at 0.
-  //
-  // grid-auto-rows: 1fr is what makes that fill *consistent* across item
-  // counts. The per-count templates below only declare 2 explicit rows, but
-  // 7–9 cards need a 3rd, which falls to an implicit row. Implicit rows default
-  // to auto (content height), so the two 1fr rows swallowed the whole band and
-  // the content row stayed short — too much height up top, not enough at the
-  // bottom. Sizing implicit rows at 1fr too makes every row an equal share, so
-  // the cards always fill the available height evenly whatever the count.
   @media (min-width: $bpDashboardMoreThan2Col) {
-    min-height: calc(100% - var(--hero-reserve));
-    grid-auto-rows: 1fr;
-  }
-
-  // fade in one entry if there is enough stuff to show and space for three columns
-  @media (min-width: $bpDashboardMoreThan2Col) {
-    &[nr-of-items="5"],
-    &[nr-of-items="6"] {
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(2, 1fr);
-    }
-
-    &[nr-of-items="7"],
-    &[nr-of-items="8"],
-    &[nr-of-items="9"],
-    &[nr-of-items="10"],
-    &[nr-of-items="11"],
-    &[nr-of-items="12"],
-    &[nr-of-items="13"],
-    &[nr-of-items="14"],
-    &[nr-of-items="15"],
-    &[nr-of-items="16"],
-    &[nr-of-items="17"],
-    &[nr-of-items="18"] {
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(2, 1fr);
-
-      &.animateCenterEntry {
-        .box {
-          animation-duration: 2 * $aniDur;
-          animation-name: minded6622fadeInAfterDelay;
-
-          @media (min-width: $bpDashboardMoreThan2Col) {
-            &:nth-child(5) {
-              animation-duration: 2 * $aniDur;
-              animation-name: minded6622fadeInWithBackgroundForCard;
-            }
-          }
-        }
-      }
-    }
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 32px 32px calc(var(--hero-reserve) + 32px);
   }
 }
 
 .box {
   position: relative;
   box-sizing: border-box;
-  animation-duration: $aniDurQuick;
-  // NOTE: padding leads to scrollbars
   @include standardPageTransitionIn();
   min-width: 0;
-  // Wider gutter between cards on phones for breathing room (≥650px bumps to 16px).
-  margin: 10px;
-  //overflow: auto;
-  //text-overflow: ellipsis;
 
   &:global(.card) {
     padding: 8px 6px;
   }
 
-  @media (min-width: $bpMobile) {
-    margin: 16px;
-  }
-
-  @media (min-width: $bpDashboardMoreThan1Col) {
-    animation: minded6622fadeIn ease $aniDur;
-
-    :global {
-      animation-name: minded6622fadeIn;
-    }
-
-    // This re-asserts the entrance after the mixin above, which would otherwise
-    // out-order the mixin's own reduced-motion reset — restore it here too.
-    @media (prefers-reduced-motion: reduce) {
-      animation: none;
-    }
-  }
-
-  &:nth-child(n + 7) {
-    @media (min-width: $bpMobile) {
-      display: none;
-
-      :global(.minded-6622-android) & {
-        display: block;
-      }
-    }
-    @media (min-width: $bpDashboardMoreThan2Col) {
-      display: block;
-    }
-
-    // Desktop normally fits three rows, but on a short viewport that third row
-    // gets cramped. Fall back to the same two-row layout tablet uses (items 7+
-    // hidden) so the remaining six cards keep a comfortable height. Android
-    // still shows everything (it scrolls), matching the tablet rule above.
-    @media (min-width: $bpDashboardMoreThan2Col) and (max-height: $bpDashboardShortViewport) {
-      display: none;
-
-      :global(.minded-6622-android) & {
-        display: block;
-      }
-    }
-  }
-
-  @media (min-width: $bpDashboardMoreThan2Col) {
-    &:nth-child(n + 10) {
-      display: none !important;
-    }
-  }
-
-  // center logic
+  // center logic — widget cards (mood, energy, stats, quote…) centre their
+  // content; lists, charts and tables keep their natural left alignment.
   @mixin centerItem() {
     display: flex;
     flex-direction: column;
@@ -307,18 +71,8 @@ $aniDur: 1.5s;
     align-items: center;
   }
 
-  @media (min-width: $bpDashboardMoreThan1Col) {
-    &.centerItem,
-    &:nth-child(1),
-    &:nth-child(2) {
-      @include centerItem();
-    }
-  }
-
-  @media (min-width: $bpDashboardMoreThan2Col) {
-    &:nth-child(3) {
-      @include centerItem();
-    }
+  &.centerItem {
+    @include centerItem();
   }
 
   &.interactive {
@@ -337,7 +91,6 @@ $aniDur: 1.5s;
       outline-offset: 3px;
     }
 
-    //@include onMousePrimary() {
     @media (hover: hover) {
       &:hover {
         // Brighten the frosted fill on hover — no lift or shadow. The
@@ -397,11 +150,10 @@ $aniDur: 1.5s;
 }
 
 .cardDailyQuestions {
-  @media (max-width: $bpDashboardMoreThan2ColMax) {
-    grid-column: 1 / -1;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-  }
+  // Roomier horizontal padding than a standard card so the prompt and its two
+  // buttons breathe.
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 
   // Soft fade-out on dismiss instead of an instant snap-to-tiny. The entrance
   // animation is disabled while removing so it doesn't fight the transition.
@@ -427,28 +179,75 @@ $aniDur: 1.5s;
   }
 }
 
-@keyframes minded6622fadeInWithBackgroundForCard {
-  0% {
+// Calm arrival: a single greeting card centred in the space above the resting
+// sun, with a quiet chevron to bring in the rest. Kept separate from the grid
+// (.DashboardGroups) so it never inherits the grid's positioning.
+.collapsed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+
+  // Reserve the resting sun's footprint at the bottom so the centred content
+  // sits in the gap above it, not under the disc (mirrors .DashboardGroups).
+  --hero-reserve: calc(var(--companion-bar-height) - 48px);
+  padding: 24px 16px calc(var(--hero-reserve) + 24px);
+
+  // Soft fade-out when revealing the full set — never a hard cut.
+  transition: opacity var(--dur-soft) var(--ease-out);
+
+  &.isRevealing {
     opacity: 0;
-    background: transparent;
   }
-  50% {
-    opacity: 1;
-    background: transparent;
+
+  // The greeting sits on a calm, readable width, and eases in slower than a
+  // normal page transition (overriding just the duration of the shared entrance
+  // mixin) so it arrives gently rather than snapping in.
+  .box {
+    width: 100%;
+    max-width: 480px;
+    animation-duration: 1800ms;
   }
-  100% {
+}
+
+// Module-LOCAL keyframe on purpose: a global one (e.g. minded6622fadeIn) would
+// have its name scoped away inside this CSS module and silently never run,
+// leaving the button stuck at its start opacity. A local @keyframes is hashed
+// consistently with the reference below, so it actually animates.
+@keyframes revealFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
     opacity: 1;
   }
 }
 
-@keyframes minded6622fadeInAfterDelay {
-  0% {
-    opacity: 0;
+// The reveal button eases in a beat *after* the greeting card has settled, so
+// the eye lands on the card first and the invitation arrives second. `both`
+// holds the hidden start through the delay and the visible end after — and fails
+// safe: if the animation never runs, the button still defaults to visible.
+.revealBtn {
+  // Intentionally very slow (3s) so the invitation seeps in rather than pops,
+  // well after the card has settled. `both` keeps it hidden through the delay.
+  animation: revealFadeIn 3000ms var(--ease-out) 900ms both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
+
+  // A subordinate affordance: smaller than a primary button so it doesn't loom
+  // over a small greeting card. The design system has no small text-button
+  // variant, so this one quiet control sets its own size — selector raised over
+  // the global .btnTxt to win the cascade.
+  &:global(.btnTxt) {
+    height: 36px;
+    line-height: 36px;
+    font-size: var(--fz-s);
   }
 }

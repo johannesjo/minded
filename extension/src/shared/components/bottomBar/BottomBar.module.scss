@@ -53,6 +53,18 @@
       animation-name: minded6622fadeIn;
     }
   }
+
+  // The dashboard's feedback & settings icons (its only > a children) reveal
+  // slowly — a gentle settle on arrival — rather than snapping in at the 200ms
+  // default above. Re-declares the animation with the same global-keyframe
+  // workaround the rest of this file uses.
+  &.isOnDashboard > a {
+    animation: minded6622fadeIn ease 2.5s;
+
+    :global {
+      animation-name: minded6622fadeIn;
+    }
+  }
 }
 
 //.bottomBarWrapper::after {
