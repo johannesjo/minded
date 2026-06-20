@@ -186,6 +186,13 @@ class InteractionWindow(
     // guarantee that fadeInDurationMs = 0L exists to provide is preserved and the
     // blocked app never shows through.
     private fun nudgeWindowAlpha() {
+        // Never start an alpha animation on the window root while hideWindow()'s
+        // fade-out is running: both animate the same view, so starting ours would
+        // cancel the fade-out's withEndAction, leaving the view un-removed and the
+        // window wedged open. A late onPageFinished after a fast dismiss (or after
+        // onRenderProcessGone -> hideWindow) is exactly that race. Same-thread, so
+        // this check fully covers the hide-then-nudge ordering.
+        if (isWindowHiding()) return
         val root = window ?: return
         root.alpha = 0.996f
         root.animate()

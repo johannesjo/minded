@@ -20,6 +20,15 @@ open class CommonWindow(
     private var isHiding = false
 
     /**
+     * True while hideWindow()'s fade-out animation is in flight (the view has not
+     * been removed yet). Subclasses that start their own animation on [window]
+     * must check this first: starting a second ViewPropertyAnimator on the same
+     * view cancels the fade-out's withEndAction, so the view would never be
+     * removed and the window would wedge open. Safe to read on the main thread.
+     */
+    protected fun isWindowHiding(): Boolean = isHiding
+
+    /**
      * Duration of the native window alpha fade-in. While the window animates
      * from alpha 0 -> 1 it is semi-transparent, so whatever is behind it (e.g.
      * the blocked app the user just opened) shows through for this long.
