@@ -247,6 +247,10 @@ export const Sun: Component<SunProps> = (props) => {
   // transitions (e.g. cancelling the intent/time choices), which keep the
   // snappier default.
   const COMPANION_GLIDE_MS = 900;
+  // Returning home *after a fling* doesn't glide — the disc is off-screen, so a
+  // glide would streak it across the whole screen. It fades in at the rest over
+  // this instead (see settleInAtRest).
+  const COMPANION_FADE_IN_MS = 500;
   // The companion is the only settle anchored by a fixed bottom px with no fixed
   // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
   // departing, top-px interactive). Used to give its glides the slower duration.
@@ -389,8 +393,48 @@ export const Sun: Component<SunProps> = (props) => {
     setTapCount(0);
   };
 
+  // Bring a disc that was flung off-screen home *without* streaking it across the
+  // whole screen: place it straight on its rest and gently fade (with a touch of
+  // scale) it in there. Used when an offer opened by a fling (let-go up /
+  // grounding down) is dismissed and the disc returns to the bottom bar — a glide
+  // from its off-screen position would zip back unpleasantly fast (worst for the
+  // let-go offer, flung all the way up then declined).
+  const settleInAtRest = (
+    target: SunPosition,
+    restScale: number,
+    onDone?: () => void,
+  ) => {
+    cancelSettleFrame();
+    setIsAnimating(true);
+    setDragOffset(target); // snap home — no cross-screen glide
+    const startScale = restScale * 0.6;
+    setScale(startScale);
+    setOpacity(0);
+    const startTime = Date.now();
+    const step = () => {
+      const eased = easeInOut(
+        Math.min((Date.now() - startTime) / COMPANION_FADE_IN_MS, 1),
+      );
+      setOpacity(eased);
+      setScale(startScale + (restScale - startScale) * eased);
+      if (eased < 1) {
+        settleFrame = requestAnimationFrame(step);
+      } else {
+        settleFrame = undefined;
+        onDone?.();
+      }
+    };
+    settleFrame = requestAnimationFrame(step);
+  };
+
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+    // A terminal gesture (fling / drag-complete) leaves the disc flung off-screen.
+    // Capture that BEFORE resetTerminalStateForReuse clears the flag, so the
+    // return home can fade in at the rest instead of streaking back across the
+    // whole screen.
+    const wasFlungOffScreen =
+      isCompanionSettle(settle) && getIsCompletionStarted();
     if (isCompanionSettle(settle)) resetTerminalStateForReuse();
     const restScale = settle.scale ?? DEFAULT_REST_SCALE;
     const target = getAnchorOffset(settle);
@@ -402,15 +446,7 @@ export const Sun: Component<SunProps> = (props) => {
       ? COMPANION_GLIDE_MS
       : GLIDE_DURATION_MS;
 
-    if (prefersReducedMotion()) {
-      cancelSettleFrame();
-      setDragOffset(target);
-      setScale(restScale);
-      setIsAnimating(false);
-      return;
-    }
-
-    animateOffsetScaleTo(target, restScale, duration, () => {
+    const onSettled = () => {
       if (settle.breathe) {
         startBreathCycle(
           restScale,
@@ -423,7 +459,22 @@ export const Sun: Component<SunProps> = (props) => {
       } else {
         setIsAnimating(false);
       }
-    });
+    };
+
+    if (prefersReducedMotion()) {
+      cancelSettleFrame();
+      setDragOffset(target);
+      setScale(restScale);
+      setIsAnimating(false);
+      return;
+    }
+
+    if (wasFlungOffScreen) {
+      settleInAtRest(target, restScale, onSettled);
+      return;
+    }
+
+    animateOffsetScaleTo(target, restScale, duration, onSettled);
   };
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
