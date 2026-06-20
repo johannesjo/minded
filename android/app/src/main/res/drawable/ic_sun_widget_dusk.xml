@@ -1,0 +1,42 @@
+<!-- DUSK phase of the living companion sun: the golden, declining evening sun. The
+     disc deepens from a warm cream centre to the app's coral (#EF6F52) at the rim,
+     in a warm amber glow — fuller and warmer than midday, the day winding down.
+     See docs/sun-companion-widget.md. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:aapt="http://schemas.android.com/aapt"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+
+    <!-- Warm amber dusk glow -->
+    <path android:pathData="M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="53">
+                <item android:offset="0.0" android:color="#00FF9E52" />
+                <item android:offset="0.56" android:color="#00FF9E52" />
+                <item android:offset="0.74" android:color="#52FF8A4A" />
+                <item android:offset="1.0" android:color="#00EF6F52" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The disc: cream centre deepening to a warm coral rim -->
+    <path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="36">
+                <item android:offset="0.0" android:color="#FFFFF3D6" />
+                <item android:offset="0.62" android:color="#FFFFC074" />
+                <item android:offset="1.0" android:color="#FFEF6F52" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

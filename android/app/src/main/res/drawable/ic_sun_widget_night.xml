@@ -1,6 +1,8 @@
-<!-- Night variant of the companion sun: the moon, matched to the app's `.moon`
-     (radial: white highlight upper-left → #dfe8ff → #a9b8dc) with a soft cool
-     halo. Auto-selected by the system in dark mode. -->
+<!-- NIGHT phase of the living companion sun: the moon, matched to the app's `.moon`
+     (radial: white highlight upper-left → #dfe8ff → #a9b8dc) with a soft cool halo.
+     Picked by the local hour in MyAppWidget, not by the dark-mode qualifier — so
+     it shows at actual night, not whenever the system theme is dark.
+     See docs/sun-companion-widget.md. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:aapt="http://schemas.android.com/aapt"
         android:width="108dp"
