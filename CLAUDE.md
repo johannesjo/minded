@@ -173,3 +173,10 @@ Path aliases change based on build mode to load platform-specific code.
   (`fadeOut` in `src/util/animation.ts`, `ANIMATION_TIMING`) and the established
   patterns (e.g. `InteractionOverlay`'s `handleHideWithFade`) rather than
   unmounting straight to the next surface.
+
+**Minimalism — remove before you add:**
+- Default to the simplest UI that works: less visual chrome, fewer controls,
+  fewer words. Every element must earn its place; when in doubt, leave it out.
+- This is the UI expression of the minimalism principle in *Conceptual
+  Fundamentals* — a quiet, uncluttered surface keeps cognitive load low and
+  upholds the calm, never-striving premise.
