@@ -2,8 +2,8 @@
  * Whether an incoming interaction-success callback is stale and should be
  * ignored, because the user has already left the question screen.
  *
- * A success can arrive late: an interaction that saves on a timer can fire its
- * callback after the user has already triple-tapped the sun to the choices.
+ * A success can arrive late: an interaction that saves asynchronously can fire
+ * its callback after the user has already triple-tapped the sun to the choices.
  * Acting on it then would disarm the intent/time buttons without re-arming or
  * advancing them, freezing the choices with every button greyed.
  *
