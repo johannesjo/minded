@@ -91,12 +91,16 @@ Mirrors the Android shape; only the shell differs. See the folder's `README.md`
 for the one manual Xcode step (creating the Widget Extension target) and how to
 verify.
 
-- **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`) + Lock Screen
-  (`accessoryCircular`). The sun is drawn with SwiftUI radial gradients
-  (`CompanionSun.swift`), colours ported 1:1 from the Android `ic_sun_widget`
-  vectors; day/night follows the system colour scheme.
-  `.widgetURL(URL("minded://sun"))` is the tap target. No special entitlement,
-  no App Group — the widget only carries a deep link.
+- **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`). The sun is drawn
+  with SwiftUI radial gradients (`CompanionSun.swift`), colours ported 1:1 from
+  the Android `ic_sun_widget` vectors; day/night follows the system colour
+  scheme. `.widgetURL(URL("minded://sun"))` is the tap target. No special
+  entitlement, no App Group — the widget only carries a deep link.
+  - **Lock Screen (`accessoryCircular`) deferred:** accessory widgets render in
+    the system's *vibrant* mode, which discards colour and rebuilds the view from
+    its alpha channel — the near-opaque disc + soft bloom collapse to a flat tinted
+    blob. A Lock Screen variant needs a purpose-built alpha glyph, not the colour
+    sun; left for later rather than shipped looking broken.
 - **Deep link → `?sun=open`.** The `minded://` URL scheme is already registered
   (`App/Info.plist`). `AppDelegate.application(open:)` intercepts `minded://sun`
   and posts an `OPEN_SUN` notification; `MainViewController` sets the Capacitor

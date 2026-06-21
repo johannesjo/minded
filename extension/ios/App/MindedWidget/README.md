@@ -67,8 +67,8 @@ link, it shares no data with the app.
 1. `cd extension && npm run buildIOS` then `npx cap sync ios` (bundles the shared web
    shell into the iOS app).
 2. Run the app once so the widget extension installs.
-3. Long-press the Home Screen ▸ **+** ▸ search "minded" ▸ add the sun (also try the
-   Lock Screen ▸ circular accessory).
+3. Long-press the Home Screen ▸ **+** ▸ search "minded" ▸ add the sun. (Home
+   Screen only for v1 — see the Lock Screen note below.)
 4. **Tap the widget** → the app opens and the sun interaction begins, exactly like
    tapping the in-app dashboard sun. Tap again while the app is already open (warm
    start) → it should re-open the overlay too.
@@ -76,6 +76,15 @@ link, it shares no data with the app.
 
 You can validate the *shared* trigger with zero native build in the browser
 extension: `npm start`, then load `#/?sun=open`.
+
+## Lock Screen (deferred)
+
+v1 ships `systemSmall` (Home Screen) only. A Lock Screen `accessoryCircular`
+variant was deliberately left out: accessory widgets render in the system's
+*vibrant* mode, which discards colour and rebuilds the view from its **alpha
+channel**. Our near-opaque white disc + low-alpha bloom would collapse to a flat
+tinted blob, not a sun. A good Lock Screen sun needs a purpose-built alpha glyph
+designed for vibrant mode — worth doing later, not worth shipping looking broken.
 
 ## Known caveat (cold start timing)
 

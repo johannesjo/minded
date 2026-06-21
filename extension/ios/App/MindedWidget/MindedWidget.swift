@@ -44,15 +44,13 @@ struct SunProvider: TimelineProvider {
 // MARK: - View
 
 struct MindedWidgetEntryView: View {
-    @Environment(\.widgetFamily) private var family
     @Environment(\.colorScheme) private var colorScheme
     var entry: SunProvider.Entry
 
     var body: some View {
         CompanionSun(isNight: colorScheme == .dark)
-            // Lock-screen circular wants the sun edge-to-edge; the home-screen
-            // tile gets a little breathing room so the bloom isn't clipped.
-            .padding(family == .accessoryCircular ? 0 : 12)
+            // A little breathing room so the soft bloom isn't clipped by the tile.
+            .padding(12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // The whole widget is the tap target — open the shared sun flag.
             .widgetURL(URL(string: "minded://sun"))
@@ -78,7 +76,12 @@ struct MindedSunWidget: Widget {
         }
         .configurationDisplayName("minded – the sun")
         .description("Open the sun for a mindful moment.")
-        .supportedFamilies([.systemSmall, .accessoryCircular])
+        // Home Screen only for v1. A Lock Screen (`accessoryCircular`) variant
+        // would render in the system's *vibrant* mode, which discards colour and
+        // rebuilds the view from its alpha — our near-opaque white disc + low-alpha
+        // bloom would collapse to a flat tinted blob, not a sun. That wants a
+        // purpose-built alpha glyph; deferred rather than shipped looking broken.
+        .supportedFamilies([.systemSmall])
     }
 }
 
