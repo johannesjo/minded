@@ -24,7 +24,7 @@ export const NOTICE_CUES: {
   {
     ico: "😌",
     cue: "Let your jaw and shoulders soften.",
-    done: "Softened",
+    done: "I let go",
   },
   { ico: "🤲", cue: "Let your hands fall open and rest.", done: "Resting" },
   {
@@ -43,23 +43,18 @@ export const NOTICE_CUES: {
     done: "Noticed",
   },
   {
-    ico: "🪑",
-    cue: "Feel the weight of your body where you're sitting.",
+    ico: "⚓",
+    cue: "Feel the weight of your body, wherever you are.",
     done: "I feel it",
   },
   {
     ico: "🌡️",
     cue: "Notice the temperature of the air on your skin.",
-    done: "Done",
-  },
-  {
-    ico: "👁️",
-    cue: "Let your eyes close for one slow moment.",
-    done: "Opened",
+    done: "Noticed",
   },
   {
     ico: "🎨",
-    cue: "Find three colours in the room around you.",
+    cue: "Find three colours around you.",
     done: "Found them",
   },
 ] as const;
