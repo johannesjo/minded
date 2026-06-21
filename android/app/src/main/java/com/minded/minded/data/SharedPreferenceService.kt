@@ -15,6 +15,8 @@ class SharedPreferenceService(context: Context) {
     private val logTag = "SharedPreferenceService"
     private val DB_KEY = "mindedAll"
     private val DB_NAME = "mindedData"
+    private val LITTLE_SUN_POS_X_KEY = "littleSunPosX"
+    private val LITTLE_SUN_POS_Y_KEY = "littleSunPosY"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
 
@@ -74,6 +76,25 @@ class SharedPreferenceService(context: Context) {
         val syncData = getSyncData()
         val updatedCfg = syncData.cfg.update()
         saveSyncData(syncData.copy(cfg = updatedCfg))
+    }
+
+    /**
+     * Where the user parked the draggable little-sun bubble, so it reappears in
+     * the same spot. Stored outside the JSON sync blob — it is a purely local,
+     * per-device UI preference with no place in synced data.
+     */
+    fun saveLittleSunPosition(x: Int, y: Int) {
+        with(sharedPreferences.edit()) {
+            putInt(LITTLE_SUN_POS_X_KEY, x)
+            putInt(LITTLE_SUN_POS_Y_KEY, y)
+            apply()
+        }
+    }
+
+    fun getLittleSunPosition(): Pair<Int, Int>? {
+        if (!sharedPreferences.contains(LITTLE_SUN_POS_X_KEY)) return null
+        return sharedPreferences.getInt(LITTLE_SUN_POS_X_KEY, 0) to
+            sharedPreferences.getInt(LITTLE_SUN_POS_Y_KEY, 0)
     }
 
     fun getBlockedApps(): List<String> {

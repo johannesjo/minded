@@ -860,6 +860,23 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         startActivity(intent)
     }
 
+    /**
+     * The little-sun bubble's "step away" action: the gentle redirect away from
+     * the blocked app. We can't (and the philosophy wouldn't) force-kill it —
+     * we just go home and let the bubble fade. Counted like any other
+     * user-driven close (no streaks, no scores — just the existing tap tally).
+     */
+    fun stepAwayFromBlockedApp() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler(Looper.getMainLooper()).post { stepAwayFromBlockedApp() }
+            return
+        }
+        Log.d(logTag, "stepAwayFromBlockedApp()")
+        sharedPreferenceService.countUserDrivenClose()
+        goToHomeScreen()
+        littleSunOverlayWindow.hideWindow()
+    }
+
 
     companion object {
         // Live service instance so the flag below reflects actual window

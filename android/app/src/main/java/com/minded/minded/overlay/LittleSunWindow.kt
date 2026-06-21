@@ -1,10 +1,13 @@
 package com.minded.minded.overlay
 
+import android.animation.ValueAnimator
 import android.content.Context
+import android.graphics.PixelFormat
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
+import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +19,7 @@ import com.minded.minded.ui.compose.LittleSun
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
+import kotlin.math.roundToInt
 
 //val SMALL_MSG_CYCLE_DURATION = 6
 
@@ -39,6 +43,19 @@ class LittleSunWindow(
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
+    private val density = ctrlSvc.resources.displayMetrics.density
+    private val bubbleSizePx = (60 * density).roundToInt()
+
+    // Current resting position of the bubble (top-left gravity, pixels). Drag
+    // mutates these; on release the bubble snaps to the nearest side edge.
+    private var posX = 0
+    private var posY = 0
+
+    // Drives whether the overlay is the small resting bubble or the full-screen
+    // pause + step-away invitation. A Compose state so Cmp() recomposes.
+    private var isExpanded by mutableStateOf(false)
+    private var snapAnimator: ValueAnimator? = null
+
     @Composable
     override fun Cmp() {
         LaunchedEffect(Unit) {
@@ -46,7 +63,15 @@ class LittleSunWindow(
             startTimer(initialTime)
         }
 
-        LittleSun(elapsedSeconds)
+        LittleSun(
+            elapsedSeconds = elapsedSeconds,
+            expanded = isExpanded,
+            onTap = { expand() },
+            onDrag = { dx, dy -> onDrag(dx, dy) },
+            onDragEnd = { onDragEnd() },
+            onStepAway = { stepAway() },
+            onStay = { collapse() },
+        )
     }
 
     private var elapsedSeconds by mutableStateOf(0)
@@ -132,6 +157,11 @@ class LittleSunWindow(
 
     override fun showWindow() {
         Log.d(logTag, "showWindow() called for Little Sun")
+        if (!isWindowShown()) {
+            // Always open as the resting bubble; restore its parked position.
+            isExpanded = false
+            initPosition()
+        }
         super.showWindow()
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
@@ -139,14 +169,137 @@ class LittleSunWindow(
         Log.d(logTag, "showWindow() completed, window=${window != null}")
     }
 
+    /**
+     * The resting bubble is a small wrap-content overlay positioned anywhere on
+     * screen. It is touchable (so it can be dragged and tapped) but NOT
+     * full-screen, so the app underneath stays fully interactive — Android only
+     * routes touches inside the bubble's own bounds to us, exactly like a
+     * chat-head. [FLAG_NOT_FOCUSABLE] keeps it from stealing keyboard focus from
+     * the app the user is typing in.
+     *
+     * When tapped it expands to a full-screen, dimmed pause + invitation; that
+     * surface is user-invoked and always auto-dismisses, so the app is never
+     * blocked while the bubble is idle.
+     */
     override fun getLayoutParams(): WindowManager.LayoutParams {
-        return super.getLayoutParams().apply {
-            flags = flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        return if (isExpanded) expandedLayoutParams() else restingLayoutParams()
+    }
+
+    private fun restingLayoutParams(): WindowManager.LayoutParams {
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = posX
+            y = posY
         }
+    }
+
+    private fun expandedLayoutParams(): WindowManager.LayoutParams {
+        @Suppress("DEPRECATION")
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            x = 0
+            y = 0
+        }
+    }
+
+    private fun screenWidthPx() = ctrlSvc.resources.displayMetrics.widthPixels
+    private fun screenHeightPx() = ctrlSvc.resources.displayMetrics.heightPixels
+
+    private fun initPosition() {
+        val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
+        if (saved != null) {
+            posX = saved.first
+            posY = saved.second
+        } else {
+            // Default to the bottom-left, where the little sun has always rested.
+            posX = (8 * density).roundToInt()
+            posY = screenHeightPx() - bubbleSizePx - (96 * density).roundToInt()
+        }
+        clampPosition()
+    }
+
+    private fun clampPosition() {
+        posX = posX.coerceIn(0, (screenWidthPx() - bubbleSizePx).coerceAtLeast(0))
+        posY = posY.coerceIn(0, (screenHeightPx() - bubbleSizePx).coerceAtLeast(0))
+    }
+
+    private fun updateLayout() {
+        val w = window ?: return
+        try {
+            windowManager.updateViewLayout(w, getLayoutParams())
+        } catch (e: Exception) {
+            Log.e(logTag, "updateViewLayout failed", e)
+        }
+    }
+
+    private fun onDrag(dxPx: Float, dyPx: Float) {
+        if (isExpanded) return
+        snapAnimator?.cancel()
+        posX += dxPx.roundToInt()
+        posY += dyPx.roundToInt()
+        clampPosition()
+        updateLayout()
+    }
+
+    private fun onDragEnd() {
+        if (isExpanded) return
+        val maxX = (screenWidthPx() - bubbleSizePx).coerceAtLeast(0)
+        // Settle against whichever side edge is nearer — the chat-head feel.
+        val targetX = if (posX + bubbleSizePx / 2 < screenWidthPx() / 2) 0 else maxX
+        animateSnapToX(targetX)
+        ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(targetX, posY)
+    }
+
+    private fun animateSnapToX(targetX: Int) {
+        snapAnimator?.cancel()
+        if (posX == targetX) return
+        snapAnimator = ValueAnimator.ofInt(posX, targetX).apply {
+            duration = 220
+            addUpdateListener {
+                posX = it.animatedValue as Int
+                updateLayout()
+            }
+            start()
+        }
+    }
+
+    private fun expand() {
+        if (isExpanded) return
+        snapAnimator?.cancel()
+        isExpanded = true
+        updateLayout()
+    }
+
+    private fun collapse() {
+        if (!isExpanded) return
+        isExpanded = false
+        clampPosition()
+        updateLayout()
+    }
+
+    private fun stepAway() {
+        ctrlSvc.stepAwayFromBlockedApp()
     }
 
     override fun hideWindow() {
         stopTimer()
+        snapAnimator?.cancel()
+        snapAnimator = null
         super.hideWindow()
     }
 

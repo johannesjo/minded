@@ -1,17 +1,33 @@
 package com.minded.minded.ui.compose
 
+import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,30 +36,87 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
+// Match the web extension's little sun: a solid white disc with a soft, warm
+// amber glow around it.
+private val SUN_COLOR = Color.White
+private val SUN_TEXT_COLOR = Color(0xFF956969)
+private val GLOW_COLOR = Color(0xFFE9843A) // #e9843a — the same warm amber as the web glow
 
+/**
+ * How long the sun simply breathes before the gentle step-away invitation
+ * fades in. The pause *is* the friction — the sun is the pause (see
+ * CLAUDE.md). It also makes an accidental tap harmless: nothing is asked of
+ * the user until they have had a quiet moment.
+ */
+private const val PAUSE_MS = 3800L
+
+/**
+ * A gentle offer never nags: if left untouched the invitation fades on its
+ * own and the sun returns to its resting bubble. Mirrors the auto-dismiss of
+ * the web grounding / let-go offers.
+ */
+private const val OFFER_AUTO_DISMISS_MS = 12000L
+
+/**
+ * The little sun overlay. At rest it is a small, draggable companion bubble
+ * (like a chat-head) that lets the app underneath stay fully interactive —
+ * the window only intercepts touches within the bubble's own bounds. Tapping
+ * it does not eject the user; it opens a calm pause and a soft "step away?"
+ * invitation that can always be ignored.
+ */
 @Composable
 fun LittleSun(
     elapsedSeconds: Int = 0,
-    isInitiallyVisible: Boolean = false
+    expanded: Boolean = false,
+    isInitiallyVisible: Boolean = false,
+    onTap: () -> Unit = {},
+    onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
+    onDragEnd: () -> Unit = {},
+    onStepAway: () -> Unit = {},
+    onStay: () -> Unit = {},
+) {
+    if (expanded) {
+        StepAwayOffer(onStepAway = onStepAway, onStay = onStay)
+    } else {
+        Bubble(
+            elapsedSeconds = elapsedSeconds,
+            isInitiallyVisible = isInitiallyVisible,
+            onTap = onTap,
+            onDrag = onDrag,
+            onDragEnd = onDragEnd,
+        )
+    }
+}
+
+@Composable
+private fun Bubble(
+    elapsedSeconds: Int,
+    isInitiallyVisible: Boolean,
+    onTap: () -> Unit,
+    onDrag: (Float, Float) -> Unit,
+    onDragEnd: () -> Unit,
 ) {
     val showText = elapsedSeconds >= 0
     val minutes = if (showText) elapsedSeconds / 60 else 0
     val remainingSeconds = if (showText) elapsedSeconds % 60 else 0
     val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
-    // Match the web extension's little sun: a solid white disc with a soft,
-    // warm amber glow around it.
-    val sunColor = Color.White
-    val textColor = Color(0xFF956969)
-    val glowColor = Color(0xFFE9843A) // #e9843a — the same warm amber as the web glow
 
+    val view = LocalView.current
     var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
 
     LaunchedEffect(Unit) {
@@ -59,46 +132,206 @@ fun LittleSun(
     ) {
         Box(
             modifier = Modifier
-//            .border(1.dp, Color.Black, CircleShape  )
-                .size(60.dp),
-            contentAlignment = Alignment.Center // This will center the inner Box
-
-        ) {
-            // Soft amber glow, drawn behind the disc so only the warm halo
-            // around the white body shows — mirrors the web extension's
-            // box-shadow glow. The disc radius is 0.5 of the glow radius, so
-            // the amber is saturated right where the white edge sits and then
-            // feathers to fully transparent before the layout bound (0.9), so
-            // the wrap-content window never hard-cuts the halo.
-            val glowBrush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0.5f to glowColor.copy(alpha = 0.85f),
-                    0.7f to glowColor.copy(alpha = 0.30f),
-                    0.9f to Color.Transparent,
-                ),
-            )
-            Canvas(
-                modifier = Modifier.size(60.dp),
-                onDraw = {
-                    drawCircle(glowBrush)
+                .size(60.dp)
+                // Two separate gesture detectors: a small movement stays a tap
+                // (open the pause), a deliberate drag moves the bubble. The drag
+                // deltas are handed to the window, which repositions the overlay.
+                .pointerInput(view) {
+                    detectTapGestures(
+                        onTap = {
+                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            onTap()
+                        }
+                    )
                 }
-            )
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            onDrag(dragAmount.x, dragAmount.y)
+                        },
+                        onDragEnd = { onDragEnd() },
+                    )
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            SunDisc(clockString = clockString)
+        }
+    }
+}
 
-            // Solid, opaque white sun body.
-            Box(
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .background(sunColor),
-                contentAlignment = Alignment.Center
+@Composable
+private fun StepAwayOffer(
+    onStepAway: () -> Unit,
+    onStay: () -> Unit,
+) {
+    // 0 = breathing pause, 1 = invitation shown.
+    var phase by remember { mutableStateOf(0) }
+    var shown by remember { mutableStateOf(false) }
+    var dismissing by remember { mutableStateOf(false) }
+
+    // Soft fade for the whole surface — calmness is the product, never a hard
+    // cut. Fades in on appear and out on dismiss; when the fade-out finishes we
+    // hand control back to the resting bubble (stay).
+    val surfaceAlpha by animateFloatAsState(
+        targetValue = if (!shown || dismissing) 0f else 1f,
+        animationSpec = tween(durationMillis = 400),
+        finishedListener = { if (dismissing) onStay() },
+        label = "stepAwaySurfaceAlpha",
+    )
+
+    // The sun breathes — the pause itself, mirroring the web post-sun breath.
+    val breath = rememberInfiniteTransition(label = "breath")
+    val sunScale by breath.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.12f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "breathScale",
+    )
+
+    val promptAlpha by animateFloatAsState(
+        targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
+        animationSpec = tween(durationMillis = 600),
+        label = "promptAlpha",
+    )
+
+    fun beginDismiss() {
+        if (!dismissing) dismissing = true
+    }
+
+    LaunchedEffect(Unit) {
+        shown = true
+        delay(PAUSE_MS)
+        phase = 1
+        delay(OFFER_AUTO_DISMISS_MS)
+        beginDismiss()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.55f * surfaceAlpha))
+            // Tapping anywhere off the invitation is the easy way to stay.
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { beginDismiss() })
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.alpha(surfaceAlpha),
+        ) {
+            SunDisc(glowSize = 180.dp, discSize = 92.dp, scale = sunScale)
+
+            Spacer(Modifier.height(48.dp))
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.alpha(promptAlpha),
             ) {
+                Text(
+                    text = "Step away?",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+                Spacer(Modifier.height(28.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OfferAction(
+                        text = "Leave",
+                        emphasized = true,
+                        enabled = phase >= 1 && !dismissing,
+                        onClick = onStepAway,
+                    )
+                    Spacer(Modifier.size(16.dp))
+                    OfferAction(
+                        text = "Stay",
+                        emphasized = false,
+                        enabled = phase >= 1 && !dismissing,
+                        onClick = { beginDismiss() },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OfferAction(
+    text: String,
+    emphasized: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val view = LocalView.current
+    Text(
+        text = text,
+        color = if (emphasized) Color.White else Color.White.copy(alpha = 0.7f),
+        fontSize = 17.sp,
+        fontWeight = if (emphasized) FontWeight.SemiBold else FontWeight.Normal,
+        modifier = Modifier
+            .clip(CircleShape)
+            .clickable(enabled = enabled) {
+                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                onClick()
+            }
+            .padding(horizontal = 28.dp, vertical = 12.dp),
+    )
+}
+
+@Composable
+private fun SunDisc(
+    clockString: String = "",
+    glowSize: Dp = 60.dp,
+    discSize: Dp = 30.dp,
+    scale: Float = 1f,
+) {
+    Box(
+        modifier = Modifier
+            .size(glowSize)
+            .scale(scale),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Soft amber glow, drawn behind the disc so only the warm halo around
+        // the white body shows — mirrors the web extension's box-shadow glow.
+        // The disc radius is 0.5 of the glow radius, so the amber is saturated
+        // right where the white edge sits and then feathers to fully
+        // transparent before the layout bound (0.9), so the wrap-content window
+        // never hard-cuts the halo.
+        val glowBrush = Brush.radialGradient(
+            colorStops = arrayOf(
+                0.5f to GLOW_COLOR.copy(alpha = 0.85f),
+                0.7f to GLOW_COLOR.copy(alpha = 0.30f),
+                0.9f to Color.Transparent,
+            ),
+        )
+        Canvas(
+            modifier = Modifier.size(glowSize),
+            onDraw = { drawCircle(glowBrush) },
+        )
+
+        // Solid, opaque white sun body.
+        Box(
+            modifier = Modifier
+                .size(discSize)
+                .clip(CircleShape)
+                .background(SUN_COLOR),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (clockString.isNotEmpty()) {
                 Text(
                     text = clockString,
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    color = textColor,
-                    maxLines = 1
+                    color = SUN_TEXT_COLOR,
+                    maxLines = 1,
                 )
             }
         }
@@ -109,61 +342,13 @@ fun LittleSun(
 @Preview
 @Composable
 fun LittleSunPreview() {
-    Surface(
-        color = Color.White
-    ) {
+    Surface(color = Color.White) {
         LittleSun(elapsedSeconds = 1000, isInitiallyVisible = true)
     }
 }
 
 @Preview
 @Composable
-fun LittleSunPreview2() {
-    Surface(
-        color = Color.White
-    ) {
-        LittleSun(elapsedSeconds = 9090, isInitiallyVisible = true)
-    }
+fun LittleSunExpandedPreview() {
+    LittleSun(elapsedSeconds = 1000, expanded = true)
 }
-
-@Preview
-@Composable
-fun LittleSunPreview3() {
-    Surface(
-        color = Color.White
-    ) {
-        LittleSun(elapsedSeconds = 9, isInitiallyVisible = true)
-    }
-}
-
-//
-//fun LittleSun() {
-//    Box(
-//        modifier = Modifier
-//            .background(Color.Green)
-//            .size(32.dp)
-//            .padding(16.dp) // This will add padding around the box
-//    ) {
-//        Column(
-//            verticalArrangement = Arrangement.SpaceBetween,
-//            modifier = Modifier.fillMaxHeight()
-//                .background(Color.Yellow),
-//        ) {
-//            Spacer(
-//                modifier = Modifier
-//                    .height(15.dp)
-//            )
-//
-//            Surface(
-//                shape = CircleShape,
-//                color = Color.White,
-//                modifier = Modifier.size(32.dp)
-//            ) {
-//                Box(contentAlignment = Alignment.Center) {
-//                    Text(text = "9:56")
-//                }
-//            }
-//        }
-//    }
-//}
-//
