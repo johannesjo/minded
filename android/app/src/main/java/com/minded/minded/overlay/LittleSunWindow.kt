@@ -45,6 +45,11 @@ class LittleSunWindow(
 
     private val density = ctrlSvc.resources.displayMetrics.density
     private val bubbleSizePx = (60 * density).roundToInt()
+    // The visible disc (30dp) is centered inside the 60dp window; the rest is
+    // the transparent glow halo. Let the window overhang the screen edge by this
+    // much so the disc itself hugs the edge (the halo runs off-screen), instead
+    // of resting ~15dp inset. FLAG_LAYOUT_NO_LIMITS allows the overhang.
+    private val glowInsetPx = ((60 - 30) / 2 * density).roundToInt()
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble snaps to the nearest side edge.
@@ -54,6 +59,9 @@ class LittleSunWindow(
     // Drives whether the overlay is the small resting bubble or the full-screen
     // pause + step-away invitation. A Compose state so Cmp() recomposes.
     private var isExpanded by mutableStateOf(false)
+    // True only when re-showing the resting bubble after the offer collapses, so
+    // it fades back in rather than snapping. Reset on a fresh show.
+    private var enterWithFade by mutableStateOf(false)
     private var snapAnimator: ValueAnimator? = null
 
     @Composable
@@ -66,6 +74,7 @@ class LittleSunWindow(
         LittleSun(
             elapsedSeconds = elapsedSeconds,
             expanded = isExpanded,
+            enterFade = enterWithFade,
             onTap = { expand() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
@@ -160,6 +169,7 @@ class LittleSunWindow(
         if (!isWindowShown()) {
             // Always open as the resting bubble; restore its parked position.
             isExpanded = false
+            enterWithFade = false
             initPosition()
         }
         super.showWindow()
@@ -234,8 +244,13 @@ class LittleSunWindow(
     }
 
     private fun clampPosition() {
-        posX = posX.coerceIn(0, (screenWidthPx() - bubbleSizePx).coerceAtLeast(0))
-        posY = posY.coerceIn(0, (screenHeightPx() - bubbleSizePx).coerceAtLeast(0))
+        // Allow a glow-inset overhang past each edge so the disc can sit flush.
+        val minX = -glowInsetPx
+        val maxX = (screenWidthPx() - bubbleSizePx + glowInsetPx).coerceAtLeast(minX)
+        val minY = -glowInsetPx
+        val maxY = (screenHeightPx() - bubbleSizePx + glowInsetPx).coerceAtLeast(minY)
+        posX = posX.coerceIn(minX, maxX)
+        posY = posY.coerceIn(minY, maxY)
     }
 
     private fun updateLayout() {
@@ -258,9 +273,12 @@ class LittleSunWindow(
 
     private fun onDragEnd() {
         if (isExpanded) return
-        val maxX = (screenWidthPx() - bubbleSizePx).coerceAtLeast(0)
+        clampPosition()
         // Settle against whichever side edge is nearer — the chat-head feel.
-        val targetX = if (posX + bubbleSizePx / 2 < screenWidthPx() / 2) 0 else maxX
+        // Park the disc flush by letting the glow halo overhang the edge.
+        val leftTarget = -glowInsetPx
+        val rightTarget = screenWidthPx() - bubbleSizePx + glowInsetPx
+        val targetX = if (posX + bubbleSizePx / 2 < screenWidthPx() / 2) leftTarget else rightTarget
         animateSnapToX(targetX)
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(targetX, posY)
     }
@@ -287,6 +305,8 @@ class LittleSunWindow(
 
     private fun collapse() {
         if (!isExpanded) return
+        // Fade the bubble back in as it returns from the offer, never snap.
+        enterWithFade = true
         isExpanded = false
         clampPosition()
         updateLayout()
@@ -300,6 +320,12 @@ class LittleSunWindow(
         stopTimer()
         snapAnimator?.cancel()
         snapAnimator = null
+        // Reset expansion state here (not only on the show path): the window can
+        // be hidden mid-offer by timer expiry / revalidation, and resetting only
+        // in showWindow() can be skipped if a re-show races the hide fade-out —
+        // leaving a stale full-screen overlay that would block the app.
+        isExpanded = false
+        enterWithFade = false
         super.hideWindow()
     }
 

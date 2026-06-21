@@ -10,16 +10,15 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -67,10 +66,13 @@ private const val PAUSE_MS = 3800L
 
 /**
  * A gentle offer never nags: if left untouched the invitation fades on its
- * own and the sun returns to its resting bubble. Mirrors the auto-dismiss of
+ * own and the sun returns to its resting bubble. Matches the auto-dismiss of
  * the web grounding / let-go offers.
  */
-private const val OFFER_AUTO_DISMISS_MS = 12000L
+private const val OFFER_AUTO_DISMISS_MS = 15000L
+
+/** Fade applied when the surface eases out, and when the bubble eases back in. */
+private const val FADE_MS = 400
 
 /**
  * The little sun overlay. At rest it is a small, draggable companion bubble
@@ -84,6 +86,10 @@ fun LittleSun(
     elapsedSeconds: Int = 0,
     expanded: Boolean = false,
     isInitiallyVisible: Boolean = false,
+    // When the bubble reappears after the offer collapses it should fade back
+    // in, never snap. On the very first show it appears in place (the departing
+    // interaction sun has just glided to this corner), so no fade then.
+    enterFade: Boolean = false,
     onTap: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
@@ -96,6 +102,7 @@ fun LittleSun(
         Bubble(
             elapsedSeconds = elapsedSeconds,
             isInitiallyVisible = isInitiallyVisible,
+            enterFade = enterFade,
             onTap = onTap,
             onDrag = onDrag,
             onDragEnd = onDragEnd,
@@ -107,6 +114,7 @@ fun LittleSun(
 private fun Bubble(
     elapsedSeconds: Int,
     isInitiallyVisible: Boolean,
+    enterFade: Boolean,
     onTap: () -> Unit,
     onDrag: (Float, Float) -> Unit,
     onDragEnd: () -> Unit,
@@ -125,9 +133,9 @@ private fun Bubble(
 
     AnimatedVisibility(
         visible = isOverlayVisible,
-        // No reveal animation: the departing interaction sun already glides to
-        // this corner, so the native sun just appears in place as it hands off.
-        enter = EnterTransition.None,
+        // Fade in when returning from the offer; appear in place on first show
+        // (the departing interaction sun has already glided to this corner).
+        enter = if (enterFade) fadeIn(animationSpec = tween(FADE_MS)) else EnterTransition.None,
         exit = fadeOut(animationSpec = tween(500)),
     ) {
         Box(
@@ -136,7 +144,7 @@ private fun Bubble(
                 // Two separate gesture detectors: a small movement stays a tap
                 // (open the pause), a deliberate drag moves the bubble. The drag
                 // deltas are handed to the window, which repositions the overlay.
-                .pointerInput(view) {
+                .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
                             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
@@ -171,14 +179,22 @@ private fun StepAwayOffer(
     var dismissing by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
-    // cut. Fades in on appear and out on dismiss; when the fade-out finishes we
-    // hand control back to the resting bubble (stay).
+    // cut. Fades in on appear and out on dismiss.
     val surfaceAlpha by animateFloatAsState(
         targetValue = if (!shown || dismissing) 0f else 1f,
-        animationSpec = tween(durationMillis = 400),
-        finishedListener = { if (dismissing) onStay() },
+        animationSpec = tween(durationMillis = FADE_MS),
         label = "stepAwaySurfaceAlpha",
     )
+
+    // Hand control back to the resting bubble once the fade-out has played.
+    // Driven off the dismissing flag (not the animation's finished-listener) so
+    // it can't fire on the fade-IN settling and survives the composable leaving.
+    LaunchedEffect(dismissing) {
+        if (dismissing) {
+            delay(FADE_MS.toLong())
+            onStay()
+        }
+    }
 
     // The sun breathes — the pause itself, mirroring the web post-sun breath.
     val breath = rememberInfiniteTransition(label = "breath")
@@ -228,35 +244,25 @@ private fun StepAwayOffer(
 
             Spacer(Modifier.height(48.dp))
 
+            // No heading, no question — the breath has already happened. A
+            // single gentle offer to step away, with a quiet decline; tapping
+            // off it or simply waiting also stays. The choice is never pushed.
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.alpha(promptAlpha),
             ) {
-                Text(
-                    text = "Step away?",
-                    color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Medium,
+                OfferAction(
+                    text = "Step away",
+                    enabled = phase >= 1 && !dismissing,
+                    onClick = onStepAway,
                 )
-                Spacer(Modifier.height(28.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    OfferAction(
-                        text = "Leave",
-                        emphasized = true,
-                        enabled = phase >= 1 && !dismissing,
-                        onClick = onStepAway,
-                    )
-                    Spacer(Modifier.size(16.dp))
-                    OfferAction(
-                        text = "Stay",
-                        emphasized = false,
-                        enabled = phase >= 1 && !dismissing,
-                        onClick = { beginDismiss() },
-                    )
-                }
+                Spacer(Modifier.height(8.dp))
+                OfferAction(
+                    text = "Not now",
+                    dimmed = true,
+                    enabled = phase >= 1 && !dismissing,
+                    onClick = { beginDismiss() },
+                )
             }
         }
     }
@@ -265,16 +271,16 @@ private fun StepAwayOffer(
 @Composable
 private fun OfferAction(
     text: String,
-    emphasized: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
+    dimmed: Boolean = false,
 ) {
     val view = LocalView.current
     Text(
         text = text,
-        color = if (emphasized) Color.White else Color.White.copy(alpha = 0.7f),
+        color = Color.White.copy(alpha = if (dimmed) 0.55f else 1f),
         fontSize = 17.sp,
-        fontWeight = if (emphasized) FontWeight.SemiBold else FontWeight.Normal,
+        fontWeight = FontWeight.Normal,
         modifier = Modifier
             .clip(CircleShape)
             .clickable(enabled = enabled) {
