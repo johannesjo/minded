@@ -454,6 +454,7 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.HT8,
         t: "What distraction could you remove right now",
+        prompt: "Right now I could",
         chips: [
           "silence notifications",
           "put my phone away",
@@ -479,14 +480,6 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.CT4,
         t: "Where do you feel tension in your body right now",
-        chips: [
-          "shoulders",
-          "jaw",
-          "neck",
-          "chest",
-          "stomach",
-          "nowhere right now",
-        ],
       },
     ],
     dashboardTxt: "Calming Thoughts",

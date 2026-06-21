@@ -10,6 +10,10 @@ import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 import Btn from "@src/shared/components/ui/Btn";
 
+// Chip fade-out before the text input takes over; keep in sync with the
+// `.question-chips.is-exiting` opacity transition in Question.scss.
+const CHIPS_FADE_MS = 250;
+
 export const Question: (props: {
   initialQuestion: QuestionForPrompt;
   answers: Answer[];
@@ -75,6 +79,16 @@ export const Question: (props: {
   };
 
   const hasChips = (question.chips?.length ?? 0) > 0;
+  const [getChipsExiting, setChipsExiting] = createSignal(false);
+
+  // "Something else…" swaps the chips for the text input. Fade the chips out
+  // first rather than snapping them away — calmness is the product, so even
+  // this small swap softens (matches the input's own fade-in).
+  const revealInputFromChips = () => {
+    props.onCancelCountdown();
+    setChipsExiting(true);
+    setTimeout(revealInput, CHIPS_FADE_MS);
+  };
 
   // A tapped chip is the same answer a typed one would be: when the question
   // has a prompt prefix, append the chip to it so the saved text matches the
@@ -113,9 +127,17 @@ export const Question: (props: {
       </div>
 
       <Show when={hasChips && !getShowInput()}>
-        <div class="question-chips" onMouseEnter={props.onCancelCountdown}>
+        <div
+          class="question-chips"
+          classList={{ "is-exiting": getChipsExiting() }}
+          role="group"
+          aria-label={formatQuestionText(question.t)}
+          onMouseEnter={props.onCancelCountdown}
+        >
           <For each={question.chips}>
             {(chip) => (
+              // `toggle` is borrowed only for its compact pill shape — these
+              // chips submit-and-dismiss and never show a selected state.
               <Btn variant="toggle" small onClick={() => submitChip(chip)}>
                 {chip}
               </Btn>
@@ -125,7 +147,7 @@ export const Question: (props: {
             variant="toggle"
             small
             class="question-chip-other"
-            onClick={revealInput}
+            onClick={revealInputFromChips}
           >
             Something else…
           </Btn>
