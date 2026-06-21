@@ -6,11 +6,21 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
+import { fadeOut } from "@src/util/animation";
+
+// Matches --dur-soft (the page-level fade) so leaving a page eases out at the
+// same pace "show all" eases in — never a hard cut (see the styling rules).
+const BACK_FADE_MS = 480;
+
+const prefersReducedMotion = (): boolean =>
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const BottomBar = () => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
+  let isLeaving = false;
 
   createEffect(() => {
     setIsOnDashboard(location.pathname === "/");
@@ -18,11 +28,35 @@ const BottomBar = () => {
 
   const goBack = () => {
     if (getIsOnDashboard()) return;
-    if (shouldUseWindDownHistoryBackForBottomBar(location.pathname)) {
-      window.history.back();
+    if (isLeaving) return;
+
+    const navigateBack = () => {
+      if (shouldUseWindDownHistoryBackForBottomBar(location.pathname)) {
+        window.history.back();
+        return;
+      }
+      navigate("/");
+    };
+
+    // Fade the leaving page out the instant the arrow is tapped — never a hard
+    // cut. The bottom bar and the companion sun live outside <main>, so only
+    // the page itself fades; the destination eases back in via its own
+    // pageTransitionIn. We fade the page's own root node (not <main>) so it's
+    // simply discarded on navigation — nothing to reset, no flash of the old
+    // page at full opacity.
+    const leavingPage = document.querySelector("main")
+      ?.firstElementChild as HTMLElement | null;
+
+    if (!leavingPage || prefersReducedMotion()) {
+      navigateBack();
       return;
     }
-    navigate("/");
+
+    isLeaving = true;
+    fadeOut(leavingPage, BACK_FADE_MS).promise.then(() => {
+      isLeaving = false;
+      navigateBack();
+    });
   };
 
   return (
