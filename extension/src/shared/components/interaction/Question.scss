@@ -44,6 +44,10 @@
 // textarea lands and the two simply cross-fade.
 .question-body {
   position: relative;
+  // flow-root contains the input's collapsing margins, so this box matches the
+  // input box exactly and the absolutely-positioned hint centres over the
+  // textarea by construction rather than by coincidence.
+  display: flow-root;
 }
 
 .question-tap-hint {
