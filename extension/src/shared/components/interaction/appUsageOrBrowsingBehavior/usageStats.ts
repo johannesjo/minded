@@ -10,6 +10,11 @@ import { getIsoDate } from "@src/util/getIsoDate";
  * This is observed behaviour only (real foreground time), the present-moment
  * replacement for the old Great→Awful self-rating. It is intentionally NOT
  * charted over time (no scoreboard / trend graph).
+ *
+ * NOTE: this is the live observed-usage store. The similarly shaped
+ * `SyncData.dailyUsage.perSite` (util/budget/trackBudgetUsage.ts) is the
+ * *dormant* budget-legacy store (#35) and measured something different
+ * (in-overlay sun time). Don't conflate them — new usage reads come from here.
  */
 export interface DailyUsageStat {
   perSite: { [host: string]: number };
@@ -18,8 +23,13 @@ export interface DailyUsageStat {
 
 export type UsageStatsByDate = { [dateISO: string]: DailyUsageStat };
 
-/** Keep at most this many recent days so the store can't grow unbounded. */
-export const MAX_USAGE_STAT_DAYS = 30;
+/**
+ * Keep at most this many recent days so the store can't grow unbounded (it
+ * lives in the size-limited chrome.storage.sync item). 15 = today + the 14
+ * prior days the baseline can look back over (BASELINE_LOOKBACK_DAYS); older
+ * days are never read, so retaining them would only waste quota.
+ */
+export const MAX_USAGE_STAT_DAYS = 15;
 
 const HOURS_PER_DAY = 24;
 

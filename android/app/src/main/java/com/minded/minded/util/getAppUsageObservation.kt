@@ -16,7 +16,6 @@ private const val TAG = "UsageObservation"
 private const val MIN_BASELINE_DAYS = 3
 private const val BASELINE_LOOKBACK_DAYS = 14
 private const val MAX_TARGETS = 3
-private const val DAY_MS = 24L * 60 * 60 * 1000
 
 /**
  * Builds the present-moment usage observation (the replacement for the old
@@ -62,10 +61,13 @@ fun getAppUsageObservation(context: Context, now: Long = System.currentTimeMilli
     val todaySeconds = (todayPerPkg.values.sum() / 1000).toInt()
 
     // Baseline: average of recent days' usage through the same time of day.
+    // Decrement calendar days (not fixed 24h) so DST / variable-length days
+    // can't land on the wrong day, and clamp the window to that day's own
+    // midnight so a long elapsed-today never bleeds into the next day.
     val priorCumulatives = mutableListOf<Long>()
     for (d in 1..BASELINE_LOOKBACK_DAYS) {
-        val dayStart = startOfDay(now - d * DAY_MS)
-        val dayEnd = dayStart + elapsedToday
+        val dayStart = startOfDayDaysAgo(now, d)
+        val dayEnd = minOf(dayStart + elapsedToday, nextMidnight(dayStart))
         val cumulativeMs = try {
             foregroundMsPerPackage(usageStatsManager, dayStart, dayEnd, blockedSet)
                 .values.sum()
@@ -153,6 +155,22 @@ private fun startOfDay(ts: Long): Long {
     cal.set(Calendar.MINUTE, 0)
     cal.set(Calendar.SECOND, 0)
     cal.set(Calendar.MILLISECOND, 0)
+    return cal.timeInMillis
+}
+
+/** Local midnight of the day `daysAgo` calendar days before `now`. */
+private fun startOfDayDaysAgo(now: Long, daysAgo: Int): Long {
+    val cal = Calendar.getInstance()
+    cal.timeInMillis = startOfDay(now)
+    cal.add(Calendar.DAY_OF_YEAR, -daysAgo)
+    return cal.timeInMillis
+}
+
+/** Local midnight of the day after the one starting at `dayStart`. */
+private fun nextMidnight(dayStart: Long): Long {
+    val cal = Calendar.getInstance()
+    cal.timeInMillis = dayStart
+    cal.add(Calendar.DAY_OF_YEAR, 1)
     return cal.timeInMillis
 }
 

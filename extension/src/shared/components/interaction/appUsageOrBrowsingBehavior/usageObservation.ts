@@ -38,6 +38,7 @@ export const MAX_OBSERVATION_TARGETS = 3;
  * precise stopwatch.
  */
 export const formatUsageDuration = (seconds: number): string => {
+  if (!Number.isFinite(seconds) || seconds < 0) return "less than a minute";
   const totalMinutes = Math.round(seconds / 60);
   if (totalMinutes < 1) return "less than a minute";
   if (totalMinutes < 60) return `${totalMinutes} min`;

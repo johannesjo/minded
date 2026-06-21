@@ -278,19 +278,22 @@ const parseAndroidUsageObservation = (
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<UsageObservation>;
-    if (typeof parsed.todaySeconds !== "number") return null;
+    if (!Number.isFinite(parsed.todaySeconds)) return null;
     const topTargets: UsageTarget[] = Array.isArray(parsed.topTargets)
       ? parsed.topTargets.filter(
           (t): t is UsageTarget =>
-            !!t && typeof t.id === "string" && typeof t.seconds === "number",
+            !!t &&
+            typeof t.id === "string" &&
+            typeof t.label === "string" &&
+            typeof t.seconds === "number" &&
+            Number.isFinite(t.seconds),
         )
       : [];
     return {
-      todaySeconds: parsed.todaySeconds,
-      baselineSeconds:
-        typeof parsed.baselineSeconds === "number"
-          ? parsed.baselineSeconds
-          : null,
+      todaySeconds: parsed.todaySeconds as number,
+      baselineSeconds: Number.isFinite(parsed.baselineSeconds)
+        ? (parsed.baselineSeconds as number)
+        : null,
       topTargets,
     };
   } catch {
