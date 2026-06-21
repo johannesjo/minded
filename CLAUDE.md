@@ -167,6 +167,9 @@ Path aliases change based on build mode to load platform-specific code.
 - Only create component-specific SCSS modules for layout, not for recreating existing button/input styles
 
 **Transitions — always soft, never hard cuts:**
+- As a rule, *all* transitions should aim for softness. Anything that changes
+  on screen — a surface, a state, a value, a piece of motion — should ease in
+  and out rather than snap. Softness is the default; a hard cut needs a reason.
 - Every overlay and page transition (open, close, decline, "Not now", success)
   must fade — never snap in or out. Calmness is the product; an abrupt cut reads
   as a jolt and betrays the premise. Reuse the existing fade helpers
