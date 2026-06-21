@@ -25,19 +25,16 @@ import {
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import { getIsoDate } from "@src/util/getIsoDate";
 
-const LAST_MOOD_CHECKIN_MIN_GAP = 2 * 60 * 60 * 1000;
 const TODAY_START_HOUR = 5;
 const ENERGY_LVL_MAX_HOURS = 19;
 const CONTEXTUAL_ALTERNATIVE_PROBABILITY = 1 / 3;
 const SET_ALTERNATIVE_PROBABILITY = 1 / 10;
 const SELF_ASSESSMENT_PROBABILITY = 1 / 10;
 const EMOTION_LABELING_PROBABILITY = 1 / 10;
-const MOOD_CHECKIN_STALE_PROBABILITY = 1 / 50;
 const SAVED_REASON_PROBABILITY = 1 / 15;
 const USAGE_RATING_DUE_PROBABILITY = 1 / 3;
 const USAGE_RATING_TODAY_PROBABILITY = 1 / 20;
 const ACTION_ADVICE_PROBABILITY = 1 / 20;
-const EMOJI_CHECKIN_PROBABILITY = 1 / 100;
 const PATTERN_INSIGHT_PROBABILITY = 1 / 3;
 // Share of strong-friction Android interventions that ask for a screen-off
 // minute (the rest fall through to the existing strong-friction prompts).
@@ -51,11 +48,9 @@ export type InteractionMode =
   | "ENERGY_LVL"
   | "APP_USAGE_OR_BROWSING_BEHAVIOR"
   | "ACTION_ADVICE"
-  | "EMOJI_CHECKIN"
   | "QUESTION"
   | "SHOW_ALTERNATIVE"
   | "SET_ALTERNATIVE"
-  | "MOOD_CHECKIN"
   | "SELF_ASSESSMENT"
   | "EMOTION_LABELING"
   | "SHOW_REASON"
@@ -155,9 +150,7 @@ export const getInteractionModeDecision = (
   // return "EMOTION_LABELING";
   // return "APP_USAGE_OR_BROWSING_BEHAVIOR";
   // return "ACTION_ADVICE";
-  // return "MOOD_CHECKIN";
   // return "ENERGY_LVL";
-  // return "EMOJI_CHECKIN";
   // return "SELF_ASSESSMENT";
   // return "SHOW_ALTERNATIVE";
   // return "SET_ALTERNATIVE";
@@ -196,10 +189,6 @@ export const getInteractionModeDecision = (
 
   if (context.hasFewAnswers) {
     return decision("QUESTION", "few_answers_question", frictionLevel);
-  }
-
-  if (!context.hasFreshMood) {
-    return decision("MOOD_CHECKIN", "mood_missing", frictionLevel);
   }
 
   if (isEnergyEligible && !context.hasFreshEnergy) {
@@ -325,14 +314,6 @@ export const getInteractionModeDecision = (
     );
   }
 
-  if (
-    context.moodCheckAgeMs !== null &&
-    context.moodCheckAgeMs > LAST_MOOD_CHECKIN_MIN_GAP &&
-    chance(MOOD_CHECKIN_STALE_PROBABILITY, random)
-  ) {
-    return decision("MOOD_CHECKIN", "mood_checkin_stale_sample", frictionLevel);
-  }
-
   if (hasReasonAnswers && chance(SAVED_REASON_PROBABILITY, random)) {
     return decision("SHOW_REASON", "saved_reason_sample", frictionLevel);
   }
@@ -355,10 +336,6 @@ export const getInteractionModeDecision = (
 
   if (isActionAdviceEligible && chance(ACTION_ADVICE_PROBABILITY, random)) {
     return decision("ACTION_ADVICE", "action_advice_sample", frictionLevel);
-  }
-
-  if (chance(EMOJI_CHECKIN_PROBABILITY, random)) {
-    return decision("EMOJI_CHECKIN", "emoji_checkin_sample", frictionLevel);
   }
 
   return decision("QUESTION", "fallback_question", frictionLevel);

@@ -29,8 +29,6 @@ export interface InteractionContext {
   platform?: SessionPlatform;
   answerCount: number;
   hasFewAnswers: boolean;
-  hasFreshMood: boolean;
-  moodCheckAgeMs: number | null;
   hasFreshEnergy: boolean;
   isEvening: boolean;
   alternativeCount: number;
@@ -133,8 +131,6 @@ export const getInteractionContext = ({
   const hasExpiredTimerForTarget = canResolveTimerScope
     ? hasExpiredTimerInScope(syncData, target, platform, now)
     : false;
-  const moodCheckAgeMs =
-    syncData.moodCheckTS > 0 ? Math.max(0, now - syncData.moodCheckTS) : null;
 
   return {
     now,
@@ -144,8 +140,6 @@ export const getInteractionContext = ({
     platform,
     answerCount: syncData.answers.length,
     hasFewAnswers: syncData.answers.length <= FEW_ANSWERS_MAX,
-    hasFreshMood: isSameDate(syncData.moodCheckTS, now),
-    moodCheckAgeMs,
     hasFreshEnergy: isSameDate(syncData.energyLvlTS, now),
     isEvening: nowDate.getHours() >= EVENING_START_HOUR,
     alternativeCount: enabledAlternativeCount,
@@ -182,7 +176,6 @@ export const getFrictionLevel = (
 
   if (
     context.hasFewAnswers ||
-    !context.hasFreshMood ||
     !context.hasFreshEnergy ||
     context.isEvening ||
     context.hasIntentOnExpiredTimerForTarget

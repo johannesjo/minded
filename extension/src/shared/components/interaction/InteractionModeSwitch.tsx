@@ -1,6 +1,4 @@
 import { Component, Match, Switch } from "solid-js";
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
-import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { AppUsageOrBrowsingBehavior } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/AppUsageOrBrowsingBehavior";
@@ -68,20 +66,6 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
       </Match>
       <Match when={props.mode === "EMOTION_LABELING"}>
         <EmotionLabeling
-          onCancelCountdown={props.onCancelCountdown}
-          onSuccess={props.onSuccess}
-          onSkip={props.onSkip}
-        />
-      </Match>
-      <Match when={props.mode === "MOOD_CHECKIN"}>
-        <MoodCheckin
-          onCancelCountdown={props.onCancelCountdown}
-          onSuccess={props.onSuccess}
-          onSkip={props.onSkip}
-        />
-      </Match>
-      <Match when={props.mode === "EMOJI_CHECKIN"}>
-        <EmojiCheckin
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={props.onSuccess}
           onSkip={props.onSkip}

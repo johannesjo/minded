@@ -13,7 +13,6 @@ describe("sleep wind-down activity actions", () => {
     "brainDump",
     "gratitude",
     "tomorrow",
-    "mood",
     "tips",
   ])("keeps the Done action for %s", (activityKey) => {
     expect(getSleepWindDownActivityAction(activityKey)).toBe("complete");

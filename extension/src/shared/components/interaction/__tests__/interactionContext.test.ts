@@ -53,8 +53,6 @@ describe("interaction context", () => {
       localHour: 10,
       answerCount: 3,
       hasFewAnswers: false,
-      hasFreshMood: true,
-      moodCheckAgeMs: 0,
       hasFreshEnergy: true,
       isEvening: false,
       alternativeCount: 2,

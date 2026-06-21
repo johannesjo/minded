@@ -13,7 +13,6 @@ import {
   getSyncData,
   setDailyQuestionsDoneForToday,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import styles from "./DailyQuestions.module.scss";
 import {
   DailyQuestionsMode,
@@ -32,6 +31,10 @@ const DailyQuestions = () => {
   const isMonday = today.getDay() === 1;
   const mode: DailyQuestionsMode = getDailyQuestionsMode();
   // const mode: DailyQuestionsMode = "Evening";
+  // Evening lost its opening mood check-in, so it's a 3-step flow now while
+  // Morning keeps 4. Derive the stepper size and the final success ("🌞") step.
+  const lastStep = mode === "Morning" ? 3 : 2;
+  const nrOfSteps = lastStep + 1;
   let t0: NodeJS.Timeout | undefined;
 
   const getRndQuestionFromCat = (
@@ -131,25 +134,18 @@ const DailyQuestions = () => {
         {mode === "Evening" && (
           <Switch>
             <Match when={getStep() === 0}>
-              <MoodCheckin
-                onSuccess={() => setStep(1)}
-                onSkip={() => undefined}
-                onCancelCountdown={() => undefined}
-              />
-            </Match>
-            <Match when={getStep() === 1}>
               <Question
                 initialQuestion={getRndQuestionFromCat(
                   QuestionCategoryId.GoodToday,
                 )}
                 answers={getAnswers()}
-                onSuccess={() => setStep(2)}
+                onSuccess={() => setStep(1)}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}
               />
             </Match>
-            <Match when={getStep() === 2}>
+            <Match when={getStep() === 1}>
               <Question
                 initialQuestion={getRndQuestionFromCat(
                   QuestionCategoryId.TodayILearned,
@@ -157,14 +153,14 @@ const DailyQuestions = () => {
                 answers={getAnswers()}
                 onSuccess={() => {
                   onSuccess();
-                  setStep(3);
+                  setStep(2);
                 }}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}
               />
             </Match>
-            <Match when={getStep() === 3}>
+            <Match when={getStep() === 2}>
               {/* TODO component */}
               <div
                 class="success-message"
@@ -184,14 +180,14 @@ const DailyQuestions = () => {
 
       <div
         class={styles.stepperWrapper}
-        style={{ visibility: getStep() === 3 ? "hidden" : "visible" }}
+        style={{ visibility: getStep() === lastStep ? "hidden" : "visible" }}
       >
         <Stepper
-          nrOfSteps={4}
+          nrOfSteps={nrOfSteps}
           activeStep={getStep()}
           isNoGoBack={true}
           onSetStep={(step) => setStep(step)}
-          labelFn={(step) => (step === 3 ? "🌞" : undefined)}
+          labelFn={(step) => (step === lastStep ? "🌞" : undefined)}
         />
       </div>
     </div>

@@ -104,7 +104,6 @@
 
 .browsingBehaviorGraph,
 .stats,
-.moodCheckinWidget,
 .energyLvl {
   margin: auto;
 
@@ -135,18 +134,6 @@
 }
 
 .stats {
-}
-
-.moodCheckinWidget {
-  div:first-child {
-    margin-bottom: 10px;
-
-    span {
-      margin-left: 4px;
-      margin-right: 4px;
-      text-transform: lowercase;
-    }
-  }
 }
 
 .cardDailyQuestions {

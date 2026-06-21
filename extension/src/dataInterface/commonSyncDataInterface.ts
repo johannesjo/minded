@@ -1,4 +1,3 @@
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import type {
   Alternative,
   Answer,
@@ -59,16 +58,6 @@ export const updateSyncData = async (
   newSyncData: Partial<SyncData>,
 ): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, () => newSyncData);
-
-export const saveMoodCheckIn = (
-  mood: MoodCheckinVal,
-  additional?: string,
-): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, () => ({
-    moodCheckTS: Date.now(),
-    moodCheckVal: mood,
-    moodCheckAdditional: additional || "",
-  }));
 
 export const saveEnergyLvl = (energyLvlVal: number): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, () => ({

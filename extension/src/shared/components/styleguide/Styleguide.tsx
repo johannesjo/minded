@@ -24,7 +24,6 @@ import Btn from "@src/shared/components/ui/Btn";
 import Chart from "@src/shared/components/ui/Chart";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
@@ -472,16 +471,6 @@ const Styleguide = (): JSX.Element => {
         <Subsection label="<BreathingExercise>">
           <div class={styles.interactionFrame}>
             <BreathingExercise />
-          </div>
-        </Subsection>
-
-        <Subsection label="<EmojiCheckin>">
-          <div class={styles.interactionFrame}>
-            <EmojiCheckin
-              onSuccess={() => console.log("EmojiCheckin: success")}
-              onSkip={() => console.log("EmojiCheckin: skip")}
-              onCancelCountdown={() => undefined}
-            />
           </div>
         </Subsection>
 

@@ -25,7 +25,7 @@ describe("shouldIgnoreStaleSuccess", () => {
   });
 
   // The skip-to-choices path: the user triple-tapped past the question to the
-  // intent/time choices, so a late MoodCheckin save timer must not disarm them.
+  // intent/time choices, so a late save-timer success must not disarm them.
   // `hasAnswered` was never set on this path, so the overlay flag is what guards.
   it("ignores a late success once the choices overlay is showing", () => {
     expect(shouldIgnoreStaleSuccess(state({ showPostSunOverlay: true }))).toBe(

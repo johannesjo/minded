@@ -4,7 +4,6 @@ export type SleepWindDownViewName =
   | "brainDump"
   | "gratitude"
   | "tomorrow"
-  | "mood"
   | "breathing"
   | "calmRead"
   | "tips"
@@ -19,7 +18,6 @@ const VIEWS_THAT_BACK_TO_OVERVIEW: ReadonlySet<SleepWindDownViewName> = new Set(
     "brainDump",
     "gratitude",
     "tomorrow",
-    "mood",
     "breathing",
     "calmRead",
     "tips",

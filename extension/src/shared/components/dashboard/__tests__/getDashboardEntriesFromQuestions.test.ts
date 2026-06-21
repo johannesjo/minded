@@ -129,9 +129,8 @@ describe("getDashboardEntriesFromQuestions", () => {
       }
     });
 
-    it("lets a self-report card (mood / energy) be the greeting — they're no longer pinned out of the pool", () => {
+    it("lets a self-report card (energy) be the greeting — it's no longer pinned out of the pool", () => {
       const syncData = createMockSyncData({
-        moodCheckVal: undefined,
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
           reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
@@ -147,8 +146,8 @@ describe("getDashboardEntriesFromQuestions", () => {
         );
       }
 
-      // Mood is a fixed card that the old index-range pick could never reach.
-      expect(greetingTypes).toContain(DashboardGroupType.MoodCheckin);
+      // Energy is a fixed card that the old index-range pick could never reach.
+      expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
     it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {
