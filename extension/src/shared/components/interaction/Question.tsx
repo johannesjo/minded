@@ -8,6 +8,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
+import { Ico } from "@src/shared/components/ui/Ico";
 
 export const Question: (props: {
   initialQuestion: QuestionForPrompt;
@@ -93,21 +94,36 @@ export const Question: (props: {
         <span>{formatQuestionText(question.t)}</span>
       </div>
 
-      <div
-        class="question-input-container"
-        classList={{ show: getShowInput() }}
-        onMouseEnter={props.onCancelCountdown}
-        onClick={props.onCancelCountdown}
-      >
-        <InputWithSend
-          onCancelCountdown={props.onCancelCountdown}
-          value={initialInputValue}
-          maxLength={props.maxLength ?? 500}
-          isAutoFocus={!IS_ANDROID}
-          setRef={setInpEl}
-          onInput={(val) => props.onValueChange?.(val)}
-          onSubmit={submitAnswer}
-        />
+      <div class="question-body">
+        {/* Soft, low-emphasis hint that the question is tappable. Sits where the
+            textarea will land and cross-fades out as the input fades in. The
+            question div above is already the labelled button for keyboard/AT
+            users, so this is decorative (aria-hidden) — a touch/mouse affordance only. */}
+        <div
+          class="question-tap-hint"
+          classList={{ "input-shown": getShowInput() }}
+          aria-hidden="true"
+          onClick={revealInput}
+        >
+          <Ico name="edit" size={28} />
+        </div>
+
+        <div
+          class="question-input-container"
+          classList={{ show: getShowInput() }}
+          onMouseEnter={props.onCancelCountdown}
+          onClick={props.onCancelCountdown}
+        >
+          <InputWithSend
+            onCancelCountdown={props.onCancelCountdown}
+            value={initialInputValue}
+            maxLength={props.maxLength ?? 500}
+            isAutoFocus={!IS_ANDROID}
+            setRef={setInpEl}
+            onInput={(val) => props.onValueChange?.(val)}
+            onSubmit={submitAnswer}
+          />
+        </div>
       </div>
     </div>
   );

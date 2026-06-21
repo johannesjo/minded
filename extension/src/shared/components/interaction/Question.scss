@@ -38,6 +38,64 @@
   }
 }
 
+// The input container keeps its layout box even while hidden (visibility:
+// hidden), so this region always reserves the space the textarea will fill.
+// The tap-hint is centred absolutely within it, so it sits exactly where the
+// textarea lands and the two simply cross-fade.
+.question-body {
+  position: relative;
+}
+
+.question-tap-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  // low-emphasis, gently breathing — an invitation, never a CTA.
+  // Fade softly in, then hand off into the breathing loop at the same opacity
+  // (0.4) so there is no hard cut.
+  opacity: 0;
+  animation:
+    tapHintFadeIn 0.6s ease-out 0.6s forwards,
+    tapHintBreathe 3.6s ease-in-out 1.2s infinite;
+  transition:
+    opacity 0.4s ease-out,
+    visibility 0.4s;
+
+  &.input-shown {
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+  }
+
+  .minded-6622-ico {
+    // muted regardless of the svg's own fill
+    opacity: 0.5;
+  }
+}
+
+@keyframes tapHintFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes tapHintBreathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .question-input-container {
   transform: translateY(20px);
   opacity: 0;
