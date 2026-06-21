@@ -54,8 +54,7 @@ feature decision — read them before proposing changes to interventions.
   words, fewer controls, less visual chrome. Every element must earn its place;
   when in doubt, leave it out. This reinforces the calm, never-striving premise:
   a quiet, uncluttered surface lowers cognitive load, and added complexity is a
-  cost paid by the user. Reach for an existing pattern before inventing a new
-  one, and remove before you add.
+  cost paid by the user. Remove before you add.
 
 ## Essential Commands
 
