@@ -57,6 +57,17 @@ export interface Question {
   t: string;
   id: QID;
   prompt?: string;
+  /**
+   * Optional tappable quick answers — a no-typing path that submits the moment
+   * one is tapped. Add only to questions with a small, *neutral* set of natural
+   * answers; never to open or emotionally-loaded prompts, where a fixed list
+   * would nudge what someone reports (it must still clear the "~90% sure it
+   * helps" bar). The typed input never goes away — a "Something else…" chip
+   * always reveals it. When `prompt` is set, the tapped chip is appended to it,
+   * exactly as a typed continuation would be, so the saved answer reads the same
+   * whether tapped or typed.
+   */
+  chips?: string[];
   limitTo?: LimitToOpts;
   isSkipOnDashboard?: boolean;
   isDontSaveAnswer?: boolean;
@@ -122,6 +133,13 @@ export const QUESTION_CATEGORIES: {
         id: QID.HBH6,
         t: "Instead of visiting this website, what might be a better alternative",
         prompt: "Instead of using these websites I could",
+        chips: [
+          "take a short walk",
+          "read a few pages",
+          "do one small task",
+          "step outside",
+          "stretch for a minute",
+        ],
         isSkipOnDashboard: true,
       },
       {
@@ -171,6 +189,13 @@ export const QUESTION_CATEGORIES: {
         id: QID.HAU6,
         t: "Instead of using this app, what might be a better alternative",
         prompt: "Instead of using these apps I could",
+        chips: [
+          "take a short walk",
+          "read a few pages",
+          "do one small task",
+          "step outside",
+          "stretch for a minute",
+        ],
         isSkipOnDashboard: true,
       },
       {
@@ -429,6 +454,12 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.HT8,
         t: "What distraction could you remove right now",
+        chips: [
+          "silence notifications",
+          "put my phone away",
+          "close extra tabs",
+          "clear my desk",
+        ],
       },
     ],
   },
@@ -448,6 +479,14 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.CT4,
         t: "Where do you feel tension in your body right now",
+        chips: [
+          "shoulders",
+          "jaw",
+          "neck",
+          "chest",
+          "stomach",
+          "nowhere right now",
+        ],
       },
     ],
     dashboardTxt: "Calming Thoughts",

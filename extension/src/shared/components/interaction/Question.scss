@@ -38,6 +38,21 @@
   }
 }
 
+.question-chips {
+  pointer-events: all;
+  width: 540px;
+  max-width: 100%;
+  margin: 28px auto 0;
+  text-align: center;
+  // Soft entrance — same gentle rise the question text uses, never a hard cut.
+  animation: slideUpFadeIn 0.5s ease-out 0.3s both;
+
+  // The typed-input escape hatch is secondary to the offered answers.
+  .question-chip-other {
+    opacity: 0.7;
+  }
+}
+
 .question-input-container {
   transform: translateY(20px);
   opacity: 0;
