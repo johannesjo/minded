@@ -49,6 +49,14 @@ feature decision — read them before proposing changes to interventions.
   know the user. See `docs/reflective-companion-concept.md` for the worked
   example (and the cut list of ideas that failed this bar).
 
+- **Minimalism is the default design principle — for both UX and UI.** Always
+  prefer the simplest thing that works. Fewer screens, fewer options, fewer
+  words, fewer controls, less visual chrome. Every element must earn its place;
+  when in doubt, leave it out. This reinforces the calm, never-striving premise:
+  a quiet, uncluttered surface lowers cognitive load, and added complexity is a
+  cost paid by the user. Reach for an existing pattern before inventing a new
+  one, and remove before you add.
+
 ## Essential Commands
 
 All npm scripts live in `extension/package.json` — run them from the `extension/` directory.
