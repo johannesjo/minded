@@ -1,0 +1,59 @@
+name: PR Preview
+
+# Builds the standalone styleguide (component gallery + full dashboard
+# simulation) for each PR and deploys it to GitHub Pages under
+# pr-preview/pr-<N>/, posting a sticky comment with the live URL. Uses the
+# built-in GITHUB_TOKEN only — no external secrets.
+#
+# One-time setup: enable GitHub Pages (Settings → Pages → Deploy from a branch
+# → gh-pages / root). The gh-pages branch is created on the first preview run.
+#
+# Note: deployment needs a write-scoped GITHUB_TOKEN, which PRs from forks do
+# not get. Previews therefore deploy for same-repo branches only; fork PRs build
+# (catching breakage) but skip the deploy step.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, closed]
+
+# Serialise per PR so a rapid push + close can't race the deploy/cleanup.
+concurrency:
+  group: pr-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ./extension
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # push the built preview to the gh-pages branch
+      pull-requests: write # post/update the sticky preview comment
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        if: github.event.action != 'closed'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Install npm packages
+        if: github.event.action != 'closed'
+        run: npm ci
+
+      - name: Build styleguide
+        if: github.event.action != 'closed'
+        run: npm run styleguide:build
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: extension/distStyleguide
+          umbrella-dir: pr-preview
