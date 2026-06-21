@@ -30,32 +30,32 @@ const BottomBar = () => {
     if (getIsOnDashboard()) return;
     if (isLeaving) return;
 
-    const navigateBack = () => {
-      if (shouldUseWindDownHistoryBackForBottomBar(location.pathname)) {
-        window.history.back();
-        return;
-      }
-      navigate("/");
-    };
+    // Wind-down owns its own back semantics: history.back() swaps an *internal*
+    // view (the route stays mounted), so it keeps its existing transition.
+    // Fading the page node here would strand that same node at opacity 0.
+    if (shouldUseWindDownHistoryBackForBottomBar(location.pathname)) {
+      window.history.back();
+      return;
+    }
 
     // Fade the leaving page out the instant the arrow is tapped — never a hard
     // cut. The bottom bar and the companion sun live outside <main>, so only
     // the page itself fades; the destination eases back in via its own
     // pageTransitionIn. We fade the page's own root node (not <main>) so it's
-    // simply discarded on navigation — nothing to reset, no flash of the old
-    // page at full opacity.
+    // simply discarded when navigate("/") remounts the route — nothing to
+    // reset, no flash of the old page at full opacity.
     const leavingPage = document.querySelector("main")
       ?.firstElementChild as HTMLElement | null;
 
     if (!leavingPage || prefersReducedMotion()) {
-      navigateBack();
+      navigate("/");
       return;
     }
 
     isLeaving = true;
     fadeOut(leavingPage, BACK_FADE_MS).promise.then(() => {
       isLeaving = false;
-      navigateBack();
+      navigate("/");
     });
   };
 
