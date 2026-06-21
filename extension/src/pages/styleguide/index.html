@@ -7,23 +7,70 @@
     <script>
       // Standalone-mode shim: webextension-polyfill (used by util/browser.ts)
       // throws on load when chrome.runtime is missing. Provide just enough
-      // surface for it to import without errors. Storage methods return empty.
+      // surface for it to import — plus an in-memory chrome.storage so the real
+      // data interface (getSyncData/patchSyncData/...) actually works off-
+      // extension (the dashboard simulation relies on this). webextension-
+      // polyfill promisifies callback-style chrome APIs, so every method here
+      // supports both a trailing callback and a returned promise.
+      // Keep this in sync with the copy in dashboard.html.
       if (typeof globalThis.chrome === "undefined" || !globalThis.chrome.runtime) {
-        const noopStorage = {
-          get: async () => ({}),
-          set: async () => undefined,
-          remove: async () => undefined,
-          clear: async () => undefined,
+        const makeArea = () => {
+          let data = {};
+          const read = (keys) => {
+            if (keys == null) return { ...data };
+            if (typeof keys === "string")
+              return keys in data ? { [keys]: data[keys] } : {};
+            if (Array.isArray(keys)) {
+              const out = {};
+              keys.forEach((k) => {
+                if (k in data) out[k] = data[k];
+              });
+              return out;
+            }
+            return { ...keys, ...data }; // object form: defaults overlaid by stored
+          };
+          const settle = (result, cb) => {
+            if (typeof cb === "function") {
+              cb(result);
+              return undefined;
+            }
+            return Promise.resolve(result);
+          };
+          return {
+            get: (keys, cb) => {
+              if (typeof keys === "function") {
+                cb = keys;
+                keys = undefined;
+              }
+              return settle(read(keys), cb);
+            },
+            set: (items, cb) => {
+              data = { ...data, ...items };
+              return settle(undefined, cb);
+            },
+            remove: (keys, cb) => {
+              (Array.isArray(keys) ? keys : [keys]).forEach((k) => delete data[k]);
+              return settle(undefined, cb);
+            },
+            clear: (cb) => {
+              data = {};
+              return settle(undefined, cb);
+            },
+          };
         };
+        const settleMsg = (cb) =>
+          typeof cb === "function"
+            ? (cb(undefined), undefined)
+            : Promise.resolve(undefined);
         globalThis.chrome = {
           runtime: {
             id: "styleguide-standalone",
             getURL: (p) => p,
             getManifest: () => ({}),
-            sendMessage: () => undefined,
+            sendMessage: (...args) => settleMsg(args[args.length - 1]),
             onMessage: { addListener: () => undefined, removeListener: () => undefined },
           },
-          storage: { sync: noopStorage, local: noopStorage },
+          storage: { sync: makeArea(), local: makeArea() },
         };
       }
     </script>
