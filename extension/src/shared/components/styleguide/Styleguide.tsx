@@ -175,13 +175,24 @@ const Styleguide = (): JSX.Element => {
       <header class={styles.header}>
         <div class={styles.headerTop}>
           <h1>styleguide</h1>
-          <Btn
-            outline
-            onClick={() => setIsDark((v) => !v)}
-            aria-pressed={isDark()}
-          >
-            {isDark() ? "light mode" : "dark mode"}
-          </Btn>
+          <div class={styles.headerActions}>
+            {/* Plain navigation (separate page, no router on the styleguide). */}
+            <Btn
+              outline
+              onClick={() => {
+                window.location.href = "dashboard.html";
+              }}
+            >
+              dashboard simulation →
+            </Btn>
+            <Btn
+              outline
+              onClick={() => setIsDark((v) => !v)}
+              aria-pressed={isDark()}
+            >
+              {isDark() ? "light mode" : "dark mode"}
+            </Btn>
+          </div>
         </div>
         <nav class={styles.toc}>
           <For each={TOC}>

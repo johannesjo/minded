@@ -77,6 +77,14 @@ export default defineConfig(({ mode }): UserConfig => {
           build: {
             outDir: resolve(__dirname, "distStyleguide"),
             emptyOutDir: true,
+            rollupOptions: {
+              // Two pages: the component styleguide (index) and the full
+              // dashboard simulation (the real app shell on a plain web page).
+              input: {
+                index: resolve(pagesDir, "styleguide", "index.html"),
+                dashboard: resolve(pagesDir, "styleguide", "dashboard.html"),
+              },
+            },
           },
         }
       : mode === "ios"
