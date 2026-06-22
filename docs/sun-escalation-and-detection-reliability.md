@@ -9,25 +9,40 @@ surface (`docs/sun-companion-widget.md`).
 
 ## Locked decisions (do not regress)
 
-Decided in review; these constrain the rest of this spec and supersede the
-escalation design below (a full rewrite is pending):
+Decided in review + owner direction. These supersede the escalation design below
+(a full rewrite is pending).
 
-- **Auto-arriving pause — CUT.** The sun never runs an intervention or pause on
-  its own. It is an ambient presence plus an explicit tap to engage. (An interrupt
-  dismissed ~9 times in 10 when the user isn't ready is friction, not help — and it
-  honours *never forced*.)
+**Baseline: PR #51** ("Android: make the little sun an interactive, non-blocking
+bubble") is landing and already implements the simpler variant — a draggable
+chat-head bubble that, on *tap*, expands the *same native overlay window* into a
+full-screen pause + soft "Step away?" invitation (auto-dismissing, never
+blocking). Crucially it does the pause in **native Compose** by swapping the one
+window's layout params (`LittleSunWindow.kt` resting vs. expanded params), so it
+**sidesteps the native→WebView seam** the review flagged as a blocker. This is the
+foundation; the items below are deltas on top of it.
+
+- **Auto-arriving pause — DEFERRED, not cut.** Keep the concept; ship and test the
+  simpler *tap-only* variant first (PR #51), then decide from real use whether the
+  sun should ever bring the pause on its own. The open strategic question (an
+  interrupt dismissed ~9/10 when unready is friction; but a self-initiated pause
+  may be too weak for the willpower-eroded user) is exactly what testing resolves.
 - **Escalation — CUT.** No dwell-driven growth, no swelling glow, no "harder to
   ignore over time." A rising-intensity ramp tied to elapsed time manufactures
   urgency, which the fundamentals forbid.
-- **No breathing animation outside meditations.** The everyday sun does not
-  "breathe." Breathing belongs only to guided meditations (e.g. urge-surfing).
-  This supersedes the `StrongFrictionBreathPause`-as-default-pause mechanic
-  described in `CLAUDE.md` — that file needs updating to match.
-- **The sun always smoothly *morphs* between screens and states.** It is one
-  continuous object — never a hard cut, never torn down and re-mounted into the
-  next surface. Architectural implication: favour a single persistent sun surface
-  over swapping separate windows; this is in tension with today's native-Compose
-  sun vs. WebView-intervention split (see the feasibility note in review).
+- **No breathing outside meditations.** The everyday sun does not "breathe"; the
+  breathing swell is reserved for guided meditations (e.g. urge-surfing). CLAUDE.md
+  updated to match. *Conflict to resolve in/after PR #51:* its tap-pause currently
+  breathes (`LittleSun.kt` `StepAwayOffer` → the `breath` infinite transition,
+  scale 0.92↔1.12). That must become a non-breathing calm beat — recommended: a
+  single grow-morph from the parked bubble to centre, then hold, then the invite.
+- **The sun always morphs; there is only one.** One continuous object that
+  glides/scales between states — never a hard cut, never vanishing, never in two
+  places. PR #51's expand is currently a cross-fade swap (the bubble unmounts; the
+  full-screen offer fades in), so for a beat the sun effectively *disappears* from
+  its corner and *reappears* centred. Per this rule it should be a true positional
+  morph: the sun glides+grows from its parked spot to centre as one object. Where
+  a flow still can't morph (native overlay → WebView), the job is to *make* it
+  morph.
 
 ## The problem in one line
 
