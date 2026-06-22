@@ -8,6 +8,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
+import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 
 // Chip fade-out before the text input takes over; keep in sync with the
@@ -154,21 +155,40 @@ export const Question: (props: {
         </div>
       </Show>
 
-      <div
-        class="question-input-container"
-        classList={{ show: getShowInput() }}
-        onMouseEnter={props.onCancelCountdown}
-        onClick={props.onCancelCountdown}
-      >
-        <InputWithSend
-          onCancelCountdown={props.onCancelCountdown}
-          value={initialInputValue}
-          maxLength={props.maxLength ?? 500}
-          isAutoFocus={!IS_ANDROID}
-          setRef={setInpEl}
-          onInput={(val) => props.onValueChange?.(val)}
-          onSubmit={submitAnswer}
-        />
+      <div class="question-body">
+        {/* Free-text questions (no chips) get a faint pen icon where the
+            textarea's first line lands: it shows you can tap to write, and
+            where, then fades out as the field fades in. Chips carry their own
+            tappable affordance, so they skip the hint. The question div above is
+            the labelled button, so the hint is decorative (aria-hidden) — a
+            touch/mouse affordance only. */}
+        <Show when={!hasChips}>
+          <div
+            class="question-tap-hint"
+            classList={{ "input-shown": getShowInput() }}
+            aria-hidden="true"
+            onClick={revealInput}
+          >
+            <Ico name="pen" size={26} />
+          </div>
+        </Show>
+
+        <div
+          class="question-input-container"
+          classList={{ show: getShowInput() }}
+          onMouseEnter={props.onCancelCountdown}
+          onClick={props.onCancelCountdown}
+        >
+          <InputWithSend
+            onCancelCountdown={props.onCancelCountdown}
+            value={initialInputValue}
+            maxLength={props.maxLength ?? 500}
+            isAutoFocus={!IS_ANDROID}
+            setRef={setInpEl}
+            onInput={(val) => props.onValueChange?.(val)}
+            onSubmit={submitAnswer}
+          />
+        </div>
       </div>
     </div>
   );

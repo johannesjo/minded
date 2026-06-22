@@ -10,6 +10,7 @@ import arrowBackSvg from "@assets/img/arrow-back.svg";
 import deleteSvg from "@assets/img/delete.svg";
 import deleteForeverSvg from "@assets/img/delete-forever.svg";
 import editSvg from "@assets/img/edit.svg";
+import penSvg from "@assets/img/pen.svg";
 import infoSvg from "@assets/img/info.svg";
 import questionOverlaySvg from "@assets/img/question-overlay.svg";
 import checkSvg from "@assets/img/check.svg";
@@ -26,6 +27,7 @@ const ICO_MAP = {
   delete: deleteSvg,
   deleteForever: deleteForeverSvg,
   edit: editSvg,
+  pen: penSvg,
   info: infoSvg,
   questionOverlay: questionOverlaySvg,
   check: checkSvg,

@@ -38,6 +38,70 @@
   }
 }
 
+// The input container keeps its layout box even while hidden (visibility:
+// hidden), so this region always reserves the space the textarea will fill.
+// The tap hint is absolutely positioned at the top of it, landing where the
+// textarea's first line sits, and the two simply cross-fade.
+.question-body {
+  position: relative;
+  // flow-root contains the input's collapsing margins, so this box's top edge
+  // matches the input box's, keeping the hint aligned with the real field by
+  // construction rather than by coincidence.
+  display: flow-root;
+}
+
+// A faint pen icon hinting the question can be tapped to answer. The hint
+// fills the whole reserved input area so the entire quiet space below the
+// question is a generous tap target — the pen is just the visible cue, pinned
+// near the top where the textarea's first line lands. Fades out as the field
+// fades in. An invitation, never a CTA: softly faded in, gently breathing, muted.
+.question-tap-hint {
+  position: absolute;
+  // cover the full reserved area → large, forgiving tap target
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  // drop the pen where the first line of typed text would be
+  padding-top: 32px;
+  cursor: pointer;
+  opacity: 0;
+  // Fade softly in, then hand off into the breathing loop at the same opacity
+  // (0.4) so there is no hard cut.
+  animation:
+    tapHintFadeIn 0.6s ease-out 0.6s forwards,
+    tapHintBreathe 4s ease-in-out 1.2s infinite;
+  transition:
+    opacity 0.4s ease-out,
+    visibility 0.4s;
+
+  &.input-shown {
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+  }
+}
+
+@keyframes tapHintFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes tapHintBreathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 .question-chips {
   pointer-events: all;
   width: 540px;
