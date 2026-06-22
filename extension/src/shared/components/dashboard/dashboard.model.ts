@@ -1,12 +1,10 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentEntryForDashboard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 
 export enum DashboardGroupType {
   TxtQuestion = "TxtQuestion",
   Quote = "Quote",
-  MoodCheckin = "MoodCheckin",
   EnergyLvl = "EnergyLvl",
   Stats = "Stats",
   SelfAssessment = "SelfAssessment",
@@ -29,13 +27,6 @@ export interface DashboardGroupStats {
   type: DashboardGroupType.Stats;
   attempts: number;
   sunTaps: number;
-}
-
-export interface DashboardGroupMood {
-  id: QuestionCategoryId.XMoodCheckin;
-  type: DashboardGroupType.MoodCheckin;
-  mood: MoodCheckinVal;
-  additionalTxt?: string;
 }
 
 export interface DashboardGroupEnergyLvl {
@@ -66,6 +57,5 @@ export type DashboardGroup =
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
   | DashboardGroupSelAssessment
-  | DashboardGroupMood
   | DashboardGroupEmotionLabeling
   | DashboardGroupSleepWindDown;

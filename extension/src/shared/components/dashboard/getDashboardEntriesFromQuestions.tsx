@@ -3,7 +3,6 @@ import {
   DashboardGroup,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
-  DashboardGroupMood,
   DashboardGroupSelAssessment,
   DashboardGroupStats,
   DashboardGroupType,
@@ -38,7 +37,6 @@ const MAX_SELF_ASSESSMENTS = 3;
 // extra option, so it can greet on full days and is the natural empty fallback.)
 const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.TxtQuestion,
-  DashboardGroupType.MoodCheckin,
   DashboardGroupType.EnergyLvl,
   DashboardGroupType.EmotionLabeling,
   DashboardGroupType.SelfAssessment,
@@ -98,16 +96,6 @@ export const getDashboardEntriesFromQuestions = (
       attempts: syncData.attempts[ds] || 0,
       sunTaps: syncData.sunTaps[ds] || 0,
     } as DashboardGroupStats);
-    fixedEntriesIndexAndNr++;
-  }
-
-  if (isToday(syncData.moodCheckTS)) {
-    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
-      id: QuestionCategoryId.XMoodCheckin,
-      type: DashboardGroupType.MoodCheckin,
-      mood: syncData.moodCheckVal,
-      additionalTxt: syncData.moodCheckAdditional,
-    } as DashboardGroupMood);
     fixedEntriesIndexAndNr++;
   }
 

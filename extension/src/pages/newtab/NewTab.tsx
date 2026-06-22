@@ -20,7 +20,6 @@ const NewTab = () => {
       if (
         !syncData.answers.length &&
         syncData.energyLvlTS <= DEFAULT_TS_VAL &&
-        syncData.moodCheckTS <= DEFAULT_TS_VAL &&
         syncData.lastBrowsingBehaviorRatingTS <= DEFAULT_TS_VAL
       ) {
         setIsShowInfo(true);

@@ -21,7 +21,6 @@ const phoneViewport = { width: 360, height: 640 };
 const desktopShots = [
   { file: "dashboard.png", target: "dashboard", theme: "light" },
   { file: "dashboard-dark.png", target: "dashboard", theme: "dark" },
-  { file: "mood-checkin.png", target: "mood-checkin", theme: "light" },
   { file: "energy-lvl.png", target: "energy-lvl", theme: "light" },
   {
     file: "q-something-i-am-looking-forward-to.png",
@@ -138,10 +137,6 @@ const prepareShot = async (page, shot) => {
   switch (shot.target) {
     case "dashboard":
       await page.waitForSelector(".cardDashboard");
-      break;
-    case "mood-checkin":
-      await page.getByRole("button", { name: "Okay" }).click();
-      await page.waitForSelector(".additional-block.isVisible");
       break;
     case "energy-lvl":
       await page.getByRole("button", { name: "Set rating to 3" }).click();

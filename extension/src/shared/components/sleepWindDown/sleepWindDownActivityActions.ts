@@ -2,7 +2,6 @@ export type SleepWindDownActivityKey =
   | "brainDump"
   | "gratitude"
   | "tomorrow"
-  | "mood"
   | "breathing"
   | "calmRead"
   | "tips";

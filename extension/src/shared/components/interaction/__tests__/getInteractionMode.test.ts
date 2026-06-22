@@ -195,35 +195,6 @@ describe("getInteractionMode", () => {
     expect(decision.frictionLevel).toBe("strong");
   });
 
-  it("does not let pattern insights preempt required mood checks", () => {
-    const decision = decide(
-      baseSyncData({
-        moodCheckTS: 99,
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
-      }),
-      {
-        isMainView: false,
-        target: { kind: "host", id: "youtube.com" },
-      },
-    );
-
-    expect(decision).toEqual({
-      mode: "MOOD_CHECKIN",
-      reason: "mood_missing",
-      frictionLevel: "strong",
-    });
-  });
-
   it("does not let strong friction preempt required energy checks", () => {
     const decision = decide(
       baseSyncData({
@@ -368,15 +339,7 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("asks for missing mood data deterministically", () => {
-    expect(decide(baseSyncData({ moodCheckTS: 99 }))).toEqual({
-      mode: "MOOD_CHECKIN",
-      reason: "mood_missing",
-      frictionLevel: "normal",
-    });
-  });
-
-  it("asks for missing energy data during daytime after mood is fresh", () => {
+  it("asks for missing energy data during daytime", () => {
     expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
       mode: "ENERGY_LVL",
       reason: "energy_missing",
@@ -543,23 +506,6 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("samples stale same-day mood checks without treating them as missing", () => {
-    expect(
-      decide(
-        baseSyncData({
-          moodCheckTS: NOW - 3 * 60 * 60 * 1000,
-        }),
-        {
-          random: sequenceRandom([0.99, 0.01]),
-        },
-      ),
-    ).toEqual({
-      mode: "MOOD_CHECKIN",
-      reason: "mood_checkin_stale_sample",
-      frictionLevel: "soft",
-    });
-  });
-
   it("samples saved reason reminders in otherwise stable context", () => {
     expect(
       decide(
@@ -597,24 +543,12 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("samples emoji check-in as a final low-probability fallback", () => {
-    expect(
-      decide(baseSyncData(), {
-        random: sequenceRandom([0.99, 0.99, 0.005]),
-      }),
-    ).toEqual({
-      mode: "EMOJI_CHECKIN",
-      reason: "emoji_checkin_sample",
-      frictionLevel: "soft",
-    });
-  });
-
   it("samples a notice micro-action just before the question fallback", () => {
-    // Self-assessment, action advice and emoji all fail their rolls; the
-    // notice roll then passes, surfacing the present-moment anchor.
+    // Self-assessment and action advice both fail their rolls; the notice
+    // roll then passes, surfacing the present-moment anchor.
     expect(
       decide(baseSyncData(), {
-        random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
+        random: sequenceRandom([0.99, 0.99, 0.01]),
       }),
     ).toEqual({
       mode: "NOTICE",
