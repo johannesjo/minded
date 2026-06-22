@@ -11,21 +11,20 @@ import styles from "./OnboardingSun.module.scss";
  *
  * Tapping is off on purpose: the 5-tap "skip" is an intervention mechanic, not
  * part of meeting the sun, and its indicator dots would only puzzle here. A
- * completed fling or drag fires `onDismissed` (the caller advances the step);
+ * completed fling or drag fires `onDismiss` (the caller advances the step);
  * a drag that doesn't cross the threshold snaps back, so the user can keep
  * playing before they commit.
  */
-export const OnboardingSun: Component<{ onDismissed: () => void }> = (
-  props,
-) => {
+export const OnboardingSun: Component<{ onDismiss: () => void }> = (props) => {
   return (
     <div class={styles.stage}>
       <Sun
         variant="sun"
         isTapEnabled={false}
-        onSkip={props.onDismissed}
-        onFlingAway={props.onDismissed}
-        onDragComplete={props.onDismissed}
+        minimizeWillChange={true}
+        onSkip={props.onDismiss}
+        onFlingAway={props.onDismiss}
+        onDragComplete={props.onDismiss}
       />
     </div>
   );

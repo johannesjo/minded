@@ -23,7 +23,7 @@ export const OnboardingWeb: (props: {
       <Switch>
         <Match when={getStep() === 0}>
           <div class="pageTransitionIn">
-            <OnboardingSun onDismissed={() => setStep(1)} />
+            <OnboardingSun onDismiss={() => setStep(1)} />
             <div class="h2 h2Mindful">
               Meet <em>minded</em>
             </div>

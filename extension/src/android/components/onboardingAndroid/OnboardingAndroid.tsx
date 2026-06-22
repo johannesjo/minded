@@ -42,7 +42,7 @@ export const OnboardingAndroid = (props: {
         <Switch>
           <Match when={getStep() === 0}>
             <div class="pageWrapper pageTransitionIn">
-              <OnboardingSun onDismissed={() => setStep(1)} />
+              <OnboardingSun onDismiss={() => setStep(1)} />
               <div class="h2 h2Mindful">
                 Meet <em>minded</em>
               </div>
