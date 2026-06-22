@@ -41,6 +41,8 @@ import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOver
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
+import StyleguideHalos from "./StyleguideHalos";
+
 // @ts-ignore
 import styles from "./styleguide.module.scss";
 
@@ -159,6 +161,7 @@ const Styleguide = (): JSX.Element => {
   const [intentArmed, setIntentArmed] = createSignal(true);
   const [groundingOpen, setGroundingOpen] = createSignal(false);
   const [letGoOpen, setLetGoOpen] = createSignal(false);
+  const [showHalos, setShowHalos] = createSignal(false);
 
   onMount(() => {
     setTokenSnapshot((n) => n + 1);
@@ -171,395 +174,423 @@ const Styleguide = (): JSX.Element => {
   };
 
   return (
-    <div class={styles.styleguide}>
-      <header class={styles.header}>
-        <div class={styles.headerTop}>
-          <h1>styleguide</h1>
-          <div class={styles.headerActions}>
-            {/* Plain navigation (separate page, no router on the styleguide). */}
-            <Btn
-              outline
-              onClick={() => {
-                window.location.href = "dashboard.html";
-              }}
-            >
-              dashboard simulation →
-            </Btn>
-            <Btn
-              outline
-              onClick={() => setIsDark((v) => !v)}
-              aria-pressed={isDark()}
-            >
-              {isDark() ? "light mode" : "dark mode"}
-            </Btn>
-          </div>
-        </div>
-        <nav class={styles.toc}>
-          <For each={TOC}>
-            {(item) => (
-              <Btn variant="toggle" small onClick={() => scrollTo(item.id)}>
-                {item.label}
+    <Show
+      when={!showHalos()}
+      fallback={
+        <StyleguideHalos
+          isDark={isDark()}
+          onToggleDark={() => setIsDark((v) => !v)}
+          onBack={() => setShowHalos(false)}
+        />
+      }
+    >
+      <div class={styles.styleguide}>
+        <header class={styles.header}>
+          <div class={styles.headerTop}>
+            <h1>styleguide</h1>
+            <div class={styles.headerActions}>
+              {/* Plain navigation (separate page, no router on the styleguide). */}
+              <Btn
+                outline
+                onClick={() => {
+                  window.location.href = "dashboard.html";
+                }}
+              >
+                dashboard simulation →
               </Btn>
-            )}
-          </For>
-        </nav>
-      </header>
+              <Btn
+                outline
+                onClick={() => setIsDark((v) => !v)}
+                aria-pressed={isDark()}
+              >
+                {isDark() ? "light mode" : "dark mode"}
+              </Btn>
+            </div>
+          </div>
+          <nav class={styles.toc}>
+            <For each={TOC}>
+              {(item) => (
+                <Btn variant="toggle" small onClick={() => scrollTo(item.id)}>
+                  {item.label}
+                </Btn>
+              )}
+            </For>
+          </nav>
+        </header>
 
-      <Section id="flags" title="Theme & wrapper flags">
-        <p class="txtBig">
-          Live class list on <code>#{ROOT_ID}</code> — toggle dark mode above to
-          see <code>{DARK_CLASS}</code> appear.
-        </p>
-        <div class={styles.chipRow}>
-          <For each={wrapperClasses()}>
-            {(cls) => <span class={styles.chip}>{cls}</span>}
-          </For>
-        </div>
-      </Section>
+        <Section id="flags" title="Theme & wrapper flags">
+          <p class="txtBig">
+            Live class list on <code>#{ROOT_ID}</code> — toggle dark mode above
+            to see <code>{DARK_CLASS}</code> appear.
+          </p>
+          <div class={styles.chipRow}>
+            <For each={wrapperClasses()}>
+              {(cls) => <span class={styles.chip}>{cls}</span>}
+            </For>
+          </div>
+        </Section>
 
-      <Section id="colors" title="Color tokens">
-        <div class={styles.swatchGrid}>
-          <For each={colorEntries()}>
-            {(entry) => (
-              <div class={styles.swatch}>
+        <Section id="colors" title="Color tokens">
+          <div class={styles.swatchGrid}>
+            <For each={colorEntries()}>
+              {(entry) => (
+                <div class={styles.swatch}>
+                  <div
+                    class={styles.swatchSample}
+                    style={{ background: entry.value || "transparent" }}
+                  />
+                  <code>{entry.name}</code>
+                  <span>{entry.value || "—"}</span>
+                </div>
+              )}
+            </For>
+          </div>
+        </Section>
+
+        <Section id="typography" title="Typography">
+          <h2 class="h2">.h2 — functional heading (Inter)</h2>
+          <h2 class="h2 h2Mindful">
+            .h2.h2Mindful — mindful heading (Fraunces)
+          </h2>
+          <h3 class="h3">.h3 — subsection heading (Inter)</h3>
+          <p class="txtBig">.txtBig — display body (Fraunces)</p>
+          <p>plain paragraph text using --c-fg (Inter)</p>
+          <div class={styles.fontList}>
+            <For each={fontEntries()}>
+              {(entry) => (
                 <div
-                  class={styles.swatchSample}
-                  style={{ background: entry.value || "transparent" }}
-                />
-                <code>{entry.name}</code>
-                <span>{entry.value || "—"}</span>
-              </div>
-            )}
-          </For>
-        </div>
-      </Section>
+                  class={styles.fontRow}
+                  style={{ "font-size": entry.value }}
+                >
+                  <code>{entry.name}</code> <span>{entry.value || "—"}</span>{" "}
+                  the quick brown fox
+                </div>
+              )}
+            </For>
+          </div>
+        </Section>
 
-      <Section id="typography" title="Typography">
-        <h2 class="h2">.h2 — functional heading (Inter)</h2>
-        <h2 class="h2 h2Mindful">.h2.h2Mindful — mindful heading (Fraunces)</h2>
-        <h3 class="h3">.h3 — subsection heading (Inter)</h3>
-        <p class="txtBig">.txtBig — display body (Fraunces)</p>
-        <p>plain paragraph text using --c-fg (Inter)</p>
-        <div class={styles.fontList}>
-          <For each={fontEntries()}>
-            {(entry) => (
-              <div class={styles.fontRow} style={{ "font-size": entry.value }}>
-                <code>{entry.name}</code> <span>{entry.value || "—"}</span> the
-                quick brown fox
-              </div>
-            )}
-          </For>
-        </div>
-      </Section>
+        <Section id="buttons" title="Buttons">
+          <p class={styles.muted}>
+            Every button is the <code>&lt;Btn&gt;</code> component. Three bases
+            — text (default), <code>variant="icon"</code> and{" "}
+            <code>variant="toggle"</code> — each with a small, typed set of
+            modifiers. The type system only permits these combinations, so
+            there's no way to stack one-off looks.
+          </p>
 
-      <Section id="buttons" title="Buttons">
-        <p class={styles.muted}>
-          Every button is the <code>&lt;Btn&gt;</code> component. Three bases —{" "}
-          text (default), <code>variant="icon"</code> and{" "}
-          <code>variant="toggle"</code> — each with a small, typed set of
-          modifiers. The type system only permits these combinations, so there's
-          no way to stack one-off looks.
-        </p>
+          <Subsection label="<Btn>">
+            <Btn>default</Btn>
+            <Btn disabled>disabled</Btn>
+          </Subsection>
 
-        <Subsection label="<Btn>">
-          <Btn>default</Btn>
-          <Btn disabled>disabled</Btn>
-        </Subsection>
+          <Subsection label="<Btn outline>">
+            <Btn outline>default</Btn>
+            <Btn outline disabled>
+              disabled
+            </Btn>
+          </Subsection>
 
-        <Subsection label="<Btn outline>">
-          <Btn outline>default</Btn>
-          <Btn outline disabled>
-            disabled
-          </Btn>
-        </Subsection>
+          <Subsection label="<Btn big> (primary CTA size)">
+            <Btn big>
+              <Ico name="send" /> save
+            </Btn>
+            <Btn big disabled>
+              disabled
+            </Btn>
+          </Subsection>
 
-        <Subsection label="<Btn big> (primary CTA size)">
-          <Btn big>
-            <Ico name="send" /> save
-          </Btn>
-          <Btn big disabled>
-            disabled
-          </Btn>
-        </Subsection>
+          <Subsection label='<Btn variant="toggle">'>
+            <Btn variant="toggle">unselected</Btn>
+            <Btn variant="toggle" selected>
+              selected
+            </Btn>
+            <Btn variant="toggle" disabled>
+              disabled
+            </Btn>
+          </Subsection>
 
-        <Subsection label='<Btn variant="toggle">'>
-          <Btn variant="toggle">unselected</Btn>
-          <Btn variant="toggle" selected>
-            selected
-          </Btn>
-          <Btn variant="toggle" disabled>
-            disabled
-          </Btn>
-        </Subsection>
+          <Subsection label='<Btn variant="toggle" small>'>
+            <Btn variant="toggle" small>
+              unselected
+            </Btn>
+            <Btn variant="toggle" small selected>
+              selected
+            </Btn>
+            <Btn variant="toggle" small disabled>
+              disabled
+            </Btn>
+          </Subsection>
 
-        <Subsection label='<Btn variant="toggle" small>'>
-          <Btn variant="toggle" small>
-            unselected
-          </Btn>
-          <Btn variant="toggle" small selected>
-            selected
-          </Btn>
-          <Btn variant="toggle" small disabled>
-            disabled
-          </Btn>
-        </Subsection>
+          <Subsection label='<Btn variant="icon"> / small / plain'>
+            <Btn variant="icon" aria-label="settings">
+              <Ico name="settings" />
+            </Btn>
+            <Btn variant="icon" small aria-label="close">
+              <Ico name="close" />
+            </Btn>
+            <Btn variant="icon" plain aria-label="info">
+              <Ico name="info" />
+            </Btn>
+            <Btn variant="icon" aria-label="disabled" disabled>
+              <Ico name="delete" />
+            </Btn>
+          </Subsection>
+        </Section>
 
-        <Subsection label='<Btn variant="icon"> / small / plain'>
-          <Btn variant="icon" aria-label="settings">
-            <Ico name="settings" />
-          </Btn>
-          <Btn variant="icon" small aria-label="close">
-            <Ico name="close" />
-          </Btn>
-          <Btn variant="icon" plain aria-label="info">
-            <Ico name="info" />
-          </Btn>
-          <Btn variant="icon" aria-label="disabled" disabled>
-            <Ico name="delete" />
-          </Btn>
-        </Subsection>
-      </Section>
-
-      <Section id="inputs" title="Inputs">
-        <Subsection label="<TextInput>">
-          <TextInput
-            value={textVal()}
-            onInput={setTextVal}
-            placeholder="type here"
-          />
-          <TextInput value="" placeholder="placeholder" />
-          <TextInput value="disabled value" disabled />
-        </Subsection>
-
-        <Subsection label="<TimeInput>">
-          <TimeInput value={timeVal()} onChange={setTimeVal} />
-          <TimeInput value="07:30" onChange={() => undefined} disabled />
-        </Subsection>
-
-        <Subsection label="<InputWithSend>">
-          <div style={{ "max-width": "480px" }}>
-            <InputWithSend
-              value=""
-              onSubmit={(val) => {
-                console.log("Styleguide InputWithSend submit:", val);
-                return Promise.resolve();
-              }}
+        <Section id="inputs" title="Inputs">
+          <Subsection label="<TextInput>">
+            <TextInput
+              value={textVal()}
+              onInput={setTextVal}
+              placeholder="type here"
             />
-          </div>
-        </Subsection>
-      </Section>
+            <TextInput value="" placeholder="placeholder" />
+            <TextInput value="disabled value" disabled />
+          </Subsection>
 
-      <Section id="selectors" title="Selectors">
-        <Subsection label="<Checkbox>">
-          <Checkbox
-            checked={checkboxOn()}
-            onChange={setCheckboxOn}
-            label="enable feature"
-          />
-          <Checkbox
-            checked={false}
-            onChange={() => undefined}
-            label="disabled"
-            disabled
-          />
-        </Subsection>
+          <Subsection label="<TimeInput>">
+            <TimeInput value={timeVal()} onChange={setTimeVal} />
+            <TimeInput value="07:30" onChange={() => undefined} disabled />
+          </Subsection>
 
-        <Subsection label="<Toggle>">
-          <Toggle
-            checked={toggleOn()}
-            onChange={setToggleOn}
-            label="notifications"
-          />
-          <Toggle
-            checked={false}
-            onChange={() => undefined}
-            label="disabled"
-            disabled
-          />
-        </Subsection>
-
-        <Subsection label="<TglBtns>">
-          <TglBtns
-            options={[
-              { val: "a", txt: "option a" },
-              { val: "b", txt: "option b" },
-              { val: "c", txt: "option c" },
-            ]}
-            onSelect={(v) => console.log("TglBtns select:", v)}
-          />
-        </Subsection>
-
-        <Subsection label="<Rating>">
-          <div>
-            <span class={styles.muted}>interactive: </span>
-            <Rating onSetRating={(v) => console.log("rating:", v)} />
-          </div>
-          <div>
-            <span class={styles.muted}>show only (value=3): </span>
-            <Rating value={3} isShowOnly />
-          </div>
-        </Subsection>
-      </Section>
-
-      <Section id="indicators" title="Indicators & feedback">
-        <Subsection label="<Stepper>">
-          <Stepper
-            nrOfSteps={4}
-            activeStep={stepperStep()}
-            onSetStep={setStepperStep}
-          />
-          <div>
-            <Btn onClick={() => setStepperStep((s) => Math.max(0, s - 1))}>
-              prev
-            </Btn>
-            <Btn onClick={() => setStepperStep((s) => Math.min(3, s + 1))}>
-              next
-            </Btn>
-          </div>
-        </Subsection>
-
-        <Subsection label="<Toast>">
-          <Btn outline onClick={() => setToastVisible(true)}>
-            show toast
-          </Btn>
-          <Toast
-            message="saved!"
-            visible={toastVisible()}
-            onHide={() => setToastVisible(false)}
-          />
-        </Subsection>
-
-        <Subsection label="<ButtonWrapper> (fade in/out)">
-          <Btn outline onClick={() => setWrapperVisible((v) => !v)}>
-            toggle visibility
-          </Btn>
-          <ButtonWrapper isVisible={wrapperVisible()}>
-            <Btn>i fade in and out</Btn>
-          </ButtonWrapper>
-        </Subsection>
-      </Section>
-
-      <Section id="icons" title="Icons">
-        <div class={styles.icoGrid}>
-          <For each={ICO_NAMES}>
-            {(name) => (
-              <div class={styles.icoCell}>
-                <Ico name={name} size={32} />
-                <code>{name}</code>
-              </div>
-            )}
-          </For>
-        </div>
-      </Section>
-
-      <Section id="chart" title="Chart">
-        <p class={styles.muted}>
-          Re-mounted on theme toggle so axis colors pick up the active palette.
-        </p>
-        <div style={{ "max-width": "480px" }}>
-          <For each={[themeKey()]}>
-            {() => (
-              <Chart
-                chartData={{
-                  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                  datasets: [
-                    {
-                      label: "demo",
-                      data: [2, 3, 1, 4, 3, 5, 2],
-                      tension: 0.3,
-                    },
-                  ],
+          <Subsection label="<InputWithSend>">
+            <div style={{ "max-width": "480px" }}>
+              <InputWithSend
+                value=""
+                onSubmit={(val) => {
+                  console.log("Styleguide InputWithSend submit:", val);
+                  return Promise.resolve();
                 }}
               />
-            )}
-          </For>
-        </div>
-      </Section>
+            </div>
+          </Subsection>
+        </Section>
 
-      <Section
-        id="interactions"
-        title="Interactions (curated, render in isolation)"
-      >
-        <Subsection label="<BreathingExercise>">
-          <div class={styles.interactionFrame}>
-            <BreathingExercise />
-          </div>
-        </Subsection>
-
-        <Subsection label="<EmojiCheckin>">
-          <div class={styles.interactionFrame}>
-            <EmojiCheckin
-              onSuccess={() => console.log("EmojiCheckin: success")}
-              onSkip={() => console.log("EmojiCheckin: skip")}
-              onCancelCountdown={() => undefined}
+        <Section id="selectors" title="Selectors">
+          <Subsection label="<Checkbox>">
+            <Checkbox
+              checked={checkboxOn()}
+              onChange={setCheckboxOn}
+              label="enable feature"
             />
-          </div>
-        </Subsection>
+            <Checkbox
+              checked={false}
+              onChange={() => undefined}
+              label="disabled"
+              disabled
+            />
+          </Subsection>
 
-        <Subsection label="<IntentSelection>">
-          <div class={styles.interactionFrame}>
-            <Btn outline onClick={() => setIntentArmed((v) => !v)}>
-              isArmed: {String(intentArmed())}
+          <Subsection label="<Toggle>">
+            <Toggle
+              checked={toggleOn()}
+              onChange={setToggleOn}
+              label="notifications"
+            />
+            <Toggle
+              checked={false}
+              onChange={() => undefined}
+              label="disabled"
+              disabled
+            />
+          </Subsection>
+
+          <Subsection label="<TglBtns>">
+            <TglBtns
+              options={[
+                { val: "a", txt: "option a" },
+                { val: "b", txt: "option b" },
+                { val: "c", txt: "option c" },
+              ]}
+              onSelect={(v) => console.log("TglBtns select:", v)}
+            />
+          </Subsection>
+
+          <Subsection label="<Rating>">
+            <div>
+              <span class={styles.muted}>interactive: </span>
+              <Rating onSetRating={(v) => console.log("rating:", v)} />
+            </div>
+            <div>
+              <span class={styles.muted}>show only (value=3): </span>
+              <Rating value={3} isShowOnly />
+            </div>
+          </Subsection>
+        </Section>
+
+        <Section id="indicators" title="Indicators & feedback">
+          <Subsection label="<Stepper>">
+            <Stepper
+              nrOfSteps={4}
+              activeStep={stepperStep()}
+              onSetStep={setStepperStep}
+            />
+            <div>
+              <Btn onClick={() => setStepperStep((s) => Math.max(0, s - 1))}>
+                prev
+              </Btn>
+              <Btn onClick={() => setStepperStep((s) => Math.min(3, s + 1))}>
+                next
+              </Btn>
+            </div>
+          </Subsection>
+
+          <Subsection label="<Toast>">
+            <Btn outline onClick={() => setToastVisible(true)}>
+              show toast
             </Btn>
-            <IntentSelection
-              isArmed={intentArmed()}
-              onSelectIntent={(i) => console.log("intent:", i)}
-              onCancel={() => console.log("intent cancel")}
-              onCancelCountdown={() => undefined}
+            <Toast
+              message="saved!"
+              visible={toastVisible()}
+              onHide={() => setToastVisible(false)}
             />
+          </Subsection>
+
+          <Subsection label="<ButtonWrapper> (fade in/out)">
+            <Btn outline onClick={() => setWrapperVisible((v) => !v)}>
+              toggle visibility
+            </Btn>
+            <ButtonWrapper isVisible={wrapperVisible()}>
+              <Btn>i fade in and out</Btn>
+            </ButtonWrapper>
+          </Subsection>
+        </Section>
+
+        <Section id="icons" title="Icons">
+          <div class={styles.icoGrid}>
+            <For each={ICO_NAMES}>
+              {(name) => (
+                <div class={styles.icoCell}>
+                  <Ico name={name} size={32} />
+                  <code>{name}</code>
+                </div>
+              )}
+            </For>
           </div>
-        </Subsection>
+        </Section>
 
-        <Subsection label="<GroundingOverlay> — dashboard down-drag">
+        <Section id="chart" title="Chart">
           <p class={styles.muted}>
-            On the dashboard, dragging the sun down offers a moment to ground
-            yourself: a timed meditation (still sun + start/end gong) or a
-            screen-free sit (on the web the screen dims; on Android the phone
-            locks). A gentle offer — declining is easy and ignoring it dismisses
-            it. Opens a full-screen stage.
+            Re-mounted on theme toggle so axis colors pick up the active
+            palette.
           </p>
-          <Btn outline onClick={() => setGroundingOpen(true)}>
-            Open grounding offer
-          </Btn>
-          {groundingOpen() && (
-            <GroundingOverlay
-              variant={isDark() ? "moon" : "sun"}
-              onClose={() => setGroundingOpen(false)}
-            />
-          )}
-        </Subsection>
+          <div style={{ "max-width": "480px" }}>
+            <For each={[themeKey()]}>
+              {() => (
+                <Chart
+                  chartData={{
+                    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                    datasets: [
+                      {
+                        label: "demo",
+                        data: [2, 3, 1, 4, 3, 5, 2],
+                        tension: 0.3,
+                      },
+                    ],
+                  }}
+                />
+              )}
+            </For>
+          </div>
+        </Section>
 
-        <Subsection label="<LetGoOverlay> — dashboard fling-away">
-          <p class={styles.muted}>
-            The sibling of the grounding offer: flinging the sun up/away ("let
-            go") offers the standard intervention question "What do you want to
-            let go of?". A gentle offer — declining is easy and ignoring it
-            dismisses it. Opens a full-screen stage that hides the just-flung
-            sun gliding home behind it.
-          </p>
-          <Btn outline onClick={() => setLetGoOpen(true)}>
-            Open let-go offer
-          </Btn>
-          {letGoOpen() && (
-            <LetGoOverlay
-              variant={isDark() ? "moon" : "sun"}
-              answers={[]}
-              onClose={() => setLetGoOpen(false)}
-            />
-          )}
-        </Subsection>
+        <Section
+          id="interactions"
+          title="Interactions (curated, render in isolation)"
+        >
+          <Subsection label="Sun & moon halo lab — 12 studies each, over the gradient">
+            <p class={styles.muted}>
+              A dedicated page to compare halo / glow treatments for the sun and
+              moon. Grid of all 24 studies; click one to drag it full-screen
+              over the live page gradient and judge it at every band.
+            </p>
+            <Btn outline onClick={() => setShowHalos(true)}>
+              Open halo lab →
+            </Btn>
+          </Subsection>
 
-        <Subsection label="Persistent sun — post-interaction morph">
-          <p class={styles.muted}>
-            The same sun is never hidden: it glides down + breathes for the
-            pause, then glides up + shrinks into a calm anchor for the choices,
-            with the background light tracking it. Step through the phases —
-            opens a full-screen stage.
-          </p>
-          <SunMorphHarness />
-        </Subsection>
-      </Section>
-    </div>
+          <Subsection label="<BreathingExercise>">
+            <div class={styles.interactionFrame}>
+              <BreathingExercise />
+            </div>
+          </Subsection>
+
+          <Subsection label="<EmojiCheckin>">
+            <div class={styles.interactionFrame}>
+              <EmojiCheckin
+                onSuccess={() => console.log("EmojiCheckin: success")}
+                onSkip={() => console.log("EmojiCheckin: skip")}
+                onCancelCountdown={() => undefined}
+              />
+            </div>
+          </Subsection>
+
+          <Subsection label="<IntentSelection>">
+            <div class={styles.interactionFrame}>
+              <Btn outline onClick={() => setIntentArmed((v) => !v)}>
+                isArmed: {String(intentArmed())}
+              </Btn>
+              <IntentSelection
+                isArmed={intentArmed()}
+                onSelectIntent={(i) => console.log("intent:", i)}
+                onCancel={() => console.log("intent cancel")}
+                onCancelCountdown={() => undefined}
+              />
+            </div>
+          </Subsection>
+
+          <Subsection label="<GroundingOverlay> — dashboard down-drag">
+            <p class={styles.muted}>
+              On the dashboard, dragging the sun down offers a moment to ground
+              yourself: a timed meditation (still sun + start/end gong) or a
+              screen-free sit (on the web the screen dims; on Android the phone
+              locks). A gentle offer — declining is easy and ignoring it
+              dismisses it. Opens a full-screen stage.
+            </p>
+            <Btn outline onClick={() => setGroundingOpen(true)}>
+              Open grounding offer
+            </Btn>
+            {groundingOpen() && (
+              <GroundingOverlay
+                variant={isDark() ? "moon" : "sun"}
+                onClose={() => setGroundingOpen(false)}
+              />
+            )}
+          </Subsection>
+
+          <Subsection label="<LetGoOverlay> — dashboard fling-away">
+            <p class={styles.muted}>
+              The sibling of the grounding offer: flinging the sun up/away ("let
+              go") offers the standard intervention question "What do you want to
+              let go of?". A gentle offer — declining is easy and ignoring it
+              dismisses it. Opens a full-screen stage that hides the just-flung
+              sun gliding home behind it.
+            </p>
+            <Btn outline onClick={() => setLetGoOpen(true)}>
+              Open let-go offer
+            </Btn>
+            {letGoOpen() && (
+              <LetGoOverlay
+                variant={isDark() ? "moon" : "sun"}
+                answers={[]}
+                onClose={() => setLetGoOpen(false)}
+              />
+            )}
+          </Subsection>
+
+          <Subsection label="Persistent sun — post-interaction morph">
+            <p class={styles.muted}>
+              The same sun is never hidden: it glides down + breathes for the
+              pause, then glides up + shrinks into a calm anchor for the
+              choices, with the background light tracking it. Step through the
+              phases — opens a full-screen stage.
+            </p>
+            <SunMorphHarness />
+          </Subsection>
+        </Section>
+      </div>
+    </Show>
   );
 };
 
