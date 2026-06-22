@@ -69,12 +69,13 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 private val GLOW_COLOR = Color(0xFFE99A3A)
 
 /**
- * How long the expanded sun simply rests before the gentle step-away invitation
- * fades in. The pause *is* the friction — the sun is the pause (see CLAUDE.md).
- * It also makes an accidental tap harmless: nothing is asked of the user until
- * they have had a quiet moment.
+ * Delay from the moment the pause opens (the expand starts) until the gentle
+ * step-away invitation fades in. The slow expand (EXPAND_MS) eats most of it,
+ * leaving a short settle before the buttons. The pause *is* the friction — the
+ * sun is the pause (see CLAUDE.md) — and it still makes an accidental tap
+ * harmless: there's a beat to pull down / tap off before anything is asked.
  */
-private const val PAUSE_MS = 3800L
+private const val PAUSE_MS = 1200L
 
 /**
  * A gentle offer never nags: if left untouched the invitation fades on its
