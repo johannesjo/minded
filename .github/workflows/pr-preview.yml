@@ -11,8 +11,6 @@ name: PR Preview
 # Note: deployment needs a write-scoped GITHUB_TOKEN, which PRs from forks do
 # not get. Previews therefore deploy for same-repo branches only; fork PRs build
 # (catching breakage) but skip the deploy step.
-#
-# (Test change to exercise the PR preview workflow — safe to revert.)
 
 on:
   pull_request:
