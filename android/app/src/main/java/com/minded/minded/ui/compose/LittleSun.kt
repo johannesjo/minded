@@ -1,14 +1,10 @@
 package com.minded.minded.ui.compose
 
 import android.view.HapticFeedbackConstants
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -187,50 +184,68 @@ private fun Bubble(
     val clockString = if (showText) String.format("%2d:%02d", minutes, remainingSeconds) else ""
 
     val view = LocalView.current
-    var isOverlayVisible by remember { mutableStateOf(isInitiallyVisible) }
+    val density = LocalDensity.current
+    // Visibility is controlled by alpha alone — the bubble box is ALWAYS laid out so
+    // the wrap-content overlay window sizes to it. (Adding/removing the content with
+    // AnimatedVisibility collapsed the window to ~0 while hidden, which defeated the
+    // resize wait below and let the bubble fade in mid-resize, shifting under it.)
+    var revealed by remember { mutableStateOf(isInitiallyVisible) }
+    val bubbleAlpha by animateFloatAsState(
+        targetValue = if (revealed) 1f else 0f,
+        // First show: appear in place (no fade). Returning after a collapse: fade in.
+        animationSpec = tween(durationMillis = if (enterFade) FADE_MS else 0),
+        label = "bubbleAlpha",
+    )
 
     LaunchedEffect(Unit) {
-        isOverlayVisible = true
+        // Returning after a collapse, the overlay window shrinks from the full-screen
+        // pause back down to the bubble. The (invisible) bubble box is already laid
+        // out, so the window wraps to bubble size — wait for that to actually happen,
+        // then reveal, so the bubble never appears mid-resize and shifts. Polling the
+        // real view width is robust to however long the resize takes on a device; the
+        // frame cap is a safety net. The first show has no resize, so it skips this.
+        if (enterFade) {
+            val restThresholdPx = with(density) { 120.dp.toPx() }
+            var frames = 0
+            while (view.width > restThresholdPx && frames < 12) {
+                withFrameNanos { }
+                frames++
+            }
+        }
+        revealed = true
     }
 
-    AnimatedVisibility(
-        visible = isOverlayVisible,
-        // Fade in when returning from the offer; appear in place on first show
-        // (the departing interaction sun has already glided to this corner).
-        enter = if (enterFade) fadeIn(animationSpec = tween(FADE_MS)) else EnterTransition.None,
-        exit = fadeOut(animationSpec = tween(500)),
+    Box(
+        modifier = Modifier
+            .alpha(bubbleAlpha)
+            .size(60.dp)
+            // Claim the bubble's bounds from system gestures so a drag that
+            // starts near a screen edge stays ours instead of triggering the
+            // system back-gesture (no-op below API 29).
+            .systemGestureExclusion()
+            // Two separate gesture detectors: a small movement stays a tap
+            // (open the pause), a deliberate drag moves the bubble. The drag
+            // deltas are handed to the window, which repositions the overlay.
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                        onTap()
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        onDrag(dragAmount.x, dragAmount.y)
+                    },
+                    onDragEnd = { onDragEnd() },
+                )
+            },
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                // Claim the bubble's bounds from system gestures so a drag that
-                // starts near a screen edge stays ours instead of triggering the
-                // system back-gesture (no-op below API 29).
-                .systemGestureExclusion()
-                // Two separate gesture detectors: a small movement stays a tap
-                // (open the pause), a deliberate drag moves the bubble. The drag
-                // deltas are handed to the window, which repositions the overlay.
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                            onTap()
-                        }
-                    )
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            onDrag(dragAmount.x, dragAmount.y)
-                        },
-                        onDragEnd = { onDragEnd() },
-                    )
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-            SunDisc(clockString = clockString)
-        }
+        SunDisc(clockString = clockString)
     }
 }
 
