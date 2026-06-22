@@ -50,10 +50,9 @@
   display: flow-root;
 }
 
-// A faint "write a response" icon hinting the question can be tapped to
-// answer. Sits where the first line of the textarea lands, fading out as the
-// field fades in. An invitation, never a CTA: softly faded in, gently
-// breathing, muted.
+// A faint pen icon hinting the question can be tapped to answer. Sits where
+// the first line of the textarea lands, fading out as the field fades in. An
+// invitation, never a CTA: softly faded in, gently breathing, muted.
 .question-tap-hint {
   position: absolute;
   top: 0;

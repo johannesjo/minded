@@ -156,12 +156,12 @@ export const Question: (props: {
       </Show>
 
       <div class="question-body">
-        {/* Free-text questions (no chips) get a faint "write a response" icon
-            where the textarea's first line lands: it shows you can tap to
-            write, and where, then fades out as the field fades in. Chips carry
-            their own tappable affordance, so they skip the hint. The question
-            div above is the labelled button, so the hint is decorative
-            (aria-hidden) — a touch/mouse affordance only. */}
+        {/* Free-text questions (no chips) get a faint pen icon where the
+            textarea's first line lands: it shows you can tap to write, and
+            where, then fades out as the field fades in. Chips carry their own
+            tappable affordance, so they skip the hint. The question div above is
+            the labelled button, so the hint is decorative (aria-hidden) — a
+            touch/mouse affordance only. */}
         <Show when={!hasChips}>
           <div
             class="question-tap-hint"
@@ -169,7 +169,7 @@ export const Question: (props: {
             aria-hidden="true"
             onClick={revealInput}
           >
-            <Ico name="feedback" size={28} />
+            <Ico name="edit" size={26} />
           </div>
         </Show>
 
