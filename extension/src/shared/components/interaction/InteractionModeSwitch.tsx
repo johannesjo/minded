@@ -22,9 +22,6 @@ import { NoticeInteraction } from "@src/shared/components/interaction/notice/Not
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 
-// Get random advice once at module load
-const ADVICE = getRndEntry(ACTION_ADVICES);
-
 export interface InteractionModeSwitchProps {
   mode: InteractionMode | undefined;
   frictionLevel: FrictionLevel;
@@ -80,13 +77,20 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
         />
       </Match>
       <Match when={props.mode === "ACTION_ADVICE"}>
-        <div
-          id="minded-6622-action-advice"
-          class="txtBig interaction-static-text"
-        >
-          <div>{ADVICE.txt}</div>
-          <div>{ADVICE.ico}</div>
-        </div>
+        {(() => {
+          // Pick fresh each time this interaction mounts so repeated
+          // action-advice prompts vary instead of showing one pinned line.
+          const advice = getRndEntry(ACTION_ADVICES);
+          return (
+            <div
+              id="minded-6622-action-advice"
+              class="txtBig interaction-static-text"
+            >
+              <div>{advice.txt}</div>
+              <div>{advice.ico}</div>
+            </div>
+          );
+        })()}
       </Match>
       <Match when={props.mode === "SCREEN_OFF"}>
         <ScreenOffInteraction
