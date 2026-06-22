@@ -1,6 +1,5 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { UsageStatsByDate } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
@@ -128,8 +127,11 @@ export interface SyncData {
   answers: Answer[];
   lastBlockedTS: number;
   lastBlockedUrl: string;
+  // Dormant: the mood check-in was removed (it asked you to grade your feeling
+  // on a Great→Awful scale, which is judgment, not the awareness the app is
+  // after). Fields kept so the stored SyncData JSON contract is unchanged.
   moodCheckTS: number;
-  moodCheckVal?: MoodCheckinVal;
+  moodCheckVal?: string;
   moodCheckAdditional: string;
   energyLvlTS: number;
   energyLvlVal: number;

@@ -15,8 +15,6 @@ const baseContext = (
   platform: "web",
   answerCount: 3,
   hasFewAnswers: false,
-  hasFreshMood: true,
-  moodCheckAgeMs: 0,
   hasFreshEnergy: true,
   isEvening: false,
   alternativeCount: 0,

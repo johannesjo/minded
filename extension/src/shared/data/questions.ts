@@ -29,7 +29,6 @@ export enum QuestionCategoryId {
   MindfulEating = "MindfulEating",
   // NOTE: we filter out all questions from categories starting with X
 
-  XMoodCheckin = "XMoodCheckin",
   XEnergyLevelToday = "XEnergyLevelToday",
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
   XAppUsageHappiness = "XAppUsageHappiness",
@@ -904,10 +903,6 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.XAppUsageHappiness]: {
     dashboardTxt: "Usage of configured Apps",
     isThisWeekOnlyCategory: true,
-  },
-  [QuestionCategoryId.XMoodCheckin]: {
-    dashboardTxt: "Mood Checkin",
-    isTodayOnlyCategory: true,
   },
   [QuestionCategoryId.XSelfAssessment]: {
     dashboardTxt: "Recently...",

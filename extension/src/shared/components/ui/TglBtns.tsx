@@ -33,21 +33,3 @@ const TglBtns = <T,>(props: {
 };
 
 export default TglBtns;
-
-// .mood-checkin-btns {
-//   display: flex;
-//   flex-wrap: wrap;
-//   justify-content: center;
-//   user-select: none;
-//   pointer-events: all;
-//   // more space on mobile for buttons
-//   margin-left: -32px;
-//   margin-right: -32px;
-//   margin-top: 16px;
-//   margin-bottom: 16px;
-//
-// @include onNonMobileScreens() {
-//     margin-top: 32px;
-//     margin-bottom: 64px;
-//   }
-// }

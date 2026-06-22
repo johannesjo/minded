@@ -1,4 +1,3 @@
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
@@ -9,11 +8,6 @@ export const QuestionsForToday: Component = () => {
     <div id="minded-6622-questions-for-today">
       <h2 class="h2">Questions for Today</h2>
 
-      <MoodCheckin
-        onCancelCountdown={() => undefined}
-        onSuccess={() => undefined}
-        onSkip={() => undefined}
-      />
       <EnergyLvlInteraction
         onCancelCountdown={() => undefined}
         onSuccess={() => undefined}

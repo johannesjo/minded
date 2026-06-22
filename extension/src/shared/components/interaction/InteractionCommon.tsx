@@ -719,8 +719,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   const onInteractionSuccess = (answerOrData?: Answer) => {
-    // A deferred success (e.g. MoodCheckin's 3s save timer) can land after the
-    // user triple-tapped past the question to the choices. The answer is already
+    // A deferred success (an interaction that saves asynchronously) can land after
+    // the user triple-tapped past the question to the choices. The answer is already
     // saved by the caller; acting on it here would disarm the choices without
     // re-arming or advancing them, freezing them with every button greyed.
     if (

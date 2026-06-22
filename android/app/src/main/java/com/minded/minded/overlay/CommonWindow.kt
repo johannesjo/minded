@@ -20,6 +20,27 @@ open class CommonWindow(
     private var isHiding = false
 
     /**
+     * Run [block] on the live window root, but only while no hideWindow()
+     * fade-out is in flight — holding the same lock hideWindow() takes, so the
+     * "is a hide running?" check and [block] are atomic against it. A subclass
+     * that animates [window] must go through here: starting a second
+     * ViewPropertyAnimator on the same view cancels the fade-out's withEndAction,
+     * so the view is never removed and the window wedges open permanently
+     * (isHiding never resets either). hideWindow() can be invoked off the main
+     * thread (e.g. from the WebView JS-bridge thread), so a plain unsynchronized
+     * isHiding check would not actually close that race. Keep [block] short — it
+     * runs under the lock; starting an animation is fine since that only posts to
+     * the UI thread.
+     */
+    protected fun withWindowUnlessHiding(block: (View) -> Unit) {
+        synchronized(this) {
+            if (isHiding) return
+            val root = window ?: return
+            block(root)
+        }
+    }
+
+    /**
      * Duration of the native window alpha fade-in. While the window animates
      * from alpha 0 -> 1 it is semi-transparent, so whatever is behind it (e.g.
      * the blocked app the user just opened) shows through for this long.

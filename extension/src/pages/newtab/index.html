@@ -45,14 +45,14 @@
           );
       }
     </style>
-    <script>
-      // Runs synchronously in <head>, before first paint, so the gradient is
-      // correct on the very first frame (no light->dark pop when the app mounts).
-      var h = new Date().getHours();
-      if (h >= 19 || h < 6) {
-        document.documentElement.className += " minded-loading-dark";
-      }
-    </script>
+    <!--
+      External (not inline) on purpose: this new-tab override inherits the MV3
+      `script-src 'self'` CSP, which blocks inline scripts; living in public/
+      lets it be served from the extension origin so CSP allows it. It's a
+      classic (non-deferred) <script>, so it still runs before first paint.
+      See loading-sky.js for the full why.
+    -->
+    <script src="/loading-sky.js"></script>
 </head>
 
 <body>

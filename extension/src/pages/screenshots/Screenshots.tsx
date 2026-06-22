@@ -8,9 +8,7 @@ import {
   QuestionCategoryId,
   QuestionForPrompt,
 } from "@src/shared/data/questions";
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
@@ -23,7 +21,6 @@ import styles from "./screenshots.module.scss";
 
 type ScreenshotTarget =
   | "dashboard"
-  | "mood-checkin"
   | "energy-lvl"
   | "draggable-sun"
   | "intent-selection"
@@ -36,7 +33,6 @@ type ScreenshotPlatform = "web-extension" | "android";
 
 const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
-  "mood-checkin",
   "energy-lvl",
   "draggable-sun",
   "intent-selection",
@@ -113,7 +109,6 @@ const createScreenshotSyncData = (): SyncData => {
     dailyQuestionsMorningTS: now,
     dailyQuestionsEveningTS: now,
     moodCheckTS: now,
-    moodCheckVal: MoodCheckinVal.Good,
     moodCheckAdditional: "",
     browsingBehaviorRating: {},
     lastBrowsingBehaviorRatingTS: 99,
@@ -333,14 +328,6 @@ const Screenshots = (): JSX.Element => {
 
   return (
     <ScreenshotSurface theme={theme}>
-      {target === "mood-checkin" && (
-        <MoodCheckin
-          onSuccess={() => undefined}
-          onSkip={() => undefined}
-          onCancelCountdown={() => undefined}
-        />
-      )}
-
       {target === "energy-lvl" && (
         <EnergyLvlInteraction
           onSuccess={() => undefined}

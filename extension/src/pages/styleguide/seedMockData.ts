@@ -2,12 +2,11 @@ import { saveSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import type { Answer, SyncData } from "@src/dataInterface/syncData";
 import { getIsoDate } from "@src/util/getIsoDate";
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 // A representative, deterministic dataset for the dashboard simulation: enough
-// signal across the different card types (mood, energy, stats, browsing
+// signal across the different card types (energy, stats, browsing
 // behaviour, self-assessment, reflections) that the "show all" grid is populated
 // and true to life — without depending on the questions catalogue beyond a
 // couple of free-text answers.
@@ -37,9 +36,6 @@ export const seedMockData = async (): Promise<void> => {
 
   const seeded: SyncData = {
     ...DEFAULT_SYNC_DATA,
-    moodCheckTS: now,
-    moodCheckVal: MoodCheckinVal.Good,
-    moodCheckAdditional: "A calm, steady day.",
     energyLvlTS: now,
     energyLvlVal: 4,
     browsingBehaviorRating,
