@@ -63,6 +63,10 @@ class LittleSunWindow(
     // True only when re-showing the resting bubble after the offer collapses, so
     // it fades back in rather than snapping. Reset on a fresh show.
     private var enterWithFade by mutableStateOf(false)
+    // The bubble's screen-px centre captured at the moment of tap, so the pause
+    // sun can expand out of exactly where the little sun sat.
+    private var expandOriginX by mutableStateOf(-1)
+    private var expandOriginY by mutableStateOf(-1)
     private var snapAnimator: ValueAnimator? = null
 
     @Composable
@@ -76,6 +80,8 @@ class LittleSunWindow(
             elapsedSeconds = elapsedSeconds,
             expanded = isExpanded,
             enterFade = enterWithFade,
+            expandFromX = expandOriginX,
+            expandFromY = expandOriginY,
             onTap = { expand() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
@@ -317,6 +323,9 @@ class LittleSunWindow(
     private fun expand() {
         if (isExpanded) return
         snapAnimator?.cancel()
+        // Capture where the bubble sits now so the pause sun expands out of it.
+        expandOriginX = posX + bubbleSizePx / 2
+        expandOriginY = posY + bubbleSizePx / 2
         isExpanded = true
         updateLayout()
     }

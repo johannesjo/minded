@@ -18,10 +18,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -44,14 +46,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 
 // Match the web extension's little sun: a solid white disc with a soft, warm
@@ -81,20 +87,22 @@ private const val OFFER_AUTO_DISMISS_MS = 15000L
 private const val FADE_MS = 400
 
 /**
- * The expanded pause is user-invoked, so it should answer the tap promptly — a
- * quicker fade-in than the calm fade-out, while still easing in (never a hard
- * cut, per CLAUDE.md).
+ * The expanded pause is user-invoked, so the dim should answer the tap promptly
+ * — a quick fade-in, far shorter than the calm fade-out, while still easing in
+ * (never a hard cut, per CLAUDE.md).
  */
-private const val APPEAR_FADE_MS = 200
+private const val APPEAR_FADE_MS = 160
 
 /**
- * On tap the big pause-sun grows in from the little resting bubble's size
- * rather than popping in full-size, so the little→big sun change reads as one
- * continuous bloom. 0.33 ≈ the little sun's 60dp glow over the big 180dp glow,
- * so it starts pixel-matched to the bubble it grew from, then eases up.
+ * On tap the pause-sun isn't a new element — it's the little resting sun
+ * *expanding*: it starts pixel-matched to the bubble (same size, same spot) and
+ * travels to screen-centre as it grows to full size. 0.33 ≈ the little sun's
+ * 60dp glow over the big 180dp glow, so the first frame matches the bubble.
  */
 private const val BIG_SUN_ENTER_SCALE = 0.33f
-private const val EXPAND_GROW_MS = 340
+
+/** Little→big expand: travel + grow. Kept snappy so the pause answers the tap. */
+private const val EXPAND_MS = 240
 
 /**
  * The little sun overlay. At rest it is a small, draggable companion bubble
@@ -112,6 +120,10 @@ fun LittleSun(
     // in, never snap. On the very first show it appears in place (the departing
     // interaction sun has just glided to this corner), so no fade then.
     enterFade: Boolean = false,
+    // Screen-px centre of the resting bubble at the moment of tap, so the pause
+    // sun can expand *out of* it. -1 = unknown (e.g. preview): centre-bloom only.
+    expandFromX: Int = -1,
+    expandFromY: Int = -1,
     onTap: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
@@ -119,7 +131,12 @@ fun LittleSun(
     onStay: () -> Unit = {},
 ) {
     if (expanded) {
-        StepAwayOffer(onStepAway = onStepAway, onStay = onStay)
+        StepAwayOffer(
+            expandFromX = expandFromX,
+            expandFromY = expandFromY,
+            onStepAway = onStepAway,
+            onStay = onStay,
+        )
     } else {
         Bubble(
             elapsedSeconds = elapsedSeconds,
@@ -196,6 +213,8 @@ private fun Bubble(
 
 @Composable
 private fun StepAwayOffer(
+    expandFromX: Int,
+    expandFromY: Int,
     onStepAway: () -> Unit,
     onStay: () -> Unit,
 ) {
@@ -235,13 +254,22 @@ private fun StepAwayOffer(
         label = "breathScale",
     )
 
-    // Grow the big sun in from the little bubble's size so the expansion reads
-    // as one continuous bloom, not a pop. Driven off `shown` only, so a dismiss
-    // simply fades it out (no shrink).
-    val growScale by animateFloatAsState(
-        targetValue = if (shown) 1f else BIG_SUN_ENTER_SCALE,
-        animationSpec = tween(durationMillis = EXPAND_GROW_MS, easing = FastOutSlowInEasing),
-        label = "stepAwayGrow",
+    // Drives the little→big expand (travel + grow): 0 = matched to the resting
+    // bubble, 1 = full sun at centre. `shown` flips true on the first frame; on
+    // a dismiss it stays at 1 and the surface simply fades out.
+    val expandProgress by animateFloatAsState(
+        targetValue = if (shown) 1f else 0f,
+        animationSpec = tween(durationMillis = EXPAND_MS, easing = FastOutSlowInEasing),
+        label = "stepAwayExpand",
+    )
+
+    // The sun itself is opaque from the first frame — it *is* the little sun
+    // (which was opaque), now expanding, so it must not fade in under it. It
+    // only fades on dismiss. The dim behind it still eases in via surfaceAlpha.
+    val sunAlpha by animateFloatAsState(
+        targetValue = if (dismissing) 0f else 1f,
+        animationSpec = tween(durationMillis = if (dismissing) FADE_MS else APPEAR_FADE_MS),
+        label = "stepAwaySunAlpha",
     )
 
     val promptAlpha by animateFloatAsState(
@@ -262,7 +290,7 @@ private fun StepAwayOffer(
         beginDismiss()
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.62f * surfaceAlpha))
@@ -270,36 +298,53 @@ private fun StepAwayOffer(
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { beginDismiss() })
             },
-        contentAlignment = Alignment.Center,
     ) {
+        val hasOrigin = expandFromX >= 0 && expandFromY >= 0
+        val centrePx = with(LocalDensity.current) {
+            Offset(maxWidth.toPx() / 2f, maxHeight.toPx() / 2f)
+        }
+        // Where the sun starts: the resting bubble's centre (so it expands out of
+        // it). Without an origin (e.g. preview) it just grows in place at centre.
+        val startCentrePx =
+            if (hasOrigin) Offset(expandFromX.toFloat(), expandFromY.toFloat()) else centrePx
+        // progress 0 → sit on the old bubble spot; 1 → arrived at centre. offset()
+        // is placement-only, so it never disturbs the centred rest position.
+        val sunTravel = (startCentrePx - centrePx) * (1f - expandProgress)
+        val sunScaleNow = lerp(BIG_SUN_ENTER_SCALE, sunScale, expandProgress)
+
+        SunDisc(
+            glowSize = 180.dp,
+            discSize = 92.dp,
+            scale = sunScaleNow,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset { IntOffset(sunTravel.x.roundToInt(), sunTravel.y.roundToInt()) }
+                .alpha(sunAlpha),
+        )
+
+        // No heading, no question — the breath has already happened. A single
+        // gentle offer to step away, with a quiet decline; tapping off it or
+        // simply waiting also stays. The choice is never pushed. It rests below
+        // the centred sun and only fades in once the breath has passed.
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.alpha(surfaceAlpha),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(y = 150.dp)
+                .alpha(promptAlpha),
         ) {
-            SunDisc(glowSize = 180.dp, discSize = 92.dp, scale = sunScale * growScale)
-
-            Spacer(Modifier.height(48.dp))
-
-            // No heading, no question — the breath has already happened. A
-            // single gentle offer to step away, with a quiet decline; tapping
-            // off it or simply waiting also stays. The choice is never pushed.
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.alpha(promptAlpha),
-            ) {
-                OfferAction(
-                    text = "Step away",
-                    enabled = phase >= 1 && !dismissing,
-                    onClick = onStepAway,
-                )
-                Spacer(Modifier.height(8.dp))
-                OfferAction(
-                    text = "Not now",
-                    dimmed = true,
-                    enabled = phase >= 1 && !dismissing,
-                    onClick = { beginDismiss() },
-                )
-            }
+            OfferAction(
+                text = "Step away",
+                enabled = phase >= 1 && !dismissing,
+                onClick = onStepAway,
+            )
+            Spacer(Modifier.height(8.dp))
+            OfferAction(
+                text = "Not now",
+                dimmed = true,
+                enabled = phase >= 1 && !dismissing,
+                onClick = { beginDismiss() },
+            )
         }
     }
 }
@@ -342,9 +387,10 @@ private fun SunDisc(
     glowSize: Dp = 60.dp,
     discSize: Dp = 30.dp,
     scale: Float = 1f,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(glowSize)
             .scale(scale),
         contentAlignment = Alignment.Center,
