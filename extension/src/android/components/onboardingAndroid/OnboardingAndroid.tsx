@@ -8,10 +8,26 @@ import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import { Stepper } from "@src/shared/components/ui/Stepper";
 import Btn from "@src/shared/components/ui/Btn";
 
-export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
-  const [getStep, setStep] = createSignal<number>(0);
+export const OnboardingAndroid = (props: {
+  onGoDashboard: () => void;
+  /**
+   * Where to enter the flow. First run starts at 0 (the sun intro); the
+   * dashboard's "finish setup" invitation re-enters at 1 (the app picker),
+   * skipping the welcome the user has already seen.
+   */
+  initialStep?: number;
+}) => {
+  const [getStep, setStep] = createSignal<number>(props.initialStep ?? 0);
   const [getPermissionNotGiven, setPermissionNotGiven] =
     createSignal<boolean>(false);
+
+  // Deferral: meeting the sun must never be gated behind the setup chore.
+  // Skipping marks onboarding seen (so it won't reappear) and drops the user
+  // on the dashboard; the incomplete state is recoverable from there.
+  const handleSkipForNow = async () => {
+    await updateUserCfg({ isOnboardingComplete: true });
+    props.onGoDashboard();
+  };
 
   createEffect(() => {
     if (getStep() === 3) {
@@ -26,24 +42,37 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
           <Match when={getStep() === 0}>
             <div class="pageWrapper pageTransitionIn">
               <div class="h2 h2Mindful">
-                Welcome to <em>minded</em>! 😊
+                Meet <em>minded</em> 🌞
               </div>
               <div class="txtSlightlyBigger">
                 <p>
-                  <em>minded</em> will help you to reduce the usage of apps that
-                  you aim to use less frequently, but struggle to do so.
+                  This little sun is your anchor. When you open an app on
+                  autopilot, it appears: a calm moment to pause. You can fling it
+                  away anytime; it never blocks you. No streaks, no scores, just
+                  awareness.
                 </p>
                 <p>
-                  Before we can start there are some small things we need to set
-                  up.
+                  Each time you notice the pull without judgment, that awareness
+                  grows a little. It's a capacity that builds gently, and tends
+                  to stay with you.
+                </p>
+                <p>
+                  To set that up, <em>minded</em> needs a couple of permissions
+                  and the apps where you'd like it to appear.
                 </p>
               </div>
 
               <ButtonWrapper isVisible={true}>
                 <Btn big onClick={() => setStep(1)}>
-                  let's start!
+                  begin
                 </Btn>
               </ButtonWrapper>
+
+              <div style="margin-top: 16px;">
+                <Btn outline onClick={handleSkipForNow}>
+                  I'll set this up later
+                </Btn>
+              </div>
             </div>
           </Match>
 
@@ -51,6 +80,7 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
             <div class="pageTransitionIn">
               <SettingsAndroid
                 isRouting={false}
+                heading="Where would you like the sun to meet you? Pick at least one app where it should appear."
                 saveBtnTxt="save & continue"
                 onSave={() => setStep(2)}
               />
@@ -75,12 +105,12 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
             {getPermissionNotGiven() ? (
               <div class="card pageTransitionIn" style="margin: 32px;">
                 <div class="h2 h2Mindful">
-                  <em>minded</em> is not completely configured 🙁
+                  Almost there 🌤️
                 </div>
                 <p>
-                  You did not configure all the permissions needed. You might
-                  still be able to use <em>minded</em>, but it will{" "}
-                  <strong>not work as intended</strong>.
+                  Some permissions are still missing, so the sun may not be able
+                  to meet you everywhere yet. You can finish anytime. It'll be
+                  here.
                 </p>
                 <div style="margin-top: 32px;">
                   <Btn
@@ -89,31 +119,35 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
                       setPermissionNotGiven(false);
                     }}
                   >
-                    back
+                    finish setting up
                   </Btn>
                   <Btn
                     onClick={() => props.onGoDashboard()}
                     style="margin-left: 16px;"
                   >
-                    continue anyway
+                    later
                   </Btn>
                 </div>
               </div>
             ) : (
               <div class="card pageTransitionIn" style="margin: 32px;">
                 <div class="h2 h2Mindful">
-                  <em>minded</em> is now successfully configured! 🎉
+                  The sun is ready 🌞
                 </div>
                 <p>
-                  Whenever you open one of the apps you configured a short
-                  interaction prompt will appear.
+                  From now on, when you open one of those apps, the sun will
+                  appear: a small moment to pause and notice before you carry
+                  on.
                 </p>
                 <p>
-                  This will help you break your automatic patterns to use those
-                  apps more often than you like.
+                  You can always fling it away in a single gesture. It's an
+                  invitation, never a wall.
                 </p>
-
-                <p>Come back here, once you answered a couple of those.</p>
+                <div style="margin-top: 32px;">
+                  <Btn big onClick={() => props.onGoDashboard()}>
+                    continue
+                  </Btn>
+                </div>
               </div>
             )}
           </Match>
@@ -123,9 +157,13 @@ export const OnboardingAndroid = (props: { onGoDashboard: () => void }) => {
       <Stepper
         nrOfSteps={4}
         activeStep={getStep()}
+        // On re-entry from the dashboard invitation (initialStep > 0) the
+        // welcome — with its "set this up later" skip — is behind us; don't let
+        // the stepper walk back into it.
+        isNoGoBack={(props.initialStep ?? 0) > 0}
         onSetStep={(step) => setStep(step)}
         labelFn={(step) =>
-          step === 3 ? (getPermissionNotGiven() ? "🙁" : "🌞") : undefined
+          step === 3 ? (getPermissionNotGiven() ? "🌤️" : "🌞") : undefined
         }
       />
     </div>

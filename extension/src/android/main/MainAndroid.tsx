@@ -15,6 +15,12 @@ import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
+
+// Kept in sync with the `.setupInvitationMsg` opacity transition in
+// indexMainAndroid.scss so the element finishes fading before it unmounts.
+const INVITE_FADE_MS = 300;
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -23,6 +29,23 @@ const MainAndroid = () => {
   const [getIsShowOnboarding, setIsShowOnboarding] = createSignal(false);
   const [getIsShowMissingCapabilities, setIsShowMissingCapabilities] =
     createSignal(false);
+  // Setup deferral state. `getHasBlockedApps` starts true so the invitation
+  // never flashes before the first read. `getIsShowSetup` re-opens the setup
+  // flow (app picker onwards) from the dashboard invitation. Dismiss is a quiet
+  // "not now": it hides the invitation for the current visit and is reset when
+  // the user returns to the app (see the resume handler), so it recurs gently
+  // and is never a permanent hide that would bury setup.
+  const [getHasBlockedApps, setHasBlockedApps] = createSignal(true);
+  const [getIsShowSetup, setIsShowSetup] = createSignal(false);
+  const [getIsInviteDismissed, setIsInviteDismissed] = createSignal(false);
+  const [getIsInviteDismissing, setIsInviteDismissing] = createSignal(false);
+
+  let dismissT: NodeJS.Timeout | undefined;
+  const dismissInvite = () => {
+    setIsInviteDismissing(true);
+    dismissT = setTimeout(() => setIsInviteDismissed(true), INVITE_FADE_MS);
+  };
+  onCleanup(() => clearTimeout(dismissT));
 
   onMount(() => {
     addWrapperClasses();
@@ -50,6 +73,7 @@ const MainAndroid = () => {
 
     getSyncData().then((syncData: SyncData) => {
       setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
+      setHasBlockedApps((syncData.cfg.blockedApps?.length ?? 0) > 0);
       if (syncData.cfg.isOnboardingComplete) {
         maybeTriggerSleepWindDown(syncData);
       }
@@ -66,6 +90,10 @@ const MainAndroid = () => {
     refresh();
 
     const resumeHandler = () => {
+      // A fresh return to the app re-offers the (dismissible) setup invitation;
+      // the render still gates it on there being no blocked apps.
+      setIsInviteDismissed(false);
+      setIsInviteDismissing(false);
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
       refresh();
     };
@@ -85,13 +113,57 @@ const MainAndroid = () => {
             onPermissionDenied={() => setIsShowMissingCapabilities(false)}
           />
         </div>
-      ) : getIsShowOnboarding() ? (
+      ) : getIsShowOnboarding() || getIsShowSetup() ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
-          <OnboardingAndroid onGoDashboard={() => refresh()} />
+          <OnboardingAndroid
+            initialStep={getIsShowSetup() ? 1 : 0}
+            onGoDashboard={() => {
+              setIsShowSetup(false);
+              refresh();
+            }}
+          />
         </div>
       ) : (
         <RoutesCmp>
-          {getMissingCapabilities().length > 0 && (
+          {!getHasBlockedApps() ? (
+            !getIsInviteDismissed() && (
+              <div
+                classList={{
+                  setupInvitationMsg: true,
+                  isDismissing: getIsInviteDismissing(),
+                }}
+              >
+                <div
+                  class="setupInvitationMsgText"
+                  role="button"
+                  tabindex="0"
+                  onClick={() => setIsShowSetup(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setIsShowSetup(true);
+                    }
+                  }}
+                >
+                  The sun rests here whenever you open <em>minded</em>. To have
+                  it meet you in your apps too, tell it where to appear.
+                </div>
+                <Btn
+                  variant="icon"
+                  plain
+                  class="setupInvitationMsgClose"
+                  aria-label="Dismiss"
+                  onClick={dismissInvite}
+                >
+                  <Ico name="close" />
+                </Btn>
+              </div>
+            )
+          ) : /* No apps configured means permissions are moot (nothing to
+                intervene on), so the missing-permissions banner is intentionally
+                suppressed until at least one app is chosen — the invitation above
+                is the single, calm entry point into setup. */
+          getMissingCapabilities().length > 0 ? (
             <div
               onClick={() => setIsShowMissingCapabilities(true)}
               class="missingCapabilitiesMsg"
@@ -99,7 +171,7 @@ const MainAndroid = () => {
               <em>minded</em> is missing permissions to work properly. Click
               here to resolve!
             </div>
-          )}
+          ) : null}
         </RoutesCmp>
       )}
     </>
