@@ -3,12 +3,9 @@ package com.minded.minded.ui.compose
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -35,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // Match the web extension's little sun: a solid white disc with a soft, warm
 // amber glow around it.
@@ -69,10 +69,10 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 private val GLOW_COLOR = Color(0xFFE99A3A)
 
 /**
- * How long the sun simply breathes before the gentle step-away invitation
- * fades in. The pause *is* the friction — the sun is the pause (see
- * CLAUDE.md). It also makes an accidental tap harmless: nothing is asked of
- * the user until they have had a quiet moment.
+ * How long the expanded sun simply rests before the gentle step-away invitation
+ * fades in. The pause *is* the friction — the sun is the pause (see CLAUDE.md).
+ * It also makes an accidental tap harmless: nothing is asked of the user until
+ * they have had a quiet moment.
  */
 private const val PAUSE_MS = 3800L
 
@@ -101,8 +101,9 @@ private const val APPEAR_FADE_MS = 160
  */
 private const val BIG_SUN_ENTER_SCALE = 0.33f
 
-/** Little→big expand: travel + grow. Kept snappy so the pause answers the tap. */
-private const val EXPAND_MS = 240
+/** Little→big expand: travel + grow. Slow and deliberate — it *is* the pause,
+ *  so it eases open rather than snapping, then holds still (no pulsing). */
+private const val EXPAND_MS = 600
 
 /**
  * The little sun overlay. At rest it is a small, draggable companion bubble
@@ -218,7 +219,7 @@ private fun StepAwayOffer(
     onStepAway: () -> Unit,
     onStay: () -> Unit,
 ) {
-    // 0 = breathing pause, 1 = invitation shown.
+    // 0 = quiet hold, 1 = invitation shown.
     var phase by remember { mutableStateOf(0) }
     var shown by remember { mutableStateOf(false) }
     var dismissing by remember { mutableStateOf(false) }
@@ -241,18 +242,6 @@ private fun StepAwayOffer(
             onStay()
         }
     }
-
-    // The sun breathes — the pause itself, mirroring the web post-sun breath.
-    val breath = rememberInfiniteTransition(label = "breath")
-    val sunScale by breath.animateFloat(
-        initialValue = 0.92f,
-        targetValue = 1.12f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 3200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "breathScale",
-    )
 
     // Drives the little→big expand (travel + grow): 0 = matched to the resting
     // bubble, 1 = full sun at centre. `shown` flips true on the first frame; on
@@ -278,6 +267,16 @@ private fun StepAwayOffer(
         label = "promptAlpha",
     )
 
+    // Drag-down-to-close: pull the pause downward to dismiss it, the same
+    // drag-down-to-let-go gesture the dashboard sun uses. The content follows the
+    // finger and fades; released past the threshold it closes (stay), otherwise
+    // it springs back.
+    val dragY = remember { Animatable(0f) }
+    val dragScope = rememberCoroutineScope()
+    val dismissDragPx = with(LocalDensity.current) { 140.dp.toPx() }
+    // 1 = fully present; eases to 0.15 as it's pulled to the dismiss threshold.
+    val dragFade = 1f - 0.85f * (dragY.value / dismissDragPx).coerceIn(0f, 1f)
+
     fun beginDismiss() {
         if (!dismissing) dismissing = true
     }
@@ -293,10 +292,31 @@ private fun StepAwayOffer(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.62f * surfaceAlpha))
+            .background(Color.Black.copy(alpha = 0.62f * surfaceAlpha * dragFade))
             // Tapping anywhere off the invitation is the easy way to stay.
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { beginDismiss() })
+            }
+            // Pull down to close: the content tracks the finger; released past the
+            // threshold it dismisses, otherwise it springs back.
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onVerticalDrag = { _, dy ->
+                        dragScope.launch { dragY.snapTo((dragY.value + dy).coerceAtLeast(0f)) }
+                    },
+                    onDragEnd = {
+                        if (dragY.value >= dismissDragPx) {
+                            beginDismiss()
+                        } else {
+                            dragScope.launch {
+                                dragY.animateTo(
+                                    0f,
+                                    tween(durationMillis = 240, easing = FastOutSlowInEasing),
+                                )
+                            }
+                        }
+                    },
+                )
             },
     ) {
         val hasOrigin = expandFromX >= 0 && expandFromY >= 0
@@ -308,9 +328,10 @@ private fun StepAwayOffer(
         val startCentrePx =
             if (hasOrigin) Offset(expandFromX.toFloat(), expandFromY.toFloat()) else centrePx
         // progress 0 → sit on the old bubble spot; 1 → arrived at centre. offset()
-        // is placement-only, so it never disturbs the centred rest position.
+        // is placement-only, so it never disturbs the centred rest position. Once
+        // expanded the sun holds still at full size — no breathing/pulsing.
         val sunTravel = (startCentrePx - centrePx) * (1f - expandProgress)
-        val sunScaleNow = lerp(BIG_SUN_ENTER_SCALE, sunScale, expandProgress)
+        val sunScaleNow = lerp(BIG_SUN_ENTER_SCALE, 1f, expandProgress)
 
         SunDisc(
             glowSize = 180.dp,
@@ -318,20 +339,22 @@ private fun StepAwayOffer(
             scale = sunScaleNow,
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset { IntOffset(sunTravel.x.roundToInt(), sunTravel.y.roundToInt()) }
-                .alpha(sunAlpha),
+                .offset {
+                    IntOffset(sunTravel.x.roundToInt(), (sunTravel.y + dragY.value).roundToInt())
+                }
+                .alpha(sunAlpha * dragFade),
         )
 
-        // No heading, no question — the breath has already happened. A single
-        // gentle offer to step away, with a quiet decline; tapping off it or
-        // simply waiting also stays. The choice is never pushed. It rests below
-        // the centred sun and only fades in once the breath has passed.
+        // No heading, no question — the quiet moment has already passed. A single
+        // gentle offer to step away, with a quiet decline; tapping off it, pulling
+        // down, or simply waiting also stays. The choice is never pushed. It rests
+        // below the centred sun and only fades in once the pause has settled.
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(y = 150.dp)
-                .alpha(promptAlpha),
+                .offset { IntOffset(0, (150.dp.toPx() + dragY.value).roundToInt()) }
+                .alpha(promptAlpha * dragFade),
         ) {
             OfferAction(
                 text = "Step away",
