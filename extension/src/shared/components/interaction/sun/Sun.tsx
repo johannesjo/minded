@@ -195,9 +195,7 @@ export const Sun: Component<SunProps> = (props) => {
   });
 
   onCleanup(() => {
-    if (animationFrame) {
-      cancelAnimationFrame(animationFrame);
-    }
+    cancelCompletionFrame();
     cancelSettleFrame();
     if (tapTimer) {
       clearTimeout(tapTimer);
@@ -269,6 +267,18 @@ export const Sun: Component<SunProps> = (props) => {
     if (settleFrame) {
       cancelAnimationFrame(settleFrame);
       settleFrame = undefined;
+    }
+  };
+
+  // Stop an in-flight terminal animation (fling / drag-complete / snap-back),
+  // which drive the disc on `animationFrame`. The fling in particular runs for a
+  // full 3s (FLING_ANIMATION_CONFIG.duration), so it's almost always still going
+  // when a dashboard offer it opened is dismissed — its per-frame writes would
+  // otherwise keep shoving the disc off-screen on top of the return-home fade.
+  const cancelCompletionFrame = () => {
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
     }
   };
 
@@ -405,6 +415,9 @@ export const Sun: Component<SunProps> = (props) => {
     onDone?: () => void,
   ) => {
     cancelSettleFrame();
+    // The fling that flung this disc off-screen may still be animating (it runs
+    // 3s); kill it so it can't fight the fade-in below and drag the disc back out.
+    cancelCompletionFrame();
     setIsAnimating(true);
     setDragOffset(target); // snap home — no cross-screen glide
     const startScale = restScale * 0.6;
@@ -463,6 +476,9 @@ export const Sun: Component<SunProps> = (props) => {
 
     if (prefersReducedMotion()) {
       cancelSettleFrame();
+      // Also stop any in-flight fling (it ignores reduced motion and runs its
+      // full 3s); otherwise it would immediately overwrite the snap-home below.
+      cancelCompletionFrame();
       setDragOffset(target);
       setScale(restScale);
       setIsAnimating(false);
@@ -542,10 +558,7 @@ export const Sun: Component<SunProps> = (props) => {
       // from what's on screen.
       if (getIsAnimating()) {
         cancelSettleFrame();
-        if (animationFrame) {
-          cancelAnimationFrame(animationFrame);
-          animationFrame = 0;
-        }
+        cancelCompletionFrame();
         setRestOffset(getDragOffset());
         setIsAnimating(false);
       }
