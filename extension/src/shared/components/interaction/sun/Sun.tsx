@@ -476,6 +476,9 @@ export const Sun: Component<SunProps> = (props) => {
 
     if (prefersReducedMotion()) {
       cancelSettleFrame();
+      // Also stop any in-flight fling (it ignores reduced motion and runs its
+      // full 3s); otherwise it would immediately overwrite the snap-home below.
+      cancelCompletionFrame();
       setDragOffset(target);
       setScale(restScale);
       setIsAnimating(false);
