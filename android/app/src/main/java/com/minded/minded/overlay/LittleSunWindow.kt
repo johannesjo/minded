@@ -1,6 +1,5 @@
 package com.minded.minded.overlay
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Handler
@@ -48,12 +47,13 @@ class LittleSunWindow(
     // Keep the bubble this far in from every screen edge. Resting flush put the
     // bubble's touch area inside the system back-gesture zone, so grabbing it to
     // drag fired Back instead. A small inset (paired with
-    // Modifier.systemGestureExclusion on the bubble) keeps the drag ours while
-    // still reading as a companion parked near the side.
+    // Modifier.systemGestureExclusion on the bubble) keeps the drag ours
+    // wherever it's parked.
     private val edgeMarginPx = (8 * density).roundToInt()
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
-    // mutates these; on release the bubble snaps to the nearest side edge.
+    // mutates these; on release the bubble simply rests wherever it was dropped
+    // (clamped on-screen), so it can be parked anywhere, not just at the edges.
     private var posX = 0
     private var posY = 0
 
@@ -67,7 +67,6 @@ class LittleSunWindow(
     // sun can expand out of exactly where the little sun sat.
     private var expandOriginX by mutableStateOf(-1)
     private var expandOriginY by mutableStateOf(-1)
-    private var snapAnimator: ValueAnimator? = null
     // Set while stepping away so the hide fades the expanded pause sun straight
     // out, instead of flipping back to the little bubble (which would flash on
     // its way out). Cleared once the window is actually removed.
@@ -90,6 +89,7 @@ class LittleSunWindow(
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
             onStepAway = { stepAway() },
+            onPullDownAway = { pullDownAway() },
             onStay = { collapse() },
         )
     }
@@ -291,7 +291,6 @@ class LittleSunWindow(
 
     private fun onDrag(dxPx: Float, dyPx: Float) {
         if (isExpanded) return
-        snapAnimator?.cancel()
         posX += dxPx.roundToInt()
         posY += dyPx.roundToInt()
         clampPosition()
@@ -300,33 +299,15 @@ class LittleSunWindow(
 
     private fun onDragEnd() {
         if (isExpanded) return
+        // Rest wherever it was dropped — a free-floating companion, parkable
+        // anywhere, not edge-locked. clampPosition keeps it on-screen and a
+        // margin in from every edge, clear of the system gesture zones.
         clampPosition()
-        // Settle against whichever side is nearer — the chat-head feel — but rest
-        // a margin in from the edge, never flush, so the next drag doesn't collide
-        // with the system back-gesture.
-        val leftTarget = edgeMarginPx
-        val rightTarget = screenWidthPx() - bubbleSizePx - edgeMarginPx
-        val targetX = if (posX + bubbleSizePx / 2 < screenWidthPx() / 2) leftTarget else rightTarget
-        animateSnapToX(targetX)
-        ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(targetX, posY)
-    }
-
-    private fun animateSnapToX(targetX: Int) {
-        snapAnimator?.cancel()
-        if (posX == targetX) return
-        snapAnimator = ValueAnimator.ofInt(posX, targetX).apply {
-            duration = 220
-            addUpdateListener {
-                posX = it.animatedValue as Int
-                updateLayout()
-            }
-            start()
-        }
+        ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
     }
 
     private fun expand() {
         if (isExpanded) return
-        snapAnimator?.cancel()
         // Capture where the bubble sits now so the pause sun expands out of it.
         expandOriginX = posX + bubbleSizePx / 2
         expandOriginY = posY + bubbleSizePx / 2
@@ -351,10 +332,17 @@ class LittleSunWindow(
         ctrlSvc.stepAwayFromBlockedApp()
     }
 
+    private fun pullDownAway() {
+        // The pause was pulled all the way down — the sun has already sunk off
+        // the bottom. Leave the blocked app for minded (not the home screen the
+        // "Step away" button uses). Keep the expanded surface through the hide
+        // fade so it doesn't flash back to the bubble on its way out.
+        keepExpandedOnHide = true
+        ctrlSvc.pullDownToMindedFromBlockedApp()
+    }
+
     override fun hideWindow() {
         stopTimer()
-        snapAnimator?.cancel()
-        snapAnimator = null
         // Reset expansion state here (not only on the show path): the window can
         // be hidden mid-offer by timer expiry / revalidation, and resetting only
         // in showWindow() can be skipped if a re-show races the hide fade-out —

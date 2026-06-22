@@ -148,6 +148,9 @@ fun LittleSun(
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
     onStepAway: () -> Unit = {},
+    // Pulling the pause all the way down "sets" the sun and leaves the app for
+    // minded — distinct from the gentle stay paths (Not now / tap-off / wait).
+    onPullDownAway: () -> Unit = {},
     onStay: () -> Unit = {},
 ) {
     if (expanded) {
@@ -155,6 +158,7 @@ fun LittleSun(
             expandFromX = expandFromX,
             expandFromY = expandFromY,
             onStepAway = onStepAway,
+            onPullDownAway = onPullDownAway,
             onStay = onStay,
         )
     } else {
@@ -254,6 +258,7 @@ private fun StepAwayOffer(
     expandFromX: Int,
     expandFromY: Int,
     onStepAway: () -> Unit,
+    onPullDownAway: () -> Unit,
     onStay: () -> Unit,
 ) {
     // 0 = quiet hold, 1 = invitation shown.
@@ -377,14 +382,14 @@ private fun StepAwayOffer(
                         if (dragY.value >= dismissDragPx) {
                             // Pulled past the threshold: the sun sets. It sinks the
                             // rest of the way down (staying fully opaque) while the
-                            // night sky holds, then the surface fades and the bubble
-                            // returns — it never fades out in place.
+                            // night sky holds, then we leave the blocked app for
+                            // minded — the overlay fades out as minded comes up.
                             dragScope.launch {
                                 dragY.animateTo(
                                     screenHeightPx,
                                     tween(durationMillis = 500, easing = FastOutSlowInEasing),
                                 )
-                                beginDismiss(reverse = false)
+                                onPullDownAway()
                             }
                         } else {
                             dragScope.launch {
