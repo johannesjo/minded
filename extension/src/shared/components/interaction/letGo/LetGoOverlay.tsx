@@ -10,8 +10,6 @@ import {
 } from "@src/shared/components/interaction/letGo/letGo.const";
 
 interface LetGoOverlayProps {
-  /** "sun" (light) or "moon" (dark) — matches the dashboard theme. */
-  variant: "sun" | "moon";
   /** Prior answers, so the standard Question can offer them as before. */
   answers: Answer[];
   /** Called once the flow is finished (answered, declined, or ignored). */
@@ -68,7 +66,6 @@ export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
     <div
       class={styles.letGo}
       classList={{
-        [styles.isDark]: props.variant === "moon",
         [styles.isClosing]: getIsClosing(),
       }}
       style={{ "--let-go-fade-ms": `${LET_GO_FADE_MS}ms` }}

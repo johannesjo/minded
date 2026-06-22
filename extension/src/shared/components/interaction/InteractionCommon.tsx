@@ -1104,11 +1104,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       )}
 
       {getShowLetGoOffer() && (
-        <LetGoOverlay
-          variant={getDragObjectName()}
-          answers={getAnswers()}
-          onClose={finishLetGo}
-        />
+        <LetGoOverlay answers={getAnswers()} onClose={finishLetGo} />
       )}
 
       {getShowTimeSelectionOverlay() && (
