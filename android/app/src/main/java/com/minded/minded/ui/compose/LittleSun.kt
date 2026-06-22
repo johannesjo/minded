@@ -293,7 +293,7 @@ private fun StepAwayOffer(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.62f * surfaceAlpha * dragFade))
+            .background(Color.Black.copy(alpha = 0.78f * surfaceAlpha * dragFade))
             // Tapping anywhere off the invitation is the easy way to stay.
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { beginDismiss() })
