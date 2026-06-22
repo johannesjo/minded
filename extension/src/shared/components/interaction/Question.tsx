@@ -8,7 +8,6 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
-import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 
 // Chip fade-out before the text input takes over; keep in sync with the
@@ -156,12 +155,12 @@ export const Question: (props: {
       </Show>
 
       <div class="question-body">
-        {/* Free-text questions (no chips) get a faint "ghost" of the input,
-            sitting where the textarea will land: it shows at a glance that you
-            can tap to write, and exactly where, then cross-fades into the real
-            field on tap. Chips carry their own tappable affordance, so they
-            skip the hint. The question div above is the labelled button, so the
-            ghost is decorative (aria-hidden) — a touch/mouse affordance only. */}
+        {/* Free-text questions (no chips) get a faint placeholder-style hint,
+            sitting where the first line of the textarea will land: it shows you
+            can tap to write, and where, then fades out as the field fades in.
+            Chips carry their own tappable affordance, so they skip the hint. The
+            question div above is the labelled button, so the hint is decorative
+            (aria-hidden) — a touch/mouse affordance only. */}
         <Show when={!hasChips}>
           <div
             class="question-tap-hint"
@@ -169,10 +168,7 @@ export const Question: (props: {
             aria-hidden="true"
             onClick={revealInput}
           >
-            <div class="ghost-input">
-              <Ico name="edit" size={20} />
-              <span class="ghost-label">Tap to answer</span>
-            </div>
+            Tap to answer
           </div>
         </Show>
 
