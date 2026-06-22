@@ -60,6 +60,16 @@ const [getSunRole, setSunRole] = createSignal<SunPhase>("companion");
  */
 const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
 /**
+ * Hide the whole shell-sun layer (opacity 0, inert) without changing its role.
+ * Set while a dashboard offer that *replaces* the sun flow is open — currently
+ * the let-go question, flung up/away. That overlay lives inside the interaction
+ * layer (z-20), but the shell sun is its own fixed layer (z-30), so the disc
+ * would otherwise paint *over* the question and visibly career around / pop back
+ * in on top. Hiding it lets the question read like any other screen; the disc is
+ * sent home and revealed again on close. Default false.
+ */
+const [getIsShellSunHidden, setIsShellSunHidden] = createSignal(false);
+/**
  * Bottom-bar anchor (px from the bottom edge) for the companion rest, computed to
  * mirror the `--companion-bar-center-y` CSS var (RouteCmp.module.scss):
  * `--safe-area-inset-bottom` + the `clamp(64px, 10vh, 88px)` band / 2.
@@ -151,6 +161,8 @@ export {
   setSunRole,
   getIsSunHandoffInFlight,
   setIsSunHandoffInFlight,
+  getIsShellSunHidden,
+  setIsShellSunHidden,
   getCompanionBottomYPx,
   setCompanionBottomYPx,
   getInteractiveSunAnchor,
