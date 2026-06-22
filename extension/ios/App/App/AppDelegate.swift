@@ -1,6 +1,12 @@
 import UIKit
 import Capacitor
 
+extension Notification.Name {
+    /// Posted when the home-screen companion sun widget opens `minded://sun`.
+    /// Observed by MainViewController, which sets the shared `?sun=open` flag.
+    static let openSun = Notification.Name("OPEN_SUN")
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -48,7 +54,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // it here rather than passing it to Capacitor so a missing @capacitor/app
         // listener can't swallow it. See docs/sun-companion-widget.md.
         if url.scheme == "minded", url.host == "sun" {
-            NotificationCenter.default.post(name: Notification.Name("OPEN_SUN"), object: nil)
+            NotificationCenter.default.post(name: .openSun, object: nil)
             return true
         }
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)

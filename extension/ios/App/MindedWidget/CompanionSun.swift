@@ -88,7 +88,9 @@ struct CompanionSun: View {
             ]
 
         // Day light source is centred; the moon's is offset upper-left to match
-        // the Android moon (gradient centre 40,37 within the 84-wide disc).
+        // the Android moon. Android's gradient centre (40,37) is in the 108-unit
+        // viewport; the centred 84-wide disc spans x∈[12,96], so in the disc's own
+        // coordinates that is ((40-12)/84, (37-12)/84) ≈ (0.33, 0.30).
         let center: UnitPoint = isNight ? UnitPoint(x: 0.33, y: 0.30) : .center
         // Android moon gradientRadius 62 over the 84 disc ≈ 0.74 of its diameter.
         let endRadius: CGFloat = (isNight ? diameter * 0.74 : diameter / 2)

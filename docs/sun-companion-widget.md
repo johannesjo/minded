@@ -73,8 +73,9 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   launching `MainActivity` with `EXTRA_LAUNCH_ROUTE = OPEN_SUN_HASH`
   (`"/?sun=open"`).
 - **Asset** (`res/drawable/ic_sun_widget.xml` + `res/drawable-night/…`): a
-  vector sun (radial warm gradient: cream → `#FFE281` → `#FFAE52` → `#EF6F52`)
-  and a night moon variant (cool blue), picked automatically by the system.
+  vector sun (a near-white disc warming to faint cream at the rim, over a soft
+  warm-gold bloom) and a night moon variant (cool blue), picked automatically
+  by the system.
 - **`MyAppWidgetReceiver.kt`**: stripped to the Glance receiver. The old 30-min
   `AlarmManager` refresh is removed — the sun is static, nothing to poll.
 - **`app_widget_info.xml`**: a 1×1 home-screen widget with a sun preview.
