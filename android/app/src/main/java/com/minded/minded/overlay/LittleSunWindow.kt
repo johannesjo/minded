@@ -44,12 +44,23 @@ class LittleSunWindow(
 
     private val density = ctrlSvc.resources.displayMetrics.density
     private val bubbleSizePx = (60 * density).roundToInt()
-    // Keep the bubble this far in from every screen edge. Resting flush put the
-    // bubble's touch area inside the system back-gesture zone, so grabbing it to
-    // drag fired Back instead. A small inset (paired with
-    // Modifier.systemGestureExclusion on the bubble) keeps the drag ours
-    // wherever it's parked.
+    // Keep the bubble this far in from the LEFT/RIGHT edges. Resting flush put
+    // the bubble's touch area inside the system back-gesture zone, so grabbing
+    // it to drag fired Back instead. A small inset suffices here because we also
+    // claim the bubble's bounds from the back-gesture via
+    // Modifier.systemGestureExclusion — so the drag stays ours wherever it's
+    // parked along the sides.
     private val edgeMarginPx = (8 * density).roundToInt()
+
+    // Extra clearance ADDED beyond the status bar (top) and nav bar (bottom) to
+    // keep the bubble out of the mandatory gesture zones an app can't exclude:
+    // the notification shade just below the status bar, and the home/back
+    // gesture strip just above the nav bar. The bar insets already do most of
+    // the work, so this is only a small buffer on top — bigger than the side
+    // inset, but nowhere near a full gesture zone.
+    // shortcut: a fixed dp buffer — read WindowInsets.mandatorySystemGestures
+    // if OEM gesture-zone heights ever vary enough to matter.
+    private val gestureBufferPx = (16 * density).roundToInt()
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble simply rests wherever it was dropped
@@ -241,11 +252,10 @@ class LittleSunWindow(
     private fun screenWidthPx() = ctrlSvc.resources.displayMetrics.widthPixels
     private fun screenHeightPx() = ctrlSvc.resources.displayMetrics.heightPixels
 
-    // Status-bar (top) and navigation-bar (bottom) heights, so the bubble keeps
-    // the same visible gap from the top/bottom as from the sides: it rests below
-    // the status bar and above the nav bar, never tucked under either. These only
-    // ever *add* margin, so an over-estimate (e.g. gesture-nav still reporting a
-    // full nav-bar height) merely parks it a touch higher — never under a bar.
+    // Status-bar (top) and navigation-bar (bottom) heights. clampPosition adds
+    // gestureBufferPx to each so the bubble clears the bar AND the gesture zone
+    // beyond it. An over-estimate (e.g. gesture-nav still reporting a full
+    // nav-bar height) only parks it a touch further in, never under a bar.
     private fun systemBarInsetTopPx() = systemDimenPx("status_bar_height")
     private fun systemBarInsetBottomPx() = systemDimenPx("navigation_bar_height")
 
@@ -268,13 +278,15 @@ class LittleSunWindow(
     }
 
     private fun clampPosition() {
-        // Stay a margin in from every edge so the bubble never sits in a system
-        // gesture zone. Top/bottom also clear the status and navigation bars, so
-        // the visible gap there matches the left/right one (see edgeMarginPx).
+        // Stay clear of every system gesture zone. Sides need only a small inset
+        // (the back-gesture there is excluded). Top/bottom add a buffer beyond
+        // the status/nav bar, since the notification shade and home gesture
+        // can't be excluded — but only a small one, so the bubble can still rest
+        // near the top and bottom.
         val minX = edgeMarginPx
         val maxX = (screenWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
-        val minY = systemBarInsetTopPx() + edgeMarginPx
-        val maxY = (screenHeightPx() - bubbleSizePx - systemBarInsetBottomPx() - edgeMarginPx)
+        val minY = systemBarInsetTopPx() + gestureBufferPx
+        val maxY = (screenHeightPx() - bubbleSizePx - systemBarInsetBottomPx() - gestureBufferPx)
             .coerceAtLeast(minY)
         posX = posX.coerceIn(minX, maxX)
         posY = posY.coerceIn(minY, maxY)
