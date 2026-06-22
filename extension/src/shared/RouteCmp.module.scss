@@ -76,6 +76,12 @@
 .shellSunLayer.isHidden {
   opacity: 0;
   pointer-events: none;
+  // Snap to hidden — no fade. The base layer keeps a 500ms opacity transition
+  // for the *reveal* (gliding back as an offer closes), but on the way *in* a
+  // fade would leave the just-flung disc visibly careening over the question for
+  // that half-second. Killing the transition here only affects the hide
+  // direction; removing the class restores the base transition for the reveal.
+  transition: none;
 
   // The disc keeps `pointer-events: auto` while interactive, which a parent's
   // `none` does not override — force it inert too so a hidden disc can't still

@@ -855,7 +855,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     if (isDragging) {
       setInteractionOpacity(0);
-    } else if (resetToInitial) {
+    } else if (resetToInitial && !getIsFinalAnimation()) {
+      // resetToInitial normally means a sub-threshold drag snapped back, so the
+      // dimmed content returns to full opacity. But the let-go open *also*
+      // dispatches resetToInitial (to reset the sky to neutral) while it is
+      // deliberately fading the content out — guard on isFinalAnimation so this
+      // listener doesn't fight that fade by popping the content back to opaque.
       setInteractionOpacity(1);
     }
   };
