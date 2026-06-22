@@ -98,13 +98,11 @@ describe("getDashboardEntriesFromQuestions", () => {
       (isToday as jest.Mock).mockReturnValue(false);
     });
 
-    it("never greets with a measurement card (stats counter or behaviour chart), whatever the random pick", () => {
+    it("never greets with a measurement card (the stats counter), whatever the random pick", () => {
       const syncData = createMockSyncData({
-        // → a minded-decisions tally and a behaviour-over-time chart; neither
-        // should ever be the calm first card.
+        // → a minded-decisions tally; it should never be the calm first card.
         sunTaps: { "2024-01-15": 5 },
         attempts: { "2024-01-15": 12 },
-        browsingBehaviorRating: { a: 1, b: 2, c: 3 },
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
           reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
@@ -113,11 +111,7 @@ describe("getDashboardEntriesFromQuestions", () => {
         ],
       });
 
-      const measuringTypes = [
-        DashboardGroupType.Stats,
-        DashboardGroupType.BrowsingBehaviorRating,
-        DashboardGroupType.AppUsageRating,
-      ];
+      const measuringTypes = [DashboardGroupType.Stats];
 
       // Sweep the pick across the whole [0, 1) range; the greeting must always
       // be a reflective card or a quote, never a measurement card.
@@ -129,9 +123,8 @@ describe("getDashboardEntriesFromQuestions", () => {
       }
     });
 
-    it("lets a self-report card (mood / energy) be the greeting — they're no longer pinned out of the pool", () => {
+    it("lets a self-report card (energy) be the greeting — it's no longer pinned out of the pool", () => {
       const syncData = createMockSyncData({
-        moodCheckVal: undefined,
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
           reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
@@ -147,8 +140,8 @@ describe("getDashboardEntriesFromQuestions", () => {
         );
       }
 
-      // Mood is a fixed card that the old index-range pick could never reach.
-      expect(greetingTypes).toContain(DashboardGroupType.MoodCheckin);
+      // Energy is a fixed card that the old index-range pick could never reach.
+      expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
     it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {

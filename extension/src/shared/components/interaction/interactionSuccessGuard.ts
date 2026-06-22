@@ -2,10 +2,10 @@
  * Whether an incoming interaction-success callback is stale and should be
  * ignored, because the user has already left the question screen.
  *
- * A success can arrive late: MoodCheckin saves on a 3s timer (to allow an
- * optional note) and the user can triple-tap the sun to the choices before it
- * fires. Acting on it then would disarm the intent/time buttons without
- * re-arming or advancing them, freezing the choices with every button greyed.
+ * A success can arrive late: an interaction that saves asynchronously can fire
+ * its callback after the user has already triple-tapped the sun to the choices.
+ * Acting on it then would disarm the intent/time buttons without re-arming or
+ * advancing them, freezing the choices with every button greyed.
  *
  * Each flag marks a way the question has already been left:
  * - `hasAnswered`: a success was already handled (guards duplicate callbacks).

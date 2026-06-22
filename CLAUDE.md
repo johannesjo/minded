@@ -49,6 +49,13 @@ feature decision — read them before proposing changes to interventions.
   know the user. See `docs/reflective-companion-concept.md` for the worked
   example (and the cut list of ideas that failed this bar).
 
+- **Minimalism is the default design principle — for both UX and UI.** Always
+  prefer the simplest thing that works. Fewer screens, fewer options, fewer
+  words, fewer controls, less visual chrome. Every element must earn its place;
+  when in doubt, leave it out. This reinforces the calm, never-striving premise:
+  a quiet, uncluttered surface lowers cognitive load, and added complexity is a
+  cost paid by the user. Remove before you add.
+
 ## Essential Commands
 
 All npm scripts live in `extension/package.json` — run them from the `extension/` directory.
@@ -160,9 +167,19 @@ Path aliases change based on build mode to load platform-specific code.
 - Only create component-specific SCSS modules for layout, not for recreating existing button/input styles
 
 **Transitions — always soft, never hard cuts:**
+- As a rule, *all* transitions should aim for softness. Anything that changes
+  on screen — a surface, a state, a value, a piece of motion — should ease in
+  and out rather than snap. Softness is the default; a hard cut needs a reason.
 - Every overlay and page transition (open, close, decline, "Not now", success)
   must fade — never snap in or out. Calmness is the product; an abrupt cut reads
   as a jolt and betrays the premise. Reuse the existing fade helpers
   (`fadeOut` in `src/util/animation.ts`, `ANIMATION_TIMING`) and the established
   patterns (e.g. `InteractionOverlay`'s `handleHideWithFade`) rather than
   unmounting straight to the next surface.
+
+**Minimalism — remove before you add:**
+- Default to the simplest UI that works: less visual chrome, fewer controls,
+  fewer words. Every element must earn its place; when in doubt, leave it out.
+- This is the UI expression of the minimalism principle in *Conceptual
+  Fundamentals* — a quiet, uncluttered surface keeps cognitive load low and
+  upholds the calm, never-striving premise.

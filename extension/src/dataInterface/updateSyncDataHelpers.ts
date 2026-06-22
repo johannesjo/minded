@@ -22,8 +22,8 @@ type SyncDataPatchSaver = (syncDataPatch: Partial<SyncData>) => Promise<void>;
  *
  * @example
  * await updateSyncDataField(getSyncData, patchSyncData, () => ({
- *   moodCheckTS: Date.now(),
- *   moodCheckVal: mood,
+ *   energyLvlTS: Date.now(),
+ *   energyLvlVal: lvl,
  * }));
  */
 export const updateSyncDataField = async (

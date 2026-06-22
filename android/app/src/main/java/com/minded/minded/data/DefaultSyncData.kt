@@ -2,6 +2,7 @@ package com.minded.minded.data
 
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
+import com.minded.minded.util.SessionGraceCfg
 import com.minded.minded.util.PatternInsightState
 
 val defaultSyncData = SyncData(
@@ -11,7 +12,9 @@ val defaultSyncData = SyncData(
         blockedApps = emptyList(),
         focusSchedule = null,
         soundEnabled = null,
-        sleepWindDown = null
+        sleepWindDown = null,
+        // On by default (5 min), matching the extension's DEFAULT_SYNC_DATA.
+        sessionGrace = SessionGraceCfg(enabled = true, minutes = 5)
     ),
     answers = emptyList(),
     // NOTE: 99 is set to pass isToday check
@@ -36,6 +39,8 @@ val defaultSyncData = SyncData(
     alternatives = emptyList(),
     patternInsightState = PatternInsightState(emptyMap()),
     emotionLabeling = null,
+    // Daily budget feature — REMOVED (#38). Dormant defaults kept only so the
+    // Android <-> extension sync JSON contract stays stable. No writer/reader.
     budgetPromptDismissedTS = 99L,
     activeTimer = null,
     dailyBudget = null,

@@ -58,6 +58,10 @@ export default defineConfig(({ mode }): UserConfig => {
           // `npm run styleguide` does a one-shot build + vite preview at :5174.
           // (vite's dev server hits a pre-existing TDZ in syncData.const ↔
           // commonSyncDataInterface that build mode handles fine.)
+          // Relative base so the build works at any path — both local preview
+          // (served at /) and the per-PR GitHub Pages subpath
+          // (/<repo>/pr-preview/pr-N/) the preview workflow deploys to.
+          base: "./",
           plugins: [solidPlugin()],
           css: {
             preprocessorOptions: {
@@ -77,6 +81,14 @@ export default defineConfig(({ mode }): UserConfig => {
           build: {
             outDir: resolve(__dirname, "distStyleguide"),
             emptyOutDir: true,
+            rollupOptions: {
+              // Two pages: the component styleguide (index) and the full
+              // dashboard simulation (the real app shell on a plain web page).
+              input: {
+                index: resolve(pagesDir, "styleguide", "index.html"),
+                dashboard: resolve(pagesDir, "styleguide", "dashboard.html"),
+              },
+            },
           },
         }
       : mode === "ios"

@@ -18,11 +18,8 @@ import {
   getWebHostSessionTarget,
   hasActiveWebHostTimer,
 } from "@src/util/activeTimerScope";
-import {
-  getLiveBudgetUsageEntries,
-  getLiveBudgetUsageSecondsForBudget,
-} from "@src/util/budget/liveBudgetUsage";
 import { getEffectiveSessionDurationS } from "@src/util/sessionDuration";
+import { startUsageTimeTracking } from "@src/pages/content/usageTimeTracker";
 
 const CURRENT_URL = window.location.href;
 
@@ -32,6 +29,11 @@ const CURRENT_URL = window.location.href;
     if (isOnBlockedUrl(CURRENT_URL, initialSyncData)) {
       const currentHost = getHostFromUrl(CURRENT_URL);
       const currentTarget = getWebHostSessionTarget(currentHost);
+
+      // Measure real foreground time on this blocked host for the present-moment
+      // usage observation. Runs for the page's lifetime regardless of whether an
+      // overlay shows (so rest-of-day visits are counted too).
+      startUsageTimeTracking(currentHost);
 
       // Rest-of-day mode: hide everything for the current host.
       if (isRestOfDayActive(initialSyncData, currentTarget, "web")) {
@@ -44,18 +46,10 @@ const CURRENT_URL = window.location.href;
         console.error("Failed to count opening attempt", error);
       }
 
-      const [syncData, liveBudgetUsageEntries, dataForHost] = await Promise.all(
-        [
-          getSyncData(),
-          getLiveBudgetUsageEntries(),
-          loadDataForHost(currentHost),
-        ],
-      );
-      const pendingBudgetUsageSeconds = getLiveBudgetUsageSecondsForBudget(
-        syncData,
-        currentHost,
-        liveBudgetUsageEntries,
-      );
+      const [syncData, dataForHost] = await Promise.all([
+        getSyncData(),
+        loadDataForHost(currentHost),
+      ]);
       const sessionDurationS = getEffectiveSessionDurationS(
         dataForHost,
         Date.now(),
@@ -162,12 +156,7 @@ const CURRENT_URL = window.location.href;
             <ContentScriptMain
               isShowFullMinderInitially={
                 !hasActiveSession &&
-                isShowFullMinder(
-                  CURRENT_URL,
-                  syncData,
-                  pendingBudgetUsageSeconds,
-                  sessionDurationS,
-                )
+                isShowFullMinder(CURRENT_URL, syncData, sessionDurationS)
               }
               shadowRoot={shadow}
               onTeardownShadow={teardownShadow}

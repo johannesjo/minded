@@ -34,8 +34,6 @@ import com.minded.minded.detection.OverlayDecisionEngine
 import com.minded.minded.detection.OverlayState
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
-import com.minded.minded.util.getBudgetRemainingSeconds
-import com.minded.minded.util.hasBudgetRemaining
 import com.minded.minded.util.ActiveTimer
 import com.minded.minded.util.SessionIntent
 import com.minded.minded.util.SessionTarget
@@ -160,7 +158,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         } else if (isOnBlockedApp) {
             // For Little Sun (active timer) or wind-down, the user explicitly
             // opted into that state — keep restoring it via the normal flow,
-            // which also handles timer/budget expiry while screen was off.
+            // which also handles timer expiry while screen was off.
             val appToRestore = freshForegroundApp ?: savedApp
             Log.d(logTag, "Restoring overlay after unlock: savedOverlay=$savedOverlay app=$appToRestore")
             checkToShowOverlay(appToRestore)
@@ -581,7 +579,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val now = Instant.ofEpochMilli(currentTimeMs)
         val sessionEndTime = entryForCurrentApp?.sessionEndTime ?: activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
-        val budgetRemaining = hasBudgetRemaining(syncData)
 
         val sessionGrace = syncData.cfg.sessionGrace
         val sessionGraceEnabled = sessionGrace?.enabled == true
@@ -614,7 +611,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 appSessionEndTime = entryForCurrentApp?.sessionEndTime?.toEpochMilli(),
                 activeTimerEndTime = activeTimer?.endTS,
                 activeTimerDurationS = activeTimer?.durationS,
-                hasBudgetRemaining = budgetRemaining,
                 sessionGraceEnabled = sessionGraceEnabled,
                 sessionGraceMinutes = sessionGraceMinutes,
                 currentSessionDurationS = currentSessionDurationS,
@@ -658,12 +654,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
                     // Keep per-app map in sync so Little Sun countdown can restore after process restarts.
                     sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
-                } else if (!isWithinSessionLimit && budgetRemaining) {
-                    val remainingSeconds = getBudgetRemainingSeconds(syncData)
-                    Log.v(logTag, "Budget has ${remainingSeconds}s remaining, showing little sun (budget mode)")
-                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(
-                        Instant.now().plusSeconds(remainingSeconds.toLong())
-                    )
                 }
                 showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
             }

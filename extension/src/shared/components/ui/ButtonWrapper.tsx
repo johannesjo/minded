@@ -12,7 +12,7 @@ const ButtonWrapper = (props: {
 
   return (
     <div
-      // needed for parent styling in MoodCheckin
+      // parent styling hook
       class="btn-wrapper"
       style={`text-align:center;  transition: 0.2s ease-out; ${!getIsVisible() ? "visibility: hidden; opacity: 0;" : "opacity: 1"}`}
     >

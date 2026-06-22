@@ -6,7 +6,6 @@ import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import android.view.WindowManager
-import com.minded.minded.util.hasBudgetRemaining
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,15 +31,9 @@ class LittleSunWindow(
     private val windowManager: WindowManager,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
 
-    companion object {
-        private const val BUDGET_USAGE_UPDATE_INTERVAL_S = 10
-    }
-
     override val logTag = javaClass.simpleName
     private var initialTime = 0
     private var windowShownAt = 0L
-    private var budgetUsageAccumulator = 0
-    private var isBudgetActive = false
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
     private val powerManager: PowerManager =
@@ -127,15 +120,6 @@ class LittleSunWindow(
                 } else {
                     Log.v(logTag, "Re-validation: skipping during grace period (${timeSinceShown}ms < ${REVALIDATION_GRACE_PERIOD_MS}ms)")
                 }
-
-                // Track budget usage (accumulate and write periodically)
-                if (isBudgetActive) {
-                    budgetUsageAccumulator++
-                    if (budgetUsageAccumulator >= BUDGET_USAGE_UPDATE_INTERVAL_S) {
-                        ctrlSvc.getSharedPreferenceService().addBudgetUsage(budgetUsageAccumulator)
-                        budgetUsageAccumulator = 0
-                    }
-                }
             } else {
                 // Screen off or not interactive - skip this tick but keep timer running
                 Log.v(logTag, "Screen off/not interactive, skipping timer tick")
@@ -152,8 +136,6 @@ class LittleSunWindow(
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
         windowShownAt = System.currentTimeMillis()
-        // Cache budget state at show time to avoid reading SharedPreferences every tick
-        isBudgetActive = hasBudgetRemaining(ctrlSvc.getSharedPreferenceService().getSyncData())
         Log.d(logTag, "showWindow() completed, window=${window != null}")
     }
 
@@ -165,11 +147,6 @@ class LittleSunWindow(
 
     override fun hideWindow() {
         stopTimer()
-        // Save remaining accumulated budget usage
-        if (budgetUsageAccumulator > 0) {
-            ctrlSvc.getSharedPreferenceService().addBudgetUsage(budgetUsageAccumulator)
-            budgetUsageAccumulator = 0
-        }
         super.hideWindow()
     }
 

@@ -24,7 +24,7 @@ import Btn from "@src/shared/components/ui/Btn";
 import Chart from "@src/shared/components/ui/Chart";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
+import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
@@ -175,13 +175,24 @@ const Styleguide = (): JSX.Element => {
       <header class={styles.header}>
         <div class={styles.headerTop}>
           <h1>styleguide</h1>
-          <Btn
-            outline
-            onClick={() => setIsDark((v) => !v)}
-            aria-pressed={isDark()}
-          >
-            {isDark() ? "light mode" : "dark mode"}
-          </Btn>
+          <div class={styles.headerActions}>
+            {/* Plain navigation (separate page, no router on the styleguide). */}
+            <Btn
+              outline
+              onClick={() => {
+                window.location.href = "dashboard.html";
+              }}
+            >
+              dashboard simulation →
+            </Btn>
+            <Btn
+              outline
+              onClick={() => setIsDark((v) => !v)}
+              aria-pressed={isDark()}
+            >
+              {isDark() ? "light mode" : "dark mode"}
+            </Btn>
+          </div>
         </div>
         <nav class={styles.toc}>
           <For each={TOC}>
@@ -475,11 +486,11 @@ const Styleguide = (): JSX.Element => {
           </div>
         </Subsection>
 
-        <Subsection label="<EmojiCheckin>">
+        <Subsection label="<NoticeInteraction>">
           <div class={styles.interactionFrame}>
-            <EmojiCheckin
-              onSuccess={() => console.log("EmojiCheckin: success")}
-              onSkip={() => console.log("EmojiCheckin: skip")}
+            <NoticeInteraction
+              onSuccess={() => console.log("NoticeInteraction: success")}
+              onSkip={() => console.log("NoticeInteraction: skip")}
               onCancelCountdown={() => undefined}
             />
           </div>

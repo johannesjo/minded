@@ -66,6 +66,10 @@ export const DEFAULT_SYNC_DATA: SyncData = {
           // "localhost",
           // "localhost:3000",
         ],
+    // Gentle per-session buffer is on by default: each fresh visit gets a few
+    // uninterrupted minutes (resets every session, never a depleting daily
+    // quota), so interventions never feel like nagging.
+    sessionGrace: { enabled: true, minutes: 5 },
   },
   // NOTE: 99 is set to pass isToday check
   lastBlockedTS: DEFAULT_TS_VAL,
@@ -77,6 +81,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   lastBrowsingBehaviorRatingTS: DEFAULT_TS_VAL,
   appUsageRating: {},
   lastAppUsageRatingTS: DEFAULT_TS_VAL,
+  usageStats: {},
   energyLvlVal: 0,
   energyLvlTS: DEFAULT_TS_VAL,
   dailyQuestionsMorningTS: DEFAULT_TS_VAL,
@@ -99,7 +104,8 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   },
   activeTimer: null,
   emotionLabeling: null,
-  // Daily budget feature
+  // Daily budget feature — REMOVED (#38); dormant defaults kept for the sync
+  // JSON contract / back-compat only (see syncData.d.ts). No writer or reader.
   dailyBudget: null,
   dailyUsage: {},
   budgetPromptDismissedTS: DEFAULT_TS_VAL,

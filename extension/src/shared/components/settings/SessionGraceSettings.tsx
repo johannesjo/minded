@@ -6,7 +6,7 @@ import {
 import { SessionGraceCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import Btn from "@src/shared/components/ui/Btn";
-import styles from "./BudgetSettings.module.scss";
+import styles from "./SessionGraceSettings.module.scss";
 
 const GRACE_OPTIONS = [
   { label: "1 min", value: 1 },
@@ -45,7 +45,7 @@ export const SessionGraceSettings = (): JSX.Element => {
   };
 
   return (
-    <div class={styles.BudgetSettings}>
+    <div class={styles.SessionGraceSettings}>
       <div class={styles.header}>
         <h3 class="h3" style={{ margin: 0 }}>
           Grace Period

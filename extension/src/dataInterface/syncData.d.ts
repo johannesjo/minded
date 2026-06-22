@@ -1,7 +1,7 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
-import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
+import { UsageStatsByDate } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
 /** Time range for a single day (24h format, e.g., "09:00" to "17:00") */
 export interface TimeRange {
@@ -127,8 +127,11 @@ export interface SyncData {
   answers: Answer[];
   lastBlockedTS: number;
   lastBlockedUrl: string;
+  // Dormant: the mood check-in was removed (it asked you to grade your feeling
+  // on a Great→Awful scale, which is judgment, not the awareness the app is
+  // after). Fields kept so the stored SyncData JSON contract is unchanged.
   moodCheckTS: number;
-  moodCheckVal?: MoodCheckinVal;
+  moodCheckVal?: string;
   moodCheckAdditional: string;
   energyLvlTS: number;
   energyLvlVal: number;
@@ -142,6 +145,12 @@ export interface SyncData {
   attempts: {
     [key: string]: number;
   };
+  /**
+   * Dormant: the old Great→Awful self-rating maps. No longer written or shown
+   * (replaced by the observed `usageStats` below). Kept so the stored-data
+   * shape stays stable. The `last*RatingTS` fields are reused as the
+   * "last usage observation shown" throttle (see getInteractionMode).
+   */
   lastBrowsingBehaviorRatingTS: number;
   browsingBehaviorRating: {
     [key: string]: number;
@@ -150,6 +159,13 @@ export interface SyncData {
   appUsageRating: {
     [key: string]: number;
   };
+
+  /**
+   * Observed foreground usage per day (extension-only writer; Android reads
+   * real usage from the OS via UsageStatsManager instead). Feeds the
+   * present-moment usage observation. Never charted over time.
+   */
+  usageStats: UsageStatsByDate;
   selfAssessment: SelfAssessmentData;
   alternativeApps: string[];
   alternativeWebsites: string[];
@@ -160,7 +176,11 @@ export interface SyncData {
 
   emotionLabeling: EmotionLabelingData | null;
 
-  // Daily budget feature
+  // Daily budget feature — REMOVED (#38). Retained dormant: no writer or reader
+  // remains; kept only so the Android <-> extension sync JSON contract stays
+  // stable and already-synced installs round-trip losslessly. Do not wire new
+  // logic to these. Live observed usage now lives in `usageStats`
+  // (interaction/appUsageOrBrowsingBehavior/usageStats.ts).
   dailyBudget: DailyBudget | null;
   dailyUsage: {
     [dateISO: string]: DailyUsage;
@@ -188,7 +208,7 @@ export interface StaticCfg {
   ShowAgainThreshold: number;
 }
 
-/** Daily usage budget configuration */
+/** Daily usage budget configuration (dormant since #38 — see field note). */
 export interface DailyBudget {
   globalMinutes: number; // Total allowed minutes across all sites (e.g., 30)
   perSiteMinutes?: {
@@ -197,7 +217,7 @@ export interface DailyBudget {
   };
 }
 
-/** Daily usage tracking */
+/** Daily usage tracking (dormant since #38 — see field note). */
 export interface DailyUsage {
   totalSeconds: number; // Total time today across all blocked sites
   perSite: {

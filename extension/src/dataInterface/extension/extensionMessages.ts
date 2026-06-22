@@ -1,21 +1,22 @@
-export const ADD_BUDGET_USAGE_MESSAGE_TYPE = "minded:addBudgetUsage";
+/** Observed foreground time on a blocked host, reported by the content script. */
+export const ADD_USAGE_TIME_MESSAGE_TYPE = "minded:addUsageTime";
 
-export interface AddBudgetUsageMessage {
-  type: typeof ADD_BUDGET_USAGE_MESSAGE_TYPE;
+export interface AddUsageTimeMessage {
+  type: typeof ADD_USAGE_TIME_MESSAGE_TYPE;
   host: string;
   seconds: number;
 }
 
-export const isAddBudgetUsageMessage = (
+export const isAddUsageTimeMessage = (
   request: unknown,
-): request is AddBudgetUsageMessage => {
+): request is AddUsageTimeMessage => {
   if (!request || typeof request !== "object") {
     return false;
   }
 
-  const message = request as Partial<AddBudgetUsageMessage>;
+  const message = request as Partial<AddUsageTimeMessage>;
   return (
-    message.type === ADD_BUDGET_USAGE_MESSAGE_TYPE &&
+    message.type === ADD_USAGE_TIME_MESSAGE_TYPE &&
     typeof message.host === "string" &&
     typeof message.seconds === "number"
   );

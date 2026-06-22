@@ -1,5 +1,4 @@
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
-import { BudgetSettings } from "@src/shared/components/settings/BudgetSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
@@ -39,14 +38,6 @@ const Options = () => {
             </p>
           </div>
           <SessionGraceSettings />
-        </section>
-
-        <section class={styles.section}>
-          <div class={styles.sectionIntro}>
-            <h3 class="h3">Daily Budget</h3>
-            <p>Give yourself uninterrupted time before interventions return.</p>
-          </div>
-          <BudgetSettings />
         </section>
 
         <section class={styles.section}>

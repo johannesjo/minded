@@ -15,6 +15,8 @@ import Btn from "@src/shared/components/ui/Btn";
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
   saveBtnTxt?: string;
+  /** Heading above the app list. Onboarding overrides it with presence framing. */
+  heading?: string;
   onSave?: () => void;
   /**
    * When true, each app toggle persists immediately and the save/back
@@ -69,7 +71,8 @@ export const SettingsAndroid = (props: {
   return (
     <div class="pageTransitionIn">
       <div class="txtBig" style="margin: 16px;">
-        Please select at least one app that you want to use less.
+        {props.heading ||
+          "Please select at least one app that you want to use less."}
       </div>
 
       {getAvailableApps().length === 0 ? (

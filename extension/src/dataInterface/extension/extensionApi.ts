@@ -1,19 +1,19 @@
 import { bro } from "@src/util/browser";
 import {
-  ADD_BUDGET_USAGE_MESSAGE_TYPE,
-  type AddBudgetUsageMessage,
+  ADD_USAGE_TIME_MESSAGE_TYPE,
+  type AddUsageTimeMessage,
 } from "@src/dataInterface/extension/extensionMessages";
 
 export const closeTab = () => {
   bro.runtime.sendMessage({ closeTab: true });
 };
 
-export const addBudgetUsageInBackground = (
+export const addUsageTimeInBackground = (
   host: string,
   seconds: number,
 ): Promise<unknown> =>
   bro.runtime.sendMessage({
-    type: ADD_BUDGET_USAGE_MESSAGE_TYPE,
+    type: ADD_USAGE_TIME_MESSAGE_TYPE,
     host,
     seconds,
-  } satisfies AddBudgetUsageMessage);
+  } satisfies AddUsageTimeMessage);

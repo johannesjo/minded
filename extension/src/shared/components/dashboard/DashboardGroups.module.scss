@@ -102,20 +102,13 @@
   }
 }
 
-.browsingBehaviorGraph,
 .stats,
-.moodCheckinWidget,
 .energyLvl {
   margin: auto;
 
   div:first-child {
     margin-bottom: 0;
   }
-}
-
-.browsingBehaviorGraph {
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .energyLvl {
@@ -135,18 +128,6 @@
 }
 
 .stats {
-}
-
-.moodCheckinWidget {
-  div:first-child {
-    margin-bottom: 10px;
-
-    span {
-      margin-left: 4px;
-      margin-right: 4px;
-      text-transform: lowercase;
-    }
-  }
 }
 
 .cardDailyQuestions {

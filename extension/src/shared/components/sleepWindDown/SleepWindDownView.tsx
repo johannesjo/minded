@@ -7,7 +7,6 @@ import { SyncData } from "@src/dataInterface/syncData";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
-import { MoodCheckin } from "@src/shared/components/interaction/moodCheckin/MoodCheckin";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
@@ -17,6 +16,7 @@ import {
   SLEEP_TIPS,
   TOMORROW_PROMPTS,
 } from "@src/shared/data/sleepContent";
+import { QuestionCategoryId } from "@src/shared/data/questions";
 import { getIsoDate } from "@src/util/getIsoDate";
 import {
   createSignal,
@@ -71,7 +71,6 @@ const ACTIVITIES: {
   { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
   { key: "gratitude", label: "Gratitude / reflection", view: "gratitude" },
   { key: "tomorrow", label: "Tomorrow's top 3", view: "tomorrow" },
-  { key: "mood", label: "Mood check-in", view: "mood" },
   { key: "breathing", label: "Breathing exercise", view: "breathing" },
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
 ];
@@ -466,6 +465,7 @@ export const SleepWindDownView = (
                 <BrainDump
                   initialText={gratitudeDraft()}
                   prompts={GRATITUDE_PROMPTS}
+                  questionCategoryId={QuestionCategoryId.Gratitude}
                   onDraftChange={(t) => {
                     setGratitudeDraft(t);
                     persistDraft("sleepWindDownGratitudeDraft", t);
@@ -485,6 +485,7 @@ export const SleepWindDownView = (
                 <BrainDump
                   initialText={tomorrowDraft()}
                   prompts={TOMORROW_PROMPTS}
+                  questionCategoryId={QuestionCategoryId.GoodPlans}
                   onDraftChange={(t) => {
                     setTomorrowDraft(t);
                     persistDraft("sleepWindDownTomorrowDraft", t);
@@ -498,20 +499,6 @@ export const SleepWindDownView = (
                     )
                   }
                 />
-              </Match>
-
-              <Match when={currentView === "mood"}>
-                <div class={styles.activityBody}>
-                  <MoodCheckin
-                    onSuccess={() => {
-                      markComplete("mood");
-                      goToView(WIND_DOWN_OVERVIEW_VIEW);
-                    }}
-                    onSkip={() => undefined}
-                    onCancelCountdown={() => undefined}
-                  />
-                  {activityActions("mood")}
-                </div>
               </Match>
 
               <Match when={currentView === "breathing"}>

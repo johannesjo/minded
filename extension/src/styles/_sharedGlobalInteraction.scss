@@ -4,8 +4,7 @@
 @import "@src/shared/components/interaction/sun/Sun.scss";
 @import "@src/shared/components/interaction/backgroundTransition/BackgroundTransition.scss";
 @import "@src/shared/components/interaction/backgroundTransition/Stars.scss";
-@import "@src/shared/components/interaction/moodCheckin/MoodCheckin.scss";
-@import "@src/shared/components/interaction/emojiCheckin/EmojiCheckin.scss";
+@import "@src/shared/components/interaction/notice/Notice.scss";
 @import "@src/shared/components/interaction/timeSelection/TimeSelection.scss";
 @import "@src/shared/components/interaction/intentSelection/IntentSelection.scss";
 @import "@src/shared/components/interaction/alternatives/ShowAlternative.scss";
@@ -13,6 +12,4 @@
 @import "@src/shared/components/interaction/urgeSurfing/UrgeSurfing.scss";
 @import "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause.scss";
 @import "@src/shared/components/interaction/questionsForToday/QuestionsForToday.scss";
-@import "@src/shared/components/interaction/budgetSetup/BudgetSetupPrompt.scss";
-@import "@src/shared/components/interaction/BudgetExhaustedMessage.scss";
 @import "@src/shared/components/ui/Rating.scss";

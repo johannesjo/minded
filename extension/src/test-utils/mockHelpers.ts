@@ -101,7 +101,10 @@ const DEFAULT_CFG: UserCfg = {
  * This creates a default SyncData without importing from syncData.const.ts
  * to avoid TypeScript errors from the browser extension APIs.
  */
-export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
+export const createMockSyncData = (
+  overrides: Partial<Omit<SyncData, "cfg">> & { cfg?: Partial<UserCfg> } = {},
+): SyncData => {
+  const { cfg: cfgOverride, ...rest } = overrides;
   const defaultSelfAssessment = Object.values(SelfAssessmentId).reduce(
     (acc, curr) => {
       acc[curr] = { ts: DEFAULT_TS_VAL, val: -1 };
@@ -121,6 +124,7 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     lastBrowsingBehaviorRatingTS: DEFAULT_TS_VAL,
     appUsageRating: {},
     lastAppUsageRatingTS: DEFAULT_TS_VAL,
+    usageStats: {},
     energyLvlVal: 0,
     energyLvlTS: DEFAULT_TS_VAL,
     dailyQuestionsMorningTS: DEFAULT_TS_VAL,
@@ -151,10 +155,10 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
 
   return {
     ...defaultData,
-    ...overrides,
+    ...rest,
     cfg: {
       ...defaultData.cfg,
-      ...overrides?.cfg,
+      ...cfgOverride,
     },
   };
 };

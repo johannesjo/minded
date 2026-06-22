@@ -10,7 +10,6 @@ describe("sleep wind-down back navigation", () => {
     expect(shouldBackReturnToWindDownOverview("brainDump")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("gratitude")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("tomorrow")).toBe(true);
-    expect(shouldBackReturnToWindDownOverview("mood")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("breathing")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("calmRead")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("tips")).toBe(true);

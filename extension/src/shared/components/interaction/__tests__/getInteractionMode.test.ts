@@ -143,17 +143,8 @@ describe("getInteractionMode", () => {
           answer("2"),
         ],
         alternativeWebsites: ["https://example.com"],
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
+        sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: RECENT_SUN_TAPS,
       }),
       {
         isMainView: false,
@@ -166,9 +157,10 @@ describe("getInteractionMode", () => {
       reason: "strong_friction_pattern_insight",
       frictionLevel: "strong",
       patternInsight: {
-        id: "budget-exhausted:youtube.com",
+        id: "return-loop",
         dateISO: TODAY,
-        message: "You've used today's 10-minute budget.",
+        message:
+          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "show_alternative", "leave_now"],
       },
     });
@@ -195,50 +187,11 @@ describe("getInteractionMode", () => {
     expect(decision.frictionLevel).toBe("strong");
   });
 
-  it("does not let pattern insights preempt required mood checks", () => {
-    const decision = decide(
-      baseSyncData({
-        moodCheckTS: 99,
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
-      }),
-      {
-        isMainView: false,
-        target: { kind: "host", id: "youtube.com" },
-      },
-    );
-
-    expect(decision).toEqual({
-      mode: "MOOD_CHECKIN",
-      reason: "mood_missing",
-      frictionLevel: "strong",
-    });
-  });
-
   it("does not let strong friction preempt required energy checks", () => {
     const decision = decide(
       baseSyncData({
         energyLvlTS: 99,
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
+        ...strongFrictionViaAttempts(),
       }),
       {
         isMainView: false,
@@ -368,15 +321,7 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("asks for missing mood data deterministically", () => {
-    expect(decide(baseSyncData({ moodCheckTS: 99 }))).toEqual({
-      mode: "MOOD_CHECKIN",
-      reason: "mood_missing",
-      frictionLevel: "normal",
-    });
-  });
-
-  it("asks for missing energy data during daytime after mood is fresh", () => {
+  it("asks for missing energy data during daytime", () => {
     expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
       mode: "ENERGY_LVL",
       reason: "energy_missing",
@@ -431,15 +376,10 @@ describe("getInteractionMode", () => {
     expect(
       decide(
         baseSyncData({
-          attempts: { [TODAY]: 2 },
-          dailyUsage: {
-            [TODAY]: {
-              totalSeconds: 18 * 60,
-              perSite: {
-                "youtube.com": 18 * 60,
-              },
-            },
-          },
+          // Three recent returns → return-loop insight is eligible, but not the
+          // five that would push friction to strong.
+          sunTaps: { [TODAY]: 3 },
+          sunTapTimestamps: [NOW - 2 * ONE_HOUR, NOW - ONE_HOUR, NOW],
         }),
         {
           isMainView: false,
@@ -452,9 +392,10 @@ describe("getInteractionMode", () => {
       reason: "contextual_pattern_insight",
       frictionLevel: "normal",
       patternInsight: {
-        id: "daily-usage:youtube.com",
+        id: "return-loop",
         dateISO: TODAY,
-        message: "You've spent 18 minutes here today.",
+        message:
+          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "leave_now"],
       },
     });
@@ -464,16 +405,9 @@ describe("getInteractionMode", () => {
     expect(
       decide(
         baseSyncData({
-          attempts: { [TODAY]: 2 },
           alternativeWebsites: ["https://example.com"],
-          dailyUsage: {
-            [TODAY]: {
-              totalSeconds: 18 * 60,
-              perSite: {
-                "youtube.com": 18 * 60,
-              },
-            },
-          },
+          sunTaps: { [TODAY]: 3 },
+          sunTapTimestamps: [NOW - 2 * ONE_HOUR, NOW - ONE_HOUR, NOW],
         }),
         {
           isMainView: false,
@@ -485,32 +419,6 @@ describe("getInteractionMode", () => {
       mode: "SHOW_ALTERNATIVE",
       reason: "contextual_alternative",
       frictionLevel: "normal",
-    });
-  });
-
-  it("does not show pattern insights in soft friction", () => {
-    expect(
-      decide(
-        baseSyncData({
-          dailyUsage: {
-            [TODAY]: {
-              totalSeconds: 18 * 60,
-              perSite: {
-                "youtube.com": 18 * 60,
-              },
-            },
-          },
-        }),
-        {
-          isMainView: false,
-          target: { kind: "host", id: "youtube.com" },
-          random: () => 0.2,
-        },
-      ),
-    ).toEqual({
-      mode: "QUESTION",
-      reason: "fallback_question",
-      frictionLevel: "soft",
     });
   });
 
@@ -539,23 +447,6 @@ describe("getInteractionMode", () => {
     ).toEqual({
       mode: "EMOTION_LABELING",
       reason: "emotion_labeling_sample",
-      frictionLevel: "soft",
-    });
-  });
-
-  it("samples stale same-day mood checks without treating them as missing", () => {
-    expect(
-      decide(
-        baseSyncData({
-          moodCheckTS: NOW - 3 * 60 * 60 * 1000,
-        }),
-        {
-          random: sequenceRandom([0.99, 0.01]),
-        },
-      ),
-    ).toEqual({
-      mode: "MOOD_CHECKIN",
-      reason: "mood_checkin_stale_sample",
       frictionLevel: "soft",
     });
   });
@@ -597,14 +488,16 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("samples emoji check-in as a final low-probability fallback", () => {
+  it("samples a notice micro-action just before the question fallback", () => {
+    // Self-assessment and action advice both fail their rolls; the notice
+    // roll then passes, surfacing the present-moment anchor.
     expect(
       decide(baseSyncData(), {
-        random: sequenceRandom([0.99, 0.99, 0.005]),
+        random: sequenceRandom([0.99, 0.99, 0.01]),
       }),
     ).toEqual({
-      mode: "EMOJI_CHECKIN",
-      reason: "emoji_checkin_sample",
+      mode: "NOTICE",
+      reason: "notice_sample",
       frictionLevel: "soft",
     });
   });
