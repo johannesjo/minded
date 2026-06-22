@@ -43,6 +43,7 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
+import SunWidgetGallery from "./SunWidgetGallery";
 
 const ROOT_ID = "minded-6622";
 const DARK_CLASS = "minded-6622-dark";
@@ -104,6 +105,7 @@ const TOC = [
   { id: "icons", label: "Icons" },
   { id: "chart", label: "Chart" },
   { id: "interactions", label: "Interactions" },
+  { id: "sun-widget", label: "Sun widget" },
 ];
 
 const getRoot = () => document.getElementById(ROOT_ID);
@@ -558,6 +560,17 @@ const Styleguide = (): JSX.Element => {
           </p>
           <SunMorphHarness />
         </Subsection>
+      </Section>
+
+      <Section id="sun-widget" title="Sun widget (Android)">
+        <p class={styles.muted}>
+          The four time-of-day phases of the home-screen companion sun, rendered
+          from the real <code>ic_sun_widget_*.xml</code> drawables (converted to
+          SVG at build time). Phase is chosen by the local clock, not the system
+          theme — toggle dark mode above to preview the discs on a dark
+          wallpaper. SVG is indicative, not a pixel-exact device render.
+        </p>
+        <SunWidgetGallery />
       </Section>
     </div>
   );

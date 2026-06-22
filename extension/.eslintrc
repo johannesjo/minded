@@ -35,6 +35,7 @@
   },
   "ignorePatterns": [
     "watch.js",
-    "dist/**"
+    "dist/**",
+    "src/shared/components/styleguide/generated/**"
   ]
 }
