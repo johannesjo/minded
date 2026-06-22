@@ -9,8 +9,6 @@ import {
 } from "solid-js";
 import {
   DashboardGroup,
-  DashboardGroupAppUsageHappiness,
-  DashboardGroupBrowsingBehaviorHappiness,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupMood,
@@ -33,9 +31,6 @@ import Rating from "@src/shared/components/ui/Rating";
 import Btn from "@src/shared/components/ui/Btn";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
-import Chart from "@src/shared/components/ui/Chart";
-import { getAppUsageOrBrowsingBehaviorChartData } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/getAppUsageOrBrowsingBehaviorChartData";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
@@ -194,7 +189,6 @@ export const DashboardGroups: (props: {
           [styles.interactive]: isInteractive,
           [styles.centerItem]:
             dg.type !== DashboardGroupType.TxtQuestion &&
-            dg.type !== DashboardGroupType.BrowsingBehaviorRating &&
             dg.type !== DashboardGroupType.SelfAssessment,
         }}
       >
@@ -205,26 +199,6 @@ export const DashboardGroups: (props: {
                 <div>
                   <div class="dashboardHeading">wind down for sleep</div>
                   <div class="fatTxt">it's getting late</div>
-                </div>
-              );
-            case DashboardGroupType.AppUsageRating:
-            case DashboardGroupType.BrowsingBehaviorRating:
-              // eslint-disable-next-line no-case-declarations
-              const rd = (
-                dg as
-                  | DashboardGroupBrowsingBehaviorHappiness
-                  | DashboardGroupAppUsageHappiness
-              ).data;
-              return (
-                <div class={styles.browsingBehaviorGraph}>
-                  <div class="dashboardHeading">
-                    {IS_ANDROID
-                      ? "bad app usage rating over time"
-                      : "browsing behavior over time"}
-                  </div>
-                  <Chart
-                    chartData={getAppUsageOrBrowsingBehaviorChartData(rd)}
-                  />
                 </div>
               );
             case DashboardGroupType.Stats:

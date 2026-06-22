@@ -57,3 +57,12 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
     });
   });
 };
+
+/** Raw UsageObservation JSON from the native UsageStatsManager bridge. */
+export const getUsageObservationRawN = (): string | null => {
+  try {
+    return androidInterface.getUsageObservation?.() ?? null;
+  } catch {
+    return null;
+  }
+};

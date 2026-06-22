@@ -1,15 +1,22 @@
-import { createSignal, JSX, Match, Switch } from "solid-js";
+import { createSignal, JSX, Match, onMount, Show, Switch } from "solid-js";
 import {
-  rateCurrentAppUsage,
-  rateCurrentBrowsingBehavior,
+  getUsageObservation,
+  markUsageObservationShown,
+  IS_ANDROID,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/appUsageOrBrowsingBehavior.const";
+import {
+  formatUsageDuration,
+  MIN_OBSERVATION_SECONDS,
+  UsageObservation,
+} from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageObservation";
 import { Question } from "@src/shared/components/interaction/Question";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { getRndEntry } from "@src/util/getRndEntry";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
-import TglBtns from "@src/shared/components/ui/TglBtns";
+import Btn from "@src/shared/components/ui/Btn";
+
+// `undefined` = still loading; `null` = no usable usage signal.
+type ObservationState = UsageObservation | null | undefined;
 
 export const AppUsageOrBrowsingBehavior: (props: {
   onSuccess: () => void;
@@ -17,19 +24,33 @@ export const AppUsageOrBrowsingBehavior: (props: {
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
   const [getStep, setStep] = createSignal<number>(0);
+  const [getObservation, setObservation] =
+    createSignal<ObservationState>(undefined);
 
-  const handleRatingSelect = async (rating: number) => {
-    if (IS_ANDROID) {
-      await rateCurrentAppUsage(rating);
-    } else {
-      await rateCurrentBrowsingBehavior(rating);
-    }
+  onMount(() => {
+    // Mark the throttle the moment we surface, so the observation stays rare
+    // regardless of how the user leaves it.
+    void markUsageObservationShown();
+    void getUsageObservation().then((observation) => {
+      setObservation(observation);
+      // Nothing meaningful to observe yet → go straight to the gentle reflection.
+      if (!observation || observation.todaySeconds < MIN_OBSERVATION_SECONDS) {
+        setStep(1);
+      }
+    });
+  });
 
-    if (rating >= 4) {
-      props.onSuccess();
-    } else {
-      setStep(1);
+  const targetLabel = (): string => {
+    const observation = getObservation();
+    if (!observation || observation.topTargets.length === 0) {
+      return IS_ANDROID
+        ? "the apps you're using less"
+        : "the sites you're using less";
     }
+    return observation.topTargets
+      .slice(0, 2)
+      .map((target) => target.label)
+      .join(" & ");
   };
 
   const rndQuestion = getRndEntry(
@@ -48,19 +69,25 @@ export const AppUsageOrBrowsingBehavior: (props: {
     >
       <Switch>
         <Match when={getStep() === 0}>
-          <div>
-            <div class="txtBig" style="padding-bottom:16px;">
-              {IS_ANDROID
-                ? "How would you rate your recent usage of the apps you configured to use less?"
-                : "How would you rate your recent browsing behavior?"}
-            </div>
-            <div class="browsing-behavior-rating-btns">
-              <TglBtns
-                options={APP_USAGE_OR_BROWSING_BEHAVIOR_OPTIONS}
-                onSelect={handleRatingSelect}
-              />
-            </div>
-          </div>
+          <Show when={getObservation()}>
+            {(observation) => (
+              <div>
+                <div class="txtBig" style="padding-bottom:8px;">
+                  You've spent about{" "}
+                  {formatUsageDuration(observation().todaySeconds)} on{" "}
+                  {targetLabel()} so far today.
+                </div>
+                <Show when={observation().baselineSeconds !== null}>
+                  <div style="padding-bottom:16px;opacity:0.7;">
+                    Usually around{" "}
+                    {formatUsageDuration(observation().baselineSeconds ?? 0)} by
+                    now.
+                  </div>
+                </Show>
+                <Btn onClick={() => setStep(1)}>continue</Btn>
+              </div>
+            )}
+          </Show>
         </Match>
         <Match when={getStep() === 1}>
           <div class="pageTransitionIn">

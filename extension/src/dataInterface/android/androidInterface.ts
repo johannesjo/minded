@@ -20,6 +20,12 @@ interface InteractionWindowJavaScriptInterface {
   setSessionLimit: (payloadJson: string) => void;
   snoozeWindDown: (seconds: number) => void;
   getSafeAreaInsets: () => string;
+  /**
+   * Real per-app foreground usage, read from the OS (UsageStatsManager).
+   * Returns a JSON string of UsageObservation, or "" / null when unavailable
+   * (e.g. usage-access permission not granted).
+   */
+  getUsageObservation: () => string | null;
   test: () => void;
 }
 

@@ -609,6 +609,20 @@ describe("getInteractionMode", () => {
     });
   });
 
+  it("samples a notice micro-action just before the question fallback", () => {
+    // Self-assessment, action advice and emoji all fail their rolls; the
+    // notice roll then passes, surfacing the present-moment anchor.
+    expect(
+      decide(baseSyncData(), {
+        random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
+      }),
+    ).toEqual({
+      mode: "NOTICE",
+      reason: "notice_sample",
+      frictionLevel: "soft",
+    });
+  });
+
   it("falls back to a question when no contextual or sampled mode is selected", () => {
     expect(decide(baseSyncData())).toEqual({
       mode: "QUESTION",

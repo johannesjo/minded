@@ -121,6 +121,7 @@ export const createMockSyncData = (overrides?: Partial<SyncData>): SyncData => {
     lastBrowsingBehaviorRatingTS: DEFAULT_TS_VAL,
     appUsageRating: {},
     lastAppUsageRatingTS: DEFAULT_TS_VAL,
+    usageStats: {},
     energyLvlVal: 0,
     energyLvlTS: DEFAULT_TS_VAL,
     dailyQuestionsMorningTS: DEFAULT_TS_VAL,

@@ -20,6 +20,14 @@ const BRAIN_DUMP_MAX_LENGTH = 2000;
 export const BrainDump = (props: {
   initialText?: string;
   prompts?: string[];
+  /**
+   * Which dashboard category the answer is filed under. Wind-down activities
+   * that mirror an existing reflective category route there so the answer sits
+   * where that kind of question already lives (e.g. gratitude → Gratitude),
+   * instead of a separate wind-down card. The freeform gentle brain dump has no
+   * natural home, so it keeps the small SleepWindDown category by default.
+   */
+  questionCategoryId?: QuestionCategoryId;
   onDraftChange?: (text: string) => void;
   onBeforeSubmit?: () => void | Promise<void>;
   onDone: () => void | Promise<void>;
@@ -30,9 +38,11 @@ export const BrainDump = (props: {
   );
   const [text, setText] = createSignal(props.initialText ?? "");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
+  const categoryId =
+    props.questionCategoryId ?? QuestionCategoryId.SleepWindDown;
   const question: QuestionForPrompt = {
     id: QID.SWD1,
-    categoryId: QuestionCategoryId.SleepWindDown,
+    categoryId,
     t: prompt(),
     isDontSaveAnswer: true,
   };
@@ -83,7 +93,7 @@ export const BrainDump = (props: {
         await saveAnswer({
           id: `sleep-${Date.now()}`,
           qid: null,
-          questionCategoryId: QuestionCategoryId.SleepWindDown,
+          questionCategoryId: categoryId,
           val: trimmed,
           ts: Date.now(),
         });
