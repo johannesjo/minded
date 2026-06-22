@@ -76,6 +76,13 @@
 .shellSunLayer.isHidden {
   opacity: 0;
   pointer-events: none;
+
+  // The disc keeps `pointer-events: auto` while interactive, which a parent's
+  // `none` does not override — force it inert too so a hidden disc can't still
+  // catch taps meant for the offer that replaced it.
+  :global(.minded-sun) {
+    pointer-events: none;
+  }
 }
 
 // Sits exactly on the companion's bottom-bar anchor (the disc settles to the
