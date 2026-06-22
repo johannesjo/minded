@@ -52,9 +52,9 @@ export const OnboardingAndroid = (props: {
                   awareness.
                 </p>
                 <p>
-                  A blocker is a wall, and walls get routed around. Mindfulness
-                  works differently: simply noticing, without judgment, builds a
-                  small capacity in you that tends to stay.
+                  Each time you notice the pull without judgment, that awareness
+                  grows a little. It's a capacity that builds gently, and tends
+                  to stay with you.
                 </p>
                 <p>
                   To set that up, <em>minded</em> needs a couple of permissions
