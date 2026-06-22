@@ -40,30 +40,32 @@
 
 // The input container keeps its layout box even while hidden (visibility:
 // hidden), so this region always reserves the space the textarea will fill.
-// The tap-hint is centred absolutely within it, so it sits exactly where the
-// textarea lands and the two simply cross-fade.
+// The ghost hint is absolutely positioned at the top of it, landing where the
+// textarea sits, and the two simply cross-fade.
 .question-body {
   position: relative;
-  // flow-root contains the input's collapsing margins, so this box matches the
-  // input box exactly and the absolutely-positioned hint centres over the
-  // textarea by construction rather than by coincidence.
+  // flow-root contains the input's collapsing margins, so this box's top edge
+  // matches the input box's, keeping the ghost aligned with the real field by
+  // construction rather than by coincidence.
   display: flow-root;
 }
 
+// A faint "ghost" of the input that previews where — and that — the user can
+// write. It sits at the top of the reserved area, exactly where the real
+// textarea lands, and cross-fades into it on tap. An invitation, never a CTA:
+// softly faded in, gently breathing, muted.
 .question-tap-hint {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 0;
+  left: 0;
+  right: 0;
   cursor: pointer;
-  // low-emphasis, gently breathing — an invitation, never a CTA.
-  // Fade softly in, then hand off into the breathing loop at the same opacity
-  // (0.4) so there is no hard cut.
   opacity: 0;
+  // Fade softly in, then hand off into the breathing loop at the same opacity
+  // (0.85) so there is no hard cut.
   animation:
     tapHintFadeIn 0.6s ease-out 0.6s forwards,
-    tapHintBreathe 3.6s ease-in-out 1.2s infinite;
+    tapHintBreathe 4s ease-in-out 1.2s infinite;
   transition:
     opacity 0.4s ease-out,
     visibility 0.4s;
@@ -75,9 +77,34 @@
     animation: none;
   }
 
-  .minded-6622-ico {
-    // muted regardless of the svg's own fill
-    opacity: 0.5;
+  // Mirror the real input box (formInput): same width, radius, fill and
+  // margins so the swap reads as the field simply coming to life.
+  .ghost-input {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 540px;
+    max-width: 100%;
+    margin: 32px auto;
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    background: var(--form-inputs-bg);
+    color: var(--c-fg-full-emphasis);
+    // muted so it reads as a hint, not a filled-in field
+    opacity: 0.55;
+    transition: opacity 0.2s ease;
+  }
+
+  // desktop affordance: lift the veil a touch on hover
+  &:hover .ghost-input {
+    opacity: 0.72;
+  }
+
+  .ghost-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -86,17 +113,17 @@
     opacity: 0;
   }
   100% {
-    opacity: 0.4;
+    opacity: 0.85;
   }
 }
 
 @keyframes tapHintBreathe {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.85;
   }
   50% {
-    opacity: 0.7;
+    opacity: 1;
   }
 }
 

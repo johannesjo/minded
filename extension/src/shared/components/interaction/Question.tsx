@@ -105,7 +105,10 @@ export const Question: (props: {
           aria-hidden="true"
           onClick={revealInput}
         >
-          <Ico name="edit" size={28} />
+          <div class="ghost-input">
+            <Ico name="edit" size={20} />
+            <span class="ghost-label">Tap to answer</span>
+          </div>
         </div>
 
         <div
