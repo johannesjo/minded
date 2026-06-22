@@ -10,6 +10,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.minded.minded.MissingCapability
 import com.minded.minded.util.SafeAreaInsetsHolder
+import com.minded.minded.util.getAppUsageObservation
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -66,6 +67,16 @@ open class MainActivityJavaScriptInterface(
 
     @JavascriptInterface
     fun getSafeAreaInsets(): String = safeAreaInsets.toJsonString()
+
+    /**
+     * Real per-app foreground usage for the present-moment usage observation
+     * (replaces the old self-rating). Returns UsageObservation JSON, or "" when
+     * unavailable (usage access not granted, no configured apps, no usage).
+     */
+    @JavascriptInterface
+    fun getUsageObservation(): String {
+        return getAppUsageObservation(context) ?: ""
+    }
 
     @JavascriptInterface
     fun getMissingCapabilities(): String {

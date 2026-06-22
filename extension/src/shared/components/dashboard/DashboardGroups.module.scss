@@ -102,7 +102,6 @@
   }
 }
 
-.browsingBehaviorGraph,
 .stats,
 .moodCheckinWidget,
 .energyLvl {
@@ -111,11 +110,6 @@
   div:first-child {
     margin-bottom: 0;
   }
-}
-
-.browsingBehaviorGraph {
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .energyLvl {

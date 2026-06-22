@@ -2,6 +2,7 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { MoodCheckinVal } from "@src/shared/components/interaction/moodCheckin/moodCheckin.const";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
+import { UsageStatsByDate } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
 /** Time range for a single day (24h format, e.g., "09:00" to "17:00") */
 export interface TimeRange {
@@ -142,6 +143,12 @@ export interface SyncData {
   attempts: {
     [key: string]: number;
   };
+  /**
+   * Dormant: the old Great→Awful self-rating maps. No longer written or shown
+   * (replaced by the observed `usageStats` below). Kept so the stored-data
+   * shape stays stable. The `last*RatingTS` fields are reused as the
+   * "last usage observation shown" throttle (see getInteractionMode).
+   */
   lastBrowsingBehaviorRatingTS: number;
   browsingBehaviorRating: {
     [key: string]: number;
@@ -150,6 +157,13 @@ export interface SyncData {
   appUsageRating: {
     [key: string]: number;
   };
+
+  /**
+   * Observed foreground usage per day (extension-only writer; Android reads
+   * real usage from the OS via UsageStatsManager instead). Feeds the
+   * present-moment usage observation. Never charted over time.
+   */
+  usageStats: UsageStatsByDate;
   selfAssessment: SelfAssessmentData;
   alternativeApps: string[];
   alternativeWebsites: string[];

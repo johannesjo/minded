@@ -45,6 +45,10 @@ export const patchSyncDataN = (
   }
 };
 
+// On the extension the usage observation is computed from stored `usageStats`
+// (see getUsageObservation in commonSyncDataInterface), not via a native bridge.
+export const getUsageObservationRawN = (): string | null => null;
+
 export const saveAnswerN = (answer: Answer): Promise<void> => {
   return getSyncDataN().then((syncData) => {
     const newAnswers = [...syncData.answers, answer];
