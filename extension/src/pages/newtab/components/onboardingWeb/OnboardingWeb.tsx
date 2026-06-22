@@ -28,16 +28,14 @@ export const OnboardingWeb: (props: {
             <div class={styles.infoText}>
               <p>
                 This little sun is your anchor. When you reach for a habit on
-                autopilot, it appears — something calm to come back to. Pause
-                with it, and the pull loosens. You can fling it away anytime; it
-                never blocks you. No streaks, no scores — just awareness.
+                autopilot, it appears: a calm moment to pause. You can fling it
+                away anytime; it never blocks you. No streaks, no scores, just
+                awareness.
               </p>
               <p>
-                Why a sun and not a blocker? A blocker is a wall, and walls get
-                routed around, and so does sheer willpower. Mindfulness works differently:
-                simply noticing, without judgment, builds a small capacity in
-                you — catching the pull before you act on it. That's the kind of
-                thing that tends to stay with you.
+                A blocker is a wall, and walls get routed around. Mindfulness
+                works differently: simply noticing, without judgment, builds a
+                small capacity in you that tends to stay.
               </p>
             </div>
             <ButtonWrapper isVisible={true}>
@@ -54,7 +52,7 @@ export const OnboardingWeb: (props: {
             <div class={styles.infoText}>
               <p>
                 Add the sites where you tend to get pulled in. The sun will
-                quietly show up there — nowhere else.
+                quietly show up there, nowhere else.
               </p>
             </div>
             <WebsiteList onAfterSave={onAfterSaveWebsites} />

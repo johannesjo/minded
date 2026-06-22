@@ -47,21 +47,18 @@ export const OnboardingAndroid = (props: {
               <div class="txtSlightlyBigger">
                 <p>
                   This little sun is your anchor. When you open an app on
-                  autopilot, it appears — something calm to come back to. Pause
-                  with it, and the pull loosens. You can fling it away anytime;
-                  it never blocks you. No streaks, no scores — just awareness.
+                  autopilot, it appears: a calm moment to pause. You can fling it
+                  away anytime; it never blocks you. No streaks, no scores, just
+                  awareness.
                 </p>
                 <p>
-                  Why a sun and not a blocker? A blocker is a wall, and walls
-                  get routed around, and so does sheer willpower. Mindfulness works
-                  differently: simply noticing, without judgment, builds a small
-                  capacity in you — catching the pull before you act on it.
-                  That's the kind of thing that tends to stay with you.
+                  A blocker is a wall, and walls get routed around. Mindfulness
+                  works differently: simply noticing, without judgment, builds a
+                  small capacity in you that tends to stay.
                 </p>
                 <p>
-                  To meet you in those moments, <em>minded</em> needs a couple of
-                  permissions and the apps where you'd like it to show up. Let's
-                  set that up together.
+                  To set that up, <em>minded</em> needs a couple of permissions
+                  and the apps where you'd like it to appear.
                 </p>
               </div>
 
@@ -112,7 +109,7 @@ export const OnboardingAndroid = (props: {
                 </div>
                 <p>
                   Some permissions are still missing, so the sun may not be able
-                  to meet you everywhere yet. You can finish anytime — it'll be
+                  to meet you everywhere yet. You can finish anytime. It'll be
                   here.
                 </p>
                 <div style="margin-top: 32px;">
@@ -139,7 +136,7 @@ export const OnboardingAndroid = (props: {
                 </div>
                 <p>
                   From now on, when you open one of those apps, the sun will
-                  appear — a small moment to pause and notice before you carry
+                  appear: a small moment to pause and notice before you carry
                   on.
                 </p>
                 <p>
