@@ -3,6 +3,7 @@ package com.minded.minded.overlay
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.graphics.PixelFormat
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,18 @@ class InteractionWindow(
     private val windowManager: WindowManager,
 //    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
+    companion object {
+        // How long to keep nudging the freshly-loaded overlay WebView to paint
+        // its first frame. Long enough to bridge the gap until the web content's
+        // own fade-in animation starts driving frames, short enough to add no
+        // meaningful battery/CPU cost.
+        private const val FIRST_FRAME_PUMP_MS = 800L
+
+        // Duration of the near-opaque window alpha nudge that forces the overlay
+        // window to recomposite its first frame after load.
+        private const val FIRST_FRAME_ALPHA_NUDGE_MS = 200L
+    }
+
     override val logTag = javaClass.simpleName
 
     // Appear as an instantly-opaque shield: the interaction overlay covers the
@@ -81,8 +94,9 @@ class InteractionWindow(
                 // never composite its first frame — leaving the user on the opaque
                 // dark shield (the "black screen on first open, clears on reopen"
                 // reports). Let the WebView use the default layer so the first frame
-                // paints. If first-paint flakiness remains, invalidate() after load
-                // before reaching for a hardware layer again.
+                // paints. We also pump invalidate()s after load (see pumpFirstFrame /
+                // onPageFinished) to force that first composite without a tap; only
+                // reach for a hardware layer if first-paint flakiness still remains.
 
                 // Set transparent background after page starts loading
                 this.webViewClient = object : android.webkit.WebViewClient() {
@@ -92,6 +106,23 @@ class InteractionWindow(
                         view?.postDelayed({
                             view.setBackgroundColor(0x00000000)
                         }, 100)
+                    }
+
+                    // Guarantee the first frame composites without needing a tap.
+                    // This overlay is a TYPE_APPLICATION_OVERLAY + TRANSLUCENT window
+                    // with fadeInDurationMs = 0L, so — unlike the other overlays — no
+                    // native alpha animation runs after addView to drive a frame. With
+                    // nothing invalidating, a hardware-accelerated overlay WebView can
+                    // fail to schedule its first composite and the user is left on the
+                    // opaque dark shield; the next touch schedules a frame, which is the
+                    // "black screen until I tap it" report. Force that first frame two
+                    // ways: a near-opaque window alpha animation (recomposites the whole
+                    // overlay window — the lever the other overlays' fade-in proves out)
+                    // plus a short burst of view invalidates.
+                    override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        nudgeWindowAlpha()
+                        view?.let { pumpFirstFrame(it) }
                     }
 
                     // Diagnostics for the "stuck on a black screen" reports: the web
@@ -147,6 +178,56 @@ class InteractionWindow(
         })
     }
 
+
+    // Run a near-opaque alpha animation on the overlay window root after load.
+    // Animating the window's alpha forces the WindowManager to recomposite the
+    // overlay across several frames — the same mechanism the other overlays' fade-in
+    // relies on, and the strongest nudge for a stuck first composite. The range is
+    // 0.996 -> 1.0 (not 0 -> 1): visually imperceptible, so the opaque-shield
+    // guarantee that fadeInDurationMs = 0L exists to provide is preserved and the
+    // blocked app never shows through.
+    private fun nudgeWindowAlpha() {
+        // Go through withWindowUnlessHiding so the "is a hide in flight?" check and
+        // the animation start are atomic under hideWindow()'s lock: both animate the
+        // same window view, so racing ours in would cancel the fade-out's
+        // withEndAction and wedge the window open. hideWindow() can fire off the main
+        // thread (a fast JS-bridge dismiss, or onRenderProcessGone), so the guard
+        // must hold the lock — not merely assume same-thread ordering.
+        withWindowUnlessHiding { root ->
+            root.alpha = 0.996f
+            root.animate()
+                .alpha(1f)
+                .setDuration(FIRST_FRAME_ALPHA_NUDGE_MS)
+                .start()
+        }
+    }
+
+    // Re-post an invalidate on each animation frame for a short window after the
+    // page loads, so the overlay WebView is forced to schedule and present its
+    // first composite even though no native fade animation is driving frames.
+    // The web content's own fade-in (driven by JS a beat after load) takes over
+    // once it starts animating, so a brief pump is enough to cover the gap.
+    //
+    // shortcut: this is the redundant half of the belt-and-suspenders
+    // (nudgeWindowAlpha is the primary, window-level nudge). If a field repro
+    // shows the alpha nudge alone fixes the black screen, delete this; if instead
+    // the blind 800ms proves wasteful, gate it on WebView.postVisualStateCallback
+    // so it stops at first paint instead of running a fixed duration.
+    private fun pumpFirstFrame(view: WebView) {
+        // Monotonic clock: a wall-clock jump (NTP / manual change) mid-pump must
+        // not cut the burst short or stretch it out.
+        val deadline = SystemClock.uptimeMillis() + FIRST_FRAME_PUMP_MS
+        val pump = object : Runnable {
+            override fun run() {
+                if (webViewRef !== view) return
+                view.invalidate()
+                if (SystemClock.uptimeMillis() < deadline) {
+                    view.postOnAnimation(this)
+                }
+            }
+        }
+        view.postOnAnimation(pump)
+    }
 
     private fun isPhone(): Boolean {
         val smallestWidth = ctrlSvc.resources.configuration.smallestScreenWidthDp
