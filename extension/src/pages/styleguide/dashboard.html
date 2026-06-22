@@ -127,8 +127,12 @@
       }
     </style>
     <script>
+      // Day/night loading sky — mirrors isDarkModeNow(), incl. the ?theme= dev
+      // override (so forcing dark doesn't flash a light gradient before boot).
+      var theme = new URLSearchParams(location.search).get("theme");
       var h = new Date().getHours();
-      if (h >= 19 || h < 6) {
+      var dark = theme === "dark" || (theme !== "light" && (h >= 19 || h < 6));
+      if (dark) {
         document.documentElement.className += " minded-loading-dark";
       }
     </script>
