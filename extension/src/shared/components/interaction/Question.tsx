@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { createSignal, JSX } from "solid-js";
+import { createSignal, For, JSX, Show } from "solid-js";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { Answer } from "@src/dataInterface/syncData";
 import {
@@ -8,6 +8,11 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
+import Btn from "@src/shared/components/ui/Btn";
+
+// Chip fade-out before the text input takes over; keep in sync with the
+// `.question-chips.is-exiting` opacity transition in Question.scss.
+const CHIPS_FADE_MS = 250;
 
 export const Question: (props: {
   initialQuestion: QuestionForPrompt;
@@ -73,25 +78,81 @@ export const Question: (props: {
     setTimeout(() => getInpEl()?.focus(), 100);
   };
 
+  const hasChips = (question.chips?.length ?? 0) > 0;
+  const [getChipsExiting, setChipsExiting] = createSignal(false);
+
+  // "Something else…" swaps the chips for the text input. Fade the chips out
+  // first rather than snapping them away — calmness is the product, so even
+  // this small swap softens (matches the input's own fade-in).
+  const revealInputFromChips = () => {
+    props.onCancelCountdown();
+    setChipsExiting(true);
+    setTimeout(revealInput, CHIPS_FADE_MS);
+  };
+
+  // A tapped chip is the same answer a typed one would be: when the question
+  // has a prompt prefix, append the chip to it so the saved text matches the
+  // pre-filled input exactly. Submits immediately — taps are the whole point.
+  const submitChip = (chip: string) => {
+    props.onCancelCountdown();
+    const answerTxt = question.prompt ? `${question.prompt} ${chip}` : chip;
+    void submitAnswer(answerTxt);
+  };
+
   return (
     <div id="minded-6622-question-wrapper">
       <div
         id="minded-6622-question"
         class="txtBig"
         classList={{ "show-input": getShowInput() }}
-        role="button"
-        tabindex={getShowInput() ? -1 : 0}
-        aria-expanded={getShowInput()}
-        onClick={revealInput}
-        onKeyDown={(ev) => {
-          if (ev.key === "Enter" || ev.key === " ") {
-            ev.preventDefault();
-            revealInput();
-          }
-        }}
+        // With chips the question is plain text — the chips (and "Something
+        // else…") drive input — so it isn't a button. Without chips it stays
+        // the tap-to-type reveal target it has always been.
+        role={hasChips ? undefined : "button"}
+        tabindex={hasChips ? undefined : getShowInput() ? -1 : 0}
+        aria-expanded={hasChips ? undefined : getShowInput()}
+        onClick={hasChips ? undefined : revealInput}
+        onKeyDown={
+          hasChips
+            ? undefined
+            : (ev) => {
+                if (ev.key === "Enter" || ev.key === " ") {
+                  ev.preventDefault();
+                  revealInput();
+                }
+              }
+        }
       >
         <span>{formatQuestionText(question.t)}</span>
       </div>
+
+      <Show when={hasChips && !getShowInput()}>
+        <div
+          class="question-chips"
+          classList={{ "is-exiting": getChipsExiting() }}
+          role="group"
+          aria-label={formatQuestionText(question.t)}
+          onMouseEnter={props.onCancelCountdown}
+        >
+          <For each={question.chips}>
+            {(chip) => (
+              // `toggle` is borrowed only for its compact pill shape — these
+              // chips submit-and-dismiss and never show a selected state.
+              <Btn variant="toggle" small onClick={() => submitChip(chip)}>
+                {chip}
+              </Btn>
+            )}
+          </For>
+          <Btn
+            variant="toggle"
+            small
+            class="question-chip-other"
+            onClick={revealInputFromChips}
+          >
+            Something else…
+          </Btn>
+        </div>
+      </Show>
 
       <div
         class="question-input-container"

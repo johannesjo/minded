@@ -25,6 +25,7 @@ import Chart from "@src/shared/components/ui/Chart";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { EmojiCheckin } from "@src/shared/components/interaction/emojiCheckin/EmojiCheckin";
+import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
@@ -491,6 +492,16 @@ const Styleguide = (): JSX.Element => {
             <EmojiCheckin
               onSuccess={() => console.log("EmojiCheckin: success")}
               onSkip={() => console.log("EmojiCheckin: skip")}
+              onCancelCountdown={() => undefined}
+            />
+          </div>
+        </Subsection>
+
+        <Subsection label="<NoticeInteraction>">
+          <div class={styles.interactionFrame}>
+            <NoticeInteraction
+              onSuccess={() => console.log("NoticeInteraction: success")}
+              onSkip={() => console.log("NoticeInteraction: skip")}
               onCancelCountdown={() => undefined}
             />
           </div>

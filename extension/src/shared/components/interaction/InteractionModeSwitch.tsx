@@ -20,6 +20,7 @@ import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
 import { ScreenOffInteraction } from "@src/shared/components/interaction/screenOff/ScreenOffInteraction";
 import { UrgeSurfing } from "@src/shared/components/interaction/urgeSurfing/UrgeSurfing";
+import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 
@@ -84,6 +85,13 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
         <EmojiCheckin
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={props.onSuccess}
+          onSkip={props.onSkip}
+        />
+      </Match>
+      <Match when={props.mode === "NOTICE"}>
+        <NoticeInteraction
+          onCancelCountdown={props.onCancelCountdown}
+          onSuccess={() => props.onSuccess()}
           onSkip={props.onSkip}
         />
       </Match>
