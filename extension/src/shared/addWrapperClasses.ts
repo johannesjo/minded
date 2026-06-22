@@ -32,7 +32,18 @@ export const addWrapperClasses = (shadowRoot?: ShadowRoot) => {
 };
 
 export const isDarkModeNow = (): boolean => {
-  // return true;
+  // Dev/preview override: the standalone styleguide + dashboard simulation are
+  // served at a real URL with no OS theme hook, so `?theme=dark` / `?theme=light`
+  // forces the mode for testing at any time of day. Honoured here (rather than
+  // only in the entry) so the whole shell agrees — addWrapperClasses' class, the
+  // companion's moon/sun variant and the interaction sky all read this. Inert in
+  // the extension/app, where no such query param is ever present.
+  if (typeof window !== "undefined" && window.location?.search) {
+    const theme = new URLSearchParams(window.location.search).get("theme");
+    if (theme === "dark") return true;
+    if (theme === "light") return false;
+  }
+
   const now = new Date();
   const nowHours = now.getHours();
 

@@ -19,6 +19,7 @@ import {
   hasActiveWebHostTimer,
 } from "@src/util/activeTimerScope";
 import { getEffectiveSessionDurationS } from "@src/util/sessionDuration";
+import { startUsageTimeTracking } from "@src/pages/content/usageTimeTracker";
 
 const CURRENT_URL = window.location.href;
 
@@ -28,6 +29,11 @@ const CURRENT_URL = window.location.href;
     if (isOnBlockedUrl(CURRENT_URL, initialSyncData)) {
       const currentHost = getHostFromUrl(CURRENT_URL);
       const currentTarget = getWebHostSessionTarget(currentHost);
+
+      // Measure real foreground time on this blocked host for the present-moment
+      // usage observation. Runs for the page's lifetime regardless of whether an
+      // overlay shows (so rest-of-day visits are counted too).
+      startUsageTimeTracking(currentHost);
 
       // Rest-of-day mode: hide everything for the current host.
       if (isRestOfDayActive(initialSyncData, currentTarget, "web")) {

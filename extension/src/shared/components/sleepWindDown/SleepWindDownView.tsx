@@ -17,6 +17,7 @@ import {
   SLEEP_TIPS,
   TOMORROW_PROMPTS,
 } from "@src/shared/data/sleepContent";
+import { QuestionCategoryId } from "@src/shared/data/questions";
 import { getIsoDate } from "@src/util/getIsoDate";
 import {
   createSignal,
@@ -466,6 +467,7 @@ export const SleepWindDownView = (
                 <BrainDump
                   initialText={gratitudeDraft()}
                   prompts={GRATITUDE_PROMPTS}
+                  questionCategoryId={QuestionCategoryId.Gratitude}
                   onDraftChange={(t) => {
                     setGratitudeDraft(t);
                     persistDraft("sleepWindDownGratitudeDraft", t);
@@ -485,6 +487,7 @@ export const SleepWindDownView = (
                 <BrainDump
                   initialText={tomorrowDraft()}
                   prompts={TOMORROW_PROMPTS}
+                  questionCategoryId={QuestionCategoryId.GoodPlans}
                   onDraftChange={(t) => {
                     setTomorrowDraft(t);
                     persistDraft("sleepWindDownTomorrowDraft", t);
