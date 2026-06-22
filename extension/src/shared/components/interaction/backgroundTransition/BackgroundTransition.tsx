@@ -67,6 +67,13 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       animateToCompletion(direction);
     };
 
+    // A dashboard offer (grounding / let-go) takes over with its own full-screen
+    // app-sky layer, so the transition background eases back to its default sky
+    // rather than warming to night — otherwise that warmed sky (stars and all)
+    // flashes when the offer fades out on close. Background-only: unlike the
+    // dragProgress reset, it must not touch the interaction content's opacity.
+    const handleResetBackground = () => animateToDefault();
+
     const eventTarget = props.shadowRoot ?? window;
 
     eventTarget.addEventListener(
@@ -76,6 +83,10 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     eventTarget.addEventListener(
       "startBackgroundAnimation",
       handleStartAnimation as EventListener,
+    );
+    eventTarget.addEventListener(
+      "resetBackgroundTransition",
+      handleResetBackground as EventListener,
     );
 
     onCleanup(() => {
@@ -87,6 +98,10 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
         "startBackgroundAnimation",
         handleStartAnimation as EventListener,
       );
+      eventTarget.removeEventListener(
+        "resetBackgroundTransition",
+        handleResetBackground as EventListener,
+      );
     });
   });
 
@@ -97,6 +112,9 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   });
 
   const animateToDefault = () => {
+    // Take over any in-flight animation (e.g. a completion still easing toward
+    // night) so the two rAF loops don't fight over progress.
+    if (animationFrame) cancelAnimationFrame(animationFrame);
     setIsAnimating(true);
     setShowStars(false); // Hide stars when returning to default
     const startProgress = getProgress();

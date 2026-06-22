@@ -681,12 +681,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Direction picks the ritual on the dashboard: down = ground yourself
     // (offer to meditate / be present), up/away = let go (offer the "What do you
     // want to let go of?" reflection) — instead of completing. Either way the
-    // interaction content fades out, the sky warms, and the offer takes over;
-    // the just-flung sun glides home hidden behind the offer's full-screen layer.
+    // interaction content fades out and the offer takes over with its own
+    // full-screen app-sky layer; the just-flung sun glides home hidden behind it.
     if (props.isFromDashboard && (direction === "down" || direction === "up")) {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
+      // Don't warm the transition background to night here: the offer fully
+      // covers it, so the only time that warmed sky (stars and all, in dark
+      // mode) would show is the brief reveal as the offer fades out on close —
+      // read as a jarring flash. Ease it back to the default sky instead, so
+      // whatever peeks through during the offer's open/close fade is seamless.
       interactionEventTarget.dispatchEvent(
-        new CustomEvent("startBackgroundAnimation", { detail: { direction } }),
+        new CustomEvent("resetBackgroundTransition"),
       );
       if (direction === "down") {
         setShowGroundingOffer(true);
