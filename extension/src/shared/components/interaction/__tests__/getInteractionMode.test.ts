@@ -143,17 +143,8 @@ describe("getInteractionMode", () => {
           answer("2"),
         ],
         alternativeWebsites: ["https://example.com"],
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
+        sunTaps: { [TODAY]: 5 },
+        sunTapTimestamps: RECENT_SUN_TAPS,
       }),
       {
         isMainView: false,
@@ -166,9 +157,10 @@ describe("getInteractionMode", () => {
       reason: "strong_friction_pattern_insight",
       frictionLevel: "strong",
       patternInsight: {
-        id: "budget-exhausted:youtube.com",
+        id: "return-loop",
         dateISO: TODAY,
-        message: "You've used today's 10-minute budget.",
+        message:
+          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "show_alternative", "leave_now"],
       },
     });
@@ -199,17 +191,7 @@ describe("getInteractionMode", () => {
     const decision = decide(
       baseSyncData({
         energyLvlTS: 99,
-        dailyBudget: {
-          globalMinutes: 10,
-        },
-        dailyUsage: {
-          [TODAY]: {
-            totalSeconds: 10 * 60,
-            perSite: {
-              "youtube.com": 10 * 60,
-            },
-          },
-        },
+        ...strongFrictionViaAttempts(),
       }),
       {
         isMainView: false,
@@ -394,15 +376,10 @@ describe("getInteractionMode", () => {
     expect(
       decide(
         baseSyncData({
-          attempts: { [TODAY]: 2 },
-          dailyUsage: {
-            [TODAY]: {
-              totalSeconds: 18 * 60,
-              perSite: {
-                "youtube.com": 18 * 60,
-              },
-            },
-          },
+          // Three recent returns → return-loop insight is eligible, but not the
+          // five that would push friction to strong.
+          sunTaps: { [TODAY]: 3 },
+          sunTapTimestamps: [NOW - 2 * ONE_HOUR, NOW - ONE_HOUR, NOW],
         }),
         {
           isMainView: false,
@@ -415,9 +392,10 @@ describe("getInteractionMode", () => {
       reason: "contextual_pattern_insight",
       frictionLevel: "normal",
       patternInsight: {
-        id: "daily-usage:youtube.com",
+        id: "return-loop",
         dateISO: TODAY,
-        message: "You've spent 18 minutes here today.",
+        message:
+          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "leave_now"],
       },
     });
@@ -427,16 +405,9 @@ describe("getInteractionMode", () => {
     expect(
       decide(
         baseSyncData({
-          attempts: { [TODAY]: 2 },
           alternativeWebsites: ["https://example.com"],
-          dailyUsage: {
-            [TODAY]: {
-              totalSeconds: 18 * 60,
-              perSite: {
-                "youtube.com": 18 * 60,
-              },
-            },
-          },
+          sunTaps: { [TODAY]: 3 },
+          sunTapTimestamps: [NOW - 2 * ONE_HOUR, NOW - ONE_HOUR, NOW],
         }),
         {
           isMainView: false,
@@ -448,32 +419,6 @@ describe("getInteractionMode", () => {
       mode: "SHOW_ALTERNATIVE",
       reason: "contextual_alternative",
       frictionLevel: "normal",
-    });
-  });
-
-  it("does not show pattern insights in soft friction", () => {
-    expect(
-      decide(
-        baseSyncData({
-          dailyUsage: {
-            [TODAY]: {
-              totalSeconds: 18 * 60,
-              perSite: {
-                "youtube.com": 18 * 60,
-              },
-            },
-          },
-        }),
-        {
-          isMainView: false,
-          target: { kind: "host", id: "youtube.com" },
-          random: () => 0.2,
-        },
-      ),
-    ).toEqual({
-      mode: "QUESTION",
-      reason: "fallback_question",
-      frictionLevel: "soft",
     });
   });
 

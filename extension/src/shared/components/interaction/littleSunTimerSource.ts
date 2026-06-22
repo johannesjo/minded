@@ -1,5 +1,4 @@
 import type { ActiveTimer, SyncData } from "@src/dataInterface/syncData";
-import { getBudgetState } from "@src/util/budget";
 import {
   getActiveTimerInScope,
   getWebHostSessionTarget,
@@ -23,13 +22,6 @@ export type LittleSunTimerSource =
       type: "grace-exhausted";
     }
   | {
-      type: "budget";
-      remainingSeconds: number;
-    }
-  | {
-      type: "budget-exhausted";
-    }
-  | {
       type: "elapsed";
       initialSeconds: number;
       shouldClearExpiredTimer: boolean;
@@ -40,7 +32,6 @@ export const getLittleSunTimerSource = (
   host: string,
   initialElapsedSeconds: number,
   now: number = Date.now(),
-  pendingBudgetUsageSeconds = 0,
 ): LittleSunTimerSource => {
   const target = getWebHostSessionTarget(host);
   const activeTimer = getActiveTimerInScope(syncData, target, "web", now);
@@ -64,21 +55,8 @@ export const getLittleSunTimerSource = (
     };
   }
 
-  const budgetState = getBudgetState(syncData, host, pendingBudgetUsageSeconds);
-  if (budgetState.isActive && budgetState.remainingSeconds > 0) {
-    return {
-      type: "budget",
-      remainingSeconds: budgetState.remainingSeconds,
-    };
-  }
-  if (budgetState.isActive) {
-    return {
-      type: "budget-exhausted",
-    };
-  }
-
-  // Grace was configured and is now exhausted, with no budget to fall back to —
-  // signal intervention rather than silently dropping into elapsed mode.
+  // Grace was configured and is now exhausted — signal intervention rather than
+  // silently dropping into elapsed mode.
   if (graceCfg) {
     return { type: "grace-exhausted" };
   }

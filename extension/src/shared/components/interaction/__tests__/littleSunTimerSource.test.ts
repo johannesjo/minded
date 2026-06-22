@@ -26,17 +26,6 @@ describe("getLittleSunTimerSource", () => {
     expect(source).toEqual({ type: "grace-exhausted" });
   });
 
-  it("returns budget when grace is exhausted but budget has time left", () => {
-    const base = withGrace({ enabled: true, minutes: 5 });
-    const syncData: SyncData = {
-      ...base,
-      dailyBudget: { globalMinutes: 30 },
-      dailyUsage: {},
-    };
-    const source = getLittleSunTimerSource(syncData, HOST, 5 * 60, NOW);
-    expect(source.type).toBe("budget");
-  });
-
   it("returns elapsed (not grace-exhausted) when grace is disabled", () => {
     const syncData = createMockSyncData();
     const source = getLittleSunTimerSource(syncData, HOST, 600, NOW);

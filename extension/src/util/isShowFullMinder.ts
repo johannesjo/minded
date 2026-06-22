@@ -1,5 +1,4 @@
 import { SyncData } from "@src/dataInterface/syncData";
-import { getBudgetState } from "@src/util/budget";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
 import { hasActiveWebHostTimer } from "@src/util/activeTimerScope";
 import { isSessionGraceActive } from "@src/util/sessionGrace";
@@ -9,12 +8,10 @@ import { isSessionGraceActive } from "@src/util/sessionGrace";
  * Returns false (skip full intervention) if:
  * - Active session timer exists
  * - Session grace period still has time left
- * - Daily budget has remaining time
  */
 export const isShowFullMinder = (
   currentUrl: string,
   syncData: SyncData,
-  pendingBudgetUsageSeconds = 0,
   sessionDurationS = 0,
 ): boolean => {
   const now = Date.now();
@@ -30,12 +27,6 @@ export const isShowFullMinder = (
     return false;
   }
 
-  // Check if daily budget has remaining time
-  const budgetState = getBudgetState(syncData, host, pendingBudgetUsageSeconds);
-  if (budgetState.isActive && budgetState.remainingSeconds > 0) {
-    return false;
-  }
-
-  // No active session and no budget remaining → show full intervention
+  // No active session and no grace remaining → show full intervention
   return true;
 };

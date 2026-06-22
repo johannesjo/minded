@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.minded.minded.BuildConfig
 import com.minded.minded.data.defaultSyncData
-import com.minded.minded.util.DailyUsage
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
 import com.minded.minded.util.getIsoDate
@@ -93,15 +92,6 @@ class SharedPreferenceService(context: Context) {
                 Log.v(logTag, "countUserDrivenClose() updatedSunTaps: $updatedSunTaps")
             }
             copy(sunTaps = updatedSunTaps)
-        }
-    }
-
-    @Synchronized
-    fun addBudgetUsage(secondsToAdd: Int) {
-        val today = getIsoDate()
-        updateSyncData {
-            val currentUsage = dailyUsage[today] ?: DailyUsage(totalSeconds = 0, perSite = emptyMap())
-            copy(dailyUsage = dailyUsage + (today to currentUsage.copy(totalSeconds = currentUsage.totalSeconds + secondsToAdd)))
         }
     }
 

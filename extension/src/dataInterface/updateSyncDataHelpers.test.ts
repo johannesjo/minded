@@ -1,7 +1,7 @@
 import type { SyncData } from "@src/dataInterface/syncData";
-import { addBudgetUsage } from "@src/util/budget";
-import { createMockSyncData, mockDate } from "@src/test-utils/mockHelpers";
+import { createMockSyncData } from "@src/test-utils/mockHelpers";
 import { updateSyncDataField } from "./updateSyncDataHelpers";
+import { addUsageTime } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
 describe("updateSyncDataField", () => {
   afterEach(() => {
@@ -38,18 +38,13 @@ describe("updateSyncDataField", () => {
   });
 
   it("rebases same-field updates onto writes made after the initial read", async () => {
-    mockDate("2026-05-18T10:00:00");
+    const now = new Date("2026-05-18T10:00:00").getTime();
 
-    const staleSyncData = createMockSyncData({
-      dailyUsage: {},
-    });
+    // Stale read has no usage yet; a concurrent write lands 10s before our patch.
+    // `addUsageTime` is the real live same-field updater (usageStats).
+    const staleSyncData = createMockSyncData({ usageStats: {} });
     const latestSyncData = createMockSyncData({
-      dailyUsage: {
-        "2026-05-18": {
-          totalSeconds: 10,
-          perSite: { "reddit.com": 10 },
-        },
-      },
+      usageStats: addUsageTime({}, "reddit.com", 10, now),
     });
     const getSyncData = jest
       .fn<Promise<SyncData>, []>()
@@ -59,17 +54,18 @@ describe("updateSyncDataField", () => {
       .fn<Promise<void>, [Partial<SyncData>]>()
       .mockResolvedValue();
 
-    await updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
-      addBudgetUsage(syncData, "reddit.com", 10),
-    );
+    await updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+      usageStats: addUsageTime(syncData.usageStats, "reddit.com", 10, now),
+    }));
 
+    // Our 10s rebases onto the concurrent write instead of clobbering it → 20s.
     expect(patchSyncData).toHaveBeenCalledWith({
-      dailyUsage: {
-        "2026-05-18": {
-          totalSeconds: 20,
-          perSite: { "reddit.com": 20 },
-        },
-      },
+      usageStats: addUsageTime(
+        addUsageTime({}, "reddit.com", 10, now),
+        "reddit.com",
+        10,
+        now,
+      ),
     });
   });
 });

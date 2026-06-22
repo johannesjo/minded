@@ -94,11 +94,8 @@ class OverlayDecisionEngine {
         } else if (isWithinSessionGrace(state)) {
             // Per-session grace period still has time - show little sun
             OverlayDecision.ShowLittleSun
-        } else if (state.hasBudgetRemaining) {
-            // Daily budget has remaining time - show little sun
-            OverlayDecision.ShowLittleSun
         } else {
-            // No active session, no grace, no budget remaining - show intervention
+            // No active session and no grace remaining - show intervention
             OverlayDecision.ShowIntervention
         }
     }
@@ -167,9 +164,6 @@ data class OverlayState(
 
     /** Global active timer duration in seconds, or -1 for rest-of-day */
     val activeTimerDurationS: Int? = null,
-
-    /** Whether the daily budget has remaining time */
-    val hasBudgetRemaining: Boolean = false,
 
     /** Whether the per-session grace period setting is enabled */
     val sessionGraceEnabled: Boolean = false,

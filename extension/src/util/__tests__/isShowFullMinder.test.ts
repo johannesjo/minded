@@ -51,21 +51,27 @@ describe("isShowFullMinder", () => {
     );
   });
 
-  it("shows the full minder when pending live budget usage exhausts the budget", () => {
+  it("hides the full minder while the per-session grace window has time left", () => {
     mockDate(NOW);
 
     const syncData = createMockSyncData({
-      dailyBudget: { globalMinutes: 10 },
-      dailyUsage: {
-        "2026-05-15": {
-          totalSeconds: 9 * 60 + 55,
-          perSite: { "reddit.com": 9 * 60 + 55 },
-        },
-      },
+      cfg: { sessionGrace: { enabled: true, minutes: 5 } },
     });
 
-    expect(isShowFullMinder("https://www.reddit.com/r/test", syncData, 6)).toBe(
-      true,
-    );
+    expect(
+      isShowFullMinder("https://www.reddit.com/r/test", syncData, 60),
+    ).toBe(false);
+  });
+
+  it("shows the full minder once the grace window is exhausted", () => {
+    mockDate(NOW);
+
+    const syncData = createMockSyncData({
+      cfg: { sessionGrace: { enabled: true, minutes: 5 } },
+    });
+
+    expect(
+      isShowFullMinder("https://www.reddit.com/r/test", syncData, 5 * 60),
+    ).toBe(true);
   });
 });

@@ -6,12 +6,8 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { formatBadgeTime } from "@src/util/formatTime";
 import { SyncData } from "@src/dataInterface/syncData";
-import { addBudgetUsage } from "@src/util/budget";
 import { updateSyncDataField } from "@src/dataInterface/updateSyncDataHelpers";
-import {
-  isAddBudgetUsageMessage,
-  isAddUsageTimeMessage,
-} from "@src/dataInterface/extension/extensionMessages";
+import { isAddUsageTimeMessage } from "@src/dataInterface/extension/extensionMessages";
 import { addUsageTime } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
 let badgeInterval: ReturnType<typeof setInterval> | null = null;
@@ -96,14 +92,6 @@ bro.runtime.onMessage.addListener((request, sender) => {
     countSunTap();
     bro.tabs.remove(sender.tab.id);
     return undefined;
-  }
-
-  if (isAddBudgetUsageMessage(request)) {
-    return enqueueSyncUpdate(() =>
-      updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
-        addBudgetUsage(syncData, request.host, request.seconds),
-      ),
-    );
   }
 
   if (isAddUsageTimeMessage(request)) {
