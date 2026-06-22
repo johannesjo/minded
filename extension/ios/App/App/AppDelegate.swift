@@ -1,6 +1,12 @@
 import UIKit
 import Capacitor
 
+extension Notification.Name {
+    /// Posted when the home-screen companion sun widget opens `minded://sun`.
+    /// Observed by MainViewController, which sets the shared `?sun=open` flag.
+    static let openSun = Notification.Name("OPEN_SUN")
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -41,6 +47,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         print("application URL" , url)
+        // The home-screen companion sun widget opens `minded://sun`. Turn it into
+        // the shared `?sun=open` launch flag the web shell already consumes (the
+        // exact same trigger as tapping the in-app dashboard sun). The notification
+        // is observed by MainViewController, which sets the WebView hash. We handle
+        // it here rather than passing it to Capacitor so a missing @capacitor/app
+        // listener can't swallow it. See docs/sun-companion-widget.md.
+        if url.scheme == "minded", url.host == "sun" {
+            NotificationCenter.default.post(name: .openSun, object: nil)
+            return true
+        }
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 

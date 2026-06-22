@@ -1,6 +1,10 @@
 # Spec: the sun companion widget (Home/Lock Screen)
 
-Status: **Android in progress, iOS specced.** This is "option 1" from
+Status: **Android in progress; iOS implemented (pending first Xcode build).**
+The iOS WidgetKit widget + deep-link plumbing now live in
+`extension/ios/App/MindedWidget/` (see its README); they were written without a
+macOS build available, so the first Xcode build is the real verification. This is
+"option 1" from
 `docs/ios-platform-fit.md` — the always-present, invitation-only sun, moved off
 the dashboard bottom bar and onto the device home screen. It is the
 entitlement-free, on-philosophy first step toward an iOS presence, and it is a
@@ -69,8 +73,9 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   launching `MainActivity` with `EXTRA_LAUNCH_ROUTE = OPEN_SUN_HASH`
   (`"/?sun=open"`).
 - **Asset** (`res/drawable/ic_sun_widget.xml` + `res/drawable-night/…`): a
-  vector sun (radial warm gradient: cream → `#FFE281` → `#FFAE52` → `#EF6F52`)
-  and a night moon variant (cool blue), picked automatically by the system.
+  vector sun (a near-white disc warming to faint cream at the rim, over a soft
+  warm-gold bloom) and a night moon variant (cool blue), picked automatically
+  by the system.
 - **`MyAppWidgetReceiver.kt`**: stripped to the Glance receiver. The old 30-min
   `AlarmManager` refresh is removed — the sun is static, nothing to poll.
 - **`app_widget_info.xml`**: a 1×1 home-screen widget with a sun preview.
@@ -81,21 +86,29 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   clobber the flag.
 - **`AndroidManifest.xml`**: uncomment + wire the `MyAppWidgetReceiver`.
 
-### iOS (specced, not built)
+### iOS (implemented — `extension/ios/App/MindedWidget/`)
 
-When iOS is revisited, mirror the Android shape — only the shell differs:
+Mirrors the Android shape; only the shell differs. See the folder's `README.md`
+for the one manual Xcode step (creating the Widget Extension target) and how to
+verify.
 
-- **WidgetKit widget** (SwiftUI), Home Screen + Lock Screen + StandBy. Render the
-  same sun (a SwiftUI `Circle` with a radial gradient, or a shared asset);
-  `.widgetURL(URL("minded://sun"))` (or a Universal Link) as the tap target. No
-  special entitlement.
-- **Deep link → `?sun=open`.** Register a `minded://` URL scheme on the iOS app.
-  In `AppDelegate`/`MainViewController` (or via Capacitor's `appUrlOpen`), on
-  open set the Capacitor WebView's hash to `#/?sun=open` — the exact same flag
-  the shared shell already consumes. `MainIOS.tsx` already reads
-  `window.location.hash` on mount, so this is a small addition, not new flow.
+- **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`). The sun is drawn
+  with SwiftUI radial gradients (`CompanionSun.swift`), colours ported 1:1 from
+  the Android `ic_sun_widget` vectors; day/night follows the system colour
+  scheme. `.widgetURL(URL("minded://sun"))` is the tap target. No special
+  entitlement, no App Group — the widget only carries a deep link.
+  - **Lock Screen (`accessoryCircular`) deferred:** accessory widgets render in
+    the system's *vibrant* mode, which discards colour and rebuilds the view from
+    its alpha channel — the near-opaque disc + soft bloom collapse to a flat tinted
+    blob. A Lock Screen variant needs a purpose-built alpha glyph, not the colour
+    sun; left for later rather than shipped looking broken.
+- **Deep link → `?sun=open`.** The `minded://` URL scheme is already registered
+  (`App/Info.plist`). `AppDelegate.application(open:)` intercepts `minded://sun`
+  and posts an `OPEN_SUN` notification; `MainViewController` sets the Capacitor
+  WebView's hash to `/?sun=open` — the exact same flag the shared shell already
+  consumes — retrying across lifecycle beats to cover the cold-start race.
 - Everything below the deep link (the interaction itself) is already shared, so
-  the iOS effort is just the SwiftUI widget + URL plumbing.
+  the iOS code is just the SwiftUI widget + URL plumbing.
 
 ## Deliberately out of scope (v1)
 
