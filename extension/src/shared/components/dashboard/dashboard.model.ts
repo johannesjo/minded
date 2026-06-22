@@ -7,8 +7,6 @@ export enum DashboardGroupType {
   Quote = "Quote",
   EnergyLvl = "EnergyLvl",
   Stats = "Stats",
-  BrowsingBehaviorRating = "BrowsingBehaviorRating",
-  AppUsageRating = "AppUsageRating",
   SelfAssessment = "SelfAssessment",
   EmotionLabeling = "EmotionLabeling",
   SleepWindDown = "SleepWindDown",
@@ -37,18 +35,6 @@ export interface DashboardGroupEnergyLvl {
   energyLvl: number;
 }
 
-export interface DashboardGroupBrowsingBehaviorHappiness {
-  id: QuestionCategoryId.XBrowsingBehaviorHappiness;
-  type: DashboardGroupType.BrowsingBehaviorRating;
-  data: { [key: string]: number };
-}
-
-export interface DashboardGroupAppUsageHappiness {
-  id: QuestionCategoryId.XAppUsageHappiness;
-  type: DashboardGroupType.AppUsageRating;
-  data: { [key: string]: number };
-}
-
 export interface DashboardGroupSelAssessment {
   id: QuestionCategoryId.XSelfAssessment;
   type: DashboardGroupType.SelfAssessment;
@@ -67,8 +53,6 @@ export interface DashboardGroupSleepWindDown {
 
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
-  | DashboardGroupBrowsingBehaviorHappiness
-  | DashboardGroupAppUsageHappiness
   | DashboardGroupStats
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl

@@ -1,8 +1,6 @@
 import { Answer, SyncData } from "@src/dataInterface/syncData";
 import {
   DashboardGroup,
-  DashboardGroupAppUsageHappiness,
-  DashboardGroupBrowsingBehaviorHappiness,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupSelAssessment,
@@ -130,22 +128,6 @@ export const getDashboardEntriesFromQuestions = (
       entries: entriesForSelfAssessment,
     } as DashboardGroupSelAssessment);
     fixedEntriesIndexAndNr++;
-  }
-
-  if (Object.keys(syncData.browsingBehaviorRating).length >= 3 && !IS_ANDROID) {
-    sortedEntries.push({
-      id: QuestionCategoryId.XBrowsingBehaviorHappiness,
-      type: DashboardGroupType.BrowsingBehaviorRating,
-      data: syncData.browsingBehaviorRating,
-    } as DashboardGroupBrowsingBehaviorHappiness);
-  }
-
-  if (Object.keys(syncData.appUsageRating).length >= 3 && IS_ANDROID) {
-    sortedEntries.push({
-      id: QuestionCategoryId.XAppUsageHappiness,
-      type: DashboardGroupType.AppUsageRating,
-      data: syncData.appUsageRating,
-    } as DashboardGroupAppUsageHappiness);
   }
 
   // Move the greeting (the centre pick the dashboard opens on) to CENTER_INDEX.

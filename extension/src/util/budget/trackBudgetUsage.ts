@@ -4,6 +4,10 @@ import { getIsoDate } from "@src/util/getIsoDate";
 /**
  * Create an updated dailyUsage object with added time for a host.
  * Returns the new dailyUsage to be saved via updateSyncData.
+ *
+ * NOTE: `dailyUsage` is the dormant budget-legacy store (#35) — this write path
+ * only fires in (removed) budget mode. The live observed-usage store is
+ * `SyncData.usageStats` (interaction/appUsageOrBrowsingBehavior/usageStats.ts).
  */
 export const addBudgetUsage = (
   syncData: SyncData,

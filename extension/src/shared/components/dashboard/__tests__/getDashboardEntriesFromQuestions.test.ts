@@ -98,13 +98,11 @@ describe("getDashboardEntriesFromQuestions", () => {
       (isToday as jest.Mock).mockReturnValue(false);
     });
 
-    it("never greets with a measurement card (stats counter or behaviour chart), whatever the random pick", () => {
+    it("never greets with a measurement card (the stats counter), whatever the random pick", () => {
       const syncData = createMockSyncData({
-        // → a minded-decisions tally and a behaviour-over-time chart; neither
-        // should ever be the calm first card.
+        // → a minded-decisions tally; it should never be the calm first card.
         sunTaps: { "2024-01-15": 5 },
         attempts: { "2024-01-15": 12 },
-        browsingBehaviorRating: { a: 1, b: 2, c: 3 },
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
           reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
@@ -113,11 +111,7 @@ describe("getDashboardEntriesFromQuestions", () => {
         ],
       });
 
-      const measuringTypes = [
-        DashboardGroupType.Stats,
-        DashboardGroupType.BrowsingBehaviorRating,
-        DashboardGroupType.AppUsageRating,
-      ];
+      const measuringTypes = [DashboardGroupType.Stats];
 
       // Sweep the pick across the whole [0, 1) range; the greeting must always
       // be a reflective card or a quote, never a measurement card.

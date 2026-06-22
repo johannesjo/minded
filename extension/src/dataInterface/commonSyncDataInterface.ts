@@ -10,6 +10,7 @@ import {
   patchSyncDataN,
   saveAnswerN,
   saveSyncDataN,
+  getUsageObservationRawN,
   // @ts-ignore - path alias resolved at build time based on platform
 } from "@dataInterface/syncDataInterface";
 import {
@@ -40,6 +41,11 @@ import {
   markPatternInsightShownInState,
   type PatternInsight,
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import {
+  computeUsageObservation,
+  type UsageObservation,
+  type UsageTarget,
+} from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageObservation";
 
 export const getSyncData: () => Promise<SyncData> = getSyncDataN;
 export const saveSyncData: (syncData: SyncData) => Promise<void> =
@@ -236,16 +242,65 @@ export const countSunTap = (): Promise<void> =>
     bumpSunTap(syncData, Date.now()),
   );
 
-export const rateCurrentBrowsingBehavior = async (
-  val: number,
-  dateTS = Date.now(),
-): Promise<void> => {
-  const ds = getIsoDate(new Date(dateTS));
-  return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    lastBrowsingBehaviorRatingTS: dateTS,
-    browsingBehaviorRating: { ...syncData.browsingBehaviorRating, [ds]: val },
-  }));
+/**
+ * Present-moment, judgment-free read of actual usage — the replacement for the
+ * old Great→Awful self-rating. Extension computes it from observed `usageStats`;
+ * Android reads real per-app foreground time from the OS via the native bridge.
+ * Returns null when there's no usable signal (e.g. Android usage-access not
+ * granted, or iOS).
+ */
+export const getUsageObservation =
+  async (): Promise<UsageObservation | null> => {
+    if (IS_ANDROID) {
+      return parseAndroidUsageObservation(getUsageObservationRawN());
+    }
+    if (IS_WEB_EXT) {
+      const syncData = await getSyncData();
+      return computeUsageObservation(syncData.usageStats, Date.now());
+    }
+    return null;
+  };
+
+const parseAndroidUsageObservation = (
+  raw: string | null,
+): UsageObservation | null => {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<UsageObservation>;
+    if (!Number.isFinite(parsed.todaySeconds)) return null;
+    const topTargets: UsageTarget[] = Array.isArray(parsed.topTargets)
+      ? parsed.topTargets.filter(
+          (t): t is UsageTarget =>
+            !!t &&
+            typeof t.id === "string" &&
+            typeof t.label === "string" &&
+            typeof t.seconds === "number" &&
+            Number.isFinite(t.seconds),
+        )
+      : [];
+    return {
+      todaySeconds: parsed.todaySeconds as number,
+      baselineSeconds: Number.isFinite(parsed.baselineSeconds)
+        ? (parsed.baselineSeconds as number)
+        : null,
+      topTargets,
+    };
+  } catch {
+    return null;
+  }
 };
+
+/**
+ * Throttle marker for the usage-observation interaction. Reuses the dormant
+ * `last*RatingTS` fields (kept for storage-shape stability) as the "last shown"
+ * timestamp that getInteractionMode reads.
+ */
+export const markUsageObservationShown = (dateTS = Date.now()): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, () =>
+    IS_ANDROID
+      ? { lastAppUsageRatingTS: dateTS }
+      : { lastBrowsingBehaviorRatingTS: dateTS },
+  );
 
 export const setDailyQuestionsDoneForToday = async (
   mode: DailyQuestionsMode,
@@ -256,18 +311,6 @@ export const setDailyQuestionsDoneForToday = async (
       ? { dailyQuestionsMorningTS: dateTS }
       : { dailyQuestionsEveningTS: dateTS },
   );
-
-export const rateCurrentAppUsage = async (
-  val: number,
-  dateTS = Date.now(),
-): Promise<void> => {
-  // Use date 3 days ago for app usage rating
-  const ds = getIsoDate(new Date(dateTS - 1000 * 60 * 60 * 24 * 3));
-  return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    lastAppUsageRatingTS: dateTS,
-    appUsageRating: { ...syncData.appUsageRating, [ds]: val },
-  }));
-};
 
 export const saveSelfAssessment = async (
   selfAssessmentId: SelfAssessmentId,

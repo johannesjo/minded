@@ -456,8 +456,11 @@ export const LittleSunComponent: (props: {
   };
 
   const getDisplayTime = () => {
-    if (getIsGraceMode() && getGraceRemaining() !== null) {
-      return formatSessionTime(getGraceRemaining()!);
+    // During grace, count the elapsed session time *up* — a calm companion
+    // resting in the corner, not a countdown ticking down toward the next
+    // intervention (which would manufacture the very urgency we avoid).
+    if (getIsGraceMode()) {
+      return formatSessionTime(getSessionTime());
     }
     if (getIsBudgetMode() && getBudgetRemaining() !== null) {
       return formatSessionTime(getBudgetRemaining()!);
@@ -475,13 +478,12 @@ export const LittleSunComponent: (props: {
   };
 
   const getAccessibleLabel = () => {
-    const timeKind = getIsGraceMode()
-      ? "grace remaining"
-      : getIsBudgetMode()
-        ? "budget remaining"
-        : getRemainingSeconds() !== null
-          ? "remaining"
-          : "elapsed";
+    // Grace counts up like a plain elapsed session, so it reads as "elapsed".
+    const timeKind = getIsBudgetMode()
+      ? "budget remaining"
+      : getRemainingSeconds() !== null
+        ? "remaining"
+        : "elapsed";
     return `${getDisplayTime()} ${timeKind}. ${getActionLabel()}.`;
   };
 

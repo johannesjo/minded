@@ -65,3 +65,6 @@ export const saveAnswerN = (answer: Answer): Promise<void> => {
     });
   });
 };
+
+// iOS isn't actively developed and has no usage-observation source.
+export const getUsageObservationRawN = (): string | null => null;

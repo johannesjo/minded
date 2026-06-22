@@ -35,6 +35,9 @@ const SAVED_REASON_PROBABILITY = 1 / 15;
 const USAGE_RATING_DUE_PROBABILITY = 1 / 3;
 const USAGE_RATING_TODAY_PROBABILITY = 1 / 20;
 const ACTION_ADVICE_PROBABILITY = 1 / 20;
+// A present-moment "notice → tap" anchor: a gentle, no-typing fallback offered
+// when nothing more specific is due. Rarer than action advice.
+const NOTICE_PROBABILITY = 1 / 30;
 const PATTERN_INSIGHT_PROBABILITY = 1 / 3;
 // Share of strong-friction Android interventions that ask for a screen-off
 // minute (the rest fall through to the existing strong-friction prompts).
@@ -48,6 +51,7 @@ export type InteractionMode =
   | "ENERGY_LVL"
   | "APP_USAGE_OR_BROWSING_BEHAVIOR"
   | "ACTION_ADVICE"
+  | "NOTICE"
   | "QUESTION"
   | "SHOW_ALTERNATIVE"
   | "SET_ALTERNATIVE"
@@ -78,6 +82,7 @@ export type InteractionModeReason =
   | "saved_reason_sample"
   | "usage_rating_due"
   | "action_advice_sample"
+  | "notice_sample"
   | "screen_off_strong"
   | "urge_surfing_strong"
   | "fallback_question";
@@ -148,6 +153,7 @@ export const getInteractionModeDecision = (
   // return "APP_USAGE_OR_BROWSING_BEHAVIOR";
   // return "ACTION_ADVICE";
   // return "ENERGY_LVL";
+  // return "NOTICE";
   // return "SELF_ASSESSMENT";
   // return "SHOW_ALTERNATIVE";
   // return "SET_ALTERNATIVE";
@@ -333,6 +339,10 @@ export const getInteractionModeDecision = (
 
   if (isActionAdviceEligible && chance(ACTION_ADVICE_PROBABILITY, random)) {
     return decision("ACTION_ADVICE", "action_advice_sample", frictionLevel);
+  }
+
+  if (chance(NOTICE_PROBABILITY, random)) {
+    return decision("NOTICE", "notice_sample", frictionLevel);
   }
 
   return decision("QUESTION", "fallback_question", frictionLevel);

@@ -114,6 +114,7 @@ const createScreenshotSyncData = (): SyncData => {
     lastBrowsingBehaviorRatingTS: 99,
     appUsageRating: {},
     lastAppUsageRatingTS: 99,
+    usageStats: {},
     energyLvlTS: now,
     energyLvlVal: 3,
     sunTaps: {},

@@ -8,7 +8,11 @@ import { formatBadgeTime } from "@src/util/formatTime";
 import { SyncData } from "@src/dataInterface/syncData";
 import { addBudgetUsage } from "@src/util/budget";
 import { updateSyncDataField } from "@src/dataInterface/updateSyncDataHelpers";
-import { isAddBudgetUsageMessage } from "@src/dataInterface/extension/extensionMessages";
+import {
+  isAddBudgetUsageMessage,
+  isAddUsageTimeMessage,
+} from "@src/dataInterface/extension/extensionMessages";
+import { addUsageTime } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
 let badgeInterval: ReturnType<typeof setInterval> | null = null;
 let syncUpdateQueue: Promise<void> = Promise.resolve();
@@ -99,6 +103,18 @@ bro.runtime.onMessage.addListener((request, sender) => {
       updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
         addBudgetUsage(syncData, request.host, request.seconds),
       ),
+    );
+  }
+
+  if (isAddUsageTimeMessage(request)) {
+    return enqueueSyncUpdate(() =>
+      updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+        usageStats: addUsageTime(
+          syncData.usageStats,
+          request.host,
+          request.seconds,
+        ),
+      })),
     );
   }
 

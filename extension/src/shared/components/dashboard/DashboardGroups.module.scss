@@ -102,7 +102,6 @@
   }
 }
 
-.browsingBehaviorGraph,
 .stats,
 .energyLvl {
   margin: auto;
@@ -110,11 +109,6 @@
   div:first-child {
     margin-bottom: 0;
   }
-}
-
-.browsingBehaviorGraph {
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .energyLvl {
