@@ -30,7 +30,6 @@ export interface InteractionContext {
   todayOpeningAttempts: number;
   todaySunTaps: number;
   recentSunTaps: number;
-  todayUsageSeconds: number;
   hasActiveTimer: boolean;
   hasExpiredTimerForTarget: boolean;
   hasIntentOnExpiredTimerForTarget: boolean;
@@ -47,7 +46,6 @@ const FEW_ANSWERS_MAX = 1;
 const EVENING_START_HOUR = 20;
 const MANY_RECENT_SUN_TAPS_THRESHOLD = 5;
 const MANY_ATTEMPTS_TODAY_THRESHOLD = 10;
-const HIGH_USAGE_TODAY_SECONDS = 20 * 60;
 
 const isSameDate = (leftTS: number, rightTS: number): boolean => {
   if (leftTS <= 0) return false;
@@ -62,10 +60,6 @@ export const getInteractionContext = ({
 }: InteractionContextInput): InteractionContext => {
   const nowDate = new Date(now);
   const dateISO = getIsoDate(nowDate);
-  const todayUsage = syncData.dailyUsage[dateISO] || {
-    totalSeconds: 0,
-    perSite: {},
-  };
   const alternatives = getAlternativesForTarget(syncData, target, platform);
   const enabledAlternativeCount = alternatives.filter(
     (alternative) => alternative.disabledTS === undefined,
@@ -98,7 +92,6 @@ export const getInteractionContext = ({
       syncData.sunTapTimestamps ?? [],
       now,
     ).length,
-    todayUsageSeconds: todayUsage.totalSeconds,
     hasActiveTimer: canResolveTimerScope
       ? hasActiveTimerInScope(syncData, target, platform, now)
       : !!activeTimer && activeTimer.endTS > now,
@@ -129,11 +122,7 @@ export const getFrictionLevel = (
     return "normal";
   }
 
-  if (
-    context.todayOpeningAttempts <= 1 &&
-    context.todaySunTaps === 0 &&
-    context.todayUsageSeconds < HIGH_USAGE_TODAY_SECONDS
-  ) {
+  if (context.todayOpeningAttempts <= 1 && context.todaySunTaps === 0) {
     return "soft";
   }
 

@@ -309,8 +309,7 @@ export const LittleSunComponent: (props: {
 
   const getAccessibleLabel = () => {
     // Grace counts up like a plain elapsed session, so it reads as "elapsed".
-    const timeKind =
-      getRemainingSeconds() !== null ? "remaining" : "elapsed";
+    const timeKind = getRemainingSeconds() !== null ? "remaining" : "elapsed";
     return `${getDisplayTime()} ${timeKind}. ${getActionLabel()}.`;
   };
 

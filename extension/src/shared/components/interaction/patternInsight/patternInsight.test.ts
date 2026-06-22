@@ -24,7 +24,6 @@ const baseContext = (
   todayOpeningAttempts: 2,
   todaySunTaps: 1,
   recentSunTaps: 1,
-  todayUsageSeconds: 0,
   hasActiveTimer: false,
   hasExpiredTimerForTarget: false,
   hasIntentOnExpiredTimerForTarget: false,

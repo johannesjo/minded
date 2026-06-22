@@ -17,7 +17,7 @@ const answers = (count: number): Answer[] =>
   }));
 
 describe("interaction context", () => {
-  it("derives daily counters, freshness, alternatives, and usage", () => {
+  it("derives daily counters, freshness, and alternatives", () => {
     const syncData = createMockSyncData({
       answers: answers(3),
       moodCheckTS: NOW,
@@ -25,14 +25,6 @@ describe("interaction context", () => {
       alternativeWebsites: ["wikipedia.org", "example.com"],
       attempts: { [TODAY]: 4 },
       sunTaps: { [TODAY]: 2 },
-      dailyUsage: {
-        [TODAY]: {
-          totalSeconds: 900,
-          perSite: {
-            "reddit.com": 300,
-          },
-        },
-      },
     });
 
     const context = getInteractionContext({
@@ -56,7 +48,6 @@ describe("interaction context", () => {
       todayOpeningAttempts: 4,
       todaySunTaps: 2,
       recentSunTaps: 0,
-      todayUsageSeconds: 900,
     });
   });
 

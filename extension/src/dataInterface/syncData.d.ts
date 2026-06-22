@@ -174,7 +174,11 @@ export interface SyncData {
 
   emotionLabeling: EmotionLabelingData | null;
 
-  // Daily budget feature
+  // Daily budget feature — REMOVED (#38). Retained dormant: no writer or reader
+  // remains; kept only so the Android <-> extension sync JSON contract stays
+  // stable and already-synced installs round-trip losslessly. Do not wire new
+  // logic to these. Live observed usage now lives in `usageStats`
+  // (interaction/appUsageOrBrowsingBehavior/usageStats.ts).
   dailyBudget: DailyBudget | null;
   dailyUsage: {
     [dateISO: string]: DailyUsage;
@@ -202,7 +206,7 @@ export interface StaticCfg {
   ShowAgainThreshold: number;
 }
 
-/** Daily usage budget configuration */
+/** Daily usage budget configuration (dormant since #38 — see field note). */
 export interface DailyBudget {
   globalMinutes: number; // Total allowed minutes across all sites (e.g., 30)
   perSiteMinutes?: {
@@ -211,7 +215,7 @@ export interface DailyBudget {
   };
 }
 
-/** Daily usage tracking */
+/** Daily usage tracking (dormant since #38 — see field note). */
 export interface DailyUsage {
   totalSeconds: number; // Total time today across all blocked sites
   perSite: {

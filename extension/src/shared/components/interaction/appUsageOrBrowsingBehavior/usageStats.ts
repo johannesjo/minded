@@ -12,8 +12,9 @@ import { getIsoDate } from "@src/util/getIsoDate";
  * charted over time (no scoreboard / trend graph).
  *
  * NOTE: this is the live observed-usage store. The similarly shaped
- * `SyncData.dailyUsage.perSite` (util/budget/trackBudgetUsage.ts) is the
- * *dormant* budget-legacy store (#35) and measured something different
+ * `SyncData.dailyUsage.perSite` is the *dormant* budget-legacy store (#35) — the
+ * budget feature that wrote it was removed (#38), so it now has no writer and is
+ * retained only for sync-contract/back-compat. It measured something different
  * (in-overlay sun time). Don't conflate them — new usage reads come from here.
  */
 export interface DailyUsageStat {
