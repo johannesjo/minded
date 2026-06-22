@@ -1,0 +1,15 @@
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Room for the disc plus its glow, and headroom for a small upward drag
+  // before it meets the copy below.
+  min-height: 200px;
+  margin-bottom: 8px;
+  // The glow and an in-progress drag spill past the box — never clip them.
+  overflow: visible;
+  // The disc owns vertical-drag gestures; keep the page from scrolling under a
+  // touch drag, and don't let a missed grab select the surrounding copy.
+  touch-action: none;
+  user-select: none;
+}

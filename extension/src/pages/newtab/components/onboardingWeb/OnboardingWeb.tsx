@@ -6,6 +6,7 @@ import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList"
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 import Btn from "@src/shared/components/ui/Btn";
+import OnboardingSun from "@src/shared/components/interaction/sun/OnboardingSun";
 
 export const OnboardingWeb: (props: {
   onComplete: () => void;
@@ -22,15 +23,15 @@ export const OnboardingWeb: (props: {
       <Switch>
         <Match when={getStep() === 0}>
           <div class="pageTransitionIn">
+            <OnboardingSun onDismissed={() => setStep(1)} />
             <div class="h2 h2Mindful">
-              Meet <em>minded</em> 🌞
+              Meet <em>minded</em>
             </div>
             <div class={styles.infoText}>
               <p>
                 This little sun is your anchor. When you reach for a habit on
-                autopilot, it appears: a calm moment to pause. You can fling it
-                away anytime; it never blocks you. No streaks, no scores, just
-                awareness.
+                autopilot, it appears: a calm moment to pause. Give it a fling —
+                it never blocks you. No streaks, no scores, just awareness.
               </p>
               <p>
                 Each time you notice the pull without judgment, that awareness

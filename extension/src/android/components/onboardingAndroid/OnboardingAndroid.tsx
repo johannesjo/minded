@@ -7,6 +7,7 @@ import styles from "./OnboardingAndroid.module.scss";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import { Stepper } from "@src/shared/components/ui/Stepper";
 import Btn from "@src/shared/components/ui/Btn";
+import OnboardingSun from "@src/shared/components/interaction/sun/OnboardingSun";
 
 export const OnboardingAndroid = (props: {
   onGoDashboard: () => void;
@@ -41,15 +42,15 @@ export const OnboardingAndroid = (props: {
         <Switch>
           <Match when={getStep() === 0}>
             <div class="pageWrapper pageTransitionIn">
+              <OnboardingSun onDismissed={() => setStep(1)} />
               <div class="h2 h2Mindful">
-                Meet <em>minded</em> 🌞
+                Meet <em>minded</em>
               </div>
               <div class="txtSlightlyBigger">
                 <p>
                   This little sun is your anchor. When you open an app on
-                  autopilot, it appears: a calm moment to pause. You can fling it
-                  away anytime; it never blocks you. No streaks, no scores, just
-                  awareness.
+                  autopilot, it appears: a calm moment to pause. Give it a fling
+                  — it never blocks you. No streaks, no scores, just awareness.
                 </p>
                 <p>
                   Each time you notice the pull without judgment, that awareness
@@ -104,9 +105,7 @@ export const OnboardingAndroid = (props: {
           <Match when={getStep() >= 3}>
             {getPermissionNotGiven() ? (
               <div class="card pageTransitionIn" style="margin: 32px;">
-                <div class="h2 h2Mindful">
-                  Almost there 🌤️
-                </div>
+                <div class="h2 h2Mindful">Almost there 🌤️</div>
                 <p>
                   Some permissions are still missing, so the sun may not be able
                   to meet you everywhere yet. You can finish anytime. It'll be
@@ -131,9 +130,7 @@ export const OnboardingAndroid = (props: {
               </div>
             ) : (
               <div class="card pageTransitionIn" style="margin: 32px;">
-                <div class="h2 h2Mindful">
-                  The sun is ready 🌞
-                </div>
+                <div class="h2 h2Mindful">The sun is ready 🌞</div>
                 <p>
                   From now on, when you open one of those apps, the sun will
                   appear: a small moment to pause and notice before you carry
