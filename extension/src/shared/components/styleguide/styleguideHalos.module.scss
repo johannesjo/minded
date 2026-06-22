@@ -1,0 +1,237 @@
+// Sun & moon halo lab — a grid of every halo study plus a full-screen stage to
+// drag one disc over the live page gradient. The disc markup is one component;
+// each variant only swaps the --halo-* custom properties (see haloVariants.ts).
+
+.page {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: var(--c-fg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+
+  h1 {
+    font-size: var(--fz-xl);
+    margin: 0;
+  }
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.intro {
+  opacity: 0.6;
+  font-size: var(--fz-s);
+  max-width: 70ch;
+  margin: 0 0 24px;
+}
+
+.groupTitle {
+  font-size: var(--fz-l);
+  margin: 40px 0 4px;
+}
+
+.groupHint {
+  opacity: 0.5;
+  font-size: var(--fz-s);
+  margin: 0 0 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+// One grid cell: the live gradient as a backdrop (so a pale halo is judged in
+// context, not on flat card colour), the disc centred over it, label below.
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cellStage {
+  position: relative;
+  height: 150px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--btn-outline-color);
+  background: var(--background-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease-out;
+
+  .cell:hover & {
+    transform: translateY(-2px);
+  }
+}
+
+.cellLabel {
+  font-size: var(--fz-s);
+  font-weight: 600;
+}
+
+.cellNote {
+  font-size: 11px;
+  opacity: 0.6;
+  line-height: 1.3;
+}
+
+// --- The disc itself (shared by grid previews and the drag stage) ---------
+
+.disc {
+  position: relative;
+  border-radius: 50%;
+  background: var(--halo-disc, #fff);
+  // A crisp warm rim so the disc edge stays defined; the big halo lives on
+  // ::after. Mirrors Sun.scss's --sun-shadow.
+  box-shadow: 0 0 1px 0 rgba(233, 132, 58, 0.5);
+  transform-origin: center;
+  // The inline transform (translate) keeps a stacking context in both modes so
+  // the negative-z wash composites *over* the disc face, like the real sun.
+
+  &.moon {
+    box-shadow:
+      0 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 28px 3px rgba(255, 255, 255, 0.12);
+  }
+
+  // The rim halo — pulses opacity only (compositor-cheap), like the resting sun.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: var(--halo-shadow);
+    opacity: 0.5;
+    animation: haloLabBreath 9s ease-in-out infinite;
+    will-change: opacity;
+  }
+}
+
+// The broad bloom the sun casts behind the disc (moons set this to `none`).
+.wash {
+  position: absolute;
+  inset: -175%;
+  z-index: -2;
+  border-radius: 50%;
+  pointer-events: none;
+  background: var(--halo-wash, none);
+}
+
+.draggable {
+  cursor: grab;
+  touch-action: none; // let the pointer drag own the gesture on touch
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// --- Full-screen drag stage ----------------------------------------------
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+}
+
+// The draggable disc lives above the gradient (BackgroundTransition z-index 1-2)
+// but lets clicks through everywhere except the disc, so the control bar stays
+// reachable.
+.stageDiscLayer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1101;
+  pointer-events: none;
+
+  .disc {
+    pointer-events: auto;
+  }
+}
+
+.stageHint {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1300;
+  font-size: var(--fz-s);
+  color: var(--c-fg);
+  opacity: 0.7;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.stageControls {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1300;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.stageLabel {
+  font-size: var(--fz-s);
+  color: #fff;
+  opacity: 0.9;
+  min-width: 11ch;
+  text-align: center;
+}
+
+@keyframes haloLabBreath {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  50% {
+    opacity: 0.62;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disc::after {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .cellStage {
+    transition: none;
+  }
+}
