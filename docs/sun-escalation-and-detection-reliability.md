@@ -44,6 +44,16 @@ foundation; the items below are deltas on top of it.
   a flow still can't morph (native overlay → WebView), the job is to *make* it
   morph.
 
+## Follow-ups (deferred)
+
+- **Morph + breathing fix on the tap-pause — deferred.** PR #51 lands as-is
+  (with its repeating breath and its bubble→full-screen cross-fade). The fix is a
+  later, contained change in `LittleSun.kt` (`StepAwayOffer` / `Bubble`):
+  (1) remove the repeating `breath` infinite transition — no breathing outside
+  meditations; (2) replace the cross-fade swap with a single positional morph —
+  the sun glides + grows from its parked bubble position to centre, holds, then
+  the "Step away?" invite fades in. One file, does not block #51.
+
 ## The problem in one line
 
 Android foreground detection is **not, and can never be, 100% reliable** — so a
