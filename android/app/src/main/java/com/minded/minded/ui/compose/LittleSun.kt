@@ -39,10 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,7 +58,9 @@ import kotlinx.coroutines.delay
 // amber glow around it.
 private val SUN_COLOR = Color.White
 private val SUN_TEXT_COLOR = Color(0xFF956969)
-private val GLOW_COLOR = Color(0xFFE9843A) // #e9843a — the same warm amber as the web glow
+// Warm amber-gold, leaning a touch more toward yellow than the web little
+// sun's #e9843a (a more golden glow reads softer and sunnier).
+private val GLOW_COLOR = Color(0xFFE99A3A)
 
 /**
  * How long the sun simply breathes before the gentle step-away invitation
@@ -81,6 +86,15 @@ private const val FADE_MS = 400
  * cut, per CLAUDE.md).
  */
 private const val APPEAR_FADE_MS = 200
+
+/**
+ * On tap the big pause-sun grows in from the little resting bubble's size
+ * rather than popping in full-size, so the little→big sun change reads as one
+ * continuous bloom. 0.33 ≈ the little sun's 60dp glow over the big 180dp glow,
+ * so it starts pixel-matched to the bubble it grew from, then eases up.
+ */
+private const val BIG_SUN_ENTER_SCALE = 0.33f
+private const val EXPAND_GROW_MS = 340
 
 /**
  * The little sun overlay. At rest it is a small, draggable companion bubble
@@ -221,6 +235,15 @@ private fun StepAwayOffer(
         label = "breathScale",
     )
 
+    // Grow the big sun in from the little bubble's size so the expansion reads
+    // as one continuous bloom, not a pop. Driven off `shown` only, so a dismiss
+    // simply fades it out (no shrink).
+    val growScale by animateFloatAsState(
+        targetValue = if (shown) 1f else BIG_SUN_ENTER_SCALE,
+        animationSpec = tween(durationMillis = EXPAND_GROW_MS, easing = FastOutSlowInEasing),
+        label = "stepAwayGrow",
+    )
+
     val promptAlpha by animateFloatAsState(
         targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
         animationSpec = tween(durationMillis = 600),
@@ -242,7 +265,7 @@ private fun StepAwayOffer(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.55f * surfaceAlpha))
+            .background(Color.Black.copy(alpha = 0.62f * surfaceAlpha))
             // Tapping anywhere off the invitation is the easy way to stay.
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { beginDismiss() })
@@ -253,7 +276,7 @@ private fun StepAwayOffer(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.alpha(surfaceAlpha),
         ) {
-            SunDisc(glowSize = 180.dp, discSize = 92.dp, scale = sunScale)
+            SunDisc(glowSize = 180.dp, discSize = 92.dp, scale = sunScale * growScale)
 
             Spacer(Modifier.height(48.dp))
 
@@ -291,9 +314,18 @@ private fun OfferAction(
     val view = LocalView.current
     Text(
         text = text,
-        color = Color.White.copy(alpha = if (dimmed) 0.55f else 1f),
+        color = Color.White.copy(alpha = if (dimmed) 0.7f else 1f),
         fontSize = 17.sp,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Medium,
+        // A soft drop shadow keeps the white label readable over whatever bright
+        // app content shows through the dim, without adding button chrome.
+        style = TextStyle(
+            shadow = Shadow(
+                color = Color.Black.copy(alpha = 0.6f),
+                offset = Offset(0f, 1f),
+                blurRadius = 12f,
+            ),
+        ),
         modifier = Modifier
             .clip(CircleShape)
             .clickable(enabled = enabled) {

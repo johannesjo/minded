@@ -231,6 +231,19 @@ class LittleSunWindow(
     private fun screenWidthPx() = ctrlSvc.resources.displayMetrics.widthPixels
     private fun screenHeightPx() = ctrlSvc.resources.displayMetrics.heightPixels
 
+    // Status-bar (top) and navigation-bar (bottom) heights, so the bubble keeps
+    // the same visible gap from the top/bottom as from the sides: it rests below
+    // the status bar and above the nav bar, never tucked under either. These only
+    // ever *add* margin, so an over-estimate (e.g. gesture-nav still reporting a
+    // full nav-bar height) merely parks it a touch higher — never under a bar.
+    private fun systemBarInsetTopPx() = systemDimenPx("status_bar_height")
+    private fun systemBarInsetBottomPx() = systemDimenPx("navigation_bar_height")
+
+    private fun systemDimenPx(resName: String): Int {
+        val id = ctrlSvc.resources.getIdentifier(resName, "dimen", "android")
+        return if (id > 0) ctrlSvc.resources.getDimensionPixelSize(id) else 0
+    }
+
     private fun initPosition() {
         val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
         if (saved != null) {
@@ -246,11 +259,13 @@ class LittleSunWindow(
 
     private fun clampPosition() {
         // Stay a margin in from every edge so the bubble never sits in a system
-        // gesture zone (see edgeMarginPx).
+        // gesture zone. Top/bottom also clear the status and navigation bars, so
+        // the visible gap there matches the left/right one (see edgeMarginPx).
         val minX = edgeMarginPx
         val maxX = (screenWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
-        val minY = edgeMarginPx
-        val maxY = (screenHeightPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minY)
+        val minY = systemBarInsetTopPx() + edgeMarginPx
+        val maxY = (screenHeightPx() - bubbleSizePx - systemBarInsetBottomPx() - edgeMarginPx)
+            .coerceAtLeast(minY)
         posX = posX.coerceIn(minX, maxX)
         posY = posY.coerceIn(minY, maxY)
     }
