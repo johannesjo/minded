@@ -130,7 +130,7 @@ fun LittleSun(
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
     onStepAway: () -> Unit = {},
-    onStay: () -> Unit = {},
+    onStay: (sunReturnedToCorner: Boolean) -> Unit = {},
 ) {
     if (expanded) {
         StepAwayOffer(
@@ -218,12 +218,16 @@ private fun StepAwayOffer(
     expandFromX: Int,
     expandFromY: Int,
     onStepAway: () -> Unit,
-    onStay: () -> Unit,
+    onStay: (sunReturnedToCorner: Boolean) -> Unit,
 ) {
     // 0 = quiet hold, 1 = invitation shown.
     var phase by remember { mutableStateOf(0) }
     var shown by remember { mutableStateOf(false) }
     var dismissing by remember { mutableStateOf(false) }
+    // A "stay" dismiss (Not now / tap-off / ignored) plays the expand in reverse:
+    // the sun shrinks and glides back to its bubble corner. A drag-down close
+    // instead fades the sun out from wherever the finger left it.
+    var reverseDismiss by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
     // cut. Fades in on appear and out on dismiss.
@@ -240,31 +244,36 @@ private fun StepAwayOffer(
     LaunchedEffect(dismissing) {
         if (dismissing) {
             delay(FADE_MS.toLong())
-            onStay()
+            onStay(reverseDismiss)
         }
     }
 
     // Drives the little→big expand (travel + grow): 0 = matched to the resting
-    // bubble, 1 = full sun at centre. `shown` flips true on the first frame; on
-    // a dismiss it stays at 1 and the surface simply fades out.
+    // bubble, 1 = full sun at centre. A reverse dismiss runs it back to 0 so the
+    // sun shrinks and glides home; other paths leave it at 1.
     val expandProgress by animateFloatAsState(
-        targetValue = if (shown) 1f else 0f,
-        animationSpec = tween(durationMillis = EXPAND_MS, easing = FastOutSlowInEasing),
+        targetValue = if (shown && !(dismissing && reverseDismiss)) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = if (dismissing) FADE_MS else EXPAND_MS,
+            easing = FastOutSlowInEasing,
+        ),
         label = "stepAwayExpand",
     )
 
-    // The sun itself is opaque from the first frame — it *is* the little sun
-    // (which was opaque), now expanding, so it must not fade in under it. It
-    // only fades on dismiss. The dim behind it still eases in via surfaceAlpha.
+    // The sun is opaque from the first frame — it *is* the little sun (which was
+    // opaque), now expanding, so it must not fade in under it. On a reverse
+    // dismiss it stays opaque and glides home; only a drag-down close fades it.
     val sunAlpha by animateFloatAsState(
-        targetValue = if (dismissing) 0f else 1f,
+        targetValue = if (dismissing && !reverseDismiss) 0f else 1f,
         animationSpec = tween(durationMillis = if (dismissing) FADE_MS else APPEAR_FADE_MS),
         label = "stepAwaySunAlpha",
     )
 
     val promptAlpha by animateFloatAsState(
         targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
-        animationSpec = tween(durationMillis = 600),
+        // Fade the buttons out quickly on dismiss so they don't linger over the
+        // returning sun.
+        animationSpec = tween(durationMillis = if (dismissing) 200 else 600),
         label = "promptAlpha",
     )
 
@@ -278,8 +287,11 @@ private fun StepAwayOffer(
     // 1 = fully present; eases to 0.15 as it's pulled to the dismiss threshold.
     val dragFade = 1f - 0.85f * (dragY.value / dismissDragPx).coerceIn(0f, 1f)
 
-    fun beginDismiss() {
-        if (!dismissing) dismissing = true
+    fun beginDismiss(reverse: Boolean = false) {
+        if (!dismissing) {
+            reverseDismiss = reverse
+            dismissing = true
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -287,16 +299,18 @@ private fun StepAwayOffer(
         delay(PAUSE_MS)
         phase = 1
         delay(OFFER_AUTO_DISMISS_MS)
-        beginDismiss()
+        // Ignored long enough → the sun quietly glides back home.
+        beginDismiss(reverse = true)
     }
 
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.78f * surfaceAlpha * dragFade))
-            // Tapping anywhere off the invitation is the easy way to stay.
+            // Tapping anywhere off the invitation is the easy way to stay — the
+            // sun glides back home.
             .pointerInput(Unit) {
-                detectTapGestures(onTap = { beginDismiss() })
+                detectTapGestures(onTap = { beginDismiss(reverse = true) })
             }
             // Pull down to close: the content tracks the finger; released past the
             // threshold it dismisses, otherwise it springs back.
@@ -307,7 +321,8 @@ private fun StepAwayOffer(
                     },
                     onDragEnd = {
                         if (dragY.value >= dismissDragPx) {
-                            beginDismiss()
+                            // Pulled away — let it fade out from here, don't snap home.
+                            beginDismiss(reverse = false)
                         } else {
                             dragScope.launch {
                                 dragY.animateTo(
@@ -367,7 +382,7 @@ private fun StepAwayOffer(
                 text = "Not now",
                 dimmed = true,
                 enabled = phase >= 1 && !dismissing,
-                onClick = { beginDismiss() },
+                onClick = { beginDismiss(reverse = true) },
             )
         }
     }
