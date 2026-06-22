@@ -3,6 +3,7 @@ package com.minded.minded.overlay
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.graphics.PixelFormat
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -186,19 +187,19 @@ class InteractionWindow(
     // guarantee that fadeInDurationMs = 0L exists to provide is preserved and the
     // blocked app never shows through.
     private fun nudgeWindowAlpha() {
-        // Never start an alpha animation on the window root while hideWindow()'s
-        // fade-out is running: both animate the same view, so starting ours would
-        // cancel the fade-out's withEndAction, leaving the view un-removed and the
-        // window wedged open. A late onPageFinished after a fast dismiss (or after
-        // onRenderProcessGone -> hideWindow) is exactly that race. Same-thread, so
-        // this check fully covers the hide-then-nudge ordering.
-        if (isWindowHiding()) return
-        val root = window ?: return
-        root.alpha = 0.996f
-        root.animate()
-            .alpha(1f)
-            .setDuration(FIRST_FRAME_ALPHA_NUDGE_MS)
-            .start()
+        // Go through withWindowUnlessHiding so the "is a hide in flight?" check and
+        // the animation start are atomic under hideWindow()'s lock: both animate the
+        // same window view, so racing ours in would cancel the fade-out's
+        // withEndAction and wedge the window open. hideWindow() can fire off the main
+        // thread (a fast JS-bridge dismiss, or onRenderProcessGone), so the guard
+        // must hold the lock — not merely assume same-thread ordering.
+        withWindowUnlessHiding { root ->
+            root.alpha = 0.996f
+            root.animate()
+                .alpha(1f)
+                .setDuration(FIRST_FRAME_ALPHA_NUDGE_MS)
+                .start()
+        }
     }
 
     // Re-post an invalidate on each animation frame for a short window after the
@@ -206,13 +207,21 @@ class InteractionWindow(
     // first composite even though no native fade animation is driving frames.
     // The web content's own fade-in (driven by JS a beat after load) takes over
     // once it starts animating, so a brief pump is enough to cover the gap.
+    //
+    // shortcut: this is the redundant half of the belt-and-suspenders
+    // (nudgeWindowAlpha is the primary, window-level nudge). If a field repro
+    // shows the alpha nudge alone fixes the black screen, delete this; if instead
+    // the blind 800ms proves wasteful, gate it on WebView.postVisualStateCallback
+    // so it stops at first paint instead of running a fixed duration.
     private fun pumpFirstFrame(view: WebView) {
-        val deadline = System.currentTimeMillis() + FIRST_FRAME_PUMP_MS
+        // Monotonic clock: a wall-clock jump (NTP / manual change) mid-pump must
+        // not cut the burst short or stretch it out.
+        val deadline = SystemClock.uptimeMillis() + FIRST_FRAME_PUMP_MS
         val pump = object : Runnable {
             override fun run() {
                 if (webViewRef !== view) return
                 view.invalidate()
-                if (System.currentTimeMillis() < deadline) {
+                if (SystemClock.uptimeMillis() < deadline) {
                     view.postOnAnimation(this)
                 }
             }
