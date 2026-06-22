@@ -3,6 +3,7 @@ package com.minded.minded.widget
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidget
@@ -59,7 +60,7 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.Default).launch {
             try {
-                MyAppWidget().updateAll(context)
+                glanceAppWidget.updateAll(context)
             } finally {
                 scheduleNextPhaseChange(context)
                 pendingResult.finish()
@@ -69,6 +70,15 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
 
     private fun scheduleNextPhaseChange(context: Context) {
         val alarmManager = alarmManager(context) ?: return
+        // Only a placed sun needs refreshing. Without this guard a clock/timezone
+        // change (delivered to the manifest receiver even with no widget on screen)
+        // would arm a self-rescheduling alarm that ticks on forever — onDisabled, the
+        // only canceller, never fires because onEnabled never did. Tie the alarm's
+        // life to the sun's: bail and clear any stray alarm when none is placed.
+        if (!hasPlacedWidget(context)) {
+            alarmManager.cancel(refreshPendingIntent(context))
+            return
+        }
         val now = Calendar.getInstance()
         val minutes = SunWidgetPhase.minutesUntilNextBoundary(
             now.get(Calendar.HOUR_OF_DAY),
@@ -89,6 +99,12 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
 
     private fun alarmManager(context: Context): AlarmManager? =
         context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+
+    private fun hasPlacedWidget(context: Context): Boolean {
+        val ids = AppWidgetManager.getInstance(context)
+            ?.getAppWidgetIds(ComponentName(context, MyAppWidgetReceiver::class.java))
+        return ids != null && ids.isNotEmpty()
+    }
 
     private fun refreshPendingIntent(context: Context): PendingIntent {
         val intent = Intent(context, MyAppWidgetReceiver::class.java).apply {
