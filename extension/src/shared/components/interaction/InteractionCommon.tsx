@@ -686,12 +686,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     // Direction picks the ritual on the dashboard, instead of completing.
     //
-    // Down = ground yourself: warm the sky as the disc settles toward the viewer,
-    // then the "Stay a while?" offer takes over.
+    // Down = ground yourself: the "Stay a while?" offer takes over with its own
+    // full-screen, opaque app-sky layer (it needs an opaque backdrop — the
+    // screen-free phase, for one, dims to near-black). Don't warm the transition
+    // background to night behind it: the only time that warmed sky (stars and
+    // all, in dark mode) would show is the brief reveal as the offer fades out on
+    // close — a jarring flash. Ease it back to the default sky instead so the
+    // reveal is seamless. The opaque overlay already hides the sun gliding home,
+    // so unlike let-go nothing else need change.
     if (props.isFromDashboard && direction === "down") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
       interactionEventTarget.dispatchEvent(
-        new CustomEvent("startBackgroundAnimation", { detail: { direction } }),
+        new CustomEvent("resetBackgroundTransition"),
       );
       setShowGroundingOffer(true);
       return;

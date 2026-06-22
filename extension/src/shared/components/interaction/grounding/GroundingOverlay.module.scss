@@ -13,17 +13,13 @@
   padding: 24px;
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  // Warm light backdrop — the sky the sun settles into when pulled close.
-  background: radial-gradient(
-    120% 120% at 50% 35%,
-    #fdf3e6 0%,
-    #f6e3cf 100%
-  );
+  // The same sky as the rest of the app — the morning-sky (light) or night-sky
+  // (dark) wash. --background-gradient flips with the .minded-6622-dark ancestor,
+  // the very class that sets this overlay's "moon" variant, so the two never
+  // disagree. The grounding stage settles into the dashboard's sky, not a
+  // separate backdrop.
+  background: var(--background-gradient);
   animation: groundingIn var(--grounding-fade-ms, 600ms) ease-out forwards;
-
-  &.isDark {
-    background: radial-gradient(120% 120% at 50% 35%, #1a1f2e 0%, #0c0e16 100%);
-  }
 
   // Screen-free sit: dim almost to black so the eyes can truly rest.
   &.isQuiet {

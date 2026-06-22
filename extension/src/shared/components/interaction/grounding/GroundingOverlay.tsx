@@ -167,7 +167,6 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     <div
       class={styles.grounding}
       classList={{
-        [styles.isDark]: props.variant === "moon",
         [styles.isQuiet]:
           getMode() === "quiet" &&
           (getPhase() === "session" || getPhase() === "androidLock"),
