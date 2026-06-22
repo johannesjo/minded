@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,6 +74,13 @@ private const val OFFER_AUTO_DISMISS_MS = 15000L
 
 /** Fade applied when the surface eases out, and when the bubble eases back in. */
 private const val FADE_MS = 400
+
+/**
+ * The expanded pause is user-invoked, so it should answer the tap promptly — a
+ * quicker fade-in than the calm fade-out, while still easing in (never a hard
+ * cut, per CLAUDE.md).
+ */
+private const val APPEAR_FADE_MS = 200
 
 /**
  * The little sun overlay. At rest it is a small, draggable companion bubble
@@ -141,6 +149,10 @@ private fun Bubble(
         Box(
             modifier = Modifier
                 .size(60.dp)
+                // Claim the bubble's bounds from system gestures so a drag that
+                // starts near a screen edge stays ours instead of triggering the
+                // system back-gesture (no-op below API 29).
+                .systemGestureExclusion()
                 // Two separate gesture detectors: a small movement stays a tap
                 // (open the pause), a deliberate drag moves the bubble. The drag
                 // deltas are handed to the window, which repositions the overlay.
@@ -182,7 +194,8 @@ private fun StepAwayOffer(
     // cut. Fades in on appear and out on dismiss.
     val surfaceAlpha by animateFloatAsState(
         targetValue = if (!shown || dismissing) 0f else 1f,
-        animationSpec = tween(durationMillis = FADE_MS),
+        // Appear quickly on tap; ease out calmly on dismiss.
+        animationSpec = tween(durationMillis = if (dismissing) FADE_MS else APPEAR_FADE_MS),
         label = "stepAwaySurfaceAlpha",
     )
 

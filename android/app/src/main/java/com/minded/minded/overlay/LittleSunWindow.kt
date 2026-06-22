@@ -45,11 +45,12 @@ class LittleSunWindow(
 
     private val density = ctrlSvc.resources.displayMetrics.density
     private val bubbleSizePx = (60 * density).roundToInt()
-    // The visible disc (30dp) is centered inside the 60dp window; the rest is
-    // the transparent glow halo. Let the window overhang the screen edge by this
-    // much so the disc itself hugs the edge (the halo runs off-screen), instead
-    // of resting ~15dp inset. FLAG_LAYOUT_NO_LIMITS allows the overhang.
-    private val glowInsetPx = ((60 - 30) / 2 * density).roundToInt()
+    // Keep the bubble this far in from every screen edge. Resting flush put the
+    // bubble's touch area inside the system back-gesture zone, so grabbing it to
+    // drag fired Back instead. A small inset (paired with
+    // Modifier.systemGestureExclusion on the bubble) keeps the drag ours while
+    // still reading as a companion parked near the side.
+    private val edgeMarginPx = (8 * density).roundToInt()
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble snaps to the nearest side edge.
@@ -244,11 +245,12 @@ class LittleSunWindow(
     }
 
     private fun clampPosition() {
-        // Allow a glow-inset overhang past each edge so the disc can sit flush.
-        val minX = -glowInsetPx
-        val maxX = (screenWidthPx() - bubbleSizePx + glowInsetPx).coerceAtLeast(minX)
-        val minY = -glowInsetPx
-        val maxY = (screenHeightPx() - bubbleSizePx + glowInsetPx).coerceAtLeast(minY)
+        // Stay a margin in from every edge so the bubble never sits in a system
+        // gesture zone (see edgeMarginPx).
+        val minX = edgeMarginPx
+        val maxX = (screenWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
+        val minY = edgeMarginPx
+        val maxY = (screenHeightPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minY)
         posX = posX.coerceIn(minX, maxX)
         posY = posY.coerceIn(minY, maxY)
     }
@@ -274,10 +276,11 @@ class LittleSunWindow(
     private fun onDragEnd() {
         if (isExpanded) return
         clampPosition()
-        // Settle against whichever side edge is nearer — the chat-head feel.
-        // Park the disc flush by letting the glow halo overhang the edge.
-        val leftTarget = -glowInsetPx
-        val rightTarget = screenWidthPx() - bubbleSizePx + glowInsetPx
+        // Settle against whichever side is nearer — the chat-head feel — but rest
+        // a margin in from the edge, never flush, so the next drag doesn't collide
+        // with the system back-gesture.
+        val leftTarget = edgeMarginPx
+        val rightTarget = screenWidthPx() - bubbleSizePx - edgeMarginPx
         val targetX = if (posX + bubbleSizePx / 2 < screenWidthPx() / 2) leftTarget else rightTarget
         animateSnapToX(targetX)
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(targetX, posY)
