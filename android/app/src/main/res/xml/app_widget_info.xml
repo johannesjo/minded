@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The companion sun widget: a small (1x1) home-screen sun. Static content, so
-     no periodic update. The breathing pause it opens lives in the app. -->
+<!-- The companion sun widget: a small (1x1) home-screen sun. It tracks the day's
+     light (dawn / day / dusk / moon); refreshes are driven by a per-phase alarm in
+     MyAppWidgetReceiver, not by updatePeriodMillis. The breathing pause it opens
+     lives in the app. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
         android:minWidth="40dp"
         android:minHeight="40dp"
@@ -10,5 +12,5 @@
         android:resizeMode="none"
         android:widgetCategory="home_screen"
         android:description="@string/widget_sun_description"
-        android:previewImage="@drawable/ic_sun_widget"
+        android:previewImage="@drawable/ic_sun_widget_day"
         android:initialLayout="@layout/glance_default_loading_layout" />

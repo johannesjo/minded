@@ -1,7 +1,7 @@
-<!-- Static home-screen companion sun, matched to the app's resting sun: a white
-     disc (the sun-bg var is #fff; the warm orange face only fades in mid-interaction
-     via the sun-warmth var) wrapped in a soft warm glow. Tuned against the live
-     in-app sun, not guessed. Night variant (moon) is in res/drawable-night/. -->
+<!-- DAY phase of the living companion sun: the bright, high midday sun, matched to
+     the app's resting sun — a white disc (warming to the faintest gold only at the
+     rim) wrapped in a soft warm glow. Picked by the local hour in MyAppWidget,
+     not by the dark-mode qualifier. See docs/sun-companion-widget.md. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:aapt="http://schemas.android.com/aapt"
         android:width="108dp"
