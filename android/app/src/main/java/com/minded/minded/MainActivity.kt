@@ -16,19 +16,18 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
-import com.minded.minded.ui.theme.AppBgGradientDarkStops
-import com.minded.minded.ui.theme.AppBgGradientLightStops
 import com.minded.minded.ui.theme.MindedTheme
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
@@ -116,11 +115,16 @@ class MainActivity : AppCompatActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .imePadding()
-                            .background(
-                                Brush.verticalGradient(
-                                    *(if (isDarkModeNow()) AppBgGradientDarkStops
-                                    else AppBgGradientLightStops)
-                                )
+                            // Pre-dithered loading sky (same bitmap as the
+                            // window background) shows behind the transparent
+                            // WebView until the web sky paints. Stretched to
+                            // fill; banding is baked out in the pixels.
+                            .paint(
+                                painterResource(
+                                    if (isDarkModeNow()) R.drawable.loading_sky_dark
+                                    else R.drawable.loading_sky_light
+                                ),
+                                contentScale = ContentScale.FillBounds
                             )
                     ) {
                         AndroidView(factory = { context ->

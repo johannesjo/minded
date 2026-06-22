@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Cold-start window background. Approximates the web background gradient
-  (extension/src/styles/_variables.scss) so launching no longer flashes white
-  before the WebView paints. <shape> gradients allow only 3 stops, so this is a
-  close approximation of the multi-stop web gradient; the Compose Box gradient in
-  MainActivity (full, correctly-positioned stops) takes over once the activity
-  draws. Stops map to web 0% / 36% (the green) / 100% — the yellow is dropped as
-  the least distinct. Light is the static default; MainActivity swaps to the dark
-  variant at night.
+  Light cold-start window background. A pre-dithered bitmap of the exact app sky
+  (see android/tools/gen_loading_sky.py) stretched to fill: it carries the full
+  multi-stop gradient with the banding ("weird lines") already dithered away in
+  the pixels, which an 8-bit <shape> gradient could neither approximate nor draw
+  smoothly. The Compose Box / WebView paint the same image / the real web sky.
+  Light is the static default; MainActivity swaps to the dark variant at night.
 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <gradient
-        android:angle="270"
-        android:type="linear"
-        android:startColor="#CFE4F5"
-        android:centerColor="#D8ECD6"
-        android:endColor="#F6DCD2" />
-</shape>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/loading_sky_light"
+    android:gravity="fill" />
