@@ -50,10 +50,10 @@
   display: flow-root;
 }
 
-// A faint, placeholder-style hint that the question can be tapped to answer.
-// No box, no icon — just quiet text sitting where the first line of the
-// textarea lands, fading out as the field fades in. An invitation, never a
-// CTA: softly faded in, gently breathing, muted.
+// A faint "write a response" icon hinting the question can be tapped to
+// answer. Sits where the first line of the textarea lands, fading out as the
+// field fades in. An invitation, never a CTA: softly faded in, gently
+// breathing, muted.
 .question-tap-hint {
   position: absolute;
   top: 0;
@@ -62,7 +62,6 @@
   // sit just below the question, where the first line of typed text would be
   margin-top: 32px;
   text-align: center;
-  color: var(--c-fg-full-emphasis);
   cursor: pointer;
   opacity: 0;
   // Fade softly in, then hand off into the breathing loop at the same opacity
