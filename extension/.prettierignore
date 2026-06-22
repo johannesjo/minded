@@ -3,6 +3,7 @@ node_modules/
 dist/
 tmp/
 /.idea
+src/shared/components/styleguide/generated/
 
 
 *.log

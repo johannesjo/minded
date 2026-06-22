@@ -7,6 +7,8 @@
     "start": "NODE_ENV=development npm run dev",
     "startDroid": "NODE_ENV=development vite build -w --mode android --emptyOutDir",
     "startIOS": "NODE_ENV=development vite build -w --mode ios --emptyOutDir",
+    "generate:widget-previews": "node scripts/generate-widget-previews.mjs",
+    "prestyleguide:build": "node scripts/generate-widget-previews.mjs",
     "styleguide:build": "NODE_ENV=development vite build --mode styleguide",
     "styleguide": "npm run styleguide:build && NODE_ENV=development vite preview --mode styleguide --port 5174",
     "dev": "vite build -w",
