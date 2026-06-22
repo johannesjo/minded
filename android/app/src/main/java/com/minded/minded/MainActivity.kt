@@ -16,11 +16,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -30,6 +28,7 @@ import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.theme.AppBgGradientDarkStops
 import com.minded.minded.ui.theme.AppBgGradientLightStops
 import com.minded.minded.ui.theme.MindedTheme
+import com.minded.minded.ui.theme.ditheredVerticalGradient
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.checkDrawOverlayPermission
@@ -116,11 +115,9 @@ class MainActivity : AppCompatActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .imePadding()
-                            .background(
-                                Brush.verticalGradient(
-                                    *(if (isDarkModeNow()) AppBgGradientDarkStops
-                                    else AppBgGradientLightStops)
-                                )
+                            .ditheredVerticalGradient(
+                                if (isDarkModeNow()) AppBgGradientDarkStops
+                                else AppBgGradientLightStops
                             )
                     ) {
                         AndroidView(factory = { context ->

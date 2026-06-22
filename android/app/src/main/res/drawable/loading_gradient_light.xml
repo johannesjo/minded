@@ -10,7 +10,8 @@
   variant at night.
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
+    android:shape="rectangle"
+    android:dither="true">
     <gradient
         android:angle="270"
         android:type="linear"
