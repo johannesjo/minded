@@ -1,9 +1,13 @@
 .letGo {
   position: fixed;
   inset: 0;
-  // Above the interaction layer (overlay 1100, settled wrapper 1101), same as
-  // the grounding stage: it fully replaces the dashboard sun flow — and hides
-  // the just-flung shell sun gliding home behind it — while it is open.
+  // Above the interaction content (overlay 1100, settled wrapper 1101) so the
+  // question sits on top of the fading-out interaction — but deliberately with
+  // NO backdrop of its own: the standard interaction BackgroundTransition shows
+  // through, so the let-go question reads exactly like any other question screen
+  // (rather than a separate, hardcoded gradient). The just-flung shell sun is
+  // hidden separately (sunStore isShellSunHidden) while this is open, so there is
+  // nothing to paint over here.
   z-index: 1200;
   display: flex;
   flex-direction: column;
@@ -12,12 +16,6 @@
   padding: 24px;
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  // The same sky as the rest of the app — the morning-sky (light) or night-sky
-  // (dark) wash. --background-gradient flips with the .minded-6622-dark ancestor,
-  // so it always matches the dashboard theme. Mirrors grounding so the two
-  // gesture rituals (up = let go, down = ground) feel like one system that
-  // settles into the dashboard's sky.
-  background: var(--background-gradient);
   animation: letGoIn var(--let-go-fade-ms, 600ms) ease-out forwards;
 
   &.isClosing {

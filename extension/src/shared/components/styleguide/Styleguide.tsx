@@ -536,18 +536,15 @@ const Styleguide = (): JSX.Element => {
             The sibling of the grounding offer: flinging the sun up/away ("let
             go") offers the standard intervention question "What do you want to
             let go of?". A gentle offer — declining is easy and ignoring it
-            dismisses it. Opens a full-screen stage that hides the just-flung
-            sun gliding home behind it.
+            dismisses it. It sits on the standard (transparent) interaction
+            background; in the live app the just-flung shell sun is hidden while
+            it's open and returns home on close.
           </p>
           <Btn outline onClick={() => setLetGoOpen(true)}>
             Open let-go offer
           </Btn>
           {letGoOpen() && (
-            <LetGoOverlay
-              variant={isDark() ? "moon" : "sun"}
-              answers={[]}
-              onClose={() => setLetGoOpen(false)}
-            />
+            <LetGoOverlay answers={[]} onClose={() => setLetGoOpen(false)} />
           )}
         </Subsection>
 

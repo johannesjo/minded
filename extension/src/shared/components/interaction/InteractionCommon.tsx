@@ -40,6 +40,7 @@ import {
   registerSunInteraction,
   setBreathStartedAt,
   setInteractiveSunAnchor,
+  setIsShellSunHidden,
   setIsSunHandoffInFlight,
   setRestingSunAnchor,
   setSunRole,
@@ -332,6 +333,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const finishLetGo = () => {
     setShowLetGoOffer(false);
+    // Reveal the shell sun again; the fade-home below settles it onto the bottom
+    // bar as the sky fades out, so it returns cleanly instead of staying hidden.
+    if (props.useShellSun) setIsShellSunHidden(false);
     props.onAfterInteractionFadeout();
   };
 
@@ -388,6 +392,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   if (props.useShellSun) {
     createEffect(() => setIsSunHandoffInFlight(getIsExitingInteraction()));
     onCleanup(() => setIsSunHandoffInFlight(false));
+    // Never leave the shell sun stranded hidden if we unmount mid-let-go.
+    onCleanup(() => setIsShellSunHidden(false));
   }
 
   // Fade animation for mobile content
@@ -678,26 +684,47 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     lastCompletionDirection = direction;
     setIsFinalAnimation(true);
 
-    // Direction picks the ritual on the dashboard: down = ground yourself
-    // (offer to meditate / be present), up/away = let go (offer the "What do you
-    // want to let go of?" reflection) — instead of completing. Either way the
-    // interaction content fades out and the offer takes over with its own
-    // full-screen app-sky layer; the just-flung sun glides home hidden behind it.
-    if (props.isFromDashboard && (direction === "down" || direction === "up")) {
+    // Direction picks the ritual on the dashboard, instead of completing.
+    //
+    // Down = ground yourself: the "Stay a while?" offer takes over with its own
+    // full-screen, opaque app-sky layer (it needs an opaque backdrop — the
+    // screen-free phase, for one, dims to near-black). Don't warm the transition
+    // background to night behind it: the only time that warmed sky (stars and
+    // all, in dark mode) would show is the brief reveal as the offer fades out on
+    // close — a jarring flash. Ease it back to the default sky instead so the
+    // reveal is seamless. The opaque overlay already hides the sun gliding home,
+    // so unlike let-go nothing else need change.
+    if (props.isFromDashboard && direction === "down") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
-      // Don't warm the transition background to night here: the offer fully
-      // covers it, so the only time that warmed sky (stars and all, in dark
-      // mode) would show is the brief reveal as the offer fades out on close —
-      // read as a jarring flash. Ease it back to the default sky instead, so
-      // whatever peeks through during the offer's open/close fade is seamless.
       interactionEventTarget.dispatchEvent(
         new CustomEvent("resetBackgroundTransition"),
       );
-      if (direction === "down") {
-        setShowGroundingOffer(true);
-      } else {
-        setShowLetGoOffer(true);
-      }
+      setShowGroundingOffer(true);
+      return;
+    }
+
+    // Up/away = let go: the disc is flung off and the "What do you want to let go
+    // of?" question takes over. It should read like any other question screen, so
+    // (a) reset the background to its neutral default rather than completing to
+    // the cold "night" extreme the up-drag was heading toward — the transparent
+    // let-go overlay shows that standard background through — and (b) hide the
+    // shell sun while the question is up. The sun is its own layer above this
+    // overlay, so leaving it visible would let it career across the question and
+    // pop back in on top; hidden here, it is sent home and revealed on close.
+    if (props.isFromDashboard && direction === "up") {
+      runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
+      interactionEventTarget.dispatchEvent(
+        new CustomEvent("dragProgress", {
+          detail: {
+            direction: "none",
+            intensity: 0,
+            isDragging: false,
+            resetToInitial: true,
+          },
+        }),
+      );
+      if (props.useShellSun) setIsShellSunHidden(true);
+      setShowLetGoOffer(true);
       return;
     }
 
@@ -834,7 +861,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     if (isDragging) {
       setInteractionOpacity(0);
-    } else if (resetToInitial) {
+    } else if (resetToInitial && !getIsFinalAnimation()) {
+      // resetToInitial normally means a sub-threshold drag snapped back, so the
+      // dimmed content returns to full opacity. But the let-go open *also*
+      // dispatches resetToInitial (to reset the sky to neutral) while it is
+      // deliberately fading the content out — guard on isFinalAnimation so this
+      // listener doesn't fight that fade by popping the content back to opaque.
       setInteractionOpacity(1);
     }
   };

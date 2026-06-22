@@ -21,6 +21,7 @@ import {
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   computeCompanionBottomYPx,
+  getIsShellSunHidden,
   getIsSunHandoffInFlight,
   getSunHandlers,
   getSunRole,
@@ -170,6 +171,10 @@ const MainWrapper = (props: RouteSectionProps) => {
           // still there so the disc's centre stays exactly on the point the
           // background glow tracks (see the SCSS note).
           [styles.isIntervention]: getSunRole() !== "companion",
+          // A dashboard offer (the flung-up let-go question) has taken over and
+          // owns the screen; hide the disc behind it instead of letting it paint
+          // over the question. It returns home when the offer closes.
+          [styles.isHidden]: getIsShellSunHidden(),
         }}
       >
         <div class={styles.shellSunSlot}>

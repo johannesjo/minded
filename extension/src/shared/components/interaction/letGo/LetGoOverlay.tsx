@@ -20,8 +20,9 @@ interface LetGoOverlayProps {
  * The "let go" reflection the dashboard sun offers when flung *away* (up). The
  * sibling of the down-drag grounding offer: an invitation, never a trap —
  * declining is as easy as answering, and doing nothing dismisses it. It hosts
- * the standard intervention `Question` so it reads like any other prompt; the
- * full-screen layer also hides the just-flung shell sun gliding home behind it.
+ * the standard intervention `Question` on the standard (transparent) interaction
+ * background so it reads like any other prompt; the just-flung shell sun is
+ * hidden (sunStore) while this is open and returns home on close.
  */
 export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
   const [getIsClosing, setIsClosing] = createSignal(false);
