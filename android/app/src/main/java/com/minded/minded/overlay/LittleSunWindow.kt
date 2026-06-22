@@ -90,7 +90,7 @@ class LittleSunWindow(
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
             onStepAway = { stepAway() },
-            onStay = { sunReturnedToCorner -> collapse(sunReturnedToCorner) },
+            onStay = { collapse() },
         )
     }
 
@@ -334,12 +334,12 @@ class LittleSunWindow(
         updateLayout()
     }
 
-    private fun collapse(sunReturnedToCorner: Boolean = false) {
+    private fun collapse() {
         if (!isExpanded) return
-        // If the pause sun glided home (reverse dismiss) it already sits on the
-        // bubble's spot at the bubble's size, so let the bubble appear in place —
-        // a seamless handoff. Otherwise fade it back in, never snap.
-        enterWithFade = !sunReturnedToCorner
+        // The pause sun has already faded out (reverse crossfade) or sunk off-screen
+        // (drag-down) by the time we get here, so the window resize is unseen. Fade
+        // the resting bubble back in, never snap.
+        enterWithFade = true
         isExpanded = false
         clampPosition()
         updateLayout()

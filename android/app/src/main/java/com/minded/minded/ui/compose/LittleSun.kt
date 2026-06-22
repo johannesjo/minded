@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
@@ -68,14 +69,25 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 // sun's #e9843a (a more golden glow reads softer and sunnier).
 private val GLOW_COLOR = Color(0xFFE99A3A)
 
+// The cool dusk-into-night sky the sun sets into when the pause is pulled down,
+// matching the web interaction's dark-mode sunset gradient
+// (BackgroundTransition.scss): a deep, calm blue, never harsh.
+private val NIGHT_SKY_COLORS = listOf(
+    Color(0xFF020C25),
+    Color(0xFF041735),
+    Color(0xFF07244F),
+    Color(0xFF05214E),
+)
+
 /**
  * Delay from the moment the pause opens (the expand starts) until the gentle
- * step-away invitation fades in. The slow expand (EXPAND_MS) eats most of it,
- * leaving a short settle before the buttons. The pause *is* the friction — the
- * sun is the pause (see CLAUDE.md) — and it still makes an accidental tap
- * harmless: there's a beat to pull down / tap off before anything is asked.
+ * step-away invitation fades in — timed to land just as the little→big expand
+ * (EXPAND_MS) finishes, so the buttons arrive with the settled sun rather than
+ * long after it. The pause *is* the friction — the sun is the pause (see
+ * CLAUDE.md) — and a short beat still makes an accidental tap harmless: there's
+ * a moment to pull down / tap off before anything is asked.
  */
-private const val PAUSE_MS = 1200L
+private const val PAUSE_MS = 600L
 
 /**
  * A gentle offer never nags: if left untouched the invitation fades on its
@@ -86,6 +98,15 @@ private const val OFFER_AUTO_DISMISS_MS = 15000L
 
 /** Fade applied when the surface eases out, and when the bubble eases back in. */
 private const val FADE_MS = 400
+
+/**
+ * On a stay-dismiss (Not now / tap-off / ignored) the sun first glides home over
+ * FADE_MS, then fades out at the corner over this. The fade lets the overlay
+ * window resize from full-screen back to the little bubble *behind* an invisible
+ * sun — so the resize never shows as a jump — before the resting bubble fades in.
+ * A soft hand-off, never a hard cut (per CLAUDE.md).
+ */
+private const val CROSSFADE_MS = 280
 
 /**
  * The expanded pause is user-invoked, so the dim should answer the tap promptly
@@ -130,7 +151,7 @@ fun LittleSun(
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
     onStepAway: () -> Unit = {},
-    onStay: (sunReturnedToCorner: Boolean) -> Unit = {},
+    onStay: () -> Unit = {},
 ) {
     if (expanded) {
         StepAwayOffer(
@@ -218,16 +239,19 @@ private fun StepAwayOffer(
     expandFromX: Int,
     expandFromY: Int,
     onStepAway: () -> Unit,
-    onStay: (sunReturnedToCorner: Boolean) -> Unit,
+    onStay: () -> Unit,
 ) {
     // 0 = quiet hold, 1 = invitation shown.
     var phase by remember { mutableStateOf(0) }
     var shown by remember { mutableStateOf(false) }
     var dismissing by remember { mutableStateOf(false) }
     // A "stay" dismiss (Not now / tap-off / ignored) plays the expand in reverse:
-    // the sun shrinks and glides back to its bubble corner. A drag-down close
-    // instead fades the sun out from wherever the finger left it.
+    // the sun shrinks and glides back to its bubble corner, then crossfades into
+    // the resting bubble. A drag-down close instead sinks the sun off-screen.
     var reverseDismiss by remember { mutableStateOf(false) }
+    // Set once the reverse glide-home has landed: the sun fades out at its corner
+    // so the window can resize behind it unseen before the bubble fades in.
+    var crossfading by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
     // cut. Fades in on appear and out on dismiss.
@@ -238,13 +262,19 @@ private fun StepAwayOffer(
         label = "stepAwaySurfaceAlpha",
     )
 
-    // Hand control back to the resting bubble once the fade-out has played.
-    // Driven off the dismissing flag (not the animation's finished-listener) so
-    // it can't fire on the fade-IN settling and survives the composable leaving.
+    // Hand control back to the resting bubble once the dismiss has played. Driven
+    // off the dismissing flag (not an animation finished-listener) so it can't fire
+    // on the fade-IN settling and survives the composable leaving. A reverse
+    // dismiss adds a crossfade beat: glide home, fade the sun out, then hand off —
+    // so the window resize never shows as a jump (see CROSSFADE_MS).
     LaunchedEffect(dismissing) {
         if (dismissing) {
-            delay(FADE_MS.toLong())
-            onStay(reverseDismiss)
+            delay(FADE_MS.toLong()) // glide home / sink away
+            if (reverseDismiss) {
+                crossfading = true
+                delay(CROSSFADE_MS.toLong()) // fade the landed sun out before the resize
+            }
+            onStay()
         }
     }
 
@@ -261,19 +291,21 @@ private fun StepAwayOffer(
     )
 
     // The sun is opaque from the first frame — it *is* the little sun (which was
-    // opaque), now expanding, so it must not fade in under it. On a reverse
-    // dismiss it stays opaque and glides home; only a drag-down close fades it.
+    // opaque), now expanding, so it must not fade in under it. It stays opaque
+    // through the glide home; a reverse dismiss only fades it once `crossfading`
+    // begins (the soft hand-off). A drag-down close fades it too, but it has
+    // already sunk off-screen so the fade is unseen.
     val sunAlpha by animateFloatAsState(
-        targetValue = if (dismissing && !reverseDismiss) 0f else 1f,
-        animationSpec = tween(durationMillis = if (dismissing) FADE_MS else APPEAR_FADE_MS),
+        targetValue = if ((dismissing && !reverseDismiss) || crossfading) 0f else 1f,
+        animationSpec = tween(durationMillis = if (dismissing) CROSSFADE_MS else APPEAR_FADE_MS),
         label = "stepAwaySunAlpha",
     )
 
     val promptAlpha by animateFloatAsState(
         targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
         // Fade the buttons out quickly on dismiss so they don't linger over the
-        // returning sun.
-        animationSpec = tween(durationMillis = if (dismissing) 200 else 600),
+        // returning sun; fade them in promptly once the pause has settled.
+        animationSpec = tween(durationMillis = if (dismissing) 200 else 450),
         label = "promptAlpha",
     )
 
@@ -284,8 +316,15 @@ private fun StepAwayOffer(
     val dragY = remember { Animatable(0f) }
     val dragScope = rememberCoroutineScope()
     val dismissDragPx = with(LocalDensity.current) { 140.dp.toPx() }
-    // 1 = fully present; eases to 0.15 as it's pulled to the dismiss threshold.
-    val dragFade = 1f - 0.85f * (dragY.value / dismissDragPx).coerceIn(0f, 1f)
+    // Enough to carry the sun fully off the bottom edge when it sets.
+    val screenHeightPx = with(LocalDensity.current) {
+        LocalConfiguration.current.screenHeightDp.dp.toPx()
+    }
+    // 0 = at rest, 1 = pulled to the dismiss threshold. Drives how far the night
+    // sky has risen behind the sun — the sun itself stays fully opaque and sets
+    // into the sky rather than fading away.
+    val dragProgress = (dragY.value / dismissDragPx).coerceIn(0f, 1f)
+    val nightSkyBrush = remember { Brush.verticalGradient(NIGHT_SKY_COLORS) }
 
     fun beginDismiss(reverse: Boolean = false) {
         if (!dismissing) {
@@ -306,7 +345,7 @@ private fun StepAwayOffer(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.78f * surfaceAlpha * dragFade))
+            .background(Color.Black.copy(alpha = 0.78f * surfaceAlpha))
             // Tapping anywhere off the invitation is the easy way to stay — the
             // sun glides back home.
             .pointerInput(Unit) {
@@ -321,8 +360,17 @@ private fun StepAwayOffer(
                     },
                     onDragEnd = {
                         if (dragY.value >= dismissDragPx) {
-                            // Pulled away — let it fade out from here, don't snap home.
-                            beginDismiss(reverse = false)
+                            // Pulled past the threshold: the sun sets. It sinks the
+                            // rest of the way down (staying fully opaque) while the
+                            // night sky holds, then the surface fades and the bubble
+                            // returns — it never fades out in place.
+                            dragScope.launch {
+                                dragY.animateTo(
+                                    screenHeightPx,
+                                    tween(durationMillis = 500, easing = FastOutSlowInEasing),
+                                )
+                                beginDismiss(reverse = false)
+                            }
                         } else {
                             dragScope.launch {
                                 dragY.animateTo(
@@ -335,6 +383,17 @@ private fun StepAwayOffer(
                 )
             },
     ) {
+        // The night sky rises behind the sun as it is pulled down — the same cool
+        // dusk-into-night palette the in-app sun-set uses. Fully out at the dismiss
+        // threshold; recedes if the pull is released early. Sits above the dim and
+        // below the sun, and fades with the surface on dismiss.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(surfaceAlpha * dragProgress)
+                .background(nightSkyBrush),
+        )
+
         val hasOrigin = expandFromX >= 0 && expandFromY >= 0
         val centrePx = with(LocalDensity.current) {
             Offset(maxWidth.toPx() / 2f, maxHeight.toPx() / 2f)
@@ -358,7 +417,7 @@ private fun StepAwayOffer(
                 .offset {
                     IntOffset(sunTravel.x.roundToInt(), (sunTravel.y + dragY.value).roundToInt())
                 }
-                .alpha(sunAlpha * dragFade),
+                .alpha(sunAlpha),
         )
 
         // No heading, no question — the quiet moment has already passed. A single
@@ -370,7 +429,7 @@ private fun StepAwayOffer(
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset { IntOffset(0, (150.dp.toPx() + dragY.value).roundToInt()) }
-                .alpha(promptAlpha * dragFade),
+                .alpha(promptAlpha * (1f - dragProgress)),
         ) {
             OfferAction(
                 text = "Step away",
