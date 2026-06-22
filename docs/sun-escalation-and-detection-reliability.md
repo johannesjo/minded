@@ -7,6 +7,28 @@ wrong detection from ever producing a jarring, mis-targeted interrupt. This is t
 *interrupt-side* sun; the invitation-only home-screen companion is a separate
 surface (`docs/sun-companion-widget.md`).
 
+## Locked decisions (do not regress)
+
+Decided in review; these constrain the rest of this spec and supersede the
+escalation design below (a full rewrite is pending):
+
+- **Auto-arriving pause — CUT.** The sun never runs an intervention or pause on
+  its own. It is an ambient presence plus an explicit tap to engage. (An interrupt
+  dismissed ~9 times in 10 when the user isn't ready is friction, not help — and it
+  honours *never forced*.)
+- **Escalation — CUT.** No dwell-driven growth, no swelling glow, no "harder to
+  ignore over time." A rising-intensity ramp tied to elapsed time manufactures
+  urgency, which the fundamentals forbid.
+- **No breathing animation outside meditations.** The everyday sun does not
+  "breathe." Breathing belongs only to guided meditations (e.g. urge-surfing).
+  This supersedes the `StrongFrictionBreathPause`-as-default-pause mechanic
+  described in `CLAUDE.md` — that file needs updating to match.
+- **The sun always smoothly *morphs* between screens and states.** It is one
+  continuous object — never a hard cut, never torn down and re-mounted into the
+  next surface. Architectural implication: favour a single persistent sun surface
+  over swapping separate windows; this is in tension with today's native-Compose
+  sun vs. WebView-intervention split (see the feasibility note in review).
+
 ## The problem in one line
 
 Android foreground detection is **not, and can never be, 100% reliable** — so a
