@@ -24,13 +24,20 @@ import {
   getQuestionSmart,
   getQuestionSemiSmart,
 } from "@src/util/getQuestionSmart";
-import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
+import {
+  getSyncData,
+  IS_ANDROID,
+} from "@src/dataInterface/commonSyncDataInterface";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
+  LITTLE_SUN_DISC_PX_ANDROID,
+  LITTLE_SUN_DISC_PX_WEB,
   restingSunAnchorFromRect,
+  sunDepartSettleAt,
   sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
@@ -203,6 +210,36 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
+  // Centre (viewport fractions) where the native Android Little Sun bubble will
+  // rest, read once on mount. The bubble can't move while the interaction is up
+  // (it isn't shown then), so a single read is stable for this interaction; the
+  // departing morph targets it instead of the fixed corner. null off Android or
+  // when the native side can't report it.
+  const [getLittleSunRestCenter, setLittleSunRestCenter] = createSignal<{
+    x: number;
+    y: number;
+  } | null>(null);
+  if (IS_ANDROID && props.interactionPlatform === "android") {
+    onMount(() => {
+      try {
+        const raw = androidInterface.getLittleSunRestCenter?.();
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as { fracX?: number; fracY?: number };
+        // Number.isFinite (not typeof) so a NaN slips through to NaN offsets;
+        // clamp to the viewport so a bad value can't fling the disc off-screen.
+        if (Number.isFinite(parsed.fracX) && Number.isFinite(parsed.fracY)) {
+          const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+          setLittleSunRestCenter({
+            x: clamp01(parsed.fracX!),
+            y: clamp01(parsed.fracY!),
+          });
+        }
+      } catch {
+        // Leave null → the morph falls back to the fixed corner.
+      }
+    });
+  }
+
   const getSunSettle = () => {
     // Resting: tuck under the measured choices block (mirrors the shell sun's
     // getSunSettleForCurrentRole), falling back to the static rest target until
@@ -211,18 +248,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       const anchor = getRestingSunAnchor();
       if (anchor) return sunRestingSettle(anchor);
     }
+    // Departing on Android: the native Little Sun is a free-floating bubble the
+    // user can park anywhere (and the persisted spot is read on mount). Glide to
+    // its real centre so the disc lands where the bubble blooms in, rather than
+    // darting to a fixed corner it no longer rests at. Fall back to the corner
+    // when the position is unknown (older app, read failed).
+    if (getSunPhase() === "departing") {
+      const restCenter = getLittleSunRestCenter();
+      if (restCenter) return sunDepartSettleAt(restCenter);
+    }
+    const isAndroid = props.interactionPlatform === "android";
     return getSunSettleForPhase(
       getSunPhase(),
       // companionBottomYPx is only read for the "companion" phase, which the
       // local (non-shell) sun never enters — keep the default.
       undefined,
       // The departing sun hands off to a different Little Sun per platform:
-      // Android shows the native overlay (a smaller 30px corner), the web
-      // extension its own 40px-corner Little Sun. Match the right one so the
-      // disc doesn't jump when the persistent timer blooms in.
-      props.interactionPlatform === "android"
-        ? LITTLE_SUN_CORNER_PX_ANDROID
-        : LITTLE_SUN_CORNER_PX_WEB,
+      // Android shows the native overlay (a smaller 30px corner + 30px disc), the
+      // web extension its own 40px-corner / 40px-disc Little Sun. Match the right
+      // corner AND disc size so neither the position nor the size jumps when the
+      // persistent timer blooms in.
+      isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
+      isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
     );
   };
   // A mode rides its own animation on the real sun: glide the single disc into
