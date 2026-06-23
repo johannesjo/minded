@@ -478,7 +478,8 @@ describe("getInteractionMode", () => {
           lastBrowsingBehaviorRatingTS: 99,
         }),
         {
-          random: sequenceRandom([0.99, 0.01]),
+          isMainView: false,
+          random: sequenceRandom([0.99, 0.99, 0.01]),
         },
       ),
     ).toEqual({
@@ -486,6 +487,23 @@ describe("getInteractionMode", () => {
       reason: "usage_rating_due",
       frictionLevel: "soft",
     });
+  });
+
+  it("does not show the usage observation when starting from the dashboard", () => {
+    // From the dashboard (isMainView) the usage observation is suppressed even
+    // when the rating is stale and every roll would otherwise select it; the
+    // flow falls through to a real intervention instead.
+    expect(
+      decide(
+        baseSyncData({
+          lastBrowsingBehaviorRatingTS: 99,
+        }),
+        {
+          isMainView: true,
+          random: sequenceRandom([0.99, 0.01]),
+        },
+      ).mode,
+    ).not.toBe("APP_USAGE_OR_BROWSING_BEHAVIOR");
   });
 
   it("samples a notice micro-action just before the question fallback", () => {
