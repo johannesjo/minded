@@ -9,20 +9,12 @@ export const QUOTES: Quote[] = [
     txt: "Sometimes your joy is the source of your smile, but sometimes your smile can be the source of your joy.",
   },
   {
-    txt: "Good is good enough. Don't aim for perfection. Focus on the important things.",
+    txt: "Good is good enough. There's no need to chase perfect.",
   },
   {
-    txt: "Embrace Progress over Achievement. Productivity is not about massive strides every day but the accumulation of small, incremental progress that leads to significant achievements over time.",
+    txt: "There's no need for massive strides. Small, quiet steps are enough — they add up in their own time.",
   },
   {
-    txt: "I have not failed. I've just found 10,000 ways that won't work.",
-    author: "Thomas A. Edison",
-  },
-  {
-    txt: "Take breaks! They help you clear your mind and make you almost always more productive in the long run. Go! Take a walk!",
-  },
-  {
-    author: "Seth Godin",
-    txt: "You don't need more time in your day. You need to decide.",
+    txt: "Take a break. Step away and let your mind settle. Go — take a walk.",
   },
 ];
