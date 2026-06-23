@@ -177,6 +177,13 @@ export const getDashboardEntriesFromQuestions = (
   // its simpler fixed arrangement, with the quote fallback only when there's
   // little to show.
   if (!isSkipRndEntry) {
+    // Filtering the pick *pool* with isGreetingEligible is about greeting
+    // quality, not just correctness — it keeps the pick landing on a genuine
+    // in-window reflective card instead of "wasting" itself on an out-of-window
+    // recap that guardHeroSlot below would only convert to a quote. So this is
+    // NOT redundant with the guard: the guard is the cross-platform correctness
+    // backstop (Android/merge have no pick); this is the web variety win. Don't
+    // drop one assuming the other covers it.
     const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
       if (isGreetingEligible(entry, now)) acc.push(i);
       return acc;
