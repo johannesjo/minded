@@ -1442,7 +1442,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         )}
       </div>
 
-      {props.isFromDashboard && (
+      {props.isFromDashboard && !getShowLetGoOffer() && (
         <div class="back-button-wrapper">
           <Btn
             variant="icon"
