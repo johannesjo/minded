@@ -338,8 +338,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT5,
-        t: "What would make you proud today, if it would finally be done",
-        prompt: "I would be proud to",
+        t: "What would feel meaningful to spend a little time on today",
+        prompt: "I'd like to spend time on",
       },
       {
         id: QID.RFHT6,
@@ -347,8 +347,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT7,
-        t: "What do you want to achieve today",
-        prompt: "Today I want to",
+        t: "What would you like to focus on today",
+        prompt: "Today I want to focus on",
       },
       {
         id: QID.RFHT8,
@@ -362,10 +362,10 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT10,
-        t: "What is one small step I can take towards my long-term goals today",
+        t: "What is one small step you could gently take today",
         prompt: "",
       },
-      { id: QID.RFHT11, t: "What is currently my most important goal" },
+      { id: QID.RFHT11, t: "What feels most important to you right now" },
       { id: QID.RFHT12, t: "What is the most fun task I could work on today" },
       {
         id: QID.RFHT13,
@@ -373,8 +373,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT14,
-        t: "What would make today feel like a success",
-        prompt: "Today is a success if",
+        t: "What would make today feel good",
+        prompt: "Today feels good if",
       },
     ],
   },
@@ -423,8 +423,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT2,
-        t: "What might boost your productivity",
-        prompt: "I am more productive when",
+        t: "What helps you feel focused",
+        prompt: "I feel focused when",
       },
       {
         id: QID.HT3,
@@ -438,7 +438,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT5,
-        t: "What environment helps you work best? (consider light, noise, temperature, etc.)",
+        t: "What environment helps you feel focused? (consider light, noise, temperature, etc.)",
         prompt: "I need",
       },
       {
@@ -448,7 +448,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT7,
-        t: "How can you eliminate or reduce distractions",
+        t: "What helps you settle when your attention scatters",
       },
       {
         id: QID.HT8,
@@ -623,15 +623,18 @@ export const QUESTION_CATEGORIES: {
     isMorningCategory: true,
     isWorkDayCategory: true,
     questions: [
-      { id: QID.GW1, t: "What is a goal you want to achieve this week" },
+      {
+        id: QID.GW1,
+        t: "What would you like to give your attention to this week",
+      },
       {
         id: QID.GW2,
-        t: "This week I will do my best to...",
-        prompt: "This week I will do my best to",
+        t: "This week I'd like to...",
+        prompt: "This week I'd like to",
       },
-      { id: QID.GW3, t: "What is my most important goal this week" },
+      { id: QID.GW3, t: "What feels most important to you this week" },
     ],
-    dashboardTxt: "Your Goal for the Week",
+    dashboardTxt: "Looking at the Week Ahead",
   },
   [QuestionCategoryId.UnderstandingProcrastination]: {
     questions: [
