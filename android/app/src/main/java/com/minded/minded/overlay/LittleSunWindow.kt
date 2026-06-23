@@ -2,11 +2,13 @@ package com.minded.minded.overlay
 
 import android.content.Context
 import android.graphics.PixelFormat
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import android.view.Gravity
+import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,16 +53,6 @@ class LittleSunWindow(
     // Modifier.systemGestureExclusion — so the drag stays ours wherever it's
     // parked along the sides.
     private val edgeMarginPx = (8 * density).roundToInt()
-
-    // Extra clearance ADDED beyond the status bar (top) and nav bar (bottom) to
-    // keep the bubble out of the mandatory gesture zones an app can't exclude:
-    // the notification shade just below the status bar, and the home/back
-    // gesture strip just above the nav bar. The bar insets already do most of
-    // the work, so this is only a small buffer on top — bigger than the side
-    // inset, but nowhere near a full gesture zone.
-    // shortcut: a fixed dp buffer — read WindowInsets.mandatorySystemGestures
-    // if OEM gesture-zone heights ever vary enough to matter.
-    private val gestureBufferPx = (16 * density).roundToInt()
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble simply rests wherever it was dropped
@@ -249,15 +241,38 @@ class LittleSunWindow(
         }
     }
 
-    private fun screenWidthPx() = ctrlSvc.resources.displayMetrics.widthPixels
-    private fun screenHeightPx() = ctrlSvc.resources.displayMetrics.heightPixels
+    // The full display bounds the resting bubble is positioned within. With
+    // gravity TOP|START + FLAG_LAYOUT_NO_LIMITS the bubble lives in the real
+    // display coordinate space (behind the bars), so we clamp against that.
+    private fun displayWidthPx() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            windowManager.currentWindowMetrics.bounds.width()
+        else ctrlSvc.resources.displayMetrics.widthPixels
 
-    // Status-bar (top) and navigation-bar (bottom) heights. clampPosition adds
-    // gestureBufferPx to each so the bubble clears the bar AND the gesture zone
-    // beyond it. An over-estimate (e.g. gesture-nav still reporting a full
-    // nav-bar height) only parks it a touch further in, never under a bar.
-    private fun systemBarInsetTopPx() = systemDimenPx("status_bar_height")
-    private fun systemBarInsetBottomPx() = systemDimenPx("navigation_bar_height")
+    private fun displayHeightPx() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            windowManager.currentWindowMetrics.bounds.height()
+        else ctrlSvc.resources.displayMetrics.heightPixels
+
+    // Top/bottom safe insets read LIVE from the window, not from static resource
+    // dimens. mandatorySystemGestures is exactly the band an app can't exclude —
+    // the notification-shade pull at the top, the home/back gesture strip at the
+    // bottom — and (unlike navigation_bar_height) it reports the real gesture-
+    // zone size in gesture-nav mode, so the bubble can't be parked under the home
+    // bar. Unioned with systemBars so it also clears the visible bars. Falls back
+    // to static dimens on API 29, which predates currentWindowMetrics.
+    private fun safeInsetTopPx() = gestureInsets().first
+    private fun safeInsetBottomPx() = gestureInsets().second
+
+    private fun gestureInsets(): Pair<Int, Int> {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val insets = windowManager.currentWindowMetrics.windowInsets.getInsets(
+                WindowInsets.Type.mandatorySystemGestures() or WindowInsets.Type.systemBars()
+            )
+            return insets.top to insets.bottom
+        }
+        return systemDimenPx("status_bar_height") to systemDimenPx("navigation_bar_height")
+    }
 
     private fun systemDimenPx(resName: String): Int {
         val id = ctrlSvc.resources.getIdentifier(resName, "dimen", "android")
@@ -272,21 +287,22 @@ class LittleSunWindow(
         } else {
             // Default to the bottom-left, where the little sun has always rested.
             posX = (8 * density).roundToInt()
-            posY = screenHeightPx() - bubbleSizePx - (96 * density).roundToInt()
+            posY = displayHeightPx() - bubbleSizePx - (96 * density).roundToInt()
         }
         clampPosition()
     }
 
     private fun clampPosition() {
-        // Stay clear of every system gesture zone. Sides need only a small inset
-        // (the back-gesture there is excluded). Top/bottom add a buffer beyond
-        // the status/nav bar, since the notification shade and home gesture
-        // can't be excluded — but only a small one, so the bubble can still rest
-        // near the top and bottom.
+        // Keep the bubble on-screen and clear of every system gesture zone, with
+        // the same small visual gap (edgeMarginPx) on all four sides beyond the
+        // true safe boundary. Sides: the back-gesture is excluded for the
+        // bubble's bounds, so only the gap is needed. Top/bottom: park just
+        // outside the live mandatory-gesture insets, so the bubble can sit near
+        // the edges without arming the notification shade or the home gesture.
         val minX = edgeMarginPx
-        val maxX = (screenWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
-        val minY = systemBarInsetTopPx() + gestureBufferPx
-        val maxY = (screenHeightPx() - bubbleSizePx - systemBarInsetBottomPx() - gestureBufferPx)
+        val maxX = (displayWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
+        val minY = safeInsetTopPx() + edgeMarginPx
+        val maxY = (displayHeightPx() - bubbleSizePx - safeInsetBottomPx() - edgeMarginPx)
             .coerceAtLeast(minY)
         posX = posX.coerceIn(minX, maxX)
         posY = posY.coerceIn(minY, maxY)
