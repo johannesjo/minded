@@ -94,6 +94,14 @@
   flex-shrink: 0;
 }
 
+// The per-day rows live inside a wrapper (so the fade applies to one element),
+// so the wrapper — not .daysList — owns the inter-row spacing.
+.expandedRows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 // Soft reveal when switching between the single-row and per-day views — never
 // a hard cut (see Styling Guidelines).
 .fadeIn {

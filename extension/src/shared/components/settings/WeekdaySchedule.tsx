@@ -1,4 +1,4 @@
-import { createSignal, Index, JSX, Show } from "solid-js";
+import { createSignal, createUniqueId, Index, JSX, Show } from "solid-js";
 import { TimeRange } from "@src/dataInterface/syncData";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import { TimeInput } from "@src/shared/components/ui/TimeInput";
@@ -66,6 +66,9 @@ export const WeekdaySchedule = (props: {
   // Start collapsed only when the saved schedule is genuinely uniform; a custom
   // per-day config opens expanded so it's never silently flattened on screen.
   const [expanded, setExpanded] = createSignal(!isUniform(props.days));
+  // Per-instance id so two editors on one page (Android settings stacks both
+  // Active Hours and Sleep Wind-Down) don't collide on the aria-controls target.
+  const rowsId = createUniqueId();
 
   const single = (): TimeRange =>
     representativeRange(props.days, props.defaultRange);
@@ -99,7 +102,7 @@ export const WeekdaySchedule = (props: {
   const getRange = (idx: number) => props.days[idx] || props.defaultRange;
 
   return (
-    <div class={styles.daysList} id="weekday-schedule-rows">
+    <div class={styles.daysList} id={rowsId}>
       <Show
         when={expanded()}
         fallback={
@@ -128,7 +131,7 @@ export const WeekdaySchedule = (props: {
           </div>
         }
       >
-        <div class={styles.fadeIn}>
+        <div class={`${styles.expandedRows} ${styles.fadeIn}`}>
           <Index each={DAY_NAMES}>
             {(name, index) => (
               <div
@@ -171,7 +174,7 @@ export const WeekdaySchedule = (props: {
           outline
           disabled={props.disabled}
           aria-expanded={expanded()}
-          aria-controls="weekday-schedule-rows"
+          aria-controls={rowsId}
           onClick={() => (expanded() ? collapse() : setExpanded(true))}
         >
           {expanded()
