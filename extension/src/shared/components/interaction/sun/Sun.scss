@@ -164,6 +164,15 @@
     inset: 0;
     pointer-events: none;
     animation: minded6622fadeIn 0.6s ease both;
+    transition: opacity 0.6s ease;
+
+    // On the success bloom the flow clears the orbit; we hold the crown mounted
+    // (Sun.tsx) and dissolve it out here rather than snapping it away. `animation:
+    // none` releases the fade-in's locked end opacity so the transition can run.
+    &.is-leaving {
+      animation: none;
+      opacity: 0;
+    }
   }
 
   .sun-orbit-dot {
