@@ -37,6 +37,7 @@ import {
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+import { navigateWithPageFadeOut } from "@src/util/animation";
 
 // Matches the --dur-soft fade on the collapsed view so it finishes fading out
 // before the full set mounts (mirrors the daily-questions banner dismissal).
@@ -146,7 +147,10 @@ export const DashboardGroups: (props: {
           : "Would you like to reflect on your day?"}
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        <Btn outline onClick={() => navigate("/dailyQuestions")}>
+        <Btn
+          outline
+          onClick={() => navigateWithPageFadeOut(navigate, "/dailyQuestions")}
+        >
           let's go
         </Btn>
         <Btn outline onClick={() => removeDailyQuestionsBanner()}>
@@ -161,7 +165,7 @@ export const DashboardGroups: (props: {
       "id" in dg || dg.type === DashboardGroupType.SleepWindDown;
     const activate = () => {
       if (dg.type === DashboardGroupType.SleepWindDown) {
-        navigate("/sleepWindDown");
+        navigateWithPageFadeOut(navigate, "/sleepWindDown");
         return;
       }
       if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);

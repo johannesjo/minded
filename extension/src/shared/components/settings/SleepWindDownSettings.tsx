@@ -1,5 +1,6 @@
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+import { navigateWithPageFadeOut } from "@src/util/animation";
 import {
   getSyncData,
   updateSyncData,
@@ -105,7 +106,12 @@ export const SleepWindDownSettings = (props: {
         />
       </Show>
       <div style={{ "margin-top": "16px", "text-align": "center" }}>
-        <Btn outline onClick={() => navigate("/sleepWindDown?preview=1")}>
+        <Btn
+          outline
+          onClick={() =>
+            navigateWithPageFadeOut(navigate, "/sleepWindDown?preview=1")
+          }
+        >
           Try wind-down now
         </Btn>
       </div>

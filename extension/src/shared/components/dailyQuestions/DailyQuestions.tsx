@@ -19,6 +19,7 @@ import {
   getDailyQuestionsMode,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { useNavigate } from "@solidjs/router";
+import { navigateWithPageFadeOut } from "@src/util/animation";
 
 const AFTER_ANI_WAIT_DURATION = 1100;
 
@@ -64,8 +65,17 @@ const DailyQuestions = () => {
   const afterAni = () => {
     window.clearTimeout(t0);
     t0 = setTimeout(() => {
-      navigate("/");
+      navigateWithPageFadeOut(navigate, "/");
     }, AFTER_ANI_WAIT_DURATION);
+  };
+
+  // The success message arms afterAni once it mounts. Track the timer on `t0`
+  // (the same one onCleanup clears) so leaving mid-celebration cancels it —
+  // otherwise the stray timer would later fade whatever page the user moved on
+  // to and yank them back to the dashboard.
+  const scheduleAfterAni = () => {
+    window.clearTimeout(t0);
+    t0 = setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
   };
 
   // TODO answers
@@ -120,9 +130,7 @@ const DailyQuestions = () => {
               {/* TODO component */}
               <div
                 class="success-message"
-                ref={() => {
-                  setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
-                }}
+                ref={scheduleAfterAni}
               >
                 <div class="success-sun"></div>
                 <div class="success-text">Have a wonderful day today!</div>
@@ -164,9 +172,7 @@ const DailyQuestions = () => {
               {/* TODO component */}
               <div
                 class="success-message"
-                ref={() => {
-                  setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
-                }}
+                ref={scheduleAfterAni}
               >
                 <div class="success-sun"></div>
                 <div class="success-text">
