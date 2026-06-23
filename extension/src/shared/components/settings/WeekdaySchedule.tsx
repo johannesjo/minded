@@ -1,4 +1,4 @@
-import { createSignal, For, JSX, Show } from "solid-js";
+import { createSignal, Index, JSX, Show } from "solid-js";
 import { TimeRange } from "@src/dataInterface/syncData";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import { TimeInput } from "@src/shared/components/ui/TimeInput";
@@ -99,71 +99,84 @@ export const WeekdaySchedule = (props: {
   const getRange = (idx: number) => props.days[idx] || props.defaultRange;
 
   return (
-    <div class={styles.daysList}>
+    <div class={styles.daysList} id="weekday-schedule-rows">
       <Show
         when={expanded()}
         fallback={
+          // <Show> remounts whichever branch is active on each toggle, so the
+          // fadeIn animation replays — keeping open/close soft, not a hard cut.
           <div
-            class={`${styles.dayRow} ${props.disabled ? styles.isDisabled : ""}`}
+            class={`${styles.dayRow} ${styles.fadeIn} ${props.disabled ? styles.isDisabled : ""}`}
           >
+            <span class={styles.checkboxSpacer} aria-hidden="true" />
             <span class={styles.dayName}>Every day</span>
             <div class={styles.timeInputs}>
               <TimeInput
                 value={single().start}
                 onChange={(v) => updateSingle("start", v)}
                 disabled={props.disabled}
+                aria-label="Start time, every day"
               />
               <span class={styles.timeSeparator}>to</span>
               <TimeInput
                 value={single().end}
                 onChange={(v) => updateSingle("end", v)}
                 disabled={props.disabled}
+                aria-label="End time, every day"
               />
             </div>
           </div>
         }
       >
-        <For each={DAY_NAMES}>
-          {(name, index) => (
-            <div
-              class={`${styles.dayRow} ${props.disabled ? styles.isDisabled : ""}`}
-            >
-              <Checkbox
-                checked={isDayEnabled(index())}
-                onChange={() => toggleDay(index())}
-                disabled={props.disabled}
-              />
-              <span
-                class={styles.dayName}
-                onClick={() => !props.disabled && toggleDay(index())}
+        <div class={styles.fadeIn}>
+          <Index each={DAY_NAMES}>
+            {(name, index) => (
+              <div
+                class={`${styles.dayRow} ${props.disabled ? styles.isDisabled : ""}`}
               >
-                {name}
-              </span>
-              <div class={styles.timeInputs}>
-                <TimeInput
-                  value={getRange(index()).start}
-                  onChange={(v) => updateDayTime(index(), "start", v)}
-                  disabled={props.disabled || !isDayEnabled(index())}
+                <Checkbox
+                  checked={isDayEnabled(index)}
+                  onChange={() => toggleDay(index)}
+                  disabled={props.disabled}
                 />
-                <span class={styles.timeSeparator}>to</span>
-                <TimeInput
-                  value={getRange(index()).end}
-                  onChange={(v) => updateDayTime(index(), "end", v)}
-                  disabled={props.disabled || !isDayEnabled(index())}
-                />
+                <span
+                  class={styles.dayName}
+                  onClick={() => !props.disabled && toggleDay(index)}
+                >
+                  {name()}
+                </span>
+                <div class={styles.timeInputs}>
+                  <TimeInput
+                    value={getRange(index).start}
+                    onChange={(v) => updateDayTime(index, "start", v)}
+                    disabled={props.disabled || !isDayEnabled(index)}
+                    aria-label={`Start time, ${name()}`}
+                  />
+                  <span class={styles.timeSeparator}>to</span>
+                  <TimeInput
+                    value={getRange(index).end}
+                    onChange={(v) => updateDayTime(index, "end", v)}
+                    disabled={props.disabled || !isDayEnabled(index)}
+                    aria-label={`End time, ${name()}`}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-        </For>
+            )}
+          </Index>
+        </div>
       </Show>
 
       <div class={styles.expandToggle}>
         <Btn
           outline
           disabled={props.disabled}
+          aria-expanded={expanded()}
+          aria-controls="weekday-schedule-rows"
           onClick={() => (expanded() ? collapse() : setExpanded(true))}
         >
-          {expanded() ? "Use the same time every day" : "Set times per day"}
+          {expanded()
+            ? "Use the same time every day"
+            : "Set different times per day"}
         </Btn>
       </div>
     </div>
