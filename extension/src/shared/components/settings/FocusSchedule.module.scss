@@ -80,8 +80,39 @@
   opacity: 0.6;
 }
 
-.controls {
-  margin-top: 24px;
+.expandToggle {
+  margin-top: 16px;
   display: flex;
   justify-content: center;
+}
+
+// Reserve the checkbox column in the collapsed "Every day" row so the day-name
+// column lines up with the per-day rows and doesn't jump sideways on expand.
+// 22px matches the checkbox checkmark width.
+.checkboxSpacer {
+  width: 22px;
+  flex-shrink: 0;
+}
+
+// The per-day rows live inside a wrapper (so the fade applies to one element),
+// so the wrapper — not .daysList — owns the inter-row spacing.
+.expandedRows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Soft reveal when switching between the single-row and per-day views — never
+// a hard cut (see Styling Guidelines).
+.fadeIn {
+  animation: weekdayScheduleFadeIn 200ms ease-in;
+}
+
+@keyframes weekdayScheduleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
