@@ -108,8 +108,8 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.HBH1,
-        t: "What is the one thing you find most problematic in your recent browsing behavior",
-        prompt: "The biggest challenge is",
+        t: "What is one thing you'd like to gently change about your recent browsing",
+        prompt: "I'd like to change",
       },
       {
         id: QID.HBH2,
@@ -118,7 +118,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH3,
-        t: "What might help you change your unhealthy browsing behavior",
+        t: "What might help you change your browsing habits",
       },
       {
         id: QID.HBH4,
@@ -164,8 +164,8 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.HAU1,
-        t: "What is the one thing you find most problematic in your recent usage of mobile apps",
-        prompt: "The biggest challenge is",
+        t: "What is one thing you'd like to gently change about your recent app use",
+        prompt: "I'd like to change",
       },
       {
         id: QID.HAU2,
@@ -174,7 +174,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU3,
-        t: "What might help you change your unhealthy usage of mobile apps",
+        t: "What might help you change your app habits",
       },
       {
         id: QID.HAU4,
@@ -230,8 +230,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRB3,
-        t: "What do you miss out on when you browse too much?",
-        prompt: "I miss out on",
+        t: "What would you like more time for?",
+        prompt: "I'd like more time for",
       },
       {
         id: QID.WRB4,
@@ -262,8 +262,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRA3,
-        t: "What do you miss out on when you use these apps too much?",
-        prompt: "I miss out on",
+        t: "What would you like more time for?",
+        prompt: "I'd like more time for",
       },
       {
         id: QID.WRA4,
@@ -647,8 +647,8 @@ export const QUESTION_CATEGORIES: {
         t: "Why are you visiting this website",
         limitTo: ["BrowserExtension"],
       },
-      { id: QID.UP3, t: "Where and how do I waste time" },
-      { id: QID.UP4, t: "What is hurting your focus" },
+      { id: QID.UP3, t: "Where does my time tend to go" },
+      { id: QID.UP4, t: "What tends to pull at your focus" },
       {
         id: QID.UP5,
         t: "In what situations do you have a hard time focusing and what contributes to it",
