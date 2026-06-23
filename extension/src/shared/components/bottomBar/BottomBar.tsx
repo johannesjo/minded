@@ -47,8 +47,10 @@ const BottomBar = () => {
             plain
             title="Give us some feedback"
             aria-label="Give us some feedback"
-            href="/feedback"
-            activeClass="active"
+            onClick={(event) => {
+              event.stopPropagation();
+              navigateWithPageFadeOut(navigate, "/feedback");
+            }}
           >
             <Ico name="feedback" />
           </Btn>
@@ -58,8 +60,10 @@ const BottomBar = () => {
               plain
               title="Go to settings page"
               aria-label="Go to settings page"
-              href="/settings"
-              activeClass="active"
+              onClick={(event) => {
+                event.stopPropagation();
+                navigateWithPageFadeOut(navigate, "/settings");
+              }}
             >
               <Ico name="settings" />
             </Btn>

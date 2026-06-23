@@ -33,7 +33,7 @@ Other comments:
   });
 
   return (
-    <div class={styles.wrapper}>
+    <div class={`${styles.wrapper} pageTransitionIn`}>
       <p class="txtBig">
         <em>minded</em> is very young, so we'd really appreciate your feedback!
       </p>
