@@ -87,6 +87,9 @@ export const QuestionCategoryView: (props: {
         [styles.QuestionCategoryView]: true,
         ["pageWrapper"]: true,
         ["mw"]: true,
+        // Ease in to match the dashboard fading out before us — never a hard cut
+        // (see the "transitions — always soft" styling rule).
+        ["pageTransitionIn"]: true,
       }}
     >
       <div
