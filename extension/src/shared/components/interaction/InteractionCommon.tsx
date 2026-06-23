@@ -223,11 +223,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         const raw = androidInterface.getLittleSunRestCenter?.();
         if (!raw) return;
         const parsed = JSON.parse(raw) as { fracX?: number; fracY?: number };
-        if (
-          typeof parsed.fracX === "number" &&
-          typeof parsed.fracY === "number"
-        ) {
-          setLittleSunRestCenter({ x: parsed.fracX, y: parsed.fracY });
+        // Number.isFinite (not typeof) so a NaN slips through to NaN offsets;
+        // clamp to the viewport so a bad value can't fling the disc off-screen.
+        if (Number.isFinite(parsed.fracX) && Number.isFinite(parsed.fracY)) {
+          const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+          setLittleSunRestCenter({
+            x: clamp01(parsed.fracX!),
+            y: clamp01(parsed.fracY!),
+          });
         }
       } catch {
         // Leave null → the morph falls back to the fixed corner.
