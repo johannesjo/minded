@@ -69,6 +69,15 @@ const DailyQuestions = () => {
     }, AFTER_ANI_WAIT_DURATION);
   };
 
+  // The success message arms afterAni once it mounts. Track the timer on `t0`
+  // (the same one onCleanup clears) so leaving mid-celebration cancels it —
+  // otherwise the stray timer would later fade whatever page the user moved on
+  // to and yank them back to the dashboard.
+  const scheduleAfterAni = () => {
+    window.clearTimeout(t0);
+    t0 = setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
+  };
+
   // TODO answers
   return (
     <div
@@ -121,9 +130,7 @@ const DailyQuestions = () => {
               {/* TODO component */}
               <div
                 class="success-message"
-                ref={() => {
-                  setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
-                }}
+                ref={scheduleAfterAni}
               >
                 <div class="success-sun"></div>
                 <div class="success-text">Have a wonderful day today!</div>
@@ -165,9 +172,7 @@ const DailyQuestions = () => {
               {/* TODO component */}
               <div
                 class="success-message"
-                ref={() => {
-                  setTimeout(() => afterAni(), AFTER_ANI_WAIT_DURATION);
-                }}
+                ref={scheduleAfterAni}
               >
                 <div class="success-sun"></div>
                 <div class="success-text">

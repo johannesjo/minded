@@ -47,6 +47,11 @@ let isPageLeaving = false;
 // discarded when the route remounts: nothing to reset, no flash of the old page
 // at full opacity. The bottom bar and companion sun live outside <main>, so
 // they stay put through the move.
+//
+// Caller must target a *different* route: the faded node is only cleaned up by
+// the route remounting it. A same-route move (e.g. a query-only change) would
+// leave it stuck at opacity 0. Same-route view swaps should fade in place
+// instead (see the wind-down dismiss / "show all" reveal).
 export function navigateWithPageFadeOut(
   navigate: (path: string) => void,
   path: string,
