@@ -63,10 +63,11 @@ export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
 // Guard the card that actually greets you (the hero slot the view reads — see
 // DashboardGroups.getHeroIndex). If it holds an out-of-window recap, move it out
 // (it stays available in "look back") and greet with a calm quote instead —
-// matching the web fallback when nothing reflective qualifies. Applied to every
-// surface that can produce the hero: the web pick already keeps it in-window, but
-// the Android positional build and the incremental merge (updateDashboardEntries)
-// don't, so this is their safety net. Mutates and returns `entries`.
+// matching the fallback when nothing reflective qualifies. The random pick
+// already keeps the hero in-window (isGreetingEligible), but the incremental
+// merge (updateDashboardEntries) preserves the existing order, so a greeting
+// that was in-window when first built can go stale as the hours pass — this is
+// that path's safety net. Mutates and returns `entries`.
 export const guardHeroSlot = (
   entries: DashboardGroup[],
   now = new Date(),
@@ -80,10 +81,19 @@ export const guardHeroSlot = (
   return entries;
 };
 
+// A stable identity for a greeting candidate, used to remember which tile we
+// last greeted with so the next arrival can surface a different one. The
+// reflective cards carry a category id; the quote has only its type.
+export const getGreetingKey = (dg: DashboardGroup): string =>
+  "id" in dg ? dg.id : dg.type;
+
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
-  isSkipRndEntry = IS_ANDROID,
+  // The greeting shown on the previous arrival, if any. We avoid repeating it so
+  // each landing surfaces a fresh tile — but only when an alternative exists, so
+  // we never end up with nothing to greet with.
+  avoidGreetingKey?: string,
 ): DashboardGroup[] => {
   const ds = getIsoDate(now);
   const dashboardGroups: DashboardGroup[] = [];
@@ -173,28 +183,40 @@ export const getDashboardEntriesFromQuestions = (
   // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
   // option — so a calm quote can greet you even on a full day, and is the
   // natural fallback when nothing reflective qualifies yet (an empty eligible
-  // pool always lands on the quote). The random pick is web-only; Android keeps
-  // its simpler fixed arrangement, with the quote fallback only when there's
-  // little to show.
-  if (!isSkipRndEntry) {
-    const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
-      if (isGreetingEligible(entry, now)) acc.push(i);
-      return acc;
-    }, []);
+  // pool always lands on the quote). Runs on every platform: each arrival
+  // re-rolls the greeting (see avoidGreetingKey + the RE_GREET trigger) so the
+  // dashboard never greets you with the same tile twice in a row. Out-of-window
+  // question recaps are kept out of the pool (isGreetingEligible) so a morning
+  // card never greets you at night — it stays in "look back" only.
+  const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
+    if (isGreetingEligible(entry, now)) acc.push(i);
+    return acc;
+  }, []);
 
-    const pick = getRndInt(0, eligibleIndexes.length);
-    if (pick === eligibleIndexes.length) {
-      sortedEntries.splice(CENTER_INDEX, 0, {
-        type: DashboardGroupType.Quote,
-      });
-    } else {
-      const [greeting] = sortedEntries.splice(eligibleIndexes[pick], 1);
-      sortedEntries.splice(CENTER_INDEX, 0, greeting);
-    }
-  } else if (sortedEntries.length < 5) {
+  // The pool of greetings to draw from: every eligible reflective card, plus
+  // the quote as one always-present extra option (the last slot).
+  const options = [
+    ...eligibleIndexes.map((index) => ({
+      index,
+      key: getGreetingKey(sortedEntries[index]),
+    })),
+    { index: -1, key: DashboardGroupType.Quote as string },
+  ];
+
+  // Prefer a tile different from the one shown last time we landed, so each
+  // arrival feels fresh rather than possibly repeating. Only narrow the pool
+  // when an alternative remains — never leave nothing to greet with.
+  const pickable = options.filter((o) => o.key !== avoidGreetingKey);
+  const pool = pickable.length > 0 ? pickable : options;
+
+  const chosen = pool[getRndInt(0, pool.length - 1)];
+  if (chosen.index === -1) {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
+  } else {
+    const [greeting] = sortedEntries.splice(chosen.index, 1);
+    sortedEntries.splice(CENTER_INDEX, 0, greeting);
   }
 
   // Make sure the card that greets you is never an out-of-window recap (the web

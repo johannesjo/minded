@@ -9,8 +9,13 @@ export const updateDashboardEntriesFromQuestions = (
   syncData: SyncData,
   existingDashboardGroups: DashboardGroup[],
   now = new Date(),
+  avoidGreetingKey?: string,
 ): DashboardGroup[] => {
-  const newDashboardGroups = getDashboardEntriesFromQuestions(syncData, now);
+  const newDashboardGroups = getDashboardEntriesFromQuestions(
+    syncData,
+    now,
+    avoidGreetingKey,
+  );
 
   if (existingDashboardGroups.length !== newDashboardGroups.length) {
     return newDashboardGroups;

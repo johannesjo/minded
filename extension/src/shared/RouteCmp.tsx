@@ -42,7 +42,7 @@ import {
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import { REFRESH_DASHBOARD_EV, RE_GREET_DASHBOARD_EV } from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
@@ -237,6 +237,9 @@ const MainWrapper = (props: RouteSectionProps) => {
             setBreathStartedAt(undefined);
             setIsShowQuestionOverlay(false);
             setIsOverlayInstant(false);
+            // Returning to the dashboard from an interaction: re-roll the
+            // greeting so it meets you with a fresh tile.
+            window.dispatchEvent(new Event(RE_GREET_DASHBOARD_EV));
           }}
         />
       )}

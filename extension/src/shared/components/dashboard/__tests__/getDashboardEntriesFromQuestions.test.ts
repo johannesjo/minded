@@ -1,6 +1,7 @@
 import {
   CENTER_INDEX,
   getDashboardEntriesFromQuestions,
+  guardHeroSlot,
   isGreetingEligible,
 } from "../getDashboardEntriesFromQuestions";
 import {
@@ -9,6 +10,7 @@ import {
   mockRandom,
 } from "@src/test-utils/mockHelpers";
 import {
+  DashboardGroup,
   DashboardGroupTxtQuestion,
   DashboardGroupType,
 } from "../dashboard.model";
@@ -146,6 +148,51 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
+    it("avoids repeating the greeting shown last time, so each landing surfaces a new tile", () => {
+      const syncData = createMockSyncData({
+        answers: [
+          reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
+          reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
+          reflectiveAnswer(QuestionCategoryId.Gratitude, "a3"),
+          reflectiveAnswer(QuestionCategoryId.HelpfulTools, "a4"),
+        ],
+      });
+
+      // First landing: take whatever the pick lands on, then derive its key the
+      // same way the view does.
+      mockRandom(0.1);
+      const first = greetingOf(getDashboardEntriesFromQuestions(syncData, now));
+      const firstKey = "id" in first ? first.id : first.type;
+
+      // Next landing with the SAME random draw would normally repeat the same
+      // tile — but passing the last key as avoidGreetingKey must steer it away.
+      mockRandom(0.1);
+      const second = greetingOf(
+        getDashboardEntriesFromQuestions(syncData, now, firstKey),
+      );
+      const secondKey = "id" in second ? second.id : second.type;
+
+      expect(secondKey).not.toBe(firstKey);
+    });
+
+    it("still greets even when the avoided tile is the only option (never leaves nothing)", () => {
+      // Only one reflective card present; the pool is just it + the quote.
+      const syncData = createMockSyncData({
+        answers: [reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1")],
+      });
+
+      // Avoid the quote AND draw toward the quote slot — it must still produce a
+      // valid greeting rather than nothing.
+      mockRandom(0.999);
+      const entries = getDashboardEntriesFromQuestions(
+        syncData,
+        now,
+        DashboardGroupType.Quote,
+      );
+
+      expect(greetingOf(entries)).toBeDefined();
+    });
+
     // The greeting is a present-moment surface, so a question recap may only
     // greet inside the same time-of-day / work-day window its live question
     // would (e.g. "Finding Focus Today" is a morning, work-day category).
@@ -198,47 +245,42 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(greetingIds).toContain(QuestionCategoryId.RefocusHelperToday);
     });
 
-    // Android arranges cards positionally (no random pick), so the hero-slot
-    // guard — not the web pick — has to keep an out-of-window recap from being
-    // the card that greets you.
-    it("keeps an out-of-window recap out of the hero slot on the positional (Android) path", () => {
-      // GoalForTheWeek is a this-week-only category; let it qualify so there are
-      // enough recaps (≥5 cards) to land one in the hero slot and exercise the
-      // guard rather than the short-list quote fallback.
-      (isThisWeek as jest.Mock).mockReturnValue(true);
-      // Monday 03:00 — past the morning window all these categories are gated to.
+    // The random pick already keeps an out-of-window recap out of the pool
+    // (isGreetingEligible), but the incremental merge (updateDashboardEntries)
+    // can leave a once-fresh recap sitting in the hero slot as the hours pass.
+    // guardHeroSlot is the safety net for that path: if the hero is a stale
+    // recap, move it out (it stays in "look back") and greet with a quote.
+    it("guardHeroSlot evicts a stale recap from the hero slot and greets with a quote", () => {
+      // Monday 03:00 — past the morning window RefocusHelperToday is gated to.
       const night = new Date("2024-01-15T03:00:00");
-      const syncData = createMockSyncData({
-        answers: [
-          reflectiveAnswer(QuestionCategoryId.GoodPlansToday, "m1"),
-          reflectiveAnswer(QuestionCategoryId.RefocusHelperToday, "m2"),
-          reflectiveAnswer(QuestionCategoryId.GoalForTheWeek, "m3"),
-          reflectiveAnswer(QuestionCategoryId.HelpfulTools, "m4"),
-        ],
+      const recap = (id: QuestionCategoryId): DashboardGroup => ({
+        id,
+        type: DashboardGroupType.TxtQuestion,
+        dashboardTxt: "x",
+        answers: [],
       });
+      // ≥5 cards with the stale morning recap sitting in the hero slot (index 4).
+      const entries: DashboardGroup[] = [
+        recap(QuestionCategoryId.HelpfulTools),
+        recap(QuestionCategoryId.GoodPlans),
+        recap(QuestionCategoryId.Motivation),
+        recap(QuestionCategoryId.Gratitude),
+        recap(QuestionCategoryId.RefocusHelperToday),
+      ];
 
-      // isSkipRndEntry = true mirrors Android (IS_ANDROID): no random greeting.
-      const entries = getDashboardEntriesFromQuestions(syncData, night, true);
+      const guarded = guardHeroSlot(entries, night);
 
-      // Lock the path: ≥5 cards means we exercise the hero guard, not the
-      // `length < 5` quote fallback (which would make this test vacuous).
-      expect(entries.length).toBeGreaterThanOrEqual(5);
-
-      // The greeting must not be a stale morning recap — it falls back to a quote.
-      expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
-
-      // ...but every recap is still present for the "look back" grid.
-      const recapIds = entries
-        .filter((e) => e.type === DashboardGroupType.TxtQuestion && "id" in e)
-        .map((e) => (e as DashboardGroupTxtQuestion).id);
-      expect(recapIds).toEqual(
-        expect.arrayContaining([
-          QuestionCategoryId.GoodPlansToday,
-          QuestionCategoryId.RefocusHelperToday,
-          QuestionCategoryId.GoalForTheWeek,
-          QuestionCategoryId.HelpfulTools,
-        ]),
-      );
+      // The greeting must not be the stale morning recap — it falls back to a
+      // quote — but the recap is still present for the "look back" grid.
+      expect(greetingOf(guarded).type).toBe(DashboardGroupType.Quote);
+      expect(
+        guarded.some(
+          (e) =>
+            e.type === DashboardGroupType.TxtQuestion &&
+            "id" in e &&
+            e.id === QuestionCategoryId.RefocusHelperToday,
+        ),
+      ).toBe(true);
     });
 
     it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {
