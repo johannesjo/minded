@@ -57,8 +57,28 @@ const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
 
 // Whether a card may *greet* you right now: a reflective/self-report card that
 // isn't an out-of-window recap.
-const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
+export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
   GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
+
+// Guard the card that actually greets you (the hero slot the view reads — see
+// DashboardGroups.getHeroIndex). If it holds an out-of-window recap, move it out
+// (it stays available in "look back") and greet with a calm quote instead —
+// matching the web fallback when nothing reflective qualifies. Applied to every
+// surface that can produce the hero: the web pick already keeps it in-window, but
+// the Android positional build and the incremental merge (updateDashboardEntries)
+// don't, so this is their safety net. Mutates and returns `entries`.
+export const guardHeroSlot = (
+  entries: DashboardGroup[],
+  now = new Date(),
+): DashboardGroup[] => {
+  const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
+  if (heroIndex >= 0 && isOutOfWindowRecap(entries[heroIndex], now)) {
+    const [stale] = entries.splice(heroIndex, 1);
+    entries.push(stale);
+    entries.splice(CENTER_INDEX, 0, { type: DashboardGroupType.Quote });
+  }
+  return entries;
+};
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -177,22 +197,9 @@ export const getDashboardEntriesFromQuestions = (
     });
   }
 
-  // Final guard on the card that actually greets you (the hero slot the view
-  // reads — see DashboardGroups.getHeroIndex). The web pick above already keeps
-  // it in-window, but Android arranges cards positionally with no pick, so an
-  // out-of-window recap could still land in the hero slot. If it does, move it
-  // out (it stays available in "look back") and greet with a calm quote
-  // instead — matching the web fallback when nothing reflective qualifies.
-  const heroIndex = Math.min(CENTER_INDEX, sortedEntries.length - 1);
-  if (heroIndex >= 0 && isOutOfWindowRecap(sortedEntries[heroIndex], now)) {
-    const [stale] = sortedEntries.splice(heroIndex, 1);
-    sortedEntries.push(stale);
-    sortedEntries.splice(CENTER_INDEX, 0, {
-      type: DashboardGroupType.Quote,
-    });
-  }
-
-  return sortedEntries;
+  // Make sure the card that greets you is never an out-of-window recap (the web
+  // pick already keeps it in-window; this covers the Android positional build).
+  return guardHeroSlot(sortedEntries, now);
 };
 
 const getLastThreeAnswers = (answers: Answer[]): Answer[] => {

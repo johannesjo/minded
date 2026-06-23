@@ -1,7 +1,14 @@
-import { getQuestionSmart, getQuestionSemiSmart } from "../getQuestionSmart";
+import {
+  getQuestionSmart,
+  getQuestionSemiSmart,
+  isCategoryWithinTimeConstraints,
+} from "../getQuestionSmart";
 import { mockDate } from "@src/test-utils/mockHelpers";
 import { Answer } from "@src/dataInterface/syncData";
-import { QuestionCategoryId } from "@src/shared/data/questions";
+import {
+  QUESTION_CATEGORIES,
+  QuestionCategoryId,
+} from "@src/shared/data/questions";
 
 // Mock dependencies
 jest.mock("../isToday", () => ({
@@ -204,5 +211,49 @@ describe("getQuestionSemiSmart", () => {
   it("uses current date when no date provided", () => {
     const result = getQuestionSemiSmart();
     expect(result).toBeDefined();
+  });
+});
+
+// Direct boundary coverage for the shared present-moment gate. (isWorkDay is
+// mocked true above, so these isolate the time-of-day thresholds.)
+describe("isCategoryWithinTimeConstraints", () => {
+  beforeEach(() => {
+    mockedIsWorkDay.mockReturnValue(true);
+  });
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const at = (hour: number) => new Date(2024, 0, 15, hour, 0, 0); // Mon, given hour
+  const morning = QUESTION_CATEGORIES[QuestionCategoryId.RefocusHelperToday]; // isMorningCategory (4–14)
+  const evening = QUESTION_CATEGORIES[QuestionCategoryId.GoodToday]; // isEveningCategory (≥15)
+  const lateNight = QUESTION_CATEGORIES[QuestionCategoryId.Insomnia]; // isLateNightCategory (0–4)
+
+  it("morning category: inclusive at 4 and 14, excluded at 3 and 15", () => {
+    expect(isCategoryWithinTimeConstraints(morning, at(4))).toBe(true);
+    expect(isCategoryWithinTimeConstraints(morning, at(14))).toBe(true);
+    expect(isCategoryWithinTimeConstraints(morning, at(3))).toBe(false);
+    expect(isCategoryWithinTimeConstraints(morning, at(15))).toBe(false);
+  });
+
+  it("evening category: excluded at 14, included from 15", () => {
+    expect(isCategoryWithinTimeConstraints(evening, at(14))).toBe(false);
+    expect(isCategoryWithinTimeConstraints(evening, at(15))).toBe(true);
+  });
+
+  it("late-night category: inclusive at 0 and 4, excluded at 5", () => {
+    expect(isCategoryWithinTimeConstraints(lateNight, at(0))).toBe(true);
+    expect(isCategoryWithinTimeConstraints(lateNight, at(4))).toBe(true);
+    expect(isCategoryWithinTimeConstraints(lateNight, at(5))).toBe(false);
+  });
+
+  it("work-day category is ruled out on weekends regardless of the hour", () => {
+    mockedIsWorkDay.mockReturnValue(false);
+    // RefocusHelperToday is morning AND work-day; 9am is in the morning window.
+    expect(isCategoryWithinTimeConstraints(morning, at(9))).toBe(false);
+  });
+
+  it("returns true for an undefined category (no constraints to apply)", () => {
+    expect(isCategoryWithinTimeConstraints(undefined, at(3))).toBe(true);
   });
 });

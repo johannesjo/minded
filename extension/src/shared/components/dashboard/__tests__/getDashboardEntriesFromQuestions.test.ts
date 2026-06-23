@@ -1,6 +1,7 @@
 import {
   CENTER_INDEX,
   getDashboardEntriesFromQuestions,
+  isGreetingEligible,
 } from "../getDashboardEntriesFromQuestions";
 import {
   createMockSyncData,
@@ -219,6 +220,10 @@ describe("getDashboardEntriesFromQuestions", () => {
       // isSkipRndEntry = true mirrors Android (IS_ANDROID): no random greeting.
       const entries = getDashboardEntriesFromQuestions(syncData, night, true);
 
+      // Lock the path: ≥5 cards means we exercise the hero guard, not the
+      // `length < 5` quote fallback (which would make this test vacuous).
+      expect(entries.length).toBeGreaterThanOrEqual(5);
+
       // The greeting must not be a stale morning recap — it falls back to a quote.
       expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
 
@@ -253,5 +258,112 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(entries.length).toBeGreaterThanOrEqual(5);
       expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
     });
+
+    // Symmetry with the night/focus case: an evening recap shouldn't greet in
+    // the morning either. (GoodToday — "What went well today" — is evening-only.)
+    it("never greets with an evening recap in the morning", () => {
+      const morning = new Date("2024-01-15T09:00:00");
+      const syncData = createMockSyncData({
+        answers: [
+          reflectiveAnswer(QuestionCategoryId.GoodToday, "e1"),
+          reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
+          reflectiveAnswer(QuestionCategoryId.Gratitude, "a3"),
+        ],
+      });
+
+      for (let r = 0; r < 1; r += 0.05) {
+        mockRandom(r);
+        const greeting = greetingOf(
+          getDashboardEntriesFromQuestions(syncData, morning),
+        );
+        const isEveningRecap =
+          greeting.type === DashboardGroupType.TxtQuestion &&
+          "id" in greeting &&
+          greeting.id === QuestionCategoryId.GoodToday;
+        expect(isEveningRecap).toBe(false);
+      }
+
+      // Sanity: the evening recap IS built (so the test isn't passing only
+      // because the card was never there) — it just never greets in the morning.
+      const built = getDashboardEntriesFromQuestions(syncData, morning).some(
+        (e) =>
+          e.type === DashboardGroupType.TxtQuestion &&
+          "id" in e &&
+          e.id === QuestionCategoryId.GoodToday,
+      );
+      expect(built).toBe(true);
+    });
+  });
+});
+
+// Unit-level coverage of the web-pick filter itself. The integration tests above
+// assert the end-to-end "no stale greeting" outcome, but the cross-platform hero
+// guard backstops that outcome — so these isolate the pick-pool filter so a
+// regression in it alone is caught.
+describe("isGreetingEligible", () => {
+  const txt = (id: QuestionCategoryId): DashboardGroupTxtQuestion => ({
+    id,
+    type: DashboardGroupType.TxtQuestion,
+    dashboardTxt: "x",
+    answers: [],
+  });
+  const monMorning = new Date("2024-01-15T09:00:00"); // Monday, work-day morning
+  const monNight = new Date("2024-01-15T03:00:00"); // Monday, middle of the night
+  const monEvening = new Date("2024-01-15T21:00:00"); // Monday evening
+  const satMorning = new Date("2024-01-13T09:00:00"); // Saturday morning (weekend)
+
+  it("excludes a morning+work-day recap at night, includes it on a work-day morning", () => {
+    expect(
+      isGreetingEligible(txt(QuestionCategoryId.RefocusHelperToday), monNight),
+    ).toBe(false);
+    expect(
+      isGreetingEligible(
+        txt(QuestionCategoryId.RefocusHelperToday),
+        monMorning,
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes a work-day-only recap on the weekend", () => {
+    expect(
+      isGreetingEligible(
+        txt(QuestionCategoryId.RefocusHelperToday),
+        satMorning,
+      ),
+    ).toBe(false);
+  });
+
+  it("excludes an evening recap in the morning, includes it in the evening", () => {
+    expect(
+      isGreetingEligible(txt(QuestionCategoryId.GoodToday), monMorning),
+    ).toBe(false);
+    expect(
+      isGreetingEligible(txt(QuestionCategoryId.GoodToday), monEvening),
+    ).toBe(true);
+  });
+
+  it("treats reflective self-report cards (no time window) as always eligible", () => {
+    expect(
+      isGreetingEligible(
+        {
+          id: QuestionCategoryId.XEnergyLevelToday,
+          type: DashboardGroupType.EnergyLvl,
+          energyLvl: 3,
+        },
+        monNight,
+      ),
+    ).toBe(true);
+  });
+
+  it("never treats a measurement or quote card as a greeting candidate", () => {
+    expect(
+      isGreetingEligible(
+        { type: DashboardGroupType.Stats, attempts: 0, sunTaps: 1 },
+        monMorning,
+      ),
+    ).toBe(false);
+    expect(
+      isGreetingEligible({ type: DashboardGroupType.Quote }, monMorning),
+    ).toBe(false);
   });
 });
