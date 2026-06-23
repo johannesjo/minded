@@ -34,6 +34,8 @@ import {
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
+  LITTLE_SUN_DISC_PX_ANDROID,
+  LITTLE_SUN_DISC_PX_WEB,
   restingSunAnchorFromRect,
   sunDepartSettleAt,
   sunRestingSettle,
@@ -255,18 +257,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       const restCenter = getLittleSunRestCenter();
       if (restCenter) return sunDepartSettleAt(restCenter);
     }
+    const isAndroid = props.interactionPlatform === "android";
     return getSunSettleForPhase(
       getSunPhase(),
       // companionBottomYPx is only read for the "companion" phase, which the
       // local (non-shell) sun never enters — keep the default.
       undefined,
       // The departing sun hands off to a different Little Sun per platform:
-      // Android shows the native overlay (a smaller 30px corner), the web
-      // extension its own 40px-corner Little Sun. Match the right one so the
-      // disc doesn't jump when the persistent timer blooms in.
-      props.interactionPlatform === "android"
-        ? LITTLE_SUN_CORNER_PX_ANDROID
-        : LITTLE_SUN_CORNER_PX_WEB,
+      // Android shows the native overlay (a smaller 30px corner + 30px disc), the
+      // web extension its own 40px-corner / 40px-disc Little Sun. Match the right
+      // corner AND disc size so neither the position nor the size jumps when the
+      // persistent timer blooms in.
+      isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
+      isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
     );
   };
   // A mode rides its own animation on the real sun: glide the single disc into
