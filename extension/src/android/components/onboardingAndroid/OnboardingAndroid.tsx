@@ -49,17 +49,17 @@ export const OnboardingAndroid = (props: {
               <div class="txtSlightlyBigger">
                 <p>
                   This little sun is your anchor. When you open an app on
-                  autopilot, it appears: a calm moment to pause. Give it a fling
-                  — it never blocks you. No streaks, no scores, just awareness.
+                  autopilot, it appears: a calm moment to pause. Give it a
+                  fling. It never blocks you. No streaks, no scores, just
+                  awareness.
                 </p>
                 <p>
                   Each time you notice the pull without judgment, that awareness
-                  grows a little. It's a capacity that builds gently, and tends
-                  to stay with you.
+                  grows a little, and tends to stay with you.
                 </p>
                 <p>
-                  To set that up, <em>minded</em> needs a couple of permissions
-                  and the apps where you'd like it to appear.
+                  To set it up, <em>minded</em> needs a few permissions and the
+                  apps where it should appear.
                 </p>
               </div>
 
@@ -81,7 +81,7 @@ export const OnboardingAndroid = (props: {
             <div class="pageTransitionIn">
               <SettingsAndroid
                 isRouting={false}
-                heading="Where would you like the sun to meet you? Pick at least one app where it should appear."
+                heading="Where should the sun meet you? Pick at least one app."
                 saveBtnTxt="save & continue"
                 onSave={() => setStep(2)}
               />
@@ -105,11 +105,10 @@ export const OnboardingAndroid = (props: {
           <Match when={getStep() >= 3}>
             {getPermissionNotGiven() ? (
               <div class="card pageTransitionIn" style="margin: 32px;">
-                <div class="h2 h2Mindful">Almost there 🌤️</div>
+                <div class="h2 h2Mindful">Almost there</div>
                 <p>
-                  Some permissions are still missing, so the sun may not be able
-                  to meet you everywhere yet. You can finish anytime. It'll be
-                  here.
+                  Some permissions are still missing, so the sun can't meet you
+                  everywhere yet. You can finish anytime. It'll be here.
                 </p>
                 <div style="margin-top: 32px;">
                   <Btn
@@ -130,15 +129,15 @@ export const OnboardingAndroid = (props: {
               </div>
             ) : (
               <div class="card pageTransitionIn" style="margin: 32px;">
-                <div class="h2 h2Mindful">The sun is ready 🌞</div>
+                <OnboardingSun />
+                <div class="h2 h2Mindful">The sun is ready</div>
                 <p>
-                  From now on, when you open one of those apps, the sun will
-                  appear: a small moment to pause and notice before you carry
-                  on.
+                  From now on, when you open one of those apps, the sun appears:
+                  a moment to pause and notice before you carry on.
                 </p>
                 <p>
-                  You can always fling it away in a single gesture. It's an
-                  invitation, never a wall.
+                  You can always fling it away. It's an invitation, never a
+                  wall.
                 </p>
                 <div style="margin-top: 32px;">
                   <Btn big onClick={() => props.onGoDashboard()}>
@@ -159,9 +158,6 @@ export const OnboardingAndroid = (props: {
         // the stepper walk back into it.
         isNoGoBack={(props.initialStep ?? 0) > 0}
         onSetStep={(step) => setStep(step)}
-        labelFn={(step) =>
-          step === 3 ? (getPermissionNotGiven() ? "🌤️" : "🌞") : undefined
-        }
       />
     </div>
   );

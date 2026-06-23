@@ -3,7 +3,8 @@
   align-items: center;
   justify-content: center;
   // Room for the disc plus its glow, and headroom for a small upward drag
-  // before it meets the copy below.
+  // before it meets the copy below. Display mode (the "sun is ready" step,
+  // no drag) reuses the same stage purely to reserve that vertical space.
   min-height: 200px;
   margin-bottom: 8px;
   // The glow and an in-progress drag spill past the box — never clip them.

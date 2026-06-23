@@ -30,13 +30,12 @@ export const OnboardingWeb: (props: {
             <div class={styles.infoText}>
               <p>
                 This little sun is your anchor. When you reach for a habit on
-                autopilot, it appears: a calm moment to pause. Give it a fling —
-                it never blocks you. No streaks, no scores, just awareness.
+                autopilot, it appears: a calm moment to pause. Give it a fling.
+                It never blocks you. No streaks, no scores, just awareness.
               </p>
               <p>
                 Each time you notice the pull without judgment, that awareness
-                grows a little. It's a capacity that builds gently, and tends to
-                stay with you.
+                grows a little, and tends to stay with you.
               </p>
             </div>
             <ButtonWrapper isVisible={true}>
@@ -52,8 +51,8 @@ export const OnboardingWeb: (props: {
             <div class="h2 h2Mindful">Where should the sun meet you?</div>
             <div class={styles.infoText}>
               <p>
-                Add the sites where you tend to get pulled in. The sun will
-                quietly show up there, nowhere else.
+                Add the sites where you tend to get pulled in. The sun shows up
+                only there, nowhere else.
               </p>
             </div>
             <WebsiteList onAfterSave={onAfterSaveWebsites} />

@@ -154,8 +154,8 @@ export const MissingCapabilityView = (props: {
         {hasOptionalMissing() && (
           <div class={styles.optionalSection}>
             <p class={styles.optionalHeading}>
-              Recommended — <em>minded</em> already works with the permissions
-              above. The steps below are optional and make detection even more
+              Recommended. <em>minded</em> already works with the permissions
+              above; the steps below are optional and make detection more
               reliable.
             </p>
             {getMissingCapabilities().includes("UsageStats") && (
