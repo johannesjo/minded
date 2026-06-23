@@ -52,6 +52,13 @@ the native→WebView seam the review flagged as a blocker.
 
 ## The everyday intervention: always-on, soft, un-feared
 
+> **"Rare" applies to content, not presence.** The ~90% / "rare and dismissible"
+> bar (`docs/reflective-companion-concept.md`) governs the reflective *questions
+> and insights* we surface — not the sun's presence. The sun appears on every
+> blocked-app open *because* that consistency is what makes it feel safe rather
+> than an ambush. "Rare" means each *thing we say* must clear the bar in the
+> moment; it never meant show the sun rarely.
+
 The intervention fires every time on a blocked app and stays in the gentle
 register. The whole job is to make that *welcome rather than dreaded*. Four
 directions, all about removing fear, none about adding force:
@@ -90,22 +97,31 @@ trust it for what it is.
 
 ## Reliability: the liveness gate (ship first)
 
-The one genuinely-needed reliability fix, independent of everything above.
+The one genuinely-needed reliability fix, independent of everything above. The bug:
+detection lags 0.5–2 s, so the sun can be drawn *after* the user has already left
+the blocked app (`OverlayControllerService.showOverlay` trusts the package captured
+at detection time and never re-checks). Two complementary guards:
 
-- **The bug:** detection lags 0.5–2 s, so the sun can be drawn *after* the user has
-  already left the blocked app (`OverlayControllerService.showOverlay` trusts the
-  package captured at detection time and never re-checks).
-- **2a — drop stale shows.** `ValidatedDetection` already carries a timestamp
-  (`HybridAppDetector.kt`); thread it through the overlay intent (today only the
-  package name survives, `MyAccessibilityService.kt:384-387`) and reject shows
-  older than ~one poll interval.
-- **2b — freshest-foreground accessor.** A small shared holder both channels write
-  (the accessibility focused-window read `computeFocusedAppPackage`, and the poll)
-  and the overlay reads synchronously at show time — so the decisive draw consults
-  live truth, not a captured string.
-- **Honesty:** fully sound with accessibility alive; without it the poll's own lag
-  means this *narrows* but doesn't *eliminate* the stale window. A soft, dismissible
-  sun tolerates the residue.
+- **2a — age guard (delayed delivery).** `ValidatedDetection` carries an *emit*
+  timestamp (`HybridAppDetector.kt`); thread it through the overlay intent (today
+  only the package survives the `triggerOverlay` →
+  `INTENT_EXTRA_CURRENT_PACKAGE_NAME` path) and have the pure
+  `OverlayDecisionEngine.decide` reject a detection delivered too late. Cheap,
+  fully unit-testable. **Its limit:** the timestamp is *emit* time, so it catches a
+  detection that sat in the pipe — not one that was already stale *when read* (the
+  poll can read a 1–2 s-old foreground and emit it "fresh"). That case needs 2b.
+- **2b — render-time foreground re-check (the substantive fix).** Right before
+  drawing, re-read the freshest foreground (prefer the accessibility focused-window
+  read `computeFocusedAppPackage`; fall back to `getForegroundAppReliable`) and skip
+  the draw if it is no longer the target app. This is what actually catches "the
+  user already left." Expose the freshest read via a small `@Volatile` holder
+  (mirroring `MyAccessibilityService`'s `focusSnapshot`) written by the
+  focused-window read and the poll, read synchronously by the overlay controller.
+- **Honesty:** 2b is authoritative only while accessibility is alive — its writer
+  (the detector) dies with the accessibility service, which is the Slice 2
+  re-parenting work. Without accessibility it degrades to the laggy poll: the stale
+  window *narrows* but isn't eliminated. A soft, dismissible sun tolerates the
+  residue.
 
 ## Accessibility optional: the prerequisite
 
@@ -161,3 +177,10 @@ without accessibility" is not real.
   (2) replace the cross-fade swap with a single positional morph — the sun glides +
   grows from its parked bubble position to centre, holds, then the "Step away?"
   invite fades in. One file, does not block #51.
+- **Remove breathing from the strong-friction pause — deferred cleanup.** The
+  existing everyday breath pause (`StrongFrictionBreathPause`, gated by
+  `getPostSunPauseSeconds` for strong friction) breathes *outside* a guided
+  meditation, which the locked "no breathing outside meditations" decision now
+  forbids. Rework it to a non-breathing calm beat (or let the sun's morph carry the
+  pause); breathing stays only in guided meditations / grounding. This is a
+  behaviour change — confirm scope before doing it.
