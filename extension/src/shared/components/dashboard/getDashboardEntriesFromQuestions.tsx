@@ -14,6 +14,7 @@ import {
   RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
+import { isCategoryWithinTimeConstraints } from "@src/util/getQuestionSmart";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
@@ -41,6 +42,23 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.EmotionLabeling,
   DashboardGroupType.SelfAssessment,
 ]);
+
+// Whether a card may *greet* you right now. The greeting is a present-moment
+// surface, so a question recap must honour the same time-of-day / work-day
+// window its live question would (e.g. never greet with "Finding Focus Today"
+// in the middle of the night). The other greeting cards (energy, emotions,
+// self-assessment) reflect today's own entries and have no such window.
+// Out-of-window recaps still appear in the full "look back" grid — that view is
+// explicitly historical, so they belong there, just not as the centre pick.
+const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean => {
+  if (!GREETING_ELIGIBLE_TYPES.has(entry.type)) {
+    return false;
+  }
+  if (entry.type === DashboardGroupType.TxtQuestion && "id" in entry) {
+    return isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
+  }
+  return true;
+};
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -140,7 +158,7 @@ export const getDashboardEntriesFromQuestions = (
   // little to show.
   if (!isSkipRndEntry) {
     const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
-      if (GREETING_ELIGIBLE_TYPES.has(entry.type)) acc.push(i);
+      if (isGreetingEligible(entry, now)) acc.push(i);
       return acc;
     }, []);
 

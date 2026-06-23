@@ -144,6 +144,58 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
+    // The greeting is a present-moment surface, so a question recap may only
+    // greet inside the same time-of-day / work-day window its live question
+    // would (e.g. "Finding Focus Today" is a morning, work-day category).
+    it("never greets with an out-of-window question recap (no 'Finding Focus Today' in the middle of the night)", () => {
+      // Monday 03:00 — past the morning window the focus category is gated to.
+      const night = new Date("2024-01-15T03:00:00");
+      const syncData = createMockSyncData({
+        answers: [
+          reflectiveAnswer(QuestionCategoryId.RefocusHelperToday, "f1"),
+          reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
+          reflectiveAnswer(QuestionCategoryId.Gratitude, "a3"),
+        ],
+      });
+
+      for (let r = 0; r < 1; r += 0.05) {
+        mockRandom(r);
+        const greeting = greetingOf(
+          getDashboardEntriesFromQuestions(syncData, night),
+        );
+        const isFocusTile =
+          greeting.type === DashboardGroupType.TxtQuestion &&
+          "id" in greeting &&
+          greeting.id === QuestionCategoryId.RefocusHelperToday;
+        expect(isFocusTile).toBe(false);
+      }
+    });
+
+    it("can greet with a question recap once it's inside its window ('Finding Focus Today' on a work-day morning)", () => {
+      // Monday 09:00 — inside the morning / work-day window.
+      const morning = new Date("2024-01-15T09:00:00");
+      const syncData = createMockSyncData({
+        answers: [
+          reflectiveAnswer(QuestionCategoryId.RefocusHelperToday, "f1"),
+        ],
+      });
+
+      const greetingIds = new Set<QuestionCategoryId>();
+      for (let r = 0; r < 1; r += 0.05) {
+        mockRandom(r);
+        const greeting = greetingOf(
+          getDashboardEntriesFromQuestions(syncData, morning),
+        );
+        if (
+          greeting.type === DashboardGroupType.TxtQuestion &&
+          "id" in greeting
+        )
+          greetingIds.add(greeting.id);
+      }
+
+      expect(greetingIds).toContain(QuestionCategoryId.RefocusHelperToday);
+    });
+
     it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {
       const syncData = createMockSyncData({
         answers: [
