@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <title>minded — dashboard simulation</title>
+    <script>
+      // In-memory chrome shim — must run before the module bundle imports
+      // webextension-polyfill. Identical to the copy in index.html (keep in
+      // sync). Gives the real data interface a working, session-persistent
+      // backing store so the dashboard + interaction flow run off-extension.
+      if (typeof globalThis.chrome === "undefined" || !globalThis.chrome.runtime) {
+        const makeArea = () => {
+          let data = {};
+          const read = (keys) => {
+            if (keys == null) return { ...data };
+            if (typeof keys === "string")
+              return keys in data ? { [keys]: data[keys] } : {};
+            if (Array.isArray(keys)) {
+              const out = {};
+              keys.forEach((k) => {
+                if (k in data) out[k] = data[k];
+              });
+              return out;
+            }
+            return { ...keys, ...data }; // object form: defaults overlaid by stored
+          };
+          const settle = (result, cb) => {
+            if (typeof cb === "function") {
+              cb(result);
+              return undefined;
+            }
+            return Promise.resolve(result);
+          };
+          return {
+            get: (keys, cb) => {
+              if (typeof keys === "function") {
+                cb = keys;
+                keys = undefined;
+              }
+              return settle(read(keys), cb);
+            },
+            set: (items, cb) => {
+              data = { ...data, ...items };
+              return settle(undefined, cb);
+            },
+            remove: (keys, cb) => {
+              (Array.isArray(keys) ? keys : [keys]).forEach((k) => delete data[k]);
+              return settle(undefined, cb);
+            },
+            clear: (cb) => {
+              data = {};
+              return settle(undefined, cb);
+            },
+          };
+        };
+        const settleMsg = (cb) =>
+          typeof cb === "function"
+            ? (cb(undefined), undefined)
+            : Promise.resolve(undefined);
+        globalThis.chrome = {
+          runtime: {
+            id: "styleguide-standalone",
+            getURL: (p) => p,
+            getManifest: () => ({}),
+            sendMessage: (...args) => settleMsg(args[args.length - 1]),
+            onMessage: { addListener: () => undefined, removeListener: () => undefined },
+          },
+          storage: { sync: makeArea(), local: makeArea() },
+        };
+      }
+    </script>
+
+    <!--
+      Loading-screen sky — mirrors src/pages/newtab/index.html so the simulation
+      boots with the same no-flash gradient the real app uses. Keep light/dark in
+      sync with isDarkModeNow() and --background-gradient.
+    -->
+    <style>
+      html {
+        background: linear-gradient(
+          to bottom,
+          #cfe4f5 0%,
+          #cfe4f5 18%,
+          #d8ecd6 36%,
+          #f5efc8 54%,
+          #f6dcd2 100%
+        );
+      }
+      html.minded-loading-dark {
+        background:
+          radial-gradient(
+            ellipse 116vmin 32vmin at 50% 112%,
+            rgba(117, 54, 44, 0.34) 0%,
+            rgba(76, 43, 58, 0.2) 46%,
+            transparent 78%
+          ),
+          linear-gradient(
+            to bottom,
+            #02091f 0%,
+            #041238 28%,
+            #0a2860 68%,
+            #123262 82%,
+            #233053 92%,
+            #49313b 100%
+          );
+      }
+      body {
+        margin: 0;
+      }
+      /* Unobtrusive dev-only escape hatch back to the styleguide index. */
+      .sg-back {
+        position: fixed;
+        top: 8px;
+        left: 10px;
+        z-index: 2000;
+        font:
+          12px/1.2 system-ui,
+          sans-serif;
+        color: var(--c-fg, #333);
+        opacity: 0.55;
+        text-decoration: none;
+      }
+      .sg-back:hover {
+        opacity: 1;
+      }
+    </style>
+    <script>
+      // Day/night loading sky — mirrors isDarkModeNow(), incl. the ?theme= dev
+      // override (so forcing dark doesn't flash a light gradient before boot).
+      var theme = new URLSearchParams(location.search).get("theme");
+      var h = new Date().getHours();
+      var dark = theme === "dark" || (theme !== "light" && (h >= 19 || h < 6));
+      if (dark) {
+        document.documentElement.className += " minded-loading-dark";
+      }
+    </script>
+    <script type="module" crossorigin src="./assets/dashboard-Cct1bd8s.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/Styleguide-NgVnQYJe.js">
+    <link rel="stylesheet" crossorigin href="./assets/Styleguide-CAcNb9kn.css">
+    <link rel="stylesheet" crossorigin href="./assets/dashboard-Bsanm64X.css">
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <a class="sg-back" href="index.html">← styleguide</a>
+    <div id="minded-6622"></div>
+
+  </body>
+</html>
