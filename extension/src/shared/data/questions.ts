@@ -122,11 +122,11 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH4,
-        t: "What specific first step could you take right now to develop a better browsing behavior",
+        t: "What is one small step that might help your browsing feel better",
       },
       {
         id: QID.HBH5,
-        t: "What would your ideal media consumption behavior look like",
+        t: "What would a calmer relationship with these websites look like",
       },
       {
         id: QID.HBH6,
@@ -178,11 +178,11 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU4,
-        t: "What specific first step could you take right now to develop better habits in using mobile apps",
+        t: "What is one small step that might help your app use feel better",
       },
       {
         id: QID.HAU5,
-        t: "What would your ideal media consumption behavior look like",
+        t: "What would a calmer relationship with these apps look like",
       },
       {
         id: QID.HAU6,
@@ -230,7 +230,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRB3,
-        t: "What would you like more time for?",
+        t: "What would you like more time for, away from these websites?",
         prompt: "I'd like more time for",
       },
       {
@@ -262,7 +262,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRA3,
-        t: "What would you like more time for?",
+        t: "What would you like more time for, away from these apps?",
         prompt: "I'd like more time for",
       },
       {
@@ -362,10 +362,10 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT10,
-        t: "What is one small step you could gently take today",
+        t: "What is one small step you could take today",
         prompt: "",
       },
-      { id: QID.RFHT11, t: "What feels most important to you right now" },
+      { id: QID.RFHT11, t: "What feels most worth your attention today" },
       { id: QID.RFHT12, t: "What is the most fun task I could work on today" },
       {
         id: QID.RFHT13,
@@ -452,7 +452,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT8,
-        t: "What distraction could you remove right now",
+        t: "What is one thing pulling at your attention right now",
         prompt: "Right now I could",
         chips: [
           "silence notifications",
