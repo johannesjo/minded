@@ -39,6 +39,7 @@ import com.minded.minded.util.SessionIntent
 import com.minded.minded.util.SessionTarget
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.ForegroundStateHolder
 import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
 
@@ -289,7 +290,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
         Log.d(logTag, "onStartCommand() received intent for package: $currentPackage")
         if (currentPackage != null) {
-            checkToShowOverlay(currentPackage)
+            val detectionTimestampMs = intent.getLongExtra(
+                MyAccessibilityService.INTENT_EXTRA_DETECTION_TIMESTAMP, 0L
+            )
+            checkToShowOverlay(currentPackage, detectionTimestampMs)
         } else {
             val overlayNameString = intent.getStringExtra(INTENT_EXTRA_OVERLAY_NAME)
             if (overlayNameString.isNullOrEmpty()) {
@@ -566,7 +570,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         return blockedApps.contains(packageName)
     }
 
-    private fun checkToShowOverlay(currentPackageName: String) {
+    private fun checkToShowOverlay(
+        currentPackageName: String,
+        detectionTimestampMs: Long = 0L
+    ) {
         val syncData = sharedPreferenceService.getSyncData()
         val blockedApps = getEffectiveBlockedApps()
         Log.d(logTag, "checkToShowOverlay() - Blocked apps list: $blockedApps")
@@ -577,6 +584,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val activeTimerEndTime = activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
         val currentTimeMs = System.currentTimeMillis()
         val now = Instant.ofEpochMilli(currentTimeMs)
+
+        // Render-time liveness gate (guard 2b): consult the freshest foreground
+        // read just before deciding. The decision engine only acts on it when
+        // it is both present and recent, so stale/absent data is safe.
+        val freshestForeground = ForegroundStateHolder.current()
         val sessionEndTime = entryForCurrentApp?.sessionEndTime ?: activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > now } ?: false
 
@@ -616,6 +628,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 currentSessionDurationS = currentSessionDurationS,
                 isWindDownActive = isWindDownActive(syncData),
                 isWindDownSnoozed = isWindDownSnoozed(syncData),
+                detectionTimestamp = detectionTimestampMs,
+                freshestForegroundPackage = freshestForeground?.packageName,
+                freshestForegroundTimestamp = freshestForeground?.timestampMs ?: 0L,
             )
         )
 

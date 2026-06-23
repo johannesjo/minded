@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.minded.minded.BuildConfig
 import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.ForegroundStateHolder
 import com.minded.minded.util.getForegroundAppReliable
 import java.util.Collections
 import kotlinx.coroutines.*
@@ -345,6 +346,13 @@ class HybridAppDetector(private val context: Context) {
                     is ForegroundAppResult.Success -> {
                         val newApp = result.packageName
                         val previousApp = _usageStatsDetectedApp.value
+
+                        // Publish the freshest poll read for the overlay
+                        // controller's render-time liveness gate (guard 2b). The
+                        // poll is laggy (UsageStats 500-2000ms), so this only
+                        // narrows - not eliminates - the stale-show window when
+                        // accessibility's faster focused-window read is absent.
+                        ForegroundStateHolder.update(newApp, "usage_stats")
 
                         if (newApp != previousApp) {
                             _usageStatsDetectedApp.value = newApp
