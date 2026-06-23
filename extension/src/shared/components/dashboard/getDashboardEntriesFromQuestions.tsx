@@ -51,7 +51,6 @@ export const getGreetingKey = (dg: DashboardGroup): string =>
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
-  isSkipRndEntry = IS_ANDROID,
   // The greeting shown on the previous arrival, if any. We avoid repeating it so
   // each landing surfaces a fresh tile — but only when an alternative exists, so
   // we never end up with nothing to greet with.
@@ -145,44 +144,38 @@ export const getDashboardEntriesFromQuestions = (
   // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
   // option — so a calm quote can greet you even on a full day, and is the
   // natural fallback when nothing reflective qualifies yet (an empty eligible
-  // pool always lands on the quote). The random pick is web-only; Android keeps
-  // its simpler fixed arrangement, with the quote fallback only when there's
-  // little to show.
-  if (!isSkipRndEntry) {
-    const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
-      if (GREETING_ELIGIBLE_TYPES.has(entry.type)) acc.push(i);
-      return acc;
-    }, []);
+  // pool always lands on the quote). Runs on every platform: each arrival
+  // re-rolls the greeting (see avoidGreetingKey + the RE_GREET trigger) so the
+  // dashboard never greets you with the same tile twice in a row.
+  const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
+    if (GREETING_ELIGIBLE_TYPES.has(entry.type)) acc.push(i);
+    return acc;
+  }, []);
 
-    // The pool of greetings to draw from: every eligible reflective card, plus
-    // the quote as one always-present extra option (the last slot).
-    const options = [
-      ...eligibleIndexes.map((index) => ({
-        index,
-        key: getGreetingKey(sortedEntries[index]),
-      })),
-      { index: -1, key: DashboardGroupType.Quote as string },
-    ];
+  // The pool of greetings to draw from: every eligible reflective card, plus
+  // the quote as one always-present extra option (the last slot).
+  const options = [
+    ...eligibleIndexes.map((index) => ({
+      index,
+      key: getGreetingKey(sortedEntries[index]),
+    })),
+    { index: -1, key: DashboardGroupType.Quote as string },
+  ];
 
-    // Prefer a tile different from the one shown last time we landed, so each
-    // arrival feels fresh rather than possibly repeating. Only narrow the pool
-    // when an alternative remains — never leave nothing to greet with.
-    const pickable = options.filter((o) => o.key !== avoidGreetingKey);
-    const pool = pickable.length > 0 ? pickable : options;
+  // Prefer a tile different from the one shown last time we landed, so each
+  // arrival feels fresh rather than possibly repeating. Only narrow the pool
+  // when an alternative remains — never leave nothing to greet with.
+  const pickable = options.filter((o) => o.key !== avoidGreetingKey);
+  const pool = pickable.length > 0 ? pickable : options;
 
-    const chosen = pool[getRndInt(0, pool.length - 1)];
-    if (chosen.index === -1) {
-      sortedEntries.splice(CENTER_INDEX, 0, {
-        type: DashboardGroupType.Quote,
-      });
-    } else {
-      const [greeting] = sortedEntries.splice(chosen.index, 1);
-      sortedEntries.splice(CENTER_INDEX, 0, greeting);
-    }
-  } else if (sortedEntries.length < 5) {
+  const chosen = pool[getRndInt(0, pool.length - 1)];
+  if (chosen.index === -1) {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
+  } else {
+    const [greeting] = sortedEntries.splice(chosen.index, 1);
+    sortedEntries.splice(CENTER_INDEX, 0, greeting);
   }
 
   return sortedEntries;

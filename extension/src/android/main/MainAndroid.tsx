@@ -4,7 +4,7 @@ import {
   ANDROID_EV_RESUME,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import { REFRESH_DASHBOARD_EV, RE_GREET_DASHBOARD_EV } from "@src/ev.const";
 import {
   addWrapperClasses,
   setIsDarkModeIfApplies,
@@ -95,6 +95,11 @@ const MainAndroid = () => {
       setIsInviteDismissed(false);
       setIsInviteDismissing(false);
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
+      // A real return to the dashboard: re-roll the greeting so the tile feels
+      // fresh after backgrounding rather than frozen on its last pick. (The
+      // WebView isn't reloaded on resume, so the dashboard never remounts to do
+      // this on its own.)
+      window.dispatchEvent(new Event(RE_GREET_DASHBOARD_EV));
       refresh();
     };
     window.addEventListener(ANDROID_EV_RESUME, resumeHandler);

@@ -164,7 +164,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       // tile — but passing the last key as avoidGreetingKey must steer it away.
       mockRandom(0.1);
       const second = greetingOf(
-        getDashboardEntriesFromQuestions(syncData, now, false, firstKey),
+        getDashboardEntriesFromQuestions(syncData, now, firstKey),
       );
       const secondKey = "id" in second ? second.id : second.type;
 
@@ -183,7 +183,6 @@ describe("getDashboardEntriesFromQuestions", () => {
       const entries = getDashboardEntriesFromQuestions(
         syncData,
         now,
-        false,
         DashboardGroupType.Quote,
       );
 

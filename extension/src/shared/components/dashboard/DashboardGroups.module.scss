@@ -198,6 +198,20 @@
   }
 }
 
+// Wraps the single greeting tile so it can fade out (and the fresh pick fade
+// back in) when the dashboard re-greets on a return — never a hard content
+// swap. Keeps the inner card on its calm 480px width, centred.
+.greetingSwap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  transition: opacity var(--dur-soft) var(--ease-out);
+
+  &.isSwapping {
+    opacity: 0;
+  }
+}
+
 // Module-LOCAL keyframe on purpose: a global one (e.g. minded6622fadeIn) would
 // have its name scoped away inside this CSS module and silently never run,
 // leaving the button stuck at its start opacity. A local @keyframes is hashed

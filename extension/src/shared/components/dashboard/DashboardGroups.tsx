@@ -36,18 +36,27 @@ import Rating from "@src/shared/components/ui/Rating";
 import Btn from "@src/shared/components/ui/Btn";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import { REFRESH_DASHBOARD_EV, RE_GREET_DASHBOARD_EV } from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { useNavigate } from "@solidjs/router";
 import {
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
-import { navigateWithPageFadeOut } from "@src/util/animation";
+import {
+  navigateWithPageFadeOut,
+  PAGE_FADE_MS,
+  prefersReducedMotion,
+} from "@src/util/animation";
 
 // Matches the --dur-soft fade on the collapsed view so it finishes fading out
 // before the full set mounts (mirrors the daily-questions banner dismissal).
 const REVEAL_FADE_MS = 480;
+
+// How long the current greeting fades out before it's swapped for a fresh one
+// on re-greet — matches the page fade so the swap eases at the same calm pace as
+// every other transition (never a hard cut).
+const GREETING_SWAP_FADE_MS = PAGE_FADE_MS;
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
@@ -57,6 +66,12 @@ export const DashboardGroups: (props: {
 }) => JSX.Element = (props) => {
   let t0: NodeJS.Timeout | undefined;
   let revealT0: NodeJS.Timeout | undefined;
+  let greetingSwapT0: NodeJS.Timeout | undefined;
+
+  // Drives the soft fade-out of the current greeting while it's swapped for a
+  // fresh one on re-greet (the new tile fades back in via its own entrance).
+  const [getIsGreetingSwapping, setIsGreetingSwapping] =
+    createSignal<boolean>(false);
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
     createSignal<boolean>(false);
@@ -95,15 +110,18 @@ export const DashboardGroups: (props: {
     if (hero) setLastGreetingKey(getGreetingKey(hero));
   });
 
-  const refresh = () => {
-    getSyncData().then((syncData) => {
+  // `reselect` forces a brand-new greeting pick (a fresh arrival); otherwise we
+  // update in place, preserving the current arrangement so a routine data
+  // refresh never reshuffles the tile under the user.
+  const refresh = (reselect = false) => {
+    return getSyncData().then((syncData) => {
       setIsShowDailyQuestionsBanner(isShowDailyQuestionsBanner(syncData));
 
       // Steer this arrival's greeting away from the tile shown last time we
       // landed, so each return surfaces a fresh one (see greetingMemory).
       const avoidGreetingKey = getLastGreetingKey();
       const existingDashboardGroups = getDashboardGroups();
-      if (existingDashboardGroups) {
+      if (!reselect && existingDashboardGroups.length) {
         const upd = updateDashboardEntriesFromQuestions(
           syncData,
           existingDashboardGroups,
@@ -115,7 +133,6 @@ export const DashboardGroups: (props: {
         const entries = getDashboardEntriesFromQuestions(
           syncData,
           undefined,
-          undefined,
           avoidGreetingKey,
         );
         setDashboardGroups(entries);
@@ -123,15 +140,45 @@ export const DashboardGroups: (props: {
     });
   };
 
+  // Landing back on the dashboard (app resume, or closing an interaction
+  // overlay) without the view remounting: re-roll the greeting so the tile feels
+  // fresh rather than frozen on whatever it was last time. The grid view has no
+  // single greeting, so it sits this out.
+  const reGreet = () => {
+    if (props.forceRevealed) return;
+    if (prefersReducedMotion()) {
+      refresh(true);
+      return;
+    }
+    // Fade the current tile out, swap in the fresh pick *while invisible*, then
+    // ease the new one back in — so the change reads as a calm cross-fade rather
+    // than a content pop.
+    setIsGreetingSwapping(true);
+    window.clearTimeout(greetingSwapT0);
+    greetingSwapT0 = setTimeout(() => {
+      refresh(true).then(() => {
+        // Let the fresh tile paint at opacity 0 before easing it back in.
+        requestAnimationFrame(() => setIsGreetingSwapping(false));
+      });
+    }, GREETING_SWAP_FADE_MS);
+  };
+
+  // A plain wrapper so the event object isn't passed as `reselect` (which would
+  // force a reshuffle on every routine data refresh).
+  const onRefreshEv = () => refresh();
+
   onMount(() => {
     refresh();
-    window.addEventListener(REFRESH_DASHBOARD_EV, refresh);
+    window.addEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
+    window.addEventListener(RE_GREET_DASHBOARD_EV, reGreet);
   });
 
   onCleanup(() => {
-    window.removeEventListener(REFRESH_DASHBOARD_EV, refresh);
+    window.removeEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
+    window.removeEventListener(RE_GREET_DASHBOARD_EV, reGreet);
     window.clearTimeout(t0);
     window.clearTimeout(revealT0);
+    window.clearTimeout(greetingSwapT0);
   });
 
   // Fade the calm greeting out, then route to the full "look back" grid so it
@@ -299,7 +346,18 @@ export const DashboardGroups: (props: {
           <Show
             when={getIsShowDailyQuestionsBanner()}
             fallback={
-              <Show when={getHeroGroup()}>{(g) => renderCard(g())}</Show>
+              <div
+                classList={{
+                  [styles.greetingSwap]: true,
+                  [styles.isSwapping]: getIsGreetingSwapping(),
+                }}
+              >
+                {/* `keyed` so a fresh pick remounts the card and replays its
+                    gentle entrance fade-in (see .collapsed .box). */}
+                <Show when={getHeroGroup()} keyed>
+                  {(g) => renderCard(g)}
+                </Show>
+              </div>
             }
           >
             {renderDailyQuestionsBanner()}

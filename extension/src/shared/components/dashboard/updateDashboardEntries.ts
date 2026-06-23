@@ -11,7 +11,6 @@ export const updateDashboardEntriesFromQuestions = (
   const newDashboardGroups = getDashboardEntriesFromQuestions(
     syncData,
     now,
-    undefined,
     avoidGreetingKey,
   );
 
