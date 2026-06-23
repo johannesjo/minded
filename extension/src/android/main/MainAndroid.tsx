@@ -1,6 +1,7 @@
 import RoutesCmp from "@src/shared/RouteCmp";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import {
+  ANDROID_EV_PAUSE,
   ANDROID_EV_RESUME,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
@@ -21,6 +22,12 @@ import Btn from "@src/shared/components/ui/Btn";
 // Kept in sync with the `.setupInvitationMsg` opacity transition in
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
 const INVITE_FADE_MS = 300;
+
+// How long the app must have been backgrounded for a return to count as a fresh
+// visit (and re-greet with a new dashboard tile). Below this, a quick switch out
+// and back — glancing at a notification, copying a 2FA code — keeps the current
+// tile, so the greeting never feels restless. Tune here.
+const MIN_ABSENCE_FOR_REGREET_MS = 90_000;
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -86,8 +93,17 @@ const MainAndroid = () => {
     });
   };
 
+  // When the app last went to the background. Seeded with "now" so the first
+  // onResume after a cold launch (which has no preceding pause) reads as a tiny
+  // absence and doesn't re-greet the tile the dashboard just mounted with.
+  let backgroundedAtTs = Date.now();
+
   onMount(() => {
     refresh();
+
+    const pauseHandler = () => {
+      backgroundedAtTs = Date.now();
+    };
 
     const resumeHandler = () => {
       // A fresh return to the app re-offers the (dismissible) setup invitation;
@@ -95,16 +111,21 @@ const MainAndroid = () => {
       setIsInviteDismissed(false);
       setIsInviteDismissing(false);
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
-      // A real return to the dashboard: re-roll the greeting so the tile feels
-      // fresh after backgrounding rather than frozen on its last pick. (The
+      // Only treat this as a fresh visit — re-rolling the greeting so the tile
+      // feels new — if the app was actually away for a while. A quick switch out
+      // and back keeps the current tile (see MIN_ABSENCE_FOR_REGREET_MS). The
       // WebView isn't reloaded on resume, so the dashboard never remounts to do
-      // this on its own.)
-      window.dispatchEvent(new Event(RE_GREET_DASHBOARD_EV));
+      // this on its own.
+      if (Date.now() - backgroundedAtTs >= MIN_ABSENCE_FOR_REGREET_MS) {
+        window.dispatchEvent(new Event(RE_GREET_DASHBOARD_EV));
+      }
       refresh();
     };
+    window.addEventListener(ANDROID_EV_PAUSE, pauseHandler);
     window.addEventListener(ANDROID_EV_RESUME, resumeHandler);
 
     onCleanup(() => {
+      window.removeEventListener(ANDROID_EV_PAUSE, pauseHandler);
       window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
     });
   });

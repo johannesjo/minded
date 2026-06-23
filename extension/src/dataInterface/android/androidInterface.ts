@@ -34,3 +34,4 @@ declare const androidMinded: InteractionWindowJavaScriptInterface;
 export const androidInterface = IS_ANDROID ? androidMinded : ({} as never);
 
 export const ANDROID_EV_RESUME = "androidAppResume";
+export const ANDROID_EV_PAUSE = "androidAppPause";
