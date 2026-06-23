@@ -12,7 +12,7 @@ import {
   DashboardGroupType,
 } from "../dashboard.model";
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { isToday } from "@src/util/isToday";
+import { isThisWeek, isToday } from "@src/util/isToday";
 
 jest.mock("@src/dataInterface/commonSyncDataInterface", () => ({
   IS_ANDROID: false,
@@ -94,8 +94,9 @@ describe("getDashboardEntriesFromQuestions", () => {
     });
 
     afterEach(() => {
-      // Don't leak the override into the rest of the suite.
+      // Don't leak the overrides into the rest of the suite.
       (isToday as jest.Mock).mockReturnValue(false);
+      (isThisWeek as jest.Mock).mockReturnValue(false);
     });
 
     it("never greets with a measurement card (the stats counter), whatever the random pick", () => {
@@ -194,6 +195,45 @@ describe("getDashboardEntriesFromQuestions", () => {
       }
 
       expect(greetingIds).toContain(QuestionCategoryId.RefocusHelperToday);
+    });
+
+    // Android arranges cards positionally (no random pick), so the hero-slot
+    // guard — not the web pick — has to keep an out-of-window recap from being
+    // the card that greets you.
+    it("keeps an out-of-window recap out of the hero slot on the positional (Android) path", () => {
+      // GoalForTheWeek is a this-week-only category; let it qualify so there are
+      // enough recaps (≥5 cards) to land one in the hero slot and exercise the
+      // guard rather than the short-list quote fallback.
+      (isThisWeek as jest.Mock).mockReturnValue(true);
+      // Monday 03:00 — past the morning window all these categories are gated to.
+      const night = new Date("2024-01-15T03:00:00");
+      const syncData = createMockSyncData({
+        answers: [
+          reflectiveAnswer(QuestionCategoryId.GoodPlansToday, "m1"),
+          reflectiveAnswer(QuestionCategoryId.RefocusHelperToday, "m2"),
+          reflectiveAnswer(QuestionCategoryId.GoalForTheWeek, "m3"),
+          reflectiveAnswer(QuestionCategoryId.HelpfulTools, "m4"),
+        ],
+      });
+
+      // isSkipRndEntry = true mirrors Android (IS_ANDROID): no random greeting.
+      const entries = getDashboardEntriesFromQuestions(syncData, night, true);
+
+      // The greeting must not be a stale morning recap — it falls back to a quote.
+      expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
+
+      // ...but every recap is still present for the "look back" grid.
+      const recapIds = entries
+        .filter((e) => e.type === DashboardGroupType.TxtQuestion && "id" in e)
+        .map((e) => (e as DashboardGroupTxtQuestion).id);
+      expect(recapIds).toEqual(
+        expect.arrayContaining([
+          QuestionCategoryId.GoodPlansToday,
+          QuestionCategoryId.RefocusHelperToday,
+          QuestionCategoryId.GoalForTheWeek,
+          QuestionCategoryId.HelpfulTools,
+        ]),
+      );
     });
 
     it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {

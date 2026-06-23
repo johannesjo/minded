@@ -43,22 +43,22 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.SelfAssessment,
 ]);
 
-// Whether a card may *greet* you right now. The greeting is a present-moment
-// surface, so a question recap must honour the same time-of-day / work-day
-// window its live question would (e.g. never greet with "Finding Focus Today"
-// in the middle of the night). The other greeting cards (energy, emotions,
-// self-assessment) reflect today's own entries and have no such window.
-// Out-of-window recaps still appear in the full "look back" grid — that view is
-// explicitly historical, so they belong there, just not as the centre pick.
-const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean => {
-  if (!GREETING_ELIGIBLE_TYPES.has(entry.type)) {
-    return false;
-  }
-  if (entry.type === DashboardGroupType.TxtQuestion && "id" in entry) {
-    return isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
-  }
-  return true;
-};
+// A question recap whose category is outside its time-of-day / work-day window
+// right now (e.g. a "Finding Focus Today" card — a morning, work-day category —
+// shown in the evening or the middle of the night). Such a recap shouldn't be
+// the card that *greets* you, but still belongs in the full "look back" grid,
+// which is explicitly historical. The other reflective cards (energy, emotions,
+// self-assessment) only ever reflect today's own entries, so they have no such
+// window.
+const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
+  entry.type === DashboardGroupType.TxtQuestion &&
+  "id" in entry &&
+  !isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
+
+// Whether a card may *greet* you right now: a reflective/self-report card that
+// isn't an out-of-window recap.
+const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
+  GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -172,6 +172,21 @@ export const getDashboardEntriesFromQuestions = (
       sortedEntries.splice(CENTER_INDEX, 0, greeting);
     }
   } else if (sortedEntries.length < 5) {
+    sortedEntries.splice(CENTER_INDEX, 0, {
+      type: DashboardGroupType.Quote,
+    });
+  }
+
+  // Final guard on the card that actually greets you (the hero slot the view
+  // reads — see DashboardGroups.getHeroIndex). The web pick above already keeps
+  // it in-window, but Android arranges cards positionally with no pick, so an
+  // out-of-window recap could still land in the hero slot. If it does, move it
+  // out (it stays available in "look back") and greet with a calm quote
+  // instead — matching the web fallback when nothing reflective qualifies.
+  const heroIndex = Math.min(CENTER_INDEX, sortedEntries.length - 1);
+  if (heroIndex >= 0 && isOutOfWindowRecap(sortedEntries[heroIndex], now)) {
+    const [stale] = sortedEntries.splice(heroIndex, 1);
+    sortedEntries.push(stale);
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
