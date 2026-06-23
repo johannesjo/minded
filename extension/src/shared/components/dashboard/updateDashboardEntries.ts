@@ -1,6 +1,9 @@
 import { SyncData } from "@src/dataInterface/syncData";
 import { DashboardGroup } from "@src/shared/components/dashboard/dashboard.model";
-import { getDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
+import {
+  getDashboardEntriesFromQuestions,
+  guardHeroSlot,
+} from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 
 export const updateDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -37,5 +40,12 @@ export const updateDashboardEntriesFromQuestions = (
     }
   }
 
-  return dashboardGroupsCopy;
+  // The merge keeps the *existing* card order (so cards don't jump around as you
+  // look), only refreshing their contents — which means a greeting that was
+  // in-window when the dashboard was first built can go stale as the hours pass
+  // (e.g. a morning "Finding Focus Today" hero still showing at night after an
+  // app-resume refresh). Re-run the hero guard so the greeting honours the
+  // current time even on this incremental path. (newDashboardGroups is already
+  // guarded; only the merged copy needs it.)
+  return guardHeroSlot(dashboardGroupsCopy, now);
 };

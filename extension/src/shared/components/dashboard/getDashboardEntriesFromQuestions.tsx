@@ -14,6 +14,7 @@ import {
   RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
+import { isCategoryWithinTimeConstraints } from "@src/util/getQuestionSmart";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
@@ -41,6 +42,43 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.EmotionLabeling,
   DashboardGroupType.SelfAssessment,
 ]);
+
+// A question recap whose category is outside its time-of-day / work-day window
+// right now (e.g. a "Finding Focus Today" card — a morning, work-day category —
+// shown in the evening or the middle of the night). Such a recap shouldn't be
+// the card that *greets* you, but still belongs in the full "look back" grid,
+// which is explicitly historical. The other reflective cards (energy, emotions,
+// self-assessment) only ever reflect today's own entries, so they have no such
+// window.
+const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
+  entry.type === DashboardGroupType.TxtQuestion &&
+  "id" in entry &&
+  !isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
+
+// Whether a card may *greet* you right now: a reflective/self-report card that
+// isn't an out-of-window recap.
+export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
+  GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
+
+// Guard the card that actually greets you (the hero slot the view reads — see
+// DashboardGroups.getHeroIndex). If it holds an out-of-window recap, move it out
+// (it stays available in "look back") and greet with a calm quote instead —
+// matching the web fallback when nothing reflective qualifies. Applied to every
+// surface that can produce the hero: the web pick already keeps it in-window, but
+// the Android positional build and the incremental merge (updateDashboardEntries)
+// don't, so this is their safety net. Mutates and returns `entries`.
+export const guardHeroSlot = (
+  entries: DashboardGroup[],
+  now = new Date(),
+): DashboardGroup[] => {
+  const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
+  if (heroIndex >= 0 && isOutOfWindowRecap(entries[heroIndex], now)) {
+    const [stale] = entries.splice(heroIndex, 1);
+    entries.push(stale);
+    entries.splice(CENTER_INDEX, 0, { type: DashboardGroupType.Quote });
+  }
+  return entries;
+};
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
@@ -140,7 +178,7 @@ export const getDashboardEntriesFromQuestions = (
   // little to show.
   if (!isSkipRndEntry) {
     const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
-      if (GREETING_ELIGIBLE_TYPES.has(entry.type)) acc.push(i);
+      if (isGreetingEligible(entry, now)) acc.push(i);
       return acc;
     }, []);
 
@@ -159,7 +197,9 @@ export const getDashboardEntriesFromQuestions = (
     });
   }
 
-  return sortedEntries;
+  // Make sure the card that greets you is never an out-of-window recap (the web
+  // pick already keeps it in-window; this covers the Android positional build).
+  return guardHeroSlot(sortedEntries, now);
 };
 
 const getLastThreeAnswers = (answers: Answer[]): Answer[] => {

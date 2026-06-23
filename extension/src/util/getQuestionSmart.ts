@@ -3,6 +3,7 @@ import {
   filterSpecialWidgets,
   isExcludedByLimitTo,
   QUESTION_CATEGORIES,
+  QuestionCategory,
   QuestionCategoryId,
   QuestionForPrompt,
   QUESTIONS_FOR_DEVICE,
@@ -22,6 +23,50 @@ const THRESHOLD_LATE_NIGHT_END = 4;
 const BOOST_FACTOR = 1;
 
 const FAKE_RULE_OUT_NR = 9999;
+
+/**
+ * Whether a category's questions are appropriate to surface *right now*, given
+ * its time-of-day and work-day constraints (morning / evening / late-night /
+ * work-day). This is the present-moment gate the question router uses so we
+ * never ask, e.g. a "Finding Focus Today" question in the middle of the night.
+ * Shared so other present-moment surfaces (like the dashboard greeting) honour
+ * the exact same windows.
+ */
+export const isCategoryWithinTimeConstraints = (
+  category: QuestionCategory | undefined,
+  now = new Date(),
+): boolean => {
+  if (!category) {
+    return true;
+  }
+  const nowHours = now.getHours();
+
+  if (category.isMorningCategory) {
+    if (
+      nowHours < THRESHOLD_MORNING_START ||
+      nowHours > THRESHOLD_MORNING_END
+    ) {
+      return false;
+    }
+  }
+  if (category.isEveningCategory) {
+    if (nowHours < THRESHOLD_EVENING_START) {
+      return false;
+    }
+  }
+  if (category.isLateNightCategory) {
+    if (
+      nowHours < THRESHOLD_LATE_NIGHT_START ||
+      nowHours > THRESHOLD_LATE_NIGHT_END
+    ) {
+      return false;
+    }
+  }
+  if (category.isWorkDayCategory && !isWorkDay(now)) {
+    return false;
+  }
+  return true;
+};
 
 /*
 What do I want to achieve?
@@ -178,38 +223,9 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
 };
 
 export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
-  const isWorkDayToday = isWorkDay(now);
-  const nowHours = now.getHours();
-
-  const questionsToUse = QUESTIONS_FOR_DEVICE.filter((q) => {
-    const categoryForQuestion = QUESTION_CATEGORIES[q.categoryId];
-
-    if (categoryForQuestion.isMorningCategory) {
-      if (
-        nowHours < THRESHOLD_MORNING_START ||
-        nowHours > THRESHOLD_MORNING_END
-      ) {
-        return false;
-      }
-    }
-    if (categoryForQuestion.isEveningCategory) {
-      if (nowHours < THRESHOLD_EVENING_START) {
-        return false;
-      }
-    }
-    if (categoryForQuestion.isLateNightCategory) {
-      if (
-        nowHours < THRESHOLD_LATE_NIGHT_START ||
-        nowHours > THRESHOLD_LATE_NIGHT_END
-      ) {
-        return false;
-      }
-    }
-    if (categoryForQuestion.isWorkDayCategory && !isWorkDayToday) {
-      return false;
-    }
-    return true;
-  });
+  const questionsToUse = QUESTIONS_FOR_DEVICE.filter((q) =>
+    isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[q.categoryId], now),
+  );
   return getRndQuestionConsideringMain(questionsToUse);
 };
 
