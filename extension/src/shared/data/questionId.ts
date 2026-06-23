@@ -73,12 +73,14 @@ export enum QID {
   CT2 = "CT2",
   CT3 = "CT3",
   CT4 = "CT4",
+  CT5 = "CT5",
 
   PT1 = "PT1",
   PT2 = "PT2",
   PT3 = "PT3",
   PT4 = "PT4",
   PT5 = "PT5",
+  PT6 = "PT6",
 
   GT1 = "GT1",
   GT2 = "GT2",
@@ -89,6 +91,7 @@ export enum QID {
   GT7 = "GT7",
   GT8 = "GT8",
   GT9 = "GT9",
+  GT10 = "GT10",
 
   GP1 = "GP1",
   GP2 = "GP2",
@@ -177,6 +180,22 @@ export enum QID {
   SI5 = "SI5",
   SI6 = "SI6",
   SI7 = "SI7",
+
+  NN1 = "NN1",
+  NN2 = "NN2",
+  NN3 = "NN3",
+  NN4 = "NN4",
+  NN5 = "NN5",
+
+  SC1 = "SC1",
+  SC2 = "SC2",
+  SC3 = "SC3",
+  SC4 = "SC4",
+
+  LG1 = "LG1",
+  LG2 = "LG2",
+  LG3 = "LG3",
+  LG4 = "LG4",
 
   // The reflective question offered when the dashboard sun is flung away ("let
   // go"). Standalone (not part of any random category pool) — surfaced only by

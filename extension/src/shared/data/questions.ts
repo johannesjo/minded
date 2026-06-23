@@ -27,6 +27,9 @@ export enum QuestionCategoryId {
   SelfImprovement = "SelfImprovement",
   Relationships = "Relationships",
   MindfulEating = "MindfulEating",
+  NoticingNow = "NoticingNow",
+  SelfCompassion = "SelfCompassion",
+  LettingGo = "LettingGo",
   // NOTE: we filter out all questions from categories starting with X
 
   XEnergyLevelToday = "XEnergyLevelToday",
@@ -43,7 +46,6 @@ export enum QuestionCategoryId {
   // XWeatherSelector = "XWeatherSelector",
   // FlowBreaker = "FlowBreaker",
   // Other = "Other",
-  // SelfCompassion = "SelfCompassion",
 }
 
 export type LimitTo = "BrowserExtension" | "MobileApp";
@@ -480,6 +482,17 @@ export const QUESTION_CATEGORIES: {
         id: QID.CT4,
         t: "Where do you feel tension in your body right now",
       },
+      {
+        id: QID.CT5,
+        t: "What is one slow, ordinary thing you could do right now",
+        prompt: "Right now I could",
+        chips: [
+          "make tea",
+          "drink some water",
+          "step outside",
+          "stretch slowly",
+        ],
+      },
     ],
     dashboardTxt: "Calming Thoughts",
   },
@@ -493,6 +506,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.PT5,
         t: "What accomplishments are you most proud of",
         prompt: "I am proud of",
+      },
+      {
+        id: QID.PT6,
+        t: "What is something small that delighted you recently",
       },
     ],
     dashboardTxt: "Positive Thoughts",
@@ -539,6 +556,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.GT9,
         t: "What are you most proud of doing today",
         prompt: "I am proud",
+      },
+      {
+        id: QID.GT10,
+        t: "What is one moment today you'd like to remember",
       },
     ],
     dashboardTxt: "Good Today",
@@ -895,6 +916,78 @@ export const QUESTION_CATEGORIES: {
       },
     ],
   },
+  [QuestionCategoryId.NoticingNow]: {
+    dashboardTxt: "Noticing Now",
+    frequencyModifier: 1,
+    questions: [
+      {
+        id: QID.NN1,
+        t: "What can you hear right now, if you pause to listen",
+      },
+      {
+        id: QID.NN2,
+        t: "What do you notice in your body right now",
+        prompt: "Right now I notice",
+      },
+      {
+        id: QID.NN3,
+        t: "What is one thing you can see that you usually overlook",
+      },
+      {
+        id: QID.NN4,
+        t: "What does the air feel like around you right now",
+      },
+      {
+        id: QID.NN5,
+        t: "What is one thing around you that is fine just as it is",
+      },
+    ],
+  },
+  [QuestionCategoryId.SelfCompassion]: {
+    dashboardTxt: "Being Kind to Yourself",
+    questions: [
+      {
+        id: QID.SC1,
+        t: "What would you say to a good friend in your situation right now",
+      },
+      {
+        id: QID.SC2,
+        t: "How could you be a little gentler with yourself right now",
+        prompt: "I could",
+      },
+      {
+        id: QID.SC3,
+        t: "What do you need right now",
+        prompt: "Right now I need",
+      },
+      {
+        id: QID.SC4,
+        t: "What is something you can forgive yourself for",
+      },
+    ],
+  },
+  [QuestionCategoryId.LettingGo]: {
+    dashboardTxt: "Making Room",
+    questions: [
+      {
+        id: QID.LG1,
+        t: "What is something outside your control you could set down for now",
+        prompt: "I can set down",
+      },
+      {
+        id: QID.LG2,
+        t: "What are you holding onto that you could loosen your grip on a little",
+      },
+      {
+        id: QID.LG3,
+        t: "What is already enough about this moment",
+      },
+      {
+        id: QID.LG4,
+        t: "What is one worry you could leave for tomorrow",
+      },
+    ],
+  },
   [QuestionCategoryId.XEnergyLevelToday]: {
     dashboardTxt: "Energy Level",
     isTodayOnlyCategory: true,
@@ -943,6 +1036,9 @@ export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.Insomnia,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.NoticingNow,
+  QuestionCategoryId.SelfCompassion,
+  QuestionCategoryId.LettingGo,
 ];
 
 const qids: Record<string, Question> = {};
