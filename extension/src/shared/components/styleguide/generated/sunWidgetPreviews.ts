@@ -3,7 +3,7 @@
 // Regenerate with: npm run generate:widget-previews
 
 export interface SunWidgetPreview {
-  key: "dawn" | "day" | "dusk" | "night";
+  key: "day" | "night";
   label: string;
   /** Display-only hour range for the phase. */
   hours: string;
@@ -13,22 +13,10 @@ export interface SunWidgetPreview {
 
 export const SUN_WIDGET_PREVIEWS: SunWidgetPreview[] = [
   {
-    "key": "dawn",
-    "label": "Dawn",
-    "hours": "05–09",
-    "svg": "<svg viewBox=\"0 0 108 108\" width=\"108\" height=\"108\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"sw-dawn-0\" gradientUnits=\"userSpaceOnUse\" cx=\"54\" cy=\"54\" r=\"53\"><stop offset=\"0.0\" stop-color=\"#FFC89A\" stop-opacity=\"0\"/><stop offset=\"0.56\" stop-color=\"#FFC89A\" stop-opacity=\"0\"/><stop offset=\"0.74\" stop-color=\"#FFB985\" stop-opacity=\"0.2784313725490196\"/><stop offset=\"1.0\" stop-color=\"#FFAE6E\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"sw-dawn-1\" gradientUnits=\"userSpaceOnUse\" cx=\"54\" cy=\"54\" r=\"36\"><stop offset=\"0.0\" stop-color=\"#FFFDF7\" stop-opacity=\"1\"/><stop offset=\"0.7\" stop-color=\"#FFE9CE\" stop-opacity=\"1\"/><stop offset=\"1.0\" stop-color=\"#FFC79A\" stop-opacity=\"1\"/></radialGradient></defs><path d=\"M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0\" fill=\"url(#sw-dawn-0)\"/><path d=\"M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0\" fill=\"url(#sw-dawn-1)\"/></svg>"
-  },
-  {
     "key": "day",
     "label": "Day",
-    "hours": "09–17",
+    "hours": "05–21",
     "svg": "<svg viewBox=\"0 0 108 108\" width=\"108\" height=\"108\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"sw-day-0\" gradientUnits=\"userSpaceOnUse\" cx=\"54\" cy=\"54\" r=\"53\"><stop offset=\"0.0\" stop-color=\"#FFD877\" stop-opacity=\"0\"/><stop offset=\"0.56\" stop-color=\"#FFD877\" stop-opacity=\"0\"/><stop offset=\"0.74\" stop-color=\"#FFD673\" stop-opacity=\"0.2784313725490196\"/><stop offset=\"1.0\" stop-color=\"#FFCB5A\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"sw-day-1\" gradientUnits=\"userSpaceOnUse\" cx=\"54\" cy=\"54\" r=\"36\"><stop offset=\"0.0\" stop-color=\"#FFFFFF\" stop-opacity=\"1\"/><stop offset=\"0.84\" stop-color=\"#FFFFFF\" stop-opacity=\"1\"/><stop offset=\"1.0\" stop-color=\"#FFF5DC\" stop-opacity=\"1\"/></radialGradient></defs><path d=\"M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0\" fill=\"url(#sw-day-0)\"/><path d=\"M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0\" fill=\"url(#sw-day-1)\"/></svg>"
-  },
-  {
-    "key": "dusk",
-    "label": "Dusk",
-    "hours": "17–21",
-    "svg": "<svg viewBox=\"0 0 108 108\" width=\"108\" height=\"108\" xmlns=\"http://www.w3.org/2000/svg\"><defs><radialGradient id=\"sw-dusk-0\" gradientUnits=\"userSpaceOnUse\" cx=\"54\" cy=\"54\" r=\"53\"><stop offset=\"0.0\" stop-color=\"#FF9E52\" stop-opacity=\"0\"/><stop offset=\"0.56\" stop-color=\"#FF9E52\" stop-opacity=\"0\"/><stop offset=\"0.74\" stop-color=\"#FF8A4A\" stop-opacity=\"0.3215686274509804\"/><stop offset=\"1.0\" stop-color=\"#EF6F52\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"sw-dusk-1\" gradientUnits=\"userSpaceOnUse\" cx=\"54\" cy=\"54\" r=\"36\"><stop offset=\"0.0\" stop-color=\"#FFF3D6\" stop-opacity=\"1\"/><stop offset=\"0.62\" stop-color=\"#FFC074\" stop-opacity=\"1\"/><stop offset=\"1.0\" stop-color=\"#EF6F52\" stop-opacity=\"1\"/></radialGradient></defs><path d=\"M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0\" fill=\"url(#sw-dusk-0)\"/><path d=\"M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0\" fill=\"url(#sw-dusk-1)\"/></svg>"
   },
   {
     "key": "night",

@@ -14,8 +14,6 @@
     <string name="health_notification_text">App detection stopped working reliably. Tap to open minded and fix it.</string>
     <string name="widget_label">minded – the sun</string>
     <string name="widget_sun_description">Open the sun for a mindful moment</string>
-    <string name="widget_sun_description_dawn">The morning sun – open for a mindful moment</string>
     <string name="widget_sun_description_day">The sun – open for a mindful moment</string>
-    <string name="widget_sun_description_dusk">The evening sun – open for a mindful moment</string>
     <string name="widget_sun_description_night">The moon – open for a mindful moment</string>
 </resources>

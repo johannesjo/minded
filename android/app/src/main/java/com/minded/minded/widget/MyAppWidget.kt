@@ -21,9 +21,9 @@ import java.util.Calendar
 
 /**
  * The home-screen companion sun: a calm, living anchor that tracks the day's
- * natural light — a warm dawn sun, the bright midday sun, a golden dusk, the moon
- * at night. It carries no metrics, badge, or anything to grade; it just reflects
- * where you actually are in the day (present-moment, never a stale timestamp).
+ * natural light — the warm sun by day, the cool moon at night. It carries no
+ * metrics, badge, or anything to grade; it just reflects where you actually are
+ * in the day (present-moment, never a stale timestamp).
  * Tapping it launches the app and opens the same sun interaction as tapping the
  * in-app dashboard companion. It is presence and invitation, never an interrupt.
  *
@@ -51,16 +51,12 @@ class MyAppWidget : GlanceAppWidget() {
     }
 
     private fun drawableFor(phase: SunWidgetPhase): Int = when (phase) {
-        SunWidgetPhase.DAWN -> R.drawable.ic_sun_widget_dawn
         SunWidgetPhase.DAY -> R.drawable.ic_sun_widget_day
-        SunWidgetPhase.DUSK -> R.drawable.ic_sun_widget_dusk
         SunWidgetPhase.NIGHT -> R.drawable.ic_sun_widget_night
     }
 
     private fun descriptionFor(phase: SunWidgetPhase): Int = when (phase) {
-        SunWidgetPhase.DAWN -> R.string.widget_sun_description_dawn
         SunWidgetPhase.DAY -> R.string.widget_sun_description_day
-        SunWidgetPhase.DUSK -> R.string.widget_sun_description_dusk
         SunWidgetPhase.NIGHT -> R.string.widget_sun_description_night
     }
 

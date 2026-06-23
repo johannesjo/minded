@@ -561,7 +561,8 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="sun-widget" title="Sun widget (Android)">
         <p class={styles.muted}>
-          The four time-of-day phases of the home-screen companion sun, rendered
+          The two time-of-day phases of the home-screen companion sun — the warm
+          sun by day, the cool moon by night — rendered
           from the real <code>ic_sun_widget_*.xml</code> drawables (converted to
           SVG at build time). Phase is chosen by the local clock, not the system
           theme — toggle dark mode above to preview the discs on a dark

@@ -5,8 +5,9 @@ import styles from "./styleguide.module.scss";
 import { SUN_WIDGET_PREVIEWS } from "./generated/sunWidgetPreviews";
 
 /**
- * The four time-of-day phases of the Android home-screen companion sun widget,
- * rendered from the real `ic_sun_widget_*.xml` drawables (converted to SVG by
+ * The two time-of-day phases of the Android home-screen companion sun widget —
+ * the warm sun by day, the cool moon by night — rendered from the real
+ * `ic_sun_widget_*.xml` drawables (converted to SVG by
  * scripts/generate-widget-previews.mjs — single source of truth, regenerated on
  * every styleguide build). Toggle the styleguide's dark mode to preview the
  * discs on a dark wallpaper. SVG is close to, but not pixel-identical with,

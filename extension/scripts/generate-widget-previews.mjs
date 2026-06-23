@@ -1,5 +1,5 @@
 // Convert the Android sun-widget vector drawables into inline SVG so the
-// styleguide (and its per-PR preview deploy) can show the four time-of-day
+// styleguide (and its per-PR preview deploy) can show the two time-of-day
 // phases without an Android build. The Android `ic_sun_widget_*.xml` files stay
 // the single source of truth: this script reads them and emits a generated TS
 // module — it never hand-copies colours, so the preview can't silently drift
@@ -22,12 +22,10 @@ const outFile = resolve(
   "../src/shared/components/styleguide/generated/sunWidgetPreviews.ts",
 );
 
-// Mirrors SunWidgetPhase.kt's boundaries (dawn 5–9, day 9–17, dusk 17–21, moon
-// otherwise) — for display only; the phase math itself lives in Kotlin.
+// Mirrors SunWidgetPhase.kt's boundaries (day 5–21, the moon otherwise) — for
+// display only; the phase math itself lives in Kotlin.
 const PHASES = [
-  { key: "dawn", label: "Dawn", hours: "05–09" },
-  { key: "day", label: "Day", hours: "09–17" },
-  { key: "dusk", label: "Dusk", hours: "17–21" },
+  { key: "day", label: "Day", hours: "05–21" },
   { key: "night", label: "Night", hours: "21–05" },
 ];
 
@@ -91,7 +89,7 @@ const banner =
 const body =
   banner +
   "\nexport interface SunWidgetPreview {\n" +
-  '  key: "dawn" | "day" | "dusk" | "night";\n' +
+  '  key: "day" | "night";\n' +
   "  label: string;\n" +
   "  /** Display-only hour range for the phase. */\n" +
   "  hours: string;\n" +

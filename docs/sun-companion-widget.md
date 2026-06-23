@@ -14,9 +14,9 @@ genuinely nice addition to Android in its own right.
 
 A calm sun sits on the home screen as an ambient companion — no numbers, no
 streaks, no badge, nothing to grade. It is *living*: it tracks the day's natural
-light, glowing as a soft dawn sun, the bright midday sun, a golden dusk, and the
-moon at night. That is the whole of what it "shows" — where you actually are in
-the day, reflected back as warmth and colour, never a metric. **Tapping it does
+light, glowing as the warm sun by day and the cool moon by night. That is the
+whole of what it "shows" — where you actually are in the day, reflected back as
+warmth and colour, never a metric. **Tapping it does
 exactly what tapping the in-app dashboard sun does**: it opens the app's existing
 interaction overlay, and the existing flow handles the exit the same way too. The
 widget is just that companion, relocated to the home screen.
@@ -29,8 +29,8 @@ It passes the product's bar cleanly: it states the **present moment, never a
 stale timestamp** (it reads the live local hour), it reflects an **observed fact,
 never an inferred feeling** (the time of day, not "you seem tired"), and it
 carries no count, streak, or budget. The phase is decided from the local hour in
-`SunWidgetPhase` (dawn 5–9, day 9–17, dusk 17–21, moon otherwise); the receiver
-arms one inexact alarm at each boundary (≈4 wakeups a day) to refresh it.
+`SunWidgetPhase` (the sun 5–21, the moon otherwise); the receiver arms one inexact
+alarm at each boundary (≈2 wakeups a day) to refresh it.
 
 It is **presence and invitation**, never an interrupt. It does not detect
 anything, block anything, or fire on its own. You reach for it; it never reaches
@@ -89,11 +89,14 @@ for you. That is exactly why it fits the product's soft approach where the iOS
 - **Phase logic** (`widget/SunWidgetPhase.kt`): pure, R-free, JVM-unit-tested
   (`SunWidgetPhaseTest`). Maps the local hour to a phase and computes the minutes
   to the next boundary.
-- **Assets** (`res/drawable/ic_sun_widget_{dawn,day,dusk,night}.xml`): four vector
-  discs on the app's warm ramp (`#FFE281` → `#FFAE52` → `#EF6F52`) plus the cool
-  moon (`#dfe8ff` → `#a9b8dc`). Selection is by clock in code, **not** by the
-  `drawable-night` qualifier — so the moon shows at actual night, not whenever the
-  system theme happens to be dark.
+- **Assets** (`res/drawable/ic_sun_widget_{day,night}.xml`): two vector discs —
+  the warm day sun (a white disc warming to a faint gold rim, on the app's warm
+  glow) and the cool moon (`#dfe8ff` → `#a9b8dc`). We deliberately stop at two:
+  the old dawn/dusk discs wore saturated amber/coral that read as a *signal*
+  ("caution") on a surface that must never grade the user, whereas sun-vs-moon is
+  the one shift everyone reads as the world, not a message. Selection is by clock
+  in code, **not** by the `drawable-night` qualifier — so the moon shows at actual
+  night, not whenever the system theme happens to be dark.
 - **`MyAppWidgetReceiver.kt`**: the Glance receiver, plus a per-phase refresh. It
   arms one inexact `setAndAllowWhileIdle` alarm at the next boundary and re-arms
   when it fires (a self-targeted `ACTION_REFRESH_SUN` broadcast → `updateAll`);
@@ -162,8 +165,8 @@ Keeping it honest and small, per the product's bar:
    dashboard sun. Tapping while the app is already open should also work
    (warm-start path).
 5. Confirm the phase tracks the clock, not the system theme: change the device
-   time across a boundary (e.g. to 06:00, 12:00, 18:00, 23:00) and check the sun
-   warms/cools accordingly (dawn → day → dusk → moon). System dark mode no longer
+   time across the boundary (e.g. to 12:00, then 23:00) and check the sun gives
+   way to the moon and back (day → night → day). System dark mode no longer
    drives it.
 
 Run the phase logic unit tests with

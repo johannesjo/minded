@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The companion sun widget: a small (1x1) home-screen sun. It tracks the day's
-     light (dawn / day / dusk / moon); refreshes are driven by a per-phase alarm in
-     MyAppWidgetReceiver, not by updatePeriodMillis. The breathing pause it opens
-     lives in the app. -->
+     light (the sun by day, the moon by night); refreshes are driven by a per-phase
+     alarm in MyAppWidgetReceiver, not by updatePeriodMillis. The breathing pause it
+     opens lives in the app. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
         android:minWidth="40dp"
         android:minHeight="40dp"

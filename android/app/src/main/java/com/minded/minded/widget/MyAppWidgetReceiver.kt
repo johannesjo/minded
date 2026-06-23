@@ -16,10 +16,10 @@ import java.util.Calendar
 
 /**
  * Receiver for the home-screen companion sun. The sun is a *living* anchor: it
- * tracks the day's light (dawn / day / dusk / moon), so it must refresh when the
- * phase turns over. Rather than polling, we arm a single inexact alarm for the
- * next phase boundary (≈4 wakeups a day) and re-arm each time it fires. The phase
- * itself is decided in MyAppWidget.provideGlance from the local hour.
+ * tracks the day's light (the sun by day, the moon by night), so it must refresh
+ * when the phase turns over. Rather than polling, we arm a single inexact alarm
+ * for the next phase boundary (≈2 wakeups a day) and re-arm each time it fires.
+ * The phase itself is decided in MyAppWidget.provideGlance from the local hour.
  * See docs/sun-companion-widget.md.
  */
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
