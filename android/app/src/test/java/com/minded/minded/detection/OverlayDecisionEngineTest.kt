@@ -659,6 +659,45 @@ class OverlayDecisionEngineTest {
         assertEquals(OverlayDecision.ShowIntervention, decision)
     }
 
+    @Test
+    fun `should not skip when contradicting foreground is older than the detection`() {
+        // A holder value that predates this detection must not suppress it (e.g.
+        // the high-confidence path emitted with a null focus read, leaving a
+        // prior app in the holder). Recent by the window, but stale vs. the
+        // detection -> allow the draw.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime - 1000 // within window, but older than the detection
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should skip when contradicting foreground is newer than the detection`() {
+        // Foreground evidence that postdates the detection is trustworthy: the
+        // user really did move on after the detection fired -> skip the draw.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime - 1000,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime - 100 // newer than the detection, fresh
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.STALE_FOREGROUND, decision.reason)
+    }
+
     // ==================== Helper Functions ====================
 
     private fun createState(

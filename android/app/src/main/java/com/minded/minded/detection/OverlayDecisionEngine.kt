@@ -92,12 +92,20 @@ class OverlayDecisionEngine {
         // already left the target - skip the draw. Only acts on evidence that is
         // both present and recent; null or stale holder data is "no evidence"
         // and must NOT block (avoids false-blocking).
+        // The evidence must also be at least as new as the detection it would
+        // override (`>= detectionTimestamp`): a holder value OLDER than this
+        // detection must never suppress it, else a stale holder (e.g. the
+        // high-confidence path emits with a null focus read and leaves a prior
+        // app in the holder) would wrongly skip a legitimate draw. When
+        // detectionTimestamp is 0L (non-detection callers) this is always true,
+        // so behaviour is unchanged for them.
         // Authoritative only while accessibility is alive (its writer dies with
         // the accessibility service); in poll-only degraded mode this narrows
         // but does not eliminate the stale window.
         val freshForeground = state.freshestForegroundPackage
         if (freshForeground != null &&
             state.currentTime - state.freshestForegroundTimestamp in 0..FOREGROUND_FRESH_WINDOW_MS &&
+            state.freshestForegroundTimestamp >= state.detectionTimestamp &&
             freshForeground != currentPackage
         ) {
             return OverlayDecision.Skip(SkipReason.STALE_FOREGROUND)
