@@ -19,7 +19,13 @@ export type SunPhase =
   | "breathing"
   | "surfing"
   | "resting"
-  | "departing";
+  | "departing"
+  // The daily-questions flow (morning inspiration / evening reflection) borrows
+  // the one shell sun as its through-line instead of drawing its own discs: it
+  // rests on the bottom bar as a calm companion (carrying the orbit progress
+  // dots) while the questions are answered, then blooms into the closing sun.
+  | "dailyQuestions"
+  | "dailyQuestionsSuccess";
 
 /**
  * Interactive intervention: rest on the measured placeholder centre (full size,
@@ -170,6 +176,19 @@ export const SUN_DEPART_SETTLE: SunSettle = sunDepartSettle();
 /** Placeholder bottom-bar anchor used until MainWrapper measures the real px. */
 export const DEFAULT_COMPANION_BOTTOM_Y_PX = 44;
 
+/**
+ * Daily-questions success bloom: the same companion disc that carried the user
+ * through the questions glides up off the bottom bar to a calm upper-middle rest
+ * and grows into the closing "have a wonderful day" sun. The success sun is
+ * literally the sun that was already there — no separate element pops in, so
+ * there's nothing to jump. Tune the bloom (height / size) here.
+ */
+export const sunDailyQuestionsSuccessSettle = (): SunSettle => ({
+  anchorYRatio: 0.38, // upper-middle, leaving the closing line room beneath it
+  scale: 0.62, // larger than the companion (0.42) — a warm bloom, not full size
+  breathe: false,
+});
+
 export const sunCompanionSettle = (
   barCenterYPxFromBottom: number,
 ): SunSettle => ({
@@ -205,6 +224,11 @@ export const getSunSettleForPhase = (
       return SUN_REST_SETTLE;
     case "departing":
       return sunDepartSettle(departCornerPx);
+    case "dailyQuestionsSuccess":
+      return sunDailyQuestionsSuccessSettle();
+    // "dailyQuestions" (the answering phase) rests on the bottom-bar companion
+    // anchor, so getSunSettleForCurrentRole routes it through the companion
+    // settle (which needs the measured px) rather than this pure map.
     default:
       return null;
   }

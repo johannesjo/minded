@@ -155,6 +155,33 @@
       background: rgba(255, 255, 255, 0.9);
     }
   }
+
+  // Daily-questions progress crown: faint dots arced above the disc. The
+  // container fades in as a whole (so the crown appears with the flow rather
+  // than snapping in); each dot eases from unlit to lit as a question is done.
+  .sun-orbit {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    animation: minded6622fadeIn 0.6s ease both;
+  }
+
+  .sun-orbit-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    transition:
+      background 400ms ease,
+      opacity 400ms ease;
+
+    &.filled {
+      background: rgba(255, 255, 255, 0.85);
+    }
+  }
 }
 
 @keyframes mindedSunIdleBreath {

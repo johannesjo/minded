@@ -2,6 +2,7 @@ import {
   Component,
   createEffect,
   createSignal,
+  Index,
   on,
   onCleanup,
   onMount,
@@ -84,6 +85,13 @@ interface SunProps {
    * position.
    */
   settle?: SunSettle | null;
+  /**
+   * Faint progress dots arranged as a crown above the disc (`filled` of `total`
+   * lit). Used by the daily-questions flow as a gentle, non-numeric "where am I"
+   * hint while this one sun carries the user through the questions. Omitted /
+   * null everywhere else, so the crown never shows outside that flow.
+   */
+  orbit?: { total: number; filled: number } | null;
 }
 
 export interface SunSettle {
@@ -1148,6 +1156,31 @@ export const Sun: Component<SunProps> = (props) => {
               classList={{ filled: i + 1 <= getTapCount() }}
             />
           ))}
+        </div>
+      )}
+      {props.orbit && props.orbit.total > 0 && (
+        // A faint crown of dots spread across the top arc (avoiding the bottom,
+        // where the disc rests on the bar). Children of the disc, so they ride
+        // its scale/float and the ring stays just outside the edge at any size.
+        <div class="sun-orbit" aria-hidden="true">
+          <Index each={Array.from({ length: props.orbit.total })}>
+            {(_, i) => {
+              const total = props.orbit!.total;
+              const arcDeg = 120; // crown span, centred on straight-up
+              const angle =
+                total === 1 ? 0 : -arcDeg / 2 + (i * arcDeg) / (total - 1);
+              const radius = sunSize.size / 2 + 16;
+              return (
+                <div
+                  class="sun-orbit-dot"
+                  classList={{ filled: i < props.orbit!.filled }}
+                  style={{
+                    transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`,
+                  }}
+                />
+              );
+            }}
+          </Index>
         </div>
       )}
     </div>
