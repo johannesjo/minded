@@ -489,21 +489,32 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("does not show the usage observation when starting from the dashboard", () => {
-    // From the dashboard (isMainView) the usage observation is suppressed even
-    // when the rating is stale and every roll would otherwise select it; the
-    // flow falls through to a real intervention instead.
+  it("suppresses the usage observation on the dashboard but keeps it for real interventions", () => {
+    // The same stale-rating data: off-dashboard the roll selects the usage
+    // observation, but starting deliberately from the dashboard (isMainView)
+    // skips the usage branch entirely and falls through to a real intervention.
+    const syncData = baseSyncData({ lastBrowsingBehaviorRatingTS: 99 });
+
     expect(
-      decide(
-        baseSyncData({
-          lastBrowsingBehaviorRatingTS: 99,
-        }),
-        {
-          isMainView: true,
-          random: sequenceRandom([0.99, 0.01]),
-        },
-      ).mode,
-    ).not.toBe("APP_USAGE_OR_BROWSING_BEHAVIOR");
+      decide(syncData, {
+        isMainView: false,
+        random: sequenceRandom([0.99, 0.99, 0.01]),
+      }).mode,
+    ).toBe("APP_USAGE_OR_BROWSING_BEHAVIOR");
+
+    // On the dashboard the usage branch consumes no roll, so the same first
+    // self-assessment miss (0.99) then an action-advice hit (0.01) lands on a
+    // real intervention instead.
+    expect(
+      decide(syncData, {
+        isMainView: true,
+        random: sequenceRandom([0.99, 0.01]),
+      }),
+    ).toEqual({
+      mode: "ACTION_ADVICE",
+      reason: "action_advice_sample",
+      frictionLevel: "soft",
+    });
   });
 
   it("samples a notice micro-action just before the question fallback", () => {
