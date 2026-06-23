@@ -44,8 +44,11 @@ the native→WebView seam the review flagged as a blocker.
   (why-reduce, energy check, alternative, pattern insight, …) is the "reflect" in
   interrupt → reflect → redirect. They always remain available; the polish below
   reframes them as invitation, never a gate.
-- **No breathing outside meditations.** The everyday sun does not "breathe"; the
-  breathing swell is reserved for guided meditations (e.g. urge-surfing).
+- **Breathing only in *guided* breath pauses.** A repeating breath belongs to
+  guided meditations (e.g. urge-surfing) and the strong-friction breath pause
+  (`StrongFrictionBreathPause`, **kept** — it guides breathe-in / hold / out). The
+  ambient / companion / everyday-soft sun never carries an unguided breath — which
+  is why the PR #51 tap-pause's *ambient* breath becomes a morph (see Follow-ups).
 - **The sun always morphs; there is only one.** One continuous object that
   glides/scales between states — never a hard cut, never vanishing, never in two
   places. Where a flow can't morph yet (native overlay → WebView), make it morph.
@@ -177,10 +180,3 @@ without accessibility" is not real.
   (2) replace the cross-fade swap with a single positional morph — the sun glides +
   grows from its parked bubble position to centre, holds, then the "Step away?"
   invite fades in. One file, does not block #51.
-- **Remove breathing from the strong-friction pause — deferred cleanup.** The
-  existing everyday breath pause (`StrongFrictionBreathPause`, gated by
-  `getPostSunPauseSeconds` for strong friction) breathes *outside* a guided
-  meditation, which the locked "no breathing outside meditations" decision now
-  forbids. Rework it to a non-breathing calm beat (or let the sun's morph carry the
-  pause); breathing stays only in guided meditations / grounding. This is a
-  behaviour change — confirm scope before doing it.

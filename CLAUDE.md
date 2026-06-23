@@ -24,11 +24,14 @@ feature decision — read them before proposing changes to interventions.
 - **The sun is the central mechanic and *is* the pause.** When an intervention
   fires, a draggable animated sun appears; tapping/flinging it is the universal,
   always-available escape hatch. Tapping it opens a calm pause — but the everyday
-  sun does **not** "breathe": the slow in/out breathing swell is reserved for
-  guided meditations only (e.g. urge-surfing). Outside meditations the pause is
-  carried by the sun's quiet presence and its soft morph into place, never a
-  separate "take a breath" UI and never a repeating breath. The sun rests on the
-  dashboard bottom bar as a companion; drag up → intervention, drag down →
+  *soft/companion* sun does **not** "breathe" on its own. A repeating breathing
+  swell belongs only to *guided* breath pauses — guided meditations (e.g.
+  urge-surfing) and the deliberate strong-friction breath pause
+  (`StrongFrictionBreathPause`, which guides breathe-in / hold / out). The
+  ambient/companion sun and the everyday soft interaction never carry an unguided
+  repeating breath; their calm is carried by the sun's quiet presence and its soft
+  morph into place, never a separate ambient "take a breath" UI. The sun rests on
+  the dashboard bottom bar as a companion; drag up → intervention, drag down →
   optional grounding offer.
 
 - **The sun always *morphs*, and there is only ever one.** Across screens and
