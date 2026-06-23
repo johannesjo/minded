@@ -144,6 +144,52 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
+    it("avoids repeating the greeting shown last time, so each landing surfaces a new tile", () => {
+      const syncData = createMockSyncData({
+        answers: [
+          reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
+          reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
+          reflectiveAnswer(QuestionCategoryId.Gratitude, "a3"),
+          reflectiveAnswer(QuestionCategoryId.HelpfulTools, "a4"),
+        ],
+      });
+
+      // First landing: take whatever the pick lands on, then derive its key the
+      // same way the view does.
+      mockRandom(0.1);
+      const first = greetingOf(getDashboardEntriesFromQuestions(syncData, now));
+      const firstKey = "id" in first ? first.id : first.type;
+
+      // Next landing with the SAME random draw would normally repeat the same
+      // tile — but passing the last key as avoidGreetingKey must steer it away.
+      mockRandom(0.1);
+      const second = greetingOf(
+        getDashboardEntriesFromQuestions(syncData, now, false, firstKey),
+      );
+      const secondKey = "id" in second ? second.id : second.type;
+
+      expect(secondKey).not.toBe(firstKey);
+    });
+
+    it("still greets even when the avoided tile is the only option (never leaves nothing)", () => {
+      // Only one reflective card present; the pool is just it + the quote.
+      const syncData = createMockSyncData({
+        answers: [reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1")],
+      });
+
+      // Avoid the quote AND draw toward the quote slot — it must still produce a
+      // valid greeting rather than nothing.
+      mockRandom(0.999);
+      const entries = getDashboardEntriesFromQuestions(
+        syncData,
+        now,
+        false,
+        DashboardGroupType.Quote,
+      );
+
+      expect(greetingOf(entries)).toBeDefined();
+    });
+
     it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {
       const syncData = createMockSyncData({
         answers: [

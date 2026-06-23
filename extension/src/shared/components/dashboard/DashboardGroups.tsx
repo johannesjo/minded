@@ -1,4 +1,5 @@
 import {
+  createEffect,
   createMemo,
   createSignal,
   For,
@@ -22,7 +23,12 @@ import {
 import {
   CENTER_INDEX,
   getDashboardEntriesFromQuestions,
+  getGreetingKey,
 } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
+import {
+  getLastGreetingKey,
+  setLastGreetingKey,
+} from "@src/shared/components/dashboard/greetingMemory";
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
@@ -81,19 +87,37 @@ export const DashboardGroups: (props: {
   });
   const getHeroGroup = createMemo(() => getDashboardGroups()[getHeroIndex()]);
 
+  // Remember the tile we actually greeted with, so the next arrival can pick a
+  // different one. Tracking the rendered hero (rather than the raw pick) keeps
+  // the memory honest when a refresh preserves the existing greeting.
+  createEffect(() => {
+    const hero = getHeroGroup();
+    if (hero) setLastGreetingKey(getGreetingKey(hero));
+  });
+
   const refresh = () => {
     getSyncData().then((syncData) => {
       setIsShowDailyQuestionsBanner(isShowDailyQuestionsBanner(syncData));
 
+      // Steer this arrival's greeting away from the tile shown last time we
+      // landed, so each return surfaces a fresh one (see greetingMemory).
+      const avoidGreetingKey = getLastGreetingKey();
       const existingDashboardGroups = getDashboardGroups();
       if (existingDashboardGroups) {
         const upd = updateDashboardEntriesFromQuestions(
           syncData,
           existingDashboardGroups,
+          undefined,
+          avoidGreetingKey,
         );
         setDashboardGroups(upd);
       } else {
-        const entries = getDashboardEntriesFromQuestions(syncData);
+        const entries = getDashboardEntriesFromQuestions(
+          syncData,
+          undefined,
+          undefined,
+          avoidGreetingKey,
+        );
         setDashboardGroups(entries);
       }
     });

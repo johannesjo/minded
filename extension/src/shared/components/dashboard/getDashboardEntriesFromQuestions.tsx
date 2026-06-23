@@ -42,10 +42,20 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.SelfAssessment,
 ]);
 
+// A stable identity for a greeting candidate, used to remember which tile we
+// last greeted with so the next arrival can surface a different one. The
+// reflective cards carry a category id; the quote has only its type.
+export const getGreetingKey = (dg: DashboardGroup): string =>
+  "id" in dg ? dg.id : dg.type;
+
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
   isSkipRndEntry = IS_ANDROID,
+  // The greeting shown on the previous arrival, if any. We avoid repeating it so
+  // each landing surfaces a fresh tile — but only when an alternative exists, so
+  // we never end up with nothing to greet with.
+  avoidGreetingKey?: string,
 ): DashboardGroup[] => {
   const ds = getIsoDate(now);
   const dashboardGroups: DashboardGroup[] = [];
@@ -144,13 +154,29 @@ export const getDashboardEntriesFromQuestions = (
       return acc;
     }, []);
 
-    const pick = getRndInt(0, eligibleIndexes.length);
-    if (pick === eligibleIndexes.length) {
+    // The pool of greetings to draw from: every eligible reflective card, plus
+    // the quote as one always-present extra option (the last slot).
+    const options = [
+      ...eligibleIndexes.map((index) => ({
+        index,
+        key: getGreetingKey(sortedEntries[index]),
+      })),
+      { index: -1, key: DashboardGroupType.Quote as string },
+    ];
+
+    // Prefer a tile different from the one shown last time we landed, so each
+    // arrival feels fresh rather than possibly repeating. Only narrow the pool
+    // when an alternative remains — never leave nothing to greet with.
+    const pickable = options.filter((o) => o.key !== avoidGreetingKey);
+    const pool = pickable.length > 0 ? pickable : options;
+
+    const chosen = pool[getRndInt(0, pool.length - 1)];
+    if (chosen.index === -1) {
       sortedEntries.splice(CENTER_INDEX, 0, {
         type: DashboardGroupType.Quote,
       });
     } else {
-      const [greeting] = sortedEntries.splice(eligibleIndexes[pick], 1);
+      const [greeting] = sortedEntries.splice(chosen.index, 1);
       sortedEntries.splice(CENTER_INDEX, 0, greeting);
     }
   } else if (sortedEntries.length < 5) {
