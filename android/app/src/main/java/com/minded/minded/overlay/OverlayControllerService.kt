@@ -860,6 +860,47 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         startActivity(intent)
     }
 
+    /**
+     * The little-sun bubble's "step away" action: the gentle redirect away from
+     * the blocked app. We can't (and the philosophy wouldn't) force-kill it —
+     * we just go home and let the bubble fade.
+     *
+     * Deliberately NOT counted via countUserDrivenClose(): that tally feeds
+     * shouldPromptBudgetSetup (5+/day -> "set up a daily budget"), so logging a
+     * calm step-away would manufacture a scarcity nudge out of the healthy
+     * outcome. Stepping away should leave no tally behind.
+     */
+    fun stepAwayFromBlockedApp() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler(Looper.getMainLooper()).post { stepAwayFromBlockedApp() }
+            return
+        }
+        Log.d(logTag, "stepAwayFromBlockedApp()")
+        goToHomeScreen()
+        littleSunOverlayWindow.hideWindow()
+    }
+
+    /**
+     * Pulling the little-sun pause all the way down "sets" the sun: a deliberate
+     * leave that lands the user in minded itself, rather than the neutral home
+     * screen the "Step away" button uses. The sun-set gesture is an active choice
+     * to return to a calm space, so we redirect into minded (like the full
+     * interaction's close, [goToApp]).
+     *
+     * Like [stepAwayFromBlockedApp], this is NOT counted via
+     * countUserDrivenClose(): a calm, chosen exit shouldn't feed the budget-setup
+     * nudge.
+     */
+    fun pullDownToMindedFromBlockedApp() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler(Looper.getMainLooper()).post { pullDownToMindedFromBlockedApp() }
+            return
+        }
+        Log.d(logTag, "pullDownToMindedFromBlockedApp()")
+        goToApp()
+        littleSunOverlayWindow.hideWindow()
+    }
+
 
     companion object {
         // Live service instance so the flag below reflects actual window

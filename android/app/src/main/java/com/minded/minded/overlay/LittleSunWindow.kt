@@ -1,10 +1,14 @@
 package com.minded.minded.overlay
 
 import android.content.Context
+import android.graphics.PixelFormat
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
+import android.view.Gravity
+import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +20,7 @@ import com.minded.minded.ui.compose.LittleSun
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
+import kotlin.math.roundToInt
 
 //val SMALL_MSG_CYCLE_DURATION = 6
 
@@ -39,6 +44,37 @@ class LittleSunWindow(
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
+    private val density = ctrlSvc.resources.displayMetrics.density
+    private val bubbleSizePx = (60 * density).roundToInt()
+    // Keep the bubble this far in from the LEFT/RIGHT edges. Resting flush put
+    // the bubble's touch area inside the system back-gesture zone, so grabbing
+    // it to drag fired Back instead. A small inset suffices here because we also
+    // claim the bubble's bounds from the back-gesture via
+    // Modifier.systemGestureExclusion — so the drag stays ours wherever it's
+    // parked along the sides.
+    private val edgeMarginPx = (8 * density).roundToInt()
+
+    // Current resting position of the bubble (top-left gravity, pixels). Drag
+    // mutates these; on release the bubble simply rests wherever it was dropped
+    // (clamped on-screen), so it can be parked anywhere, not just at the edges.
+    private var posX = 0
+    private var posY = 0
+
+    // Drives whether the overlay is the small resting bubble or the full-screen
+    // pause + step-away invitation. A Compose state so Cmp() recomposes.
+    private var isExpanded by mutableStateOf(false)
+    // True only when re-showing the resting bubble after the offer collapses, so
+    // it fades back in rather than snapping. Reset on a fresh show.
+    private var enterWithFade by mutableStateOf(false)
+    // The bubble's screen-px centre captured at the moment of tap, so the pause
+    // sun can expand out of exactly where the little sun sat.
+    private var expandOriginX by mutableStateOf(-1)
+    private var expandOriginY by mutableStateOf(-1)
+    // Set while stepping away so the hide fades the expanded pause sun straight
+    // out, instead of flipping back to the little bubble (which would flash on
+    // its way out). Cleared once the window is actually removed.
+    private var keepExpandedOnHide = false
+
     @Composable
     override fun Cmp() {
         LaunchedEffect(Unit) {
@@ -46,7 +82,19 @@ class LittleSunWindow(
             startTimer(initialTime)
         }
 
-        LittleSun(elapsedSeconds)
+        LittleSun(
+            elapsedSeconds = elapsedSeconds,
+            expanded = isExpanded,
+            enterFade = enterWithFade,
+            expandFromX = expandOriginX,
+            expandFromY = expandOriginY,
+            onTap = { expand() },
+            onDrag = { dx, dy -> onDrag(dx, dy) },
+            onDragEnd = { onDragEnd() },
+            onStepAway = { stepAway() },
+            onPullDownAway = { pullDownAway() },
+            onStay = { collapse() },
+        )
     }
 
     private var elapsedSeconds by mutableStateOf(0)
@@ -132,6 +180,12 @@ class LittleSunWindow(
 
     override fun showWindow() {
         Log.d(logTag, "showWindow() called for Little Sun")
+        if (!isWindowShown()) {
+            // Always open as the resting bubble; restore its parked position.
+            isExpanded = false
+            enterWithFade = false
+            initPosition()
+        }
         super.showWindow()
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
@@ -139,18 +193,204 @@ class LittleSunWindow(
         Log.d(logTag, "showWindow() completed, window=${window != null}")
     }
 
+    /**
+     * The resting bubble is a small wrap-content overlay positioned anywhere on
+     * screen. It is touchable (so it can be dragged and tapped) but NOT
+     * full-screen, so the app underneath stays fully interactive — Android only
+     * routes touches inside the bubble's own bounds to us, exactly like a
+     * chat-head. [FLAG_NOT_FOCUSABLE] keeps it from stealing keyboard focus from
+     * the app the user is typing in.
+     *
+     * When tapped it expands to a full-screen, dimmed pause + invitation; that
+     * surface is user-invoked and always auto-dismisses, so the app is never
+     * blocked while the bubble is idle.
+     */
     override fun getLayoutParams(): WindowManager.LayoutParams {
-        return super.getLayoutParams().apply {
-            flags = flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        return if (isExpanded) expandedLayoutParams() else restingLayoutParams()
+    }
+
+    private fun restingLayoutParams(): WindowManager.LayoutParams {
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = posX
+            y = posY
         }
+    }
+
+    private fun expandedLayoutParams(): WindowManager.LayoutParams {
+        @Suppress("DEPRECATION")
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            x = 0
+            y = 0
+        }
+    }
+
+    // The full display bounds the resting bubble is positioned within. With
+    // gravity TOP|START + FLAG_LAYOUT_NO_LIMITS the bubble lives in the real
+    // display coordinate space (behind the bars), so we clamp against that.
+    private fun displayWidthPx() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            windowManager.currentWindowMetrics.bounds.width()
+        else ctrlSvc.resources.displayMetrics.widthPixels
+
+    private fun displayHeightPx() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            windowManager.currentWindowMetrics.bounds.height()
+        else ctrlSvc.resources.displayMetrics.heightPixels
+
+    // Top/bottom safe insets read LIVE from the window, not from static resource
+    // dimens. mandatorySystemGestures is exactly the band an app can't exclude —
+    // the notification-shade pull at the top, the home/back gesture strip at the
+    // bottom — and (unlike navigation_bar_height) it reports the real gesture-
+    // zone size in gesture-nav mode, so the bubble can't be parked under the home
+    // bar. Unioned with systemBars so it also clears the visible bars. Falls back
+    // to static dimens on API 29, which predates currentWindowMetrics.
+    private fun safeInsetTopPx() = gestureInsets().first
+    private fun safeInsetBottomPx() = gestureInsets().second
+
+    private fun gestureInsets(): Pair<Int, Int> {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val insets = windowManager.currentWindowMetrics.windowInsets.getInsets(
+                WindowInsets.Type.mandatorySystemGestures() or WindowInsets.Type.systemBars()
+            )
+            return insets.top to insets.bottom
+        }
+        return systemDimenPx("status_bar_height") to systemDimenPx("navigation_bar_height")
+    }
+
+    private fun systemDimenPx(resName: String): Int {
+        val id = ctrlSvc.resources.getIdentifier(resName, "dimen", "android")
+        return if (id > 0) ctrlSvc.resources.getDimensionPixelSize(id) else 0
+    }
+
+    private fun initPosition() {
+        val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
+        if (saved != null) {
+            posX = saved.first
+            posY = saved.second
+        } else {
+            // Default to the bottom-left, where the little sun has always rested.
+            posX = (8 * density).roundToInt()
+            posY = displayHeightPx() - bubbleSizePx - (96 * density).roundToInt()
+        }
+        clampPosition()
+    }
+
+    private fun clampPosition() {
+        // Keep the bubble on-screen and clear of every system gesture zone, with
+        // the same small visual gap (edgeMarginPx) on all four sides beyond the
+        // true safe boundary. Sides: the back-gesture is excluded for the
+        // bubble's bounds, so only the gap is needed. Top/bottom: park just
+        // outside the live mandatory-gesture insets, so the bubble can sit near
+        // the edges without arming the notification shade or the home gesture.
+        val minX = edgeMarginPx
+        val maxX = (displayWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
+        val minY = safeInsetTopPx() + edgeMarginPx
+        val maxY = (displayHeightPx() - bubbleSizePx - safeInsetBottomPx() - edgeMarginPx)
+            .coerceAtLeast(minY)
+        posX = posX.coerceIn(minX, maxX)
+        posY = posY.coerceIn(minY, maxY)
+    }
+
+    private fun updateLayout() {
+        val w = window ?: return
+        try {
+            windowManager.updateViewLayout(w, getLayoutParams())
+        } catch (e: Exception) {
+            Log.e(logTag, "updateViewLayout failed", e)
+        }
+    }
+
+    private fun onDrag(dxPx: Float, dyPx: Float) {
+        if (isExpanded) return
+        posX += dxPx.roundToInt()
+        posY += dyPx.roundToInt()
+        clampPosition()
+        updateLayout()
+    }
+
+    private fun onDragEnd() {
+        if (isExpanded) return
+        // Rest wherever it was dropped — a free-floating companion, parkable
+        // anywhere, not edge-locked. clampPosition keeps it on-screen and a
+        // margin in from every edge, clear of the system gesture zones.
+        clampPosition()
+        ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
+    }
+
+    private fun expand() {
+        if (isExpanded) return
+        // Capture where the bubble sits now so the pause sun expands out of it.
+        expandOriginX = posX + bubbleSizePx / 2
+        expandOriginY = posY + bubbleSizePx / 2
+        isExpanded = true
+        updateLayout()
+    }
+
+    private fun collapse() {
+        if (!isExpanded) return
+        // The pause sun has already faded out (reverse crossfade) or sunk off-screen
+        // (drag-down) by the time we get here, so the window resize is unseen. Fade
+        // the resting bubble back in, never snap.
+        enterWithFade = true
+        isExpanded = false
+        clampPosition()
+        updateLayout()
+    }
+
+    private fun stepAway() {
+        // Fade the expanded sun straight out — don't revert to the little bubble.
+        keepExpandedOnHide = true
+        ctrlSvc.stepAwayFromBlockedApp()
+    }
+
+    private fun pullDownAway() {
+        // The pause was pulled all the way down — the sun has already sunk off
+        // the bottom. Leave the blocked app for minded (not the home screen the
+        // "Step away" button uses). Keep the expanded surface through the hide
+        // fade so it doesn't flash back to the bubble on its way out.
+        keepExpandedOnHide = true
+        ctrlSvc.pullDownToMindedFromBlockedApp()
     }
 
     override fun hideWindow() {
         stopTimer()
+        // Reset expansion state here (not only on the show path): the window can
+        // be hidden mid-offer by timer expiry / revalidation, and resetting only
+        // in showWindow() can be skipped if a re-show races the hide fade-out —
+        // leaving a stale full-screen overlay that would block the app. The lone
+        // exception is stepping away, which keeps the expanded sun on screen so it
+        // fades out as the pause (the reset then happens in onWindowRemoved).
+        if (!keepExpandedOnHide) {
+            isExpanded = false
+            enterWithFade = false
+        }
         super.hideWindow()
     }
 
     override fun onWindowRemoved() {
+        // Window is gone — clear expansion so the next show starts as the bubble
+        // (step-away keeps it expanded through the fade, so reset only now).
+        isExpanded = false
+        enterWithFade = false
+        keepExpandedOnHide = false
+
         val expiredApp = pendingExpiredApp ?: return
         val wasWindDownSnooze = pendingExpiredWasWindDownSnooze
         pendingExpiredApp = null
