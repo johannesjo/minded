@@ -488,7 +488,7 @@ export const QUESTION_CATEGORIES: {
         prompt: "Right now I could",
         chips: [
           "make tea",
-          "look out the window",
+          "drink some water",
           "step outside",
           "stretch slowly",
         ],
@@ -939,7 +939,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.NN5,
-        t: "What is here right now, that you don't need to change",
+        t: "What is one thing around you that is fine just as it is",
       },
     ],
   },
@@ -967,7 +967,7 @@ export const QUESTION_CATEGORIES: {
     ],
   },
   [QuestionCategoryId.LettingGo]: {
-    dashboardTxt: "Letting Go",
+    dashboardTxt: "Making Room",
     questions: [
       {
         id: QID.LG1,
@@ -980,7 +980,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.LG3,
-        t: "What would it feel like to let this moment be enough",
+        t: "What is already enough about this moment",
       },
       {
         id: QID.LG4,
