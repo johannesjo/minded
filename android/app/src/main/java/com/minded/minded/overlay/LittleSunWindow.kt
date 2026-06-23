@@ -2,13 +2,11 @@ package com.minded.minded.overlay
 
 import android.content.Context
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import android.view.Gravity
-import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,14 +43,7 @@ class LittleSunWindow(
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
     private val density = ctrlSvc.resources.displayMetrics.density
-    private val bubbleSizePx = (60 * density).roundToInt()
-    // Keep the bubble this far in from the LEFT/RIGHT edges. Resting flush put
-    // the bubble's touch area inside the system back-gesture zone, so grabbing
-    // it to drag fired Back instead. A small inset suffices here because we also
-    // claim the bubble's bounds from the back-gesture via
-    // Modifier.systemGestureExclusion — so the drag stays ours wherever it's
-    // parked along the sides.
-    private val edgeMarginPx = (8 * density).roundToInt()
+    private val bubbleSizePx = LittleSunPosition.bubbleSizePx(density)
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble simply rests wherever it was dropped
@@ -241,71 +232,20 @@ class LittleSunWindow(
         }
     }
 
-    // The full display bounds the resting bubble is positioned within. With
-    // gravity TOP|START + FLAG_LAYOUT_NO_LIMITS the bubble lives in the real
-    // display coordinate space (behind the bars), so we clamp against that.
-    private fun displayWidthPx() =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            windowManager.currentWindowMetrics.bounds.width()
-        else ctrlSvc.resources.displayMetrics.widthPixels
-
-    private fun displayHeightPx() =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            windowManager.currentWindowMetrics.bounds.height()
-        else ctrlSvc.resources.displayMetrics.heightPixels
-
-    // Top/bottom safe insets read LIVE from the window, not from static resource
-    // dimens. mandatorySystemGestures is exactly the band an app can't exclude —
-    // the notification-shade pull at the top, the home/back gesture strip at the
-    // bottom — and (unlike navigation_bar_height) it reports the real gesture-
-    // zone size in gesture-nav mode, so the bubble can't be parked under the home
-    // bar. Unioned with systemBars so it also clears the visible bars. Falls back
-    // to static dimens on API 29, which predates currentWindowMetrics.
-    private fun safeInsetTopPx() = gestureInsets().first
-    private fun safeInsetBottomPx() = gestureInsets().second
-
-    private fun gestureInsets(): Pair<Int, Int> {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val insets = windowManager.currentWindowMetrics.windowInsets.getInsets(
-                WindowInsets.Type.mandatorySystemGestures() or WindowInsets.Type.systemBars()
-            )
-            return insets.top to insets.bottom
-        }
-        return systemDimenPx("status_bar_height") to systemDimenPx("navigation_bar_height")
-    }
-
-    private fun systemDimenPx(resName: String): Int {
-        val id = ctrlSvc.resources.getIdentifier(resName, "dimen", "android")
-        return if (id > 0) ctrlSvc.resources.getDimensionPixelSize(id) else 0
-    }
-
+    // Position geometry (default, clamp, display bounds, gesture insets) lives in
+    // LittleSunPosition so the departing-sun morph in the interaction WebView can
+    // target the exact same resting spot the bubble will appear at.
     private fun initPosition() {
         val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
-        if (saved != null) {
-            posX = saved.first
-            posY = saved.second
-        } else {
-            // Default to the bottom-left, where the little sun has always rested.
-            posX = (8 * density).roundToInt()
-            posY = displayHeightPx() - bubbleSizePx - (96 * density).roundToInt()
-        }
-        clampPosition()
+        val (x, y) = LittleSunPosition.restingTopLeft(ctrlSvc, windowManager, saved)
+        posX = x
+        posY = y
     }
 
     private fun clampPosition() {
-        // Keep the bubble on-screen and clear of every system gesture zone, with
-        // the same small visual gap (edgeMarginPx) on all four sides beyond the
-        // true safe boundary. Sides: the back-gesture is excluded for the
-        // bubble's bounds, so only the gap is needed. Top/bottom: park just
-        // outside the live mandatory-gesture insets, so the bubble can sit near
-        // the edges without arming the notification shade or the home gesture.
-        val minX = edgeMarginPx
-        val maxX = (displayWidthPx() - bubbleSizePx - edgeMarginPx).coerceAtLeast(minX)
-        val minY = safeInsetTopPx() + edgeMarginPx
-        val maxY = (displayHeightPx() - bubbleSizePx - safeInsetBottomPx() - edgeMarginPx)
-            .coerceAtLeast(minY)
-        posX = posX.coerceIn(minX, maxX)
-        posY = posY.coerceIn(minY, maxY)
+        val (x, y) = LittleSunPosition.clamp(ctrlSvc, windowManager, posX, posY)
+        posX = x
+        posY = y
     }
 
     private fun updateLayout() {

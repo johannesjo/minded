@@ -96,6 +96,13 @@ export interface SunSettle {
    */
   anchorXPx?: number;
   /**
+   * Horizontal resting point as a fraction of viewport width (0 = left edge).
+   * Overrides anchorXPx's default centring when set. Used to land on a
+   * measured fractional point (the Android Little Sun's dragged position) that
+   * tracks the viewport rather than a fixed px corner.
+   */
+  anchorXRatio?: number;
+  /**
    * Fixed vertical resting point in px from the bottom edge. Overrides
    * anchorYRatio when set. Used to land on the bottom-bar companion anchor
    * (--companion-bar-center-y) without drifting on tall viewports.
@@ -289,7 +296,10 @@ export const Sun: Component<SunProps> = (props) => {
   const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
     if (!rest) return getDragOffset();
-    const anchorX = settle.anchorXPx ?? window.innerWidth * 0.5;
+    const anchorX =
+      settle.anchorXRatio != null
+        ? window.innerWidth * settle.anchorXRatio
+        : (settle.anchorXPx ?? window.innerWidth * 0.5);
     const anchorY =
       settle.anchorYPxFromBottom != null
         ? window.innerHeight - settle.anchorYPxFromBottom

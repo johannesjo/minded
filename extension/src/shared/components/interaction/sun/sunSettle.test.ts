@@ -5,6 +5,8 @@ import {
   restingSunAnchorFromRect,
   SUN_REST_SETTLE,
   sunBreatheSettle,
+  sunDepartSettle,
+  sunDepartSettleAt,
   sunRestingSettle,
 } from "./sunSettle";
 
@@ -68,6 +70,24 @@ describe("getSunSettleForPhase", () => {
     )!;
     expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_ANDROID);
     expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_ANDROID);
+  });
+});
+
+describe("sunDepartSettleAt", () => {
+  it("anchors the departing disc at the measured fractional position", () => {
+    // Android hands off to a free-floating bubble parked wherever the user
+    // dropped it; the morph targets that centre as viewport fractions so it
+    // lands there on any screen size rather than at the fixed corner.
+    const settle = sunDepartSettleAt({ x: 0.07, y: 0.86 });
+    expect(settle.anchorXRatio).toBe(0.07);
+    expect(settle.anchorYRatio).toBe(0.86);
+    expect(settle.breathe).toBe(false);
+  });
+
+  it("keeps the same shrink as the fixed-corner depart so the hand-off size matches", () => {
+    expect(sunDepartSettleAt({ x: 0.5, y: 0.5 }).scale).toBe(
+      sunDepartSettle().scale,
+    );
   });
 });
 

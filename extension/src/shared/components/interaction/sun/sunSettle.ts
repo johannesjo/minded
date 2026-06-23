@@ -162,6 +162,29 @@ export const sunDepartSettle = (
 export const SUN_DEPART_SETTLE: SunSettle = sunDepartSettle();
 
 /**
+ * Departing target at a measured fractional point of the viewport, used on
+ * Android where the native Little Sun is a free-floating, draggable bubble that
+ * rests wherever the user parked it (persisted) rather than at the fixed corner.
+ *
+ * `frac` is the bubble's centre expressed as a fraction (0..1) of the device
+ * display, read from the native side (see InteractionWindowJavaScriptInterface
+ * .getLittleSunRestCenter). Because the interaction WebView covers the full
+ * display, that fraction maps 1:1 onto its viewport — so the departing sun
+ * glides to exactly where the native bubble will bloom in, on a wide phone or a
+ * tall one, wherever it was dragged. Scale matches `sunDepartSettle` so the
+ * hand-off size is identical to the fixed-corner case.
+ */
+export const sunDepartSettleAt = (frac: {
+  x: number;
+  y: number;
+}): SunSettle => ({
+  anchorXRatio: frac.x,
+  anchorYRatio: frac.y,
+  scale: 0.34,
+  breathe: false,
+});
+
+/**
  * Companion rest: the idle home in the app shell, centred over the bottom bar.
  * Anchored in fixed px from the bottom (the measured `--companion-bar-center-y`)
  * so it lands on the bottom-bar anchor. No JS breath — the CSS idle-breath glow

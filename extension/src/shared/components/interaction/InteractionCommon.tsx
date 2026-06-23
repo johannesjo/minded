@@ -24,13 +24,18 @@ import {
   getQuestionSmart,
   getQuestionSemiSmart,
 } from "@src/util/getQuestionSmart";
-import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
+import {
+  getSyncData,
+  IS_ANDROID,
+} from "@src/dataInterface/commonSyncDataInterface";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
   restingSunAnchorFromRect,
+  sunDepartSettleAt,
   sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
@@ -203,6 +208,33 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   };
 
+  // Centre (viewport fractions) where the native Android Little Sun bubble will
+  // rest, read once on mount. The bubble can't move while the interaction is up
+  // (it isn't shown then), so a single read is stable for this interaction; the
+  // departing morph targets it instead of the fixed corner. null off Android or
+  // when the native side can't report it.
+  const [getLittleSunRestCenter, setLittleSunRestCenter] = createSignal<{
+    x: number;
+    y: number;
+  } | null>(null);
+  if (IS_ANDROID && props.interactionPlatform === "android") {
+    onMount(() => {
+      try {
+        const raw = androidInterface.getLittleSunRestCenter?.();
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as { fracX?: number; fracY?: number };
+        if (
+          typeof parsed.fracX === "number" &&
+          typeof parsed.fracY === "number"
+        ) {
+          setLittleSunRestCenter({ x: parsed.fracX, y: parsed.fracY });
+        }
+      } catch {
+        // Leave null → the morph falls back to the fixed corner.
+      }
+    });
+  }
+
   const getSunSettle = () => {
     // Resting: tuck under the measured choices block (mirrors the shell sun's
     // getSunSettleForCurrentRole), falling back to the static rest target until
@@ -210,6 +242,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (getSunPhase() === "resting") {
       const anchor = getRestingSunAnchor();
       if (anchor) return sunRestingSettle(anchor);
+    }
+    // Departing on Android: the native Little Sun is a free-floating bubble the
+    // user can park anywhere (and the persisted spot is read on mount). Glide to
+    // its real centre so the disc lands where the bubble blooms in, rather than
+    // darting to a fixed corner it no longer rests at. Fall back to the corner
+    // when the position is unknown (older app, read failed).
+    if (getSunPhase() === "departing") {
+      const restCenter = getLittleSunRestCenter();
+      if (restCenter) return sunDepartSettleAt(restCenter);
     }
     return getSunSettleForPhase(
       getSunPhase(),
