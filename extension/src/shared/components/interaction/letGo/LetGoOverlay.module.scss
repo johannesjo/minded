@@ -16,7 +16,13 @@
   padding: 24px;
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  animation: letGoIn var(--let-go-fade-ms, 600ms) ease-out forwards;
+  // No `forwards`: a finished forwards-filled animation keeps controlling the
+  // computed opacity (animation origin outranks normal declarations), which would
+  // pin the element at 1 and silently swallow the `.isClosing` fade below — the
+  // leave would hard-cut. Dropping it lets opacity revert to its base (1, the
+  // `to` value, so no end flash) and frees the exit transition to run. Don't
+  // re-add `forwards` here.
+  animation: letGoIn var(--let-go-fade-ms, 600ms) ease-out;
 
   &.isClosing {
     opacity: 0;
