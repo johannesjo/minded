@@ -4,7 +4,6 @@ import {
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupSelAssessment,
-  DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import {
@@ -17,7 +16,6 @@ import { getRndEntries } from "@src/util/getRndEntries";
 import { isCategoryWithinTimeConstraints } from "@src/util/getQuestionSmart";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
-import { getIsoDate } from "@src/util/getIsoDate";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard/getRecentSelfAssementEntries";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
@@ -95,7 +93,6 @@ export const getDashboardEntriesFromQuestions = (
   // we never end up with nothing to greet with.
   avoidGreetingKey?: string,
 ): DashboardGroup[] => {
-  const ds = getIsoDate(now);
   const dashboardGroups: DashboardGroup[] = [];
   const groupsToCheck = [
     ...FIXED_QUESTION_CATEGORIES_ON_DASHBOARD,
@@ -135,15 +132,6 @@ export const getDashboardEntriesFromQuestions = (
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
       type: DashboardGroupType.SleepWindDown,
     });
-    fixedEntriesIndexAndNr++;
-  }
-
-  if (syncData.sunTaps[ds] > 0) {
-    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
-      type: DashboardGroupType.Stats,
-      attempts: syncData.attempts[ds] || 0,
-      sunTaps: syncData.sunTaps[ds] || 0,
-    } as DashboardGroupStats);
     fixedEntriesIndexAndNr++;
   }
 

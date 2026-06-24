@@ -102,31 +102,6 @@ describe("getDashboardEntriesFromQuestions", () => {
       (isThisWeek as jest.Mock).mockReturnValue(false);
     });
 
-    it("never greets with a measurement card (the stats counter), whatever the random pick", () => {
-      const syncData = createMockSyncData({
-        // → a minded-decisions tally; it should never be the calm first card.
-        sunTaps: { "2024-01-15": 5 },
-        attempts: { "2024-01-15": 12 },
-        answers: [
-          reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
-          reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
-          reflectiveAnswer(QuestionCategoryId.Gratitude, "a3"),
-          reflectiveAnswer(QuestionCategoryId.HelpfulTools, "a4"),
-        ],
-      });
-
-      const measuringTypes = [DashboardGroupType.Stats];
-
-      // Sweep the pick across the whole [0, 1) range; the greeting must always
-      // be a reflective card or a quote, never a measurement card.
-      for (let r = 0; r < 1; r += 0.05) {
-        mockRandom(r);
-        expect(measuringTypes).not.toContain(
-          greetingOf(getDashboardEntriesFromQuestions(syncData, now)).type,
-        );
-      }
-    });
-
     it("lets a self-report card (energy) be the greeting — it's no longer pinned out of the pool", () => {
       const syncData = createMockSyncData({
         answers: [
@@ -397,13 +372,7 @@ describe("isGreetingEligible", () => {
     ).toBe(true);
   });
 
-  it("never treats a measurement or quote card as a greeting candidate", () => {
-    expect(
-      isGreetingEligible(
-        { type: DashboardGroupType.Stats, attempts: 0, sunTaps: 1 },
-        monMorning,
-      ),
-    ).toBe(false);
+  it("never treats a quote card as a greeting candidate", () => {
     expect(
       isGreetingEligible({ type: DashboardGroupType.Quote }, monMorning),
     ).toBe(false);

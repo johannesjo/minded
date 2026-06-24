@@ -13,7 +13,6 @@ import {
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
   DashboardGroupSelAssessment,
-  DashboardGroupStats,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import {
@@ -272,27 +271,6 @@ export const DashboardGroups: (props: {
                 <div>
                   <div class="dashboardHeading">wind down for sleep</div>
                   <div class="fatTxt">it's getting late</div>
-                </div>
-              );
-            case DashboardGroupType.Stats:
-              // eslint-disable-next-line no-case-declarations
-              const dgs = dg as DashboardGroupStats;
-              return (
-                <div class={styles.stats}>
-                  <div
-                    class="dashboardHeading"
-                    title="'minded' decisions are counted every time when you leave a website by clicking the sun."
-                  >
-                    minded decisions today
-                  </div>
-                  <div
-                    class="fatTxt"
-                    title={
-                      dgs.attempts + " website visit attempts today in total"
-                    }
-                  >
-                    {dgs.sunTaps}
-                  </div>
                 </div>
               );
             case DashboardGroupType.Quote:
