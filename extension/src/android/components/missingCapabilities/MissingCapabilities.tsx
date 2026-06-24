@@ -22,9 +22,14 @@ const OPTIONAL_CAPABILITIES = ["UsageStats", "BatteryOptimization"];
 export const MissingCapabilityView = (props: {
   onAllConfigured?: () => void;
   onPermissionDenied?: () => void;
-  // When true, advisory capabilities (usage-access, battery-optimization) don't
-  // block onAllConfigured - used by onboarding so they don't gate completion.
+  // When true, show only the required capabilities (accessibility + overlay) and
+  // gate onAllConfigured on them. Used by the first onboarding permission step so
+  // the optional extras don't crowd the first impression or block completion.
   requiredOnly?: boolean;
+  // When true, show only the advisory capabilities (usage-access,
+  // battery-optimization). Used by the dedicated optional onboarding step that
+  // follows the required one; never blocks - the user can always continue.
+  optionalOnly?: boolean;
 }) => {
   const [getIsShowManualInstructions, setIsShowManualInstructions] =
     createSignal<boolean>(false);
@@ -41,6 +46,20 @@ export const MissingCapabilityView = (props: {
       [],
     );
     setMissingCapabilities(mc);
+
+    // Optional step: nothing here blocks, so Continue is always available. Once
+    // the user has granted (or already had) every optional capability there is
+    // nothing left to offer, so move straight on to completion.
+    if (props.optionalOnly) {
+      const optionalMissing = mc.filter((c) =>
+        OPTIONAL_CAPABILITIES.includes(c),
+      );
+      setCanContinue(true);
+      if (optionalMissing.length === 0) {
+        props.onAllConfigured?.();
+      }
+      return;
+    }
 
     const blockingMissing = props.requiredOnly
       ? mc.filter((c) => REQUIRED_CAPABILITIES.includes(c))
@@ -88,8 +107,18 @@ export const MissingCapabilityView = (props: {
     <div class={styles.container + " pageTransitionIn"}>
       <div class={styles.innerContainer}>
         <div class="txtSlightlyBigger">
-          <em>minded</em> displays an overlay when you open one of the
-          configured apps. For this to work you need to give us permission.
+          {props.optionalOnly ? (
+            <>
+              You're all set. These extras are optional — they just help the sun
+              appear more reliably. Add them now or skip; you can always do it
+              later.
+            </>
+          ) : (
+            <>
+              <em>minded</em> displays an overlay when you open one of the
+              configured apps. For this to work you need to give us permission.
+            </>
+          )}
         </div>
         {/*<div*/}
         {/*  class="txtSlightlyBigger"*/}
@@ -99,61 +128,68 @@ export const MissingCapabilityView = (props: {
         {/*    <em>minded</em> does not collect or send any kind of information!*/}
         {/*  </strong>*/}
         {/*</div>*/}
-        {getMissingCapabilities().includes("Accessibility") && (
-          <div class="card">
-            <p class={styles.permissionText}>
-              <em>minded</em> uses accessibility capabilities only to detect the
-              app that is currently in the foreground, so <em>minded</em> can
-              display its interaction overlay for the apps you configured.
-            </p>
-            {/*<p class={styles.permissionText "}>*/}
-            {/*  <em>minded</em> does not collect any kind of information and does*/}
-            {/*  not send any kind of information.*/}
+        {!props.optionalOnly &&
+          getMissingCapabilities().includes("Accessibility") && (
+            <div class="card">
+              <p class={styles.permissionText}>
+                <em>minded</em> uses accessibility capabilities only to detect
+                the app that is currently in the foreground, so <em>minded</em>{" "}
+                can display its interaction overlay for the apps you configured.
+              </p>
+              {/*<p class={styles.permissionText "}>*/}
+              {/*  <em>minded</em> does not collect any kind of information and does*/}
+              {/*  not send any kind of information.*/}
 
-            {/*Enabling the shortcut is{" "}*/}
-            {/*<strong>not</strong> required or recommended.*/}
-            {/*</p>*/}
-            <Btn onClick={() => onMissingCapabilityClick("Accessibility")}>
-              Enable Accessibility Service
-            </Btn>
+              {/*Enabling the shortcut is{" "}*/}
+              {/*<strong>not</strong> required or recommended.*/}
+              {/*</p>*/}
+              <Btn onClick={() => onMissingCapabilityClick("Accessibility")}>
+                Enable Accessibility Service
+              </Btn>
 
-            {getIsShowManualInstructions() && (
-              <>
-                <p class={styles.smallText}>
-                  If the buttons above does not work, you can enable the
-                  accessibility service and the permission manually in your
-                  device settings.
-                </p>
-                <p class={styles.smallText}>
-                  In case there are problems with the accessibility service,
-                  enabling, disabling and then enabling the service again will
-                  likely help.
-                </p>
-              </>
-            )}
-          </div>
-        )}
-        {getMissingCapabilities().includes("SystemAlertWindow") && (
-          <div class="card">
-            <p class={styles.permissionText}>
-              To display its overlays, <em>minded </em>needs the overlay
-              permission.
-            </p>
-            <Btn onClick={() => onMissingCapabilityClick("SystemAlertWindow")}>
-              Enable Overlay Permission
-            </Btn>
-          </div>
-        )}
-        {/* Optional capabilities are deferred during onboarding (requiredOnly):
-            a first-run user should meet two cards, not four. They still surface
-            afterwards via the dashboard's missing-permissions banner. */}
+              {getIsShowManualInstructions() && (
+                <>
+                  <p class={styles.smallText}>
+                    If the buttons above does not work, you can enable the
+                    accessibility service and the permission manually in your
+                    device settings.
+                  </p>
+                  <p class={styles.smallText}>
+                    In case there are problems with the accessibility service,
+                    enabling, disabling and then enabling the service again will
+                    likely help.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+        {!props.optionalOnly &&
+          getMissingCapabilities().includes("SystemAlertWindow") && (
+            <div class="card">
+              <p class={styles.permissionText}>
+                To display its overlays, <em>minded </em>needs the overlay
+                permission.
+              </p>
+              <Btn
+                onClick={() => onMissingCapabilityClick("SystemAlertWindow")}
+              >
+                Enable Overlay Permission
+              </Btn>
+            </div>
+          )}
+        {/* Optional capabilities are deferred during the required onboarding
+            step (requiredOnly) so a first-run user meets two cards, not four.
+            They get their own dedicated step afterwards (optionalOnly), and
+            also surface via the dashboard's missing-permissions banner. */}
         {!props.requiredOnly && hasOptionalMissing() && (
           <div class={styles.optionalSection}>
-            <p class={styles.optionalHeading}>
-              Recommended. <em>minded</em> already works with the permissions
-              above; the steps below are optional and make detection more
-              reliable.
-            </p>
+            {!props.optionalOnly && (
+              <p class={styles.optionalHeading}>
+                Recommended. <em>minded</em> already works with the permissions
+                above; the steps below are optional and make detection more
+                reliable.
+              </p>
+            )}
             {getMissingCapabilities().includes("UsageStats") && (
               <div class="card">
                 <span class={styles.optionalBadge}>Optional</span>
@@ -188,23 +224,27 @@ export const MissingCapabilityView = (props: {
           </div>
         )}
 
-        {props.requiredOnly && getCanContinue() && (
+        {(props.requiredOnly || props.optionalOnly) && getCanContinue() && (
           <Btn
             big
-            style="margin-top: 32px"
+            style={{ "margin-top": "32px" }}
             onClick={() => props.onAllConfigured?.()}
           >
             continue
           </Btn>
         )}
 
-        <Btn
-          outline
-          style="margin-top:  32px"
-          onClick={() => props.onPermissionDenied?.()}
-        >
-          maybe later
-        </Btn>
+        {/* The optional step never blocks - its always-available Continue is the
+            skip - so it omits the declining opt-out shown on the required step. */}
+        {!props.optionalOnly && (
+          <Btn
+            outline
+            style={{ "margin-top": "32px" }}
+            onClick={() => props.onPermissionDenied?.()}
+          >
+            maybe later
+          </Btn>
+        )}
 
         <p class={styles.privacyNote}>
           Everything stays on your device. Nothing is ever sent anywhere.

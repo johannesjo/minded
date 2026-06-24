@@ -30,8 +30,11 @@ export const OnboardingAndroid = (props: {
     props.onGoDashboard();
   };
 
+  // Mark onboarding done once the required permissions are granted (step 3
+  // onward): from there minded is functional, so a force-quit shouldn't drop the
+  // user back into the welcome. The denied path jumps straight to step 4.
   createEffect(() => {
-    if (getStep() === 3) {
+    if (getStep() >= 3) {
       updateUserCfg({ isOnboardingComplete: true });
     }
   });
@@ -90,13 +93,21 @@ export const OnboardingAndroid = (props: {
                   setPermissionNotGiven(false);
                 }}
                 onPermissionDenied={() => {
-                  setStep(3);
+                  setStep(4);
                   setPermissionNotGiven(true);
                 }}
               />
             </div>
           </Match>
-          <Match when={getStep() >= 3}>
+          <Match when={getStep() === 3}>
+            <div class="pageWrapper pageTransitionIn">
+              <MissingCapabilityView
+                optionalOnly={true}
+                onAllConfigured={() => setStep(4)}
+              />
+            </div>
+          </Match>
+          <Match when={getStep() >= 4}>
             {getPermissionNotGiven() ? (
               <div class="card pageTransitionIn" style={{ margin: "32px" }}>
                 <div class="h2 h2Mindful">Almost there</div>
@@ -145,7 +156,7 @@ export const OnboardingAndroid = (props: {
       </div>
 
       <Stepper
-        nrOfSteps={4}
+        nrOfSteps={5}
         activeStep={getStep()}
         // On re-entry from the dashboard invitation (initialStep > 0) the
         // welcome — with its "set this up later" skip — is behind us; don't let
