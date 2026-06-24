@@ -181,14 +181,17 @@
     pointer-events: none;
   }
 
-  // Pin cancel to the bottom out of the flow so the choices group centres on the
-  // full page height rather than the space above the cancel link.
+  // Keep the cancel in the flow at the bottom of the choices column rather than
+  // pinning it as a full-width absolute band. A bottom-pinned `inset` band spans
+  // the whole width and, with its own pointer events, floats over — and silently
+  // steals taps from — the lower options whenever vertical space is tight
+  // (landscape, short browser windows, Android nav-bar insets / keyboard). In the
+  // flow the click-through resting-sun spacer always sits between the options and
+  // the cancel, so every choice stays tappable; the choices still read as centred
+  // (the flex:1 container above absorbs the slack).
   .intent-selection-cancel,
   .time-selection-cancel {
-    position: absolute;
-    bottom: 48px;
-    left: 0;
-    right: 0;
+    margin-top: auto;
     text-align: center;
   }
 }
