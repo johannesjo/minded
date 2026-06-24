@@ -55,7 +55,9 @@ class LittleSunWindow(
     // pause + step-away invitation. A Compose state so Cmp() recomposes.
     private var isExpanded by mutableStateOf(false)
     // True only when re-showing the resting bubble after the offer collapses, so
-    // it fades back in rather than snapping. Reset on a fresh show.
+    // the bubble waits for the window resize to settle before appearing (then
+    // snaps in at the sun's spot, with no entrance of its own — one continuous
+    // motion). Reset on a fresh show.
     private var enterWithFade by mutableStateOf(false)
     // The bubble's screen-px centre captured at the moment of tap, so the pause
     // sun can expand out of exactly where the little sun sat.
@@ -285,9 +287,10 @@ class LittleSunWindow(
 
     private fun collapse() {
         if (!isExpanded) return
-        // The pause sun has already faded out (reverse crossfade) or sunk off-screen
-        // (drag-down) by the time we get here, so the window resize is unseen. Fade
-        // the resting bubble back in, never snap.
+        // The pause sun has already handed off (reverse glide → quick hide) or sunk
+        // off-screen (drag-down) by the time we get here, so the window resize is
+        // unseen. Have the resting bubble wait for the resize to settle, then snap
+        // in at the sun's spot (no separate entrance) — one continuous motion.
         enterWithFade = true
         isExpanded = false
         clampPosition()

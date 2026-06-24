@@ -93,17 +93,24 @@ private const val PAUSE_MS = 600L
  */
 private const val OFFER_AUTO_DISMISS_MS = 15000L
 
-/** Fade applied when the surface eases out, and when the bubble eases back in. */
+/** Duration of the pause surface's ease-out and the sun's reverse glide-home. */
 private const val FADE_MS = 400
 
 /**
  * On a stay-dismiss (Not now / tap-off / ignored) the sun first glides home over
- * FADE_MS, then fades out at the corner over this. The fade lets the overlay
- * window resize from full-screen back to the little bubble *behind* an invisible
- * sun — so the resize never shows as a jump — before the resting bubble fades in.
- * A soft hand-off, never a hard cut (per CLAUDE.md).
+ * FADE_MS staying fully opaque, then hands off to the resting bubble over this.
+ * The hand-off only needs to outlast the window resize (full-screen → little
+ * bubble), which must happen behind an *invisible* sun or it shows as a 1-frame
+ * jump — so this is kept short: just long enough to mask the resize, not a slow
+ * fade that reads as the sun "disappearing" before a separate bubble animates in.
+ * The opaque bubble then takes the sun's exact spot with no entrance of its own,
+ * so the whole close reads as one continuous motion.
+ *
+ * NOTE: a single window can't be perfectly seamless here (the resize and Compose
+ * re-layout can't land in the same frame); the only fully gap-free fix is two
+ * windows. This is the tightened one-window interim — tune on a device.
  */
-private const val CROSSFADE_MS = 280
+private const val CROSSFADE_MS = 80
 
 /**
  * The expanded pause is user-invoked, so the dim should answer the tap promptly
@@ -136,9 +143,12 @@ fun LittleSun(
     elapsedSeconds: Int = 0,
     expanded: Boolean = false,
     isInitiallyVisible: Boolean = false,
-    // When the bubble reappears after the offer collapses it should fade back
-    // in, never snap. On the very first show it appears in place (the departing
-    // interaction sun has just glided to this corner), so no fade then.
+    // True when the bubble reappears after the offer collapses: it then waits for
+    // the window resize to settle before showing (so it can't appear mid-resize
+    // and shift), and snaps in opaque at the sun's spot — the continuation of the
+    // glide, with no entrance of its own. On the very first show there's no resize
+    // (the departing interaction sun has just glided to this corner): it appears
+    // in place. (Despite the historical name, this no longer drives any fade.)
     enterFade: Boolean = false,
     // Screen-px centre of the resting bubble at the moment of tap, so the pause
     // sun can expand *out of* it. -1 = unknown (e.g. preview): centre-bloom only.
@@ -194,10 +204,16 @@ private fun Bubble(
     // AnimatedVisibility collapsed the window to ~0 while hidden, which defeated the
     // resize wait below and let the bubble fade in mid-resize, shifting under it.)
     var revealed by remember { mutableStateOf(isInitiallyVisible) }
+    // The resting bubble never animates its own entrance — it is the sun that just
+    // glided home, so it simply *is* there, at the exact spot/size the glide ended
+    // (the pause sun's matched first/last frame). A self-fade read as a second,
+    // separate animation after the glide ("the little sun is animated in"), which
+    // broke the one-motion feel. On a return-after-collapse the reveal is still
+    // gated on the resize settling (LaunchedEffect below) so it can't pop
+    // mid-resize and shift — but once shown, it snaps in.
     val bubbleAlpha by animateFloatAsState(
         targetValue = if (revealed) 1f else 0f,
-        // First show: appear in place (no fade). Returning after a collapse: fade in.
-        animationSpec = tween(durationMillis = if (enterFade) FADE_MS else 0),
+        animationSpec = tween(durationMillis = 0),
         label = "bubbleAlpha",
     )
 
@@ -266,11 +282,12 @@ private fun StepAwayOffer(
     var shown by remember { mutableStateOf(false) }
     var dismissing by remember { mutableStateOf(false) }
     // A "stay" dismiss (Not now / tap-off / ignored) plays the expand in reverse:
-    // the sun shrinks and glides back to its bubble corner, then crossfades into
-    // the resting bubble. A drag-down close instead sinks the sun off-screen.
+    // the sun shrinks and glides back to its bubble corner, then hands off to the
+    // resting bubble. A drag-down close instead sinks the sun off-screen.
     var reverseDismiss by remember { mutableStateOf(false) }
-    // Set once the reverse glide-home has landed: the sun fades out at its corner
-    // so the window can resize behind it unseen before the bubble fades in.
+    // Set once the reverse glide-home has landed: the sun is quickly hidden at its
+    // corner so the window can resize behind it unseen, then the resting bubble
+    // takes its exact place (snapped, no entrance of its own).
     var crossfading by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
