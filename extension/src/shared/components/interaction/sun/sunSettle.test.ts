@@ -1,10 +1,15 @@
 import {
+  DEPART_GLOW_INTENSITY,
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
+  LITTLE_SUN_DISC_PX_ANDROID,
+  LITTLE_SUN_DISC_PX_WEB,
+  LITTLE_SUN_GLOW_RGB,
   restingSunAnchorFromRect,
   SUN_REST_SETTLE,
   sunBreatheSettle,
+  sunDepartSettleAt,
   sunRestingSettle,
 } from "./sunSettle";
 
@@ -50,24 +55,53 @@ describe("getSunSettleForPhase", () => {
     expect(SUN_REST_SETTLE.anchorYRatio!).toBeLessThanOrEqual(0.85);
   });
 
-  it("departs to the web Little Sun corner by default (square bottom-left anchor)", () => {
+  it("departs to the web Little Sun corner + disc size by default, with an amber halo", () => {
     const settle = getSunSettleForPhase("departing")!;
     expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_WEB);
     expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_WEB);
+    // Pin the exact disc size (not a constant scale) so it matches the 40px web
+    // Little Sun, and warm the halo to amber so the glow colour matches too.
+    expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_WEB);
+    expect(settle.glowColor).toBe(LITTLE_SUN_GLOW_RGB);
+    expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
     expect(settle.breathe).toBe(false);
   });
 
-  it("departs to a smaller corner when handed the Android native Little Sun inset", () => {
-    // The native overlay's disc centre sits closer to the corner than the web
-    // extension's, so the departing sun must aim lower-left to avoid a jump.
+  it("departs to a smaller corner + disc when handed the Android native Little Sun", () => {
+    // The native overlay's disc is both nearer the corner and smaller than the
+    // web extension's, so the departing sun must aim lower-left AND shrink more.
     expect(LITTLE_SUN_CORNER_PX_ANDROID).toBeLessThan(LITTLE_SUN_CORNER_PX_WEB);
+    expect(LITTLE_SUN_DISC_PX_ANDROID).toBeLessThan(LITTLE_SUN_DISC_PX_WEB);
     const settle = getSunSettleForPhase(
       "departing",
       undefined,
       LITTLE_SUN_CORNER_PX_ANDROID,
+      LITTLE_SUN_DISC_PX_ANDROID,
     )!;
     expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_ANDROID);
     expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_ANDROID);
+    expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_ANDROID);
+  });
+});
+
+describe("sunDepartSettleAt", () => {
+  it("anchors the departing disc at the measured fractional position", () => {
+    // Android hands off to a free-floating bubble parked wherever the user
+    // dropped it; the morph targets that centre as viewport fractions so it
+    // lands there on any screen size rather than at the fixed corner.
+    const settle = sunDepartSettleAt({ x: 0.07, y: 0.86 });
+    expect(settle.anchorXRatio).toBe(0.07);
+    expect(settle.anchorYRatio).toBe(0.86);
+    expect(settle.breathe).toBe(false);
+  });
+
+  it("matches the native Little Sun's disc size and amber halo by default", () => {
+    // Position differs from the fixed-corner depart, but size + glow must match
+    // so the whole hand-off (position, size, halo) is seamless.
+    const settle = sunDepartSettleAt({ x: 0.5, y: 0.5 });
+    expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_ANDROID);
+    expect(settle.glowColor).toBe(LITTLE_SUN_GLOW_RGB);
+    expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
   });
 });
 

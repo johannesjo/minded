@@ -105,6 +105,13 @@ export interface SunSettle {
    */
   anchorXPx?: number;
   /**
+   * Horizontal resting point as a fraction of viewport width (0 = left edge).
+   * Overrides anchorXPx's default centring when set. Used to land on a
+   * measured fractional point (the Android Little Sun's dragged position) that
+   * tracks the viewport rather than a fixed px corner.
+   */
+  anchorXRatio?: number;
+  /**
    * Fixed vertical resting point in px from the bottom edge. Overrides
    * anchorYRatio when set. Used to land on the bottom-bar companion anchor
    * (--companion-bar-center-y) without drifting on tall viewports.
@@ -118,6 +125,26 @@ export interface SunSettle {
   anchorYPxFromTop?: number;
   /** Resting scale relative to the sun's base size. */
   scale?: number;
+  /**
+   * Target disc diameter in CSS px. When set it overrides `scale`: the disc
+   * settles to exactly this many px (scale = discPx / base size), so the morph
+   * lands at the Little Sun's real size on any viewport instead of a fixed
+   * fraction of a base that varies with screen width. Used by the departing
+   * hand-off.
+   */
+  discPx?: number;
+  /**
+   * Halo colour as an `"r, g, b"` string for the settled disc's box-shadow,
+   * overriding the default white (sun) glow. The departing sun warms to the
+   * Little Sun's amber here so the glow colour matches at hand-off. Ignored for
+   * the moon, which keeps its own cool halo.
+   */
+  glowColor?: string;
+  /**
+   * Halo intensity for the settled disc, overriding the bold companion rest
+   * glow. The departing hand-off dials it down to the Little Sun's tighter halo.
+   */
+  glowIntensity?: number;
   /** Run one slow inhale→hold→exhale while settled. */
   breathe?: boolean;
   /** Loop the breath continuously (a gentle meditation pulse) instead of once. */
@@ -195,7 +222,7 @@ export const Sun: Component<SunProps> = (props) => {
         setIsAnimating(true);
         setDragOffset(target);
         setRestOffset(target);
-        setScale(props.settle.scale ?? DEFAULT_REST_SCALE);
+        setScale(restScaleForSettle(props.settle));
         requestAnimationFrame(() => setIsAnimating(false));
       }
     }
@@ -267,6 +294,19 @@ export const Sun: Component<SunProps> = (props) => {
   const DEFAULT_ANCHOR_Y_RATIO = 0.4;
   const DEFAULT_REST_SCALE = 0.82;
 
+  // Base disc size for this screen (px + baseScale); fixed for the component's
+  // life. Used both to render the disc and to convert a settle's pinned disc
+  // diameter (discPx) into a scale.
+  const sunSize = getSunSize(window.innerWidth);
+  // A settle may pin an exact disc diameter (discPx) instead of a scale — the
+  // departing hand-off does, so the disc lands at the Little Sun's real px size
+  // on any viewport. Convert that to a scale of the base disc; otherwise use the
+  // settle's explicit scale (or the default).
+  const restScaleForSettle = (settle: SunSettle): number =>
+    settle.discPx != null
+      ? settle.discPx / sunSize.size
+      : (settle.scale ?? DEFAULT_REST_SCALE);
+
   const prefersReducedMotion = () =>
     typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
@@ -298,7 +338,10 @@ export const Sun: Component<SunProps> = (props) => {
   const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
     if (!rest) return getDragOffset();
-    const anchorX = settle.anchorXPx ?? window.innerWidth * 0.5;
+    const anchorX =
+      settle.anchorXRatio != null
+        ? window.innerWidth * settle.anchorXRatio
+        : (settle.anchorXPx ?? window.innerWidth * 0.5);
     const anchorY =
       settle.anchorYPxFromBottom != null
         ? window.innerHeight - settle.anchorYPxFromBottom
@@ -458,7 +501,7 @@ export const Sun: Component<SunProps> = (props) => {
     const wasFlungOffScreen =
       isCompanionSettle(settle) && getIsCompletionStarted();
     if (isCompanionSettle(settle)) resetTerminalStateForReuse();
-    const restScale = settle.scale ?? DEFAULT_REST_SCALE;
+    const restScale = restScaleForSettle(settle);
     const target = getAnchorOffset(settle);
     // This anchor is now the disc's rest, so a drag release snaps back here
     // (the interactive shell sun rests on its placeholder, not the base).
@@ -1081,8 +1124,6 @@ export const Sun: Component<SunProps> = (props) => {
     sunEl.addEventListener("mousedown", mouseDownHandler);
   };
 
-  const sunSize = getSunSize(window.innerWidth);
-
   // Reactive glow color based on upward drag color temperature
   const getGlowColor = () => {
     const ct = getColorTemp();
@@ -1164,20 +1205,39 @@ export const Sun: Component<SunProps> = (props) => {
       style={{
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale() * getInteractionScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
+        // transform/opacity are JS-driven every frame during a drag or settle
+        // glide, so a CSS transition there would fight the inline updates — keep
+        // them off then. box-shadow is NOT per-frame (it changes on phase/glow
+        // shifts), so let it ease whenever the finger isn't on the disc: that way
+        // the departing hand-off's white→amber glow warms softly mid-glide rather
+        // than snapping (a hard cut would betray the calm premise). Only an active
+        // drag, where the glow tracks the finger, needs it instant.
         transition:
-          getIsDragging() || getIsAnimating()
-            ? "none"
-            : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 160ms ease-out",
+          [
+            getIsDragging() || getIsAnimating()
+              ? null
+              : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            getIsDragging() ? null : "box-shadow 160ms ease-out",
+          ]
+            .filter(Boolean)
+            .join(", ") || "none",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
-        "--glow-color": getGlowColor(),
+        // A settle may warm the halo to the Little Sun's amber and tighten it for
+        // the departing hand-off (sun only — the moon keeps its own cool halo).
+        "--glow-color":
+          props.variant !== "moon" && props.settle?.glowColor
+            ? props.settle.glowColor
+            : getGlowColor(),
         "--glow-intensity":
           props.variant === "moon"
             ? Math.max(
                 getGlowIntensity(),
                 props.isHovered ? COMPANION_HOVER_GLOW : 0,
               )
-            : Math.max(getGlowIntensity(), COMPANION_REST_GLOW),
+            : props.settle?.glowIntensity != null
+              ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
+              : Math.max(getGlowIntensity(), COMPANION_REST_GLOW),
         "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >

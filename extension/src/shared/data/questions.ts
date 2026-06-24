@@ -27,6 +27,9 @@ export enum QuestionCategoryId {
   SelfImprovement = "SelfImprovement",
   Relationships = "Relationships",
   MindfulEating = "MindfulEating",
+  NoticingNow = "NoticingNow",
+  SelfCompassion = "SelfCompassion",
+  LettingGo = "LettingGo",
   // NOTE: we filter out all questions from categories starting with X
 
   XEnergyLevelToday = "XEnergyLevelToday",
@@ -43,7 +46,6 @@ export enum QuestionCategoryId {
   // XWeatherSelector = "XWeatherSelector",
   // FlowBreaker = "FlowBreaker",
   // Other = "Other",
-  // SelfCompassion = "SelfCompassion",
 }
 
 export type LimitTo = "BrowserExtension" | "MobileApp";
@@ -108,8 +110,8 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.HBH1,
-        t: "What is the one thing you find most problematic in your recent browsing behavior",
-        prompt: "The biggest challenge is",
+        t: "What is one thing you'd like to gently change about your recent browsing",
+        prompt: "I'd like to change",
       },
       {
         id: QID.HBH2,
@@ -118,15 +120,15 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH3,
-        t: "What might help you change your unhealthy browsing behavior",
+        t: "What might help you change your browsing habits",
       },
       {
         id: QID.HBH4,
-        t: "What specific first step could you take right now to develop a better browsing behavior",
+        t: "What is one small step that might help your browsing feel better",
       },
       {
         id: QID.HBH5,
-        t: "What would your ideal media consumption behavior look like",
+        t: "What would a calmer relationship with these websites look like",
       },
       {
         id: QID.HBH6,
@@ -164,8 +166,8 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.HAU1,
-        t: "What is the one thing you find most problematic in your recent usage of mobile apps",
-        prompt: "The biggest challenge is",
+        t: "What is one thing you'd like to gently change about your recent app use",
+        prompt: "I'd like to change",
       },
       {
         id: QID.HAU2,
@@ -174,15 +176,15 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU3,
-        t: "What might help you change your unhealthy usage of mobile apps",
+        t: "What might help you change your app habits",
       },
       {
         id: QID.HAU4,
-        t: "What specific first step could you take right now to develop better habits in using mobile apps",
+        t: "What is one small step that might help your app use feel better",
       },
       {
         id: QID.HAU5,
-        t: "What would your ideal media consumption behavior look like",
+        t: "What would a calmer relationship with these apps look like",
       },
       {
         id: QID.HAU6,
@@ -230,8 +232,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRB3,
-        t: "What do you miss out on when you browse too much?",
-        prompt: "I miss out on",
+        t: "What would you like more time for, away from these websites?",
+        prompt: "I'd like more time for",
       },
       {
         id: QID.WRB4,
@@ -262,8 +264,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRA3,
-        t: "What do you miss out on when you use these apps too much?",
-        prompt: "I miss out on",
+        t: "What would you like more time for, away from these apps?",
+        prompt: "I'd like more time for",
       },
       {
         id: QID.WRA4,
@@ -338,8 +340,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT5,
-        t: "What would make you proud today, if it would finally be done",
-        prompt: "I would be proud to",
+        t: "What would feel meaningful to spend a little time on today",
+        prompt: "I'd like to spend time on",
       },
       {
         id: QID.RFHT6,
@@ -347,8 +349,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT7,
-        t: "What do you want to achieve today",
-        prompt: "Today I want to",
+        t: "What would you like to focus on today",
+        prompt: "Today I want to focus on",
       },
       {
         id: QID.RFHT8,
@@ -362,10 +364,10 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT10,
-        t: "What is one small step I can take towards my long-term goals today",
+        t: "What is one small step you could take today",
         prompt: "",
       },
-      { id: QID.RFHT11, t: "What is currently my most important goal" },
+      { id: QID.RFHT11, t: "What feels most worth your attention today" },
       { id: QID.RFHT12, t: "What is the most fun task I could work on today" },
       {
         id: QID.RFHT13,
@@ -373,8 +375,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.RFHT14,
-        t: "What would make today feel like a success",
-        prompt: "Today is a success if",
+        t: "What would make today feel good",
+        prompt: "Today feels good if",
       },
     ],
   },
@@ -423,8 +425,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT2,
-        t: "What might boost your productivity",
-        prompt: "I am more productive when",
+        t: "What helps you feel focused",
+        prompt: "I feel focused when",
       },
       {
         id: QID.HT3,
@@ -438,7 +440,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT5,
-        t: "What environment helps you work best? (consider light, noise, temperature, etc.)",
+        t: "What environment helps you feel focused? (consider light, noise, temperature, etc.)",
         prompt: "I need",
       },
       {
@@ -448,11 +450,11 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HT7,
-        t: "How can you eliminate or reduce distractions",
+        t: "What helps you settle when your attention scatters",
       },
       {
         id: QID.HT8,
-        t: "What distraction could you remove right now",
+        t: "What is one thing pulling at your attention right now",
         prompt: "Right now I could",
         chips: [
           "silence notifications",
@@ -480,6 +482,17 @@ export const QUESTION_CATEGORIES: {
         id: QID.CT4,
         t: "Where do you feel tension in your body right now",
       },
+      {
+        id: QID.CT5,
+        t: "What is one slow, ordinary thing you could do right now",
+        prompt: "Right now I could",
+        chips: [
+          "make tea",
+          "drink some water",
+          "step outside",
+          "stretch slowly",
+        ],
+      },
     ],
     dashboardTxt: "Calming Thoughts",
   },
@@ -493,6 +506,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.PT5,
         t: "What accomplishments are you most proud of",
         prompt: "I am proud of",
+      },
+      {
+        id: QID.PT6,
+        t: "What is something small that delighted you recently",
       },
     ],
     dashboardTxt: "Positive Thoughts",
@@ -539,6 +556,10 @@ export const QUESTION_CATEGORIES: {
         id: QID.GT9,
         t: "What are you most proud of doing today",
         prompt: "I am proud",
+      },
+      {
+        id: QID.GT10,
+        t: "What is one moment today you'd like to remember",
       },
     ],
     dashboardTxt: "Good Today",
@@ -623,15 +644,18 @@ export const QUESTION_CATEGORIES: {
     isMorningCategory: true,
     isWorkDayCategory: true,
     questions: [
-      { id: QID.GW1, t: "What is a goal you want to achieve this week" },
+      {
+        id: QID.GW1,
+        t: "What would you like to give your attention to this week",
+      },
       {
         id: QID.GW2,
-        t: "This week I will do my best to...",
-        prompt: "This week I will do my best to",
+        t: "This week I'd like to...",
+        prompt: "This week I'd like to",
       },
-      { id: QID.GW3, t: "What is my most important goal this week" },
+      { id: QID.GW3, t: "What feels most important to you this week" },
     ],
-    dashboardTxt: "Your Goal for the Week",
+    dashboardTxt: "Looking at the Week Ahead",
   },
   [QuestionCategoryId.UnderstandingProcrastination]: {
     questions: [
@@ -644,8 +668,8 @@ export const QUESTION_CATEGORIES: {
         t: "Why are you visiting this website",
         limitTo: ["BrowserExtension"],
       },
-      { id: QID.UP3, t: "Where and how do I waste time" },
-      { id: QID.UP4, t: "What is hurting your focus" },
+      { id: QID.UP3, t: "Where does my time tend to go" },
+      { id: QID.UP4, t: "What tends to pull at your focus" },
       {
         id: QID.UP5,
         t: "In what situations do you have a hard time focusing and what contributes to it",
@@ -892,6 +916,78 @@ export const QUESTION_CATEGORIES: {
       },
     ],
   },
+  [QuestionCategoryId.NoticingNow]: {
+    dashboardTxt: "Noticing Now",
+    frequencyModifier: 1,
+    questions: [
+      {
+        id: QID.NN1,
+        t: "What can you hear right now, if you pause to listen",
+      },
+      {
+        id: QID.NN2,
+        t: "What do you notice in your body right now",
+        prompt: "Right now I notice",
+      },
+      {
+        id: QID.NN3,
+        t: "What is one thing you can see that you usually overlook",
+      },
+      {
+        id: QID.NN4,
+        t: "What does the air feel like around you right now",
+      },
+      {
+        id: QID.NN5,
+        t: "What is one thing around you that is fine just as it is",
+      },
+    ],
+  },
+  [QuestionCategoryId.SelfCompassion]: {
+    dashboardTxt: "Being Kind to Yourself",
+    questions: [
+      {
+        id: QID.SC1,
+        t: "What would you say to a good friend in your situation right now",
+      },
+      {
+        id: QID.SC2,
+        t: "How could you be a little gentler with yourself right now",
+        prompt: "I could",
+      },
+      {
+        id: QID.SC3,
+        t: "What do you need right now",
+        prompt: "Right now I need",
+      },
+      {
+        id: QID.SC4,
+        t: "What is something you can forgive yourself for",
+      },
+    ],
+  },
+  [QuestionCategoryId.LettingGo]: {
+    dashboardTxt: "Making Room",
+    questions: [
+      {
+        id: QID.LG1,
+        t: "What is something outside your control you could set down for now",
+        prompt: "I can set down",
+      },
+      {
+        id: QID.LG2,
+        t: "What are you holding onto that you could loosen your grip on a little",
+      },
+      {
+        id: QID.LG3,
+        t: "What is already enough about this moment",
+      },
+      {
+        id: QID.LG4,
+        t: "What is one worry you could leave for tomorrow",
+      },
+    ],
+  },
   [QuestionCategoryId.XEnergyLevelToday]: {
     dashboardTxt: "Energy Level",
     isTodayOnlyCategory: true,
@@ -940,6 +1036,9 @@ export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.Insomnia,
   QuestionCategoryId.PositiveThoughts,
   QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.NoticingNow,
+  QuestionCategoryId.SelfCompassion,
+  QuestionCategoryId.LettingGo,
 ];
 
 const qids: Record<string, Question> = {};

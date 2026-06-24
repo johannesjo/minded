@@ -1,5 +1,6 @@
-import { createSignal, For, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onMount, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+import { navigateWithPageFadeOut } from "@src/util/animation";
 import {
   getSyncData,
   updateSyncData,
@@ -8,25 +9,17 @@ import {
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { SleepWindDownCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
-import { Checkbox } from "@src/shared/components/ui/Checkbox";
-import { TimeInput } from "@src/shared/components/ui/TimeInput";
 import Btn from "@src/shared/components/ui/Btn";
 import {
   DEFAULT_DAY_RANGE,
   resolveNightId,
 } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import {
+  DaysMap,
+  WeekdaySchedule,
+} from "@src/shared/components/settings/WeekdaySchedule";
 // @ts-ignore — reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
-
-const DAY_NAMES = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 
 export const SleepWindDownSettings = (props: {
   /** If true, persist each edit immediately. */
@@ -35,6 +28,7 @@ export const SleepWindDownSettings = (props: {
   const navigate = useNavigate();
   const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
   const [pausedTonight, setPausedTonight] = createSignal(false);
+  const [loaded, setLoaded] = createSignal(false);
 
   onMount(() => {
     getSyncData().then((sd) => {
@@ -46,6 +40,7 @@ export const SleepWindDownSettings = (props: {
       const dismissed = sd.sleepWindDownDismissedNightId;
       const currentNightId = resolveNightId(swd);
       setPausedTonight(!!currentNightId && dismissed === currentNightId);
+      setLoaded(true);
     });
   });
 
@@ -71,29 +66,10 @@ export const SleepWindDownSettings = (props: {
     apply((prev) => ({ ...prev, enabled: !prev.enabled }));
   };
 
-  const toggleDay = (idx: number) => {
-    apply((prev) => {
-      const days = { ...prev.days };
-      // Preserve the previous range when re-enabling a day if available;
-      // otherwise seed with the default night window.
-      days[idx] = days[idx] ? null : { ...DEFAULT_DAY_RANGE };
-      return { ...prev, days };
-    });
+  const setDays = (days: DaysMap) => {
+    apply((prev) => ({ ...prev, days }));
   };
 
-  const updateTime = (idx: number, field: "start" | "end", value: string) => {
-    apply((prev) => {
-      const cur = prev.days[idx];
-      if (!cur) return prev;
-      return {
-        ...prev,
-        days: { ...prev.days, [idx]: { ...cur, [field]: value } },
-      };
-    });
-  };
-
-  const isDayEnabled = (idx: number) => !!cfg().days[idx];
-  const getRange = (idx: number) => cfg().days[idx] || DEFAULT_DAY_RANGE;
   const enabledDayCount = () =>
     Object.values(cfg().days).filter((r) => r !== null).length;
 
@@ -121,42 +97,21 @@ export const SleepWindDownSettings = (props: {
           Paused for tonight — wind-down will resume tomorrow.
         </p>
       )}
-      <div class={styles.daysList}>
-        <For each={DAY_NAMES}>
-          {(name, index) => (
-            <div
-              class={`${styles.dayRow} ${!cfg().enabled ? styles.isDisabled : ""}`}
-            >
-              <Checkbox
-                checked={isDayEnabled(index())}
-                onChange={() => toggleDay(index())}
-                disabled={!cfg().enabled}
-              />
-              <span
-                class={styles.dayName}
-                onClick={() => cfg().enabled && toggleDay(index())}
-              >
-                {name}
-              </span>
-              <div class={styles.timeInputs}>
-                <TimeInput
-                  value={getRange(index()).start}
-                  onChange={(v) => updateTime(index(), "start", v)}
-                  disabled={!cfg().enabled || !isDayEnabled(index())}
-                />
-                <span class={styles.timeSeparator}>to</span>
-                <TimeInput
-                  value={getRange(index()).end}
-                  onChange={(v) => updateTime(index(), "end", v)}
-                  disabled={!cfg().enabled || !isDayEnabled(index())}
-                />
-              </div>
-            </div>
-          )}
-        </For>
-      </div>
+      <Show when={loaded()}>
+        <WeekdaySchedule
+          days={cfg().days}
+          onChange={setDays}
+          disabled={!cfg().enabled}
+          defaultRange={DEFAULT_DAY_RANGE}
+        />
+      </Show>
       <div style={{ "margin-top": "16px", "text-align": "center" }}>
-        <Btn outline onClick={() => navigate("/sleepWindDown?preview=1")}>
+        <Btn
+          outline
+          onClick={() =>
+            navigateWithPageFadeOut(navigate, "/sleepWindDown?preview=1")
+          }
+        >
           Try wind-down now
         </Btn>
       </div>

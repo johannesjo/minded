@@ -14,6 +14,7 @@ import {
   RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD,
 } from "@src/shared/data/questions";
 import { getRndEntries } from "@src/util/getRndEntries";
+import { isCategoryWithinTimeConstraints } from "@src/util/getQuestionSmart";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { getIsoDate } from "@src/util/getIsoDate";
@@ -42,10 +43,57 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.SelfAssessment,
 ]);
 
+// A question recap whose category is outside its time-of-day / work-day window
+// right now (e.g. a "Finding Focus Today" card — a morning, work-day category —
+// shown in the evening or the middle of the night). Such a recap shouldn't be
+// the card that *greets* you, but still belongs in the full "look back" grid,
+// which is explicitly historical. The other reflective cards (energy, emotions,
+// self-assessment) only ever reflect today's own entries, so they have no such
+// window.
+const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
+  entry.type === DashboardGroupType.TxtQuestion &&
+  "id" in entry &&
+  !isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
+
+// Whether a card may *greet* you right now: a reflective/self-report card that
+// isn't an out-of-window recap.
+export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
+  GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
+
+// Guard the card that actually greets you (the hero slot the view reads — see
+// DashboardGroups.getHeroIndex). If it holds an out-of-window recap, move it out
+// (it stays available in "look back") and greet with a calm quote instead —
+// matching the fallback when nothing reflective qualifies. The random pick
+// already keeps the hero in-window (isGreetingEligible), but the incremental
+// merge (updateDashboardEntries) preserves the existing order, so a greeting
+// that was in-window when first built can go stale as the hours pass — this is
+// that path's safety net. Mutates and returns `entries`.
+export const guardHeroSlot = (
+  entries: DashboardGroup[],
+  now = new Date(),
+): DashboardGroup[] => {
+  const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
+  if (heroIndex >= 0 && isOutOfWindowRecap(entries[heroIndex], now)) {
+    const [stale] = entries.splice(heroIndex, 1);
+    entries.push(stale);
+    entries.splice(CENTER_INDEX, 0, { type: DashboardGroupType.Quote });
+  }
+  return entries;
+};
+
+// A stable identity for a greeting candidate, used to remember which tile we
+// last greeted with so the next arrival can surface a different one. The
+// reflective cards carry a category id; the quote has only its type.
+export const getGreetingKey = (dg: DashboardGroup): string =>
+  "id" in dg ? dg.id : dg.type;
+
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
-  isSkipRndEntry = IS_ANDROID,
+  // The greeting shown on the previous arrival, if any. We avoid repeating it so
+  // each landing surfaces a fresh tile — but only when an alternative exists, so
+  // we never end up with nothing to greet with.
+  avoidGreetingKey?: string,
 ): DashboardGroup[] => {
   const ds = getIsoDate(now);
   const dashboardGroups: DashboardGroup[] = [];
@@ -135,31 +183,45 @@ export const getDashboardEntriesFromQuestions = (
   // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
   // option — so a calm quote can greet you even on a full day, and is the
   // natural fallback when nothing reflective qualifies yet (an empty eligible
-  // pool always lands on the quote). The random pick is web-only; Android keeps
-  // its simpler fixed arrangement, with the quote fallback only when there's
-  // little to show.
-  if (!isSkipRndEntry) {
-    const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
-      if (GREETING_ELIGIBLE_TYPES.has(entry.type)) acc.push(i);
-      return acc;
-    }, []);
+  // pool always lands on the quote). Runs on every platform: each arrival
+  // re-rolls the greeting (see avoidGreetingKey + the RE_GREET trigger) so the
+  // dashboard never greets you with the same tile twice in a row. Out-of-window
+  // question recaps are kept out of the pool (isGreetingEligible) so a morning
+  // card never greets you at night — it stays in "look back" only.
+  const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
+    if (isGreetingEligible(entry, now)) acc.push(i);
+    return acc;
+  }, []);
 
-    const pick = getRndInt(0, eligibleIndexes.length);
-    if (pick === eligibleIndexes.length) {
-      sortedEntries.splice(CENTER_INDEX, 0, {
-        type: DashboardGroupType.Quote,
-      });
-    } else {
-      const [greeting] = sortedEntries.splice(eligibleIndexes[pick], 1);
-      sortedEntries.splice(CENTER_INDEX, 0, greeting);
-    }
-  } else if (sortedEntries.length < 5) {
+  // The pool of greetings to draw from: every eligible reflective card, plus
+  // the quote as one always-present extra option (the last slot).
+  const options = [
+    ...eligibleIndexes.map((index) => ({
+      index,
+      key: getGreetingKey(sortedEntries[index]),
+    })),
+    { index: -1, key: DashboardGroupType.Quote as string },
+  ];
+
+  // Prefer a tile different from the one shown last time we landed, so each
+  // arrival feels fresh rather than possibly repeating. Only narrow the pool
+  // when an alternative remains — never leave nothing to greet with.
+  const pickable = options.filter((o) => o.key !== avoidGreetingKey);
+  const pool = pickable.length > 0 ? pickable : options;
+
+  const chosen = pool[getRndInt(0, pool.length - 1)];
+  if (chosen.index === -1) {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,
     });
+  } else {
+    const [greeting] = sortedEntries.splice(chosen.index, 1);
+    sortedEntries.splice(CENTER_INDEX, 0, greeting);
   }
 
-  return sortedEntries;
+  // Make sure the card that greets you is never an out-of-window recap (the web
+  // pick already keeps it in-window; this covers the Android positional build).
+  return guardHeroSlot(sortedEntries, now);
 };
 
 const getLastThreeAnswers = (answers: Answer[]): Answer[] => {

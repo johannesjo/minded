@@ -49,6 +49,12 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Strong relationships are one of the biggest contributors to a happy life. Reflecting on the people around you can help you nurture connection, set boundaries, and feel more supported.",
   [QuestionCategoryId.MindfulEating]:
     "Paying attention to how and what you eat can help you notice hunger and fullness cues, enjoy your food more, and build a healthier relationship with eating.",
+  [QuestionCategoryId.NoticingNow]:
+    "Gently noticing what's around you and how your body feels can bring you back to the present moment, without anything needing to change.",
+  [QuestionCategoryId.SelfCompassion]:
+    "Meeting yourself with kindness, especially when things are hard, can ease self-criticism and help you respond to difficult moments with more warmth.",
+  [QuestionCategoryId.LettingGo]:
+    "Noticing what you can set down, and what lies outside your control, can loosen the grip of worry and make room for a little more ease.",
   [QuestionCategoryId.XEnergyLevelToday]:
     "Tracking your energy level can help you notice patterns (sleep, workload, habits) and plan demanding tasks for times when you tend to feel best.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:

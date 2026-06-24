@@ -6,6 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -60,6 +61,32 @@ class InteractionWindowJavaScriptInterface(
         win.hideWindow()
     }
 
+
+    /**
+     * Where the native Little Sun bubble will rest (the user's parked drag
+     * position, or its default), as the bubble centre in fractions of the
+     * display: `{"fracX":..,"fracY":..}`. The departing-sun morph reads this so
+     * it glides to the bubble's real spot instead of a fixed corner the bubble
+     * no longer rests at. Computed via the same LittleSunPosition geometry the
+     * bubble itself uses, so the two can't drift. Returns "" on failure, in
+     * which case the web side falls back to the corner.
+     */
+    @JavascriptInterface
+    fun getLittleSunRestCenter(): String {
+        return try {
+            val wm = ctrlSvc.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
+            val (fracX, fracY) =
+                LittleSunPosition.restingCenterFractions(ctrlSvc, wm, saved)
+            JSONObject()
+                .put("fracX", fracX.toDouble())
+                .put("fracY", fracY.toDouble())
+                .toString()
+        } catch (e: Exception) {
+            Log.e(logTag, "getLittleSunRestCenter failed", e)
+            ""
+        }
+    }
 
     @JavascriptInterface
     fun showLittleSun() {

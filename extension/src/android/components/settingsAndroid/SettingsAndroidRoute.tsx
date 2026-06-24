@@ -6,6 +6,7 @@ import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
+import { navigateWithPageFadeOut } from "@src/util/animation";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export const SettingsAndroidRoute = () => {
       <SleepWindDownSettings autoSave={true} />
 
       <div style="text-align: center; margin: 32px 16px;">
-        <Btn onClick={() => navigate("/")}>
+        <Btn onClick={() => navigateWithPageFadeOut(navigate, "/")}>
           <Ico name="arrowBack" /> Back
         </Btn>
       </div>

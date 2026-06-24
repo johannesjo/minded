@@ -6,21 +6,12 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
-import { fadeOut } from "@src/util/animation";
-
-// Matches --dur-soft (the page-level fade) so leaving a page eases out at the
-// same pace "show all" eases in — never a hard cut (see the styling rules).
-const BACK_FADE_MS = 480;
-
-const prefersReducedMotion = (): boolean =>
-  typeof window.matchMedia === "function" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+import { navigateWithPageFadeOut } from "@src/util/animation";
 
 const BottomBar = () => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
-  let isLeaving = false;
 
   createEffect(() => {
     setIsOnDashboard(location.pathname === "/");
@@ -28,7 +19,6 @@ const BottomBar = () => {
 
   const goBack = () => {
     if (getIsOnDashboard()) return;
-    if (isLeaving) return;
 
     // Wind-down owns its own back semantics: history.back() swaps an *internal*
     // view (the route stays mounted), so it keeps its existing transition.
@@ -38,25 +28,10 @@ const BottomBar = () => {
       return;
     }
 
-    // Fade the leaving page out the instant the arrow is tapped — never a hard
-    // cut. The bottom bar and the companion sun live outside <main>, so only
-    // the page itself fades; the destination eases back in via its own
-    // pageTransitionIn. We fade the page's own root node (not <main>) so it's
-    // simply discarded when navigate("/") remounts the route — nothing to
-    // reset, no flash of the old page at full opacity.
-    const leavingPage = document.querySelector("main")
-      ?.firstElementChild as HTMLElement | null;
-
-    if (!leavingPage || prefersReducedMotion()) {
-      navigate("/");
-      return;
-    }
-
-    isLeaving = true;
-    fadeOut(leavingPage, BACK_FADE_MS).promise.then(() => {
-      isLeaving = false;
-      navigate("/");
-    });
+    // Fade the leaving page fully out the instant the arrow is tapped, then
+    // return to the dashboard — never a hard cut. The destination eases back in
+    // via its own pageTransitionIn.
+    navigateWithPageFadeOut(navigate, "/");
   };
 
   return (
@@ -72,8 +47,10 @@ const BottomBar = () => {
             plain
             title="Give us some feedback"
             aria-label="Give us some feedback"
-            href="/feedback"
-            activeClass="active"
+            onClick={(event) => {
+              event.stopPropagation();
+              navigateWithPageFadeOut(navigate, "/feedback");
+            }}
           >
             <Ico name="feedback" />
           </Btn>
@@ -83,8 +60,10 @@ const BottomBar = () => {
               plain
               title="Go to settings page"
               aria-label="Go to settings page"
-              href="/settings"
-              activeClass="active"
+              onClick={(event) => {
+                event.stopPropagation();
+                navigateWithPageFadeOut(navigate, "/settings");
+              }}
             >
               <Ico name="settings" />
             </Btn>

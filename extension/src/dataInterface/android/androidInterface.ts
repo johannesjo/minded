@@ -26,6 +26,14 @@ interface InteractionWindowJavaScriptInterface {
    * (e.g. usage-access permission not granted).
    */
   getUsageObservation: () => string | null;
+  /**
+   * Where the native Little Sun bubble will rest (saved drag position or its
+   * default), as the bubble centre in fractions of the display: a JSON string
+   * `{"fracX":0.07,"fracY":0.86}`. The departing-sun morph reads this so it
+   * glides to the bubble's real position instead of the fixed corner. Returns
+   * "" / null if unavailable (then the morph falls back to the corner).
+   */
+  getLittleSunRestCenter: () => string | null;
   test: () => void;
 }
 
@@ -34,3 +42,4 @@ declare const androidMinded: InteractionWindowJavaScriptInterface;
 export const androidInterface = IS_ANDROID ? androidMinded : ({} as never);
 
 export const ANDROID_EV_RESUME = "androidAppResume";
+export const ANDROID_EV_PAUSE = "androidAppPause";

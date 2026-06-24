@@ -324,11 +324,17 @@ export const getInteractionModeDecision = (
   const ratingTS = isAndroidMode
     ? syncData.lastAppUsageRatingTS
     : syncData.lastBrowsingBehaviorRatingTS;
+  // The usage observation ("You've spent about X on Y so far today.") is a
+  // present-moment awareness nudge for a *real* intervention — when the user is
+  // mid-doom-scroll on a site/app. Starting an intervention deliberately from
+  // the dashboard isn't that moment: replaying their own day's stats back at
+  // them there reads as a tracker, not a pause. Keep it to real interventions.
   if (
-    (!hasHappenedInLastXDaysAt(ratingTS, 2, nowTS) &&
+    !isMainView &&
+    ((!hasHappenedInLastXDaysAt(ratingTS, 2, nowTS) &&
       chance(USAGE_RATING_DUE_PROBABILITY, random)) ||
-    (!isSameLocalDate(ratingTS, nowTS) &&
-      chance(USAGE_RATING_TODAY_PROBABILITY, random))
+      (!isSameLocalDate(ratingTS, nowTS) &&
+        chance(USAGE_RATING_TODAY_PROBABILITY, random)))
   ) {
     return decision(
       "APP_USAGE_OR_BROWSING_BEHAVIOR",

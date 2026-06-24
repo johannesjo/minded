@@ -147,25 +147,92 @@ export const LITTLE_SUN_CORNER_PX_WEB = 40;
 export const LITTLE_SUN_CORNER_PX_ANDROID = 30;
 
 /**
- * Time chosen → the sun glides to the bottom-left corner and shrinks to roughly
- * the Little Sun's size, then the Little Sun appears in place where it lands, so
- * the persistent timer reads as the very same sun settling in.
+ * The Little Sun's white-disc diameter in CSS px, per platform — the departing
+ * sun shrinks to *exactly* this so there's no size jump when the persistent timer
+ * blooms in (a constant scale landed ~27px regardless, missing both targets):
+ * - Web extension: the 40px SolidJS Little Sun (LittleSun.scss `$sun-size: 40px`).
+ * - Android: the native 30dp disc (LittleSun.kt SunDisc `discSize = 30.dp`). dp ==
+ *   CSS px in the full-screen interaction WebView, so 30dp reads as 30px here.
+ * Keep in sync if either Little Sun's disc resizes.
+ */
+export const LITTLE_SUN_DISC_PX_WEB = 40;
+export const LITTLE_SUN_DISC_PX_ANDROID = 30;
+
+/**
+ * Both Little Suns wear a warm amber breath halo (web: `rgba(233,132,58,…)` in
+ * LittleSun.scss; Android: `#E99A3A` ≈ 233,154,58 in LittleSun.kt). The departing
+ * sun warms its normally-white glow to this amber as it settles, so the halo
+ * *colour* matches at hand-off too — not just the position and size. One shared
+ * value: the two ambers differ by an imperceptible amount in a soft glow.
+ */
+export const LITTLE_SUN_GLOW_RGB = "233, 140, 58";
+
+/**
+ * Departing halo intensity, dialled down from the bold companion rest glow
+ * (Sun.tsx COMPANION_REST_GLOW ≈ 1.8). The Little Sun's amber halo is a snug ring
+ * roughly the disc's own width, not the broad bloom the resting companion wears,
+ * so the morph tightens the glow to read as that same close halo when it hands
+ * off. Tuned by eye in the styleguide SunMorphHarness; nudge here if it reads too
+ * faint or too broad.
+ */
+export const DEPART_GLOW_INTENSITY = 1.0;
+
+/**
+ * Time chosen → the sun glides to the bottom-left corner, shrinks to the Little
+ * Sun's exact disc size, and warms its halo to amber, then the Little Sun appears
+ * in place where it lands, so the persistent timer reads as the very same sun
+ * settling in.
  *
  * Anchored in fixed px (not viewport ratios) to match the Little Sun's fixed
  * corner exactly — otherwise the two drift apart on wide monitors (a 5vw anchor
- * is 64px at 1280px but 128px at 2560px, while the Little Sun stays put).
+ * is 64px at 1280px but 128px at 2560px, while the Little Sun stays put). The disc
+ * is pinned in px (discPx) for the same reason: a constant scale tracks the base
+ * disc, which varies with viewport, so it can't match a fixed-px Little Sun.
  */
 export const sunDepartSettle = (
   cornerPx: number = LITTLE_SUN_CORNER_PX_WEB,
+  discPx: number = LITTLE_SUN_DISC_PX_WEB,
 ): SunSettle => ({
   anchorXPx: cornerPx,
   anchorYPxFromBottom: cornerPx,
-  scale: 0.34,
+  discPx,
+  glowColor: LITTLE_SUN_GLOW_RGB,
+  glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });
 
 /** Default departing target (the web extension's SolidJS Little Sun corner). */
 export const SUN_DEPART_SETTLE: SunSettle = sunDepartSettle();
+
+/**
+ * Departing target at a measured fractional point of the viewport, used on
+ * Android where the native Little Sun is a free-floating, draggable bubble that
+ * rests wherever the user parked it (persisted) rather than at the fixed corner.
+ *
+ * `frac` is the bubble's centre expressed as a fraction (0..1) of the device
+ * display, read from the native side (see InteractionWindowJavaScriptInterface
+ * .getLittleSunRestCenter). Because the interaction WebView covers the full
+ * display, that fraction maps 1:1 onto its viewport — so the departing sun
+ * glides to exactly where the native bubble will bloom in, on a wide phone or a
+ * tall one, wherever it was dragged. Disc size + amber glow match
+ * `sunDepartSettle` so the whole hand-off (position, size, halo) is seamless;
+ * only the target point differs. Used on Android, so it defaults to the native
+ * Little Sun's disc size.
+ */
+export const sunDepartSettleAt = (
+  frac: {
+    x: number;
+    y: number;
+  },
+  discPx: number = LITTLE_SUN_DISC_PX_ANDROID,
+): SunSettle => ({
+  anchorXRatio: frac.x,
+  anchorYRatio: frac.y,
+  discPx,
+  glowColor: LITTLE_SUN_GLOW_RGB,
+  glowIntensity: DEPART_GLOW_INTENSITY,
+  breathe: false,
+});
 
 /**
  * Companion rest: the idle home in the app shell, centred over the bottom bar.
@@ -208,14 +275,16 @@ export const sunCompanionSettle = (
  * Map a sun phase to its settle target. `interactive` returns null (the sun is
  * draggable, not settled). Pure so it can be unit-tested and reused verbatim by
  * the styleguide harness. `companionBottomYPx` is the measured bottom-bar anchor,
- * needed only for the "companion" phase. `departCornerPx` is the Little Sun's
- * corner inset, needed only for the "departing" phase (defaults to the web
- * extension's corner; Android passes its native Little Sun's smaller corner).
+ * needed only for the "companion" phase. `departCornerPx` / `departDiscPx` are
+ * the Little Sun's corner inset and disc size, needed only for the "departing"
+ * phase (default to the web extension's; Android passes its native Little Sun's
+ * smaller corner and disc).
  */
 export const getSunSettleForPhase = (
   phase: SunPhase,
   companionBottomYPx = DEFAULT_COMPANION_BOTTOM_Y_PX,
   departCornerPx: number = LITTLE_SUN_CORNER_PX_WEB,
+  departDiscPx: number = LITTLE_SUN_DISC_PX_WEB,
 ): SunSettle | null => {
   switch (phase) {
     case "companion":
@@ -227,7 +296,7 @@ export const getSunSettleForPhase = (
     case "resting":
       return SUN_REST_SETTLE;
     case "departing":
-      return sunDepartSettle(departCornerPx);
+      return sunDepartSettle(departCornerPx, departDiscPx);
     case "dailyQuestionsSuccess":
       return sunDailyQuestionsSuccessSettle();
     // "dailyQuestions" (the answering phase) rests on the bottom-bar companion
