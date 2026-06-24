@@ -77,6 +77,7 @@ import {
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
 import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/interactionSuccessGuard";
+import { shouldShowSunInstructionsOverlay } from "@src/shared/components/interaction/sunInstructionsVisibility";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
@@ -1354,57 +1355,61 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           />
         )}
 
-        {/* Sun instructions overlay */}
-        {getShowSunInstructions() &&
-          !getIsCompletionStarted() &&
-          !props.isFromDashboard && (
-            <div
-              class="interaction-content sun-instructions-overlay"
-              classList={{
-                "fade-in":
-                  getShowSunInstructions() &&
-                  !getShowPostSunOverlay() &&
-                  !getIsExitingInteraction(),
-                dragging: getIsDragging(),
-              }}
-              style={{
-                opacity:
-                  getIsExitingInteraction() || getShowPostSunOverlay()
-                    ? 0
-                    : getInteractionOpacity(),
-                // Match the question's quick fade-out when advancing past it.
-                transition:
-                  getIsExitingInteraction() || getShowPostSunOverlay()
-                    ? `opacity ${QUESTION_FADE_OUT_MS}ms ease-out`
-                    : undefined,
-                "pointer-events":
-                  getIsCompletionStarted() ||
-                  getIsExitingInteraction() ||
-                  getShowPostSunOverlay()
-                    ? "none"
-                    : "auto",
-              }}
-            >
-              <div class="sun-instructions txtSmaller">
-                <p class="sun-instructions-line is-visible">
-                  Fling the {getDragObjectName()} away to let go.
-                </p>
-                <p
-                  class="sun-instructions-line"
-                  classList={{ "is-visible": getSunHintStep() >= 1 }}
-                >
-                  Drag the {getDragObjectName()} down to ground yourself.
-                </p>
-                <p
-                  class="sun-instructions-line"
-                  classList={{ "is-visible": getSunHintStep() >= 2 }}
-                >
-                  Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
-                  continue.
-                </p>
-              </div>
+        {/* Sun instructions overlay — see shouldShowSunInstructionsOverlay for
+            why it unmounts once the post-sun choices/breath overlay is up. */}
+        {shouldShowSunInstructionsOverlay({
+          showSunInstructions: getShowSunInstructions(),
+          isCompletionStarted: getIsCompletionStarted(),
+          showPostSunOverlay: getShowPostSunOverlay(),
+          isFromDashboard: !!props.isFromDashboard,
+        }) && (
+          <div
+            class="interaction-content sun-instructions-overlay"
+            classList={{
+              "fade-in":
+                getShowSunInstructions() &&
+                !getShowPostSunOverlay() &&
+                !getIsExitingInteraction(),
+              dragging: getIsDragging(),
+            }}
+            style={{
+              opacity:
+                getIsExitingInteraction() || getShowPostSunOverlay()
+                  ? 0
+                  : getInteractionOpacity(),
+              // Match the question's quick fade-out when advancing past it.
+              transition:
+                getIsExitingInteraction() || getShowPostSunOverlay()
+                  ? `opacity ${QUESTION_FADE_OUT_MS}ms ease-out`
+                  : undefined,
+              "pointer-events":
+                getIsCompletionStarted() ||
+                getIsExitingInteraction() ||
+                getShowPostSunOverlay()
+                  ? "none"
+                  : "auto",
+            }}
+          >
+            <div class="sun-instructions txtSmaller">
+              <p class="sun-instructions-line is-visible">
+                Fling the {getDragObjectName()} away to let go.
+              </p>
+              <p
+                class="sun-instructions-line"
+                classList={{ "is-visible": getSunHintStep() >= 1 }}
+              >
+                Drag the {getDragObjectName()} down to ground yourself.
+              </p>
+              <p
+                class="sun-instructions-line"
+                classList={{ "is-visible": getSunHintStep() >= 2 }}
+              >
+                Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
+                continue.
+              </p>
             </div>
-          )}
+          </div>
+        )}
 
         {getIsSunInFlow() && !props.useShellSun && (
           <div
