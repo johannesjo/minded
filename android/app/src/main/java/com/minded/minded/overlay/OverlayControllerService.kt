@@ -918,13 +918,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return
         }
         Log.d(logTag, "putPhoneDownFromBlockedApp()")
-        littleSunOverlayWindow.hideWindow()
         // Lock via the accessibility service's GLOBAL_ACTION_LOCK_SCREEN, the same
-        // path the sleep wind-down and grounding screen-free sit use.
+        // path the sleep wind-down and grounding screen-free sit use. Broadcast
+        // first (as those callers do), then hide the overlay.
         val intent = Intent("com.minded.ACTION_LOCK_SCREEN").apply {
             setPackage(packageName)
         }
         sendBroadcast(intent)
+        littleSunOverlayWindow.hideWindow()
     }
 
 

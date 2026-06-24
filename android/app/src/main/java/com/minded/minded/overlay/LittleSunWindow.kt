@@ -63,9 +63,10 @@ class LittleSunWindow(
     // sun can expand out of exactly where the little sun sat.
     private var expandOriginX by mutableStateOf(-1)
     private var expandOriginY by mutableStateOf(-1)
-    // Set while stepping away so the hide fades the expanded pause sun straight
-    // out, instead of flipping back to the little bubble (which would flash on
-    // its way out). Cleared once the window is actually removed.
+    // Set while leaving via the offer (Step away → minded, or pull-down → lock)
+    // so the hide fades the expanded pause sun straight out, instead of flipping
+    // back to the little bubble (which would flash on its way out). Cleared once
+    // the window is actually removed.
     private var keepExpandedOnHide = false
 
     @Composable
@@ -318,9 +319,10 @@ class LittleSunWindow(
         // Reset expansion state here (not only on the show path): the window can
         // be hidden mid-offer by timer expiry / revalidation, and resetting only
         // in showWindow() can be skipped if a re-show races the hide fade-out —
-        // leaving a stale full-screen overlay that would block the app. The lone
-        // exception is stepping away, which keeps the expanded sun on screen so it
-        // fades out as the pause (the reset then happens in onWindowRemoved).
+        // leaving a stale full-screen overlay that would block the app. The
+        // exceptions are the deliberate leaves (Step away / pull-down), which keep
+        // the expanded sun on screen so it fades out as the pause (the reset then
+        // happens in onWindowRemoved).
         if (!keepExpandedOnHide) {
             isExpanded = false
             enterWithFade = false
@@ -330,7 +332,7 @@ class LittleSunWindow(
 
     override fun onWindowRemoved() {
         // Window is gone — clear expansion so the next show starts as the bubble
-        // (step-away keeps it expanded through the fade, so reset only now).
+        // (the deliberate leaves keep it expanded through the fade, so reset only now).
         isExpanded = false
         enterWithFade = false
         keepExpandedOnHide = false
