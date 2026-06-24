@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -65,6 +66,14 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 // Warm amber-gold, leaning a touch more toward yellow than the web little
 // sun's #e9843a (a more golden glow reads softer and sunnier).
 private val GLOW_COLOR = Color(0xFFE99A3A)
+
+// At night the companion is the moon, not a warm sun — so the little sun
+// mirrors the in-app moon (web Sun.scss .moon): a cool silver disc with a cool
+// blue halo instead of the daytime amber glow, so it belongs in the night sky
+// rather than reading as an out-of-place orange dot.
+private val SUN_COLOR_NIGHT = Color(0xFFEEF2FF)
+private val SUN_TEXT_COLOR_NIGHT = Color(0xFF33405E)
+private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
 // The cool dusk-into-night sky the sun sets into when the pause is pulled down,
 // matching the web interaction's dark-mode sunset gradient
@@ -530,22 +539,28 @@ private fun SunDisc(
     scale: Float = 1f,
     modifier: Modifier = Modifier,
 ) {
+    // At night the companion becomes the moon — cool silver body, cool halo —
+    // matching the in-app sun, which is also a moon after dark.
+    val night = isDarkModeNow()
+    val glowColor = if (night) GLOW_COLOR_NIGHT else GLOW_COLOR
+    val bodyColor = if (night) SUN_COLOR_NIGHT else SUN_COLOR
+    val textColor = if (night) SUN_TEXT_COLOR_NIGHT else SUN_TEXT_COLOR
+
     Box(
         modifier = modifier
             .size(glowSize)
             .scale(scale),
         contentAlignment = Alignment.Center,
     ) {
-        // Soft amber glow, drawn behind the disc so only the warm halo around
-        // the white body shows — mirrors the web extension's box-shadow glow.
-        // The disc radius is 0.5 of the glow radius, so the amber is saturated
-        // right where the white edge sits and then feathers to fully
-        // transparent before the layout bound (0.9), so the wrap-content window
-        // never hard-cuts the halo.
+        // Soft glow, drawn behind the disc so only the halo around the body
+        // shows — mirrors the web extension's box-shadow glow. The disc radius
+        // is 0.5 of the glow radius, so the colour is saturated right where the
+        // body edge sits and then feathers to fully transparent before the
+        // layout bound (0.9), so the wrap-content window never hard-cuts the halo.
         val glowBrush = Brush.radialGradient(
             colorStops = arrayOf(
-                0.5f to GLOW_COLOR.copy(alpha = 0.85f),
-                0.7f to GLOW_COLOR.copy(alpha = 0.30f),
+                0.5f to glowColor.copy(alpha = 0.85f),
+                0.7f to glowColor.copy(alpha = 0.30f),
                 0.9f to Color.Transparent,
             ),
         )
@@ -554,12 +569,12 @@ private fun SunDisc(
             onDraw = { drawCircle(glowBrush) },
         )
 
-        // Solid, opaque white sun body.
+        // Solid, opaque sun/moon body.
         Box(
             modifier = Modifier
                 .size(discSize)
                 .clip(CircleShape)
-                .background(SUN_COLOR),
+                .background(bodyColor),
             contentAlignment = Alignment.Center,
         ) {
             if (clockString.isNotEmpty()) {
@@ -568,7 +583,7 @@ private fun SunDisc(
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    color = SUN_TEXT_COLOR,
+                    color = textColor,
                     maxLines = 1,
                 )
             }
