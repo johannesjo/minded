@@ -140,10 +140,11 @@ export const InteractionWeb: (props: {
             <LittleSunComponent
               host={props.host}
               teardown={teardown}
-              onShowFreshInteraction={() => {
-                // Timer ran out → morph the intervention back out of the corner
-                // where this Little Sun rests, mirroring the depart hand-off.
-                setMorphInFromCorner(true);
+              onShowFreshInteraction={(morph) => {
+                // Set the morph flag on every hand-back (true only when the timer
+                // genuinely ran out), so it's always fresh for the next mount and
+                // can't go stale into a later re-question/tap re-show.
+                setMorphInFromCorner(morph);
                 setIsShowLittleSun(false);
                 setQuestion(undefined);
                 stopAllVideos();

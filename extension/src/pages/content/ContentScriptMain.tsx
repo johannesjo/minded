@@ -120,8 +120,8 @@ export const ContentScriptMain: (props: {
       ) : (
         <LittleSunComponent
           host={host}
-          onShowFreshInteraction={() => {
-            setMorphInFromCorner(true);
+          onShowFreshInteraction={(morph) => {
+            setMorphInFromCorner(morph);
             setIsShowFullMinder(true);
           }}
           teardown={teardown}

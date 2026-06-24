@@ -414,7 +414,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         } catch (e: Exception) {
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
-            scheduleOverlayRetry(overlayName, overlayMode, appName)
+            scheduleOverlayRetry(overlayName, overlayMode, appName, morphInFromCorner)
         }
     }
 
@@ -429,17 +429,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun scheduleOverlayRetry(
         overlayName: OverlayName,
         overlayMode: OverlayMode?,
-        appName: String?
+        appName: String?,
+        // Carry the reverse-morph intent across a retry so a timer-expiry
+        // intervention that failed its first addView still glides in from the
+        // corner once it succeeds (rather than silently dropping the morph).
+        morphInFromCorner: Boolean = false
     ) {
         val retryKey = "${overlayName}_${appName ?: ""}"
         val currentRetries = pendingOverlayRetries[retryKey] ?: 0
-        
+
         if (currentRetries < MAX_OVERLAY_RETRY_ATTEMPTS) {
             pendingOverlayRetries[retryKey] = currentRetries + 1
-            
+
             overlayRetryHandler.postDelayed({
                 Log.d(logTag, "Retrying overlay display: $overlayName (attempt ${currentRetries + 1})")
-                showOverlay(overlayName, overlayMode, appName)
+                showOverlay(overlayName, overlayMode, appName, morphInFromCorner)
             }, OVERLAY_RETRY_DELAY_MS * (currentRetries + 1))
         } else {
             Log.e(logTag, "Max retry attempts reached for overlay: $overlayName")

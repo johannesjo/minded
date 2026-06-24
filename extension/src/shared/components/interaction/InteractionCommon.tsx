@@ -2,6 +2,7 @@ import {
   batch,
   Component,
   createEffect,
+  createMemo,
   createSignal,
   onCleanup,
   onMount,
@@ -218,7 +219,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // glide home. Self-owned sun only; the shell sun never re-shows after a Little
   // Sun, so it has no corner to arrive from.
   const [getIsArrivingFromCorner, setIsArrivingFromCorner] = createSignal(
-    !props.useShellSun && !!props.morphInFromCorner,
+    !props.useShellSun &&
+      !!props.morphInFromCorner &&
+      // Only morph when the glide can actually be seen and is wanted: skip under
+      // reduced-motion (just appear centred, no animation) and when the tab is
+      // hidden — rAF is paused there, so the disc would otherwise sit frozen in
+      // the corner until the tab is foregrounded (a cross-tab timer-clear can
+      // swap a backgrounded tab straight to the intervention).
+      !prefersReducedMotion() &&
+      (typeof document === "undefined" || !document.hidden),
   );
   const getSunPhase = (): SunPhase =>
     props.useShellSun ? getSunRole() : getLocalSunPhase();
@@ -268,7 +277,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // mount), so glide to its real centre; fall back to the fixed corner when the
   // position is unknown (older app, read failed). Disc size + corner differ per
   // platform (native overlay is smaller), so match the right ones.
-  const getCornerSettle = () => {
+  // Memoized so it returns a STABLE object identity (it only re-derives when the
+  // Android bubble position signal changes). getSunSettle is read reactively, and
+  // the <Sun> settle effect keys off object identity — a fresh object each call
+  // would risk a spurious corner→corner glide on the Android branch, which reads
+  // getLittleSunRestCenter(). Pure constants on web, so it's computed once there.
+  const getCornerSettle = createMemo(() => {
     const isAndroid = props.interactionPlatform === "android";
     if (isAndroid) {
       const restCenter = getLittleSunRestCenter();
@@ -282,7 +296,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
       isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
     );
-  };
+  });
 
   const getSunSettle = () => {
     // Arriving: hold the disc at the Little Sun's corner so it mounts exactly
