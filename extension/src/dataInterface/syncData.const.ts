@@ -66,10 +66,10 @@ export const DEFAULT_SYNC_DATA: SyncData = {
           // "localhost",
           // "localhost:3000",
         ],
-    // Gentle per-session buffer is on by default: each fresh visit gets a few
-    // uninterrupted minutes (resets every session, never a depleting daily
-    // quota), so interventions never feel like nagging.
-    sessionGrace: { enabled: true, minutes: 5 },
+    // Gentle per-session buffer, off by default: when enabled from settings,
+    // each fresh visit gets a few uninterrupted minutes (resets every session,
+    // never a depleting daily quota).
+    sessionGrace: { enabled: false, minutes: 5 },
   },
   // NOTE: 99 is set to pass isToday check
   lastBlockedTS: DEFAULT_TS_VAL,
