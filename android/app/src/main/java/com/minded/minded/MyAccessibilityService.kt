@@ -23,6 +23,7 @@ import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
+import com.minded.minded.util.ForegroundStateHolder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import java.util.Collections
@@ -104,6 +105,7 @@ class MyAccessibilityService : AccessibilityService() {
 
     companion object {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
+        const val INTENT_EXTRA_DETECTION_TIMESTAMP = "INTENT_EXTRA_DETECTION_TIMESTAMP"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
         private const val TAG = "MindedAccessibility"
         private const val HEALTH_NOTIFICATION_CHANNEL_ID = "minded_health_alerts"
@@ -383,7 +385,7 @@ class MyAccessibilityService : AccessibilityService() {
         detectionCollectionJob = serviceScope.launch {
             hybridDetector?.validatedDetections?.collect { detection ->
                 Log.d(TAG, "Received validated detection: ${detection.packageName} (confidence: ${detection.confidence.overall})")
-                triggerOverlay(detection.packageName)
+                triggerOverlay(detection.packageName, detection.timestamp)
             }
         }
 
@@ -439,6 +441,9 @@ class MyAccessibilityService : AccessibilityService() {
             ) {
                 null
             } else {
+                // Publish the freshest confident foreground for the overlay
+                // controller's render-time liveness gate (guard 2b). Cheap write.
+                ForegroundStateHolder.update(focusedPackage, "accessibility")
                 focusedPackage
             }
         } catch (e: Exception) {
@@ -512,7 +517,10 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun triggerOverlay(packageName: String) {
+    private fun triggerOverlay(
+        packageName: String,
+        detectionTimestampMs: Long = System.currentTimeMillis()
+    ) {
         Log.d(TAG, "Triggering overlay for package: $packageName")
 
         // Track when we trigger overlay for user apps coming from launcher
@@ -530,6 +538,7 @@ class MyAccessibilityService : AccessibilityService() {
         try {
             val intent = Intent(this, OverlayControllerService::class.java).apply {
                 putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+                putExtra(INTENT_EXTRA_DETECTION_TIMESTAMP, detectionTimestampMs)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(intent)
@@ -544,6 +553,7 @@ class MyAccessibilityService : AccessibilityService() {
                 try {
                     val retryIntent = Intent(this, OverlayControllerService::class.java).apply {
                         putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+                        putExtra(INTENT_EXTRA_DETECTION_TIMESTAMP, detectionTimestampMs)
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         startForegroundService(retryIntent)

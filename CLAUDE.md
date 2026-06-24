@@ -23,12 +23,23 @@ feature decision — read them before proposing changes to interventions.
 
 - **The sun is the central mechanic and *is* the pause.** When an intervention
   fires, a draggable animated sun appears; tapping/flinging it is the universal,
-  always-available escape hatch. The sun also delivers the calming pause itself:
-  `InteractionCommon.tsx` glides it to a "breathing" anchor and runs
-  `StrongFrictionBreathPause`, with the pause length scaled by friction via
-  `getPostSunPauseSeconds()`. Don't add separate "take a breath" UI — the pause
-  already exists in the sun. The sun rests on the dashboard bottom bar as a
-  companion; drag up → intervention, drag down → optional grounding offer.
+  always-available escape hatch. Tapping it opens a calm pause — but the everyday
+  *soft/companion* sun does **not** "breathe" on its own. A repeating breathing
+  swell belongs only to *guided* breath pauses — guided meditations (e.g.
+  urge-surfing) and the deliberate strong-friction breath pause
+  (`StrongFrictionBreathPause`, which guides breathe-in / hold / out). The
+  ambient/companion sun and the everyday soft interaction never carry an unguided
+  repeating breath; their calm is carried by the sun's quiet presence and its soft
+  morph into place, never a separate ambient "take a breath" UI. The sun rests on
+  the dashboard bottom bar as a companion; drag up → intervention, drag down →
+  optional grounding offer.
+
+- **The sun always *morphs*, and there is only ever one.** Across screens and
+  states the sun is a single continuous object that glides/scales from one
+  surface to the next — it must never hard-cut, vanish, or appear in two places
+  at once. Where the architecture can't currently morph (e.g. a native overlay
+  handing off to a WebView surface), the job is to *make* it morph, not to
+  accept the cut.
 
 - **Interrupt → reflect → redirect, gently and never forced.** Grounding and
   similar offers are invitations ("Stay a while?"), auto-dismiss if ignored, and

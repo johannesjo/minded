@@ -520,6 +520,184 @@ class OverlayDecisionEngineTest {
         assertEquals(SkipReason.RECENT_HIDE_ALL, decision.reason)
     }
 
+    // ==================== Liveness Gate 2a: Stale Detection ====================
+
+    @Test
+    fun `should skip when detection emit timestamp is too old`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime -
+                (OverlayDecisionEngine.STALE_SHOW_THRESHOLD_MS + 500)
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.STALE_DETECTION, decision.reason)
+    }
+
+    @Test
+    fun `should not skip when detection emit timestamp is fresh`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime - 200 // well within threshold
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should not skip on stale detection when timestamp is zero`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = 0L // no detection timestamp available
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should not skip on stale detection when timestamp is in the future (clock skew)`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime + 5000 // negative age
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    // ==================== Liveness Gate 2b: Stale Foreground ====================
+
+    @Test
+    fun `should skip when fresh foreground is a different app`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime - 200 // fresh
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.STALE_FOREGROUND, decision.reason)
+    }
+
+    @Test
+    fun `should not skip when fresh foreground matches target app`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            freshestForegroundPackage = youtubePackage, // same as target
+            freshestForegroundTimestamp = currentTime - 200
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should not skip when contradicting foreground is stale`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime -
+                (OverlayDecisionEngine.FOREGROUND_FRESH_WINDOW_MS + 500) // too old
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        // Stale evidence is no evidence - default to allowing the draw
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should not skip when foreground holder is absent`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            freshestForegroundPackage = null
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should not skip when contradicting foreground timestamp is in the future (clock skew)`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime + 5000 // negative age
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should not skip when contradicting foreground is older than the detection`() {
+        // A holder value that predates this detection must not suppress it (e.g.
+        // the high-confidence path emitted with a null focus read, leaving a
+        // prior app in the holder). Recent by the window, but stale vs. the
+        // detection -> allow the draw.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime - 1000 // within window, but older than the detection
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should skip when contradicting foreground is newer than the detection`() {
+        // Foreground evidence that postdates the detection is trustworthy: the
+        // user really did move on after the detection fired -> skip the draw.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime - 1000,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime - 100 // newer than the detection, fresh
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.STALE_FOREGROUND, decision.reason)
+    }
+
     // ==================== Helper Functions ====================
 
     private fun createState(
@@ -533,7 +711,10 @@ class OverlayDecisionEngineTest {
         activeTimerEndTime: Long? = null,
         activeTimerDurationS: Int? = null,
         isWindDownActive: Boolean = false,
-        isWindDownSnoozed: Boolean = false
+        isWindDownSnoozed: Boolean = false,
+        detectionTimestamp: Long = 0L,
+        freshestForegroundPackage: String? = null,
+        freshestForegroundTimestamp: Long = 0L
     ): OverlayState {
         return OverlayState(
             ownPackage = mindedPackage,
@@ -547,7 +728,10 @@ class OverlayDecisionEngineTest {
             activeTimerEndTime = activeTimerEndTime,
             activeTimerDurationS = activeTimerDurationS,
             isWindDownActive = isWindDownActive,
-            isWindDownSnoozed = isWindDownSnoozed
+            isWindDownSnoozed = isWindDownSnoozed,
+            detectionTimestamp = detectionTimestamp,
+            freshestForegroundPackage = freshestForegroundPackage,
+            freshestForegroundTimestamp = freshestForegroundTimestamp
         )
     }
 }
