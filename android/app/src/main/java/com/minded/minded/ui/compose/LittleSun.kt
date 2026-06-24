@@ -158,8 +158,9 @@ fun LittleSun(
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
     onStepAway: () -> Unit = {},
-    // Pulling the pause all the way down "sets" the sun and leaves the app for
-    // minded — distinct from the gentle stay paths (Not now / tap-off / wait).
+    // Pulling the pause all the way down puts the phone down for real — it locks
+    // the screen (eyes off entirely), distinct both from the gentle stay paths
+    // (Not now / tap-off / wait) and from "Step away", which lands you in minded.
     onPullDownAway: () -> Unit = {},
     onStay: () -> Unit = {},
 ) {
@@ -277,6 +278,8 @@ private fun StepAwayOffer(
     onPullDownAway: () -> Unit,
     onStay: () -> Unit,
 ) {
+    // For the soft haptic that confirms the pull-down lock commit.
+    val view = LocalView.current
     // 0 = quiet hold, 1 = invitation shown.
     var phase by remember { mutableStateOf(0) }
     var shown by remember { mutableStateOf(false) }
@@ -399,8 +402,11 @@ private fun StepAwayOffer(
                         if (dragY.value >= dismissDragPx) {
                             // Pulled past the threshold: the sun sets. It sinks the
                             // rest of the way down (staying fully opaque) while the
-                            // night sky holds, then we leave the blocked app for
-                            // minded — the overlay fades out as minded comes up.
+                            // night sky holds, then we put the phone down for real —
+                            // the screen locks as the overlay fades out. A soft tick
+                            // confirms the deliberate, consequential leave (matching
+                            // the offer buttons' haptic).
+                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                             dragScope.launch {
                                 dragY.animateTo(
                                     screenHeightPx,
