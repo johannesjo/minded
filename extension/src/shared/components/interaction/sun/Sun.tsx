@@ -457,10 +457,10 @@ export const Sun: Component<SunProps> = (props) => {
 
   // Bring a disc that was flung off-screen home *without* streaking it across the
   // whole screen: place it straight on its rest and gently fade (with a touch of
-  // scale) it in there. Used when an offer opened by a fling (let-go up /
-  // grounding down) is dismissed and the disc returns to the bottom bar — a glide
-  // from its off-screen position would zip back unpleasantly fast (worst for the
-  // let-go offer, flung all the way up then declined).
+  // scale) it in there. Used when a disc a terminal gesture flung off-screen
+  // returns to the bottom bar — e.g. the let-go offer (flung all the way up, then
+  // declined): a glide from that off-screen position would zip back unpleasantly
+  // fast. (A still-on-screen disc glides instead — see enterSettle.)
   const settleInAtRest = (
     target: SunPosition,
     restScale: number,
@@ -492,14 +492,35 @@ export const Sun: Component<SunProps> = (props) => {
     settleFrame = requestAnimationFrame(step);
   };
 
+  // Whether the disc's centre is still within the viewport right now. A terminal
+  // gesture that *flung* the disc away (let-go up) leaves it off-screen; a
+  // down-drag whose completion has only just begun (the grounding offer, which
+  // hands straight to the companion settle) leaves it still on-screen near its
+  // release point. The two want different homecomings — see enterSettle.
+  const isDiscCenterOnScreen = (): boolean => {
+    const c = getSunCenterForOffset();
+    if (!c) return false;
+    return (
+      c.x >= 0 &&
+      c.x <= window.innerWidth &&
+      c.y >= 0 &&
+      c.y <= window.innerHeight
+    );
+  };
+
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
-    // A terminal gesture (fling / drag-complete) leaves the disc flung off-screen.
-    // Capture that BEFORE resetTerminalStateForReuse clears the flag, so the
-    // return home can fade in at the rest instead of streaking back across the
-    // whole screen.
+    // A terminal gesture can leave the disc flung off-screen (the let-go fling
+    // runs a full 3s). Only then must the return home fade in at the rest rather
+    // than glide — a glide from off-screen would streak across the whole screen.
+    // When the disc is still on-screen (the down-drag-to-ground hands to the
+    // companion settle the instant its completion starts, before it has moved),
+    // a glide to the bottom is the cleaner morph and avoids a hard cut. Capture
+    // this BEFORE resetTerminalStateForReuse clears the completion flag.
     const wasFlungOffScreen =
-      isCompanionSettle(settle) && getIsCompletionStarted();
+      isCompanionSettle(settle) &&
+      getIsCompletionStarted() &&
+      !isDiscCenterOnScreen();
     if (isCompanionSettle(settle)) resetTerminalStateForReuse();
     const restScale = restScaleForSettle(settle);
     const target = getAnchorOffset(settle);
@@ -542,6 +563,11 @@ export const Sun: Component<SunProps> = (props) => {
       return;
     }
 
+    // A terminal completion may still be mid-flight when we glide instead (the
+    // down-drag-to-ground that opened a dashboard offer settles to the companion
+    // the instant its completion starts): cancel it so its per-frame writes don't
+    // fight the glide below and drag the disc off the bottom edge.
+    cancelCompletionFrame();
     animateOffsetScaleTo(target, restScale, duration, onSettled);
   };
 
