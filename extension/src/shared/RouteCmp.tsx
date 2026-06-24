@@ -24,6 +24,7 @@ import {
   getIsShellSunHidden,
   getIsSunHandoffInFlight,
   getSunHandlers,
+  getSunOrbit,
   getSunRole,
   getSunSettleForCurrentRole,
   isShellSunInteractive,
@@ -167,10 +168,14 @@ const MainWrapper = (props: RouteSectionProps) => {
         class={styles.shellSunLayer}
         classList={{
           [styles.isInteractive]: isSunInteractive(),
-          // Any non-companion role is a live intervention: hold the idle float
-          // still there so the disc's centre stays exactly on the point the
-          // background glow tracks (see the SCSS note).
-          [styles.isIntervention]: getSunRole() !== "companion",
+          // A live intervention pins the idle float still so the disc's centre
+          // stays exactly on the point the background glow tracks (see the SCSS
+          // note). The companion rest and the daily-questions phases have no such
+          // glow to track, so they keep their gentle idle float.
+          [styles.isIntervention]:
+            getSunRole() !== "companion" &&
+            getSunRole() !== "dailyQuestions" &&
+            getSunRole() !== "dailyQuestionsSuccess",
           // A dashboard offer (the flung-up let-go question) has taken over and
           // owns the screen; hide the disc behind it instead of letting it paint
           // over the question. It returns home when the offer closes.
@@ -181,6 +186,7 @@ const MainWrapper = (props: RouteSectionProps) => {
           <Sun
             variant={getSunVariant()}
             settle={getSunSettleForCurrentRole()}
+            orbit={getSunOrbit()}
             onBreathStart={setBreathStartedAt}
             minimizeWillChange={true}
             isDragEnabled={isSunInteractive()}

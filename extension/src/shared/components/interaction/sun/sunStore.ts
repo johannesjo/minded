@@ -144,6 +144,18 @@ const [getBreathStartedAt, setBreathStartedAt] = createSignal<
 >(undefined);
 
 /**
+ * Progress dots orbiting the sun while the daily-questions flow drives it (a
+ * faint crown above the disc, `filled` of `total` lit). It's the gentle
+ * "where am I" hint the flow shows in place of a numbered stepper — present as
+ * a companion, never a score. `null` whenever no flow is driving the sun, so
+ * the dots only ever appear on that route.
+ */
+export type SunOrbit = { total: number; filled: number };
+const [getSunOrbit, setSunOrbit] = createSignal<SunOrbit | null>(null, {
+  equals: (a, b) => a?.total === b?.total && a?.filled === b?.filled,
+});
+
+/**
  * The shell disc accepts pointer input (drag/tap, `pointer-events: auto`) only
  * while its role is the live "interactive" phase AND no hand-off to the post-sun
  * choices is in flight. The second term is what stops the centred, full-size disc
@@ -171,6 +183,8 @@ export {
   setRestingSunAnchor,
   getBreathStartedAt,
   setBreathStartedAt,
+  getSunOrbit,
+  setSunOrbit,
 };
 
 /**
@@ -186,7 +200,14 @@ export {
  */
 export const getSunSettleForCurrentRole = (): SunSettle | null => {
   const role = getSunRole();
-  if (role === "companion" || role === "departing") {
+  // The daily-questions answering phase rests exactly where the companion does
+  // (the bottom bar), so entering the flow from the dashboard moves nothing —
+  // only the orbit dots fade in. It leaves that rest on success, below.
+  if (
+    role === "companion" ||
+    role === "departing" ||
+    role === "dailyQuestions"
+  ) {
     return getSunSettleForPhase("companion", getCompanionBottomYPx());
   }
   // Interactive: rest on the measured placeholder centre (full size, no breath)

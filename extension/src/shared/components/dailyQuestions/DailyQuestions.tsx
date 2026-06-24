@@ -1,5 +1,15 @@
-import { createSignal, Match, onCleanup, onMount, Switch } from "solid-js";
-import Stepper from "@src/shared/components/ui/Stepper";
+import {
+  createEffect,
+  createSignal,
+  Match,
+  onCleanup,
+  onMount,
+  Switch,
+} from "solid-js";
+import {
+  setSunOrbit,
+  setSunRole,
+} from "@src/shared/components/interaction/sun/sunStore";
 import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
@@ -33,9 +43,11 @@ const DailyQuestions = () => {
   const mode: DailyQuestionsMode = getDailyQuestionsMode();
   // const mode: DailyQuestionsMode = "Evening";
   // Evening lost its opening mood check-in, so it's a 3-step flow now while
-  // Morning keeps 4. Derive the stepper size and the final success ("🌞") step.
+  // Morning keeps 4. The last step is the success beat; the rest are questions.
   const lastStep = mode === "Morning" ? 3 : 2;
-  const nrOfSteps = lastStep + 1;
+  // Every step before the success beat is one question; that count is also the
+  // number of progress dots the sun wears as its crown.
+  const nrOfQuestions = lastStep;
   let t0: NodeJS.Timeout | undefined;
 
   const getRndQuestionFromCat = (
@@ -54,8 +66,27 @@ const DailyQuestions = () => {
     });
   });
 
+  // The one shell sun is this flow's through-line: it rests on the bottom bar
+  // wearing a progress crown while the questions are answered, then blooms into
+  // the closing sun. Driven reactively off the step so each transition is a
+  // glide of the same disc — never a new element popping in (which is what made
+  // the old separate suns jump).
+  createEffect(() => {
+    if (getStep() === lastStep) {
+      setSunOrbit(null);
+      setSunRole("dailyQuestionsSuccess");
+    } else {
+      setSunOrbit({ total: nrOfQuestions, filled: getStep() });
+      setSunRole("dailyQuestions");
+    }
+  });
+
   onCleanup(() => {
     window.clearTimeout(t0);
+    // Hand the disc back to its companion rest — from the success bloom it
+    // glides down to the bottom bar of the dashboard we navigate to.
+    setSunOrbit(null);
+    setSunRole("companion");
   });
 
   const onSuccess = () => {
@@ -128,11 +159,8 @@ const DailyQuestions = () => {
             </Match>
             <Match when={getStep() === 3}>
               {/* TODO component */}
-              <div
-                class="success-message"
-                ref={scheduleAfterAni}
-              >
-                <div class="success-sun"></div>
+              <div class="success-message" ref={scheduleAfterAni}>
+                {/* No sun here: the shell sun blooms above this line. */}
                 <div class="success-text">Have a wonderful day today!</div>
               </div>
             </Match>
@@ -170,11 +198,8 @@ const DailyQuestions = () => {
             </Match>
             <Match when={getStep() === 2}>
               {/* TODO component */}
-              <div
-                class="success-message"
-                ref={scheduleAfterAni}
-              >
-                <div class="success-sun"></div>
+              <div class="success-message" ref={scheduleAfterAni}>
+                {/* No sun here: the shell sun blooms above this line. */}
                 <div class="success-text">
                   Have a wonderful rest of the day!
                 </div>
@@ -182,19 +207,6 @@ const DailyQuestions = () => {
             </Match>
           </Switch>
         )}
-      </div>
-
-      <div
-        class={styles.stepperWrapper}
-        style={{ visibility: getStep() === lastStep ? "hidden" : "visible" }}
-      >
-        <Stepper
-          nrOfSteps={nrOfSteps}
-          activeStep={getStep()}
-          isNoGoBack={true}
-          onSetStep={(step) => setStep(step)}
-          labelFn={(step) => (step === lastStep ? "🌞" : undefined)}
-        />
       </div>
     </div>
   );

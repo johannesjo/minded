@@ -7,6 +7,15 @@
   }
 }
 
+@keyframes minded6622fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 // Page-level entrance: fade paired with a barely-there scale so views feel
 // like they arrive rather than blink into place. Uses the independent `scale`
 // property (NOT `transform: scale()`) so it composes with any centering

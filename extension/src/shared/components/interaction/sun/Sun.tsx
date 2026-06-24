@@ -2,9 +2,11 @@ import {
   Component,
   createEffect,
   createSignal,
+  Index,
   on,
   onCleanup,
   onMount,
+  Show,
 } from "solid-js";
 import {
   DRAG_THRESHOLD_PX,
@@ -84,6 +86,13 @@ interface SunProps {
    * position.
    */
   settle?: SunSettle | null;
+  /**
+   * Faint progress dots arranged as a crown above the disc (`filled` of `total`
+   * lit). Used by the daily-questions flow as a gentle, non-numeric "where am I"
+   * hint while this one sun carries the user through the questions. Omitted /
+   * null everywhere else, so the crown never shows outside that flow.
+   */
+  orbit?: { total: number; filled: number } | null;
 }
 
 export interface SunSettle {
@@ -1135,6 +1144,38 @@ export const Sun: Component<SunProps> = (props) => {
   // letting it take over would only make the sun fade the moment you touch it. Sun
   // only; the moon keeps its own cooler resting halo (Sun.scss).
   const COMPANION_REST_GLOW = COMPANION_HOVER_GLOW;
+  // Keep the progress crown mounted through one soft fade when the flow clears
+  // it (the success bloom), so the dots dissolve rather than snapping out — a
+  // hard cut reads as a jolt (see the styling rules). We hold the last orbit
+  // value for the duration of the fade, then unmount.
+  const ORBIT_FADE_MS = 600;
+  const [getOrbitLeaving, setOrbitLeaving] = createSignal(false);
+  let lastOrbit: { total: number; filled: number } | null = null;
+  let orbitLeaveT: ReturnType<typeof setTimeout> | undefined;
+  createEffect(() => {
+    const o = props.orbit;
+    if (o && o.total > 0) {
+      lastOrbit = o;
+      clearTimeout(orbitLeaveT);
+      setOrbitLeaving(false);
+    } else if (lastOrbit) {
+      clearTimeout(orbitLeaveT);
+      setOrbitLeaving(true);
+      orbitLeaveT = setTimeout(() => {
+        setOrbitLeaving(false);
+        lastOrbit = null;
+      }, ORBIT_FADE_MS);
+    }
+  });
+  onCleanup(() => clearTimeout(orbitLeaveT));
+  // The crown to draw: the live orbit, or the held last value while it fades out.
+  const orbitToRender = (): { total: number; filled: number } | null =>
+    props.orbit && props.orbit.total > 0
+      ? props.orbit
+      : getOrbitLeaving()
+        ? lastOrbit
+        : null;
+
   const getInteractionScale = () => {
     if (getIsCompletionStarted()) {
       return 1;
@@ -1171,14 +1212,15 @@ export const Sun: Component<SunProps> = (props) => {
         // the departing hand-off's white→amber glow warms softly mid-glide rather
         // than snapping (a hard cut would betray the calm premise). Only an active
         // drag, where the glow tracks the finger, needs it instant.
-        transition: [
-          getIsDragging() || getIsAnimating()
-            ? null
-            : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-          getIsDragging() ? null : "box-shadow 160ms ease-out",
-        ]
-          .filter(Boolean)
-          .join(", ") || "none",
+        transition:
+          [
+            getIsDragging() || getIsAnimating()
+              ? null
+              : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            getIsDragging() ? null : "box-shadow 160ms ease-out",
+          ]
+            .filter(Boolean)
+            .join(", ") || "none",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         // A settle may warm the halo to the Little Sun's amber and tighten it for
@@ -1209,6 +1251,40 @@ export const Sun: Component<SunProps> = (props) => {
           ))}
         </div>
       )}
+      <Show when={orbitToRender()}>
+        {(orbit) => (
+          // A faint crown of dots spread across the top arc (avoiding the bottom,
+          // where the disc rests on the bar). Children of the disc, so they ride
+          // its scale/float and the ring stays just outside the edge at any size.
+          <div
+            class="sun-orbit"
+            classList={{ "is-leaving": getOrbitLeaving() }}
+            aria-hidden="true"
+          >
+            <Index each={Array.from({ length: orbit().total })}>
+              {(_, i) => {
+                const total = orbit().total;
+                const arcDeg = 120; // crown span, centred on straight-up
+                const angle =
+                  total === 1 ? 0 : -arcDeg / 2 + (i * arcDeg) / (total - 1);
+                // +24 is pre-scale local px: the crown rides the disc's transform
+                // (companion scale ~0.42), so this lands ~10px of on-screen
+                // clearance beyond the disc edge at every breakpoint.
+                const radius = sunSize.size / 2 + 24;
+                return (
+                  <div
+                    class="sun-orbit-dot"
+                    classList={{ filled: i < orbit().filled }}
+                    style={{
+                      transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`,
+                    }}
+                  />
+                );
+              }}
+            </Index>
+          </div>
+        )}
+      </Show>
     </div>
   );
 };
