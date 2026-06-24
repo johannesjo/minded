@@ -26,6 +26,7 @@ import {
   getSunSize,
   hasVerticalCompletionIntent,
   getSunReleaseAction,
+  shouldAcceptSunPointerStart,
   calculateDragColorTemperature,
   type VelocitySample,
   type PhysicsState,
@@ -616,15 +617,20 @@ export const Sun: Component<SunProps> = (props) => {
     let allowFinalFrame = false;
 
     const handleStart = (clientX: number, clientY: number) => {
-      // Prevent interactions once completion animation has started
-      if (getIsCompletionStarted()) return;
-
-      // While a role-transition glide is carrying the disc to its new rest, stay
-      // inert: taking the gesture over (below) would cancel the glide and re-anchor
-      // the rest to the interrupted spot, leaving the disc stranded mid-transition
-      // — e.g. tapping the rising sun a second time froze it full-size. Let the
-      // glide land first; the disc becomes grabbable the instant it does.
-      if (getIsSettlingIntoRole()) return;
+      // A new gesture only starts when the disc is settled and not on its way
+      // out. A completion animation (fling / drag-complete) or a role-transition
+      // glide both make it inert: taking the gesture over (below) mid-glide would
+      // cancel the glide and re-anchor the rest to the interrupted spot, leaving
+      // the disc stranded mid-transition — e.g. tapping the rising sun a second
+      // time froze it full-size. Let the glide land first; the disc becomes
+      // grabbable the instant it does. (See shouldAcceptSunPointerStart.)
+      if (
+        !shouldAcceptSunPointerStart({
+          isCompletionStarted: getIsCompletionStarted(),
+          isSettlingIntoRole: getIsSettlingIntoRole(),
+        })
+      )
+        return;
 
       // Grabbing the sun mid-animation (the breath cycle or a snap-back — the
       // role-transition glide is already excluded above) used to leave the
