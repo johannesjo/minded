@@ -21,10 +21,27 @@ export const InteractionWeb: (props: {
   host: string;
   onHideAll: () => void;
   shadowRoot?: ShadowRoot;
+  /**
+   * The page opened straight into a Little Sun (an active session was already
+   * running), and its timer has now run out — so this first intervention should
+   * arrive by morphing out of the Little Sun's corner rather than appearing fresh.
+   * Re-shows that happen *within* this component (a session set here, then its
+   * timer expiring) drive the same morph via the internal signal below.
+   */
+  morphInFromCorner?: boolean;
 }) => JSX.Element = (props) => {
   const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
+  // Whether the next full intervention should glide in from the Little Sun corner
+  // (the reverse of the departing hand-off). Seeded from the prop for the very
+  // first intervention; set true whenever a Little Sun shown *here* hands back to
+  // the intervention because its timer ran out. Once any Little Sun has appeared,
+  // every re-show is a morph-in — only a first intervention with no prior timer
+  // (prop false) simply appears.
+  const [getMorphInFromCorner, setMorphInFromCorner] = createSignal(
+    !!props.morphInFromCorner,
+  );
 
   let wrapperEl: HTMLDivElement = undefined!;
   let isDismissing = false;
@@ -124,6 +141,9 @@ export const InteractionWeb: (props: {
               host={props.host}
               teardown={teardown}
               onShowFreshInteraction={() => {
+                // Timer ran out → morph the intervention back out of the corner
+                // where this Little Sun rests, mirroring the depart hand-off.
+                setMorphInFromCorner(true);
                 setIsShowLittleSun(false);
                 setQuestion(undefined);
                 stopAllVideos();
@@ -159,6 +179,7 @@ export const InteractionWeb: (props: {
                 shadowRoot={props.shadowRoot}
                 interactionTarget={{ kind: "host", id: props.host }}
                 interactionPlatform="web"
+                morphInFromCorner={getMorphInFromCorner()}
                 onSetAnswer={() => {}}
                 onModeSet={() => {}}
                 onAfterInteractionFadeout={() => {
