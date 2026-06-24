@@ -2,6 +2,7 @@ import {
   calculateDragColorTemperature,
   getSunReleaseAction,
   hasVerticalCompletionIntent,
+  shouldAcceptSunPointerStart,
 } from "./sunAnimationUtils";
 
 describe("sun animation utils", () => {
@@ -104,6 +105,47 @@ describe("sun animation utils", () => {
 
     it("keeps color neutral without a vertical drag direction", () => {
       expect(calculateDragColorTemperature("none", 80)).toBe(0);
+    });
+  });
+
+  describe("shouldAcceptSunPointerStart", () => {
+    it("accepts a gesture only on a settled, non-exiting disc", () => {
+      expect(
+        shouldAcceptSunPointerStart({
+          isCompletionStarted: false,
+          isSettlingIntoRole: false,
+        }),
+      ).toBe(true);
+    });
+
+    it("ignores a tap while a role-transition glide is still in flight", () => {
+      // The regression guard: tapping the disc as it glides from the bottom-bar
+      // companion up into the interactive form must not take the glide over and
+      // strand it full-size — it stays inert until the glide lands.
+      expect(
+        shouldAcceptSunPointerStart({
+          isCompletionStarted: false,
+          isSettlingIntoRole: true,
+        }),
+      ).toBe(false);
+    });
+
+    it("ignores a gesture once a completion animation has started", () => {
+      expect(
+        shouldAcceptSunPointerStart({
+          isCompletionStarted: true,
+          isSettlingIntoRole: false,
+        }),
+      ).toBe(false);
+    });
+
+    it("stays inert when both exit states are active", () => {
+      expect(
+        shouldAcceptSunPointerStart({
+          isCompletionStarted: true,
+          isSettlingIntoRole: true,
+        }),
+      ).toBe(false);
     });
   });
 });
