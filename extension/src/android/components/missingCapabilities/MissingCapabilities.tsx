@@ -5,7 +5,6 @@ import {
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
 import { safeJsonParse } from "@src/util/safeJsonParse";
-import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 
 // Capabilities minded cannot run without. Usage-access and battery-optimization
@@ -107,12 +106,6 @@ export const MissingCapabilityView = (props: {
               app that is currently in the foreground, so <em>minded</em> can
               display its interaction overlay for the apps you configured.
             </p>
-            <p class={styles.permissionText}>
-              <strong>
-                <em>minded</em> does not collect or send any kind of
-                information!
-              </strong>
-            </p>
             {/*<p class={styles.permissionText "}>*/}
             {/*  <em>minded</em> does not collect any kind of information and does*/}
             {/*  not send any kind of information.*/}
@@ -151,7 +144,10 @@ export const MissingCapabilityView = (props: {
             </Btn>
           </div>
         )}
-        {hasOptionalMissing() && (
+        {/* Optional capabilities are deferred during onboarding (requiredOnly):
+            a first-run user should meet two cards, not four. They still surface
+            afterwards via the dashboard's missing-permissions banner. */}
+        {!props.requiredOnly && hasOptionalMissing() && (
           <div class={styles.optionalSection}>
             <p class={styles.optionalHeading}>
               Recommended. <em>minded</em> already works with the permissions
@@ -207,8 +203,12 @@ export const MissingCapabilityView = (props: {
           style="margin-top:  32px"
           onClick={() => props.onPermissionDenied?.()}
         >
-          <Ico name="close" /> don't give permission
+          maybe later
         </Btn>
+
+        <p class={styles.privacyNote}>
+          Everything stays on your device. Nothing is ever sent anywhere.
+        </p>
       </div>
     </div>
   );
