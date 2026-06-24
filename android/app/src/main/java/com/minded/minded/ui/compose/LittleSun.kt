@@ -7,18 +7,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.systemGestureExclusion
@@ -157,11 +152,10 @@ fun LittleSun(
     onTap: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
+    // Pulling the sun down is the one offered gesture: it steps away into minded —
+    // the calm redirect the old "Step away" button performed. The gentle stay
+    // paths (tap-off / wait) glide the sun back home instead.
     onStepAway: () -> Unit = {},
-    // Pulling the pause all the way down puts the phone down for real — it locks
-    // the screen (eyes off entirely), distinct both from the gentle stay paths
-    // (Not now / tap-off / wait) and from "Step away", which lands you in minded.
-    onPullDownAway: () -> Unit = {},
     onStay: () -> Unit = {},
 ) {
     if (expanded) {
@@ -169,7 +163,6 @@ fun LittleSun(
             expandFromX = expandFromX,
             expandFromY = expandFromY,
             onStepAway = onStepAway,
-            onPullDownAway = onPullDownAway,
             onStay = onStay,
         )
     } else {
@@ -275,18 +268,17 @@ private fun StepAwayOffer(
     expandFromX: Int,
     expandFromY: Int,
     onStepAway: () -> Unit,
-    onPullDownAway: () -> Unit,
     onStay: () -> Unit,
 ) {
-    // For the soft haptic that confirms the pull-down lock commit.
+    // For the soft haptic that confirms the pull-down step-away commit.
     val view = LocalView.current
-    // 0 = quiet hold, 1 = invitation shown.
+    // 0 = quiet hold, 1 = the gentle hint has been invited in.
     var phase by remember { mutableStateOf(0) }
     var shown by remember { mutableStateOf(false) }
     var dismissing by remember { mutableStateOf(false) }
-    // A "stay" dismiss (Not now / tap-off / ignored) plays the expand in reverse:
-    // the sun shrinks and glides back to its bubble corner, then hands off to the
-    // resting bubble. A drag-down close instead sinks the sun off-screen.
+    // A "stay" dismiss (tap-off / ignored) plays the expand in reverse: the sun
+    // shrinks and glides back to its bubble corner, then hands off to the resting
+    // bubble. A drag-down step-away instead sinks the sun off-screen.
     var reverseDismiss by remember { mutableStateOf(false) }
     // Set once the reverse glide-home has landed: the sun is quickly hidden at its
     // corner so the window can resize behind it unseen, then the resting bubble
@@ -341,18 +333,20 @@ private fun StepAwayOffer(
         label = "stepAwaySunAlpha",
     )
 
-    val promptAlpha by animateFloatAsState(
+    // The gentle hint that names the one gesture. It fades in once the pause has
+    // settled and out quickly on dismiss so it never lingers over the returning
+    // sun. (It also fades as the sun is dragged — see hintAlpha * (1 - dragProgress)
+    // on the Text below — so the words step aside the instant the motion begins.)
+    val hintAlpha by animateFloatAsState(
         targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
-        // Fade the buttons out quickly on dismiss so they don't linger over the
-        // returning sun; fade them in promptly once the pause has settled.
         animationSpec = tween(durationMillis = if (dismissing) 200 else 450),
-        label = "promptAlpha",
+        label = "hintAlpha",
     )
 
-    // Drag-down-to-close: pull the pause downward to dismiss it, the same
-    // drag-down-to-let-go gesture the dashboard sun uses. The content follows the
-    // finger and fades; released past the threshold it closes (stay), otherwise
-    // it springs back.
+    // Drag-down-to-step-away: pull the sun downward — the same drag-down gesture
+    // the dashboard sun uses. The sun follows the finger and the night sky rises
+    // behind it; released past the threshold it sets into minded, otherwise it
+    // springs back.
     val dragY = remember { Animatable(0f) }
     val dragScope = rememberCoroutineScope()
     val dismissDragPx = with(LocalDensity.current) { 140.dp.toPx() }
@@ -391,8 +385,8 @@ private fun StepAwayOffer(
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { beginDismiss(reverse = true) })
             }
-            // Pull down to close: the content tracks the finger; released past the
-            // threshold it dismisses, otherwise it springs back.
+            // Pull down to step away: the content tracks the finger; released past
+            // the threshold it sets into minded, otherwise it springs back.
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
                     onVerticalDrag = { _, dy ->
@@ -402,17 +396,17 @@ private fun StepAwayOffer(
                         if (dragY.value >= dismissDragPx) {
                             // Pulled past the threshold: the sun sets. It sinks the
                             // rest of the way down (staying fully opaque) while the
-                            // night sky holds, then we put the phone down for real —
-                            // the screen locks as the overlay fades out. A soft tick
-                            // confirms the deliberate, consequential leave (matching
-                            // the offer buttons' haptic).
+                            // night sky holds, then we step away into minded — the
+                            // calm redirect the old "Step away" button performed,
+                            // now the natural completion of the downward gesture. A
+                            // soft tick confirms the deliberate, chosen leave.
                             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                             dragScope.launch {
                                 dragY.animateTo(
                                     screenHeightPx,
                                     tween(durationMillis = 500, easing = FastOutSlowInEasing),
                                 )
-                                onPullDownAway()
+                                onStepAway()
                             }
                         } else {
                             dragScope.launch {
@@ -463,63 +457,33 @@ private fun StepAwayOffer(
                 .alpha(sunAlpha),
         )
 
-        // No heading, no question — the quiet moment has already passed. A single
-        // gentle offer to step away, with a quiet decline; tapping off it, pulling
-        // down, or simply waiting also stays. The choice is never pushed. It rests
-        // below the centred sun and only fades in once the pause has settled.
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        // No heading, no question, no buttons — the quiet moment has already
+        // passed. A single soft line names the one gesture, like the dashboard
+        // interaction's drag hint: pull the sun down to step away into minded. It
+        // rests below the centred sun, fades in only once the pause has settled,
+        // and fades out the instant the sun is grabbed (the motion and the rising
+        // night sky take over from the words). Tapping off, or simply waiting,
+        // still glides the sun home — the gesture is never pushed.
+        Text(
+            text = "Drag the sun down to step away",
+            color = Color.White,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            // A soft drop shadow keeps the white line readable over whatever bright
+            // app content shows through the dim, without adding any chrome.
+            style = TextStyle(
+                shadow = Shadow(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    offset = Offset(0f, 1f),
+                    blurRadius = 12f,
+                ),
+            ),
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset { IntOffset(0, (150.dp.toPx() + dragY.value).roundToInt()) }
-                .alpha(promptAlpha * (1f - dragProgress)),
-        ) {
-            OfferAction(
-                text = "Step away",
-                enabled = phase >= 1 && !dismissing,
-                onClick = onStepAway,
-            )
-            Spacer(Modifier.height(8.dp))
-            OfferAction(
-                text = "Not now",
-                dimmed = true,
-                enabled = phase >= 1 && !dismissing,
-                onClick = { beginDismiss(reverse = true) },
-            )
-        }
+                .alpha(hintAlpha * (1f - dragProgress)),
+        )
     }
-}
-
-@Composable
-private fun OfferAction(
-    text: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    dimmed: Boolean = false,
-) {
-    val view = LocalView.current
-    Text(
-        text = text,
-        color = Color.White.copy(alpha = if (dimmed) 0.7f else 1f),
-        fontSize = 17.sp,
-        fontWeight = FontWeight.Medium,
-        // A soft drop shadow keeps the white label readable over whatever bright
-        // app content shows through the dim, without adding button chrome.
-        style = TextStyle(
-            shadow = Shadow(
-                color = Color.Black.copy(alpha = 0.6f),
-                offset = Offset(0f, 1f),
-                blurRadius = 12f,
-            ),
-        ),
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable(enabled = enabled) {
-                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                onClick()
-            }
-            .padding(horizontal = 28.dp, vertical = 12.dp),
-    )
 }
 
 @Composable
