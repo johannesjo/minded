@@ -36,7 +36,11 @@ import Rating from "@src/shared/components/ui/Rating";
 import Btn from "@src/shared/components/ui/Btn";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
-import { REFRESH_DASHBOARD_EV, RE_GREET_DASHBOARD_EV } from "@src/ev.const";
+import {
+  REFRESH_DASHBOARD_EV,
+  RE_GREET_DASHBOARD_EV,
+  RE_GREET_DASHBOARD_HIDDEN_EV,
+} from "@src/ev.const";
 import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { useNavigate } from "@solidjs/router";
 import {
@@ -163,6 +167,16 @@ export const DashboardGroups: (props: {
     }, GREETING_SWAP_FADE_MS);
   };
 
+  // Re-greet *now*, instantly, while the dashboard is still hidden behind a
+  // fading-out overlay (an interaction closing). No cross-fade: the fresh tile
+  // mounts and plays its own gentle entrance behind the cover, so it's already in
+  // place — gently easing in, and the only card you ever see — when the overlay
+  // reveals it. (The in-view cross-fade above is only needed with nothing covering us.)
+  const reGreetHidden = () => {
+    if (props.forceRevealed) return;
+    refresh(true);
+  };
+
   // A plain wrapper so the event object isn't passed as `reselect` (which would
   // force a reshuffle on every routine data refresh).
   const onRefreshEv = () => refresh();
@@ -171,11 +185,13 @@ export const DashboardGroups: (props: {
     refresh();
     window.addEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
     window.addEventListener(RE_GREET_DASHBOARD_EV, reGreet);
+    window.addEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, reGreetHidden);
   });
 
   onCleanup(() => {
     window.removeEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
     window.removeEventListener(RE_GREET_DASHBOARD_EV, reGreet);
+    window.removeEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, reGreetHidden);
     window.clearTimeout(t0);
     window.clearTimeout(revealT0);
     window.clearTimeout(greetingSwapT0);

@@ -3,7 +3,10 @@ import { fadeOut } from "@src/util/animation";
 import styles from "./InteractionOverlay.module.scss";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { setSunRole } from "@src/shared/components/interaction/sun/sunStore";
-import { ON_SHOW_INTERACTION_OVERLAY_EV } from "@src/ev.const";
+import {
+  ON_SHOW_INTERACTION_OVERLAY_EV,
+  RE_GREET_DASHBOARD_HIDDEN_EV,
+} from "@src/ev.const";
 
 export const InteractionOverlay: (props: {
   onHideInteraction: () => void;
@@ -27,6 +30,11 @@ export const InteractionOverlay: (props: {
     // sky fades out beneath it — instead of sitting still through the whole
     // fade and only starting to move once the overlay is gone.
     setSunRole("companion");
+    // Re-roll the dashboard greeting now, while the sky still fully covers it, so
+    // the fresh tile is already in place — gently easing in — by the time the sky
+    // fades away. You never land on the old tile and watch it swap — there's only
+    // ever the one fresh card. (Hidden = instant swap; see RE_GREET_DASHBOARD_HIDDEN_EV.)
+    window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
     const { promise } = fadeOut(wrapperEl, 800); // 0.8 second fade
     promise.then(() => {
       props.onPossibleNewData(); // Always refresh dashboard when closing

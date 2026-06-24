@@ -6,6 +6,13 @@ export const ON_SHOW_INTERACTION_OVERLAY_EV = "showInterActionOverlay";
 // "You've just arrived at (or returned to) the dashboard." Distinct from
 // REFRESH_DASHBOARD_EV (a data refresh that deliberately preserves the current
 // arrangement): this one re-rolls the greeting tile so each arrival surfaces a
-// fresh one. Fired on app resume and when an interaction overlay closes — the
-// moments the user lands back on the dashboard without the view remounting.
+// fresh one. Fired on app resume — a moment the user lands back on the dashboard,
+// in view, without the view remounting, so the swap is a calm in-view cross-fade.
 export const RE_GREET_DASHBOARD_EV = "reGreetDashboard";
+
+// Like RE_GREET_DASHBOARD_EV, but fired while the dashboard is still hidden behind
+// a fading-out overlay (an interaction closing). The greeting is swapped
+// *instantly* — no in-view cross-fade — so the fresh tile is already in place,
+// gently easing in, when the overlay reveals it. You never land on the old tile
+// and then watch it change; there is only ever the one fresh card.
+export const RE_GREET_DASHBOARD_HIDDEN_EV = "reGreetDashboardHidden";
