@@ -876,8 +876,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     /**
-     * The little-sun bubble's "step away" action: the gentle redirect away from
-     * the blocked app and into minded itself — a calm space — rather than the
+     * The little-sun pause's step-away action — now the completion of pulling the
+     * sun down (there is no longer a button): the gentle redirect away from the
+     * blocked app and into minded itself — a calm space — rather than the
      * launcher, which would dump the user back among the very icons (including
      * the one just left) that re-tempt. This is the "redirect" half of
      * interrupt → reflect → redirect, and it matches the full interaction's

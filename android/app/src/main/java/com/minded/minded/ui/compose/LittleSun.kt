@@ -284,6 +284,10 @@ private fun StepAwayOffer(
     // corner so the window can resize behind it unseen, then the resting bubble
     // takes its exact place (snapped, no entrance of its own).
     var crossfading by remember { mutableStateOf(false) }
+    // True once a pull-down has committed and its sink animation is in flight. It
+    // locks out every stay path (auto-dismiss timer, tap-off) so collapse() can't
+    // race onStepAway() on the same window during the ~500ms set-and-leave.
+    var committing by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
     // cut. Fades in on appear and out on dismiss.
@@ -361,7 +365,11 @@ private fun StepAwayOffer(
     val nightSkyBrush = remember { Brush.verticalGradient(NIGHT_SKY_COLORS) }
 
     fun beginDismiss(reverse: Boolean = false) {
-        if (!dismissing) {
+        // Never start a stay-dismiss once a step-away pull has committed: its sink
+        // animation is mid-flight and will call onStepAway(), so letting the
+        // auto-dismiss timer or a stray tap also fire would race collapse() (stay)
+        // against the leave on the same window.
+        if (!dismissing && !committing) {
             reverseDismiss = reverse
             dismissing = true
         }
@@ -393,13 +401,19 @@ private fun StepAwayOffer(
                         dragScope.launch { dragY.snapTo((dragY.value + dy).coerceAtLeast(0f)) }
                     },
                     onDragEnd = {
-                        if (dragY.value >= dismissDragPx) {
+                        // The pull only commits once the pause has settled
+                        // (phase >= 1) — so a hurried tap-then-flick during the
+                        // opening beat springs back instead of ejecting before the
+                        // hint has even appeared. This is the same PAUSE_MS friction
+                        // the buttons had via their `enabled = phase >= 1`.
+                        if (phase >= 1 && dragY.value >= dismissDragPx) {
                             // Pulled past the threshold: the sun sets. It sinks the
                             // rest of the way down (staying fully opaque) while the
                             // night sky holds, then we step away into minded — the
                             // calm redirect the old "Step away" button performed,
                             // now the natural completion of the downward gesture. A
                             // soft tick confirms the deliberate, chosen leave.
+                            committing = true
                             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                             dragScope.launch {
                                 dragY.animateTo(
