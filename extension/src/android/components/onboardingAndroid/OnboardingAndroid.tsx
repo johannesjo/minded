@@ -1,13 +1,13 @@
-import { createEffect, createSignal, Match, Switch } from "solid-js";
 import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { SettingsAndroid } from "@src/android/components/settingsAndroid/SettingsAndroid";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
+import { createEffect, createSignal, Match, Switch } from "solid-js";
 // @ts-ignore
-import styles from "./OnboardingAndroid.module.scss";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
-import { Stepper } from "@src/shared/components/ui/Stepper";
-import Btn from "@src/shared/components/ui/Btn";
 import OnboardingSun from "@src/shared/components/interaction/sun/OnboardingSun";
+import Btn from "@src/shared/components/ui/Btn";
+import { Stepper } from "@src/shared/components/ui/Stepper";
+import styles from "./OnboardingAndroid.module.scss";
 
 export const OnboardingAndroid = (props: {
   onGoDashboard: () => void;
@@ -49,13 +49,7 @@ export const OnboardingAndroid = (props: {
               <div class="txtSlightlyBigger">
                 <p>
                   This little sun is your anchor. When you open an app on
-                  autopilot, it appears: a calm moment to pause. Give it a
-                  fling. It never blocks you. No streaks, no scores, just
-                  awareness.
-                </p>
-                <p>
-                  Each time you notice the pull without judgment, that awareness
-                  grows a little, and tends to stay with you.
+                  autopilot, it appears as a calm moment to pause.
                 </p>
                 <p>
                   To set it up, <em>minded</em> needs a few permissions and the
@@ -69,7 +63,7 @@ export const OnboardingAndroid = (props: {
                 </Btn>
               </ButtonWrapper>
 
-              <div style="margin-top: 16px;">
+              <div style={{ "margin-top": "16px" }}>
                 <Btn outline onClick={handleSkipForNow}>
                   I'll set this up later
                 </Btn>
@@ -104,13 +98,13 @@ export const OnboardingAndroid = (props: {
           </Match>
           <Match when={getStep() >= 3}>
             {getPermissionNotGiven() ? (
-              <div class="card pageTransitionIn" style="margin: 32px;">
+              <div class="card pageTransitionIn" style={{ margin: "32px" }}>
                 <div class="h2 h2Mindful">Almost there</div>
                 <p>
                   Some permissions are still missing, so the sun can't meet you
                   everywhere yet. You can finish anytime. It'll be here.
                 </p>
-                <div style="margin-top: 32px;">
+                <div style={{ "margin-top": "32px" }}>
                   <Btn
                     onClick={() => {
                       setStep(2);
@@ -121,14 +115,14 @@ export const OnboardingAndroid = (props: {
                   </Btn>
                   <Btn
                     onClick={() => props.onGoDashboard()}
-                    style="margin-left: 16px;"
+                    style={{ "margin-left": "16px" }}
                   >
                     later
                   </Btn>
                 </div>
               </div>
             ) : (
-              <div class="card pageTransitionIn" style="margin: 32px;">
+              <div class="card pageTransitionIn" style={{ margin: "32px" }}>
                 <OnboardingSun />
                 <div class="h2 h2Mindful">The sun is ready</div>
                 <p>
@@ -139,7 +133,7 @@ export const OnboardingAndroid = (props: {
                   You can always fling it away. It's an invitation, never a
                   wall.
                 </p>
-                <div style="margin-top: 32px;">
+                <div style={{ "margin-top": "32px" }}>
                   <Btn big onClick={() => props.onGoDashboard()}>
                     continue
                   </Btn>
