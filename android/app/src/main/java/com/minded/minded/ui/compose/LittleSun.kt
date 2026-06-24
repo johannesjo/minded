@@ -158,8 +158,9 @@ fun LittleSun(
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
     onStepAway: () -> Unit = {},
-    // Pulling the pause all the way down "sets" the sun and leaves the app for
-    // minded — distinct from the gentle stay paths (Not now / tap-off / wait).
+    // Pulling the pause all the way down puts the phone down for real — it locks
+    // the screen (eyes off entirely), distinct both from the gentle stay paths
+    // (Not now / tap-off / wait) and from "Step away", which lands you in minded.
     onPullDownAway: () -> Unit = {},
     onStay: () -> Unit = {},
 ) {

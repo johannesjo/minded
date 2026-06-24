@@ -305,11 +305,12 @@ class LittleSunWindow(
 
     private fun pullDownAway() {
         // The pause was pulled all the way down — the sun has already sunk off
-        // the bottom. Leave the blocked app for minded (not the home screen the
-        // "Step away" button uses). Keep the expanded surface through the hide
-        // fade so it doesn't flash back to the bubble on its way out.
+        // the bottom. Put the phone down for real: lock the screen, the truest
+        // step away (eyes off entirely, not just moved to minded the way the
+        // "Step away" button does). Keep the expanded surface through the hide so
+        // it doesn't flash back to the bubble on its way out.
         keepExpandedOnHide = true
-        ctrlSvc.pullDownToMindedFromBlockedApp()
+        ctrlSvc.putPhoneDownFromBlockedApp()
     }
 
     override fun hideWindow() {
