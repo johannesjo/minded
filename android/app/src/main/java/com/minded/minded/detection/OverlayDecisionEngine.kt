@@ -96,9 +96,12 @@ class OverlayDecisionEngine {
         // override (`>= detectionTimestamp`): a holder value OLDER than this
         // detection must never suppress it, else a stale holder (e.g. the
         // high-confidence path emits with a null focus read and leaves a prior
-        // app in the holder) would wrongly skip a legitimate draw. When
-        // detectionTimestamp is 0L (non-detection callers) this is always true,
-        // so behaviour is unchanged for them.
+        // app in the holder) would wrongly skip a legitimate draw. Callers that
+        // pass detectionTimestamp == 0L always satisfy this clause. Note the two
+        // synchronous accessibility-event callers of triggerOverlay() stamp ~now
+        // (not 0L), so this clause is almost always false for them and 2b is
+        // effectively inert on those paths - acceptable, since the triggering
+        // event is itself a fresh focused-window signal.
         // Authoritative only while accessibility is alive (its writer dies with
         // the accessibility service); in poll-only degraded mode this narrows
         // but does not eliminate the stale window.

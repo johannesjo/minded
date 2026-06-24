@@ -348,11 +348,19 @@ class HybridAppDetector(private val context: Context) {
                         val previousApp = _usageStatsDetectedApp.value
 
                         // Publish the freshest poll read for the overlay
-                        // controller's render-time liveness gate (guard 2b). The
-                        // poll is laggy (UsageStats 500-2000ms), so this only
-                        // narrows - not eliminates - the stale-show window when
-                        // accessibility's faster focused-window read is absent.
-                        ForegroundStateHolder.update(newApp, "usage_stats")
+                        // controller's render-time liveness gate (guard 2b). Stamp
+                        // it with the read's *real* time (now - ageMs), not write
+                        // time: the poll is laggy (UsageStats 500-2000ms), so a read
+                        // of the app the user just left carries an older timestamp
+                        // and the reader's freshness window correctly discards it
+                        // instead of letting it wrongly suppress a legitimate draw.
+                        // This only narrows - not eliminates - the stale-show window
+                        // when accessibility's faster focused-window read is absent.
+                        ForegroundStateHolder.update(
+                            newApp,
+                            "usage_stats",
+                            System.currentTimeMillis() - result.ageMs
+                        )
 
                         if (newApp != previousApp) {
                             _usageStatsDetectedApp.value = newApp

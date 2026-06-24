@@ -36,9 +36,21 @@ object ForegroundStateHolder {
     @Volatile
     private var state: ForegroundState? = null
 
-    /** Records a confident foreground read, stamped with the current time. */
-    fun update(packageName: String, source: String) {
-        state = ForegroundState(packageName, System.currentTimeMillis(), source)
+    /**
+     * Records a foreground read.
+     *
+     * @param timestampMs when the read actually reflects the foreground. Pass the
+     *   read's *real* time (e.g. `now - ageMs` for a laggy UsageStats read) so the
+     *   reader's freshness window measures true staleness rather than write time.
+     *   Defaults to now, correct for a live read (the accessibility focused-window
+     *   read), which has negligible age.
+     */
+    fun update(
+        packageName: String,
+        source: String,
+        timestampMs: Long = System.currentTimeMillis()
+    ) {
+        state = ForegroundState(packageName, timestampMs, source)
     }
 
     /** Returns the latest snapshot, or null if none has been recorded. */
