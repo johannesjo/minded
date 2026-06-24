@@ -51,6 +51,14 @@ class InteractionWindow(
     private var webViewRef: WebView? = null
     private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
 
+    // Set by the controller just before showWindow() when this interaction is
+    // being re-shown because a Little Sun session timer ran out. Passed to the web
+    // layer as a URL flag so the sun *arrives* by gliding out of the Little Sun's
+    // corner (the mirror of the departing hand-off) instead of snapping in centred.
+    // The controller sets it explicitly for every interaction show (false for a
+    // plain fresh intervention), so it never goes stale between shows.
+    var morphInFromCorner: Boolean = false
+
 
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
@@ -173,7 +181,10 @@ class InteractionWindow(
                     safeAreaInsets = safeAreaInsetsHolder,
                 )
                 addJavascriptInterface(jsInterface, "androidMinded")
-                loadUrl("file:///android_asset/web/src/android/interaction/index.html#${questionId}")
+                // Query goes before the hash so the existing `#questionId` parsing
+                // on the web side is untouched; the flag drives the reverse morph.
+                val morphQuery = if (win.morphInFromCorner) "?morphInFromCorner=1" else ""
+                loadUrl("file:///android_asset/web/src/android/interaction/index.html$morphQuery#${questionId}")
             }
         })
     }
