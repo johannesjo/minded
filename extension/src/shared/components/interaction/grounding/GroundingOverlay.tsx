@@ -28,6 +28,15 @@ interface GroundingOverlayProps {
   variant: "sun" | "moon";
   /** Called once the flow is finished (completed, declined, or ignored). */
   onClose: () => void;
+  /**
+   * Whether the dashboard's companion sun should rest at the bottom beneath this
+   * stage. True while the invitation/choice screens show (offer, duration) so the
+   * sun stays with the offer; false once a sit takes over (session, androidLock,
+   * praise) — those stages own the screen (their own breath sun, or a near-black
+   * dim), so the companion sun is tucked away to keep a single sun on screen.
+   * Optional — only the shell-sun dashboard wires it up.
+   */
+  onShowPersistentSun?: (show: boolean) => void;
 }
 
 const RING_RADIUS = 140;
@@ -64,6 +73,16 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       endTimeout = undefined;
     }
   };
+
+  // The dashboard's companion sun rests at the bottom beneath this stage (see
+  // InteractionCommon). Keep it there only while we're still inviting — the
+  // offer and duration choice screens. Once a sit begins (session / androidLock /
+  // praise) the stage owns the screen with its own sun or a near-black dim, so
+  // the companion is tucked away to keep a single sun on screen.
+  createEffect(() => {
+    const phase = getPhase();
+    props.onShowPersistentSun?.(phase === "offer" || phase === "duration");
+  });
 
   // A gentle offer never nags: if it is left untouched it fades on its own.
   createEffect(() => {
