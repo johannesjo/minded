@@ -698,6 +698,62 @@ class OverlayDecisionEngineTest {
         assertEquals(SkipReason.STALE_FOREGROUND, decision.reason)
     }
 
+    // ==================== Liveness Gate: Threshold Boundaries ====================
+
+    @Test
+    fun `should not skip when detection age is exactly at the stale threshold`() {
+        // Guard 2a uses strict `>`: at age == STALE_SHOW_THRESHOLD_MS the detection
+        // is still considered deliverable. Pins the operator against an off-by-one.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime - OverlayDecisionEngine.STALE_SHOW_THRESHOLD_MS
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `should skip when contradicting foreground age is exactly at the fresh window edge`() {
+        // Guard 2b's window is inclusive (`in 0..FOREGROUND_FRESH_WINDOW_MS`): at age
+        // == the window edge the evidence still counts. Pins the inclusive bound.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp =
+                currentTime - OverlayDecisionEngine.FOREGROUND_FRESH_WINDOW_MS
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.STALE_FOREGROUND, decision.reason)
+    }
+
+    @Test
+    fun `should skip when contradicting foreground is exactly as new as the detection`() {
+        // Guard 2b uses `>=`: foreground evidence with the same timestamp as the
+        // detection is trustworthy and suppresses. Pins the equality edge.
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            detectionTimestamp = currentTime - 500,
+            freshestForegroundPackage = whatsappPackage,
+            freshestForegroundTimestamp = currentTime - 500 // equal to the detection, fresh
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertIs<OverlayDecision.Skip>(decision)
+        assertEquals(SkipReason.STALE_FOREGROUND, decision.reason)
+    }
+
     // ==================== Helper Functions ====================
 
     private fun createState(

@@ -443,7 +443,7 @@ class MyAccessibilityService : AccessibilityService() {
             } else {
                 // Publish the freshest confident foreground for the overlay
                 // controller's render-time liveness gate (guard 2b). Cheap write.
-                ForegroundStateHolder.update(focusedPackage, "accessibility")
+                ForegroundStateHolder.update(focusedPackage)
                 focusedPackage
             }
         } catch (e: Exception) {
@@ -536,34 +536,37 @@ class MyAccessibilityService : AccessibilityService() {
         }
 
         try {
-            val intent = Intent(this, OverlayControllerService::class.java).apply {
-                putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
-                putExtra(INTENT_EXTRA_DETECTION_TIMESTAMP, detectionTimestampMs)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            } else {
-                startService(intent)
-            }
+            startOverlayServiceFor(packageName, detectionTimestampMs)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start OverlayControllerService for package: $packageName", e)
             // Try to ensure service is running and retry
             ensureOverlayServiceRunning()
             Handler(Looper.getMainLooper()).postDelayed({
                 try {
-                    val retryIntent = Intent(this, OverlayControllerService::class.java).apply {
-                        putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
-                        putExtra(INTENT_EXTRA_DETECTION_TIMESTAMP, detectionTimestampMs)
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(retryIntent)
-                    } else {
-                        startService(retryIntent)
-                    }
+                    startOverlayServiceFor(packageName, detectionTimestampMs)
                 } catch (retryException: Exception) {
                     Log.e(TAG, "Retry failed for package: $packageName", retryException)
                 }
             }, 500)
+        }
+    }
+
+    /**
+     * Builds and starts [OverlayControllerService] for [packageName], threading the
+     * detection emit time through so the controller's liveness gate can age it.
+     * Single source of truth for the overlay-start intent - the normal and retry
+     * paths must stay identical (they once drifted when an extra was added to only
+     * one).
+     */
+    private fun startOverlayServiceFor(packageName: String, detectionTimestampMs: Long) {
+        val intent = Intent(this, OverlayControllerService::class.java).apply {
+            putExtra(INTENT_EXTRA_CURRENT_PACKAGE_NAME, packageName)
+            putExtra(INTENT_EXTRA_DETECTION_TIMESTAMP, detectionTimestampMs)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
         }
     }
 

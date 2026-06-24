@@ -358,7 +358,6 @@ class HybridAppDetector(private val context: Context) {
                         // when accessibility's faster focused-window read is absent.
                         ForegroundStateHolder.update(
                             newApp,
-                            "usage_stats",
                             System.currentTimeMillis() - result.ageMs
                         )
 

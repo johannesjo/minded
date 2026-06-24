@@ -114,12 +114,22 @@ at detection time and never re-checks). Two complementary guards:
   detection that sat in the pipe — not one that was already stale *when read* (the
   poll can read a 1–2 s-old foreground and emit it "fresh"). That case needs 2b.
 - **2b — render-time foreground re-check (the substantive fix).** Right before
-  drawing, re-read the freshest foreground (prefer the accessibility focused-window
-  read `computeFocusedAppPackage`; fall back to `getForegroundAppReliable`) and skip
-  the draw if it is no longer the target app. This is what actually catches "the
-  user already left." Expose the freshest read via a small `@Volatile` holder
-  (mirroring `MyAccessibilityService`'s `focusSnapshot`) written by the
-  focused-window read and the poll, read synchronously by the overlay controller.
+  drawing, consult the freshest foreground the detectors have *already published*
+  and skip the draw if it is no longer the target app. This is what actually catches
+  "the user already left." Mechanism is a **push-cache, not a blocking pull**: every
+  confident read is pushed into a small process-wide `@Volatile` holder
+  (`ForegroundStateHolder`, mirroring `MyAccessibilityService`'s `focusSnapshot`) —
+  the accessibility focused-window read publishes a live (age ≈ 0) read, and the
+  usage-stats poll publishes its read stamped with the read's *real* age
+  (`now - ageMs`) so a laggy/stale read is recognisably old. The overlay controller
+  reads this holder synchronously and the pure `OverlayDecisionEngine` acts only on
+  evidence that is present, recent (`FOREGROUND_FRESH_WINDOW_MS`), and at least as
+  new as the detection it would override. Why a cache and not a literal re-read: the
+  only foreground source reachable from the overlay controller is the laggy
+  `getForegroundAppReliable` (`computeFocusedAppPackage` lives inside the
+  accessibility service and isn't callable cross-service), and calling it on the
+  service-start path would block the main thread on 0.5–2 s of binder IPC for a
+  reading no fresher than what the detectors already publish.
 - **Honesty:** 2b is authoritative only while accessibility is alive — its writer
   (the detector) dies with the accessibility service, which is the Slice 2
   re-parenting work. Without accessibility it degrades to the laggy poll: the stale
