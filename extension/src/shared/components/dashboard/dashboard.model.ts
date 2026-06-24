@@ -6,7 +6,6 @@ export enum DashboardGroupType {
   TxtQuestion = "TxtQuestion",
   Quote = "Quote",
   EnergyLvl = "EnergyLvl",
-  Stats = "Stats",
   SelfAssessment = "SelfAssessment",
   EmotionLabeling = "EmotionLabeling",
   SleepWindDown = "SleepWindDown",
@@ -21,12 +20,6 @@ export interface DashboardGroupTxtQuestion {
 
 export interface DashboardGroupQuote {
   type: DashboardGroupType.Quote;
-}
-
-export interface DashboardGroupStats {
-  type: DashboardGroupType.Stats;
-  attempts: number;
-  sunTaps: number;
 }
 
 export interface DashboardGroupEnergyLvl {
@@ -53,7 +46,6 @@ export interface DashboardGroupSleepWindDown {
 
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
-  | DashboardGroupStats
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
   | DashboardGroupSelAssessment
