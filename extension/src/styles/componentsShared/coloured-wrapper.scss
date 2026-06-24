@@ -47,6 +47,21 @@
     }
   }
 
+  // The mirror of is-departing: the intervention is being re-shown because a
+  // Little Sun session timer ran out, so the sky fades back *in* (page beneath →
+  // full gradient) while the sun — kept fully opaque, because the morph-in case
+  // is rendered WITHOUT the .aniIn surface fade — glides out of the corner to the
+  // centre. Only the sky layer animates; the disc stays one continuous, opaque
+  // object, just as is-departing fades only the sky out and leaves the sun be. A
+  // one-shot animation (no transition needed in both states), removed once played.
+  &.is-arriving {
+    background: transparent;
+
+    .background-transition.background-default {
+      animation: minded6622fadeIn 1000ms ease-out;
+    }
+  }
+
   @media (orientation: portrait) {
   }
 
