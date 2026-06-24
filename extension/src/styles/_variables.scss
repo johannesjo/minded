@@ -107,6 +107,10 @@
     ),
     radial-gradient(circle at 50% 56%, #ffe487 0%, #ffb24f 55%, #f2823c 100%);
   --little-sun-shadow: 0 0 6px 1px #e9843a;
+  // The little sun's breathing halo colour (see LittleSun.scss). Kept as bare
+  // rgb components so the breath keyframe can wrap it in rgba() at varying
+  // alpha; dark mode overrides it with the moon's cool blue below.
+  --little-sun-breath-rgb: 233, 132, 58;
   --litle-sun-txt-fz: 13px;
   --litle-sun-counter-fz: 12px;
   --litle-sun-btn-fz: 16px;
@@ -216,6 +220,20 @@
     --btn-outline-color: rgba(255, 255, 255, 0.3);
     // Warm amber glow that echoes the sun — calmer than a saturated pink.
     --btn-box-shadow: 0 0 10px 1px rgba(255, 178, 79, 0.45);
+
+    // At night the companion is the moon, not a warm sun — so the little sun
+    // mirrors the in-app moon (Sun.scss .moon): a cool silver disc lit from the
+    // top-left, with a cool blue halo instead of the daytime amber glow.
+    --little-sun-bg:
+      radial-gradient(
+        circle at 34% 28%,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0) 42%
+      ),
+      radial-gradient(circle at 50% 56%, #eef2ff 0%, #c5cfe6 58%, #9aa8cc 100%);
+    --little-sun-shadow: 0 0 6px 1px rgba(190, 210, 255, 0.7);
+    --little-sun-breath-rgb: 190, 210, 255;
+    --little-sun-txt-c: #33405e;
   }
 }
 

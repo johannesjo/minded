@@ -26,6 +26,7 @@ import {
   getSunSize,
   hasVerticalCompletionIntent,
   getSunReleaseAction,
+  shouldAcceptSunPointerStart,
   calculateDragColorTemperature,
   type VelocitySample,
   type PhysicsState,
@@ -168,6 +169,16 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsDragging, setIsDragging] = createSignal(false);
   const [getIsPointerOver, setIsPointerOver] = createSignal(false);
   const [getIsAnimating, setIsAnimating] = createSignal(false);
+  // True only while a role-transition glide (enter/exitSettle) is carrying the
+  // disc to a new rest. This is a strict subset of getIsAnimating, which is also
+  // true during the breath loop, snap-back and fling — all of which stay
+  // grabbable (handleStart takes them over cleanly). A settle glide must NOT be
+  // grabbable mid-flight: taking it over cancels the glide and re-anchors the
+  // rest to the interrupted spot, stranding the disc there. That's the "tap the
+  // rising sun a second time and it sticks, full-size" bug — the companion→
+  // interactive glide gets cancelled half-way and never lands. So while this is
+  // true the disc ignores pointer input and just finishes gliding into place.
+  const [getIsSettlingIntoRole, setIsSettlingIntoRole] = createSignal(false);
   const [getTapCount, setTapCount] = createSignal(0);
   const [getDragProgress, setDragProgress] = createSignal(0);
   // Write-only: the setters feed the drag bookkeeping below, but nothing reads
@@ -510,6 +521,9 @@ export const Sun: Component<SunProps> = (props) => {
 
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+    // The disc is now gliding to a new rest — go inert until it lands (see
+    // getIsSettlingIntoRole) so a tap can't strand it mid-glide.
+    setIsSettlingIntoRole(true);
     // A terminal gesture can leave the disc flung off-screen (the let-go fling
     // runs a full 3s). Only then must the return home fade in at the rest rather
     // than glide — a glide from off-screen would streak across the whole screen.
@@ -533,6 +547,9 @@ export const Sun: Component<SunProps> = (props) => {
       : GLIDE_DURATION_MS;
 
     const onSettled = () => {
+      // The glide has landed; the disc is grabbable again (the breath loop that
+      // may start below is take-over-safe, unlike the glide).
+      setIsSettlingIntoRole(false);
       if (settle.breathe) {
         startBreathCycle(
           restScale,
@@ -555,6 +572,7 @@ export const Sun: Component<SunProps> = (props) => {
       setDragOffset(target);
       setScale(restScale);
       setIsAnimating(false);
+      setIsSettlingIntoRole(false); // snapped, not gliding — grabbable at once
       return;
     }
 
@@ -573,6 +591,8 @@ export const Sun: Component<SunProps> = (props) => {
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
     cancelSettleFrame();
+    // Gliding back to base — inert until it lands (see getIsSettlingIntoRole).
+    setIsSettlingIntoRole(true);
     // Returns the disc to its untransformed base (e.g. the plain interactive sun
     // with no placeholder). A return from the companion keeps the slower glide.
     const duration = isCompanionSettle(fromSettle)
@@ -584,11 +604,13 @@ export const Sun: Component<SunProps> = (props) => {
       setDragOffset({ x: 0, y: 0 });
       setScale(1);
       setIsAnimating(false);
+      setIsSettlingIntoRole(false);
       return;
     }
-    animateOffsetScaleTo({ x: 0, y: 0 }, 1, duration, () =>
-      setIsAnimating(false),
-    );
+    animateOffsetScaleTo({ x: 0, y: 0 }, 1, duration, () => {
+      setIsAnimating(false);
+      setIsSettlingIntoRole(false);
+    });
   };
 
   // Re-settle when the target changes (phases map to stable settle objects, so
@@ -621,19 +643,31 @@ export const Sun: Component<SunProps> = (props) => {
     let allowFinalFrame = false;
 
     const handleStart = (clientX: number, clientY: number) => {
-      // Prevent interactions once completion animation has started
-      if (getIsCompletionStarted()) return;
+      // A new gesture only starts when the disc is settled and not on its way
+      // out. A completion animation (fling / drag-complete) or a role-transition
+      // glide both make it inert: taking the gesture over (below) mid-glide would
+      // cancel the glide and re-anchor the rest to the interrupted spot, leaving
+      // the disc stranded mid-transition — e.g. tapping the rising sun a second
+      // time froze it full-size. Let the glide land first; the disc becomes
+      // grabbable the instant it does. (See shouldAcceptSunPointerStart.)
+      if (
+        !shouldAcceptSunPointerStart({
+          isCompletionStarted: getIsCompletionStarted(),
+          isSettlingIntoRole: getIsSettlingIntoRole(),
+        })
+      )
+        return;
 
-      // Grabbing the sun mid-animation (a settle glide, the breath cycle, or a
-      // snap-back) used to leave the animation's rAF loop running alongside the
-      // drag's — both write dragOffset/scale/opacity every frame and fight each
-      // other. Worse, the drag anchors its delta to getRestOffset(), which a
-      // settle glide has already advanced to its final anchor while the disc is
-      // still mid-glide, so the first drag frame teleports the sun and the two
-      // loops can shove it off-screen or shrink/fade it to nothing. Take over
-      // cleanly: stop any running animation and re-anchor the rest to wherever
-      // the disc actually sits right now so the drag (and its snap-back) starts
-      // from what's on screen.
+      // Grabbing the sun mid-animation (the breath cycle or a snap-back — the
+      // role-transition glide is already excluded above) used to leave the
+      // animation's rAF loop running alongside the drag's — both write
+      // dragOffset/scale/opacity every frame and fight each other. Worse, the
+      // drag anchors its delta to getRestOffset(), which the animation may have
+      // already advanced to its final anchor while the disc is still mid-flight,
+      // so the first drag frame teleports the sun and the two loops can shove it
+      // off-screen or shrink/fade it to nothing. Take over cleanly: stop any
+      // running animation and re-anchor the rest to wherever the disc actually
+      // sits right now so the drag (and its snap-back) starts from what's on screen.
       if (getIsAnimating()) {
         cancelSettleFrame();
         cancelCompletionFrame();
