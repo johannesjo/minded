@@ -1264,9 +1264,14 @@ export const Sun: Component<SunProps> = (props) => {
             <Index each={Array.from({ length: orbit().total })}>
               {(_, i) => {
                 const total = orbit().total;
-                const arcDeg = 120; // crown span, centred on straight-up
-                const angle =
-                  total === 1 ? 0 : -arcDeg / 2 + (i * arcDeg) / (total - 1);
+                // A fixed gap between adjacent dots, centred on straight-up, so the
+                // crown stays a tidy shallow arc over the top of the disc for any
+                // count. (A fixed *total* span splayed the few dots we ever show —
+                // 2 or 3 — out to the sides at ±60°, reading as scattered rather
+                // than a crown.) At 26° apart, 3 dots span just ±26° and sit high
+                // above the cap.
+                const gapDeg = 26;
+                const angle = (i - (total - 1) / 2) * gapDeg;
                 // +24 is pre-scale local px: the crown rides the disc's transform
                 // (companion scale ~0.42), so this lands ~10px of on-screen
                 // clearance beyond the disc edge at every breakpoint.
