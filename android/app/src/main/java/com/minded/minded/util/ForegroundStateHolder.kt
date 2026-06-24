@@ -5,14 +5,12 @@ package com.minded.minded.util
  * last produced a confident read.
  *
  * @param packageName The confidently-focused user app.
- * @param timestampMs When this read was taken (System.currentTimeMillis()).
- * @param source Which detector produced it ("accessibility" or "usage_stats"),
- *   for debugging only.
+ * @param timestampMs When the read actually reflects the foreground
+ *   (System.currentTimeMillis(); a laggy read passes its real `now - ageMs`).
  */
 data class ForegroundState(
     val packageName: String,
-    val timestampMs: Long,
-    val source: String
+    val timestampMs: Long
 )
 
 /**
@@ -47,10 +45,9 @@ object ForegroundStateHolder {
      */
     fun update(
         packageName: String,
-        source: String,
         timestampMs: Long = System.currentTimeMillis()
     ) {
-        state = ForegroundState(packageName, timestampMs, source)
+        state = ForegroundState(packageName, timestampMs)
     }
 
     /** Returns the latest snapshot, or null if none has been recorded. */
