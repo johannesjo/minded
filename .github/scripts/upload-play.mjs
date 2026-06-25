@@ -54,35 +54,85 @@ const auth = new google.auth.GoogleAuth({
 
 const androidpublisher = google.androidpublisher({ version: 'v3', auth });
 
+// Network-level hiccups and 5xx/429 responses from the Google APIs are
+// transient — the token endpoint in particular likes to drop the connection
+// mid-response (ERR_STREAM_PREMATURE_CLOSE), which would otherwise fail an
+// entire release. Genuine errors (auth, duplicate version code, bad request)
+// are not retried so they still surface fast.
+const RETRYABLE_CODES = new Set([
+  'ERR_STREAM_PREMATURE_CLOSE',
+  'ECONNRESET',
+  'ETIMEDOUT',
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'EPIPE',
+]);
+const RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504]);
+
+function isRetryable(err) {
+  if (err?.code && RETRYABLE_CODES.has(err.code)) return true;
+  const status = err?.response?.status ?? (typeof err?.code === 'number' ? err.code : undefined);
+  return status !== undefined && RETRYABLE_STATUS.has(status);
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function withRetry(label, fn, attempts = 4) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt >= attempts || !isRetryable(err)) throw err;
+      const delayMs = 2000 * 2 ** (attempt - 1); // 2s, 4s, 8s
+      console.warn(
+        `  ${label} failed (attempt ${attempt}/${attempts}): ${err.message || err.code}. Retrying in ${delayMs / 1000}s...`,
+      );
+      await sleep(delayMs);
+    }
+  }
+}
+
 async function main() {
   console.log('\n[1/4] Creating edit...');
-  const edit = await androidpublisher.edits.insert({ packageName: PACKAGE_NAME });
+  const edit = await withRetry('Create edit', () =>
+    androidpublisher.edits.insert({ packageName: PACKAGE_NAME }),
+  );
   const editId = edit.data.id;
   console.log(`  editId=${editId}`);
 
   console.log('[2/4] Uploading bundle...');
-  const upload = await androidpublisher.edits.bundles.upload({
-    packageName: PACKAGE_NAME,
-    editId,
-    media: {
-      mimeType: 'application/octet-stream',
-      body: createReadStream(AAB_PATH),
-    },
-  });
+  // Recreate the read stream on each attempt — a consumed stream can't replay.
+  const upload = await withRetry('Upload bundle', () =>
+    androidpublisher.edits.bundles.upload({
+      packageName: PACKAGE_NAME,
+      editId,
+      media: {
+        mimeType: 'application/octet-stream',
+        body: createReadStream(AAB_PATH),
+      },
+    }),
+  );
   const versionCode = upload.data.versionCode;
   console.log(`  versionCode=${versionCode} sha1=${upload.data.sha1}`);
 
   console.log(`[3/4] Assigning versionCode ${versionCode} to ${TRACK}...`);
-  await androidpublisher.edits.tracks.update({
-    packageName: PACKAGE_NAME,
-    editId,
-    track: TRACK,
-    requestBody: {
+  await withRetry('Assign track', () =>
+    androidpublisher.edits.tracks.update({
+      packageName: PACKAGE_NAME,
+      editId,
       track: TRACK,
-      releases: [{ status: STATUS, versionCodes: [String(versionCode)] }],
-    },
-  });
+      requestBody: {
+        track: TRACK,
+        releases: [{ status: STATUS, versionCodes: [String(versionCode)] }],
+      },
+    }),
+  );
 
+  // Not retried: commit is the one non-idempotent step. A connection drop
+  // *after* the server commits would leave a retry calling commit on a now-
+  // consumed editId, which fails with editNotFound and masks the successful
+  // publish. A single attempt fails honestly instead.
   console.log('[4/4] Committing edit...');
   await androidpublisher.edits.commit({ packageName: PACKAGE_NAME, editId });
 
