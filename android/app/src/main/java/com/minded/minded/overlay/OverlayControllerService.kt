@@ -895,8 +895,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     /**
-     * The little-sun bubble's "step away" action: the gentle redirect away from
-     * the blocked app and into minded itself — a calm space — rather than the
+     * The little-sun pause's step-away action — now the completion of pulling the
+     * sun down (there is no longer a button): the gentle redirect away from the
+     * blocked app and into minded itself — a calm space — rather than the
      * launcher, which would dump the user back among the very icons (including
      * the one just left) that re-tempt. This is the "redirect" half of
      * interrupt → reflect → redirect, and it matches the full interaction's
@@ -915,35 +916,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
         Log.d(logTag, "stepAwayFromBlockedApp()")
         goToApp()
-        littleSunOverlayWindow.hideWindow()
-    }
-
-    /**
-     * Pulling the little-sun pause all the way down puts the phone down for real:
-     * it locks the screen — the truest step away, eyes off entirely, not merely
-     * moved to another app. Down = put it to rest, mirroring the established
-     * gesture elsewhere (the sleep wind-down's "drag the moon down" and the
-     * grounding screen-free sit both lock). The gentle "Step away" button instead
-     * lands the user in minded ([stepAwayFromBlockedApp]); the pull-down is the
-     * heavier, more deliberate exit.
-     *
-     * Like [stepAwayFromBlockedApp], this is NOT counted via
-     * countUserDrivenClose(): a calm, chosen exit shouldn't feed the budget-setup
-     * nudge.
-     */
-    fun putPhoneDownFromBlockedApp() {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            Handler(Looper.getMainLooper()).post { putPhoneDownFromBlockedApp() }
-            return
-        }
-        Log.d(logTag, "putPhoneDownFromBlockedApp()")
-        // Lock via the accessibility service's GLOBAL_ACTION_LOCK_SCREEN, the same
-        // path the sleep wind-down and grounding screen-free sit use. Broadcast
-        // first (as those callers do), then hide the overlay.
-        val intent = Intent("com.minded.ACTION_LOCK_SCREEN").apply {
-            setPackage(packageName)
-        }
-        sendBroadcast(intent)
         littleSunOverlayWindow.hideWindow()
     }
 

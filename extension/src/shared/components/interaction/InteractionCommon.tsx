@@ -448,6 +448,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // refresh twice per close).
   const finishGrounding = () => {
     setShowGroundingOffer(false);
+    // The offer may have hidden the shell sun once a sit began; reveal it so it
+    // returns to its companion home as the sky fades out (mirrors finishLetGo).
+    if (props.useShellSun) setIsShellSunHidden(false);
     props.onAfterInteractionFadeout();
   };
 
@@ -812,13 +815,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // background to night behind it: the only time that warmed sky (stars and
     // all, in dark mode) would show is the brief reveal as the offer fades out on
     // close — a jarring flash. Ease it back to the default sky instead so the
-    // reveal is seamless. The opaque overlay already hides the sun gliding home,
-    // so unlike let-go nothing else need change.
+    // reveal is seamless.
+    //
+    // Unlike let-go (which hides the sun behind its question), the sun stays with
+    // the offer rather than vanishing: settle it to its companion rest at the
+    // bottom so it rests beneath the invitation, visible on the shell-sun layer
+    // above the offer's sky. (The down-drag's own completion would otherwise
+    // slide the disc off the bottom edge and fade it out.) It's tucked away again
+    // only once a sit actually begins — the session draws its own breath sun — so
+    // there's never two suns at once; see GroundingOverlay's onShowPersistentSun.
     if (props.isFromDashboard && direction === "down") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
       interactionEventTarget.dispatchEvent(
         new CustomEvent("resetBackgroundTransition"),
       );
+      setSunPhase("companion");
       setShowGroundingOffer(true);
       return;
     }
@@ -1252,6 +1263,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <GroundingOverlay
           variant={getDragObjectName()}
           onClose={finishGrounding}
+          onShowPersistentSun={(show) => {
+            // Shell sun only: it's the disc that rests at the bottom beneath the
+            // offer. Hide it (without disturbing its companion role) once a sit
+            // takes over so only one sun shows; finishGrounding reveals it again.
+            if (props.useShellSun) setIsShellSunHidden(!show);
+          }}
         />
       )}
 

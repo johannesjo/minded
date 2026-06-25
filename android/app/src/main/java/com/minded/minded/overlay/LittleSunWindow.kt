@@ -63,7 +63,7 @@ class LittleSunWindow(
     // sun can expand out of exactly where the little sun sat.
     private var expandOriginX by mutableStateOf(-1)
     private var expandOriginY by mutableStateOf(-1)
-    // Set while leaving via the offer (Step away → minded, or pull-down → lock)
+    // Set while leaving via the offer (pull the sun down → step away into minded)
     // so the hide fades the expanded pause sun straight out, instead of flipping
     // back to the little bubble (which would flash on its way out). Cleared once
     // the window is actually removed.
@@ -86,7 +86,6 @@ class LittleSunWindow(
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
             onStepAway = { stepAway() },
-            onPullDownAway = { pullDownAway() },
             onStay = { collapse() },
         )
     }
@@ -305,19 +304,10 @@ class LittleSunWindow(
     }
 
     private fun stepAway() {
+        // The pull-down has sunk the sun off the bottom; now redirect into minded.
         // Fade the expanded sun straight out — don't revert to the little bubble.
         keepExpandedOnHide = true
         ctrlSvc.stepAwayFromBlockedApp()
-    }
-
-    private fun pullDownAway() {
-        // The pause was pulled all the way down — the sun has already sunk off
-        // the bottom. Put the phone down for real: lock the screen, the truest
-        // step away (eyes off entirely, not just moved to minded the way the
-        // "Step away" button does). Keep the expanded surface through the hide so
-        // it doesn't flash back to the bubble on its way out.
-        keepExpandedOnHide = true
-        ctrlSvc.putPhoneDownFromBlockedApp()
     }
 
     override fun hideWindow() {
@@ -326,7 +316,7 @@ class LittleSunWindow(
         // be hidden mid-offer by timer expiry / revalidation, and resetting only
         // in showWindow() can be skipped if a re-show races the hide fade-out —
         // leaving a stale full-screen overlay that would block the app. The
-        // exceptions are the deliberate leaves (Step away / pull-down), which keep
+        // exception is the deliberate leave (pull down → step away), which keeps
         // the expanded sun on screen so it fades out as the pause (the reset then
         // happens in onWindowRemoved).
         if (!keepExpandedOnHide) {

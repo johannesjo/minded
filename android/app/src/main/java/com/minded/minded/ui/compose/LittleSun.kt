@@ -7,18 +7,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.systemGestureExclusion
@@ -54,6 +49,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -65,6 +61,14 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 // Warm amber-gold, leaning a touch more toward yellow than the web little
 // sun's #e9843a (a more golden glow reads softer and sunnier).
 private val GLOW_COLOR = Color(0xFFE99A3A)
+
+// At night the companion is the moon, not a warm sun — so the little sun
+// mirrors the in-app moon (web Sun.scss .moon): a cool silver disc with a cool
+// blue halo instead of the daytime amber glow, so it belongs in the night sky
+// rather than reading as an out-of-place orange dot.
+private val SUN_COLOR_NIGHT = Color(0xFFEEF2FF)
+private val SUN_TEXT_COLOR_NIGHT = Color(0xFF33405E)
+private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
 // The cool dusk-into-night sky the sun sets into when the pause is pulled down,
 // matching the web interaction's dark-mode sunset gradient
@@ -157,11 +161,10 @@ fun LittleSun(
     onTap: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
+    // Pulling the sun down is the one offered gesture: it steps away into minded —
+    // the calm redirect the old "Step away" button performed. The gentle stay
+    // paths (tap-off / wait) glide the sun back home instead.
     onStepAway: () -> Unit = {},
-    // Pulling the pause all the way down puts the phone down for real — it locks
-    // the screen (eyes off entirely), distinct both from the gentle stay paths
-    // (Not now / tap-off / wait) and from "Step away", which lands you in minded.
-    onPullDownAway: () -> Unit = {},
     onStay: () -> Unit = {},
 ) {
     if (expanded) {
@@ -169,7 +172,6 @@ fun LittleSun(
             expandFromX = expandFromX,
             expandFromY = expandFromY,
             onStepAway = onStepAway,
-            onPullDownAway = onPullDownAway,
             onStay = onStay,
         )
     } else {
@@ -275,23 +277,26 @@ private fun StepAwayOffer(
     expandFromX: Int,
     expandFromY: Int,
     onStepAway: () -> Unit,
-    onPullDownAway: () -> Unit,
     onStay: () -> Unit,
 ) {
-    // For the soft haptic that confirms the pull-down lock commit.
+    // For the soft haptic that confirms the pull-down step-away commit.
     val view = LocalView.current
-    // 0 = quiet hold, 1 = invitation shown.
+    // 0 = quiet hold, 1 = the gentle hint has been invited in.
     var phase by remember { mutableStateOf(0) }
     var shown by remember { mutableStateOf(false) }
     var dismissing by remember { mutableStateOf(false) }
-    // A "stay" dismiss (Not now / tap-off / ignored) plays the expand in reverse:
-    // the sun shrinks and glides back to its bubble corner, then hands off to the
-    // resting bubble. A drag-down close instead sinks the sun off-screen.
+    // A "stay" dismiss (tap-off / ignored) plays the expand in reverse: the sun
+    // shrinks and glides back to its bubble corner, then hands off to the resting
+    // bubble. A drag-down step-away instead sinks the sun off-screen.
     var reverseDismiss by remember { mutableStateOf(false) }
     // Set once the reverse glide-home has landed: the sun is quickly hidden at its
     // corner so the window can resize behind it unseen, then the resting bubble
     // takes its exact place (snapped, no entrance of its own).
     var crossfading by remember { mutableStateOf(false) }
+    // True once a pull-down has committed and its sink animation is in flight. It
+    // locks out every stay path (auto-dismiss timer, tap-off) so collapse() can't
+    // race onStepAway() on the same window during the ~500ms set-and-leave.
+    var committing by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
     // cut. Fades in on appear and out on dismiss.
@@ -341,18 +346,20 @@ private fun StepAwayOffer(
         label = "stepAwaySunAlpha",
     )
 
-    val promptAlpha by animateFloatAsState(
+    // The gentle hint that names the one gesture. It fades in once the pause has
+    // settled and out quickly on dismiss so it never lingers over the returning
+    // sun. (It also fades as the sun is dragged — see hintAlpha * (1 - dragProgress)
+    // on the Text below — so the words step aside the instant the motion begins.)
+    val hintAlpha by animateFloatAsState(
         targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
-        // Fade the buttons out quickly on dismiss so they don't linger over the
-        // returning sun; fade them in promptly once the pause has settled.
         animationSpec = tween(durationMillis = if (dismissing) 200 else 450),
-        label = "promptAlpha",
+        label = "hintAlpha",
     )
 
-    // Drag-down-to-close: pull the pause downward to dismiss it, the same
-    // drag-down-to-let-go gesture the dashboard sun uses. The content follows the
-    // finger and fades; released past the threshold it closes (stay), otherwise
-    // it springs back.
+    // Drag-down-to-step-away: pull the sun downward — the same drag-down gesture
+    // the dashboard sun uses. The sun follows the finger and the night sky rises
+    // behind it; released past the threshold it sets into minded, otherwise it
+    // springs back.
     val dragY = remember { Animatable(0f) }
     val dragScope = rememberCoroutineScope()
     val dismissDragPx = with(LocalDensity.current) { 140.dp.toPx() }
@@ -367,7 +374,11 @@ private fun StepAwayOffer(
     val nightSkyBrush = remember { Brush.verticalGradient(NIGHT_SKY_COLORS) }
 
     fun beginDismiss(reverse: Boolean = false) {
-        if (!dismissing) {
+        // Never start a stay-dismiss once a step-away pull has committed: its sink
+        // animation is mid-flight and will call onStepAway(), so letting the
+        // auto-dismiss timer or a stray tap also fire would race collapse() (stay)
+        // against the leave on the same window.
+        if (!dismissing && !committing) {
             reverseDismiss = reverse
             dismissing = true
         }
@@ -391,28 +402,34 @@ private fun StepAwayOffer(
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { beginDismiss(reverse = true) })
             }
-            // Pull down to close: the content tracks the finger; released past the
-            // threshold it dismisses, otherwise it springs back.
+            // Pull down to step away: the content tracks the finger; released past
+            // the threshold it sets into minded, otherwise it springs back.
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
                     onVerticalDrag = { _, dy ->
                         dragScope.launch { dragY.snapTo((dragY.value + dy).coerceAtLeast(0f)) }
                     },
                     onDragEnd = {
-                        if (dragY.value >= dismissDragPx) {
+                        // The pull only commits once the pause has settled
+                        // (phase >= 1) — so a hurried tap-then-flick during the
+                        // opening beat springs back instead of ejecting before the
+                        // hint has even appeared. This is the same PAUSE_MS friction
+                        // the buttons had via their `enabled = phase >= 1`.
+                        if (phase >= 1 && dragY.value >= dismissDragPx) {
                             // Pulled past the threshold: the sun sets. It sinks the
                             // rest of the way down (staying fully opaque) while the
-                            // night sky holds, then we put the phone down for real —
-                            // the screen locks as the overlay fades out. A soft tick
-                            // confirms the deliberate, consequential leave (matching
-                            // the offer buttons' haptic).
+                            // night sky holds, then we step away into minded — the
+                            // calm redirect the old "Step away" button performed,
+                            // now the natural completion of the downward gesture. A
+                            // soft tick confirms the deliberate, chosen leave.
+                            committing = true
                             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                             dragScope.launch {
                                 dragY.animateTo(
                                     screenHeightPx,
                                     tween(durationMillis = 500, easing = FastOutSlowInEasing),
                                 )
-                                onPullDownAway()
+                                onStepAway()
                             }
                         } else {
                             dragScope.launch {
@@ -463,63 +480,33 @@ private fun StepAwayOffer(
                 .alpha(sunAlpha),
         )
 
-        // No heading, no question — the quiet moment has already passed. A single
-        // gentle offer to step away, with a quiet decline; tapping off it, pulling
-        // down, or simply waiting also stays. The choice is never pushed. It rests
-        // below the centred sun and only fades in once the pause has settled.
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        // No heading, no question, no buttons — the quiet moment has already
+        // passed. A single soft line names the one gesture, like the dashboard
+        // interaction's drag hint: pull the sun down to step away into minded. It
+        // rests below the centred sun, fades in only once the pause has settled,
+        // and fades out the instant the sun is grabbed (the motion and the rising
+        // night sky take over from the words). Tapping off, or simply waiting,
+        // still glides the sun home — the gesture is never pushed.
+        Text(
+            text = "Drag the sun down to step away",
+            color = Color.White,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            // A soft drop shadow keeps the white line readable over whatever bright
+            // app content shows through the dim, without adding any chrome.
+            style = TextStyle(
+                shadow = Shadow(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    offset = Offset(0f, 1f),
+                    blurRadius = 12f,
+                ),
+            ),
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset { IntOffset(0, (150.dp.toPx() + dragY.value).roundToInt()) }
-                .alpha(promptAlpha * (1f - dragProgress)),
-        ) {
-            OfferAction(
-                text = "Step away",
-                enabled = phase >= 1 && !dismissing,
-                onClick = onStepAway,
-            )
-            Spacer(Modifier.height(8.dp))
-            OfferAction(
-                text = "Not now",
-                dimmed = true,
-                enabled = phase >= 1 && !dismissing,
-                onClick = { beginDismiss(reverse = true) },
-            )
-        }
+                .alpha(hintAlpha * (1f - dragProgress)),
+        )
     }
-}
-
-@Composable
-private fun OfferAction(
-    text: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    dimmed: Boolean = false,
-) {
-    val view = LocalView.current
-    Text(
-        text = text,
-        color = Color.White.copy(alpha = if (dimmed) 0.7f else 1f),
-        fontSize = 17.sp,
-        fontWeight = FontWeight.Medium,
-        // A soft drop shadow keeps the white label readable over whatever bright
-        // app content shows through the dim, without adding button chrome.
-        style = TextStyle(
-            shadow = Shadow(
-                color = Color.Black.copy(alpha = 0.6f),
-                offset = Offset(0f, 1f),
-                blurRadius = 12f,
-            ),
-        ),
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable(enabled = enabled) {
-                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                onClick()
-            }
-            .padding(horizontal = 28.dp, vertical = 12.dp),
-    )
 }
 
 @Composable
@@ -530,22 +517,28 @@ internal fun SunDisc(
     scale: Float = 1f,
     modifier: Modifier = Modifier,
 ) {
+    // At night the companion becomes the moon — cool silver body, cool halo —
+    // matching the in-app sun, which is also a moon after dark.
+    val night = isDarkModeNow()
+    val glowColor = if (night) GLOW_COLOR_NIGHT else GLOW_COLOR
+    val bodyColor = if (night) SUN_COLOR_NIGHT else SUN_COLOR
+    val textColor = if (night) SUN_TEXT_COLOR_NIGHT else SUN_TEXT_COLOR
+
     Box(
         modifier = modifier
             .size(glowSize)
             .scale(scale),
         contentAlignment = Alignment.Center,
     ) {
-        // Soft amber glow, drawn behind the disc so only the warm halo around
-        // the white body shows — mirrors the web extension's box-shadow glow.
-        // The disc radius is 0.5 of the glow radius, so the amber is saturated
-        // right where the white edge sits and then feathers to fully
-        // transparent before the layout bound (0.9), so the wrap-content window
-        // never hard-cuts the halo.
+        // Soft glow, drawn behind the disc so only the halo around the body
+        // shows — mirrors the web extension's box-shadow glow. The disc radius
+        // is 0.5 of the glow radius, so the colour is saturated right where the
+        // body edge sits and then feathers to fully transparent before the
+        // layout bound (0.9), so the wrap-content window never hard-cuts the halo.
         val glowBrush = Brush.radialGradient(
             colorStops = arrayOf(
-                0.5f to GLOW_COLOR.copy(alpha = 0.85f),
-                0.7f to GLOW_COLOR.copy(alpha = 0.30f),
+                0.5f to glowColor.copy(alpha = 0.85f),
+                0.7f to glowColor.copy(alpha = 0.30f),
                 0.9f to Color.Transparent,
             ),
         )
@@ -554,12 +547,12 @@ internal fun SunDisc(
             onDraw = { drawCircle(glowBrush) },
         )
 
-        // Solid, opaque white sun body.
+        // Solid, opaque sun/moon body.
         Box(
             modifier = Modifier
                 .size(discSize)
                 .clip(CircleShape)
-                .background(SUN_COLOR),
+                .background(bodyColor),
             contentAlignment = Alignment.Center,
         ) {
             if (clockString.isNotEmpty()) {
@@ -568,7 +561,7 @@ internal fun SunDisc(
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    color = SUN_TEXT_COLOR,
+                    color = textColor,
                     maxLines = 1,
                 )
             }
