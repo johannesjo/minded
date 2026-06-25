@@ -221,9 +221,14 @@
     // Warm amber glow that echoes the sun — calmer than a saturated pink.
     --btn-box-shadow: 0 0 10px 1px rgba(255, 178, 79, 0.45);
 
-    // At night the companion is the moon, not a warm sun — so the little sun
-    // mirrors the in-app moon (Sun.scss .moon): a cool silver disc lit from the
-    // top-left, with a cool blue halo instead of the daytime amber glow.
+    // At night the companion is the moon, not a warm sun: a cool silver disc lit
+    // from the top-left, with a cool blue halo instead of the daytime amber glow.
+    // The in-app moon (Sun.scss .moon) is a real lunar photo, but the Little Sun
+    // deliberately stays this clean gradient rather than reusing that photo — it
+    // carries a timer number, and the photo's cratered surface would hurt the
+    // number's legibility at this 40px size, where craters read as noise anyway.
+    // Shrunk to the corner, the gradient is barely distinguishable from the photo
+    // at the hand-off.
     --little-sun-bg:
       radial-gradient(
         circle at 34% 28%,
