@@ -129,10 +129,12 @@ async function main() {
     }),
   );
 
+  // Not retried: commit is the one non-idempotent step. A connection drop
+  // *after* the server commits would leave a retry calling commit on a now-
+  // consumed editId, which fails with editNotFound and masks the successful
+  // publish. A single attempt fails honestly instead.
   console.log('[4/4] Committing edit...');
-  await withRetry('Commit edit', () =>
-    androidpublisher.edits.commit({ packageName: PACKAGE_NAME, editId }),
-  );
+  await androidpublisher.edits.commit({ packageName: PACKAGE_NAME, editId });
 
   console.log(`\nDone: ${PACKAGE_NAME} versionCode ${versionCode} -> ${TRACK}`);
 }
