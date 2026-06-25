@@ -130,7 +130,16 @@ jobs:
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
-          IPA=$(ls "$RUNNER_TEMP/export/"*.ipa | head -n1)
+          set -euo pipefail
+          IPA=$(ls "$RUNNER_TEMP/export/"*.ipa 2>/dev/null | head -n1 || true)
+          if [ -z "$IPA" ] || [ ! -f "$IPA" ]; then
+            echo "::error::Export produced no .ipa — nothing to upload to TestFlight."
+            exit 1
+          fi
+          # `altool --upload-app` is deprecated but functional on Xcode 16. If a
+          # future Xcode removes it, switch to ExportOptions `destination: upload`
+          # (xcodebuild uploads directly using the same -authenticationKey* flags)
+          # or `altool --upload-package`.
           xcrun altool --upload-app \
             --type ios \
             --file "$IPA" \

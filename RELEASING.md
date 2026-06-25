@@ -89,8 +89,8 @@ There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS
 ### One-time setup
 
 1. **Apple Developer Program** membership (Team ID `363FAFK383`).
-2. **Register the app** in App Store Connect once: bundle id `com.minded.app`, then create the app record. TestFlight uploads fail until the record exists.
-3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **App Manager** (or Admin) access. Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**.
+2. **Register the app** in App Store Connect once: bundle id `com.minded.app`, then create the app record. TestFlight uploads fail until the record exists. (Note: the iOS bundle id `com.minded.app` is intentionally *not* the same as `capacitor.config.ts`'s `appId` / the Android `applicationId`, which are both `com.minded.minded`. The iOS Xcode project — `project.pbxproj` — is the source of truth for iOS; `cap sync` does not change it.)
+3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **Admin** access. (App Manager is usually enough to manage profiles, but cloud signing via `-allowProvisioningUpdates` may also need to *create the distribution certificate* — Admin avoids a mid-build "not authorized to manage certificates" failure.) Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**.
 4. **Add the secrets** (scope to the `production` environment, same as the store secrets):
 
    | Secret | Source |
@@ -100,6 +100,8 @@ There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS
    | `APP_STORE_CONNECT_PRIVATE_KEY_BASE64` | `base64 -w0 AuthKey_XXXXXX.p8` of the downloaded key |
 
 5. **Wire up the widget target (the one step that wants Xcode once).** The `MindedWidget` Swift sources exist (`extension/ios/App/MindedWidget/`) but the WidgetKit **extension target is not yet in `App.xcodeproj`**. Until it is, TestFlight builds ship the WebView shell *without* the companion sun widget. Add it once via Xcode's GUI (File → New → Target → Widget Extension; see that folder's `README.md`) or programmatically with the `xcodeproj` Ruby gem / xcodegen (those can run on Linux). After it's committed, every build includes the widget — no Mac needed again.
+
+> **Caveats for the first build.** (a) Apple caps distribution certificates per team — if cloud signing fails with "certificate limit reached", revoke an unused one in the Developer portal. (b) This iOS app has never been compiled; treat the first run as real verification, especially that the WebView loads the `distIOS` bundle (asset paths use base `/`). (c) `altool --upload-app` is deprecated though still functional on Xcode 16 — see the comment in the workflow for the migration path if a future Xcode drops it.
 
 ### Testing on a specific person's phone (e.g. a friend's), no public release
 
