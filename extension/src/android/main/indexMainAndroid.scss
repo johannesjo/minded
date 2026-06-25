@@ -14,6 +14,17 @@
   margin-bottom: 0;
 }
 
+// When every required permission is granted and only the advisory extras
+// remain, minded already works — so the banner must invite, not alarm. Drop the
+// magenta fill for a quiet sun-tinted outline (echoing the confirmation tick)
+// and calmer copy (set in MainAndroid). Declared after `.missingCapabilitiesMsg`
+// so its overrides win at equal specificity.
+.missingCapabilitiesMsgSoft {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(var(--little-sun-breath-rgb), 0.45);
+}
+
 // Deferred-setup invitation. Deliberately calmer than the magenta
 // `.missingCapabilitiesMsg` alert: this is an invitation, not an error, so it
 // uses a soft warm tint and fades in/out rather than snapping.

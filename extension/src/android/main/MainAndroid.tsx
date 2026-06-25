@@ -14,7 +14,10 @@ import { safeJsonParse } from "@src/util/safeJsonParse";
 import { SyncData } from "@src/dataInterface/syncData";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { OnboardingAndroid } from "@src/android/components/onboardingAndroid/OnboardingAndroid";
-import { MissingCapabilityView } from "@src/android/components/missingCapabilities/MissingCapabilities";
+import {
+  MissingCapabilityView,
+  REQUIRED_CAPABILITIES,
+} from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
@@ -130,6 +133,12 @@ const MainAndroid = () => {
     });
   });
 
+  // Distinguishes a banner that must alarm (a required permission is missing, so
+  // minded can't intervene at all) from one that should merely invite (only the
+  // advisory extras remain — minded already works).
+  const hasMissingRequired = () =>
+    getMissingCapabilities().some((c) => REQUIRED_CAPABILITIES.includes(c));
+
   return (
     <>
       {getIsShowMissingCapabilities() ? (
@@ -192,10 +201,25 @@ const MainAndroid = () => {
           getMissingCapabilities().length > 0 ? (
             <div
               onClick={() => setIsShowMissingCapabilities(true)}
-              class="missingCapabilitiesMsg"
+              classList={{
+                missingCapabilitiesMsg: true,
+                // Only the advisory extras are missing → quiet outline, not an
+                // alarm: minded already works, so the banner invites rather
+                // than warns.
+                missingCapabilitiesMsgSoft: !hasMissingRequired(),
+              }}
             >
-              <em>minded</em> is missing permissions to work properly. Click
-              here to resolve!
+              {hasMissingRequired() ? (
+                <>
+                  <em>minded</em> is missing permissions to work properly. Click
+                  here to resolve!
+                </>
+              ) : (
+                <>
+                  Optional permissions can help the sun appear more reliably.
+                  Tap to add them.
+                </>
+              )}
             </div>
           ) : null}
         </RoutesCmp>

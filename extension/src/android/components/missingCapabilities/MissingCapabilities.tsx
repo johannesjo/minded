@@ -12,7 +12,7 @@ import Btn from "@src/shared/components/ui/Btn";
 // are advisory - they improve detection reliability but must NOT block
 // onboarding completion or the "fully configured" state - so they are
 // intentionally excluded here while still being surfaced as fixable cards below.
-const REQUIRED_CAPABILITIES = ["Accessibility", "SystemAlertWindow"];
+export const REQUIRED_CAPABILITIES = ["Accessibility", "SystemAlertWindow"];
 
 // Advisory capabilities - granting them improves detection reliability, but
 // minded works without them (accessibility + overlay are enough). They are
@@ -106,17 +106,12 @@ export const MissingCapabilityView = (props: {
         ? later(() => onAllConfigured?.(), EXIT_MS)
         : onAllConfigured?.();
 
-    // Optional step: nothing here blocks, so Continue is always available. Once
-    // the user has granted (or already had) every optional capability there is
-    // nothing left to offer, so move straight on to completion.
+    // Optional step never auto-concludes. Granting one advisory permission must
+    // not skip past the other (devices vary in which of the two start missing),
+    // and even granting all of them leaves the user here to move on at their own
+    // pace via Continue — which is always available, since nothing blocks.
     if (props.optionalOnly) {
-      const optionalMissing = mc.filter((c) =>
-        OPTIONAL_CAPABILITIES.includes(c),
-      );
       setCanContinue(true);
-      if (optionalMissing.length === 0) {
-        finishAfterExit();
-      }
       return;
     }
 
