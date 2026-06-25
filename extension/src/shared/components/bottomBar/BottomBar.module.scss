@@ -7,9 +7,19 @@
   // keeps them off the very screen edge and clear of any display-cutout inset.
   justify-content: space-between;
   align-items: center;
-  // Match the reserved bottom band so the bar centre lines up with the sun's
-  // resting anchor (--companion-bar-center-y).
-  min-height: var(--companion-bar-height);
+  // Vertically centre the icons on the sun's resting anchor
+  // (--companion-bar-center-y = safe-area-inset-bottom + companion-bar-height/2).
+  // We push the bottom safe-area inset out as padding, so the band must be that
+  // much taller for the *content* region (where align-items: center places the
+  // icons) to stay a full companion-bar-height above the inset. Because
+  // box-sizing is border-box, folding the inset into min-height keeps the
+  // flex-centred line at inset + companion-bar-height/2 — exactly where the sun
+  // rests. Without the inset here the icons would sit safe-area/2 above the sun
+  // on platforms with a non-zero bottom inset (Android nav bar, iOS home
+  // indicator); on desktop the inset is 0 so nothing changes.
+  min-height: calc(
+    var(--companion-bar-height) + var(--safe-area-inset-bottom)
+  );
   padding-left: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-left));
   padding-right: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-right));
   // Transparent on every platform now (mobile included): the bottom fade on the
