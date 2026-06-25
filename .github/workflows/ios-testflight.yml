@@ -33,7 +33,7 @@ env:
 
 jobs:
   testflight:
-    runs-on: macos-15
+    runs-on: macos-26
     environment: production
     timeout-minutes: 40
     steps:
