@@ -98,27 +98,13 @@
   }
 
   // The moon must read unmistakably as the moon — not a dimmer sun — or the
-  // morning/evening cue it carries says nothing. So it's a cool silver sphere
-  // (clearly distinct from the warm sun) lit from the top-left, with a softly
-  // shaded lower-right limb (a gentle terminator) that gives it real roundness.
+  // morning/evening cue it carries says nothing. So it's a real photograph of the
+  // lunar surface: a public-domain NASA image, sphere-shaded into a disc with a
+  // soft transparent edge (see src/assets/img/moon.webp and the render notes in
+  // git history). The genuine cratered relief and cool night halo make it clearly
+  // distinct from the warm, stylised sun.
   &.moon {
-    background:
-      // A shaded lower-right limb: the side facing away from the light falls into
-      // cool shadow, so the disc reads as a lit sphere rather than a flat coin.
-      radial-gradient(
-        circle at 74% 78%,
-        rgba(90, 104, 140, 0.55) 0%,
-        rgba(120, 135, 172, 0.22) 36%,
-        transparent 62%
-      ),
-      // The body: a bright top-left sheen easing out to a cool silver rim.
-      radial-gradient(
-        circle at 33% 28%,
-        #ffffff 0 12%,
-        #eef2ff 40%,
-        #c5cfe6 74%,
-        #9aa8cc 100%
-      );
+    background: center / cover no-repeat url("@src/assets/img/moon.webp");
     box-shadow:
       0 0 1px 0 rgba(255, 255, 255, 0.9),
       0 0 28px 3px rgba(255, 255, 255, 0.14),
@@ -127,33 +113,12 @@
       0 0 calc(56px * var(--glow-intensity))
         rgba(190, 210, 255, calc(0.3 * var(--glow-intensity)));
 
-    // The ::before carries the moon's maria — a few faint, soft craters that make
-    // the silver disc legibly lunar. Kept very low-contrast so at companion size
-    // they read as quiet surface texture, never as smudges. Clipped to the disc.
+    // The photograph already carries the moon's craters and its limb shading, so
+    // the sun's warmth overlay (the shared ::before) must stay hidden here — a
+    // downward drag raises --sun-warmth, which would otherwise bleed amber across
+    // the disc. The maria the gradient moon used to paint here are now real.
     &::before {
-      display: block;
-      opacity: 1;
-      background:
-        radial-gradient(
-          circle at 60% 42%,
-          rgba(120, 134, 170, 0.28) 0 7%,
-          transparent 11%
-        ),
-        radial-gradient(
-          circle at 44% 63%,
-          rgba(120, 134, 170, 0.22) 0 9%,
-          transparent 13%
-        ),
-        radial-gradient(
-          circle at 67% 67%,
-          rgba(120, 134, 170, 0.16) 0 5%,
-          transparent 8%
-        ),
-        radial-gradient(
-          circle at 38% 40%,
-          rgba(120, 134, 170, 0.14) 0 4%,
-          transparent 7%
-        );
+      display: none;
     }
 
     // The night scene stays cool, so the moon carries only this cool ::after halo,
