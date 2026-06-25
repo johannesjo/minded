@@ -93,9 +93,30 @@ const readSafeAreaInsetBottomPx = (): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+/**
+ * Layout-viewport height in px — the basis CSS viewport units (`vh`) resolve
+ * against (the initial containing block), exposed to JS as
+ * `document.documentElement.clientHeight`. Use this, NOT `window.innerHeight`
+ * (the *visual* viewport): the two diverge while a mobile URL bar or keyboard
+ * shifts the visual viewport, and the companion band below must resolve to the
+ * exact same px as the CSS `clamp(64px, 10vh, 88px)` so the disc lands dead-on
+ * the bottom-bar centre. Falls back to `innerHeight` if the doc element is
+ * unavailable (non-DOM contexts).
+ */
+const readLayoutViewportHeightPx = (): number => {
+  const docEl =
+    typeof document !== "undefined" ? document.documentElement : null;
+  const clientHeight = docEl?.clientHeight ?? 0;
+  return clientHeight > 0 ? clientHeight : window.innerHeight;
+};
+
 export const computeCompanionBottomYPx = (): number => {
   if (typeof window === "undefined") return DEFAULT_COMPANION_BOTTOM_Y_PX;
-  const band = Math.min(88, Math.max(64, window.innerHeight * 0.1));
+  // Mirror CSS `--companion-bar-height: clamp(64px, 10vh, 88px)` exactly, then
+  // its centre above the bottom safe-area inset — see --companion-bar-center-y
+  // in RouteCmp.module.scss. Both sides must agree to the pixel or the
+  // CSS-driven bar and the JS-driven disc drift apart.
+  const band = Math.min(88, Math.max(64, readLayoutViewportHeightPx() * 0.1));
   return readSafeAreaInsetBottomPx() + band / 2;
 };
 
