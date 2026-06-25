@@ -98,11 +98,12 @@
   }
 
   // The moon must read unmistakably as the moon — not a dimmer sun — or the
-  // morning/evening cue it carries says nothing. So it's a real photograph of the
-  // lunar surface: a public-domain NASA image, sphere-shaded into a disc with a
-  // soft transparent edge (see src/assets/img/moon.webp and the render notes in
-  // git history). The genuine cratered relief and cool night halo make it clearly
-  // distinct from the warm, stylised sun.
+  // morning/evening cue it carries says nothing. So it's the real near-side full
+  // moon: NASA's public-domain lunar albedo map orthographically projected into a
+  // front-facing disc (the recognizable "man in the moon" maria), with gentle
+  // limb shading and a soft transparent edge (see src/assets/img/moon.webp and
+  // the render notes in git history). The genuine maria + cratered relief and the
+  // cool night halo make it clearly distinct from the warm, stylised sun.
   &.moon {
     background: center / cover no-repeat url("@src/assets/img/moon.webp");
     box-shadow:
