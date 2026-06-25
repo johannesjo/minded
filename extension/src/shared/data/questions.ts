@@ -67,11 +67,26 @@ export interface Question {
    * always reveals it. When `prompt` is set, the tapped chip is appended to it,
    * exactly as a typed continuation would be, so the saved answer reads the same
    * whether tapped or typed.
+   *
+   * The one narrow exception to "never emotionally-loaded" is a question that
+   * also sets `supportiveResponse` + `isDontSaveAnswer` (see UP8): there the
+   * charged chips are the point — naming a depleted state — and because nothing
+   * is persisted there is no self-report record to skew.
    */
   chips?: string[];
   limitTo?: LimitToOpts;
   isSkipOnDashboard?: boolean;
   isDontSaveAnswer?: boolean;
+  /**
+   * When set, tapping a chip on this question does NOT proceed into the normal
+   * post-question flow (sun instructions → choosing a browse session). Instead
+   * it shows this one supportive line and eases out to the resting companion
+   * sun — acknowledging the named state and giving permission to set things
+   * down, never pushing through. Only the chips take this exit; a typed
+   * "Something else…" answer is genuinely something else and follows the normal
+   * flow. Pair with `isDontSaveAnswer` so naming the state leaves no record.
+   */
+  supportiveResponse?: string;
 }
 
 export interface QuestionForPrompt extends Question {
@@ -661,11 +676,11 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.UP1,
-        t: "What do you think is a factor that enables your procrastination",
+        t: "What tends to hold you back",
       },
       {
         id: QID.UP2,
-        t: "Why are you visiting this website",
+        t: "What brings you to this website right now",
         limitTo: ["BrowserExtension"],
       },
       { id: QID.UP3, t: "Where does my time tend to go" },
@@ -684,9 +699,23 @@ export const QUESTION_CATEGORIES: {
         id: QID.UP7,
         t: "What emotions does this task bring up",
       },
+      {
+        // Intervention-only and never saved: the depleted-state chips make
+        // "it's just a hard day" a first-class answer in the moment. A narrow,
+        // intentional exception to the "no chips on emotionally-loaded prompts"
+        // guidance on `Question.chips` — nothing is persisted, so there is no
+        // self-report record to skew; naming the state is the whole value.
+        id: QID.UP8,
+        t: "What's in the way right now",
+        chips: ["I'm tired", "overwhelmed", "can't focus", "just a hard day"],
+        supportiveResponse:
+          "That's a real answer. Nothing here needs you right now — it's okay to set it down and rest.",
+        isDontSaveAnswer: true,
+        isSkipOnDashboard: true,
+      },
     ],
     isMorningCategory: true,
-    dashboardTxt: "Understanding Procrastination",
+    dashboardTxt: "What's in the Way",
   },
   [QuestionCategoryId.Insomnia]: {
     questions: [
