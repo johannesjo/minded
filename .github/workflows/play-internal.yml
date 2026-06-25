@@ -12,6 +12,15 @@ name: Play Internal
 on:
   push:
     branches: [main]
+    # Only build when something that affects the Android artifact changes: the
+    # web bundle (shared across platforms), the native app, or this pipeline
+    # itself. Docs, the Chrome/iOS workflows, and other unrelated commits skip
+    # the build entirely.
+    paths:
+      - 'extension/**'
+      - 'android/**'
+      - '.github/workflows/play-internal.yml'
+      - '.github/scripts/**'
 
 permissions:
   contents: read
