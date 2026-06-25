@@ -114,12 +114,28 @@
       0 0 calc(56px * var(--glow-intensity))
         rgba(190, 210, 255, calc(0.3 * var(--glow-intensity)));
 
-    // The photograph already carries the moon's craters and its limb shading, so
-    // the sun's warmth overlay (the shared ::before) must stay hidden here — a
-    // downward drag raises --sun-warmth, which would otherwise bleed amber across
-    // the disc. The maria the gradient moon used to paint here are now real.
+    // A soft luminous sheen over the photo: a faint overall lift plus a brighter
+    // top-left highlight, screen-blended so it lights the disc — reading as a
+    // glowing orb the way the old gradient moon did — without flattening the real
+    // craters, which stay clearly visible underneath. This repurposes the shared
+    // ::before (which for the sun carries the warm down-drag overlay): a fixed white
+    // sheen at full opacity, so a downward drag's --sun-warmth can no longer bleed
+    // amber across the moon — the warm overlay is replaced here, not just hidden.
     &::before {
-      display: none;
+      display: block;
+      opacity: 1;
+      mix-blend-mode: screen;
+      background:
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(255, 255, 255, 0.16) 0%,
+          transparent 70%
+        ),
+        radial-gradient(
+          circle at 36% 31%,
+          rgba(255, 255, 255, 0.34) 0%,
+          transparent 38%
+        );
     }
 
     // The moon's resting glow is the cool/white box-shadow bloom above, floored at

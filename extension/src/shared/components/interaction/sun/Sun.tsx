@@ -1203,12 +1203,15 @@ export const Sun: Component<SunProps> = (props) => {
   // than gate on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so
   // letting it take over would only make the sun fade the moment you touch it.
   const COMPANION_REST_GLOW = COMPANION_HOVER_GLOW;
-  // The moon carries a resting glow too, the same way the sun does — its disc is a
-  // near-white lunar photo, bright enough to wash out the faint cool ::after halo
-  // on its own, so without a real box-shadow bloom it stops reading as glowing.
-  // Floored cooler and softer than the sun's (the night scene stays calm), it
-  // lights the moon's white/cool bloom layers (Sun.scss .moon box-shadow) at rest.
-  const MOON_REST_GLOW = 1.0;
+  // The moon carries a resting glow too, the same way the sun does. Its disc is a
+  // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
+  // "a rock with a ring" rather than a glowing moon — it needs a genuinely bright
+  // bloom to glow like the gradient moon did. Floored a touch above the sun's rest
+  // (the photo disc isn't self-luminous like the gradient was) so the white/cool
+  // bloom layers (Sun.scss .moon box-shadow) clearly light at rest; hover lifts it
+  // further, echoing the bottom-bar hover. Paired with the disc sheen in Sun.scss.
+  const MOON_REST_GLOW = 2.0;
+  const MOON_HOVER_GLOW = 2.6;
   // Keep the progress crown mounted through one soft fade when the flow clears
   // it (the success bloom), so the dots dissolve rather than snapping out — a
   // hard cut reads as a jolt (see the styling rules). We hold the last orbit
@@ -1298,7 +1301,7 @@ export const Sun: Component<SunProps> = (props) => {
           props.variant === "moon"
             ? Math.max(
                 getGlowIntensity(),
-                props.isHovered ? COMPANION_HOVER_GLOW : MOON_REST_GLOW,
+                props.isHovered ? MOON_HOVER_GLOW : MOON_REST_GLOW,
               )
             : props.settle?.glowIntensity != null
               ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
