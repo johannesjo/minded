@@ -52,8 +52,6 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/androidpublisher'],
 });
 
-const androidpublisher = google.androidpublisher({ version: 'v3', auth });
-
 // Network-level hiccups and 5xx/429 responses from the Google APIs are
 // transient — the token endpoint in particular likes to drop the connection
 // mid-response (ERR_STREAM_PREMATURE_CLOSE), which would otherwise fail an
@@ -80,8 +78,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // The Google token endpoint can stay flaky for tens of seconds, so spread the
 // retries across a wide window rather than giving up in ~14s: 6 attempts with
-// exponential backoff capped at 30s spans ~70s of real outage. Full jitter
-// keeps a fleet of release jobs from retrying in lockstep.
+// exponential backoff capped at 30s spans ~70s of real outage, and the
+// idempotent auth phase (main()) retries harder still (10 attempts, ~2min).
+// Full jitter keeps a fleet of release jobs from retrying in lockstep.
 const MAX_DELAY_MS = 30_000;
 
 async function withRetry(label, fn, attempts = 6) {
@@ -101,7 +100,28 @@ async function withRetry(label, fn, attempts = 6) {
 }
 
 async function main() {
-  console.log('\n[1/4] Creating edit...');
+  // The OAuth token fetch is by far the flakiest call in this pipeline: the
+  // token endpoint likes to drop the connection mid-response
+  // (ERR_STREAM_PREMATURE_CLOSE) and has exhausted the per-call retry budget
+  // twice, killing otherwise-successful builds. Unlike the edit/upload/commit
+  // calls, acquiring a token is fully idempotent, so isolate it into its own
+  // aggressively-retried phase up front. google-auth-library caches the token
+  // on the client, so once this succeeds the calls below reuse it and never
+  // re-hit the token endpoint — confining the flakiness to one safe-to-retry
+  // step instead of leaking it into every API call.
+  console.log('\n[0/4] Authenticating...');
+  const authClient = await withRetry(
+    'Authenticate',
+    async () => {
+      const client = await auth.getClient();
+      await client.getAccessToken(); // forces + caches the token exchange
+      return client;
+    },
+    10,
+  );
+  const androidpublisher = google.androidpublisher({ version: 'v3', auth: authClient });
+
+  console.log('[1/4] Creating edit...');
   const edit = await withRetry('Create edit', () =>
     androidpublisher.edits.insert({ packageName: PACKAGE_NAME }),
   );
