@@ -34,6 +34,13 @@ interface InteractionWindowJavaScriptInterface {
    * "" / null if unavailable (then the morph falls back to the corner).
    */
   getLittleSunRestCenter: () => string | null;
+  /**
+   * Signal that the reverse-morph arriving sun has painted at the Little Sun's
+   * corner, so the native side can cross-fade out the placeholder disc it shows
+   * over the loading WebView to keep that corner filled. Optional: older native
+   * builds won't have it, so callers must guard with `?.()`.
+   */
+  onArrivingSunReady?: () => void;
   test: () => void;
 }
 

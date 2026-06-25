@@ -333,7 +333,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun showOverlay(
         overlayName: OverlayName,
         overlayMode: OverlayMode? = null,
-        appName: String? = null
+        appName: String? = null,
+        // Only meaningful for INTERACTION_OVERLAY: re-show the intervention by
+        // gliding the sun out of the Little Sun's corner (set when a session timer
+        // ran out). Always assigned to the window below — false for a plain show —
+        // so a stale value can't leak from a prior timer expiry into a later show.
+        morphInFromCorner: Boolean = false
     ) {
         Log.v(logTag, "showOverlay() ${overlayName} ${overlayMode} ${appName}")
         wasNoOverlaysBefore = false
@@ -365,6 +370,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                     // when whe show the question, we likely want to update the current app usage
                     sharedOverlayViewModel.updateLastAppUsage()
+                    interactionOverlayWindow.morphInFromCorner = morphInFromCorner
                     interactionOverlayWindow.showWindow()
 
                     // we hide others only after to avoid lifecycle complications
@@ -408,7 +414,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         } catch (e: Exception) {
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
-            scheduleOverlayRetry(overlayName, overlayMode, appName)
+            scheduleOverlayRetry(overlayName, overlayMode, appName, morphInFromCorner)
         }
     }
 
@@ -423,17 +429,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun scheduleOverlayRetry(
         overlayName: OverlayName,
         overlayMode: OverlayMode?,
-        appName: String?
+        appName: String?,
+        // Carry the reverse-morph intent across a retry so a timer-expiry
+        // intervention that failed its first addView still glides in from the
+        // corner once it succeeds (rather than silently dropping the morph).
+        morphInFromCorner: Boolean = false
     ) {
         val retryKey = "${overlayName}_${appName ?: ""}"
         val currentRetries = pendingOverlayRetries[retryKey] ?: 0
-        
+
         if (currentRetries < MAX_OVERLAY_RETRY_ATTEMPTS) {
             pendingOverlayRetries[retryKey] = currentRetries + 1
-            
+
             overlayRetryHandler.postDelayed({
                 Log.d(logTag, "Retrying overlay display: $overlayName (attempt ${currentRetries + 1})")
-                showOverlay(overlayName, overlayMode, appName)
+                showOverlay(overlayName, overlayMode, appName, morphInFromCorner)
             }, OVERLAY_RETRY_DELAY_MS * (currentRetries + 1))
         } else {
             Log.e(logTag, "Max retry attempts reached for overlay: $overlayName")
@@ -549,7 +559,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         } else {
             sharedOverlayViewModel.updateCurrentAppSessionEndTime(null)
         }
-        checkToShowOverlay(currentApp)
+        // The Little Sun bubble just timed out and faded from its corner; if this
+        // leads to a fresh intervention, let its sun glide back out of that same
+        // corner — the reverse of the depart hand-off — instead of popping in.
+        checkToShowOverlay(currentApp, morphInterventionFromCorner = true)
     }
 
     private fun getEffectiveBlockedApps(): Set<String> {
@@ -572,7 +585,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private fun checkToShowOverlay(
         currentPackageName: String,
-        detectionTimestampMs: Long = 0L
+        detectionTimestampMs: Long = 0L,
+        // When this check fires because a Little Sun session timer ran out and the
+        // decision lands on ShowIntervention, glide the sun back out of the corner
+        // (the reverse morph) rather than snapping it in. Ignored for every other
+        // decision; defaults false so ordinary app-foreground checks are unchanged.
+        morphInterventionFromCorner: Boolean = false
     ) {
         val syncData = sharedPreferenceService.getSyncData()
         val blockedApps = getEffectiveBlockedApps()
@@ -679,7 +697,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 showOverlay(
                     OverlayName.INTERACTION_OVERLAY,
                     OverlayMode.INTERACTION_OVERLAY__FRESH,
-                    currentPackageName
+                    currentPackageName,
+                    morphInFromCorner = morphInterventionFromCorner
                 )
             }
 

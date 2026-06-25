@@ -127,6 +127,36 @@ open class CommonWindow(
     /** Called after the window view has been removed from the window manager. */
     protected open fun onWindowRemoved() {}
 
+    /**
+     * Remove the window NOW, with no fade-out, still firing [onWindowRemoved].
+     * Same teardown as [hideWindow] minus the 300ms alpha animation.
+     *
+     * Used for the Little Sun → intervention hand-off on timer expiry: the fresh
+     * intervention overlay is shown right after (gated on this window being gone,
+     * via onWindowRemoved), and its opaque shield then covers this corner. A fade
+     * here would just leave the corner empty / the blocked app flashing through
+     * for those 300ms before the intervention appears — so drop the bubble at once
+     * and let the shield take over as soon as possible.
+     */
+    open fun hideWindowImmediate() {
+        synchronized(this) {
+            if (window == null || isHiding) {
+                return
+            }
+            isHiding = true
+            window?.let { view ->
+                try {
+                    windowManager.removeView(view)
+                } catch (e: Exception) {
+                    Log.e(logTag, "Failed to remove view", e)
+                }
+            }
+            onWindowRemoved()
+            window = null
+            isHiding = false
+        }
+    }
+
     open fun getLayoutParams(): WindowManager.LayoutParams {
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,

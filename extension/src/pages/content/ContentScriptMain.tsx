@@ -27,6 +27,11 @@ export const ContentScriptMain: (props: {
   const [getIsShowFullMinder, setIsShowFullMinder] = createSignal(
     props.isShowFullMinderInitially,
   );
+  // When we switch from the Little Sun back to the full intervention because a
+  // session timer ran out, let the intervention sun glide in from the Little Sun's
+  // corner (the reverse of the depart hand-off) instead of popping in. False on a
+  // first-load full intervention (no Little Sun was on screen to morph from).
+  const [getMorphInFromCorner, setMorphInFromCorner] = createSignal(false);
 
   // Use shadow-aware teardown if available, otherwise fall back to document query
   const teardown = () => {
@@ -61,7 +66,9 @@ export const ContentScriptMain: (props: {
         setIsShowFullMinder(false);
       }
     } else if (wasOldTimerForHost && !getIsShowFullMinder()) {
-      // Timer was cleared → show fresh intervention
+      // Timer was cleared → morph the intervention back out of the Little Sun
+      // corner that was showing in this tab.
+      setMorphInFromCorner(true);
       setIsShowFullMinder(true);
     }
   };
@@ -108,11 +115,15 @@ export const ContentScriptMain: (props: {
           host={host}
           onHideAll={teardown}
           shadowRoot={props.shadowRoot}
+          morphInFromCorner={getMorphInFromCorner()}
         />
       ) : (
         <LittleSunComponent
           host={host}
-          onShowFreshInteraction={() => setIsShowFullMinder(true)}
+          onShowFreshInteraction={(morph) => {
+            setMorphInFromCorner(morph);
+            setIsShowFullMinder(true);
+          }}
           teardown={teardown}
         ></LittleSunComponent>
       )}

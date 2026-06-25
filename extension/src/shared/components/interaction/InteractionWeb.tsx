@@ -14,6 +14,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import { ActiveTimer, SessionIntent } from "@src/dataInterface/syncData";
 import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 // NOTE: val also needs to be set in css
 
@@ -21,14 +22,67 @@ export const InteractionWeb: (props: {
   host: string;
   onHideAll: () => void;
   shadowRoot?: ShadowRoot;
+  /**
+   * The page opened straight into a Little Sun (an active session was already
+   * running), and its timer has now run out — so this first intervention should
+   * arrive by morphing out of the Little Sun's corner rather than appearing fresh.
+   * Re-shows that happen *within* this component (a session set here, then its
+   * timer expiring) drive the same morph via the internal signal below.
+   */
+  morphInFromCorner?: boolean;
 }) => JSX.Element = (props) => {
   const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
+  // Whether the next full intervention should glide in from the Little Sun corner
+  // (the reverse of the departing hand-off). Seeded from the prop for the very
+  // first intervention; set true whenever a Little Sun shown *here* hands back to
+  // the intervention because its timer ran out. Once any Little Sun has appeared,
+  // every re-show is a morph-in — only a first intervention with no prior timer
+  // (prop false) simply appears.
+  const [getMorphInFromCorner, setMorphInFromCorner] = createSignal(
+    !!props.morphInFromCorner,
+  );
+
+  // Whether *this* showing should actually run the morph: only when the flag is
+  // set and the glide can be seen and is wanted (kept in step with
+  // InteractionCommon's own guard so the sky fade and the sun glide agree).
+  const canMorphIn = () =>
+    getMorphInFromCorner() &&
+    !prefersReducedMotion() &&
+    (typeof document === "undefined" || !document.hidden);
+
+  // When morphing in, the sun must stay fully opaque (so it reads as the same disc
+  // gliding out of the corner), so the surface is rendered WITHOUT the .aniIn fade
+  // and instead the sky alone fades in via the wrapper's `is-arriving` class — the
+  // mirror of the departing hand-off (is-departing fades only the sky out). This
+  // signal carries that class for the ~1s the sky fade plays, then drops it.
+  const SKY_ARRIVE_MS = 1050;
+  // Seeded so the very first paint already carries the class (the first showing
+  // can be a morph straight from an expired Little Sun); onMount arms the timeout.
+  const [getIsSkyArriving, setIsSkyArriving] = createSignal(canMorphIn());
+  let skyArriveTimeout: number | undefined;
+  const beginSkyArriving = (on: boolean) => {
+    window.clearTimeout(skyArriveTimeout);
+    setIsSkyArriving(on);
+    if (on) {
+      skyArriveTimeout = window.setTimeout(
+        () => setIsSkyArriving(false),
+        SKY_ARRIVE_MS,
+      );
+    }
+  };
 
   let wrapperEl: HTMLDivElement = undefined!;
   let isDismissing = false;
   const stopVideoTimeouts: number[] = [];
+
+  // Seed the sky fade for the very first showing (it came straight from a Little
+  // Sun whose timer expired); later re-shows arm it from onShowFreshInteraction.
+  onMount(() => {
+    if (canMorphIn()) beginSkyArriving(true);
+  });
+  onCleanup(() => window.clearTimeout(skyArriveTimeout));
 
   onMount(() => {
     // Stop videos multiple times to catch delayed autoplay
@@ -123,7 +177,14 @@ export const InteractionWeb: (props: {
             <LittleSunComponent
               host={props.host}
               teardown={teardown}
-              onShowFreshInteraction={() => {
+              onShowFreshInteraction={(morph) => {
+                // Set the morph flag on every hand-back (true only when the timer
+                // genuinely ran out), so it's always fresh for the next mount and
+                // can't go stale into a later re-question/tap re-show.
+                setMorphInFromCorner(morph);
+                // Arm the sky fade-in BEFORE the Switch flips, so the re-mounted
+                // wrapper carries `is-arriving` from its first paint.
+                beginSkyArriving(canMorphIn());
                 setIsShowLittleSun(false);
                 setQuestion(undefined);
                 stopAllVideos();
@@ -133,10 +194,16 @@ export const InteractionWeb: (props: {
           </div>
         </Match>
         <Match when={true}>
-          <div class="aniIn">
+          {/* Morphing in keeps the sun fully opaque, so it is rendered WITHOUT
+              the .aniIn surface fade; the sky alone fades in via `is-arriving`
+              below. Every other showing keeps the normal .aniIn fade. */}
+          <div class={canMorphIn() ? "" : "aniIn"}>
             <div
               id="minded-6622-coloured-wrapper-dynamic"
-              class={isDarkModeNow() ? "minded-6622-dark" : ""}
+              classList={{
+                "minded-6622-dark": isDarkModeNow(),
+                "is-arriving": getIsSkyArriving(),
+              }}
               style={{ opacity: "1" }}
               onclick={(ev) => {
                 // Background click disabled - only gesture controls
@@ -159,6 +226,7 @@ export const InteractionWeb: (props: {
                 shadowRoot={props.shadowRoot}
                 interactionTarget={{ kind: "host", id: props.host }}
                 interactionPlatform="web"
+                morphInFromCorner={getMorphInFromCorner()}
                 onSetAnswer={() => {}}
                 onModeSet={() => {}}
                 onAfterInteractionFadeout={() => {
