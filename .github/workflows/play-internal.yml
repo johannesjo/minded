@@ -38,9 +38,13 @@ env:
 jobs:
   release-internal:
     runs-on: ubuntu-latest
-    # Ungated environment (no required reviewers) so this publishes
-    # automatically. Add the same signing + Play secrets here as in production.
-    environment: internal
+    # Reusing the existing `production` environment for now, so no new secrets
+    # are needed — but it has a required reviewer, so each push waits for a
+    # one-click approval in the Actions UI before it ships. To make this fully
+    # hands-off later, create a separate ungated `internal` environment (no
+    # reviewers) with the same secrets and switch this back to it. (Don't drop
+    # the reviewer from `production` — that would un-gate real releases too.)
+    environment: production
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

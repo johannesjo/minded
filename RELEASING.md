@@ -106,13 +106,19 @@ only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
 
 ### One-time setup
 
-1. **Create an `internal` environment** (Settings → Environments → New) with
-   **no required reviewers** — the gate would defeat auto-publishing. Add the
-   same secrets used by production: `ANDROID_KEYSTORE_BASE64`,
+1. **Environment / secrets.** The workflow currently reuses the existing
+   **`production`** environment (`environment: production`), so **no new secrets
+   are needed** — it already has the signing + Play keys. The catch: the
+   `production` environment has a required reviewer, so **each push to `main`
+   waits for a one-click approval** in the Actions UI before it ships to
+   internal. To make it fully hands-off, create a separate **`internal`**
+   environment (Settings → Environments → New) with **no required reviewers**,
+   re-add the same five values (`ANDROID_KEYSTORE_BASE64`,
    `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`,
-   `PLAY_SERVICE_ACCOUNT_JSON` (same values). Environment secrets aren't
-   inherited from the `production` environment, so they must be re-added here
-   (or promote them to repo-level secrets and drop the `environment:` line).
+   `PLAY_SERVICE_ACCOUNT_JSON` — environment secrets aren't inherited, so they
+   must be re-entered or promoted to repo-level), and switch `environment:` in
+   `play-internal.yml` to `internal`. Don't just remove the reviewer from
+   `production` — that would un-gate real production releases too.
 2. **First Play upload must still be manual** (see *First-ever Play upload*
    above) — the internal-track API only accepts uploads once the app exists in
    the Console. Already satisfied if you've shipped before.
