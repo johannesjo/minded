@@ -14,9 +14,10 @@
   // icons) to stay a full companion-bar-height above the inset. Because
   // box-sizing is border-box, folding the inset into min-height keeps the
   // flex-centred line at inset + companion-bar-height/2 — exactly where the sun
-  // rests. Without the inset here the icons would sit safe-area/2 above the sun
-  // on platforms with a non-zero bottom inset (Android nav bar, iOS home
-  // indicator); on desktop the inset is 0 so nothing changes.
+  // rests. Without the inset here the icons would sit safe-area/2 below the sun
+  // (the sun floating that much above them) on platforms with a non-zero bottom
+  // inset (Android nav bar, iOS home indicator); on desktop the inset is 0 so
+  // nothing changes.
   min-height: calc(
     var(--companion-bar-height) + var(--safe-area-inset-bottom)
   );
