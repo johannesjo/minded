@@ -4,9 +4,8 @@
   padding-top: 16px;
   padding-bottom: 16px;
 
-  :global .card {
-    margin-top: 16px;
-  }
+  // Card spacing lives on .cardSlot (so it can collapse with the card on exit);
+  // no per-card margin here, to avoid two rules competing over the same gap.
 
   :global .h2 {
     margin-top: 16px;
@@ -20,6 +19,54 @@
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+// Each permission card lives in a collapsing slot so granting it glides the card
+// away and eases the cards below up, rather than a hard pop that leaves a gap.
+// grid-template-rows 1fr -> 0fr collapses to the card's own height without us
+// measuring it; the card's top margin lives on the slot so the gap collapses too.
+// --dur-soft is 0ms under reduced-motion, so this falls back to instant.
+.cardSlot {
+  display: grid;
+  grid-template-rows: 1fr;
+  margin-top: 16px;
+  transition:
+    grid-template-rows var(--dur-soft) var(--ease-out),
+    opacity var(--dur-soft) var(--ease-out),
+    margin-top var(--dur-soft) var(--ease-out);
+
+  :global .card {
+    min-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+  }
+}
+
+.cardSlotExiting {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.confirmation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirmCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  font-size: var(--fz-m);
+  // Borrow the little sun's own tint (warm in light, cool in dark) so the
+  // confirmation reads as the sun acknowledging, not a generic success tick.
+  color: rgb(var(--little-sun-breath-rgb));
+  border: 1px solid rgba(var(--little-sun-breath-rgb), 0.4);
 }
 
 .permissionText {
