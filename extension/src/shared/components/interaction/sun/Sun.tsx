@@ -1208,10 +1208,12 @@ export const Sun: Component<SunProps> = (props) => {
   // "a rock with a ring" rather than a glowing moon — it needs a genuinely bright
   // bloom to glow like the gradient moon did. Floored a touch above the sun's rest
   // (the photo disc isn't self-luminous like the gradient was) so the white/cool
-  // bloom layers (Sun.scss .moon box-shadow) clearly light at rest; hover lifts it
-  // further, echoing the bottom-bar hover. Paired with the disc sheen in Sun.scss.
-  const MOON_REST_GLOW = 2.0;
-  const MOON_HOVER_GLOW = 2.6;
+  // bloom layers (Sun.scss .moon box-shadow) light softly at rest — a gentle moon
+  // halo, not the loud first pass; hover lifts it further, echoing the bottom-bar
+  // hover. Paired with the disc sheen in Sun.scss, which carries most of the
+  // "glowing orb" read, so the halo itself can stay restrained.
+  const MOON_REST_GLOW = 1.4;
+  const MOON_HOVER_GLOW = 2.0;
   // Keep the progress crown mounted through one soft fade when the flow clears
   // it (the success bloom), so the dots dissolve rather than snapping out — a
   // hard cut reads as a jolt (see the styling rules). We hold the last orbit

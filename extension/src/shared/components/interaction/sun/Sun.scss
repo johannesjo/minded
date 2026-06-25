@@ -128,13 +128,14 @@
       background:
         radial-gradient(
           circle at 50% 50%,
-          rgba(255, 255, 255, 0.16) 0%,
-          transparent 70%
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0.12) 55%,
+          transparent 84%
         ),
         radial-gradient(
           circle at 36% 31%,
-          rgba(255, 255, 255, 0.34) 0%,
-          transparent 38%
+          rgba(255, 255, 255, 0.42) 0%,
+          transparent 42%
         );
     }
 
