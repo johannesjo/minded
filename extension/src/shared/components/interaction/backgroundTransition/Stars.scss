@@ -6,24 +6,24 @@
   bottom: 0;
   z-index: 2; // Above background but below content
   pointer-events: none;
+  // Opacity is driven inline from the sun's drag progress (see Stars.tsx) so the
+  // night sky fills in as the sun is pulled down and recedes as it returns — no
+  // CSS transition here, or it would lag a frame behind the finger.
   opacity: 0;
-  transition: opacity 2s ease-in-out;
-
-  &.active {
-    opacity: 1;
-  }
 }
 
 .star {
   position: absolute;
   background: white;
   border-radius: 50%;
-  animation: twinkle infinite ease-in-out;
   box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+  // Twinkle only runs while the field is shown (.active) — see below. Each star's
+  // own delay/duration are set inline (Stars.tsx) and still win over the shorthand.
 }
 
 @keyframes twinkle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0;
     transform: scale(0.5);
   }
@@ -40,9 +40,9 @@
   height: 2px;
   background: linear-gradient(to right, transparent, white, transparent);
   opacity: 0;
-  
+
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -54,16 +54,22 @@
 }
 
 .stars-container.active {
+  // Gate the per-star twinkle on visibility so 150 animations aren't ticking the
+  // compositor while the field is hidden (by day, or at rest before any pull).
+  .star {
+    animation: twinkle infinite ease-in-out;
+  }
+
   .shooting-star-1 {
     animation: shoot-1 4s linear infinite;
     animation-delay: 1s;
   }
-  
+
   .shooting-star-2 {
     animation: shoot-2 5s linear infinite;
     animation-delay: 3s;
   }
-  
+
   .shooting-star-3 {
     animation: shoot-3 6s linear infinite;
     animation-delay: 2s;

@@ -19,8 +19,18 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 ) => {
   const [getProgress, setProgress] = createSignal(0); // -1 to 1, where 0 is default
   const [getIsAnimating, setIsAnimating] = createSignal(false);
-  const [getShowStars, setShowStars] = createSignal(false);
   const [getIsDarkMode, setIsDarkMode] = createSignal(false);
+
+  // Stars come out as the night sky deepens. They are tied to the downward drag
+  // (positive progress) and only after dark, squared so they emerge a beat behind
+  // the rising sky and recede the same way as the sun is pulled back up or springs
+  // home — the same gradual reveal the Android little-sun uses, rather than the old
+  // snap-on at completion.
+  const getStarsIntensity = () => {
+    if (!getIsDarkMode()) return 0;
+    const downward = Math.max(0, getProgress());
+    return downward * downward;
+  };
 
   // const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
 
@@ -116,7 +126,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     // night) so the two rAF loops don't fight over progress.
     if (animationFrame) cancelAnimationFrame(animationFrame);
     setIsAnimating(true);
-    setShowStars(false); // Hide stars when returning to default
+    // Stars fade out on their own as progress eases back to 0 (getStarsIntensity).
     const startProgress = getProgress();
     const duration = 600; // Match sun snap-back duration
     const startTime = Date.now();
@@ -148,10 +158,9 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     const duration = 3000; // Match sun completion duration
     const startTime = Date.now();
 
-    // Show stars if dark mode for both directions
-    if (getIsDarkMode()) {
-      setTimeout(() => setShowStars(true), 500); // Delay slightly for better effect
-    }
+    // Stars need no explicit trigger here: a downward completion eases progress
+    // toward 1, so getStarsIntensity() fades them in (an upward one keeps them at
+    // 0). The gradual reveal already began during the drag itself.
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -202,7 +211,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
         }}
       />
     </>,
-    <Stars isActive={getShowStars()} isDarkMode={getIsDarkMode()} />,
+    <Stars intensity={getStarsIntensity()} />,
   ];
 };
 

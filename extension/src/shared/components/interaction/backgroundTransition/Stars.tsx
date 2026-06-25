@@ -1,8 +1,12 @@
-import { Component, createSignal, For, onCleanup, onMount } from "solid-js";
+import { Component, createSignal, For, onMount } from "solid-js";
 
 interface StarsProps {
-  isActive: boolean;
-  isDarkMode: boolean;
+  // 0 = no stars, 1 = full night sky. Driven by the sun's drag progress so the
+  // stars come out gradually as the sun is pulled down (and recede as it is
+  // pulled back up or springs home), rather than snapping on at completion. The
+  // caller already gates this to dark mode (0 by day), so the field never shows
+  // over a daytime sky.
+  intensity: number;
 }
 
 interface Star {
@@ -44,9 +48,14 @@ const Stars: Component<StarsProps> = (props) => {
     <div
       ref={containerEl!}
       class="stars-container"
+      // Opacity tracks the drag directly so the reveal is gradual and reverses
+      // with it. `active` only switches on the shooting-star flourish once any
+      // star is showing — it no longer controls the fade (that's the inline
+      // opacity now).
       classList={{
-        active: props.isActive && props.isDarkMode,
+        active: props.intensity > 0,
       }}
+      style={{ opacity: props.intensity }}
     >
       <For each={stars()}>
         {(star) => (

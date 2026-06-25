@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -72,40 +73,57 @@ private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
 // The sky the sun sets into when the pause is pulled down. It reacts to the time
 // of day exactly like the web interaction's drag-down background
-// (BackgroundTransition.scss `.background-sunset` + _variables.scss): by day a
-// warm sunset, after dark a deep, calm night — never harsh. isDarkModeNow() picks
-// which (the same switch that turns the companion into a moon at night), so the
-// revealed sky always belongs to the hour rather than being a fixed night.
-//
-// The colour STOPS mirror the web gradient's exactly — that tuning is what makes
-// it nice: the dusk blue is held across the top band before the sky warms down
-// through peach and gold to coral, rather than warming evenly from the very top.
-// (Plain `verticalGradient(colours)` spaces stops evenly, which pushed the warm
-// tones far too high and lost the calm band of sky — the difference this fixes.)
-private val DAY_SKY_STOPS: Array<Pair<Float, Color>> = arrayOf(
-    0.00f to Color(0xFF4F78BB), // dusk blue up top…
-    0.14f to Color(0xFF4F78BB), // …held across the top band
-    0.54f to Color(0xFFF49F73), // warm peach
-    0.78f to Color(0xFFFFD36A), // gold near the horizon
-    1.00f to Color(0xFFEF6F63), // coral at the base
+// (BackgroundTransition.scss + _variables.scss): by day a warm sunset, after dark
+// a deep, calm night — never harsh. isDarkModeNow() picks which (the same switch
+// that turns the companion into a moon at night), so the revealed sky always
+// belongs to the hour rather than being a fixed night.
+private val DAY_SKY_COLORS = listOf(
+    Color(0xFF4F78BB), // dusk blue up top
+    Color(0xFFF49F73), // warm peach
+    Color(0xFFFFD36A), // gold near the horizon
+    Color(0xFFEF6F63), // coral at the base
 )
-private val NIGHT_SKY_STOPS: Array<Pair<Float, Color>> = arrayOf(
-    0.00f to Color(0xFF020C25),
-    0.52f to Color(0xFF041735),
-    0.76f to Color(0xFF07244F),
-    1.00f to Color(0xFF05214E),
+private val NIGHT_SKY_COLORS = listOf(
+    Color(0xFF020C25),
+    Color(0xFF041735),
+    Color(0xFF07244F),
+    Color(0xFF05214E),
 )
 
-// At night the web sky also pools a faint warm glow at the very bottom — the
-// horizon warmth where the sun sets (BackgroundTransition.scss, the
-// `.minded-6622-dark … .background-sunset` overlay layer). Drawn over the night
-// base; the day sky needs none (it is already warm down low).
-private val NIGHT_SKY_GLOW_STOPS: Array<Pair<Float, Color>> = arrayOf(
-    0.00f to Color.Transparent,
-    0.80f to Color.Transparent,
-    0.91f to Color(0x1F792D56), // rgba(121, 45, 86, 0.12)
-    1.00f to Color(0x3DC4483A), // rgba(196, 72, 58, 0.24)
+// The stars that emerge in the night sky share the night sun/moon body's exact
+// cool white (SUN_COLOR_NIGHT), so the whole night scene reads as one cool palette
+// rather than a warm dot among blue-white pinpricks. Aliased (not a re-typed
+// literal) so retuning the moon body carries the stars with it.
+private val STAR_COLOR = SUN_COLOR_NIGHT
+
+/** A single star: position as a fraction of the sky (0..1) so it scales with the
+ *  surface, a fixed radius, and a base brightness that gives the field depth. */
+private class Star(
+    val x: Float,
+    val y: Float,
+    val radiusPx: Float,
+    val baseAlpha: Float,
 )
+
+/**
+ * A fixed, gently varied star field. Seeded so the layout is stable across
+ * recompositions (and pleasant rather than clumpy), since the stars only ever
+ * fade in/out — their positions never change. The whole field is revealed by an
+ * external alpha tied to the drag, so the count/spread here is purely cosmetic.
+ */
+private fun generateStars(count: Int, minRadiusPx: Float, maxRadiusPx: Float): List<Star> {
+    val rng = Random(seed = 8723)
+    return List(count) {
+        Star(
+            x = rng.nextFloat(),
+            y = rng.nextFloat(),
+            radiusPx = minRadiusPx + rng.nextFloat() * (maxRadiusPx - minRadiusPx),
+            // 0.4..1.0: dimmer stars sit further back, brighter ones pop — depth
+            // without any twinkle (the calm night sky doesn't flicker or breathe).
+            baseAlpha = 0.4f + rng.nextFloat() * 0.6f,
+        )
+    }
+}
 
 /**
  * Delay from the moment the pause opens (the expand starts) until the gentle
@@ -407,10 +425,18 @@ private fun StepAwayOffer(
     // companion sun/moon uses, so the sky the sun sets into matches the hour.
     val isNightSky = isDarkModeNow()
     val skyBrush = remember(isNightSky) {
-        val stops = if (isNightSky) NIGHT_SKY_STOPS else DAY_SKY_STOPS
-        Brush.verticalGradient(*stops)
+        Brush.verticalGradient(if (isNightSky) NIGHT_SKY_COLORS else DAY_SKY_COLORS)
     }
-    val nightGlowBrush = remember { Brush.verticalGradient(*NIGHT_SKY_GLOW_STOPS) }
+    // Only the night sky has stars. Generated once (positions never change — they
+    // only fade in/out), so an empty list by day costs nothing.
+    val density = LocalDensity.current
+    val stars = remember(isNightSky) {
+        if (isNightSky) {
+            with(density) { generateStars(count = 120, 1.dp.toPx(), 2.4.dp.toPx()) }
+        } else {
+            emptyList()
+        }
+    }
 
     fun beginDismiss(reverse: Boolean = false) {
         // Never start a stay-dismiss once a step-away pull has committed: its sink
@@ -502,11 +528,30 @@ private fun StepAwayOffer(
             modifier = Modifier
                 .fillMaxSize()
                 .alpha(surfaceAlpha * dragProgress)
-                .background(skyBrush)
-                // Night pools a faint warm glow at the horizon on top of the base
-                // sky; the day sunset is already warm down low and needs none.
-                .then(if (isNightSky) Modifier.background(nightGlowBrush) else Modifier),
+                .background(skyBrush),
         )
+
+        // Stars come out as the night sky rises behind the setting sun — only after
+        // dark, and only as far as the pull has gone. They emerge a beat later than
+        // the sky (dragProgress², so the deeper the pull the more the night fills in)
+        // and recede the same way if the sun is dragged back up or springs home, since
+        // their alpha is driven straight off the live drag. The global alpha is folded
+        // into each star so no extra compositing layer is needed. Above the sky
+        // gradient, behind the sun.
+        if (stars.isNotEmpty()) {
+            val starsAlpha = surfaceAlpha * dragProgress * dragProgress
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (starsAlpha <= 0f) return@Canvas
+                for (star in stars) {
+                    drawCircle(
+                        color = STAR_COLOR,
+                        radius = star.radiusPx,
+                        center = Offset(star.x * size.width, star.y * size.height),
+                        alpha = (star.baseAlpha * starsAlpha).coerceIn(0f, 1f),
+                    )
+                }
+            }
+        }
 
         val hasOrigin = expandFromX >= 0 && expandFromY >= 0
         val centrePx = with(LocalDensity.current) {
