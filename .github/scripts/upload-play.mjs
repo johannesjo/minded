@@ -78,15 +78,22 @@ function isRetryable(err) {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function withRetry(label, fn, attempts = 4) {
+// The Google token endpoint can stay flaky for tens of seconds, so spread the
+// retries across a wide window rather than giving up in ~14s: 6 attempts with
+// exponential backoff capped at 30s spans ~70s of real outage. Full jitter
+// keeps a fleet of release jobs from retrying in lockstep.
+const MAX_DELAY_MS = 30_000;
+
+async function withRetry(label, fn, attempts = 6) {
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
     } catch (err) {
       if (attempt >= attempts || !isRetryable(err)) throw err;
-      const delayMs = 2000 * 2 ** (attempt - 1); // 2s, 4s, 8s
+      const backoff = Math.min(2000 * 2 ** (attempt - 1), MAX_DELAY_MS);
+      const delayMs = Math.round(backoff / 2 + Math.random() * (backoff / 2));
       console.warn(
-        `  ${label} failed (attempt ${attempt}/${attempts}): ${err.message || err.code}. Retrying in ${delayMs / 1000}s...`,
+        `  ${label} failed (attempt ${attempt}/${attempts}): ${err.message || err.code}. Retrying in ${(delayMs / 1000).toFixed(1)}s...`,
       );
       await sleep(delayMs);
     }
