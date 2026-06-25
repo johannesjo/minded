@@ -113,6 +113,8 @@ Yes — this is exactly what TestFlight is for. A TestFlight build is **not** a 
    - **External testers** (just their email, no team access) are simpler for a friend/partner: create a tester group, add their email, and submit the build for **Beta App Review** (a light, usually-fast review — much quicker than App Store review). Once approved, they install the **TestFlight** app from the App Store and accept the invite.
 3. They install via the **TestFlight** app on their iPhone. Builds expire after 90 days.
 
+**Export compliance** (would otherwise block external testing on *every* build): minded sets `ITSAppUsesNonExemptEncryption = false` in `extension/ios/App/App/Info.plist` (it uses only standard HTTPS/system crypto, which is exempt), so builds skip the "Missing Compliance" prompt automatically. If you ever add non-exempt encryption, remove that key and answer the question in App Store Connect instead. External testers also need a one-line **Beta App Description** and a **feedback email** in the TestFlight *Test Information* tab.
+
 Ad-hoc distribution (register the device UDID, install an `.ipa` directly) also works without a release but is clunkier and capped at the devices you register — TestFlight is the recommended path.
 
 ### Versioning
