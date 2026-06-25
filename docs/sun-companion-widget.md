@@ -89,9 +89,12 @@ for you. That is exactly why it fits the product's soft approach where the iOS
 - **Phase logic** (`widget/SunWidgetPhase.kt`): pure, R-free, JVM-unit-tested
   (`SunWidgetPhaseTest`). Maps the local hour to a phase and computes the minutes
   to the next boundary.
-- **Assets** (`res/drawable/ic_sun_widget_{day,night}.xml`): two vector discs —
-  the warm day sun (a white disc warming to a faint gold rim, on the app's warm
-  glow) and the cool moon (`#dfe8ff` → `#a9b8dc`). We deliberately stop at two:
+- **Assets**: the day sun is a vector disc (`res/drawable/ic_sun_widget_day.xml`
+  — a white disc warming to a faint gold rim, on the app's warm glow). The night
+  moon is the real lunar photo with a cool glow baked in
+  (`res/drawable-nodpi/ic_sun_widget_night.webp`), matching the in-app `.moon`
+  (the same NASA near-side disc + sheen + cool halo) rather than a gradient twin.
+  We deliberately stop at two:
   the old dawn/dusk discs wore saturated amber/coral that read as a *signal*
   ("caution") on a surface that must never grade the user, whereas sun-vs-moon is
   the one shift everyone reads as the world, not a message. Selection is by clock

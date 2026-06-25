@@ -6,12 +6,13 @@ import { SUN_WIDGET_PREVIEWS } from "./generated/sunWidgetPreviews";
 
 /**
  * The two time-of-day phases of the Android home-screen companion sun widget —
- * the warm sun by day, the cool moon by night — rendered from the real
- * `ic_sun_widget_*.xml` drawables (converted to SVG by
- * scripts/generate-widget-previews.mjs — single source of truth, regenerated on
- * every styleguide build). Toggle the styleguide's dark mode to preview the
- * discs on a dark wallpaper. SVG is close to, but not pixel-identical with,
- * Android's gradient rendering — good for palette and drift, not a device check.
+ * the warm sun by day, the cool moon by night — built from the real widget
+ * assets by scripts/generate-widget-previews.mjs (single source of truth,
+ * regenerated on every styleguide build): the day sun is the vector drawable
+ * converted to SVG; the night moon is the actual lunar photo + baked glow
+ * (drawable-nodpi/ic_sun_widget_night.webp) embedded as-is. Toggle the
+ * styleguide's dark mode to preview the discs on a dark wallpaper. Indicative of
+ * palette and proportion, not a pixel-exact device render.
  */
 const SunWidgetGallery = (): JSX.Element => (
   <div class={styles.widgetGrid}>

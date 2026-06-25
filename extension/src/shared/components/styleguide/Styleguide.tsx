@@ -562,11 +562,12 @@ const Styleguide = (): JSX.Element => {
       <Section id="sun-widget" title="Sun widget (Android)">
         <p class={styles.muted}>
           The two time-of-day phases of the home-screen companion sun — the warm
-          sun by day, the cool moon by night — rendered
-          from the real <code>ic_sun_widget_*.xml</code> drawables (converted to
-          SVG at build time). Phase is chosen by the local clock, not the system
-          theme — toggle dark mode above to preview the discs on a dark
-          wallpaper. SVG is indicative, not a pixel-exact device render.
+          sun by day, the cool moon by night. The day sun is the real vector
+          drawable; the night moon is the actual lunar photo with a baked glow
+          (<code>ic_sun_widget_night.webp</code>), the same art the widget shows.
+          Phase is chosen by the local clock, not the system theme — toggle dark
+          mode above to preview the discs on a dark wallpaper. Indicative, not a
+          pixel-exact device render.
         </p>
         <SunWidgetGallery />
       </Section>
