@@ -33,6 +33,11 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- minded only uses standard HTTPS/system encryption (exempt under US
+	     export regulations). Declaring this avoids the "Missing Compliance"
+	     gate that otherwise blocks every TestFlight build. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MinimumOSVersion</key>

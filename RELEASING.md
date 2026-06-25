@@ -1,6 +1,6 @@
 # Releasing
 
-minded ships to two stores via tag-triggered CI: the Chrome Web Store (browser extension) and the Google Play Store (Android app). iOS is not actively maintained — skip.
+minded ships to stores via tag-triggered CI: the Chrome Web Store (browser extension) and the Google Play Store (Android app), both in `.github/workflows/release.yml`. The iOS **widget-only variant** ships separately to TestFlight via `.github/workflows/ios-testflight.yml` — see [iOS / TestFlight](#ios--testflight) below. **You do not need a Mac**: iOS is built and signed on a GitHub-hosted macOS runner.
 
 See [`docs/release-automation-plan.md`](docs/release-automation-plan.md) for the design rationale and `.github/workflows/release.yml` for the pipeline definition.
 
@@ -75,6 +75,51 @@ CWS review may require source code for minified bundles. When prompted:
 - Build command: `cd extension && npm ci && npm run build`
 - Output: `extension/minded.zip`
 - Node version: see `NODE_VERSION` in `.github/workflows/release.yml`
+
+## iOS / TestFlight
+
+iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is *cloud-managed*: the runner authenticates with an App Store Connect API key and `xcodebuild -allowProvisioningUpdates` creates/downloads the distribution certificate and provisioning profile on the fly, so no `.p12` or `.mobileprovision` is stored in CI.
+
+Workflow: `.github/workflows/ios-testflight.yml`. Triggers on a `vX.Y.Z` tag (alongside the store releases) **and** on manual dispatch (Actions → *iOS TestFlight* → *Run workflow*) so you can push a beta build any time without cutting a public release.
+
+### Why "no Mac" still isn't "no Apple"
+
+There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS. "Without a Mac" means *without owning one*: you rent Apple's hosted macOS runner per build. You still need a paid **Apple Developer Program** membership ($99/yr) for any signing or distribution.
+
+### One-time setup
+
+1. **Apple Developer Program** membership (Team ID `363FAFK383`).
+2. **Register the app** in App Store Connect once: bundle id `com.minded.app`, then create the app record. TestFlight uploads fail until the record exists. (Note: the iOS bundle id `com.minded.app` is intentionally *not* the same as `capacitor.config.ts`'s `appId` / the Android `applicationId`, which are both `com.minded.minded`. The iOS Xcode project — `project.pbxproj` — is the source of truth for iOS; `cap sync` does not change it.)
+3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **Admin** access. (App Manager is usually enough to manage profiles, but cloud signing via `-allowProvisioningUpdates` may also need to *create the distribution certificate* — Admin avoids a mid-build "not authorized to manage certificates" failure.) Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**.
+4. **Add the secrets** (scope to the `production` environment, same as the store secrets):
+
+   | Secret | Source |
+   |---|---|
+   | `APP_STORE_CONNECT_KEY_ID` | the API key's Key ID |
+   | `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID (top of the API keys page) |
+   | `APP_STORE_CONNECT_PRIVATE_KEY_BASE64` | `base64 -w0 AuthKey_XXXXXX.p8` of the downloaded key |
+
+5. **Wire up the widget target (the one step that wants Xcode once).** The `MindedWidget` Swift sources exist (`extension/ios/App/MindedWidget/`) but the WidgetKit **extension target is not yet in `App.xcodeproj`**. Until it is, TestFlight builds ship the WebView shell *without* the companion sun widget. Add it once via Xcode's GUI (File → New → Target → Widget Extension; see that folder's `README.md`) or programmatically with the `xcodeproj` Ruby gem / xcodegen (those can run on Linux). After it's committed, every build includes the widget — no Mac needed again.
+
+> **Caveats for the first build.** (a) Apple caps distribution certificates per team — if cloud signing fails with "certificate limit reached", revoke an unused one in the Developer portal. (b) This iOS app has never been compiled; treat the first run as real verification, especially that the WebView loads the `distIOS` bundle (asset paths use base `/`). (c) `altool --upload-app` is deprecated though still functional on Xcode 16 — see the comment in the workflow for the migration path if a future Xcode drops it.
+
+### Testing on a specific person's phone (e.g. a friend's), no public release
+
+Yes — this is exactly what TestFlight is for. A TestFlight build is **not** a public App Store release; only invited testers see it.
+
+1. Run the *iOS TestFlight* workflow (manual dispatch is fine). It uploads the build to App Store Connect → TestFlight.
+2. In **App Store Connect → TestFlight**, add the tester:
+   - **Internal testers** (up to 100) get builds **immediately, no review** — but each must be added as a user on your App Store Connect team.
+   - **External testers** (just their email, no team access) are simpler for a friend/partner: create a tester group, add their email, and submit the build for **Beta App Review** (a light, usually-fast review — much quicker than App Store review). Once approved, they install the **TestFlight** app from the App Store and accept the invite.
+3. They install via the **TestFlight** app on their iPhone. Builds expire after 90 days.
+
+**Export compliance** (would otherwise block external testing on *every* build): minded sets `ITSAppUsesNonExemptEncryption = false` in `extension/ios/App/App/Info.plist` (it uses only standard HTTPS/system crypto, which is exempt), so builds skip the "Missing Compliance" prompt automatically. If you ever add non-exempt encryption, remove that key and answer the question in App Store Connect instead. External testers also need a one-line **Beta App Description** and a **feedback email** in the TestFlight *Test Information* tab.
+
+Ad-hoc distribution (register the device UDID, install an `.ipa` directly) also works without a release but is clunkier and capped at the devices you register — TestFlight is the recommended path.
+
+### Versioning
+
+The workflow sets `MARKETING_VERSION` from `extension/package.json` and `CURRENT_PROJECT_VERSION` from the CI run number, so every upload has a strictly increasing build number (TestFlight rejects duplicates). No manual `project.pbxproj` bump is needed for a TestFlight build.
 
 ## Rollback
 

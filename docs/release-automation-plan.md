@@ -1,6 +1,6 @@
 # Release Automation Plan
 
-Automates releases to the Chrome Web Store and Google Play Store, triggered by `vX.Y.Z` git tags produced by `extension/scripts/version.mjs`. iOS is out of scope (per `CLAUDE.md` it is not actively developed).
+Automates releases to the Chrome Web Store and Google Play Store, triggered by `vX.Y.Z` git tags produced by `extension/scripts/version.mjs`. The iOS widget-only variant ships separately to TestFlight from `.github/workflows/ios-testflight.yml` (see `RELEASING.md`); this plan covers the two stores above.
 
 This is the V2 plan, hardened against multi-agent review feedback (concurrency, least-privilege secrets, supply-chain pinning, environment-gated approval, simpler Gradle signing, no signed-AAB-as-artifact).
 

@@ -5,7 +5,7 @@ Thanks for your interest. This project is small and opinionated — please read 
 ## Before you start
 
 - For anything beyond a small fix, **open an issue first** to discuss the approach. Drive-by PRs that change architecture or add dependencies will likely be closed.
-- Check the [iOS note in the README](./README.md#repository-layout): iOS isn't actively developed and PRs targeting iOS-only features will not be accepted.
+- iOS is a deliberately minimal **widget-only variant** (the companion sun — see [`docs/ios-platform-fit.md`](./docs/ios-platform-fit.md)). iOS-specific PRs should stay within that scope (the WidgetKit companion + WebView shell); new *intervention* features still target the browser extension and Android only.
 - New dependencies need justification. Check `package.json` first to see if something equivalent is already available.
 
 ## Dev setup
