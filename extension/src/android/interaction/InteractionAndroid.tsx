@@ -24,6 +24,19 @@ const InteractionAndroid = () => {
     : null;
   let wrapperEl: HTMLDivElement = undefined!;
 
+  // On a reverse morph, tell the native side once our sun has painted at the
+  // corner, so it can cross-fade out the placeholder disc it holds there during
+  // the WebView load. Two frames after mount the arriving sun has snapped to the
+  // corner and painted; the native cross-fade is forgiving of slight timing since
+  // both discs sit at the same spot. Guarded — older native builds lack it.
+  if (morphInFromCorner) {
+    onMount(() => {
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => androidInterface.onArrivingSunReady?.()),
+      );
+    });
+  }
+
   onMount(async () => {
     addWrapperClasses();
 

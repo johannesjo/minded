@@ -3,22 +3,33 @@ package com.minded.minded.overlay
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.graphics.PixelFormat
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.ui.compose.SunDisc
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
+import kotlinx.coroutines.delay
 
 
 class InteractionWindow(
@@ -37,6 +48,12 @@ class InteractionWindow(
         // Duration of the near-opaque window alpha nudge that forces the overlay
         // window to recomposite its first frame after load.
         private const val FIRST_FRAME_ALPHA_NUDGE_MS = 200L
+
+        // Safety net for the reverse-morph corner placeholder: if the web never
+        // signals its sun has arrived (a load error, reduced-motion, the morph
+        // skipped), fade the native disc out anyway so it can't strand on screen.
+        // Comfortably longer than a normal WebView first paint.
+        private const val CORNER_PLACEHOLDER_FALLBACK_MS = 1500L
     }
 
     override val logTag = javaClass.simpleName
@@ -59,6 +76,14 @@ class InteractionWindow(
     // plain fresh intervention), so it never goes stale between shows.
     var morphInFromCorner: Boolean = false
 
+    // Reverse-morph hand-off: while a freshly-shown morph interaction loads its
+    // WebView (an opaque dark shield until the web paints), a native sun disc
+    // holds the Little Sun's resting corner so that spot is never empty before the
+    // web sun appears there. Set true for a morph show (in showWindow), cross-faded
+    // out when the web signals its sun has painted (onArrivingSunReady) or by the
+    // fallback above — so it can never strand on screen.
+    private val showCornerPlaceholder = mutableStateOf(false)
+
 
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
@@ -70,6 +95,7 @@ class InteractionWindow(
         val webViewState = remember { mutableStateOf<WebView?>(null) }
         ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
 
+        Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             modifier = Modifier.fillMaxSize().imePadding(),
             factory = { context ->
@@ -187,6 +213,42 @@ class InteractionWindow(
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html$morphQuery#${questionId}")
             }
         })
+
+        // Reverse-morph hand-off: hold a sun disc at the Little Sun's resting
+        // corner over the loading WebView (an opaque shield until the web paints)
+        // so the corner is never empty before the web sun arrives there. It
+        // cross-fades out the moment the web signals (onArrivingSunReady), or by
+        // the fallback so it can't strand.
+        if (morphInFromCorner) {
+            val placeholderAlpha by animateFloatAsState(
+                targetValue = if (showCornerPlaceholder.value) 1f else 0f,
+                label = "cornerPlaceholderAlpha",
+            )
+            LaunchedEffect(Unit) {
+                delay(CORNER_PLACEHOLDER_FALLBACK_MS)
+                showCornerPlaceholder.value = false
+            }
+            if (placeholderAlpha > 0f) {
+                // The same resting spot the bubble parks at; the arriving web sun
+                // targets this exact point too (getLittleSunRestCenter), so the
+                // disc, the bubble that just left, and the web sun all line up.
+                val rest = remember {
+                    LittleSunPosition.restingTopLeft(
+                        ctrlSvc,
+                        windowManager,
+                        ctrlSvc.getSharedPreferenceService().getLittleSunPosition(),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(rest.first, rest.second) }
+                        .alpha(placeholderAlpha),
+                ) {
+                    SunDisc()
+                }
+            }
+        }
+        }
     }
 
 
@@ -278,12 +340,30 @@ class InteractionWindow(
     }
 
     override fun showWindow() {
+        // Arm the corner placeholder for a morph show BEFORE super.showWindow()
+        // composes Cmp(), so the disc is in the very first composition (the web
+        // sun won't have loaded yet). Always reassigned, so a non-morph show clears
+        // any leftover from a prior morph.
+        showCornerPlaceholder.value = morphInFromCorner
         super.showWindow()
         // Apply system UI visibility flags to the view after it's created
         @Suppress("DEPRECATION")
         window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+    }
+
+    /**
+     * The web layer has painted its arriving sun at the Little Sun's corner (it
+     * targets the same resting point), so cross-fade out the native placeholder
+     * that was holding that spot during the WebView load. Hand-off is seamless
+     * because both discs sit at the same point. Posted to the main thread (the JS
+     * bridge can call in off it). A no-op for a non-morph show.
+     */
+    fun onArrivingSunReady() {
+        Handler(Looper.getMainLooper()).post {
+            showCornerPlaceholder.value = false
+        }
     }
 
     override fun hideWindow() {

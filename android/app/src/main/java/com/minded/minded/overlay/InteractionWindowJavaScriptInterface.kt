@@ -54,6 +54,15 @@ class InteractionWindowJavaScriptInterface(
     fun test() {
         Log.d(logTag, "TEST - JavaScript interface is working!")
     }
+
+    // The reverse-morph arriving sun has painted at the Little Sun's corner, so
+    // the native placeholder disc holding that spot during the WebView load can
+    // cross-fade out. Web calls this once, right after the morph sun first paints.
+    @JavascriptInterface
+    fun onArrivingSunReady() {
+        Log.v(logTag, "onArrivingSunReady()")
+        win.onArrivingSunReady()
+    }
     @JavascriptInterface
     fun onSuccessSunTap() {
         Log.v(logTag, "onSuccessSunTap()")

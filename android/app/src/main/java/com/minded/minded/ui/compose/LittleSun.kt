@@ -523,7 +523,7 @@ private fun OfferAction(
 }
 
 @Composable
-private fun SunDisc(
+internal fun SunDisc(
     clockString: String = "",
     glowSize: Dp = 60.dp,
     discSize: Dp = 30.dp,
