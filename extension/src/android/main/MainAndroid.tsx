@@ -82,7 +82,16 @@ const MainAndroid = () => {
     setIsDarkModeIfApplies();
 
     getSyncData().then((syncData: SyncData) => {
-      setIsShowOnboarding(!syncData.cfg.isOnboardingComplete);
+      // Only ever *enter* onboarding from here — never leave it. Reaching the
+      // optional step marks onboarding complete (so a force-quit won't replay
+      // the welcome), yet the flow is still on screen and keeps sending the user
+      // out to system settings to grant permissions. Each return fires a
+      // resume → refresh; honouring the flag here would tear the flow down and
+      // drop the user onto the dashboard mid-step. Leaving is driven only by
+      // onGoDashboard.
+      if (!syncData.cfg.isOnboardingComplete) {
+        setIsShowOnboarding(true);
+      }
       setHasBlockedApps((syncData.cfg.blockedApps?.length ?? 0) > 0);
       if (syncData.cfg.isOnboardingComplete) {
         maybeTriggerSleepWindDown(syncData);
@@ -153,6 +162,10 @@ const MainAndroid = () => {
           <OnboardingAndroid
             initialStep={getIsShowSetup() ? 1 : 0}
             onGoDashboard={() => {
+              // Sole exit from the flow: refresh() never lowers this flag (see
+              // above), so the onboarding/setup screens stay up until the user
+              // actually finishes here.
+              setIsShowOnboarding(false);
               setIsShowSetup(false);
               refresh();
             }}
