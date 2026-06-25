@@ -12,7 +12,12 @@ android {
         applicationId = "com.minded.minded"
         minSdk = 29
         targetSdk = 35
-        versionCode = 23
+        // In CI both pipelines set ANDROID_VERSION_CODE to a time-based value
+        // (seconds since 2020-01-01) so production always builds at or above the
+        // latest internal-test build and Play's cross-track shadowing rule is
+        // never tripped. This literal is only the local-build fallback; the
+        // user-facing version is versionName below. See RELEASING.md.
+        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 23
         versionName = "6.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -35,7 +35,7 @@ Likely already enrolled (default for apps created after 2021). Without it, the u
 
 ### First-ever Play upload
 
-Must be done manually via Play Console (Internal testing → Create release → upload AAB). Automated uploads to the internal track require a prior production release to exist. After the first manual upload, CI takes over.
+Must be done manually via Play Console (create a release on any track → upload AAB) — the Play API only takes over once the app has an initial release on file. After that first manual upload, CI handles everything: tagged releases go to **production**, pushes to `main` go to **internal** testing.
 
 ## Cutting a release
 
@@ -45,7 +45,7 @@ npm version patch    # or minor / major
 ```
 
 This:
-- bumps `package.json`, `android/app/build.gradle.kts` (`versionName` + `versionCode`), and `extension/ios/App/App.xcodeproj/project.pbxproj`
+- bumps `package.json`, `android/app/build.gradle.kts` (`versionName`; the `versionCode` literal is also bumped but is now only a local-build fallback — CI derives the real one, see [Version codes](#version-codes-the-cross-track-constraint)), and `extension/ios/App/App.xcodeproj/project.pbxproj`
 - creates `chore(release): bump version to X.Y.Z` commit and `vX.Y.Z` tag
 
 Builds run in CI on tag push — no local build is required.
@@ -62,10 +62,81 @@ The tag triggers `.github/workflows/release.yml`. Steps:
 2. `release-chrome` and `release-play` — **both wait for your approval** in the Actions UI (Environments → `production` → review).
 3. Once approved, each job builds and uploads:
    - Chrome: extension is uploaded **and auto-submitted for review**. Google's review queue typically clears in minutes to days. No further action in the CWS dashboard.
-   - Play: AAB is uploaded to the **internal** track. Visit Play Console → Internal testing → Promote → Production when ready.
+   - Play: AAB is uploaded straight to the **production** track and published live (`STATUS: completed`) — no manual promotion step. (Continuous internal-test builds are a separate pipeline; see below.)
 4. `github-release` creates a GitHub Release with auto-generated notes from commit messages.
 
 Total wall time: ~6–10 min once approved.
+
+## Continuous internal test builds (push to main)
+
+`.github/workflows/play-internal.yml` publishes a signed AAB to the Play
+**internal testing** track on every push to `main` that touches the app (a
+`paths:` filter limits it to `extension/**`, `android/**`, and the pipeline's
+own files). Internal-track installs **auto-update through the Play Store** like
+any normal app — once you've opted in and installed, your phone stays on the
+latest `main` with no sideloading. This shares the production app listing but a
+different track.
+
+### Version codes (the cross-track constraint)
+
+Play assigns each device the **highest** `versionCode` across every track it's
+eligible for, and **rejects** a release that would be shadowed by a higher code
+already active on another track (`multiApkShadowedActiveApk`). Internal testers
+are also production-eligible, so a naive "give internal a permanently higher
+code" scheme would block the next production release. (It would also globally
+*consume* those codes — a `versionCode` can never be reused.)
+
+So both pipelines derive `versionCode` from the **same** source: seconds since
+2020-01-01 UTC, computed at build time (`$(date +%s) - 1577836800`). Whichever
+builds later has the higher code. Internal builds on each push; a production
+release builds at release time ("now"), so production is always **at or above**
+the latest internal build and stays publishable. `build.gradle.kts`'s literal
+`versionCode` is now only a local-build fallback — CI always overrides it.
+`versionName` is untouched (`npm version` still owns the user-facing semver, and
+`verify-version` only checks `versionName`), so nothing user-visible changes;
+only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
+~3.2e7/yr against the 2.1e9 ceiling (decades of headroom).
+
+> Tiny residual race: if an internal build starts *between* a production build
+> and its upload, it could grab a higher code and shadow that production
+> release. The window is minutes and it self-heals on the next release (just
+> re-run). If you want production fully isolated from this, the alternative is a
+> separate dev app id (`com.minded.minded.dev` via a Gradle flavor) — more setup
+> (a second Play listing) but production version codes never interact at all.
+
+### One-time setup
+
+1. **Environment / secrets.** The workflow currently reuses the existing
+   **`production`** environment (`environment: production`), so **no new secrets
+   are needed** — it already has the signing + Play keys. The catch: the
+   `production` environment has a required reviewer, so **each push to `main`
+   waits for a one-click approval** in the Actions UI before it ships to
+   internal. To make it fully hands-off, create a separate **`internal`**
+   environment (Settings → Environments → New) with **no required reviewers**,
+   re-add the same five values (`ANDROID_KEYSTORE_BASE64`,
+   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`,
+   `PLAY_SERVICE_ACCOUNT_JSON` — environment secrets aren't inherited, so they
+   must be re-entered or promoted to repo-level), and switch `environment:` in
+   `play-internal.yml` to `internal`. Don't just remove the reviewer from
+   `production` — that would un-gate real production releases too.
+2. **No manual AAB upload needed** (for minded). A manual first upload is only
+   required for a brand-new app with zero releases; minded already ships to
+   production, so the API can upload to the internal track directly. You do need
+   to **set up the internal testing track and add your phone as a tester** once
+   in the Console — that's track config, not a build upload (step 3).
+3. **Opt your phone into internal testing:** Play Console → Testing → Internal
+   testing → Testers → copy the **opt-in URL**, open it on your phone, accept,
+   then install from the link (or from the Play Store once joined). After that,
+   updates arrive automatically (often within a few hours; force a check in the
+   Play Store app under *Manage apps → Updates available* if impatient).
+
+### Cost / churn note
+
+Each qualifying push triggers a build + upload (~6–10 min). `concurrency`
+cancels superseded in-flight runs so rapid pushes don't pile up (a cancelled
+run just skips a disposable timestamp code). The `paths:` filter already keeps
+docs-only and unrelated commits from building; tighten it further or switch the
+trigger to `workflow_dispatch` if it's still noisier than you want.
 
 ## Chrome Web Store source-code submission
 
@@ -128,7 +199,7 @@ Neither store supports true rollback. The fix is always **fix-forward** with a h
 ### Play Store
 
 - Play Console → Production → "Halt managed publishing rollout" to pause distribution while you ship a fix.
-- Cut a new version (`npm version patch`), let the pipeline ship the fix to internal, promote to production.
+- Cut a new version (`npm version patch`) and push the tag — the release pipeline ships the fix straight to production.
 
 ### Chrome Web Store
 
@@ -154,7 +225,7 @@ Do this quarterly, or immediately on any suspicion of compromise.
 |---|---|
 | `verify-version` fails on version mismatch | Tag created without `npm run version` — files weren't bumped. Re-run the version script. |
 | `verify-version` fails on ancestry | Tag was created on a non-main branch. Merge to main first, then re-tag from the merge commit. |
-| Play upload rejected: "versionCode already exists" | Manual upload happened in parallel, or a previous run partially succeeded. Bump `versionCode` again. |
+| Play upload rejected: "versionCode already exists" / `multiApkShadowedActiveApk` | Two builds landed in the same second, or an internal push minted a higher code mid-release and shadowed it. versionCode is time-derived, so don't edit it — just **re-run the workflow** to mint a fresh timestamp code. |
 | CWS upload rejected: "package size too large" | Bundle exceeds 50MB recommended. Investigate large assets. (Hard limit is 2GB.) |
 | Gradle: "keystore file not found" | Workflow secrets missing or wrong base64. Re-encode with `base64 -w0`. |
 | Both publish jobs hang in "Waiting" | You forgot to approve the `production` environment in the Actions UI. |

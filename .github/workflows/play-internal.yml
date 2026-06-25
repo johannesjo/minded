@@ -1,0 +1,112 @@
+name: Play Internal
+
+# Publishes a signed AAB to the Play **internal testing** track on every push
+# to main. Internal-track installs auto-update through the Play Store like any
+# normal app, so this gives you a continuously fresh build on your phone with
+# no sideloading. Tagged production releases ship separately via release.yml.
+#
+# Version codes: this workflow and release.yml derive versionCode from the
+# same time-based formula (seconds since 2020-01-01), so production (built at
+# release time) is always >= the latest internal build and never gets shadowed
+# on the Play side. See the "Version codes" section in RELEASING.md.
+
+on:
+  push:
+    branches: [main]
+    # Only build when something that affects the Android artifact changes: the
+    # web bundle (shared across platforms), the native app, or this pipeline
+    # itself. Docs, the Chrome/iOS workflows, and other unrelated commits skip
+    # the build entirely.
+    paths:
+      - 'extension/**'
+      - 'android/**'
+      - '.github/workflows/play-internal.yml'
+      - '.github/scripts/**'
+
+permissions:
+  contents: read
+
+# Rapid pushes supersede each other; a cancelled build just skips a disposable
+# timestamp version code (the next run mints a fresh one from the clock).
+concurrency:
+  group: play-internal
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  release-internal:
+    runs-on: ubuntu-latest
+    # Reusing the existing `production` environment for now, so no new secrets
+    # are needed — but it has a required reviewer, so each push waits for a
+    # one-click approval in the Actions UI before it ships. To make this fully
+    # hands-off later, create a separate ungated `internal` environment (no
+    # reviewers) with the same secrets and switch this back to it. (Don't drop
+    # the reviewer from `production` — that would un-gate real releases too.)
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - name: Build web assets for Android
+        working-directory: extension
+        run: |
+          npm ci
+          npm run buildDroid
+      - name: Decode keystore
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: printf '%s' "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"
+      - name: Build signed AAB
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/upload.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          # Time-based versionCode: seconds since 2020-01-01 UTC. The SAME
+          # formula is used by the production pipeline (release.yml), so
+          # whichever builds later has the higher code. Internal builds run on
+          # pushes; a production release builds at release time ("now"), so it
+          # always sits at or above the latest internal build — which is what
+          # avoids Play's cross-track multiApkShadowedActiveApk rejection.
+          # ~2e8 today, growing ~3.2e7/yr, far under the 2.1e9 versionCode max.
+          export ANDROID_VERSION_CODE=$(( $(date +%s) - 1577836800 ))
+          echo "Internal build versionCode=$ANDROID_VERSION_CODE"
+          # Timestamp codes are opaque; record code -> commit so a versionCode
+          # seen in the Play Console can be traced back to a SHA.
+          echo "internal versionCode \`$ANDROID_VERSION_CODE\` ← \`$GITHUB_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          ./gradlew bundleRelease
+      - name: Upload AAB as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-internal-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Install Play upload deps
+        working-directory: .github/scripts
+        run: npm install --no-audit --no-fund
+      - name: Upload to Play Store (internal testing)
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PACKAGE_NAME: com.minded.minded
+          AAB_PATH: android/app/build/outputs/bundle/release/app-release.aab
+          TRACK: internal
+          STATUS: completed
+        run: node .github/scripts/upload-play.mjs
+      - name: Cleanup keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"
