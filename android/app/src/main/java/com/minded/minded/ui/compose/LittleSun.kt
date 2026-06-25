@@ -70,9 +70,18 @@ private val SUN_COLOR_NIGHT = Color(0xFFEEF2FF)
 private val SUN_TEXT_COLOR_NIGHT = Color(0xFF33405E)
 private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
-// The cool dusk-into-night sky the sun sets into when the pause is pulled down,
-// matching the web interaction's dark-mode sunset gradient
-// (BackgroundTransition.scss): a deep, calm blue, never harsh.
+// The sky the sun sets into when the pause is pulled down. It reacts to the time
+// of day exactly like the web interaction's drag-down background
+// (BackgroundTransition.scss + _variables.scss): by day a warm sunset, after dark
+// a deep, calm night — never harsh. isDarkModeNow() picks which (the same switch
+// that turns the companion into a moon at night), so the revealed sky always
+// belongs to the hour rather than being a fixed night.
+private val DAY_SKY_COLORS = listOf(
+    Color(0xFF4F78BB), // dusk blue up top
+    Color(0xFFF49F73), // warm peach
+    Color(0xFFFFD36A), // gold near the horizon
+    Color(0xFFEF6F63), // coral at the base
+)
 private val NIGHT_SKY_COLORS = listOf(
     Color(0xFF020C25),
     Color(0xFF041735),
@@ -297,6 +306,10 @@ private fun StepAwayOffer(
     // locks out every stay path (auto-dismiss timer, tap-off) so collapse() can't
     // race onStepAway() on the same window during the ~500ms set-and-leave.
     var committing by remember { mutableStateOf(false) }
+    // True from the moment the sun is grabbed to drag until the pull is released
+    // without committing. Drives the hint's instant fade so the words step aside as
+    // soon as the motion begins, rather than lingering until the sun has travelled.
+    var grabbed by remember { mutableStateOf(false) }
 
     // Soft fade for the whole surface — calmness is the product, never a hard
     // cut. Fades in on appear and out on dismiss.
@@ -347,19 +360,20 @@ private fun StepAwayOffer(
     )
 
     // The gentle hint that names the one gesture. It fades in once the pause has
-    // settled and out quickly on dismiss so it never lingers over the returning
-    // sun. (It also fades as the sun is dragged — see hintAlpha * (1 - dragProgress)
-    // on the Text below — so the words step aside the instant the motion begins.)
+    // settled, fades out quickly on dismiss so it never lingers over the returning
+    // sun, and — the instant the sun is grabbed to drag (`grabbed`) — clears in a
+    // quick 200ms beat so the words step aside as soon as the motion begins and the
+    // rising sky takes over. It eases back in (450ms) if the pull is released early.
     val hintAlpha by animateFloatAsState(
-        targetValue = if (phase >= 1 && !dismissing) 1f else 0f,
-        animationSpec = tween(durationMillis = if (dismissing) 200 else 450),
+        targetValue = if (phase >= 1 && !dismissing && !grabbed) 1f else 0f,
+        animationSpec = tween(durationMillis = if (dismissing || grabbed) 200 else 450),
         label = "hintAlpha",
     )
 
     // Drag-down-to-step-away: pull the sun downward — the same drag-down gesture
-    // the dashboard sun uses. The sun follows the finger and the night sky rises
-    // behind it; released past the threshold it sets into minded, otherwise it
-    // springs back.
+    // the dashboard sun uses. The sun follows the finger and the sky rises behind
+    // it; released past the threshold it sets into minded, otherwise it springs
+    // back.
     val dragY = remember { Animatable(0f) }
     val dragScope = rememberCoroutineScope()
     val dismissDragPx = with(LocalDensity.current) { 140.dp.toPx() }
@@ -367,11 +381,16 @@ private fun StepAwayOffer(
     val screenHeightPx = with(LocalDensity.current) {
         LocalConfiguration.current.screenHeightDp.dp.toPx()
     }
-    // 0 = at rest, 1 = pulled to the dismiss threshold. Drives how far the night
-    // sky has risen behind the sun — the sun itself stays fully opaque and sets
-    // into the sky rather than fading away.
+    // 0 = at rest, 1 = pulled to the dismiss threshold. Drives how far the sky has
+    // risen behind the sun — the sun itself stays fully opaque and sets into the
+    // sky rather than fading away.
     val dragProgress = (dragY.value / dismissDragPx).coerceIn(0f, 1f)
-    val nightSkyBrush = remember { Brush.verticalGradient(NIGHT_SKY_COLORS) }
+    // Warm sunset by day, deep night after dark — the same time-of-day switch the
+    // companion sun/moon uses, so the sky the sun sets into matches the hour.
+    val isNightSky = isDarkModeNow()
+    val skyBrush = remember(isNightSky) {
+        Brush.verticalGradient(if (isNightSky) NIGHT_SKY_COLORS else DAY_SKY_COLORS)
+    }
 
     fun beginDismiss(reverse: Boolean = false) {
         // Never start a stay-dismiss once a step-away pull has committed: its sink
@@ -406,6 +425,14 @@ private fun StepAwayOffer(
             // the threshold it sets into minded, otherwise it springs back.
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
+                    // The sun is grabbed: clear the hint at once (see hintAlpha).
+                    onDragStart = { grabbed = true },
+                    onDragCancel = {
+                        grabbed = false
+                        dragScope.launch {
+                            dragY.animateTo(0f, tween(durationMillis = 240, easing = FastOutSlowInEasing))
+                        }
+                    },
                     onVerticalDrag = { _, dy ->
                         dragScope.launch { dragY.snapTo((dragY.value + dy).coerceAtLeast(0f)) }
                     },
@@ -418,7 +445,7 @@ private fun StepAwayOffer(
                         if (phase >= 1 && dragY.value >= dismissDragPx) {
                             // Pulled past the threshold: the sun sets. It sinks the
                             // rest of the way down (staying fully opaque) while the
-                            // night sky holds, then we step away into minded — the
+                            // sky holds, then we step away into minded — the
                             // calm redirect the old "Step away" button performed,
                             // now the natural completion of the downward gesture. A
                             // soft tick confirms the deliberate, chosen leave.
@@ -432,6 +459,9 @@ private fun StepAwayOffer(
                                 onStepAway()
                             }
                         } else {
+                            // Released before the threshold: the hint eases back in
+                            // as the sun springs home.
+                            grabbed = false
                             dragScope.launch {
                                 dragY.animateTo(
                                     0f,
@@ -443,15 +473,16 @@ private fun StepAwayOffer(
                 )
             },
     ) {
-        // The night sky rises behind the sun as it is pulled down — the same cool
-        // dusk-into-night palette the in-app sun-set uses. Fully out at the dismiss
-        // threshold; recedes if the pull is released early. Sits above the dim and
-        // below the sun, and fades with the surface on dismiss.
+        // The sky rises behind the sun as it is pulled down — a warm sunset by day,
+        // a deep night after dark, the same time-of-day palette the in-app sun-set
+        // uses. Fully out at the dismiss threshold; recedes if the pull is released
+        // early. Sits above the dim and below the sun, and fades with the surface on
+        // dismiss.
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .alpha(surfaceAlpha * dragProgress)
-                .background(nightSkyBrush),
+                .background(skyBrush),
         )
 
         val hasOrigin = expandFromX >= 0 && expandFromY >= 0
@@ -485,8 +516,8 @@ private fun StepAwayOffer(
         // interaction's drag hint: pull the sun down to step away into minded. It
         // rests below the centred sun, fades in only once the pause has settled,
         // and fades out the instant the sun is grabbed (the motion and the rising
-        // night sky take over from the words). Tapping off, or simply waiting,
-        // still glides the sun home — the gesture is never pushed.
+        // sky take over from the words). Tapping off, or simply waiting, still
+        // glides the sun home — the gesture is never pushed.
         Text(
             text = "Drag the sun down to step away",
             color = Color.White,
@@ -504,7 +535,7 @@ private fun StepAwayOffer(
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset { IntOffset(0, (150.dp.toPx() + dragY.value).roundToInt()) }
-                .alpha(hintAlpha * (1f - dragProgress)),
+                .alpha(hintAlpha),
         )
     }
 }
