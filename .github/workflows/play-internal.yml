@@ -5,9 +5,10 @@ name: Play Internal
 # normal app, so this gives you a continuously fresh build on your phone with
 # no sideloading. Tagged production releases ship separately via release.yml.
 #
-# Version codes: this workflow overrides build.gradle.kts's literal versionCode
-# (used by production) with a high-band value (1e9 + run number) so internal
-# builds never collide with or outrank the semver-linked production line.
+# Version codes: this workflow and release.yml derive versionCode from the
+# same time-based formula (seconds since 2020-01-01), so production (built at
+# release time) is always >= the latest internal build and never gets shadowed
+# on the Play side. See the "Version codes" section in RELEASING.md.
 
 on:
   push:
@@ -25,8 +26,8 @@ on:
 permissions:
   contents: read
 
-# Rapid pushes supersede each other; a cancelled build just wastes one
-# (cheap, disposable) version code in the high band.
+# Rapid pushes supersede each other; a cancelled build just skips a disposable
+# timestamp version code (the next run mints a fresh one from the clock).
 concurrency:
   group: play-internal
   cancel-in-progress: true
@@ -79,6 +80,9 @@ jobs:
           # ~2e8 today, growing ~3.2e7/yr, far under the 2.1e9 versionCode max.
           export ANDROID_VERSION_CODE=$(( $(date +%s) - 1577836800 ))
           echo "Internal build versionCode=$ANDROID_VERSION_CODE"
+          # Timestamp codes are opaque; record code -> commit so a versionCode
+          # seen in the Play Console can be traced back to a SHA.
+          echo "internal versionCode \`$ANDROID_VERSION_CODE\` ← \`$GITHUB_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           ./gradlew bundleRelease
       - name: Upload AAB as workflow artifact
         if: always()

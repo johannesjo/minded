@@ -45,7 +45,7 @@ npm version patch    # or minor / major
 ```
 
 This:
-- bumps `package.json`, `android/app/build.gradle.kts` (`versionName` + `versionCode`), and `extension/ios/App/App.xcodeproj/project.pbxproj`
+- bumps `package.json`, `android/app/build.gradle.kts` (`versionName`; the `versionCode` literal is also bumped but is now only a local-build fallback — CI derives the real one, see [Version codes](#version-codes-the-cross-track-constraint)), and `extension/ios/App/App.xcodeproj/project.pbxproj`
 - creates `chore(release): bump version to X.Y.Z` commit and `vX.Y.Z` tag
 
 Builds run in CI on tag push — no local build is required.
@@ -217,7 +217,7 @@ Do this quarterly, or immediately on any suspicion of compromise.
 |---|---|
 | `verify-version` fails on version mismatch | Tag created without `npm run version` — files weren't bumped. Re-run the version script. |
 | `verify-version` fails on ancestry | Tag was created on a non-main branch. Merge to main first, then re-tag from the merge commit. |
-| Play upload rejected: "versionCode already exists" | Manual upload happened in parallel, or a previous run partially succeeded. Bump `versionCode` again. |
+| Play upload rejected: "versionCode already exists" / `multiApkShadowedActiveApk` | Two builds landed in the same second, or an internal push minted a higher code mid-release and shadowed it. versionCode is time-derived, so don't edit it — just **re-run the workflow** to mint a fresh timestamp code. |
 | CWS upload rejected: "package size too large" | Bundle exceeds 50MB recommended. Investigate large assets. (Hard limit is 2GB.) |
 | Gradle: "keystore file not found" | Workflow secrets missing or wrong base64. Re-encode with `base64 -w0`. |
 | Both publish jobs hang in "Waiting" | You forgot to approve the `production` environment in the Actions UI. |
