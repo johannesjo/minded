@@ -660,12 +660,27 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.UnderstandingProcrastination]: {
     questions: [
       {
+        // Present-moment, never saved, intervention-only. The depleted-state
+        // chips deliberately make "it's just a hard day" a first-class answer
+        // at the moment of interruption. This is a narrow, intentional
+        // exception to the general "no chips on emotionally-loaded prompts"
+        // guidance on `Question.chips`: because the answer is never persisted
+        // (`isDontSaveAnswer`) there is no self-report record to skew, and the
+        // point is to legitimize *naming* the state, not to measure it. Naming
+        // it is the whole value.
+        id: QID.UP8,
+        t: "What's in the way right now",
+        chips: ["I'm tired", "overwhelmed", "can't focus", "just a hard day"],
+        isDontSaveAnswer: true,
+        isSkipOnDashboard: true,
+      },
+      {
         id: QID.UP1,
-        t: "What do you think is a factor that enables your procrastination",
+        t: "What tends to get in the way for you",
       },
       {
         id: QID.UP2,
-        t: "Why are you visiting this website",
+        t: "What brings you to this website right now",
         limitTo: ["BrowserExtension"],
       },
       { id: QID.UP3, t: "Where does my time tend to go" },
@@ -686,7 +701,7 @@ export const QUESTION_CATEGORIES: {
       },
     ],
     isMorningCategory: true,
-    dashboardTxt: "Understanding Procrastination",
+    dashboardTxt: "What's in the Way",
   },
   [QuestionCategoryId.Insomnia]: {
     questions: [

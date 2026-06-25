@@ -120,6 +120,7 @@ export enum QID {
   UP5 = "UP5",
   UP6 = "UP6",
   UP7 = "UP7",
+  UP8 = "UP8",
 
   IN1 = "IN1",
   IN2 = "IN2",

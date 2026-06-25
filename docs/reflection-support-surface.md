@@ -1,10 +1,27 @@
 # Concept: a reflection / support surface for hard, low-output stretches
 
-Status: **proposal / awaiting sign-off.** This translates an external
-brainstorming handover (written in Super Productivity's vocabulary) onto
-minded's actual surfaces, picks a direction, and specifies a minimal first
-slice. Nothing here is committed to a release. Copy is illustrative and needs
-maintainer sign-off before wiring — in this app the wording *is* the product.
+Status: **slice 1 implemented (content-only); slice 2 awaiting sign-off.** This
+translates an external brainstorming handover (written in Super Productivity's
+vocabulary) onto minded's actual surfaces, picks a direction, and specifies a
+minimal first slice. The content-only slice 1 below has been shipped on this
+branch; the supportive off-ramp (slice 2) is held for sign-off. Copy is still
+tunable — it's plain data in `questions.ts` — and in this app the wording *is*
+the product, so adjust freely.
+
+**Slice 1, as implemented** (`questions.ts`, `questionId.ts`):
+- Softened the `UnderstandingProcrastination` framing: category heading
+  "Understanding Procrastination" → "What's in the Way"; UP1 "What do you think
+  is a factor that enables your procrastination" → "What tends to get in the way
+  for you"; UP2 "Why are you visiting this website" → "What brings you to this
+  website right now".
+- Added `UP8`: a present-moment, intervention-only, **ephemeral** question
+  "What's in the way right now" with depleted-state chips
+  (`I'm tired` / `overwhelmed` / `can't focus` / `just a hard day`),
+  `isDontSaveAnswer: true` + `isSkipOnDashboard: true`. Nothing is persisted.
+- Note: UP8's chips are an intentional, documented exception to the general
+  "no chips on emotionally-loaded prompts" guidance — justified inline because
+  the answer is never stored (no self-report record to skew) and the goal is to
+  legitimize *naming* the state, not measure it.
 
 Companion to `reflective-companion-concept.md`. That note asks "what can we
 *reflect back* to the user?"; this one asks "how do we *carry load* for a
