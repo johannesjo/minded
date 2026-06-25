@@ -85,7 +85,7 @@ docs/           Architecture and design notes
 
 The web UI under `extension/src/shared/` is reused across all platforms. Platform-specific data access goes through the **dataInterface pattern** documented in [`CLAUDE.md`](./CLAUDE.md) — that file is the best entry point for understanding the architecture.
 
-> **iOS note:** iOS code paths exist under `extension/src/ios/` but are not actively developed. Real interventions on iOS are blocked by platform restrictions on inspecting other apps. New features should target the browser extension and Android.
+> **iOS note:** iOS ships as a deliberately minimal **widget-only variant** — the companion sun as a Home Screen widget (`extension/ios/App/MindedWidget/`), presence + invitation only. It does *not* attempt the forced intervention/overlay, which is the wrong shape for iOS (see [`docs/ios-platform-fit.md`](./docs/ios-platform-fit.md)). New *intervention* features still target the browser extension and Android. iOS builds and TestFlight ship from CI with no local Mac — see [`RELEASING.md`](./RELEASING.md).
 
 ## Contributing
 

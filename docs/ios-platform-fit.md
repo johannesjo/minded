@@ -1,8 +1,11 @@
-# Why iOS is deprioritized — and the one way it could still work
+# Why iOS is a widget-only variant — and the one way it works
 
-Status: **decision note + open exploration.** Records why iOS is not actively
-developed, corrects a wrong reason that was previously documented, and sketches
-the only adaptation that would be true to the product. Nothing here is scheduled.
+Status: **decision note — acted on.** Records why iOS is *not* a port of the
+Android app, corrects a wrong reason that was previously documented, and
+explains the one adaptation we now build: **option 1 below, the companion-sun
+Home Screen widget.** The forced-intervention path stays out of scope. See
+`extension/ios/App/MindedWidget/` for the implementation and `RELEASING.md` for
+the Mac-less build + TestFlight pipeline.
 
 ## The wrong reason we used to give
 
@@ -105,9 +108,26 @@ Honest caveats:
 
 ## Current decision
 
-iOS stays deprioritized — but for the true reason: its only effective interrupt
-is the wrong shape, and we won't ship the striving/parental-controls model
-wearing minded's paint. If iOS is ever revisited, the path above (presence +
-invitation, gentlest-shield, no budgets) is the only one worth building, and it
-should be understood as minded's gentlest self — possibly its *truest* self for
-the iOS audience — not a port of the Android overlay.
+We build **option 1 only**: the companion sun as a Home Screen widget —
+presence + invitation, no metrics, no shield, no budgets. It needs no special
+entitlement and is fully on-philosophy: minded's gentlest self, and arguably its
+*truest* self for the self-selected iOS mindfulness audience. We deliberately do
+**not** ship the forced overlay or the Screen Time shield (option 2): its only
+effective interrupt is the wrong shape, and we won't wear the
+striving/parental-controls model in minded's paint.
+
+Scope guardrails for anyone touching iOS:
+
+- **In scope:** the WidgetKit companion sun (`extension/ios/App/MindedWidget/`),
+  the `minded://sun` deep link, and the shared Capacitor WebView shell that the
+  tap opens.
+- **Out of scope:** `FamilyControls`/`ManagedSettings`/`DeviceActivity` shields,
+  any forced overlay, time budgets/schedules, or content/foreground-app reads.
+  Don't reintroduce these without revisiting this note.
+
+Build & ship: iOS is built, signed, and pushed to TestFlight from a GitHub
+macOS runner with **no local Mac** (`.github/workflows/ios-testflight.yml`).
+Remaining one-time prerequisite: the `MindedWidget` extension target is not yet
+wired into `App.xcodeproj` (the Swift sources exist; the target does not). Until
+it is added, TestFlight builds ship the WebView shell without the widget. See
+`extension/ios/App/MindedWidget/README.md` and `RELEASING.md`.

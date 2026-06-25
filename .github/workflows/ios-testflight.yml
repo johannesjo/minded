@@ -1,0 +1,143 @@
+name: iOS TestFlight
+
+# Builds and signs the iOS app on a GitHub-hosted macOS runner and uploads
+# it to TestFlight — no local Mac required. Signing is cloud-managed via an
+# App Store Connect API key (-allowProvisioningUpdates), so no certificates
+# or provisioning profiles are stored in CI.
+#
+# Trigger it manually (Actions -> iOS TestFlight -> Run workflow) to push a
+# beta build to testers, or it runs automatically on a vX.Y.Z tag alongside
+# the store releases. TestFlight is *not* a public release: builds go to
+# your testers only. Promoting to the App Store is a separate manual step in
+# App Store Connect.
+#
+# One-time setup and the testing flow are documented in RELEASING.md.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '22'
+  # The app record's bundle id in App Store Connect (matches project.pbxproj).
+  IOS_BUNDLE_ID: com.minded.app
+  IOS_TEAM_ID: '363FAFK383'
+
+jobs:
+  testflight:
+    runs-on: macos-15
+    environment: production
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Build iOS web assets
+        working-directory: extension
+        run: |
+          npm ci
+          # Build the SolidJS app for iOS -> extension/distIOS
+          npx vite build --mode ios --emptyOutDir
+          # Capacitor's webDir points at the Android bundle path, which is
+          # gitignored and therefore absent on a clean checkout. Stage the
+          # freshly-built iOS bundle there so `cap sync` copies the correct
+          # assets into the iOS app and (re)generates the native
+          # capacitor.config.json + plugin list.
+          rm -rf ../android/app/src/main/assets/web
+          mkdir -p ../android/app/src/main/assets/web
+          cp -R distIOS/. ../android/app/src/main/assets/web/
+          npx cap sync ios
+
+      - name: Install CocoaPods
+        working-directory: extension/ios/App
+        run: pod install
+
+      - name: Stage App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
+        run: |
+          # xcodebuild's -authenticationKeyPath wants the raw .p8 on disk;
+          # altool (the upload step) discovers it by KEY_ID under one of its
+          # known private_keys dirs. Write it to both.
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s' "$ASC_KEY_BASE64" | base64 -d > "$KEY_PATH"
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          echo "ASC_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Archive
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          # Marketing version tracks package.json; build number tracks the run
+          # number so every upload is strictly higher than the last (TestFlight
+          # rejects duplicate build numbers).
+          MARKETING_VERSION=$(node -p "require('./extension/package.json').version")
+          xcodebuild archive \
+            -workspace extension/ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            MARKETING_VERSION="$MARKETING_VERSION" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            DEVELOPMENT_TEAM="$IOS_TEAM_ID"
+
+      - name: Export .ipa
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist .github/ios/ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            -authenticationKeyPath "$ASC_KEY_PATH"
+
+      - name: Upload .ipa as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: minded-ios-${{ github.run_number }}
+          path: ${{ runner.temp }}/export/*.ipa
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          IPA=$(ls "$RUNNER_TEMP/export/"*.ipa | head -n1)
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA" \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Cleanup signing key
+        if: always()
+        run: |
+          rm -f "$ASC_KEY_PATH" "$HOME/.appstoreconnect/private_keys/"AuthKey_*.p8
