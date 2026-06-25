@@ -67,6 +67,53 @@ The tag triggers `.github/workflows/release.yml`. Steps:
 
 Total wall time: ~6–10 min once approved.
 
+## Continuous internal test builds (every push to main)
+
+`.github/workflows/play-internal.yml` publishes a signed AAB to the Play
+**internal testing** track on every push to `main`. Internal-track installs
+**auto-update through the Play Store** like any normal app — once you've opted
+in and installed, your phone stays on the latest `main` with no sideloading.
+This is independent of the tag-triggered production pipeline.
+
+### Version codes (why this doesn't break the release scheme)
+
+Play requires every `versionCode` to be globally unique and never reused, so
+internal builds **must not** draw from the same low integer line as releases.
+They don't: `build.gradle.kts` keeps its literal `versionCode` for production
+(bumped by `npm version`), and the internal workflow overrides it *only at
+build time* with `1_000_000_000 + github.run_number`. That high band can never
+collide with the semver-linked production codes (`23, 24, …`) and is always
+higher, so internal testers never get a downgrade. `versionName` is unchanged
+(`6.2.0`), so testers still see a normal version string. (Trade-off: you can't
+*promote* an internal build to production through the Play UI — production
+ships its own AAB from the tag pipeline. The two lines are intentionally
+decoupled.)
+
+### One-time setup
+
+1. **Create an `internal` environment** (Settings → Environments → New) with
+   **no required reviewers** — the gate would defeat auto-publishing. Add the
+   same secrets used by production: `ANDROID_KEYSTORE_BASE64`,
+   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`,
+   `PLAY_SERVICE_ACCOUNT_JSON` (same values). Environment secrets aren't
+   inherited from the `production` environment, so they must be re-added here
+   (or promote them to repo-level secrets and drop the `environment:` line).
+2. **First Play upload must still be manual** (see *First-ever Play upload*
+   above) — the internal-track API only accepts uploads once the app exists in
+   the Console. Already satisfied if you've shipped before.
+3. **Opt your phone into internal testing:** Play Console → Testing → Internal
+   testing → Testers → copy the **opt-in URL**, open it on your phone, accept,
+   then install from the link (or from the Play Store once joined). After that,
+   updates arrive automatically (usually within an hour; force a check in the
+   Play Store app under *Manage apps → Updates available* if impatient).
+
+### Cost / churn note
+
+Every push to `main` triggers a build + upload (~6–10 min). `concurrency`
+cancels superseded in-flight runs so rapid pushes don't pile up. If the churn
+gets noisy, add a `paths:` filter (e.g. only `extension/**` and `android/**`)
+or switch the trigger to `workflow_dispatch`.
+
 ## Chrome Web Store source-code submission
 
 CWS review may require source code for minified bundles. When prompted:

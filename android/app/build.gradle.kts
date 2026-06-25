@@ -12,7 +12,11 @@ android {
         applicationId = "com.minded.minded"
         minSdk = 29
         targetSdk = 35
-        versionCode = 23
+        // Production releases (tag pipeline) use this literal, bumped by
+        // `npm version`. Internal test builds override it via env into a high
+        // band (1e9 + CI run number) so they never collide with or outrank
+        // this semver-linked line. See .github/workflows/play-internal.yml.
+        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 23
         versionName = "6.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
