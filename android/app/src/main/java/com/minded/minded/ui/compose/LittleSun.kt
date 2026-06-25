@@ -72,21 +72,39 @@ private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
 // The sky the sun sets into when the pause is pulled down. It reacts to the time
 // of day exactly like the web interaction's drag-down background
-// (BackgroundTransition.scss + _variables.scss): by day a warm sunset, after dark
-// a deep, calm night — never harsh. isDarkModeNow() picks which (the same switch
-// that turns the companion into a moon at night), so the revealed sky always
-// belongs to the hour rather than being a fixed night.
-private val DAY_SKY_COLORS = listOf(
-    Color(0xFF4F78BB), // dusk blue up top
-    Color(0xFFF49F73), // warm peach
-    Color(0xFFFFD36A), // gold near the horizon
-    Color(0xFFEF6F63), // coral at the base
+// (BackgroundTransition.scss `.background-sunset` + _variables.scss): by day a
+// warm sunset, after dark a deep, calm night — never harsh. isDarkModeNow() picks
+// which (the same switch that turns the companion into a moon at night), so the
+// revealed sky always belongs to the hour rather than being a fixed night.
+//
+// The colour STOPS mirror the web gradient's exactly — that tuning is what makes
+// it nice: the dusk blue is held across the top band before the sky warms down
+// through peach and gold to coral, rather than warming evenly from the very top.
+// (Plain `verticalGradient(colours)` spaces stops evenly, which pushed the warm
+// tones far too high and lost the calm band of sky — the difference this fixes.)
+private val DAY_SKY_STOPS: Array<Pair<Float, Color>> = arrayOf(
+    0.00f to Color(0xFF4F78BB), // dusk blue up top…
+    0.14f to Color(0xFF4F78BB), // …held across the top band
+    0.54f to Color(0xFFF49F73), // warm peach
+    0.78f to Color(0xFFFFD36A), // gold near the horizon
+    1.00f to Color(0xFFEF6F63), // coral at the base
 )
-private val NIGHT_SKY_COLORS = listOf(
-    Color(0xFF020C25),
-    Color(0xFF041735),
-    Color(0xFF07244F),
-    Color(0xFF05214E),
+private val NIGHT_SKY_STOPS: Array<Pair<Float, Color>> = arrayOf(
+    0.00f to Color(0xFF020C25),
+    0.52f to Color(0xFF041735),
+    0.76f to Color(0xFF07244F),
+    1.00f to Color(0xFF05214E),
+)
+
+// At night the web sky also pools a faint warm glow at the very bottom — the
+// horizon warmth where the sun sets (BackgroundTransition.scss, the
+// `.minded-6622-dark … .background-sunset` overlay layer). Drawn over the night
+// base; the day sky needs none (it is already warm down low).
+private val NIGHT_SKY_GLOW_STOPS: Array<Pair<Float, Color>> = arrayOf(
+    0.00f to Color.Transparent,
+    0.80f to Color.Transparent,
+    0.91f to Color(0x1F792D56), // rgba(121, 45, 86, 0.12)
+    1.00f to Color(0x3DC4483A), // rgba(196, 72, 58, 0.24)
 )
 
 /**
@@ -389,8 +407,10 @@ private fun StepAwayOffer(
     // companion sun/moon uses, so the sky the sun sets into matches the hour.
     val isNightSky = isDarkModeNow()
     val skyBrush = remember(isNightSky) {
-        Brush.verticalGradient(if (isNightSky) NIGHT_SKY_COLORS else DAY_SKY_COLORS)
+        val stops = if (isNightSky) NIGHT_SKY_STOPS else DAY_SKY_STOPS
+        Brush.verticalGradient(*stops)
     }
+    val nightGlowBrush = remember { Brush.verticalGradient(*NIGHT_SKY_GLOW_STOPS) }
 
     fun beginDismiss(reverse: Boolean = false) {
         // Never start a stay-dismiss once a step-away pull has committed: its sink
@@ -482,7 +502,10 @@ private fun StepAwayOffer(
             modifier = Modifier
                 .fillMaxSize()
                 .alpha(surfaceAlpha * dragProgress)
-                .background(skyBrush),
+                .background(skyBrush)
+                // Night pools a faint warm glow at the horizon on top of the base
+                // sky; the day sunset is already warm down low and needs none.
+                .then(if (isNightSky) Modifier.background(nightGlowBrush) else Modifier),
         )
 
         val hasOrigin = expandFromX >= 0 && expandFromY >= 0
