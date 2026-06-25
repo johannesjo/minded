@@ -122,9 +122,11 @@
       display: none;
     }
 
-    // The night scene stays cool, so the moon carries only this cool ::after halo,
-    // no warm bloom. It is the moon's resting glow (the moon doesn't take the
-    // sun's box-shadow rest glow), breathing via the shared ::after opacity pulse.
+    // The moon's resting glow is the cool/white box-shadow bloom above, floored at
+    // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's — the near-white disc
+    // would otherwise wash out a halo this faint. This cool ::after ring sits under
+    // that bloom and carries the gentle breath via its opacity pulse; the scene
+    // stays cool, so there is no warm bloom.
     &::after {
       box-shadow:
         0 0 18px 1px rgba(216, 229, 255, 0.32),

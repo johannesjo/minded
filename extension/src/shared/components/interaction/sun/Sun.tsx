@@ -1201,9 +1201,14 @@ export const Sun: Component<SunProps> = (props) => {
   // state, and, crucially, the glow never drops out while it's being dragged or
   // tapped (both reset getGlowIntensity toward 0). We floor at this baseline rather
   // than gate on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so
-  // letting it take over would only make the sun fade the moment you touch it. Sun
-  // only; the moon keeps its own cooler resting halo (Sun.scss).
+  // letting it take over would only make the sun fade the moment you touch it.
   const COMPANION_REST_GLOW = COMPANION_HOVER_GLOW;
+  // The moon carries a resting glow too, the same way the sun does — its disc is a
+  // near-white lunar photo, bright enough to wash out the faint cool ::after halo
+  // on its own, so without a real box-shadow bloom it stops reading as glowing.
+  // Floored cooler and softer than the sun's (the night scene stays calm), it
+  // lights the moon's white/cool bloom layers (Sun.scss .moon box-shadow) at rest.
+  const MOON_REST_GLOW = 1.0;
   // Keep the progress crown mounted through one soft fade when the flow clears
   // it (the success bloom), so the dots dissolve rather than snapping out — a
   // hard cut reads as a jolt (see the styling rules). We hold the last orbit
@@ -1284,7 +1289,7 @@ export const Sun: Component<SunProps> = (props) => {
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         // A settle may warm the halo to the Little Sun's amber and tighten it for
-        // the departing hand-off (sun only — the moon keeps its own cool halo).
+        // the departing hand-off (sun only — the moon keeps its own cool glow).
         "--glow-color":
           props.variant !== "moon" && props.settle?.glowColor
             ? props.settle.glowColor
@@ -1293,7 +1298,7 @@ export const Sun: Component<SunProps> = (props) => {
           props.variant === "moon"
             ? Math.max(
                 getGlowIntensity(),
-                props.isHovered ? COMPANION_HOVER_GLOW : 0,
+                props.isHovered ? COMPANION_HOVER_GLOW : MOON_REST_GLOW,
               )
             : props.settle?.glowIntensity != null
               ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
