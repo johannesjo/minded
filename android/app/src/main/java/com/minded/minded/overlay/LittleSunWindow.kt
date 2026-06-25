@@ -117,7 +117,13 @@ class LittleSunWindow(
                         pendingExpiredApp = currentApp
                         pendingExpiredWasWindDownSnooze = windDownSnoozeEndTime != null
                     }
-                    hideWindow()
+                    // Resting bubble → intervention hand-off: drop the bubble
+                    // instantly (no 300ms fade) so the intervention's shield covers
+                    // the corner ~300ms sooner, with no page-flash before the sun
+                    // re-blooms there via the reverse morph. onWindowRemoved still
+                    // fires, so the intervention is triggered exactly as before. An
+                    // expanded full-screen surface keeps its graceful fade.
+                    if (isExpanded) hideWindow() else hideWindowImmediate()
                     stopTimer()
                     return
                 } else {
