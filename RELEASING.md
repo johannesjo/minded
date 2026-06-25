@@ -119,9 +119,11 @@ only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
    must be re-entered or promoted to repo-level), and switch `environment:` in
    `play-internal.yml` to `internal`. Don't just remove the reviewer from
    `production` — that would un-gate real production releases too.
-2. **First Play upload must still be manual** (see *First-ever Play upload*
-   above) — the internal-track API only accepts uploads once the app exists in
-   the Console. Already satisfied if you've shipped before.
+2. **No manual AAB upload needed** (for minded). A manual first upload is only
+   required for a brand-new app with zero releases; minded already ships to
+   production, so the API can upload to the internal track directly. You do need
+   to **set up the internal testing track and add your phone as a tester** once
+   in the Console — that's track config, not a build upload (step 3).
 3. **Opt your phone into internal testing:** Play Console → Testing → Internal
    testing → Testers → copy the **opt-in URL**, open it on your phone, accept,
    then install from the link (or from the Play Store once joined). After that,
