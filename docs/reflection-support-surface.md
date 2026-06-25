@@ -1,19 +1,17 @@
 # Concept: a reflection / support surface for hard, low-output stretches
 
-Status: **slice 1 implemented (content-only); slice 2 awaiting sign-off.** This
-translates an external brainstorming handover (written in Super Productivity's
-vocabulary) onto minded's actual surfaces, picks a direction, and specifies a
-minimal first slice. The content-only slice 1 below has been shipped on this
-branch; the supportive off-ramp (slice 2) is held for sign-off. Copy is still
-tunable — it's plain data in `questions.ts` — and in this app the wording *is*
-the product, so adjust freely.
+Status: **slices 1 + 2 implemented.** This translates an external brainstorming
+handover (written in Super Productivity's vocabulary) onto minded's actual
+surfaces, picks a direction, and ships a minimal slice. Copy is still tunable —
+it's plain data in `questions.ts` — and in this app the wording *is* the
+product, so adjust freely.
 
 **Slice 1, as implemented** (`questions.ts`, `questionId.ts`):
 - Softened the `UnderstandingProcrastination` framing: category heading
   "Understanding Procrastination" → "What's in the Way"; UP1 "What do you think
-  is a factor that enables your procrastination" → "What tends to get in the way
-  for you"; UP2 "Why are you visiting this website" → "What brings you to this
-  website right now".
+  is a factor that enables your procrastination" → "What tends to hold you back";
+  UP2 "Why are you visiting this website" → "What brings you to this website
+  right now".
 - Added `UP8`: a present-moment, intervention-only, **ephemeral** question
   "What's in the way right now" with depleted-state chips
   (`I'm tired` / `overwhelmed` / `can't focus` / `just a hard day`),
@@ -22,6 +20,21 @@ the product, so adjust freely.
   "no chips on emotionally-loaded prompts" guidance — justified inline because
   the answer is never stored (no self-report record to skew) and the goal is to
   legitimize *naming* the state, not measure it.
+
+**Slice 2, as implemented** (`questions.ts`, `Question.tsx`, `Question.scss`):
+- Added a content-driven `supportiveResponse` field on `Question`. When set,
+  tapping a chip shows that one supportive line and eases out to the resting
+  companion sun (via the existing `onSkip` → `handleSkip` fade) instead of
+  proceeding into the sun-instructions → choose-a-browse-session flow. This is
+  the off-ramp: it acknowledges the named state and gives permission to set
+  things down, never pushing through and never force-closing the tab.
+- UP8's line: *"That's a real answer. Nothing here needs you right now — it's
+  okay to set it down and rest."*
+- Scope is deliberately narrow: only the depleted-state **chips** take this
+  exit. A typed "Something else…" answer is genuinely something else and follows
+  the normal flow (this also sidesteps `handleSkip`'s active-editing guard).
+- Transitions stay soft: the question/chips fade out, then the line fades in
+  (reusing `slideUpFadeIn`); the resting-sun hand-off keeps its existing fade.
 
 Companion to `reflective-companion-concept.md`. That note asks "what can we
 *reflect back* to the user?"; this one asks "how do we *carry load* for a
@@ -153,10 +166,11 @@ work:
    This alone makes "a hard day" a *nameable* answer at the interruption, with
    zero risk and full reversibility.
 
-2. **Follow-up PR (only if slice 1 feels right):** the supportive off-ramp
-   (step 3) — re-point the depleted-chip branch at the grounding offer / a
-   supportive fade instead of intent-time selection. This is the only code that
-   touches the flow and deserves its own review.
+2. **Follow-up — the supportive off-ramp (now built, slice 2):** the
+   depleted-chip branch eases out to the resting companion sun behind a single
+   supportive line, rather than proceeding to intent/time selection. Chose the
+   lighter "supportive line + fade-to-resting-sun" over reusing the grounding
+   offer (the grounding "Stay a while?" offer is gated to the dashboard).
 
 Ship behind the lightest possible opt-in, or simply as part of the existing
 intervention question rotation (it self-limits via the normal cadence).
@@ -164,14 +178,13 @@ intervention question rotation (it self-limits via the normal cadence).
 ## Open questions for the maintainer
 
 1. **Sign off the copy.** The lead-in reframe and the depleted chips/response
-   line are the product — exact wording needs your voice before wiring. Drafts
-   above are placeholders.
-2. **Off-ramp target.** For the depleted branch, prefer (a) reuse the grounding
-   "Stay a while?" offer, or (b) just a supportive line + fade-to-close? (a) is
-   richer, (b) is lighter. Recommendation: start with (b), it adds less.
-3. **Host surface.** Confirm the intervention question flow is the right host
-   (vs. a dedicated gesture surface like letGo). Recommendation: intervention
-   flow — it's where "what's in the way right now?" is actually true.
+   line are the product — exact wording is easy to tune (plain data in
+   `questions.ts`). Current strings are reasonable defaults, not final.
+2. **Off-ramp target — decided.** Shipped the lighter option: a supportive line
+   then a soft fade to the resting sun (not the dashboard grounding offer, which
+   is gesture-gated to the dashboard, and not a forced tab-close).
+3. **Host surface — decided.** The intervention question flow hosts it — it's
+   where "what's in the way right now?" is actually true.
 4. **Decline B and C explicitly?** Confirm we're not building a general inbox
    (B) or project-parking (C), since neither fits minded's model. The
    load-carrying intent is served by A's "permission to do less" branch instead.

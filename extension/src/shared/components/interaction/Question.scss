@@ -27,6 +27,33 @@
   }
 }
 
+// The question + chips/input fade out softly before the supportive line takes
+// over (see Question.tsx runSupportiveExit) — never a hard cut. Matches the
+// chips' own exit timing.
+.question-content {
+  transition: opacity 0.25s ease-out;
+
+  &.is-exiting {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+// The supportive line shown when a depleted-state chip is tapped. Reuses the
+// same gentle rise the question text uses, so it eases in rather than snapping.
+.question-supportive {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: var(--c-fg-full-emphasis);
+
+  > span {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: slideUpFadeIn 0.6s ease-out forwards;
+  }
+}
+
 @keyframes slideUpFadeIn {
   0% {
     transform: translateY(15px);
