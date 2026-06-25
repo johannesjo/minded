@@ -35,7 +35,7 @@ Likely already enrolled (default for apps created after 2021). Without it, the u
 
 ### First-ever Play upload
 
-Must be done manually via Play Console (Internal testing → Create release → upload AAB). Automated uploads to the internal track require a prior production release to exist. After the first manual upload, CI takes over.
+Must be done manually via Play Console (create a release on any track → upload AAB) — the Play API only takes over once the app has an initial release on file. After that first manual upload, CI handles everything: tagged releases go to **production**, pushes to `main` go to **internal** testing.
 
 ## Cutting a release
 
@@ -62,7 +62,7 @@ The tag triggers `.github/workflows/release.yml`. Steps:
 2. `release-chrome` and `release-play` — **both wait for your approval** in the Actions UI (Environments → `production` → review).
 3. Once approved, each job builds and uploads:
    - Chrome: extension is uploaded **and auto-submitted for review**. Google's review queue typically clears in minutes to days. No further action in the CWS dashboard.
-   - Play: AAB is uploaded to the **internal** track. Visit Play Console → Internal testing → Promote → Production when ready.
+   - Play: AAB is uploaded straight to the **production** track and published live (`STATUS: completed`) — no manual promotion step. (Continuous internal-test builds are a separate pipeline; see below.)
 4. `github-release` creates a GitHub Release with auto-generated notes from commit messages.
 
 Total wall time: ~6–10 min once approved.
@@ -191,7 +191,7 @@ Neither store supports true rollback. The fix is always **fix-forward** with a h
 ### Play Store
 
 - Play Console → Production → "Halt managed publishing rollout" to pause distribution while you ship a fix.
-- Cut a new version (`npm version patch`), let the pipeline ship the fix to internal, promote to production.
+- Cut a new version (`npm version patch`) and push the tag — the release pipeline ships the fix straight to production.
 
 ### Chrome Web Store
 
