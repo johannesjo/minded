@@ -98,7 +98,17 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew bundleRelease
+        run: |
+          # Time-based versionCode: seconds since 2020-01-01 UTC. The SAME
+          # formula is used by the internal-test pipeline (play-internal.yml).
+          # A production release builds at release time ("now"), so its code is
+          # always >= the latest internal build, keeping production publishable
+          # despite internal builds on every push (avoids Play's cross-track
+          # multiApkShadowedActiveApk rejection). versionName stays the semver
+          # value in build.gradle.kts; only this invisible integer is derived.
+          export ANDROID_VERSION_CODE=$(( $(date +%s) - 1577836800 ))
+          echo "Production build versionCode=$ANDROID_VERSION_CODE"
+          ./gradlew bundleRelease
       - name: Upload AAB as workflow artifact
         if: always()
         uses: actions/upload-artifact@v7

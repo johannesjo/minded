@@ -67,27 +67,42 @@ The tag triggers `.github/workflows/release.yml`. Steps:
 
 Total wall time: ~6–10 min once approved.
 
-## Continuous internal test builds (every push to main)
+## Continuous internal test builds (push to main)
 
 `.github/workflows/play-internal.yml` publishes a signed AAB to the Play
-**internal testing** track on every push to `main`. Internal-track installs
-**auto-update through the Play Store** like any normal app — once you've opted
-in and installed, your phone stays on the latest `main` with no sideloading.
-This is independent of the tag-triggered production pipeline.
+**internal testing** track on every push to `main` that touches the app (a
+`paths:` filter limits it to `extension/**`, `android/**`, and the pipeline's
+own files). Internal-track installs **auto-update through the Play Store** like
+any normal app — once you've opted in and installed, your phone stays on the
+latest `main` with no sideloading. This shares the production app listing but a
+different track.
 
-### Version codes (why this doesn't break the release scheme)
+### Version codes (the cross-track constraint)
 
-Play requires every `versionCode` to be globally unique and never reused, so
-internal builds **must not** draw from the same low integer line as releases.
-They don't: `build.gradle.kts` keeps its literal `versionCode` for production
-(bumped by `npm version`), and the internal workflow overrides it *only at
-build time* with `1_000_000_000 + github.run_number`. That high band can never
-collide with the semver-linked production codes (`23, 24, …`) and is always
-higher, so internal testers never get a downgrade. `versionName` is unchanged
-(`6.2.0`), so testers still see a normal version string. (Trade-off: you can't
-*promote* an internal build to production through the Play UI — production
-ships its own AAB from the tag pipeline. The two lines are intentionally
-decoupled.)
+Play assigns each device the **highest** `versionCode` across every track it's
+eligible for, and **rejects** a release that would be shadowed by a higher code
+already active on another track (`multiApkShadowedActiveApk`). Internal testers
+are also production-eligible, so a naive "give internal a permanently higher
+code" scheme would block the next production release. (It would also globally
+*consume* those codes — a `versionCode` can never be reused.)
+
+So both pipelines derive `versionCode` from the **same** source: seconds since
+2020-01-01 UTC, computed at build time (`$(date +%s) - 1577836800`). Whichever
+builds later has the higher code. Internal builds on each push; a production
+release builds at release time ("now"), so production is always **at or above**
+the latest internal build and stays publishable. `build.gradle.kts`'s literal
+`versionCode` is now only a local-build fallback — CI always overrides it.
+`versionName` is untouched (`npm version` still owns the user-facing semver, and
+`verify-version` only checks `versionName`), so nothing user-visible changes;
+only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
+~3.2e7/yr against the 2.1e9 ceiling (decades of headroom).
+
+> Tiny residual race: if an internal build starts *between* a production build
+> and its upload, it could grab a higher code and shadow that production
+> release. The window is minutes and it self-heals on the next release (just
+> re-run). If you want production fully isolated from this, the alternative is a
+> separate dev app id (`com.minded.minded.dev` via a Gradle flavor) — more setup
+> (a second Play listing) but production version codes never interact at all.
 
 ### One-time setup
 
@@ -104,15 +119,16 @@ decoupled.)
 3. **Opt your phone into internal testing:** Play Console → Testing → Internal
    testing → Testers → copy the **opt-in URL**, open it on your phone, accept,
    then install from the link (or from the Play Store once joined). After that,
-   updates arrive automatically (usually within an hour; force a check in the
+   updates arrive automatically (often within a few hours; force a check in the
    Play Store app under *Manage apps → Updates available* if impatient).
 
 ### Cost / churn note
 
-Every push to `main` triggers a build + upload (~6–10 min). `concurrency`
-cancels superseded in-flight runs so rapid pushes don't pile up. If the churn
-gets noisy, add a `paths:` filter (e.g. only `extension/**` and `android/**`)
-or switch the trigger to `workflow_dispatch`.
+Each qualifying push triggers a build + upload (~6–10 min). `concurrency`
+cancels superseded in-flight runs so rapid pushes don't pile up (a cancelled
+run just skips a disposable timestamp code). The `paths:` filter already keeps
+docs-only and unrelated commits from building; tighten it further or switch the
+trigger to `workflow_dispatch` if it's still noisier than you want.
 
 ## Chrome Web Store source-code submission
 
