@@ -50,24 +50,39 @@
 // rotated frame. Translating along the rotated X axis does exactly that, on any
 // viewport aspect ratio. Each meteor only needs a fixed anchor (the point its
 // line passes through at translateX(0)); the head sweeps along that line.
+//
+// The element itself is a zero-size *point* at the anchor. Both the head
+// (`::after`) and the tail (`::before`) hang off that same point and each
+// centre themselves on it, so neither can drift relative to the other — the
+// head can't sit a pixel or two off the line the way it did when the tail was
+// measured against the head's own 3px box.
 .shooting-star {
   position: absolute;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7); // soft glow at the head
+  width: 0;
+  height: 0;
   opacity: 0;
 
-  // The tail: brightest at the head and fading out behind it to the left, i.e.
-  // along the trailing direction of motion. Anchored to the head's *centre*
-  // (left/top 50% + translate(-100%, -50%)) so the dot sits exactly on the line
-  // rather than slightly off it.
+  // The head: a small glowing dot centred on the point.
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7);
+    transform: translate(-50%, -50%);
+  }
+
+  // The tail: its bright right end meets the point (the head), fading out behind
+  // it to the left — along the trailing direction of motion.
   &::before {
     content: "";
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 0;
+    left: 0;
     width: 110px;
     height: 1px;
     background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
