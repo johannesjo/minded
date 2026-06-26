@@ -5,6 +5,7 @@ import { createEffect, createSignal, Match, Switch } from "solid-js";
 // @ts-ignore
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import OnboardingSun from "@src/shared/components/interaction/sun/OnboardingSun";
+import { companionWord } from "@src/shared/addWrapperClasses";
 import Btn from "@src/shared/components/ui/Btn";
 import { Stepper } from "@src/shared/components/ui/Stepper";
 import styles from "./OnboardingAndroid.module.scss";
@@ -51,8 +52,8 @@ export const OnboardingAndroid = (props: {
               </div>
               <div class="txtSlightlyBigger">
                 <p>
-                  This little sun is your anchor. When you open an app on
-                  autopilot, it appears as a calm moment to pause.
+                  This little {companionWord()} is your anchor. When you open an
+                  app on autopilot, it appears as a calm moment to pause.
                 </p>
                 <p>
                   To set it up, <em>minded</em> needs a few permissions and the
@@ -78,7 +79,7 @@ export const OnboardingAndroid = (props: {
             <div class="pageTransitionIn">
               <SettingsAndroid
                 isRouting={false}
-                heading="Where should the sun meet you? Pick at least one app."
+                heading={`Where should the ${companionWord()} meet you? Pick at least one app.`}
                 saveBtnTxt="save & continue"
                 onSave={() => setStep(2)}
               />
@@ -112,8 +113,9 @@ export const OnboardingAndroid = (props: {
               <div class="card pageTransitionIn" style={{ margin: "32px" }}>
                 <div class="h2 h2Mindful">Almost there</div>
                 <p>
-                  Some permissions are still missing, so the sun can't meet you
-                  everywhere yet. You can finish anytime. It'll be here.
+                  Some permissions are still missing, so the {companionWord()}{" "}
+                  can't meet you everywhere yet. You can finish anytime. It'll be
+                  here.
                 </p>
                 <div style={{ "margin-top": "32px" }}>
                   <Btn
@@ -135,10 +137,11 @@ export const OnboardingAndroid = (props: {
             ) : (
               <div class="card pageTransitionIn" style={{ margin: "32px" }}>
                 <OnboardingSun />
-                <div class="h2 h2Mindful">The sun is ready</div>
+                <div class="h2 h2Mindful">The {companionWord()} is ready</div>
                 <p>
-                  From now on, when you open one of those apps, the sun appears:
-                  a moment to pause and notice before you carry on.
+                  From now on, when you open one of those apps, the{" "}
+                  {companionWord()} appears: a moment to pause and notice before
+                  you carry on.
                 </p>
                 <p>
                   You can always fling it away. It's an invitation, never a
