@@ -25,9 +25,19 @@ const PATHS = {
 const { version: newVersion } = JSON.parse(readFileSync(PATHS.packageJson, 'utf8'));
 
 let gradle = readFileSync(PATHS.buildGradle, 'utf8');
-const currentVersionCode = parseInt(gradle.match(/versionCode\s*=\s*(\d+)/)[1], 10);
+// versionCode is CI-time-derived (see RELEASING.md); the gradle literal is
+// only the local-build fallback after `?:`. Bump that fallback, not a bare int.
+const versionCodeRe =
+  /(versionCode\s*=\s*System\.getenv\([^)]*\)\?\.toIntOrNull\(\)\s*\?:\s*)(\d+)/;
+const versionCodeMatch = gradle.match(versionCodeRe);
+if (!versionCodeMatch) {
+  throw new Error(
+    'Could not find the versionCode fallback literal in build.gradle.kts — did the gradle format change?'
+  );
+}
+const currentVersionCode = parseInt(versionCodeMatch[2], 10);
 const newVersionCode = currentVersionCode + 1;
-gradle = gradle.replace(/versionCode\s*=\s*\d+/, `versionCode = ${newVersionCode}`);
+gradle = gradle.replace(versionCodeRe, `$1${newVersionCode}`);
 gradle = gradle.replace(/versionName\s*=\s*"[^"]+"/, `versionName = "${newVersion}"`);
 writeFileSync(PATHS.buildGradle, gradle);
 
