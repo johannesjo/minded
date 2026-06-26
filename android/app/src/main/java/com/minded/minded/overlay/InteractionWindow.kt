@@ -323,6 +323,16 @@ class InteractionWindow(
             x = 0
             y = 0
 
+            // Draw under the system bars — including the bottom gesture /
+            // navigation bar — so the sky covers the full screen with no
+            // uncovered strip. FLAG_LAYOUT_NO_LIMITS only extends the window
+            // *frame*; on API 30+ the window still keeps clear of the system-bar
+            // insets unless we opt out here, and the legacy systemUiVisibility /
+            // FLAG_FULLSCREEN flags above are inert on modern Android (15/16).
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                fitInsetsTypes = 0
+            }
+
             // Add soft input mode to handle keyboard smoothly
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
