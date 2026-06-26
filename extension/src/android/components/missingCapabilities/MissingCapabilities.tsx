@@ -7,6 +7,7 @@ import {
 } from "@src/dataInterface/android/androidInterface";
 import { safeJsonParse } from "@src/util/safeJsonParse";
 import Btn from "@src/shared/components/ui/Btn";
+import { companionWord } from "@src/shared/addWrapperClasses";
 
 // Capabilities minded cannot run without. Usage-access and battery-optimization
 // are advisory - they improve detection reliability but must NOT block
@@ -202,9 +203,9 @@ export const MissingCapabilityView = (props: {
             <div class="txtSlightlyBigger">
               {props.optionalOnly ? (
                 <>
-                  You're all set. These extras are optional — they just help the
-                  sun appear more reliably. Add them now or skip; you can always
-                  do it later.
+                  You're all set. These extras are optional — they just help the{" "}
+                  {companionWord()} appear more reliably. Add them now or skip;
+                  you can always do it later.
                 </>
               ) : (
                 <>
