@@ -237,6 +237,17 @@ class LittleSunWindow(
         ).apply {
             x = 0
             y = 0
+
+            // Draw under the system bars — including the bottom gesture /
+            // navigation bar — so the expanded pause covers the full screen with
+            // no uncovered strip. See InteractionWindow.getLayoutParams for the
+            // full rationale: FLAG_LAYOUT_NO_LIMITS only extends the window frame,
+            // and the legacy FLAG_FULLSCREEN flag above is inert on modern Android
+            // (15/16); on API 30+ fitInsetsTypes is the lever that actually lets
+            // the content draw under the bars.
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                fitInsetsTypes = 0
+            }
         }
     }
 
