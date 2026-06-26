@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.webkit.ValueCallback
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -62,6 +63,16 @@ class MainActivity : AppCompatActivity() {
          * in-app companion sun (see RouteCmp's `?sun=open` effect).
          */
         const val OPEN_SUN_HASH = "/?sun=open"
+
+        /** Fade-in duration when the WebView first paints over the loading sky. */
+        private const val WEBVIEW_FADE_IN_MS = 300L
+
+        /**
+         * Safety net: reveal the WebView even if onPageCommitVisible never arrives
+         * (e.g. a stalled bundle), so a load hiccup can't strand the app on the
+         * loading sky forever.
+         */
+        private const val WEBVIEW_REVEAL_TIMEOUT_MS = 2500L
     }
 
     /**
@@ -162,11 +173,32 @@ class MainActivity : AppCompatActivity() {
                                     safeAreaInsets = safeAreaInsetsHolder,
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
+                                // Stay invisible until the first real frame commits; the
+                                // half-initialised transparent surface would otherwise
+                                // show as the cold-start teal/orange compositing stripes.
+                                // Fade in over the native loading sky so the native->web
+                                // handoff stays soft instead of hard-cutting.
+                                alpha = 0f
+                                webViewClient = object : WebViewClient() {
+                                    override fun onPageCommitVisible(view: WebView?, url: String?) {
+                                        super.onPageCommitVisible(view, url)
+                                        view?.animate()?.alpha(1f)
+                                            ?.setDuration(WEBVIEW_FADE_IN_MS)?.start()
+                                    }
+                                }
                                 // Cold start: if launched from the widget, load the
                                 // dashboard with the sun hash so the shell opens the
                                 // interaction overlay on first paint.
                                 val route = routeFromIntent(intent)
                                 loadUrl(if (route != null) "$baseUrl#$route" else baseUrl)
+                                // Safety net: reveal even if onPageCommitVisible never
+                                // arrives (e.g. a stalled bundle), so a load hiccup can't
+                                // strand the app on the loading sky.
+                                postDelayed({
+                                    if (alpha < 1f) {
+                                        animate().alpha(1f).setDuration(WEBVIEW_FADE_IN_MS).start()
+                                    }
+                                }, WEBVIEW_REVEAL_TIMEOUT_MS)
                             }
                             webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY)
                             webView.setScrollbarFadingEnabled(false)
