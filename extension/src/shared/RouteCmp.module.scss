@@ -54,11 +54,17 @@
     pointer-events: auto;
   }
 
-  // During any intervention (anything but the resting companion) hold the disc's
-  // idle float still: it would wander the disc's centre ±4px off the point the
-  // background glow is anchored to, so the two visibly drift apart. The ::after
-  // halo breath (opacity only, not positional) keeps the gentle pulse going.
-  &.isIntervention :global(.minded-sun) {
+  // Hold the disc's idle float still in two cases, for the same reason: the
+  // upward 4px translate would wander the disc's centre off a point it must stay
+  // pinned to.
+  //   - During any intervention: off the point the background glow is anchored
+  //     to, so the disc and its glow visibly drift apart.
+  //   - At the companion rest: off the bottom bar's settings / feedback centre
+  //     line, so the sun reads as sitting too high (not vertically centred).
+  // The ::after halo breath (opacity only, not positional) keeps the gentle pulse
+  // going where it's wanted.
+  &.isIntervention :global(.minded-sun),
+  &.isCompanion :global(.minded-sun) {
     animation: none;
     translate: none;
   }
