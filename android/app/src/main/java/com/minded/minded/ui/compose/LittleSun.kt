@@ -181,6 +181,16 @@ private const val BIG_SUN_ENTER_SCALE = 0.33f
 private const val EXPAND_MS = 600
 
 /**
+ * How far the pulled-down sun follows the finger — a gentle fraction, never 1:1.
+ * The sun should sink calmly, so even a fast downward swipe can't whip it across
+ * the screen; it always moves slower than the finger. The commit threshold
+ * (dismissDragPx) is measured on this damped travel, so the sun still only has to
+ * *visibly* sink the same distance to set — the finger just has to move further,
+ * which is what keeps the motion slow and deliberate. Tunable: lower = heavier.
+ */
+private const val DRAG_FOLLOW_FACTOR = 0.5f
+
+/**
  * The little sun overlay. At rest it is a small, draggable companion bubble
  * (like a chat-head) that lets the app underneath stay fully interactive —
  * the window only intercepts touches within the bubble's own bounds. Tapping
@@ -480,7 +490,12 @@ private fun StepAwayOffer(
                         }
                     },
                     onVerticalDrag = { _, dy ->
-                        dragScope.launch { dragY.snapTo((dragY.value + dy).coerceAtLeast(0f)) }
+                        // Follow the finger at a fraction of its speed (never 1:1)
+                        // so the sun sinks calmly and can't be whipped down by a
+                        // fast swipe — see DRAG_FOLLOW_FACTOR.
+                        dragScope.launch {
+                            dragY.snapTo((dragY.value + dy * DRAG_FOLLOW_FACTOR).coerceAtLeast(0f))
+                        }
                     },
                     onDragEnd = {
                         // The pull only commits once the pause has settled
