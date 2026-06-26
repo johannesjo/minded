@@ -181,14 +181,29 @@ private const val BIG_SUN_ENTER_SCALE = 0.33f
 private const val EXPAND_MS = 600
 
 /**
- * How far the pulled-down sun follows the finger — a gentle fraction, never 1:1.
- * The sun should sink calmly, so even a fast downward swipe can't whip it across
- * the screen; it always moves slower than the finger. The commit threshold
- * (dismissDragPx) is measured on this damped travel, so the sun still only has to
- * *visibly* sink the same distance to set — the finger just has to move further,
- * which is what keeps the motion slow and deliberate. Tunable: lower = heavier.
+ * How far the pulled-down sun follows the finger. Just under 1:1 — the sun stays
+ * connected to the finger (so the drag feels responsive, like the full
+ * interaction's drag-down) while a touch of weight still keeps it from being
+ * whipped across the screen by a fast flick. The earlier heavy 0.5 made the sun
+ * lag the finger so far the gesture read as slow and stuck; the calm comes from
+ * the committed *set* easing out (SET_MS), not from crippling the live drag.
  */
-private const val DRAG_FOLLOW_FACTOR = 0.5f
+private const val DRAG_FOLLOW_FACTOR = 0.8f
+
+/**
+ * Once the pull commits, the sun sets below the horizon over this — a calm,
+ * deliberate sink (the full interaction's drag-down completion eases over a
+ * similar unhurried beat), not the old quick drop.
+ */
+private const val SET_MS = 620
+
+/**
+ * After the sun has set, the sky and dim recede over this to reveal minded
+ * (already launched behind the raised dim). A soft ease-away into the app rather
+ * than the old hard ~300ms cut that snapped the screen out the instant the sun
+ * was gone.
+ */
+private const val SKY_RECEDE_MS = 480
 
 /**
  * The little sun overlay. At rest it is a small, draggable companion bubble
@@ -216,6 +231,10 @@ fun LittleSun(
     onTap: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
+    // Fired the instant a pull-down commits, before the sun finishes setting: it
+    // launches minded behind the still-raised dim so the app is drawn and ready by
+    // the time the sky recedes to reveal it (no blocked-app flash, no hard cut).
+    onLeaving: () -> Unit = {},
     // Pulling the sun down is the one offered gesture: it steps away into minded —
     // the calm redirect the old "Step away" button performed. The gentle stay
     // paths (tap-off / wait) glide the sun back home instead.
@@ -226,6 +245,7 @@ fun LittleSun(
         StepAwayOffer(
             expandFromX = expandFromX,
             expandFromY = expandFromY,
+            onLeaving = onLeaving,
             onStepAway = onStepAway,
             onStay = onStay,
         )
@@ -331,6 +351,7 @@ private fun Bubble(
 private fun StepAwayOffer(
     expandFromX: Int,
     expandFromY: Int,
+    onLeaving: () -> Unit,
     onStepAway: () -> Unit,
     onStay: () -> Unit,
 ) {
@@ -350,8 +371,12 @@ private fun StepAwayOffer(
     var crossfading by remember { mutableStateOf(false) }
     // True once a pull-down has committed and its sink animation is in flight. It
     // locks out every stay path (auto-dismiss timer, tap-off) so collapse() can't
-    // race onStepAway() on the same window during the ~500ms set-and-leave.
+    // race onStepAway() on the same window during the set-and-leave.
     var committing by remember { mutableStateOf(false) }
+    // Set once the sun has finished setting: the sky + dim then recede to reveal
+    // minded (already launched behind the dim). Drives surfaceAlpha to 0 over
+    // SKY_RECEDE_MS — the soft ease-away into the app, replacing the old hard cut.
+    var setting by remember { mutableStateOf(false) }
     // True from the moment the sun is grabbed to drag until the pull is released
     // without committing. Drives the hint's instant fade so the words step aside as
     // soon as the motion begins, rather than lingering until the sun has travelled.
@@ -360,9 +385,16 @@ private fun StepAwayOffer(
     // Soft fade for the whole surface — calmness is the product, never a hard
     // cut. Fades in on appear and out on dismiss.
     val surfaceAlpha by animateFloatAsState(
-        targetValue = if (!shown || dismissing) 0f else 1f,
-        // Appear quickly on tap; ease out calmly on dismiss.
-        animationSpec = tween(durationMillis = if (dismissing) FADE_MS else APPEAR_FADE_MS),
+        targetValue = if (!shown || dismissing || setting) 0f else 1f,
+        // Appear quickly on tap; ease out calmly on a stay-dismiss; and recede
+        // gently into the app once the committed sun has set (the sky-recede).
+        animationSpec = tween(
+            durationMillis = when {
+                setting -> SKY_RECEDE_MS
+                dismissing -> FADE_MS
+                else -> APPEAR_FADE_MS
+            },
+        ),
         label = "stepAwaySurfaceAlpha",
     )
 
@@ -422,11 +454,15 @@ private fun StepAwayOffer(
     // back.
     val dragY = remember { Animatable(0f) }
     val dragScope = rememberCoroutineScope()
-    val dismissDragPx = with(LocalDensity.current) { 140.dp.toPx() }
-    // Enough to carry the sun fully off the bottom edge when it sets.
+    val dismissDragPx = with(LocalDensity.current) { 120.dp.toPx() }
     val screenHeightPx = with(LocalDensity.current) {
         LocalConfiguration.current.screenHeightDp.dp.toPx()
     }
+    // Where the committed sun sets to: just clear of the bottom edge, so its
+    // ease-out lands as it dips below the horizon (the calm part reads on-screen)
+    // rather than being spent travelling far below it. 160dp past centre carries
+    // the disc + its 180dp glow fully off.
+    val setTargetPx = screenHeightPx / 2f + with(LocalDensity.current) { 160.dp.toPx() }
     // 0 = at rest, 1 = pulled to the dismiss threshold. Drives how far the sky has
     // risen behind the sun — the sun itself stays fully opaque and sets into the
     // sky rather than fading away.
@@ -490,9 +526,9 @@ private fun StepAwayOffer(
                         }
                     },
                     onVerticalDrag = { _, dy ->
-                        // Follow the finger at a fraction of its speed (never 1:1)
-                        // so the sun sinks calmly and can't be whipped down by a
-                        // fast swipe — see DRAG_FOLLOW_FACTOR.
+                        // Track the finger closely (just under 1:1) so the drag feels
+                        // responsive, with a touch of weight so a fast swipe can't
+                        // whip the sun down — see DRAG_FOLLOW_FACTOR.
                         dragScope.launch {
                             dragY.snapTo((dragY.value + dy * DRAG_FOLLOW_FACTOR).coerceAtLeast(0f))
                         }
@@ -504,19 +540,28 @@ private fun StepAwayOffer(
                         // hint has even appeared. This is the same PAUSE_MS friction
                         // the buttons had via their `enabled = phase >= 1`.
                         if (phase >= 1 && dragY.value >= dismissDragPx) {
-                            // Pulled past the threshold: the sun sets. It sinks the
-                            // rest of the way down (staying fully opaque) while the
-                            // sky holds, then we step away into minded — the
-                            // calm redirect the old "Step away" button performed,
-                            // now the natural completion of the downward gesture. A
+                            // Pulled past the threshold: the sun sets. Launch minded
+                            // *now* (onLeaving), behind the still-raised dim, so it is
+                            // drawn and ready by the time the sky recedes to reveal it
+                            // — no blocked-app flash, no hard cut. The sun then sinks
+                            // calmly below the horizon (SET_MS, staying fully opaque
+                            // while the sky holds), and only once it has set does the
+                            // sky + dim ease away into minded (setting → SKY_RECEDE_MS).
+                            // This choreographs the leave like the full interaction's
+                            // drag-down completion rather than a quick drop-then-cut. A
                             // soft tick confirms the deliberate, chosen leave.
                             committing = true
                             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            onLeaving()
                             dragScope.launch {
                                 dragY.animateTo(
-                                    screenHeightPx,
-                                    tween(durationMillis = 500, easing = FastOutSlowInEasing),
+                                    setTargetPx,
+                                    tween(durationMillis = SET_MS, easing = FastOutSlowInEasing),
                                 )
+                                // The sun has set; let the sky and dim recede to
+                                // reveal minded, then tear down the spent window.
+                                setting = true
+                                delay(SKY_RECEDE_MS.toLong())
                                 onStepAway()
                             }
                         } else {
