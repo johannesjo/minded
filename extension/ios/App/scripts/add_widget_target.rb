@@ -23,9 +23,8 @@
 require 'xcodeproj'
 
 WIDGET_NAME = 'MindedWidget'
-WIDGET_BUNDLE_ID = 'com.minded.app.widget' # must be the app id (com.minded.app) + a suffix
+WIDGET_BUNDLE_SUFFIX = 'widget' # the widget id is the app's bundle id + ".widget"
 DEPLOYMENT_TARGET = '16.0'
-DEVELOPMENT_TEAM = '363FAFK383'
 SOURCE_FILES = %w[MindedWidget.swift CompanionSun.swift].freeze
 
 project_path = File.expand_path(File.join(__dir__, '..', 'App.xcodeproj'))
@@ -39,13 +38,17 @@ if project.targets.any? { |t| t.name == WIDGET_NAME }
   exit 0
 end
 
-# Mirror the app's version build settings so the widget's Info.plist (which reads
-# $(MARKETING_VERSION)/$(CURRENT_PROJECT_VERSION)) resolves and the App Store
-# accepts the paired build.
+# Derive identity + version settings from the app's own Release config rather than
+# hardcoding them, so the widget can't drift from the app (bundle id, team, and the
+# $(MARKETING_VERSION)/$(CURRENT_PROJECT_VERSION) its Info.plist reads).
 app_release = app_target.build_configurations.find { |c| c.name == 'Release' } ||
               app_target.build_configurations.first
-marketing_version = app_release.build_settings['MARKETING_VERSION'] || '1.0'
-project_version = app_release.build_settings['CURRENT_PROJECT_VERSION'] || '1'
+app_settings = app_release.build_settings
+app_bundle_id = app_settings['PRODUCT_BUNDLE_IDENTIFIER'] || 'com.minded.app'
+widget_bundle_id = "#{app_bundle_id}.#{WIDGET_BUNDLE_SUFFIX}"
+development_team = app_settings['DEVELOPMENT_TEAM']
+marketing_version = app_settings['MARKETING_VERSION'] || '1.0'
+project_version = app_settings['CURRENT_PROJECT_VERSION'] || '1'
 
 widget_target = project.new_target(
   :app_extension,
@@ -67,11 +70,11 @@ widget_group.new_reference('Info.plist') # carried by INFOPLIST_FILE, not compil
 
 widget_target.build_configurations.each do |config|
   settings = config.build_settings
-  settings['PRODUCT_BUNDLE_IDENTIFIER'] = WIDGET_BUNDLE_ID
+  settings['PRODUCT_BUNDLE_IDENTIFIER'] = widget_bundle_id
   settings['PRODUCT_NAME'] = '$(TARGET_NAME)'
   settings['INFOPLIST_FILE'] = "#{WIDGET_NAME}/Info.plist"
   settings['IPHONEOS_DEPLOYMENT_TARGET'] = DEPLOYMENT_TARGET
-  settings['DEVELOPMENT_TEAM'] = DEVELOPMENT_TEAM
+  settings['DEVELOPMENT_TEAM'] = development_team if development_team
   settings['CODE_SIGN_STYLE'] = 'Automatic'
   settings['SWIFT_VERSION'] = '5.0'
   settings['TARGETED_DEVICE_FAMILY'] = '1,2'

@@ -28,7 +28,7 @@ import {
 import {
   getSyncData,
   IS_ANDROID,
-  recordInteractionModeShown,
+  markInteractionModeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
@@ -1162,7 +1162,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           // Remember what we opened with so the next intervention can avoid
           // repeating it (one-deep memory; see getInteractionMode's fallback).
           // Fire-and-forget: it must not delay showing the pause.
-          void recordInteractionModeShown(modeDecision.mode).catch(
+          void markInteractionModeShown(modeDecision.mode).catch(
             (error: unknown) =>
               console.error("Failed to record interaction mode", error),
           );

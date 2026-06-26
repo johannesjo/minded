@@ -178,11 +178,10 @@ export interface SyncData {
   emotionLabeling: EmotionLabelingData | null;
 
   /**
-   * The mode the last intervention opened with. A one-deep memory the router
-   * uses to avoid repeating itself: because every richer mode is low-probability,
-   * the QUESTION fallback would otherwise recur several times in a row when the
-   * user returns repeatedly in one sitting — making the everyday loop feel like
-   * the same screen on a loop. Optional; absent until the first intervention.
+   * One-deep memory of the mode the last intervention opened with, powering the
+   * router's anti-repeat fallback (the full rationale lives at its decision site
+   * in getInteractionMode). Deliberately part of the synced contract so the same
+   * router runs on extension + Android. Optional; absent until first use.
    */
   lastInteractionMode?: InteractionMode;
 

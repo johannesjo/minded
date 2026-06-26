@@ -219,16 +219,14 @@ export const markPatternInsightShown = (
   }));
 
 /**
- * Remember the mode the current intervention opened with, so the next one can
- * avoid repeating itself (see the anti-repeat fallback in getInteractionMode).
- * One-deep memory; intentionally records every opening mode, not just QUESTION.
+ * Remember the mode the last router-decided intervention opened with, powering
+ * getInteractionMode's anti-repeat fallback. Stores the full mode (not a boolean)
+ * so the memory updates after a NOTICE too. A plain key patch — no read needed,
+ * since the value doesn't depend on current state.
  */
-export const recordInteractionModeShown = (
+export const markInteractionModeShown = (
   mode: InteractionMode,
-): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, () => ({
-    lastInteractionMode: mode,
-  }));
+): Promise<void> => patchSyncData({ lastInteractionMode: mode });
 
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
