@@ -17,15 +17,22 @@
   background: white;
   border-radius: 50%;
   box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
-  // Twinkle only runs while the field is shown (.active) — see below. Each star's
-  // own delay/duration are set inline (Stars.tsx) and still win over the shorthand.
+  // Rest at this star's own dim level so the field reads as present (and stays so
+  // when motion is reduced) rather than starting blank. The twinkle only runs
+  // while the field is shown (.active) — see below. Each star's own
+  // delay/duration/`--twinkle-min` are set inline (Stars.tsx).
+  opacity: var(--twinkle-min, 0.5);
 }
 
+// A lively shimmer, not a blink: each star eases between its own dim level
+// (`--twinkle-min`, varied per star for depth) and full brightness, with a gentle
+// scale change. It never drops to 0 — that read as a harsh, random flicker — but
+// the dip is deep enough to sparkle.
 @keyframes twinkle {
   0%,
   100% {
-    opacity: 0;
-    transform: scale(0.5);
+    opacity: var(--twinkle-min, 0.5);
+    transform: scale(0.85);
   }
   50% {
     opacity: 1;
@@ -33,24 +40,74 @@
   }
 }
 
-// Shooting stars for extra magic
+// Shooting stars for extra magic.
+//
+// Motion is driven entirely by `transform: rotate(θ) translateX(...)` (see the
+// keyframes), never by animating top/left. That matters: the trail is a fixed
+// horizontal line attached to the head, so the only way to guarantee it always
+// points opposite the direction of travel — instead of jutting off at an angle
+// like a plane's contrail — is to put the trail and the motion in the *same*
+// rotated frame. Translating along the rotated X axis does exactly that, on any
+// viewport aspect ratio. Each meteor only needs a fixed anchor (the point its
+// line passes through at translateX(0)); the head sweeps along that line.
+//
+// The element itself is a zero-size *point* at the anchor. Both the head
+// (`::after`) and the tail (`::before`) hang off that same point and each
+// centre themselves on it, so neither can drift relative to the other — the
+// head can't sit a pixel or two off the line the way it did when the tail was
+// measured against the head's own 3px box.
 .shooting-star {
   position: absolute;
-  width: 2px;
-  height: 2px;
-  background: linear-gradient(to right, transparent, white, transparent);
+  width: 0;
+  height: 0;
   opacity: 0;
 
+  // The head: a bright glowing dot centred on the point. Kept clearly the
+  // brightest, most prominent part so the leading end of the streak is never in
+  // doubt — a faint head behind a long bright trail can read as moving tail-first.
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.95);
+    transform: translate(-50%, -50%);
+  }
+
+  // The tail: its bright right end meets the point (the head), fading out behind
+  // it to the left — along the trailing direction of motion. Deliberately shorter
+  // and dimmer than the head so it reads as a trail subordinate to the head,
+  // never the brightest mass.
   &::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
-    width: 100px;
+    width: 90px;
     height: 1px;
-    background: linear-gradient(to right, white, transparent);
-    transform: translateX(-100%);
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.65), transparent);
+    transform: translate(-100%, -50%);
   }
+}
+
+// Each meteor's line passes through this anchor at translateX(0); the rotation
+// (set in its keyframe) decides the diagonal, so these just spread the three
+// across different bands of the sky.
+.shooting-star-1 {
+  top: 42%;
+  left: 50%;
+}
+.shooting-star-2 {
+  top: 24%;
+  left: 48%;
+}
+.shooting-star-3 {
+  top: 60%;
+  left: 52%;
 }
 
 .stars-container.active {
@@ -60,82 +117,92 @@
     animation: twinkle infinite ease-in-out;
   }
 
+  // Longer cycles so each meteor is a brief flourish followed by a quiet gap,
+  // not a near-constant streak. The travel happens in the first ~third of each
+  // keyframe; the rest is spent parked off-screen and invisible.
   .shooting-star-1 {
-    animation: shoot-1 4s linear infinite;
+    animation: shoot-1 7s linear infinite;
     animation-delay: 1s;
   }
 
   .shooting-star-2 {
-    animation: shoot-2 5s linear infinite;
-    animation-delay: 3s;
+    animation: shoot-2 9s linear infinite;
+    animation-delay: 4s;
   }
 
   .shooting-star-3 {
-    animation: shoot-3 6s linear infinite;
-    animation-delay: 2s;
+    animation: shoot-3 8s linear infinite;
+    animation-delay: 2.5s;
   }
 }
 
+// Each meteor sweeps along its own diagonal by animating translateX on the
+// rotated axis from off one side to off the other. The rotation is constant, so
+// the trail stays locked exactly opposite the motion the whole way across — no
+// airplane-contrail angle. Travel is packed into the first ~third of the cycle,
+// then the head is held off-screen and invisible, so meteors read as occasional
+// flourishes rather than a constant streak. The angles differ per meteor for
+// variety; all lean down-and-to-the-right so they share a radiant.
 @keyframes shoot-1 {
   0% {
     opacity: 0;
-    top: 20%;
-    left: -10%;
-    transform: rotate(45deg);
+    transform: rotate(20deg) translateX(-75vw);
   }
-  10% {
+  5% {
     opacity: 1;
   }
-  90% {
+  25% {
     opacity: 1;
+  }
+  32% {
+    opacity: 0;
+    transform: rotate(20deg) translateX(75vw);
   }
   100% {
     opacity: 0;
-    top: 80%;
-    left: 110%;
-    transform: rotate(45deg);
+    transform: rotate(20deg) translateX(75vw);
   }
 }
 
 @keyframes shoot-2 {
   0% {
     opacity: 0;
-    top: 10%;
-    right: -10%;
-    transform: rotate(-45deg);
+    transform: rotate(24deg) translateX(-75vw);
   }
-  10% {
+  5% {
     opacity: 1;
   }
-  90% {
+  25% {
     opacity: 1;
+  }
+  32% {
+    opacity: 0;
+    transform: rotate(24deg) translateX(75vw);
   }
   100% {
     opacity: 0;
-    top: 70%;
-    right: 110%;
-    transform: rotate(-45deg);
+    transform: rotate(24deg) translateX(75vw);
   }
 }
 
 @keyframes shoot-3 {
   0% {
     opacity: 0;
-    top: 40%;
-    left: -10%;
-    transform: rotate(30deg);
+    transform: rotate(28deg) translateX(-75vw);
   }
-  10% {
+  5% {
     opacity: 1;
   }
-  90% {
+  25% {
     opacity: 1;
+  }
+  32% {
+    opacity: 0;
+    transform: rotate(28deg) translateX(75vw);
   }
   100% {
     opacity: 0;
-    top: 90%;
-    left: 110%;
-    transform: rotate(30deg);
+    transform: rotate(28deg) translateX(75vw);
   }
 }
 

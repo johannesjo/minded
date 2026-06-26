@@ -20,6 +20,10 @@ interface Star {
   size: number;
   animationDelay: number;
   twinkleDuration: number;
+  // The dim end of this star's twinkle (the bright end is always 1). Varied per
+  // star so the field shimmers softly with a sense of depth rather than every
+  // star blinking fully on/off in lockstep — see the `twinkle` keyframe.
+  minOpacity: number;
 }
 
 const Stars: Component<StarsProps> = (props) => {
@@ -36,8 +40,12 @@ const Stars: Component<StarsProps> = (props) => {
         x: Math.random() * 100, // Random position 0-100%
         y: Math.random() * 100,
         size: Math.random() * 2 + 1, // Size between 1-3px
-        animationDelay: Math.random() * 5, // Random delay 0-5s
-        twinkleDuration: Math.random() * 3 + 2, // Duration 2-5s
+        animationDelay: Math.random() * 6, // Random delay 0-6s
+        // 3-6s cycles — a lively shimmer without tipping into a harsh flicker.
+        twinkleDuration: Math.random() * 3 + 3,
+        // Dip to 0.3-0.75 then back to full: enough contrast to sparkle, but
+        // never blinking fully off.
+        minOpacity: Math.random() * 0.45 + 0.3,
       });
     }
 
@@ -72,6 +80,9 @@ const Stars: Component<StarsProps> = (props) => {
               height: `${star.size}px`,
               "animation-delay": `${star.animationDelay}s`,
               "animation-duration": `${star.twinkleDuration}s`,
+              // Per-star dim level for the twinkle (and the static brightness when
+              // motion is reduced) — see `--twinkle-min` in Stars.scss.
+              "--twinkle-min": `${star.minOpacity}`,
             }}
           />
         )}
