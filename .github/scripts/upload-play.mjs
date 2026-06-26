@@ -20,18 +20,36 @@
 import { google } from 'googleapis';
 import { createReadStream, statSync } from 'fs';
 import dns from 'node:dns';
+import http from 'node:http';
+import https from 'node:https';
+import net from 'node:net';
 
-// Prefer IPv4 when resolving Google's hosts. GitHub-hosted runners advertise
-// IPv6 but have flaky/partial IPv6 egress to Google's endpoints: the TLS
-// connection establishes, then the response body is truncated mid-stream
-// (ERR_STREAM_PREMATURE_CLOSE). Node 22 defaults DNS result order to
-// "verbatim", which surfaces the AAAA (IPv6) record first, so the token fetch
-// keeps landing on the broken path and burns through every retry below —
-// exactly what happened across all three initial runs of this pipeline. The
-// retries are the safety net; pinning IPv4 removes the cause, since the same
-// hosts are fully reachable over IPv4. Harmless if a runner ever ships without
-// IPv6: IPv4 was already being chosen there anyway.
+// Force every outbound HTTPS request in this process onto IPv4.
+//
+// GitHub-hosted runners advertise IPv6 but have flaky/partial IPv6 egress to
+// Google's endpoints: the TLS connection establishes, then the response body is
+// truncated mid-stream (ERR_STREAM_PREMATURE_CLOSE). The OAuth token fetch to
+// www.googleapis.com/oauth2/v4/token hits this on *every* run and burns through
+// the entire retry budget below — a sustained network-path failure, not a blip.
+//
+// A previous attempt (#98) set only dns.setDefaultResultOrder('ipv4first'), and
+// it was inert — the run failed byte-for-byte identically. The reason: Node 22
+// enables autoSelectFamily (Happy Eyeballs) by default, and that path resolves
+// addresses with `verbatim` forced, ignoring setDefaultResultOrder entirely. So
+// the IPv4 path was never actually exercised. Happy Eyeballs also can't rescue
+// this case: the IPv6 socket *connects* fine (so it wins the race) and only
+// fails later when the body truncates — connection-level fallback never trips.
+//
+// The fix that actually holds is to pin the address family at the socket level
+// so the AAAA path is never used at all. gaxios -> node-fetch sends requests
+// with no explicit agent, so they fall through to http(s).globalAgent; swapping
+// those for family:4 agents routes every request over IPv4. Disabling
+// autoSelectFamily and keeping ipv4first are belt-and-suspenders for any code
+// path that bypasses the global agents.
 dns.setDefaultResultOrder('ipv4first');
+net.setDefaultAutoSelectFamily?.(false);
+https.globalAgent = new https.Agent({ family: 4 });
+http.globalAgent = new http.Agent({ family: 4 });
 
 const {
   SERVICE_ACCOUNT_JSON,
