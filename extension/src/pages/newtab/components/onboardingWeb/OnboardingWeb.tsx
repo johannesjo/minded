@@ -5,6 +5,7 @@ import styles from "./OnboardingWeb.module.scss";
 // @ts-ignore
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import OnboardingSun from "@src/shared/components/interaction/sun/OnboardingSun";
+import { companionWord } from "@src/shared/addWrapperClasses";
 import Btn from "@src/shared/components/ui/Btn";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 
@@ -29,8 +30,8 @@ export const OnboardingWeb: (props: {
             </div>
             <div class={styles.infoText}>
               <p>
-                This little sun is your anchor. When you reach for a habit on
-                autopilot, it appears as a calm moment to pause.
+                This little {companionWord()} is your anchor. When you reach for
+                a habit on autopilot, it appears as a calm moment to pause.
               </p>
             </div>
             <ButtonWrapper isVisible={true}>
@@ -43,11 +44,13 @@ export const OnboardingWeb: (props: {
 
         <Match when={getStep() === 1}>
           <div class="pageTransitionIn">
-            <div class="h2 h2Mindful">Where should the sun meet you?</div>
+            <div class="h2 h2Mindful">
+              Where should the {companionWord()} meet you?
+            </div>
             <div class={styles.infoText}>
               <p>
-                Add the sites where you tend to get pulled in. The sun shows up
-                only there, nowhere else.
+                Add the sites where you tend to get pulled in. The{" "}
+                {companionWord()} shows up only there, nowhere else.
               </p>
             </div>
             <WebsiteList onAfterSave={onAfterSaveWebsites} />

@@ -50,6 +50,14 @@ export const isDarkModeNow = (): boolean => {
   return nowHours >= DARK_MODE_START_HOUR || nowHours < DARK_MODE_END_HOUR;
 };
 
+/**
+ * What to call the companion in copy. The disc already morphs sun↔moon with the
+ * time of day (see RouteCmp's sunVariant), so text that names it should agree:
+ * "moon" at night, "sun" by day. Lowercase — callers supply any leading capital.
+ */
+export const companionWord = (): "sun" | "moon" =>
+  isDarkModeNow() ? "moon" : "sun";
+
 export const setIsDarkModeIfApplies = (
   el: HTMLElement | null = document.getElementById("minded-6622"),
 ) => {

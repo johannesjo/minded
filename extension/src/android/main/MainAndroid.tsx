@@ -8,6 +8,7 @@ import {
 import { REFRESH_DASHBOARD_EV, RE_GREET_DASHBOARD_EV } from "@src/ev.const";
 import {
   addWrapperClasses,
+  companionWord,
   setIsDarkModeIfApplies,
 } from "@src/shared/addWrapperClasses";
 import { safeJsonParse } from "@src/util/safeJsonParse";
@@ -193,8 +194,9 @@ const MainAndroid = () => {
                     }
                   }}
                 >
-                  The sun rests here whenever you open <em>minded</em>. To have
-                  it meet you in your apps too, tell it where to appear.
+                  The {companionWord()} rests here whenever you open{" "}
+                  <em>minded</em>. To have it meet you in your apps too, tell it
+                  where to appear.
                 </div>
                 <Btn
                   variant="icon"
@@ -229,8 +231,8 @@ const MainAndroid = () => {
                 </>
               ) : (
                 <>
-                  Optional permissions can help the sun appear more reliably.
-                  Tap to add them.
+                  Optional permissions can help the {companionWord()} appear
+                  more reliably. Tap to add them.
                 </>
               )}
             </div>
