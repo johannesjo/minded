@@ -17,15 +17,22 @@
   background: white;
   border-radius: 50%;
   box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
-  // Twinkle only runs while the field is shown (.active) — see below. Each star's
-  // own delay/duration are set inline (Stars.tsx) and still win over the shorthand.
+  // Rest at this star's own dim level so the field reads as present (and stays so
+  // when motion is reduced) rather than starting blank. The twinkle only runs
+  // while the field is shown (.active) — see below. Each star's own
+  // delay/duration/`--twinkle-min` are set inline (Stars.tsx).
+  opacity: var(--twinkle-min, 0.6);
 }
 
+// A soft shimmer, not a blink: each star eases between its own dim level
+// (`--twinkle-min`, varied per star for depth) and full brightness, with only a
+// slight scale change. It never drops to 0 or shrinks by half — that read as a
+// harsh, random flicker.
 @keyframes twinkle {
   0%,
   100% {
-    opacity: 0;
-    transform: scale(0.5);
+    opacity: var(--twinkle-min, 0.6);
+    transform: scale(0.92);
   }
   50% {
     opacity: 1;
@@ -60,81 +67,108 @@
     animation: twinkle infinite ease-in-out;
   }
 
+  // Longer cycles so each meteor is a brief flourish followed by a quiet gap,
+  // not a near-constant streak. The travel happens in the first ~third of each
+  // keyframe; the rest is spent parked off-screen and invisible.
   .shooting-star-1 {
-    animation: shoot-1 4s linear infinite;
+    animation: shoot-1 7s linear infinite;
     animation-delay: 1s;
   }
 
   .shooting-star-2 {
-    animation: shoot-2 5s linear infinite;
-    animation-delay: 3s;
+    animation: shoot-2 9s linear infinite;
+    animation-delay: 4s;
   }
 
   .shooting-star-3 {
-    animation: shoot-3 6s linear infinite;
-    animation-delay: 2s;
+    animation: shoot-3 8s linear infinite;
+    animation-delay: 2.5s;
   }
 }
 
+// All three travel left → right and downward. The trail (`::before`) is fixed
+// pointing left, so it only sits *behind* the head for rightward motion — a
+// right→left path makes the meteor look like it's flying backwards. Each
+// rotation is set to roughly follow its own path's slope, and the motion is
+// packed into the first ~third of the cycle (then held off-screen, invisible)
+// so meteors arrive as occasional flourishes rather than streaking constantly.
 @keyframes shoot-1 {
   0% {
     opacity: 0;
-    top: 20%;
-    left: -10%;
-    transform: rotate(45deg);
+    top: 12%;
+    left: -8%;
+    transform: rotate(22deg);
   }
-  10% {
+  4% {
     opacity: 1;
   }
-  90% {
+  26% {
     opacity: 1;
+  }
+  32% {
+    opacity: 0;
+    top: 70%;
+    left: 108%;
+    transform: rotate(22deg);
   }
   100% {
     opacity: 0;
-    top: 80%;
-    left: 110%;
-    transform: rotate(45deg);
+    top: 70%;
+    left: 108%;
+    transform: rotate(22deg);
   }
 }
 
 @keyframes shoot-2 {
   0% {
     opacity: 0;
-    top: 10%;
-    right: -10%;
-    transform: rotate(-45deg);
+    top: 6%;
+    left: -8%;
+    transform: rotate(13deg);
   }
-  10% {
+  4% {
     opacity: 1;
   }
-  90% {
+  26% {
     opacity: 1;
+  }
+  32% {
+    opacity: 0;
+    top: 40%;
+    left: 108%;
+    transform: rotate(13deg);
   }
   100% {
     opacity: 0;
-    top: 70%;
-    right: 110%;
-    transform: rotate(-45deg);
+    top: 40%;
+    left: 108%;
+    transform: rotate(13deg);
   }
 }
 
 @keyframes shoot-3 {
   0% {
     opacity: 0;
-    top: 40%;
-    left: -10%;
+    top: 32%;
+    left: -8%;
     transform: rotate(30deg);
   }
-  10% {
+  4% {
     opacity: 1;
   }
-  90% {
+  26% {
     opacity: 1;
+  }
+  32% {
+    opacity: 0;
+    top: 92%;
+    left: 105%;
+    transform: rotate(30deg);
   }
   100% {
     opacity: 0;
-    top: 90%;
-    left: 110%;
+    top: 92%;
+    left: 105%;
     transform: rotate(30deg);
   }
 }
