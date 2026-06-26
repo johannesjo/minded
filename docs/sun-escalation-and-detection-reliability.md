@@ -183,10 +183,20 @@ without accessibility" is not real.
 
 ## Follow-ups (deferred)
 
-- **Morph + breathing fix on the tap-pause — deferred.** PR #51 lands as-is (with
-  its repeating breath and its bubble→full-screen cross-fade). The fix is a later,
-  contained change in `LittleSun.kt` (`StepAwayOffer` / `Bubble`): (1) remove the
-  repeating `breath` infinite transition — no breathing outside meditations;
-  (2) replace the cross-fade swap with a single positional morph — the sun glides +
-  grows from its parked bubble position to centre, holds, then the "Step away?"
-  invite fades in. One file, does not block #51.
+- **Morph + breathing fix on the tap-pause — mostly resolved; the rest is
+  deliberate.** This note predates PR #51's merge and assumed it would land with a
+  repeating breath and a bubble→full-screen cross-fade. As merged, neither the
+  breath nor the *opening* cut is present: the expanded sun holds still (see the
+  "no breathing/pulsing" note in `LittleSun.kt:566`), and the open path already
+  morphs — `expandProgress` glides + grows the sun from its parked bubble position
+  to centre, holds, then the "Step away?" invite fades in. So (1) "remove the
+  repeating breath" and (2) "make opening a positional morph" are already done.
+  What remains is the *close* path only: a reverse dismiss adds an 80 ms cross-fade
+  beat (`CROSSFADE_MS`, `LittleSun.kt:362`) — and that one is **deliberate**, not
+  the hard cut the morph principle warns against. The little-sun pause is a single
+  window that *resizes* on close; the sun must fade out before that resize or it
+  visibly jumps. Making close a true positional morph would mean re-architecting to
+  two windows (a parked bubble + a separate pause surface) so the disc can travel
+  without a resize — a larger change, not the contained `LittleSun.kt` tweak this
+  note first assumed. Leave the close cross-fade until that two-window morph is
+  actually built.
