@@ -85,6 +85,7 @@ class LittleSunWindow(
             onTap = { expand() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
+            onLeaving = { beginStepAwayLaunch() },
             onStepAway = { stepAway() },
             onStay = { collapse() },
         )
@@ -314,11 +315,31 @@ class LittleSunWindow(
         updateLayout()
     }
 
+    /**
+     * The pull-down has committed (the sun is still setting). Launch minded *now*,
+     * behind the still-raised dim, so the app is drawn and ready by the time the
+     * sky recedes to reveal it — the calm "redirect" half of interrupt → reflect →
+     * redirect, into minded (a calm space) rather than the launcher that re-tempts.
+     * Matches the full interaction's close ([OverlayControllerService.goToApp]).
+     *
+     * Stop the timer so the foreground re-validation tick can't tear the window
+     * down mid-set now that the foreground is minded, not the blocked app.
+     *
+     * Deliberately NOT counted via countUserDrivenClose(): that tally feeds the
+     * "set up a daily budget" prompt (5+/day), so logging a calm step-away would
+     * manufacture a scarcity nudge out of a healthy outcome — it leaves no tally.
+     */
+    private fun beginStepAwayLaunch() {
+        stopTimer()
+        ctrlSvc.goToApp()
+    }
+
     private fun stepAway() {
-        // The pull-down has sunk the sun off the bottom; now redirect into minded.
-        // Fade the expanded sun straight out — don't revert to the little bubble.
+        // The sun has set and the sky has receded — minded is already showing.
+        // Remove the now-invisible expanded window, keeping it expanded through the
+        // teardown so it can't flash back to the little bubble on its way out.
         keepExpandedOnHide = true
-        ctrlSvc.stepAwayFromBlockedApp()
+        hideWindow()
     }
 
     override fun hideWindow() {

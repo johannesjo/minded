@@ -887,36 +887,31 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
     }
 
+    /**
+     * The gentle redirect away from a blocked app and into minded itself — a calm
+     * space — rather than the launcher, which would dump the user back among the
+     * very icons (including the one just left) that re-tempt. This is the
+     * "redirect" half of interrupt → reflect → redirect, shared by every calm
+     * close: the full interaction, the sleep wind-down, and the little-sun pause's
+     * pull-down step-away. We can't (and the philosophy wouldn't) force-kill the
+     * blocked app — we just glide the user somewhere calm.
+     */
     fun goToApp() {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         lastGoToAppTimestamp = System.currentTimeMillis()
-        startActivity(intent)
-    }
-
-    /**
-     * The little-sun pause's step-away action — now the completion of pulling the
-     * sun down (there is no longer a button): the gentle redirect away from the
-     * blocked app and into minded itself — a calm space — rather than the
-     * launcher, which would dump the user back among the very icons (including
-     * the one just left) that re-tempt. This is the "redirect" half of
-     * interrupt → reflect → redirect, and it matches the full interaction's
-     * close ([goToApp]). We can't (and the philosophy wouldn't) force-kill the
-     * blocked app — we just glide the user somewhere calm and let the bubble fade.
-     *
-     * Deliberately NOT counted via countUserDrivenClose(): that tally feeds
-     * shouldPromptBudgetSetup (5+/day -> "set up a daily budget"), so logging a
-     * calm step-away would manufacture a scarcity nudge out of the healthy
-     * outcome. Stepping away should leave no tally behind.
-     */
-    fun stepAwayFromBlockedApp() {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            Handler(Looper.getMainLooper()).post { stepAwayFromBlockedApp() }
-            return
+        // Guard the launch: a Service startActivity can be refused (background
+        // activity-launch restrictions on some OEMs / Android versions). Callers
+        // run their overlay teardown *downstream* of this — the little-sun
+        // step-away fires goToApp() and only then animates the sun out and hides
+        // the window — so an uncaught throw here would abort that teardown and
+        // strand the user under an inescapable dim. Swallow it: worst case the
+        // redirect is missed, but the overlay still closes.
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(logTag, "goToApp() - failed to launch minded", e)
         }
-        Log.d(logTag, "stepAwayFromBlockedApp()")
-        goToApp()
-        littleSunOverlayWindow.hideWindow()
     }
 
 
