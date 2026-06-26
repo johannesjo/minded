@@ -42,32 +42,11 @@ class LittleSunWindow(
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
 
-    private val density = ctrlSvc.resources.displayMetrics.density
-    private val bubbleSizePx = LittleSunPosition.bubbleSizePx(density)
-
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble simply rests wherever it was dropped
     // (clamped on-screen), so it can be parked anywhere, not just at the edges.
     private var posX = 0
     private var posY = 0
-
-    // Drives whether the overlay is the small resting bubble or the full-screen
-    // pause + step-away invitation. A Compose state so Cmp() recomposes.
-    private var isExpanded by mutableStateOf(false)
-    // True only when re-showing the resting bubble after the offer collapses, so
-    // the bubble waits for the window resize to settle before appearing (then
-    // snaps in at the sun's spot, with no entrance of its own — one continuous
-    // motion). Reset on a fresh show.
-    private var enterWithFade by mutableStateOf(false)
-    // The bubble's screen-px centre captured at the moment of tap, so the pause
-    // sun can expand out of exactly where the little sun sat.
-    private var expandOriginX by mutableStateOf(-1)
-    private var expandOriginY by mutableStateOf(-1)
-    // Set while leaving via the offer (pull the sun down → step away into minded)
-    // so the hide fades the expanded pause sun straight out, instead of flipping
-    // back to the little bubble (which would flash on its way out). Cleared once
-    // the window is actually removed.
-    private var keepExpandedOnHide = false
 
     @Composable
     override fun Cmp() {
@@ -78,16 +57,10 @@ class LittleSunWindow(
 
         LittleSun(
             elapsedSeconds = elapsedSeconds,
-            expanded = isExpanded,
-            enterFade = enterWithFade,
-            expandFromX = expandOriginX,
-            expandFromY = expandOriginY,
-            onTap = { expand() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
             onLeaving = { beginStepAwayLaunch() },
             onStepAway = { stepAway() },
-            onStay = { collapse() },
         )
     }
 
@@ -121,9 +94,8 @@ class LittleSunWindow(
                     // instantly (no 300ms fade) so the intervention's shield covers
                     // the corner ~300ms sooner, with no page-flash before the sun
                     // re-blooms there via the reverse morph. onWindowRemoved still
-                    // fires, so the intervention is triggered exactly as before. An
-                    // expanded full-screen surface keeps its graceful fade.
-                    if (isExpanded) hideWindow() else hideWindowImmediate()
+                    // fires, so the intervention is triggered exactly as before.
+                    hideWindowImmediate()
                     stopTimer()
                     return
                 } else {
@@ -181,9 +153,7 @@ class LittleSunWindow(
     override fun showWindow() {
         Log.d(logTag, "showWindow() called for Little Sun")
         if (!isWindowShown()) {
-            // Always open as the resting bubble; restore its parked position.
-            isExpanded = false
-            enterWithFade = false
+            // Restore the bubble's parked position.
             initPosition()
         }
         super.showWindow()
@@ -194,22 +164,18 @@ class LittleSunWindow(
     }
 
     /**
-     * The resting bubble is a small wrap-content overlay positioned anywhere on
-     * screen. It is touchable (so it can be dragged and tapped) but NOT
+     * The little sun is always a small wrap-content overlay positioned anywhere
+     * on screen. It is touchable (so it can be dragged and flung) but NOT
      * full-screen, so the app underneath stays fully interactive — Android only
      * routes touches inside the bubble's own bounds to us, exactly like a
      * chat-head. [FLAG_NOT_FOCUSABLE] keeps it from stealing keyboard focus from
      * the app the user is typing in.
      *
-     * When tapped it expands to a full-screen, dimmed pause + invitation; that
-     * surface is user-invoked and always auto-dismisses, so the app is never
-     * blocked while the bubble is idle.
+     * The step-away is offered on the bubble itself (fling / drag-down → leave),
+     * so there is no full-screen pause to expand into and the app is never
+     * blocked.
      */
     override fun getLayoutParams(): WindowManager.LayoutParams {
-        return if (isExpanded) expandedLayoutParams() else restingLayoutParams()
-    }
-
-    private fun restingLayoutParams(): WindowManager.LayoutParams {
         return WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -221,34 +187,6 @@ class LittleSunWindow(
             gravity = Gravity.TOP or Gravity.START
             x = posX
             y = posY
-        }
-    }
-
-    private fun expandedLayoutParams(): WindowManager.LayoutParams {
-        @Suppress("DEPRECATION")
-        return WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            PixelFormat.TRANSLUCENT,
-        ).apply {
-            x = 0
-            y = 0
-
-            // Draw under the system bars — including the bottom gesture /
-            // navigation bar — so the expanded pause covers the full screen with
-            // no uncovered strip. See InteractionWindow.getLayoutParams for the
-            // full rationale: FLAG_LAYOUT_NO_LIMITS only extends the window frame,
-            // and the legacy FLAG_FULLSCREEN flag above is inert on modern Android
-            // (15/16); on API 30+ fitInsetsTypes is the lever that actually lets
-            // the content draw under the bars.
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                fitInsetsTypes = 0
-            }
         }
     }
 
@@ -278,7 +216,6 @@ class LittleSunWindow(
     }
 
     private fun onDrag(dxPx: Float, dyPx: Float) {
-        if (isExpanded) return
         posX += dxPx.roundToInt()
         posY += dyPx.roundToInt()
         clampPosition()
@@ -286,7 +223,6 @@ class LittleSunWindow(
     }
 
     private fun onDragEnd() {
-        if (isExpanded) return
         // Rest wherever it was dropped — a free-floating companion, parkable
         // anywhere, not edge-locked. clampPosition keeps it on-screen and a
         // margin in from every edge, clear of the system gesture zones.
@@ -294,33 +230,12 @@ class LittleSunWindow(
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
     }
 
-    private fun expand() {
-        if (isExpanded) return
-        // Capture where the bubble sits now so the pause sun expands out of it.
-        expandOriginX = posX + bubbleSizePx / 2
-        expandOriginY = posY + bubbleSizePx / 2
-        isExpanded = true
-        updateLayout()
-    }
-
-    private fun collapse() {
-        if (!isExpanded) return
-        // The pause sun has already handed off (reverse glide → quick hide) or sunk
-        // off-screen (drag-down) by the time we get here, so the window resize is
-        // unseen. Have the resting bubble wait for the resize to settle, then snap
-        // in at the sun's spot (no separate entrance) — one continuous motion.
-        enterWithFade = true
-        isExpanded = false
-        clampPosition()
-        updateLayout()
-    }
-
     /**
-     * The pull-down has committed (the sun is still setting). Launch minded *now*,
-     * behind the still-raised dim, so the app is drawn and ready by the time the
-     * sky recedes to reveal it — the calm "redirect" half of interrupt → reflect →
-     * redirect, into minded (a calm space) rather than the launcher that re-tempts.
-     * Matches the full interaction's close ([OverlayControllerService.goToApp]).
+     * A leave has committed (fling / drag-down). Launch minded *now*, behind the
+     * still-visible sun, so the app is drawn and ready by the time the sun has
+     * set — the calm "redirect" half of interrupt → reflect → redirect, into
+     * minded (a calm space) rather than the launcher that re-tempts. Matches the
+     * full interaction's close ([OverlayControllerService.goToApp]).
      *
      * Stop the timer so the foreground re-validation tick can't tear the window
      * down mid-set now that the foreground is minded, not the blocked app.
@@ -335,36 +250,17 @@ class LittleSunWindow(
     }
 
     private fun stepAway() {
-        // The sun has set and the sky has receded — minded is already showing.
-        // Remove the now-invisible expanded window, keeping it expanded through the
-        // teardown so it can't flash back to the little bubble on its way out.
-        keepExpandedOnHide = true
-        hideWindow()
+        // The sun has set (faded out in the composable) and minded is already
+        // showing — remove the now-invisible window at once, no second fade.
+        hideWindowImmediate()
     }
 
     override fun hideWindow() {
         stopTimer()
-        // Reset expansion state here (not only on the show path): the window can
-        // be hidden mid-offer by timer expiry / revalidation, and resetting only
-        // in showWindow() can be skipped if a re-show races the hide fade-out —
-        // leaving a stale full-screen overlay that would block the app. The
-        // exception is the deliberate leave (pull down → step away), which keeps
-        // the expanded sun on screen so it fades out as the pause (the reset then
-        // happens in onWindowRemoved).
-        if (!keepExpandedOnHide) {
-            isExpanded = false
-            enterWithFade = false
-        }
         super.hideWindow()
     }
 
     override fun onWindowRemoved() {
-        // Window is gone — clear expansion so the next show starts as the bubble
-        // (the deliberate leaves keep it expanded through the fade, so reset only now).
-        isExpanded = false
-        enterWithFade = false
-        keepExpandedOnHide = false
-
         val expiredApp = pendingExpiredApp ?: return
         val wasWindDownSnooze = pendingExpiredWasWindDownSnooze
         pendingExpiredApp = null

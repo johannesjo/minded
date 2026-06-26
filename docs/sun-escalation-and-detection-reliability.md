@@ -26,11 +26,29 @@ blocked-apps concept."* Where it landed:
 
 Decided in review + owner direction.
 
-**Baseline: PR #51** ("Android: make the little sun an interactive, non-blocking
-bubble") is landing — a draggable chat-head bubble that, on *tap*, expands the
+**Revised (2026-06): the tap-to-expand full-screen pause is removed.** PR #51's
+full-screen pause surface (below) was found not to feel good — tapping did
+nothing actionable, then the leave demanded a second, hidden, heavy drag inside a
+modal that overran the calm a casual companion tap deserves. Per owner direction
+we **stepped away from the additional overlay entirely**: the little sun is now
+*only* the resting bubble, and it offers the step-away **on the bubble itself** —
+**fling it** (any direction; the universal "fling it" escape hatch from
+`CLAUDE.md`) or **drag it down** past a threshold (the deliberate calm set,
+matching the dashboard sun's drag-down). Both end in minded. A gentler drag just
+repositions the bubble; a plain tap does nothing (so a stray touch neither ejects
+the user nor detonates a surface). On a committed leave the bubble eases out in
+place (a soft shrink + fade) as minded comes forward behind it — no full-screen
+dim, no rising-sky ceremony, no native→WebView seam. (`LittleSun.kt`,
+`LittleSunWindow.kt`.) The rest of this doc's framing — no escalation, the leave
+must feel *wanted*, one always-morphing sun — still holds; only the *shape* of
+the offer changed.
+
+**Original baseline: PR #51** ("Android: make the little sun an interactive,
+non-blocking bubble") — a draggable chat-head bubble that, on *tap*, expanded the
 *same native overlay window* into a full-screen pause + soft "Step away?" invite
-(auto-dismissing, never blocking). It does the pause in native Compose, sidestepping
-the native→WebView seam the review flagged as a blocker.
+(auto-dismissing, never blocking). It did the pause in native Compose, sidestepping
+the native→WebView seam the review flagged as a blocker. **Superseded by the
+revision above.**
 
 - **No escalation.** No dwell-driven growth, no swelling glow, no "harder to ignore
   over time," and no ramping to a harsher/feared register with repetition. The
@@ -183,20 +201,14 @@ without accessibility" is not real.
 
 ## Follow-ups (deferred)
 
-- **Morph + breathing fix on the tap-pause — mostly resolved; the rest is
-  deliberate.** This note predates PR #51's merge and assumed it would land with a
-  repeating breath and a bubble→full-screen cross-fade. As merged, neither the
-  breath nor the *opening* cut is present: the expanded sun holds still (see the
-  "no breathing/pulsing" note in `LittleSun.kt:566`), and the open path already
-  morphs — `expandProgress` glides + grows the sun from its parked bubble position
-  to centre, holds, then the "Step away?" invite fades in. So (1) "remove the
-  repeating breath" and (2) "make opening a positional morph" are already done.
-  What remains is the *close* path only: a reverse dismiss adds an 80 ms cross-fade
-  beat (`CROSSFADE_MS`, `LittleSun.kt:362`) — and that one is **deliberate**, not
-  the hard cut the morph principle warns against. The little-sun pause is a single
-  window that *resizes* on close; the sun must fade out before that resize or it
-  visibly jumps. Making close a true positional morph would mean re-architecting to
-  two windows (a parked bubble + a separate pause surface) so the disc can travel
-  without a resize — a larger change, not the contained `LittleSun.kt` tweak this
-  note first assumed. Leave the close cross-fade until that two-window morph is
-  actually built.
+- **The tap-pause morph/cross-fade follow-up is now moot — the pause itself was
+  removed.** This note tracked polishing the bubble→full-screen pause's open/close
+  morph (the close path needed an 80 ms cross-fade because the single window had to
+  *resize*, and a true positional morph would have meant a two-window rearchitecture).
+  The 2026-06 revision removed the full-screen pause entirely, so there is no
+  expand/resize/cross-fade left to morph. The leave is now a soft shrink + fade of
+  the bubble in place — within one wrap-content window, so no resize seam exists.
+  A possible future polish: let a *fling* visibly throw the sun off-screen in the
+  fling direction (rather than fade in place), which would need a transient larger
+  window to animate across — deliberately not built, to keep the "no additional
+  overlay" win.
