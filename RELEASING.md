@@ -125,10 +125,27 @@ only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
    to **set up the internal testing track and add your phone as a tester** once
    in the Console — that's track config, not a build upload (step 3).
 3. **Opt your phone into internal testing:** Play Console → Testing → Internal
-   testing → Testers → copy the **opt-in URL**, open it on your phone, accept,
-   then install from the link (or from the Play Store once joined). After that,
-   updates arrive automatically (often within a few hours; force a check in the
-   Play Store app under *Manage apps → Updates available* if impatient).
+   testing → **Testers** tab → put your email in a tester list and save → copy
+   the **opt-in URL**, open it on your phone (signed into the Play Store with
+   that same Google account), accept, then install from the link (or from the
+   Play Store once joined). After that, updates arrive automatically (often
+   within a few hours; force a check in the Play Store app under *Manage apps →
+   Updates available* if impatient).
+
+   > **Gotcha — "no testers set" even though you added your email.** Adding
+   > yourself under *Users and permissions* (account/Console access) is **not**
+   > the same as being a tester. A build only reaches a phone via the **Testers
+   > list on the track** plus accepting the **opt-in URL** on that device.
+   > Account access just lets you manage the Console.
+
+4. **Don't create internal releases by hand.** `play-internal.yml` already
+   uploads to the internal track on every push to `main`, so the *Create
+   internal test release* flow in the Console is unnecessary — and a trap: if
+   you manually pick an **older** AAB from the library than the one already
+   active on the track, Play rejects it with *"existing users cannot upgrade to
+   the newly added app bundles"* (a downgrade; version codes must strictly
+   increase). Just discard the draft and let CI's latest upload stand, or push a
+   new commit to mint a fresh, higher code.
 
 ### Cost / churn note
 
@@ -226,6 +243,8 @@ Do this quarterly, or immediately on any suspicion of compromise.
 | `verify-version` fails on version mismatch | Tag created without `npm run version` — files weren't bumped. Re-run the version script. |
 | `verify-version` fails on ancestry | Tag was created on a non-main branch. Merge to main first, then re-tag from the merge commit. |
 | Play upload rejected: "versionCode already exists" / `multiApkShadowedActiveApk` | Two builds landed in the same second, or an internal push minted a higher code mid-release and shadowed it. versionCode is time-derived, so don't edit it — just **re-run the workflow** to mint a fresh timestamp code. |
+| Console: "existing users cannot upgrade to the newly added app bundles" | You're manually creating an internal release and selected an **older** AAB than the one already active on the track (a downgrade). Discard the draft — CI already keeps the internal track on the latest build; or push a new commit for a higher code. |
+| Internal release shows "no testers set" / can't install despite "listing my email" | Your email is a Console **user**, not a **tester**. Add it to the track's **Testers** list and accept the **opt-in URL** on the phone. See [Continuous internal test builds](#continuous-internal-test-builds-push-to-main) step 3. |
 | CWS upload rejected: "package size too large" | Bundle exceeds 50MB recommended. Investigate large assets. (Hard limit is 2GB.) |
 | Gradle: "keystore file not found" | Workflow secrets missing or wrong base64. Re-encode with `base64 -w0`. |
 | Both publish jobs hang in "Waiting" | You forgot to approve the `production` environment in the Actions UI. |
