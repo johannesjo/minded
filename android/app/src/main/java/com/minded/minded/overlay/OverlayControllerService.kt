@@ -900,7 +900,18 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         lastGoToAppTimestamp = System.currentTimeMillis()
-        startActivity(intent)
+        // Guard the launch: a Service startActivity can be refused (background
+        // activity-launch restrictions on some OEMs / Android versions). Callers
+        // run their overlay teardown *downstream* of this — the little-sun
+        // step-away fires goToApp() and only then animates the sun out and hides
+        // the window — so an uncaught throw here would abort that teardown and
+        // strand the user under an inescapable dim. Swallow it: worst case the
+        // redirect is missed, but the overlay still closes.
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(logTag, "goToApp() - failed to launch minded", e)
+        }
     }
 
 
