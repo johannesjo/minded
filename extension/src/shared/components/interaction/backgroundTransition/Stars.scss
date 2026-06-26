@@ -59,17 +59,19 @@
   box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7); // soft glow at the head
   opacity: 0;
 
-  // The tail: brightest at the head (its right edge sits on the head) and fading
-  // out behind it to the left, i.e. along the trailing direction of motion.
+  // The tail: brightest at the head and fading out behind it to the left, i.e.
+  // along the trailing direction of motion. Anchored to the head's *centre*
+  // (left/top 50% + translate(-100%, -50%)) so the dot sits exactly on the line
+  // rather than slightly off it.
   &::before {
     content: "";
     position: absolute;
     top: 50%;
-    left: 0;
+    left: 50%;
     width: 110px;
     height: 1px;
     background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
-    transform: translateX(-100%);
+    transform: translate(-100%, -50%);
   }
 }
 
