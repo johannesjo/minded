@@ -43,7 +43,26 @@
   }
 }
 
+// The night-sky sparkle (dark mode only). A positioned z-index:0 layer so the
+// stars' own fixed/z-index:2 container is bounded to this stacking context and
+// stays behind the content (which sits at z-index 1 below). It fades out for the
+// screen-free sit's near-black dim — softly, so the recede matches the app's calm.
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity var(--grounding-fade-ms, 600ms) ease;
+}
+
+.starfieldHidden {
+  opacity: 0;
+}
+
 .panel {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,6 +99,8 @@
 }
 
 .session {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -147,6 +168,8 @@
 }
 
 .praise {
+  position: relative;
+  z-index: 1;
   @include displayVoice;
   font-size: calc(var(--fz-xl) + 2px);
   line-height: 1.4;
