@@ -41,11 +41,11 @@ const Stars: Component<StarsProps> = (props) => {
         y: Math.random() * 100,
         size: Math.random() * 2 + 1, // Size between 1-3px
         animationDelay: Math.random() * 6, // Random delay 0-6s
-        // Longer, gentler cycles (4-7s) so the field breathes calmly instead of
-        // flickering.
-        twinkleDuration: Math.random() * 3 + 4,
-        // Stay between fairly bright (0.5-0.85) and full, never blinking off.
-        minOpacity: Math.random() * 0.35 + 0.5,
+        // 3-6s cycles — a lively shimmer without tipping into a harsh flicker.
+        twinkleDuration: Math.random() * 3 + 3,
+        // Dip to 0.3-0.75 then back to full: enough contrast to sparkle, but
+        // never blinking fully off.
+        minOpacity: Math.random() * 0.45 + 0.3,
       });
     }
 

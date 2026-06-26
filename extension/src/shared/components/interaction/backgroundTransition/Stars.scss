@@ -21,18 +21,18 @@
   // when motion is reduced) rather than starting blank. The twinkle only runs
   // while the field is shown (.active) — see below. Each star's own
   // delay/duration/`--twinkle-min` are set inline (Stars.tsx).
-  opacity: var(--twinkle-min, 0.6);
+  opacity: var(--twinkle-min, 0.5);
 }
 
-// A soft shimmer, not a blink: each star eases between its own dim level
-// (`--twinkle-min`, varied per star for depth) and full brightness, with only a
-// slight scale change. It never drops to 0 or shrinks by half — that read as a
-// harsh, random flicker.
+// A lively shimmer, not a blink: each star eases between its own dim level
+// (`--twinkle-min`, varied per star for depth) and full brightness, with a gentle
+// scale change. It never drops to 0 — that read as a harsh, random flicker — but
+// the dip is deep enough to sparkle.
 @keyframes twinkle {
   0%,
   100% {
-    opacity: var(--twinkle-min, 0.6);
-    transform: scale(0.92);
+    opacity: var(--twinkle-min, 0.5);
+    transform: scale(0.85);
   }
   50% {
     opacity: 1;
@@ -40,24 +40,53 @@
   }
 }
 
-// Shooting stars for extra magic
+// Shooting stars for extra magic.
+//
+// Motion is driven entirely by `transform: rotate(θ) translateX(...)` (see the
+// keyframes), never by animating top/left. That matters: the trail is a fixed
+// horizontal line attached to the head, so the only way to guarantee it always
+// points opposite the direction of travel — instead of jutting off at an angle
+// like a plane's contrail — is to put the trail and the motion in the *same*
+// rotated frame. Translating along the rotated X axis does exactly that, on any
+// viewport aspect ratio. Each meteor only needs a fixed anchor (the point its
+// line passes through at translateX(0)); the head sweeps along that line.
 .shooting-star {
   position: absolute;
-  width: 2px;
-  height: 2px;
-  background: linear-gradient(to right, transparent, white, transparent);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.7); // soft glow at the head
   opacity: 0;
 
+  // The tail: brightest at the head (its right edge sits on the head) and fading
+  // out behind it to the left, i.e. along the trailing direction of motion.
   &::before {
     content: "";
     position: absolute;
-    top: 0;
+    top: 50%;
     left: 0;
-    width: 100px;
+    width: 110px;
     height: 1px;
-    background: linear-gradient(to right, white, transparent);
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
     transform: translateX(-100%);
   }
+}
+
+// Each meteor's line passes through this anchor at translateX(0); the rotation
+// (set in its keyframe) decides the diagonal, so these just spread the three
+// across different bands of the sky.
+.shooting-star-1 {
+  top: 42%;
+  left: 50%;
+}
+.shooting-star-2 {
+  top: 24%;
+  left: 48%;
+}
+.shooting-star-3 {
+  top: 60%;
+  left: 52%;
 }
 
 .stars-container.active {
@@ -86,90 +115,73 @@
   }
 }
 
-// All three travel left → right and downward. The trail (`::before`) is fixed
-// pointing left, so it only sits *behind* the head for rightward motion — a
-// right→left path makes the meteor look like it's flying backwards. Each
-// rotation is set to roughly follow its own path's slope, and the motion is
-// packed into the first ~third of the cycle (then held off-screen, invisible)
-// so meteors arrive as occasional flourishes rather than streaking constantly.
+// Each meteor sweeps along its own diagonal by animating translateX on the
+// rotated axis from off one side to off the other. The rotation is constant, so
+// the trail stays locked exactly opposite the motion the whole way across — no
+// airplane-contrail angle. Travel is packed into the first ~third of the cycle,
+// then the head is held off-screen and invisible, so meteors read as occasional
+// flourishes rather than a constant streak. The angles differ per meteor for
+// variety; all lean down-and-to-the-right so they share a radiant.
 @keyframes shoot-1 {
   0% {
     opacity: 0;
-    top: 12%;
-    left: -8%;
-    transform: rotate(22deg);
+    transform: rotate(20deg) translateX(-75vw);
   }
-  4% {
+  5% {
     opacity: 1;
   }
-  26% {
+  25% {
     opacity: 1;
   }
   32% {
     opacity: 0;
-    top: 70%;
-    left: 108%;
-    transform: rotate(22deg);
+    transform: rotate(20deg) translateX(75vw);
   }
   100% {
     opacity: 0;
-    top: 70%;
-    left: 108%;
-    transform: rotate(22deg);
+    transform: rotate(20deg) translateX(75vw);
   }
 }
 
 @keyframes shoot-2 {
   0% {
     opacity: 0;
-    top: 6%;
-    left: -8%;
-    transform: rotate(13deg);
+    transform: rotate(12deg) translateX(-75vw);
   }
-  4% {
+  5% {
     opacity: 1;
   }
-  26% {
+  25% {
     opacity: 1;
   }
   32% {
     opacity: 0;
-    top: 40%;
-    left: 108%;
-    transform: rotate(13deg);
+    transform: rotate(12deg) translateX(75vw);
   }
   100% {
     opacity: 0;
-    top: 40%;
-    left: 108%;
-    transform: rotate(13deg);
+    transform: rotate(12deg) translateX(75vw);
   }
 }
 
 @keyframes shoot-3 {
   0% {
     opacity: 0;
-    top: 32%;
-    left: -8%;
-    transform: rotate(30deg);
+    transform: rotate(28deg) translateX(-75vw);
   }
-  4% {
+  5% {
     opacity: 1;
   }
-  26% {
+  25% {
     opacity: 1;
   }
   32% {
     opacity: 0;
-    top: 92%;
-    left: 105%;
-    transform: rotate(30deg);
+    transform: rotate(28deg) translateX(75vw);
   }
   100% {
     opacity: 0;
-    top: 92%;
-    left: 105%;
-    transform: rotate(30deg);
+    transform: rotate(28deg) translateX(75vw);
   }
 }
 
