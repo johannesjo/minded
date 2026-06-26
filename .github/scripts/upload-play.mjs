@@ -19,6 +19,19 @@
 
 import { google } from 'googleapis';
 import { createReadStream, statSync } from 'fs';
+import dns from 'node:dns';
+
+// Prefer IPv4 when resolving Google's hosts. GitHub-hosted runners advertise
+// IPv6 but have flaky/partial IPv6 egress to Google's endpoints: the TLS
+// connection establishes, then the response body is truncated mid-stream
+// (ERR_STREAM_PREMATURE_CLOSE). Node 22 defaults DNS result order to
+// "verbatim", which surfaces the AAAA (IPv6) record first, so the token fetch
+// keeps landing on the broken path and burns through every retry below —
+// exactly what happened across all three initial runs of this pipeline. The
+// retries are the safety net; pinning IPv4 removes the cause, since the same
+// hosts are fully reachable over IPv4. Harmless if a runner ever ships without
+// IPv6: IPv4 was already being chosen there anyway.
+dns.setDefaultResultOrder('ipv4first');
 
 const {
   SERVICE_ACCOUNT_JSON,
