@@ -1,4 +1,4 @@
-import { Component, createSignal, For, onMount } from "solid-js";
+import { Component, createSignal, For, onMount, Show } from "solid-js";
 
 interface StarsProps {
   // 0 = no stars, 1 = full night sky. Driven by the sun's drag progress so the
@@ -7,6 +7,10 @@ interface StarsProps {
   // caller already gates this to dark mode (0 by day), so the field never shows
   // over a daytime sky.
   intensity: number;
+  // The corner-to-corner shooting-star flourish. On by default (the dashboard's
+  // down-drag sky). Calm always-on surfaces — the grounding sit — pass false: a
+  // streaking meteor reads as a jolt behind a settling meditation.
+  shootingStars?: boolean;
 }
 
 interface Star {
@@ -74,9 +78,11 @@ const Stars: Component<StarsProps> = (props) => {
       </For>
 
       {/* Add some shooting stars for extra magic */}
-      <div class="shooting-star shooting-star-1" />
-      <div class="shooting-star shooting-star-2" />
-      <div class="shooting-star shooting-star-3" />
+      <Show when={props.shootingStars ?? true}>
+        <div class="shooting-star shooting-star-1" />
+        <div class="shooting-star shooting-star-2" />
+        <div class="shooting-star shooting-star-3" />
+      </Show>
     </div>
   );
 };

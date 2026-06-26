@@ -45,19 +45,21 @@
 
 // The night-sky sparkle (dark mode only). A positioned z-index:0 layer so the
 // stars' own fixed/z-index:2 container is bounded to this stacking context and
-// stays behind the content (which sits at z-index 1 below). It fades out for the
-// screen-free sit's near-black dim — softly, so the recede matches the app's calm.
+// stays behind the content (which sits at z-index 1 below).
 .starfield {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 1;
-  transition: opacity var(--grounding-fade-ms, 600ms) ease;
-}
 
-.starfieldHidden {
-  opacity: 0;
+  // Visibility is driven by the <Stars> intensity prop (opacity inline, animations
+  // gated on it), which drops to 0 for the screen-free sit's near-black dim — so
+  // the field both recedes and stops ticking the compositor. Stars' own container
+  // has no transition (it's drag-driven elsewhere); add one here so this recede
+  // eases softly, matching the app's calm.
+  :global(.stars-container) {
+    transition: opacity var(--grounding-fade-ms, 600ms) ease;
+  }
 }
 
 .panel {

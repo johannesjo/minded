@@ -138,3 +138,17 @@
     transform: rotate(30deg);
   }
 }
+
+// Honour a reduced-motion preference: hold the field still rather than twinkling
+// and streaking. The stars stay as quiet static dots (their base opacity), and the
+// shooting stars (base opacity 0) simply never appear.
+@media (prefers-reduced-motion: reduce) {
+  .stars-container.active {
+    .star,
+    .shooting-star-1,
+    .shooting-star-2,
+    .shooting-star-3 {
+      animation: none;
+    }
+  }
+}
