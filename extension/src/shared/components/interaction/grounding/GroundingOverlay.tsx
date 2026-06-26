@@ -7,6 +7,7 @@ import {
 } from "solid-js";
 import styles from "./GroundingOverlay.module.scss";
 import { BreathSun } from "@src/shared/components/interaction/breathSun/BreathSun";
+import Stars from "@src/shared/components/interaction/backgroundTransition/Stars";
 import { playGong } from "@src/shared/components/interaction/sun/sunAudio";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
@@ -175,6 +176,12 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     if (lockTimeout) window.clearTimeout(lockTimeout);
   });
 
+  // The screen-free sit (and its Android lock send-off) dims almost to black so
+  // the eyes can truly rest — the one stage where the night sky should recede.
+  const isQuietPhase = () =>
+    getMode() === "quiet" &&
+    (getPhase() === "session" || getPhase() === "androidLock");
+
   const remainingLabel = () => {
     const totalSec = Math.ceil(getRemainingMs() / 1000);
     const m = Math.floor(totalSec / 60);
@@ -186,13 +193,26 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     <div
       class={styles.grounding}
       classList={{
-        [styles.isQuiet]:
-          getMode() === "quiet" &&
-          (getPhase() === "session" || getPhase() === "androidLock"),
+        [styles.isQuiet]: isQuietPhase(),
         [styles.isClosing]: getIsClosing(),
       }}
       style={{ "--grounding-fade-ms": `${GROUNDING_FADE_MS}ms` }}
     >
+      {/* Night mode keeps the dashboard's sparkling sky: the same twinkling stars
+          the down-drag reveals carry through onto the grounding stage instead of a
+          flat gradient. It's part of the overlay's own backdrop, so it fades in and
+          out with the stage (no separate layer to flash on close). Moon variant
+          only — the morning sky has no stars. */}
+      <Show when={props.variant === "moon"}>
+        <div class={styles.starfield} aria-hidden="true">
+          {/* Gentle twinkle only — no shooting-star flourish: a meteor streaking
+              across the frame would read as a jolt, not calm, behind a settling
+              sit. Intensity drops to 0 for the screen-free sit's near-black dim,
+              which both recedes the field and stops its animations (see Stars). */}
+          <Stars intensity={isQuietPhase() ? 0 : 1} shootingStars={false} />
+        </div>
+      </Show>
+
       {/* Offer — "Stay a while?" with two ways to ground, and an easy decline. */}
       <Show when={getPhase() === "offer"}>
         <div class={styles.panel}>
