@@ -85,7 +85,8 @@ export type InteractionModeReason =
   | "notice_sample"
   | "screen_off_strong"
   | "urge_surfing_strong"
-  | "fallback_question";
+  | "fallback_question"
+  | "fallback_anti_repeat_notice";
 
 export interface InteractionModeDecision {
   mode: InteractionMode;
@@ -349,6 +350,19 @@ export const getInteractionModeDecision = (
 
   if (chance(NOTICE_PROBABILITY, random)) {
     return decision("NOTICE", "notice_sample", frictionLevel);
+  }
+
+  // Anti-repeat: this fallback is QUESTION, and because every richer mode above
+  // is low-probability, it is by far the most common outcome — so when the user
+  // returns again and again in one sitting it would otherwise serve QUESTION
+  // back-to-back, making the loop feel like the same screen each time. If the
+  // last intervention already opened with QUESTION, offer the gentle no-typing
+  // NOTICE anchor instead (it exists for exactly this "nothing more specific is
+  // due" moment), so the everyday loop alternates rather than repeats. The hard
+  // gates above (few answers, missing energy, strong-friction prompts) are
+  // intentional repeats and are deliberately left untouched.
+  if (syncData.lastInteractionMode === "QUESTION") {
+    return decision("NOTICE", "fallback_anti_repeat_notice", frictionLevel);
   }
 
   return decision("QUESTION", "fallback_question", frictionLevel);

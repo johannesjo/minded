@@ -538,4 +538,61 @@ describe("getInteractionMode", () => {
       frictionLevel: "soft",
     });
   });
+
+  describe("anti-repeat memory of the last interaction mode", () => {
+    it("swaps the QUESTION fallback for a NOTICE when the last mode was already QUESTION", () => {
+      // Same fallback context as the test above, but the previous intervention
+      // already opened with QUESTION — so back-to-back repetition is broken by
+      // offering the gentle no-typing present-moment anchor instead.
+      expect(decide(baseSyncData({ lastInteractionMode: "QUESTION" }))).toEqual(
+        {
+          mode: "NOTICE",
+          reason: "fallback_anti_repeat_notice",
+          frictionLevel: "soft",
+        },
+      );
+    });
+
+    it("keeps the QUESTION fallback when the last mode was something other than QUESTION", () => {
+      // A NOTICE last time means QUESTION now is variety, not repetition.
+      expect(decide(baseSyncData({ lastInteractionMode: "NOTICE" }))).toEqual({
+        mode: "QUESTION",
+        reason: "fallback_question",
+        frictionLevel: "soft",
+      });
+    });
+
+    it("never overrides the few-answers onboarding gate, even after a QUESTION", () => {
+      // Collecting the user's reasons during onboarding must keep asking; the
+      // anti-repeat only applies to the soft fallback, never the hard gates.
+      const syncData = createMockSyncData({
+        answers: [],
+        lastInteractionMode: "QUESTION",
+      });
+
+      expect(decide(syncData)).toEqual({
+        mode: "QUESTION",
+        reason: "few_answers_question",
+        frictionLevel: "normal",
+      });
+    });
+
+    it("does not touch the strong-friction question fall-through after a QUESTION", () => {
+      // The strong-friction prompt is an intentional, context-critical return;
+      // only the low-stakes soft fallback alternates.
+      expect(
+        decide(
+          baseSyncData({
+            lastInteractionMode: "QUESTION",
+            ...strongFrictionViaAttempts(),
+          }),
+          { isMainView: false, random: () => 0.99 },
+        ),
+      ).toEqual({
+        mode: "QUESTION",
+        reason: "strong_friction_question",
+        frictionLevel: "strong",
+      });
+    });
+  });
 });

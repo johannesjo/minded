@@ -41,6 +41,7 @@ import {
   markPatternInsightShownInState,
   type PatternInsight,
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import {
   computeUsageObservation,
   type UsageObservation,
@@ -215,6 +216,18 @@ export const markPatternInsightShown = (
       insight.id,
       insight.dateISO,
     ),
+  }));
+
+/**
+ * Remember the mode the current intervention opened with, so the next one can
+ * avoid repeating itself (see the anti-repeat fallback in getInteractionMode).
+ * One-deep memory; intentionally records every opening mode, not just QUESTION.
+ */
+export const recordInteractionModeShown = (
+  mode: InteractionMode,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, () => ({
+    lastInteractionMode: mode,
   }));
 
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> =>

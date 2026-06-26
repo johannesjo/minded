@@ -1,5 +1,6 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
+import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { UsageStatsByDate } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
@@ -175,6 +176,15 @@ export interface SyncData {
   activeTimer: ActiveTimer | null;
 
   emotionLabeling: EmotionLabelingData | null;
+
+  /**
+   * The mode the last intervention opened with. A one-deep memory the router
+   * uses to avoid repeating itself: because every richer mode is low-probability,
+   * the QUESTION fallback would otherwise recur several times in a row when the
+   * user returns repeatedly in one sitting — making the everyday loop feel like
+   * the same screen on a loop. Optional; absent until the first intervention.
+   */
+  lastInteractionMode?: InteractionMode;
 
   // Daily budget feature — REMOVED (#38). Retained dormant: no writer or reader
   // remains; kept only so the Android <-> extension sync JSON contract stays
