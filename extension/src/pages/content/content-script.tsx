@@ -82,8 +82,26 @@ const CURRENT_URL = window.location.href;
         // Create Shadow DOM host element for complete style isolation
         const hostEl = document.createElement("minded-app");
         hostEl.id = "minded-6622-host";
+        // Host pages skip their single-key shortcuts (e.g. x.com "n" → New Post)
+        // while the user is typing in a field. Keystrokes into minded's own inputs
+        // are composed events that retarget to this host element when they reach the
+        // page's document/activeElement, so the page reads a non-editable target and
+        // fires its shortcut on every character (and preventDefaults it, so the char
+        // never lands in minded's input either). Marking the host editable makes the
+        // page's guard recognise that a field has focus — true: minded's field does.
+        // Covers guards that consult contenteditable/isContentEditable, in either
+        // capture or bubble, on document or window, by target or activeElement — where
+        // stopPropagation from inside the shadow cannot (it runs too late for capture).
+        // Shortcut: won't help a guard that checks element type only (INPUT/TEXTAREA,
+        // never isContentEditable); upgrade path would re-dispatch into a real field.
+        // tabindex=-1 keeps it out of the tab order while staying isContentEditable.
+        // See issue #101.
+        hostEl.setAttribute("contenteditable", "");
+        hostEl.setAttribute("tabindex", "-1");
         // Apply critical styles inline to prevent host page CSS from hiding the element
-        // (e.g., Reddit sets visibility:hidden on elements which overrides :host styles)
+        // (e.g., Reddit sets visibility:hidden on elements which overrides :host styles).
+        // The host now matches [contenteditable] selectors, so neutralise any paint a
+        // host page hangs on that selector — this is a full-viewport, max-z-index box.
         hostEl.style.cssText = `
           position: fixed !important;
           top: 0 !important;
@@ -95,6 +113,10 @@ const CURRENT_URL = window.location.href;
           visibility: visible !important;
           display: block !important;
           opacity: 1 !important;
+          background: transparent !important;
+          border: 0 !important;
+          outline: 0 !important;
+          caret-color: transparent !important;
         `;
         document.body.appendChild(hostEl);
 
