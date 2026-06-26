@@ -895,7 +895,13 @@ export const Sun: Component<SunProps> = (props) => {
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.(releaseAction.direction);
-        animateFling(velocity);
+        // The dashboard down-gesture hands the disc to its companion rest at the
+        // bottom (the "Stay a while?" offer) rather than completing: the role flip
+        // in the line above starts a settle glide *synchronously*, so an
+        // off-screen fling here would run concurrently and override it, dragging
+        // the disc off the bottom edge — no sun on the offer. When a settle has
+        // taken over, skip the fling and let the glide bring the disc home.
+        if (!getIsSettlingIntoRole()) animateFling(velocity);
       } else if (releaseAction.type === "dragComplete") {
         // Slow drag behavior (non-fling) - triggers onDragComplete
         triggerHapticPattern("completion"); // Satisfying heavy + light pattern
@@ -903,7 +909,11 @@ export const Sun: Component<SunProps> = (props) => {
         setIsCompletionStarted(true);
         props.onCompletionStarted?.(true);
         props.onStartBackgroundAnimation?.(releaseAction.direction);
-        animateToCompletion(releaseAction.direction);
+        // See the fling branch: a dashboard down-drag recalls the disc to its
+        // companion rest via a settle glide started synchronously above, so the
+        // off-screen completion would fight and override it. Skip it then.
+        if (!getIsSettlingIntoRole())
+          animateToCompletion(releaseAction.direction);
       }
     };
 
