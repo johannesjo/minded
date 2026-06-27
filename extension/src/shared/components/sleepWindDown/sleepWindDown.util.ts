@@ -85,7 +85,7 @@ export const SNOOZE_MINUTES = 15;
  * The first entry is the default; `SNOOZE_MINUTES` must stay in this list so
  * the picker has a matching selected option.
  */
-export const SNOOZE_DURATION_OPTIONS = [15, 30, 45, 60];
+export const SNOOZE_DURATION_OPTIONS = [15, 30, 60];
 
 /**
  * Maps a `nightId` string ("YYYY-MM-DD") to a stable index in `[0, length)`.
