@@ -256,7 +256,7 @@ export const sunDailyQuestionsSuccessSettle = (): SunSettle => ({
   // raising it widens the gap at every viewport height (and as the line wraps),
   // rather than relying on the two coordinate systems lining up by coincidence.
   anchorYRatio: 0.33,
-  scale: 0.62, // larger than the companion (0.42) — a warm bloom, not full size
+  scale: 0.62, // larger than the companion (0.52) — a warm bloom, not full size
   breathe: false,
 });
 
@@ -264,10 +264,10 @@ export const sunCompanionSettle = (
   barCenterYPxFromBottom: number,
 ): SunSettle => ({
   anchorYPxFromBottom: barCenterYPxFromBottom,
-  // ~0.42 of the interaction sun's base lands the companion at ~50px — the
-  // footprint the bottom-bar band is centred around — rather than the 0.66 that
+  // ~0.52 of the interaction sun's base gives the companion a touch more presence
+  // on the bottom-bar band while still sitting comfortably below the 0.66 that
   // would nearly fill the band and crowd the icons either side.
-  scale: 0.42,
+  scale: 0.52,
   breathe: false,
 });
 

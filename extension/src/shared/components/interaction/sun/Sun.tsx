@@ -1206,13 +1206,24 @@ export const Sun: Component<SunProps> = (props) => {
   // glow (0 0 30px rgba(255,255,255,0.9)) — i.e. as bold as a button's hover.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
-  // The sun carries that same bold halo at all times — the disc's box-shadow glow
-  // at the hover intensity — so the idle sun already looks like the (liked) hover
-  // state, and, crucially, the glow never drops out while it's being dragged or
-  // tapped (both reset getGlowIntensity toward 0). We floor at this baseline rather
-  // than gate on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so
-  // letting it take over would only make the sun fade the moment you touch it.
-  const COMPANION_REST_GLOW = COMPANION_HOVER_GLOW;
+  // The sun carries a warm halo at all times — the disc's box-shadow glow — so the
+  // idle sun glows gently and, crucially, the glow never drops out while it's being
+  // dragged or tapped (both reset getGlowIntensity toward 0). We floor at this
+  // baseline rather than gate on drag: the drag ramp (0..1) is dimmer than the rest
+  // glow anyway, so letting it take over would only make the sun fade the moment
+  // you touch it.
+  //
+  // Held a notch below the hover glow (which still blooms to COMPANION_HOVER_GLOW
+  // on hover, so hover stays a visible lift). The companion rests low in the bottom
+  // band, where its halo blooms ~3× further above the disc than it can below before
+  // the screen edge clips it — at the old bold 1.8 that one-sided bloom pulled the
+  // sun's visible mass upward, so the disc read as sitting high above the bottom-bar
+  // icons even though its body is centred on their line (the effect grows with the
+  // disc, so it surfaced when the companion was enlarged). A tighter rest halo clips
+  // far less, so the sun reads level with the icons. Near the moon's calm 1.1 rest
+  // (which never showed the bias), nudged a touch higher to keep the sun's warmer
+  // presence.
+  const COMPANION_REST_GLOW = 1.25;
   // The moon carries a resting glow too, the same way the sun does. Its disc is a
   // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
   // "a rock with a ring" rather than a glowing moon — it needs a genuinely bright
@@ -1317,7 +1328,10 @@ export const Sun: Component<SunProps> = (props) => {
               )
             : props.settle?.glowIntensity != null
               ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
-              : Math.max(getGlowIntensity(), COMPANION_REST_GLOW),
+              : Math.max(
+                  getGlowIntensity(),
+                  props.isHovered ? COMPANION_HOVER_GLOW : COMPANION_REST_GLOW,
+                ),
         "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >
@@ -1353,7 +1367,7 @@ export const Sun: Component<SunProps> = (props) => {
                 const gapDeg = 26;
                 const angle = (i - (total - 1) / 2) * gapDeg;
                 // +24 is pre-scale local px: the crown rides the disc's transform
-                // (companion scale ~0.42), so this lands ~10px of on-screen
+                // (companion scale ~0.52), so this lands ~10px of on-screen
                 // clearance beyond the disc edge at every breakpoint.
                 const radius = sunSize.size / 2 + 24;
                 return (
