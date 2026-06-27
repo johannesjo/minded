@@ -43,7 +43,10 @@ import {
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
+import {
+  REFRESH_DASHBOARD_EV,
+  SAFE_AREA_INSETS_CHANGED_EV,
+} from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
@@ -129,12 +132,32 @@ const MainWrapper = (props: RouteSectionProps) => {
       );
     }
 
-    // The companion anchor is already exact from the store's computed initial
-    // value, so the sun rests in place from first paint; just keep it in sync
-    // with the viewport on resize.
-    const onResize = () => setCompanionBottomYPx(computeCompanionBottomYPx());
-    window.addEventListener("resize", onResize);
-    onCleanup(() => window.removeEventListener("resize", onResize));
+    // Keep the JS-pinned companion anchor in lock-step with the CSS bottom bar.
+    // Both derive from the same two quantities — the band height (10vh) and the
+    // bottom safe-area inset — but the CSS reads them live while the sun's anchor
+    // is computed in JS, so it must be re-synced whenever either changes:
+    //   - `resize` covers the band (viewport height).
+    //   - The inset, though, changes out-of-band from resize (boot-race, rotation,
+    //     gesture-nav swap): Android's native bridge fires `androidSafeAreaChanged`
+    //     and iOS fires SAFE_AREA_INSETS_CHANGED_EV. Without re-reading on those the
+    //     bar moves to the new inset while the sun stays put — they drift apart by
+    //     exactly the inset, so the sun reads as not vertically centred (the very
+    //     mis-centring earlier fixes chased). The initial store value is computed at
+    //     module load, before the host has reported insets, so this is also what
+    //     corrects that first stale read once they arrive.
+    const syncCompanionAnchor = () =>
+      setCompanionBottomYPx(computeCompanionBottomYPx());
+    window.addEventListener("resize", syncCompanionAnchor);
+    window.addEventListener("androidSafeAreaChanged", syncCompanionAnchor);
+    window.addEventListener(SAFE_AREA_INSETS_CHANGED_EV, syncCompanionAnchor);
+    onCleanup(() => {
+      window.removeEventListener("resize", syncCompanionAnchor);
+      window.removeEventListener("androidSafeAreaChanged", syncCompanionAnchor);
+      window.removeEventListener(
+        SAFE_AREA_INSETS_CHANGED_EV,
+        syncCompanionAnchor,
+      );
+    });
     // getSyncData().then((syncData: SyncData) => {
     //   if (
     //     !syncData || IS_ANDROID
