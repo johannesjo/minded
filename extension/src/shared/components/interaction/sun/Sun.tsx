@@ -1353,7 +1353,7 @@ export const Sun: Component<SunProps> = (props) => {
                 const gapDeg = 26;
                 const angle = (i - (total - 1) / 2) * gapDeg;
                 // +24 is pre-scale local px: the crown rides the disc's transform
-                // (companion scale ~0.42), so this lands ~10px of on-screen
+                // (companion scale ~0.48), so this lands ~10px of on-screen
                 // clearance beyond the disc edge at every breakpoint.
                 const radius = sunSize.size / 2 + 24;
                 return (
