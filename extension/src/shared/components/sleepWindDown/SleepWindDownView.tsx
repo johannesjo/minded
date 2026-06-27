@@ -32,6 +32,7 @@ import { BrainDump } from "./activities/BrainDump";
 import {
   nightIdToIndex,
   resolveNightId,
+  SNOOZE_DURATION_OPTIONS,
   SNOOZE_MINUTES,
 } from "./sleepWindDown.util";
 import type { SleepWindDownActivityKey } from "./sleepWindDownActivityActions";
@@ -87,8 +88,13 @@ export interface SleepWindDownViewProps {
   /**
    * Called after persistence completes. The host decides what "leaving" means
    * — main app navigates to dashboard, Android overlay closes the blocked app.
+   * `snoozeMinutes` is the chosen duration on the "snooze" path so the host can
+   * arm its own timer (Android's little-sun countdown) to the same length.
    */
-  onDismiss: (reason: SleepWindDownDismissReason) => void;
+  onDismiss: (
+    reason: SleepWindDownDismissReason,
+    snoozeMinutes?: number,
+  ) => void;
 }
 
 export const SleepWindDownView = (
@@ -100,6 +106,9 @@ export const SleepWindDownView = (
   const [gratitudeDraft, setGratitudeDraft] = createSignal("");
   const [tomorrowDraft, setTomorrowDraft] = createSignal("");
   const [hydrated, setHydrated] = createSignal(false);
+  // Chosen snooze length (minutes), picked on the goodnight gesture. Defaults
+  // to the established 15; the picker lets the user ask for a longer pause.
+  const [snoozeMinutes, setSnoozeMinutes] = createSignal(SNOOZE_MINUTES);
   // Skip persists its state up front and then routes through the goodnight
   // gesture as a calming exit. We carry the chosen reason here so the moon-
   // drag completion fires onDismiss with the original semantics (skip exits,
@@ -303,17 +312,18 @@ export const SleepWindDownView = (
   };
 
   const snooze = async () => {
+    const minutes = snoozeMinutes();
     if (!props.isPreview) {
       await enqueueWrite(async () => {
         await updateSyncData({
-          sleepWindDownSnoozeUntilTS: Date.now() + SNOOZE_MINUTES * 60 * 1000,
+          sleepWindDownSnoozeUntilTS: Date.now() + minutes * 60 * 1000,
         });
       });
     }
     // Snooze returns the user to whatever they were doing without the moon-
     // drag gesture. On Android the host turns this deadline into the regular
     // little-sun countdown.
-    await dismissWithFade("snooze");
+    await dismissWithFade("snooze", minutes);
   };
 
   const enterGoodnight = () => {
@@ -378,7 +388,7 @@ export const SleepWindDownView = (
                       onClick={() => goToView("snoozeIntent")}
                       disabled={!hydrated()}
                     >
-                      Snooze 15 min
+                      Snooze
                     </Btn>
                     <Btn
                       outline
@@ -554,8 +564,23 @@ export const SleepWindDownView = (
                   <BackgroundTransition isSunGradientAttached={false} />
                   <div class={styles.goodnightContent}>
                     <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
-                      15 more minutes
+                      {snoozeMinutes()} more minutes
                     </h2>
+                    <div class={styles.durationRow}>
+                      <For each={SNOOZE_DURATION_OPTIONS}>
+                        {(mins) => (
+                          <Btn
+                            variant="toggle"
+                            small
+                            selected={snoozeMinutes() === mins}
+                            onClick={() => setSnoozeMinutes(mins)}
+                            disabled={!hydrated()}
+                          >
+                            {mins} min
+                          </Btn>
+                        )}
+                      </For>
+                    </div>
                     <p class={styles.subtle}>
                       {IS_ANDROID
                         ? "Triple-tap to snooze, or drag the moon down to sleep now."

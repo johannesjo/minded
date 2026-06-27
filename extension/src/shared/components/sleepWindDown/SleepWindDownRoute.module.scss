@@ -168,6 +168,19 @@
   color: var(--c-fg-full-emphasis);
 }
 
+.durationRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+
+  // btnToggleSelect bakes in its own margins for inline toggle rows; the flex
+  // gap is enough here, so drop the margin to keep the pills evenly spaced.
+  > button {
+    margin: 0;
+  }
+}
+
 .moonContainer {
   position: relative;
   z-index: 30;

@@ -27,7 +27,22 @@ describe("createSleepWindDownDismissTransition", () => {
     resolveFade();
     await dismissal;
 
-    expect(onDismiss).toHaveBeenCalledWith("done");
+    expect(onDismiss).toHaveBeenCalledWith("done", undefined);
+  });
+
+  it("forwards the chosen snooze duration to onDismiss", async () => {
+    const fade = jest.fn(() => ({ promise: Promise.resolve() }));
+    const onDismiss = jest.fn();
+
+    const dismiss = createSleepWindDownDismissTransition({
+      getWrapperEl: () => ({ style: {} }) as HTMLElement,
+      onDismiss,
+      fade,
+    });
+
+    await dismiss("snooze", 30);
+
+    expect(onDismiss).toHaveBeenCalledWith("snooze", 30);
   });
 
   it("dismisses once when completion callbacks fire more than once", async () => {
@@ -59,6 +74,6 @@ describe("createSleepWindDownDismissTransition", () => {
     await dismiss("snooze");
 
     expect(fade).not.toHaveBeenCalled();
-    expect(onDismiss).toHaveBeenCalledWith("snooze");
+    expect(onDismiss).toHaveBeenCalledWith("snooze", undefined);
   });
 });
