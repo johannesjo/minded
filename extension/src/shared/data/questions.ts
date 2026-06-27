@@ -128,12 +128,12 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HBH5,
-        t: "What would a calmer relationship with these websites look like",
+        t: "What would a calmer relationship with the web look like",
       },
       {
         id: QID.HBH6,
         t: "Instead of visiting this website, what might be a better alternative",
-        prompt: "Instead of using these websites I could",
+        prompt: "Instead, I could",
         chips: [
           "take a short walk",
           "read a few pages",
@@ -184,12 +184,12 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.HAU5,
-        t: "What would a calmer relationship with these apps look like",
+        t: "What would a calmer relationship with your phone look like",
       },
       {
         id: QID.HAU6,
         t: "Instead of using this app, what might be a better alternative",
-        prompt: "Instead of using these apps I could",
+        prompt: "Instead, I could",
         chips: [
           "take a short walk",
           "read a few pages",
@@ -222,7 +222,7 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.WRB1,
-        t: "Why do you want to spend less time on these websites?",
+        t: "Why do you want to spend less time online?",
         prompt: "I want to spend less time online because",
       },
       {
@@ -232,7 +232,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRB3,
-        t: "What would you like more time for, away from these websites?",
+        t: "What would you like more time for, away from the screen?",
         prompt: "I'd like more time for",
       },
       {
@@ -242,7 +242,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRB5,
-        t: "What matters more to you than these websites?",
+        t: "What matters more to you than time online?",
         prompt: "What matters more is",
       },
     ],
@@ -254,17 +254,17 @@ export const QUESTION_CATEGORIES: {
     questions: [
       {
         id: QID.WRA1,
-        t: "Why do you want to spend less time on these apps?",
-        prompt: "I want to spend less time on apps because",
+        t: "Why do you want to spend less time on your phone?",
+        prompt: "I want to spend less time on my phone because",
       },
       {
         id: QID.WRA2,
-        t: "What would you rather be doing instead of using these apps?",
+        t: "What would you rather be doing instead?",
         prompt: "Instead, I'd rather",
       },
       {
         id: QID.WRA3,
-        t: "What would you like more time for, away from these apps?",
+        t: "What would you like more time for, away from your phone?",
         prompt: "I'd like more time for",
       },
       {
@@ -274,7 +274,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.WRA5,
-        t: "What matters more to you than these apps?",
+        t: "What matters more to you than time on your phone?",
         prompt: "What matters more is",
       },
     ],

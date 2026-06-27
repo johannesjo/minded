@@ -10,6 +10,7 @@ import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
+import { withTargetName } from "@src/util/displayTargetName";
 
 // Chip fade-out before the text input takes over; keep in sync with the
 // `.question-chips.is-exiting` opacity transition in Question.scss.
@@ -25,8 +26,18 @@ export const Question: (props: {
   initialValue?: string;
   onValueChange?: (val: string) => void;
   maxLength?: number;
+  /** Name of the site/app this interaction is about; when set, the generic
+   *  "this website"/"this app" in the question text is shown as the real name. */
+  targetName?: string;
 }) => JSX.Element = (props) => {
   const question = props.initialQuestion;
+  // Resolve the generic "this website"/"this app" referent to the real site/app
+  // name for the *displayed question* only (recreated per question, so a
+  // one-time read is fine). Deliberately NOT applied to `prompt`: the prompt
+  // becomes part of the saved answer, and baking a specific host into stored
+  // history would read wrong out of its moment — a stale, site-specific log
+  // instead of the timeless reflection it's meant to be.
+  const displayText = withTargetName(question.t, props.targetName);
   const initialInputValue = question.prompt
     ? question.prompt + " "
     : (props.initialValue ?? "");
@@ -124,7 +135,7 @@ export const Question: (props: {
               }
         }
       >
-        <span>{formatQuestionText(question.t)}</span>
+        <span>{formatQuestionText(displayText)}</span>
       </div>
 
       <Show when={hasChips && !getShowInput()}>
@@ -132,7 +143,7 @@ export const Question: (props: {
           class="question-chips"
           classList={{ "is-exiting": getChipsExiting() }}
           role="group"
-          aria-label={formatQuestionText(question.t)}
+          aria-label={formatQuestionText(displayText)}
           onMouseEnter={props.onCancelCountdown}
         >
           <For each={question.chips}>
