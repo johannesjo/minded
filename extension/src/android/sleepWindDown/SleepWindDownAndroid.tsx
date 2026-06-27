@@ -23,6 +23,12 @@ const SleepWindDownAndroid = (): JSX.Element => {
     snoozeMinutes?: number,
   ) => {
     if (reason === "snooze") {
+      // The view already awaited a write of `sleepWindDownSnoozeUntilTS` to the
+      // shared blob before dismissing, and the Kotlin side treats that
+      // timestamp as authoritative (it keeps any future deadline as-is). These
+      // seconds are only the fallback Kotlin uses if no future deadline is
+      // stored yet — keep them in sync with the chosen duration so the two
+      // never diverge.
       androidInterface.snoozeWindDown((snoozeMinutes ?? SNOOZE_MINUTES) * 60);
       return;
     }
