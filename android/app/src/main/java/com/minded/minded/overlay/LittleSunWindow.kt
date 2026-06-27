@@ -60,6 +60,7 @@ class LittleSunWindow(
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
             onLeaving = { beginStepAwayLaunch() },
+            onLeaveMove = { dx, dy -> onLeaveMove(dx, dy) },
             onStepAway = { stepAway() },
         )
     }
@@ -228,6 +229,19 @@ class LittleSunWindow(
         // margin in from every edge, clear of the system gesture zones.
         clampPosition()
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
+    }
+
+    /**
+     * Per-frame move during a committed leave (fling / drag-down set): the disc
+     * travels off-screen, so unlike [onDrag] this does NOT clamp on-screen and
+     * does NOT persist the position — clamping would pin the bubble in view and
+     * the leave could never complete. The composable drives this each frame; the
+     * window is torn down by [stepAway] once the disc has cleared the screen.
+     */
+    private fun onLeaveMove(dxPx: Float, dyPx: Float) {
+        posX += dxPx.roundToInt()
+        posY += dyPx.roundToInt()
+        updateLayout()
     }
 
     /**

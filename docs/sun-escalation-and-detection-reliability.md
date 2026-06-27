@@ -32,16 +32,25 @@ nothing actionable, then the leave demanded a second, hidden, heavy drag inside 
 modal that overran the calm a casual companion tap deserves. Per owner direction
 we **stepped away from the additional overlay entirely**: the little sun is now
 *only* the resting bubble, and it offers the step-away **on the bubble itself** —
-**fling it** (any direction; the universal "fling it" escape hatch from
-`CLAUDE.md`) or **drag it down** past a threshold (the deliberate calm set,
-matching the dashboard sun's drag-down). Both end in minded. A gentler drag just
-repositions the bubble; a plain tap does nothing (so a stray touch neither ejects
-the user nor detonates a surface). On a committed leave the bubble eases out in
-place (a soft shrink + fade) as minded comes forward behind it — no full-screen
-dim, no rising-sky ceremony, no native→WebView seam. (`LittleSun.kt`,
+**fling it** (a quick vertical flick; the universal "fling it" escape hatch from
+`CLAUDE.md`) or **drag it down** past a threshold (the deliberate calm set). Both
+end in minded. A gentler / sideways / upward drag just repositions the bubble; a
+plain tap does nothing (so a stray touch neither ejects the user nor detonates a
+surface).
+
+The leave animations are **ported 1:1 from the in-app sun** (`sunAnimationUtils.ts`
+/ `Sun.tsx`) so the little sun reads and exits a gesture exactly like the sun
+everywhere else: the same release thresholds (`getSunReleaseAction` — 100 dp drag,
+200 dp/s fling, 75 dp min travel, vertical intent), the same fling physics
+(`updatePhysics` — friction 0.98, distance-based shrink/fade, slight spin) and the
+same downward ease-in-out set (`animateToCompletion`). The one difference is
+*where* the motion lands: the in-app sun translates a disc inside a full-viewport
+surface, whereas the little sun has none — so it carries the disc off-screen by
+moving its own wrap-content overlay **window** (`onLeaveMove`, unclamped),
+needing no full-screen surface and no native→WebView seam. (`LittleSun.kt`,
 `LittleSunWindow.kt`.) The rest of this doc's framing — no escalation, the leave
-must feel *wanted*, one always-morphing sun — still holds; only the *shape* of
-the offer changed.
+must feel *wanted*, one always-morphing sun — still holds; only the *shape* of the
+offer changed.
 
 **Original baseline: PR #51** ("Android: make the little sun an interactive,
 non-blocking bubble") — a draggable chat-head bubble that, on *tap*, expanded the
@@ -206,9 +215,17 @@ without accessibility" is not real.
   morph (the close path needed an 80 ms cross-fade because the single window had to
   *resize*, and a true positional morph would have meant a two-window rearchitecture).
   The 2026-06 revision removed the full-screen pause entirely, so there is no
-  expand/resize/cross-fade left to morph. The leave is now a soft shrink + fade of
-  the bubble in place — within one wrap-content window, so no resize seam exists.
-  A possible future polish: let a *fling* visibly throw the sun off-screen in the
-  fling direction (rather than fade in place), which would need a transient larger
-  window to animate across — deliberately not built, to keep the "no additional
-  overlay" win.
+  expand/resize/cross-fade left to morph.
+- **The directional leave throw was the earlier "deferred fling fly-off" — now
+  built without a larger window.** An earlier draft of this revision faded the
+  bubble in place and deferred a real off-screen throw, assuming it would need a
+  transient full-screen surface to animate across. It does not: the leave moves the
+  little sun's own wrap-content **window** off-screen (`onLeaveMove`), so the fling
+  (physics throw along the release vector) and the drag-down set (ease-in-out sink
+  off the bottom) both carry the disc fully off-screen, ported 1:1 from the in-app
+  sun's physics/easing — no extra surface, the "no additional overlay" win intact.
+  Two small, deliberate divergences from the web sun remain, both forced by the
+  60 dp wrap-content window: the downward set does **not** grow the disc to 1.15×
+  (a scale-up would clip at the window bounds), and its duration is the snappier
+  `SET_MS` (≈620 ms) rather than the web's 3 s (the exit must feel *wanted*, not
+  slow). Revisit only if the window is ever enlarged for the leave.
