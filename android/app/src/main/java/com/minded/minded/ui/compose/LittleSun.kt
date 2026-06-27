@@ -6,6 +6,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -40,6 +41,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +51,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import com.minded.minded.R
 import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -631,6 +634,8 @@ private fun StepAwayOffer(
             glowSize = 180.dp,
             discSize = 92.dp,
             scale = sunScaleNow,
+            // The large, number-free pause sun shows the real moon photo at night.
+            useMoonImage = true,
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset {
@@ -674,6 +679,13 @@ internal fun SunDisc(
     glowSize: Dp = 60.dp,
     discSize: Dp = 30.dp,
     scale: Float = 1f,
+    // At night, draw the body as the real moon photo (the same lunar disc the
+    // in-app interaction uses — res/drawable/moon, copied from the web Sun's
+    // moon.webp) instead of a flat cool disc. Off for the tiny resting bubble:
+    // it carries the timer number, where the cratered photo would only hurt
+    // legibility at that size (so it stays a cool gradient, exactly like the web
+    // little sun) — and on only for the expanded pause's large, number-free sun.
+    useMoonImage: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     // At night the companion becomes the moon — cool silver body, cool halo —
@@ -682,6 +694,9 @@ internal fun SunDisc(
     val glowColor = if (night) GLOW_COLOR_NIGHT else GLOW_COLOR
     val bodyColor = if (night) SUN_COLOR_NIGHT else SUN_COLOR
     val textColor = if (night) SUN_TEXT_COLOR_NIGHT else SUN_TEXT_COLOR
+    // The moon photo only stands in for the body after dark, and only where it's
+    // wanted (the large expanded pause sun) — never by day, never on the bubble.
+    val showMoonImage = night && useMoonImage
 
     Box(
         modifier = modifier
@@ -706,23 +721,35 @@ internal fun SunDisc(
             onDraw = { drawCircle(glowBrush) },
         )
 
-        // Solid, opaque sun/moon body.
-        Box(
-            modifier = Modifier
-                .size(discSize)
-                .clip(CircleShape)
-                .background(bodyColor),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (clockString.isNotEmpty()) {
-                Text(
-                    text = clockString,
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    color = textColor,
-                    maxLines = 1,
-                )
+        if (showMoonImage) {
+            // The real moon, over the cool halo above — the same lunar disc the
+            // in-app interaction shows after dark, so the native pause reads as the
+            // moon rather than a flat silver dot. The webp carries its own soft,
+            // transparent limb, so it needs no circle clip.
+            Image(
+                painter = painterResource(id = R.drawable.moon),
+                contentDescription = null,
+                modifier = Modifier.size(discSize),
+            )
+        } else {
+            // Solid, opaque sun/moon body.
+            Box(
+                modifier = Modifier
+                    .size(discSize)
+                    .clip(CircleShape)
+                    .background(bodyColor),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (clockString.isNotEmpty()) {
+                    Text(
+                        text = clockString,
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor,
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }
