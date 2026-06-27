@@ -68,6 +68,38 @@
     animation: none;
     translate: none;
   }
+
+  // The resting daytime companion wears a *tight* halo, not the broad bloom the
+  // interaction sun carries. Its disc is centred exactly on the bottom-bar icon
+  // line (the JS anchor + the bar's min-height math), and the solid disc reads
+  // dead level there — but the shared glow (Sun.scss: 15/40/80px blur layers)
+  // blooms ~80px past the disc, and the companion rests so low that this bloom is
+  // clipped by the screen edge *below* while spreading freely *above*. That
+  // one-sided, upward-only plume pulls the sun's visible mass up, so the disc
+  // reads as floating above the icons — an effect that grew when the companion
+  // was enlarged and sat closer to the edge. #106 tried to tame it by lowering
+  // the rest intensity (COMPANION_REST_GLOW), but intensity scales the *whole*
+  // profile, so even at 1.25 the 80px layer still plumes ~100px up — far broader
+  // than the moon's halo, which at the very same spot never showed the bias
+  // because its glow is genuinely tight (Sun.scss .moon: max ~32px blur).
+  //
+  // So tighten the *shape* the way the moon already proves works: a snug 2-layer
+  // halo with no far plume, so the clip below removes almost nothing and the
+  // visible glow stays symmetric around the centred disc. It still scales with
+  // --glow-intensity, so the hover lift (COMPANION_HOVER_GLOW) keeps blooming and
+  // any drag/tap glow still reads — only the blur reach is reined in. Daytime sun
+  // only: the moon (.moon) keeps its own already-tight glow. Lifted off the
+  // companion the moment it morphs into an intervention (the role, and this
+  // class, change), so the interaction sun is unaffected and regains the broad
+  // bloom as it rises.
+  &.isCompanion :global(.minded-sun:not(.moon)) {
+    box-shadow:
+      var(--sun-shadow),
+      0 0 calc(14px * var(--glow-intensity))
+        rgba(var(--glow-color), calc(0.5 * var(--glow-intensity))),
+      0 0 calc(30px * var(--glow-intensity))
+        rgba(var(--glow-color), calc(0.25 * var(--glow-intensity)));
+  }
 }
 
 // The sun's untransformed base is viewport centre (the flex-centred layer). Every

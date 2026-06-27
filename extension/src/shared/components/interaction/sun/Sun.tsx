@@ -1214,15 +1214,18 @@ export const Sun: Component<SunProps> = (props) => {
   // you touch it.
   //
   // Held a notch below the hover glow (which still blooms to COMPANION_HOVER_GLOW
-  // on hover, so hover stays a visible lift). The companion rests low in the bottom
-  // band, where its halo blooms ~3× further above the disc than it can below before
-  // the screen edge clips it — at the old bold 1.8 that one-sided bloom pulled the
-  // sun's visible mass upward, so the disc read as sitting high above the bottom-bar
-  // icons even though its body is centred on their line (the effect grows with the
-  // disc, so it surfaced when the companion was enlarged). A tighter rest halo clips
-  // far less, so the sun reads level with the icons. Near the moon's calm 1.1 rest
-  // (which never showed the bias), nudged a touch higher to keep the sun's warmer
-  // presence.
+  // on hover, so hover stays a visible lift). This is just the rest *brightness*;
+  // the companion's halo *shape* is tightened separately in CSS so it reads level
+  // with the bottom-bar icons. The disc sits low in the band, where the shared
+  // broad glow (Sun.scss: 15/40/80px) would be clipped by the screen edge below
+  // while pluming freely above — a one-sided, upward-only bloom that pulls the
+  // sun's visible mass up so it reads as sitting high, even though its body is
+  // centred on the icon line (worse the larger the disc). Lowering this intensity
+  // alone can't fix it (it scales the *whole* profile, so the 80px layer still
+  // plumes ~100px up); instead the resting daytime companion gets a snug 2-layer
+  // halo with no far plume — see `.isCompanion .minded-sun:not(.moon)` in
+  // RouteCmp.module.scss. With that tight shape the clip below removes almost
+  // nothing, so 1.25 keeps a warm, symmetric rest halo that stays level.
   const COMPANION_REST_GLOW = 1.25;
   // The moon carries a resting glow too, the same way the sun does. Its disc is a
   // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
