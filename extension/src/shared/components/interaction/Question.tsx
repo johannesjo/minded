@@ -10,6 +10,7 @@ import { nanoid } from "nanoid";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
+import { withTargetName } from "@src/util/displayTargetName";
 
 // Chip fade-out before the text input takes over; keep in sync with the
 // `.question-chips.is-exiting` opacity transition in Question.scss.
@@ -25,10 +26,20 @@ export const Question: (props: {
   initialValue?: string;
   onValueChange?: (val: string) => void;
   maxLength?: number;
+  /** Name of the site/app this interaction is about; when set, the generic
+   *  "this website"/"this app" in a prompt is shown as the real name. */
+  targetName?: string;
 }) => JSX.Element = (props) => {
   const question = props.initialQuestion;
-  const initialInputValue = question.prompt
-    ? question.prompt + " "
+  // Resolve the generic referent to the real site/app name once (the component
+  // is re-created per question); display text and the saved-answer prompt must
+  // use the same resolved string so a tapped chip and the shown prompt match.
+  const displayText = withTargetName(question.t, props.targetName);
+  const displayPrompt = question.prompt
+    ? withTargetName(question.prompt, props.targetName)
+    : undefined;
+  const initialInputValue = displayPrompt
+    ? displayPrompt + " "
     : (props.initialValue ?? "");
   const [getInpEl, setInpEl] = createSignal<HTMLTextAreaElement | null>(null);
   const [getShowInput, setShowInput] = createSignal(false);
@@ -49,8 +60,8 @@ export const Question: (props: {
 
   const submitAnswer = async (answerTxt: string) => {
     const normalizedVal = normalizeAnswerText(answerTxt);
-    const normalizedPrompt = question.prompt
-      ? normalizeAnswerText(question.prompt)
+    const normalizedPrompt = displayPrompt
+      ? normalizeAnswerText(displayPrompt)
       : "";
     const remainderWhenPrefilled =
       normalizedPrompt && normalizedVal.startsWith(normalizedPrompt)
@@ -96,7 +107,7 @@ export const Question: (props: {
   // pre-filled input exactly. Submits immediately — taps are the whole point.
   const submitChip = (chip: string) => {
     props.onCancelCountdown();
-    const answerTxt = question.prompt ? `${question.prompt} ${chip}` : chip;
+    const answerTxt = displayPrompt ? `${displayPrompt} ${chip}` : chip;
     void submitAnswer(answerTxt);
   };
 
@@ -124,7 +135,7 @@ export const Question: (props: {
               }
         }
       >
-        <span>{formatQuestionText(question.t)}</span>
+        <span>{formatQuestionText(displayText)}</span>
       </div>
 
       <Show when={hasChips && !getShowInput()}>
@@ -132,7 +143,7 @@ export const Question: (props: {
           class="question-chips"
           classList={{ "is-exiting": getChipsExiting() }}
           role="group"
-          aria-label={formatQuestionText(question.t)}
+          aria-label={formatQuestionText(displayText)}
           onMouseEnter={props.onCancelCountdown}
         >
           <For each={question.chips}>

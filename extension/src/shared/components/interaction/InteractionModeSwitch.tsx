@@ -28,6 +28,8 @@ export interface InteractionModeSwitchProps {
   syncData: SyncData | undefined;
   initialQuestion: QuestionForPrompt | undefined;
   answers: Answer[];
+  /** Short name of the site/app this interaction is about, if known. */
+  targetName?: string;
   patternInsight: PatternInsight | undefined;
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
@@ -177,6 +179,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           <Question
             initialQuestion={props.initialQuestion}
             answers={props.answers}
+            targetName={props.targetName}
             onCancelCountdown={props.onCancelCountdown}
             onSuccess={props.onSuccess}
             onUpdateQuestion={props.onUpdateQuestion}

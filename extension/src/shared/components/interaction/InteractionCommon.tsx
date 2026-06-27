@@ -63,6 +63,7 @@ import BackgroundTransition from "@src/shared/components/interaction/backgroundT
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
+import { displayTargetName } from "@src/util/displayTargetName";
 import {
   calculateFadeProgress,
   calculateOpacity,
@@ -1419,6 +1420,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             syncData={getSyncDataI()}
             initialQuestion={getInitialQuestion()}
             answers={getAnswers()}
+            targetName={displayTargetName(props.interactionTarget)}
             patternInsight={getPatternInsight()}
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
