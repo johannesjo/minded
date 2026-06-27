@@ -33,13 +33,13 @@ export const DEFAULT_SLEEP_WIND_DOWN: SleepWindDownCfg = {
 export const DEFAULT_FOCUS_SCHEDULE: FocusSchedule = {
   enabled: false, // Start disabled so current behavior is preserved
   days: {
-    0: null, // Sunday - no blocking
+    0: { start: "09:00", end: "17:00" }, // Sunday
     1: { start: "09:00", end: "17:00" }, // Monday
     2: { start: "09:00", end: "17:00" }, // Tuesday
     3: { start: "09:00", end: "17:00" }, // Wednesday
     4: { start: "09:00", end: "17:00" }, // Thursday
     5: { start: "09:00", end: "17:00" }, // Friday
-    6: null, // Saturday - no blocking
+    6: { start: "09:00", end: "17:00" }, // Saturday
   },
 };
 
