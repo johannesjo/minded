@@ -81,6 +81,13 @@ export const isInsideWindow = (
 export const SNOOZE_MINUTES = 15;
 
 /**
+ * Selectable snooze durations (minutes) offered on the goodnight gesture.
+ * The first entry is the default; `SNOOZE_MINUTES` must stay in this list so
+ * the picker has a matching selected option.
+ */
+export const SNOOZE_DURATION_OPTIONS = [15, 30, 45, 60];
+
+/**
  * Maps a `nightId` string ("YYYY-MM-DD") to a stable index in `[0, length)`.
  * Used to pick rotating content (e.g. calm-read passage) deterministically per
  * night — same passage all night, different across nights.

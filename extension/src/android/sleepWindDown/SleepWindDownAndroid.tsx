@@ -18,9 +18,12 @@ const SleepWindDownAndroid = (): JSX.Element => {
   // gesture (drag/fling the moon down) — at that point they're going to bed,
   // so close the overlay and lock the screen so the phone is dark when they
   // put it down.
-  const onDismiss = (reason: SleepWindDownDismissReason) => {
+  const onDismiss = (
+    reason: SleepWindDownDismissReason,
+    snoozeMinutes?: number,
+  ) => {
     if (reason === "snooze") {
-      androidInterface.snoozeWindDown(SNOOZE_MINUTES * 60);
+      androidInterface.snoozeWindDown((snoozeMinutes ?? SNOOZE_MINUTES) * 60);
       return;
     }
     androidInterface.closeCurrentApp();
