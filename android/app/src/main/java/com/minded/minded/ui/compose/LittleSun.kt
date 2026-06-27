@@ -1,9 +1,6 @@
 package com.minded.minded.ui.compose
 
 import android.view.HapticFeedbackConstants
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -19,16 +16,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -37,10 +37,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import com.minded.minded.util.isDarkModeNow
 import kotlin.math.abs
-import kotlinx.coroutines.delay
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 // Match the web extension's little sun: a solid white disc with a soft, warm
 // amber glow around it.
@@ -58,29 +58,40 @@ private val SUN_COLOR_NIGHT = Color(0xFFEEF2FF)
 private val SUN_TEXT_COLOR_NIGHT = Color(0xFF33405E)
 private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
-/**
- * A quick flick of the sun in any direction sends it away — the universal
- * "tapping/flinging it is the escape hatch" gesture (CLAUDE.md). A release
- * velocity past this (dp/s) reads as a deliberate fling rather than a slow
- * reposition of the bubble.
- */
-private const val FLING_LEAVE_DP_PER_S = 1100f
+// ---------------------------------------------------------------------------
+// Leave gestures: ported 1:1 from the web sun (sunAnimationUtils.ts) so the
+// little sun reads a fling / drag-down and animates its exit exactly like the
+// in-app sun. The web works in CSS px, which map to dp here. The one difference
+// is *where* the motion is applied: the in-app sun translates a disc inside a
+// full-viewport surface, whereas the little sun has no surface — so it carries
+// the disc off-screen by moving its own wrap-content overlay *window* (see
+// onLeaveMove), needing no extra/full-screen overlay.
+// ---------------------------------------------------------------------------
+
+// Release thresholds — mirror getSunReleaseAction / its constants.
+private const val DRAG_THRESHOLD_DP = 100f // slow drag past this (downward) "sets" the sun
+private const val FLING_VELOCITY_THRESHOLD_DP_S = 200f // release speed that reads as a fling
+private const val FLING_MIN_DISTANCE_DP = 75f // a fling must also have travelled this far
+
+// Fling physics — mirror FLING_ANIMATION_CONFIG + updatePhysics.
+private const val FLING_FRICTION = 0.98f // velocity decay, applied per (dt*60) frames
+private const val FLING_ROTATION_FACTOR = 0.0005f
+private const val FLING_MAX_MS = 1500L // safety cap; the throw normally ends as it leaves the screen
 
 /**
- * A deliberate, predominantly-downward pull past this (dp) sets the sun down —
- * the calm step-away into minded, the same drag-down the dashboard sun uses.
- * Kept well past a casual nudge so the bubble can still be parked lower on
- * screen without leaving.
+ * Downward "set" — mirror animateToCompletion("down"): an ease-in-out sink off
+ * the bottom edge, the calm deliberate leave. The web runs this over 3s inside a
+ * full viewport; on the little overlay we keep the snappier beat the prior
+ * little-sun set used (the exit must feel *wanted*, not slow — CLAUDE.md), so the
+ * easing curve + direction are mirrored while the duration stays brisk.
  */
-private const val DRAG_DOWN_LEAVE_DP = 140f
+private const val SET_MS = 620L
 
-/**
- * The sun's soft set on a committed leave: it eases out in place — a gentle
- * shrink + fade as minded comes forward behind it — never a hard cut (CLAUDE.md
- * "all transitions fade/morph"). Kept short since minded is already being
- * brought to the front underneath while this plays.
- */
-private const val LEAVE_MS = 380
+/** The web's easeInOut (easeInOutQuad), ported so the set's curve matches exactly. */
+private fun easeInOutQuad(p: Float): Float =
+    if (p < 0.5f) 2f * p * p else 1f - ((-2f * p + 2f) * (-2f * p + 2f)) / 2f
+
+private enum class LeaveKind { FLING, SET }
 
 /**
  * The little sun overlay: a small, draggable companion bubble (like a chat-head)
@@ -88,24 +99,30 @@ private const val LEAVE_MS = 380
  * window only intercepts touches within the bubble's own bounds.
  *
  * It is both the gentle presence and the escape hatch, and it offers to step
- * away *on the bubble itself* — no separate full-screen pause to expand into.
- * Two gestures leave (both end in minded, the calm redirect):
- *  - **fling** it in any direction — the instant, light escape hatch, or
- *  - **drag it down** past a threshold — the deliberate, calm set, matching the
- *    dashboard sun's drag-down.
- * Any gentler drag just repositions the bubble; a plain tap does nothing (so a
- * stray touch neither ejects the user nor detonates a surface).
+ * away *on the bubble itself* — no separate full-screen pause. Two gestures
+ * leave (both end in minded, both animated exactly like the in-app sun):
+ *  - **fling** it (a quick vertical flick) — a physics throw off-screen in the
+ *    fling's direction (mirrors the web sun's `animateFling`), the universal
+ *    "fling it" escape hatch from `CLAUDE.md`.
+ *  - **drag it down** past a threshold — an ease-in-out sink off the bottom
+ *    (mirrors the web sun's downward `animateToCompletion`), the deliberate set.
+ * Any gentler / sideways / upward drag just repositions the bubble; a plain tap
+ * does nothing (so a stray touch neither ejects the user nor detonates a surface).
  */
 @Composable
 fun LittleSun(
     elapsedSeconds: Int = 0,
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
-    // Fired the instant a leave commits, before the sun finishes setting: it
-    // brings minded to the front behind the fading sun, so the app is ready as
-    // the sun winks out (no blocked-app flash, no hard cut).
+    // Fired the instant a leave commits, before the sun has gone: it brings minded
+    // to the front behind the leaving sun, so the app is ready as the disc clears
+    // the screen (no blocked-app flash, no hard cut).
     onLeaving: () -> Unit = {},
-    // Fired once the sun has set: the (now-invisible) overlay window is removed.
+    // Per-frame, unclamped move of the overlay window during a leave so the disc
+    // can travel off-screen (the resting drag clamps to keep the bubble on-screen,
+    // which a leave must not).
+    onLeaveMove: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
+    // Fired once the disc has left the screen: the spent window is removed.
     onStepAway: () -> Unit = {},
 ) {
     val showText = elapsedSeconds >= 0
@@ -115,39 +132,109 @@ fun LittleSun(
 
     val view = LocalView.current
     val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+    // Enough extra travel to carry the disc *and* its 60dp glow fully off-screen.
+    val offScreenMarginPx = with(density) { 120.dp.toPx() }
 
-    // A committed leave: the sun eases out (shrink + fade) in place, minded is
-    // brought forward behind it, then the spent window is removed. Once set, all
-    // further gestures are locked out.
-    var leaving by remember { mutableStateOf(false) }
-    val leaveProgress by animateFloatAsState(
-        targetValue = if (leaving) 1f else 0f,
-        animationSpec = tween(durationMillis = LEAVE_MS, easing = FastOutSlowInEasing),
-        label = "littleSunLeave",
-    )
-    LaunchedEffect(leaving) {
-        if (leaving) {
-            onLeaving() // bring minded to the front now, behind the fading sun
-            delay(LEAVE_MS.toLong())
-            onStepAway() // the sun has set — remove the now-invisible window
+    // A committed leave and (for a fling) the release velocity that drives it.
+    var leaveKind by remember { mutableStateOf<LeaveKind?>(null) }
+    var flingVx by remember { mutableStateOf(0f) }
+    var flingVy by remember { mutableStateOf(0f) }
+    val leaving = leaveKind != null
+
+    // Visual state the leave animations drive; identity values while at rest.
+    var leaveScale by remember { mutableStateOf(1f) }
+    var leaveAlpha by remember { mutableStateOf(1f) }
+    var leaveRotation by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(leaveKind) {
+        val kind = leaveKind ?: return@LaunchedEffect
+        onLeaving() // bring minded forward behind the leaving sun
+        when (kind) {
+            // Drag-down set: ease-in-out sink straight off the bottom edge,
+            // staying opaque as it dips below the horizon (mirrors the web sun's
+            // downward completion, which exits by translation).
+            LeaveKind.SET -> {
+                val totalDy = screenHeightPx + offScreenMarginPx
+                val startNs = withFrameNanos { it }
+                var movedY = 0f
+                while (true) {
+                    val now = withFrameNanos { it }
+                    val t = ((now - startNs).toFloat() / (SET_MS * 1_000_000f)).coerceIn(0f, 1f)
+                    val target = totalDy * easeInOutQuad(t)
+                    onLeaveMove(0f, target - movedY)
+                    movedY = target
+                    if (t >= 1f) break
+                }
+            }
+            // Fling: integrate the release velocity with friction decay, shrinking
+            // and fading the disc with distance and spinning it slightly — the web
+            // sun's `updatePhysics`, applied to the window's position.
+            LeaveKind.FLING -> {
+                var vx = flingVx
+                var vy = flingVy
+                var cumX = 0f
+                var cumY = 0f
+                val maxDistance = maxOf(screenWidthPx, screenHeightPx)
+                val startNs = withFrameNanos { it }
+                var lastNs = startNs
+                while (true) {
+                    val now = withFrameNanos { it }
+                    // Clamp dt so a dropped frame can't teleport the disc.
+                    val dt = ((now - lastNs).toFloat() / 1_000_000_000f).coerceAtMost(0.05f)
+                    lastNs = now
+                    val decay = FLING_FRICTION.toDouble().pow((dt * 60f).toDouble()).toFloat()
+                    vx *= decay
+                    vy *= decay
+                    val dx = vx * dt
+                    val dy = vy * dt
+                    cumX += dx
+                    cumY += dy
+                    onLeaveMove(dx, dy)
+
+                    val distance = sqrt((cumX * cumX + cumY * cumY).toDouble()).toFloat()
+                    val distanceProgress = (distance / maxDistance).coerceIn(0f, 1f)
+                    leaveScale = 1f - distanceProgress * 0.5f
+                    // Distance-based opacity (mirror updatePhysics: full when flinging
+                    // upward), floored by a time fade so a weak, barely-threshold fling
+                    // that never quite clears the screen still ends invisible rather
+                    // than popping out on teardown — a strong fling is long off-screen
+                    // before the time fade matters.
+                    val elapsedMs = (now - startNs) / 1_000_000L
+                    val physicsAlpha = if (vy < 0f) 1f else (1f - distanceProgress * 0.8f).coerceIn(0f, 1f)
+                    val timeFade = (1f - elapsedMs.toFloat() / FLING_MAX_MS).coerceIn(0f, 1f)
+                    leaveAlpha = minOf(physicsAlpha, timeFade)
+                    leaveRotation += vx * FLING_ROTATION_FACTOR * dt
+
+                    val offScreen = cumY > screenHeightPx + offScreenMarginPx ||
+                        cumY < -(screenHeightPx + offScreenMarginPx) ||
+                        cumX > screenWidthPx + offScreenMarginPx ||
+                        cumX < -(screenWidthPx + offScreenMarginPx)
+                    if (offScreen || elapsedMs >= FLING_MAX_MS) break
+                }
+            }
         }
+        onStepAway() // the disc has left — remove the spent window
     }
 
-    // Fling vs drag-down thresholds, in density-independent terms.
-    val flingThresholdPx = with(density) { FLING_LEAVE_DP_PER_S.dp.toPx() }
-    val dragDownThresholdPx = with(density) { DRAG_DOWN_LEAVE_DP.dp.toPx() }
-    // Reconstruct the finger's own trajectory for the fling read: the window
-    // chases the finger during a drag (onDrag repositions it), so the pointer's
-    // *local* position barely moves and can't measure velocity. Accumulating the
-    // raw drag deltas recovers the real motion regardless of the window moving.
+    val flingThresholdPx = with(density) { FLING_VELOCITY_THRESHOLD_DP_S.dp.toPx() }
+    val dragThresholdPx = with(density) { DRAG_THRESHOLD_DP.dp.toPx() }
+    val flingMinDistancePx = with(density) { FLING_MIN_DISTANCE_DP.dp.toPx() }
+    // Reconstruct the finger's own trajectory: the window chases the finger during
+    // a drag (onDrag repositions it), so the pointer's *local* position barely
+    // moves and can't measure velocity. Accumulating the raw drag deltas recovers
+    // the real motion regardless of the window moving.
     val velocityTracker = remember { VelocityTracker() }
     var dragAccum by remember { mutableStateOf(Offset.Zero) }
 
     Box(
         modifier = Modifier
             .size(60.dp)
-            .alpha(1f - leaveProgress)
-            .scale(lerp(1f, 0.6f, leaveProgress))
+            .alpha(leaveAlpha)
+            .scale(leaveScale)
+            .rotate(leaveRotation)
             // Claim the bubble's bounds from system gestures so a drag that
             // starts near a screen edge stays ours instead of triggering the
             // system back-gesture (no-op below API 29).
@@ -170,21 +257,31 @@ fun LittleSun(
                     onDragEnd = {
                         if (!leaving) {
                             val v = velocityTracker.calculateVelocity()
-                            // Compare squared magnitudes — avoids a Float sqrt.
-                            val speedSq = v.x * v.x + v.y * v.y
-                            val down = dragAccum.y
-                            val flung = speedSq >= flingThresholdPx * flingThresholdPx
-                            // A deliberate, predominantly-downward pull (so a
-                            // sideways/upward reposition never leaves by accident).
-                            val pulledDown = down >= dragDownThresholdPx && down > abs(dragAccum.x)
-                            if (flung || pulledDown) {
-                                // A soft tick confirms the deliberate, chosen leave.
-                                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                                leaving = true
-                            } else {
-                                // Rest wherever it was dropped — a free-floating
-                                // companion, parkable anywhere.
-                                onDragEnd()
+                            val offset = dragAccum
+                            val verticalFlingIntent = abs(v.y) >= abs(v.x)
+                            val verticalDragIntent = abs(offset.y) >= abs(offset.x)
+                            // Mirror getSunReleaseAction: a fast vertical flick that
+                            // also travelled far enough is a fling (up or down); a
+                            // slow downward pull past the threshold is the set.
+                            val isFling = abs(v.y) >= flingThresholdPx &&
+                                abs(offset.y) >= flingMinDistancePx &&
+                                verticalFlingIntent && verticalDragIntent
+                            val isSetDown = offset.y >= dragThresholdPx && verticalDragIntent
+                            when {
+                                isFling -> {
+                                    // A soft tick confirms the deliberate, chosen leave.
+                                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                    flingVx = v.x
+                                    flingVy = v.y
+                                    leaveKind = LeaveKind.FLING
+                                }
+                                isSetDown -> {
+                                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                    leaveKind = LeaveKind.SET
+                                }
+                                // Everything else (sideways / upward / short) just
+                                // rests where it was dropped — a parkable companion.
+                                else -> onDragEnd()
                             }
                         }
                     },
