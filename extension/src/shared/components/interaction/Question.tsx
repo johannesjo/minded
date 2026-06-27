@@ -27,19 +27,19 @@ export const Question: (props: {
   onValueChange?: (val: string) => void;
   maxLength?: number;
   /** Name of the site/app this interaction is about; when set, the generic
-   *  "this website"/"this app" in a prompt is shown as the real name. */
+   *  "this website"/"this app" in the question text is shown as the real name. */
   targetName?: string;
 }) => JSX.Element = (props) => {
   const question = props.initialQuestion;
-  // Resolve the generic referent to the real site/app name once (the component
-  // is re-created per question); display text and the saved-answer prompt must
-  // use the same resolved string so a tapped chip and the shown prompt match.
+  // Resolve the generic "this website"/"this app" referent to the real site/app
+  // name for the *displayed question* only (recreated per question, so a
+  // one-time read is fine). Deliberately NOT applied to `prompt`: the prompt
+  // becomes part of the saved answer, and baking a specific host into stored
+  // history would read wrong out of its moment — a stale, site-specific log
+  // instead of the timeless reflection it's meant to be.
   const displayText = withTargetName(question.t, props.targetName);
-  const displayPrompt = question.prompt
-    ? withTargetName(question.prompt, props.targetName)
-    : undefined;
-  const initialInputValue = displayPrompt
-    ? displayPrompt + " "
+  const initialInputValue = question.prompt
+    ? question.prompt + " "
     : (props.initialValue ?? "");
   const [getInpEl, setInpEl] = createSignal<HTMLTextAreaElement | null>(null);
   const [getShowInput, setShowInput] = createSignal(false);
@@ -60,8 +60,8 @@ export const Question: (props: {
 
   const submitAnswer = async (answerTxt: string) => {
     const normalizedVal = normalizeAnswerText(answerTxt);
-    const normalizedPrompt = displayPrompt
-      ? normalizeAnswerText(displayPrompt)
+    const normalizedPrompt = question.prompt
+      ? normalizeAnswerText(question.prompt)
       : "";
     const remainderWhenPrefilled =
       normalizedPrompt && normalizedVal.startsWith(normalizedPrompt)
@@ -107,7 +107,7 @@ export const Question: (props: {
   // pre-filled input exactly. Submits immediately — taps are the whole point.
   const submitChip = (chip: string) => {
     props.onCancelCountdown();
-    const answerTxt = displayPrompt ? `${displayPrompt} ${chip}` : chip;
+    const answerTxt = question.prompt ? `${question.prompt} ${chip}` : chip;
     void submitAnswer(answerTxt);
   };
 
