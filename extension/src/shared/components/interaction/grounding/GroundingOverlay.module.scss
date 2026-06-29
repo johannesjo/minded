@@ -161,44 +161,20 @@
   gap: 28px;
 }
 
-.ring {
-  position: relative;
-  width: min(300px, 70vw);
-  height: min(300px, 70vw);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ringSvg {
+// Timed sit, live dashboard: the breathing disc here is the one shell sun, risen
+// from its companion rest to the surfing meditation anchor (sunSurfSettle, ~0.38
+// of the viewport). It floats on its own layer, so this block carries only the
+// remaining time + End — dropped to just below the disc and its halo so the two
+// read as one centred group, the same shape as the urge-surf meditation. Anchored
+// to the viewport (not flow-centred) so it tracks the fixed-ratio sun. The
+// styleguide preview keeps the flow-centred .session (a local BreathSun stands in
+// for the absent shell sun).
+.sessionMeditate {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg); // start the progress at 12 o'clock
-}
-
-.ringTrack {
-  fill: none;
-  stroke: rgba(150, 130, 90, 0.18);
-  stroke-width: 4;
-}
-
-.ringProgress {
-  fill: none;
-  stroke: #e8b765;
-  stroke-width: 4;
-  stroke-linecap: round;
-  // Driven by stroke-dashoffset from the component; a short transition keeps
-  // the per-frame updates from looking jittery.
-  transition: stroke-dashoffset 0.3s linear;
-}
-
-.ringInner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  left: 50%;
+  top: 56%;
+  transform: translateX(-50%);
+  gap: 18px;
 }
 
 .remaining {
@@ -243,9 +219,6 @@
   .grounding::before,
   .grounding.skySettled::before {
     opacity: 0;
-    transition: none;
-  }
-  .ringProgress {
     transition: none;
   }
   .praise {

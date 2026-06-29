@@ -31,18 +31,21 @@ interface GroundingOverlayProps {
   /** Called once the flow is finished (completed, declined, or ignored). */
   onClose: () => void;
   /**
-   * Whether the dashboard's companion sun should rest at the bottom beneath this
-   * stage. True while the invitation/choice screens show (offer, duration) so the
-   * sun stays with the offer; false once a sit takes over (session, androidLock,
-   * praise) — those stages own the screen (their own breath sun, or a near-black
-   * dim), so the companion sun is tucked away to keep a single sun on screen.
-   * Optional — only the shell-sun dashboard wires it up.
+   * How the dashboard's single shell sun should behave through this stage — the
+   * one disc carries the whole flow rather than a second one being drawn:
+   * - "companion": rest on the bottom bar beneath the invitation (offer/duration)
+   *   or glide home there beneath the closing praise.
+   * - "meditate": rise into the centre and breathe as the timed sit's breath sun
+   *   (the surfing meditation settle — the same gentle pulse the other meditations
+   *   use), so the sit reads as the same sun the user always sees.
+   * - "hidden": tuck away while a screen-free sit / Android lock owns the screen.
+   * Provided only by the shell-sun dashboard; its *presence* also tells this
+   * overlay the shell sun exists, so the timed sit reuses it instead of drawing
+   * its own disc. Absent in the styleguide preview, which falls back to a local
+   * BreathSun.
    */
-  onShowPersistentSun?: (show: boolean) => void;
+  onSunMode?: (mode: "companion" | "meditate" | "hidden") => void;
 }
-
-const RING_RADIUS = 140;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 /**
  * The grounding offer the dashboard sun gives when dragged *down*. It is an
@@ -55,8 +58,13 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const [getMode, setMode] = createSignal<Mode>("timer");
   const [getIsClosing, setIsClosing] = createSignal(false);
   const [getSkySettled, setSkySettled] = createSignal(false);
-  const [getProgress, setProgress] = createSignal(0);
   const [getRemainingMs, setRemainingMs] = createSignal(0);
+
+  // The shell-sun dashboard wires onSunMode; its presence means the one shell sun
+  // is available to carry this stage, so the timed sit reuses it as its breath sun
+  // rather than drawing its own. (Absent in the styleguide preview — see the
+  // BreathSun fallback in the timed-sit render.)
+  const usesMainSun = () => !!props.onSunMode;
 
   let intervalId: number | undefined;
   let endTimeout: number | undefined;
@@ -78,14 +86,23 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     }
   };
 
-  // The dashboard's companion sun rests at the bottom beneath this stage (see
-  // InteractionCommon). Keep it there only while we're still inviting — the
-  // offer and duration choice screens. Once a sit begins (session / androidLock /
-  // praise) the stage owns the screen with its own sun or a near-black dim, so
-  // the companion is tucked away to keep a single sun on screen.
+  // Drive the one shell sun through the stage (see InteractionCommon's onSunMode):
+  // it rests at the bottom beneath the invitation (offer/duration) and glides home
+  // there beneath the closing praise ("companion"); it rises into the centre and
+  // breathes as the timed sit's breath sun ("meditate"); it tucks away while a
+  // screen-free sit / Android lock owns the near-black screen ("hidden"). The timed
+  // sit is the morph the user sees — the companion disc rises and breathes rather
+  // than a second disc popping in.
   createEffect(() => {
     const phase = getPhase();
-    props.onShowPersistentSun?.(phase === "offer" || phase === "duration");
+    const isTimer = getMode() === "timer";
+    const mode =
+      phase === "offer" || phase === "duration" || phase === "praise"
+        ? "companion"
+        : phase === "session" && isTimer
+          ? "meditate"
+          : "hidden";
+    props.onSunMode?.(mode);
   });
 
   // The down-drag's warm sunset (light) / night sky (dark) carries in with the
@@ -148,18 +165,16 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const startSession = (minutes: number) => {
     const durationMs = minutes * 60 * 1000;
     setRemainingMs(durationMs);
-    setProgress(0);
     setPhase("session");
     // A clear tone marks the threshold into stillness.
     void playGong();
 
-    // A 1 Hz interval is all the countdown needs: the label only changes once a
-    // second and the ring has a 0.3s CSS transition that smooths each step, so
-    // sampling per animation frame (~60x/sec) would repaint for no visible gain.
+    // A 1 Hz interval is all the countdown needs: the remaining-time label only
+    // changes once a second, so sampling per animation frame (~60x/sec) would
+    // repaint for no visible gain.
     const startTs = Date.now();
     intervalId = window.setInterval(() => {
       const elapsed = Date.now() - startTs;
-      setProgress(Math.min(1, elapsed / durationMs));
       setRemainingMs(Math.max(0, durationMs - elapsed));
     }, 1000);
     // The end is its own timer, not a branch of the interval: a backgrounded tab
@@ -273,34 +288,19 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         </div>
       </Show>
 
-      {/* Timed sit — a still, softly glowing sun and a quiet progress ring. */}
+      {/* Timed sit — the one sun breathes at the centre, the remaining time and
+          End tucked just beneath it (mirrors the urge-surf meditation). The
+          breathing disc IS the shell sun, risen from its companion rest (see the
+          onSunMode effect); only the styleguide preview, which has no shell sun,
+          stands in with a local BreathSun. */}
       <Show when={getPhase() === "session" && getMode() === "timer"}>
-        <div class={styles.session}>
-          <div class={styles.ring}>
-            <svg
-              class={styles.ringSvg}
-              viewBox="0 0 300 300"
-              aria-hidden="true"
-            >
-              <circle
-                class={styles.ringTrack}
-                cx="150"
-                cy="150"
-                r={RING_RADIUS}
-              />
-              <circle
-                class={styles.ringProgress}
-                cx="150"
-                cy="150"
-                r={RING_RADIUS}
-                stroke-dasharray={RING_CIRCUMFERENCE}
-                stroke-dashoffset={RING_CIRCUMFERENCE * (1 - getProgress())}
-              />
-            </svg>
-            <div class={styles.ringInner}>
-              <BreathSun fill={1} size="large" variant={props.variant} />
-            </div>
-          </div>
+        <div
+          class={styles.session}
+          classList={{ [styles.sessionMeditate]: usesMainSun() }}
+        >
+          <Show when={!usesMainSun()}>
+            <BreathSun fill={1} size="large" variant={props.variant} />
+          </Show>
           <p class={styles.remaining}>{remainingLabel()}</p>
           <Btn onClick={finishSession}>End</Btn>
         </div>

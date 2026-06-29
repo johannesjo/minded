@@ -826,9 +826,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // the offer rather than vanishing: settle it to its companion rest at the
     // bottom so it rests beneath the invitation, visible on the shell-sun layer
     // above the offer's sky. (The down-drag's own completion would otherwise
-    // slide the disc off the bottom edge and fade it out.) It's tucked away again
-    // only once a sit actually begins — the session draws its own breath sun — so
-    // there's never two suns at once; see GroundingOverlay's onShowPersistentSun.
+    // slide the disc off the bottom edge and fade it out.) From there it carries
+    // the whole stage as the one sun: it rises into the centre and breathes for a
+    // timed sit, and tucks away only for a screen-free sit / Android lock — so
+    // there's never two suns at once; see GroundingOverlay's onSunMode.
     if (props.isFromDashboard && direction === "down") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
       // Ease the transition background home only *after* the offer has faded in
@@ -1290,12 +1291,32 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <GroundingOverlay
           variant={getDragObjectName()}
           onClose={finishGrounding}
-          onShowPersistentSun={(show) => {
-            // Shell sun only: it's the disc that rests at the bottom beneath the
-            // offer. Hide it (without disturbing its companion role) once a sit
-            // takes over so only one sun shows; finishGrounding reveals it again.
-            if (props.useShellSun) setIsShellSunHidden(!show);
-          }}
+          onSunMode={
+            // The one shell sun carries the whole grounding stage rather than a
+            // second disc being drawn (only wired when the shell sun exists; the
+            // grounding offer only opens on the shell-sun dashboard anyway):
+            //  - "companion": rest on / glide home to the bottom bar (beneath the
+            //    invitation, and beneath the closing praise).
+            //  - "meditate": rise into the centre and breathe as the timed sit's
+            //    breath sun. Reuse the "surfing" role so the sit breathes with the
+            //    same gentle meditation pulse the urge-surf wave uses, gliding up
+            //    from the companion rest — one sun, morphing, never a second disc.
+            //  - "hidden": tuck away while a screen-free sit / Android lock owns
+            //    the near-black screen. (Snap-hide, per the shell-sun layer.)
+            props.useShellSun
+              ? (mode) => {
+                  if (mode === "hidden") {
+                    // Send it home first so it's at its companion rest when the
+                    // close reveals it again, then hide it behind the dim.
+                    setSunPhase("companion");
+                    setIsShellSunHidden(true);
+                    return;
+                  }
+                  setIsShellSunHidden(false);
+                  setSunPhase(mode === "meditate" ? "surfing" : "companion");
+                }
+              : undefined
+          }
         />
       )}
 
