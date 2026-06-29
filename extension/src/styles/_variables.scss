@@ -154,6 +154,18 @@
   --bg-transition-sunset-mid: #f49f73;
   --bg-transition-sunset-horizon: #ffd36a;
   --bg-transition-sunset-bottom: #ef6f63;
+  // The full warm-sky wash the down-drag reveals. Shared by the drag's
+  // BackgroundTransition layer and the grounding stage so the sky the drag
+  // unveils carries through "Stay a while" unchanged (built from the same
+  // sunset color stops above, so a color tweak updates both at once).
+  --background-sunset-gradient: linear-gradient(
+    to bottom,
+    var(--bg-transition-sunset-top) 0%,
+    var(--bg-transition-sunset-top) 14%,
+    var(--bg-transition-sunset-mid) 54%,
+    var(--bg-transition-sunset-horizon) 78%,
+    var(--bg-transition-sunset-bottom) 100%
+  );
 
   --safe-area-inset-bottom: 0px;
   --safe-area-inset-top: 0px;
@@ -188,6 +200,24 @@
     --bg-transition-sunset-bottom: #05214e;
     --bg-transition-bluesky-top: #020c25;
     --bg-transition-bluesky-bottom: #05214e;
+
+    // Dark sky carries a faint warm horizon glow over the deep-night gradient
+    // (matches BackgroundTransition's dark down-drag layer).
+    --background-sunset-gradient:
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 80%,
+        rgba(121, 45, 86, 0.12) 91%,
+        rgba(196, 72, 58, 0.24) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        var(--bg-transition-sunset-top) 0%,
+        var(--bg-transition-sunset-mid) 52%,
+        var(--bg-transition-sunset-horizon) 76%,
+        var(--bg-transition-sunset-bottom) 100%
+      );
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);

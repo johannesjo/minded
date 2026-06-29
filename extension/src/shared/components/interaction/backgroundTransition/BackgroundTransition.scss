@@ -41,14 +41,10 @@
   }
 
   &.background-sunset {
-    background: linear-gradient(
-      to bottom,
-      var(--bg-transition-sunset-top, #4f78bb) 0%,
-      var(--bg-transition-sunset-top, #4f78bb) 14%,
-      var(--bg-transition-sunset-mid, #f49f73) 54%,
-      var(--bg-transition-sunset-horizon, #ffd36a) 78%,
-      var(--bg-transition-sunset-bottom, #ef6f63) 100%
-    );
+    // Shared with the grounding stage (see --background-sunset-gradient): the
+    // sky the down-drag reveals is the same one "Stay a while" keeps, so they
+    // must be pixel-identical for the crossfade between them to read as seamless.
+    background: var(--background-sunset-gradient);
     // No sun-gradient-attached override here anymore: the sun's glow rides the
     // disc's own box-shadow (Sun.scss `.minded-sun`) and sinks with it into the
     // sunset, so the sky overlay just needs its plain gradient.
@@ -65,21 +61,11 @@
   will-change: auto;
 }
 
-.minded-6622-dark
-  .background-transition.background-sunset.sun-gradient-attached {
-  background:
-    linear-gradient(
-      to bottom,
-      transparent 0%,
-      transparent 80%,
-      rgba(121, 45, 86, 0.12) 91%,
-      rgba(196, 72, 58, 0.24) 100%
-    ),
-    linear-gradient(
-      to bottom,
-      var(--bg-transition-sunset-top, #020c25) 0%,
-      var(--bg-transition-sunset-mid, #041735) 52%,
-      var(--bg-transition-sunset-horizon, #07244f) 76%,
-      var(--bg-transition-sunset-bottom, #05214e) 100%
-    );
-}
+// The dark down-drag sunset now comes from --background-sunset-gradient (it
+// flips to the deep-night wash under .minded-6622-dark), shared with the
+// grounding stage, so no separate dark override is needed here. The deleted
+// override was gated on .sun-gradient-attached; the var is not, so the one
+// unattached caller (SleepWindDown's goodnight moon-down gesture) now gets the
+// same proper deep-night wash in dark mode instead of the old degenerate
+// fallback (dark colors at light-mode stops, no horizon glow). That's
+// intentional — it unifies every "drag down" reveal on the real night sky.

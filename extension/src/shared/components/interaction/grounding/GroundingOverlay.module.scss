@@ -13,13 +13,33 @@
   padding: 24px;
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  // The same sky as the rest of the app — the morning-sky (light) or night-sky
-  // (dark) wash. --background-gradient flips with the .minded-6622-dark ancestor,
-  // the very class that sets this overlay's "moon" variant, so the two never
-  // disagree. The grounding stage settles into the dashboard's sky, not a
-  // separate backdrop.
+  // Keep the sky the down-drag revealed — but composited exactly as the drag
+  // shows it, or it reads far more saturated here than on the dashboard. There,
+  // BackgroundTransition paints the sunset as a 0.8-opacity overlay *over* the
+  // resting sky, so the sky beneath mutes it; painting the gradient at full
+  // strength here looked over-colored. So we mirror those two layers — the
+  // resting sky as the base...
   background: var(--background-gradient);
   animation: groundingIn var(--grounding-fade-ms, 600ms) ease-out forwards;
+
+  // ...and the same sunset wash at the same 0.8 on top. --background-sunset-gradient
+  // is the very gradient the drag overlays (and flips to the deep-night version
+  // under .minded-6622-dark, the class that also sets this overlay's "moon"
+  // variant), so the colored sky carries seamlessly from the drag through this
+  // stage and only dissolves back to the dashboard sky as the overlay fades out
+  // on close. It sits behind the panel/session/starfield content and fades with
+  // the stage (it's a child of this opacity-animated element).
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--background-sunset-gradient);
+    opacity: 0.8;
+    pointer-events: none;
+    // Recede softly with the screen-free dim (see &.isQuiet::before below).
+    transition: opacity var(--grounding-fade-ms, 600ms) ease;
+  }
 
   // Screen-free sit: dim almost to black so the eyes can truly rest.
   &.isQuiet {
@@ -28,9 +48,21 @@
     transition: background var(--grounding-fade-ms, 600ms) ease;
   }
 
-  &.isClosing {
+  // ...and drop the sunset wash entirely so nothing tints that near-black dim.
+  &.isQuiet::before {
     opacity: 0;
-    transition: opacity var(--grounding-fade-ms, 600ms) ease;
+  }
+
+  // Close with a dedicated fade-out animation, not `opacity: 0` + transition.
+  // The entrance `animation: groundingIn … forwards` keeps *filling* opacity at 1
+  // with a priority above normal declarations, so a plain `opacity: 0` here gets
+  // overridden — the overlay would hard-cut on unmount instead of fading. An
+  // animation overrides that fill, so the kept sunset / night sky actually
+  // dissolves back to the dashboard sky as we return home. Its duration matches
+  // GROUNDING_FADE_MS (the JS waits that long before unmounting), so the fade
+  // lands exactly as the overlay leaves.
+  &.isClosing {
+    animation: groundingOut var(--grounding-fade-ms, 600ms) ease forwards;
   }
 }
 
@@ -40,6 +72,15 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes groundingOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -179,7 +220,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .grounding {
+  .grounding,
+  // .isClosing is more specific than .grounding, so it must be named explicitly
+  // here or its groundingOut would still run under reduced motion.
+  .grounding.isClosing {
     animation: none;
   }
   .ringProgress {

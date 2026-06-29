@@ -812,12 +812,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Direction picks the ritual on the dashboard, instead of completing.
     //
     // Down = ground yourself: the "Stay a while?" offer takes over with its own
-    // full-screen, opaque app-sky layer (it needs an opaque backdrop — the
-    // screen-free phase, for one, dims to near-black). Don't warm the transition
-    // background to night behind it: the only time that warmed sky (stars and
-    // all, in dark mode) would show is the brief reveal as the offer fades out on
-    // close — a jarring flash. Ease it back to the default sky instead so the
-    // reveal is seamless.
+    // full-screen, opaque layer that *keeps* the warm sky the drag just revealed
+    // (--background-sunset-gradient; the screen-free phase still dims it to
+    // near-black on top). So the sunset/night sky carries seamlessly from the
+    // drag into the offer. We still ease the transition background beneath it
+    // back to the default sky: that layer is hidden under the opaque offer
+    // throughout, and easing it home means the *close* fade dissolves the
+    // sunset back into the dashboard's sky rather than revealing a frozen one.
     //
     // Unlike let-go (which hides the sun behind its question), the sun stays with
     // the offer rather than vanishing: settle it to its companion rest at the
