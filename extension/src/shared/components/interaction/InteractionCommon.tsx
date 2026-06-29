@@ -165,9 +165,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getPatternInsight, setPatternInsight] = createSignal<
     PatternInsight | undefined
   >();
-  const [getPendingAnswer, setPendingAnswer] = createSignal<
-    Answer | undefined
-  >();
+  const [, setPendingAnswer] = createSignal<Answer | undefined>();
   const [getAlternativeToReplace, setAlternativeToReplace] = createSignal<
     Alternative | undefined
   >();
