@@ -6,6 +6,8 @@ import {
 } from "./emotionLabeling.const";
 import { saveEmotionLabeling } from "@src/dataInterface/commonSyncDataInterface";
 import Btn from "@src/shared/components/ui/Btn";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import { createScreenFade } from "@src/util/screenFade";
 
 interface EmotionLabelingProps {
   onSuccess: () => void;
@@ -21,6 +23,13 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
   const [getBodyLocations, setBodyLocations] = createSignal<Set<BodyLocation>>(
     new Set(),
   );
+
+  const FADE_MS = 240;
+  // Cross-screen fade between the two steps (emotions → body location), via the
+  // shared helper rather than hard-cutting the <Switch>: drop opacity to 0, swap
+  // the step while hidden, then ease back in. Matches the FADE_MS transition on
+  // the root element below.
+  const screenFade = createScreenFade(FADE_MS);
 
   const toggleEmotion = (emotion: string) => {
     props.onCancelCountdown();
@@ -55,6 +64,12 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
   return (
     <div
       id="minded-6622-emotion-labeling"
+      style={{
+        opacity: screenFade.opacity(),
+        transition: prefersReducedMotion()
+          ? "none"
+          : `opacity ${FADE_MS}ms ease-in-out`,
+      }}
       onmousemove={props.onCancelCountdown}
     >
       <Switch>
@@ -87,7 +102,7 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
               "margin-top": "24px",
               visibility: getSelectedEmotions().size > 0 ? "visible" : "hidden",
             }}
-            onClick={() => setStep(1)}
+            onClick={() => screenFade.toScreen(() => setStep(1))}
           >
             continue
           </Btn>
