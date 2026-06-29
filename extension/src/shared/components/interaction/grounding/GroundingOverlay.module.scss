@@ -172,9 +172,15 @@
 .sessionMeditate {
   position: absolute;
   left: 50%;
-  top: 56%;
+  // Anchor to the sun, not a bare viewport fraction: the breath sun's centre is
+  // fixed at 38% of the viewport (sunSurfSettle), so place the time a constant
+  // ~96px below that — just under the disc and its halo — and it keeps the same
+  // close gap on any viewport height instead of drifting as a plain % would. The
+  // End button then sits further down (the wider column gap) so it reads as a
+  // separate action, not part of the breathing group.
+  top: calc(38% + 96px);
   transform: translateX(-50%);
-  gap: 18px;
+  gap: 34px;
 }
 
 .remaining {
