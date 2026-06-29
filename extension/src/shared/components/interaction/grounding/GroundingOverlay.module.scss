@@ -13,22 +13,23 @@
   padding: 24px;
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  // Keep the sky the down-drag revealed — but composited exactly as the drag
-  // shows it, or it reads far more saturated here than on the dashboard. There,
-  // BackgroundTransition paints the sunset as a 0.8-opacity overlay *over* the
-  // resting sky, so the sky beneath mutes it; painting the gradient at full
-  // strength here looked over-colored. So we mirror those two layers — the
-  // resting sky as the base...
+  // The resting sky is the dashboard's own calm sky — the surface "Stay a while"
+  // settles onto. The down-drag's warm sky rides in on top of it (the ::before
+  // below) and then dissolves away, leaving this.
   background: var(--background-gradient);
   animation: groundingIn var(--grounding-fade-ms, 600ms) ease-out forwards;
 
-  // ...and the same sunset wash at the same 0.8 on top. --background-sunset-gradient
-  // is the very gradient the drag overlays (and flips to the deep-night version
-  // under .minded-6622-dark, the class that also sets this overlay's "moon"
-  // variant), so the colored sky carries seamlessly from the drag through this
-  // stage and only dissolves back to the dashboard sky as the overlay fades out
-  // on close. It sits behind the panel/session/starfield content and fades with
-  // the stage (it's a child of this opacity-animated element).
+  // The warm sunset (light) / night sky (dark) the down-drag revealed, carried
+  // in on top of the resting sky so the hand-off from the drag is seamless — no
+  // flash. Composited exactly as the drag shows it: a 0.8-opacity wash over the
+  // sky (BackgroundTransition paints it the same way), so it doesn't read
+  // over-saturated, and built from the same --background-sunset-gradient (which
+  // flips to the deep-night version under .minded-6622-dark, the class that also
+  // sets this overlay's "moon" variant), so the two are pixel-identical. From the
+  // moment the offer opens this eases to 0 (see &.skySettled::before) — "Stay a
+  // while" is a place to rest, not a sunset to dwell in. It sits behind the
+  // panel/session/starfield content and fades with the stage (it's a child of
+  // this opacity-animated element).
   &::before {
     content: "";
     position: absolute;
@@ -37,8 +38,18 @@
     background: var(--background-sunset-gradient);
     opacity: 0.8;
     pointer-events: none;
-    // Recede softly with the screen-free dim (see &.isQuiet::before below).
+    // Base duration governs only the screen-free recede (&.isQuiet below); the
+    // settle back to standard sky overrides it with the slow --sky-settle-ms.
     transition: opacity var(--grounding-fade-ms, 600ms) ease;
+  }
+
+  // Dissolve the carried-in sunset back to the dashboard's resting sky. JS flips
+  // this class on the first frame after mount, so the sky eases home from the
+  // moment the offer opens — no hold on the sunset — over the slow --sky-settle-ms
+  // (much longer than the entrance fade above). A calm, unhurried return.
+  &.skySettled::before {
+    opacity: 0;
+    transition: opacity var(--sky-settle-ms, 2500ms) ease;
   }
 
   // Screen-free sit: dim almost to black so the eyes can truly rest.
@@ -225,6 +236,14 @@
   // here or its groundingOut would still run under reduced motion.
   .grounding.isClosing {
     animation: none;
+  }
+  // No carried-in sunset to dissolve: rest on the dashboard's calm sky from the
+  // start, with no fade either in or back out. (The .skySettled selector is named
+  // explicitly so its slow transition can't win over this on specificity.)
+  .grounding::before,
+  .grounding.skySettled::before {
+    opacity: 0;
+    transition: none;
   }
   .ringProgress {
     transition: none;

@@ -84,6 +84,7 @@ import { shouldShowSunInstructionsOverlay } from "@src/shared/components/interac
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
+import { GROUNDING_FADE_MS } from "@src/shared/components/interaction/grounding/grounding.const";
 import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
@@ -402,6 +403,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let initFadeOutTimeout: number | undefined;
   let contentReadyTimeout: number | undefined;
   let beProudMessageTimeout: number | undefined;
+  let groundingBgResetTimeout: number | undefined;
   let intentSelectionArmTimeout: number | undefined;
   let timeSelectionArmTimeout: number | undefined;
   let rootThemeObserver: MutationObserver | undefined;
@@ -812,13 +814,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Direction picks the ritual on the dashboard, instead of completing.
     //
     // Down = ground yourself: the "Stay a while?" offer takes over with its own
-    // full-screen, opaque layer that *keeps* the warm sky the drag just revealed
-    // (--background-sunset-gradient; the screen-free phase still dims it to
-    // near-black on top). So the sunset/night sky carries seamlessly from the
-    // drag into the offer. We still ease the transition background beneath it
-    // back to the default sky: that layer is hidden under the opaque offer
-    // throughout, and easing it home means the *close* fade dissolves the
-    // sunset back into the dashboard's sky rather than revealing a frozen one.
+    // full-screen, opaque layer that the drag's warm sky carries *into*
+    // (--background-sunset-gradient), so the hand-off from the drag reads as one
+    // continuous motion — no flash. But "Stay a while" is a place to rest, not a
+    // sunset to dwell in: once the offer has landed it eases that carried-in wash
+    // back to the dashboard's calm sky (see GroundingOverlay's skySettled). We
+    // also ease the transition background beneath it home, so any peek on close
+    // is the default sky rather than a frozen sunset.
     //
     // Unlike let-go (which hides the sun behind its question), the sun stays with
     // the offer rather than vanishing: settle it to its companion rest at the
@@ -829,9 +831,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // there's never two suns at once; see GroundingOverlay's onShowPersistentSun.
     if (props.isFromDashboard && direction === "down") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
-      interactionEventTarget.dispatchEvent(
-        new CustomEvent("resetBackgroundTransition"),
-      );
+      // Ease the transition background home only *after* the offer has faded in
+      // and gone opaque (GROUNDING_FADE_MS). The offer carries the drag's sunset
+      // and dissolves it back to standard itself; resetting the layer beneath it
+      // *now* — while the offer is still translucent over it — would race the
+      // offer's slow settle and make the sky dip toward standard then bounce back
+      // toward sunset mid-fade. Once the offer is opaque this reset is hidden, so
+      // it only matters for the close fade (where it must reveal the default sky,
+      // never a frozen sunset).
+      groundingBgResetTimeout = window.setTimeout(() => {
+        groundingBgResetTimeout = undefined;
+        if (isDisposed) return;
+        interactionEventTarget.dispatchEvent(
+          new CustomEvent("resetBackgroundTransition"),
+        );
+      }, GROUNDING_FADE_MS);
       setSunPhase("companion");
       setShowGroundingOffer(true);
       return;
@@ -1244,6 +1258,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
     if (beProudMessageTimeout) {
       clearTimeout(beProudMessageTimeout);
+    }
+    if (groundingBgResetTimeout) {
+      clearTimeout(groundingBgResetTimeout);
     }
     rootThemeObserver?.disconnect();
     wrapperThemeObserver?.disconnect();

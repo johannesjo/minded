@@ -19,6 +19,15 @@ export const OFFER_AUTO_DISMISS_MS = 15000;
 /** Fade in/out of the grounding overlay itself. */
 export const GROUNDING_FADE_MS = 600;
 
+/**
+ * How long the warm down-drag sky (sunset / night) takes to dissolve back to the
+ * dashboard's standard sky once "Stay a while" opens. The dissolve starts the
+ * moment the offer mounts — no hold on the sunset first — and eases slowly, a
+ * calm, unhurried return that is deliberately much longer than the
+ * GROUNDING_FADE_MS entrance/close fades.
+ */
+export const SKY_SETTLE_MS = 2500;
+
 /** How long "Be proud!" lingers after a finished timed sit before closing. */
 export const PRAISE_DURATION_MS = 2600;
 

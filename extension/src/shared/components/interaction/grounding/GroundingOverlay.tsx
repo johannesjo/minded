@@ -17,6 +17,7 @@ import {
   OFFER_AUTO_DISMISS_MS,
   PRAISE_DURATION_MS,
   QUIET_MINUTE_OPTIONS,
+  SKY_SETTLE_MS,
   TIMER_MINUTE_OPTIONS,
 } from "@src/shared/components/interaction/grounding/grounding.const";
 import Btn from "@src/shared/components/ui/Btn";
@@ -53,6 +54,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const [getPhase, setPhase] = createSignal<Phase>("offer");
   const [getMode, setMode] = createSignal<Mode>("timer");
   const [getIsClosing, setIsClosing] = createSignal(false);
+  const [getSkySettled, setSkySettled] = createSignal(false);
   const [getProgress, setProgress] = createSignal(0);
   const [getRemainingMs, setRemainingMs] = createSignal(0);
 
@@ -61,6 +63,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   let closeTimeout: number | undefined;
   let praiseTimeout: number | undefined;
   let lockTimeout: number | undefined;
+  let settleRaf: number | undefined;
   let isDisposed = false;
 
   // Stop the timed sit's 1 Hz countdown and its authoritative end timer.
@@ -83,6 +86,21 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   createEffect(() => {
     const phase = getPhase();
     props.onShowPersistentSun?.(phase === "offer" || phase === "duration");
+  });
+
+  // The down-drag's warm sunset (light) / night sky (dark) carries in with the
+  // offer — opaque and pixel-identical to the drag, so the hand-off reads as one
+  // continuous motion, no flash — and then eases straight back to the dashboard's
+  // own calm sky. "Stay a while" is a place to rest, not a sunset to dwell in, so
+  // the dissolve starts the moment the offer mounts (no hold on the sunset) and
+  // runs slowly over SKY_SETTLE_MS (the .skySettled rule eases the ::before to 0).
+  // Two rAFs so the carried-in sunset paints once before .skySettled flips it —
+  // otherwise the browser coalesces the change and hard-cuts to standard.
+  settleRaf = requestAnimationFrame(() => {
+    settleRaf = requestAnimationFrame(() => {
+      settleRaf = undefined;
+      if (!isDisposed) setSkySettled(true);
+    });
   });
 
   // A gentle offer never nags: if it is left untouched it fades on its own.
@@ -174,6 +192,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     if (closeTimeout) window.clearTimeout(closeTimeout);
     if (praiseTimeout) window.clearTimeout(praiseTimeout);
     if (lockTimeout) window.clearTimeout(lockTimeout);
+    if (settleRaf) cancelAnimationFrame(settleRaf);
   });
 
   // The screen-free sit (and its Android lock send-off) dims almost to black so
@@ -195,8 +214,12 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       classList={{
         [styles.isQuiet]: isQuietPhase(),
         [styles.isClosing]: getIsClosing(),
+        [styles.skySettled]: getSkySettled(),
       }}
-      style={{ "--grounding-fade-ms": `${GROUNDING_FADE_MS}ms` }}
+      style={{
+        "--grounding-fade-ms": `${GROUNDING_FADE_MS}ms`,
+        "--sky-settle-ms": `${SKY_SETTLE_MS}ms`,
+      }}
     >
       {/* Night mode keeps the dashboard's sparkling sky: the same twinkling stars
           the down-drag reveals carry through onto the grounding stage instead of a
