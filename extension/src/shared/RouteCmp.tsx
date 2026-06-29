@@ -183,9 +183,10 @@ const MainWrapper = (props: RouteSectionProps) => {
           // still companion also matches the no-ambient-breath rule for the soft
           // sun (it morphs into place, then rests; it doesn't inhale).
           [styles.isCompanion]: getSunRole() === "companion",
-          // A dashboard offer (the flung-up let-go question) has taken over and
-          // owns the screen; hide the disc behind it instead of letting it paint
-          // over the question. It returns home when the offer closes.
+          // A dashboard offer that owns the screen has taken over (the flung-up
+          // let-go question, or grounding's screen-free / Android-lock sit); hide
+          // the disc behind it instead of letting it paint over the screen. It
+          // returns home when the offer closes.
           [styles.isHidden]: getIsShellSunHidden(),
         }}
       >

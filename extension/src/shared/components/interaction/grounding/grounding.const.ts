@@ -20,6 +20,13 @@ export const OFFER_AUTO_DISMISS_MS = 15000;
 export const GROUNDING_FADE_MS = 600;
 
 /**
+ * Crossfade between the grounding stage's own screens (offer ↔ duration ↔ the
+ * sit ↔ praise) — a quick, soft swap, much shorter than the GROUNDING_FADE_MS the
+ * whole overlay fades in/out with. Mirrors the urge-surf meditation's screen fade.
+ */
+export const SCREEN_FADE_MS = 200;
+
+/**
  * How long the warm down-drag sky (sunset / night) takes to dissolve back to the
  * dashboard's standard sky once "Stay a while" opens. The dissolve starts the
  * moment the offer mounts — no hold on the sunset first — and eases slowly, a

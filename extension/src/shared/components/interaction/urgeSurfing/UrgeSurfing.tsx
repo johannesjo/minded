@@ -13,6 +13,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import { createScreenFade } from "@src/util/screenFade";
 import Btn from "@src/shared/components/ui/Btn";
 import {
   getSurfCue,
@@ -49,9 +50,6 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   const [getFraction, setFraction] = createSignal(0);
   const [getBefore, setBefore] = createSignal(0);
   const [getAfter, setAfter] = createSignal(0);
-  // Drives the cross-screen fade: drop to 0, swap the screen while hidden, then
-  // back to 1 (see .urge-surfing's opacity transition).
-  const [getScreenOpacity, setScreenOpacity] = createSignal(1);
 
   const FADE_MS = 240;
   // Hold the first surf cue back this long so the pulsing sun reads on its own
@@ -61,7 +59,12 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   // quick screen fade.
   const CUE_FADE_MS = 900;
   let intervalId: ReturnType<typeof setInterval> | undefined;
-  let fadeTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  // Cross-screen fade between the phases (intro → rate → surf → after → done).
+  // The shared handler drops opacity to 0, swaps the screen while hidden, then
+  // eases back in (bound to .urge-surfing's opacity below). Matches FADE_MS to
+  // the CSS transition on .urge-surfing.
+  const screenFade = createScreenFade(FADE_MS);
 
   const stopTimer = (): void => {
     if (intervalId !== undefined) {
@@ -70,26 +73,14 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     }
   };
 
-  const clearFade = (): void => {
-    if (fadeTimeout !== undefined) {
-      clearTimeout(fadeTimeout);
-      fadeTimeout = undefined;
-    }
-  };
-
   // Fade the current screen out, swap to `next` while hidden, then fade in. The
   // optional `onHidden` runs at the swap so sun/timer changes land with the new
   // screen rather than before the old one has faded.
   const goToPhase = (next: UrgeSurfingPhase, onHidden?: () => void): void => {
-    const fadeMs = prefersReducedMotion() ? 0 : FADE_MS;
-    clearFade();
-    setScreenOpacity(0);
-    fadeTimeout = setTimeout(() => {
-      fadeTimeout = undefined;
+    screenFade.toScreen(() => {
       onHidden?.();
       setPhase(next);
-      setScreenOpacity(1);
-    }, fadeMs);
+    });
   };
 
   // Crossfade the surf cues into one another as the wave moves through its
@@ -194,7 +185,6 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
 
   onCleanup(() => {
     stopTimer();
-    clearFade();
     clearCueFade();
   });
 
@@ -202,7 +192,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     <div
       class="urge-surfing"
       classList={{ "is-surf": getPhase() === "surf" }}
-      style={{ opacity: getScreenOpacity() }}
+      style={{ opacity: screenFade.opacity() }}
       onMouseMove={() => props.onCancelCountdown()}
     >
       <Switch>
@@ -217,11 +207,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           {/* No "skip" here: triple-tapping (or flinging) the persistent sun is
               the universal way out of any interaction, so a second button would
               be redundant. */}
-          <Btn
-            onClick={() => goToPhase("rateBefore")}
-          >
-            Surf it
-          </Btn>
+          <Btn onClick={() => goToPhase("rateBefore")}>Surf it</Btn>
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
@@ -235,11 +221,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           <div class="urge-surfing-scale">
             <For each={[...URGE_INTENSITY_STEPS]}>
               {(step) => (
-                <Btn
-                  variant="toggle"
-                  small
-                  onClick={() => handleRate(step)}
-                >
+                <Btn variant="toggle" small onClick={() => handleRate(step)}>
                   {step}
                 </Btn>
               )}
@@ -270,11 +252,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
 
         <Match when={getPhase() === "done"}>
           <div class="txtBig interaction-heading">{reflection()}</div>
-          <Btn
-            onClick={() => props.onSuccess()}
-          >
-            Continue
-          </Btn>
+          <Btn onClick={() => props.onSuccess()}>Continue</Btn>
         </Match>
       </Switch>
     </div>

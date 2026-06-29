@@ -17,10 +17,12 @@ import {
   OFFER_AUTO_DISMISS_MS,
   PRAISE_DURATION_MS,
   QUIET_MINUTE_OPTIONS,
+  SCREEN_FADE_MS,
   SKY_SETTLE_MS,
   TIMER_MINUTE_OPTIONS,
 } from "@src/shared/components/interaction/grounding/grounding.const";
 import Btn from "@src/shared/components/ui/Btn";
+import { createScreenFade } from "@src/util/screenFade";
 
 type Phase = "offer" | "duration" | "session" | "praise" | "androidLock";
 type Mode = "timer" | "quiet";
@@ -73,6 +75,17 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   let lockTimeout: number | undefined;
   let settleRaf: number | undefined;
   let isDisposed = false;
+  // Set the instant a sit ends so the "End" tap and the end timer (which can
+  // both land) only ring the gong and advance once. (The old guard read the
+  // phase, but the phase swap is now deferred to the screen fade's midpoint, so a
+  // synchronous flag is needed.)
+  let finishing = false;
+
+  // The grounding stage's own screens (offer / duration / sit / praise) crossfade
+  // through this instead of hard-cutting: toScreen fades the current screen out,
+  // runs the swap (setPhase + its gong / timers) at the hidden midpoint so they
+  // land with the new screen, then fades back in. Soft, never a jolt.
+  const screenFade = createScreenFade(SCREEN_FADE_MS);
 
   // Stop the timed sit's 1 Hz countdown and its authoritative end timer.
   const stopTimers = () => {
@@ -148,53 +161,64 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       startAndroidLock();
       return;
     }
-    setPhase("duration");
+    screenFade.toScreen(() => setPhase("duration"));
   };
 
   const startAndroidLock = () => {
-    setPhase("androidLock");
-    void playGong();
-    lockTimeout = window.setTimeout(() => {
-      lockTimeout = undefined;
-      if (isDisposed) return;
-      if (IS_ANDROID) androidInterface.lockScreen();
-      close();
-    }, ANDROID_LOCK_DELAY_MS);
+    // Fade to the send-off, then ring the gong and start the lock countdown as it
+    // appears (not over the fading-out offer).
+    screenFade.toScreen(() => {
+      setPhase("androidLock");
+      void playGong();
+      lockTimeout = window.setTimeout(() => {
+        lockTimeout = undefined;
+        if (isDisposed) return;
+        if (IS_ANDROID) androidInterface.lockScreen();
+        close();
+      }, ANDROID_LOCK_DELAY_MS);
+    });
   };
 
   const startSession = (minutes: number) => {
     const durationMs = minutes * 60 * 1000;
-    setRemainingMs(durationMs);
-    setPhase("session");
-    // A clear tone marks the threshold into stillness.
-    void playGong();
+    // Fade to the sit, then mark the threshold into stillness and start the clock
+    // as it lands — the gong and countdown begin with the screen, not before it.
+    screenFade.toScreen(() => {
+      setRemainingMs(durationMs);
+      setPhase("session");
+      void playGong();
 
-    // A 1 Hz interval is all the countdown needs: the remaining-time label only
-    // changes once a second, so sampling per animation frame (~60x/sec) would
-    // repaint for no visible gain.
-    const startTs = Date.now();
-    intervalId = window.setInterval(() => {
-      const elapsed = Date.now() - startTs;
-      setRemainingMs(Math.max(0, durationMs - elapsed));
-    }, 1000);
-    // The end is its own timer, not a branch of the interval: a backgrounded tab
-    // throttles or pauses the visual ticks, but setTimeout still fires, so the
-    // closing gong reliably calls you back even if the countdown was frozen.
-    endTimeout = window.setTimeout(finishSession, durationMs);
+      // A 1 Hz interval is all the countdown needs: the remaining-time label only
+      // changes once a second, so sampling per animation frame (~60x/sec) would
+      // repaint for no visible gain.
+      const startTs = Date.now();
+      intervalId = window.setInterval(() => {
+        const elapsed = Date.now() - startTs;
+        setRemainingMs(Math.max(0, durationMs - elapsed));
+      }, 1000);
+      // The end is its own timer, not a branch of the interval: a backgrounded tab
+      // throttles or pauses the visual ticks, but setTimeout still fires, so the
+      // closing gong reliably calls you back even if the countdown was frozen.
+      endTimeout = window.setTimeout(finishSession, durationMs);
+    });
   };
 
   const finishSession = () => {
-    // Idempotent: the "End" tap and the end timer can both land (or End can be
-    // double-tapped); only the first call should ring the gong and advance.
-    if (getIsClosing() || getPhase() === "praise") return;
+    // Idempotent (see `finishing`): the "End" tap and the end timer can both land
+    // (or End can be double-tapped); only the first call rings the gong and
+    // advances. A flag, not a phase read — the phase swap is deferred to the fade.
+    if (finishing || getIsClosing()) return;
+    finishing = true;
     stopTimers();
-    // The gong calls you back.
+    // The gong calls you back — ring it the instant the sit ends, then fade out.
     void playGong();
     if (getMode() === "timer") {
-      setPhase("praise");
-      praiseTimeout = window.setTimeout(() => {
-        if (!isDisposed) close();
-      }, PRAISE_DURATION_MS);
+      screenFade.toScreen(() => {
+        setPhase("praise");
+        praiseTimeout = window.setTimeout(() => {
+          if (!isDisposed) close();
+        }, PRAISE_DURATION_MS);
+      });
     } else {
       // Screen-free: no on-screen praise — the disconnect is its own reward.
       close();
@@ -234,6 +258,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       style={{
         "--grounding-fade-ms": `${GROUNDING_FADE_MS}ms`,
         "--sky-settle-ms": `${SKY_SETTLE_MS}ms`,
+        "--screen-fade-ms": `${SCREEN_FADE_MS}ms`,
       }}
     >
       {/* Night mode keeps the dashboard's sparkling sky: the same twinkling stars
@@ -251,82 +276,90 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         </div>
       </Show>
 
-      {/* Offer — "Stay a while?" with two ways to ground, and an easy decline. */}
-      <Show when={getPhase() === "offer"}>
-        <div class={styles.panel}>
-          <h2 class={styles.title}>Stay a while?</h2>
-          <p class={styles.subtitle}>Take a moment to ground yourself.</p>
-          <div class={styles.choices}>
-            <Btn onClick={() => chooseMode("timer")}>Meditate with a timer</Btn>
-            <Btn onClick={() => chooseMode("quiet")}>
-              {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}
+      {/* The active screen. Crossfaded as the stage moves between offer →
+          duration → sit → praise (screenFade), so the swap is soft, never a hard
+          cut. The sky (::before), the stars above, and the shell sun (its own
+          layer) sit outside this and don't fade per screen. */}
+      <div class={styles.screen} style={{ opacity: screenFade.opacity() }}>
+        {/* Offer — "Stay a while?" with two ways to ground, and an easy decline. */}
+        <Show when={getPhase() === "offer"}>
+          <div class={styles.panel}>
+            <h2 class={styles.title}>Stay a while?</h2>
+            <p class={styles.subtitle}>Take a moment to ground yourself.</p>
+            <div class={styles.choices}>
+              <Btn onClick={() => chooseMode("timer")}>
+                Meditate with a timer
+              </Btn>
+              <Btn onClick={() => chooseMode("quiet")}>
+                {IS_ANDROID ? "Put your phone down" : "Be present, screen-free"}
+              </Btn>
+            </div>
+            <Btn outline onClick={close}>
+              Not now
             </Btn>
           </div>
-          <Btn outline onClick={close}>
-            Not now
-          </Btn>
-        </div>
-      </Show>
+        </Show>
 
-      {/* Duration — a small ladder for the chosen mode. */}
-      <Show when={getPhase() === "duration"}>
-        <div class={styles.panel}>
-          <h2 class={styles.title}>
-            {getMode() === "timer" ? "How long?" : "Be present for…"}
-          </h2>
-          <div class={styles.durations}>
-            {(getMode() === "timer"
-              ? TIMER_MINUTE_OPTIONS
-              : QUIET_MINUTE_OPTIONS
-            ).map((min) => (
-              <Btn variant="toggle" onClick={() => startSession(min)}>
-                {min} min
-              </Btn>
-            ))}
+        {/* Duration — a small ladder for the chosen mode. */}
+        <Show when={getPhase() === "duration"}>
+          <div class={styles.panel}>
+            <h2 class={styles.title}>
+              {getMode() === "timer" ? "How long?" : "Be present for…"}
+            </h2>
+            <div class={styles.durations}>
+              {(getMode() === "timer"
+                ? TIMER_MINUTE_OPTIONS
+                : QUIET_MINUTE_OPTIONS
+              ).map((min) => (
+                <Btn variant="toggle" onClick={() => startSession(min)}>
+                  {min} min
+                </Btn>
+              ))}
+            </div>
+            <Btn onClick={close}>Not now</Btn>
           </div>
-          <Btn onClick={close}>Not now</Btn>
-        </div>
-      </Show>
+        </Show>
 
-      {/* Timed sit — the one sun breathes at the centre, the remaining time and
+        {/* Timed sit — the one sun breathes at the centre, the remaining time and
           End tucked just beneath it (mirrors the urge-surf meditation). The
           breathing disc IS the shell sun, risen from its companion rest (see the
           onSunMode effect); only the styleguide preview, which has no shell sun,
           stands in with a local BreathSun. */}
-      <Show when={getPhase() === "session" && getMode() === "timer"}>
-        <div
-          class={styles.session}
-          classList={{ [styles.sessionMeditate]: usesMainSun() }}
-        >
-          <Show when={!usesMainSun()}>
-            <BreathSun fill={1} size="large" variant={props.variant} />
-          </Show>
-          <p class={styles.remaining}>{remainingLabel()}</p>
-          <Btn onClick={finishSession}>End</Btn>
-        </div>
-      </Show>
+        <Show when={getPhase() === "session" && getMode() === "timer"}>
+          <div
+            class={styles.session}
+            classList={{ [styles.sessionMeditate]: usesMainSun() }}
+          >
+            <Show when={!usesMainSun()}>
+              <BreathSun fill={1} size="large" variant={props.variant} />
+            </Show>
+            <p class={styles.remaining}>{remainingLabel()}</p>
+            <Btn onClick={finishSession}>End</Btn>
+          </div>
+        </Show>
 
-      {/* Screen-free sit — eyes off; the bell calls you back. */}
-      <Show when={getPhase() === "session" && getMode() === "quiet"}>
-        <div class={styles.session}>
-          <p class={styles.quietCue}>Rest your eyes.</p>
-          <p class={styles.quietSub}>The bell will call you back.</p>
-          <Btn onClick={finishSession}>End</Btn>
-        </div>
-      </Show>
+        {/* Screen-free sit — eyes off; the bell calls you back. */}
+        <Show when={getPhase() === "session" && getMode() === "quiet"}>
+          <div class={styles.session}>
+            <p class={styles.quietCue}>Rest your eyes.</p>
+            <p class={styles.quietSub}>The bell will call you back.</p>
+            <Btn onClick={finishSession}>End</Btn>
+          </div>
+        </Show>
 
-      {/* Android: a brief send-off before the phone locks. */}
-      <Show when={getPhase() === "androidLock"}>
-        <div class={styles.session}>
-          <p class={styles.quietCue}>Put your phone down.</p>
-          <p class={styles.quietSub}>Be present for a little while.</p>
-        </div>
-      </Show>
+        {/* Android: a brief send-off before the phone locks. */}
+        <Show when={getPhase() === "androidLock"}>
+          <div class={styles.session}>
+            <p class={styles.quietCue}>Put your phone down.</p>
+            <p class={styles.quietSub}>Be present for a little while.</p>
+          </div>
+        </Show>
 
-      {/* Earned praise after a finished timed sit. */}
-      <Show when={getPhase() === "praise"}>
-        <div class={styles.praise}>Be proud!</div>
-      </Show>
+        {/* Earned praise after a finished timed sit. */}
+        <Show when={getPhase() === "praise"}>
+          <div class={styles.praise}>Be proud!</div>
+        </Show>
+      </div>
     </div>
   );
 };

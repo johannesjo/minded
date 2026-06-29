@@ -152,6 +152,18 @@
   justify-content: center;
 }
 
+// The active grounding screen. createScreenFade drives this element's opacity
+// (inline) to crossfade between the offer, duration, sit and praise — soft, never
+// a hard cut. A centred flex column so each screen sits where it did before. The
+// sky (::before), the stars, and the shell sun are separate layers outside this,
+// so they don't fade on every screen swap.
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity var(--screen-fade-ms, 200ms) ease;
+}
+
 .session {
   position: relative;
   z-index: 1;
@@ -209,7 +221,8 @@
   @include displayVoice;
   font-size: calc(var(--fz-xl) + 2px);
   line-height: 1.4;
-  animation: groundingIn 0.8s ease-in forwards;
+  // Fades in with the screen crossfade (see .screen) — no separate entrance
+  // animation, which would double up with it.
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -227,7 +240,9 @@
     opacity: 0;
     transition: none;
   }
-  .praise {
-    animation: none;
+  // Screen swaps are instant under reduced motion (createScreenFade also swaps
+  // with no delay), so the crossfade doesn't animate.
+  .screen {
+    transition: none;
   }
 }
