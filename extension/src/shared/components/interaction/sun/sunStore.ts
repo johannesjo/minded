@@ -78,8 +78,13 @@ const [getIsShellSunHidden, setIsShellSunHidden] = createSignal(false);
  * The bottom inset is non-zero on Android (the system nav/gesture bar), so unlike
  * the old top anchor we can't assume 0 — read it from the same CSS var the layout
  * uses (set on #minded-6622 by setupAndroidInsets) so the disc lands exactly on
- * the bar centre on every platform. Computed (not DOM-measured) so it's exact
- * from the very first paint. Keep in sync with that SCSS var.
+ * the bar centre on every platform. Keep in sync with that SCSS var.
+ *
+ * NOTE: this initial value is computed at module-eval time, which runs before
+ * mountApp() applies the real --safe-area-inset-bottom, so it can read a 0 inset
+ * and land too low. RouteCmp re-anchors it in onMount (insets applied, before
+ * first paint) — that's the source of truth for the resting position, not this
+ * seed.
  */
 const readSafeAreaInsetBottomPx = (): number => {
   const appEl =
