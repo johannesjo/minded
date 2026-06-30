@@ -151,7 +151,16 @@ CWS review may require source code for minified bundles. When prompted:
 
 iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is *cloud-managed*: the runner authenticates with an App Store Connect API key and `xcodebuild -allowProvisioningUpdates` creates/downloads the distribution certificate and provisioning profiles on the fly (one per bundle id — the app `com.minded.app` and the widget `com.minded.app.widget`), so no `.p12` or `.mobileprovision` is stored in CI. (This is why the API key needs **Admin** access — see step 3 below: registering the widget's new App ID and minting its profile both go through the key.)
 
-Workflow: `.github/workflows/ios-testflight.yml`. Triggers on a `vX.Y.Z` tag (alongside the store releases) **and** on manual dispatch (Actions → *iOS TestFlight* → *Run workflow*) so you can push a beta build any time without cutting a public release.
+Workflow: `.github/workflows/ios-testflight.yml`. It runs on four triggers, but only some upload to TestFlight:
+
+| Trigger | What it does |
+|---|---|
+| **push to `main`** | Build + signed archive **only — no upload.** A verification gate: iOS is the can't-test-locally variant, so this catches silent compile/signing breakage on every commit (it's free on this public repo). |
+| **nightly cron** (04:00 UTC) | Full build **+ TestFlight upload** — one fresh beta per day. `main` changes daily, so it isn't a redundant rebuild. |
+| **`vX.Y.Z` tag** | Full build **+ upload**, alongside the store releases. |
+| **manual dispatch** (Actions → *iOS TestFlight* → *Run workflow*) | Full build **+ upload**, on demand. |
+
+The upload is gated by `if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')` on the *Upload to TestFlight* step — i.e. plain `main` pushes verify but don't distribute.
 
 ### Why "no Mac" still isn't "no Apple"
 

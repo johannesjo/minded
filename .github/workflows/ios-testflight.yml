@@ -1,21 +1,31 @@
 name: iOS TestFlight
 
-# Builds and signs the iOS app on a GitHub-hosted macOS runner and uploads
-# it to TestFlight — no local Mac required. Signing is cloud-managed via an
-# App Store Connect API key (-allowProvisioningUpdates), so no certificates
-# or provisioning profiles are stored in CI.
+# Builds and signs the iOS app on a GitHub-hosted macOS runner — no local Mac
+# required. Signing is cloud-managed via an App Store Connect API key
+# (-allowProvisioningUpdates), so no certificates or provisioning profiles are
+# stored in CI.
 #
-# Trigger it manually (Actions -> iOS TestFlight -> Run workflow) to push a
-# beta build to testers, or it runs automatically on a vX.Y.Z tag alongside
-# the store releases. TestFlight is *not* a public release: builds go to
-# your testers only. Promoting to the App Store is a separate manual step in
-# App Store Connect.
+# Triggers (see the `if` on the "Upload to TestFlight" step for what uploads):
+#   - push to main    → build + signed archive ONLY, no upload. iOS is the
+#                       can't-test-locally variant, so this is the early-warning
+#                       signal that catches silent compile/signing breakage.
+#   - nightly cron    → full build + TestFlight upload (one fresh beta per day;
+#                       main changes daily, so it isn't a redundant rebuild).
+#   - vX.Y.Z tag      → full build + upload, alongside the store releases.
+#   - manual dispatch → full build + upload, on demand.
+# TestFlight is *not* a public release: builds go to your testers only.
+# Promoting to the App Store is a separate manual step in App Store Connect.
 #
 # One-time setup and the testing flow are documented in RELEASING.md.
 
 on:
   workflow_dispatch:
+  schedule:
+    # Nightly TestFlight upload at 04:00 UTC. Keeps testers on a fresh build
+    # without uploading one per commit (main sees ~15 commits/day).
+    - cron: '0 4 * * *'
   push:
+    branches: [main] # verify-only — the upload step is skipped for these
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
 
 permissions:
@@ -141,6 +151,10 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload to TestFlight
+        # Plain pushes to main are verification builds — everything above runs
+        # (so a broken archive/sign still fails CI), but we don't distribute.
+        # Upload only on tags, manual dispatch, and the nightly cron.
+        if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')
         env:
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
