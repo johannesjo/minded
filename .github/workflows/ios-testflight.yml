@@ -66,11 +66,14 @@ jobs:
         run: |
           # The MindedWidget Swift sources live in the repo, but the WidgetKit
           # app-extension target is added to App.xcodeproj programmatically (no
-          # Mac/Xcode GUI needed). The script is idempotent and must run before
-          # `pod install`, which regenerates the workspace from the project.
-          # The archive step below is the real verification — a malformed
-          # project fails CI here, so no build ships without the sun silently.
-          gem install xcodeproj --no-document
+          # Mac/Xcode GUI needed). The script is idempotent. Run it before the
+          # `pod install` below so CocoaPods integrates with the widget target
+          # already in place; the archive step is the real verification — a
+          # malformed project fails CI here, not silently at upload.
+          # CocoaPods already vendors the xcodeproj gem on the runner, so only
+          # install it if the script's `require` can't find it — this avoids a
+          # version bump and any non-sudo gem-install permission issue.
+          ruby -e "require 'xcodeproj'" 2>/dev/null || gem install xcodeproj --no-document
           ruby scripts/add_widget_target.rb
 
       - name: Install CocoaPods

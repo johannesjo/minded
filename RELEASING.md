@@ -149,7 +149,7 @@ CWS review may require source code for minified bundles. When prompted:
 
 ## iOS / TestFlight
 
-iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is *cloud-managed*: the runner authenticates with an App Store Connect API key and `xcodebuild -allowProvisioningUpdates` creates/downloads the distribution certificate and provisioning profile on the fly, so no `.p12` or `.mobileprovision` is stored in CI.
+iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is *cloud-managed*: the runner authenticates with an App Store Connect API key and `xcodebuild -allowProvisioningUpdates` creates/downloads the distribution certificate and provisioning profiles on the fly (one per bundle id — the app `com.minded.app` and the widget `com.minded.app.widget`), so no `.p12` or `.mobileprovision` is stored in CI. (This is why the API key needs **Admin** access — see step 3 below: registering the widget's new App ID and minting its profile both go through the key.)
 
 Workflow: `.github/workflows/ios-testflight.yml`. Triggers on a `vX.Y.Z` tag (alongside the store releases) **and** on manual dispatch (Actions → *iOS TestFlight* → *Run workflow*) so you can push a beta build any time without cutting a public release.
 
