@@ -9,22 +9,29 @@ import UIKit
 import WebKit
 import Capacitor
 
-class MainViewController: CAPBridgeViewController {
+class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
     var isInteractionShown = false
 
+    // The shared `?sun=open` launch flag the web shell consumes (RouteCmp's
+    // `?sun=open` effect). Mirrors Android's `MainActivity.OPEN_SUN_HASH` so the cold
+    // (user script) and warm (retry) paths can't drift to different literals.
+    private static let openSunHash = "/?sun=open"
+    // The one-off message the web posts once the interaction sun has actually
+    // painted; used to fade the launch overlay on the real first paint.
+    private static let sunReadyMessage = "mindedSunReady"
+
     /// Whether the companion sun widget cold-launched us (read once from the app
     /// delegate's launch-options check). Drives the synchronous first-paint open and
-    /// the launch-sun morph below; both are no-ops on a normal launch.
+    /// the launch fade below; both are no-ops on a normal launch.
     private var launchedFromSunWidget: Bool {
         (UIApplication.shared.delegate as? AppDelegate)?.launchedFromSunWidget ?? false
     }
 
-    // The launch-sun morph overlay (item 3): a still copy of the splash sun held
-    // over the loading WebView and cross-faded out once the in-app sun has painted,
-    // so the springboard→app handoff is one continuous sun, never a hard cut.
-    private var launchSunOverlay: UIImageView?
-    private var loadProgressObservation: NSKeyValueObservation?
+    // The launch fade (item 3): a still of the brand launch screen held over the
+    // loading WebView and softly faded out once the in-app sun has painted, so the
+    // launch screen eases into the app instead of hard-cutting to a blank frame.
+    private var launchOverlay: UIImageView?
 
     // Set when the companion sun widget launched us via `minded://sun` (see
     // AppDelegate). We may receive it before the WebView has a live document
@@ -47,12 +54,24 @@ class MainViewController: CAPBridgeViewController {
         // it to put `?sun=open` in the hash up front, so RouteCmp reads it
         // synchronously at mount and the interaction overlay is in the very first
         // render — no dashboard frame flashing past first. (The post-load
-        // `handleOpenSun` retry still covers warm re-taps, where the app is already
-        // running; the redundant fire on cold start is harmless — RouteCmp guards it.)
+        // `handleOpenSun` retry covers warm re-taps, where the app is already running;
+        // on a cold launch this user script is what opens the sun.)
         if launchedFromSunWidget,
            let userContentController = webView?.configuration.userContentController {
+            // One-shot guard: a WKUserScript runs at the start of *every* main-frame
+            // load, so if WKWebView reloads (e.g. after iOS jettisons the web content
+            // process under memory pressure) an unguarded script would re-force the
+            // pause open on a later return — exactly the "never pop the overlay on
+            // some unrelated foreground" rule the retry path protects. The
+            // sessionStorage flag survives an in-session reload, so the hash is forced
+            // only on the genuine launch.
             let openSun = WKUserScript(
-                source: "window.location.hash = '/?sun=open'",
+                source: """
+                if (!sessionStorage.getItem('mindedSunLaunched')) {
+                    sessionStorage.setItem('mindedSunLaunched', '1');
+                    window.location.hash = '\(Self.openSunHash)';
+                }
+                """,
                 injectionTime: .atDocumentStart,
                 forMainFrameOnly: true
             )
@@ -71,12 +90,11 @@ class MainViewController: CAPBridgeViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: NSNotification.Name("SWITCH_MODE"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleOpenSun), name: .openSun, object: nil)
 
-        // Item 3 — the launch-sun morph. Only on a widget cold-launch, because only
-        // then does the first web paint land on a centred sun (item 2's pause); a
-        // normal launch lands on the dashboard with the companion on the bottom bar,
-        // where a centre→bottom cross-fade would read as a jump, not a morph.
+        // Item 3 — the launch fade. Only on a widget cold-launch, because only then
+        // does the first web paint land on the sun pause (item 2); a normal launch
+        // lands on the dashboard, where the system launch screen already suffices.
         if launchedFromSunWidget {
-            installLaunchSunMorph()
+            installLaunchFade()
         }
     }
 
@@ -103,7 +121,7 @@ class MainViewController: CAPBridgeViewController {
             return
         }
         openSunRetriesLeft -= 1
-        webView?.evaluateJavaScript("window.location.hash = '/?sun=open'") { [weak self] (_, error) in
+        webView?.evaluateJavaScript("window.location.hash = '\(Self.openSunHash)'") { [weak self] (_, error) in
             // On error the flag stays set; the next `didBecomeActive` retries
             // until openSunRetriesLeft is exhausted.
             if error == nil {
@@ -143,18 +161,19 @@ class MainViewController: CAPBridgeViewController {
         dispatchJSEvent(evName: "DID_ENTER_BACKGROUND")
     }
 
-    // MARK: - Launch-sun morph (item 3)
+    // MARK: - Launch fade (item 3)
 
-    // The springboard→app seam is the one place the sun can't yet morph on its own:
-    // tapping the widget hands off to a freshly loading WebView, and iOS would hard-
-    // cut the launch splash the instant the web view paints. Keep the sun continuous
-    // instead — lay a still copy of the launch splash (the same `Splash` sun) over
-    // the loading WebView so the system LaunchScreen is replaced by an identical
-    // image (no visible swap), then gently cross-fade it out once the in-app sun has
-    // painted underneath: the launch sun *becoming* the in-app sun. RouteCmp rests
-    // the interaction sun at screen-centre, where the splash sun already sits.
-    private func installLaunchSunMorph() {
-        guard launchSunOverlay == nil, isViewLoaded else { return }
+    // The springboard→app seam would otherwise hard-cut: tapping the widget hands off
+    // to a freshly loading WebView, and iOS removes the launch screen the instant the
+    // web view paints — which on a cold start can be a blank frame before the bundle
+    // renders. Soften it: lay a still of the brand launch screen (the same `Splash`
+    // image) over the loading WebView so the system launch screen is replaced by an
+    // identical image (no visible swap), then fade it out once the interaction sun has
+    // actually painted underneath. (The overlay is the brand mark, not the sun itself
+    // — item 2 already puts the real sun in the first web paint; this just eases the
+    // launch screen out instead of cutting to it.)
+    private func installLaunchFade() {
+        guard launchOverlay == nil, isViewLoaded else { return }
         let overlay = UIImageView(image: UIImage(named: "Splash"))
         overlay.contentMode = .scaleAspectFill
         overlay.clipsToBounds = true
@@ -162,26 +181,30 @@ class MainViewController: CAPBridgeViewController {
         overlay.frame = view.bounds
         overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(overlay)
-        launchSunOverlay = overlay
+        launchOverlay = overlay
 
-        // Reveal the web sun once the page has loaded. Observe the WebView's load
-        // progress (KVO doesn't fight Capacitor's navigation delegate) and fade after
-        // a short beat so the sun has a frame to paint. A hard cap always clears the
-        // overlay so a stalled load can never strand the splash on screen.
-        loadProgressObservation = webView?.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
-            if (change.newValue ?? 0) >= 1.0 {
-                DispatchQueue.main.async { self?.fadeOutLaunchSunMorph(delay: 0.15) }
-            }
-        }
+        // Fade out on the real first paint: the web posts `mindedSunReady` once the
+        // interaction sun has mounted (see RouteCmp). That's the accurate signal —
+        // page-load progress only says resources finished, not that the sun rendered,
+        // so it could reveal a blank frame. A hard cap always clears the overlay so a
+        // stalled or silent load can never strand the launch screen on top.
+        webView?.configuration.userContentController.add(self, name: Self.sunReadyMessage)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-            self?.fadeOutLaunchSunMorph(delay: 0)
+            self?.fadeOutLaunch(delay: 0)
         }
     }
 
-    private func fadeOutLaunchSunMorph(delay: TimeInterval) {
-        guard let overlay = launchSunOverlay else { return }
-        launchSunOverlay = nil           // one-shot: KVO and the cap can both arrive
-        loadProgressObservation = nil
+    // The web signalled the sun has painted — ease the launch screen out.
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == Self.sunReadyMessage else { return }
+        fadeOutLaunch(delay: 0)
+    }
+
+    private func fadeOutLaunch(delay: TimeInterval) {
+        // Stop listening either way — also breaks the retain cycle from `add(self)`.
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: Self.sunReadyMessage)
+        guard let overlay = launchOverlay else { return }
+        launchOverlay = nil           // one-shot: the ready message and the cap can both arrive
         UIView.animate(
             withDuration: 0.5,
             delay: delay,
@@ -193,7 +216,6 @@ class MainViewController: CAPBridgeViewController {
 
     // Don't forget to remove the observers when the app delegate is deinitialized
     deinit {
-       loadProgressObservation = nil
        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("SWITCH_MODE"), object: nil)

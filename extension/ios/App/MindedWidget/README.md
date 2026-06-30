@@ -115,7 +115,7 @@ channel**. Our near-opaque white disc + low-alpha bloom would collapse to a flat
 tinted blob, not a sun. A good Lock Screen sun needs a purpose-built alpha glyph
 designed for vibrant mode — worth doing later, not worth shipping looking broken.
 
-## Cold-start open + the launch-sun morph
+## Cold-start open + the launch fade
 
 A **cold** widget launch opens the sun **synchronously, in the first render**. The
 app delegate flags the launch (`minded://sun` in the launch options →
@@ -127,14 +127,16 @@ in the very first paint, with no dashboard frame flashing past first. The older
 `willEnterForeground` / `didBecomeActive`) remains as the path for **warm re-taps**
 (app already running) and as a backstop if the launch flag is ever missed.
 
-On top of that, a widget cold-launch **morphs** rather than hard-cuts: a still copy
-of the launch splash sun is held over the loading WebView and cross-faded out once
-the in-app sun has painted (`installLaunchSunMorph`), so the springboard→app handoff
-is one continuous sun (the launch sun _becoming_ the in-app sun). It is widget-launch
-only — a normal launch lands on the dashboard, where a centre→bottom-bar cross-fade
-would read as a jump. A hard timeout always clears the overlay, so a stalled load can
-never strand the splash on screen. The exact fade timing and the splash-vs-web sun
-size match want one pass on a device.
+On top of that, a widget cold-launch **fades** the launch screen out softly rather
+than hard-cutting it: a still copy of the brand launch image (`Splash` — the brand
+mark, _not_ the companion sun) is held over the loading WebView and faded out once
+the interaction sun has actually painted (`installLaunchFade`), so the system launch
+screen eases into the app instead of cutting to a blank frame before the bundle
+renders. The fade triggers on the real first paint: the web posts a `mindedSunReady`
+message once the sun has mounted (see `RouteCmp`), which is accurate where page-load
+progress is not (it only signals resources finished, not render). A hard timeout
+always clears the overlay, so a stalled or silent load can never strand the launch
+screen on top. It is widget-launch only. The fade timing wants one pass on a device.
 
 > Note: these native files were written without a macOS/Xcode build available, so they
 > have not been compiled or run. Treat the first Xcode build as the real verification.

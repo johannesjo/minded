@@ -3,15 +3,18 @@
 //  MindedWidget
 //
 //  The time-of-day phase of the home-screen companion sun — the Swift twin of the
-//  Android `widget/SunWidgetPhase.kt`, ported one-to-one and covered by the same
-//  cases in `SunWidgetPhaseTest.kt`. The widget is a calm, ambient anchor: glancing
+//  Android `widget/SunWidgetPhase.kt`. `forHour` mirrors the Kotlin one-to-one (the
+//  JVM `SunWidgetPhaseTest` covers that logic); `nextBoundary(after:)` is a
+//  WidgetKit-specific reimplementation that returns the next *Date* rather than the
+//  Kotlin's minutes-until, so it has no Kotlin twin and no test yet — verify on a
+//  device, or add a Swift test target. The widget is a calm, ambient anchor: glancing
 //  at it grounds you in where you actually are in the day's natural light — the warm
 //  sun by day, the cool moon by night. It is present-moment by construction (it
 //  reads the real local hour, never a stale timestamp) and carries no metric, count,
 //  or judgment. See docs/sun-companion-widget.md.
 //
 //  Pure logic, free of WidgetKit/SwiftUI references, so it mirrors the Kotlin
-//  one-to-one (and could be unit-tested the same way if a test target is added).
+//  structure closely (and could be unit-tested the same way if a test target is added).
 //
 
 import Foundation

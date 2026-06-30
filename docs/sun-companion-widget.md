@@ -141,11 +141,14 @@ verify.
   flag the shared shell already consumes), retrying across lifecycle beats. On a
   **cold** launch the app delegate flags it from the launch options and
   `capacitorDidLoad` injects an `.atDocumentStart` user script that sets the hash
-  *before* the bundle runs — so the pause is in the first paint, no dashboard frame
-  first. The cold launch also **morphs**: a still of the splash sun is cross-faded
-  out once the in-app sun has painted, so springboard→app is one continuous sun.
-- Everything below the deep link (the interaction itself) is already shared, so
-  the iOS code is just the SwiftUI widget + URL plumbing.
+  *before* the bundle runs (guarded by a `sessionStorage` flag so a later WebView
+  reload can't re-force the pause open) — so the pause is in the first paint, no
+  dashboard frame first. The cold launch also **fades** the brand launch screen out
+  softly rather than hard-cutting it: a still of the `Splash` image is held over the
+  loading WebView and faded once the web posts `mindedSunReady` (the sun has painted).
+- Below the deep link the interaction itself is already shared; the iOS-specific code
+  is the SwiftUI widget, the URL plumbing, and a small native launch fade
+  (`installLaunchFade` — a `Splash` overlay faded out on the web's paint signal).
 
 ## Deliberately out of scope (v1)
 

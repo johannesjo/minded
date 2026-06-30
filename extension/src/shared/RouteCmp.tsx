@@ -135,6 +135,25 @@ const MainWrapper = (props: RouteSectionProps) => {
     const onResize = () => setCompanionBottomYPx(computeCompanionBottomYPx());
     window.addEventListener("resize", onResize);
     onCleanup(() => window.removeEventListener("resize", onResize));
+
+    // iOS widget cold-launch only: tell the native launch overlay the sun has
+    // actually painted, so it fades out on the real first paint instead of guessing
+    // from page-load progress (which only signals resources finished, not render).
+    // No-op elsewhere — the handler is only registered during an iOS widget launch,
+    // and the optional chain makes the call harmless on Android/web/web-ext.
+    if (IS_IOS && openedFromWidgetAtLaunch) {
+      requestAnimationFrame(() => {
+        (
+          window as unknown as {
+            webkit?: {
+              messageHandlers?: {
+                mindedSunReady?: { postMessage: (m: string) => void };
+              };
+            };
+          }
+        ).webkit?.messageHandlers?.mindedSunReady?.postMessage("ready");
+      });
+    }
     // getSyncData().then((syncData: SyncData) => {
     //   if (
     //     !syncData || IS_ANDROID
