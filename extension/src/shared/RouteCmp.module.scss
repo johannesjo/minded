@@ -7,7 +7,10 @@
   --companion-bar-height: clamp(64px, 10vh, 88px);
   // Centre the sun in the bottom band by deriving its resting Y (measured from
   // the bottom edge) from the band height itself (half of it), above the system
-  // safe-area inset. Mirrors computeCompanionBottomYPx in sunStore.ts.
+  // safe-area inset. This is the single source of truth for the companion rest:
+  // the JS-positioned disc reads this back off `.companionTapTarget` (which is
+  // anchored to it) rather than re-deriving the math — see reanchorCompanion in
+  // RouteCmp.tsx.
   --companion-bar-center-y: calc(
     var(--safe-area-inset-bottom) + var(--companion-bar-height) / 2
   );

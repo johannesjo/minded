@@ -20,7 +20,6 @@ import {
 } from "@src/shared/addWrapperClasses";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
-  computeCompanionBottomYPx,
   getIsShellSunHidden,
   getIsSunHandoffInFlight,
   getSunHandlers,
@@ -129,26 +128,34 @@ const MainWrapper = (props: RouteSectionProps) => {
       );
     }
 
-    // Re-anchor the companion sun now that we're actually mounted. The store's
-    // initial value is computed at module-eval time — which runs *before*
-    // mountApp() calls setupAndroidInsets to write the real
-    // --safe-area-inset-bottom onto #minded-6622 — so that first read can see a 0
-    // bottom inset and land the disc below the bottom-bar centre, leaving the
-    // moon visibly off the settings/feedback icon line (the startup race that bit
-    // ~half of cold starts). The icons follow the CSS var live, but the disc is
-    // JS-positioned, so it stays frozen at that seed until something re-anchors.
+    // Anchor the companion sun by reading the position straight off the CSS that
+    // already places the tap-target the disc rests onto: `.companionTapTarget` is
+    // `position: fixed; bottom: var(--companion-bar-center-y)`, so the browser has
+    // resolved that var to a px `bottom` (vh against the layout viewport, plus the
+    // live safe-area inset) exactly as the bottom bar's own layout did. Reading it
+    // back makes the SCSS the single source of truth — the disc lands on the same
+    // px the icons do, with no clamp math mirrored in JS to drift out of sync.
     //
-    // Recompute on mount (SolidJS runs onMount before paint, so a correct inset
-    // here lands with no visible glide) and once more next frame. But the deeper
-    // race is the boot path itself: on Android, Compose can deliver the first
-    // real inset *after* mountApp ran, so setupAndroidInsets read null and the
-    // var is still 0 at mount — the value only arrives later via the native
-    // WebViewSafeAreaBridge push, which sets the CSS var and dispatches
-    // `androidSafeAreaChanged`. Listen for that (nothing else did) so the disc
-    // re-anchors to the late inset; if it changed, the settle glide morphs it
-    // softly into place. `resize` keeps it in sync with the viewport as before.
-    const reanchorCompanion = () =>
-      setCompanionBottomYPx(computeCompanionBottomYPx());
+    // This also drives the fix for the startup race: the store seeds the signal
+    // with a plain default at module-eval (before mountApp runs setupAndroidInsets
+    // and before, on Android, Compose has even delivered the first inset), so the
+    // resting disc would otherwise sit off the settings/feedback icon line on
+    // ~half of cold starts. Re-measure on mount (SolidJS runs onMount before
+    // paint, so the corrected value lands with no visible glide) and again next
+    // frame. The late inset itself arrives via the native WebViewSafeAreaBridge
+    // push, which sets the CSS var and dispatches `androidSafeAreaChanged` (which
+    // nothing else listened to) — re-measure on that so the disc catches up; if it
+    // moved, the settle glide morphs it softly into place. `resize` keeps it in
+    // sync with the viewport. The tap-target only exists while resting, which is
+    // exactly when the companion anchor matters; otherwise we keep the last value.
+    const reanchorCompanion = () => {
+      const tapTarget = document.querySelector<HTMLElement>(
+        `.${styles.companionTapTarget}`,
+      );
+      if (!tapTarget) return;
+      const bottomPx = parseFloat(getComputedStyle(tapTarget).bottom);
+      if (Number.isFinite(bottomPx)) setCompanionBottomYPx(bottomPx);
+    };
     reanchorCompanion();
     const rafId = requestAnimationFrame(reanchorCompanion);
     window.addEventListener("resize", reanchorCompanion);
