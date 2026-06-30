@@ -12,9 +12,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    /// True when the app was *cold-launched* by tapping the companion sun widget
+    /// (`minded://sun` arrived in the launch options). MainViewController reads this
+    /// to seed the WebView's very first paint straight into the sun pause — and to
+    /// bridge the launch with a morphing sun instead of a hard splash cut — rather
+    /// than relying on the post-load hash retry (which paints a dashboard frame
+    /// first). A warm re-tap, where the app is already running, goes through
+    /// `application(open:)` → `.openSun` below instead.
+    var launchedFromSunWidget = false
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("application1")
-        // Override point for customization after application launch.
+        // Note a widget cold-launch before the WebView loads, so the controller can
+        // open the sun synchronously in the first render. We only flag it here; the
+        // shared `?sun=open` handling is unchanged. If this is ever missed, the
+        // `application(open:)` retry path still opens the overlay (just a frame late).
+        if let url = launchOptions?[.url] as? URL, url.scheme == "minded", url.host == "sun" {
+            launchedFromSunWidget = true
+        }
         return true
     }
 

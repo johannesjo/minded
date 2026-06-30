@@ -8,11 +8,12 @@
 //  (res/drawable + res/drawable-night). The colours and proportions are ported
 //  one-to-one from there so the home-screen sun matches the app's resting sun:
 //  a near-white disc with a soft warm bloom (day), or a cool moon lit from the
-//  upper-left (night). Day/night follows the system colour scheme, exactly like
-//  Android's drawable-night qualifier — not the app's time-based rule. The widget
-//  is a static snapshot (WidgetKit can't run the living, breathing in-app sun),
-//  so this is the calm doorway, not the experience. See
-//  docs/sun-companion-widget.md.
+//  upper-left (night). It just renders whichever it's told via `isNight`; the
+//  day/night *decision* is the clock (`SunWidgetPhase`, picked by the timeline in
+//  MindedWidget.swift), the same time-based rule as the Android widget — not the
+//  system colour scheme. The widget is a static snapshot per phase (WidgetKit
+//  can't run the living, breathing in-app sun), so this is the calm doorway, not
+//  the experience. See docs/sun-companion-widget.md.
 //
 
 import SwiftUI

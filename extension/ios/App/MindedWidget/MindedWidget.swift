@@ -10,45 +10,63 @@
 //  launch flag — the exact same trigger as tapping the in-app dashboard sun
 //  (see RouteCmp's `?sun=open` effect). One shared trigger, two native shells.
 //
-//  The content is a single static snapshot (no timeline, nothing to poll — the
-//  sun is calm and unchanging), so the provider returns one entry with a
-//  `.never` refresh policy, mirroring the Android receiver that dropped its
-//  periodic alarm.
+//  The sun never animates, but it *is* alive to the day: it reflects the real
+//  local hour — the warm sun by day, the cool moon by night — exactly like the
+//  Android widget (`SunWidgetPhase`). So instead of one static `.never` snapshot,
+//  the provider lays down the upcoming day/night boundaries as timeline entries; a
+//  given snapshot is still unchanging, but the sun gives way to the moon (and back)
+//  on the hour with no live refresh needed. Day/night is decided here by the clock,
+//  **not** by the system colour scheme at render time.
 //
 
 import WidgetKit
 import SwiftUI
 
-// MARK: - Timeline (a single, static entry)
+// MARK: - Timeline (one entry per day/night phase)
 
 struct SunEntry: TimelineEntry {
     let date: Date
+    let phase: SunWidgetPhase
 }
 
 struct SunProvider: TimelineProvider {
     func placeholder(in context: Context) -> SunEntry {
-        SunEntry(date: Date())
+        let now = Date()
+        return SunEntry(date: now, phase: SunWidgetPhase.phase(at: now))
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SunEntry) -> Void) {
-        completion(SunEntry(date: Date()))
+        let now = Date()
+        completion(SunEntry(date: now, phase: SunWidgetPhase.phase(at: now)))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SunEntry>) -> Void) {
-        // One entry, never refreshed: the sun is static, day/night is handled by
-        // the system colour scheme at render time.
-        completion(Timeline(entries: [SunEntry(date: Date())], policy: .never))
+        let now = Date()
+        var entries: [SunEntry] = [SunEntry(date: now, phase: SunWidgetPhase.phase(at: now))]
+        // Pre-place the next few day/night boundaries so the sun flips on time even
+        // before WidgetKit asks for a fresh timeline. A handful spans a couple of
+        // days; `.atEnd` requests the next batch once they're consumed. The sun is
+        // unchanging *within* a phase, so this is two snapshots a day, not a poll.
+        var cursor = now
+        for _ in 0..<4 {
+            guard let boundary = SunWidgetPhase.nextBoundary(after: cursor) else { break }
+            entries.append(SunEntry(date: boundary, phase: SunWidgetPhase.phase(at: boundary)))
+            cursor = boundary
+        }
+        completion(Timeline(entries: entries, policy: .atEnd))
     }
 }
 
 // MARK: - View
 
 struct MindedWidgetEntryView: View {
-    @Environment(\.colorScheme) private var colorScheme
     var entry: SunProvider.Entry
 
     var body: some View {
-        CompanionSun(isNight: colorScheme == .dark)
+        // Day/night comes from the entry's clock-derived phase, not the system
+        // colour scheme — so the moon shows at actual night, not whenever the phone
+        // happens to be in dark mode (matches Android's `SunWidgetPhase`).
+        CompanionSun(isNight: entry.phase.isNight)
             // A little breathing room so the soft bloom isn't clipped by the tile.
             .padding(12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)

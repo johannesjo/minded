@@ -124,19 +124,26 @@ verify.
 
 - **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`). The sun is drawn
   with SwiftUI radial gradients (`CompanionSun.swift`), colours ported 1:1 from
-  the Android `ic_sun_widget` vectors; day/night follows the system colour
-  scheme. `.widgetURL(URL("minded://sun"))` is the tap target. No special
-  entitlement, no App Group — the widget only carries a deep link.
+  the Android `ic_sun_widget` vectors; day/night follows the **local clock**
+  (`SunWidgetPhase.swift`, the Swift twin of the Android phase logic), with the
+  timeline pre-placing each day/night boundary so the sun flips on the hour — not
+  the system colour scheme. `.widgetURL(URL("minded://sun"))` is the tap target.
+  No special entitlement, no App Group — the widget only carries a deep link.
   - **Lock Screen (`accessoryCircular`) deferred:** accessory widgets render in
     the system's *vibrant* mode, which discards colour and rebuilds the view from
     its alpha channel — the near-opaque disc + soft bloom collapse to a flat tinted
     blob. A Lock Screen variant needs a purpose-built alpha glyph, not the colour
     sun; left for later rather than shipped looking broken.
 - **Deep link → `?sun=open`.** The `minded://` URL scheme is already registered
-  (`App/Info.plist`). `AppDelegate.application(open:)` intercepts `minded://sun`
-  and posts an `OPEN_SUN` notification; `MainViewController` sets the Capacitor
-  WebView's hash to `/?sun=open` — the exact same flag the shared shell already
-  consumes — retrying across lifecycle beats to cover the cold-start race.
+  (`App/Info.plist`). On a **warm** re-tap `AppDelegate.application(open:)`
+  intercepts `minded://sun`, posts an `OPEN_SUN` notification, and
+  `MainViewController` sets the live WebView's hash to `/?sun=open` (the exact same
+  flag the shared shell already consumes), retrying across lifecycle beats. On a
+  **cold** launch the app delegate flags it from the launch options and
+  `capacitorDidLoad` injects an `.atDocumentStart` user script that sets the hash
+  *before* the bundle runs — so the pause is in the first paint, no dashboard frame
+  first. The cold launch also **morphs**: a still of the splash sun is cross-faded
+  out once the in-app sun has painted, so springboard→app is one continuous sun.
 - Everything below the deep link (the interaction itself) is already shared, so
   the iOS code is just the SwiftUI widget + URL plumbing.
 

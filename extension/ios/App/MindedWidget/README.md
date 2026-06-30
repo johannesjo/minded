@@ -29,10 +29,13 @@ registered in `App/Info.plist`), and the two small native edits in
 ## Files in this folder
 
 - `MindedWidget.swift` — the `@main` widget bundle, `StaticConfiguration`, timeline
-  provider (one static entry, `.never` refresh), the entry view, and the
-  `minded://sun` `widgetURL`.
+  provider (one entry per day/night phase, boundaries pre-placed so the sun flips on
+  the hour with `.atEnd`), the entry view, and the `minded://sun` `widgetURL`.
 - `CompanionSun.swift` — the SwiftUI sun/moon, colours ported 1:1 from the Android
-  `ic_sun_widget` vectors. Day/night follows the system colour scheme.
+  `ic_sun_widget` vectors. It renders whichever it's told via `isNight`.
+- `SunWidgetPhase.swift` — the pure, clock-driven day/night decision (the Swift twin
+  of the Android `SunWidgetPhase.kt`): the sun by day, the moon by night, by the real
+  local hour — **not** the system colour scheme.
 - `Info.plist` — the WidgetKit extension Info.plist.
 
 No image asset is needed — the sun is drawn with SwiftUI gradients.
@@ -96,7 +99,9 @@ link, it shares no data with the app.
 4. **Tap the widget** → the app opens and the sun interaction begins, exactly like
    tapping the in-app dashboard sun. Tap again while the app is already open (warm
    start) → it should re-open the overlay too.
-5. Toggle system Dark Mode and re-check the widget → the moon variant.
+5. Confirm day/night tracks the **clock, not the theme**: set the device time past a
+   boundary (e.g. 12:00 → 23:00) and check the sun gives way to the moon and back.
+   Toggling system Dark Mode alone must _not_ change it (the disc is theme-agnostic).
 
 You can validate the _shared_ trigger with zero native build in the browser
 extension: `npm start`, then load `#/?sun=open`.
@@ -110,15 +115,26 @@ channel**. Our near-opaque white disc + low-alpha bloom would collapse to a flat
 tinted blob, not a sun. A good Lock Screen sun needs a purpose-built alpha glyph
 designed for vibrant mode — worth doing later, not worth shipping looking broken.
 
-## Known caveat (cold start timing)
+## Cold-start open + the launch-sun morph
 
-On a **cold** launch the `OPEN_SUN` notification can arrive before the WebView has a
-live document. `MainViewController.applyPendingOpenSun()` handles this by holding the
-flag and retrying on the next lifecycle beats (`willEnterForeground` /
-`didBecomeActive`), clearing it only once the JS runs. In practice the overlay opens a
-moment after launch (same as the Android warm path). If you ever want the
-_synchronous_ first-paint open (overlay in the very first render), inject the hash
-into the WebView's initial URL instead of setting it post-load.
+A **cold** widget launch opens the sun **synchronously, in the first render**. The
+app delegate flags the launch (`minded://sun` in the launch options →
+`AppDelegate.launchedFromSunWidget`), and `MainViewController.capacitorDidLoad()`
+injects an `.atDocumentStart` user script that sets the `?sun=open` hash _before_ the
+web bundle evaluates — so `RouteCmp` reads it at mount and the interaction overlay is
+in the very first paint, with no dashboard frame flashing past first. The older
+`handleOpenSun`/`applyPendingOpenSun` retry (holding the flag across
+`willEnterForeground` / `didBecomeActive`) remains as the path for **warm re-taps**
+(app already running) and as a backstop if the launch flag is ever missed.
+
+On top of that, a widget cold-launch **morphs** rather than hard-cuts: a still copy
+of the launch splash sun is held over the loading WebView and cross-faded out once
+the in-app sun has painted (`installLaunchSunMorph`), so the springboard→app handoff
+is one continuous sun (the launch sun _becoming_ the in-app sun). It is widget-launch
+only — a normal launch lands on the dashboard, where a centre→bottom-bar cross-fade
+would read as a jump. A hard timeout always clears the overlay, so a stalled load can
+never strand the splash on screen. The exact fade timing and the splash-vs-web sun
+size match want one pass on a device.
 
 > Note: these native files were written without a macOS/Xcode build available, so they
 > have not been compiled or run. Treat the first Xcode build as the real verification.

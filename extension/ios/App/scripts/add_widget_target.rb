@@ -25,7 +25,7 @@ require 'xcodeproj'
 WIDGET_NAME = 'MindedWidget'
 WIDGET_BUNDLE_SUFFIX = 'widget' # the widget id is the app's bundle id + ".widget"
 DEPLOYMENT_TARGET = '16.0'
-SOURCE_FILES = %w[MindedWidget.swift CompanionSun.swift].freeze
+SOURCE_FILES = %w[MindedWidget.swift CompanionSun.swift SunWidgetPhase.swift].freeze
 
 project_path = File.expand_path(File.join(__dir__, '..', 'App.xcodeproj'))
 project = Xcodeproj::Project.open(project_path)
