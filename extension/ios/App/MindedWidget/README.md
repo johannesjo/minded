@@ -39,6 +39,12 @@ No image asset is needed — the sun is drawn with SwiftUI gradients.
 
 ## Adding the target
 
+**CI already does this.** The _iOS TestFlight_ workflow runs
+`scripts/add_widget_target.rb` (Option A below) before `pod install`, so every
+TestFlight archive embeds the widget — no action needed to ship it. The sections
+below are for wiring it into a checked-in `project.pbxproj` (run the script once
+locally and commit the diff) or for doing it by hand in Xcode.
+
 The source files are ready, but a **new app-extension target** must be created that
 builds and embeds them. Two equivalent one-time paths — pick one:
 
