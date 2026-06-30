@@ -82,9 +82,10 @@ const [getIsShellSunHidden, setIsShellSunHidden] = createSignal(false);
  *
  * NOTE: this initial value is computed at module-eval time, which runs before
  * mountApp() applies the real --safe-area-inset-bottom, so it can read a 0 inset
- * and land too low. RouteCmp re-anchors it in onMount (insets applied, before
- * first paint) — that's the source of truth for the resting position, not this
- * seed.
+ * and land too low — and on Android the real inset may not even exist yet, only
+ * arriving later via the native WebViewSafeAreaBridge push. RouteCmp re-anchors
+ * this in onMount and again on the bridge's `androidSafeAreaChanged` event, so
+ * those are the source of truth for the resting position, not this seed.
  */
 const readSafeAreaInsetBottomPx = (): number => {
   const appEl =

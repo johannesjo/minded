@@ -132,24 +132,31 @@ const MainWrapper = (props: RouteSectionProps) => {
     // Re-anchor the companion sun now that we're actually mounted. The store's
     // initial value is computed at module-eval time — which runs *before*
     // mountApp() calls setupAndroidInsets to write the real
-    // --safe-area-inset-bottom onto #minded-6622 — so that first read sees a 0
-    // bottom inset and lands the disc below the bottom-bar centre, leaving the
-    // moon visibly off the settings/feedback icon line (the startup race that
-    // bit ~half of cold starts). By onMount the inline inset var is set, so
-    // recompute here: SolidJS runs onMount before the browser paints, so this
-    // corrects the anchor with no visible glide. Recompute once more on the next
-    // frame in case the native side pushed a late inset update after first
-    // paint; if nothing changed the signal's value-equality skips it (no churn),
-    // and if it did the settle glide morphs the disc softly into place. Then
-    // keep it in sync with the viewport on resize.
+    // --safe-area-inset-bottom onto #minded-6622 — so that first read can see a 0
+    // bottom inset and land the disc below the bottom-bar centre, leaving the
+    // moon visibly off the settings/feedback icon line (the startup race that bit
+    // ~half of cold starts). The icons follow the CSS var live, but the disc is
+    // JS-positioned, so it stays frozen at that seed until something re-anchors.
+    //
+    // Recompute on mount (SolidJS runs onMount before paint, so a correct inset
+    // here lands with no visible glide) and once more next frame. But the deeper
+    // race is the boot path itself: on Android, Compose can deliver the first
+    // real inset *after* mountApp ran, so setupAndroidInsets read null and the
+    // var is still 0 at mount — the value only arrives later via the native
+    // WebViewSafeAreaBridge push, which sets the CSS var and dispatches
+    // `androidSafeAreaChanged`. Listen for that (nothing else did) so the disc
+    // re-anchors to the late inset; if it changed, the settle glide morphs it
+    // softly into place. `resize` keeps it in sync with the viewport as before.
     const reanchorCompanion = () =>
       setCompanionBottomYPx(computeCompanionBottomYPx());
     reanchorCompanion();
     const rafId = requestAnimationFrame(reanchorCompanion);
     window.addEventListener("resize", reanchorCompanion);
+    window.addEventListener("androidSafeAreaChanged", reanchorCompanion);
     onCleanup(() => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", reanchorCompanion);
+      window.removeEventListener("androidSafeAreaChanged", reanchorCompanion);
     });
 
     // iOS widget cold-launch only: tell the native launch overlay the sun has
