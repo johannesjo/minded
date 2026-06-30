@@ -41,20 +41,24 @@ const BottomBar = () => {
       class={`${styles.bottomBarWrapper}  ${getIsOnDashboard() && styles.isOnDashboard} `}
     >
       {getIsOnDashboard() ? (
-        <>
-          <Btn
-            variant="icon"
-            plain
-            title="Give us some feedback"
-            aria-label="Give us some feedback"
-            onClick={(event) => {
-              event.stopPropagation();
-              navigateWithPageFadeOut(navigate, "/feedback");
-            }}
-          >
-            <Ico name="feedback" />
-          </Btn>
-          {!IS_IOS && (
+        // iOS is the widget-only variant: it has no settings page (nothing to
+        // configure), so it carries no feedback icon either — a lone feedback
+        // button with no settings beside it reads as misplaced/incomplete. The
+        // other platforms show both. The sun still rests centred over this bar.
+        !IS_IOS && (
+          <>
+            <Btn
+              variant="icon"
+              plain
+              title="Give us some feedback"
+              aria-label="Give us some feedback"
+              onClick={(event) => {
+                event.stopPropagation();
+                navigateWithPageFadeOut(navigate, "/feedback");
+              }}
+            >
+              <Ico name="feedback" />
+            </Btn>
             <Btn
               variant="icon"
               plain
@@ -67,8 +71,8 @@ const BottomBar = () => {
             >
               <Ico name="settings" />
             </Btn>
-          )}
-        </>
+          </>
+        )
       ) : (
         <Btn
           variant="icon"
