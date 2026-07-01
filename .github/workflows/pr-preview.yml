@@ -35,7 +35,7 @@ jobs:
       pull-requests: write # post/update the sticky preview comment
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         if: github.event.action != 'closed'
@@ -74,7 +74,7 @@ jobs:
 
       - name: Post preview comment
         if: github.event.action != 'closed'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pr-preview
           message: |
@@ -91,7 +91,7 @@ jobs:
 
       - name: Remove preview comment
         if: github.event.action == 'closed'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pr-preview
           delete: true
