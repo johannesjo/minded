@@ -50,6 +50,17 @@ development_team = app_settings['DEVELOPMENT_TEAM']
 marketing_version = app_settings['MARKETING_VERSION'] || '1.0'
 project_version = app_settings['CURRENT_PROJECT_VERSION'] || '1'
 
+# Manual code signing for CI archives. When the workflow passes the App Store
+# profile NAMES (IOS_APP_PROFILE_NAME / IOS_WIDGET_PROFILE_NAME), pin both the
+# app and widget targets to the shared Apple Distribution cert + their App Store
+# profiles — ephemeral runners can't use cloud/automatic signing without leaking
+# a fresh certificate every run (see .github/workflows/ios-testflight.yml).
+# Absent these (a local run of this script), signing stays Automatic so the
+# project still opens and builds in Xcode with a developer's own account.
+app_profile_name = ENV['IOS_APP_PROFILE_NAME'].to_s
+widget_profile_name = ENV['IOS_WIDGET_PROFILE_NAME'].to_s
+manual_signing = !app_profile_name.empty? && !widget_profile_name.empty?
+
 widget_target = project.new_target(
   :app_extension,
   WIDGET_NAME,
@@ -75,7 +86,13 @@ widget_target.build_configurations.each do |config|
   settings['INFOPLIST_FILE'] = "#{WIDGET_NAME}/Info.plist"
   settings['IPHONEOS_DEPLOYMENT_TARGET'] = DEPLOYMENT_TARGET
   settings['DEVELOPMENT_TEAM'] = development_team if development_team
-  settings['CODE_SIGN_STYLE'] = 'Automatic'
+  if manual_signing
+    settings['CODE_SIGN_STYLE'] = 'Manual'
+    settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+    settings['PROVISIONING_PROFILE_SPECIFIER'] = widget_profile_name
+  else
+    settings['CODE_SIGN_STYLE'] = 'Automatic'
+  end
   settings['SWIFT_VERSION'] = '5.0'
   settings['TARGETED_DEVICE_FAMILY'] = '1,2'
   settings['GENERATE_INFOPLIST_FILE'] = 'NO'
@@ -104,6 +121,16 @@ end
 
 build_file = embed_phase.add_file_reference(widget_target.product_reference, true)
 build_file.settings = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
+
+# The app target is checked in as Automatic signing (so Xcode opens cleanly for
+# local dev). Flip its Release config to the same manual identity as the widget
+# for the CI archive — both targets must resolve a distribution profile or the
+# archive fails. Guarded by manual_signing so local runs leave the project alone.
+if manual_signing
+  app_release.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+  app_release.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+  app_release.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = app_profile_name
+end
 
 project.save
 puts "Added #{WIDGET_NAME} app-extension target and embedded it into App."

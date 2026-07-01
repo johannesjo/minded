@@ -149,7 +149,9 @@ CWS review may require source code for minified bundles. When prompted:
 
 ## iOS / TestFlight
 
-iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is *cloud-managed*: the runner authenticates with an App Store Connect API key and `xcodebuild -allowProvisioningUpdates` creates/downloads the distribution certificate and provisioning profiles on the fly (one per bundle id — the app `com.minded.app` and the widget `com.minded.app.widget`), so no `.p12` or `.mobileprovision` is stored in CI. (This is why the API key needs **Admin** access — see step 3 below: registering the widget's new App ID and minting its profile both go through the key.)
+iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is **manual and deterministic**: one **Apple Distribution** certificate (`.p12`) plus two **App Store** provisioning profiles (app `com.minded.app` + widget `com.minded.app.widget`) are stored as GitHub secrets and imported into a throwaway keychain on each run. The App Store Connect API key is still used, but only to *upload* the finished build to TestFlight (`altool`), not to sign.
+
+> **Why not cloud signing (`-allowProvisioningUpdates`)?** It's tempting because it stores no `.p12`/`.mobileprovision` in CI — but on an *ephemeral* runner it mints a **brand-new signing certificate every run** and never reuses it, because the runner's keychain (and the freshly-created private key) are destroyed when the job ends. Apple caps certificates per team, so after a couple of dozen runs the account fills up and archives start failing with *"Your account has reached the maximum number of certificates."* Manual signing reuses the **same** persisted certificate forever — no leak, and the archive is reproducible. (If you ever hit that cap again, clear the leaked certs — see the troubleshooting row at the bottom.)
 
 Workflow: `.github/workflows/ios-testflight.yml`. It runs on four triggers, but only some upload to TestFlight:
 
@@ -170,18 +172,48 @@ There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS
 
 1. **Apple Developer Program** membership (Team ID `363FAFK383`).
 2. **Register the app** in App Store Connect once: bundle id `com.minded.app`, then create the app record. TestFlight uploads fail until the record exists. (Note: the iOS bundle id `com.minded.app` is intentionally *not* the same as `capacitor.config.ts`'s `appId` / the Android `applicationId`, which are both `com.minded.minded`. The iOS Xcode project — `project.pbxproj` — is the source of truth for iOS; `cap sync` does not change it.)
-3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **Admin** access. (App Manager is usually enough to manage profiles, but cloud signing via `-allowProvisioningUpdates` may also need to *create the distribution certificate* — Admin avoids a mid-build "not authorized to manage certificates" failure.) Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**.
-4. **Add the secrets** (scope to the `production` environment, same as the store secrets):
+3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **App Manager** access (it's now only used to *upload* to TestFlight, not to sign, so Admin is no longer required). Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**. Keep the `.p8` file around — the cert-cleanup helper in the troubleshooting section reuses it.
+4. **Create the signing identity — one Apple Distribution certificate + two App Store profiles.** This is Mac-free (OpenSSL on Linux for the key material, the Developer portal in a browser for the Apple side):
+
+   ```bash
+   # a) Generate a private key + certificate signing request (CSR)
+   openssl genrsa -out dist.key 2048
+   openssl req -new -key dist.key -out dist.csr -subj "/CN=minded distribution/O=minded/C=DE"
+   ```
+
+   - **b) Certificate.** Developer portal → *Certificates, Identifiers & Profiles* → **Certificates** → **+** → **Apple Distribution** → upload `dist.csr` → download the resulting `distribution.cer`.
+   - **c) Bundle it into a `.p12`** (pick any password — it becomes the `IOS_DIST_CERT_PASSWORD` secret):
+
+     ```bash
+     openssl x509 -in distribution.cer -inform DER -out dist.pem -outform PEM
+     openssl pkcs12 -export -legacy -inkey dist.key -in dist.pem \
+       -name "Apple Distribution" -out dist.p12 -passout pass:CHOOSE_A_PASSWORD
+     # (drop -legacy only if your OpenSSL is 1.x and rejects it; 3.x needs it so
+     #  macOS `security import` can read the .p12)
+     ```
+
+   - **d) App IDs.** Under **Identifiers**, confirm both `com.minded.app` and `com.minded.app.widget` exist (the app already does; create the widget one if missing — type *App*, no special capabilities). 
+   - **e) Two App Store profiles.** Under **Profiles** → **+** → **App Store** (Distribution):
+     - App ID `com.minded.app` → select the *Apple Distribution* cert from (b) → **name it exactly `minded profile main`** → download `minded-app.mobileprovision`.
+     - App ID `com.minded.app.widget` → same cert → **name it exactly `minded profile widget`** → download `minded-widget.mobileprovision`.
+
+     > The names must match `IOS_APP_PROFILE_NAME` / `IOS_WIDGET_PROFILE_NAME` in `.github/workflows/ios-testflight.yml`. If you name them differently, change the workflow env to match.
+
+5. **Add the secrets** (scope to the `production` environment, same as the store secrets):
 
    | Secret | Source |
    |---|---|
-   | `APP_STORE_CONNECT_KEY_ID` | the API key's Key ID |
+   | `APP_STORE_CONNECT_KEY_ID` | the API key's Key ID (upload only) |
    | `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID (top of the API keys page) |
-   | `APP_STORE_CONNECT_PRIVATE_KEY_BASE64` | `base64 -w0 AuthKey_XXXXXX.p8` of the downloaded key |
+   | `APP_STORE_CONNECT_PRIVATE_KEY_BASE64` | `base64 -w0 AuthKey_XXXXXX.p8` of the API key |
+   | `IOS_DIST_CERT_P12_BASE64` | `base64 -w0 dist.p12` |
+   | `IOS_DIST_CERT_PASSWORD` | the `.p12` password chosen in step 4c |
+   | `IOS_APP_PROVISIONING_PROFILE_BASE64` | `base64 -w0 minded-app.mobileprovision` |
+   | `IOS_WIDGET_PROVISIONING_PROFILE_BASE64` | `base64 -w0 minded-widget.mobileprovision` |
 
-5. **Widget target — wired in automatically by CI.** The `MindedWidget` Swift sources live in `extension/ios/App/MindedWidget/`, but the WidgetKit **extension target is not stored in `App.xcodeproj`**. The TestFlight workflow adds it on the fly: a *Wire in the widget extension target* step runs `extension/ios/App/scripts/add_widget_target.rb` (via the `xcodeproj` gem) before `pod install`, so every archive embeds the companion sun. The script is idempotent and the archive step is the real verification — a malformed project fails CI rather than silently shipping the WebView shell without the sun. Nothing to do here; to wire it into a checked-in project instead, run that script once locally and commit the `project.pbxproj` diff (see that folder's `README.md`).
+6. **Widget target — wired in automatically by CI.** The `MindedWidget` Swift sources live in `extension/ios/App/MindedWidget/`, but the WidgetKit **extension target is not stored in `App.xcodeproj`**. The TestFlight workflow adds it on the fly: a *Wire in the widget extension target* step runs `extension/ios/App/scripts/add_widget_target.rb` (via the `xcodeproj` gem) before `pod install`, so every archive embeds the companion sun. The same script also pins **both** targets to manual signing (the shared distribution cert + each target's App Store profile) when the workflow passes the `IOS_*_PROFILE_NAME` env — a local run without those env vars leaves signing on Automatic so the project still opens in Xcode. The script is idempotent and the archive step is the real verification — a malformed project fails CI rather than silently shipping the WebView shell without the sun. Nothing to do here; to wire it into a checked-in project instead, run that script once locally and commit the `project.pbxproj` diff (see that folder's `README.md`).
 
-> **Caveats for the first build.** (a) Apple caps distribution certificates per team — if cloud signing fails with "certificate limit reached", revoke an unused one in the Developer portal. (b) This iOS app has never been compiled; treat the first run as real verification, especially that the WebView loads the `distIOS` bundle (asset paths use base `/`). (c) `altool --upload-app` is deprecated though still functional on Xcode 16 — see the comment in the workflow for the migration path if a future Xcode drops it.
+> **Caveats for the first build.** (a) With manual signing you reuse one persisted distribution certificate, so the per-team certificate cap no longer creeps up on you — but if you're migrating from the old cloud-signing setup, clear its leaked certs first (see the troubleshooting row below). (b) This iOS app has never been compiled; treat the first run as real verification, especially that the WebView loads the `distIOS` bundle (asset paths use base `/`). (c) `altool --upload-app` is deprecated though still functional on Xcode 16 — see the comment in the workflow for the migration path if a future Xcode drops it.
 
 ### Testing on a specific person's phone (e.g. a friend's), no public release
 
@@ -237,4 +269,19 @@ Do this quarterly, or immediately on any suspicion of compromise.
 | Play upload rejected: "versionCode already exists" / `multiApkShadowedActiveApk` | Two builds landed in the same second, or an internal push minted a higher code mid-release and shadowed it. versionCode is time-derived, so don't edit it — just **re-run the workflow** to mint a fresh timestamp code. |
 | CWS upload rejected: "package size too large" | Bundle exceeds 50MB recommended. Investigate large assets. (Hard limit is 2GB.) |
 | Gradle: "keystore file not found" | Workflow secrets missing or wrong base64. Re-encode with `base64 -w0`. |
+| iOS Archive: *"Your account has reached the maximum number of certificates"* | Leftover certs from the old cloud-signing setup (it leaked one per run). Clear them with the helper below, then re-run. Won't recur under manual signing. |
+| iOS Archive: *"No profiles for 'com.minded.app…' were found"* | A profile secret is missing/mis-encoded, or its **name** in the portal doesn't match `IOS_APP_PROFILE_NAME`/`IOS_WIDGET_PROFILE_NAME`, or the widget App ID `com.minded.app.widget` isn't registered. Re-check step 4d/4e. |
+| iOS Archive: *"No signing certificate 'Apple Distribution' found"* | `IOS_DIST_CERT_P12_BASE64` / `IOS_DIST_CERT_PASSWORD` wrong, or the `.p12` was exported without `-legacy` (OpenSSL 3.x) so `security import` silently imported nothing. Re-export per step 4c. |
+
+**Clearing leaked signing certificates.** With your API key `.p8` in hand:
+
+```bash
+ASC_KEY_ID=XXXXXXXXXX \
+ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+ASC_KEY_PATH=./AuthKey_XXXXXXXXXX.p8 \
+  node extension/ios/App/scripts/asc-certs.mjs list        # review what's there
+#   …then: node extension/ios/App/scripts/asc-certs.mjs revoke-all   (or revoke <id>…)
+```
+
+Revoking a distribution cert does **not** break already-uploaded builds (Apple re-signs those); it only stops new signing. The one cert you use for manual signing lives in your GitHub secrets, so don't revoke that one once you've cut over. You can also do this by hand in the Developer portal → *Certificates* → select → *Revoke*.
 | Both publish jobs hang in "Waiting" | You forgot to approve the `production` environment in the Actions UI. |
