@@ -71,58 +71,22 @@ const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
  */
 const [getIsShellSunHidden, setIsShellSunHidden] = createSignal(false);
 /**
- * Bottom-bar anchor (px from the bottom edge) for the companion rest, computed to
- * mirror the `--companion-bar-center-y` CSS var (RouteCmp.module.scss):
- * `--safe-area-inset-bottom` + the `clamp(64px, 10vh, 88px)` band / 2.
+ * Bottom-bar anchor (px from the bottom edge) for the companion rest — the spot
+ * the resting disc settles onto, matching the `--companion-bar-center-y` CSS var
+ * (RouteCmp.module.scss): `--safe-area-inset-bottom` + the `clamp(64px, 10vh,
+ * 88px)` band / 2.
  *
- * The bottom inset is non-zero on Android (the system nav/gesture bar), so unlike
- * the old top anchor we can't assume 0 — read it from the same CSS var the layout
- * uses (set on #minded-6622 by setupAndroidInsets) so the disc lands exactly on
- * the bar centre on every platform. Computed (not DOM-measured) so it's exact
- * from the very first paint. Keep in sync with that SCSS var.
+ * This is only a SEED. The real position is measured from the DOM and pushed in
+ * by RouteCmp: `.companionTapTarget` is positioned at that same CSS var, so the
+ * shell reads its resolved `bottom` back and calls setCompanionBottomYPx — the
+ * SCSS stays the single source of truth (no clamp math mirrored here to drift),
+ * and the disc lands on the exact px the bottom-bar icons do. RouteCmp re-measures
+ * on mount, next frame, on resize, and on the native `androidSafeAreaChanged`
+ * push, so the resting position is whatever the CSS currently resolves to — not
+ * this default. The default just covers the pre-mount / non-DOM (styleguide) gap.
  */
-const readSafeAreaInsetBottomPx = (): number => {
-  const appEl =
-    typeof document !== "undefined"
-      ? document.getElementById("minded-6622")
-      : null;
-  if (!appEl) return 0;
-  const raw = getComputedStyle(appEl)
-    .getPropertyValue("--safe-area-inset-bottom")
-    .trim();
-  const parsed = parseFloat(raw);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-/**
- * Layout-viewport height in px — the basis CSS viewport units (`vh`) resolve
- * against (the initial containing block), exposed to JS as
- * `document.documentElement.clientHeight`. Use this, NOT `window.innerHeight`
- * (the *visual* viewport): the two diverge while a mobile URL bar or keyboard
- * shifts the visual viewport, and the companion band below must resolve to the
- * exact same px as the CSS `clamp(64px, 10vh, 88px)` so the disc lands dead-on
- * the bottom-bar centre. Falls back to `innerHeight` if the doc element is
- * unavailable (non-DOM contexts).
- */
-const readLayoutViewportHeightPx = (): number => {
-  const docEl =
-    typeof document !== "undefined" ? document.documentElement : null;
-  const clientHeight = docEl?.clientHeight ?? 0;
-  return clientHeight > 0 ? clientHeight : window.innerHeight;
-};
-
-export const computeCompanionBottomYPx = (): number => {
-  if (typeof window === "undefined") return DEFAULT_COMPANION_BOTTOM_Y_PX;
-  // Mirror CSS `--companion-bar-height: clamp(64px, 10vh, 88px)` exactly, then
-  // its centre above the bottom safe-area inset — see --companion-bar-center-y
-  // in RouteCmp.module.scss. Both sides must agree to the pixel or the
-  // CSS-driven bar and the JS-driven disc drift apart.
-  const band = Math.min(88, Math.max(64, readLayoutViewportHeightPx() * 0.1));
-  return readSafeAreaInsetBottomPx() + band / 2;
-};
-
 const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
-  computeCompanionBottomYPx(),
+  DEFAULT_COMPANION_BOTTOM_Y_PX,
 );
 
 /**

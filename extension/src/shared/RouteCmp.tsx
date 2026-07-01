@@ -20,7 +20,6 @@ import {
 } from "@src/shared/addWrapperClasses";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
-  computeCompanionBottomYPx,
   getIsShellSunHidden,
   getIsSunHandoffInFlight,
   getSunHandlers,
@@ -129,12 +128,43 @@ const MainWrapper = (props: RouteSectionProps) => {
       );
     }
 
-    // The companion anchor is already exact from the store's computed initial
-    // value, so the sun rests in place from first paint; just keep it in sync
-    // with the viewport on resize.
-    const onResize = () => setCompanionBottomYPx(computeCompanionBottomYPx());
-    window.addEventListener("resize", onResize);
-    onCleanup(() => window.removeEventListener("resize", onResize));
+    // Anchor the companion sun by reading the position straight off the CSS that
+    // already places the tap-target the disc rests onto: `.companionTapTarget` is
+    // `position: fixed; bottom: var(--companion-bar-center-y)`, so the browser has
+    // resolved that var to a px `bottom` (vh against the layout viewport, plus the
+    // live safe-area inset) exactly as the bottom bar's own layout did. Reading it
+    // back makes the SCSS the single source of truth — the disc lands on the same
+    // px the icons do, with no clamp math mirrored in JS to drift out of sync.
+    //
+    // This also drives the fix for the startup race: the store seeds the signal
+    // with a plain default at module-eval (before mountApp runs setupAndroidInsets
+    // and before, on Android, Compose has even delivered the first inset), so the
+    // resting disc would otherwise sit off the settings/feedback icon line on
+    // ~half of cold starts. Re-measure on mount (SolidJS runs onMount before
+    // paint, so the corrected value lands with no visible glide) and again next
+    // frame. The late inset itself arrives via the native WebViewSafeAreaBridge
+    // push, which sets the CSS var and dispatches `androidSafeAreaChanged` (which
+    // nothing else listened to) — re-measure on that so the disc catches up; if it
+    // moved, the settle glide morphs it softly into place. `resize` keeps it in
+    // sync with the viewport. The tap-target only exists while resting, which is
+    // exactly when the companion anchor matters; otherwise we keep the last value.
+    const reanchorCompanion = () => {
+      const tapTarget = document.querySelector<HTMLElement>(
+        `.${styles.companionTapTarget}`,
+      );
+      if (!tapTarget) return;
+      const bottomPx = parseFloat(getComputedStyle(tapTarget).bottom);
+      if (Number.isFinite(bottomPx)) setCompanionBottomYPx(bottomPx);
+    };
+    reanchorCompanion();
+    const rafId = requestAnimationFrame(reanchorCompanion);
+    window.addEventListener("resize", reanchorCompanion);
+    window.addEventListener("androidSafeAreaChanged", reanchorCompanion);
+    onCleanup(() => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", reanchorCompanion);
+      window.removeEventListener("androidSafeAreaChanged", reanchorCompanion);
+    });
 
     // iOS widget cold-launch only: tell the native launch overlay the sun has
     // actually painted, so it fades out on the real first paint instead of guessing
