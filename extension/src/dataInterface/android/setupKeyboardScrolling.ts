@@ -1,5 +1,16 @@
 const FIELD_BOTTOM_MARGIN = 24;
 
+// Single signal for "the keyboard is up" across the Android web layer. Consumed
+// by CSS (e.g. hiding the bottom bar — see BottomBar.module.scss). Formerly set
+// by a native global-layout probe in MyWebView; now derived here from focus so
+// there is one source of truth and no pixel-height threshold.
+const KEYBOARD_OPEN_CLASS = "androidKeyboardOpen";
+
+const isTextEntry = (el: EventTarget | null): boolean =>
+  el instanceof HTMLTextAreaElement ||
+  el instanceof HTMLInputElement ||
+  (el instanceof HTMLElement && el.isContentEditable);
+
 const getActiveField = (): HTMLInputElement | HTMLTextAreaElement | null => {
   const target = document.activeElement;
   if (
@@ -85,6 +96,23 @@ export function setupKeyboardScrolling(): void {
     true,
   );
   document.addEventListener("input", scheduleVisibilityCheck, true);
+
+  // Toggle the keyboard-open class off a focused text field rather than a
+  // measured viewport delta: with native adjustResize/imePadding the window is
+  // already resized for the IME, so visualViewport reports no usable gap. A
+  // focused field is the exact, threshold-free signal.
+  const syncKeyboardOpenClass = () => {
+    document.body.classList.toggle(
+      KEYBOARD_OPEN_CLASS,
+      isTextEntry(document.activeElement),
+    );
+  };
+  document.addEventListener("focusin", syncKeyboardOpenClass);
+  // focusout fires before focus lands on the next field; re-check next frame so
+  // tabbing field→field doesn't flicker the class (and the bottom bar) off/on.
+  document.addEventListener("focusout", () =>
+    requestAnimationFrame(syncKeyboardOpenClass),
+  );
 
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", scheduleVisibilityCheck);

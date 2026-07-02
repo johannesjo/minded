@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { onCleanup, onMount } from "solid-js";
+import { onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
@@ -37,59 +37,13 @@ const InteractionAndroid = () => {
     });
   }
 
-  onMount(async () => {
+  onMount(() => {
     addWrapperClasses();
-
-    // Handle keyboard viewport changes smoothly
-    let lastHeight = window.innerHeight;
-    const handleViewportChange = () => {
-      const currentHeight = window.innerHeight;
-      const heightDiff = lastHeight - currentHeight;
-
-      // Keyboard is showing if height decreased
-      if (heightDiff > 100) {
-        // Add class to handle keyboard state
-        document.body.classList.add("keyboard-visible");
-
-        // Smoothly adjust content position
-        const wrapper = document.getElementById(
-          "minded-6622-interaction-wrapper-box",
-        );
-        if (wrapper) {
-          wrapper.style.paddingBottom = `${heightDiff / 2}px`;
-        }
-      } else if (heightDiff < -100) {
-        // Keyboard is hiding
-        document.body.classList.remove("keyboard-visible");
-
-        const wrapper = document.getElementById(
-          "minded-6622-interaction-wrapper-box",
-        );
-        if (wrapper) {
-          wrapper.style.paddingBottom = "0";
-        }
-      }
-
-      lastHeight = currentHeight;
-    };
-
-    // Listen for viewport changes
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleViewportChange);
-    } else {
-      window.addEventListener("resize", handleViewportChange);
-    }
-
-    onCleanup(() => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener(
-          "resize",
-          handleViewportChange,
-        );
-      } else {
-        window.removeEventListener("resize", handleViewportChange);
-      }
-    });
+    // No per-screen keyboard handling: the native window insets (adjustResize +
+    // imePadding) reflow the WebView so the centred interaction box recentres
+    // above the keyboard on its own, and setupKeyboardScrolling (visualViewport)
+    // keeps the focused field in view. The old pixel-threshold viewport listener
+    // that also padded the box (and fought those systems) is gone — see #121.
   });
 
   const onUpdateQuestion = (rndQuestion: QuestionForPrompt) => {

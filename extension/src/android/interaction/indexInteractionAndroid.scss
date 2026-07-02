@@ -73,32 +73,6 @@ body {
   will-change: transform;
 }
 
-// Ensure interaction content stays properly positioned during keyboard resize
-#minded-6622-interaction-wrapper-box {
-  transition: padding-bottom 0.3s ease-out;
-}
-
-// Handle keyboard visible state
-body.keyboard-visible {
-  // Ensure background stays consistent during keyboard animation
-  &::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: inherit;
-    z-index: -1;
-  }
-
-  // Adjust sun position when keyboard is visible
-  .sun-container {
-    transition: transform 0.3s ease-out;
-    transform: translateY(-20px);
-  }
-}
-
 // Prevent layout jumps on focus
 input,
 textarea {
