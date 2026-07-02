@@ -310,6 +310,7 @@ const MainWrapper = (props: RouteSectionProps) => {
             onStartBackgroundAnimation={(d) =>
               getSunHandlers()?.onStartBackgroundAnimation?.(d)
             }
+            onFlungOffscreen={() => getSunHandlers()?.onFlungOffscreen?.()}
             onCompletionStarted={(s) =>
               getSunHandlers()?.onCompletionStarted?.(s)
             }

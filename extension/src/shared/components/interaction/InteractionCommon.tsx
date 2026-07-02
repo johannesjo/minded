@@ -422,6 +422,20 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let lastCompletionDirection: "up" | "down" | undefined;
   const interactionEventTarget = props.shadowRoot ?? window;
 
+  // Reveal the "what do you want to let go of?" question and tuck the flung disc
+  // away behind it. Deferred from the fling's *start* to the moment the sun has
+  // actually flown off the screen (onFlungOffscreen), so the gesture reads as a
+  // release rather than an instant cut. Idempotent: whichever of the off-screen
+  // watcher or the terminal fallback fires first opens it; the other no-ops.
+  const openLetGoOffer = () => {
+    if (getShowLetGoOffer()) return;
+    // The disc is off-screen now, so hiding the shell-sun layer is invisible; it
+    // keeps the still-running fling from careering back over the question and is
+    // sent home / revealed again on close (see finishLetGo).
+    if (props.useShellSun) setIsShellSunHidden(true);
+    setShowLetGoOffer(true);
+  };
+
   // Dashboard down-drag opens the grounding offer (and up/away the let-go offer)
   // while keeping the interaction mounted, so the sun's terminal close (fade +
   // unmount) must not fire. Every other case closes as before.
@@ -433,11 +447,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     ) {
       return;
     }
-    if (
-      props.isFromDashboard &&
-      lastCompletionDirection === "up" &&
-      getShowLetGoOffer()
-    ) {
+    if (props.isFromDashboard && lastCompletionDirection === "up") {
+      // The fling has finished carrying the sun off the top (or stalled on-screen
+      // without ever clearing it — a gentle fling). Either way, reveal the let-go
+      // question now as the fallback if the off-screen watcher hasn't already.
+      openLetGoOffer();
       return;
     }
     close();
@@ -851,13 +865,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     // Up/away = let go: the disc is flung off and the "What do you want to let go
-    // of?" question takes over. It should read like any other question screen, so
-    // (a) reset the background to its neutral default rather than completing to
-    // the cold "night" extreme the up-drag was heading toward — the transparent
-    // let-go overlay shows that standard background through — and (b) hide the
-    // shell sun while the question is up. The sun is its own layer above this
-    // overlay, so leaving it visible would let it career across the question and
-    // pop back in on top; hidden here, it is sent home and revealed on close.
+    // of?" question takes over. Let the fling actually play out first — the sun
+    // should visibly fly off the top before the question appears, so the gesture
+    // reads as a release, not an instant swap. So here we only calm the stage for
+    // the flight: (a) reset the background to its neutral default rather than
+    // completing to the cold "night" extreme the up-drag was heading toward — the
+    // transparent let-go overlay shows that standard background through — and
+    // ease the interaction sky out to reveal the dashboard the sun flies over.
+    // Hiding the shell sun and revealing the question is deferred to
+    // openLetGoOffer, fired once the disc has cleared the viewport (onFlungOffscreen)
+    // — or, as a fallback for a gentle fling that never clears, when the terminal
+    // animation completes (runTerminalOutcome).
     if (props.isFromDashboard && direction === "up") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
       interactionEventTarget.dispatchEvent(
@@ -870,8 +888,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           },
         }),
       );
-      if (props.useShellSun) setIsShellSunHidden(true);
-      setShowLetGoOffer(true);
       return;
     }
 
@@ -1028,6 +1044,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       onFlingAway: () => runTerminalOutcome(props.onFlingAway),
       onDragComplete: () => runTerminalOutcome(props.onDragComplete),
       onStartBackgroundAnimation: handleStartBackgroundAnimation,
+      onFlungOffscreen: () => {
+        // The let-go fling has carried the sun off the top; reveal the question
+        // now (down-drags open grounding with the sun still present, so ignore
+        // those).
+        if (props.isFromDashboard && lastCompletionDirection === "up") {
+          openLetGoOffer();
+        }
+      },
       onCompletionStarted: (started) => {
         setIsCompletionStarted(started);
         props.onCompletionStarted?.(started);
@@ -1569,6 +1593,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               onFlingAway={() => runTerminalOutcome(props.onFlingAway)}
               onDragComplete={() => runTerminalOutcome(props.onDragComplete)}
               onStartBackgroundAnimation={handleStartBackgroundAnimation}
+              onFlungOffscreen={() => {
+                if (props.isFromDashboard && lastCompletionDirection === "up") {
+                  openLetGoOffer();
+                }
+              }}
               onCompletionStarted={(started) => {
                 setIsCompletionStarted(started);
                 props.onCompletionStarted?.(started);

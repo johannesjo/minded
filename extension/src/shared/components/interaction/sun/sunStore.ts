@@ -36,6 +36,8 @@ export interface SunOutcomeHandlers {
   onDragComplete: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
+  /** Fired once the flung disc has fully cleared the viewport (see Sun's onFlungOffscreen). */
+  onFlungOffscreen?: () => void;
   /** Taps to "continue" while interactive (the companion opens via its own tap-target). */
   tapThreshold?: number;
   /**

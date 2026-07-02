@@ -51,6 +51,15 @@ interface SunProps {
   onDragComplete: () => void;
   onStartBackgroundAnimation?: (direction: "up" | "down") => void;
   onCompletionStarted?: (started: boolean) => void;
+  /**
+   * Fired once per terminal gesture the instant the flung/completing disc has
+   * fully cleared the viewport. The dashboard let-go uses this to hold its
+   * question back until the sun has visibly flown off the top, rather than
+   * revealing it the moment the fling begins. Not fired if the disc never leaves
+   * the screen (a gentle fling that stalls on-screen) — the terminal callback
+   * covers that as a fallback.
+   */
+  onFlungOffscreen?: () => void;
   eventRoot?: ShadowRoot;
   /**
    * Opt-in: fired with `Date.now()` at the instant a once-through breath actually
@@ -1152,6 +1161,26 @@ export const Sun: Component<SunProps> = (props) => {
       }
     };
 
+    // Watch the live disc rect during a terminal animation and fire
+    // onFlungOffscreen the frame it fully clears the viewport. The fling /
+    // completion run for a fixed 3s, but the disc leaves the screen long before
+    // that — this lets a consumer (the dashboard let-go) act on "the sun has
+    // flown off" without waiting out the whole animation. Reset per gesture.
+    let hasFlungOffscreen = false;
+    const notifyIfFlungOffscreen = () => {
+      if (hasFlungOffscreen || !props.onFlungOffscreen || !sunEl) return;
+      const rect = sunEl.getBoundingClientRect();
+      const isOffscreen =
+        rect.bottom <= 0 ||
+        rect.top >= window.innerHeight ||
+        rect.right <= 0 ||
+        rect.left >= window.innerWidth;
+      if (isOffscreen) {
+        hasFlungOffscreen = true;
+        props.onFlungOffscreen();
+      }
+    };
+
     const animateSnapBack = () => {
       // Keep transitions disabled while JS drives the snap-back animation
       setIsAnimating(true);
@@ -1209,6 +1238,7 @@ export const Sun: Component<SunProps> = (props) => {
 
     const animateToCompletion = (direction: "up" | "down") => {
       setIsAnimating(true);
+      hasFlungOffscreen = false;
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
@@ -1239,6 +1269,8 @@ export const Sun: Component<SunProps> = (props) => {
           startOpacity + (easing.targetOpacity - startOpacity) * easedProgress;
         setOpacity(currentOpacity);
 
+        notifyIfFlungOffscreen();
+
         if (progress < 1) {
           animationFrame = requestAnimationFrame(animate);
         } else {
@@ -1256,6 +1288,7 @@ export const Sun: Component<SunProps> = (props) => {
       magnitude: number;
     }) => {
       setIsAnimating(true);
+      hasFlungOffscreen = false;
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
@@ -1306,6 +1339,8 @@ export const Sun: Component<SunProps> = (props) => {
         setScale(physicsState.scale);
         setOpacity(physicsState.opacity);
         setRotation(physicsState.rotation);
+
+        notifyIfFlungOffscreen();
 
         // Animation runs for fixed duration
         const animationComplete = elapsedTime >= config.duration;
