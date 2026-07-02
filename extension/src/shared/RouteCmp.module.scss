@@ -4,16 +4,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden !important;
-  --companion-bar-height: clamp(64px, 10vh, 88px);
-  // Centre the sun in the bottom band by deriving its resting Y (measured from
-  // the bottom edge) from the band height itself (half of it), above the system
-  // safe-area inset. This is the single source of truth for the companion rest:
-  // the JS-positioned disc reads this back off `.companionTapTarget` (which is
-  // anchored to it) rather than re-deriving the math — see reanchorCompanion in
-  // RouteCmp.tsx.
-  --companion-bar-center-y: calc(
-    var(--safe-area-inset-bottom) + var(--companion-bar-height) / 2
-  );
+  // --companion-bar-height / --companion-bar-center-y (the companion rest's
+  // single source of truth) live on the app root in _variables.scss, because
+  // the Android onboarding renders outside this shell yet lands its hand-off
+  // on the same anchor. The JS-positioned disc reads the resolved px back off
+  // `.companionTapTarget` rather than re-deriving the math — see
+  // reanchorCompanion in RouteCmp.tsx.
   // Radius of the soft round fade "pocket" that opens around the resting
   // companion sun (bottom-centre). Content scrolling into this radius dissolves
   // in a circle around the disc, extending the flat bottom fade upward right

@@ -156,6 +156,14 @@ export interface SunSettle {
   breathPattern?: BreathPattern;
 }
 
+/**
+ * Duration of a glide to/from a companion-style rest (the bottom-bar home).
+ * Exported so a caller sequencing a hand-off around the glide (the Android
+ * onboarding waits for the disc to land before swapping in the dashboard
+ * shell) shares the real duration instead of a drifting copy.
+ */
+export const COMPANION_GLIDE_MS = 900;
+
 export const Sun: Component<SunProps> = (props) => {
   let sunEl: HTMLDivElement;
   const [getDragOffset, setDragOffset] = createSignal({ x: 0, y: 0 });
@@ -290,8 +298,7 @@ export const Sun: Component<SunProps> = (props) => {
   // Glides to/from the dashboard companion (the bottom-bar rest rising into the
   // interaction, and the return home) get a gentler, slower duration than other
   // transitions (e.g. cancelling the intent/time choices), which keep the
-  // snappier default.
-  const COMPANION_GLIDE_MS = 900;
+  // snappier default. (COMPANION_GLIDE_MS lives at module scope, exported.)
   // Returning home *after a fling* doesn't glide — the disc is off-screen, so a
   // glide would streak it across the whole screen. It fades in at the rest over
   // this instead (see settleInAtRest).
