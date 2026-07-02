@@ -48,6 +48,15 @@ class LittleSunWindow(
     private var posX = 0
     private var posY = 0
 
+    // The finger's unclamped position during a drag: posX/posY are clamped
+    // on-screen every step, so once the bubble is pinned at the clamp floor the
+    // finger keeps travelling while the window stays put. The downward gap
+    // (rawY - posY) is the overshoot the set gesture reads — pulling the bubble
+    // past its lowest allowed rest is unmistakably a leave, while every
+    // position the clamp allows stays a plain parkable drop.
+    private var rawX = 0f
+    private var rawY = 0f
+
     @Composable
     override fun Cmp() {
         LaunchedEffect(Unit) {
@@ -59,6 +68,7 @@ class LittleSunWindow(
             elapsedSeconds = elapsedSeconds,
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
+            getBottomOvershootPx = { (rawY - posY).coerceAtLeast(0f) },
             onLeaving = { beginStepAwayLaunch() },
             onLeaveMove = { dx, dy -> onLeaveMove(dx, dy) },
             onStepAway = { stepAway() },
@@ -199,6 +209,8 @@ class LittleSunWindow(
         val (x, y) = LittleSunPosition.restingTopLeft(ctrlSvc, windowManager, saved)
         posX = x
         posY = y
+        rawX = posX.toFloat()
+        rawY = posY.toFloat()
     }
 
     private fun clampPosition() {
@@ -217,8 +229,10 @@ class LittleSunWindow(
     }
 
     private fun onDrag(dxPx: Float, dyPx: Float) {
-        posX += dxPx.roundToInt()
-        posY += dyPx.roundToInt()
+        rawX += dxPx
+        rawY += dyPx
+        posX = rawX.roundToInt()
+        posY = rawY.roundToInt()
         clampPosition()
         updateLayout()
     }
@@ -228,6 +242,8 @@ class LittleSunWindow(
         // anywhere, not edge-locked. clampPosition keeps it on-screen and a
         // margin in from every edge, clear of the system gesture zones.
         clampPosition()
+        rawX = posX.toFloat()
+        rawY = posY.toFloat()
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
     }
 

@@ -69,7 +69,11 @@ private val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 // ---------------------------------------------------------------------------
 
 // Release thresholds — mirror getSunReleaseAction / its constants.
-private const val DRAG_THRESHOLD_DP = 100f // slow drag past this (downward) "sets" the sun
+// The set threshold is measured as *overshoot past the bubble's lowest allowed
+// rest* (the window clamps the bubble on-screen while the finger keeps pulling),
+// not as plain downward travel: the bubble — unlike the in-app sun — is parkable
+// anywhere, so travel alone can't tell a reposition from a leave.
+private const val DRAG_THRESHOLD_DP = 100f // pulled this far past the bottom rest "sets" the sun
 private const val FLING_VELOCITY_THRESHOLD_DP_S = 200f // release speed that reads as a fling
 private const val FLING_MIN_DISTANCE_DP = 75f // a fling must also have travelled this far
 
@@ -104,16 +108,23 @@ private enum class LeaveKind { FLING, SET }
  *  - **fling** it (a quick vertical flick) — a physics throw off-screen in the
  *    fling's direction (mirrors the web sun's `animateFling`), the universal
  *    "fling it" escape hatch from `CLAUDE.md`.
- *  - **drag it down** past a threshold — an ease-in-out sink off the bottom
- *    (mirrors the web sun's downward `animateToCompletion`), the deliberate set.
- * Any gentler / sideways / upward drag just repositions the bubble; a plain tap
- * does nothing (so a stray touch neither ejects the user nor detonates a surface).
+ *  - **drag it down past its lowest rest** — once the bubble is pinned at the
+ *    bottom clamp, pulling the finger ~100dp further commits an ease-in-out sink
+ *    off the bottom (mirrors the web sun's downward `animateToCompletion`), the
+ *    deliberate set.
+ * Any other drag — including all the way down to the bottom corner — just
+ * repositions the bubble (parkable anywhere the clamp allows); a plain tap does
+ * nothing (so a stray touch neither ejects the user nor detonates a surface).
  */
 @Composable
 fun LittleSun(
     elapsedSeconds: Int = 0,
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
+    // The drag's current downward overshoot past the bubble's lowest allowed
+    // rest: the window clamps the bubble on-screen, so this is how far the
+    // finger has pulled below that floor (0 while the bubble can still follow).
+    getBottomOvershootPx: () -> Float = { 0f },
     // Fired the instant a leave commits, before the sun has gone: it brings minded
     // to the front behind the leaving sun, so the app is ready as the disc clears
     // the screen (no blocked-app flash, no hard cut).
@@ -268,13 +279,16 @@ fun LittleSun(
                             val confusedRelease =
                                 vMagnitude >= flingThresholdPx && !verticalFlingIntent
                             // A fast vertical flick that also travelled far enough is
-                            // a fling (up or down); a slow downward pull past the
-                            // threshold is the set.
+                            // a fling (up or down); a slow pull that carried the finger
+                            // past the bubble's lowest rest by the threshold is the set
+                            // (plain downward travel just repositions — the bubble is
+                            // parkable anywhere the clamp allows).
                             val isFling = abs(v.y) >= flingThresholdPx &&
                                 abs(offset.y) >= flingMinDistancePx &&
                                 verticalFlingIntent && verticalDragIntent
                             val isSetDown = !confusedRelease &&
-                                offset.y >= dragThresholdPx && verticalDragIntent
+                                getBottomOvershootPx() >= dragThresholdPx &&
+                                verticalDragIntent
                             when {
                                 isFling -> {
                                     // A soft tick confirms the deliberate, chosen leave.

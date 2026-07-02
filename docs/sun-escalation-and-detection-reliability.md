@@ -33,15 +33,19 @@ modal that overran the calm a casual companion tap deserves. Per owner direction
 we **stepped away from the additional overlay entirely**: the little sun is now
 *only* the resting bubble, and it offers the step-away **on the bubble itself** —
 **fling it** (a quick vertical flick; the universal "fling it" escape hatch from
-`CLAUDE.md`) or **drag it down** past a threshold (the deliberate calm set). Both
-end in minded. A gentler / sideways / upward drag just repositions the bubble; a
-plain tap does nothing (so a stray touch neither ejects the user nor detonates a
-surface).
+`CLAUDE.md`) or **drag it down past its lowest rest** (the deliberate calm set:
+once the bubble is pinned at its bottom clamp, pulling the finger ~100 dp further
+commits the leave). Both end in minded. Any other drag — including down to the
+bottom corner — just repositions the bubble (parkable anywhere the clamp allows);
+a plain tap does nothing (so a stray touch neither ejects the user nor detonates
+a surface).
 
 The leave animations are **ported 1:1 from the in-app sun** (`sunAnimationUtils.ts`
 / `Sun.tsx`) so the little sun reads and exits a gesture exactly like the sun
 everywhere else: the same release thresholds (`getSunReleaseAction` — 100 dp drag,
-200 dp/s fling, 75 dp min travel, vertical intent), the same fling physics
+with the little sun's drag measured as overshoot past the bottom clamp, since
+unlike the in-app sun it is repositionable and plain travel can't tell a park
+from a leave — 200 dp/s fling, 75 dp min travel, vertical intent), the same fling physics
 (`updatePhysics` — friction 0.98, distance-based shrink/fade, slight spin) and the
 same downward ease-in-out set (`animateToCompletion`). The one difference is
 *where* the motion lands: the in-app sun translates a disc inside a full-viewport
