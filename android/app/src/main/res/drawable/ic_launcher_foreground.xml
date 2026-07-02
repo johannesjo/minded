@@ -1,24 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive-icon FOREGROUND: the rising sun disc only, on a transparent field
+     so it parallaxes over the sky (ic_launcher_background.xml). The disc is
+     centred on the bottom edge (a sunrise); its top sits at the icon's centre,
+     inside the safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="512"
     android:viewportHeight="512">
-  <path
-      android:pathData="M0,0h512v512h-512z">
-    <aapt:attr name="android:fillColor">
-      <gradient 
-          android:centerX="256"
-          android:centerY="512"
-          android:gradientRadius="512"
-          android:tileMode="clamp"
-          android:type="radial">
-        <item android:offset="0.33" android:color="#FFEFEE9F"/>
-        <item android:offset="0.66" android:color="#FFFFCCEA"/>
-        <item android:offset="0.9" android:color="#FFAAE9EE"/>
-      </gradient>
-    </aapt:attr>
-  </path>
   <path
       android:pathData="M256,512m-256,0a256,256 0,1 1,512 0a256,256 0,1 1,-512 0"
       android:fillColor="#ffffff"/>
