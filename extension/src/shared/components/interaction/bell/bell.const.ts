@@ -22,9 +22,9 @@ export const BELL_SILENCE_BEFORE_CONFIRM_MS = 1600;
 export const BELL_CONFIRM_FADE_MS = 900;
 
 /**
- * How often the listen screen pokes the parent's auto-dismiss countdown while
- * the bell rings: the whole point is to sit still, so nothing else would reset
- * it (mirrors urge surfing's wave tick). Once the confirmation is up the poking
- * stops — an ignored offer is allowed to fade away on its own.
+ * How often the listen screen pokes the parent's auto-dismiss while the bell
+ * rings: the whole point is to sit still, so no pointer input would otherwise
+ * keep the overlay's fade from firing mid-listen (mirrors urge surfing's wave
+ * tick). Stops once the confirmation is up.
  */
 export const BELL_KEEP_ALIVE_TICK_MS = 200;

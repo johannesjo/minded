@@ -49,8 +49,8 @@ const SCREEN_OFF_PROBABILITY = 1 / 3;
 const URGE_SURFING_PROBABILITY = 1 / 3;
 // Share of (remaining) strong-friction interventions that ring the bell —
 // one strike, listened all the way down into silence. Deliberately below
-// urge surfing: at peak pull the urge work is the more specific practice,
-// the bell the quieter alternative.
+// urge surfing (at peak pull the urge work is the more specific practice)
+// and below a ready pattern insight (see the strong branch).
 const BELL_PROBABILITY = 1 / 4;
 // Rare everyday appearance of the bell, in the same "nothing more specific is
 // due" register as NOTICE (and slightly more common than it, being the richer
@@ -249,10 +249,6 @@ export const getInteractionModeDecision = (
       return decision("URGE_SURFING", "urge_surfing_strong", frictionLevel);
     }
 
-    if (canOfferBell && chance(BELL_PROBABILITY, random)) {
-      return decision("BELL", "bell_strong", frictionLevel);
-    }
-
     if (patternInsight) {
       return decision(
         "PATTERN_INSIGHT",
@@ -260,6 +256,14 @@ export const getInteractionModeDecision = (
         frictionLevel,
         patternInsight,
       );
+    }
+
+    // After the pattern insight, never instead of it: a ready insight is the
+    // most context-specific thing the strong tier can say, and the bell must
+    // not displace it. It only adds variety to the more generic slots below
+    // (saved reason / alternative / question).
+    if (canOfferBell && chance(BELL_PROBABILITY, random)) {
+      return decision("BELL", "bell_strong", frictionLevel);
     }
 
     if (hasReasonAnswers) {

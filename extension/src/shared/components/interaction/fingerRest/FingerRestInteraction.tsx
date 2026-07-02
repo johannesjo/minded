@@ -32,6 +32,7 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
   const [getIsResting, setIsResting] = createSignal(false);
 
   let restStartTS: number | undefined;
+  let restingPointerId: number | undefined;
   let keepAliveInterval: ReturnType<typeof setInterval> | undefined;
 
   const stopKeepAlive = (): void => {
@@ -42,10 +43,16 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
   };
 
   const handleRestStart = (e: PointerEvent): void => {
+    // One rest at a time: a second fingertip brushing the zone mid-rest must
+    // not restart the clock or orphan the keep-alive interval — the first
+    // finger keeps the rest, and only its lift ends it (pointer-id checks in
+    // the end handlers below).
+    if (getIsResting()) return;
     // Keep the press from starting text selection / the long-press callout,
     // and keep receiving the pointer even if the resting finger drifts.
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    restingPointerId = e.pointerId;
 
     // Capture outside the interval so the reactive `props` access does not
     // trip the solid/reactivity lint rule (as UrgeSurfing does).
@@ -61,8 +68,9 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
     );
   };
 
-  const handleRestEnd = (): void => {
-    if (!getIsResting()) return;
+  const handleRestEnd = (e: PointerEvent): void => {
+    if (!getIsResting() || e.pointerId !== restingPointerId) return;
+    restingPointerId = undefined;
     stopKeepAlive();
     setIsResting(false);
     const restedMs = restStartTS !== undefined ? Date.now() - restStartTS : 0;
@@ -74,9 +82,11 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
     // back in via the signal above; no nudge, no message.
   };
 
-  const handleRestInterrupted = (): void => {
+  const handleRestInterrupted = (e: PointerEvent): void => {
     // The system took the pointer (gesture, palm rejection) — that is not a
     // chosen lift, so never complete from here; just return to the invitation.
+    if (e.pointerId !== restingPointerId) return;
+    restingPointerId = undefined;
     stopKeepAlive();
     setIsResting(false);
     restStartTS = undefined;
