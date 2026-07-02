@@ -258,15 +258,23 @@ fun LittleSun(
                         if (!leaving) {
                             val v = velocityTracker.calculateVelocity()
                             val offset = dragAccum
+                            val vMagnitude = sqrt(v.x * v.x + v.y * v.y)
                             val verticalFlingIntent = abs(v.y) >= abs(v.x)
                             val verticalDragIntent = abs(offset.y) >= abs(offset.x)
-                            // Mirror getSunReleaseAction: a fast vertical flick that
-                            // also travelled far enough is a fling (up or down); a
-                            // slow downward pull past the threshold is the set.
+                            // Mirror getSunReleaseAction: a fast release without
+                            // vertical intent is a confused gesture — rest, never
+                            // leave (guards a hurried sideways flick at the end of a
+                            // downward pull from committing an accidental step-away).
+                            val confusedRelease =
+                                vMagnitude >= flingThresholdPx && !verticalFlingIntent
+                            // A fast vertical flick that also travelled far enough is
+                            // a fling (up or down); a slow downward pull past the
+                            // threshold is the set.
                             val isFling = abs(v.y) >= flingThresholdPx &&
                                 abs(offset.y) >= flingMinDistancePx &&
                                 verticalFlingIntent && verticalDragIntent
-                            val isSetDown = offset.y >= dragThresholdPx && verticalDragIntent
+                            val isSetDown = !confusedRelease &&
+                                offset.y >= dragThresholdPx && verticalDragIntent
                             when {
                                 isFling -> {
                                     // A soft tick confirms the deliberate, chosen leave.

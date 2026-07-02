@@ -892,9 +892,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
      * space — rather than the launcher, which would dump the user back among the
      * very icons (including the one just left) that re-tempt. This is the
      * "redirect" half of interrupt → reflect → redirect, shared by every calm
-     * close: the full interaction, the sleep wind-down, and the little-sun pause's
-     * pull-down step-away. We can't (and the philosophy wouldn't) force-kill the
-     * blocked app — we just glide the user somewhere calm.
+     * close: the full interaction, the sleep wind-down, and the little-sun
+     * bubble's fling / drag-down step-away. We can't (and the philosophy
+     * wouldn't) force-kill the blocked app — we just glide the user somewhere
+     * calm.
      */
     fun goToApp() {
         val intent = Intent(this, MainActivity::class.java)
@@ -905,8 +906,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         // run their overlay teardown *downstream* of this — the little-sun
         // step-away fires goToApp() and only then animates the sun out and hides
         // the window — so an uncaught throw here would abort that teardown and
-        // strand the user under an inescapable dim. Swallow it: worst case the
-        // redirect is missed, but the overlay still closes.
+        // strand the bubble mid-leave. Swallow it: worst case the redirect is
+        // missed, but the overlay still closes.
         try {
             startActivity(intent)
         } catch (e: Exception) {
