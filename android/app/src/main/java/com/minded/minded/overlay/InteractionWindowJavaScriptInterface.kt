@@ -1,10 +1,6 @@
 package com.minded.minded.overlay
 
 import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import android.util.Log
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -13,6 +9,7 @@ import android.webkit.WebView
 import com.minded.minded.BuildConfig
 import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.util.Haptics
 import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.SessionIntent
 import com.minded.minded.util.parseJSONQuestion
@@ -184,69 +181,10 @@ class InteractionWindowJavaScriptInterface(
         ctrlSvc.setSessionLimit(payload.seconds, payload.intent)
     }
 
-    private val vibrator: Vibrator by lazy {
-        val context = ctrlSvc.applicationContext
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
-    }
-
     @JavascriptInterface
     fun triggerHaptic(type: String) {
-        // Offload to background thread to avoid blocking JS thread
-        Thread {
-            try {
-                if (!vibrator.hasVibrator()) {
-                    return@Thread
-                }
-                
-                val effect = when (type) {
-                    "light" -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            vibrator.vibrate(30)
-                            return@Thread
-                        }
-                    }
-                    "medium" -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            vibrator.vibrate(50)
-                            return@Thread
-                        }
-                    }
-                    "heavy" -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
-                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            vibrator.vibrate(300)
-                            return@Thread
-                        }
-                    }
-                    else -> {
-                        return@Thread
-                    }
-                }
-                
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(effect)
-                }
-            } catch (e: Exception) {
-                Log.e(logTag, "Failed to trigger haptic feedback", e)
-            }
-        }.start()
+        // Shared with the native little sun (Haptics) so every surface vibrates
+        // with the same real Vibrator effect rather than a weaker view tick.
+        Haptics.trigger(ctrlSvc.applicationContext, type)
     }
 }

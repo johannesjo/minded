@@ -7,7 +7,6 @@ import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import android.view.Gravity
-import android.view.HapticFeedbackConstants
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +21,7 @@ import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
 import com.minded.minded.ui.compose.LittleSunLeaveZone
 import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
 import kotlin.math.hypot
@@ -294,8 +294,12 @@ class LittleSunWindow(
         if (inZone != isDiscInZone) {
             isDiscInZone = inZone
             if (inZone) {
-                // A soft tick marks the capture — release now and the sun sets.
-                window?.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                // A crisp click marks the capture — release now and the sun sets.
+                // The same real Vibrator "medium" the WebView sun fires when a
+                // drag crosses its threshold, so the two suns feel identical
+                // (view-level performHapticFeedback was weaker and unreliable on
+                // this overlay window).
+                Haptics.trigger(ctrlSvc.applicationContext, "medium")
             }
         }
     }
@@ -348,7 +352,9 @@ class LittleSunWindow(
      * manufacture a scarcity nudge out of a healthy outcome — it leaves no tally.
      */
     private fun commitLeave() {
-        window?.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        // The satisfying completion pattern the WebView sun plays on a completed
+        // drag (heavy click + faint tail), via the same shared Vibrator path.
+        Haptics.triggerCompletion(ctrlSvc.applicationContext)
         stopTimer()
         ctrlSvc.goToApp()
         // Flip BEFORE tearing the bubble window down: hideWindowImmediate keeps
