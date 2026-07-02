@@ -20,6 +20,11 @@
     @include btnTxtOutlineModifier();
   }
 
+  &.isSoft,
+  #minded-6622 &.isSoft {
+    @include btnTxtSoftModifier();
+  }
+
   &.isBig,
   #minded-6622 &.isBig {
     @include btnTxtBigModifier();

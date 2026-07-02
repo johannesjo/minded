@@ -73,7 +73,7 @@ export const StrongFrictionBreathPause: Component<
         <div class="txtSmaller">{getCount()}</div>
       </div>
 
-      <Btn onClick={() => props.onCancel()}>
+      <Btn soft onClick={() => props.onCancel()}>
         cancel
       </Btn>
     </div>

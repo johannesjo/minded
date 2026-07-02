@@ -29,10 +29,15 @@ interface CommonBtnProps {
   "aria-describedby"?: string;
 }
 
-/** Text button (the default). Modifiers: `outline` (ghost) and `big` (CTA). */
+/**
+ * Text button (the default). Modifiers: `outline` (ghost), `soft` (quiet
+ * translucent — for a secondary exit that stays easy but shouldn't be the
+ * loudest pixel) and `big` (CTA).
+ */
 type TextBtnProps = CommonBtnProps & {
   variant?: "text";
   outline?: boolean;
+  soft?: boolean;
   big?: boolean;
 };
 
@@ -59,6 +64,7 @@ export type BtnProps = TextBtnProps | IconBtnProps | ToggleBtnProps;
 type InternalBtnProps = CommonBtnProps & {
   variant?: Variant;
   outline?: boolean;
+  soft?: boolean;
   big?: boolean;
   small?: boolean;
   plain?: boolean;
@@ -82,6 +88,7 @@ const Btn = (props: BtnProps): JSX.Element => {
   const [local, rest] = splitProps(p, [
     "variant",
     "outline",
+    "soft",
     "big",
     "small",
     "plain",
@@ -106,6 +113,7 @@ const Btn = (props: BtnProps): JSX.Element => {
     const classes = [BASE_CLASS[variant]];
     if (variant === "text") {
       if (local.outline) classes.push("isOutline");
+      if (local.soft) classes.push("isSoft");
       if (local.big) classes.push("isBig");
     } else if (variant === "icon") {
       if (local.small) classes.push("isSmall");

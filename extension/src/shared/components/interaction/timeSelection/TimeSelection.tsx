@@ -57,7 +57,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
       </div>
 
       <div class="time-selection-cancel">
-        <Btn onClick={props.onCancel}>
+        <Btn soft onClick={props.onCancel}>
           cancel
         </Btn>
       </div>

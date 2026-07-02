@@ -296,6 +296,13 @@ const Styleguide = (): JSX.Element => {
           </Btn>
         </Subsection>
 
+        <Subsection label="<Btn soft> (quiet translucent — secondary exit)">
+          <Btn soft>cancel</Btn>
+          <Btn soft disabled>
+            disabled
+          </Btn>
+        </Subsection>
+
         <Subsection label="<Btn big> (primary CTA size)">
           <Btn big>
             <Ico name="send" /> save

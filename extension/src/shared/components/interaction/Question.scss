@@ -181,8 +181,23 @@
     bottom: 0;
     right: 8px;
     left: auto;
-    border-radius: 8px;
+    // Soften the loudest pixel on the check-in: a rounder, translucent pill with
+    // a --c-fg-weight arrow, so the eye stays on the response, not the send
+    // chrome (issue #130). Dark mode's --btn-bg tint is already quiet, so only
+    // the light value needs toning down.
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.7);
     padding: 8px 12px;
     font-size: 14px;
+
+    @include inDarkMode() {
+      background: var(--btn-bg);
+    }
+
+    // send.svg's #111 fill is baked into the <img>, so soften it toward --c-fg
+    // (0.8 alpha) with opacity rather than colour.
+    > .minded-6622-ico {
+      opacity: 0.8;
+    }
   }
 }

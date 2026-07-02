@@ -65,7 +65,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
       </div>
 
       <div class="intent-selection-cancel">
-        <Btn onClick={handleCancel}>
+        <Btn soft onClick={handleCancel}>
           cancel
         </Btn>
       </div>

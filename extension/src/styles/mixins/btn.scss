@@ -164,6 +164,23 @@
   }
 }
 
+// Modifier (.btnTxt.isSoft): a quiet, translucent text button for a secondary
+// exit (the intervention "cancel"). It rests at the weight of an unselected
+// choice instead of a solid-white pill, so it stops being the loudest pixel and
+// the eye stays on the user's options rather than the escape (issue #130).
+// Presence, not prominence — deliberately a translucent fill, never a bare
+// outline, which on touch (no hover to fill it in) would read as discouraging
+// the exit and betray the never-forced principle.
+@mixin btnTxtSoftModifier() {
+  background: var(--btn-bg-not-selected);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--btn-bg-selectable-hover);
+    }
+  }
+}
+
 // Modifier (.btnTxt.isBig): larger primary-CTA size. Replaces .btnTxtBig.
 @mixin btnTxtBigModifier() {
   height: var(--btn-height-bigger);
