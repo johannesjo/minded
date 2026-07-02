@@ -370,12 +370,12 @@ describe("getInteractionMode", () => {
     });
 
     it("samples the bell in the everyday rotation off the dashboard", () => {
-      // Set-alternative, self-assessment and action advice all fail their
-      // rolls; the usage rating is fresh (no roll); the bell roll then passes.
+      // Set-alternative and action advice fail their rolls; the usage rating
+      // is fresh (no roll); the bell roll then passes.
       expect(
         decide(baseSyncData(), {
           isMainView: false,
-          random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
+          random: sequenceRandom([0.99, 0.99, 0.01]),
         }),
       ).toEqual({
         mode: "BELL",
@@ -385,12 +385,13 @@ describe("getInteractionMode", () => {
     });
 
     it("keeps the bell out of dashboard-started interactions", () => {
-      // Same everyday chain from the dashboard: the bell consumes no roll, so
-      // the low value lands on the notice anchor instead.
+      // Same everyday chain from the dashboard: set-alternative and the bell
+      // consume no roll there, so after the action-advice miss the low value
+      // lands on the notice anchor instead.
       expect(
         decide(baseSyncData(), {
           isMainView: true,
-          random: sequenceRandom([0.99, 0.99, 0.01]),
+          random: sequenceRandom([0.99, 0.01]),
         }),
       ).toEqual({
         mode: "NOTICE",
@@ -402,12 +403,12 @@ describe("getInteractionMode", () => {
 
   describe("finger rest (wordless everyday sample)", () => {
     it("samples the wordless rest off the dashboard", () => {
-      // Set-alternative, self-assessment, action advice and the bell all fail
-      // their rolls; the finger-rest roll then passes.
+      // Set-alternative, action advice and the bell all fail their rolls; the
+      // finger-rest roll then passes.
       expect(
         decide(baseSyncData(), {
           isMainView: false,
-          random: sequenceRandom([0.99, 0.99, 0.99, 0.99, 0.01]),
+          random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
         }),
       ).toEqual({
         mode: "FINGER_REST",
@@ -418,14 +419,14 @@ describe("getInteractionMode", () => {
 
     it("is available in the small hours, when the hour-gated prompts are not", () => {
       // At 3am action advice and the bell are outside their hour window and
-      // consume no roll; set-alternative and self-assessment fail theirs, and
-      // the finger-rest roll passes — stillness has no wrong hour.
+      // consume no roll; set-alternative fails its roll, and the finger-rest
+      // roll passes — stillness has no wrong hour.
       const lateNight = new Date("2026-05-11T03:00:00").getTime();
       expect(
         decide(baseSyncData(), {
           isMainView: false,
           clock: () => lateNight,
-          random: sequenceRandom([0.99, 0.99, 0.01]),
+          random: sequenceRandom([0.99, 0.01]),
         }),
       ).toMatchObject({
         mode: "FINGER_REST",
@@ -435,11 +436,12 @@ describe("getInteractionMode", () => {
 
     it("stays out of dashboard-started interactions", () => {
       // From the dashboard neither the bell nor the finger rest consumes a
-      // roll, so the low value lands on the notice anchor instead.
+      // roll, so after the action-advice miss the low value lands on the
+      // notice anchor instead.
       expect(
         decide(baseSyncData(), {
           isMainView: true,
-          random: sequenceRandom([0.99, 0.99, 0.01]),
+          random: sequenceRandom([0.99, 0.01]),
         }).mode,
       ).toBe("NOTICE");
     });
