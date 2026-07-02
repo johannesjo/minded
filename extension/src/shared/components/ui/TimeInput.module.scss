@@ -5,7 +5,7 @@
   background: transparent;
   border-radius: var(--border-radius);
   padding: 4px 12px;
-  transition: 0.1s;
+  transition: transform var(--dur-quick) var(--ease-out);
   width: 134px;
   min-width: 134px;
   font-size: var(--fz-s) !important;
