@@ -210,6 +210,17 @@ export const Sun: Component<SunProps> = (props) => {
   let velocitySamples: VelocitySample[] = [];
   let longPressTimer: number | null = null;
   let settleFrame: number | undefined;
+  // The settle the disc currently RESTS on (mount snap applied, or a settle
+  // glide landed) — null while gliding, dragging, or interactive. The resting
+  // offset can silently go stale (a layout reflow moves the in-flow base the
+  // offset is relative to — e.g. the async question content mounting right
+  // after the arriving hand-off snapped to the Little Sun's corner), so when
+  // the next glide takes off from a rest it re-resolves THIS settle's anchor
+  // as its start point instead of trusting the offset — healing any staleness
+  // exactly at the hand-off (see enter/exitSettle). Tracked here rather than
+  // relying on the settle effect's prev value, which is undefined on the first
+  // change after mount (`on` with defer never records its initial input).
+  let restingSettle: SunSettle | null = null;
 
   // Store event handler references for cleanup
   let touchStartHandler: EventListener | null = null;
@@ -242,6 +253,7 @@ export const Sun: Component<SunProps> = (props) => {
         setDragOffset(target);
         setRestOffset(target);
         setScale(restScaleForSettle(props.settle));
+        restingSettle = props.settle;
         requestAnimationFrame(() => setIsAnimating(false));
       }
     }
@@ -276,17 +288,34 @@ export const Sun: Component<SunProps> = (props) => {
     }
   });
 
+  // The translate the disc is ACTUALLY rendered with, read back from its
+  // inline style. The rect and the style attribute are always mutually
+  // consistent DOM state, whereas the dragOffset signal can briefly run ahead
+  // of the DOM (a write in the same update cycle that hasn't flushed to the
+  // style yet — observed between the mount snap and the next frame). Deriving
+  // the disc's base from rect − styleTranslate therefore never mixes a fresh
+  // offset with a stale rect, which would double-count the offset and place a
+  // settle target hundreds of px off.
+  const getRenderedTranslate = (): SunPosition => {
+    const match = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/.exec(
+      sunEl?.style.transform ?? "",
+    );
+    return match
+      ? { x: parseFloat(match[1]), y: parseFloat(match[2]) }
+      : getDragOffset();
+  };
+
   const getSunCenterForOffset = (
     offset = getDragOffset(),
   ): SunPosition | undefined => {
     if (!sunEl) return undefined;
 
     const rect = sunEl.getBoundingClientRect();
-    const currentOffset = getDragOffset();
+    const rendered = getRenderedTranslate();
 
     return {
-      x: rect.left + rect.width / 2 - currentOffset.x + offset.x,
-      y: rect.top + rect.height / 2 - currentOffset.y + offset.y,
+      x: rect.left + rect.width / 2 - rendered.x + offset.x,
+      y: rect.top + rect.height / 2 - rendered.y + offset.y,
     };
   };
 
@@ -349,6 +378,23 @@ export const Sun: Component<SunProps> = (props) => {
     }
   };
 
+  // The layout viewport the settle anchors are expressed in. The anchors'
+  // real-world counterparts (the Little Sun's corner, the bottom bar, the
+  // centred overlays) are all `position: fixed`, and a fixed element's
+  // containing block EXCLUDES classic scrollbars — which window.inner* still
+  // include. On a host page with a scrollbar (the content-script overlay) an
+  // innerHeight-derived corner therefore lands a scrollbar's thickness off the
+  // fixed-positioned Little Sun. documentElement.clientWidth/Height is exactly
+  // that scrollbar-less viewport (identical to inner* wherever no classic
+  // scrollbar shows, e.g. the app shells and the mobile WebViews).
+  const getViewportSize = (): { width: number; height: number } => {
+    const doc = document.documentElement;
+    return {
+      width: doc?.clientWidth || window.innerWidth,
+      height: doc?.clientHeight || window.innerHeight,
+    };
+  };
+
   // Offset that places the sun's center on a resting anchor. The anchor is a
   // fraction of viewport width/height (x defaults to centered), unless a fixed
   // px anchor is given — px wins so the sun can land exactly on a fixed-px
@@ -356,39 +402,68 @@ export const Sun: Component<SunProps> = (props) => {
   const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
     if (!rest) return getDragOffset();
+    const viewport = getViewportSize();
     const anchorX =
       settle.anchorXRatio != null
-        ? window.innerWidth * settle.anchorXRatio
-        : (settle.anchorXPx ?? window.innerWidth * 0.5);
+        ? viewport.width * settle.anchorXRatio
+        : (settle.anchorXPx ?? viewport.width * 0.5);
     const anchorY =
       settle.anchorYPxFromBottom != null
-        ? window.innerHeight - settle.anchorYPxFromBottom
+        ? viewport.height - settle.anchorYPxFromBottom
         : settle.anchorYPxFromTop != null
           ? settle.anchorYPxFromTop
-          : window.innerHeight *
-            (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO);
+          : viewport.height * (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO);
     return { x: anchorX - rest.x, y: anchorY - rest.y };
   };
 
   // Ease the offset and scale toward a target. The disc's glow is its own
   // box-shadow, so it rides the disc transform and nothing needs the per-frame center.
+  //
+  // The target is a *resolver*, re-read every frame, and the start point is
+  // pinned in viewport space: the disc's untransformed base is an in-flow
+  // layout position that can shift mid-glide (the async question content
+  // mounting reflows the centred wrapper box). Interpolating raw offsets
+  // against a one-shot target would let such a shift drag the whole path —
+  // and the landing — off with it; re-basing both endpoints against the live
+  // base each frame keeps the visible path anchored, so the disc takes off
+  // from where it actually stood and still lands exactly on its target even
+  // when the ground moves beneath it (the corner hand-off's headline bug).
   const animateOffsetScaleTo = (
-    targetOffset: SunPosition,
+    resolveTargetOffset: () => SunPosition,
     targetScale: number,
     duration: number,
     onDone?: () => void,
+    // Take-off offset; defaults to wherever the disc currently is. A glide
+    // leaving a rested settle passes the settle's re-resolved anchor offset
+    // instead, healing a silently-stale offset at the very first frame (see
+    // enter/exitSettle). Written synchronously so even this commit's paint
+    // shows the healed start, not the stale one.
+    startOffsetOverride?: SunPosition,
   ) => {
     setIsAnimating(true); // suppress the CSS transform-transition while JS drives it
-    const startOffset = getDragOffset();
+    const startOffset = startOffsetOverride ?? getDragOffset();
+    if (startOffsetOverride) setDragOffset(startOffsetOverride);
     const startScale = getScale();
+    const startBase = getSunCenterForOffset({ x: 0, y: 0 });
     const startTime = Date.now();
 
     const step = () => {
       const progress = Math.min((Date.now() - startTime) / duration, 1);
       const eased = easeInOut(progress);
+      const targetOffset = resolveTargetOffset();
+      // Start offset re-expressed against the live base, so the take-off point
+      // stays fixed in viewport space across reflows.
+      let fromOffset = startOffset;
+      const liveBase = startBase && getSunCenterForOffset({ x: 0, y: 0 });
+      if (startBase && liveBase) {
+        fromOffset = {
+          x: startOffset.x + startBase.x - liveBase.x,
+          y: startOffset.y + startBase.y - liveBase.y,
+        };
+      }
       const offset = {
-        x: startOffset.x + (targetOffset.x - startOffset.x) * eased,
-        y: startOffset.y + (targetOffset.y - startOffset.y) * eased,
+        x: fromOffset.x + (targetOffset.x - fromOffset.x) * eased,
+        y: fromOffset.y + (targetOffset.y - fromOffset.y) * eased,
       };
       setDragOffset(offset);
       setScale(startScale + (targetScale - startScale) * eased);
@@ -504,6 +579,8 @@ export const Sun: Component<SunProps> = (props) => {
         settleFrame = requestAnimationFrame(step);
       } else {
         settleFrame = undefined;
+        // The rest is recorded by the caller's onDone (enterSettle's
+        // onSettled sets restingSettle).
         onDone?.();
       }
     };
@@ -528,6 +605,17 @@ export const Sun: Component<SunProps> = (props) => {
 
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+    // Take-off point: when the disc was RESTING on a settle, its offset may be
+    // silently stale (a reflow since it landed moved the in-flow base the
+    // offset is relative to — e.g. the async question content mounting), so
+    // re-resolve that settle's anchor against the live layout and take off
+    // from there; the two only differ when the offset went stale. A disc not
+    // at rest (interrupted mid-glide, mid-gesture) keeps its actual current
+    // offset. Resolve BEFORE any state below changes what "current" means.
+    const startOffsetOverride = restingSettle
+      ? getAnchorOffset(restingSettle)
+      : undefined;
+    restingSettle = null;
     // The disc is now gliding to a new rest — go inert until it lands (see
     // getIsSettlingIntoRole) so a tap can't strand it mid-glide.
     setIsSettlingIntoRole(true);
@@ -556,6 +644,7 @@ export const Sun: Component<SunProps> = (props) => {
     const onSettled = () => {
       // The glide has landed; the disc is grabbable again (the breath loop that
       // may start below is take-over-safe, unlike the glide).
+      restingSettle = settle;
       setIsSettlingIntoRole(false);
       if (settle.breathe) {
         startBreathCycle(
@@ -578,6 +667,7 @@ export const Sun: Component<SunProps> = (props) => {
       cancelCompletionFrame();
       setDragOffset(target);
       setScale(restScale);
+      restingSettle = settle;
       setIsAnimating(false);
       setIsSettlingIntoRole(false); // snapped, not gliding — grabbable at once
       return;
@@ -593,11 +683,28 @@ export const Sun: Component<SunProps> = (props) => {
     // the instant its completion starts): cancel it so its per-frame writes don't
     // fight the glide below and drag the disc off the bottom edge.
     cancelCompletionFrame();
-    animateOffsetScaleTo(target, restScale, duration, onSettled);
+    // Live resolver: the anchor offset is re-derived from the layout each frame,
+    // so a reflow mid-glide can't strand the landing off the anchor.
+    animateOffsetScaleTo(
+      () => getAnchorOffset(settle),
+      restScale,
+      duration,
+      onSettled,
+      startOffsetOverride,
+    );
   };
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
     cancelSettleFrame();
+    // Same staleness heal as enterSettle: take off from the rested settle's
+    // live-resolved anchor (the arriving hand-off leaves the corner exactly as
+    // the question content mounts and reflows the base — without this the
+    // glide home would take off from wherever the stale corner offset happens
+    // to render).
+    const startOffsetOverride = restingSettle
+      ? getAnchorOffset(restingSettle)
+      : undefined;
+    restingSettle = null;
     // Gliding back to base — inert until it lands (see getIsSettlingIntoRole).
     setIsSettlingIntoRole(true);
     // Returns the disc to its untransformed base (e.g. the plain interactive sun
@@ -614,10 +721,16 @@ export const Sun: Component<SunProps> = (props) => {
       setIsSettlingIntoRole(false);
       return;
     }
-    animateOffsetScaleTo({ x: 0, y: 0 }, 1, duration, () => {
-      setIsAnimating(false);
-      setIsSettlingIntoRole(false);
-    });
+    animateOffsetScaleTo(
+      () => ({ x: 0, y: 0 }),
+      1,
+      duration,
+      () => {
+        setIsAnimating(false);
+        setIsSettlingIntoRole(false);
+      },
+      startOffsetOverride,
+    );
   };
 
   // Re-settle when the target changes (phases map to stable settle objects, so
@@ -635,6 +748,69 @@ export const Sun: Component<SunProps> = (props) => {
       { defer: true },
     ),
   );
+
+  // --- Corner hand-off pin. A settle with a pinned disc size (discPx — set
+  // only by the Little Sun hand-offs, departing and arriving) must hold the
+  // disc *exactly* on the Little Sun's spot while it rests there, or the two
+  // suns visibly disagree at the swap. But the disc's offset is relative to an
+  // in-flow base that shifts whenever the surrounding layout reflows — most
+  // notably when the async-loaded question content mounts a beat after the
+  // arriving sun measured its corner, moving the centred wrapper box (and the
+  // snapped disc with it) off the spot the Little Sun just left. While such a
+  // settle is active and the disc is at rest (not gliding — the glide re-bases
+  // itself — and not being dragged), re-derive the anchor offset every frame
+  // and snap out any drift the moment it appears. Bounded by construction:
+  // these settles only exist for the ~1s around the hand-off.
+  let pinFrame: number | undefined;
+  createEffect(() => {
+    const settle = props.settle;
+    if (settle?.discPx == null) return;
+    let didSuppressTransition = false;
+    // The base seen on the previous tick. A correction is only applied once
+    // the base has held still for two consecutive ticks: in the frames right
+    // around mount the layout passes through transient states (styles and the
+    // async content still settling — observed as an internally-consistent but
+    // short-lived base), and a correction computed against such a state flings
+    // the disc hundreds of px off once the layout settles. A genuine reflow
+    // shift lands once and then holds, so it is corrected one tick later —
+    // still before that frame's paint on the next reflow-free frame.
+    let lastBase: SunPosition | null = null;
+    const step = () => {
+      pinFrame = requestAnimationFrame(step);
+      if (getIsDragging() || getIsSettlingIntoRole() || settleFrame) {
+        lastBase = null;
+        return;
+      }
+      const base = getSunCenterForOffset({ x: 0, y: 0 });
+      if (!base) return;
+      const prevBase = lastBase;
+      lastBase = base;
+      const isBaseStable =
+        !!prevBase &&
+        Math.hypot(base.x - prevBase.x, base.y - prevBase.y) < 1;
+      const target = getAnchorOffset(settle);
+      const current = getDragOffset();
+      const drift = Math.hypot(target.x - current.x, target.y - current.y);
+      if (drift > 0.5 && isBaseStable) {
+        // The base jumped (a reflow is instant), so the compensation must be
+        // instant too — suppress the CSS transform-transition while correcting.
+        setIsAnimating(true);
+        didSuppressTransition = true;
+        setDragOffset(target);
+        setRestOffset(target);
+      } else if (drift <= 0.5 && didSuppressTransition) {
+        didSuppressTransition = false;
+        setIsAnimating(false);
+      }
+    };
+    pinFrame = requestAnimationFrame(step);
+    onCleanup(() => {
+      if (pinFrame) {
+        cancelAnimationFrame(pinFrame);
+        pinFrame = undefined;
+      }
+    });
+  });
 
   const setupDragHandlers = () => {
     if (!sunEl) return;
@@ -681,6 +857,8 @@ export const Sun: Component<SunProps> = (props) => {
         setRestOffset(getDragOffset());
         setIsAnimating(false);
       }
+      // The finger owns the disc now — it's off its settle anchor.
+      restingSettle = null;
 
       touchStartTime = Date.now();
       isDragIntent = false;
