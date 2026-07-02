@@ -1,0 +1,126 @@
+import { createSignal, JSX, onCleanup } from "solid-js";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import {
+  FINGER_REST_CUE_FADE_MS,
+  FINGER_REST_KEEP_ALIVE_TICK_MS,
+  FINGER_REST_MIN_MS,
+  FINGER_REST_WARMTH_IN_MS,
+  FINGER_REST_WARMTH_OUT_MS,
+} from "./fingerRest.const";
+
+interface FingerRestProps {
+  onSuccess: () => void;
+  onCancelCountdown: () => void;
+}
+
+/**
+ * The wordless intervention: one line inviting the scrolling finger — the very
+ * organ of the habit — to simply be still for a moment. Press anywhere on the
+ * invitation and rest; the words dissolve, a soft warmth gathers under the
+ * fingertip, and lifting continues on. Nothing is counted, timed on screen, or
+ * scored, and there is nothing to read once it has begun.
+ *
+ * Deliberately NOT a hold-to-unlock gate (the attention-check dark pattern):
+ * no progress ring, no announced duration, and release is always free — a
+ * quick accidental brush just lets the invitation return. The rest zone is the
+ * invitation itself, not the sun: the persistent sun keeps its own gestures
+ * (tap ×3 / fling / drag) as the universal way through, and per the
+ * fundamentals its calm stays a quiet presence — the warmth here responds
+ * monotonically to the touch, never as a rhythmic breath.
+ */
+export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
+  const [getIsResting, setIsResting] = createSignal(false);
+
+  let restStartTS: number | undefined;
+  let keepAliveInterval: ReturnType<typeof setInterval> | undefined;
+
+  const stopKeepAlive = (): void => {
+    if (keepAliveInterval !== undefined) {
+      clearInterval(keepAliveInterval);
+      keepAliveInterval = undefined;
+    }
+  };
+
+  const handleRestStart = (e: PointerEvent): void => {
+    // Keep the press from starting text selection / the long-press callout,
+    // and keep receiving the pointer even if the resting finger drifts.
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+
+    // Capture outside the interval so the reactive `props` access does not
+    // trip the solid/reactivity lint rule (as UrgeSurfing does).
+    const onCancelCountdown = props.onCancelCountdown;
+    props.onCancelCountdown();
+    restStartTS = Date.now();
+    setIsResting(true);
+    // A resting finger produces no events, so keep the parent's auto-dismiss
+    // at bay for as long as it stays.
+    keepAliveInterval = setInterval(
+      () => onCancelCountdown(),
+      FINGER_REST_KEEP_ALIVE_TICK_MS,
+    );
+  };
+
+  const handleRestEnd = (): void => {
+    if (!getIsResting()) return;
+    stopKeepAlive();
+    setIsResting(false);
+    const restedMs = restStartTS !== undefined ? Date.now() - restStartTS : 0;
+    restStartTS = undefined;
+    if (restedMs >= FINGER_REST_MIN_MS) {
+      props.onSuccess();
+    }
+    // Shorter was a tap, not a rest: the invitation has already begun fading
+    // back in via the signal above; no nudge, no message.
+  };
+
+  const handleRestInterrupted = (): void => {
+    // The system took the pointer (gesture, palm rejection) — that is not a
+    // chosen lift, so never complete from here; just return to the invitation.
+    stopKeepAlive();
+    setIsResting(false);
+    restStartTS = undefined;
+  };
+
+  onCleanup(stopKeepAlive);
+
+  return (
+    <div class="finger-rest" onMouseMove={() => props.onCancelCountdown()}>
+      <div
+        class="finger-rest-zone"
+        classList={{ "is-resting": getIsResting() }}
+        onPointerDown={handleRestStart}
+        onPointerUp={handleRestEnd}
+        onPointerCancel={handleRestInterrupted}
+      >
+        <div
+          class="finger-rest-warmth"
+          aria-hidden="true"
+          style={{
+            opacity: getIsResting() ? 1 : 0,
+            transition: prefersReducedMotion()
+              ? "none"
+              : `opacity ${
+                  getIsResting()
+                    ? FINGER_REST_WARMTH_IN_MS
+                    : FINGER_REST_WARMTH_OUT_MS
+                }ms ease-in-out`,
+          }}
+        />
+        <div
+          class="txtBig finger-rest-cue"
+          style={{
+            opacity: getIsResting() ? 0 : 1,
+            transition: prefersReducedMotion()
+              ? "none"
+              : `opacity ${FINGER_REST_CUE_FADE_MS}ms ease-in-out`,
+          }}
+        >
+          Let your finger rest here.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FingerRestInteraction;

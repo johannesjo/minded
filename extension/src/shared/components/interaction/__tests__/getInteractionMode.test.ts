@@ -400,6 +400,51 @@ describe("getInteractionMode", () => {
     });
   });
 
+  describe("finger rest (wordless everyday sample)", () => {
+    it("samples the wordless rest off the dashboard", () => {
+      // Set-alternative, self-assessment, action advice and the bell all fail
+      // their rolls; the finger-rest roll then passes.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: false,
+          random: sequenceRandom([0.99, 0.99, 0.99, 0.99, 0.01]),
+        }),
+      ).toEqual({
+        mode: "FINGER_REST",
+        reason: "finger_rest_sample",
+        frictionLevel: "soft",
+      });
+    });
+
+    it("is available in the small hours, when the hour-gated prompts are not", () => {
+      // At 3am action advice and the bell are outside their hour window and
+      // consume no roll; set-alternative and self-assessment fail theirs, and
+      // the finger-rest roll passes — stillness has no wrong hour.
+      const lateNight = new Date("2026-05-11T03:00:00").getTime();
+      expect(
+        decide(baseSyncData(), {
+          isMainView: false,
+          clock: () => lateNight,
+          random: sequenceRandom([0.99, 0.99, 0.01]),
+        }),
+      ).toMatchObject({
+        mode: "FINGER_REST",
+        reason: "finger_rest_sample",
+      });
+    });
+
+    it("stays out of dashboard-started interactions", () => {
+      // From the dashboard neither the bell nor the finger rest consumes a
+      // roll, so the low value lands on the notice anchor instead.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: true,
+          random: sequenceRandom([0.99, 0.99, 0.01]),
+        }).mode,
+      ).toBe("NOTICE");
+    });
+  });
+
   it("asks for missing energy data during daytime", () => {
     expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
       mode: "ENERGY_LVL",
