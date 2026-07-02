@@ -14,6 +14,8 @@ import { QUESTIONS } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import { getRndEntry } from "@src/util/getRndEntry";
 import Btn from "@src/shared/components/ui/Btn";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import { createScreenFade } from "@src/util/screenFade";
 
 // `undefined` = still loading; `null` = no usable usage signal.
 type ObservationState = UsageObservation | null | undefined;
@@ -26,6 +28,13 @@ export const AppUsageOrBrowsingBehavior: (props: {
   const [getStep, setStep] = createSignal<number>(0);
   const [getObservation, setObservation] =
     createSignal<ObservationState>(undefined);
+
+  const FADE_MS = 240;
+  // Cross-screen fade between the usage observation and the follow-up question,
+  // via the shared helper rather than hard-cutting the <Switch>: drop opacity to
+  // 0, swap the step while hidden, then ease back in. Matches the FADE_MS
+  // transition on the root element below.
+  const screenFade = createScreenFade(FADE_MS);
 
   onMount(() => {
     // Mark the throttle the moment we surface, so the observation stays rare
@@ -65,6 +74,12 @@ export const AppUsageOrBrowsingBehavior: (props: {
   return (
     <div
       id="minded-6622-browsing-behavior-rating"
+      style={{
+        opacity: screenFade.opacity(),
+        transition: prefersReducedMotion()
+          ? "none"
+          : `opacity ${FADE_MS}ms ease-in-out`,
+      }}
       onmousemove={props.onCancelCountdown}
     >
       <Switch>
@@ -84,22 +99,22 @@ export const AppUsageOrBrowsingBehavior: (props: {
                     now.
                   </div>
                 </Show>
-                <Btn onClick={() => setStep(1)}>continue</Btn>
+                <Btn onClick={() => screenFade.toScreen(() => setStep(1))}>
+                  continue
+                </Btn>
               </div>
             )}
           </Show>
         </Match>
         <Match when={getStep() === 1}>
-          <div class="pageTransitionIn">
-            <Question
-              initialQuestion={rndQuestion}
-              answers={[]}
-              onCancelCountdown={props.onCancelCountdown}
-              onSuccess={() => props.onSuccess()}
-              onSkip={() => undefined}
-              onUpdateQuestion={() => undefined}
-            />
-          </div>
+          <Question
+            initialQuestion={rndQuestion}
+            answers={[]}
+            onCancelCountdown={props.onCancelCountdown}
+            onSuccess={() => props.onSuccess()}
+            onSkip={() => undefined}
+            onUpdateQuestion={() => undefined}
+          />
         </Match>
       </Switch>
     </div>
