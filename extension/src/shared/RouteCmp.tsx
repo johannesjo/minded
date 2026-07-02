@@ -35,6 +35,7 @@ import {
   setCompanionBottomYPx,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
+import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
 import {
@@ -111,33 +112,51 @@ const MainWrapper = (props: RouteSectionProps) => {
   // then `retry(true)` so it goes through without re-entering this guard; the
   // route remounts and discards the faded node, and the destination eases in via
   // its own pageTransitionIn. Skipped for:
-  //  - browser/hardware back+forward: `e.to` is a numeric history delta, not a
-  //    path. Leave those instant — fading would add latency and force the
-  //    router's block-then-restore history bounce on every back.
+  //  - browser/hardware back+forward: leave those instant — fading would add
+  //    latency and force the router's block-then-restore history bounce on
+  //    every press. Only a *backward* move arrives as a numeric history delta;
+  //    the router hands a forward move over as a plain path string, so history
+  //    moves are recognised by the hash already pointing at the destination
+  //    (a popstate/hashchange changed the URL before this guard runs, whereas
+  //    an in-app navigate() fires it while the URL still shows the old route).
   //  - same-path changes (query-only, e.g. clearing `?sun=open`): the route node
   //    isn't remounted, so fading it would strand it at opacity 0.
   //  - reduced motion, and navigations that already faded their own surface
   //    (wind-down dismiss passes `state.skipPageFade`).
   let isPageFading = false;
+  // The navigation to run once the in-flight fade lands. A second tap during
+  // the fade replaces it (the newest intent wins instead of being swallowed); a
+  // history move during the fade clears it (the user navigated away themselves,
+  // so re-pushing the faded-out destination would override their back press).
+  let pendingRetry: (() => void) | null = null;
+  const normalizeHashPath = (s: string): string => s.replace(/^#/, "") || "/";
   useBeforeLeave((e: BeforeLeaveEventArgs) => {
     const state = e.options?.state as { skipPageFade?: boolean } | undefined;
-    if (typeof e.to !== "string") return;
+    if (
+      typeof e.to !== "string" ||
+      normalizeHashPath(e.to) === normalizeHashPath(window.location.hash)
+    ) {
+      // A history move (back delta, or the hash already points at the
+      // destination) — instant, and it drops any queued retry.
+      pendingRetry = null;
+      return;
+    }
     if (e.defaultPrevented || prefersReducedMotion() || state?.skipPageFade)
       return;
     if (e.to.split(/[?#]/)[0] === e.from.pathname) return;
 
-    if (isPageFading) {
-      // A page fade is already mid-flight (e.g. a double-tap on a card) — drop
-      // this second navigation rather than hard-cutting past the fade.
-      e.preventDefault();
-      return;
-    }
-
     e.preventDefault();
+    pendingRetry = () => e.retry(true);
+    // A fade is already mid-flight (double-tap, or a quick second tap on a
+    // different card) — the pending retry above hands it the newest target.
+    if (isPageFading) return;
+
     isPageFading = true;
     fadeOutCurrentPage().then(() => {
       isPageFading = false;
-      e.retry(true);
+      const retry = pendingRetry;
+      pendingRetry = null;
+      retry?.();
     });
   });
 
@@ -194,8 +213,8 @@ const MainWrapper = (props: RouteSectionProps) => {
         `.${styles.companionTapTarget}`,
       );
       if (!tapTarget) return;
-      const bottomPx = parseFloat(getComputedStyle(tapTarget).bottom);
-      if (Number.isFinite(bottomPx)) setCompanionBottomYPx(bottomPx);
+      const bottomPx = readCompanionBottomPx(tapTarget);
+      if (bottomPx != null) setCompanionBottomYPx(bottomPx);
     };
     reanchorCompanion();
     const rafId = requestAnimationFrame(reanchorCompanion);
