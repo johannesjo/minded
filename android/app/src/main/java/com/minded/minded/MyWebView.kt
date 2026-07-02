@@ -2,6 +2,7 @@ package com.minded.minded
 
 import android.app.Activity
 import android.graphics.Rect
+import android.view.View
 import android.webkit.WebView
 import android.content.Context
 import android.util.Log
@@ -13,6 +14,9 @@ class MyWebView(context: Context) : WebView(context) {
     private val r = Rect()
 
     init {
+        // Kill the default overscroll stretch/glow: the blue edge ripple reads
+        // as foreign over the pastel sky and breaks the calm, continuous field.
+        overScrollMode = View.OVER_SCROLL_NEVER
         setupKeyboardListener()
     }
 

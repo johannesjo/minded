@@ -14,6 +14,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -89,15 +90,29 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Make edge-to-edge explicit on API 35+ so Compose's WindowInsets
-        // observe system-bar + display-cutout insets and
-        // `ForwardSafeAreaInsetsToWebView` can populate the
-        // `--safe-area-inset-*` CSS variables. The previously used
-        // `windowOptOutEdgeToEdgeEnforcement` opt-out silently zeroed those
-        // insets and is deprecated in Android 16.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            enableEdgeToEdge()
+        // Go edge-to-edge on every supported API (minSdk 29) with fully
+        // transparent system bars, so the pastel sky runs under the status and
+        // navigation bars as one continuous field instead of being capped by a
+        // black seam. Compose's WindowInsets observe the system-bar +
+        // display-cutout insets and `ForwardSafeAreaInsetsToWebView` bridges
+        // them to the `--safe-area-inset-*` CSS variables, so content still
+        // clears the bars. Bar icon contrast follows the app's clock-based dark
+        // mode: dark icons over the light daytime sky, light icons at night.
+        // (Transparent scrims give truly edge-to-edge bars on API 29-34, where a
+        // bare enableEdgeToEdge() would otherwise apply a contrast scrim; on
+        // API 35+ the bars are transparency-enforced and only the icon style
+        // applies. minSdk 29 >= 23, so the dark-icon fallback scrim never runs.
+        // The previously used `windowOptOutEdgeToEdgeEnforcement` opt-out
+        // silently zeroed those insets and is deprecated in Android 16.)
+        val barStyle = if (isDarkModeNow()) {
+            SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        } else {
+            SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT,
+            )
         }
+        enableEdgeToEdge(statusBarStyle = barStyle, navigationBarStyle = barStyle)
         super.onCreate(savedInstanceState)
         // Paint the loading sky behind the WebView to match the app's time-based
         // dark mode (the theme's windowBackground covers the very first frame in

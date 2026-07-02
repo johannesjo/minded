@@ -1,6 +1,5 @@
 package com.minded.minded.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -8,12 +7,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -54,15 +48,9 @@ fun MindedTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-//            window.statusBarColor = colorScheme.primary.toArgb()
-            window.statusBarColor = Color.Black.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
-        }
-    }
+    // System-bar transparency and icon contrast are owned by
+    // `enableEdgeToEdge` in MainActivity (driven by the clock-based dark mode),
+    // so this theme no longer touches the status/navigation bars.
 
     MaterialTheme(
         colorScheme = colorScheme,

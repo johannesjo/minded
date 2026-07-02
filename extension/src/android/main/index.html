@@ -4,7 +4,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
+    <!--
+      Day sky's top gradient stop (matches the linear-gradient below). Inert in
+      the embedded Android WebView — the native side owns the real system bars
+      (edge-to-edge + transparent, see MainActivity.enableEdgeToEdge). This only
+      matters if the page is ever loaded in a browser/PWA, and it can't track
+      the clock-based night sky, so it stays on the day value.
+    -->
+    <meta name="theme-color" content="#cfe4f5" />
     <title>minded</title>
 
     <!--
