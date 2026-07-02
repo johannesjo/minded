@@ -41,6 +41,36 @@
   }
 }
 
+// Give every intervention type the same soft entrance the question has: the
+// content rises a touch as it fades in, rather than snapping into place. The
+// opacity fade is already carried by `.interaction-content` above (for every
+// mode), so this animates the *transform only* — that way it layers cleanly on
+// top of each mode's own opacity work (e.g. the emotion-labeling / urge-surfing
+// step cross-fades) without fighting it. Values mirror the question's own
+// `slideUpFadeIn` (15px, 0.6s ease-out, 0.2s delay) so the feel is identical.
+// Two exclusions keep their own, finer reveals: the question wrapper (its text
+// span + chips already rise on their own stagger) and the sun-instructions
+// overlay (a separate `.interaction-content` with a line-by-line reveal).
+.interaction-content:not(.sun-instructions-overlay)
+  > *:not(#minded-6622-question-wrapper) {
+  animation: interactionRise 0.6s ease-out 0.2s both;
+
+  // Reduced-motion asks for calm-without-motion: keep the opacity fade, drop
+  // the rise.
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes interactionRise {
+  from {
+    transform: translateY(15px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 #minded-6622-interaction-wrapper-box {
   pointer-events: auto; // Changed from none to auto to catch clicks
   position: absolute;
