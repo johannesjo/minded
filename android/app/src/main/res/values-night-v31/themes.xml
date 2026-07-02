@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night variant of the cold-start window background (issue #117).
+
+         Dark mode here is clock-based (19:00–06:00, see isDarkModeNow) and
+         decoupled from the system night setting, so this is NOT selected by the
+         system's dark mode. Instead MindedApplication registers the clock
+         decision with the system via UiModeManager.setApplicationNightMode
+         (API 31+); the system then resolves this resource for the *starting
+         window* it paints before any activity code runs, and persists it for the
+         next cold start — so at night the sky arrives already dark instead of
+         flashing the light sky then swapping.
+
+         Qualified -v31 on purpose: setApplicationNightMode only exists on API
+         31+. Below that there is no per-app override, so a plain values-night
+         would be driven by the *system* dark mode — coupling the sky to the very
+         setting the design rejects. Excluding <31 keeps their behaviour exactly
+         as before (light window background; MainActivity's onCreate swap still
+         corrects the activity window). -->
+    <style name="Theme.MindedAppCompat" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/loading_gradient_dark</item>
+    </style>
+</resources>

@@ -114,9 +114,11 @@ class MainActivity : AppCompatActivity() {
         }
         enableEdgeToEdge(statusBarStyle = barStyle, navigationBarStyle = barStyle)
         super.onCreate(savedInstanceState)
-        // Paint the loading sky behind the WebView to match the app's time-based
-        // dark mode (the theme's windowBackground covers the very first frame in
-        // light). Keep in sync with isDarkModeNow (19:00–06:00).
+        // Correct the activity window's background to match the app's time-based
+        // dark mode. On API 31+ the starting window already arrives correct via
+        // MindedApplication's per-app night override + values-night-v31 (issue
+        // #117); this stays as the API < 31 correction and a belt-and-suspenders
+        // safety net. Keep in sync with isDarkModeNow (19:00–06:00).
         window.setBackgroundDrawableResource(
             if (isDarkModeNow()) R.drawable.loading_gradient_dark
             else R.drawable.loading_gradient_light
