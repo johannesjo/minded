@@ -106,10 +106,27 @@
 @mixin btnIcoPlainModifier() {
   background: none;
 
+  // Plain icon buttons are chrome (bottom bar, back, dismiss) — quiet them so
+  // they recede behind content, full strength only on hover/press. The resting
+  // opacity sits on the icon, not the button, so it doesn't fight any opacity
+  // fade-in animating the button itself.
+  > .minded-6622-ico {
+    opacity: 0.7;
+    transition: opacity var(--dur-quick) var(--ease-out);
+  }
+
   @media (hover: hover) {
     &:hover {
       background: var(--btn-bg);
+
+      > .minded-6622-ico {
+        opacity: 1;
+      }
     }
+  }
+
+  &:active > .minded-6622-ico {
+    opacity: 1;
   }
 
   &.active {

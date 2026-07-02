@@ -1,5 +1,4 @@
 import { createSignal, For, JSX } from "solid-js";
-import lightningSvg from "@assets/img/lightning.svg";
 
 export const Rating: (props: {
   value?: number;
@@ -29,12 +28,11 @@ export const Rating: (props: {
             }}
             onmouseleave={() => setHoveredRating(0)}
           >
-            <img
-              class={
-                value <= rating() || value <= hoveredRating() ? "isFull" : ""
-              }
-              src={lightningSvg}
-              alt=""
+            <div
+              classList={{
+                ratingDot: true,
+                isFull: value <= rating() || value <= hoveredRating(),
+              }}
             />
           </button>
         )}

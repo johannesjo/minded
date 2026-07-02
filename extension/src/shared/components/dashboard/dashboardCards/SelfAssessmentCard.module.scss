@@ -22,15 +22,11 @@
 
 .dots {
   display: flex;
-  opacity: .8;
+  opacity: 0.8;
 }
 
 .dot {
-  background: var(--c-fg);
-  opacity: var(--rating-inactive-opacity);
-  border-radius: 50%;
-  width: 6px;
-  height: 6px;
+  @include levelDot(6px);
   margin-left: 2px;
 
   @include onNonMobileScreens {
@@ -40,6 +36,6 @@
   }
 
   &.full {
-    opacity: .7;
+    opacity: 0.7;
   }
 }

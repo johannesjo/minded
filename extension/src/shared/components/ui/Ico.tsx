@@ -12,7 +12,6 @@ import deleteForeverSvg from "@assets/img/delete-forever.svg";
 import editSvg from "@assets/img/edit.svg";
 import penSvg from "@assets/img/pen.svg";
 import infoSvg from "@assets/img/info.svg";
-import questionOverlaySvg from "@assets/img/question-overlay.svg";
 import checkSvg from "@assets/img/check.svg";
 
 const ICO_MAP = {
@@ -29,7 +28,6 @@ const ICO_MAP = {
   edit: editSvg,
   pen: penSvg,
   info: infoSvg,
-  questionOverlay: questionOverlaySvg,
   check: checkSvg,
 } as const;
 
