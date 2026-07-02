@@ -10,12 +10,12 @@
     }
   }
 
+  // Read-only (dashboard) rows drop the big tap targets so the dots sit close
+  // together, matching the self-assessment answer dots beside them.
   &.showOnly .ratingButton {
     margin: 0;
-
-    img.isFull {
-      color: inherit;
-    }
+    width: var(--rating-size-small);
+    height: var(--rating-size-small);
   }
 
   .ratingButton {
@@ -30,8 +30,9 @@
 
     cursor: pointer;
     pointer-events: all;
-    display: inline-block;
-    line-height: var(--rating-size);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: transform var(--dur-quick) var(--ease-out);
 
     &:disabled {
@@ -49,20 +50,11 @@
     }
   }
 
-  img {
-    display: block;
-    width: var(--rating-size);
-    height: var(--rating-size);
-    opacity: var(--rating-inactive-opacity);
-    transition: opacity var(--dur-quick) var(--ease-out);
+  .ratingDot {
+    @include levelDot(12px);
 
     &.isFull {
-      color: var(--c-fg-full-emphasis);
       opacity: var(--rating-active-opacity);
-    }
-
-    @include inDarkMode() {
-      filter: invert(1);
     }
   }
 }

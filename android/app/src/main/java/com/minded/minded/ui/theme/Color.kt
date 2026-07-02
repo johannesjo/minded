@@ -13,18 +13,31 @@ val PastelGreen = Color(0xFFB7E4C7)
 val PastelRed = Color(0xFFE4B7B7)
 val PastelYellow = Color(0xFFE4E0B7)
 
-val LightGradColor1 = Color(0xFFA5DEE5)
-val LightGradColor2 = Color(0xFFFFCFDF)
-val LightGradColor3 = Color(0xFFFEFDCA)
+// Sky gradient stops mirrored from --c-gradient-1..4 (light) and
+// --c-gradient-1..3 (dark) in extension/src/styles/_variables.scss. The light
+// stops are the classic "morning" sky, which the web's living time-of-day
+// timeline (skyTimeline.ts) keeps as its anchor keyframe; if the living sky
+// ever comes to Android, these become time-aware.
+val LightGradColor1 = Color(0xFFCFE4F5)
+val LightGradColor2 = Color(0xFFD8ECD6)
+val LightGradColor3 = Color(0xFFF5EFC8)
+val LightGradColor4 = Color(0xFFF6DCD2)
 
-val DarkGradColor1 = Color(0xFF080c3a)
-val DarkGradColor2 = Color(0xFF611177)
-val DarkGradColor3 = Color(0xFF873400)
+val DarkGradColor1 = Color(0xFF02091F)
+val DarkGradColor2 = Color(0xFF0A2860)
+val DarkGradColor3 = Color(0xFF49313B)
+
+// Sky-family accents for native surfaces: the pause dim leans into the
+// deep-night sky instead of flat black, and the toast glow is the warm amber
+// of the dark-mode --btn-box-shadow, rgba(255, 178, 79, 0.45).
+val NightSkyDim = DarkGradColor1
+val WarmAmberGlow = Color(0x73FFB24F)
 
 val StandardGradientLight = listOf(
     LightGradColor1,
     LightGradColor2,
     LightGradColor3,
+    LightGradColor4,
 )
 
 val StandardGradientDark = listOf(

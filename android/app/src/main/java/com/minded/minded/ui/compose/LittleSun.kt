@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.minded.minded.R
+import com.minded.minded.ui.theme.NightSkyDim
 import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -510,7 +511,8 @@ private fun StepAwayOffer(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.78f * surfaceAlpha))
+            // Deep-night sky tint, not flat black — the dim is still "sky".
+            .background(NightSkyDim.copy(alpha = 0.78f * surfaceAlpha))
             // Tapping anywhere off the invitation is the easy way to stay — the
             // sun glides back home.
             .pointerInput(Unit) {

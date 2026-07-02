@@ -1,21 +1,31 @@
+// Height of the quiet band under the status bar where the small "sky" sun
+// rests during the setup steps. Reserved on every step so layouts don't shift
+// between steps; .skyProbe (measured by the component) marks its centre.
+$sky-strip: 88px;
+
 .wrapper {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   display: flex;
   flex-direction: column;
+  // Keep everything — content and Stepper — clear of the status bar, display
+  // cutout and gesture pill. The steps themselves only add their uniform 16px.
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right)
+    var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+}
 
-  > div:first-child {
-    margin-top: auto;
-  }
+// Content + Stepper as one unit, so the closing hand-off can fade the whole
+// chrome away while the sun (its own fixed layer) keeps gliding home.
+.chrome {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .contentWrapper {
   flex: 1;
+  min-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -28,12 +38,95 @@
   }
 }
 
-.skipWrapper {
-  margin-top: 16px;
+// The one edge treatment every step shares (the wrapper already consumed the
+// safe-area insets, so this is pure content breathing room).
+.step {
+  width: 100%;
+  padding: 16px;
 }
 
-.finalCard {
-  margin: 32px;
+// Chore steps (app picker, permissions) additionally reserve the sky band so
+// tall, scrollable content never slides under the small resting sun. The hero
+// steps skip it — their disc sits in the in-flow spacer, and the extra band
+// would squeeze the welcome copy into scrolling.
+.stepUnderSky {
+  padding-top: $sky-strip;
+}
+
+// The empty slot the hero steps (welcome / "ready") reserve for the disc —
+// same footprint the old in-flow OnboardingSun stage had. The component
+// measures its centre and the fixed-layer sun settles exactly into the gap.
+.sunSpacer {
+  min-height: 200px;
+  margin-bottom: 8px;
+}
+
+// Mirrors RouteCmp's .shellSunLayer: fixed + viewport-centred so the disc's
+// untransformed base is screen-centre and every rest is a settle offset from
+// there. Click-through except the disc itself while it's the interactive hero.
+.sunLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  // The disc mounts snapped into its first rest; ease it in instead of popping.
+  animation: onboardingSunIn 600ms ease;
+
+  :global(.minded-sun) {
+    pointer-events: none;
+    // The disc owns vertical-drag gestures on the welcome step; don't let a
+    // touch drag scroll the page underneath it.
+    touch-action: none;
+  }
+
+  &.isInteractive :global(.minded-sun) {
+    pointer-events: auto;
+  }
+
+  // Hold the idle float still while gliding home, so the disc lands exactly on
+  // the bar anchor the (float-less) shell companion takes over — otherwise the
+  // swap could jump by the float's offset.
+  &.isLeaving :global(.minded-sun) {
+    animation: none;
+    translate: none;
+  }
+}
+
+@keyframes onboardingSunIn {
+  from {
+    opacity: 0;
+  }
+}
+
+// Invisible measurement probes: CSS stays the single source of truth for the
+// two computed rests, JS only reads the resolved px back (the same pattern as
+// RouteCmp's reanchorCompanion).
+.skyProbe,
+.companionProbe {
+  position: fixed;
+  left: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+// Centre of the sky band (viewport coords, so measured from the fixed layer).
+.skyProbe {
+  top: calc(var(--safe-area-inset-top) + #{$sky-strip * 0.5});
+}
+
+// The dashboard companion's rest — the hand-off glide lands here, on the very
+// anchor the shell sun will mount on.
+.companionProbe {
+  bottom: var(--companion-bar-center-y);
+}
+
+.skipWrapper {
+  margin-top: 16px;
 }
 
 .actions {

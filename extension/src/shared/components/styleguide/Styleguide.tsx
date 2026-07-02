@@ -103,8 +103,8 @@ const ICO_NAMES: IcoName[] = [
   "delete",
   "deleteForever",
   "edit",
+  "pen",
   "info",
-  "questionOverlay",
   "check",
 ];
 

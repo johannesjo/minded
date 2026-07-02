@@ -22,6 +22,10 @@ import {
  * This module is a per-document singleton. It is consumed ONLY by the shell
  * (MainWrapper) and by InteractionCommon behind its `useShellSun` flag; the
  * content-script / Android / iOS runtimes keep their own self-owned sun.
+ * (One sanctioned outside write: the Android onboarding seeds
+ * setCompanionBottomYPx with its measured anchor right before handing off to
+ * the dashboard, so the shell disc mounts on the exact px the onboarding disc
+ * stopped on.)
  */
 
 export type SunPosition = { x: number; y: number };

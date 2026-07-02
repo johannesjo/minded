@@ -181,10 +181,37 @@
   --safe-area-inset-left: 0px;
   --safe-area-inset-right: 0px;
 
+  // The bottom band the companion sun rests over, and the disc's resting Y
+  // (px from the bottom edge): half the band, above the safe-area inset. The
+  // single source of truth for the companion rest — JS never re-derives this
+  // math, it reads the resolved px back off an element positioned with it
+  // (RouteCmp's reanchorCompanion, the Android onboarding's hand-off probe).
+  // Defined at the app root (not RouteCmp.module.scss) because onboarding
+  // renders *instead of* the route shell yet must land its closing glide on
+  // the exact anchor the shell sun will rest on.
+  --companion-bar-height: clamp(64px, 10vh, 88px);
+  --companion-bar-center-y: calc(
+    var(--safe-area-inset-bottom) + var(--companion-bar-height) / 2
+  );
+
   &.minded-6622-dark {
     --c-gradient-1: #02091f;
     --c-gradient-2: #0a2860;
     --c-gradient-3: #49313b;
+    // A handful of static stars in the ambient night sky. One full-sky SVG, not
+    // a repeating tile: the consumers' `background-size: cover` stretches every
+    // layer of this composite, so a tile (grain-style) would smear — the grain
+    // only tiles because it lives on its own ::after with its own sizing. Star
+    // colour is the moon body's cool white (#eef2ff — LittleSun.kt aliases its
+    // STAR_COLOR the same way) so the night scene stays one cool palette.
+    // Static by design: the twinkling field (Stars.tsx) belongs to the down-drag
+    // reveal and grounding; the resting sky stays still. Stars keep to the upper
+    // sky (y ≲ 620/900) clear of the warm horizon glow, and the brightest sit
+    // mid-canvas so `background-position: center` cropping on unusual aspect
+    // ratios only ever trims the dim outliers.
+    --night-stars: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1440' height='900' viewBox='0 0 1440 900'><g fill='%23eef2ff'><circle cx='120' cy='150' r='1.3' opacity='.55'/><circle cx='270' cy='320' r='1' opacity='.35'/><circle cx='430' cy='120' r='1.6' opacity='.65'/><circle cx='565' cy='360' r='1' opacity='.3'/><circle cx='700' cy='200' r='1.2' opacity='.5'/><circle cx='880' cy='130' r='1' opacity='.4'/><circle cx='1020' cy='300' r='1.5' opacity='.6'/><circle cx='1180' cy='170' r='1.1' opacity='.45'/><circle cx='1330' cy='370' r='1.3' opacity='.55'/><circle cx='190' cy='480' r='1' opacity='.3'/><circle cx='500' cy='545' r='1.2' opacity='.4'/><circle cx='770' cy='460' r='1' opacity='.3'/><circle cx='950' cy='560' r='1.4' opacity='.5'/><circle cx='1250' cy='520' r='1' opacity='.35'/><circle cx='60' cy='300' r='1' opacity='.4'/><circle cx='350' cy='420' r='1.4' opacity='.5'/><circle cx='1100' cy='620' r='1' opacity='.25'/><circle cx='620' cy='100' r='1' opacity='.35'/></g></svg>");
+    // Layer order (top → bottom): horizon glow, stars, night gradient — so any
+    // low star sits under the warm glow rather than punching through it.
     --background-gradient:
       radial-gradient(
         ellipse 116vmin 32vmin at 50% 112%,
@@ -192,6 +219,7 @@
         rgba(76, 43, 58, 0.2) 46%,
         transparent 78%
       ),
+      var(--night-stars),
       linear-gradient(
         to bottom,
         var(--c-gradient-1) 0%,

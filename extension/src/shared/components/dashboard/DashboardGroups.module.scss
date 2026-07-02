@@ -115,15 +115,6 @@
     margin-bottom: 16px !important;
     margin-top: 0;
   }
-
-  :global .rating {
-    img {
-      @include onSmallScreens() {
-        width: var(--rating-size-small);
-        height: var(--rating-size-small);
-      }
-    }
-  }
 }
 
 .cardDailyQuestions {
