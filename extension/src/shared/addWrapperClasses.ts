@@ -60,8 +60,11 @@ export const isDarkModeNow = (): boolean => {
 /**
  * The fractional local hour driving every time-of-day surface (dark-mode
  * class, ambient sky, drag-target skies). Honours the `?skyHour=` dev
- * override the same way isDarkModeNow honours `?theme=` — styleguide /
- * dashboard-simulation only, inert in the extension/app.
+ * override the same way isDarkModeNow honours `?theme=` — meant for the
+ * styleguide / dashboard simulation. Like `?theme=`, a content script reads
+ * the *host page's* URL here, so a page carrying the param could pin the
+ * overlay's sky — accepted as vanishingly unlikely, same as the existing
+ * pattern.
  */
 export const getEffectiveHourNow = (): number => {
   if (typeof window !== "undefined" && window.location?.search) {
@@ -147,13 +150,23 @@ export const applySkyAtHour = (
 export const applySkyForNow = (shadowRoot?: ShadowRoot) =>
   applySkyAtHour(getEffectiveHourNow(), getWrapperEl(shadowRoot));
 
-// One interval per JS context; it re-resolves the wrapper each tick so a
-// remounted overlay (content script) is picked up and a detached one is
-// never retained. Per-minute steps are sub-perceptual by design — the sky
-// is ambient state, not animation.
+// One interval per JS context, re-resolving the wrapper each tick.
+// Per-minute steps are sub-perceptual by design — the sky is ambient state,
+// not animation.
 let isSkyTickerStarted = false;
 const ensureSkyTicker = (shadowRoot?: ShadowRoot) => {
   if (isSkyTickerStarted) return;
   isSkyTickerStarted = true;
-  setInterval(() => applySkyForNow(shadowRoot), 60_000);
+  const intervalId = setInterval(() => {
+    const el = getWrapperEl(shadowRoot);
+    // A torn-down content-script overlay leaves the wrapper inside a detached
+    // shadow tree: stop ticking so the interval doesn't retain that tree
+    // forever, and let a future addWrapperClasses start a fresh ticker.
+    if (el && !el.isConnected) {
+      clearInterval(intervalId);
+      isSkyTickerStarted = false;
+      return;
+    }
+    applySkyAtHour(getEffectiveHourNow(), el);
+  }, 60_000);
 };

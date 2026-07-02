@@ -164,7 +164,14 @@ export const zenithTargetGradientAt = (hour: number): string => {
 export const parseSkyHourParam = (search: string): number | null => {
   const raw = new URLSearchParams(search).get("skyHour");
   if (!raw) return null;
-  const [h, m] = raw.split(":");
-  const hour = m !== undefined ? Number(h) + Number(m) / 60 : Number(raw);
+  let hour: number;
+  if (raw.includes(":")) {
+    const [h, m] = raw.split(":");
+    const mins = Number(m);
+    if (h === "" || m === "" || !(mins >= 0 && mins < 60)) return null;
+    hour = Number(h) + mins / 60;
+  } else {
+    hour = Number(raw);
+  }
   return Number.isFinite(hour) && hour >= 0 && hour < 24 ? hour : null;
 };

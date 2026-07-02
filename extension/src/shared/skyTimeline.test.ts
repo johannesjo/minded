@@ -108,5 +108,13 @@ describe("skyTimeline", () => {
       expect(parseSkyHourParam("?skyHour=24")).toBeNull();
       expect(parseSkyHourParam("?skyHour=-1")).toBeNull();
     });
+
+    it("rejects malformed HH:MM values", () => {
+      expect(parseSkyHourParam("?skyHour=18:")).toBeNull();
+      expect(parseSkyHourParam("?skyHour=:30")).toBeNull();
+      expect(parseSkyHourParam("?skyHour=12:90")).toBeNull();
+      expect(parseSkyHourParam("?skyHour=12:-30")).toBeNull();
+      expect(parseSkyHourParam("?skyHour=12:xx")).toBeNull();
+    });
   });
 });

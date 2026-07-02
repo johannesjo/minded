@@ -627,12 +627,13 @@ const formatHour = (hour: number): string => {
 // scrubbed hour (?skyHour=) to test the real drag/grounding flow.
 const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
   const [hour, setHour] = createSignal(
-    Math.round(getEffectiveHourNow() * 4) / 4,
+    // min: rounding 23:53+ would yield 24, past the slider's max
+    Math.min(23.75, Math.round(getEffectiveHourNow() * 4) / 4),
   );
   const [applyToPage, setApplyToPage] = createSignal(false);
   const isNight = () => hour() >= NIGHT_START_HOUR || hour() < NIGHT_END_HOUR;
 
-  createEffect<boolean>((wasApplied) => {
+  createEffect(() => {
     // Track the dark toggle too: applySkyAtHour keys off the wrapper class,
     // so re-running after a theme flip clears (dark) or re-applies (light)
     // the inline sky vars instead of leaving stale light-sky values under
@@ -641,11 +642,12 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
     props.isDark();
     if (applyToPage()) {
       applySkyAtHour(hour());
-    } else if (wasApplied) {
+    } else {
+      // Unconditional: the entry set now-sky inline vars at load, so a dark
+      // flip must clear them even if apply-to-page was never touched.
       applySkyForNow();
     }
-    return applyToPage();
-  }, false);
+  });
   onCleanup(() => applySkyForNow());
 
   return (
