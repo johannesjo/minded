@@ -25,4 +25,10 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+
+  // The count ticks down every second; fixed-width digits keep it centered
+  // instead of shifting with each new number.
+  .txtSmaller {
+    font-variant-numeric: tabular-nums;
+  }
 }

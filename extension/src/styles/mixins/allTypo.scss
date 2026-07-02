@@ -5,6 +5,12 @@
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.005em;
+  // Display surfaces are short, mostly centered prompts; balance the rag so
+  // no lone word ("here?") dangles on the last line — a quiet jolt on the
+  // app's most central text. The one multi-line *reading* consumer (dashboard
+  // reflections) overrides this with `pretty`. Progressive: unsupported
+  // engines just keep normal wrapping.
+  text-wrap: balance;
   // Newsreader's bundled subset carries the `opsz` axis (see _fonts.scss); let
   // the browser track it to font-size so display sizes keep their warmth.
   font-optical-sizing: auto;
@@ -23,9 +29,14 @@
     font-weight: 300;
     margin-bottom: 8px;
     font-size: var(--fz-xxl);
+    // Inter is drawn for text sizes; at heading size it sits a touch loose.
+    // Slight negative tracking composes it (Inter's own dynamic-metrics
+    // guidance tightens further with size — this stays gentler).
+    letter-spacing: -0.01em;
     user-select: none;
     pointer-events: all;
     text-transform: lowercase;
+    text-wrap: balance;
   }
 
   // Opt-in modifier for mindful contexts (sleep wind-down, onboarding).
@@ -42,6 +53,7 @@
     font-size: var(--fz-l);
     user-select: none;
     pointer-events: all;
+    text-wrap: balance;
   }
 
   .txtBig {
@@ -51,21 +63,26 @@
     pointer-events: all;
   }
 
+  // Reading blocks: `pretty` only tidies the paragraph's end (no orphan word
+  // on the last line) without reshaping every line the way `balance` would.
   .txtSlightlyBigger {
     font-size: var(--fz-l);
     line-height: 1.5;
     pointer-events: all;
+    text-wrap: pretty;
   }
 
   .txtSmaller {
     font-size: var(--fz-m);
     line-height: 1.5;
     pointer-events: all;
+    text-wrap: pretty;
   }
 
   // TODO replace with p instead
   .txt {
     line-height: 1.5;
+    text-wrap: pretty;
   }
 
   .fatTxt {
@@ -97,5 +114,6 @@
     line-height: 1.4;
     font-weight: 350;
     pointer-events: all;
+    text-wrap: pretty;
   }
 }

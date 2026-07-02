@@ -8,6 +8,11 @@
     // emotion labels) keep Inter, and the Inter labels above stay the contrast.
     @include displayVoice;
 
+    // A reading block, not a prompt: keep the natural rag (displayVoice's
+    // `balance` would narrow every line of a multi-line reflection) and only
+    // avoid an orphan word on the last line.
+    text-wrap: pretty;
+
     margin-top: 10px;
 
     @include onNonMobileScreens {
