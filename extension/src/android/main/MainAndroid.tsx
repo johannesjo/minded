@@ -1,8 +1,9 @@
 import RoutesCmp from "@src/shared/RouteCmp";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import {
-  ANDROID_EV_PAUSE,
   ANDROID_EV_RESUME,
+  ANDROID_EV_START,
+  ANDROID_EV_STOP,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
 import {
@@ -31,12 +32,12 @@ import { fadeOutThen } from "@src/util/animation";
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
 const INVITE_FADE_MS = 300;
 
-// How long the app must have been in the foreground before backgrounding it
-// re-greets the dashboard (staging a fresh tile for the next return). The swap
-// happens on *pause*, while the app is hidden — so the card is never changed in
-// front of the user; the fresh tile is simply already there when they come back.
-// Below this, a quick open-and-leave — glancing in, copying a 2FA code — keeps
-// the current tile, so the greeting never feels restless. Tune here.
+// How long the app must have been visible (onStart → onStop) before being hidden
+// re-greets the dashboard, staging a fresh tile for the next return. The swap
+// happens on *stop* — when the app is genuinely hidden, not merely unfocused — so
+// the card is never changed in front of the user; the fresh tile is simply
+// already there when they come back. Below this, a quick open-and-leave keeps the
+// current tile, so a barely-glanced-at greeting isn't churned. Tune here.
 const MIN_FOREGROUND_FOR_REGREET_MS = 90_000;
 
 const MainAndroid = () => {
@@ -130,22 +131,30 @@ const MainAndroid = () => {
     });
   };
 
-  // When the app last came to the foreground. Seeded with "now" for the cold
-  // launch (which has no preceding resume) so a quick open-and-leave right after
-  // launch keeps the tile the dashboard just mounted with.
+  // When the app last became visible (onStart). Seeded with "now" for the cold
+  // launch (whose onStart may fire before this listener attaches) so a quick
+  // open-and-leave right after launch keeps the tile the dashboard just mounted
+  // with.
   let foregroundedAtTs = Date.now();
 
   onMount(() => {
     refresh();
 
-    const pauseHandler = () => {
-      // Re-roll the greeting *now*, as the app goes to the background and the
-      // dashboard is hidden — so a fresh tile is already in place when the user
-      // returns and the card never changes in front of them (calm is the
+    const startHandler = () => {
+      // The app is visible again — start (or restart) timing this visible
+      // session. onStart, not onResume, so a transient focus flicker (a dialog
+      // over the app) doesn't reset the clock mid-session.
+      foregroundedAtTs = Date.now();
+    };
+
+    const stopHandler = () => {
+      // The app is now genuinely hidden (onStop, not onPause). Re-roll the
+      // greeting *here*, offscreen, so a fresh tile is already in place when the
+      // user returns and the card never changes in front of them (calm is the
       // product; a card only ever changes offscreen). Only if the app was
       // actually in use for a while: a quick open-and-leave keeps the current
-      // tile so the greeting never feels restless (see
-      // MIN_FOREGROUND_FOR_REGREET_MS). The WebView isn't reloaded on resume, so
+      // tile, so a barely-glanced-at greeting isn't churned (see
+      // MIN_FOREGROUND_FOR_REGREET_MS). The WebView isn't reloaded on return, so
       // the dashboard never remounts to re-greet on its own.
       if (Date.now() - foregroundedAtTs >= MIN_FOREGROUND_FOR_REGREET_MS) {
         window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
@@ -153,21 +162,22 @@ const MainAndroid = () => {
     };
 
     const resumeHandler = () => {
-      foregroundedAtTs = Date.now();
       // A fresh return to the app re-offers the (dismissible) setup invitation;
       // the render still gates it on there being no blocked apps.
       setIsInviteDismissed(false);
       setIsInviteDismissing(false);
       // Sync any data that changed while away, preserving the current
-      // arrangement — the greeting itself was already re-rolled on pause, hidden.
+      // arrangement — the greeting itself was already re-rolled on stop, hidden.
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
       refresh();
     };
-    window.addEventListener(ANDROID_EV_PAUSE, pauseHandler);
+    window.addEventListener(ANDROID_EV_START, startHandler);
+    window.addEventListener(ANDROID_EV_STOP, stopHandler);
     window.addEventListener(ANDROID_EV_RESUME, resumeHandler);
 
     onCleanup(() => {
-      window.removeEventListener(ANDROID_EV_PAUSE, pauseHandler);
+      window.removeEventListener(ANDROID_EV_START, startHandler);
+      window.removeEventListener(ANDROID_EV_STOP, stopHandler);
       window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
     });
   });
