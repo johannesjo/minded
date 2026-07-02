@@ -13,9 +13,8 @@
   // and Sun.tsx floors the value there, so the 0..1 drag ramp (always dimmer)
   // can't dim it mid-drag. It's a static shadow at rest (constant intensity →
   // rasterised once, not per frame); the gentle breath is carried separately by
-  // the ::after opacity pulse below (a compositor-only property). The glow
-  // colour rides --glow-color: white in flight, warmed by a settle at the
-  // companion rest and the departing hand-off (see Sun.tsx getGlowColor).
+  // the ::after opacity pulse below (a compositor-only property). The glow is
+  // white throughout.
   box-shadow:
     var(--sun-shadow),
     0 0 calc(15px * var(--glow-intensity))
@@ -41,11 +40,6 @@
   /* Ensure box-shadow transitions smoothly even when JS updates the variables */
   transition: box-shadow 0.1s linear;
 
-  // The sun's warm golden face. Sun.tsx floors --sun-warmth at a resting
-  // whisper (SUN_REST_WARMTH) so the disc always carries a hint of this
-  // gradient rather than reading as a flat white hole in the sky. Static only:
-  // the opacity never pulses — a breathing swell belongs solely to guided
-  // pauses, never the companion.
   &::before {
     content: "";
     position: absolute;
@@ -124,8 +118,8 @@
     // top-left highlight, screen-blended so it lights the disc — reading as a
     // glowing orb the way the old gradient moon did — without flattening the real
     // craters, which stay clearly visible underneath. This repurposes the shared
-    // ::before (which for the sun carries the warm face overlay): a fixed white
-    // sheen at full opacity, so the sun's --sun-warmth floor can never bleed
+    // ::before (which for the sun carries the warm down-drag overlay): a fixed white
+    // sheen at full opacity, so a downward drag's --sun-warmth can no longer bleed
     // amber across the moon — the warm overlay is replaced here, not just hidden.
     &::before {
       display: block;
