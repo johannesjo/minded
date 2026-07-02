@@ -181,6 +181,19 @@
   --safe-area-inset-left: 0px;
   --safe-area-inset-right: 0px;
 
+  // The bottom band the companion sun rests over, and the disc's resting Y
+  // (px from the bottom edge): half the band, above the safe-area inset. The
+  // single source of truth for the companion rest — JS never re-derives this
+  // math, it reads the resolved px back off an element positioned with it
+  // (RouteCmp's reanchorCompanion, the Android onboarding's hand-off probe).
+  // Defined at the app root (not RouteCmp.module.scss) because onboarding
+  // renders *instead of* the route shell yet must land its closing glide on
+  // the exact anchor the shell sun will rest on.
+  --companion-bar-height: clamp(64px, 10vh, 88px);
+  --companion-bar-center-y: calc(
+    var(--safe-area-inset-bottom) + var(--companion-bar-height) / 2
+  );
+
   &.minded-6622-dark {
     --c-gradient-1: #02091f;
     --c-gradient-2: #0a2860;
