@@ -22,7 +22,7 @@
   h1 {
     @include displayVoice;
     font-size: clamp(28px, 7vw, 42px);
-    line-height: 1.15; // Fraunces ascenders need a touch more room
+    line-height: 1.15; // the display serif's ascenders need a touch more room
     margin: 0;
   }
 

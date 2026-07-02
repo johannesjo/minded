@@ -1,9 +1,9 @@
 // Latin variable woff2 subsets copied from @fontsource-variable.
-// To refresh: `npm i @fontsource-variable/inter @fontsource-variable/fraunces`,
-// copy `inter-latin-wght-normal.woff2` and `fraunces-latin-standard-normal.woff2`
+// To refresh: `npm i @fontsource-variable/inter @fontsource-variable/newsreader`,
+// copy `inter-latin-wght-normal.woff2` and `newsreader-latin-standard-normal.woff2`
 // from each package's `files/` dir into `src/assets/fonts/`, then uninstall.
 //
-// Fraunces uses the `standard` subset (opsz + wght), NOT `wght`-only: its `opsz`
+// Newsreader uses the `standard` subset (opsz + wght), NOT `wght`-only: its `opsz`
 // axis carries much of its warmth at display sizes and drives
 // `font-optical-sizing: auto` (see `displayVoice` in mixins/allTypo.scss).
 
@@ -16,9 +16,9 @@
 }
 
 @font-face {
-  font-family: "Fraunces Variable";
+  font-family: "Newsreader Variable";
   font-style: normal;
   font-display: swap;
   font-weight: 100 900;
-  src: url("@src/assets/fonts/fraunces-latin-variable.woff2") format("woff2");
+  src: url("@src/assets/fonts/newsreader-latin-variable.woff2") format("woff2");
 }

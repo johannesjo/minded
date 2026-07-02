@@ -1,14 +1,14 @@
-// The single Fraunces "voice" — same weight + tracking across every mindful
+// The single Newsreader "voice" — same weight + tracking across every mindful
 // surface (intervention prompts, breath labels, success overlay, opt-in h2).
 // Size and line-height are set by the consumer.
 @mixin displayVoice() {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.005em;
-  // Fraunces' bundled subset carries the `opsz` axis (see _fonts.scss); let the
-  // browser track it to font-size so display sizes keep their warmth.
+  // Newsreader's bundled subset carries the `opsz` axis (see _fonts.scss); let
+  // the browser track it to font-size so display sizes keep their warmth.
   font-optical-sizing: auto;
-  // Fraunces ships only `normal`; reset em/i so the browser doesn't
+  // We bundle only the `normal` master; reset em/i so the browser doesn't
   // synthesize an oblique that looks visibly off vs a real italic master.
   em,
   i {

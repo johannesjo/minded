@@ -257,9 +257,11 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="typography" title="Typography">
         <h2 class="h2">.h2 — functional heading (Inter)</h2>
-        <h2 class="h2 h2Mindful">.h2.h2Mindful — mindful heading (Fraunces)</h2>
+        <h2 class="h2 h2Mindful">
+          .h2.h2Mindful — mindful heading (display serif)
+        </h2>
         <h3 class="h3">.h3 — subsection heading (Inter)</h3>
-        <p class="txtBig">.txtBig — display body (Fraunces)</p>
+        <p class="txtBig">.txtBig — display body (display serif)</p>
         <p>plain paragraph text using --c-fg (Inter)</p>
         <div class={styles.fontList}>
           <For each={fontEntries()}>
