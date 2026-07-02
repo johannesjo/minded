@@ -62,4 +62,11 @@
   font-weight: 600;
   padding: 2px 4px;
   text-decoration: underline;
+
+  // Keyboard focus ring — same treatment as links (_sharedAll.scss).
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
 }

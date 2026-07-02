@@ -5,7 +5,6 @@
   // step's reduced opacity, not a different fill.
   --color-inactive: var(--btn-bg-selected);
   --color-active: var(--btn-bg-selected);
-  --transition-speed: 0.3s;
   --line-height: 3px;
   --line-width: 32px;
   --color-line: var(--btn-bg);
@@ -30,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color var(--transition-speed);
+  transition: background-color var(--dur-quick) var(--ease-out);
   position: relative;
   opacity: 0.5;
   cursor: default;
@@ -52,6 +51,12 @@
 
   &:disabled {
     cursor: default;
+  }
+
+  // Keyboard focus ring — same treatment as links/buttons.
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
   }
 
   &:not(:last-child) {

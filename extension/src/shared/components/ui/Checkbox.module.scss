@@ -25,7 +25,7 @@
   background: var(--form-inputs-bg);
   border-radius: 4px;
   position: relative;
-  transition: background 0.15s;
+  transition: background var(--dur-quick) var(--ease-out);
   flex-shrink: 0;
 
   &::after {
@@ -47,6 +47,13 @@
     &::after {
       display: block;
     }
+  }
+
+  // The native input is visually hidden, so keyboard focus needs to show on the
+  // box itself — same ring as links/buttons.
+  input:focus-visible ~ & {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
   }
 
   input:disabled ~ & {

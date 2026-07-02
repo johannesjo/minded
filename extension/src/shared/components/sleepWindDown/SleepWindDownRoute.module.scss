@@ -86,6 +86,13 @@
   &:hover {
     opacity: 0.85;
   }
+
+  // Keyboard focus ring — same treatment as links (_sharedAll.scss).
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
 }
 
 .activityBody {

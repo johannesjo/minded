@@ -40,6 +40,12 @@
       opacity: 1;
     }
 
+    // Keyboard focus ring — same treatment as links/buttons.
+    &:focus-visible {
+      outline: 2px solid var(--c-link-color);
+      outline-offset: 3px;
+    }
+
     @include onNonMobileScreens {
       &:hover {
         transform: scale(1.6);
