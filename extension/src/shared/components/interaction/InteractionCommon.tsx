@@ -86,6 +86,7 @@ import { StrongFrictionBreathPause } from "@src/shared/components/interaction/br
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
 import { GROUNDING_FADE_MS } from "@src/shared/components/interaction/grounding/grounding.const";
 import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
+import { LET_GO_REVEAL_MAX_MS } from "@src/shared/components/interaction/letGo/letGo.const";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 interface InteractionCommonProps {
@@ -402,6 +403,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let contentReadyTimeout: number | undefined;
   let beProudMessageTimeout: number | undefined;
   let groundingBgResetTimeout: number | undefined;
+  // Fallback that reveals the let-go question if the flung sun never clears the
+  // viewport promptly (a gentle fling / slow drag-up). Cleared once the offer
+  // opens (whether by this or the off-screen watcher) and on dispose.
+  let letGoRevealTimeout: number | undefined;
   let intentSelectionArmTimeout: number | undefined;
   let timeSelectionArmTimeout: number | undefined;
   let rootThemeObserver: MutationObserver | undefined;
@@ -425,14 +430,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // Reveal the "what do you want to let go of?" question and tuck the flung disc
   // away behind it. Deferred from the fling's *start* to the moment the sun has
   // actually flown off the screen (onFlungOffscreen), so the gesture reads as a
-  // release rather than an instant cut. Idempotent: whichever of the off-screen
-  // watcher or the terminal fallback fires first opens it; the other no-ops.
+  // release rather than an instant cut. Idempotent: three triggers race to open
+  // it — the off-screen watcher, the LET_GO_REVEAL_MAX_MS cap, and the terminal
+  // callback — and whichever wins opens it; the rest no-op.
   const openLetGoOffer = () => {
+    if (letGoRevealTimeout) {
+      window.clearTimeout(letGoRevealTimeout);
+      letGoRevealTimeout = undefined;
+    }
     if (getShowLetGoOffer()) return;
-    // The disc is off-screen now, so hiding the shell-sun layer is invisible; it
-    // keeps the still-running fling from careering back over the question and is
-    // sent home / revealed again on close (see finishLetGo).
-    if (props.useShellSun) setIsShellSunHidden(true);
+    // Soft-fade the shell-sun layer out rather than snapping it: by now the disc
+    // has flown up and off the top (or is high up, still rising), so it only ever
+    // drifts further *away* as it fades — never careening back over the question —
+    // which keeps the hand-off soft (never a hard cut). It is sent home / revealed
+    // again on close (see finishLetGo).
+    if (props.useShellSun) setIsShellSunHidden("soft");
     setShowLetGoOffer(true);
   };
 
@@ -888,6 +900,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           },
         }),
       );
+      // Prefer the tight reveal the instant the disc clears the top
+      // (onFlungOffscreen); this only backs it up for a release that stalls
+      // on-screen or clears too slowly, so the question never lags by more than a
+      // beat. openLetGoOffer clears this if the watcher opens the offer first.
+      letGoRevealTimeout = window.setTimeout(() => {
+        letGoRevealTimeout = undefined;
+        if (isDisposed) return;
+        openLetGoOffer();
+      }, LET_GO_REVEAL_MAX_MS);
       return;
     }
 
@@ -1285,6 +1306,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (groundingBgResetTimeout) {
       clearTimeout(groundingBgResetTimeout);
     }
+    if (letGoRevealTimeout) {
+      clearTimeout(letGoRevealTimeout);
+    }
     rootThemeObserver?.disconnect();
     wrapperThemeObserver?.disconnect();
   });
@@ -1612,18 +1636,24 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         )}
       </div>
 
-      {props.isFromDashboard && !getShowLetGoOffer() && (
-        <div class="back-button-wrapper">
-          <Btn
-            variant="icon"
-            plain
-            onClick={() => props.onSkip()}
-            aria-label="Go back"
-          >
-            <Ico name="arrowBack" />
-          </Btn>
-        </div>
-      )}
+      {props.isFromDashboard &&
+        !getShowLetGoOffer() &&
+        !getIsFinalAnimation() && (
+          // Drop the back arrow the instant a terminal gesture begins, not only
+          // once an offer has opened: the let-go question now waits for the sun to
+          // fly off first, so without this the opaque arrow would hover over the
+          // whole flight. (A down-drag's grounding offer covers it anyway.)
+          <div class="back-button-wrapper">
+            <Btn
+              variant="icon"
+              plain
+              onClick={() => props.onSkip()}
+              aria-label="Go back"
+            >
+              <Ico name="arrowBack" />
+            </Btn>
+          </div>
+        )}
     </>
   );
 };
