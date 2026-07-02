@@ -44,20 +44,12 @@ export const SelfAssessmentCard = (props: {
                       <div>{q?.question}</div>
                     </td>
                     <td>
-                      <div class={styles.dots}>
-                        <For each={SELF_ASSESSMENT_ANSWERS}>
-                          {(selfReflectionAnswer) => {
-                            return (
-                              <div
-                                classList={{
-                                  [styles.dot]: true,
-                                  [styles.full]:
-                                    selfReflectionAnswer.val <= entry.val,
-                                }}
-                              ></div>
-                            );
-                          }}
-                        </For>
+                      <div class={styles.answerTxt}>
+                        {
+                          SELF_ASSESSMENT_ANSWERS.find(
+                            (answ) => answ.val === entry.val,
+                          )?.txt
+                        }
                       </div>
                     </td>
                   </tr>

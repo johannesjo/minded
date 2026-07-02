@@ -20,22 +20,10 @@
   }
 }
 
-.dots {
-  display: flex;
-  opacity: 0.8;
-}
-
-.dot {
-  @include levelDot(6px);
-  margin-left: 2px;
-
-  @include onNonMobileScreens {
-    width: 8px;
-    height: 8px;
-    margin-left: 4px;
-  }
-
-  &.full {
-    opacity: 0.7;
-  }
+// A quiet, worded recollection ("many days") rather than a fill-up-the-score
+// ladder of dots — keeps the card a reflection, never a scoreboard.
+.answerTxt {
+  opacity: 0.6;
+  white-space: nowrap;
+  font-size: 0.9em;
 }

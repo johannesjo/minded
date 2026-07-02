@@ -24,72 +24,75 @@ export interface SelfAssessmentQuestion {
   ico: IcoName;
 }
 
+// NOTE: framed as gentle, judgment-free noticing of the recent past, not a
+// self-rating of virtues or achievements. Keep new statements observational
+// ("what has my experience been like"), never a standard to measure up to.
 export const SELF_ASSESSMENT_QUESTIONS: SelfAssessmentQuestion[] = [
   {
     id: SelfAssessmentId.CARE_OF_NEEDS,
-    question: "I took care of my needs",
+    question: "I was gentle with myself",
     ico: "info",
-    short: "Care of Needs",
+    short: "Gentle with myself",
   },
   {
     id: SelfAssessmentId.SOCIAL_CONTACTS,
-    question: "I had enough social contacts",
+    question: "I felt connected to others",
     ico: "askQuestion",
-    short: "Social Contacts",
+    short: "Connection",
   },
   {
     id: SelfAssessmentId.HAPPY_WITH_ACHIEVEMENTS,
-    question: "I am happy with what I achieved",
+    question: "I made time for something that matters to me",
     ico: "info",
-    short: "Achievements",
+    short: "Time for what matters",
   },
   {
     id: SelfAssessmentId.WAS_OPTIMISTIC,
-    question: "I was optimistic",
+    question: "I looked forward to something",
     ico: "questionExchange",
-    short: "Optimistic",
+    short: "Looking forward",
   },
   {
     id: SelfAssessmentId.TRIED_NEW_THINGS,
-    question: "I tried new things",
+    question: "I felt curious",
     ico: "feedback",
-    short: "Tried New Things",
+    short: "Curious",
   },
   {
     id: SelfAssessmentId.COULD_RELAX,
-    question: "I could relax",
+    question: "I made space to rest",
     ico: "edit",
-    short: "Could Relax",
+    short: "Rest",
   },
   {
     id: SelfAssessmentId.TRIED_TO_SEE_THE_GOOD,
-    question: "I tried to see the good",
+    question: "I noticed the good around me",
     ico: "questionExchange",
-    short: "Appreciation",
+    short: "Noticing the good",
   },
   {
     id: SelfAssessmentId.WAS_HAPPY,
-    question: "I was happy",
+    question: "I felt at ease",
     ico: "info",
-    short: "Happy",
+    short: "At ease",
   },
   {
     id: SelfAssessmentId.WAS_COURAGEOUS,
-    question: "I was courageous",
+    question: "I stayed with something difficult",
     ico: "info",
-    short: "Courageous",
+    short: "Staying with difficulty",
   },
   {
     id: SelfAssessmentId.ABLE_TO_DROP_NEGATIVE_THOUGHTS,
-    question: "I was able to drop negative thoughts",
+    question: "I let difficult thoughts come and go",
     ico: "info",
-    short: "Dropping Negative Thoughts",
+    short: "Letting thoughts pass",
   },
   {
     id: SelfAssessmentId.HAD_ENOUGH_ENERGY,
-    question: "I had enough energy",
+    question: "I had energy for what matters",
     ico: "info",
-    short: "Enough Energy",
+    short: "Energy",
   },
   {
     id: SelfAssessmentId.SLEPT_WELL,
@@ -99,9 +102,9 @@ export const SELF_ASSESSMENT_QUESTIONS: SelfAssessmentQuestion[] = [
   },
   {
     id: SelfAssessmentId.ENJOYED_LIFE,
-    question: "I enjoyed life",
+    question: "I noticed moments I enjoyed",
     ico: "info",
-    short: "Enjoyed Life",
+    short: "Moments enjoyed",
   },
 ];
 
@@ -110,9 +113,11 @@ export type SelfReflectionAnswerVal = 1 | 2 | 3 | 4;
 export interface SelfReflectionAnswer
   extends TglBtnOption<SelfReflectionAnswerVal> {}
 
+// A soft, descriptive frequency range grounded in observable days, rather than
+// a "never = failing grade" ladder. Values stay 1–4 so stored history is intact.
 export const SELF_ASSESSMENT_ANSWERS: SelfReflectionAnswer[] = [
-  { txt: "(almost) never", val: 1 },
-  { txt: "sometimes", val: 2 },
-  { txt: "often", val: 3 },
-  { txt: "(almost) always", val: 4 },
+  { txt: "rarely", val: 1 },
+  { txt: "some days", val: 2 },
+  { txt: "many days", val: 3 },
+  { txt: "most days", val: 4 },
 ];
