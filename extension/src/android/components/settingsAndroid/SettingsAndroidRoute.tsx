@@ -1,4 +1,3 @@
-import { useNavigate } from "@solidjs/router";
 import { SettingsAndroid } from "./SettingsAndroid";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
@@ -6,12 +5,9 @@ import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
-import { navigateWithPageFadeOut } from "@src/util/animation";
 import styles from "./SettingsAndroidRoute.module.scss";
 
 export const SettingsAndroidRoute = () => {
-  const navigate = useNavigate();
-
   return (
     <div class="pageTransitionIn">
       <h2 class="h2 h2Mindful">
@@ -37,7 +33,7 @@ export const SettingsAndroidRoute = () => {
       <SleepWindDownSettings autoSave={true} />
 
       <div class={styles.backWrapper}>
-        <Btn onClick={() => navigateWithPageFadeOut(navigate, "/")}>
+        <Btn href="/">
           <Ico name="arrowBack" /> Back
         </Btn>
       </div>

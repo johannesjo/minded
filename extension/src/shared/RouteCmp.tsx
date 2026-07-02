@@ -1,10 +1,14 @@
 import {
+  type BeforeLeaveEventArgs,
   HashRouter,
   Route,
   RouteSectionProps,
+  useBeforeLeave,
   useLocation,
   useSearchParams,
 } from "@solidjs/router";
+import { fadeOutCurrentPage } from "@src/util/animation";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import {
   createEffect,
@@ -99,6 +103,43 @@ const MainWrapper = (props: RouteSectionProps) => {
     isShellSunInteractive(getSunRole(), getIsSunHandoffInFlight());
 
   // const navigate = useNavigate();
+
+  // One place makes every page-to-page route change fade out before the next
+  // eases in, so the soft transition is the default and can't be forgotten at a
+  // call site (this replaces the old per-navigate `navigateWithPageFadeOut`
+  // wrapping). On each navigation we fade the leaving page's own node fully out,
+  // then `retry(true)` so it goes through without re-entering this guard; the
+  // route remounts and discards the faded node, and the destination eases in via
+  // its own pageTransitionIn. Skipped for:
+  //  - browser/hardware back+forward: `e.to` is a numeric history delta, not a
+  //    path. Leave those instant — fading would add latency and force the
+  //    router's block-then-restore history bounce on every back.
+  //  - same-path changes (query-only, e.g. clearing `?sun=open`): the route node
+  //    isn't remounted, so fading it would strand it at opacity 0.
+  //  - reduced motion, and navigations that already faded their own surface
+  //    (wind-down dismiss passes `state.skipPageFade`).
+  let isPageFading = false;
+  useBeforeLeave((e: BeforeLeaveEventArgs) => {
+    const state = e.options?.state as { skipPageFade?: boolean } | undefined;
+    if (typeof e.to !== "string") return;
+    if (e.defaultPrevented || prefersReducedMotion() || state?.skipPageFade)
+      return;
+    if (e.to.split(/[?#]/)[0] === e.from.pathname) return;
+
+    if (isPageFading) {
+      // A page fade is already mid-flight (e.g. a double-tap on a card) — drop
+      // this second navigation rather than hard-cutting past the fade.
+      e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+    isPageFading = true;
+    fadeOutCurrentPage().then(() => {
+      isPageFading = false;
+      e.retry(true);
+    });
+  });
 
   // The home-screen sun widget (Android now, iOS later) launches the app with
   // `?sun=open` to mirror tapping the in-app companion: it opens the very same

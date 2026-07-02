@@ -6,7 +6,6 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
-import { navigateWithPageFadeOut } from "@src/util/animation";
 
 const BottomBar = () => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
@@ -28,10 +27,10 @@ const BottomBar = () => {
       return;
     }
 
-    // Fade the leaving page fully out the instant the arrow is tapped, then
-    // return to the dashboard — never a hard cut. The destination eases back in
-    // via its own pageTransitionIn.
-    navigateWithPageFadeOut(navigate, "/");
+    // Return to the dashboard — never a hard cut. The router-level page-fade
+    // interceptor (RouteCmp) eases the leaving page out before the dashboard
+    // eases back in via its own pageTransitionIn.
+    navigate("/");
   };
 
   return (
@@ -47,27 +46,27 @@ const BottomBar = () => {
         // other platforms show both. The sun still rests centred over this bar.
         !IS_IOS && (
           <>
+            {/*
+              Real internal links (router <A>) — the router-level page-fade
+              interceptor eases the transition, so no onClick wrapping is needed.
+              These only render on the dashboard, where the wrapper's goBack()
+              early-returns, so the bubbling click is harmless.
+            */}
             <Btn
               variant="icon"
               plain
+              href="/feedback"
               title="Give us some feedback"
               aria-label="Give us some feedback"
-              onClick={(event) => {
-                event.stopPropagation();
-                navigateWithPageFadeOut(navigate, "/feedback");
-              }}
             >
               <Ico name="feedback" />
             </Btn>
             <Btn
               variant="icon"
               plain
+              href="/settings"
               title="Go to settings page"
               aria-label="Go to settings page"
-              onClick={(event) => {
-                event.stopPropagation();
-                navigateWithPageFadeOut(navigate, "/settings");
-              }}
             >
               <Ico name="settings" />
             </Btn>

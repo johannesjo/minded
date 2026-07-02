@@ -14,8 +14,9 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
  * motion). The swap itself is already instant under reduced motion, so the screen
  * changes with no fade. Cleans up its pending timer on unmount.
  *
- * NOT for page/route changes — those fade fully out before navigating; see
- * `navigateWithPageFadeOut` in ./animation.
+ * NOT for page/route changes — those fade fully out before navigating, handled
+ * globally by the router-level page-fade interceptor in RouteCmp
+ * (`useBeforeLeave` → `fadeOutCurrentPage` in ./animation).
  */
 export function createScreenFade(fadeMs: number): {
   opacity: Accessor<number>;

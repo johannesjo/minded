@@ -29,7 +29,6 @@ import {
   getDailyQuestionsMode,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { useNavigate } from "@solidjs/router";
-import { navigateWithPageFadeOut } from "@src/util/animation";
 
 const AFTER_ANI_WAIT_DURATION = 1100;
 
@@ -96,7 +95,7 @@ const DailyQuestions = () => {
   const afterAni = () => {
     window.clearTimeout(t0);
     t0 = setTimeout(() => {
-      navigateWithPageFadeOut(navigate, "/");
+      navigate("/");
     }, AFTER_ANI_WAIT_DURATION);
   };
 
