@@ -111,17 +111,9 @@
 }
 
 .stars-container.active {
-  // Gate the per-star twinkle on visibility so the animations aren't ticking the
+  // Gate the per-star twinkle on visibility so 150 animations aren't ticking the
   // compositor while the field is hidden (by day, or at rest before any pull).
-  //
-  // Only the bounded `.twinkles` subset animates. The `twinkle` keyframe animates
-  // `transform`, which puts each animated star on its own compositor layer;
-  // animating all 230 blows past Android WebView's layer/texture budget on real
-  // devices, so the compositor drops most of them and the sky renders nearly
-  // empty. Limiting the animated set (see TWINKLING_STAR_COUNT in Stars.tsx)
-  // keeps the layer count in budget while the static majority still paint into
-  // the base tile — so the full field shows on-device.
-  .star.twinkles {
+  .star {
     animation: twinkle infinite ease-in-out;
   }
 
@@ -219,7 +211,7 @@
 // shooting stars (base opacity 0) simply never appear.
 @media (prefers-reduced-motion: reduce) {
   .stars-container.active {
-    .star.twinkles,
+    .star,
     .shooting-star-1,
     .shooting-star-2,
     .shooting-star-3 {

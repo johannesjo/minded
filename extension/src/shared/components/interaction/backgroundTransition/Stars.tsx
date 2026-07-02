@@ -24,23 +24,7 @@ interface Star {
   // star so the field shimmers softly with a sense of depth rather than every
   // star blinking fully on/off in lockstep — see the `twinkle` keyframe.
   minOpacity: number;
-  // Whether this star carries the animated twinkle. Only a bounded subset does —
-  // see TWINKLING_STAR_COUNT.
-  twinkles: boolean;
 }
-
-// The whole field is painted, but only this many stars get the `twinkle`
-// animation. The keyframe animates `transform` (a scale), which promotes each
-// animated star to its OWN compositor layer. Desktop Chromium has a generous
-// layer/texture budget so all 230 can animate there, but real Android WebView
-// devices have a far tighter budget: once it's exceeded the compositor silently
-// drops the excess layers, so most stars never paint and the sky looks nearly
-// empty — "only a couple of stars". Bumping the star count never fixed that (the
-// cap is the layer budget, not the count). Static stars, by contrast, are
-// rasterised into the base tile and are NOT subject to that budget, so the field
-// stays full on-device. Keep this an ABSOLUTE cap (not a ratio of starCount) so
-// raising starCount can never quietly push the animated layers back over budget.
-const TWINKLING_STAR_COUNT = 55;
 
 const Stars: Component<StarsProps> = (props) => {
   const [stars, setStars] = createSignal<Star[]>([]);
@@ -59,14 +43,9 @@ const Stars: Component<StarsProps> = (props) => {
         animationDelay: Math.random() * 6, // Random delay 0-6s
         // 3-6s cycles — a lively shimmer without tipping into a harsh flicker.
         twinkleDuration: Math.random() * 3 + 3,
-        // Dip to 0.45-0.85 then back to full: enough contrast to sparkle, but
-        // never blinking fully off. The static majority (see twinkles) rest at
-        // this level, so keep the floor bright enough that they read clearly on a
-        // phone rather than washing into the night gradient.
-        minOpacity: Math.random() * 0.4 + 0.45,
-        // Positions are random, so the first N are already spread across the
-        // whole sky — no shuffle needed to distribute the twinkle.
-        twinkles: i < TWINKLING_STAR_COUNT,
+        // Dip to 0.3-0.75 then back to full: enough contrast to sparkle, but
+        // never blinking fully off.
+        minOpacity: Math.random() * 0.45 + 0.3,
       });
     }
 
@@ -94,7 +73,6 @@ const Stars: Component<StarsProps> = (props) => {
         {(star) => (
           <div
             class="star"
-            classList={{ twinkles: star.twinkles }}
             style={{
               left: `${star.x}%`,
               top: `${star.y}%`,
