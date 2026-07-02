@@ -99,6 +99,58 @@
       0 0 calc(30px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.25 * var(--glow-intensity)));
   }
+
+  // Horizon reflection under the resting moon (GitHub #125): a faint, wide,
+  // static cool glow hugging the bottom edge and brightest under the disc, so the
+  // night companion reads as moonlight pooling on the horizon rather than
+  // floating over the transparent bottom bar. Bottom-anchored (an ellipse whose
+  // brightest point sits at 50% 100% — the content floor, centred under the disc)
+  // rather than wrapped around the disc centre: a disc-anchored bloom just merges
+  // into the moon's own halo and adds nothing, while ground-hugging light reads
+  // as a distinct horizon. It reuses the app's existing night horizon-glow idiom
+  // (the warm `ellipse … at 50% 112%` in --background-gradient). Painted behind
+  // the disc (z 0 < the disc's z 30); its transparent tail dies out well inside
+  // the edge icons, so it never washes them. Static, no breath — the soft
+  // companion never inhales.
+  //
+  // Night only. The daytime sun rests over a warm coral horizon where a warm
+  // bloom of any calm opacity is invisible (verified against the light sky), so
+  // adding one there would be dead chrome — the day companion is already seated
+  // by the sky. Scoping the whole pseudo-element (not just its colour) under the
+  // dark theme means light mode paints no extra layer at all.
+  //
+  // Hidden by default and revealed only while the moon actually rests as the
+  // companion, so it fades in with that role and dissolves as the disc morphs up
+  // into an intervention — never a hard cut.
+  :global(.minded-6622-dark) &::before {
+    content: "";
+    position: fixed;
+    left: 50vw;
+    // Sit the glow's floor on the content bottom (above any safe-area nav inset),
+    // so its brightest band lands at the disc's base — the disc rests half a bar
+    // height above this floor.
+    bottom: var(--safe-area-inset-bottom);
+    transform: translateX(-50%);
+    width: clamp(300px, 90vw, 560px);
+    height: clamp(120px, 20vh, 176px);
+    // A wide, bottom-weighted ellipse, soft by construction — a gradient needs no
+    // blur filter, so it's cheap: rasterised once, no per-frame work.
+    background: radial-gradient(
+      ellipse 55% 100% at 50% 100%,
+      rgba(var(--horizon-reflection-rgb), var(--horizon-reflection-alpha)) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    opacity: 0;
+    // Soft reveal on rest / soft dissolve on morph — matches the shell layer's
+    // own 500ms opacity ease and the never-hard-cut rule.
+    transition: opacity 500ms ease;
+    z-index: 0;
+  }
+
+  :global(.minded-6622-dark) &.isCompanion::before {
+    opacity: 1;
+  }
 }
 
 // The sun's untransformed base is viewport centre (the flex-centred layer). Every

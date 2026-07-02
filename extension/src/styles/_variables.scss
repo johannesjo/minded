@@ -310,6 +310,18 @@
     --little-sun-shadow: 0 0 6px 1px rgba(190, 210, 255, 0.7);
     --little-sun-breath-rgb: 190, 210, 255;
     --little-sun-txt-c: #33405e;
+
+    // Horizon reflection under the resting moon (GitHub #125): a faint, wide,
+    // static cool bloom hugging the bottom edge, brightest under the disc — cool
+    // moonlight pooling on the horizon so the moon reads as seated on the
+    // transparent bottom bar rather than floating over nothing. Night only: the
+    // daytime sun already sits over a warm coral horizon, where a warm bloom of
+    // any calm opacity is invisible (verified against the light sky), so the day
+    // companion deliberately gets none — one more surface only earns its place
+    // where it actually reads. Bare rgb components + a separate alpha so the
+    // gradient can wrap them at a tuned opacity.
+    --horizon-reflection-rgb: 198, 216, 255;
+    --horizon-reflection-alpha: 0.14;
   }
 }
 
