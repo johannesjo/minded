@@ -85,8 +85,6 @@
 
   --dashboard-card-bg: rgba(255, 255, 255, 0.35);
   --dashboard-card-bg-hover: rgba(255, 255, 255, 0.7);
-  // A 1px lit top edge so frosted cards read as caught by the sky above them.
-  --dashboard-card-highlight: rgba(255, 255, 255, 0.45);
   --dashboard-card-border-radius: var(--radius-xl);
 
   --sun-bg: #fff;
@@ -275,8 +273,6 @@
     // tint here would sink the cards into the near-black top of the gradient.
     --dashboard-card-bg: rgba(255, 255, 255, 0.07);
     --dashboard-card-bg-hover: rgba(255, 255, 255, 0.12);
-    // Barely-there over the night sky — a strong highlight would read as a seam.
-    --dashboard-card-highlight: rgba(255, 255, 255, 0.12);
 
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, 0.95);
