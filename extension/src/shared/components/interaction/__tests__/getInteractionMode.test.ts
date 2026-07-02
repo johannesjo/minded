@@ -321,6 +321,85 @@ describe("getInteractionMode", () => {
     });
   });
 
+  describe("bell (strong friction + rare everyday sample)", () => {
+    const strongWeb = (options: InteractionModeDecisionOptions = {}) =>
+      decide(
+        baseSyncData({
+          ...strongFrictionViaAttempts(),
+        }),
+        { isMainView: false, ...options },
+      );
+
+    it("rings the bell at strong friction once the urge-surfing roll has failed", () => {
+      // First roll fails urge surfing, second roll passes the bell.
+      expect(strongWeb({ random: sequenceRandom([0.99, 0.1]) })).toEqual({
+        mode: "BELL",
+        reason: "bell_strong",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("never offers the bell with the sound setting off", () => {
+      const syncData = baseSyncData({ ...strongFrictionViaAttempts() });
+      syncData.cfg.soundEnabled = false;
+      expect(
+        decide(syncData, {
+          isMainView: false,
+          random: sequenceRandom([0.99, 0.1]),
+        }).mode,
+      ).not.toBe("BELL");
+    });
+
+    it("never offers the bell when the device could not be heard", () => {
+      expect(
+        strongWeb({
+          isAudioAudible: false,
+          random: sequenceRandom([0.99, 0.1]),
+        }).mode,
+      ).not.toBe("BELL");
+    });
+
+    it("does not fire outside waking hours", () => {
+      const lateNight = new Date("2026-05-11T03:00:00").getTime();
+      expect(
+        strongWeb({
+          clock: () => lateNight,
+          random: sequenceRandom([0.99, 0.1]),
+        }).mode,
+      ).not.toBe("BELL");
+    });
+
+    it("samples the bell in the everyday rotation off the dashboard", () => {
+      // Set-alternative, self-assessment and action advice all fail their
+      // rolls; the usage rating is fresh (no roll); the bell roll then passes.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: false,
+          random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
+        }),
+      ).toEqual({
+        mode: "BELL",
+        reason: "bell_sample",
+        frictionLevel: "soft",
+      });
+    });
+
+    it("keeps the bell out of dashboard-started interactions", () => {
+      // Same everyday chain from the dashboard: the bell consumes no roll, so
+      // the low value lands on the notice anchor instead.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: true,
+          random: sequenceRandom([0.99, 0.99, 0.01]),
+        }),
+      ).toEqual({
+        mode: "NOTICE",
+        reason: "notice_sample",
+        frictionLevel: "soft",
+      });
+    });
+  });
+
   it("asks for missing energy data during daytime", () => {
     expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
       mode: "ENERGY_LVL",

@@ -1,0 +1,50 @@
+// Global interaction styles (injected via _sharedGlobalInteraction.scss). A CSS
+// module would not reach the interaction's render context, so everything is
+// scoped under the root `.bell-interaction` class instead (as UrgeSurfing does).
+.bell-interaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  color: var(--c-fg-full-emphasis);
+  // Cross-screen fade between invite → listen; opacity is driven from the
+  // component (screenFade). Matches BELL_SCREEN_FADE_MS.
+  transition: opacity 240ms ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  // Same fixed-box trick as urge surfing: hold a constant height across both
+  // screens so the sun's slot below never shifts when the copy disappears for
+  // the listen screen.
+  min-height: 320px;
+  padding-bottom: 52px;
+
+  // While listening the sun rides the surf settle just above centre, so the
+  // (initially invisible) confirmation drops to the bottom of the box, below
+  // the disc and its halo — mirroring urge surfing's .is-surf layout.
+  &.is-listening {
+    justify-content: flex-end;
+    padding-bottom: 0;
+  }
+
+  .interaction-heading {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .bell-sub {
+    margin: 0 0 4px;
+    opacity: 0.76;
+    max-width: 42ch;
+  }
+
+  .bell-confirm {
+    // Reserve the button's line even while hidden so its fade-in doesn't shift
+    // the layout under the settling sun.
+    min-height: 48px;
+  }
+}
