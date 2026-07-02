@@ -5,7 +5,10 @@ import {
   ANDROID_EV_RESUME,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
-import { REFRESH_DASHBOARD_EV, RE_GREET_DASHBOARD_EV } from "@src/ev.const";
+import {
+  REFRESH_DASHBOARD_EV,
+  RE_GREET_DASHBOARD_HIDDEN_EV,
+} from "@src/ev.const";
 import {
   addWrapperClasses,
   companionWord,
@@ -28,11 +31,13 @@ import { fadeOutThen } from "@src/util/animation";
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
 const INVITE_FADE_MS = 300;
 
-// How long the app must have been backgrounded for a return to count as a fresh
-// visit (and re-greet with a new dashboard tile). Below this, a quick switch out
-// and back — glancing at a notification, copying a 2FA code — keeps the current
-// tile, so the greeting never feels restless. Tune here.
-const MIN_ABSENCE_FOR_REGREET_MS = 90_000;
+// How long the app must have been in the foreground before backgrounding it
+// re-greets the dashboard (staging a fresh tile for the next return). The swap
+// happens on *pause*, while the app is hidden — so the card is never changed in
+// front of the user; the fresh tile is simply already there when they come back.
+// Below this, a quick open-and-leave — glancing in, copying a 2FA code — keeps
+// the current tile, so the greeting never feels restless. Tune here.
+const MIN_FOREGROUND_FOR_REGREET_MS = 90_000;
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -125,32 +130,37 @@ const MainAndroid = () => {
     });
   };
 
-  // When the app last went to the background. Seeded with "now" so the first
-  // onResume after a cold launch (which has no preceding pause) reads as a tiny
-  // absence and doesn't re-greet the tile the dashboard just mounted with.
-  let backgroundedAtTs = Date.now();
+  // When the app last came to the foreground. Seeded with "now" for the cold
+  // launch (which has no preceding resume) so a quick open-and-leave right after
+  // launch keeps the tile the dashboard just mounted with.
+  let foregroundedAtTs = Date.now();
 
   onMount(() => {
     refresh();
 
     const pauseHandler = () => {
-      backgroundedAtTs = Date.now();
+      // Re-roll the greeting *now*, as the app goes to the background and the
+      // dashboard is hidden — so a fresh tile is already in place when the user
+      // returns and the card never changes in front of them (calm is the
+      // product; a card only ever changes offscreen). Only if the app was
+      // actually in use for a while: a quick open-and-leave keeps the current
+      // tile so the greeting never feels restless (see
+      // MIN_FOREGROUND_FOR_REGREET_MS). The WebView isn't reloaded on resume, so
+      // the dashboard never remounts to re-greet on its own.
+      if (Date.now() - foregroundedAtTs >= MIN_FOREGROUND_FOR_REGREET_MS) {
+        window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
+      }
     };
 
     const resumeHandler = () => {
+      foregroundedAtTs = Date.now();
       // A fresh return to the app re-offers the (dismissible) setup invitation;
       // the render still gates it on there being no blocked apps.
       setIsInviteDismissed(false);
       setIsInviteDismissing(false);
+      // Sync any data that changed while away, preserving the current
+      // arrangement — the greeting itself was already re-rolled on pause, hidden.
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
-      // Only treat this as a fresh visit — re-rolling the greeting so the tile
-      // feels new — if the app was actually away for a while. A quick switch out
-      // and back keeps the current tile (see MIN_ABSENCE_FOR_REGREET_MS). The
-      // WebView isn't reloaded on resume, so the dashboard never remounts to do
-      // this on its own.
-      if (Date.now() - backgroundedAtTs >= MIN_ABSENCE_FOR_REGREET_MS) {
-        window.dispatchEvent(new Event(RE_GREET_DASHBOARD_EV));
-      }
       refresh();
     };
     window.addEventListener(ANDROID_EV_PAUSE, pauseHandler);
