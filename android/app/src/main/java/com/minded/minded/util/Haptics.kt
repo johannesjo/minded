@@ -43,10 +43,13 @@ object Haptics {
 
     /** Fire a single haptic. Runs off the caller's thread so it never blocks. */
     fun trigger(context: Context, type: String) {
-        val vibrator = vibrator(context)
+        val appContext = context.applicationContext
         // Offload to a background thread so a gesture callback never blocks on it.
+        // Resolving the Vibrator lives inside the try so a service/cast failure is
+        // logged here rather than thrown at the gesture/JS caller.
         Thread {
             try {
+                val vibrator = vibrator(appContext)
                 if (!vibrator.hasVibrator()) {
                     return@Thread
                 }
