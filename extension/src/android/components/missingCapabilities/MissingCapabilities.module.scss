@@ -67,6 +67,17 @@
   // confirmation reads as the sun acknowledging, not a generic success tick.
   color: rgb(var(--little-sun-breath-rgb));
   border: 1px solid rgba(var(--little-sun-breath-rgb), 0.4);
+
+  // The check mark is the shared icon asset, but drawn via a currentColor
+  // mask instead of <Ico>'s <img>: an img can't take the sun tint above.
+  &::after {
+    content: "";
+    width: 0.9em;
+    height: 0.9em;
+    background: currentColor;
+    -webkit-mask: url("@src/assets/img/check.svg") no-repeat center / contain;
+    mask: url("@src/assets/img/check.svg") no-repeat center / contain;
+  }
 }
 
 .permissionText {
@@ -101,6 +112,10 @@
   letter-spacing: 0.05em;
   opacity: 0.7;
   margin-bottom: 8px;
+}
+
+.footerBtn {
+  margin-top: 32px;
 }
 
 .privacyNote {

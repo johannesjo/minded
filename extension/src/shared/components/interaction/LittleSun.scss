@@ -70,8 +70,12 @@ $shadow: var(--little-sun-shadow);
   position: relative;
   z-index: 3;
 
-  &:hover {
-    transform: scale(1.5);
+  // Hover-capable pointers only: on touch, :hover sticks after a tap and
+  // would leave the sun frozen at 1.5x.
+  @media (hover: hover) {
+    &:hover {
+      transform: scale(1.5);
+    }
   }
 }
 

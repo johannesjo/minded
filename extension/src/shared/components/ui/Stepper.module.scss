@@ -1,7 +1,8 @@
 .stepper {
   --spacing-medium: 16px;
   --step-size: 52px;
-  --color-inactive: var(--btn-bg-not-selected);
+  // Same base color as active/done; the inactive look comes from the
+  // step's reduced opacity, not a different fill.
   --color-inactive: var(--btn-bg-selected);
   --color-active: var(--btn-bg-selected);
   --transition-speed: 0.3s;

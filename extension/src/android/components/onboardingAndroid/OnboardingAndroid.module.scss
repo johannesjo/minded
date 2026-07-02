@@ -21,10 +21,25 @@
   align-items: center;
   overflow: auto;
 
-  > *{
+  > * {
     max-height: 100%;
     overflow: auto;
     margin: auto;
   }
 }
 
+.skipWrapper {
+  margin-top: 16px;
+}
+
+.finalCard {
+  margin: 32px;
+}
+
+.actions {
+  margin-top: 32px;
+}
+
+.laterBtn {
+  margin-left: 16px;
+}

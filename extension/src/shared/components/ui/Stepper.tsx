@@ -1,6 +1,7 @@
 import { createEffect, createSignal, For, JSX } from "solid-js";
 // @ts-ignore
 import styles from "./Stepper.module.scss";
+import { Ico } from "./Ico";
 
 export const Stepper = (props: {
   nrOfSteps: number;
@@ -43,11 +44,13 @@ export const Stepper = (props: {
             }}
             class={`${styles.step} ${step === getStep() ? styles.active : ""} ${step < getStep() ? styles.done : ""}`}
           >
-            {props.labelFn && props.labelFn(step) !== undefined
-              ? props.labelFn(step)
-              : step < getStep()
-                ? "✓"
-                : step + 1}
+            {props.labelFn && props.labelFn(step) !== undefined ? (
+              props.labelFn(step)
+            ) : step < getStep() ? (
+              <Ico name="check" size={20} alt={`step ${step + 1}, done`} />
+            ) : (
+              step + 1
+            )}
           </button>
         )}
       </For>

@@ -1,10 +1,14 @@
+.inset {
+  margin: 16px;
+}
+
+// The whole page scrolls; no inner scrollbox, so the full app list is
+// visible in one continuous surface.
 .appList {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin: 16px;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .appEntry {
@@ -26,4 +30,13 @@
 .appName {
   flex: 1;
   font-size: var(--fz-m);
+}
+
+// Display-only: the row handles the tap, so the checkbox must not swallow it.
+.checkboxDisplay {
+  pointer-events: none;
+}
+
+.backBtn {
+  margin-right: 16px;
 }

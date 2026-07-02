@@ -7,33 +7,36 @@ import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWind
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { navigateWithPageFadeOut } from "@src/util/animation";
+import styles from "./SettingsAndroidRoute.module.scss";
 
 export const SettingsAndroidRoute = () => {
   const navigate = useNavigate();
 
   return (
     <div class="pageTransitionIn">
-      <h2 class="h2">minded – Settings</h2>
+      <h2 class="h2 h2Mindful">
+        <em>minded</em> – Settings
+      </h2>
 
       <SettingsAndroid autoSave={true} />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr class={styles.divider} />
 
       <SoundSettings />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr class={styles.divider} />
 
       <SessionGraceSettings />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr class={styles.divider} />
 
       <FocusSchedule />
 
-      <hr style="opacity: 0.2; margin: 32px 16px;" />
+      <hr class={styles.divider} />
 
       <SleepWindDownSettings autoSave={true} />
 
-      <div style="text-align: center; margin: 32px 16px;">
+      <div class={styles.backWrapper}>
         <Btn onClick={() => navigateWithPageFadeOut(navigate, "/")}>
           <Ico name="arrowBack" /> Back
         </Btn>

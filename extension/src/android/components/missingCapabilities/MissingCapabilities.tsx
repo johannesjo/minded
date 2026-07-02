@@ -218,20 +218,10 @@ export const MissingCapabilityView = (props: {
           }
         >
           <div class={`${styles.confirmation} pageTransitionIn`}>
-            <span class={styles.confirmCheck} aria-hidden="true">
-              ✓
-            </span>
+            <span class={styles.confirmCheck} aria-hidden="true" />
             <span class="txtSlightlyBigger">Permissions granted.</span>
           </div>
         </Show>
-        {/*<div*/}
-        {/*  class="txtSlightlyBigger"*/}
-        {/*  style="margin-top: 16px; margin-bottom: 32px;"*/}
-        {/*>*/}
-        {/*  <strong>*/}
-        {/*    <em>minded</em> does not collect or send any kind of information!*/}
-        {/*  </strong>*/}
-        {/*</div>*/}
         <Show when={!props.optionalOnly}>
           <PermissionCard capability="Accessibility">
             <p class={styles.permissionText}>
@@ -239,13 +229,6 @@ export const MissingCapabilityView = (props: {
               app that is currently in the foreground, so <em>minded</em> can
               display its interaction overlay for the apps you configured.
             </p>
-            {/*<p class={styles.permissionText "}>*/}
-            {/*  <em>minded</em> does not collect any kind of information and does*/}
-            {/*  not send any kind of information.*/}
-
-            {/*Enabling the shortcut is{" "}*/}
-            {/*<strong>not</strong> required or recommended.*/}
-            {/*</p>*/}
             <Btn onClick={() => onMissingCapabilityClick("Accessibility")}>
               Enable Accessibility Service
             </Btn>
@@ -320,7 +303,7 @@ export const MissingCapabilityView = (props: {
         {(props.requiredOnly || props.optionalOnly) && getCanContinue() && (
           <Btn
             big
-            style={{ "margin-top": "32px" }}
+            class={styles.footerBtn}
             onClick={() => props.onAllConfigured?.()}
           >
             continue
@@ -332,7 +315,7 @@ export const MissingCapabilityView = (props: {
         {!props.optionalOnly && (
           <Btn
             outline
-            style={{ "margin-top": "32px" }}
+            class={styles.footerBtn}
             onClick={() => props.onPermissionDenied?.()}
           >
             maybe later

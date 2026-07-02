@@ -67,7 +67,7 @@ export const OnboardingAndroid = (props: {
                 </Btn>
               </ButtonWrapper>
 
-              <div style={{ "margin-top": "16px" }}>
+              <div class={styles.skipWrapper}>
                 <Btn outline onClick={handleSkipForNow}>
                   I'll set this up later
                 </Btn>
@@ -110,14 +110,14 @@ export const OnboardingAndroid = (props: {
           </Match>
           <Match when={getStep() >= 4}>
             {getPermissionNotGiven() ? (
-              <div class="card pageTransitionIn" style={{ margin: "32px" }}>
+              <div class={`card pageTransitionIn ${styles.finalCard}`}>
                 <div class="h2 h2Mindful">Almost there</div>
                 <p>
                   Some permissions are still missing, so the {companionWord()}{" "}
-                  can't meet you everywhere yet. You can finish anytime. It'll be
-                  here.
+                  can't meet you everywhere yet. You can finish anytime. It'll
+                  be here.
                 </p>
-                <div style={{ "margin-top": "32px" }}>
+                <div class={styles.actions}>
                   <Btn
                     onClick={() => {
                       setStep(2);
@@ -127,15 +127,15 @@ export const OnboardingAndroid = (props: {
                     finish setting up
                   </Btn>
                   <Btn
+                    class={styles.laterBtn}
                     onClick={() => props.onGoDashboard()}
-                    style={{ "margin-left": "16px" }}
                   >
                     later
                   </Btn>
                 </div>
               </div>
             ) : (
-              <div class="card pageTransitionIn" style={{ margin: "32px" }}>
+              <div class={`card pageTransitionIn ${styles.finalCard}`}>
                 <OnboardingSun />
                 <div class="h2 h2Mindful">The {companionWord()} is ready</div>
                 <p>
@@ -147,7 +147,7 @@ export const OnboardingAndroid = (props: {
                   You can always fling it away. It's an invitation, never a
                   wall.
                 </p>
-                <div style={{ "margin-top": "32px" }}>
+                <div class={styles.actions}>
                   <Btn big onClick={() => props.onGoDashboard()}>
                     continue
                   </Btn>

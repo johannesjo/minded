@@ -70,13 +70,13 @@ export const SettingsAndroid = (props: {
 
   return (
     <div class="pageTransitionIn">
-      <div class="txtBig" style="margin: 16px;">
+      <div class={`txtBig ${styles.inset}`}>
         {props.heading ||
           "Please select at least one app that you want to use less."}
       </div>
 
       {getAvailableApps().length === 0 ? (
-        <div style="margin: 16px;">Loading apps...</div>
+        <div class={styles.inset}>Loading apps...</div>
       ) : (
         <>
           <div class={styles.appList}>
@@ -86,7 +86,7 @@ export const SettingsAndroid = (props: {
                   class={styles.appEntry}
                   onClick={() => handleToggleApp(app.packageName)}
                 >
-                  <div style="pointer-events: none;">
+                  <div class={styles.checkboxDisplay}>
                     <Checkbox
                       checked={getSelectedApps().includes(app.packageName)}
                       onChange={() => {}}
@@ -101,7 +101,7 @@ export const SettingsAndroid = (props: {
           {!props.autoSave && (
             <div>
               {props.isRouting && (
-                <Btn style="margin-right: 16px;" onClick={() => navigate("/")}>
+                <Btn class={styles.backBtn} onClick={() => navigate("/")}>
                   <Ico name="arrowBack" /> Back
                 </Btn>
               )}

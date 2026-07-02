@@ -184,15 +184,6 @@ const MainWrapper = (props: RouteSectionProps) => {
         ).webkit?.messageHandlers?.mindedSunReady?.postMessage("ready");
       });
     }
-    // getSyncData().then((syncData: SyncData) => {
-    //   if (
-    //     !syncData || IS_ANDROID
-    //       ? !syncData.cfg.blockedApps.length
-    //       : !syncData.cfg.blockedHosts.length
-    //   ) {
-    //     navigate("/settings");
-    //   }
-    // });
   });
 
   return (
@@ -315,13 +306,6 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
   return (
     <div id="minded-6622-coloured-wrapper" class={styles.mainWrapper}>
       {props.children}
-      {/*<div*/}
-      {/*  class="missingCapabilitiesMsg"*/}
-      {/*  style="border: 2px solid red; min-height: 100px"*/}
-      {/*>*/}
-      {/*  <em>minded</em> is missing permissions to work properly. Click here to*/}
-      {/*  resolve!*/}
-      {/*</div>*/}
 
       <HashRouter root={MainWrapper}>
         <Route path="*" component={() => <Dashboard />} />

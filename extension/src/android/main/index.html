@@ -56,7 +56,11 @@
     </script>
 </head>
 
-<!-- for the most weird unknown reasons the black background color is required for colors not to mess up -->
+<!-- Load-bearing on API 29-32: MainActivity sets FORCE_DARK_ON there, and
+     WebView's algorithmic darkening inverts pages it classifies as light.
+     The dark body makes the heuristic treat the page as already dark and
+     leave our colors alone. Only removable together with the forceDark
+     setting, verified on an API <= 32 device. -->
 <body class="android" style="background: #000; color: #fff">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="minded-6622"></div>

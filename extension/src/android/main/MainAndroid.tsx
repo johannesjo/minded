@@ -226,8 +226,8 @@ const MainAndroid = () => {
             >
               {hasMissingRequired() ? (
                 <>
-                  <em>minded</em> is missing permissions to work properly. Click
-                  here to resolve!
+                  <em>minded</em> needs a few permissions before it can meet
+                  you. Tap to finish setting up.
                 </>
               ) : (
                 <>

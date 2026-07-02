@@ -1,8 +1,13 @@
 @import "@src/styles/sharedMain";
 
+// Shared by the permissions banner and the setup invitation: noticeable but
+// calm, never a saturated alarm color.
+$warm-invite-tint: rgba(255, 196, 84, 0.16);
+
+// Required permissions are missing: a soft warm card, not an alert.
 .missingCapabilitiesMsg {
-  background: #e338f1;
-  color: #fff;
+  background: $warm-invite-tint;
+  color: inherit;
   padding: 16px;
   border-radius: 8px;
   margin: 8px;
@@ -15,24 +20,22 @@
 }
 
 // When every required permission is granted and only the advisory extras
-// remain, minded already works — so the banner must invite, not alarm. Drop the
-// magenta fill for a quiet sun-tinted outline (echoing the confirmation tick)
-// and calmer copy (set in MainAndroid). Declared after `.missingCapabilitiesMsg`
-// so its overrides win at equal specificity.
+// remain, minded already works — so the banner steps back further: a quiet
+// sun-tinted outline (echoing the confirmation tick) instead of the warm fill,
+// with calmer copy (set in MainAndroid). Declared after
+// `.missingCapabilitiesMsg` so its overrides win at equal specificity.
 .missingCapabilitiesMsgSoft {
   background: transparent;
   color: inherit;
   border: 1px solid rgba(var(--little-sun-breath-rgb), 0.45);
 }
 
-// Deferred-setup invitation. Deliberately calmer than the magenta
-// `.missingCapabilitiesMsg` alert: this is an invitation, not an error, so it
-// uses a soft warm tint and fades in/out rather than snapping.
+// Deferred-setup invitation: fades in/out rather than snapping.
 .setupInvitationMsg {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: rgba(255, 196, 84, 0.16);
+  background: $warm-invite-tint;
   color: inherit;
   padding: 16px;
   border-radius: 8px;
