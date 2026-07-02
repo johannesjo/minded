@@ -22,13 +22,15 @@ import Sun, {
   SunSettle,
 } from "@src/shared/components/interaction/sun/Sun";
 import { setCompanionBottomYPx } from "@src/shared/components/interaction/sun/sunStore";
+import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
 import { getOnboardingSunSettle } from "./onboardingSunSettle";
 import {
   fadeOut,
+  fadeOutThen,
   PAGE_FADE_MS,
-  prefersReducedMotion,
   promiseTimeout,
 } from "@src/util/animation";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 // @ts-ignore
 import styles from "./OnboardingAndroid.module.scss";
 
@@ -92,10 +94,8 @@ export const OnboardingAndroid = (props: {
   const [getCompanionY, setCompanionY] = createSignal<number | null>(null);
 
   const measureAnchors = () => {
-    const companionBottom = parseFloat(
-      getComputedStyle(companionProbeEl).bottom,
-    );
-    if (Number.isFinite(companionBottom)) setCompanionY(companionBottom);
+    const companionBottom = readCompanionBottomPx(companionProbeEl);
+    if (companionBottom != null) setCompanionY(companionBottom);
     const skyTop = skyProbeEl.getBoundingClientRect().top;
     setSkyY(window.innerHeight - skyTop);
     if (spacerEl?.isConnected) {
@@ -176,12 +176,8 @@ export const OnboardingAndroid = (props: {
     if (next === getStep() || getIsLeaving()) return;
     setStep(next); // Stepper + sun move now; the content follows the fade
     if (isStepSwapInFlight) return; // the in-flight swap picks up the new step
-    if (prefersReducedMotion()) {
-      setShownStep(next);
-      return;
-    }
     isStepSwapInFlight = true;
-    fadeOut(contentEl, PAGE_FADE_MS).promise.then(() => {
+    fadeOutThen(contentEl, () => {
       isStepSwapInFlight = false;
       if (isDisposed) return;
       setShownStep(getStep());

@@ -46,7 +46,8 @@ import {
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
-import { PAGE_FADE_MS, prefersReducedMotion } from "@src/util/animation";
+import { PAGE_FADE_MS } from "@src/util/animation";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 // Matches the --dur-soft fade on the collapsed view so it finishes fading out
 // before the full set mounts (mirrors the daily-questions banner dismissal).

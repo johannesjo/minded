@@ -22,11 +22,7 @@ import {
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
-import {
-  fadeOut,
-  PAGE_FADE_MS,
-  prefersReducedMotion,
-} from "@src/util/animation";
+import { fadeOutThen } from "@src/util/animation";
 
 // Kept in sync with the `.setupInvitationMsg` opacity transition in
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
@@ -65,21 +61,17 @@ const MainAndroid = () => {
 
   // Fade the current top-level surface fully out, then run the state change that
   // swaps it — so the leaving surface eases out before the next eases in via its
-  // own pageTransitionIn (a clean sequential fade, never a hard cut). All three
+  // own pageTransitionIn (a clean sequential fade, never a hard cut). The
   // top-level surfaces (missing-capabilities, onboarding/setup, dashboard) share
   // the id below and unmount the instant the signal flips, so the faded node is
-  // simply discarded — nothing to reset (mirrors navigateWithPageFadeOut). The
-  // guard stops a second tap stacking a fade mid-flight.
+  // simply discarded — nothing to reset. The guard stops a second tap stacking a
+  // fade mid-flight. (The onboarding→dashboard exit deliberately bypasses this —
+  // see onGoDashboard.)
   let isTopLevelLeaving = false;
   const fadeTopLevelThen = (mutate: () => void) => {
-    const el = document.getElementById("minded-6622-coloured-wrapper");
-    if (!el || prefersReducedMotion()) {
-      mutate();
-      return;
-    }
     if (isTopLevelLeaving) return;
     isTopLevelLeaving = true;
-    fadeOut(el, PAGE_FADE_MS).promise.then(() => {
+    fadeOutThen(document.getElementById("minded-6622-coloured-wrapper"), () => {
       isTopLevelLeaving = false;
       mutate();
     });
@@ -193,17 +185,21 @@ const MainAndroid = () => {
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
           <OnboardingAndroid
             initialStep={getIsShowSetup() ? 1 : 0}
-            onGoDashboard={() =>
+            onGoDashboard={() => {
               // Sole exit from the flow: refresh() never lowers this flag (see
               // above), so the onboarding/setup screens stay up until the user
-              // actually finishes here. Fade the flow out before the dashboard
-              // eases in, rather than hard-cutting.
-              fadeTopLevelThen(() => {
-                setIsShowOnboarding(false);
-                setIsShowSetup(false);
-                refresh();
-              })
-            }
+              // actually finishes here. Deliberately NOT fadeTopLevelThen: the
+              // flow has already faded its own chrome and glided the ONE disc
+              // onto the companion anchor (leaveToDashboard), so fading the
+              // wrapper here would take that landed sun down with it and dip
+              // the screen to black before the dashboard pops in. The bare swap
+              // is seamless instead — both wrappers share the id that paints
+              // the sky, the shell sun takes over the disc in place, and the
+              // dashboard content eases in via its own pageTransitionIn.
+              setIsShowOnboarding(false);
+              setIsShowSetup(false);
+              refresh();
+            }}
           />
         </div>
       ) : (

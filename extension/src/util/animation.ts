@@ -1,3 +1,5 @@
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+
 export function promiseTimeout(duration: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, duration);
@@ -31,9 +33,19 @@ export function fadeOut(
 // hard cut (see the "transitions — always soft" styling rule).
 export const PAGE_FADE_MS = 480;
 
-export const prefersReducedMotion = (): boolean =>
-  typeof window.matchMedia === "function" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Fade `el` fully out over the page-fade beat, then run `done` — the shared
+// core of every "leaving surface eases out before the next eases in" swap
+// (Android top-level surface swaps, onboarding step changes). Under reduced
+// motion, or with nothing to fade, it skips straight to `done` synchronously.
+// Re-entrancy (a second tap mid-fade) is call-site policy, so guards stay with
+// the callers.
+export function fadeOutThen(el: HTMLElement | null, done: () => void): void {
+  if (!el || prefersReducedMotion()) {
+    done();
+    return;
+  }
+  fadeOut(el, PAGE_FADE_MS).promise.then(done);
+}
 
 // Fade the current page's own root node (`<main>`'s first child) fully out and
 // resolve once it's gone — so the leaving surface is gone before the destination
