@@ -4,6 +4,7 @@ import styles from "./DashboardAnswerList.module.scss";
 import { DashboardGroupTxtQuestion } from "@src/shared/components/dashboard/dashboard.model";
 import { truncate } from "@src/util/truncate";
 import { QUESTIONS } from "@src/shared/data/questions";
+import { formatQuestionText } from "@src/util/formatQuestionText";
 
 const MAX_ANSWER_LENGTH = 200;
 
@@ -25,7 +26,9 @@ export const DashboardAnswerList: (props: {
         {(answer) => {
           const question = QUESTIONS.find((q) => q.id === answer.qid);
           const questionTxt =
-            answer.qid && question ? `Question: ${question.t}?` : "";
+            answer.qid && question
+              ? `Question: ${formatQuestionText(question.t)}`
+              : "";
           const titleTxt =
             answer.val.toString().length > MAX_ANSWER_LENGTH
               ? answer.qid

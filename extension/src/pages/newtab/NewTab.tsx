@@ -47,16 +47,16 @@ const NewTab = () => {
               will appear.
             </p>
             <p>
-              This will help you break your automatic patterns to visit those
-              websites more often than you like.
+              This can help you notice the automatic habit of opening these
+              sites more often than you'd like.
             </p>
             {getTestWebsite() ? (
               <p>
                 Try it now by visiting{" "}
-                <a href={"https://" + getTestWebsite()}>{getTestWebsite()}</a>!
+                <a href={"https://" + getTestWebsite()}>{getTestWebsite()}</a>.
               </p>
             ) : (
-              <p>Come back here, once you answered a couple of those.</p>
+              <p>Come back here once you've answered a couple of those.</p>
             )}
           </div>
         </div>

@@ -6,7 +6,7 @@ export const ACTION_ADVICES: {
 }[] = [
   { ico: "✿", txt: "How about looking out the window for a minute?" },
   { ico: "☕", txt: "How about a short break?" },
-  { ico: "🏅", txt: "How about a little stretch?" },
+  { ico: "🙆", txt: "How about a little stretch?" },
   { ico: "🌞", txt: "How about some fresh air?" },
   { ico: "࿋", txt: "How about a deep breath?" },
   { ico: "🌊", txt: "How about some water?" },

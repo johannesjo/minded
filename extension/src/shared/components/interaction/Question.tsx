@@ -11,6 +11,7 @@ import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { withTargetName } from "@src/util/displayTargetName";
+import { formatQuestionText } from "@src/util/formatQuestionText";
 
 // Chip fade-out before the text input takes over; keep in sync with the
 // `.question-chips.is-exiting` opacity transition in Question.scss.
@@ -43,17 +44,6 @@ export const Question: (props: {
     : (props.initialValue ?? "");
   const [getInpEl, setInpEl] = createSignal<HTMLTextAreaElement | null>(null);
   const [getShowInput, setShowInput] = createSignal(false);
-
-  const formatQuestionText = (txt: string): string => {
-    const trimmed = (txt || "").trim();
-    if (!trimmed) return "";
-    if (trimmed.includes("?")) return trimmed;
-    const lastChar = trimmed[trimmed.length - 1];
-    if (lastChar === "." || lastChar === "!" || lastChar === "…") {
-      return trimmed;
-    }
-    return trimmed + "?";
-  };
 
   const normalizeAnswerText = (txt: string): string =>
     (txt || "").replace(/\s+/g, " ").trim();

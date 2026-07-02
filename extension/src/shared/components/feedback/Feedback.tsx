@@ -10,12 +10,12 @@ const Feedback = () => {
 
   onMount(() => {
     const encodedSubject = encodeURIComponent(
-      `Feedback for minded ${IS_ANDROID ? "on Android" : IS_IOS ? "on IOS" : "WebExtension"}`,
+      `Feedback for minded ${IS_ANDROID ? "on Android" : IS_IOS ? "on iOS" : "on the browser extension"}`,
     );
-    const encodedBody = encodeURIComponent(`Things, I like:
+    const encodedBody = encodeURIComponent(`Things I like:
 
 
-Things, I don't like:
+Things I don't like:
 
 
 Ideas for improvement:

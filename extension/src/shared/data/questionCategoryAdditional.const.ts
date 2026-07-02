@@ -4,39 +4,39 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [key in QuestionCategoryId]: string;
 } = {
   [QuestionCategoryId.HealthierBrowsingHabits]:
-    "Improving your browsing habits can help you stay focused and reduce distractions. Being more intentional with your time online can support your productivity and well-being.",
+    "Noticing how you browse, gently and without judgment, can help your time online feel a little more your own.",
   [QuestionCategoryId.HealthierAppUsage]:
-    "Improving your app-usage habits can help you stay focused and reduce distractions. Being more intentional with your phone time can support your productivity and well-being.",
+    "Noticing how you use your phone, gently and without judgment, can help your time on it feel a little more your own.",
   [QuestionCategoryId.WhyReduceBrowsing]:
-    "Remembering why you want to change is powerful. When temptation strikes, recalling your personal reasons can strengthen your resolve and keep you aligned with your values.",
+    "Remembering why you want to change can be a quiet anchor. When the pull is strong, your own reasons are there to return to.",
   [QuestionCategoryId.WhyReduceAppUsage]:
-    "Remembering why you want to change is powerful. When temptation strikes, recalling your personal reasons can strengthen your resolve and keep you aligned with your values.",
+    "Remembering why you want to change can be a quiet anchor. When the pull is strong, your own reasons are there to return to.",
   [QuestionCategoryId.PersonalResources]:
-    "Recognizing your skills and strengths can support confidence and help you draw on them when facing challenges or working toward goals.",
+    "Noticing your own strengths can be a quiet source of confidence to draw on when things feel hard.",
   [QuestionCategoryId.TodayILearned]:
-    "Reflecting on what you learned each day supports continuous growth and helps reinforce new insights and skills.",
+    "Pausing on what you noticed today lets the day's small discoveries settle — nothing to prove, just worth keeping.",
   [QuestionCategoryId.RefocusHelperToday]:
-    "Choosing a clear focus for the day can help you prioritize, manage your time, and feel more accomplished.",
+    "Naming one thing that matters today can bring a little clarity, and a gentler sense of where to begin.",
   [QuestionCategoryId.Motivation]:
-    "Understanding what motivates you can help you start and keep going when things get hard, which supports progress toward your goals.",
+    "Noticing what quietly moves you can help you begin again when things feel heavy — no pressure, just a reminder of what's yours.",
   [QuestionCategoryId.Gratitude]:
-    "Practicing gratitude can support well-being by helping you notice positives, which may boost mood and reduce stress.",
+    "Noticing what you're grateful for, even something small, can gently soften a heavy moment.",
   [QuestionCategoryId.HelpfulTools]:
-    "Identifying tools that can help you work more efficiently can save you time and reduce stress. It can also enhance your skills and productivity.",
+    "Noticing what helps you settle can make it a little easier to come back to yourself when your attention scatters.",
   [QuestionCategoryId.CalmingThoughts]:
-    "Cultivating calming thoughts can help you manage stress and anxiety and support relaxation.",
+    "Letting your mind rest on something calming can ease tension and make a little more room to breathe.",
   [QuestionCategoryId.PositiveThoughts]:
-    "Fostering helpful, realistic thoughts can support your mood and resilience and make stress feel more manageable.",
+    "Making room for kinder, truer thoughts can gently steady you when things feel heavy.",
   [QuestionCategoryId.GoodToday]:
-    "Reflecting on the good aspects of your day can lift your mood and support well-being. It helps you appreciate positive moments, no matter how small they may be.",
+    "Noticing the good in your day, however small, can quietly lift the moment — nothing needs to be earned.",
   [QuestionCategoryId.GoodPlans]:
-    "Making good plans can provide a sense of direction and reduce anxiety about the future. It can also increase your motivation to take action towards your goals.",
+    "Holding a gentle plan can ease worry about what's ahead and remind you there's no rush.",
   [QuestionCategoryId.GoodPlansToday]:
-    "Planning your day can help you manage your time effectively and reduce stress. It also ensures that you focus on your most important tasks.",
+    "A soft sense of the day ahead can settle the mind — not a checklist, just a direction to lean toward.",
   [QuestionCategoryId.GoalForTheWeek]:
-    "Setting weekly goals can provide a sense of direction and purpose. It can also enhance your motivation and productivity throughout the week.",
+    "Noticing what matters to you this week can bring a quiet sense of direction, held lightly.",
   [QuestionCategoryId.UnderstandingProcrastination]:
-    "Understanding why you procrastinate can help you develop strategies to manage it. This can improve your productivity and reduce feelings of guilt and stress associated with procrastination.",
+    "Meeting your own patterns with curiosity, rather than blame, can gently loosen their hold.",
   [QuestionCategoryId.SelfDiscovery]:
     "Self-discovery helps you understand your needs, desires, and motivations. It can support better decision-making and overall well-being.",
   [QuestionCategoryId.Insomnia]:

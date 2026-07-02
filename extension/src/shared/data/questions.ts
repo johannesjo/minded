@@ -299,7 +299,7 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.TodayILearned]: {
     isTodayOnlyCategory: true,
     isEveningCategory: true,
-    dashboardTxt: "Today I learned",
+    dashboardTxt: "Today I Learned",
     frequencyModifier: -1,
     questions: [
       { id: QID.TIL1, t: "Today I learned...", prompt: "I learned" },
@@ -735,14 +735,14 @@ export const QUESTION_CATEGORIES: {
       },
       { id: QID.SD7, t: "Is where you are today making you happy" },
       { id: QID.SD8, t: "Your favorite way to spend the day is..." },
-      { id: QID.SD9, t: "The words you’d like to live by are..." },
+      { id: QID.SD9, t: "The words you'd like to live by are..." },
       { id: QID.SD10, t: "If your body could talk, it would say..." },
       {
         id: QID.SD11,
         t: "What actions would make you proud of yourself",
         prompt: "I would be proud if",
       },
-      { id: QID.SD12, t: "What is the biggest “What if” in your mind" },
+      { id: QID.SD12, t: 'What is the biggest "What if" in your mind' },
       {
         id: QID.SD13,
         t: "If you could talk to your teenage self, the one thing you would say is...",
@@ -996,7 +996,7 @@ export const QUESTION_CATEGORIES: {
     isThisWeekOnlyCategory: true,
   },
   [QuestionCategoryId.XAppUsageHappiness]: {
-    dashboardTxt: "Usage of configured Apps",
+    dashboardTxt: "Usage of Configured Apps",
     isThisWeekOnlyCategory: true,
   },
   [QuestionCategoryId.XEmotionLabeling]: {

@@ -81,7 +81,7 @@ export const SleepWindDownSettings = (props: {
         <Toggle
           checked={cfg().enabled}
           onChange={toggleEnabled}
-          label={cfg().enabled ? "Enabled" : "Disabled"}
+          label={cfg().enabled ? "On" : "Off"}
         />
       </div>
       <p class={styles.description}>

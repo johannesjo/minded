@@ -236,7 +236,7 @@ export const MissingCapabilityView = (props: {
             {getIsShowManualInstructions() && (
               <>
                 <p class={styles.smallText}>
-                  If the buttons above does not work, you can enable the
+                  If the button above doesn't work, you can enable the
                   accessibility service and the permission manually in your
                   device settings.
                 </p>
