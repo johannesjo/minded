@@ -1,5 +1,4 @@
 import {
-  COMPANION_REST_GLOW_RGB,
   DEPART_GLOW_INTENSITY,
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
@@ -54,15 +53,6 @@ describe("getSunSettleForPhase", () => {
     // It sits beneath the choices but must not clip the bottom / cancel link.
     expect(SUN_REST_SETTLE.anchorYRatio!).toBeGreaterThanOrEqual(0.6);
     expect(SUN_REST_SETTLE.anchorYRatio!).toBeLessThanOrEqual(0.85);
-  });
-
-  it("companion rest wears a slightly warm halo — a hint of amber, never the full amber", () => {
-    // The white disc and the amber corner Little Sun are the same object; a
-    // whisper of warmth at the anchor smooths that identity seam (issue #124)
-    // without out-glowing the Little Sun itself.
-    const settle = getSunSettleForPhase("companion", 44)!;
-    expect(settle.glowColor).toBe(COMPANION_REST_GLOW_RGB);
-    expect(settle.glowColor).not.toBe(LITTLE_SUN_GLOW_RGB);
   });
 
   it("departs to the web Little Sun corner + disc size by default, with an amber halo", () => {

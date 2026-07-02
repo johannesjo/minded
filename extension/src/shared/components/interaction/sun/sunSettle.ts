@@ -168,15 +168,6 @@ export const LITTLE_SUN_DISC_PX_ANDROID = 30;
 export const LITTLE_SUN_GLOW_RGB = "233, 140, 58";
 
 /**
- * The resting companion's halo colour: white nudged ~20% toward
- * LITTLE_SUN_GLOW_RGB. The disc is white on the bottom bar but unmistakably
- * amber as the corner Little Sun, so the anchor glow carries a hint of that
- * amber to smooth the identity seam — a whisper, never the full amber, which
- * would out-glow the Little Sun itself (see issue #124).
- */
-export const COMPANION_REST_GLOW_RGB = "251, 232, 216";
-
-/**
  * Departing halo intensity, dialled down from the bold companion rest glow
  * (Sun.tsx COMPANION_REST_GLOW ≈ 1.8). The Little Sun's amber halo is a snug ring
  * roughly the disc's own width, not the broad bloom the resting companion wears,
@@ -277,7 +268,6 @@ export const sunCompanionSettle = (
   // on the bottom-bar band while still sitting comfortably below the 0.66 that
   // would nearly fill the band and crowd the icons either side.
   scale: 0.52,
-  glowColor: COMPANION_REST_GLOW_RGB,
   breathe: false,
 });
 
