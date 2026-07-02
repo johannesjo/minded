@@ -1,14 +1,11 @@
 import {
   FocusSchedule,
-  SelfAssessmentEntry,
   SleepWindDownCfg,
   StaticCfg,
   SyncData,
 } from "./syncData";
 // @ts-ignore - path alias resolved at build time based on platform
 import { IS_ANDROID } from "@dataInterface/system";
-
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 export const DEFAULT_TS_VAL = 99;
 
@@ -90,13 +87,9 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   attempts: {},
   sunTaps: {},
   sunTapTimestamps: [],
-  selfAssessment: Object.values(SelfAssessmentId).reduce(
-    (acc, curr) => {
-      acc[curr] = { ts: DEFAULT_TS_VAL, val: -1 };
-      return acc;
-    },
-    {} as Record<SelfAssessmentId, SelfAssessmentEntry>,
-  ),
+  // Dormant since the self-assessment removal; kept only for the sync JSON
+  // contract / back-compat (see syncData.d.ts). No writer or reader.
+  selfAssessment: {},
   alternativeApps: [],
   alternativeWebsites: [],
   patternInsightState: {

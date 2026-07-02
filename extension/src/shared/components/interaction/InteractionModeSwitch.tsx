@@ -8,7 +8,6 @@ import {
   QuestionCategoryId,
   QuestionForPrompt,
 } from "@src/shared/data/questions";
-import SelfAssessmentInteraction from "@src/shared/components/interaction/selfAssessmentInteraction/SelfAssessmentInteraction";
 import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
 import { EmotionLabeling } from "@src/shared/components/interaction/emotionLabeling/EmotionLabeling";
@@ -54,16 +53,6 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
 ) => {
   return (
     <Switch>
-      <Match when={props.mode === "SELF_ASSESSMENT"}>
-        {props.syncData && (
-          <SelfAssessmentInteraction
-            syncData={props.syncData}
-            onCancelCountdown={props.onCancelCountdown}
-            onSuccess={props.onSuccess}
-            onSkip={props.onSkip}
-          />
-        )}
-      </Match>
       <Match when={props.mode === "EMOTION_LABELING"}>
         <EmotionLabeling
           onCancelCountdown={props.onCancelCountdown}

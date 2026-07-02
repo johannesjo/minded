@@ -1,5 +1,4 @@
 import { SyncData, UserCfg } from "@src/dataInterface/syncData";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 
 /**
  * Mock the global Date constructor and Date.now() with a fixed date.
@@ -105,13 +104,6 @@ export const createMockSyncData = (
   overrides: Partial<Omit<SyncData, "cfg">> & { cfg?: Partial<UserCfg> } = {},
 ): SyncData => {
   const { cfg: cfgOverride, ...rest } = overrides;
-  const defaultSelfAssessment = Object.values(SelfAssessmentId).reduce(
-    (acc, curr) => {
-      acc[curr] = { ts: DEFAULT_TS_VAL, val: -1 };
-      return acc;
-    },
-    {} as Record<SelfAssessmentId, { ts: number; val: number }>,
-  );
 
   const defaultData: SyncData = {
     cfg: DEFAULT_CFG,
@@ -133,7 +125,7 @@ export const createMockSyncData = (
     attempts: {},
     sunTaps: {},
     sunTapTimestamps: [],
-    selfAssessment: defaultSelfAssessment,
+    selfAssessment: {},
     alternativeApps: [],
     alternativeWebsites: [],
     patternInsightState: {

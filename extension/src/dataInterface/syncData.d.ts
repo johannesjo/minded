@@ -1,7 +1,6 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { QID } from "@src/shared/data/questionId";
 import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { UsageStatsByDate } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
 /** Time range for a single day (24h format, e.g., "09:00" to "17:00") */
@@ -60,8 +59,16 @@ export interface Answer {
   ts: number;
 }
 
+/**
+ * Dormant: the "Recently…" self-assessment was removed (it asked you to score
+ * yourself on virtues/achievements on a never→always ladder, which is judgment,
+ * not the awareness the app is after). No writer or reader remains; the field is
+ * kept so the Android <-> extension sync JSON contract stays stable and
+ * already-synced installs round-trip losslessly. Keyed loosely (was the removed
+ * SelfAssessmentId enum) since nothing reads it anymore.
+ */
 export type SelfAssessmentData = {
-  [key in SelfAssessmentId]: SelfAssessmentEntry;
+  [key: string]: SelfAssessmentEntry;
 };
 
 export interface SelfAssessmentEntry {
@@ -167,6 +174,7 @@ export interface SyncData {
    * present-moment usage observation. Never charted over time.
    */
   usageStats: UsageStatsByDate;
+  /** Dormant since the self-assessment removal — see SelfAssessmentData note. */
   selfAssessment: SelfAssessmentData;
   alternativeApps: string[];
   alternativeWebsites: string[];
