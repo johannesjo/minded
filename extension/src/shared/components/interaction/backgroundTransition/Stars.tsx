@@ -31,7 +31,7 @@ const Stars: Component<StarsProps> = (props) => {
   let containerEl: HTMLDivElement;
 
   const generateStars = () => {
-    const starCount = 190; // Number of stars
+    const starCount = 230; // Number of stars
     const newStars: Star[] = [];
 
     for (let i = 0; i < starCount; i++) {
