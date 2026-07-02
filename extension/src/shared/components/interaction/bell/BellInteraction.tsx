@@ -18,10 +18,6 @@ type BellPhase = "invite" | "listen";
 interface BellProps {
   onSuccess: () => void;
   onCancelCountdown: () => void;
-  /** Swell the real sun while the strike rings (the surf settle carries it). */
-  onSunWaveStart: (seconds: number) => void;
-  /** Settle the real sun back once the sound has died away. */
-  onSunWaveEnd: () => void;
 }
 
 /**
@@ -32,10 +28,13 @@ interface BellProps {
  * the listening chosen rather than imposed and guarantees the browser lets the
  * audio play.
  *
- * The sun swells with the strike and settles as the sound dies (via the same
- * one-real-sun wave urge surfing rides), so on a muted edge case the moment
- * still reads as watching the glow settle — the "It's gone" confirmation is
- * true for the eye as well as the ear.
+ * While the bell rings the screen is deliberately empty and the one sun simply
+ * keeps its quiet presence in its slot — no swell: a repeating pulse here would
+ * be exactly the unguided ambient breath the fundamentals reserve for guided
+ * breath pauses, and a resting sun also stays fully interactive as the
+ * universal way out for the whole ring. The "It's gone" confirmation is timed
+ * to the strike's real length, so even a muted edge case resolves into the
+ * confirmation rather than a stuck screen.
  *
  * No skip button, mirroring urge surfing: triple-tapping (or flinging) the
  * persistent sun is the universal way out of any interaction.
@@ -46,6 +45,7 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
 
   const screenFade = createScreenFade(BELL_SCREEN_FADE_MS);
 
+  let isDisposed = false;
   let keepAliveInterval: ReturnType<typeof setInterval> | undefined;
   let confirmTimeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -60,36 +60,34 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
     // Capture outside the async chain/interval so the reactive `props` access
     // does not trip the solid/reactivity lint rule (as UrgeSurfing does).
     const onCancelCountdown = props.onCancelCountdown;
-    const onSunWaveEnd = props.onSunWaveEnd;
 
     props.onCancelCountdown();
     screenFade.toScreen(() => setPhase("listen"));
-    // The swell begins as the strike lands. The bell is preloaded with the
-    // other intervention sounds, so playback starts (and reports its true
-    // ring length) essentially immediately.
-    props.onSunWaveStart(SINGLE_BELL_FALLBACK_DURATION_MS / 1000);
 
-    // Sitting still is the whole point, so no pointer input will reset the
-    // parent's auto-dismiss — keep it at bay until the confirmation is up.
+    // Sitting still is the whole point, so no pointer input will keep the
+    // parent's auto-dismiss fade from firing mid-listen — tick it away until
+    // the confirmation is up.
     keepAliveInterval = setInterval(
       () => onCancelCountdown(),
       BELL_KEEP_ALIVE_TICK_MS,
     );
 
     void playSingleBell().then((ringMs) => {
+      // The user may have left (sun-tap/fling teardown) while playback was
+      // still starting up — never arm the timer into a disposed tree.
+      if (isDisposed) return;
       const durationMs = ringMs ?? SINGLE_BELL_FALLBACK_DURATION_MS;
       confirmTimeout = setTimeout(() => {
         confirmTimeout = undefined;
         stopKeepAlive();
-        // Sound gone → the sun settles → the confirmation eases in out of the
-        // silence, in that order.
-        onSunWaveEnd();
+        // Sound gone → the confirmation eases in out of the silence.
         setIsConfirmShown(true);
       }, durationMs + BELL_SILENCE_BEFORE_CONFIRM_MS);
     });
   };
 
   onCleanup(() => {
+    isDisposed = true;
     stopKeepAlive();
     if (confirmTimeout !== undefined) {
       clearTimeout(confirmTimeout);
@@ -100,7 +98,6 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
   return (
     <div
       class="bell-interaction"
-      classList={{ "is-listening": getPhase() === "listen" }}
       style={{ opacity: screenFade.opacity() }}
       onMouseMove={() => props.onCancelCountdown()}
     >
@@ -112,9 +109,10 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
         </Match>
 
         <Match when={getPhase() === "listen"}>
-          {/* Deliberately empty while the bell rings: the ear (and the swelling
-              sun) carry the moment. The confirmation only eases in once the
-              sound has died and a beat of silence has passed. */}
+          {/* Deliberately empty while the bell rings: the ear carries the
+              moment, the sun rests quietly in its slot. The confirmation only
+              eases in once the sound has died and a beat of silence has
+              passed. */}
           <div
             class="bell-confirm"
             style={{

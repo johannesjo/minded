@@ -19,17 +19,9 @@
 
   // Same fixed-box trick as urge surfing: hold a constant height across both
   // screens so the sun's slot below never shifts when the copy disappears for
-  // the listen screen.
+  // the listen screen (the sun rests in that slot for the whole ring).
   min-height: 320px;
   padding-bottom: 52px;
-
-  // While listening the sun rides the surf settle just above centre, so the
-  // (initially invisible) confirmation drops to the bottom of the box, below
-  // the disc and its halo — mirroring urge surfing's .is-surf layout.
-  &.is-listening {
-    justify-content: flex-end;
-    padding-bottom: 0;
-  }
 
   .interaction-heading {
     padding-top: 8px;

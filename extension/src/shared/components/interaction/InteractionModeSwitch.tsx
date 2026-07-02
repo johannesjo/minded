@@ -106,8 +106,6 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
         <BellInteraction
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={() => props.onSuccess()}
-          onSunWaveStart={props.onSunWaveStart}
-          onSunWaveEnd={props.onSunWaveEnd}
         />
       </Match>
       <Match when={props.mode === "FINGER_REST"}>
