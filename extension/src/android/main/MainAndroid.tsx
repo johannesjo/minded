@@ -22,6 +22,11 @@ import {
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
+import {
+  fadeOut,
+  PAGE_FADE_MS,
+  prefersReducedMotion,
+} from "@src/util/animation";
 
 // Kept in sync with the `.setupInvitationMsg` opacity transition in
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
@@ -57,6 +62,28 @@ const MainAndroid = () => {
     dismissT = setTimeout(() => setIsInviteDismissed(true), INVITE_FADE_MS);
   };
   onCleanup(() => clearTimeout(dismissT));
+
+  // Fade the current top-level surface fully out, then run the state change that
+  // swaps it — so the leaving surface eases out before the next eases in via its
+  // own pageTransitionIn (a clean sequential fade, never a hard cut). All three
+  // top-level surfaces (missing-capabilities, onboarding/setup, dashboard) share
+  // the id below and unmount the instant the signal flips, so the faded node is
+  // simply discarded — nothing to reset (mirrors navigateWithPageFadeOut). The
+  // guard stops a second tap stacking a fade mid-flight.
+  let isTopLevelLeaving = false;
+  const fadeTopLevelThen = (mutate: () => void) => {
+    const el = document.getElementById("minded-6622-coloured-wrapper");
+    if (!el || prefersReducedMotion()) {
+      mutate();
+      return;
+    }
+    if (isTopLevelLeaving) return;
+    isTopLevelLeaving = true;
+    fadeOut(el, PAGE_FADE_MS).promise.then(() => {
+      isTopLevelLeaving = false;
+      mutate();
+    });
+  };
 
   onMount(() => {
     addWrapperClasses();
@@ -154,22 +181,29 @@ const MainAndroid = () => {
       {getIsShowMissingCapabilities() ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
           <MissingCapabilityView
-            onAllConfigured={() => setIsShowMissingCapabilities(false)}
-            onPermissionDenied={() => setIsShowMissingCapabilities(false)}
+            onAllConfigured={() =>
+              fadeTopLevelThen(() => setIsShowMissingCapabilities(false))
+            }
+            onPermissionDenied={() =>
+              fadeTopLevelThen(() => setIsShowMissingCapabilities(false))
+            }
           />
         </div>
       ) : getIsShowOnboarding() || getIsShowSetup() ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
           <OnboardingAndroid
             initialStep={getIsShowSetup() ? 1 : 0}
-            onGoDashboard={() => {
+            onGoDashboard={() =>
               // Sole exit from the flow: refresh() never lowers this flag (see
               // above), so the onboarding/setup screens stay up until the user
-              // actually finishes here.
-              setIsShowOnboarding(false);
-              setIsShowSetup(false);
-              refresh();
-            }}
+              // actually finishes here. Fade the flow out before the dashboard
+              // eases in, rather than hard-cutting.
+              fadeTopLevelThen(() => {
+                setIsShowOnboarding(false);
+                setIsShowSetup(false);
+                refresh();
+              })
+            }
           />
         </div>
       ) : (
@@ -186,11 +220,11 @@ const MainAndroid = () => {
                   class="setupInvitationMsgText"
                   role="button"
                   tabindex="0"
-                  onClick={() => setIsShowSetup(true)}
+                  onClick={() => fadeTopLevelThen(() => setIsShowSetup(true))}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      setIsShowSetup(true);
+                      fadeTopLevelThen(() => setIsShowSetup(true));
                     }
                   }}
                 >
@@ -215,7 +249,9 @@ const MainAndroid = () => {
                 is the single, calm entry point into setup. */
           getMissingCapabilities().length > 0 ? (
             <div
-              onClick={() => setIsShowMissingCapabilities(true)}
+              onClick={() =>
+                fadeTopLevelThen(() => setIsShowMissingCapabilities(true))
+              }
               classList={{
                 missingCapabilitiesMsg: true,
                 // Only the advisory extras are missing → quiet outline, not an

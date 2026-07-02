@@ -17,6 +17,11 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
   // where the banner is not shown).
   margin-top: calc(var(--safe-area-inset-top) + 8px);
   margin-bottom: 0;
+  // Fades in on appearance rather than snapping: it's mounted a frame after
+  // render, once the native capability read resolves (setTimeout in
+  // MainAndroid.refresh), so without this it would pop in. Shares the sibling
+  // invitation's fade-in keyframe below.
+  animation: setupInvitationFadeIn 0.3s ease;
 }
 
 // When every required permission is granted and only the advisory extras
