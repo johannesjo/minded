@@ -69,6 +69,29 @@ open class MainActivityJavaScriptInterface(
     fun getSafeAreaInsets(): String = safeAreaInsets.toJsonString()
 
     /**
+     * Current media-stream volume as a percentage (0–100), or -1 when it can't
+     * be read. The web layer uses this to keep sound-dependent interventions
+     * (the bell) from being offered when they'd ring silently: the WebView
+     * plays on STREAM_MUSIC, which the silent/vibrate ringer switch does NOT
+     * mute — media volume turned all the way down is the case that matters.
+     * -1 (unknown) is treated as audible on the web side, so failure here
+     * degrades softly instead of removing the mode.
+     */
+    @JavascriptInterface
+    fun getMediaVolume(): Int {
+        return try {
+            val audioManager =
+                context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            val max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+            val current = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+            if (max <= 0) -1 else (current * 100) / max
+        } catch (e: Exception) {
+            Log.e(logTag, "getMediaVolume failed", e)
+            -1
+        }
+    }
+
+    /**
      * Real per-app foreground usage for the present-moment usage observation
      * (replaces the old self-rating). Returns UsageObservation JSON, or "" when
      * unavailable (usage access not granted, no configured apps, no usage).

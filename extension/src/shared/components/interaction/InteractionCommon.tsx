@@ -1188,7 +1188,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           if (isDisposed) return;
 
           setIsContentReady(true);
-          playInterventionSound();
+          // The BELL mode's whole practice is a single strike listened down
+          // into silence — the usual opening chime (the very same bell) would
+          // step on it, so that mode opens quiet and rings on the user's tap.
+          if (getMode() !== "BELL") {
+            playInterventionSound();
+          }
         }, ANIMATION_TIMING.delay.contentReady);
       })
       .catch((error) => {

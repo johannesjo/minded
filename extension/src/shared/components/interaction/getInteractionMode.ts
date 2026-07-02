@@ -23,6 +23,7 @@ import {
   getPatternInsightCandidate,
   type PatternInsight,
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import { getIsMediaAudible } from "@src/shared/components/interaction/bell/isMediaAudible";
 import { getIsoDate } from "@src/util/getIsoDate";
 
 const TODAY_START_HOUR = 5;
@@ -46,6 +47,15 @@ const SCREEN_OFF_PROBABILITY = 1 / 3;
 // Strong friction means the pull is highest — exactly when riding the urge out
 // is the right practice. Cross-platform, unlike the Android-only screen-off.
 const URGE_SURFING_PROBABILITY = 1 / 3;
+// Share of (remaining) strong-friction interventions that ring the bell —
+// one strike, listened all the way down into silence. Deliberately below
+// urge surfing: at peak pull the urge work is the more specific practice,
+// the bell the quieter alternative.
+const BELL_PROBABILITY = 1 / 4;
+// Rare everyday appearance of the bell, in the same "nothing more specific is
+// due" register as NOTICE (and slightly more common than it, being the richer
+// moment of the two).
+const BELL_SAMPLE_PROBABILITY = 1 / 25;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -60,7 +70,8 @@ export type InteractionMode =
   | "SHOW_REASON"
   | "PATTERN_INSIGHT"
   | "SCREEN_OFF"
-  | "URGE_SURFING";
+  | "URGE_SURFING"
+  | "BELL";
 
 export type InteractionModeReason =
   | "few_answers_question"
@@ -85,6 +96,8 @@ export type InteractionModeReason =
   | "notice_sample"
   | "screen_off_strong"
   | "urge_surfing_strong"
+  | "bell_strong"
+  | "bell_sample"
   | "fallback_question"
   | "fallback_anti_repeat_notice";
 
@@ -103,6 +116,11 @@ export interface InteractionModeDecisionOptions {
   isMainView?: boolean;
   isApp?: boolean;
   isAndroid?: boolean;
+  /**
+   * Whether a rung bell could actually be heard right now (media volume /
+   * platform). Defaults to the live device read; injectable for tests.
+   */
+  isAudioAudible?: boolean;
 }
 
 const decision = (
@@ -190,6 +208,16 @@ export const getInteractionModeDecision = (
     !isMainView && frictionLevel !== "soft"
       ? getPatternInsightCandidate(context, syncData.patternInsightState)
       : undefined;
+  // The bell is only offered when it could be heard: never with the Sound
+  // setting off, never with the media volume at zero (a silent bell is a
+  // broken moment, so the gate is structural rather than a setting). Kept to
+  // real interventions (not the dashboard, whose sun already offers grounding)
+  // and — like the other audible/attention prompts — to waking hours.
+  const canOfferBell =
+    !isMainView &&
+    isActionAdviceEligible &&
+    (syncData.cfg.soundEnabled ?? true) &&
+    (options.isAudioAudible ?? getIsMediaAudible());
 
   if (context.hasFewAnswers) {
     return decision("QUESTION", "few_answers_question", frictionLevel);
@@ -212,6 +240,10 @@ export const getInteractionModeDecision = (
 
     if (isActionAdviceEligible && chance(URGE_SURFING_PROBABILITY, random)) {
       return decision("URGE_SURFING", "urge_surfing_strong", frictionLevel);
+    }
+
+    if (canOfferBell && chance(BELL_PROBABILITY, random)) {
+      return decision("BELL", "bell_strong", frictionLevel);
     }
 
     if (patternInsight) {
@@ -346,6 +378,10 @@ export const getInteractionModeDecision = (
 
   if (isActionAdviceEligible && chance(ACTION_ADVICE_PROBABILITY, random)) {
     return decision("ACTION_ADVICE", "action_advice_sample", frictionLevel);
+  }
+
+  if (canOfferBell && chance(BELL_SAMPLE_PROBABILITY, random)) {
+    return decision("BELL", "bell_sample", frictionLevel);
   }
 
   if (chance(NOTICE_PROBABILITY, random)) {

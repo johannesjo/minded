@@ -143,6 +143,42 @@ export async function playGong(): Promise<void> {
   await playInterventionSound();
 }
 
+/**
+ * Used by the BELL interaction when playback fails or reports no duration
+ * (autoplay refused, decode error): the listen screen still runs its visual
+ * decay over the asset's real length, so a silent edge case degrades to
+ * watching the glow settle instead of a stuck screen.
+ */
+export const SINGLE_BELL_FALLBACK_DURATION_MS = 5500;
+
+/**
+ * Ring the single bell once, for the BELL listening practice, and report how
+ * long the strike actually rings (ms) so the caller can time the "It's gone"
+ * confirmation to the true end of the sound rather than a guessed constant.
+ * Returns null when nothing audibly played.
+ */
+export async function playSingleBell(): Promise<number | null> {
+  if (!soundEnabled) return null;
+
+  const buffer = await initWebAudio(singleBellPath);
+  if (buffer && (await playWithWebAudio(buffer))) {
+    return buffer.duration * 1000;
+  }
+
+  // Fallback to HTML Audio
+  try {
+    const audio = new Audio(getAudioUrl(singleBellPath));
+    audio.volume = VOLUME;
+    await audio.play();
+    return Number.isFinite(audio.duration) && audio.duration > 0
+      ? audio.duration * 1000
+      : SINGLE_BELL_FALLBACK_DURATION_MS;
+  } catch (err) {
+    console.debug("Single bell playback failed:", err);
+    return null;
+  }
+}
+
 // Preload all sounds for faster playback
 export async function preloadSounds(): Promise<void> {
   await Promise.all(
