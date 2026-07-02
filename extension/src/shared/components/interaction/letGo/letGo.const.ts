@@ -15,6 +15,18 @@ import { QID } from "@src/shared/data/questionId";
 export const LET_GO_FADE_MS = 600;
 
 /**
+ * The question waits for the flung sun to fly off the top of the screen before
+ * it appears — the flight *is* the release, so cutting to the question mid-flight
+ * betrays the gesture. But not every release clears the viewport promptly: a
+ * gentle fling can stall on-screen and a slow drag-up only clears near the end of
+ * its long completion. So the reveal is capped — once this long the question
+ * comes up regardless, and the sun (by now high and rising) is soft-faded out
+ * rather than snapped, so the hand-off stays soft. A brisk fling clears well
+ * before this and reveals the moment it does (see Sun's onFlungOffscreen).
+ */
+export const LET_GO_REVEAL_MAX_MS = 800;
+
+/**
  * If the offer is left untouched it fades on its own — a gentle offer never
  * nags. Cancelled the moment the user engages the input, so it can't snatch a
  * half-written thought away. Mirrors the grounding offer's auto-dismiss.
