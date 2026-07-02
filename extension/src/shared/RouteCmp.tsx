@@ -287,7 +287,8 @@ const MainWrapper = (props: RouteSectionProps) => {
           // let-go question, or grounding's screen-free / Android-lock sit); hide
           // the disc behind it instead of letting it paint over the screen. It
           // returns home when the offer closes.
-          [styles.isHidden]: getIsShellSunHidden(),
+          [styles.isHidden]: getIsShellSunHidden() === true,
+          [styles.isHiddenSoft]: getIsShellSunHidden() === "soft",
         }}
       >
         <div class={styles.shellSunSlot}>
@@ -315,7 +316,13 @@ const MainWrapper = (props: RouteSectionProps) => {
           />
         </div>
         <Show
-          when={getSunRole() === "companion" && !getIsShowQuestionOverlay()}
+          when={
+            getSunRole() === "companion" &&
+            !getIsShowQuestionOverlay() &&
+            // A hidden companion must not keep an invisible tap target armed
+            // (e.g. while the sleep wind-down's moon owns the screen).
+            !getIsShellSunHidden()
+          }
         >
           <button
             type="button"

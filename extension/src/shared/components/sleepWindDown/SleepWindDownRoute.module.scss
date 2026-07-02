@@ -13,11 +13,16 @@
 
 .viewPane {
   width: 100%;
-  animation: sleepWindDownViewFade 260ms ease-out both;
-  // Intentionally NOT setting `will-change: transform` and the keyframe
-  // intentionally has no transform — both create a containing block, which
-  // would trap the goodnight gesture's `position: fixed; inset: 0` against
-  // .viewPane's collapsed box and render the screen as a tiny slit.
+  // createScreenFade drives this element's opacity (inline) to crossfade
+  // between the wind-down views — fade out, swap hidden, fade back in — so the
+  // outgoing view eases away instead of hard-cutting (the old keyed remount
+  // only faded the incoming one in). Duration must match VIEW_FADE_MS in
+  // SleepWindDownView.tsx.
+  transition: opacity 260ms ease-out;
+  // Intentionally NOT `will-change: transform` and the fade intentionally has
+  // no transform — both create a containing block, which would trap the
+  // goodnight gesture's `position: fixed; inset: 0` against .viewPane's
+  // collapsed box and render the screen as a tiny slit.
   will-change: opacity;
 }
 
@@ -85,6 +90,13 @@
 
   &:hover {
     opacity: 0.85;
+  }
+
+  // Keyboard focus ring — same treatment as links (_sharedAll.scss).
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+    border-radius: 3px;
   }
 }
 
@@ -200,17 +212,10 @@
   margin-top: 8px;
 }
 
-@keyframes sleepWindDownViewFade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
+// View swaps are instant under reduced motion (createScreenFade also swaps
+// with no delay), so the crossfade doesn't animate.
 @media (prefers-reduced-motion: reduce) {
   .viewPane {
-    animation: none;
+    transition: none;
   }
 }

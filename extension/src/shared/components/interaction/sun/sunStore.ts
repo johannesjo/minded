@@ -72,8 +72,17 @@ const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
  * the disc would otherwise paint *over* it and visibly career around / pop back
  * in on top. Hiding it lets the screen read on its own; the disc is sent home and
  * revealed again on close. Default false.
+ *
+ * `true` snaps to hidden (needed when a just-flung disc must not career over the
+ * incoming screen — see `.isHidden` in RouteCmp.module.scss). `"soft"` fades out
+ * on the layer's own 500ms ease instead: for surfaces that bring their own
+ * disc as the centrepiece (the sleep wind-down's moon), where the companion
+ * must yield — there is only ever one — but nothing was flung, so a snap
+ * would be a hard cut.
  */
-const [getIsShellSunHidden, setIsShellSunHidden] = createSignal(false);
+const [getIsShellSunHidden, setIsShellSunHidden] = createSignal<
+  boolean | "soft"
+>(false);
 /**
  * Bottom-bar anchor (px from the bottom edge) for the companion rest — the spot
  * the resting disc settles onto, matching the `--companion-bar-center-y` CSS var

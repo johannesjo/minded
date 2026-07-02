@@ -6,13 +6,13 @@
   background: rgba(0, 0, 0, 0.85);
   color: #fff;
   padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fz-s);
   opacity: 0;
   pointer-events: none;
   transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+    opacity var(--dur-quick) var(--ease-out),
+    transform var(--dur-quick) var(--ease-out);
   z-index: 9999;
 
   &.isVisible {

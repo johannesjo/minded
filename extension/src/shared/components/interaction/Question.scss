@@ -175,8 +175,9 @@
     height: auto !important;
   }
 
+  // Rendered as <Btn variant="icon">, so the .btnIco base comes from the
+  // shared button styles (imported before this file); only the deltas live here.
   .send-button {
-    @include btnIco();
     position: absolute;
     bottom: 0;
     right: 8px;

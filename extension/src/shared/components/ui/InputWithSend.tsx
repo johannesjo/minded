@@ -1,5 +1,6 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
+import Btn from "@src/shared/components/ui/Btn";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { requestFocusAndShowKeyboard } from "@src/dataInterface/system";
 
@@ -88,15 +89,15 @@ export const InputWithSend = (props: {
         placeholder="Type your response..."
         onInput={(ev) => props.onInput?.(ev.currentTarget.value)}
       />
-      <button
-        type="button"
+      <Btn
+        variant="icon"
         class="send-button"
         aria-label="Submit response"
-        onclick={() => onSubmit(inpEl?.value)}
+        onClick={() => onSubmit(inpEl?.value)}
         disabled={getIsInputDisabled()}
       >
         <Ico name="send" />
-      </button>
+      </Btn>
     </div>
   );
 };

@@ -32,6 +32,13 @@
     outline: 0;
   }
 
+  // Keyboard focus ring — same treatment as links (_sharedAll.scss), so every
+  // button stays reachable by keyboard without adding chrome for pointer users.
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+  }
+
   @media (hover: hover) {
     &:hover {
       box-shadow: var(--btn-box-shadow);

@@ -15,6 +15,17 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  // Ring the switch pill, not the whole label row — same treatment as
+  // links/buttons.
+  &:focus-visible {
+    outline: none;
+
+    .switch {
+      outline: 2px solid var(--c-link-color);
+      outline-offset: 3px;
+    }
+  }
 }
 
 .label {

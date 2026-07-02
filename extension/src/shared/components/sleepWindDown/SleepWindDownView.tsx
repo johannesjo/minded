@@ -19,6 +19,7 @@ import {
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import { getIsoDate } from "@src/util/getIsoDate";
 import {
+  createEffect,
   createSignal,
   For,
   JSX,
@@ -28,6 +29,7 @@ import {
   Show,
   Switch,
 } from "solid-js";
+import { setIsShellSunHidden } from "@src/shared/components/interaction/sun/sunStore";
 import { BrainDump } from "./activities/BrainDump";
 import {
   nightIdToIndex,
@@ -44,10 +46,15 @@ import {
 } from "./sleepWindDownBackNavigation";
 import type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
 import { createSleepWindDownDismissTransition } from "./sleepWindDownDismissTransition";
+import { createScreenFade } from "@src/util/screenFade";
 // @ts-ignore
 import styles from "./SleepWindDownRoute.module.scss";
 
 export type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransition";
+
+// One beat for every view swap inside the wind-down surface; must match the
+// opacity transition on .viewPane in SleepWindDownRoute.module.scss.
+const VIEW_FADE_MS = 260;
 
 const SNOOZE_INTENT_OPTIONS = [
   "Something unfinished",
@@ -127,6 +134,28 @@ export const SleepWindDownView = (
     onDismiss: props.onDismiss,
   });
 
+  // Crossfade between the wind-down views via the shared helper instead of
+  // hard-cutting the outgoing view: fade the pane out, swap the view at the
+  // hidden midpoint, ease back in. Matches the transition on .viewPane.
+  const screenFade = createScreenFade(VIEW_FADE_MS);
+  // Where the user has navigated, updated synchronously — the rendered view()
+  // lags behind by the crossfade's hidden midpoint, so navigation decisions
+  // (the back checkpoint, the same-view guard) must not read the stale view()
+  // or a back press landing mid-fade gets judged against the outgoing view.
+  let logicalView: SleepWindDownViewName = "prompt";
+
+  // The goodnight gesture brings its own disc — the moon as the centrepiece of
+  // the night sky. There is only ever one, so the shell's companion moon yields
+  // (a soft fade on its own layer, keyed to the rendered view so it leaves as
+  // the gesture fades in) and is revealed again on the way out.
+  createEffect(() => {
+    const v = view();
+    setIsShellSunHidden(
+      v === "snoozeGoodnight" || v === "goodnight" ? "soft" : false,
+    );
+  });
+  onCleanup(() => setIsShellSunHidden(false));
+
   const pushOverviewBackCheckpoint = () => {
     if (hasOverviewBackCheckpoint) return;
     try {
@@ -148,7 +177,8 @@ export const SleepWindDownView = (
   };
 
   const goToView = (nextView: SleepWindDownViewName) => {
-    const currentView = view();
+    const currentView = logicalView;
+    if (nextView === currentView) return;
     const isReturningToOverview =
       nextView === WIND_DOWN_OVERVIEW_VIEW &&
       hasOverviewBackCheckpoint &&
@@ -158,12 +188,15 @@ export const SleepWindDownView = (
       pushOverviewBackCheckpoint();
     }
 
-    setView(nextView);
+    logicalView = nextView;
+    screenFade.toScreen(() => {
+      setView(nextView);
 
-    if (isReturningToOverview) {
-      hasOverviewBackCheckpoint = false;
-      window.history.back();
-    }
+      if (isReturningToOverview) {
+        hasOverviewBackCheckpoint = false;
+        window.history.back();
+      }
+    });
   };
 
   const enqueueWrite = (fn: () => Promise<void>): Promise<void> => {
@@ -178,10 +211,11 @@ export const SleepWindDownView = (
     const handleBrowserBack = () => {
       if (
         hasOverviewBackCheckpoint &&
-        shouldBackReturnToWindDownOverview(view())
+        shouldBackReturnToWindDownOverview(logicalView)
       ) {
         hasOverviewBackCheckpoint = false;
-        setView(WIND_DOWN_OVERVIEW_VIEW);
+        logicalView = WIND_DOWN_OVERVIEW_VIEW;
+        screenFade.toScreen(() => setView(WIND_DOWN_OVERVIEW_VIEW));
       }
     };
 
@@ -364,11 +398,12 @@ export const SleepWindDownView = (
       }}
       class={`${styles.wrapper} pageTransitionIn`}
     >
-      <Show when={view()} keyed>
-        {(currentView) => (
-          <div class={styles.viewPane}>
-            <Switch>
-              <Match when={currentView === "prompt"}>
+      {/* One persistent pane: createScreenFade drives its opacity (inline) so
+          each view swap eases out and back in instead of the old keyed remount,
+          which faded the new view in but hard-cut the old one away. */}
+      <div class={styles.viewPane} style={{ opacity: screenFade.opacity() }}>
+        <Switch>
+              <Match when={view() === "prompt"}>
                 <div class={styles.center}>
                   <h2 class="h2 h2Mindful">Wind down for sleep?</h2>
                   <p class={styles.subtle}>
@@ -401,7 +436,7 @@ export const SleepWindDownView = (
                 </div>
               </Match>
 
-              <Match when={currentView === "menu"}>
+              <Match when={view() === "menu"}>
                 <div class={styles.menu}>
                   <h2 class="h2 h2Mindful">Choose anything that helps</h2>
                   <p class={styles.subtle}>
@@ -453,7 +488,7 @@ export const SleepWindDownView = (
                 </div>
               </Match>
 
-              <Match when={currentView === "brainDump"}>
+              <Match when={view() === "brainDump"}>
                 <BrainDump
                   initialText={brainDumpDraft()}
                   onDraftChange={(t) => {
@@ -471,7 +506,7 @@ export const SleepWindDownView = (
                 />
               </Match>
 
-              <Match when={currentView === "gratitude"}>
+              <Match when={view() === "gratitude"}>
                 <BrainDump
                   initialText={gratitudeDraft()}
                   prompts={GRATITUDE_PROMPTS}
@@ -491,7 +526,7 @@ export const SleepWindDownView = (
                 />
               </Match>
 
-              <Match when={currentView === "tomorrow"}>
+              <Match when={view() === "tomorrow"}>
                 <BrainDump
                   initialText={tomorrowDraft()}
                   prompts={TOMORROW_PROMPTS}
@@ -511,21 +546,21 @@ export const SleepWindDownView = (
                 />
               </Match>
 
-              <Match when={currentView === "breathing"}>
+              <Match when={view() === "breathing"}>
                 <div class={styles.activityBody}>
                   <BreathingExercise />
                   {activityActions("breathing")}
                 </div>
               </Match>
 
-              <Match when={currentView === "calmRead"}>
+              <Match when={view() === "calmRead"}>
                 <div class={styles.activityBody}>
                   <p class={styles.calmRead}>{calmReadPassage()}</p>
                   {activityActions("calmRead")}
                 </div>
               </Match>
 
-              <Match when={currentView === "tips"}>
+              <Match when={view() === "tips"}>
                 <div class={styles.activityBody}>
                   <h2 class={`h2 h2Mindful ${styles.activityTitle}`}>
                     Tips for good sleep
@@ -537,7 +572,7 @@ export const SleepWindDownView = (
                 </div>
               </Match>
 
-              <Match when={currentView === "snoozeIntent"}>
+              <Match when={view() === "snoozeIntent"}>
                 <div class={styles.center}>
                   <h2 class="h2 h2Mindful">What's keeping you up?</h2>
                   <p class={styles.subtle}>
@@ -559,41 +594,59 @@ export const SleepWindDownView = (
                 </div>
               </Match>
 
-              <Match when={currentView === "snoozeGoodnight"}>
+              {/* Both goodnight variants share one block so there is only ever
+                  one moon in the tree: the disc stays mounted across the
+                  snooze/goodnight pair (only the copy and gesture props swap),
+                  never unmounting to reappear as a second instance. */}
+              <Match
+                when={
+                  view() === "snoozeGoodnight" || view() === "goodnight"
+                }
+              >
                 <div class={styles.goodnightGesture}>
                   <BackgroundTransition isSunGradientAttached={false} />
                   <div class={styles.goodnightContent}>
                     <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
-                      {snoozeMinutes()} more minutes
+                      {view() === "snoozeGoodnight"
+                        ? `${snoozeMinutes()} more minutes`
+                        : "Sleep well"}
                     </h2>
-                    <div class={styles.durationRow}>
-                      <For each={SNOOZE_DURATION_OPTIONS}>
-                        {(mins) => (
-                          <Btn
-                            variant="toggle"
-                            small
-                            selected={snoozeMinutes() === mins}
-                            onClick={() => setSnoozeMinutes(mins)}
-                            disabled={!hydrated()}
-                          >
-                            {mins} min
-                          </Btn>
-                        )}
-                      </For>
-                    </div>
+                    <Show when={view() === "snoozeGoodnight"}>
+                      <div class={styles.durationRow}>
+                        <For each={SNOOZE_DURATION_OPTIONS}>
+                          {(mins) => (
+                            <Btn
+                              variant="toggle"
+                              small
+                              selected={snoozeMinutes() === mins}
+                              onClick={() => setSnoozeMinutes(mins)}
+                              disabled={!hydrated()}
+                            >
+                              {mins} min
+                            </Btn>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
                     <p class={styles.subtle}>
-                      {IS_ANDROID
-                        ? "Triple-tap to snooze, or drag the moon down to sleep now."
-                        : "Triple-tap to confirm."}
+                      {view() === "snoozeGoodnight"
+                        ? IS_ANDROID
+                          ? "Triple-tap to snooze, or drag the moon down to sleep now."
+                          : "Triple-tap to confirm."
+                        : "Drag the moon down to let the day go."}
                     </p>
                     <div class={styles.moonContainer}>
                       <Sun
                         variant="moon"
                         completionDirection="down"
-                        isTapEnabled={true}
+                        isTapEnabled={view() === "snoozeGoodnight"}
                         tapThreshold={3}
-                        isDragEnabled={IS_ANDROID}
-                        onSkip={snooze}
+                        isDragEnabled={IS_ANDROID || view() === "goodnight"}
+                        onSkip={() =>
+                          view() === "snoozeGoodnight"
+                            ? snooze()
+                            : completeGoodnight()
+                        }
                         onFlingAway={completeGoodnight}
                         onDragComplete={completeGoodnight}
                         onStartBackgroundAnimation={(direction) => {
@@ -608,41 +661,8 @@ export const SleepWindDownView = (
                   </div>
                 </div>
               </Match>
-
-              <Match when={currentView === "goodnight"}>
-                <div class={styles.goodnightGesture}>
-                  <BackgroundTransition isSunGradientAttached={false} />
-                  <div class={styles.goodnightContent}>
-                    <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
-                      Sleep well
-                    </h2>
-                    <p class={styles.subtle}>
-                      Drag the moon down to let the day go.
-                    </p>
-                    <div class={styles.moonContainer}>
-                      <Sun
-                        variant="moon"
-                        completionDirection="down"
-                        isTapEnabled={false}
-                        onSkip={completeGoodnight}
-                        onFlingAway={completeGoodnight}
-                        onDragComplete={completeGoodnight}
-                        onStartBackgroundAnimation={(direction) => {
-                          window.dispatchEvent(
-                            new CustomEvent("startBackgroundAnimation", {
-                              detail: { direction },
-                            }),
-                          );
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </Match>
-            </Switch>
-          </div>
-        )}
-      </Show>
+        </Switch>
+      </div>
     </div>
   );
 };

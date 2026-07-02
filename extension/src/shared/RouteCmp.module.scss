@@ -162,6 +162,19 @@
   pointer-events: none;
 }
 
+// Soft variant of .isHidden: fades out on the base layer's own 500ms opacity
+// ease. For surfaces whose own disc becomes the centrepiece (the sleep
+// wind-down's moon) — the companion yields, since there is only ever one, but
+// nothing was flung, so the snap below would be an uncalled-for hard cut.
+.shellSunLayer.isHiddenSoft {
+  opacity: 0;
+  pointer-events: none;
+
+  :global(.minded-sun) {
+    pointer-events: none;
+  }
+}
+
 .shellSunLayer.isHidden {
   opacity: 0;
   pointer-events: none;
