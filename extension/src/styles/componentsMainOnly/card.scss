@@ -2,6 +2,10 @@
 .card {
   user-select: none;
   background: var(--dashboard-card-bg);
+  // Static inner highlight along the top edge — light catching the card from
+  // the sky above. Cheap (no repaint, no backdrop blur) and eases through the
+  // hover bg-change. See issue #128.
+  box-shadow: inset 0 1px 0 var(--dashboard-card-highlight);
   border-radius: var(--dashboard-card-border-radius);
   padding: var(--space-md);
 
