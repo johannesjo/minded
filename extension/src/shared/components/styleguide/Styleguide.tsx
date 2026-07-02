@@ -40,6 +40,20 @@ import { GroundingOverlay } from "@src/shared/components/interaction/grounding/G
 import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import {
+  AMBIENT_SKY_KEYFRAMES,
+  ambientSkyColorsAt,
+  ambientSkyGradient,
+  duskTargetGradientAt,
+  NIGHT_END_HOUR,
+  NIGHT_START_HOUR,
+  zenithTargetGradientAt,
+} from "@src/shared/skyTimeline";
+import {
+  applySkyAtHour,
+  applySkyForNow,
+  getEffectiveHourNow,
+} from "@src/shared/addWrapperClasses";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
@@ -97,6 +111,7 @@ const ICO_NAMES: IcoName[] = [
 const TOC = [
   { id: "flags", label: "Theme & flags" },
   { id: "colors", label: "Colors" },
+  { id: "sky", label: "Sky" },
   { id: "typography", label: "Typography" },
   { id: "buttons", label: "Buttons" },
   { id: "inputs", label: "Inputs" },
@@ -234,6 +249,10 @@ const Styleguide = (): JSX.Element => {
             )}
           </For>
         </div>
+      </Section>
+
+      <Section id="sky" title="Sky timeline">
+        <SkySection isDark={isDark} />
       </Section>
 
       <Section id="typography" title="Typography">
@@ -563,8 +582,8 @@ const Styleguide = (): JSX.Element => {
         <p class={styles.muted}>
           The two time-of-day phases of the home-screen companion sun — the warm
           sun by day, the cool moon by night. The day sun is the real vector
-          drawable; the night moon is the actual lunar photo with a baked glow
-          (<code>ic_sun_widget_night.webp</code>), the same art the widget shows.
+          drawable; the night moon is the actual lunar photo with a baked glow (
+          <code>ic_sun_widget_night.webp</code>), the same art the widget shows.
           Phase is chosen by the local clock, not the system theme — toggle dark
           mode above to preview the discs on a dark wallpaper. Indicative, not a
           pixel-exact device render.
@@ -595,6 +614,142 @@ const Subsection = (props: {
     <div class={styles.subsectionRow}>{props.children}</div>
   </div>
 );
+
+const formatHour = (hour: number): string => {
+  const h = Math.floor(hour);
+  const m = Math.round((hour - h) * 60);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+
+// The living time-of-day sky (skyTimeline.ts): keyframe strips, an hour
+// scrubber previewing the ambient sky and both drag-target skies, an
+// apply-to-page toggle, and a jump into the dashboard simulation at the
+// scrubbed hour (?skyHour=) to test the real drag/grounding flow.
+const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
+  const [hour, setHour] = createSignal(
+    // min: rounding 23:53+ would yield 24, past the slider's max
+    Math.min(23.75, Math.round(getEffectiveHourNow() * 4) / 4),
+  );
+  const [applyToPage, setApplyToPage] = createSignal(false);
+  const isNight = () => hour() >= NIGHT_START_HOUR || hour() < NIGHT_END_HOUR;
+
+  createEffect(() => {
+    // Track the dark toggle too: applySkyAtHour keys off the wrapper class,
+    // so re-running after a theme flip clears (dark) or re-applies (light)
+    // the inline sky vars instead of leaving stale light-sky values under
+    // the dark theme. The parent's class-toggle effect runs first (created
+    // earlier), so the class is already updated when this re-reads it.
+    props.isDark();
+    if (applyToPage()) {
+      applySkyAtHour(hour());
+    } else {
+      // Unconditional: the entry set now-sky inline vars at load, so a dark
+      // flip must clear them even if apply-to-page was never touched.
+      applySkyForNow();
+    }
+  });
+  onCleanup(() => applySkyForNow());
+
+  return (
+    <>
+      <p class="txtBig">
+        The ambient sky interpolates through pastel keyframes across the light
+        window ({formatHour(NIGHT_END_HOUR)}–{formatHour(NIGHT_START_HOUR)}); at
+        night the dark theme owns the sky. The sun-drag reveals are targets on
+        the same timeline: from 17:00 the down-drag sunset deepens toward night
+        and the up-drag blue dims, so the gesture always leans away from
+        <em> now</em>.
+      </p>
+
+      <Subsection label="ambient keyframes">
+        <For each={AMBIENT_SKY_KEYFRAMES}>
+          {(kf) => (
+            <div class={styles.skyStrip}>
+              <div
+                class={styles.skyStripSample}
+                style={{ background: ambientSkyGradient(kf.colors) }}
+              />
+              <code>{kf.label}</code>
+              <span>{formatHour(kf.hour)}</span>
+            </div>
+          )}
+        </For>
+      </Subsection>
+
+      <div class={styles.skyControls}>
+        <input
+          type="range"
+          min="0"
+          max="23.75"
+          step="0.25"
+          value={hour()}
+          onInput={(e) => setHour(Number(e.currentTarget.value))}
+          aria-label="hour of day"
+        />
+        <code>{formatHour(hour())}</code>
+        <Checkbox
+          checked={applyToPage()}
+          onChange={setApplyToPage}
+          label="apply to page"
+        />
+        <Btn
+          outline
+          onClick={() => {
+            window.location.href = `dashboard.html?skyHour=${hour()}`;
+          }}
+        >
+          dashboard simulation at {formatHour(hour())} →
+        </Btn>
+      </div>
+
+      <Show
+        when={!isNight()}
+        fallback={
+          <p class={styles.muted}>
+            {formatHour(hour())} is night — the dark theme's two-orb sky and
+            deep-night reveal apply (toggle dark mode above to see them); inline
+            sky overrides are cleared. The strips below show the clamped
+            light-window edge.
+          </p>
+        }
+      >
+        <p class={styles.muted}>
+          apply-to-page only takes effect in light mode — in dark mode the night
+          theme owns the sky.
+        </p>
+      </Show>
+
+      <Subsection label={`skies at ${formatHour(hour())}`}>
+        <div class={styles.skyStrip}>
+          <div
+            class={styles.skyStripSample}
+            style={{
+              background: ambientSkyGradient(ambientSkyColorsAt(hour())),
+            }}
+          />
+          <code>ambient</code>
+          <span>resting app background</span>
+        </div>
+        <div class={styles.skyStrip}>
+          <div
+            class={styles.skyStripSample}
+            style={{ background: duskTargetGradientAt(hour()) }}
+          />
+          <code>drag down</code>
+          <span>grounding reveal</span>
+        </div>
+        <div class={styles.skyStrip}>
+          <div
+            class={styles.skyStripSample}
+            style={{ background: zenithTargetGradientAt(hour()) }}
+          />
+          <code>drag up</code>
+          <span>let-go reveal</span>
+        </div>
+      </Subsection>
+    </>
+  );
+};
 
 // Full-screen harness for the persistent-sun morph. Drives the real <Sun> with
 // the exact `settle` targets InteractionCommon uses (via getSunSettleForPhase),

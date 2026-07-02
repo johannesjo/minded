@@ -2,7 +2,7 @@ import { render } from "solid-js/web";
 // @ts-ignore — side-effect import of global styles
 import "@src/styles/sharedMain.scss";
 import RoutesCmp from "@src/shared/RouteCmp";
-import { isDarkModeNow } from "@src/shared/addWrapperClasses";
+import { applySkyForNow, isDarkModeNow } from "@src/shared/addWrapperClasses";
 import { seedMockData } from "./seedMockData";
 
 // Dashboard simulation: mounts the real app shell (RouteCmp's RoutesCmp — the
@@ -27,6 +27,9 @@ if (!root) throw new Error("Cannot find #minded-6622 root element");
 if (isDarkModeNow()) {
   root.classList.add("minded-6622-dark");
 }
+// Same tree-shaking story for the living sky: apply it here explicitly so the
+// simulation honours `?skyHour=` (and the real clock) like the real shell.
+applySkyForNow();
 
 const shouldSeed =
   new URLSearchParams(window.location.search).get("seed") !== "none";

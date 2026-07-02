@@ -162,6 +162,44 @@
   font-size: var(--fz-s);
 }
 
+// Sky timeline section: tall gradient strips (skies read vertically) + the
+// hour scrubber row.
+.skyStrip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 120px;
+  font-size: var(--fz-s);
+
+  code {
+    font-size: 12px;
+  }
+
+  span {
+    opacity: 0.6;
+    font-size: 11px;
+  }
+}
+
+.skyStripSample {
+  height: 150px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--btn-outline-color);
+}
+
+.skyControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 16px 0 8px;
+
+  input[type="range"] {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
 .interactionFrame {
   width: 100%;
   min-height: 240px;
