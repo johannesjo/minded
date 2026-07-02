@@ -59,7 +59,7 @@ export const FocusSchedule = (): JSX.Element => {
         <Toggle
           checked={schedule().enabled}
           onChange={toggleEnabled}
-          label={schedule().enabled ? "Enabled" : "Disabled"}
+          label={schedule().enabled ? "On" : "Off"}
         />
       </div>
 

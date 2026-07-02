@@ -42,7 +42,7 @@ const Options = () => {
 
         <section class={styles.section}>
           <div class={styles.sectionIntro}>
-            <h3 class="h3">Focus Hours</h3>
+            <h3 class="h3">Active Hours</h3>
             <p>Limit blocking to the parts of the week where it helps most.</p>
           </div>
           <FocusSchedule />

@@ -4,6 +4,7 @@ import styles from "@src/shared/components/questionCategoryView/AnswerEntry.modu
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { QUESTIONS } from "@src/shared/data/questions";
+import { formatQuestionText } from "@src/util/formatQuestionText";
 
 export const AnswerEntry: (props: {
   answer: Answer;
@@ -49,7 +50,9 @@ export const AnswerEntry: (props: {
         setIsShowEditBar(!getIsShowEditBar());
       }}
     >
-      {question && <div class={styles.question}>{question.t}?</div>}
+      {question && (
+        <div class={styles.question}>{formatQuestionText(question.t)}</div>
+      )}
 
       {!getIsEditMode() && (
         <>

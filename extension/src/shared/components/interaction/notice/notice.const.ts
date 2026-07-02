@@ -54,7 +54,7 @@ export const NOTICE_CUES: {
   },
   {
     ico: "🎨",
-    cue: "Find three colours around you.",
+    cue: "Find three colors around you.",
     done: "Found them",
   },
 ] as const;

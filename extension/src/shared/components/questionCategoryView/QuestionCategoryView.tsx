@@ -110,7 +110,7 @@ export const QuestionCategoryView: (props: {
       )}
 
       <div class={" " + styles.infoTxt}>
-        <div class="h3">Why should I care?</div>
+        <div class="h3">Why this can help</div>
         {/*<Ico name="info" size={24} />*/}
         <p class="txt">
           {QUESTION_CATEGORY_ADDITIONAL_INFO[questionCategoryId]}
