@@ -11,7 +11,6 @@ import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import Btn from "@src/shared/components/ui/Btn";
-import { navigateWithPageFadeOut } from "@src/util/animation";
 
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
@@ -66,10 +65,10 @@ export const SettingsAndroid = (props: {
   const handleSave = async () => {
     await updateBlockedApps(getSelectedApps());
     // Only navigates when used as a standalone route (isRouting); in onboarding
-    // `navigate` is a no-op and `onSave` drives the step change. Fade out first
-    // so the routed case eases home rather than hard-cutting, matching the
-    // sibling SettingsAndroidRoute.
-    navigateWithPageFadeOut(navigate, "/");
+    // `navigate` is a no-op and `onSave` drives the step change. The router-level
+    // page-fade interceptor (RouteCmp) eases this home rather than hard-cutting,
+    // matching the sibling SettingsAndroidRoute.
+    navigate("/");
     props.onSave?.();
   };
 
@@ -106,10 +105,7 @@ export const SettingsAndroid = (props: {
           {!props.autoSave && (
             <div>
               {props.isRouting && (
-                <Btn
-                  class={styles.backBtn}
-                  onClick={() => navigateWithPageFadeOut(navigate, "/")}
-                >
+                <Btn class={styles.backBtn} onClick={() => navigate("/")}>
                   <Ico name="arrowBack" /> Back
                 </Btn>
               )}
