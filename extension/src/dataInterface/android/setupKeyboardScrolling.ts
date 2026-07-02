@@ -2,13 +2,29 @@ const FIELD_BOTTOM_MARGIN = 24;
 
 // Single signal for "the keyboard is up" across the Android web layer. Consumed
 // by CSS (e.g. hiding the bottom bar — see BottomBar.module.scss). Formerly set
-// by a native global-layout probe in MyWebView; now derived here from focus so
-// there is one source of truth and no pixel-height threshold.
+// by a native global-layout probe in MyWebView; now derived here from a focused
+// text field so there is one source of truth (plus a viewport-growth backstop
+// for the back-gesture IME dismiss, which hides the keyboard without blurring).
 const KEYBOARD_OPEN_CLASS = "androidKeyboardOpen";
+
+// Input types that never summon a keyboard (toggles, pickers, buttons):
+// focusing one — e.g. tapping a settings checkbox — must not count as text
+// entry, or the class would hide the bottom bar with no keyboard on screen.
+const NON_TEXT_INPUT_TYPES = new Set([
+  "button",
+  "checkbox",
+  "color",
+  "file",
+  "image",
+  "radio",
+  "range",
+  "reset",
+  "submit",
+]);
 
 const isTextEntry = (el: EventTarget | null): boolean =>
   el instanceof HTMLTextAreaElement ||
-  el instanceof HTMLInputElement ||
+  (el instanceof HTMLInputElement && !NON_TEXT_INPUT_TYPES.has(el.type)) ||
   (el instanceof HTMLElement && el.isContentEditable);
 
 const getActiveField = (): HTMLInputElement | HTMLTextAreaElement | null => {
@@ -114,10 +130,33 @@ export function setupKeyboardScrolling(): void {
     requestAnimationFrame(syncKeyboardOpenClass),
   );
 
+  // Focus alone can't see the back-gesture IME dismiss: Android hides the
+  // keyboard without blurring the field, so no focusout ever fires and the
+  // class (and hidden bottom bar) would stick. The signal that survives is the
+  // window growing back — adjustResize shrank it for the IME — so a meaningful
+  // height gain while a text field is focused means the keyboard left. Blur the
+  // field so focus and keyboard state agree again (the focusout path above then
+  // clears the class, and a re-tap cleanly re-opens both).
+  const getViewportHeight = (): number =>
+    window.visualViewport?.height ?? window.innerHeight;
+  // Above inset/rounding jitter, well below any keyboard's height.
+  const IME_CLOSED_MIN_GROW_PX = 60;
+  let lastViewportHeight = getViewportHeight();
+  const blurFieldOnImeClose = () => {
+    const height = getViewportHeight();
+    const grewBy = height - lastViewportHeight;
+    lastViewportHeight = height;
+    if (grewBy < IME_CLOSED_MIN_GROW_PX) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && isTextEntry(active)) active.blur();
+  };
+
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", scheduleVisibilityCheck);
+    window.visualViewport.addEventListener("resize", blurFieldOnImeClose);
     window.visualViewport.addEventListener("scroll", scheduleVisibilityCheck);
   } else {
     window.addEventListener("resize", scheduleVisibilityCheck);
+    window.addEventListener("resize", blurFieldOnImeClose);
   }
 }
