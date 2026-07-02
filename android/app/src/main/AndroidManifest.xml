@@ -32,6 +32,10 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.Minded"
             tools:targetApi="31">
+        <!-- windowSoftInputMode="adjustResize" is the keyboard/IME avoidance for
+             API 29 (minSdk), where the ime inset isn't dispatched and Compose's
+             imePadding() no-ops. On API 35+ edge-to-edge ignores it and
+             imePadding() takes over (see MainActivity). The two don't stack. -->
         <activity
                 android:name=".MainActivity"
                 android:exported="true"

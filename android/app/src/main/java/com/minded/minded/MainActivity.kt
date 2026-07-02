@@ -143,6 +143,18 @@ class MainActivity : AppCompatActivity() {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
+                            // Keyboard/IME avoidance, native side. Two mechanisms
+                            // are intentional and cover complementary API ranges,
+                            // not redundant: `imePadding()` (WindowInsets.ime,
+                            // reliable API 30+) does the work on API 35+, where
+                            // edge-to-edge ignores the manifest's adjustResize;
+                            // adjustResize covers API 29 (minSdk), where the ime
+                            // inset isn't dispatched and imePadding no-ops. They
+                            // don't stack: the ime inset is measured against the
+                            // already-resized window. This is the *only* keyboard
+                            // mechanism now — the web layer keys off the resulting
+                            // viewport (visualViewport) rather than probing the
+                            // window height itself.
                             .imePadding()
                             // Pre-dithered loading sky (same bitmap as the
                             // window background) shows behind the transparent
@@ -157,7 +169,7 @@ class MainActivity : AppCompatActivity() {
                             )
                     ) {
                         AndroidView(factory = { context ->
-                            webView = MyWebView(context).apply {
+                            webView = WebView(context).apply {
                                 layoutParams = ViewGroup.LayoutParams(
                                     ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.MATCH_PARENT
