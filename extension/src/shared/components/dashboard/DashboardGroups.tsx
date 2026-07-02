@@ -12,7 +12,6 @@ import {
   DashboardGroup,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
-  DashboardGroupSelAssessment,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import {
@@ -40,7 +39,6 @@ import {
   RE_GREET_DASHBOARD_EV,
   RE_GREET_DASHBOARD_HIDDEN_EV,
 } from "@src/ev.const";
-import { SelfAssessmentCard } from "@src/shared/components/dashboard/dashboardCards/SelfAssessmentCard";
 import { useNavigate } from "@solidjs/router";
 import {
   getDailyQuestionsMode,
@@ -269,9 +267,7 @@ export const DashboardGroups: (props: {
           ["cardDashboard"]: true,
           [styles.box]: true,
           [styles.interactive]: isInteractive,
-          [styles.centerItem]:
-            dg.type !== DashboardGroupType.TxtQuestion &&
-            dg.type !== DashboardGroupType.SelfAssessment,
+          [styles.centerItem]: dg.type !== DashboardGroupType.TxtQuestion,
         }}
       >
         {(() => {
@@ -285,13 +281,6 @@ export const DashboardGroups: (props: {
               );
             case DashboardGroupType.Quote:
               return <RndQuote />;
-
-            case DashboardGroupType.SelfAssessment:
-              // eslint-disable-next-line no-case-declarations
-              const dgSA = dg as DashboardGroupSelAssessment;
-              return (
-                <SelfAssessmentCard selfAssessmentEntries={dgSA.entries} />
-              );
 
             case DashboardGroupType.EnergyLvl:
               // eslint-disable-next-line no-case-declarations

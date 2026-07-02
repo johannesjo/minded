@@ -1,4 +1,4 @@
-import { createSignal, JSX, Match, onMount, Switch } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
@@ -11,10 +11,9 @@ import {
   saveAnswer,
   updateAnswer,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { Answer, SyncData } from "@src/dataInterface/syncData";
+import { Answer } from "@src/dataInterface/syncData";
 import { Location, Params } from "@solidjs/router/dist/types";
 import { QUESTION_CATEGORY_ADDITIONAL_INFO } from "@src/shared/data/questionCategoryAdditional.const";
-import { SelfAssessmentSingleView } from "@src/shared/components/questionCategoryView/specialCategoryViewCmps/SelfAssessmentSingleView";
 
 export const QuestionCategoryView: (props: {
   params: Params;
@@ -23,7 +22,6 @@ export const QuestionCategoryView: (props: {
   // questionCategoryId: QuestionCategoryId;
   // onLeave: () => void;
 }) => JSX.Element = (props) => {
-  const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
   const [getAnswersForCategory, setAnswersForCategory] = createSignal<Answer[]>(
     [],
   );
@@ -41,7 +39,6 @@ export const QuestionCategoryView: (props: {
 
   onMount(() => {
     getSyncData().then((syncData) => {
-      setSyncDataI(syncData);
       if (syncData.answers?.length) {
         setAnswersForCategory(
           syncData.answers
@@ -97,16 +94,6 @@ export const QuestionCategoryView: (props: {
       >
         {QUESTION_CATEGORY.dashboardTxt}
       </div>
-
-      {getSyncDataI() && (
-        <Switch>
-          <Match
-            when={questionCategoryId === QuestionCategoryId.XSelfAssessment}
-          >
-            <SelfAssessmentSingleView syncData={getSyncDataI()!} />
-          </Match>
-        </Switch>
-      )}
 
       {isAnswerListCategory() && (
         <div class={styles.answers}>

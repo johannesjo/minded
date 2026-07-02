@@ -422,14 +422,14 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("keeps randomness injectable for fallback samples", () => {
+  it("keeps randomness injectable for sampled modes", () => {
     expect(
       decide(baseSyncData(), {
-        random: () => 0.05,
+        random: () => 0.02,
       }),
     ).toEqual({
-      mode: "SELF_ASSESSMENT",
-      reason: "self_assessment_sample",
+      mode: "ACTION_ADVICE",
+      reason: "action_advice_sample",
       frictionLevel: "soft",
     });
   });
@@ -441,7 +441,7 @@ describe("getInteractionMode", () => {
           emotionLabeling: { ts: 99, emotions: [], bodyLocations: [] },
         }),
         {
-          random: sequenceRandom([0.99, 0.05]),
+          random: () => 0.05,
         },
       ),
     ).toEqual({
@@ -461,7 +461,7 @@ describe("getInteractionMode", () => {
           ],
         }),
         {
-          random: sequenceRandom([0.99, 0.01]),
+          random: () => 0.01,
         },
       ),
     ).toEqual({
@@ -502,13 +502,12 @@ describe("getInteractionMode", () => {
       }).mode,
     ).toBe("APP_USAGE_OR_BROWSING_BEHAVIOR");
 
-    // On the dashboard the usage branch consumes no roll, so the same first
-    // self-assessment miss (0.99) then an action-advice hit (0.01) lands on a
-    // real intervention instead.
+    // On the dashboard the usage branch consumes no roll, so an action-advice
+    // hit (0.01) lands on a real intervention instead.
     expect(
       decide(syncData, {
         isMainView: true,
-        random: sequenceRandom([0.99, 0.01]),
+        random: () => 0.01,
       }),
     ).toEqual({
       mode: "ACTION_ADVICE",
@@ -518,11 +517,11 @@ describe("getInteractionMode", () => {
   });
 
   it("samples a notice micro-action just before the question fallback", () => {
-    // Self-assessment and action advice both fail their rolls; the notice
-    // roll then passes, surfacing the present-moment anchor.
+    // Action advice fails its roll; the notice roll then passes, surfacing the
+    // present-moment anchor.
     expect(
       decide(baseSyncData(), {
-        random: sequenceRandom([0.99, 0.99, 0.01]),
+        random: sequenceRandom([0.99, 0.01]),
       }),
     ).toEqual({
       mode: "NOTICE",

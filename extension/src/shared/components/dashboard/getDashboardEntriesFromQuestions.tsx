@@ -3,7 +3,6 @@ import {
   DashboardGroup,
   DashboardGroupEmotionLabeling,
   DashboardGroupEnergyLvl,
-  DashboardGroupSelAssessment,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
 import {
@@ -17,7 +16,6 @@ import { isCategoryWithinTimeConstraints } from "@src/util/getQuestionSmart";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
-import { getRecentSelfAssessmentEntries } from "@src/shared/components/dashboard/getRecentSelfAssementEntries";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const MAX_ANSWERS = 4;
@@ -25,7 +23,6 @@ const MAX_ANSWERS = 4;
 // the dashboard greets you with before you reveal the rest. Exported so the view
 // can identify the greeting without re-deriving the placement logic.
 export const CENTER_INDEX = 4;
-const MAX_SELF_ASSESSMENTS = 3;
 
 // The card types that may *greet* you on arrival (the centre pick). The greeting
 // reflects — your own answers, mood, energy, emotions — or offers a calm quote;
@@ -38,16 +35,14 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.TxtQuestion,
   DashboardGroupType.EnergyLvl,
   DashboardGroupType.EmotionLabeling,
-  DashboardGroupType.SelfAssessment,
 ]);
 
 // A question recap whose category is outside its time-of-day / work-day window
 // right now (e.g. a "Finding Focus Today" card — a morning, work-day category —
 // shown in the evening or the middle of the night). Such a recap shouldn't be
 // the card that *greets* you, but still belongs in the full "look back" grid,
-// which is explicitly historical. The other reflective cards (energy, emotions,
-// self-assessment) only ever reflect today's own entries, so they have no such
-// window.
+// which is explicitly historical. The other reflective cards (energy, emotions)
+// only ever reflect today's own entries, so they have no such window.
 const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
   entry.type === DashboardGroupType.TxtQuestion &&
   "id" in entry &&
@@ -150,19 +145,6 @@ export const getDashboardEntriesFromQuestions = (
       type: DashboardGroupType.EmotionLabeling,
       emotions: syncData.emotionLabeling.emotions,
     } as DashboardGroupEmotionLabeling);
-    fixedEntriesIndexAndNr++;
-  }
-
-  const entriesForSelfAssessment = getRecentSelfAssessmentEntries(
-    syncData.selfAssessment,
-    MAX_SELF_ASSESSMENTS,
-  );
-  if (entriesForSelfAssessment.length >= 1) {
-    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
-      id: QuestionCategoryId.XSelfAssessment,
-      type: DashboardGroupType.SelfAssessment,
-      entries: entriesForSelfAssessment,
-    } as DashboardGroupSelAssessment);
     fixedEntriesIndexAndNr++;
   }
 

@@ -8,7 +8,6 @@ import {
   QuestionCategoryId,
   QuestionForPrompt,
 } from "@src/shared/data/questions";
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
@@ -90,13 +89,6 @@ const createDashboardAnswer = (
 const createScreenshotSyncData = (): SyncData => {
   const now = Date.now();
   const hour = 60 * 60 * 1000;
-  const selfAssessment = Object.values(SelfAssessmentId).reduce(
-    (acc, curr) => {
-      acc[curr] = { ts: 99, val: -1 };
-      return acc;
-    },
-    {} as SyncData["selfAssessment"],
-  );
 
   return {
     cfg: {
@@ -120,11 +112,7 @@ const createScreenshotSyncData = (): SyncData => {
     sunTaps: {},
     sunTapTimestamps: [],
     attempts: {},
-    selfAssessment: {
-      ...selfAssessment,
-      [SelfAssessmentId.WAS_OPTIMISTIC]: { ts: now - hour, val: 3 },
-      [SelfAssessmentId.SOCIAL_CONTACTS]: { ts: now - 2 * hour, val: 3 },
-    },
+    selfAssessment: {},
     alternativeApps: [],
     alternativeWebsites: [],
     patternInsightState: {

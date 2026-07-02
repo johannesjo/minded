@@ -35,7 +35,6 @@ export enum QuestionCategoryId {
   XEnergyLevelToday = "XEnergyLevelToday",
   XBrowsingBehaviorHappiness = "XBrowsingBehaviorHappiness",
   XAppUsageHappiness = "XAppUsageHappiness",
-  XSelfAssessment = "XSelfAssessment",
   XEmotionLabeling = "XEmotionLabeling",
 
   // IDEAS
@@ -999,9 +998,6 @@ export const QUESTION_CATEGORIES: {
   [QuestionCategoryId.XAppUsageHappiness]: {
     dashboardTxt: "Usage of configured Apps",
     isThisWeekOnlyCategory: true,
-  },
-  [QuestionCategoryId.XSelfAssessment]: {
-    dashboardTxt: "Recently...",
   },
   [QuestionCategoryId.XEmotionLabeling]: {
     dashboardTxt: "Your Emotions Today",

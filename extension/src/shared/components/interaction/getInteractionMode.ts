@@ -29,7 +29,6 @@ const TODAY_START_HOUR = 5;
 const ENERGY_LVL_MAX_HOURS = 19;
 const CONTEXTUAL_ALTERNATIVE_PROBABILITY = 1 / 3;
 const SET_ALTERNATIVE_PROBABILITY = 1 / 10;
-const SELF_ASSESSMENT_PROBABILITY = 1 / 10;
 const EMOTION_LABELING_PROBABILITY = 1 / 10;
 const SAVED_REASON_PROBABILITY = 1 / 15;
 const USAGE_RATING_DUE_PROBABILITY = 1 / 3;
@@ -55,7 +54,6 @@ export type InteractionMode =
   | "QUESTION"
   | "SHOW_ALTERNATIVE"
   | "SET_ALTERNATIVE"
-  | "SELF_ASSESSMENT"
   | "EMOTION_LABELING"
   | "SHOW_REASON"
   | "PATTERN_INSIGHT"
@@ -75,7 +73,6 @@ export type InteractionModeReason =
   | "contextual_alternative"
   | "contextual_set_alternative"
   | "contextual_pattern_insight"
-  | "self_assessment_sample"
   | "emotion_labeling_sample"
   | "alternative_sample"
   | "set_alternative_sample"
@@ -155,7 +152,6 @@ export const getInteractionModeDecision = (
   // return "ACTION_ADVICE";
   // return "ENERGY_LVL";
   // return "NOTICE";
-  // return "SELF_ASSESSMENT";
   // return "SHOW_ALTERNATIVE";
   // return "SET_ALTERNATIVE";
 
@@ -301,10 +297,6 @@ export const getInteractionModeDecision = (
       "contextual_set_alternative",
       frictionLevel,
     );
-  }
-
-  if (chance(SELF_ASSESSMENT_PROBABILITY, random)) {
-    return decision("SELF_ASSESSMENT", "self_assessment_sample", frictionLevel);
   }
 
   if (

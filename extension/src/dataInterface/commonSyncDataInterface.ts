@@ -21,7 +21,6 @@ import {
   // @ts-ignore - path alias resolved at build time based on platform
 } from "@dataInterface/system";
 
-import { SelfAssessmentId } from "@src/shared/components/interaction/selfAssessmentInteraction/selfAssessment.model";
 import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { getRecentSunTapTimestamps } from "@src/dataInterface/sunTapHistory";
 import {
@@ -322,18 +321,6 @@ export const setDailyQuestionsDoneForToday = async (
       ? { dailyQuestionsMorningTS: dateTS }
       : { dailyQuestionsEveningTS: dateTS },
   );
-
-export const saveSelfAssessment = async (
-  selfAssessmentId: SelfAssessmentId,
-  val: number,
-  dateTS = Date.now(),
-): Promise<void> =>
-  updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    selfAssessment: {
-      ...syncData.selfAssessment,
-      [selfAssessmentId]: { ts: dateTS, val },
-    },
-  }));
 
 export const saveEmotionLabeling = (
   emotions: string[],

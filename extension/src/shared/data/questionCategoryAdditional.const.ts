@@ -60,8 +60,6 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:
     "Monitoring your browsing behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your online habits, leading to better productivity and time management.",
   // NO save questions
-  [QuestionCategoryId.XSelfAssessment]:
-    "Self-assessment can help you reflect and build self-awareness. Over time, this can highlight areas to adjust, support stress management, and encourage healthier choices.",
   [QuestionCategoryId.XAppUsageHappiness]:
     "Monitoring your app usage behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your digital habits, leading to better productivity and time management.",
   [QuestionCategoryId.XEmotionLabeling]:
