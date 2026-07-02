@@ -1194,10 +1194,17 @@ export const Sun: Component<SunProps> = (props) => {
     sunEl.addEventListener("mousedown", mouseDownHandler);
   };
 
-  // Reactive glow color based on upward drag color temperature
+  // Glow colour precedence: a live upward drag's cool tint wins (it tracks the
+  // finger), then a settle's colour — the departing hand-off's amber and the
+  // companion rest's warm white (sun only; the moon keeps its own cool glow) —
+  // else neutral white.
   const getGlowColor = () => {
-    const ct = getColorTemp();
-    return ct < -0.1 ? "200, 220, 255" : "255, 255, 255";
+    if (getColorTemp() < -0.1) {
+      return "200, 220, 255";
+    }
+    return (
+      (props.variant !== "moon" && props.settle?.glowColor) || "255, 255, 255"
+    );
   };
   // Hover lift + halo for the resting companion, echoing the bottom-bar buttons'
   // hover feedback. The lift is slight; the glow reuses the drag box-shadow (see
@@ -1238,6 +1245,14 @@ export const Sun: Component<SunProps> = (props) => {
   // "glowing orb" read, so the halo itself can stay restrained.
   const MOON_REST_GLOW = 1.1;
   const MOON_HOVER_GLOW = 1.7;
+  // The disc always carries a whisper of its warm golden face (the Sun.scss
+  // ::before gradient) so it never reads as a flat white hole in the sky, and
+  // so the same object doesn't flip white→amber at the Little Sun hand-off
+  // (issue #124). A static floor only — the warmth never pulses (no breathing
+  // swell outside guided pauses) and stays put through drags: an upward drag's
+  // cool colorTemp is negative, so the floor simply holds. The moon is
+  // untouched — its ::before override pins its own sheen opacity (Sun.scss).
+  const SUN_REST_WARMTH = 0.12;
   // Keep the progress crown mounted through one soft fade when the flow clears
   // it (the success bloom), so the dots dissolve rather than snapping out — a
   // hard cut reads as a jolt (see the styling rules). We hold the last orbit
@@ -1317,12 +1332,9 @@ export const Sun: Component<SunProps> = (props) => {
             .join(", ") || "none",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
-        // A settle may warm the halo to the Little Sun's amber and tighten it for
-        // the departing hand-off (sun only — the moon keeps its own cool glow).
-        "--glow-color":
-          props.variant !== "moon" && props.settle?.glowColor
-            ? props.settle.glowColor
-            : getGlowColor(),
+        // A settle may colour the halo — the departing hand-off's amber, the
+        // companion rest's warm white — see getGlowColor for the precedence.
+        "--glow-color": getGlowColor(),
         "--glow-intensity":
           props.variant === "moon"
             ? Math.max(
@@ -1335,7 +1347,7 @@ export const Sun: Component<SunProps> = (props) => {
                   getGlowIntensity(),
                   props.isHovered ? COMPANION_HOVER_GLOW : COMPANION_REST_GLOW,
                 ),
-        "--sun-warmth": Math.max(0, getColorTemp()),
+        "--sun-warmth": Math.max(SUN_REST_WARMTH, getColorTemp()),
       }}
     >
       {isTapEnabled() && (
