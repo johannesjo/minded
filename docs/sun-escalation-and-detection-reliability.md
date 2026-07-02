@@ -26,35 +26,44 @@ blocked-apps concept."* Where it landed:
 
 Decided in review + owner direction.
 
-**Revised (2026-06): the tap-to-expand full-screen pause is removed.** PR #51's
-full-screen pause surface (below) was found not to feel good — tapping did
-nothing actionable, then the leave demanded a second, hidden, heavy drag inside a
-modal that overran the calm a casual companion tap deserves. Per owner direction
-we **stepped away from the additional overlay entirely**: the little sun is now
-*only* the resting bubble, and it offers the step-away **on the bubble itself** —
-**fling it** (a quick vertical flick; the universal "fling it" escape hatch from
-`CLAUDE.md`) or **drag it down past its lowest rest** (the deliberate calm set:
-once the bubble is pinned at its bottom clamp, pulling the finger ~100 dp further
-commits the leave). Both end in minded. Any other drag — including down to the
-bottom corner — just repositions the bubble (parkable anywhere the clamp allows);
-a plain tap does nothing (so a stray touch neither ejects the user nor detonates
-a surface).
+**Revised (2026-07): the ported fling / overshoot-set gestures are replaced by a
+visible "horizon" drop zone.** The 2026-06 revision (below) ported the in-app
+sun's fling and drag-down thresholds 1:1 onto the bubble. In practice (owner
+feedback) that didn't survive contact with the bubble's architecture: the leave
+had to carry the disc off-screen by moving the tiny wrap-content overlay
+*window* every frame (`updateViewLayout`, which is not frame-synced — the fling
+looked broken rather than physical); the overshoot set had **no visible trigger
+area** at all; and its bottom-edge trigger collided with the bubble's own
+parking spots at the screen edges. So the step-away is still offered on the
+bubble itself, but as **one clear, indicated gesture**: while the bubble is
+being dragged, a soft **horizon glow + a small "Step away" label** fades in at
+the bottom-centre of the screen (its own non-touchable overlay window,
+`LittleSunLeaveZone.kt`); carrying the sun into it magnetizes the disc onto the
+glow (haptic tick — unmistakably armed, drag back out to cancel); releasing
+lets the sun **set below the horizon** and opens minded. The set animates
+*inside* the full-width zone window (a frame-synced Compose transform, as
+smooth as the in-app sun) instead of moving the bubble window. Any other drag —
+to any edge or corner — just repositions the bubble (parkable anywhere the
+clamp allows); a plain tap does nothing (so a stray touch neither ejects the
+user nor detonates a surface). The **fling leave is cut** per owner direction:
+it was un-smoothable in a window-move architecture and redundant next to a
+visible target; the universal fling escape hatch still lives on the in-app sun,
+where a full-viewport surface can do it justice. (`LittleSun.kt`,
+`LittleSunLeaveZone.kt`, `LittleSunWindow.kt`, geometry in
+`LittleSunPosition.kt`.)
 
-The leave animations are **ported 1:1 from the in-app sun** (`sunAnimationUtils.ts`
-/ `Sun.tsx`) so the little sun reads and exits a gesture exactly like the sun
-everywhere else: the same release thresholds (`getSunReleaseAction` — 100 dp drag,
-with the little sun's drag measured as overshoot past the bottom clamp, since
-unlike the in-app sun it is repositionable and plain travel can't tell a park
-from a leave — 200 dp/s fling, 75 dp min travel, vertical intent), the same fling physics
-(`updatePhysics` — friction 0.98, distance-based shrink/fade, slight spin) and the
-same downward ease-in-out set (`animateToCompletion`). The one difference is
-*where* the motion lands: the in-app sun translates a disc inside a full-viewport
-surface, whereas the little sun has none — so it carries the disc off-screen by
-moving its own wrap-content overlay **window** (`onLeaveMove`, unclamped),
-needing no full-screen surface and no native→WebView seam. (`LittleSun.kt`,
-`LittleSunWindow.kt`.) The rest of this doc's framing — no escalation, the leave
-must feel *wanted*, one always-morphing sun — still holds; only the *shape* of the
-offer changed.
+**Superseded (2026-06): step-away via fling / drag-past-the-clamp on the
+bubble.** This revision removed PR #51's full-screen pause — tapping did nothing
+actionable, then the leave demanded a second, hidden, heavy drag inside a modal
+that overran the calm a casual companion tap deserves — and offered the
+step-away on the bubble itself instead: fling it, or drag it ~100 dp past its
+lowest allowed rest, with thresholds and physics ported 1:1 from
+`sunAnimationUtils.ts` and applied by moving the bubble's own window. What
+*survives* from it: no additional full-screen surface, the leave lives on the
+bubble, tap stays inert, and the rest of this doc's framing — no escalation,
+the leave must feel *wanted*, one always-morphing sun. What was replaced (by
+the 2026-07 revision above): the invisible thresholds and the window-move leave
+animations.
 
 **Original baseline: PR #51** ("Android: make the little sun an interactive,
 non-blocking bubble") — a draggable chat-head bubble that, on *tap*, expanded the
@@ -220,16 +229,12 @@ without accessibility" is not real.
   *resize*, and a true positional morph would have meant a two-window rearchitecture).
   The 2026-06 revision removed the full-screen pause entirely, so there is no
   expand/resize/cross-fade left to morph.
-- **The directional leave throw was the earlier "deferred fling fly-off" — now
-  built without a larger window.** An earlier draft of this revision faded the
-  bubble in place and deferred a real off-screen throw, assuming it would need a
-  transient full-screen surface to animate across. It does not: the leave moves the
-  little sun's own wrap-content **window** off-screen (`onLeaveMove`), so the fling
-  (physics throw along the release vector) and the drag-down set (ease-in-out sink
-  off the bottom) both carry the disc fully off-screen, ported 1:1 from the in-app
-  sun's physics/easing — no extra surface, the "no additional overlay" win intact.
-  Two small, deliberate divergences from the web sun remain, both forced by the
-  60 dp wrap-content window: the downward set does **not** grow the disc to 1.15×
-  (a scale-up would clip at the window bounds), and its duration is the snappier
-  `SET_MS` (≈620 ms) rather than the web's 3 s (the exit must feel *wanted*, not
-  slow). Revisit only if the window is ever enlarged for the leave.
+- **The window-move leave throw is gone (2026-07).** The 2026-06 revision
+  carried the leave off-screen by moving the little sun's own wrap-content
+  window per frame (`onLeaveMove`) to avoid any larger surface. That is what
+  made the fling look broken — `updateViewLayout` is not frame-synced — and it
+  is why the fling was cut. The set now animates inside the bottom-anchored
+  leave-zone window (`LittleSunLeaveZone.kt`): still not a full-screen surface,
+  still no native→WebView seam, and the animation is a frame-synced Compose
+  transform. The set keeps the brisk `SET_MS` (≈620 ms) rather than the web's
+  3 s — the exit must feel *wanted*, not slow.

@@ -7,17 +7,24 @@ import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.LittleSun
+import com.minded.minded.ui.compose.LittleSunLeaveZone
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.getForegroundAppReliable
 import java.time.Instant
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 
 //val SMALL_MSG_CYCLE_DURATION = 6
@@ -49,13 +56,28 @@ class LittleSunWindow(
     private var posY = 0
 
     // The finger's unclamped position during a drag: posX/posY are clamped
-    // on-screen every step, so once the bubble is pinned at the clamp floor the
-    // finger keeps travelling while the window stays put. The downward gap
-    // (rawY - posY) is the overshoot the set gesture reads — pulling the bubble
-    // past its lowest allowed rest is unmistakably a leave, while every
-    // position the clamp allows stays a plain parkable drop.
+    // on-screen every step, so the raw pair is where the disc would be if the
+    // finger alone decided. The leave-zone capture test reads this (not the
+    // clamped window position) so the magnet answers to the finger directly.
     private var rawX = 0f
     private var rawY = 0f
+
+    // ---- Leave zone ("horizon") state -----------------------------------
+    // A second, non-touchable overlay shown only while the bubble is being
+    // dragged: the visible trigger area for the step-away. Compose state so
+    // both windows' composables react live.
+    private var zoneView: ComposeView? = null
+    private var isDiscInZone by mutableStateOf(false)
+    private var isLeaveCommitted by mutableStateOf(false)
+    private var zoneFingerCenter by mutableStateOf(Offset.Zero)
+    private var zoneMagnetCenter by mutableStateOf(Offset.Zero)
+
+    // Zone geometry in display coordinates, resolved at drag start (insets can
+    // change between drags, e.g. after a rotation).
+    private var magnetCenterX = 0
+    private var magnetCenterY = 0
+    private var magnetCaptureRadiusPx = 0
+    private var zoneTopY = 0
 
     @Composable
     override fun Cmp() {
@@ -66,12 +88,10 @@ class LittleSunWindow(
 
         LittleSun(
             elapsedSeconds = elapsedSeconds,
+            discHidden = isDiscInZone,
+            onDragStart = { onDragStart() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
             onDragEnd = { onDragEnd() },
-            getBottomOvershootPx = { (rawY - posY).coerceAtLeast(0f) },
-            onLeaving = { beginStepAwayLaunch() },
-            onLeaveMove = { dx, dy -> onLeaveMove(dx, dy) },
-            onStepAway = { stepAway() },
         )
     }
 
@@ -167,6 +187,9 @@ class LittleSunWindow(
             // Restore the bubble's parked position.
             initPosition()
         }
+        // A fresh appearance starts at rest — no capture, no committed leave.
+        isDiscInZone = false
+        isLeaveCommitted = false
         super.showWindow()
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
@@ -176,15 +199,15 @@ class LittleSunWindow(
 
     /**
      * The little sun is always a small wrap-content overlay positioned anywhere
-     * on screen. It is touchable (so it can be dragged and flung) but NOT
-     * full-screen, so the app underneath stays fully interactive — Android only
-     * routes touches inside the bubble's own bounds to us, exactly like a
-     * chat-head. [FLAG_NOT_FOCUSABLE] keeps it from stealing keyboard focus from
-     * the app the user is typing in.
+     * on screen. It is touchable (so it can be dragged) but NOT full-screen, so
+     * the app underneath stays fully interactive — Android only routes touches
+     * inside the bubble's own bounds to us, exactly like a chat-head.
+     * [FLAG_NOT_FOCUSABLE] keeps it from stealing keyboard focus from the app
+     * the user is typing in.
      *
-     * The step-away is offered on the bubble itself (fling / drag-down → leave),
-     * so there is no full-screen pause to expand into and the app is never
-     * blocked.
+     * The step-away is offered on the bubble itself (drag it into the horizon
+     * glow that appears while dragging → the sun sets, minded opens), so there
+     * is no full-screen pause to expand into and the app is never blocked.
      */
     override fun getLayoutParams(): WindowManager.LayoutParams {
         return WindowManager.LayoutParams(
@@ -228,6 +251,27 @@ class LittleSunWindow(
         }
     }
 
+    private fun onDragStart() {
+        // Resolve the zone geometry fresh — insets/orientation may have changed
+        // since the last drag.
+        val density = ctrlSvc.resources.displayMetrics.density
+        val (mx, my) = LittleSunPosition.magnetCenter(ctrlSvc, windowManager)
+        magnetCenterX = mx
+        magnetCenterY = my
+        magnetCaptureRadiusPx = LittleSunPosition.magnetCaptureRadiusPx(density)
+        zoneTopY = LittleSunPosition.displayHeightPx(ctrlSvc, windowManager) -
+            LittleSunPosition.leaveZoneHeightPx(density)
+
+        isDiscInZone = false
+        isLeaveCommitted = false
+        zoneMagnetCenter = Offset(
+            magnetCenterX.toFloat(),
+            (magnetCenterY - zoneTopY).toFloat(),
+        )
+        updateZoneFingerCenter()
+        showZone()
+    }
+
     private fun onDrag(dxPx: Float, dyPx: Float) {
         rawX += dxPx
         rawY += dyPx
@@ -235,9 +279,33 @@ class LittleSunWindow(
         posY = rawY.roundToInt()
         clampPosition()
         updateLayout()
+
+        // Magnet capture answers to the finger (raw, unclamped), so the bottom
+        // clamp can never hold the disc just out of the zone's reach.
+        updateZoneFingerCenter()
+        val bubbleHalf = LittleSunPosition.bubbleSizePx(
+            ctrlSvc.resources.displayMetrics.density,
+        ) / 2f
+        val dist = hypot(
+            rawX + bubbleHalf - magnetCenterX,
+            rawY + bubbleHalf - magnetCenterY,
+        )
+        val inZone = dist <= magnetCaptureRadiusPx
+        if (inZone != isDiscInZone) {
+            isDiscInZone = inZone
+            if (inZone) {
+                // A soft tick marks the capture — release now and the sun sets.
+                window?.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+            }
+        }
     }
 
     private fun onDragEnd() {
+        if (isLeaveCommitted) return
+        if (isDiscInZone) {
+            commitLeave()
+            return
+        }
         // Rest wherever it was dropped — a free-floating companion, parkable
         // anywhere, not edge-locked. clampPosition keeps it on-screen and a
         // margin in from every edge, clear of the system gesture zones.
@@ -245,49 +313,149 @@ class LittleSunWindow(
         rawX = posX.toFloat()
         rawY = posY.toFloat()
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
+        hideZoneFaded()
+    }
+
+    private fun updateZoneFingerCenter() {
+        // The CLAMPED centre, deliberately: when the magnet lets the disc go,
+        // the zone's disc springs back to exactly where the bubble's own disc
+        // fades back in (the clamped window position) — one sun, no seam. The
+        // capture test above is what reads the raw finger position.
+        val bubbleHalf = LittleSunPosition.bubbleSizePx(
+            ctrlSvc.resources.displayMetrics.density,
+        ) / 2f
+        zoneFingerCenter = Offset(
+            posX + bubbleHalf,
+            posY + bubbleHalf - zoneTopY,
+        )
     }
 
     /**
-     * Per-frame move during a committed leave (fling / drag-down set): the disc
-     * travels off-screen, so unlike [onDrag] this does NOT clamp on-screen and
-     * does NOT persist the position — clamping would pin the bubble in view and
-     * the leave could never complete. The composable drives this each frame; the
-     * window is torn down by [stepAway] once the disc has cleared the screen.
-     */
-    private fun onLeaveMove(dxPx: Float, dyPx: Float) {
-        posX += dxPx.roundToInt()
-        posY += dyPx.roundToInt()
-        updateLayout()
-    }
-
-    /**
-     * A leave has committed (fling / drag-down). Launch minded *now*, behind the
-     * still-visible sun, so the app is drawn and ready by the time the sun has
-     * set — the calm "redirect" half of interrupt → reflect → redirect, into
-     * minded (a calm space) rather than the launcher that re-tempts. Matches the
-     * full interaction's close ([OverlayControllerService.goToApp]).
+     * Released inside the zone — the step-away is chosen. Launch minded *now*,
+     * behind the still-visible sun, so the app is drawn and ready by the time
+     * the sun has set — the calm "redirect" half of interrupt → reflect →
+     * redirect, into minded (a calm space) rather than the launcher that
+     * re-tempts. Matches the full interaction's close
+     * ([OverlayControllerService.goToApp]).
      *
-     * Stop the timer so the foreground re-validation tick can't tear the window
-     * down mid-set now that the foreground is minded, not the blocked app.
+     * Stop the timer so the foreground re-validation tick can't tear the zone
+     * down mid-set now that the foreground is minded, not the blocked app. The
+     * bubble window itself is already invisible (the zone holds the disc), so
+     * it is removed at once; the zone plays the set and then removes itself.
      *
      * Deliberately NOT counted via countUserDrivenClose(): that tally feeds the
      * "set up a daily budget" prompt (5+/day), so logging a calm step-away would
      * manufacture a scarcity nudge out of a healthy outcome — it leaves no tally.
      */
-    private fun beginStepAwayLaunch() {
+    private fun commitLeave() {
+        window?.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         stopTimer()
         ctrlSvc.goToApp()
+        // Flip BEFORE tearing the bubble window down: hideWindowImmediate keeps
+        // its hands off the zone only while a committed set is playing there.
+        isLeaveCommitted = true
+        // Removing a view from inside its own gesture callback is asking for
+        // trouble — let this dispatch finish first.
+        handler.post { hideWindowImmediate() }
+        // Failsafe: if the zone's composition dies before the set finishes
+        // (service teardown mid-animation), onSetComplete never fires — don't
+        // leave the glow stranded on screen. Idempotent with the normal path.
+        handler.postDelayed({ removeZoneImmediate() }, 2000)
     }
 
-    private fun stepAway() {
-        // The sun has set (faded out in the composable) and minded is already
-        // showing — remove the now-invisible window at once, no second fade.
-        hideWindowImmediate()
+    // ---- Leave zone window management ------------------------------------
+
+    private fun getZoneLayoutParams(): WindowManager.LayoutParams {
+        val density = ctrlSvc.resources.displayMetrics.density
+        return WindowManager.LayoutParams(
+            LittleSunPosition.displayWidthPx(ctrlSvc, windowManager),
+            LittleSunPosition.leaveZoneHeightPx(density),
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            // Never touchable: purely a picture; every touch stays with the
+            // bubble (which captured the pointer) or the app beneath.
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            // Same display coordinate space as the bubble window, so zone-local
+            // positions are display positions minus zoneTopY.
+            gravity = Gravity.TOP or Gravity.START
+            x = 0
+            y = zoneTopY
+        }
+    }
+
+    private fun showZone() {
+        if (zoneView != null) return
+        val v = ComposeView(ctrlSvc).apply {
+            setViewTreeLifecycleOwner(ctrlSvc)
+            setViewTreeSavedStateRegistryOwner(ctrlSvc)
+            setBackgroundColor(0x00000000)
+            setContent {
+                LittleSunLeaveZone(
+                    elapsedSeconds = elapsedSeconds,
+                    armed = isDiscInZone,
+                    committed = isLeaveCommitted,
+                    fingerDiscCenter = zoneFingerCenter,
+                    magnetCenter = zoneMagnetCenter,
+                    // The sun has fully set and minded is already showing —
+                    // remove the spent window at once, no second fade. Posted:
+                    // don't remove the view from inside its own composition.
+                    onSetComplete = { handler.post { removeZoneImmediate() } },
+                )
+            }
+            alpha = 0f
+        }
+        try {
+            windowManager.addView(v, getZoneLayoutParams())
+        } catch (e: Exception) {
+            Log.e(logTag, "failed to add leave-zone view", e)
+            return
+        }
+        zoneView = v
+        v.animate().alpha(1f).setDuration(300).start()
+    }
+
+    /** The drag ended in a plain rest — breathe the horizon back out. */
+    private fun hideZoneFaded() {
+        val v = zoneView ?: return
+        zoneView = null
+        v.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction {
+                try {
+                    windowManager.removeView(v)
+                } catch (e: Exception) {
+                    Log.e(logTag, "failed to remove leave-zone view", e)
+                }
+            }
+            .start()
+    }
+
+    private fun removeZoneImmediate() {
+        val v = zoneView ?: return
+        zoneView = null
+        try {
+            windowManager.removeView(v)
+        } catch (e: Exception) {
+            Log.e(logTag, "failed to remove leave-zone view", e)
+        }
     }
 
     override fun hideWindow() {
         stopTimer()
+        // A hide can land mid-drag (timer expiry, re-validation) — never leave
+        // the horizon glow orphaned on screen. During a committed set the zone
+        // outlives the bubble on purpose and removes itself.
+        if (!isLeaveCommitted) removeZoneImmediate()
         super.hideWindow()
+    }
+
+    override fun hideWindowImmediate() {
+        if (!isLeaveCommitted) removeZoneImmediate()
+        super.hideWindowImmediate()
     }
 
     override fun onWindowRemoved() {
