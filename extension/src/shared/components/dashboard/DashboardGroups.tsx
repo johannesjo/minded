@@ -36,7 +36,6 @@ import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardA
 import { updateDashboardEntriesFromQuestions } from "@src/shared/components/dashboard/updateDashboardEntries";
 import {
   REFRESH_DASHBOARD_EV,
-  RE_GREET_DASHBOARD_EV,
   RE_GREET_DASHBOARD_HIDDEN_EV,
 } from "@src/ev.const";
 import { useNavigate } from "@solidjs/router";
@@ -44,17 +43,10 @@ import {
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
-import { PAGE_FADE_MS } from "@src/util/animation";
-import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 // Matches the --dur-soft fade on the collapsed view so it finishes fading out
 // before the full set mounts (mirrors the daily-questions banner dismissal).
 const REVEAL_FADE_MS = 480;
-
-// How long the current greeting fades out before it's swapped for a fresh one
-// on re-greet — matches the page fade so the swap eases at the same calm pace as
-// every other transition (never a hard cut).
-const GREETING_SWAP_FADE_MS = PAGE_FADE_MS;
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
@@ -64,12 +56,6 @@ export const DashboardGroups: (props: {
 }) => JSX.Element = (props) => {
   let t0: NodeJS.Timeout | undefined;
   let revealT0: NodeJS.Timeout | undefined;
-  let greetingSwapT0: NodeJS.Timeout | undefined;
-
-  // Drives the soft fade-out of the current greeting while it's swapped for a
-  // fresh one on re-greet (the new tile fades back in via its own entrance).
-  const [getIsGreetingSwapping, setIsGreetingSwapping] =
-    createSignal<boolean>(false);
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
     createSignal<boolean>(false);
@@ -138,34 +124,13 @@ export const DashboardGroups: (props: {
     });
   };
 
-  // Landing back on the dashboard (app resume, or closing an interaction
-  // overlay) without the view remounting: re-roll the greeting so the tile feels
-  // fresh rather than frozen on whatever it was last time. The grid view has no
-  // single greeting, so it sits this out.
-  const reGreet = () => {
-    if (props.forceRevealed) return;
-    if (prefersReducedMotion()) {
-      refresh(true);
-      return;
-    }
-    // Fade the current tile out, swap in the fresh pick *while invisible*, then
-    // ease the new one back in — so the change reads as a calm cross-fade rather
-    // than a content pop.
-    setIsGreetingSwapping(true);
-    window.clearTimeout(greetingSwapT0);
-    greetingSwapT0 = setTimeout(() => {
-      refresh(true).then(() => {
-        // Let the fresh tile paint at opacity 0 before easing it back in.
-        requestAnimationFrame(() => setIsGreetingSwapping(false));
-      });
-    }, GREETING_SWAP_FADE_MS);
-  };
-
-  // Re-greet *now*, instantly, while the dashboard is still hidden behind a
-  // fading-out overlay (an interaction closing). No cross-fade: the fresh tile
-  // mounts and plays its own gentle entrance behind the cover, so it's already in
-  // place — gently easing in, and the only card you ever see — when the overlay
-  // reveals it. (The in-view cross-fade above is only needed with nothing covering us.)
+  // Re-roll the greeting *while the dashboard is hidden from the user* — behind a
+  // fading-out interaction overlay, or while the app is backgrounded (Android
+  // pause). The swap is instant: the fresh tile mounts and plays its own gentle
+  // entrance behind the cover, so it's already in place — gently easing in, and
+  // the only card ever seen — by the time the dashboard is revealed. A card is
+  // never changed in front of the user (calm is the product); it only ever
+  // changes offscreen. The grid view has no single greeting, so it sits this out.
   const reGreetHidden = () => {
     if (props.forceRevealed) return;
     refresh(true);
@@ -178,17 +143,14 @@ export const DashboardGroups: (props: {
   onMount(() => {
     refresh();
     window.addEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
-    window.addEventListener(RE_GREET_DASHBOARD_EV, reGreet);
     window.addEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, reGreetHidden);
   });
 
   onCleanup(() => {
     window.removeEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
-    window.removeEventListener(RE_GREET_DASHBOARD_EV, reGreet);
     window.removeEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, reGreetHidden);
     window.clearTimeout(t0);
     window.clearTimeout(revealT0);
-    window.clearTimeout(greetingSwapT0);
   });
 
   // Fade the calm greeting out, then route to the full "look back" grid so it
@@ -323,18 +285,13 @@ export const DashboardGroups: (props: {
           <Show
             when={getIsShowDailyQuestionsBanner()}
             fallback={
-              <div
-                classList={{
-                  [styles.greetingSwap]: true,
-                  [styles.isSwapping]: getIsGreetingSwapping(),
-                }}
-              >
-                {/* `keyed` so a fresh pick remounts the card and replays its
-                    gentle entrance fade-in (see .collapsed .box). */}
-                <Show when={getHeroGroup()} keyed>
-                  {(g) => renderCard(g)}
-                </Show>
-              </div>
+              // `keyed` so a fresh pick remounts the card and replays its gentle
+              // entrance fade-in (see .collapsed .box). Re-greets only ever happen
+              // while hidden, so the fresh tile is already easing in when revealed
+              // — no in-view swap wrapper needed.
+              <Show when={getHeroGroup()} keyed>
+                {(g) => renderCard(g)}
+              </Show>
             }
           >
             {renderDailyQuestionsBanner()}

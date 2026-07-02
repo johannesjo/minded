@@ -50,3 +50,8 @@ export const androidInterface = IS_ANDROID ? androidMinded : ({} as never);
 
 export const ANDROID_EV_RESUME = "androidAppResume";
 export const ANDROID_EV_PAUSE = "androidAppPause";
+// onStart / onStop — the activity's true *visible* boundary (unlike pause/resume,
+// which fire on mere focus loss: a dialog over the app, a recents peek,
+// split-screen). Used so the dashboard only re-greets while genuinely hidden.
+export const ANDROID_EV_START = "androidAppStart";
+export const ANDROID_EV_STOP = "androidAppStop";

@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity() {
     private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
     private val webAppResumeEVName = "androidAppResume"
     private val webAppPauseEVName = "androidAppPause"
+    private val webAppStartEVName = "androidAppStart"
+    private val webAppStopEVName = "androidAppStop"
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
     private val baseUrl = "file:///android_asset/web/src/android/main/index.html"
@@ -260,12 +262,40 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         Log.v(logTag, "onPause()")
-        // Tell the web layer the app is leaving the foreground so it can time how
-        // long we're away (used to decide whether a return is a fresh visit — see
-        // the dashboard re-greet). The WebView keeps running in the background, so
-        // it gets no visibilitychange of its own; this event is its only signal.
+        // Fires on mere focus loss (a dialog over the app, a recents peek), not
+        // just a real background — so this is NOT the signal for anything that
+        // must only happen while hidden (e.g. the dashboard re-greet, which uses
+        // onStop below). The WebView keeps running in the background, so it gets
+        // no visibilitychange of its own; these lifecycle events are its only
+        // signals.
         if (this::webView.isInitialized) {
             webView.evaluateJavascript("(function() { window.dispatchEvent(new Event('${webAppPauseEVName}')); })();",
+                ValueCallback<String?> { })
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.v(logTag, "onStart()")
+        // The activity has become *visible* again (paired with onStop). Unlike
+        // onResume, it doesn't fire on a mere focus regain, so the web layer uses
+        // it to bound the true visible session — e.g. how long the app was on
+        // screen before it was next hidden.
+        if (this::webView.isInitialized) {
+            webView.evaluateJavascript("(function() { window.dispatchEvent(new Event('${webAppStartEVName}')); })();",
+                ValueCallback<String?> { })
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.v(logTag, "onStop()")
+        // The activity is now genuinely *hidden* (not merely unfocused). This is
+        // the safe moment to change offscreen UI the user must never watch swap —
+        // the dashboard re-greets here so a fresh tile is already in place, unseen,
+        // by the time the app is shown again.
+        if (this::webView.isInitialized) {
+            webView.evaluateJavascript("(function() { window.dispatchEvent(new Event('${webAppStopEVName}')); })();",
                 ValueCallback<String?> { })
         }
     }
