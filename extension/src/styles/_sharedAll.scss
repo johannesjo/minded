@@ -53,7 +53,7 @@
 
   // Body font lives on the root only so descendants inherit naturally —
   // do NOT also set this on `*`, that prior version overrode the inherited
-  // Fraunces on nested elements inside `.txtBig`/`.h2Mindful`.
+  // display serif on nested elements inside `.txtBig`/`.h2Mindful`.
   font-family: var(--font-body);
 
   // box-sizing still needs to be universal so children adopt it.
@@ -70,7 +70,7 @@
     font-family: inherit;
   }
 
-  // Display font — single Fraunces voice for mindful surfaces only.
+  // Display font — single Newsreader voice for mindful surfaces only.
   // Descendants inherit it because we removed `*` from the body-font rule.
   .txtBig,
   .h2Mindful {

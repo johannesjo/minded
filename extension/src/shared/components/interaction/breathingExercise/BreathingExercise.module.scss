@@ -22,7 +22,7 @@
   h1 {
     @include displayVoice;
     font-size: clamp(28px, 7vw, 42px);
-    line-height: 1.15; // Fraunces ascenders need a touch more room
+    line-height: 1.15; // the display serif's ascenders need a touch more room
     margin: 0;
   }
 
@@ -36,5 +36,8 @@
     font-size: 36px;
     line-height: 1;
     font-weight: 300;
+    // The count changes every second; fixed-width digits keep it centered
+    // instead of shifting with each new number.
+    font-variant-numeric: tabular-nums;
   }
 }

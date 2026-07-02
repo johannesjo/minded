@@ -99,6 +99,9 @@ $shadow: var(--little-sun-shadow);
   font-weight: 700;
   white-space: nowrap;
   font-size: var(--litle-sun-counter-fz);
+  // The countdown ticks every second; fixed-width digits keep the number from
+  // wobbling on the disc as it changes.
+  font-variant-numeric: tabular-nums;
   user-select: none;
   padding: 0;
 
