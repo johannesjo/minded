@@ -1,7 +1,11 @@
 // Latin variable woff2 subsets copied from @fontsource-variable.
 // To refresh: `npm i @fontsource-variable/inter @fontsource-variable/fraunces`,
-// copy `inter-latin-wght-normal.woff2` and `fraunces-latin-wght-normal.woff2`
+// copy `inter-latin-wght-normal.woff2` and `fraunces-latin-standard-normal.woff2`
 // from each package's `files/` dir into `src/assets/fonts/`, then uninstall.
+//
+// Fraunces uses the `standard` subset (opsz + wght), NOT `wght`-only: its `opsz`
+// axis carries much of its warmth at display sizes and drives
+// `font-optical-sizing: auto` (see `displayVoice` in mixins/allTypo.scss).
 
 @font-face {
   font-family: "Inter Variable";

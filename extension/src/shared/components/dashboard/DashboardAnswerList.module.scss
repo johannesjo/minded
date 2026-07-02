@@ -2,6 +2,12 @@
 
 .AnswerList {
   :global .dashboardContent {
+    // The user's own free-text reflections — set in the mindful serif so a
+    // page of one's own words reads like gentle writing, not a settings grid.
+    // Only this list opts in; sibling cards (quote, self-assessment dots,
+    // emotion labels) keep Inter, and the Inter labels above stay the contrast.
+    @include displayVoice;
+
     margin-top: 10px;
 
     @include onNonMobileScreens {

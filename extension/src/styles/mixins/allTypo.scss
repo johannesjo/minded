@@ -5,6 +5,9 @@
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.005em;
+  // Fraunces' bundled subset carries the `opsz` axis (see _fonts.scss); let the
+  // browser track it to font-size so display sizes keep their warmth.
+  font-optical-sizing: auto;
   // Fraunces ships only `normal`; reset em/i so the browser doesn't
   // synthesize an oblique that looks visibly off vs a real italic master.
   em,
@@ -15,7 +18,9 @@
 
 @mixin allTypo() {
   .h2 {
-    font-weight: 200;
+    // 300, not 200: ultra-light hairlines get brittle on some Android subpixel
+    // rendering. (.dashboardHeading stays 200 — the dashboard's ambient signature.)
+    font-weight: 300;
     margin-bottom: 8px;
     font-size: var(--fz-xxl);
     user-select: none;
