@@ -12,6 +12,30 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="minded-6622"></div>
 
+    <!--
+      Pick light/dark before the JS bundle mounts. Wind-down shares the
+      interaction's safety-net sky floor (#minded-6622::before in
+      indexInteractionAndroid.scss, imported by this entry), which paints
+      `var(--background-gradient)` from this static markup as soon as the CSS
+      loads — before addWrapperClasses() runs in onMount to add the dark class.
+      Wind-down is an evening feature, so without this the first frame paints
+      the *light* gradient and then pops to the night sky once JS mounts. Set
+      the class synchronously here — a classic, non-module script that runs
+      during parse, before the deferred module below and before first paint. The
+      dark `--background-gradient` override is scoped to
+      `#minded-6622.minded-6622-dark`, so the class must land on this element
+      specifically. Keep the clock rule in sync with isDarkModeNow()
+      (src/shared/addWrapperClasses.ts).
+    -->
+    <script>
+      (function () {
+        var h = new Date().getHours();
+        if (h >= 19 || h < 6) {
+          document.getElementById("minded-6622").classList.add("minded-6622-dark");
+        }
+      })();
+    </script>
+
     <script src="indexSleepWindDownAndroid.tsx" type="module"></script>
 </body>
 
