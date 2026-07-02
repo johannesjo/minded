@@ -88,6 +88,29 @@ object LittleSunPosition {
         return clamp(ctx, wm, x, y)
     }
 
+    // --- Leave zone ("horizon") geometry ---------------------------------
+    // The visible drop target for the drag-to-step-away gesture: a soft glow
+    // at the bottom-centre that appears while the bubble is being dragged.
+    // Carrying the disc within the capture radius of the magnet centre
+    // magnetizes it; releasing there commits the leave (the sun sets below
+    // the horizon). Kept here with the rest of the bubble geometry so the
+    // zone window, the capture test and the snapped disc all agree.
+
+    /** Height of the bottom-anchored leave-zone overlay window. */
+    fun leaveZoneHeightPx(density: Float): Int = (240 * density).roundToInt()
+
+    /** Centre of the leave-zone magnet, in full display coordinates. */
+    fun magnetCenter(ctx: Context, wm: WindowManager): Pair<Int, Int> {
+        val density = ctx.resources.displayMetrics.density
+        val (_, insetBottom) = gestureInsets(ctx, wm)
+        val x = displayWidthPx(ctx, wm) / 2
+        val y = displayHeightPx(ctx, wm) - insetBottom - (72 * density).roundToInt()
+        return x to y
+    }
+
+    /** Disc centres within this distance of the magnet centre are captured. */
+    fun magnetCaptureRadiusPx(density: Float): Int = (80 * density).roundToInt()
+
     /**
      * The bubble centre as a fraction (0..1) of the display bounds. The
      * full-screen interaction WebView covers the same display, so this fraction

@@ -893,7 +893,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
      * very icons (including the one just left) that re-tempt. This is the
      * "redirect" half of interrupt → reflect → redirect, shared by every calm
      * close: the full interaction, the sleep wind-down, and the little-sun
-     * bubble's fling / drag-down step-away. We can't (and the philosophy
+     * bubble's drag-to-horizon step-away. We can't (and the philosophy
      * wouldn't) force-kill the blocked app — we just glide the user somewhere
      * calm.
      */
