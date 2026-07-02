@@ -1,0 +1,49 @@
+// Global interaction styles (injected via _sharedGlobalInteraction.scss). A CSS
+// module would not reach the interaction's render context, so everything is
+// scoped under the root `.finger-rest` class instead (as UrgeSurfing does).
+.finger-rest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--c-fg-full-emphasis);
+
+  .finger-rest-zone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // A generous, unmissable surface: resting shouldn't require aiming.
+    width: min(420px, 92vw);
+    min-height: 260px;
+    // Keep the whole press for ourselves: no scroll takeover mid-rest (which
+    // would fire pointercancel and cut the moment short), no text selection,
+    // no long-press callout.
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .finger-rest-warmth {
+    position: absolute;
+    inset: 0;
+    // The quiet response to a resting finger: a soft pool of the companion's
+    // own light (amber by day, the moon's cool blue at night — same variable
+    // the little sun's halo breathes with). Opacity and its slow ease are
+    // driven inline from the component.
+    background: radial-gradient(
+      closest-side,
+      rgba(var(--little-sun-breath-rgb), 0.22) 0%,
+      rgba(var(--little-sun-breath-rgb), 0) 72%
+    );
+    pointer-events: none;
+  }
+
+  .finger-rest-cue {
+    position: relative;
+    // Opacity and fade are driven inline from the component: the words
+    // dissolve as stillness begins and return if the finger leaves early.
+  }
+}

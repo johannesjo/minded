@@ -18,6 +18,7 @@ import { PatternInsightInteraction } from "@src/shared/components/interaction/pa
 import { ScreenOffInteraction } from "@src/shared/components/interaction/screenOff/ScreenOffInteraction";
 import { UrgeSurfing } from "@src/shared/components/interaction/urgeSurfing/UrgeSurfing";
 import { BellInteraction } from "@src/shared/components/interaction/bell/BellInteraction";
+import { FingerRestInteraction } from "@src/shared/components/interaction/fingerRest/FingerRestInteraction";
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
@@ -107,6 +108,12 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           onSuccess={() => props.onSuccess()}
           onSunWaveStart={props.onSunWaveStart}
           onSunWaveEnd={props.onSunWaveEnd}
+        />
+      </Match>
+      <Match when={props.mode === "FINGER_REST"}>
+        <FingerRestInteraction
+          onCancelCountdown={props.onCancelCountdown}
+          onSuccess={() => props.onSuccess()}
         />
       </Match>
       <Match when={props.mode === "ENERGY_LVL"}>

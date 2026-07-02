@@ -55,6 +55,11 @@ const BELL_PROBABILITY = 1 / 4;
 // due" register as NOTICE (and slightly more common than it, being the richer
 // moment of the two).
 const BELL_SAMPLE_PROBABILITY = 1 / 25;
+// The one wordless intervention: no question, no advice — an invitation to let
+// the scrolling finger be still for a moment. Same everyday register as the
+// bell and NOTICE; unlike them it needs no sound and no waking-hours gate, so
+// it is also the softest thing the small hours can serve.
+const FINGER_REST_PROBABILITY = 1 / 20;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -69,7 +74,8 @@ export type InteractionMode =
   | "PATTERN_INSIGHT"
   | "SCREEN_OFF"
   | "URGE_SURFING"
-  | "BELL";
+  | "BELL"
+  | "FINGER_REST";
 
 export type InteractionModeReason =
   | "few_answers_question"
@@ -95,6 +101,7 @@ export type InteractionModeReason =
   | "urge_surfing_strong"
   | "bell_strong"
   | "bell_sample"
+  | "finger_rest_sample"
   | "fallback_question"
   | "fallback_anti_repeat_notice";
 
@@ -374,6 +381,12 @@ export const getInteractionModeDecision = (
 
   if (canOfferBell && chance(BELL_SAMPLE_PROBABILITY, random)) {
     return decision("BELL", "bell_sample", frictionLevel);
+  }
+
+  // Kept to real interventions like the bell: the dashboard's sun already
+  // offers its own embodied rituals (drag down to ground, fling to let go).
+  if (!isMainView && chance(FINGER_REST_PROBABILITY, random)) {
+    return decision("FINGER_REST", "finger_rest_sample", frictionLevel);
   }
 
   if (chance(NOTICE_PROBABILITY, random)) {
