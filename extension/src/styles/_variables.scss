@@ -134,6 +134,12 @@
   // through soft green and yellow to a warm coral at the horizon. Static
   // (no orbs/drift); see coloured-wrapper.scss. Dark theme overrides below
   // with the two-orb ambient background.
+  //
+  // These values are the 9:00 "morning" keyframe of the living time-of-day
+  // sky (skyTimeline.ts): addWrapperClasses.ts overrides the four stops
+  // inline by local hour across the light window, so what ships here is the
+  // no-JS/default baseline. Stop *positions* below are mirrored in
+  // skyTimeline.ts's gradient builders — change them in both places.
   --c-gradient-1: #cfe4f5; // sky blue (top)
   --c-gradient-2: #d8ecd6; // soft green
   --c-gradient-3: #f5efc8; // yellow
@@ -158,6 +164,9 @@
   // BackgroundTransition layer and the grounding stage so the sky the drag
   // unveils carries through "Stay a while" unchanged (built from the same
   // sunset color stops above, so a color tweak updates both at once).
+  // From 17:00 addWrapperClasses.ts overrides this var inline with a
+  // night-leaning blend (skyTimeline.ts duskTargetGradientAt) so the reveal
+  // keeps its payoff once the ambient sky is already golden.
   --background-sunset-gradient: linear-gradient(
     to bottom,
     var(--bg-transition-sunset-top) 0%,
