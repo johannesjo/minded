@@ -29,9 +29,6 @@ export const NoticeInteraction = (props: NoticeProps): JSX.Element => {
       class="notice-interaction"
       onmousemove={props.onCancelCountdown}
     >
-      <div class="notice-ico" aria-hidden="true">
-        {cue().ico}
-      </div>
       <div class="txtBig notice-cue">{cue().cue}</div>
       <Btn style={{ "margin-top": "24px" }} onClick={props.onSuccess}>
         {cue().done}
