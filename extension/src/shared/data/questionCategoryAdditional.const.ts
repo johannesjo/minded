@@ -38,15 +38,15 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.UnderstandingProcrastination]:
     "Meeting your own patterns with curiosity, rather than blame, can gently loosen their hold.",
   [QuestionCategoryId.SelfDiscovery]:
-    "Self-discovery helps you understand your needs, desires, and motivations. It can support better decision-making and overall well-being.",
+    "Getting to know your own needs and wishes, gently and without agenda, can help you feel a little more at home with yourself.",
   [QuestionCategoryId.Insomnia]:
-    "Understanding and addressing insomnia is crucial for your physical health and mental well-being. Good sleep is essential for cognitive function, mood regulation, and overall health.",
+    "Meeting sleeplessness with patience rather than frustration can ease some of the struggle. Rest often comes more easily once we stop chasing it.",
   [QuestionCategoryId.SleepWindDown]:
     "Writing down loose thoughts before sleep can reduce the need to keep them in working memory and make it easier to leave the day alone for the night.",
   [QuestionCategoryId.SelfImprovement]:
-    "Small, intentional changes compound over time. Reflecting on who you want to become can help you take meaningful steps and stay aligned with your values.",
+    "Reflecting on who you'd like to become, held gently, can help you stay close to what matters to you — no pressure to be anywhere other than where you are.",
   [QuestionCategoryId.Relationships]:
-    "Strong relationships are one of the biggest contributors to a happy life. Reflecting on the people around you can help you nurture connection, set boundaries, and feel more supported.",
+    "Bringing the people who matter to mind can quietly nurture connection and remind you of the support already around you.",
   [QuestionCategoryId.MindfulEating]:
     "Paying attention to how and what you eat can help you notice hunger and fullness cues, enjoy your food more, and build a healthier relationship with eating.",
   [QuestionCategoryId.NoticingNow]:
@@ -56,12 +56,12 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.LettingGo]:
     "Noticing what you can set down, and what lies outside your control, can loosen the grip of worry and make room for a little more ease.",
   [QuestionCategoryId.XEnergyLevelToday]:
-    "Tracking your energy level can help you notice patterns (sleep, workload, habits) and plan demanding tasks for times when you tend to feel best.",
+    "Noticing your energy as it is right now, without needing to change it, can help you meet yourself with a little more kindness today.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:
-    "Monitoring your browsing behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your online habits, leading to better productivity and time management.",
+    "Noticing how your time online feels, gently and without judgment, can help it feel a little more your own.",
   // NO save questions
   [QuestionCategoryId.XAppUsageHappiness]:
-    "Monitoring your app usage behaviors is beneficial as it can help identify patterns and habits, some of which may be unproductive or time-consuming. By understanding these behaviors, you can make conscious efforts to improve your digital habits, leading to better productivity and time management.",
+    "Noticing how your time on your phone feels, gently and without judgment, can help it feel a little more your own.",
   [QuestionCategoryId.XEmotionLabeling]:
-    "Labeling your emotions helps you develop emotional awareness and regulation skills. By identifying what you feel and where you feel it in your body, you can better understand your emotional patterns and respond to difficult feelings with greater clarity and self-compassion.",
+    "Gently naming what you feel, and noticing where it sits in your body, can bring a little clarity and help you meet difficult moments with more warmth.",
 };

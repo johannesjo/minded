@@ -87,7 +87,7 @@ const ACTIVITIES: {
 }[] = [
   { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
   { key: "gratitude", label: "Gratitude / reflection", view: "gratitude" },
-  { key: "tomorrow", label: "Tomorrow's top 3", view: "tomorrow" },
+  { key: "tomorrow", label: "A note for tomorrow", view: "tomorrow" },
   { key: "breathing", label: "Breathing exercise", view: "breathing" },
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
 ];
