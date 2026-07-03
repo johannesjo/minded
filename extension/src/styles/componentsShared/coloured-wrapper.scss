@@ -1,3 +1,14 @@
+// The dynamic wrapper hosts only interventions (content script, Android
+// overlay). There every button is an invitation ("Stay a while?", intent/time
+// options), so they speak the same serif as the questions floating in the sky
+// (issue #167). The non-dynamic id is ALSO the app-shell root (RouteCmp,
+// NewTab, options), where buttons are controls and keep the body sans — the
+// dashboard's intervention host sets the same var on its own root instead
+// (InteractionOverlay.module.scss).
+#minded-6622-coloured-wrapper-dynamic {
+  --btn-font: var(--font-display);
+}
+
 #minded-6622-coloured-wrapper-dynamic,
 #minded-6622-coloured-wrapper {
   position: fixed;

@@ -70,9 +70,14 @@
   //--btn-slightly-smaller: 52px;
   --btn-small: 36px;
   --btn-bigger-fz: 27px;
-  --btn-bg: #fff;
+  // Buttons are frosted, not solid: translucent white lets the sky's warmth
+  // through so choice surfaces stay in the same world as the gradient stage
+  // (issue #167). One alpha ladder — not-selected .25 < default .65 <
+  // hover .7 < selected .85 — so selected stays the brightest step without
+  // reverting to an opaque slab (it also signals via scale + radius).
+  --btn-bg: rgba(255, 255, 255, 0.65);
   --btn-bg-not-selected: rgba(255, 255, 255, 0.25);
-  --btn-bg-selected: rgba(255, 255, 255, 1);
+  --btn-bg-selected: rgba(255, 255, 255, 0.85);
   --btn-outline-color: rgba(0, 0, 0, 0.1);
   --btn-bg-selectable-hover: rgba(255, 255, 255, 0.7);
   --btn-selected-scale: 1.1;
