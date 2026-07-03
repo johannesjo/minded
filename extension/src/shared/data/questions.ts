@@ -53,6 +53,21 @@ export const SPECIAL_WIDGET_LETTER = "X";
 export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
   categoryId[0] !== SPECIAL_WIDGET_LETTER;
 
+/**
+ * Categories switched off for now. Their enum entry (and any answers already
+ * saved) stay intact so re-enabling is a one-line change, but their questions
+ * never enter the pool — no interventions, no daily-question steps, and (being
+ * today-only) they quietly drop off the dashboard once we stop asking them.
+ *
+ * RefocusHelperToday ("Finding Focus Today" — "your most important task today",
+ * "the plan for today") leans productivity / task-completion rather than mindful
+ * awareness, so it's parked until it earns a shape that fits the theme.
+ */
+export const DISABLED_QUESTION_CATEGORIES: ReadonlySet<QuestionCategoryId> =
+  new Set<QuestionCategoryId>([QuestionCategoryId.RefocusHelperToday]);
+export const isCategoryEnabled = (categoryId: QuestionCategoryId): boolean =>
+  !DISABLED_QUESTION_CATEGORIES.has(categoryId);
+
 export interface Question {
   t: string;
   id: QID;
@@ -1043,6 +1058,8 @@ export const QUESTIONS: QuestionForPrompt[] = [];
 Object.values(QuestionCategoryId)
   // NOTE: we filter out all questions from categories starting with X
   .filter(filterSpecialWidgets)
+  // ...and any category parked in DISABLED_QUESTION_CATEGORIES.
+  .filter(isCategoryEnabled)
   .forEach((categoryId) => {
     const entry = QUESTION_CATEGORIES[categoryId];
     entry.questions?.forEach((question: Question) => {

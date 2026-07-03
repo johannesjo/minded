@@ -16,11 +16,11 @@ export const GRATITUDE_PROMPTS: string[] = [
 ];
 
 export const TOMORROW_PROMPTS: string[] = [
-  "What's the single most important thing for tomorrow?",
-  "What would make tomorrow feel like a good day?",
-  "What are your top three priorities for tomorrow?",
-  "What's one thing you'd like to handle first tomorrow?",
-  "If you only got one thing done tomorrow, what should it be?",
+  "Is there anything for tomorrow you can set down here for now?",
+  "What would make tomorrow feel like a kind day?",
+  "What can wait until tomorrow, so you can leave it for tonight?",
+  "Is there one gentle thing you're looking forward to tomorrow?",
+  "Anything on your mind for tomorrow that tomorrow can take care of?",
 ];
 
 /**

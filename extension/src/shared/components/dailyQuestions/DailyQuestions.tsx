@@ -56,9 +56,11 @@ const DailyQuestions = () => {
   const isMonday = today.getDay() === 1;
   const mode: DailyQuestionsMode = getDailyQuestionsMode();
   // const mode: DailyQuestionsMode = "Evening";
-  // Evening lost its opening mood check-in, so it's a 3-step flow now while
-  // Morning keeps 4. The last step is the success beat; the rest are questions.
-  const lastStep = mode === "Morning" ? 3 : 2;
+  // Morning is an energy check-in, then today's gentle plans — with a
+  // lightly-held weekly intention added on Mondays (4 steps Mon / 3 steps
+  // otherwise). Evening lost its opening mood check-in, so it's 3 steps too.
+  // The last step is the success beat; the rest are questions.
+  const lastStep = mode === "Morning" ? (isMonday ? 3 : 2) : 2;
   // Every step before the success beat is one question; that count is also the
   // number of progress dots the sun wears as its crown.
   const nrOfQuestions = lastStep;
@@ -157,12 +159,12 @@ const DailyQuestions = () => {
                 onCancelCountdown={() => undefined}
               />
             </Match>
-            <Match when={getStep() === 1}>
+            {/* Mondays open with a lightly-held weekly intention; other
+                mornings go straight to today's gentle plans. */}
+            <Match when={isMonday && getStep() === 1}>
               <Question
                 initialQuestion={getRndQuestionFromCat(
-                  isMonday
-                    ? QuestionCategoryId.GoalForTheWeek
-                    : QuestionCategoryId.RefocusHelperToday,
+                  QuestionCategoryId.GoalForTheWeek,
                 )}
                 answers={getAnswers()}
                 onSuccess={() => setStep(2)}
@@ -171,7 +173,7 @@ const DailyQuestions = () => {
                 onCancelCountdown={() => undefined}
               />
             </Match>
-            <Match when={getStep() === 2}>
+            <Match when={getStep() === (isMonday ? 2 : 1)}>
               <Question
                 initialQuestion={getRndQuestionFromCat(
                   QuestionCategoryId.GoodPlansToday,
@@ -179,14 +181,14 @@ const DailyQuestions = () => {
                 answers={getAnswers()}
                 onSuccess={() => {
                   onSuccess();
-                  setStep(3);
+                  setStep(lastStep);
                 }}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}
               />
             </Match>
-            <Match when={getStep() === 3}>
+            <Match when={getStep() === lastStep}>
               {/* TODO component */}
               <div class="success-message" ref={scheduleAfterAni}>
                 {/* No sun here: the shell sun blooms above this line. */}

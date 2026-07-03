@@ -21,7 +21,6 @@ import { Toast } from "@src/shared/components/ui/Toast";
 import { Ico, IcoName } from "@src/shared/components/ui/Ico";
 import ButtonWrapper from "@src/shared/components/ui/ButtonWrapper";
 import Btn from "@src/shared/components/ui/Btn";
-import Chart from "@src/shared/components/ui/Chart";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
@@ -118,7 +117,6 @@ const TOC = [
   { id: "selectors", label: "Selectors" },
   { id: "indicators", label: "Indicators" },
   { id: "icons", label: "Icons" },
-  { id: "chart", label: "Chart" },
   { id: "interactions", label: "Interactions" },
   { id: "sun-widget", label: "Sun widget" },
 ];
@@ -135,7 +133,6 @@ const Styleguide = (): JSX.Element => {
   const root = getRoot();
   const originalDark = root?.classList.contains(DARK_CLASS) ?? false;
   const [isDark, setIsDark] = createSignal(originalDark);
-  const themeKey = () => (isDark() ? "dark" : "light");
 
   createEffect(() => {
     getRoot()?.classList.toggle(DARK_CLASS, isDark());
@@ -477,30 +474,6 @@ const Styleguide = (): JSX.Element => {
                 <Ico name={name} size={32} />
                 <code>{name}</code>
               </div>
-            )}
-          </For>
-        </div>
-      </Section>
-
-      <Section id="chart" title="Chart">
-        <p class={styles.muted}>
-          Re-mounted on theme toggle so axis colors pick up the active palette.
-        </p>
-        <div style={{ "max-width": "480px" }}>
-          <For each={[themeKey()]}>
-            {() => (
-              <Chart
-                chartData={{
-                  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                  datasets: [
-                    {
-                      label: "demo",
-                      data: [2, 3, 1, 4, 3, 5, 2],
-                      tension: 0.3,
-                    },
-                  ],
-                }}
-              />
             )}
           </For>
         </div>

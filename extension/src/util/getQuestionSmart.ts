@@ -1,6 +1,7 @@
 import { Answer } from "@src/dataInterface/syncData";
 import {
   filterSpecialWidgets,
+  isCategoryEnabled,
   isExcludedByLimitTo,
   QUESTION_CATEGORIES,
   QuestionCategory,
@@ -107,6 +108,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   const pointsMap: { [key in QuestionCategoryId]?: number } = {};
   Object.values(QuestionCategoryId)
     .filter(filterSpecialWidgets)
+    .filter(isCategoryEnabled)
     .forEach((categoryId) => {
       const questionCategory = QUESTION_CATEGORIES[categoryId];
 

@@ -87,7 +87,7 @@ const ACTIVITIES: {
 }[] = [
   { key: "brainDump", label: "Gentle brain dump", view: "brainDump" },
   { key: "gratitude", label: "Gratitude / reflection", view: "gratitude" },
-  { key: "tomorrow", label: "Tomorrow's top 3", view: "tomorrow" },
+  { key: "tomorrow", label: "A note for tomorrow", view: "tomorrow" },
   { key: "breathing", label: "Breathing exercise", view: "breathing" },
   { key: "calmRead", label: "Something calm to read", view: "calmRead" },
 ];
@@ -474,17 +474,14 @@ export const SleepWindDownView = (
                     </For>
                   </div>
                   <div class={styles.menuFooter}>
+                    {/* Always just "Goodnight" — the menu is a calm offering to
+                        dip into, not a checklist to complete, so the exit never
+                        turns into an "all done" tally. */}
                     <Btn
                       onClick={enterGoodnight}
                       disabled={!hydrated()}
                     >
-                      {completed().size > 0 ? (
-                        <>
-                          <Ico name="check" /> All done
-                        </>
-                      ) : (
-                        "Goodnight"
-                      )}
+                      Goodnight
                     </Btn>
                   </div>
                   <button
