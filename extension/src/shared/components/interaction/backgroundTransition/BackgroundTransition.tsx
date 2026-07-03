@@ -12,6 +12,11 @@ interface BackgroundTransitionProps {
   dragThreshold?: number; // Percentage (0-1) of drag needed to trigger completion
   shadowRoot?: ShadowRoot;
   isSunGradientAttached?: boolean;
+  // Dim the star field so it stays behind the dashboard/interaction UI (cards +
+  // buttons) rather than bleeding through their translucent night-mode fills.
+  // The success night sky (e.g. the sleep goodnight) leaves this off so the
+  // stars stay at full brightness — nothing sits over them there. See Stars.
+  dimStars?: boolean;
 }
 
 export const BackgroundTransition: Component<BackgroundTransitionProps> = (
@@ -211,7 +216,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
         }}
       />
     </>,
-    <Stars intensity={getStarsIntensity()} />,
+    <Stars intensity={getStarsIntensity()} dimmed={props.dimStars} />,
   ];
 };
 

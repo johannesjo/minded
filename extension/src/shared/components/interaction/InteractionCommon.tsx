@@ -1334,6 +1334,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         dragThreshold={0.3}
         shadowRoot={props.shadowRoot}
         isSunGradientAttached={getIsInteractionSunShown()}
+        // The interaction/dashboard surface keeps its cards + buttons on screen
+        // while the down-drag reveals the sky, so dim the field to stay behind
+        // them. The full-screen success night skies (grounding sit, goodnight)
+        // render their stars at full brightness.
+        dimStars
       />
 
       {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}

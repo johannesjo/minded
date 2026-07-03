@@ -11,6 +11,12 @@ interface StarsProps {
   // down-drag sky). Calm always-on surfaces — the grounding sit — pass false: a
   // streaking meteor reads as a jolt behind a settling meditation.
   shootingStars?: boolean;
+  // Hold the field to FIELD_MAX_OPACITY so it stays *behind* translucent UI
+  // rather than bleeding through it. Only the dashboard/interaction background
+  // (stars behind cards + buttons) passes this; the full-screen success night
+  // sky — the grounding sit, the goodnight — keeps the stars at full brightness,
+  // since there is no card or button there to compete with them.
+  dimmed?: boolean;
 }
 
 interface Star {
@@ -26,15 +32,14 @@ interface Star {
   minOpacity: number;
 }
 
-// Cap on the whole field's brightness. The night-mode cards and buttons rest at
-// a barely-there fill (`--btn-bg` 0.12, `--btn-bg-not-selected` 0.06 white), so
-// a field of pure-white pinpoints twinkling up to full opacity behind them bled
-// straight through and sat behind the text — the stars, buttons and cards all
-// competed and none read cleanly. Holding the field to a fraction of the drag
-// intensity keeps the night sky present and magical on the near-empty surfaces
-// (goodnight, the grounding sit) while dimming it enough that it stays *behind*
-// the UI rather than through it. One lever, applied uniformly to every star and
-// shooting star, so nothing has to know where the cards happen to sit.
+// Cap for the *dimmed* field only (see the `dimmed` prop). The night-mode cards
+// and buttons rest at a barely-there fill (`--btn-bg` 0.12, `--btn-bg-not-selected`
+// 0.06 white), so a field of pure-white pinpoints twinkling up to full opacity
+// behind them bled straight through and sat behind the text — the stars, buttons
+// and cards all competed and none read cleanly. Where stars back that UI we hold
+// the field to a fraction of the drag intensity so it stays behind the cards
+// rather than through them. The full-screen success night sky is left at full
+// brightness (dimmed omitted) — nothing sits over it to lose legibility.
 const FIELD_MAX_OPACITY = 0.55;
 
 const Stars: Component<StarsProps> = (props) => {
@@ -72,15 +77,17 @@ const Stars: Component<StarsProps> = (props) => {
       ref={containerEl!}
       class="stars-container"
       // Opacity tracks the drag directly so the reveal is gradual and reverses
-      // with it, but capped at FIELD_MAX_OPACITY so the field stays legibly
-      // behind the translucent night-mode cards/buttons rather than bleeding
-      // through them. `active` only switches on the shooting-star flourish once
-      // any star is showing — it no longer controls the fade (that's the inline
-      // opacity now).
+      // with it. When `dimmed`, it is held to FIELD_MAX_OPACITY so the field
+      // stays legibly behind the translucent night-mode cards/buttons rather
+      // than bleeding through them; the success night sky leaves it at full.
+      // `active` only switches on the shooting-star flourish once any star is
+      // showing — it no longer controls the fade (that's the inline opacity now).
       classList={{
         active: props.intensity > 0,
       }}
-      style={{ opacity: props.intensity * FIELD_MAX_OPACITY }}
+      style={{
+        opacity: props.intensity * (props.dimmed ? FIELD_MAX_OPACITY : 1),
+      }}
     >
       <For each={stars()}>
         {(star) => (
