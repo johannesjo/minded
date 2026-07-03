@@ -153,7 +153,7 @@
 }
 
 // The active grounding screen. createScreenFade drives this element's opacity
-// (inline) to crossfade between the offer, duration, sit and praise — soft, never
+// (inline) to crossfade between the offer, duration, sit and settle — soft, never
 // a hard cut. A centred flex column so each screen sits where it did before. The
 // sky (::before), the stars, and the shell sun are separate layers outside this,
 // so they don't fade on every screen swap.
@@ -213,16 +213,6 @@
   margin: 0;
   opacity: 0.6;
   font-size: var(--fz-m);
-}
-
-.praise {
-  position: relative;
-  z-index: 1;
-  @include displayVoice;
-  font-size: calc(var(--fz-xl) + 2px);
-  line-height: 1.4;
-  // Fades in with the screen crossfade (see .screen) — no separate entrance
-  // animation, which would double up with it.
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -194,7 +194,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsAdvancingToChoices, setIsAdvancingToChoices] =
     createSignal(false);
   const [getHasAnswered, setHasAnswered] = createSignal(false);
-  const [getShowBeProudMessage, setShowBeProudMessage] = createSignal(false);
   // Dashboard only: dragging the sun *down* opens the "Stay a while?" grounding
   // offer (meditate / be present), and flinging it *up/away* opens the "What do
   // you want to let go of?" reflection — instead of just completing. The gesture
@@ -401,7 +400,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let fadeInAnimationFrame: number | undefined;
   let initFadeOutTimeout: number | undefined;
   let contentReadyTimeout: number | undefined;
-  let beProudMessageTimeout: number | undefined;
   let groundingBgResetTimeout: number | undefined;
   // Fallback that reveals the let-go question if the flung sun never clears the
   // viewport promptly (a gentle fling / slow drag-up). Cleared once the offer
@@ -919,13 +917,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         props.onInteractionSubmitted?.();
         cancelCountdown();
       }
-
-      beProudMessageTimeout = window.setTimeout(() => {
-        beProudMessageTimeout = undefined;
-        if (isDisposed) return;
-
-        setShowBeProudMessage(true);
-      }, ANIMATION_TIMING.delay.beProudMessage);
     });
 
     const event = new CustomEvent("startBackgroundAnimation", {
@@ -1305,9 +1296,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (contentReadyTimeout) {
       clearTimeout(contentReadyTimeout);
     }
-    if (beProudMessageTimeout) {
-      clearTimeout(beProudMessageTimeout);
-    }
     if (groundingBgResetTimeout) {
       clearTimeout(groundingBgResetTimeout);
     }
@@ -1340,8 +1328,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         // render their stars at full brightness.
         dimStars
       />
-
-      {getShowBeProudMessage() && <div class="be-proud-message">Be proud!</div>}
 
       {getShowGroundingOffer() && (
         <GroundingOverlay

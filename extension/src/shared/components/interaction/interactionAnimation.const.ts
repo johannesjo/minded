@@ -18,7 +18,6 @@ export const ANIMATION_TIMING = {
   delay: {
     initFadeOut: 200,
     contentReady: 100,
-    beProudMessage: 1000,
     sunInstructionsFadeIn: 600,
     wrapperFadeStart: 2000,
     /**
