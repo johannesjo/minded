@@ -11,7 +11,6 @@ import {
 import {
   DRAG_THRESHOLD_PX,
   VELOCITY_SAMPLE_SIZE,
-  LONG_PRESS_DURATION_MS,
   HAPTIC_PROGRESS_POINTS,
   FLING_ANIMATION_CONFIG,
   COMPLETION_ANIMATION_CONFIG,
@@ -217,7 +216,6 @@ export const Sun: Component<SunProps> = (props) => {
   let startPos = { x: 0, y: 0 };
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
-  let longPressTimer: number | null = null;
   let settleFrame: number | undefined;
   // The settle the disc currently RESTS on (mount snap applied, or a settle
   // glide landed) — null while gliding, dragging, or interactive. The resting
@@ -275,9 +273,6 @@ export const Sun: Component<SunProps> = (props) => {
     cancelSettleFrame();
     if (tapTimer) {
       clearTimeout(tapTimer);
-    }
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
     }
 
     // Clean up event listeners
@@ -887,10 +882,6 @@ export const Sun: Component<SunProps> = (props) => {
       setIsDragging(true);
       // Reset haptic threshold tracking
       lastHapticPointIndex = -1;
-      // Start long press timer
-      if (isDragEnabled()) {
-        startLongPressTimer();
-      }
     };
 
     const applyDragFrame = () => {
@@ -905,11 +896,6 @@ export const Sun: Component<SunProps> = (props) => {
       const moveDistance = Math.sqrt(
         rawDeltaX * rawDeltaX + rawDeltaY * rawDeltaY,
       );
-
-      // Cancel long press if moved beyond tolerance (10px allows for finger jitter)
-      if (moveDistance > 10) {
-        cancelLongPressTimer();
-      }
 
       if (moveDistance > 10 && !isDragIntent) {
         isDragIntent = true;
@@ -1039,9 +1025,6 @@ export const Sun: Component<SunProps> = (props) => {
       const dragDelta = { x: offset.x - rest.x, y: offset.y - rest.y };
       const velocity = calculateVelocity(velocitySamples);
 
-      // Cancel long press timer
-      cancelLongPressTimer();
-
       // Always reset dragging state
       setIsDragging(false);
       setDragProgress(0);
@@ -1133,31 +1116,6 @@ export const Sun: Component<SunProps> = (props) => {
         tapTimer = window.setTimeout(() => {
           setTapCount(0);
         }, 1500);
-      }
-    };
-
-    const startLongPressTimer = () => {
-      cancelLongPressTimer();
-      longPressTimer = window.setTimeout(() => {
-        if (getIsCompletionStarted()) return;
-
-        // Long press triggered - lock in and play completion
-        triggerHapticPattern("completion"); // Satisfying heavy + light pattern
-        playCompletionSound();
-        setIsCompletionStarted(true);
-        props.onCompletionStarted?.(true);
-        props.onStartBackgroundAnimation?.("down");
-        // Note: animateToCompletion sets isAnimating=true before we clear isDragging
-        // to prevent transition glitch
-        animateToCompletion("down");
-        setIsDragging(false);
-      }, LONG_PRESS_DURATION_MS);
-    };
-
-    const cancelLongPressTimer = () => {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
       }
     };
 
