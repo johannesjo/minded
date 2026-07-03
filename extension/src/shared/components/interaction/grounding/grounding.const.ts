@@ -21,7 +21,7 @@ export const GROUNDING_FADE_MS = 600;
 
 /**
  * Crossfade between the grounding stage's own screens (offer ↔ duration ↔ the
- * sit ↔ praise) — a quick, soft swap, much shorter than the GROUNDING_FADE_MS the
+ * sit ↔ settle) — a quick, soft swap, much shorter than the GROUNDING_FADE_MS the
  * whole overlay fades in/out with. Mirrors the urge-surf meditation's screen fade.
  */
 export const SCREEN_FADE_MS = 200;
@@ -35,8 +35,12 @@ export const SCREEN_FADE_MS = 200;
  */
 export const SKY_SETTLE_MS = 2500;
 
-/** How long "Be proud!" lingers after a finished timed sit before closing. */
-export const PRAISE_DURATION_MS = 2600;
+/**
+ * How long the wordless settle beat holds after a finished timed sit before
+ * closing — no praise, no verdict; the sun simply glides home to the bottom bar
+ * and the sky settles. The morph carries the close (see #164).
+ */
+export const SETTLE_DURATION_MS = 2600;
 
 /**
  * On Android the screen-free sit gets the screen out of the way entirely: a

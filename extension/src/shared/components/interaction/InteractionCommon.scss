@@ -144,23 +144,6 @@
   }
 }
 
-.be-proud-message {
-  @include displayVoice;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--c-fg-full-emphasis);
-  font-size: calc(var(--fz-xl) + 2px);
-  line-height: 1.4;
-  z-index: 40;
-  animation: fadeIn 0.8s ease-in forwards;
-  pointer-events: none;
-  margin: 0;
-  padding: 0;
-}
-
 // Ensure text is visible on all backgrounds
 #minded-6622-interaction-wrapper-box,
 .sun-container {

@@ -15,16 +15,16 @@ import {
   ANDROID_LOCK_DELAY_MS,
   GROUNDING_FADE_MS,
   OFFER_AUTO_DISMISS_MS,
-  PRAISE_DURATION_MS,
   QUIET_MINUTE_OPTIONS,
   SCREEN_FADE_MS,
+  SETTLE_DURATION_MS,
   SKY_SETTLE_MS,
   TIMER_MINUTE_OPTIONS,
 } from "@src/shared/components/interaction/grounding/grounding.const";
 import Btn from "@src/shared/components/ui/Btn";
 import { createScreenFade } from "@src/util/screenFade";
 
-type Phase = "offer" | "duration" | "session" | "praise" | "androidLock";
+type Phase = "offer" | "duration" | "session" | "settle" | "androidLock";
 type Mode = "timer" | "quiet";
 
 interface GroundingOverlayProps {
@@ -71,7 +71,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   let intervalId: number | undefined;
   let endTimeout: number | undefined;
   let closeTimeout: number | undefined;
-  let praiseTimeout: number | undefined;
+  let settleTimeout: number | undefined;
   let lockTimeout: number | undefined;
   let settleRaf: number | undefined;
   let isDisposed = false;
@@ -81,7 +81,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   // synchronous flag is needed.)
   let finishing = false;
 
-  // The grounding stage's own screens (offer / duration / sit / praise) crossfade
+  // The grounding stage's own screens (offer / duration / sit / settle) crossfade
   // through this instead of hard-cutting: toScreen fades the current screen out,
   // runs the swap (setPhase + its gong / timers) at the hidden midpoint so they
   // land with the new screen, then fades back in. Soft, never a jolt.
@@ -101,7 +101,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
 
   // Drive the one shell sun through the stage (see InteractionCommon's onSunMode):
   // it rests at the bottom beneath the invitation (offer/duration) and glides home
-  // there beneath the closing praise ("companion"); it rises into the centre and
+  // there through the wordless settle beat ("companion"); it rises into the centre and
   // breathes as the timed sit's breath sun ("meditate"); it tucks away while a
   // screen-free sit / Android lock owns the near-black screen ("hidden"). The timed
   // sit is the morph the user sees — the companion disc rises and breathes rather
@@ -110,7 +110,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     const phase = getPhase();
     const isTimer = getMode() === "timer";
     const mode =
-      phase === "offer" || phase === "duration" || phase === "praise"
+      phase === "offer" || phase === "duration" || phase === "settle"
         ? "companion"
         : phase === "session" && isTimer
           ? "meditate"
@@ -214,13 +214,13 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     void playGong();
     if (getMode() === "timer") {
       screenFade.toScreen(() => {
-        setPhase("praise");
-        praiseTimeout = window.setTimeout(() => {
+        setPhase("settle");
+        settleTimeout = window.setTimeout(() => {
           if (!isDisposed) close();
-        }, PRAISE_DURATION_MS);
+        }, SETTLE_DURATION_MS);
       });
     } else {
-      // Screen-free: no on-screen praise — the disconnect is its own reward.
+      // Screen-free: nothing on screen to close — the disconnect carries itself.
       close();
     }
   };
@@ -229,7 +229,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     isDisposed = true;
     stopTimers();
     if (closeTimeout) window.clearTimeout(closeTimeout);
-    if (praiseTimeout) window.clearTimeout(praiseTimeout);
+    if (settleTimeout) window.clearTimeout(settleTimeout);
     if (lockTimeout) window.clearTimeout(lockTimeout);
     if (settleRaf) cancelAnimationFrame(settleRaf);
   });
@@ -277,7 +277,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
       </Show>
 
       {/* The active screen. Crossfaded as the stage moves between offer →
-          duration → sit → praise (screenFade), so the swap is soft, never a hard
+          duration → sit → settle (screenFade), so the swap is soft, never a hard
           cut. The sky (::before), the stars above, and the shell sun (its own
           layer) sit outside this and don't fade per screen. */}
       <div class={styles.screen} style={{ opacity: screenFade.opacity() }}>
@@ -355,10 +355,9 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           </div>
         </Show>
 
-        {/* Earned praise after a finished timed sit. */}
-        <Show when={getPhase() === "praise"}>
-          <div class={styles.praise}>Be proud!</div>
-        </Show>
+        {/* A finished timed sit closes on a wordless settle beat — no praise, no
+            verdict. The sun glides home to the bottom bar and the sky settles;
+            the morph carries the close (see #164). */}
       </div>
     </div>
   );
