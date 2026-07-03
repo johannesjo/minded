@@ -32,7 +32,7 @@ describe("updateDashboardEntriesFromQuestions", () => {
     jest.restoreAllMocks();
   });
 
-  // Mirror the view's hero-index logic (DashboardGroups.getHeroIndex).
+  // Mirror the view's hero-index logic (DashboardGroups.heroOf).
   const greetingOf = (entries: DashboardGroup[]) =>
     entries[entries.length > CENTER_INDEX ? CENTER_INDEX : entries.length - 1];
 
