@@ -1,12 +1,6 @@
 @import "../../../../styles/mixins/mixins";
 
 .interactionOverlay {
-  // Intervention buttons speak the display serif (issue #167). Set here, not
-  // on the shared #minded-6622-coloured-wrapper id, because that id is also
-  // the app-shell root where buttons are controls and stay sans — see
-  // coloured-wrapper.scss for the content-script/Android counterpart.
-  --btn-font: var(--font-display);
-
   position: fixed;
   left: 0;
   right: 0;

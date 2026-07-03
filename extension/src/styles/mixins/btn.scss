@@ -9,11 +9,11 @@
   text-align: center;
   line-height: $height;
   font-size: var(--btn-fz);
-  // Context hook, not a per-screen knob: intervention hosts set --btn-font to
-  // the display serif (coloured-wrapper.scss, InteractionOverlay.module.scss)
-  // so options read as invitations; everywhere else buttons inherit the body
-  // sans.
-  font-family: var(--btn-font, inherit);
+  // Buttons speak the display serif everywhere (issue #167) — one voice for
+  // the whole app, whether the button is an invitation ("Stay a while?") or a
+  // control (settings). A first pass scoped this to intervention hosts via a
+  // --btn-font hook; global is simpler and the settings screens read fine.
+  font-family: var(--font-display);
   background: var(--btn-bg);
   text-transform: lowercase;
   box-sizing: border-box;
