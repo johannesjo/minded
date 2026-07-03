@@ -14,11 +14,15 @@ interface FingerRestProps {
 }
 
 /**
- * The wordless intervention: one line inviting the scrolling finger — the very
- * organ of the habit — to simply be still for a moment. Press anywhere on the
- * invitation and rest; the words dissolve, a soft warmth gathers under the
- * fingertip, and lifting continues on. Nothing is counted, timed on screen, or
- * scored, and there is nothing to read once it has begun.
+ * The near-wordless intervention: an invitation for the scrolling finger — the
+ * very organ of the habit — to simply be still for a moment. The invitation
+ * names both the why (the finger that scrolls, at rest) and the how (press and
+ * stay) so a first-time meeting isn't a guess, and a soft outlined pad shows
+ * exactly where to lay the finger down. Press anywhere on the pad and rest; the
+ * words and the outline dissolve, a warmth gathers under the fingertip, and
+ * lifting continues on. Nothing is counted, timed on screen, or scored, and —
+ * true to the wordless heart of it — there is nothing left to read once it has
+ * begun; only the warmth remains.
  *
  * Deliberately NOT a hold-to-unlock gate (the attention-check dark pattern):
  * no progress ring, no announced duration, and release is always free — a
@@ -103,6 +107,19 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
         onPointerUp={handleRestEnd}
         onPointerCancel={handleRestInterrupted}
       >
+        {/* The soft outline that shows where to lay the finger down. It fades
+            with the words as stillness begins — once resting, the warmth alone
+            marks the spot. */}
+        <div
+          class="finger-rest-pad"
+          aria-hidden="true"
+          style={{
+            opacity: getIsResting() ? 0 : 1,
+            transition: prefersReducedMotion()
+              ? "none"
+              : `opacity ${FINGER_REST_CUE_FADE_MS}ms ease-in-out`,
+          }}
+        />
         <div
           class="finger-rest-warmth"
           aria-hidden="true"
@@ -117,8 +134,10 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
                 }ms ease-in-out`,
           }}
         />
+        {/* Cue and its why/how share one fade: everything to read dissolves the
+            moment stillness begins. */}
         <div
-          class="txtBig finger-rest-cue"
+          class="finger-rest-cue"
           style={{
             opacity: getIsResting() ? 0 : 1,
             transition: prefersReducedMotion()
@@ -126,7 +145,10 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
               : `opacity ${FINGER_REST_CUE_FADE_MS}ms ease-in-out`,
           }}
         >
-          Let your finger rest here.
+          <div class="txtBig">Let your finger rest here.</div>
+          <div class="finger-rest-why">
+            The finger that keeps scrolling, still for a moment. Press and stay.
+          </div>
         </div>
       </div>
     </div>
