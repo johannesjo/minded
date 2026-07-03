@@ -19,6 +19,15 @@
 }
 
 .answer {
+  // The user's own free-text reflection — set in the mindful serif so it reads
+  // like gentle writing, not a settings grid, exactly as the dashboard renders
+  // the same answers (see DashboardAnswerList's .dashboardContent). The bold
+  // Inter question label above stays the contrast.
+  @include displayVoice;
+  // A reading block, not a prompt: keep the natural rag (displayVoice's
+  // `balance` would narrow every line) and only avoid a last-line orphan.
+  text-wrap: pretty;
+
   position: relative;
   width: 100%;
   min-height: 40px;
@@ -31,7 +40,7 @@
 }
 
 .createdAt {
-  opacity: .5;
+  opacity: 0.5;
   font-size: var(--fz-s);
 }
 
@@ -68,7 +77,7 @@
     margin-left: 8px !important;
 
     img {
-      opacity: .8 !important;
+      opacity: 0.8 !important;
     }
 
     &:first-child {
@@ -77,9 +86,8 @@
   }
 }
 
-
 .editModeWrapper {
-  animation: minded6622fadeIn ease .3s;
+  animation: minded6622fadeIn ease 0.3s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   display: flex;
