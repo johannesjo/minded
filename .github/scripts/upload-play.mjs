@@ -105,6 +105,21 @@ function isRetryable(err) {
   return status !== undefined && RETRYABLE_STATUS.has(status);
 }
 
+// Google intermittently reports a seconds-old edit as expired/not-found in the
+// middle of the upload sequence — a transient backend condition, not a real
+// precondition failure (the edit is only seconds old and nothing else touches
+// this app). It surfaces as HTTP 400 "This edit has expired, please create a
+// new Edit." (reason failedPrecondition) or 404 editNotFound. Unlike the network
+// blips above, an expired edit can't be revived by retrying the same call, so
+// this is handled one level up (recreate the edit) rather than in withRetry.
+// Matched by message as well as reason because the "expired" case arrives with
+// the generic `failedPrecondition` reason, which is too broad to key on alone.
+function isEditStale(err) {
+  const reason = err?.errors?.[0]?.reason;
+  if (reason === 'editExpired' || reason === 'editNotFound') return true;
+  return /edit\b.*\b(expired|not found)\b/i.test(err?.message || '');
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // The Google token endpoint can stay flaky for tens of seconds, so spread the
@@ -130,28 +145,10 @@ async function withRetry(label, fn, attempts = 6) {
   }
 }
 
-async function main() {
-  // The OAuth token fetch is by far the flakiest call in this pipeline: the
-  // token endpoint likes to drop the connection mid-response
-  // (ERR_STREAM_PREMATURE_CLOSE) and has exhausted the per-call retry budget
-  // twice, killing otherwise-successful builds. Unlike the edit/upload/commit
-  // calls, acquiring a token is fully idempotent, so isolate it into its own
-  // aggressively-retried phase up front. google-auth-library caches the token
-  // on the client, so once this succeeds the calls below reuse it and never
-  // re-hit the token endpoint — confining the flakiness to one safe-to-retry
-  // step instead of leaking it into every API call.
-  console.log('\n[0/4] Authenticating...');
-  const authClient = await withRetry(
-    'Authenticate',
-    async () => {
-      const client = await auth.getClient();
-      await client.getAccessToken(); // forces + caches the token exchange
-      return client;
-    },
-    10,
-  );
-  const androidpublisher = google.androidpublisher({ version: 'v3', auth: authClient });
-
+// One full edit lifecycle: insert -> upload -> assign track -> commit. Returns
+// the uploaded versionCode. Runs against a single edit; if that edit goes stale
+// mid-sequence, publish() throws it away and calls this again with a fresh one.
+async function runEdit(androidpublisher) {
   console.log('[1/4] Creating edit...');
   const edit = await withRetry('Create edit', () =>
     androidpublisher.edits.insert({ packageName: PACKAGE_NAME }),
@@ -190,9 +187,60 @@ async function main() {
   // Not retried: commit is the one non-idempotent step. A connection drop
   // *after* the server commits would leave a retry calling commit on a now-
   // consumed editId, which fails with editNotFound and masks the successful
-  // publish. A single attempt fails honestly instead.
+  // publish. A single attempt fails honestly instead. (A *stale-edit* error
+  // here is safe to replay — see publish() — because an expired edit provably
+  // never committed; a network drop is not classed as stale, so it still fails
+  // honestly.)
   console.log('[4/4] Committing edit...');
   await androidpublisher.edits.commit({ packageName: PACKAGE_NAME, editId });
+
+  return versionCode;
+}
+
+// Drive runEdit, recreating the edit from scratch if Google reports it stale.
+// An expired/not-found edit can't be revived and provably never committed, so
+// discarding it and replaying the whole insert->upload->track->commit against a
+// brand-new edit is safe: no half-published state can leak to the track, and
+// the not-yet-committed versionCode is free to re-upload. Bounded to a few tries
+// so a persistent precondition failure still surfaces instead of looping.
+async function publish(androidpublisher) {
+  const MAX_EDIT_ATTEMPTS = 3;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await runEdit(androidpublisher);
+    } catch (err) {
+      if (attempt >= MAX_EDIT_ATTEMPTS || !isEditStale(err)) throw err;
+      console.warn(
+        `  Edit went stale (attempt ${attempt}/${MAX_EDIT_ATTEMPTS}): ${err.message || err.code}. Recreating edit...`,
+      );
+      await sleep(2000 * attempt);
+    }
+  }
+}
+
+async function main() {
+  // The OAuth token fetch is by far the flakiest call in this pipeline: the
+  // token endpoint likes to drop the connection mid-response
+  // (ERR_STREAM_PREMATURE_CLOSE) and has exhausted the per-call retry budget
+  // twice, killing otherwise-successful builds. Unlike the edit/upload/commit
+  // calls, acquiring a token is fully idempotent, so isolate it into its own
+  // aggressively-retried phase up front. google-auth-library caches the token
+  // on the client, so once this succeeds the calls below reuse it and never
+  // re-hit the token endpoint — confining the flakiness to one safe-to-retry
+  // step instead of leaking it into every API call.
+  console.log('\n[0/4] Authenticating...');
+  const authClient = await withRetry(
+    'Authenticate',
+    async () => {
+      const client = await auth.getClient();
+      await client.getAccessToken(); // forces + caches the token exchange
+      return client;
+    },
+    10,
+  );
+  const androidpublisher = google.androidpublisher({ version: 'v3', auth: authClient });
+
+  const versionCode = await publish(androidpublisher);
 
   console.log(`\nDone: ${PACKAGE_NAME} versionCode ${versionCode} -> ${TRACK}`);
 }
