@@ -26,6 +26,20 @@
     -webkit-touch-callout: none;
   }
 
+  .finger-rest-pad {
+    position: absolute;
+    inset: 0;
+    // A soft, unmistakable target so the finger knows where to land: a rounded
+    // outline in the companion's own light (same variable the warmth and the
+    // little sun's halo use), with a barely-there fill that reads as a place to
+    // set the finger down rather than a button to press. Opacity/fade are
+    // driven inline from the component so it dissolves as stillness begins.
+    border-radius: 40px;
+    border: 1px solid rgba(var(--little-sun-breath-rgb), 0.4);
+    background: rgba(var(--little-sun-breath-rgb), 0.04);
+    pointer-events: none;
+  }
+
   .finger-rest-warmth {
     position: absolute;
     inset: 0;
@@ -43,7 +57,23 @@
 
   .finger-rest-cue {
     position: relative;
-    // Opacity and fade are driven inline from the component: the words
-    // dissolve as stillness begins and return if the finger leaves early.
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // Give the words room to breathe inside the pad. Opacity and fade are
+    // driven inline from the component: everything to read dissolves as
+    // stillness begins and returns if the finger leaves early.
+    padding: 0 24px;
+
+    .finger-rest-why {
+      // The why (the scrolling finger, at rest) and the how (press and stay),
+      // kept quiet beneath the cue — present enough to orient a first meeting,
+      // dim enough not to become something to study.
+      margin-top: 0.85em;
+      max-width: 30ch;
+      opacity: 0.7;
+      font-size: 0.8em;
+      line-height: 1.4;
+    }
   }
 }
