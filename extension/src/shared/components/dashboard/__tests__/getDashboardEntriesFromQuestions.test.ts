@@ -74,7 +74,7 @@ describe("getDashboardEntriesFromQuestions", () => {
   describe("greeting (centre pick) selection", () => {
     const now = new Date("2024-01-15T12:00:00");
 
-    // Mirror the view's hero-index logic (DashboardGroups.getHeroIndex).
+    // Mirror the view's hero-index logic (DashboardGroups.heroOf).
     const greetingOf = (
       entries: ReturnType<typeof getDashboardEntriesFromQuestions>,
     ) =>

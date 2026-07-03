@@ -54,7 +54,7 @@ export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
   GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
 
 // Guard the card that actually greets you (the hero slot the view reads — see
-// DashboardGroups.getHeroIndex). If it holds an out-of-window recap, move it out
+// DashboardGroups.heroOf). If it holds an out-of-window recap, move it out
 // (it stays available in "look back") and greet with a calm quote instead —
 // matching the fallback when nothing reflective qualifies. The random pick
 // already keeps the hero in-window (isGreetingEligible), but the incremental
