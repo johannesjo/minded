@@ -152,6 +152,12 @@
     }
   }
 
+  // Deliberately faint: tapping to continue is meant to stay a slightly-awkward
+  // speed bump, not a bright progress meter that teaches the rhythm and trains
+  // fast muscle memory. The dots are a barely-there confirmation the taps
+  // registered — dim enough that they never read as a tally to race to the end
+  // of, with little contrast between filled and unfilled so there's no
+  // countdown to optimise.
   .tap-indicator {
     position: absolute;
     top: 100%;
@@ -165,7 +171,7 @@
     transition: opacity 200ms;
 
     &.active {
-      opacity: 1;
+      opacity: 0.5;
     }
   }
 
@@ -173,11 +179,11 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.18);
     transition: background 200ms;
 
     &.filled {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.5);
     }
   }
 
