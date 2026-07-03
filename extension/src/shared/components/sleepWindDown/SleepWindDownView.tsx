@@ -1,3 +1,12 @@
+/**
+ * Sleep wind-down — deliberately Android-only for now (gated at the trigger,
+ * settings entry, and dashboard card, not here): the phone in bed is where
+ * evening doom-scrolling actually happens, and the feature is still
+ * half-experimental, so the extra desktop effort isn't warranted while the
+ * extension has almost no users. This view stays platform-agnostic on purpose
+ * so widening later is cheap — but don't, without a product decision
+ * (see CLAUDE.md, Project Overview).
+ */
 import {
   getSyncData,
   IS_ANDROID,

@@ -9,6 +9,15 @@ minded is a multi-platform mindfulness and productivity application designed to 
 - Android App (Native Kotlin + WebView)
 - iOS App (Native Swift + Capacitor) — **deliberately a minimal, widget-only variant**, not a port of the Android app. The reasoning: iOS *can* technically block apps (the Screen Time API — `FamilyControls`/`ManagedSettings`/`DeviceActivity` — the way one sec/Opal do), so "iOS can't intervene" is false. The real blocker is conceptual: that primitive is a parental-controls *wall*, and iOS gives no way to deliver the sun *as* the interrupt. The only effective interrupt (a shield) is the wrong shape for minded's soft, never-forced approach. So iOS does **not** attempt the forced intervention/overlay at all. Instead it ships only the on-philosophy "option 1" from `docs/ios-platform-fit.md`: the **companion sun** as a Home Screen WidgetKit widget (`extension/ios/App/MindedWidget/`) — presence + invitation, never an interrupt. Tapping it opens the shared WebView pause. New *intervention* features still target Browser Extension and Android only; on iOS, keep scope to the companion widget + WebView shell and don't reintroduce shields/overlays. iOS builds + TestFlight ship from a macOS CI runner with no local Mac (`.github/workflows/ios-testflight.yml`, see `RELEASING.md`). Full reasoning: `docs/ios-platform-fit.md`.
 
+Platform scoping beyond iOS: **sleep wind-down is deliberately Android-only.**
+The phone in bed is where evening doom-scrolling actually happens, so Android is
+where the feature earns its keep — and it's still half-experimental, so the
+extra desktop effort isn't warranted while the extension has almost no users.
+The view itself is shared code (`src/shared/components/sleepWindDown/`); only
+the trigger, settings entry, and dashboard card are Android-gated, so widening
+later stays cheap. Don't port it to the extension or iOS without an explicit
+product decision.
+
 ## Conceptual Fundamentals
 
 These are the load-bearing ideas behind the product. They shape almost every
