@@ -44,10 +44,6 @@ import {
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 
-// Matches the --dur-soft fade on the collapsed view so it finishes fading out
-// before the full set mounts (mirrors the daily-questions banner dismissal).
-const REVEAL_FADE_MS = 480;
-
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
   // When true (the /lookBack route) the full grid renders directly, skipping the
@@ -55,7 +51,6 @@ export const DashboardGroups: (props: {
   forceRevealed?: boolean;
 }) => JSX.Element = (props) => {
   let t0: NodeJS.Timeout | undefined;
-  let revealT0: NodeJS.Timeout | undefined;
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
     createSignal<boolean>(false);
@@ -69,10 +64,7 @@ export const DashboardGroups: (props: {
   // reflection, or the quote when there's little to show) instead of the full
   // wall of cards. The rest stay tucked away until you choose to "look back",
   // which routes to the full grid (the /lookBack page) rather than toggling an
-  // internal flag — so the grid is a real, back-able view. `isRevealing` just
-  // drives the greeting's soft fade-out before that navigation.
-  const [getIsRevealing, setIsRevealing] = createSignal<boolean>(false);
-
+  // internal flag — so the grid is a real, back-able view.
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
@@ -150,18 +142,15 @@ export const DashboardGroups: (props: {
     window.removeEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
     window.removeEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, reGreetHidden);
     window.clearTimeout(t0);
-    window.clearTimeout(revealT0);
   });
 
-  // Fade the calm greeting out, then route to the full "look back" grid so it
-  // eases over rather than hard-cutting (see the "transitions — always soft"
-  // styling rule). Routing (not an internal flag) makes it a real page: the
-  // global bottom bar shows its back arrow there, exactly like settings.
-  const revealAll = () => {
-    setIsRevealing(true);
-    window.clearTimeout(revealT0);
-    revealT0 = setTimeout(() => navigate("/lookBack"), REVEAL_FADE_MS);
-  };
+  // Route to the full "look back" grid. The global page-transition guard
+  // (useBeforeLeave in RouteCmp) already fades the leaving greeting out before
+  // the destination eases in, so this navigates like any other card tap — no
+  // local fade-out (a second one only stacked into an awkward double pause).
+  // Routing (not an internal flag) makes it a real page: the global bottom bar
+  // shows its back arrow there, exactly like settings.
+  const revealAll = () => navigate("/lookBack");
 
   const removeDailyQuestionsBanner = () => {
     setIsDailyQuestionsBannerBeingRemoved(true);
@@ -276,12 +265,7 @@ export const DashboardGroups: (props: {
     <Show
       when={props.forceRevealed}
       fallback={
-        <div
-          classList={{
-            [styles.collapsed]: true,
-            [styles.isRevealing]: getIsRevealing(),
-          }}
-        >
+        <div class={styles.collapsed}>
           <Show
             when={getIsShowDailyQuestionsBanner()}
             fallback={
