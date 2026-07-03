@@ -1,6 +1,5 @@
 import {
   createEffect,
-  createMemo,
   createSignal,
   For,
   JSX,
@@ -72,11 +71,25 @@ export const DashboardGroups: (props: {
 
   // The greeting card: the centre pick sits at CENTER_INDEX once there are
   // enough cards, and the fallback quote (spliced in last) when there are fewer.
-  const getHeroIndex = createMemo(() => {
-    const len = getDashboardGroups().length;
-    return len > CENTER_INDEX ? CENTER_INDEX : len - 1;
-  });
-  const getHeroGroup = createMemo(() => getDashboardGroups()[getHeroIndex()]);
+  const heroOf = (groups: DashboardGroup[]): DashboardGroup | undefined => {
+    const len = groups.length;
+    return groups[len > CENTER_INDEX ? CENTER_INDEX : len - 1];
+  };
+
+  // The greeting the user is actually looking at. Deliberately its *own* signal
+  // rather than a memo over getDashboardGroups (the live data): the displayed
+  // greeting is only ever (re)set when the screen opens or on a deliberate
+  // re-greet — which only ever fires while the dashboard is hidden. A routine
+  // in-view refresh updates the underlying data (and the "show all" count) but
+  // leaves this hero untouched, so the card — and its random quote — is never
+  // seen to change under the user (calm is the product; a card only ever
+  // changes offscreen). Without this, a visible REFRESH_DASHBOARD_EV that
+  // altered the group count, re-ran guardHeroSlot, or diffed the hero's data
+  // would hand the keyed <Show> a fresh object, remounting the card (a new
+  // random quote, a replayed entrance) right in front of the user.
+  const [getHeroGroup, setHeroGroup] = createSignal<
+    DashboardGroup | undefined
+  >();
 
   // Remember the tile we actually greeted with, so the next arrival can pick a
   // different one. Tracking the rendered hero (rather than the raw pick) keeps
@@ -97,21 +110,31 @@ export const DashboardGroups: (props: {
       // landed, so each return surfaces a fresh one (see greetingMemory).
       const avoidGreetingKey = getLastGreetingKey();
       const existingDashboardGroups = getDashboardGroups();
+      let groups: DashboardGroup[];
       if (!reselect && existingDashboardGroups.length) {
-        const upd = updateDashboardEntriesFromQuestions(
+        groups = updateDashboardEntriesFromQuestions(
           syncData,
           existingDashboardGroups,
           undefined,
           avoidGreetingKey,
         );
-        setDashboardGroups(upd);
       } else {
-        const entries = getDashboardEntriesFromQuestions(
+        groups = getDashboardEntriesFromQuestions(
           syncData,
           undefined,
           avoidGreetingKey,
         );
-        setDashboardGroups(entries);
+      }
+      setDashboardGroups(groups);
+
+      // Reveal the greeting the user sees only when the screen is opening (no
+      // hero on screen yet) or on a deliberate re-greet — which only ever fires
+      // while the dashboard is hidden. A routine in-view refresh (reselect
+      // false, hero already shown) deliberately leaves the displayed hero as it
+      // is, so the card never changes in front of the user; it always just
+      // eases in on open and then holds still.
+      if (reselect || getHeroGroup() === undefined) {
+        setHeroGroup(heroOf(groups));
       }
     });
   };
