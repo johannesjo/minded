@@ -32,6 +32,21 @@ import { useNavigate } from "@solidjs/router";
 
 const AFTER_ANI_WAIT_DURATION = 1100;
 
+// The evening reflection's second step draws from a small pool of gentle,
+// low-demand prompts instead of a single category, so no one question comes up
+// every night. In particular the more effortful "Today I Learned" prompts —
+// which read like an end-of-day performance review rather than a restful
+// noticing — become just one occasional voice among letting-go, present-moment,
+// self-compassion and calming prompts. Winding down should feel relaxing, never
+// like homework.
+const EVENING_WIND_DOWN_CATEGORIES: QuestionCategoryId[] = [
+  QuestionCategoryId.LettingGo,
+  QuestionCategoryId.NoticingNow,
+  QuestionCategoryId.SelfCompassion,
+  QuestionCategoryId.CalmingThoughts,
+  QuestionCategoryId.TodayILearned,
+];
+
 const DailyQuestions = () => {
   const navigate = useNavigate();
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
@@ -57,6 +72,21 @@ const DailyQuestions = () => {
       ...getRndEntry(questions || []),
       categoryId,
     };
+  };
+
+  // Pool the questions of several categories and pick one at random, tagging
+  // each with its own category so the saved answer is still attributed
+  // correctly. Used to give the evening step variety across gentle categories.
+  const getRndQuestionFromCats = (
+    categoryIds: QuestionCategoryId[],
+  ): QuestionForPrompt => {
+    const pool = categoryIds.flatMap((categoryId) =>
+      (QUESTION_CATEGORIES[categoryId].questions || []).map((q) => ({
+        ...q,
+        categoryId,
+      })),
+    );
+    return getRndEntry(pool);
   };
 
   onMount(() => {
@@ -182,8 +212,8 @@ const DailyQuestions = () => {
             </Match>
             <Match when={getStep() === 1}>
               <Question
-                initialQuestion={getRndQuestionFromCat(
-                  QuestionCategoryId.TodayILearned,
+                initialQuestion={getRndQuestionFromCats(
+                  EVENING_WIND_DOWN_CATEGORIES,
                 )}
                 answers={getAnswers()}
                 onSuccess={() => {
