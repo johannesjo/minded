@@ -474,17 +474,14 @@ export const SleepWindDownView = (
                     </For>
                   </div>
                   <div class={styles.menuFooter}>
+                    {/* Always just "Goodnight" — the menu is a calm offering to
+                        dip into, not a checklist to complete, so the exit never
+                        turns into an "all done" tally. */}
                     <Btn
                       onClick={enterGoodnight}
                       disabled={!hydrated()}
                     >
-                      {completed().size > 0 ? (
-                        <>
-                          <Ico name="check" /> All done
-                        </>
-                      ) : (
-                        "Goodnight"
-                      )}
+                      Goodnight
                     </Btn>
                   </div>
                   <button
