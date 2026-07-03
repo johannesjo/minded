@@ -139,10 +139,10 @@ const createScreenshotSyncData = (): SyncData => {
         now,
       ),
       createDashboardAnswer(
-        "screenshot-refocus",
-        QID.RFHT1,
-        QuestionCategoryId.RefocusHelperToday,
-        "My most important task is to prepare everything for the release of minded.",
+        "screenshot-gratitude",
+        QID.GR1,
+        QuestionCategoryId.Gratitude,
+        "I'm grateful for the quiet before everyone else wakes up.",
         now,
       ),
       createDashboardAnswer(
