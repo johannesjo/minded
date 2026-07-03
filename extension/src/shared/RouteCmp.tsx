@@ -86,12 +86,13 @@ const MainWrapper = (props: RouteSectionProps) => {
   const location = useLocation();
   const isDashboard = () => location.pathname === "/";
   // Day/night for the sun. Seed from the time-based rule for the first paint,
-  // then (in onMount, after addWrapperClasses applies it) mirror the actual
-  // `.minded-6622-dark` class so the companion can't disagree with the rendered
-  // theme. On web-ext the class is set once on mount and never flips, so no
-  // observer is needed. (Shortcut: on Android a background→resume across the
-  // dark-mode threshold can flip the class; this one-shot read won't catch
-  // that — rare; add a resume listener here if it ever bites.)
+  // then (in onMount) mirror the actual `.minded-6622-dark` class — reactively,
+  // via a MutationObserver — so the companion can never disagree with the
+  // rendered theme. The class is the single source of truth and it *can* flip
+  // after mount without a reload: on Android a background→resume across the
+  // day/night threshold re-runs setIsDarkModeIfApplies (MainAndroid's refresh),
+  // toggling the class on the live wrapper. A one-shot read left the disc on the
+  // moon (or sun) until restart; observing the class flips the variant with it.
   const [getSunVariant, setSunVariant] = createSignal<"sun" | "moon">(
     isDarkModeNow() ? "moon" : "sun",
   );
@@ -180,12 +181,25 @@ const MainWrapper = (props: RouteSectionProps) => {
   onMount(() => {
     addWrapperClasses();
     // addWrapperClasses just set (or cleared) the dark class — read the real
-    // value so the sun matches the wrapper exactly.
+    // value so the sun matches the wrapper exactly, then keep mirroring it: the
+    // class can flip later without a reload (Android resume across the day/night
+    // threshold), and the companion disc must follow rather than stay on the
+    // moon (or sun) until restart. The class stays the single source of truth.
     const wrapperEl = document.getElementById("minded-6622");
-    if (wrapperEl) {
+    const syncSunVariantToWrapper = () => {
+      if (!wrapperEl) return;
       setSunVariant(
         wrapperEl.classList.contains("minded-6622-dark") ? "moon" : "sun",
       );
+    };
+    syncSunVariantToWrapper();
+    if (wrapperEl) {
+      const classObserver = new MutationObserver(syncSunVariantToWrapper);
+      classObserver.observe(wrapperEl, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+      onCleanup(() => classObserver.disconnect());
     }
 
     // Anchor the companion sun by reading the position straight off the CSS that
