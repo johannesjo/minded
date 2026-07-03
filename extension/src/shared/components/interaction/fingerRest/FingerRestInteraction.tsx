@@ -16,9 +16,10 @@ interface FingerRestProps {
 /**
  * The near-wordless intervention: an invitation for the scrolling finger — the
  * very organ of the habit — to simply be still for a moment. The invitation
- * names both the why (the finger that scrolls, at rest) and the how (press and
- * stay) so a first-time meeting isn't a guess, and a soft outlined pad shows
- * exactly where to lay the finger down. Press anywhere on the pad and rest; the
+ * names the why (the finger that scrolls, at rest), the how (press and stay),
+ * and where the attention goes (feel it there) so a first-time meeting isn't a
+ * guess, and a soft outlined pad shows exactly where to lay the finger down.
+ * Press anywhere on the pad and rest; the
  * words and the outline dissolve, a warmth gathers under the fingertip, and
  * lifting continues on. Nothing is counted, timed on screen, or scored, and —
  * true to the wordless heart of it — there is nothing left to read once it has
@@ -147,7 +148,7 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
         >
           <div class="txtBig">Let your finger rest here.</div>
           <div class="finger-rest-why">
-            The finger that keeps scrolling, still for a moment. Press and stay.
+            Press and stay. Feel the finger that keeps scrolling, now still.
           </div>
         </div>
       </div>
