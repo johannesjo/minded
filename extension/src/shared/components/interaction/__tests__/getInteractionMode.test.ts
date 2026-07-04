@@ -408,6 +408,7 @@ describe("getInteractionMode", () => {
       expect(
         decide(baseSyncData(), {
           isMainView: false,
+          isTouchPrimary: true,
           random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
         }),
       ).toEqual({
@@ -425,6 +426,7 @@ describe("getInteractionMode", () => {
       expect(
         decide(baseSyncData(), {
           isMainView: false,
+          isTouchPrimary: true,
           clock: () => lateNight,
           random: sequenceRandom([0.99, 0.01]),
         }),
@@ -432,6 +434,20 @@ describe("getInteractionMode", () => {
         mode: "FINGER_REST",
         reason: "finger_rest_sample",
       });
+    });
+
+    it("never invites a finger to rest on mouse-primary devices", () => {
+      // "Let your finger rest here" is a press-and-hold on a pad — meaningless
+      // with a mouse. On a mouse-primary device the finger-rest roll is never
+      // taken (it consumes no roll), so the low value falls through to the
+      // notice anchor instead.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: false,
+          isTouchPrimary: false,
+          random: sequenceRandom([0.99, 0.99, 0.99, 0.01]),
+        }).mode,
+      ).toBe("NOTICE");
     });
 
     it("stays out of dashboard-started interactions", () => {

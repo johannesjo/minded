@@ -125,6 +125,16 @@ export interface InteractionModeDecisionOptions {
    * platform). Defaults to the live device read; injectable for tests.
    */
   isAudioAudible?: boolean;
+  /**
+   * Whether the primary input is touch. The finger-rest invitation is a
+   * press-and-hold on a pad — meaningless with a mouse — so it is only offered
+   * on touch-primary devices. The live device read (`IS_TOUCH_PRIMARY`) lives
+   * in `@src/util/touch`, which touches `window` at import; passing it in keeps
+   * this decision module DOM-free (and node-testable). Defaults to `false` so
+   * an unknown environment fails safe — never inviting a finger to rest where
+   * there is only a mouse.
+   */
+  isTouchPrimary?: boolean;
 }
 
 const decision = (
@@ -197,6 +207,7 @@ export const getInteractionModeDecision = (
       ? options.target.kind === "app"
       : platform !== "web" || IS_APP);
   const isAndroidMode = options.isAndroid ?? platform === "android";
+  const isTouchPrimary = options.isTouchPrimary ?? false;
   const canApplyInterventionFriction = !isMainView;
   const hasReasonAnswers = getReasonAnswerCount(syncData, isAppMode) > 0;
   const canShowAlternative = !isMainView && context.hasAlternatives;
@@ -389,7 +400,13 @@ export const getInteractionModeDecision = (
 
   // Kept to real interventions like the bell: the dashboard's sun already
   // offers its own embodied rituals (drag down to ground, fling to let go).
-  if (!isMainView && chance(FINGER_REST_PROBABILITY, random)) {
+  // Touch-primary only: it invites the scrolling *finger* to rest on a pad, an
+  // embodied press-and-hold that has no meaning with a mouse.
+  if (
+    isTouchPrimary &&
+    !isMainView &&
+    chance(FINGER_REST_PROBABILITY, random)
+  ) {
     return decision("FINGER_REST", "finger_rest_sample", frictionLevel);
   }
 

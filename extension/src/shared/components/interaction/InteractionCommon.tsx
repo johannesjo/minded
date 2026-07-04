@@ -21,6 +21,7 @@ import {
 } from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { fadeOut } from "@src/util/animation";
+import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 import {
   getQuestionSmart,
   getQuestionSemiSmart,
@@ -1205,6 +1206,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             target: props.interactionTarget,
             platform: props.interactionPlatform,
             isMainView: props.isFromDashboard,
+            // The finger-rest invitation is a touch gesture; gate it here where
+            // the live device read is DOM-safe (getInteractionMode stays pure).
+            isTouchPrimary: IS_TOUCH_PRIMARY,
           });
           setInitialQuestion(question);
           setFrictionLevel(modeDecision.frictionLevel);
