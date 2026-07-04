@@ -253,6 +253,19 @@ const Styleguide = (): JSX.Element => {
       </Section>
 
       <Section id="typography" title="Typography">
+        <p class={styles.muted}>
+          Two voices. Newsreader (serif) is the <em>mindful voice</em> — used
+          only when the app speaks gently to you (intervention prompts, breath
+          &amp; pause copy, the "be proud" success message) or when you read
+          your own words (dashboard reflections, the reflection detail page).
+          Inter (sans) is the functional default for everything else: structural
+          headings, settings, labels, metadata. Serif is always opt-in via{" "}
+          <code>.txtBig</code>, <code>.h2Mindful</code>, or the{" "}
+          <code>displayVoice()</code> mixin; Inter is inherited, never declared.
+          One deliberate exception carries serif outside that rule: every{" "}
+          <code>&lt;Btn&gt;</code> app-wide (buttons are invitations — issue
+          #167).
+        </p>
         <h2 class="h2">.h2 — functional heading (Inter)</h2>
         <h2 class="h2 h2Mindful">
           .h2.h2Mindful — mindful heading (display serif)
