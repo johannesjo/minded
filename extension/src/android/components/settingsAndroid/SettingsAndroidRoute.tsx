@@ -10,9 +10,7 @@ import styles from "./SettingsAndroidRoute.module.scss";
 export const SettingsAndroidRoute = () => {
   return (
     <div class="pageTransitionIn">
-      <h2 class="h2 h2Mindful">
-        <em>minded</em> – Settings
-      </h2>
+      <h2 class="h2">Settings</h2>
 
       <SettingsAndroid autoSave={true} />
 
