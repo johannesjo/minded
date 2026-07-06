@@ -109,41 +109,29 @@ export const ScreenOffInteraction: (props: {
       <Switch>
         <Match when={getPhase() === "intro"}>
           <div class="txtBig interaction-heading">
-            Put your phone down for a minute? 📵
+            Put your phone down for a minute?
           </div>
-          <Btn onClick={arm}>
-            Lock my phone for a minute
-          </Btn>
-          <Btn onClick={() => props.onSkip()}>
-            Not now
-          </Btn>
+          <Btn onClick={arm}>Lock my phone for a minute</Btn>
+          <Btn onClick={() => props.onSkip()}>Not now</Btn>
         </Match>
 
         <Match when={getPhase() === "armed"}>
           <div class="txtBig interaction-heading">
             Lock your phone now — come back in a minute.
           </div>
-          <Btn onClick={() => props.onSkip()}>
-            Just go in
-          </Btn>
+          <Btn onClick={() => props.onSkip()}>Just go in</Btn>
         </Match>
 
         <Match when={getPhase() === "tooEarly"}>
           <div class="txtBig interaction-heading">
             Almost — {Math.ceil(getRemainingMs() / 1000)}s more away.
           </div>
-          <Btn onClick={arm}>
-            Try again
-          </Btn>
-          <Btn onClick={() => props.onSkip()}>
-            Just go in
-          </Btn>
+          <Btn onClick={arm}>Try again</Btn>
+          <Btn onClick={() => props.onSkip()}>Just go in</Btn>
         </Match>
 
         <Match when={getPhase() === "done"}>
-          <div class="txtBig interaction-heading">
-            Nice — enjoy the break. ☀️
-          </div>
+          <div class="txtBig interaction-heading">Nice — enjoy the break.</div>
         </Match>
       </Switch>
     </div>

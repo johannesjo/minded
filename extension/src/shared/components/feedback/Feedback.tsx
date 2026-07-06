@@ -40,7 +40,7 @@ Other comments:
 
       <div>
         <Btn href={mailtoLink()} target="_blank">
-          ♥ send us a quick email ♥
+          send us a quick email
         </Btn>
       </div>
     </div>

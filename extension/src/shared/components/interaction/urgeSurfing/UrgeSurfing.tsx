@@ -198,7 +198,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
       <Switch>
         <Match when={getPhase() === "intro"}>
           <div class="txtBig interaction-heading">
-            There's an urge to open this. 🌊
+            There's an urge to open this.
           </div>
           <p class="urge-surfing-sub">
             Instead of feeding it, let's watch it. Urges rise and pass on their

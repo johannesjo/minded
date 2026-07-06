@@ -80,7 +80,6 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
               class="txtBig interaction-static-text"
             >
               <div>{advice.txt}</div>
-              <div>{advice.ico}</div>
             </div>
           );
         })()}
