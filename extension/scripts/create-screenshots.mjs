@@ -8,7 +8,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const extensionDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(extensionDir, "..");
 const extensionScreenshotsDir = path.join(extensionDir, "screenshots");
-const landingScreenshotsDir = path.join(repoRoot, "landing-page", "public");
+const chromeWebStoreScreenshotsDir = path.join(
+  extensionScreenshotsDir,
+  "chrome-web-store",
+);
+const readmeScreenshotsDir = path.join(repoRoot, "docs", "screenshots");
+const landingScreenshotsDir = process.env.MINDED_LANDING_PAGE_DIR
+  ? path.resolve(process.env.MINDED_LANDING_PAGE_DIR, "public", "screenshots")
+  : undefined;
 const googlePlayPhoneScreenshotsDir = path.join(
   extensionScreenshotsDir,
   "google-play",
@@ -19,25 +26,52 @@ const desktopViewport = { width: 1280, height: 800 };
 const phoneViewport = { width: 360, height: 640 };
 
 const desktopShots = [
-  { file: "dashboard.png", target: "dashboard", theme: "light" },
+  {
+    file: "dashboard.png",
+    target: "dashboard",
+    theme: "light",
+    copyAs: [
+      path.join(readmeScreenshotsDir, "dashboard.png"),
+      path.join(chromeWebStoreScreenshotsDir, "01-dashboard.png"),
+    ],
+  },
   { file: "dashboard-dark.png", target: "dashboard", theme: "dark" },
   { file: "energy-lvl.png", target: "energy-lvl", theme: "light" },
   {
     file: "q-something-i-am-looking-forward-to.png",
     target: "q-something-i-am-looking-forward-to",
     theme: "light",
+    copyAs: [
+      path.join(chromeWebStoreScreenshotsDir, "05-reflection-question.png"),
+    ],
   },
   {
     file: "q-this-week-i-will-do-my-best-to.png",
     target: "q-this-week-i-will-do-my-best-to",
     theme: "light",
   },
-  { file: "draggable-sun.png", target: "draggable-sun", theme: "light" },
-  { file: "intent-selection.png", target: "intent-selection", theme: "light" },
+  {
+    file: "draggable-sun.png",
+    target: "draggable-sun",
+    theme: "light",
+    copyAs: [path.join(chromeWebStoreScreenshotsDir, "04-grounding-pause.png")],
+  },
+  {
+    file: "intent-selection.png",
+    target: "intent-selection",
+    theme: "light",
+    copyAs: [
+      path.join(readmeScreenshotsDir, "intervention.png"),
+      path.join(chromeWebStoreScreenshotsDir, "02-intent-selection.png"),
+    ],
+  },
   {
     file: "duration-selection.png",
     target: "duration-selection",
     theme: "light",
+    copyAs: [
+      path.join(chromeWebStoreScreenshotsDir, "03-duration-selection.png"),
+    ],
   },
   {
     file: "draggable-moon-dark.png",
@@ -56,7 +90,7 @@ const desktopShots = [
   },
 ].map((shot) => ({
   ...shot,
-  copyTo: [landingScreenshotsDir],
+  copyTo: landingScreenshotsDir ? [landingScreenshotsDir] : [],
   outputDir: extensionScreenshotsDir,
   platform: "web-extension",
   viewport: desktopViewport,
@@ -68,9 +102,20 @@ const googlePlayPhoneShots = [
     file: "question-looking-forward.png",
     target: "q-something-i-am-looking-forward-to",
     theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "check-in.png")],
   },
-  { file: "draggable-sun.png", target: "draggable-sun", theme: "light" },
-  { file: "intent-selection.png", target: "intent-selection", theme: "light" },
+  {
+    file: "draggable-sun.png",
+    target: "draggable-sun",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "breathe.png")],
+  },
+  {
+    file: "intent-selection.png",
+    target: "intent-selection",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "intervention.png")],
+  },
   {
     file: "duration-selection.png",
     target: "duration-selection",
@@ -109,6 +154,7 @@ const createScreenshotUrl = (baseUrl, shot) => {
   url.searchParams.set("target", shot.target);
   url.searchParams.set("theme", shot.theme);
   url.searchParams.set("platform", shot.platform);
+  url.searchParams.set("skyHour", "9");
   return url.toString();
 };
 
@@ -131,6 +177,26 @@ const applyTheme = async (page, shot) => {
     root?.classList.toggle("minded-6622-touch-primary", isAndroid);
     wrapper?.classList.toggle("minded-6622-dark", isDark);
   }, shot);
+};
+
+const freezeMotion = async (page) => {
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation-delay: 0s !important;
+        animation-duration: 0.001s !important;
+        animation-iteration-count: 1 !important;
+        caret-color: transparent !important;
+        transition: none !important;
+      }
+    `,
+  });
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      }),
+  );
 };
 
 const prepareShot = async (page, shot) => {
@@ -202,7 +268,11 @@ const launchBrowser = async () => {
 
 const captureScreenshots = async () => {
   const dirs = new Set(
-    shots.flatMap((shot) => [shot.outputDir, ...(shot.copyTo || [])]),
+    shots.flatMap((shot) => [
+      shot.outputDir,
+      ...(shot.copyTo || []),
+      ...(shot.copyAs || []).map((destination) => path.dirname(destination)),
+    ]),
   );
   for (const dir of dirs) {
     await mkdir(dir, { recursive: true });
@@ -273,7 +343,7 @@ const captureScreenshots = async () => {
       await page.evaluate(() => document.fonts?.ready);
       await prepareShotWithDiagnostics(page, shot, pageErrors);
       await applyTheme(page, shot);
-      await page.waitForTimeout(350);
+      await freezeMotion(page);
 
       if (pageErrors.length) {
         throw new Error(
@@ -290,6 +360,9 @@ const captureScreenshots = async () => {
 
       for (const copyDir of shot.copyTo || []) {
         await copyFile(outputPath, path.join(copyDir, shot.file));
+      }
+      for (const destination of shot.copyAs || []) {
+        await copyFile(outputPath, destination);
       }
       console.log(`Created ${path.relative(repoRoot, outputPath)}`);
     }

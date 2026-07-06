@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "CI-only scripts. Not part of the published extension or app.",
+  "scripts": {
+    "test": "node --test"
+  },
   "dependencies": {
     "googleapis": "144.0.0"
   }
