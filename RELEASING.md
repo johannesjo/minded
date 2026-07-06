@@ -67,6 +67,25 @@ The tag triggers `.github/workflows/release.yml`. Steps:
 
 Total wall time: ~6–10 min once approved.
 
+## Store and marketing screenshots
+
+Store and marketing screenshots have their own runbook — see
+[`docs/screenshot-publishing.md`](docs/screenshot-publishing.md) for the full
+checklist (README, minded.today, Google Play, Chrome Web Store, rollback).
+
+Quick reference — regenerate every set from `extension/`:
+
+```bash
+npm run screenshots
+```
+
+This refreshes the tracked root README images and the two ignored upload sets
+(`screenshots/google-play/phone/`, `screenshots/chrome-web-store/`). Publish
+Google Play by running the **Update store screenshots** GitHub Action and
+approving the `production` environment; Chrome Web Store images are replaced by
+hand in the developer dashboard. The runbook above covers each step, plus
+minded.today and rollback.
+
 ## Continuous internal test builds (push to main)
 
 `.github/workflows/play-internal.yml` publishes a signed AAB to the Play

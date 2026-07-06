@@ -11,7 +11,7 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/intervention.png" alt="minded pausing a distracting site to ask what you actually came to do" /></td>
-    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="minded dashboard showing the day's intentions and reflections" /></td>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="minded dashboard showing today's energy check-in" /></td>
   </tr>
   <tr>
     <td align="center"><em>A pause before the scroll — name what you actually came to do.</em></td>
