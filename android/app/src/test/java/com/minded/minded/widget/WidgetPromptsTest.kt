@@ -2,58 +2,86 @@ package com.minded.minded.widget
 
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WidgetPromptsTest {
 
+    // Any real epoch day works; the value is arbitrary but fixed for determinism.
+    private val day = 20_642L
+
     @Test
     fun `day hours draw from the day pool`() {
         for (hour in intArrayOf(5, 9, 12, 16, 19)) {
-            val prompt = WidgetPrompts.promptForMoment("2026-07-07", hour)
+            val prompt = WidgetPrompts.promptForMoment(day, hour)
             assertTrue(prompt in WidgetPrompts.DAY_PROMPTS, "hour $hour: $prompt")
         }
     }
 
     @Test
     fun `the evening hour draws from the evening pool`() {
-        val prompt = WidgetPrompts.promptForMoment("2026-07-07", 20)
+        val prompt = WidgetPrompts.promptForMoment(day, 20)
         assertTrue(prompt in WidgetPrompts.EVENING_PROMPTS)
     }
 
     @Test
     fun `night shows no words - the moon carries the card alone`() {
         for (hour in intArrayOf(21, 23, 0, 3, 4)) {
-            assertNull(WidgetPrompts.promptForMoment("2026-07-07", hour), "hour $hour")
+            assertNull(WidgetPrompts.promptForMoment(day, hour), "hour $hour")
+        }
+    }
+
+    @Test
+    fun `text exists exactly when the sky is light`() {
+        // The near-black prompt text is only legible on the day sky. The slot
+        // boundaries are built from SunWidgetPhase's constants so this holds by
+        // construction — this guards the construction (e.g. someone reintroducing
+        // a local night constant).
+        for (hour in 0..23) {
+            assertEquals(
+                SunWidgetPhase.forHour(hour) == SunWidgetPhase.DAY,
+                WidgetPrompts.promptForMoment(day, hour) != null,
+                "hour $hour",
+            )
         }
     }
 
     @Test
     fun `out of range hours wrap around the clock`() {
         assertEquals(
-            WidgetPrompts.promptForMoment("2026-07-07", 9),
-            WidgetPrompts.promptForMoment("2026-07-07", 33),
+            WidgetPrompts.promptForMoment(day, 9),
+            WidgetPrompts.promptForMoment(day, 33),
         )
-        assertNull(WidgetPrompts.promptForMoment("2026-07-07", -1))
+        assertNull(WidgetPrompts.promptForMoment(day, -1))
     }
 
     @Test
-    fun `the same moment always shows the same line`() {
+    fun `the same moment always shows the same line, across the whole slot`() {
         // Deterministic by construction: Glance recompositions on launcher events
         // must never visibly shuffle the text, and there is nothing to "refresh".
-        val first = WidgetPrompts.promptForMoment("2026-07-07", 10)
-        repeat(10) {
-            assertEquals(first, WidgetPrompts.promptForMoment("2026-07-07", 10))
-        }
-        // Stable across the whole day slot, not just the hour.
-        assertEquals(first, WidgetPrompts.promptForMoment("2026-07-07", 19))
+        val first = WidgetPrompts.promptForMoment(day, 5)
+        assertEquals(first, WidgetPrompts.promptForMoment(day, 10))
+        assertEquals(first, WidgetPrompts.promptForMoment(day, 19))
     }
 
     @Test
-    fun `the line rotates across days`() {
-        val prompts = (1..14)
-            .map { day -> WidgetPrompts.promptForMoment("2026-07-%02d".format(day), 10) }
-        assertTrue(prompts.distinct().size > 1, "two weeks showed a single line: $prompts")
+    fun `the line walks the whole pool, one step per day`() {
+        // Epoch-day indexing: every entry appears once per pool-length cycle and
+        // adjacent days never repeat (the char-sum seed this replaced skipped
+        // entries and repeated across X9-X0 date rollovers).
+        val dayLines = (0 until WidgetPrompts.DAY_PROMPTS.size)
+            .map { WidgetPrompts.promptForMoment(day + it, 10) }
+        assertEquals(WidgetPrompts.DAY_PROMPTS.size, dayLines.distinct().size)
+
+        val eveningLines = (0 until WidgetPrompts.EVENING_PROMPTS.size)
+            .map { WidgetPrompts.promptForMoment(day + it, 20) }
+        assertEquals(WidgetPrompts.EVENING_PROMPTS.size, eveningLines.distinct().size)
+
+        assertNotEquals(
+            WidgetPrompts.promptForMoment(day, 20),
+            WidgetPrompts.promptForMoment(day + 1, 20),
+        )
     }
 
     @Test
@@ -89,9 +117,9 @@ class WidgetPromptsTest {
 
     @Test
     fun `prompt boundaries cover the sun phase boundaries`() {
-        // The receiver arms one alarm off the earlier of the two schedules; the
-        // prompt slots (5/20/21) contain the phase flips (5/21), so a prompt-only
-        // regression here would also strand the sun - guard the containment.
+        // The receiver arms its single alarm off the prompt schedule alone, so
+        // the prompt slots must always change at least as often as the sun's
+        // phase — otherwise a phase flip could strand the wrong sky on screen.
         for (hour in 0..23) {
             assertTrue(
                 WidgetPrompts.minutesUntilNextChange(hour, 0) <=

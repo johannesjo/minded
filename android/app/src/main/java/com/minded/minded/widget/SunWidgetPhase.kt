@@ -20,31 +20,24 @@ enum class SunWidgetPhase {
         // must never grade the user, and sun-vs-moon is the one shift everyone
         // reads as "the world", not "a message to me". Boundaries ascending on the
         // 24h clock; coarse on purpose — the sun does not tick.
-        private const val DAY_START = 5    // the sun is up
-        private const val NIGHT_START = 21 // the moon
+        // `internal` (not private) because WidgetPrompts builds its slot
+        // boundaries from these — the single definition is what guarantees the
+        // card's no-text window is exactly the moon's window.
+        internal const val DAY_START = 5    // the sun is up
+        internal const val NIGHT_START = 21 // the moon
 
         private val BOUNDARY_HOURS = intArrayOf(DAY_START, NIGHT_START)
 
         /** The phase for a given local hour-of-day (0–23; other values wrap). */
-        fun forHour(hour: Int): SunWidgetPhase {
-            val h = ((hour % 24) + 24) % 24
-            return if (h in DAY_START until NIGHT_START) DAY else NIGHT
-        }
+        fun forHour(hour: Int): SunWidgetPhase =
+            if (hour.mod(24) in DAY_START until NIGHT_START) DAY else NIGHT
 
         /**
-         * Minutes from the given local time until the next phase change. The
-         * receiver uses this to arm a single, inexact alarm per phase (≈2 wakeups
-         * a day) rather than polling. Always strictly positive, so landing exactly
-         * on a boundary schedules the following one, not an immediate re-fire.
+         * Minutes from the given local time until the next phase change. Always
+         * strictly positive, so landing exactly on a boundary schedules the
+         * following one, not an immediate re-fire.
          */
-        fun minutesUntilNextBoundary(hour: Int, minute: Int): Int {
-            val nowMin = (((hour % 24) + 24) % 24) * 60 + (((minute % 60) + 60) % 60)
-            for (boundaryHour in BOUNDARY_HOURS) {
-                val boundaryMin = boundaryHour * 60
-                if (boundaryMin > nowMin) return boundaryMin - nowMin
-            }
-            // Past the last boundary today: wrap to the first one tomorrow.
-            return BOUNDARY_HOURS[0] * 60 + 24 * 60 - nowMin
-        }
+        fun minutesUntilNextBoundary(hour: Int, minute: Int): Int =
+            minutesUntilNext(BOUNDARY_HOURS, hour, minute)
     }
 }

@@ -1,8 +1,9 @@
 package com.minded.minded.widget
 
 /**
- * The single quiet line the wide companion widget carries beside the sun. See
- * docs/widget-prompts-concept.md for the full rationale; the load-bearing rules:
+ * The single quiet line the card-sized companion widget carries above the sun.
+ * See docs/widget-prompts-concept.md for the full rationale; the load-bearing
+ * rules:
  *
  * - World-voice invitations only ("Feel both feet on the floor.") — never a
  *   metric, never about the user, never an inferred feeling. A widget line
@@ -10,10 +11,13 @@ package com.minded.minded.widget
  * - Rotation is slow and boring by design: the line changes only at the app's
  *   existing time boundaries (~2 text changes a day). A faster-rotating widget
  *   is a tiny feed — "what does it say now?" is the exact loop minded fights.
- * - Rotation is deterministic (the sleepWindDown nightIdToIndex pattern): the
- *   same moment always shows the same line — nothing to refresh or fish for,
- *   and Glance recompositions on launcher events can't visibly shuffle it.
+ * - Rotation is deterministic: the same moment always shows the same line —
+ *   nothing to refresh or fish for, and Glance recompositions on launcher
+ *   events can't visibly shuffle it.
  * - At night: no words. The moon, alone. A line at 2 a.m. reads as a nudge.
+ *   The no-text window is the moon's window *by construction* — the slot
+ *   boundaries are built from [SunWidgetPhase]'s constants, so the near-black
+ *   text can never meet the dark sky.
  *
  * The copy is a widget-specific register curated from the app's own content
  * (NOTICE_CUES in notice.const.ts, ACTION_ADVICES in actionAdvices.ts, the
@@ -25,14 +29,14 @@ package com.minded.minded.widget
  */
 object WidgetPrompts {
 
-    // The app's existing time lines (TODAY_START_HOUR / EVENING_START_HOUR in
-    // getInteractionMode.ts, NIGHT_START in SunWidgetPhase) — deliberately no
-    // invented dayparts.
-    private const val DAY_START = 5
+    // The app's existing time lines — deliberately no invented dayparts. Day
+    // and night come straight from SunWidgetPhase; evening matches
+    // EVENING_START_HOUR in interactionContext.ts (TODAY_START_HOUR in
+    // getInteractionMode.ts is the same 5 as SunWidgetPhase.DAY_START).
     private const val EVENING_START = 20
-    private const val NIGHT_START = 21
 
-    private val BOUNDARY_HOURS = intArrayOf(DAY_START, EVENING_START, NIGHT_START)
+    private val BOUNDARY_HOURS =
+        intArrayOf(SunWidgetPhase.DAY_START, EVENING_START, SunWidgetPhase.NIGHT_START)
 
     /** Hard cap so every line fits ~3 serif lines on a 3×2 card. */
     const val MAX_PROMPT_LENGTH = 60
@@ -68,36 +72,28 @@ object WidgetPrompts {
     )
 
     /**
-     * The line for a given local date + hour, or null at night (the moon carries
-     * the night alone). Deterministic: same date + slot → same line, and because
-     * consecutive ISO dates mostly differ by one in their character sum, the
-     * rotation walks the pool day by day instead of jumping randomly.
+     * The line for a given local day + hour, or null at night (the moon carries
+     * the night alone). Deterministic, and because the index is the epoch day
+     * itself, the rotation walks each pool exactly one line per day — no
+     * adjacent-day repeats, no jumps (deterministic like sleepWindDown's
+     * nightIdToIndex, minus that hash's uneven date-rollover steps).
      */
-    fun promptForMoment(dateIso: String, hour: Int): String? {
-        val h = ((hour % 24) + 24) % 24
+    fun promptForMoment(epochDay: Long, hour: Int): String? {
+        val h = hour.mod(24)
         val pool = when {
-            h in DAY_START until EVENING_START -> DAY_PROMPTS
-            h in EVENING_START until NIGHT_START -> EVENING_PROMPTS
+            h in SunWidgetPhase.DAY_START until EVENING_START -> DAY_PROMPTS
+            h in EVENING_START until SunWidgetPhase.NIGHT_START -> EVENING_PROMPTS
             else -> return null
         }
-        return pool[dateSeed(dateIso) % pool.size]
+        return pool[epochDay.mod(pool.size.toLong()).toInt()]
     }
 
     /**
      * Minutes from the given local time until the displayed line next changes
-     * (day start, evening, night). Same contract as
-     * [SunWidgetPhase.minutesUntilNextBoundary]: always strictly positive, so
-     * landing exactly on a boundary schedules the following one.
+     * (day start, evening, night). Because [BOUNDARY_HOURS] contains the sun's
+     * phase flips, this schedule also covers the day/night repaint — the
+     * receiver arms one alarm off it alone (guarded by WidgetPromptsTest).
      */
-    fun minutesUntilNextChange(hour: Int, minute: Int): Int {
-        val nowMin = (((hour % 24) + 24) % 24) * 60 + (((minute % 60) + 60) % 60)
-        for (boundaryHour in BOUNDARY_HOURS) {
-            val boundaryMin = boundaryHour * 60
-            if (boundaryMin > nowMin) return boundaryMin - nowMin
-        }
-        return BOUNDARY_HOURS[0] * 60 + 24 * 60 - nowMin
-    }
-
-    // The sleepWindDown nightIdToIndex pattern: char-code sum of the ISO date.
-    private fun dateSeed(dateIso: String): Int = dateIso.sumOf { it.code }
+    fun minutesUntilNextChange(hour: Int, minute: Int): Int =
+        minutesUntilNext(BOUNDARY_HOURS, hour, minute)
 }

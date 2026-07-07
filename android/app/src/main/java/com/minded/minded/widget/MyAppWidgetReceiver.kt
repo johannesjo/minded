@@ -50,7 +50,7 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         appWidgetIds: IntArray,
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
-        scheduleNextPhaseChange(context)
+        scheduleNextBoundary(context)
     }
 
     override fun onDisabled(context: Context) {
@@ -64,13 +64,13 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             try {
                 glanceAppWidget.updateAll(context)
             } finally {
-                scheduleNextPhaseChange(context)
+                scheduleNextBoundary(context)
                 pendingResult.finish()
             }
         }
     }
 
-    private fun scheduleNextPhaseChange(context: Context) {
+    private fun scheduleNextBoundary(context: Context) {
         val alarmManager = alarmManager(context) ?: return
         // Only a placed sun needs refreshing. Without this guard a clock/timezone
         // change (delivered to the manifest receiver even with no widget on screen)
@@ -82,18 +82,20 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             return
         }
         val now = Calendar.getInstance()
-        val hour = now.get(Calendar.HOUR_OF_DAY)
-        val minute = now.get(Calendar.MINUTE)
-        // Whichever changes first repaints the widget: the sun's day/night phase
-        // or the card's prompt slot (the prompt boundaries are a superset today,
-        // but keeping both explicit means neither can silently strand the other).
-        val minutes = minOf(
-            SunWidgetPhase.minutesUntilNextBoundary(hour, minute),
-            WidgetPrompts.minutesUntilNextChange(hour, minute),
+        // The prompt slots are built from SunWidgetPhase's own constants, so one
+        // schedule covers both the line turnover and the day/night repaint
+        // (containment guarded by WidgetPromptsTest).
+        val minutes = WidgetPrompts.minutesUntilNextChange(
+            now.get(Calendar.HOUR_OF_DAY),
+            now.get(Calendar.MINUTE),
         )
         val triggerAt = System.currentTimeMillis() + minutes * 60_000L
         // Inexact + allow-while-idle: no SCHEDULE_EXACT_ALARM permission, and a few
         // minutes of drift is invisible on a sun that changes warmth, not time.
+        // DST shifts broadcast neither TIME_SET nor TIMEZONE_CHANGED, so an alarm
+        // armed across a transition lands up to an hour off the wall-clock
+        // boundary twice a year — accepted for the same reason, and it
+        // self-corrects when that alarm re-arms.
         // RTC, not RTC_WAKEUP: never wake the device to repaint a widget nobody is
         // looking at — an overdue phase change is delivered the moment the device
         // next wakes, i.e. right when someone glances at the phone.

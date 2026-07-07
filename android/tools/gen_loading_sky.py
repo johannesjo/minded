@@ -33,6 +33,12 @@ OUT_DIR = os.path.join(
 WIDTH = 360
 HEIGHT = 1280
 
+# The home-screen widget card gets its own near-target-size renders: minifying
+# the full-screen sky ~3x would undersample the baked dither and re-band, so
+# the dither must be applied at (about) the size the launcher will draw.
+CARD_WIDTH = 360
+CARD_HEIGHT = 240
+
 # (position 0..1, "#rrggbb"). Keep in sync with _variables.scss / Color.kt.
 LIGHT_STOPS = [
     (0.00, "#cfe4f5"),
@@ -56,23 +62,23 @@ def hex_rgb(h):
     return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
 
 
-def gradient_columns(stops):
+def gradient_columns(stops, height):
     """One color per row (sRGB-space linear interpolation between stops)."""
     pos = np.array([p for p, _ in stops])
     cols = np.array([hex_rgb(c) for _, c in stops], dtype=float)
-    ys = np.linspace(0.0, 1.0, HEIGHT)
-    out = np.empty((HEIGHT, 3))
+    ys = np.linspace(0.0, 1.0, height)
+    out = np.empty((height, 3))
     for ch in range(3):
         out[:, ch] = np.interp(ys, pos, cols[:, ch])
-    return out  # float, 0..255, shape (HEIGHT, 3)
+    return out  # float, 0..255, shape (height, 3)
 
 
-def render(stops):
-    rows = gradient_columns(stops)  # (H, 3)
-    img = np.repeat(rows[:, None, :], WIDTH, axis=1)  # (H, W, 3)
+def render(stops, width=WIDTH, height=HEIGHT):
+    rows = gradient_columns(stops, height)  # (H, 3)
+    img = np.repeat(rows[:, None, :], width, axis=1)  # (H, W, 3)
     # Triangular PDF dither: sum of two uniforms => triangular on [-1, 1] LSB.
     rng = np.random.default_rng(42)
-    noise = rng.random((HEIGHT, WIDTH, 3)) - rng.random((HEIGHT, WIDTH, 3))
+    noise = rng.random((height, width, 3)) - rng.random((height, width, 3))
     dithered = np.clip(np.round(img + noise), 0, 255).astype(np.uint8)
     return dithered
 
@@ -85,9 +91,15 @@ def write_png(path, arr):
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    for name, stops in (("loading_sky_light", LIGHT_STOPS), ("loading_sky_dark", DARK_STOPS)):
+    outputs = (
+        ("loading_sky_light", LIGHT_STOPS, WIDTH, HEIGHT),
+        ("loading_sky_dark", DARK_STOPS, WIDTH, HEIGHT),
+        ("widget_sky_light", LIGHT_STOPS, CARD_WIDTH, CARD_HEIGHT),
+        ("widget_sky_dark", DARK_STOPS, CARD_WIDTH, CARD_HEIGHT),
+    )
+    for name, stops, width, height in outputs:
         path = os.path.join(OUT_DIR, name + ".png")
-        write_png(path, render(stops))
+        write_png(path, render(stops, width, height))
         print(f"wrote {path} ({os.path.getsize(path) // 1024} KB)")
 
 

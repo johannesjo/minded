@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static widget-picker preview of the card face (API 31+, previewLayout).
+     A hand-kept still of MyAppWidget.PromptCard: same sky, serif line, and sun
+     drawables, so it stays truthful without maintaining a screenshot asset.
+     Never rendered by the widget itself. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_sky_light"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="serif"
+        android:gravity="center"
+        android:maxLines="3"
+        android:text="@string/widget_preview_prompt"
+        android:textColor="#D9000000"
+        android:textSize="15sp" />
+
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/widget_sun_description_day"
+        android:src="@drawable/ic_sun_widget_day" />
+</LinearLayout>

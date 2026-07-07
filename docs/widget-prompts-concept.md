@@ -115,11 +115,13 @@ rules keep the prompt an anchor instead of a slot machine:
   at 20:00, silence at 21:00 (no invented dayparts; two text changes a day,
   aligned with the alarms the widget already arms) — never per-glance, never
   per-hour.
-- **Rotation is deterministic**, seeded from the date + daypart (the
-  `nightIdToIndex` pattern from `sleepWindDown.util.ts`). The same moment
-  always shows the same line: nothing to refresh, nothing to fish for — and
-  technically necessary anyway, since Glance recomposes on launcher events
-  and a `Math.random` pick would visibly shuffle.
+- **Rotation is deterministic**: the epoch day indexes the slot's pool, so
+  the same moment always shows the same line and each pool is walked exactly
+  one line per day (same intent as `sleepWindDown.util.ts`'s `nightIdToIndex`,
+  minus that char-sum hash's uneven date-rollover steps). Nothing to refresh,
+  nothing to fish for — and technically necessary anyway, since Glance
+  recomposes on launcher events and a `Math.random` pick would visibly
+  shuffle.
 
 Habituation — the line becoming invisible wallpaper within days — is
 *accepted*, not fought. A mindfulness bell you've stopped hearing still rings
@@ -133,39 +135,51 @@ Everything extends what exists; nothing new is invented.
 [card ≥ ~3×2]  =  intervention screen in miniature:
                   [app sky] over [serif line] over [sun]
       |                              |
-  SizeMode.Responsive         WidgetPrompts.promptForMoment(dateIso, hour)
-  (below card size →          (pure Kotlin, date-seeded, unit-tested —
+  SizeMode.Responsive         WidgetPrompts.promptForMoment(epochDay, hour)
+  (below card size →          (pure Kotlin, epoch-day indexed, unit-tested —
    plain floating sun)         the SunWidgetPhase pattern; night → null)
       |
   tap → actionStartActivity(EXTRA_LAUNCH_ROUTE = "/?sun=open")   ← unchanged
       |
-  MyAppWidgetReceiver alarm: min(next phase flip, next prompt slot)
-   → boundaries 05/20/21 (≈3 inexact wakeups/day)
+  MyAppWidgetReceiver alarm: next prompt-slot boundary (contains the phase
+   flips by construction) → 05/20/21 (≈3 inexact wakeups/day)
 ```
 
 - **`MyAppWidget.kt`**: `SizeMode.Responsive` with two faces — `SUN_ONLY`
-  (40×40dp) and `PROMPT_CARD` (170×90dp, ≈ the smallest 3×2). The card is a
-  `Box`: the **pre-dithered `loading_sky_light/dark` bitmaps** (they *are*
-  the app sky, stretched exactly like the cold-start window) behind a
-  centered `Column { Text; sun }`. Text is 15sp platform serif (widgets
-  can't embed Newsreader; the serif register carries), colored
+  (40×40dp) and `PROMPT_CARD` (170×140dp). The 140dp floor is a fit
+  guarantee, not a guess (12dp padding ×2 + three 15sp serif lines + 8dp
+  spacer + 44dp sun ≈ 136dp); anything shorter — flat rows, dense grids,
+  landscape — keeps the plain floating sun rather than a clipped card. The
+  card is a `Column` with the sky as `background(ImageProvider)` — dedicated
+  **card-sized `widget_sky_light/dark` renders** of the exact app sky,
+  dithered at target size by `gen_loading_sky.py` (minifying the full-screen
+  sky would undersample the dither and re-band; these also cut the
+  launcher-side decode ~5×). Text is 15sp platform serif (widgets can't
+  embed Newsreader; the serif register carries), colored
   `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) — only ever drawn on the
-  light sky, since night has no text. `cornerRadius(24dp)` on API 31+
+  light sky, by construction (see below). `cornerRadius(24dp)` on API 31+
   (square below). Sky follows the clock via `SunWidgetPhase`, never the
   system theme.
 - **`WidgetPrompts.kt`** (new, `widget/` package): the curated pools with
-  their slots, plus pure `promptForMoment(dateIso, hour)` and
+  their slots, plus pure `promptForMoment(epochDay, hour)` and
   `minutesUntilNextChange` — R-free, JVM-unit-tested like `SunWidgetPhase`
-  (`WidgetPromptsTest`). Tests enforce the guardrails mechanically:
-  determinism, ≤60 chars, rotation across days, night returns `null`, and
-  prompt boundaries covering the phase boundaries.
+  (`WidgetPromptsTest`). The slot boundaries are built from
+  `SunWidgetPhase`'s own `DAY_START`/`NIGHT_START` constants, so the no-text
+  window *is* the moon's window and can't drift. Tests enforce the
+  guardrails mechanically: determinism, ≤60 chars, full-pool one-step-a-day
+  rotation, night returns `null`, text-iff-light-sky, and prompt boundaries
+  covering the phase boundaries. The shared boundary walk lives in
+  `clockBoundaries.kt`, used by both `WidgetPrompts` and `SunWidgetPhase`.
 - **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact alarm
-  now arms at `min(phase boundary, prompt boundary)`. Same pattern, same
-  permissions (none).
-- **`app_widget_info.xml`**: target 3×2 (the card is the default drop on
-  Android 12+; older launchers derive 1×1 from minWidth and grow by resize),
-  resizable both axes down to 1×1. The preview image still shows the plain
-  sun — a card preview is a follow-up once the look has settled on-device.
+  arms at the next prompt-slot boundary, which contains the sun's phase
+  flips by construction. Same pattern, same permissions (none). DST drift
+  (±1h twice a year, self-correcting) is documented and accepted.
+- **`app_widget_info.xml`**: target 3×2 on API 31+, and `minWidth/minHeight`
+  170×110dp so pre-31 launchers also default to a 3×2 drop; `minResize`
+  40dp keeps 1×1 reachable and already-placed widgets keep their spans.
+  The picker shows a real card still via `previewLayout`
+  (`layout/widget_preview_card.xml`, API 31+) with the plain-sun
+  `previewImage` as the pre-31 fallback.
 - **No syncData read, no bridge, no WorkManager.** The widget stays fully
   self-contained and clock-driven — exactly like today. (Native *can* read
   `SharedPreferenceService`, but per the content rules there is nothing
@@ -221,6 +235,8 @@ The shape maps cleanly to WidgetKit, arguably more naturally than Android:
   (or near-verbatim), but the selection is an editorial act and deserves the
   same voice review the return-loop copy got.
 - **On-device look.** The card has not been seen on a real launcher yet:
-  serif rendering, sky banding after stretch, the RemoteViews bitmap budget
-  for the full-screen sky PNG, and how 170×90dp maps to 3×2 across launchers
-  all need one round on hardware. A card `previewImage` follows that.
+  serif rendering, the card sky's dither under mild scaling, and how the
+  170×140dp face maps to 3×2 across launchers/grid densities all need one
+  round on hardware. (The RemoteViews bitmap budget turned out to be a
+  non-issue — Glance ships resource *references*, not parceled bitmaps; the
+  real cost was the launcher-side decode, addressed by the card-sized sky.)

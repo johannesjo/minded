@@ -18,10 +18,10 @@ import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
-import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
@@ -34,8 +34,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.minded.minded.MainActivity
 import com.minded.minded.R
-import java.util.Calendar
-import java.util.Locale
+import java.time.LocalDateTime
 
 /**
  * The home-screen companion sun: a calm, living anchor that tracks the day's
@@ -45,8 +44,8 @@ import java.util.Locale
  * Tapping it launches the app and opens the same sun interaction as tapping the
  * in-app dashboard companion. It is presence and invitation, never an interrupt.
  *
- * Two faces, one widget: at 1×1 the familiar floating sun; at larger sizes a
- * miniature still of the in-app intervention screen — the same sky, one quiet
+ * Two faces, one widget: at small sizes the familiar floating sun; at card size
+ * a miniature still of the in-app intervention screen — the same sky, one quiet
  * serif line (WidgetPrompts), the sun resting beneath it. See
  * docs/sun-companion-widget.md and docs/widget-prompts-concept.md.
  *
@@ -58,12 +57,15 @@ class MyAppWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Responsive(setOf(SUN_ONLY, PROMPT_CARD))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val now = Calendar.getInstance()
-        val hour = now.get(Calendar.HOUR_OF_DAY)
-        val phase = SunWidgetPhase.forHour(hour)
-        val prompt = WidgetPrompts.promptForMoment(isoDate(now), hour)
         provideContent {
-            if (LocalSize.current.width >= PROMPT_CARD.width) {
+            // Read the clock inside the composition: a recomposition within a
+            // still-open Glance session (host events) then can't repaint a
+            // boundary-stale snapshot.
+            val now = LocalDateTime.now()
+            val phase = SunWidgetPhase.forHour(now.hour)
+            if (LocalSize.current == PROMPT_CARD) {
+                val prompt =
+                    WidgetPrompts.promptForMoment(now.toLocalDate().toEpochDay(), now.hour)
                 PromptCard(context, phase, prompt)
             } else {
                 SunOnly(context, phase)
@@ -88,67 +90,60 @@ class MyAppWidget : GlanceAppWidget() {
     }
 
     /**
-     * A miniature of the in-app intervention screen: the sky (the pre-dithered
-     * loading_sky bitmaps are the exact app sky), a serif line in the app's
-     * voice, and the sun beneath it — text above, sun below, the intervention
-     * layout. Like everything on this widget the sky follows the clock, not the
-     * system theme; at night the prompt is null and the moon carries the card
-     * alone (words at 2 a.m. read as a nudge).
+     * A miniature of the in-app intervention screen: the sky (card-sized renders
+     * of the exact app sky, dithered at target size — see gen_loading_sky.py), a
+     * serif line in the app's voice, and the sun beneath it — text above, sun
+     * below, the intervention layout. Like everything on this widget the sky
+     * follows the clock, not the system theme; at night the prompt is null and
+     * the moon carries the card alone (words at 2 a.m. read as a nudge).
      */
     @Composable
     private fun PromptCard(context: Context, phase: SunWidgetPhase, prompt: String?) {
-        Box(
+        Column(
             modifier = GlanceModifier
                 .fillMaxSize()
+                // background(ImageProvider) stretches by default (FillBounds) —
+                // right for a vertical gradient: the full top-to-horizon sweep is
+                // the look, and distortion is invisible on a gradient.
+                .background(ImageProvider(skyFor(phase)))
                 // Rounded like the app's surfaces; silently ignored below API 31,
                 // where the sky simply fills the rectangle.
                 .cornerRadius(24.dp)
-                .clickable(actionStartActivity(openSunIntent(context))),
+                .clickable(actionStartActivity(openSunIntent(context)))
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Image(
-                provider = ImageProvider(skyFor(phase)),
-                contentDescription = null,
-                modifier = GlanceModifier.fillMaxSize(),
-                // Stretch, never crop: the sky is a vertical gradient and the
-                // full top-to-horizon sweep is the look; distortion is invisible
-                // on a gradient (the cold-start window stretches the same way).
-                contentScale = ContentScale.FillBounds,
-            )
-            Column(
-                modifier = GlanceModifier.fillMaxSize().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                if (prompt != null) {
-                    Text(
-                        text = prompt,
-                        style = TextStyle(
-                            // --c-fg-full-emphasis (light theme): rgba(0,0,0,.85).
-                            // Only ever rendered on the light sky — night has no text.
-                            color = ColorProvider(Color(0xD9000000)),
-                            fontSize = 15.sp,
-                            // The app's question voice is a serif (Newsreader);
-                            // widgets can't embed fonts, so the platform serif
-                            // carries the same register.
-                            fontFamily = FontFamily.Serif,
-                            textAlign = TextAlign.Center,
-                        ),
-                        maxLines = 3,
-                    )
-                    Spacer(GlanceModifier.height(12.dp))
-                }
-                Image(
-                    provider = ImageProvider(drawableFor(phase)),
-                    contentDescription = context.getString(descriptionFor(phase)),
-                    modifier = GlanceModifier.size(44.dp),
+            if (prompt != null) {
+                Text(
+                    text = prompt,
+                    style = TextStyle(
+                        // --c-fg-full-emphasis (light theme): rgba(0,0,0,.85).
+                        // Only ever rendered on the light sky — night has no text,
+                        // by construction (see WidgetPrompts).
+                        color = ColorProvider(Color(0xD9000000)),
+                        fontSize = 15.sp,
+                        // The app's question voice is a serif (Newsreader);
+                        // widgets can't embed fonts, so the platform serif
+                        // carries the same register.
+                        fontFamily = FontFamily.Serif,
+                        textAlign = TextAlign.Center,
+                    ),
+                    maxLines = 3,
                 )
+                Spacer(GlanceModifier.height(8.dp))
             }
+            Image(
+                provider = ImageProvider(drawableFor(phase)),
+                contentDescription = context.getString(descriptionFor(phase)),
+                modifier = GlanceModifier.size(44.dp),
+            )
         }
     }
 
     private fun skyFor(phase: SunWidgetPhase): Int = when (phase) {
-        SunWidgetPhase.DAY -> R.drawable.loading_sky_light
-        SunWidgetPhase.NIGHT -> R.drawable.loading_sky_dark
+        SunWidgetPhase.DAY -> R.drawable.widget_sky_light
+        SunWidgetPhase.NIGHT -> R.drawable.widget_sky_dark
     }
 
     private fun drawableFor(phase: SunWidgetPhase): Int = when (phase) {
@@ -169,18 +164,12 @@ class MyAppWidget : GlanceAppWidget() {
         }
 
     private companion object {
-        // The two responsive faces. 170×90dp ≈ the smallest 3×2 placement across
-        // launchers; anything below it (1×1, 2×1, 2×2, wide-but-flat rows) keeps
-        // the plain floating sun rather than a cramped card.
+        // The two responsive faces. The card's 140dp height floor is a fit
+        // guarantee, not a guess: 12dp padding ×2 + 3 serif lines at 15sp
+        // (~60dp) + 8dp spacer + 44dp sun ≈ 136dp. Placements too short for
+        // that (flat rows, dense grids, landscape) keep the plain floating sun
+        // rather than a clipped card.
         val SUN_ONLY = DpSize(40.dp, 40.dp)
-        val PROMPT_CARD = DpSize(170.dp, 90.dp)
-
-        fun isoDate(cal: Calendar): String = String.format(
-            Locale.ROOT,
-            "%04d-%02d-%02d",
-            cal.get(Calendar.YEAR),
-            cal.get(Calendar.MONTH) + 1,
-            cal.get(Calendar.DAY_OF_MONTH),
-        )
+        val PROMPT_CARD = DpSize(170.dp, 140.dp)
     }
 }

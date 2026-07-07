@@ -16,4 +16,6 @@
     <string name="widget_sun_description">Open the sun for a mindful moment</string>
     <string name="widget_sun_description_day">The sun – open for a mindful moment</string>
     <string name="widget_sun_description_night">The moon – open for a mindful moment</string>
+    <!-- Widget-picker preview line (previewLayout still); mirrors a WidgetPrompts day prompt. -->
+    <string name="widget_preview_prompt">Feel both feet on the floor.</string>
 </resources>
