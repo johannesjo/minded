@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The companion sun widget: a small (1x1) home-screen sun. It tracks the day's
-     light (the sun by day, the moon by night); refreshes are driven by a per-phase
-     alarm in MyAppWidgetReceiver, not by updatePeriodMillis. The breathing pause it
-     opens lives in the app. -->
+<!-- The companion sun widget. Default (3x2) is a miniature of the in-app
+     intervention screen: the app sky, one quiet serif line, the sun beneath it;
+     resized small (down to 1x1) it becomes the plain floating sun. It tracks the
+     day's light (the sun by day, the moon by night); refreshes are driven by a
+     per-boundary alarm in MyAppWidgetReceiver, not by updatePeriodMillis. The
+     breathing pause it opens lives in the app.
+     minWidth/minHeight stay at one cell so the sun-only face remains placeable;
+     pre-API-31 launchers derive the default drop size from them, so older
+     devices start at 1x1 and grow the card by resizing.
+     shortcut: previewImage still shows the plain sun — render a card preview
+     once the card look has settled on a real device. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
         android:minWidth="40dp"
         android:minHeight="40dp"
-        android:targetCellWidth="1"
-        android:targetCellHeight="1"
+        android:minResizeWidth="40dp"
+        android:minResizeHeight="40dp"
+        android:targetCellWidth="3"
+        android:targetCellHeight="2"
         android:updatePeriodMillis="0"
-        android:resizeMode="none"
+        android:resizeMode="horizontal|vertical"
         android:widgetCategory="home_screen"
         android:description="@string/widget_sun_description"
         android:previewImage="@drawable/ic_sun_widget_day"

@@ -1,6 +1,11 @@
 # Spec: the sun companion widget (Home/Lock Screen)
 
 Status: **Android in progress; iOS implemented (pending first Xcode build).**
+Update: the Android widget has since grown a second, larger face — a
+miniature of the in-app intervention screen carrying one quiet prompt line
+(`WidgetPrompts.kt`). The 1×1 sun described here is unchanged and remains the
+small-size fallback; the card's rationale and guardrails live in
+`docs/widget-prompts-concept.md`.
 The iOS WidgetKit widget + deep-link plumbing now live in
 `extension/ios/App/MindedWidget/` (see its README); they were written without a
 macOS build available, so the first Xcode build is the real verification. This is
@@ -156,7 +161,8 @@ Keeping it honest and small, per the product's bar:
 
 - **No metrics on the widget** — no clock readout, no streak, no count, no usage.
   Reflecting the time of day as *warmth and colour* is ambience, not a number; it
-  is a sun, not a scoreboard.
+  is a sun, not a scoreboard. (Still absolute — the later prompt card added
+  words, never numbers; see `docs/widget-prompts-concept.md`.)
 - **No bespoke widget-only experience.** Tapping reuses the in-app sun exactly;
   if that flow changes, the widget follows for free. No separate pause/route to
   drift.

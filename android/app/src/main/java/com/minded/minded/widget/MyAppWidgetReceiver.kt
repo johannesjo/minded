@@ -16,11 +16,12 @@ import java.util.Calendar
 
 /**
  * Receiver for the home-screen companion sun. The sun is a *living* anchor: it
- * tracks the day's light (the sun by day, the moon by night), so it must refresh
- * when the phase turns over. Rather than polling, we arm a single inexact alarm
- * for the next phase boundary (≈2 wakeups a day) and re-arm each time it fires.
- * The phase itself is decided in MyAppWidget.provideGlance from the local hour.
- * See docs/sun-companion-widget.md.
+ * tracks the day's light (the sun by day, the moon by night), and the wide card
+ * carries a quiet line that turns over with the day's slots (WidgetPrompts), so
+ * it must refresh at those boundaries. Rather than polling, we arm a single
+ * inexact alarm for the next boundary (≈3 wakeups a day) and re-arm each time it
+ * fires. What to show is decided in MyAppWidget.provideGlance from the local
+ * hour. See docs/sun-companion-widget.md.
  */
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = MyAppWidget()
@@ -81,9 +82,14 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             return
         }
         val now = Calendar.getInstance()
-        val minutes = SunWidgetPhase.minutesUntilNextBoundary(
-            now.get(Calendar.HOUR_OF_DAY),
-            now.get(Calendar.MINUTE),
+        val hour = now.get(Calendar.HOUR_OF_DAY)
+        val minute = now.get(Calendar.MINUTE)
+        // Whichever changes first repaints the widget: the sun's day/night phase
+        // or the card's prompt slot (the prompt boundaries are a superset today,
+        // but keeping both explicit means neither can silently strand the other).
+        val minutes = minOf(
+            SunWidgetPhase.minutesUntilNextBoundary(hour, minute),
+            WidgetPrompts.minutesUntilNextChange(hour, minute),
         )
         val triggerAt = System.currentTimeMillis() + minutes * 60_000L
         // Inexact + allow-while-idle: no SCHEDULE_EXACT_ALARM permission, and a few
