@@ -168,7 +168,7 @@
     gap: 6px;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 200ms;
+    transition: opacity var(--dur-quick) var(--ease-out);
 
     &.active {
       opacity: 0.5;
@@ -180,7 +180,7 @@
     height: 10px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.18);
-    transition: background 200ms;
+    transition: background var(--dur-quick) var(--ease-out);
 
     &.filled {
       background: rgba(255, 255, 255, 0.5);
@@ -194,7 +194,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    animation: minded6622fadeIn 0.6s ease both;
+    animation: minded6622fadeIn 0.6s var(--ease-out) both;
 
     // On the success bloom the flow clears the orbit; we hold the crown mounted
     // (Sun.tsx) and dissolve it out with an explicit reverse fade rather than
@@ -202,7 +202,7 @@
     // fade-in's locked end state) keeps the dissolve unambiguous; `forwards`
     // holds opacity 0 for the frames before Sun.tsx unmounts it (matched 0.6s).
     &.is-leaving {
-      animation: minded6622fadeOut 0.6s ease forwards;
+      animation: minded6622fadeOut 0.6s var(--ease-out) forwards;
     }
   }
 
@@ -215,8 +215,8 @@
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.22);
     transition:
-      background 400ms ease,
-      opacity 400ms ease;
+      background var(--dur-soft) var(--ease-out),
+      opacity var(--dur-soft) var(--ease-out);
 
     &.filled {
       background: rgba(255, 255, 255, 0.85);

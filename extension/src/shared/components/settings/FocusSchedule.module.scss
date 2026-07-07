@@ -22,14 +22,14 @@
 .daysList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .dayRow {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 16px;
+  padding: var(--space-md);
   background: var(--dashboard-card-bg);
   border-radius: var(--border-radius);
 
@@ -42,7 +42,7 @@
   // a comfortable size.
   @include onSmallScreens() {
     flex-wrap: wrap;
-    gap: 8px 12px;
+    gap: var(--space-sm) var(--space-md);
   }
 }
 
@@ -99,13 +99,13 @@
 .expandedRows {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 // Soft reveal when switching between the single-row and per-day views — never
 // a hard cut (see Styling Guidelines).
 .fadeIn {
-  animation: weekdayScheduleFadeIn 200ms ease-in;
+  animation: weekdayScheduleFadeIn var(--dur-quick) var(--ease-out);
 }
 
 @keyframes weekdayScheduleFadeIn {

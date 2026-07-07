@@ -10,14 +10,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-lg);
   text-align: center;
   color: var(--c-fg-full-emphasis);
   // The resting sky is the dashboard's own calm sky — the surface "Stay a while"
   // settles onto. The down-drag's warm sky rides in on top of it (the ::before
   // below) and then dissolves away, leaving this.
   background: var(--background-gradient);
-  animation: groundingIn var(--grounding-fade-ms, 600ms) ease-out forwards;
+  animation: groundingIn var(--grounding-fade-ms, 600ms) var(--ease-out)
+    forwards;
 
   // The warm sunset (light) / night sky (dark) the down-drag revealed, carried
   // in on top of the resting sky so the hand-off from the drag is seamless — no
@@ -40,7 +41,7 @@
     pointer-events: none;
     // Base duration governs only the screen-free recede (&.isQuiet below); the
     // settle back to standard sky overrides it with the slow --sky-settle-ms.
-    transition: opacity var(--grounding-fade-ms, 600ms) ease;
+    transition: opacity var(--grounding-fade-ms, 600ms) var(--ease-out);
   }
 
   // Dissolve the carried-in sunset back to the dashboard's resting sky. JS flips
@@ -49,14 +50,14 @@
   // (much longer than the entrance fade above). A calm, unhurried return.
   &.skySettled::before {
     opacity: 0;
-    transition: opacity var(--sky-settle-ms, 2500ms) ease;
+    transition: opacity var(--sky-settle-ms, 2500ms) var(--ease-out);
   }
 
   // Screen-free sit: dim almost to black so the eyes can truly rest.
   &.isQuiet {
     background: #060709;
     color: rgba(255, 255, 255, 0.82);
-    transition: background var(--grounding-fade-ms, 600ms) ease;
+    transition: background var(--grounding-fade-ms, 600ms) var(--ease-out);
   }
 
   // ...and drop the sunset wash entirely so nothing tints that near-black dim.
@@ -73,7 +74,8 @@
   // GROUNDING_FADE_MS (the JS waits that long before unmounting), so the fade
   // lands exactly as the overlay leaves.
   &.isClosing {
-    animation: groundingOut var(--grounding-fade-ms, 600ms) ease forwards;
+    animation: groundingOut var(--grounding-fade-ms, 600ms) var(--ease-out)
+      forwards;
   }
 }
 
@@ -110,7 +112,7 @@
   // has no transition (it's drag-driven elsewhere); add one here so this recede
   // eases softly, matching the app's calm.
   :global(.stars-container) {
-    transition: opacity var(--grounding-fade-ms, 600ms) ease;
+    transition: opacity var(--grounding-fade-ms, 600ms) var(--ease-out);
   }
 }
 
@@ -120,7 +122,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-lg);
   max-width: 420px;
 }
 
@@ -140,14 +142,14 @@
 .choices {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md);
   width: 100%;
   max-width: 320px;
 }
 
 .durations {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -161,7 +163,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: opacity var(--screen-fade-ms, 200ms) ease;
+  transition: opacity var(--screen-fade-ms, 200ms) var(--ease-out);
 }
 
 .session {
@@ -170,7 +172,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: var(--space-xl);
 }
 
 // Timed sit, live dashboard: the breathing disc here is the one shell sun, risen
@@ -192,12 +194,12 @@
   // separate action, not part of the breathing group.
   top: calc(38% + 96px);
   transform: translateX(-50%);
-  gap: 34px;
+  gap: var(--space-xl);
 }
 
 .remaining {
   margin: 0;
-  font-size: 32px;
+  font-size: var(--fz-xl);
   font-weight: 300;
   font-variant-numeric: tabular-nums;
   opacity: 0.7;

@@ -22,7 +22,7 @@
     > span {
       opacity: 0;
       transform: translateY(15px);
-      animation: slideUpFadeIn 0.6s ease-out 0.2s forwards;
+      animation: slideUpFadeIn 0.6s var(--ease-out) 0.2s forwards;
     }
   }
 }
@@ -63,16 +63,16 @@
   justify-content: center;
   align-items: flex-start;
   // drop the pen where the first line of typed text would be
-  padding-top: 32px;
+  padding-top: var(--space-xl);
   cursor: pointer;
   opacity: 0;
   // Fade softly in, then hand off into the breathing loop at the same opacity
   // (0.4) so there is no hard cut.
   animation:
-    tapHintFadeIn 0.6s ease-out 0.6s forwards,
+    tapHintFadeIn 0.6s var(--ease-out) 0.6s forwards,
     tapHintBreathe 4s ease-in-out 1.2s infinite;
   transition:
-    opacity 0.4s ease-out,
+    opacity 0.4s var(--ease-out),
     visibility 0.4s;
 
   &.input-shown {
@@ -106,11 +106,11 @@
   pointer-events: all;
   width: 540px;
   max-width: 100%;
-  margin: 28px auto 0;
+  margin: var(--space-xl) auto 0;
   text-align: center;
   // Soft entrance — same gentle rise the question text uses, never a hard cut.
-  animation: slideUpFadeIn 0.5s ease-out 0.3s both;
-  transition: opacity 0.25s ease-out;
+  animation: slideUpFadeIn 0.5s var(--ease-out) 0.3s both;
+  transition: opacity 0.25s var(--ease-out);
 
   // Soft exit when "Something else…" swaps in the text input — never a snap-out.
   // Dropping the entrance animation lets the opacity transition take over.
@@ -130,8 +130,8 @@
   opacity: 0;
   visibility: hidden;
   transition:
-    transform 0.4s ease-out,
-    opacity 0.4s ease-out,
+    transform 0.4s var(--ease-out),
+    opacity 0.4s var(--ease-out),
     visibility 0.4s;
 
   &.show {
@@ -144,7 +144,7 @@
 #minded-6622-question {
   display: inline-block;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--dur-quick) var(--ease-out);
 
   &.show-input {
     cursor: default;
@@ -157,19 +157,22 @@
   max-width: 100%;
   margin: auto;
   pointer-events: all;
-  padding: 0 8px;
+  padding: 0 var(--space-sm);
   // use padding rather than margin to avoid taping in between leading to close the overlay
-  margin-top: 32px;
-  margin-bottom: 32px;
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-xl);
 
   textarea {
     @include formInput();
     width: 100%;
     display: block;
     resize: none;
+    // Fixed 16px on purpose (not --fz-m, whose mobile step is 15px): form
+    // fields under 16px trigger iOS Safari's zoom-on-focus; keep the local
+    // safeguard rather than relying on the Android-only global override.
     font-size: 16px;
     line-height: 1.5;
-    padding: 12px;
+    padding: var(--space-md);
     padding-bottom: 40px; // Make room for the button
     font-family: inherit;
     height: auto !important;
@@ -180,20 +183,16 @@
   .send-button {
     position: absolute;
     bottom: 0;
-    right: 8px;
+    right: var(--space-sm);
     left: auto;
     // Soften the loudest pixel on the check-in: a rounder, translucent pill with
     // a --c-fg-weight arrow, so the eye stays on the response, not the send
-    // chrome (issue #130). Dark mode's --btn-bg tint is already quiet, so only
-    // the light value needs toning down.
+    // chrome (issue #130). --btn-bg is quiet in both themes, so no per-theme
+    // override is needed.
     border-radius: var(--radius-lg);
-    background: rgba(255, 255, 255, 0.7);
-    padding: 8px 12px;
-    font-size: 14px;
-
-    @include inDarkMode() {
-      background: var(--btn-bg);
-    }
+    background: var(--btn-bg);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--fz-s);
 
     // send.svg's #111 fill is baked into the <img>, so soften it toward --c-fg
     // (0.8 alpha) with opacity rather than colour.

@@ -22,11 +22,11 @@
   // leave would hard-cut. Dropping it lets opacity revert to its base (1, the
   // `to` value, so no end flash) and frees the exit transition to run. Don't
   // re-add `forwards` here.
-  animation: letGoIn var(--let-go-fade-ms, 600ms) ease-out;
+  animation: letGoIn var(--let-go-fade-ms, 600ms) var(--ease-out);
 
   &.isClosing {
     opacity: 0;
-    transition: opacity var(--let-go-fade-ms, 600ms) ease;
+    transition: opacity var(--let-go-fade-ms, 600ms) var(--ease-out);
   }
 }
 

@@ -13,7 +13,7 @@
 
   @include standardPageTransitionIn();
 
-  animation: minded6622fadeIn ease 0.5s !important;
+  animation: minded6622fadeIn var(--ease-out) 0.5s !important;
   :global {
     animation-name: minded6622fadeIn !important;
   }

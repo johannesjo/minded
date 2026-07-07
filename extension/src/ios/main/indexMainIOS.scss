@@ -1,10 +1,12 @@
 @import "@src/styles/sharedMain";
 
+// Same treatment as Android's banner: noticeable but calm, never a
+// saturated alarm color (see indexMainAndroid.scss).
 .missingCapabilitiesMsg {
-  background: #e338f1;
-  color: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  margin: 8px;
+  background: rgba(255, 196, 84, 0.16);
+  color: inherit;
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  margin: var(--space-sm);
   margin-bottom: 0;
 }

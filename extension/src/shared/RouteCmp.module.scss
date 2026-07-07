@@ -42,7 +42,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  transition: opacity 500ms ease;
+  transition: opacity var(--dur-soft) var(--ease-out);
 
   :global(.minded-sun) {
     pointer-events: none;
@@ -143,8 +143,8 @@
     pointer-events: none;
     opacity: 0;
     // Soft reveal on rest / soft dissolve on morph — matches the shell layer's
-    // own 500ms opacity ease and the never-hard-cut rule.
-    transition: opacity 500ms ease;
+    // own --dur-soft opacity ease and the never-hard-cut rule.
+    transition: opacity var(--dur-soft) var(--ease-out);
     z-index: 0;
   }
 
@@ -162,7 +162,7 @@
   pointer-events: none;
 }
 
-// Soft variant of .isHidden: fades out on the base layer's own 500ms opacity
+// Soft variant of .isHidden: fades out on the base layer's own --dur-soft opacity
 // ease. For surfaces whose own disc becomes the centrepiece (the sleep
 // wind-down's moon) — the companion yields, since there is only ever one, but
 // nothing was flung, so the snap below would be an uncalled-for hard cut.
@@ -178,7 +178,7 @@
 .shellSunLayer.isHidden {
   opacity: 0;
   pointer-events: none;
-  // Snap to hidden — no fade. The base layer keeps a 500ms opacity transition
+  // Snap to hidden — no fade. The base layer keeps a --dur-soft opacity transition
   // for the *reveal* (gliding back as an offer closes), but on the way *in* a
   // fade would leave the just-flung disc visibly careening over the question for
   // that half-second. Killing the transition here only affects the hide

@@ -12,7 +12,7 @@
   // Ease in once the native app read resolves, rather than hard-swapping over
   // the brief "Loading apps…" line — soft, never a cut (a pure opacity fade,
   // so it's safe under prefers-reduced-motion).
-  animation: appListFadeIn 0.3s ease;
+  animation: appListFadeIn 0.3s var(--ease-out);
 }
 
 @keyframes appListFadeIn {

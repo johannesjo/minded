@@ -4,7 +4,7 @@
 // to ensure they cannot be overridden by host page CSS (e.g., Reddit)
 
 #minded-6622 {
-  animation: minded6622fadeIn ease 0.2s;
+  animation: minded6622fadeIn var(--ease-out) 0.2s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
 }

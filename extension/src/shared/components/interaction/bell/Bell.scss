@@ -11,7 +11,7 @@
   color: var(--c-fg-full-emphasis);
   // Cross-screen fade between invite → listen; opacity is driven from the
   // component (screenFade). Matches BELL_SCREEN_FADE_MS.
-  transition: opacity 240ms ease;
+  transition: opacity 240ms var(--ease-out);
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;

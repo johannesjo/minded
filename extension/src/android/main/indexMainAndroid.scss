@@ -21,7 +21,7 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
   // render, once the native capability read resolves (setTimeout in
   // MainAndroid.refresh), so without this it would pop in. Shares the sibling
   // invitation's fade-in keyframe below.
-  animation: setupInvitationFadeIn 0.3s ease;
+  animation: setupInvitationFadeIn 0.3s var(--ease-out);
 }
 
 // When every required permission is granted and only the advisory extras
@@ -48,13 +48,13 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
   margin-top: calc(var(--safe-area-inset-top) + 8px);
   margin-bottom: 0;
   opacity: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s var(--ease-out);
 
   &.isDismissing {
     opacity: 0;
   }
   // Soft fade-in on appearance, never a hard cut.
-  animation: setupInvitationFadeIn 0.3s ease;
+  animation: setupInvitationFadeIn 0.3s var(--ease-out);
 }
 
 .setupInvitationMsgText {

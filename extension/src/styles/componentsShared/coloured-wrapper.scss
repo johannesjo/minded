@@ -38,12 +38,12 @@
     &::before,
     &::after {
       opacity: 0;
-      transition: opacity 1000ms ease-out;
+      transition: opacity 1000ms var(--ease-out);
     }
 
     .background-transition.background-default {
       opacity: 0;
-      transition: opacity 1000ms ease-out;
+      transition: opacity 1000ms var(--ease-out);
     }
   }
 
@@ -58,7 +58,7 @@
     background: transparent;
 
     .background-transition.background-default {
-      animation: minded6622fadeIn 1000ms ease-out;
+      animation: minded6622fadeIn 1000ms var(--ease-out);
     }
   }
 

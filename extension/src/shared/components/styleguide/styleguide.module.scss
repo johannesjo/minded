@@ -130,7 +130,7 @@
 
 .chip {
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--btn-bg-not-selected);
   font-size: var(--fz-s);
   font-family: monospace;
@@ -241,7 +241,7 @@
   gap: 8px;
   align-items: center;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(8px);
 }

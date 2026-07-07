@@ -6,12 +6,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: var(--space-md);
   text-align: center;
   color: var(--c-fg-full-emphasis);
   // Cross-screen fade between intro → rate → surf → after → reflection. The
   // opacity itself is driven from the component (getScreenOpacity).
-  transition: opacity 240ms ease;
+  transition: opacity 240ms var(--ease-out);
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
@@ -36,7 +36,7 @@
   min-height: 320px;
   // Push the sun's slot down so the disc, and its soft glow halo, sit clearly
   // below the copy above instead of crowding it.
-  padding-bottom: 52px;
+  padding-bottom: var(--space-2xl);
 
   // The shared interaction heading carries 64px of its own padding — far more than
   // these compact screens need, and enough to push intro past min-height (which
@@ -82,7 +82,7 @@
     width: 100%;
     max-width: 260px;
     margin-top: 2px;
-    font-size: 13px;
+    font-size: var(--fz-s);
     opacity: 0.6;
   }
 }

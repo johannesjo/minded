@@ -4,9 +4,6 @@
   @include allTypo();
 
   .aniIn {
-    animation: minded6622fadeIn .3s ease;
+    animation: minded6622fadeIn 0.3s var(--ease-out);
   }
 }
-
-
-

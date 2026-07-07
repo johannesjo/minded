@@ -8,7 +8,7 @@ $shadow: var(--little-sun-shadow);
   user-select: none;
 
   div:first-child {
-    animation: minded6622successSun ease 0.8s;
+    animation: minded6622successSun var(--ease-out) 0.8s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
   }
@@ -22,10 +22,10 @@ $shadow: var(--little-sun-shadow);
   pointer-events: none;
   transform: translate(-50%, -50%);
   transition:
-    bottom 1s ease-out,
-    top 1s ease-out,
-    left 1s ease-out,
-    transform 1s ease-out;
+    bottom 1s var(--ease-out),
+    top 1s var(--ease-out),
+    left 1s var(--ease-out),
+    transform 1s var(--ease-out);
 
   // TODO cleanup and fix class names
   &.topRight {
@@ -61,12 +61,14 @@ $shadow: var(--little-sun-shadow);
   }
 
   &.scaling-out {
+    // ease-in on purpose (not --ease-out): a shrink-to-nothing exit should
+    // accelerate away; a decelerating curve would linger and then snap.
     animation: minded6622littleSunOut 0.4s ease-in forwards;
   }
 }
 
 #minded-6622-little-sun-sun-wrapper {
-  transition: 0.5s all;
+  transition: all 0.5s var(--ease-out);
   position: relative;
   z-index: 3;
 
@@ -121,7 +123,7 @@ $shadow: var(--little-sun-shadow);
   // arriving rather than popping in alongside it. Runs once on mount — the
   // per-second text update mutates this span in place, it isn't remounted.
   // Kept inline (no display change) so the disc's text centring is unaffected.
-  animation: minded6622littleSunTextIn 0.7s ease-out 0.15s both;
+  animation: minded6622littleSunTextIn 0.7s var(--ease-out) 0.15s both;
 }
 
 @keyframes minded6622littleSunTextIn {
@@ -157,10 +159,10 @@ $shadow: var(--little-sun-shadow);
 #minded-6622-little-sun-hint {
   position: absolute;
   left: 0;
-  bottom: calc(#{$sun-size} + 12px);
+  bottom: calc(#{$sun-size} + var(--space-md));
   width: 180px;
-  max-width: calc(100vw - 32px);
-  padding: 8px 10px;
+  max-width: calc(100vw - var(--space-xl));
+  padding: var(--space-sm);
   background: var(--btn-bg);
   border-radius: var(--border-radius);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -169,7 +171,7 @@ $shadow: var(--little-sun-shadow);
   line-height: 1.3;
   pointer-events: none;
   text-align: left;
-  animation: minded6622littleSunHintIn 0.25s ease-out;
+  animation: minded6622littleSunHintIn 0.25s var(--ease-out);
   transform-origin: bottom left;
 }
 

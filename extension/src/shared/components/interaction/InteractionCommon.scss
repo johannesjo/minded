@@ -6,7 +6,7 @@
 
 .interaction-content {
   opacity: 0;
-  transition: opacity 1s ease-out;
+  transition: opacity 1s var(--ease-out);
 
   // Once we've handed off to the post-sun overlay (breath / choices), the faded
   // question must not intercept taps or hovers meant for the choices above it:
@@ -32,12 +32,12 @@
 
   &.fade-out {
     opacity: 0;
-    transition: opacity 0.3s ease-out;
+    transition: opacity 0.3s var(--ease-out);
   }
 
   // 1s transition during drag as requested
   &.dragging {
-    transition: opacity 1s ease-out;
+    transition: opacity 1s var(--ease-out);
   }
 }
 
@@ -53,7 +53,7 @@
 // overlay (a separate `.interaction-content` with a line-by-line reveal).
 .interaction-content:not(.sun-instructions-overlay)
   > *:not(#minded-6622-question-wrapper) {
-  animation: interactionRise 0.6s ease-out 0.2s both;
+  animation: interactionRise 0.6s var(--ease-out) 0.2s both;
 
   // Reduced-motion asks for calm-without-motion: keep the opacity fade, drop
   // the rise.
@@ -80,14 +80,14 @@
   cursor: auto;
   width: 990px;
   max-width: 100%;
-  padding: 32px;
+  padding: var(--space-xl);
   z-index: 10; // Above background, below sun
 
   // @include onSmallScreens() {
   //   padding: 16px;
   // }
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: var(--space-md);
   }
 }
 
@@ -112,8 +112,8 @@
 #minded-6622-action-advice {
   // icon
   :last-child {
-    font-size: 48px;
-    margin-top: 16px;
+    font-size: var(--fz-xxl);
+    margin-top: var(--space-md);
   }
 }
 
@@ -133,7 +133,7 @@
 .shell-sun-placeholder {
   width: 1px;
   height: 168px;
-  margin: 12px auto 0;
+  margin: var(--space-md) auto 0;
   pointer-events: none;
 
   @media (max-width: 1023px) {
@@ -164,7 +164,7 @@
   padding-bottom: 64px;
 
   &.fade-in {
-    transition: opacity 1s ease-out;
+    transition: opacity 1s var(--ease-out);
   }
 }
 
@@ -177,7 +177,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: auto;
-  animation: fadeIn var(--screen-transition-ms, 1000ms) ease-out forwards;
+  animation: fadeIn var(--screen-transition-ms, 1000ms) var(--ease-out) forwards;
 }
 
 // During the intent/time choices the resting sun rests in a reserved spacer
@@ -190,7 +190,7 @@
   .resting-sun-spacer {
     height: 132px;
     // Extra breathing room between the options and the sun resting beneath them.
-    margin-top: 24px;
+    margin-top: var(--space-lg);
     pointer-events: none;
   }
 
@@ -217,7 +217,7 @@
 
 .post-sun-screen {
   opacity: 1;
-  transition: opacity var(--screen-transition-ms, 1000ms) ease-out;
+  transition: opacity var(--screen-transition-ms, 1000ms) var(--ease-out);
   width: 100%;
   height: 100%;
 
@@ -236,7 +236,7 @@
     color: var(--c-fg-full-emphasis);
     visibility: hidden;
     opacity: 0;
-    transition: opacity 900ms ease-in-out;
+    transition: opacity 900ms var(--ease-out);
     will-change: opacity;
 
     &.is-visible {
@@ -248,7 +248,7 @@
 
 .back-button-wrapper {
   position: fixed;
-  bottom: 32px;
+  bottom: var(--space-xl);
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
@@ -258,8 +258,8 @@
 // Shared layout helpers for interaction-mode content blocks.
 // Keeps vertical rhythm and emphasis locked across modes the user cycles through.
 .interaction-heading {
-  padding-top: 32px;
-  padding-bottom: 32px;
+  padding-top: var(--space-xl);
+  padding-bottom: var(--space-xl);
 }
 
 .interaction-static-text {

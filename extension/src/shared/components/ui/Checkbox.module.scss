@@ -23,7 +23,7 @@
   width: 22px;
   height: 22px;
   background: var(--form-inputs-bg);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   position: relative;
   transition: background var(--dur-quick) var(--ease-out);
   flex-shrink: 0;

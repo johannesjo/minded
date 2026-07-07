@@ -34,6 +34,8 @@
     // little sun's halo use), with a barely-there fill that reads as a place to
     // set the finger down rather than a button to press. Opacity/fade are
     // driven inline from the component so it dissolves as stillness begins.
+    // Deliberately above the radius scale: proportional to the ~420px pad,
+    // where --radius-xl would read sharp on a surface meant to feel soft.
     border-radius: 40px;
     border: 1px solid rgba(var(--little-sun-breath-rgb), 0.4);
     background: rgba(var(--little-sun-breath-rgb), 0.04);

@@ -3,9 +3,11 @@
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 12px 24px;
+  // The same frosted surface as buttons/cards (flips itself in dark mode),
+  // instead of a one-off near-black slab that ignored the theme.
+  background: var(--btn-bg-selected);
+  color: var(--c-fg-full-emphasis);
+  padding: var(--space-md) var(--space-lg);
   border-radius: var(--radius-sm);
   font-size: var(--fz-s);
   opacity: 0;

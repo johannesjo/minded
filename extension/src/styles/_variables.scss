@@ -3,9 +3,13 @@
 #minded-6622 {
   // Radius scale — one vocabulary so corners stay in tune across surfaces.
   // Extend only when a new step earns its place.
+  // xs: tiny controls + focus-ring rounding. pill: fully-rounded capsules
+  // (an oversized value the browser clamps to half the box's short side).
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  --radius-pill: 999px;
 
   // Spacing scale — a strict 8px rhythm (with a 4px half-step for fine
   // alignment) so padding and gaps stay in tune across surfaces, the same way
@@ -278,6 +282,7 @@
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
+    --success-sun-txt-c: rgba(255, 255, 255, 0.85);
     --scrollbar-thumb: rgba(255, 255, 255, 0.28);
     --c-link-color: #8de9ee;
     --c-link-hover-color: #c4fbff;

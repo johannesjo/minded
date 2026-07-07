@@ -87,7 +87,7 @@
 }
 
 .editModeWrapper {
-  animation: minded6622fadeIn ease 0.3s;
+  animation: minded6622fadeIn var(--ease-out) 0.3s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   display: flex;

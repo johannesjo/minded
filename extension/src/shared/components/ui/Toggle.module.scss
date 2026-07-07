@@ -36,7 +36,7 @@
   width: 48px;
   height: 26px;
   background: var(--form-inputs-bg);
-  border-radius: 13px;
+  border-radius: var(--radius-pill);
   position: relative;
   transition: background var(--dur-quick) var(--ease-out);
 

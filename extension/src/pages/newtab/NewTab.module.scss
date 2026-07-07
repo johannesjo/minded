@@ -1,7 +1,5 @@
 .NewTab {
-
 }
-
 
 .infoBox {
   position: absolute;
@@ -9,7 +7,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   min-width: 320px;
-  animation: minded6622fadeIn ease .5s;
+  animation: minded6622fadeIn var(--ease-out) 0.5s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
 
@@ -17,5 +15,3 @@
     animation-name: minded6622fadeIn;
   }
 }
-
-

@@ -73,7 +73,7 @@ $sky-strip: 88px;
   justify-content: center;
   pointer-events: none;
   // The disc mounts snapped into its first rest; ease it in instead of popping.
-  animation: onboardingSunIn 600ms ease;
+  animation: onboardingSunIn 600ms var(--ease-out);
 
   :global(.minded-sun) {
     pointer-events: none;
