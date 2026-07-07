@@ -517,10 +517,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     setSunHintStep(0);
     const t1 = window.setTimeout(() => setSunHintStep(1), 1200);
-    const t2 = window.setTimeout(() => setSunHintStep(2), 2400);
     onCleanup(() => {
       window.clearTimeout(t1);
-      window.clearTimeout(t2);
     });
   });
 
@@ -1574,19 +1572,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                   : "auto",
             }}
           >
+            {/* Off-dashboard the let-go / grounding rituals never fire (both
+                drag handlers are gated on isFromDashboard) — fling and
+                drag-down both just leave the site/app. So promise only what
+                happens here: leave, or tap to continue. */}
             <div class="sun-instructions txtSmaller">
               <p class="sun-instructions-line is-visible">
-                Fling the {getDragObjectName()} away to let go.
+                Fling the {getDragObjectName()} away to leave.
               </p>
               <p
                 class="sun-instructions-line"
                 classList={{ "is-visible": getSunHintStep() >= 1 }}
-              >
-                Drag the {getDragObjectName()} down to ground yourself.
-              </p>
-              <p
-                class="sun-instructions-line"
-                classList={{ "is-visible": getSunHintStep() >= 2 }}
               >
                 Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
                 continue.
