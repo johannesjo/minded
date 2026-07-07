@@ -7,7 +7,6 @@ export type SleepWindDownViewName =
   | "breathing"
   | "calmRead"
   | "tips"
-  | "snoozeIntent"
   | "snoozeGoodnight"
   | "goodnight";
 
@@ -21,7 +20,6 @@ const VIEWS_THAT_BACK_TO_OVERVIEW: ReadonlySet<SleepWindDownViewName> = new Set(
     "breathing",
     "calmRead",
     "tips",
-    "snoozeIntent",
     "snoozeGoodnight",
     "goodnight",
   ],

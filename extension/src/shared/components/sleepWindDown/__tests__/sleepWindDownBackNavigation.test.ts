@@ -13,7 +13,6 @@ describe("sleep wind-down back navigation", () => {
     expect(shouldBackReturnToWindDownOverview("breathing")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("calmRead")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("tips")).toBe(true);
-    expect(shouldBackReturnToWindDownOverview("snoozeIntent")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("snoozeGoodnight")).toBe(true);
     expect(shouldBackReturnToWindDownOverview("goodnight")).toBe(true);
   });

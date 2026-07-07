@@ -65,14 +65,6 @@ export type { SleepWindDownDismissReason } from "./sleepWindDownDismissTransitio
 // opacity transition on .viewPane in SleepWindDownRoute.module.scss.
 const VIEW_FADE_MS = 260;
 
-const SNOOZE_INTENT_OPTIONS = [
-  "Something unfinished",
-  "My mind won't settle",
-  "Worried, I won't sleep",
-  "I'm avoiding tomorrow",
-  "I feel lonely",
-];
-
 type ActivityKey = SleepWindDownActivityKey;
 
 type DraftField =
@@ -412,261 +404,227 @@ export const SleepWindDownView = (
           which faded the new view in but hard-cut the old one away. */}
       <div class={styles.viewPane} style={{ opacity: screenFade.opacity() }}>
         <Switch>
-              <Match when={view() === "prompt"}>
-                <div class={styles.center}>
-                  <h2 class="h2 h2Mindful">Wind down for sleep?</h2>
-                  <p class={styles.subtle}>
-                    It's getting late — would you like to take a moment before
-                    bed?
-                  </p>
-                  <div class={styles.btnRow}>
-                    <Btn
-                      outline
-                      onClick={() => goToView(WIND_DOWN_OVERVIEW_VIEW)}
-                      disabled={!hydrated()}
-                    >
-                      Yes
-                    </Btn>
-                    <Btn
-                      outline
-                      onClick={() => goToView("snoozeIntent")}
-                      disabled={!hydrated()}
-                    >
-                      Snooze
-                    </Btn>
-                    <Btn
-                      outline
-                      onClick={skipTonight}
-                      disabled={!hydrated()}
-                    >
-                      Skip tonight
-                    </Btn>
-                  </div>
-                </div>
-              </Match>
+          <Match when={view() === "prompt"}>
+            <div class={styles.center}>
+              <h2 class="h2 h2Mindful">Wind down for sleep?</h2>
+              <p class={styles.subtle}>
+                It's getting late — would you like to take a moment before bed?
+              </p>
+              <div class={styles.btnRow}>
+                <Btn
+                  outline
+                  onClick={() => goToView(WIND_DOWN_OVERVIEW_VIEW)}
+                  disabled={!hydrated()}
+                >
+                  Yes
+                </Btn>
+                <Btn
+                  outline
+                  onClick={() => goToView("snoozeGoodnight")}
+                  disabled={!hydrated()}
+                >
+                  Snooze
+                </Btn>
+                <Btn outline onClick={skipTonight} disabled={!hydrated()}>
+                  Skip tonight
+                </Btn>
+              </div>
+            </div>
+          </Match>
 
-              <Match when={view() === "menu"}>
-                <div class={styles.menu}>
-                  <h2 class="h2 h2Mindful">Choose anything that helps</h2>
-                  <p class={styles.subtle}>
-                    Pick in any order. Skip what you don't need.
-                  </p>
-                  <div class={styles.activityList}>
-                    <For each={ACTIVITIES}>
-                      {(a) => {
-                        const isDone = () => completed().has(a.key);
-                        return (
-                          <Btn
-                            variant="toggle"
-                            selected={isDone()}
-                            onClick={() => goToView(a.view)}
-                            disabled={!hydrated()}
-                          >
-                            {isDone() && (
-                              <span class={styles.activityCheck}>
-                                <Ico name="check" />
-                              </span>
-                            )}
-                            <span>{a.label}</span>
-                          </Btn>
-                        );
-                      }}
-                    </For>
-                  </div>
-                  <div class={styles.menuFooter}>
-                    {/* Always just "Goodnight" — the menu is a calm offering to
+          <Match when={view() === "menu"}>
+            <div class={styles.menu}>
+              <h2 class="h2 h2Mindful">Choose anything that helps</h2>
+              <p class={styles.subtle}>
+                Pick in any order. Skip what you don't need.
+              </p>
+              <div class={styles.activityList}>
+                <For each={ACTIVITIES}>
+                  {(a) => {
+                    const isDone = () => completed().has(a.key);
+                    return (
+                      <Btn
+                        variant="toggle"
+                        selected={isDone()}
+                        onClick={() => goToView(a.view)}
+                        disabled={!hydrated()}
+                      >
+                        {isDone() && (
+                          <span class={styles.activityCheck}>
+                            <Ico name="check" />
+                          </span>
+                        )}
+                        <span>{a.label}</span>
+                      </Btn>
+                    );
+                  }}
+                </For>
+              </div>
+              <div class={styles.menuFooter}>
+                {/* Always just "Goodnight" — the menu is a calm offering to
                         dip into, not a checklist to complete, so the exit never
                         turns into an "all done" tally. */}
-                    <Btn
-                      onClick={enterGoodnight}
-                      disabled={!hydrated()}
-                    >
-                      Goodnight
-                    </Btn>
-                  </div>
-                  <button
-                    class={styles.tipsLink}
-                    onClick={() => goToView("tips")}
-                    disabled={!hydrated()}
-                  >
-                    Tips for good sleep
-                  </button>
-                </div>
-              </Match>
+                <Btn onClick={enterGoodnight} disabled={!hydrated()}>
+                  Goodnight
+                </Btn>
+              </div>
+              <button
+                class={styles.tipsLink}
+                onClick={() => goToView("tips")}
+                disabled={!hydrated()}
+              >
+                Tips for good sleep
+              </button>
+            </div>
+          </Match>
 
-              <Match when={view() === "brainDump"}>
-                <BrainDump
-                  initialText={brainDumpDraft()}
-                  onDraftChange={(t) => {
-                    setBrainDumpDraft(t);
-                    persistDraft("sleepWindDownBrainDumpDraft", t);
-                  }}
-                  onBeforeSubmit={() => pendingWritePromise}
-                  onDone={() =>
-                    completePromptActivity(
-                      "brainDump",
-                      "sleepWindDownBrainDumpDraft",
-                      () => setBrainDumpDraft(""),
-                    )
-                  }
-                />
-              </Match>
+          <Match when={view() === "brainDump"}>
+            <BrainDump
+              initialText={brainDumpDraft()}
+              onDraftChange={(t) => {
+                setBrainDumpDraft(t);
+                persistDraft("sleepWindDownBrainDumpDraft", t);
+              }}
+              onBeforeSubmit={() => pendingWritePromise}
+              onDone={() =>
+                completePromptActivity(
+                  "brainDump",
+                  "sleepWindDownBrainDumpDraft",
+                  () => setBrainDumpDraft(""),
+                )
+              }
+            />
+          </Match>
 
-              <Match when={view() === "gratitude"}>
-                <BrainDump
-                  initialText={gratitudeDraft()}
-                  prompts={GRATITUDE_PROMPTS}
-                  questionCategoryId={QuestionCategoryId.Gratitude}
-                  onDraftChange={(t) => {
-                    setGratitudeDraft(t);
-                    persistDraft("sleepWindDownGratitudeDraft", t);
-                  }}
-                  onBeforeSubmit={() => pendingWritePromise}
-                  onDone={() =>
-                    completePromptActivity(
-                      "gratitude",
-                      "sleepWindDownGratitudeDraft",
-                      () => setGratitudeDraft(""),
-                    )
-                  }
-                />
-              </Match>
+          <Match when={view() === "gratitude"}>
+            <BrainDump
+              initialText={gratitudeDraft()}
+              prompts={GRATITUDE_PROMPTS}
+              questionCategoryId={QuestionCategoryId.Gratitude}
+              onDraftChange={(t) => {
+                setGratitudeDraft(t);
+                persistDraft("sleepWindDownGratitudeDraft", t);
+              }}
+              onBeforeSubmit={() => pendingWritePromise}
+              onDone={() =>
+                completePromptActivity(
+                  "gratitude",
+                  "sleepWindDownGratitudeDraft",
+                  () => setGratitudeDraft(""),
+                )
+              }
+            />
+          </Match>
 
-              <Match when={view() === "tomorrow"}>
-                <BrainDump
-                  initialText={tomorrowDraft()}
-                  prompts={TOMORROW_PROMPTS}
-                  questionCategoryId={QuestionCategoryId.GoodPlans}
-                  onDraftChange={(t) => {
-                    setTomorrowDraft(t);
-                    persistDraft("sleepWindDownTomorrowDraft", t);
-                  }}
-                  onBeforeSubmit={() => pendingWritePromise}
-                  onDone={() =>
-                    completePromptActivity(
-                      "tomorrow",
-                      "sleepWindDownTomorrowDraft",
-                      () => setTomorrowDraft(""),
-                    )
-                  }
-                />
-              </Match>
+          <Match when={view() === "tomorrow"}>
+            <BrainDump
+              initialText={tomorrowDraft()}
+              prompts={TOMORROW_PROMPTS}
+              questionCategoryId={QuestionCategoryId.GoodPlans}
+              onDraftChange={(t) => {
+                setTomorrowDraft(t);
+                persistDraft("sleepWindDownTomorrowDraft", t);
+              }}
+              onBeforeSubmit={() => pendingWritePromise}
+              onDone={() =>
+                completePromptActivity(
+                  "tomorrow",
+                  "sleepWindDownTomorrowDraft",
+                  () => setTomorrowDraft(""),
+                )
+              }
+            />
+          </Match>
 
-              <Match when={view() === "breathing"}>
-                <div class={styles.activityBody}>
-                  <BreathingExercise />
-                  {activityActions("breathing")}
-                </div>
-              </Match>
+          <Match when={view() === "breathing"}>
+            <div class={styles.activityBody}>
+              <BreathingExercise />
+              {activityActions("breathing")}
+            </div>
+          </Match>
 
-              <Match when={view() === "calmRead"}>
-                <div class={styles.activityBody}>
-                  <p class={styles.calmRead}>{calmReadPassage()}</p>
-                  {activityActions("calmRead")}
-                </div>
-              </Match>
+          <Match when={view() === "calmRead"}>
+            <div class={styles.activityBody}>
+              <p class={styles.calmRead}>{calmReadPassage()}</p>
+              {activityActions("calmRead")}
+            </div>
+          </Match>
 
-              <Match when={view() === "tips"}>
-                <div class={styles.activityBody}>
-                  <h2 class={`h2 h2Mindful ${styles.activityTitle}`}>
-                    Tips for good sleep
-                  </h2>
-                  <ul class={styles.tipsList}>
-                    <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
-                  </ul>
-                  {activityActions("tips")}
-                </div>
-              </Match>
+          <Match when={view() === "tips"}>
+            <div class={styles.activityBody}>
+              <h2 class={`h2 h2Mindful ${styles.activityTitle}`}>
+                Tips for good sleep
+              </h2>
+              <ul class={styles.tipsList}>
+                <For each={SLEEP_TIPS}>{(tip) => <li>{tip}</li>}</For>
+              </ul>
+              {activityActions("tips")}
+            </div>
+          </Match>
 
-              <Match when={view() === "snoozeIntent"}>
-                <div class={styles.center}>
-                  <h2 class="h2 h2Mindful">What's keeping you up?</h2>
-                  <p class={styles.subtle}>
-                    A moment of honesty before snoozing.
-                  </p>
-                  <div class={styles.btnRow}>
-                    <For each={SNOOZE_INTENT_OPTIONS}>
-                      {(opt) => (
+          {/* Both goodnight variants share one block so there is only ever
+                  one moon in the tree: the disc stays mounted across the
+                  snooze/goodnight pair (only the copy and gesture props swap),
+                  never unmounting to reappear as a second instance. */}
+          <Match when={view() === "snoozeGoodnight" || view() === "goodnight"}>
+            <div class={styles.goodnightGesture}>
+              <BackgroundTransition isSunGradientAttached={false} />
+              <div class={styles.goodnightContent}>
+                <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
+                  {view() === "snoozeGoodnight"
+                    ? `${snoozeMinutes()} more minutes`
+                    : "Sleep well"}
+                </h2>
+                <Show when={view() === "snoozeGoodnight"}>
+                  <div class={styles.durationRow}>
+                    <For each={SNOOZE_DURATION_OPTIONS}>
+                      {(mins) => (
                         <Btn
                           variant="toggle"
-                          onClick={() => goToView("snoozeGoodnight")}
+                          small
+                          selected={snoozeMinutes() === mins}
+                          onClick={() => setSnoozeMinutes(mins)}
                           disabled={!hydrated()}
                         >
-                          {opt}
+                          {mins} min
                         </Btn>
                       )}
                     </For>
                   </div>
+                </Show>
+                <p class={styles.subtle}>
+                  {view() === "snoozeGoodnight"
+                    ? IS_ANDROID
+                      ? "Triple-tap to snooze, or drag the moon down to sleep now."
+                      : "Triple-tap to confirm."
+                    : "Drag the moon down to let the day go."}
+                </p>
+                <div class={styles.moonContainer}>
+                  <Sun
+                    variant="moon"
+                    completionDirection="down"
+                    isTapEnabled={view() === "snoozeGoodnight"}
+                    tapThreshold={3}
+                    isDragEnabled={IS_ANDROID || view() === "goodnight"}
+                    onSkip={() =>
+                      view() === "snoozeGoodnight"
+                        ? snooze()
+                        : completeGoodnight()
+                    }
+                    onFlingAway={completeGoodnight}
+                    onDragComplete={completeGoodnight}
+                    onStartBackgroundAnimation={(direction) => {
+                      window.dispatchEvent(
+                        new CustomEvent("startBackgroundAnimation", {
+                          detail: { direction },
+                        }),
+                      );
+                    }}
+                  />
                 </div>
-              </Match>
-
-              {/* Both goodnight variants share one block so there is only ever
-                  one moon in the tree: the disc stays mounted across the
-                  snooze/goodnight pair (only the copy and gesture props swap),
-                  never unmounting to reappear as a second instance. */}
-              <Match
-                when={
-                  view() === "snoozeGoodnight" || view() === "goodnight"
-                }
-              >
-                <div class={styles.goodnightGesture}>
-                  <BackgroundTransition isSunGradientAttached={false} />
-                  <div class={styles.goodnightContent}>
-                    <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
-                      {view() === "snoozeGoodnight"
-                        ? `${snoozeMinutes()} more minutes`
-                        : "Sleep well"}
-                    </h2>
-                    <Show when={view() === "snoozeGoodnight"}>
-                      <div class={styles.durationRow}>
-                        <For each={SNOOZE_DURATION_OPTIONS}>
-                          {(mins) => (
-                            <Btn
-                              variant="toggle"
-                              small
-                              selected={snoozeMinutes() === mins}
-                              onClick={() => setSnoozeMinutes(mins)}
-                              disabled={!hydrated()}
-                            >
-                              {mins} min
-                            </Btn>
-                          )}
-                        </For>
-                      </div>
-                    </Show>
-                    <p class={styles.subtle}>
-                      {view() === "snoozeGoodnight"
-                        ? IS_ANDROID
-                          ? "Triple-tap to snooze, or drag the moon down to sleep now."
-                          : "Triple-tap to confirm."
-                        : "Drag the moon down to let the day go."}
-                    </p>
-                    <div class={styles.moonContainer}>
-                      <Sun
-                        variant="moon"
-                        completionDirection="down"
-                        isTapEnabled={view() === "snoozeGoodnight"}
-                        tapThreshold={3}
-                        isDragEnabled={IS_ANDROID || view() === "goodnight"}
-                        onSkip={() =>
-                          view() === "snoozeGoodnight"
-                            ? snooze()
-                            : completeGoodnight()
-                        }
-                        onFlingAway={completeGoodnight}
-                        onDragComplete={completeGoodnight}
-                        onStartBackgroundAnimation={(direction) => {
-                          window.dispatchEvent(
-                            new CustomEvent("startBackgroundAnimation", {
-                              detail: { direction },
-                            }),
-                          );
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </Match>
+              </div>
+            </div>
+          </Match>
         </Switch>
       </div>
     </div>
