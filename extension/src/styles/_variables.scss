@@ -282,6 +282,8 @@
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
+    // The evening reflection's closing line renders over the night sky —
+    // without this override it stays 60% black on near-black (#02091f).
     --success-sun-txt-c: rgba(255, 255, 255, 0.85);
     --scrollbar-thumb: rgba(255, 255, 255, 0.28);
     --c-link-color: #8de9ee;
