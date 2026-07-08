@@ -17,16 +17,16 @@ enum class WidgetSky {
     DAWN, MORNING, MIDDAY, AFTERNOON, DUSK, NIGHT;
 
     companion object {
-        // Whole-hour steps through AMBIENT_SKY_KEYFRAMES (hours 6/9/13/16.5/19):
-        // dawn holds from the sun's own day start at 05 (the timeline clamps to
-        // its edges the same way), 16.5 rounds to a 17:00 alarm, and dusk holds
-        // 19–21 until the moon — the app hands night to the dark theme at 19,
-        // but on the widget the clock (SunWidgetPhase) owns that boundary.
-        private val BOUNDARY_HOURS = intArrayOf(
-            SunWidgetPhase.DAY_START, 9, 13, 17, 19, SunWidgetPhase.NIGHT_START,
-        )
-
-        /** The sky for a given local hour-of-day (0–23; other values wrap). */
+        /**
+         * The sky for a given local hour-of-day (0–23; other values wrap). The
+         * steps are the app's ambient keyframes on whole hours: dawn from the
+         * sun's own 05 day-start, then 09/13/17/19 (the 16.5 keyframe rounds to
+         * 17), dusk holding 19–21 until the moon — whose boundary the clock
+         * (SunWidgetPhase) owns, so the dark sky lines up exactly with the moon.
+         * The card refreshes on the line's 15-minute cadence (WidgetPrompts),
+         * which subsumes these whole-hour steps, so the sky needs no schedule of
+         * its own.
+         */
         fun forHour(hour: Int): WidgetSky {
             val h = hour.mod(24)
             return when {
@@ -39,14 +39,5 @@ enum class WidgetSky {
                 else -> NIGHT
             }
         }
-
-        /**
-         * Minutes from the given local time until the sky next steps. Because the
-         * boundaries include the sun's own phase flips (which are also the prompt
-         * slots), the receiver arms its single alarm off this schedule alone —
-         * containment guarded by WidgetSkyTest. Always strictly positive.
-         */
-        fun minutesUntilNextChange(hour: Int, minute: Int): Int =
-            minutesUntilNext(BOUNDARY_HOURS, hour, minute)
     }
 }

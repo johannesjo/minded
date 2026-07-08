@@ -16,12 +16,16 @@ import java.util.Calendar
 
 /**
  * Receiver for the home-screen companion sun. The sun is a *living* anchor: it
- * tracks the day's light (the sun by day, the moon by night), the card's sky
- * steps through the app's ambient keyframes (WidgetSky), and the card carries a
- * quiet line that turns over with the day's slots (WidgetPrompts), so it must
- * refresh at those boundaries. Rather than polling, we arm a single inexact
- * alarm for the next boundary (≈6 wakeups a day) and re-arm each time it fires.
- * What to show is decided in MyAppWidget.provideGlance from the local hour. See
+ * tracks the day's light (the sun by day, the moon by night) and the card's sky
+ * steps through the app's ambient keyframes (WidgetSky). The card's line is a
+ * mini-intervention (WidgetPrompts): it steps every 15 minutes through the day so
+ * a glance on return finds a fresh invitation, then rests wordless through the
+ * night. So rather than polling, we arm a single inexact, *non-wake* alarm for
+ * the next 15-minute step and re-arm each time it fires — one alarm spans the
+ * whole night. Non-wake (RTC) means it only fires while the device is already
+ * awake, i.e. right when someone is looking: a busy day is ~60-odd cheap
+ * piggybacked repaints, a sleeping phone schedules nothing until it wakes. What
+ * to show is decided in MyAppWidget.provideGlance from the local time. See
  * docs/sun-companion-widget.md.
  */
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -83,11 +87,11 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             return
         }
         val now = Calendar.getInstance()
-        // The sky boundaries contain SunWidgetPhase's flips, which are in turn
-        // the prompt slots, so this one schedule covers the sky step, the
-        // day/night repaint, and the line turnover (containment guarded by
-        // WidgetSkyTest).
-        val minutes = WidgetSky.minutesUntilNextChange(
+        // The line's 15-minute day cadence is the finest of the three surfaces,
+        // and every sky/phase flip lands on a whole hour (so on a slot edge), so
+        // scheduling off the prompt alone also covers the sky step and the
+        // day/night repaint (containment guarded by WidgetPromptsTest).
+        val minutes = WidgetPrompts.minutesUntilNextChange(
             now.get(Calendar.HOUR_OF_DAY),
             now.get(Calendar.MINUTE),
         )
