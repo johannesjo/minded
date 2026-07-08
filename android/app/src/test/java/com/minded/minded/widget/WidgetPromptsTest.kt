@@ -124,17 +124,4 @@ class WidgetPromptsTest {
         assertEquals(8 * 60, WidgetPrompts.minutesUntilNextChange(21, 0))
     }
 
-    @Test
-    fun `prompt boundaries cover the sun phase boundaries`() {
-        // The receiver arms its single alarm off the prompt schedule alone, so
-        // the prompt slots must always change at least as often as the sun's
-        // phase — otherwise a phase flip could strand the wrong sky on screen.
-        for (hour in 0..23) {
-            assertTrue(
-                WidgetPrompts.minutesUntilNextChange(hour, 0) <=
-                    SunWidgetPhase.minutesUntilNextBoundary(hour, 0),
-                "hour $hour",
-            )
-        }
-    }
 }

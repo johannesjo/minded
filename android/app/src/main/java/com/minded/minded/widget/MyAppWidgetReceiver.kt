@@ -16,12 +16,13 @@ import java.util.Calendar
 
 /**
  * Receiver for the home-screen companion sun. The sun is a *living* anchor: it
- * tracks the day's light (the sun by day, the moon by night), and the wide card
- * carries a quiet line that turns over with the day's slots (WidgetPrompts), so
- * it must refresh at those boundaries. Rather than polling, we arm a single
- * inexact alarm for the next boundary (≈3 wakeups a day) and re-arm each time it
- * fires. What to show is decided in MyAppWidget.provideGlance from the local
- * hour. See docs/sun-companion-widget.md.
+ * tracks the day's light (the sun by day, the moon by night), the card's sky
+ * steps through the app's ambient keyframes (WidgetSky), and the card carries a
+ * quiet line that turns over with the day's slots (WidgetPrompts), so it must
+ * refresh at those boundaries. Rather than polling, we arm a single inexact
+ * alarm for the next boundary (≈6 wakeups a day) and re-arm each time it fires.
+ * What to show is decided in MyAppWidget.provideGlance from the local hour. See
+ * docs/sun-companion-widget.md.
  */
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = MyAppWidget()
@@ -82,10 +83,11 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             return
         }
         val now = Calendar.getInstance()
-        // The prompt slots are built from SunWidgetPhase's own constants, so one
-        // schedule covers both the line turnover and the day/night repaint
-        // (containment guarded by WidgetPromptsTest).
-        val minutes = WidgetPrompts.minutesUntilNextChange(
+        // The sky boundaries contain SunWidgetPhase's flips, which are in turn
+        // the prompt slots, so this one schedule covers the sky step, the
+        // day/night repaint, and the line turnover (containment guarded by
+        // WidgetSkyTest).
+        val minutes = WidgetSky.minutesUntilNextChange(
             now.get(Calendar.HOUR_OF_DAY),
             now.get(Calendar.MINUTE),
         )

@@ -154,8 +154,8 @@ Everything extends what exists; nothing new is invented.
   tap → actionStartActivity(EXTRA_LAUNCH_ROUTE = "/?sun=open",
                             EXTRA_WIDGET_LINE = the shown line)  ← lands on that line
       |
-  MyAppWidgetReceiver alarm: next prompt-slot boundary (= the phase
-   flips) → 05/21 (≈2 inexact wakeups/day)
+  MyAppWidgetReceiver alarm: next sky-step boundary (⊇ the phase flips
+   ⊇ the prompt slots) → 05/09/13/17/19/21 (≈6 inexact wakeups/day)
 ```
 
 - **`MyAppWidget.kt`**: `SizeMode.Responsive` with two faces — `SUN_ONLY`
@@ -164,15 +164,18 @@ Everything extends what exists; nothing new is invented.
   spacer + 44dp sun ≈ 136dp); anything shorter — flat rows, dense grids,
   landscape — keeps the plain floating sun rather than a clipped card. The
   card is a `Column` with the sky as `background(ImageProvider)` — dedicated
-  **card-sized `widget_sky_light/dark` renders** of the exact app sky,
-  dithered at target size by `gen_loading_sky.py` (minifying the full-screen
-  sky would undersample the dither and re-band; these also cut the
-  launcher-side decode ~5×). Text is 15sp platform serif (widgets can't
-  embed Newsreader; the serif register carries), colored
-  `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) — only ever drawn on the
-  light sky, by construction (see below). `cornerRadius(24dp)` on API 31+
-  (square below). Sky follows the clock via `SunWidgetPhase`, never the
-  system theme.
+  **card-sized `widget_sky_*` renders** of the exact app sky, dithered at
+  target size by `gen_loading_sky.py` (minifying the full-screen sky would
+  undersample the dither and re-band; these also cut the launcher-side
+  decode ~5×). Like the app's ambient background the sky moves through the
+  day: one render per `AMBIENT_SKY_KEYFRAMES` entry (`skyTimeline.ts`),
+  stepped on whole hours by `WidgetSky.kt` (dawn 05 → morning 09 → midday 13
+  → afternoon 17 → dusk 19 → the dark night sky at 21). Text is 15sp
+  platform serif (widgets can't embed Newsreader; the serif register
+  carries), colored `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) — only
+  ever drawn on the light pastel day skies, by construction (see below).
+  `cornerRadius(24dp)` on API 31+ (square below). Sky follows the clock via
+  `WidgetSky`/`SunWidgetPhase`, never the system theme.
 - **`WidgetPrompts.kt`** (new, `widget/` package): the curated waking-hours
   pool (`WAKING_PROMPTS`), plus pure `promptForMoment(epochDay, hour)`,
   `minutesUntilNextChange`, and `isWidgetSafeLine` (the tap's allow-list) —
@@ -181,13 +184,15 @@ Everything extends what exists; nothing new is invented.
   constants, so the no-text window *is* the moon's window and can't drift. Tests
   enforce the guardrails mechanically: determinism, ≤60 chars, full-pool
   one-step-a-day rotation, night returns `null`, text-iff-light-sky, the
-  allow-list, and prompt boundaries covering the phase boundaries. The shared
-  boundary walk lives in `clockBoundaries.kt`, used by both `WidgetPrompts` and
+  allow-list, and (`WidgetSkyTest`) the sky boundaries covering both the
+  phase flips and the prompt slots. The shared boundary walk lives in
+  `clockBoundaries.kt`, used by `WidgetSky`, `WidgetPrompts`, and
   `SunWidgetPhase`.
 - **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact alarm
-  arms at the next prompt-slot boundary, which contains the sun's phase
-  flips by construction. Same pattern, same permissions (none). DST drift
-  (±1h twice a year, self-correcting) is documented and accepted.
+  arms at the next sky-step boundary, which contains the sun's phase flips
+  and the prompt slots by construction. Same pattern, same permissions
+  (none). DST drift (±1h twice a year, self-correcting) is documented and
+  accepted.
 - **`app_widget_info.xml`**: target 3×2 on API 31+, and `minWidth/minHeight`
   170×110dp so pre-31 launchers also default to a 3×2 drop; `minResize`
   40dp keeps 1×1 reachable and already-placed widgets keep their spans.

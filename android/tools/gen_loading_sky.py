@@ -47,6 +47,27 @@ LIGHT_STOPS = [
     (0.54, "#f5efc8"),
     (1.00, "#f6dcd2"),
 ]
+
+# The widget card's sky steps through the app's ambient time-of-day timeline:
+# one render per keyframe, colours verbatim from AMBIENT_SKY_KEYFRAMES in
+# extension/src/shared/skyTimeline.ts (keep in sync; WidgetSky.kt picks the
+# render for the hour). The 9:00 "morning" keyframe is the classic static sky,
+# i.e. LIGHT_STOPS above. Stop positions mirror ambientSkyGradient().
+AMBIENT_KEYFRAME_COLORS = {
+    "dawn": ["#c9d3ea", "#dde5e4", "#f3e6cf", "#f5cfc3"],
+    "morning": ["#cfe4f5", "#d8ecd6", "#f5efc8", "#f6dcd2"],
+    "midday": ["#c5e0f7", "#d6eee3", "#eff2d6", "#f6e8d6"],
+    "afternoon": ["#cfdff0", "#dfead8", "#f6ecc8", "#f7d9c9"],
+    "dusk": ["#c0c8e6", "#e0d2d6", "#f6dcb8", "#f1c0ab"],
+}
+
+
+def ambient_stops(colors):
+    """skyTimeline.ts ambientSkyGradient(): c0 held to 18%, horizon at 100%."""
+    c0, c1, c2, c3 = colors
+    return [(0.00, c0), (0.18, c0), (0.36, c1), (0.54, c2), (1.00, c3)]
+
+
 DARK_STOPS = [
     (0.00, "#02091f"),
     (0.28, "#041238"),
@@ -91,12 +112,14 @@ def write_png(path, arr):
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    outputs = (
+    outputs = [
         ("loading_sky_light", LIGHT_STOPS, WIDTH, HEIGHT),
         ("loading_sky_dark", DARK_STOPS, WIDTH, HEIGHT),
-        ("widget_sky_light", LIGHT_STOPS, CARD_WIDTH, CARD_HEIGHT),
         ("widget_sky_dark", DARK_STOPS, CARD_WIDTH, CARD_HEIGHT),
-    )
+    ] + [
+        ("widget_sky_" + name, ambient_stops(colors), CARD_WIDTH, CARD_HEIGHT)
+        for name, colors in AMBIENT_KEYFRAME_COLORS.items()
+    ]
     for name, stops, width, height in outputs:
         path = os.path.join(OUT_DIR, name + ".png")
         write_png(path, render(stops, width, height))

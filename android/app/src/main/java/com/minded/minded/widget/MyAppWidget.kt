@@ -49,8 +49,8 @@ import java.time.LocalDateTime
  * serif line (WidgetPrompts), the sun resting beneath it. See
  * docs/sun-companion-widget.md and docs/widget-prompts-concept.md.
  *
- * The phase is chosen from the local hour; MyAppWidgetReceiver arms one alarm per
- * phase/prompt change to refresh it.
+ * The phase and sky are chosen from the local hour; MyAppWidgetReceiver arms one
+ * alarm per sky/phase/prompt change to refresh it.
  */
 class MyAppWidget : GlanceAppWidget() {
 
@@ -66,7 +66,7 @@ class MyAppWidget : GlanceAppWidget() {
             if (LocalSize.current == PROMPT_CARD) {
                 val prompt =
                     WidgetPrompts.promptForMoment(now.toLocalDate().toEpochDay(), now.hour)
-                PromptCard(context, phase, prompt)
+                PromptCard(context, phase, WidgetSky.forHour(now.hour), prompt)
             } else {
                 SunOnly(context, phase)
             }
@@ -94,18 +94,25 @@ class MyAppWidget : GlanceAppWidget() {
      * of the exact app sky, dithered at target size — see gen_loading_sky.py), a
      * serif line in the app's voice, and the sun beneath it — text above, sun
      * below, the intervention layout. Like everything on this widget the sky
-     * follows the clock, not the system theme; at night the prompt is null and
-     * the moon carries the card alone (words at 2 a.m. read as a nudge).
+     * follows the clock, not the system theme — and like the app's ambient
+     * background it moves through the day's keyframes (WidgetSky, stepping
+     * dawn → morning → midday → afternoon → dusk); at night the prompt is null
+     * and the moon carries the card alone (words at 2 a.m. read as a nudge).
      */
     @Composable
-    private fun PromptCard(context: Context, phase: SunWidgetPhase, prompt: String?) {
+    private fun PromptCard(
+        context: Context,
+        phase: SunWidgetPhase,
+        sky: WidgetSky,
+        prompt: String?,
+    ) {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
                 // background(ImageProvider) stretches by default (FillBounds) —
                 // right for a vertical gradient: the full top-to-horizon sweep is
                 // the look, and distortion is invisible on a gradient.
-                .background(ImageProvider(skyFor(phase)))
+                .background(ImageProvider(skyFor(sky)))
                 // Rounded like the app's surfaces; silently ignored below API 31,
                 // where the sky simply fills the rectangle.
                 .cornerRadius(24.dp)
@@ -145,9 +152,13 @@ class MyAppWidget : GlanceAppWidget() {
         }
     }
 
-    private fun skyFor(phase: SunWidgetPhase): Int = when (phase) {
-        SunWidgetPhase.DAY -> R.drawable.widget_sky_light
-        SunWidgetPhase.NIGHT -> R.drawable.widget_sky_dark
+    private fun skyFor(sky: WidgetSky): Int = when (sky) {
+        WidgetSky.DAWN -> R.drawable.widget_sky_dawn
+        WidgetSky.MORNING -> R.drawable.widget_sky_morning
+        WidgetSky.MIDDAY -> R.drawable.widget_sky_midday
+        WidgetSky.AFTERNOON -> R.drawable.widget_sky_afternoon
+        WidgetSky.DUSK -> R.drawable.widget_sky_dusk
+        WidgetSky.NIGHT -> R.drawable.widget_sky_dark
     }
 
     private fun drawableFor(phase: SunWidgetPhase): Int = when (phase) {
