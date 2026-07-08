@@ -5,12 +5,18 @@ package com.minded.minded.widget
  * See docs/widget-prompts-concept.md for the full rationale; the load-bearing
  * rules:
  *
- * - World-voice invitations only ("Feel both feet on the floor.") — never a
- *   metric, never about the user, never an inferred feeling. A widget line
- *   lingers for hours, so it must be true at *any* minute of its slot.
- * - Rotation is slow and boring by design: the line changes only at the app's
- *   existing time boundaries (~2 text changes a day). A faster-rotating widget
- *   is a tiny feed — "what does it say now?" is the exact loop minded fights.
+ * - The line is a real interaction's content, so tapping the card lands on that
+ *   *exact* interaction. Only NOTICE cues and (short) ACTION_ADVICE lines
+ *   qualify — the app's two *ambient-safe* interaction modes: a present-moment
+ *   invitation in the world's voice, never a metric, never about the user, never
+ *   an open question left hanging on a semi-public surface. Every other mode
+ *   (questions, energy, emotion, usage, saved reasons) is off-limits here by
+ *   those same rules. The tap carries the shown line to the web shell, which
+ *   reopens it as that NOTICE/ACTION_ADVICE (see MainActivity + RouteCmp).
+ * - Rotation is slow and boring by design: the epoch-day index turns over unseen
+ *   at midnight (during the wordless night) and the new line first appears at
+ *   05:00 — ~one text change a day. A faster-rotating widget is a tiny feed —
+ *   "what does it say now?" is the exact loop minded fights.
  * - Rotation is deterministic: the same moment always shows the same line —
  *   nothing to refresh or fish for, and Glance recompositions on launcher
  *   events can't visibly shuffle it.
@@ -19,32 +25,37 @@ package com.minded.minded.widget
  *   boundaries are built from [SunWidgetPhase]'s constants, so the near-black
  *   text can never meet the dark sky.
  *
- * The copy is a widget-specific register curated from the app's own content
- * (NOTICE_CUES in notice.const.ts, ACTION_ADVICES in actionAdvices.ts, the
- * gratitude prompts in sleepContent.ts), shortened to fit a home-screen card.
- * // shortcut: Kotlin-only pool — extract to a generated shared JSON when the
- * // iOS widget ports this and becomes a second consumer.
+ * The lines are copied verbatim from the app's own interaction content
+ * (NOTICE_CUES in notice.const.ts, ACTION_ADVICES in actionAdvices.ts), curated
+ * to the widget-safe subset that fits a home-screen card.
+ * // shortcut: Kotlin-only mirror of the TS pools — a jest parity test
+ * // (widgetPromptsMirror.test.ts) asserts every line here still exists verbatim
+ * // in NOTICE_CUES/ACTION_ADVICES, and the web tap re-matches by that exact
+ * // string. Extract to a generated shared JSON if the iOS widget ports this and
+ * // becomes a third consumer.
  *
  * Pure logic, free of Android/R references so it can be unit-tested on the JVM.
  */
 object WidgetPrompts {
 
-    // The app's existing time lines — deliberately no invented dayparts. Day
-    // and night come straight from SunWidgetPhase; evening matches
-    // EVENING_START_HOUR in interactionContext.ts (TODAY_START_HOUR in
-    // getInteractionMode.ts is the same 5 as SunWidgetPhase.DAY_START).
-    private const val EVENING_START = 20
-
+    // The visible turnover points: the sun's own phase flips. The line is stable
+    // across all of waking hours (one epoch-day index), so the only thing to
+    // repaint is day-start (new line) and night (words → moon). Sharing
+    // SunWidgetPhase's constants is what guarantees the no-text window is exactly
+    // the moon's window.
     private val BOUNDARY_HOURS =
-        intArrayOf(SunWidgetPhase.DAY_START, EVENING_START, SunWidgetPhase.NIGHT_START)
+        intArrayOf(SunWidgetPhase.DAY_START, SunWidgetPhase.NIGHT_START)
 
     /** Hard cap so every line fits ~3 serif lines on a 3×2 card. */
     const val MAX_PROMPT_LENGTH = 60
 
-    // Day: embodied present-moment anchors and gentle suggestions — things that
-    // complete on the spot. Deliberately no open questions here: a question you
-    // can't answer in place reads as friction on an ambient surface.
-    val DAY_PROMPTS: List<String> = listOf(
+    // Waking hours (05:00–21:00): embodied present-moment anchors and gentle
+    // suggestions that complete on the spot — the NOTICE cues and short
+    // ACTION_ADVICE lines, verbatim. Deliberately no open questions: one you
+    // can't answer in place reads as friction on an ambient surface, and every
+    // line here must map to a real interaction the tap can open.
+    val WAKING_PROMPTS: List<String> = listOf(
+        // NOTICE cues (notice.const.ts) — the "notice → tap" anchors.
         "Feel both feet on the floor.",
         "Let your jaw and shoulders soften.",
         "Let your hands fall open and rest.",
@@ -53,6 +64,7 @@ object WidgetPrompts {
         "Feel the weight of your body, wherever you are.",
         "Notice the temperature of the air on your skin.",
         "Find three colors around you.",
+        // ACTION_ADVICE lines (actionAdvices.ts) — the "How about…" suggestions.
         "How about looking out the window for a minute?",
         "How about a little stretch?",
         "How about some fresh air?",
@@ -62,37 +74,33 @@ object WidgetPrompts {
         "How about resting your eyes on something far away?",
     )
 
-    // Evening (20:00–21:00): one reflective line in the wind-down's gratitude
-    // register — contemplation that needs no capture, gone when the moon comes.
-    val EVENING_PROMPTS: List<String> = listOf(
-        "What went well today?",
-        "Who made today a little easier?",
-        "What's something you're glad happened today?",
-        "Who or what are you grateful for tonight?",
-    )
-
     /**
      * The line for a given local day + hour, or null at night (the moon carries
      * the night alone). Deterministic, and because the index is the epoch day
-     * itself, the rotation walks each pool exactly one line per day — no
+     * itself, the rotation walks the pool exactly one line per day — no
      * adjacent-day repeats, no jumps (deterministic like sleepWindDown's
      * nightIdToIndex, minus that hash's uneven date-rollover steps).
      */
     fun promptForMoment(epochDay: Long, hour: Int): String? {
         val h = hour.mod(24)
-        val pool = when {
-            h in SunWidgetPhase.DAY_START until EVENING_START -> DAY_PROMPTS
-            h in EVENING_START until SunWidgetPhase.NIGHT_START -> EVENING_PROMPTS
-            else -> return null
+        if (h !in SunWidgetPhase.DAY_START until SunWidgetPhase.NIGHT_START) {
+            return null
         }
-        return pool[epochDay.mod(pool.size.toLong()).toInt()]
+        return WAKING_PROMPTS[epochDay.mod(WAKING_PROMPTS.size.toLong()).toInt()]
     }
 
     /**
+     * Whether [line] is one this widget actually shows. The deep-link handoff is
+     * validated against this (MainActivity), mirroring the route allow-list: only
+     * a known widget line can ever reach the WebView location.
+     */
+    fun isWidgetSafeLine(line: String): Boolean = line in WAKING_PROMPTS
+
+    /**
      * Minutes from the given local time until the displayed line next changes
-     * (day start, evening, night). Because [BOUNDARY_HOURS] contains the sun's
-     * phase flips, this schedule also covers the day/night repaint — the
-     * receiver arms one alarm off it alone (guarded by WidgetPromptsTest).
+     * (day start, night). Because [BOUNDARY_HOURS] *are* the sun's phase flips,
+     * this schedule also covers the day/night repaint — the receiver arms one
+     * alarm off it alone (guarded by WidgetPromptsTest).
      */
     fun minutesUntilNextChange(hour: Int, minute: Int): Int =
         minutesUntilNext(BOUNDARY_HOURS, hour, minute)

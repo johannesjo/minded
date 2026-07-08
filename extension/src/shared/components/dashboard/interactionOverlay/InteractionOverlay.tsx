@@ -17,6 +17,12 @@ export const InteractionOverlay: (props: {
    * dashboard out behind it.
    */
   instant?: boolean;
+  /**
+   * The exact line the widget was showing, when opened from the widget's prompt
+   * card — so the interaction lands on that same NOTICE/ACTION_ADVICE line rather
+   * than a random pick. Undefined for the plain sun tap and in-app companion tap.
+   */
+  widgetLine?: string;
 }) => JSX.Element = (props) => {
   let wrapperEl: HTMLDivElement = undefined!;
 
@@ -52,6 +58,7 @@ export const InteractionOverlay: (props: {
       <div class={styles.interactionWrapper}>
         <InteractionCommon
           questionForPrompt={undefined}
+          widgetLine={props.widgetLine}
           isInitFadeout={false}
           wrapperEl={wrapperEl!}
           isFromDashboard={true}

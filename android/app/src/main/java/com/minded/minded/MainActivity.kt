@@ -38,6 +38,7 @@ import com.minded.minded.util.checkIgnoringBatteryOptimizations
 import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import com.minded.minded.util.isDarkModeNow
+import com.minded.minded.widget.WidgetPrompts
 import kotlinx.coroutines.launch
 
 
@@ -66,6 +67,13 @@ class MainActivity : AppCompatActivity() {
          * in-app companion sun (see RouteCmp's `?sun=open` effect).
          */
         const val OPEN_SUN_HASH = "/?sun=open"
+        /**
+         * Intent extra: the exact prompt line the widget's card was showing. When
+         * present (and allow-listed, see [widgetLineFromIntent]) it rides along in
+         * the hash as `&widgetLine=…` so the interaction opens on that same
+         * NOTICE/ACTION_ADVICE line instead of a random pick (see RouteCmp).
+         */
+        const val EXTRA_WIDGET_LINE = "widget_line"
 
         /** Fade-in duration when the WebView first paints over the loading sky. */
         private const val WEBVIEW_FADE_IN_MS = 300L
@@ -88,6 +96,25 @@ class MainActivity : AppCompatActivity() {
             OPEN_SUN_HASH -> OPEN_SUN_HASH
             else -> null
         }
+
+    /**
+     * The widget line to open on, if the launching intent carried one — but only
+     * if it's a line the widget actually shows ([WidgetPrompts.isWidgetSafeLine]).
+     * Same allow-list posture as [routeFromIntent]: a crafted intent can't inject
+     * arbitrary text into the WebView location; only one of the known widget lines
+     * (each a benign, quote-free constant) ever passes, so URL-encoding it into
+     * the hash is safe.
+     */
+    private fun widgetLineFromIntent(intent: Intent?): String? =
+        intent?.getStringExtra(EXTRA_WIDGET_LINE)
+            ?.takeIf { WidgetPrompts.isWidgetSafeLine(it) }
+
+    /** The launch route with the allow-listed widget line appended, if any. */
+    private fun launchHash(intent: Intent?): String? {
+        val route = routeFromIntent(intent) ?: return null
+        val line = widgetLineFromIntent(intent)
+        return if (line != null) "$route&widgetLine=${Uri.encode(line)}" else route
+    }
 
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -218,10 +245,11 @@ class MainActivity : AppCompatActivity() {
                                     }
                                 }
                                 // Cold start: if launched from the widget, load the
-                                // dashboard with the sun hash so the shell opens the
-                                // interaction overlay on first paint.
-                                val route = routeFromIntent(intent)
-                                loadUrl(if (route != null) "$baseUrl#$route" else baseUrl)
+                                // dashboard with the sun hash (plus the tapped line, if
+                                // any) so the shell opens the interaction overlay on the
+                                // exact line on first paint.
+                                val hash = launchHash(intent)
+                                loadUrl(if (hash != null) "$baseUrl#$hash" else baseUrl)
                                 // Safety net: reveal even if onPageCommitVisible never
                                 // arrives (e.g. a stalled bundle), so a load hiccup can't
                                 // strand the app on the loading sky.
@@ -332,10 +360,10 @@ class MainActivity : AppCompatActivity() {
         // interaction. The resume → maybeTriggerSleepWindDown redirect only fires
         // from root, so it won't clobber this.
         setIntent(intent)
-        val route = routeFromIntent(intent) ?: return
+        val hash = launchHash(intent) ?: return
         if (this::webView.isInitialized) {
             webView.evaluateJavascript(
-                "(function() { window.location.hash = '#$route'; })();",
+                "(function() { window.location.hash = '#$hash'; })();",
                 ValueCallback<String?> { },
             )
         }

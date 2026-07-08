@@ -20,6 +20,8 @@ import {
   SyncData,
 } from "@src/dataInterface/syncData";
 import { QuestionForPrompt } from "@src/shared/data/questions";
+import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
+import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { fadeOut } from "@src/util/animation";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 import {
@@ -92,6 +94,15 @@ import type { PatternInsight } from "@src/shared/components/interaction/patternI
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
+  /**
+   * The exact line the home-screen widget was showing, when the interaction was
+   * opened by tapping that widget. If it matches a NOTICE cue or an ACTION_ADVICE
+   * (the only two widget-safe modes) we open on that exact line instead of the
+   * usual random pick, so the user lands on the very thing they glanced at. An
+   * unrecognised line is ignored and the normal random selection runs (so a copy
+   * drift, or a crafted intent, degrades gracefully rather than breaking).
+   */
+  widgetLine?: string;
   isInitFadeout: boolean;
   wrapperEl: HTMLElement;
   shadowRoot?: ShadowRoot;
@@ -146,6 +157,26 @@ const getInteractionRoot = (shadowRoot?: ShadowRoot) =>
   shadowRoot?.getElementById("minded-6622") ??
   document.getElementById("minded-6622");
 
+type ForcedWidgetContent =
+  | { mode: "NOTICE"; cue: (typeof NOTICE_CUES)[number] }
+  | { mode: "ACTION_ADVICE"; advice: (typeof ACTION_ADVICES)[number] };
+
+/**
+ * Resolve the widget's displayed line back to the interaction mode + exact
+ * content item it came from. `NOTICE` and `ACTION_ADVICE` are the only
+ * widget-safe modes, and the widget shows those pools' lines verbatim, so an
+ * exact string match recovers the item. Returns undefined for anything
+ * unrecognised — other content, a copy drift, or a crafted intent — so the
+ * caller falls back to the normal random pick instead of breaking.
+ */
+const matchWidgetLine = (line: string): ForcedWidgetContent | undefined => {
+  const cue = NOTICE_CUES.find((c) => c.cue === line);
+  if (cue) return { mode: "NOTICE", cue };
+  const advice = ACTION_ADVICES.find((a) => a.txt === line);
+  if (advice) return { mode: "ACTION_ADVICE", advice };
+  return undefined;
+};
+
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
   const SCREEN_TRANSITION_MS = ANIMATION_TIMING.fadeOut.standard;
@@ -167,6 +198,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getPatternInsight, setPatternInsight] = createSignal<
     PatternInsight | undefined
   >();
+  // When opened from the widget: the exact NOTICE cue / ACTION_ADVICE line to
+  // pin, so the switch shows that line rather than a random one.
+  const [getForcedNoticeCue, setForcedNoticeCue] =
+    createSignal<(typeof NOTICE_CUES)[number]>();
+  const [getForcedAdvice, setForcedAdvice] =
+    createSignal<(typeof ACTION_ADVICES)[number]>();
   const [, setPendingAnswer] = createSignal<Answer | undefined>();
   const [getAlternativeToReplace, setAlternativeToReplace] = createSignal<
     Alternative | undefined
@@ -1194,10 +1231,25 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           preloadSounds();
         }
 
+        const forcedFromWidget = props.widgetLine
+          ? matchWidgetLine(props.widgetLine)
+          : undefined;
+
         if (props.questionForPrompt) {
           setInitialQuestion(props.questionForPrompt);
           setFrictionLevel("normal");
           setModeWithoutReplacement("QUESTION");
+        } else if (forcedFromWidget) {
+          // Opened from the widget on a recognised line: land on that exact
+          // NOTICE/ACTION_ADVICE, skipping the random pick (and its anti-repeat
+          // memory — this wasn't a rolled decision).
+          if (forcedFromWidget.mode === "NOTICE") {
+            setForcedNoticeCue(forcedFromWidget.cue);
+          } else {
+            setForcedAdvice(forcedFromWidget.advice);
+          }
+          setFrictionLevel("normal");
+          setModeWithoutReplacement(forcedFromWidget.mode);
         } else {
           const question = getQuestionSmart(syncData.answers);
           const modeDecision = getInteractionModeDecision(syncData, {
@@ -1505,6 +1557,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             answers={getAnswers()}
             targetName={displayTargetName(props.interactionTarget)}
             patternInsight={getPatternInsight()}
+            forcedNoticeCue={getForcedNoticeCue()}
+            forcedAdvice={getForcedAdvice()}
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}

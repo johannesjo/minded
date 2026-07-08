@@ -70,8 +70,22 @@ const MainWrapper = (props: RouteSectionProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const openedFromWidgetAtLaunch = searchParams.sun === "open";
 
+  // The widget's prompt card passes the exact line it was showing (`&widgetLine=`)
+  // so the interaction lands on that same NOTICE/ACTION_ADVICE rather than a
+  // random pick. A repeated key would arrive as an array; take the single value.
+  const readWidgetLine = (): string | undefined =>
+    typeof searchParams.widgetLine === "string"
+      ? searchParams.widgetLine
+      : undefined;
+
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
     createSignal<boolean>(openedFromWidgetAtLaunch);
+  // The widget line to open on, held past the URL-param clear below so the overlay
+  // still mounts with it. Cleared when the overlay closes and on an in-app
+  // companion tap, so neither reuses a stale line.
+  const [getWidgetLine, setWidgetLine] = createSignal<string | undefined>(
+    openedFromWidgetAtLaunch ? readWidgetLine() : undefined,
+  );
   // Open with no entrance fade when it came from the widget, so we land straight
   // in the interaction instead of fading the dashboard out behind it. A normal
   // companion tap keeps the gentle fade.
@@ -173,9 +187,14 @@ const MainWrapper = (props: RouteSectionProps) => {
     // interaction that's already in flight.
     if (getSunRole() === "companion" && !getIsShowQuestionOverlay()) {
       setIsOverlayInstant(true);
+      // Set the line before opening so the overlay mounts with it.
+      setWidgetLine(readWidgetLine());
       setIsShowQuestionOverlay(true);
     }
-    setSearchParams({ sun: undefined }, { replace: true });
+    setSearchParams(
+      { sun: undefined, widgetLine: undefined },
+      { replace: true },
+    );
   });
 
   onMount(() => {
@@ -351,6 +370,9 @@ const MainWrapper = (props: RouteSectionProps) => {
               // straight onto its slot in one slow glide (no base detour).
               setIsCompanionHovered(false);
               setIsOverlayInstant(false); // in-app tap keeps the gentle fade
+              // A plain in-app tap is a fresh random pick — never reuse a line
+              // left over from an earlier widget tap.
+              setWidgetLine(undefined);
               setIsShowQuestionOverlay(true);
             }}
           />
@@ -362,6 +384,7 @@ const MainWrapper = (props: RouteSectionProps) => {
       {getIsShowQuestionOverlay() && (
         <InteractionOverlay
           instant={getIsOverlayInstant()}
+          widgetLine={getWidgetLine()}
           onPossibleNewData={() => {
             window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
           }}
@@ -373,6 +396,9 @@ const MainWrapper = (props: RouteSectionProps) => {
             setBreathStartedAt(undefined);
             setIsShowQuestionOverlay(false);
             setIsOverlayInstant(false);
+            // Drop the widget line so a later in-app companion tap can't reopen
+            // on it.
+            setWidgetLine(undefined);
             // The greeting was already re-rolled when the overlay *started*
             // fading (RE_GREET_DASHBOARD_HIDDEN_EV, dispatched from the overlay),
             // so the fresh tile is in place behind it — nothing to swap here, or

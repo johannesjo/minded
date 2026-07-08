@@ -7,6 +7,12 @@ interface NoticeProps {
   onSuccess: () => void;
   onSkip: () => void;
   onCancelCountdown: () => void;
+  /**
+   * Pin a specific cue instead of picking at random. Set when the interaction is
+   * opened from the home-screen widget so we land on the exact line the widget
+   * was showing (see RouteCmp's `widgetLine`).
+   */
+  cue?: (typeof NOTICE_CUES)[number];
 }
 
 /**
@@ -20,8 +26,9 @@ interface NoticeProps {
  * we put in front of the user.
  */
 export const NoticeInteraction = (props: NoticeProps): JSX.Element => {
-  // One cue per mount: varied across interventions, stable within this one.
-  const [cue] = createSignal(getRndEntry(NOTICE_CUES));
+  // One cue per mount: the widget's exact line when opened from it, otherwise
+  // varied across interventions and stable within this one.
+  const [cue] = createSignal(props.cue ?? getRndEntry(NOTICE_CUES));
 
   return (
     <div

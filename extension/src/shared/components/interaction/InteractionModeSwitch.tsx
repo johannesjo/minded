@@ -12,6 +12,7 @@ import { ShowAlternativeInteraction } from "@src/shared/components/interaction/a
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
 import { EmotionLabeling } from "@src/shared/components/interaction/emotionLabeling/EmotionLabeling";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
+import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
@@ -32,6 +33,14 @@ export interface InteractionModeSwitchProps {
   /** Short name of the site/app this interaction is about, if known. */
   targetName?: string;
   patternInsight: PatternInsight | undefined;
+  /**
+   * Pinned NOTICE cue / ACTION_ADVICE line, set when the interaction was opened
+   * from the home-screen widget so it lands on the exact line the widget showed
+   * (see RouteCmp's `widgetLine`). Absent for normal interventions, which pick at
+   * random.
+   */
+  forcedNoticeCue?: (typeof NOTICE_CUES)[number];
+  forcedAdvice?: (typeof ACTION_ADVICES)[number];
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
@@ -64,6 +73,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
       </Match>
       <Match when={props.mode === "NOTICE"}>
         <NoticeInteraction
+          cue={props.forcedNoticeCue}
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={() => props.onSuccess()}
           onSkip={props.onSkip}
@@ -71,9 +81,10 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
       </Match>
       <Match when={props.mode === "ACTION_ADVICE"}>
         {(() => {
-          // Pick fresh each time this interaction mounts so repeated
-          // action-advice prompts vary instead of showing one pinned line.
-          const advice = getRndEntry(ACTION_ADVICES);
+          // The widget's exact line when opened from it; otherwise pick fresh
+          // each mount so repeated action-advice prompts vary instead of showing
+          // one pinned line.
+          const advice = props.forcedAdvice ?? getRndEntry(ACTION_ADVICES);
           return (
             <div
               id="minded-6622-action-advice"

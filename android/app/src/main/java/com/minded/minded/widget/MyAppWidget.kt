@@ -109,7 +109,11 @@ class MyAppWidget : GlanceAppWidget() {
                 // Rounded like the app's surfaces; silently ignored below API 31,
                 // where the sky simply fills the rectangle.
                 .cornerRadius(24.dp)
-                .clickable(actionStartActivity(openSunIntent(context)))
+                // Carry the exact line being shown so the tap lands on that same
+                // interaction (null at night → a plain sun-open). Every placed card
+                // shows the same deterministic line for a moment, so all their
+                // intents carry the same value — no PendingIntent-uniqueness worry.
+                .clickable(actionStartActivity(openSunIntent(context, prompt)))
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -156,10 +160,16 @@ class MyAppWidget : GlanceAppWidget() {
         SunWidgetPhase.NIGHT -> R.string.widget_sun_description_night
     }
 
-    private fun openSunIntent(context: Context): Intent =
+    private fun openSunIntent(context: Context, widgetLine: String? = null): Intent =
         Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_MAIN
             putExtra(MainActivity.EXTRA_LAUNCH_ROUTE, MainActivity.OPEN_SUN_HASH)
+            // The card passes the exact line it's showing so the tap opens that
+            // same NOTICE/ACTION_ADVICE; MainActivity allow-lists it before use.
+            // The sun-only face has no line and passes none.
+            if (widgetLine != null) {
+                putExtra(MainActivity.EXTRA_WIDGET_LINE, widgetLine)
+            }
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
 

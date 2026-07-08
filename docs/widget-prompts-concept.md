@@ -8,6 +8,17 @@ quiet line of text*. The Android implementation lives in
 the responsive `MyAppWidget.kt`); it has not yet been seen on a real
 launcher/device.
 
+> **Update — per-prompt tap routing shipped.** The widget now shows *real
+> interaction content* and tapping lands on that **exact** interaction (a NOTICE
+> cue → the NOTICE screen, a "How about…" line → the ACTION_ADVICE screen),
+> instead of a random pick. See *Tapping the widget lands on the line it shows*
+> below; this reverses the original "deliberately out of scope" note. Two
+> consequences: the widget pool is now the **waking-hours** widget-safe slice of
+> the interaction pools (one `WAKING_PROMPTS` list, 05:00–21:00), and the
+> **evening gratitude register was dropped** — gratitude is sleep-wind-down
+> content with no dashboard interaction to land on, so it can't satisfy the
+> new rule that every line maps to a real interaction.
+
 ## The idea in one line
 
 The home-screen widget becomes **a miniature still of the in-app intervention
@@ -43,13 +54,14 @@ survive:
   timestamp, or anything *about the user*. The line speaks in the world's
   voice ("What can you hear right now?"), never the app's voice about the
   user ("you've opened Instagram…").
-- **No bespoke experience** stays true for the tap: tapping the widget —
-  prompt or no prompt — does exactly what it does today (`?sun=open`, the
-  shared interaction flow). The prompt is ambient reading, not a new surface.
-  And visually it isn't a new surface either: the card deliberately *is* the
-  intervention screen in miniature — same sky, same serif voice, same
-  text-above-sun layout — so the widget previews the exact world the tap
-  opens, rather than inventing a widget-only look.
+- **No bespoke experience** stays true for the tap: it still runs the *shared*
+  interaction flow (`?sun=open`), not a widget-only surface — the tapped line
+  just pins which existing NOTICE/ACTION_ADVICE that flow opens on (see *Tapping
+  the widget lands on the line it shows*). The prompt is ambient reading, not a
+  new surface. And visually it isn't a new surface either: the card deliberately
+  *is* the intervention screen in miniature — same sky, same serif voice, same
+  text-above-sun layout — so the widget previews the exact world the tap opens,
+  down to the line, rather than inventing a widget-only look.
 - **Opt-out by shape.** The gallery default (3×2) is the card; resizing down
   below card size (to 2×2, 2×1, 1×1) returns the pure wordless sun. The words
   are the widget's face, but silence is always one resize away — and existing
@@ -78,21 +90,21 @@ out most of the app's content:
 5. **Slow, deterministic rotation.** See below; a fast-changing widget is a
    novelty feed, which is the failure mode to design against.
 
-### The pools (as shipped in `WidgetPrompts.kt`)
+### The pool (as shipped in `WidgetPrompts.kt`)
 
 | Slot | Source | Examples (verbatim from the app) |
 |---|---|---|
-| Day (05–20) | `NOTICE_CUES` (`notice.const.ts`) + the short `ACTION_ADVICES` | "Feel both feet on the floor." / "How about a deep breath?" |
-| Evening (20–21) | the wind-down's gratitude register (`sleepContent.ts`) | "What went well today?" / "Who made today a little easier?" |
+| Waking (05–21) | `NOTICE_CUES` (`notice.const.ts`) + the short `ACTION_ADVICES` (`actionAdvices.ts`) | "Feel both feet on the floor." / "How about a deep breath?" |
 | Night (21–05) | **nothing — the moon, alone** | words at 2 a.m. read as a nudge; the calm answer is silence |
 
-The pool is deliberately small (19 lines, ≤60 chars each — enforced by test).
-The day slot carries **no open questions**: an unanswerable question on an
-ambient surface reads as friction, so the day pool is only anchors and
-suggestions that complete on the spot. The one reflective question per day
-lives in the evening slot, where contemplation is the point. Widget copy is
-its own, shorter register curated from the app's content, not an automatic
-feed of `QUESTIONS`.
+The pool is deliberately small (one `WAKING_PROMPTS` list, ≤60 chars each —
+enforced by test) and carries **no open questions**: an unanswerable question on
+an ambient surface reads as friction, and — since tapping must now open the
+line's real interaction — every entry must be a NOTICE cue or an ACTION_ADVICE,
+the app's only widget-safe modes. The lines are copied **verbatim** from those
+two interaction pools (a jest parity test guards the copy against drift), not an
+automatic feed of `QUESTIONS`. *(The former evening gratitude row was dropped —
+see the status note at the top and the routing section below.)*
 
 ### The cut list (so it doesn't creep back)
 
@@ -111,12 +123,12 @@ it say now?" is the exact dopamine loop minded exists to dissolve. Two design
 rules keep the prompt an anchor instead of a slot machine:
 
 - **Rotation is slow and boring by design**: the line changes only at the
-  app's existing time boundaries — the day's line at 05:00, an evening line
-  at 20:00, silence at 21:00 (no invented dayparts; two text changes a day,
-  aligned with the alarms the widget already arms) — never per-glance, never
-  per-hour.
-- **Rotation is deterministic**: the epoch day indexes the slot's pool, so
-  the same moment always shows the same line and each pool is walked exactly
+  app's existing time boundaries — the day's line at 05:00, silence at 21:00
+  (no invented dayparts; ~one text change a day, since the epoch-day index
+  turns over unseen during the wordless night, aligned with the alarms the
+  widget already arms) — never per-glance, never per-hour.
+- **Rotation is deterministic**: the epoch day indexes the pool, so
+  the same moment always shows the same line and the pool is walked exactly
   one line per day (same intent as `sleepWindDown.util.ts`'s `nightIdToIndex`,
   minus that char-sum hash's uneven date-rollover steps). Nothing to refresh,
   nothing to fish for — and technically necessary anyway, since Glance
@@ -139,10 +151,11 @@ Everything extends what exists; nothing new is invented.
   (below card size →          (pure Kotlin, epoch-day indexed, unit-tested —
    plain floating sun)         the SunWidgetPhase pattern; night → null)
       |
-  tap → actionStartActivity(EXTRA_LAUNCH_ROUTE = "/?sun=open")   ← unchanged
+  tap → actionStartActivity(EXTRA_LAUNCH_ROUTE = "/?sun=open",
+                            EXTRA_WIDGET_LINE = the shown line)  ← lands on that line
       |
-  MyAppWidgetReceiver alarm: next prompt-slot boundary (contains the phase
-   flips by construction) → 05/20/21 (≈3 inexact wakeups/day)
+  MyAppWidgetReceiver alarm: next prompt-slot boundary (= the phase
+   flips) → 05/21 (≈2 inexact wakeups/day)
 ```
 
 - **`MyAppWidget.kt`**: `SizeMode.Responsive` with two faces — `SUN_ONLY`
@@ -160,16 +173,17 @@ Everything extends what exists; nothing new is invented.
   light sky, by construction (see below). `cornerRadius(24dp)` on API 31+
   (square below). Sky follows the clock via `SunWidgetPhase`, never the
   system theme.
-- **`WidgetPrompts.kt`** (new, `widget/` package): the curated pools with
-  their slots, plus pure `promptForMoment(epochDay, hour)` and
-  `minutesUntilNextChange` — R-free, JVM-unit-tested like `SunWidgetPhase`
-  (`WidgetPromptsTest`). The slot boundaries are built from
-  `SunWidgetPhase`'s own `DAY_START`/`NIGHT_START` constants, so the no-text
-  window *is* the moon's window and can't drift. Tests enforce the
-  guardrails mechanically: determinism, ≤60 chars, full-pool one-step-a-day
-  rotation, night returns `null`, text-iff-light-sky, and prompt boundaries
-  covering the phase boundaries. The shared boundary walk lives in
-  `clockBoundaries.kt`, used by both `WidgetPrompts` and `SunWidgetPhase`.
+- **`WidgetPrompts.kt`** (new, `widget/` package): the curated waking-hours
+  pool (`WAKING_PROMPTS`), plus pure `promptForMoment(epochDay, hour)`,
+  `minutesUntilNextChange`, and `isWidgetSafeLine` (the tap's allow-list) —
+  R-free, JVM-unit-tested like `SunWidgetPhase` (`WidgetPromptsTest`). The slot
+  boundaries are built from `SunWidgetPhase`'s own `DAY_START`/`NIGHT_START`
+  constants, so the no-text window *is* the moon's window and can't drift. Tests
+  enforce the guardrails mechanically: determinism, ≤60 chars, full-pool
+  one-step-a-day rotation, night returns `null`, text-iff-light-sky, the
+  allow-list, and prompt boundaries covering the phase boundaries. The shared
+  boundary walk lives in `clockBoundaries.kt`, used by both `WidgetPrompts` and
+  `SunWidgetPhase`.
 - **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact alarm
   arms at the next prompt-slot boundary, which contains the sun's phase
   flips by construction. Same pattern, same permissions (none). DST drift
@@ -186,11 +200,42 @@ Everything extends what exists; nothing new is invented.
   personal the widget should ever display, so it deliberately doesn't.)
 
 **Source of truth for the pool — KISS first:** the pool lives in Kotlin for
-v1. This is not a DRY violation: widget copy is a distinct, shorter register
-curated *from* the TS content, not a mirror of it, and it changes rarely.
-When the iOS port lands (a second consumer in Swift), extract the pool to a
-small JSON generated at build time from a shared TS const —
-`// shortcut: Kotlin-only pool — extract to generated shared JSON when iOS ports this`.
+v1 as a curated **verbatim mirror** of the TS interaction pools (`NOTICE_CUES`,
+`ACTION_ADVICES`). Because the tap now re-matches the shown line against those
+same TS pools by exact string, the copies must not drift — a jest parity test
+(`widgetPromptsMirror.test.ts`) reads `WidgetPrompts.kt` and asserts every line
+still exists verbatim in the source. When the iOS port lands (a third consumer
+in Swift), extract the pool to a small JSON generated at build time from a
+shared TS const —
+`// shortcut: Kotlin-only mirror — extract to generated shared JSON when iOS ports this`.
+
+## Tapping the widget lands on the line it shows
+
+The card is a still of the intervention screen, so the tap opens *that* screen
+on *that* line — not a fresh random pick. The mechanism stays self-contained and
+carries no user data:
+
+- **The card carries its exact line** to the app as an intent extra
+  (`EXTRA_WIDGET_LINE`, `MyAppWidget.openSunIntent`).
+- **The native shell allow-lists it** exactly like the launch route:
+  `MainActivity.widgetLineFromIntent` forwards the extra only if
+  `WidgetPrompts.isWidgetSafeLine` recognises it, then appends it URL-encoded to
+  the hash (`#/?sun=open&widgetLine=…`) on both the cold and warm paths. A
+  crafted intent can only ever inject one of the widget's own known, quote-free
+  lines.
+- **The web shell forces the matching mode** (`RouteCmp` reads `widgetLine` →
+  `InteractionOverlay` → `InteractionCommon`): `matchWidgetLine` looks the string
+  up in `NOTICE_CUES`/`ACTION_ADVICES` and pins that exact NOTICE cue or
+  ACTION_ADVICE, mirroring the existing `questionForPrompt` injection. An
+  unrecognised line (copy drift, a crafted intent) falls through to the normal
+  random pick — it degrades, never breaks.
+
+This is why only NOTICE and ACTION_ADVICE may appear on the widget, and why the
+gratitude register had to go: they are the only ambient-safe modes that *also*
+have a dashboard-sun interaction to land on. The widget can only mirror this
+time-of-day + content slice; it deliberately cannot reflect the live
+per-user context (`getInteractionMode`'s friction/usage/variety), which needs
+private state the widget must never hold.
 
 ## iOS port (after Android settles)
 
@@ -207,12 +252,13 @@ The shape maps cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Deliberately out of scope
 
-- **Per-prompt tap routing** (widget shows question X → app opens question
-  X, e.g. `?sun=open&q=NN1`). Tempting, but it builds the bespoke
-  widget-experience the spec warned against and couples the widget to the
-  question pool. The tap stays the universal invitation. Revisit only if the
-  ambient version proves itself and the mismatch (reading one question,
-  meeting another) actually bothers anyone.
+- ~~**Per-prompt tap routing**~~ — **now shipped** (see *Tapping the widget
+  lands on the line it shows*). The original worry was that it couples the
+  widget to a question pool and builds a bespoke widget-experience; keeping the
+  widget to the two ambient-safe interaction modes (whose lines it already
+  showed verbatim) and re-matching by string sidesteps both — no new pool, no
+  new surface, and an unrecognised line just falls back to the universal
+  invitation.
 - **Lock-screen / AOD variants** — the iOS accessory-widget alpha problem is
   documented; same restraint on Android.
 - **Notifications of any kind** — the product has none, deliberately; the
@@ -222,18 +268,19 @@ The shape maps cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Decisions taken at implementation (were open questions)
 
-- **Day pool has no questions** — anchors and suggestions only; the single
-  reflective question lives in the evening slot (see the pools table).
-- **Boundaries are the app's existing lines** (05 / 20 / 21); nothing new.
+- **Pool has no questions** — anchors and suggestions only; every line must
+  map to a widget-safe interaction the tap can open (NOTICE / ACTION_ADVICE).
+- **Boundaries are the app's existing lines** (05 / 21); nothing new. *(The 20
+  evening boundary went with the gratitude register.)*
 - **The card is the gallery default** (3×2 target) — per the product call
   that the widget should read as the intervention screen; the wordless sun
   remains one resize away and existing 1×1 placements are untouched.
 
 ## Still open
 
-- **Copy sign-off.** The 19-line pool reuses the app's own words verbatim
-  (or near-verbatim), but the selection is an editorial act and deserves the
-  same voice review the return-loop copy got.
+- **Copy sign-off.** The pool reuses the app's own words verbatim, but the
+  selection is an editorial act and deserves the same voice review the
+  return-loop copy got.
 - **On-device look.** The card has not been seen on a real launcher yet:
   serif rendering, the card sky's dither under mild scaling, and how the
   170×140dp face maps to 3×2 across launchers/grid densities all need one
