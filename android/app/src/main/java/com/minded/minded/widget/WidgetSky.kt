@@ -19,13 +19,14 @@ enum class WidgetSky {
     companion object {
         /**
          * The sky for a given local hour-of-day (0–23; other values wrap). The
-         * steps are the app's ambient keyframes on whole hours: dawn from the
-         * sun's own 05 day-start, then 09/13/17/19 (the 16.5 keyframe rounds to
-         * 17), dusk holding 19–21 until the moon — whose boundary the clock
-         * (SunWidgetPhase) owns, so the dark sky lines up exactly with the moon.
-         * The card refreshes on the line's 15-minute cadence (WidgetPrompts),
-         * which subsumes these whole-hour steps, so the sky needs no schedule of
-         * its own.
+         * steps are the app's ambient keyframes (skyTimeline.ts) on whole hours:
+         * dawn from the 06 day-start, then morning 09, midday 13, afternoon 17
+         * (the 16.5 keyframe rounds to 17), and dusk as the last light 18–19
+         * before the moon. Night begins at SunWidgetPhase.NIGHT_START (19) — the
+         * app's own boundary — so the dark sky, the moon, and the wordless card
+         * all turn over together, in step with the app. The card refreshes on the
+         * line's 15-minute cadence (WidgetPrompts), which subsumes these
+         * whole-hour steps, so the sky needs no schedule of its own.
          */
         fun forHour(hour: Int): WidgetSky {
             val h = hour.mod(24)
@@ -34,7 +35,7 @@ enum class WidgetSky {
                 h < 9 -> DAWN
                 h < 13 -> MORNING
                 h < 17 -> MIDDAY
-                h < 19 -> AFTERNOON
+                h < 18 -> AFTERNOON
                 h < SunWidgetPhase.NIGHT_START -> DUSK
                 else -> NIGHT
             }

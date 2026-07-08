@@ -14,9 +14,9 @@ class WidgetPromptsTest {
 
     @Test
     fun `waking hours draw from the waking pool`() {
-        // The whole light window, including the former evening hour (20), draws
-        // from the one widget-safe pool.
-        for (hour in intArrayOf(5, 9, 12, 16, 19, 20)) {
+        // The app's light window (06:00–19:00), edges included, draws from the one
+        // widget-safe pool.
+        for (hour in intArrayOf(6, 9, 12, 16, 18)) {
             val prompt = WidgetPrompts.promptForMoment(day, hour, 0)
             assertTrue(prompt in WidgetPrompts.WAKING_PROMPTS, "hour $hour: $prompt")
         }
@@ -24,7 +24,9 @@ class WidgetPromptsTest {
 
     @Test
     fun `night shows no words - the moon carries the card alone`() {
-        for (hour in intArrayOf(21, 23, 0, 3, 4)) {
+        // Night is the app's 19:00–06:00, so the evening hours (19, 20) that used
+        // to carry a line are now wordless with the moon.
+        for (hour in intArrayOf(19, 20, 21, 23, 0, 4, 5)) {
             assertNull(WidgetPrompts.promptForMoment(day, hour, 0), "hour $hour")
         }
     }
@@ -67,7 +69,7 @@ class WidgetPromptsTest {
     @Test
     fun `the line steps one per slot and walks the whole pool`() {
         // One step per 15-minute slot, no adjacent repeats: WAKING_PROMPTS.size
-        // consecutive slots (from 05:00, ~3¾ h, all inside the day window) show
+        // consecutive slots (from 06:00, ~3¾ h, all inside the day window) show
         // every line exactly once. This replaced a per-day char-sum seed that
         // skipped entries and repeated across X9→X0 date rollovers.
         val n = WidgetPrompts.WAKING_PROMPTS.size
@@ -108,24 +110,24 @@ class WidgetPromptsTest {
         assertEquals(15, WidgetPrompts.minutesUntilNextChange(9, 0))
         assertEquals(8, WidgetPrompts.minutesUntilNextChange(9, 7))
         assertEquals(1, WidgetPrompts.minutesUntilNextChange(9, 14))
-        // The last day slot steps onto night (the moon) at 21:00.
-        assertEquals(10, WidgetPrompts.minutesUntilNextChange(20, 50))
+        // The last day slot steps onto night (the moon) at 19:00.
+        assertEquals(10, WidgetPrompts.minutesUntilNextChange(18, 50))
     }
 
     @Test
     fun `across the night a single alarm spans to the first line of day`() {
-        // 04:30 -> first line at 05:00.
-        assertEquals(30, WidgetPrompts.minutesUntilNextChange(4, 30))
-        // 22:00 -> day-start 05:00 next day = 7 hours.
-        assertEquals(7 * 60, WidgetPrompts.minutesUntilNextChange(22, 0))
-        // 21:00 (night start) -> day-start 05:00 next day = 8 hours.
-        assertEquals(8 * 60, WidgetPrompts.minutesUntilNextChange(21, 0))
+        // 05:30 -> first line at day-start 06:00.
+        assertEquals(30, WidgetPrompts.minutesUntilNextChange(5, 30))
+        // 22:00 -> day-start 06:00 next day = 8 hours.
+        assertEquals(8 * 60, WidgetPrompts.minutesUntilNextChange(22, 0))
+        // 19:00 (night start) -> day-start 06:00 next day = 11 hours.
+        assertEquals(11 * 60, WidgetPrompts.minutesUntilNextChange(19, 0))
     }
 
     @Test
     fun `landing exactly on a slot edge schedules the next one, never zero`() {
         // On a quarter-hour by day -> the following slot, 15 minutes out.
-        assertEquals(15, WidgetPrompts.minutesUntilNextChange(5, 0))
+        assertEquals(15, WidgetPrompts.minutesUntilNextChange(6, 0))
         assertEquals(15, WidgetPrompts.minutesUntilNextChange(10, 30))
     }
 }

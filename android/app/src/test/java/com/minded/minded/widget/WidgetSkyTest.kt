@@ -7,17 +7,17 @@ class WidgetSkyTest {
 
     @Test
     fun `the sky walks the day's keyframes in order`() {
-        assertEquals(WidgetSky.DAWN, WidgetSky.forHour(5))
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(5)) // before the 06 day-start
+        assertEquals(WidgetSky.DAWN, WidgetSky.forHour(6))
         assertEquals(WidgetSky.DAWN, WidgetSky.forHour(8))
         assertEquals(WidgetSky.MORNING, WidgetSky.forHour(9))
         assertEquals(WidgetSky.MORNING, WidgetSky.forHour(12))
         assertEquals(WidgetSky.MIDDAY, WidgetSky.forHour(13))
         assertEquals(WidgetSky.MIDDAY, WidgetSky.forHour(16))
         assertEquals(WidgetSky.AFTERNOON, WidgetSky.forHour(17))
-        assertEquals(WidgetSky.AFTERNOON, WidgetSky.forHour(18))
-        assertEquals(WidgetSky.DUSK, WidgetSky.forHour(19))
-        assertEquals(WidgetSky.DUSK, WidgetSky.forHour(20))
-        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(21))
+        assertEquals(WidgetSky.DUSK, WidgetSky.forHour(18)) // last light before night
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(19)) // moon, in step with the app
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(20))
         assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(0))
         assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(4))
     }

@@ -6,21 +6,22 @@ import kotlin.test.assertEquals
 class SunWidgetPhaseTest {
 
     @Test
-    fun `night holds through the small hours and late evening`() {
+    fun `night holds from the app's 19h boundary through to dawn`() {
         assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(0))
         assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(3))
-        assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(4))
-        assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(21))
+        assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(5)) // before day-start
+        assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(19)) // moon at 19
+        assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(20))
         assertEquals(SunWidgetPhase.NIGHT, SunWidgetPhase.forHour(23))
     }
 
     @Test
-    fun `day covers the waking daylight hours`() {
-        assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(5))
+    fun `day covers the app's 06-19 light window`() {
+        assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(6)) // sun at 06
         assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(9))
         assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(12))
         assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(16))
-        assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(20))
+        assertEquals(SunWidgetPhase.DAY, SunWidgetPhase.forHour(18)) // last day hour
     }
 
     @Test

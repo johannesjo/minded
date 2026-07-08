@@ -14,7 +14,7 @@ launcher/device.
 > instead of a random pick. See *Tapping the widget lands on the line it shows*
 > below; this reverses the original "deliberately out of scope" note. Two
 > consequences: the widget pool is now the **waking-hours** widget-safe slice of
-> the interaction pools (one `WAKING_PROMPTS` list, 05:00–21:00), and the
+> the interaction pools (one `WAKING_PROMPTS` list, 06:00–19:00), and the
 > **evening gratitude register was dropped** — gratitude is sleep-wind-down
 > content with no dashboard interaction to land on, so it can't satisfy the
 > new rule that every line maps to a real interaction.
@@ -107,8 +107,8 @@ out most of the app's content:
 
 | Slot | Source | Examples (verbatim from the app) |
 |---|---|---|
-| Waking (05–21) | `NOTICE_CUES` (`notice.const.ts`) + the short `ACTION_ADVICES` (`actionAdvices.ts`) | "Feel both feet on the floor." / "How about a deep breath?" |
-| Night (21–05) | **nothing — the moon, alone** | words at 2 a.m. read as a nudge; the calm answer is silence |
+| Waking (06–19) | `NOTICE_CUES` (`notice.const.ts`) + the short `ACTION_ADVICES` (`actionAdvices.ts`) | "Feel both feet on the floor." / "How about a deep breath?" |
+| Night (19–06) | **nothing — the moon, alone** | words at 2 a.m. read as a nudge; the calm answer is silence |
 
 The pool is deliberately small (one `WAKING_PROMPTS` list, ≤60 chars each —
 enforced by test) and carries **no open questions**: an unanswerable question on

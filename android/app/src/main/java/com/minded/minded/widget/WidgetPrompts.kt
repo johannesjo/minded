@@ -56,7 +56,7 @@ object WidgetPrompts {
     /** Hard cap so every line fits ~3 serif lines on a 3×2 card. */
     const val MAX_PROMPT_LENGTH = 60
 
-    // Waking hours (05:00–21:00): embodied present-moment anchors and gentle
+    // Waking hours (06:00–19:00): embodied present-moment anchors and gentle
     // suggestions that complete on the spot — the NOTICE cues and short
     // ACTION_ADVICE lines, verbatim. Deliberately no open questions: one you
     // can't answer in place reads as friction on an ambient surface, and every
