@@ -28,9 +28,9 @@ package com.minded.minded.widget
  *   15-minute slots since the epoch, so it steps exactly once per slot with no
  *   adjacent repeats.
  * - At night: no words. The moon, alone. A line at 2 a.m. reads as a nudge.
- *   The no-text window is the moon's window *by construction* — the slot
- *   boundaries are built from [SunWidgetPhase]'s constants, so the near-black
- *   text can never meet the dark sky.
+ *   The no-text window is the moon's window *by construction* — it is gated by
+ *   [SunWidgetPhase]'s own DAY_START/NIGHT_START, so the near-black text can
+ *   never meet the dark sky.
  *
  * The lines are copied verbatim from the app's own interaction content
  * (NOTICE_CUES in notice.const.ts, ACTION_ADVICES in actionAdvices.ts), curated
@@ -49,8 +49,8 @@ object WidgetPrompts {
     const val SLOT_MINUTES = 15
 
     // 15-minute slots in a full day. The slot index counts these since the epoch
-    // (through the night too, unseen), so it advances exactly one step per slot —
-    // the walk never stalls or repeats a neighbour, day boundary or not.
+    // (through the night too, unseen), so each visible slot steps the line by one
+    // — consecutive slots never repeat (the pool holds more than one line).
     private const val SLOTS_PER_DAY = 24 * 60 / SLOT_MINUTES
 
     /** Hard cap so every line fits ~3 serif lines on a 3×2 card. */

@@ -2,10 +2,10 @@ package com.minded.minded.widget
 
 /**
  * Minutes from a local wall-clock time until the next of the given boundary
- * hours (ascending, 0–23). Shared by the sun's day/night flip
- * ([SunWidgetPhase]) and the card's prompt slots ([WidgetPrompts]) so the two
- * clock models can't drift apart. Always strictly positive: landing exactly on
- * a boundary schedules the following one, never an immediate re-fire.
+ * hours (ascending, 0–23), wrapping to the first one tomorrow once past the
+ * last. Always strictly positive: landing exactly on a boundary schedules the
+ * following one, never an immediate re-fire. [WidgetPrompts] uses it for the one
+ * alarm that spans the wordless night, to the next day-start.
  *
  * Pure logic, free of Android/R references so it can be unit-tested on the JVM.
  */

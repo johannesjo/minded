@@ -204,11 +204,13 @@ Everything extends what exists; nothing new is invented.
   wordless-night window is built from `SunWidgetPhase`'s own
   `DAY_START`/`NIGHT_START` constants, so it *is* the moon's window and can't
   drift. Tests enforce the guardrails mechanically: determinism, ≤60 chars,
-  full-pool one-step-per-15-min-slot rotation with no adjacent repeats, night
-  returns `null`, text-iff-light-sky, the allow-list, and that the 15-minute
-  prompt schedule (the finest cadence) covers both the sky steps and the phase
-  flips. The shared boundary walk lives in `clockBoundaries.kt`, used by
-  `WidgetSky`, `WidgetPrompts`, and `SunWidgetPhase`.
+  full-pool one-step-per-15-min-slot rotation with no adjacent repeats, the
+  15-minute day cadence with a single night-spanning alarm, night returns
+  `null`, text-iff-light-sky, and the allow-list. `WidgetSky` and
+  `SunWidgetPhase` are pure `forHour` lookups (the receiver refreshes on the
+  prompt's cadence, which subsumes their whole-hour steps, so neither needs a
+  schedule of its own); the wrap-around boundary walk in `clockBoundaries.kt`
+  is used only for that night-spanning alarm.
 - **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact,
   non-wake alarm now arms at the next 15-minute prompt step — the finest
   cadence, which contains the sky steps and the sun's phase flips by

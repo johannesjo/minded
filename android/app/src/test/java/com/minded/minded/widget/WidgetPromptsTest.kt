@@ -128,24 +128,4 @@ class WidgetPromptsTest {
         assertEquals(15, WidgetPrompts.minutesUntilNextChange(5, 0))
         assertEquals(15, WidgetPrompts.minutesUntilNextChange(10, 30))
     }
-
-    @Test
-    fun `the prompt schedule catches every sky and phase change`() {
-        // The receiver arms its single alarm off the prompt (the finest cadence),
-        // so the line must step at least as often as the sun flips phase or the
-        // sky steps — otherwise a stale face could strand on screen. Every sky and
-        // phase boundary is a whole hour, so the 15-minute day cadence contains
-        // them; this guards that (e.g. a future non-slot-aligned sky boundary).
-        for (hour in 0..23) {
-            val prompt = WidgetPrompts.minutesUntilNextChange(hour, 0)
-            assertTrue(
-                prompt <= SunWidgetPhase.minutesUntilNextBoundary(hour, 0),
-                "phase at hour $hour",
-            )
-            assertTrue(
-                prompt <= WidgetSky.minutesUntilNextChange(hour, 0),
-                "sky at hour $hour",
-            )
-        }
-    }
 }

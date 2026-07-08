@@ -43,14 +43,4 @@ class WidgetSkyTest {
             )
         }
     }
-
-    @Test
-    fun `minutes until next change counts toward the upcoming step`() {
-        // 08:30 -> morning at 09:00.
-        assertEquals(30, WidgetSky.minutesUntilNextChange(8, 30))
-        // 13:00 (a boundary) -> next step at 17:00, never an immediate re-fire.
-        assertEquals(4 * 60, WidgetSky.minutesUntilNextChange(13, 0))
-        // 22:00 -> dawn at 05:00 next day = 7 hours.
-        assertEquals(7 * 60, WidgetSky.minutesUntilNextChange(22, 0))
-    }
 }
