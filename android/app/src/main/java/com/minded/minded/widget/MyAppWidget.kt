@@ -85,7 +85,7 @@ class MyAppWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(drawableFor(phase)),
                 contentDescription = context.getString(descriptionFor(phase)),
-                modifier = GlanceModifier.size(72.dp),
+                modifier = GlanceModifier.size(SUN_SIZE),
             )
         }
     }
@@ -148,7 +148,11 @@ class MyAppWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(drawableFor(phase)),
                 contentDescription = context.getString(descriptionFor(phase)),
-                modifier = GlanceModifier.size(44.dp),
+                // Beneath a line the sun is a small mark; with no line (night — the
+                // moon carries the card alone) it grows to the full companion size,
+                // never smaller than the plain 1×1 sun, so it doesn't float lost in
+                // the empty card.
+                modifier = GlanceModifier.size(if (prompt != null) CARD_SUN_SIZE else SUN_SIZE),
             )
         }
     }
@@ -186,6 +190,12 @@ class MyAppWidget : GlanceAppWidget() {
         }
 
     private companion object {
+        // The plain companion sun/moon: the 1×1 sun-only face, and the moon that
+        // carries the card alone at night (no prompt line to share the space).
+        val SUN_SIZE = 72.dp
+        // The smaller mark beneath a prompt line on the card face.
+        val CARD_SUN_SIZE = 44.dp
+
         // The two responsive faces. The card's 140dp height floor is a fit
         // guarantee, not a guess: 12dp padding ×2 + 3 serif lines at 15sp
         // (~60dp) + 8dp spacer + 44dp sun ≈ 136dp. Placements too short for
