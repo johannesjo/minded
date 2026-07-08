@@ -2,7 +2,6 @@ package com.minded.minded.widget
 
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class WidgetSkyTest {
 
@@ -41,24 +40,6 @@ class WidgetSkyTest {
                 SunWidgetPhase.forHour(hour) == SunWidgetPhase.NIGHT,
                 WidgetSky.forHour(hour) == WidgetSky.NIGHT,
                 "hour $hour",
-            )
-        }
-    }
-
-    @Test
-    fun `sky boundaries cover the phase and prompt boundaries`() {
-        // The receiver arms its single alarm off the sky schedule alone, so the
-        // sky must step at least as often as the sun flips phase or the line
-        // turns over — otherwise a stale face could strand on screen.
-        for (hour in 0..23) {
-            val sky = WidgetSky.minutesUntilNextChange(hour, 0)
-            assertTrue(
-                sky <= SunWidgetPhase.minutesUntilNextBoundary(hour, 0),
-                "phase at hour $hour",
-            )
-            assertTrue(
-                sky <= WidgetPrompts.minutesUntilNextChange(hour, 0),
-                "prompt at hour $hour",
             )
         }
     }

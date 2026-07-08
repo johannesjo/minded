@@ -64,8 +64,9 @@ class MyAppWidget : GlanceAppWidget() {
             val now = LocalDateTime.now()
             val phase = SunWidgetPhase.forHour(now.hour)
             if (LocalSize.current == PROMPT_CARD) {
-                val prompt =
-                    WidgetPrompts.promptForMoment(now.toLocalDate().toEpochDay(), now.hour)
+                val prompt = WidgetPrompts.promptForMoment(
+                    now.toLocalDate().toEpochDay(), now.hour, now.minute,
+                )
                 PromptCard(context, phase, WidgetSky.forHour(now.hour), prompt)
             } else {
                 SunOnly(context, phase)

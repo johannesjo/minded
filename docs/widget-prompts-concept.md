@@ -19,6 +19,18 @@ launcher/device.
 > content with no dashboard interaction to land on, so it can't satisfy the
 > new rule that every line maps to a real interaction.
 
+> **Update — the line is now a 15-minute mini-intervention, not a once-a-day
+> anchor.** The original design rotated one line per *day* ("slow and boring by
+> design"). Reframed: the doom-scroll moment is the unlock, and on iOS the widget
+> is the *only* surface that can meet it — so the line now **steps every 15
+> minutes** through the waking day, fresh on return but far too slow to reward
+> re-checking. This reverses the slow-rotation rule in *The biggest risk* below
+> (rewritten). The anti-feed guarantee now comes from the 15-minute floor plus
+> invitational-only copy, not from near-stillness. WidgetKit can't fire *on*
+> unlock and Android can't cheaply either, so both realise this as a dense,
+> deterministic, pre-placed rotation that simply renders the current slot's line
+> whenever the user returns.
+
 ## The idea in one line
 
 The home-screen widget becomes **a miniature still of the in-app intervention
@@ -87,8 +99,9 @@ out most of the app's content:
    ever. (This also means no App Group / no data feed is needed on iOS,
    preserving the widget's zero-entitlement footprint.)
 4. **No anxiety, scarcity, urgency, or guilt** — as everywhere.
-5. **Slow, deterministic rotation.** See below; a fast-changing widget is a
-   novelty feed, which is the failure mode to design against.
+5. **Deterministic rotation, paced to the return moment.** See below: the line
+   steps every 15 minutes so a glance on return finds a fresh invitation, but
+   never fast enough to reward re-checking within a session.
 
 ### The pool (as shipped in `WidgetPrompts.kt`)
 
@@ -118,26 +131,33 @@ see the status note at the top and the routing section below.)*
 
 ## The biggest risk, named: a changing widget trains checking
 
-Rotating content on a home screen is, mechanically, a tiny feed — "what does
-it say now?" is the exact dopamine loop minded exists to dissolve. Two design
-rules keep the prompt an anchor instead of a slot machine:
+Rotating content on a home screen *can* become a tiny feed — "what does it say
+now?" is the exact dopamine loop minded exists to dissolve. But the widget is a
+**mini-intervention**, not ambient wallpaper: the glance on unlock is where a
+doom-scroll begins, and on iOS (`docs/ios-platform-fit.md`) this widget is the
+*only* surface that can meet that moment — a line worn to wallpaper by the tenth
+look of the day can't. So the line **steps every 15 minutes** through the waking
+day. Two properties keep that an intervention, not a slot machine:
 
-- **Rotation is slow and boring by design**: the line changes only at the
-  app's existing time boundaries — the day's line at 05:00, silence at 21:00
-  (no invented dayparts; ~one text change a day, since the epoch-day index
-  turns over unseen during the wordless night, aligned with the alarms the
-  widget already arms) — never per-glance, never per-hour.
-- **Rotation is deterministic**: the epoch day indexes the pool, so
-  the same moment always shows the same line and the pool is walked exactly
-  one line per day (same intent as `sleepWindDown.util.ts`'s `nightIdToIndex`,
-  minus that char-sum hash's uneven date-rollover steps). Nothing to refresh,
-  nothing to fish for — and technically necessary anyway, since Glance
-  recomposes on launcher events and a `Math.random` pick would visibly
-  shuffle.
+- **Below the re-check threshold.** Fifteen minutes is far too slow to reward
+  refreshing — stare and nothing happens for a quarter hour — so it never trains
+  the "check again" loop. The freshness lives *between* sessions (two returns
+  spaced apart differ), never *within* a glance: fast enough to feel alive on
+  return, slow enough to be boring to watch.
+- **Every line is safe at any glance.** The widget can't tell a doom-scroll
+  return from a neutral glance (checking the time, opening the camera), so the
+  pool stays gentle present-moment *invitations* in the world's voice — never
+  confrontation, never a command. You get the intervention's *timing* without
+  its *tone*.
+- **Rotation is still deterministic**: the slot index is a continuous count of
+  15-minute slots since the epoch, so the same moment always shows the same line
+  (a Glance/WidgetKit recomposition on a host event can't shuffle it) and the
+  pool is walked one step per slot with no adjacent repeats — the whole pool in
+  ~3¾ h, so no line recurs within a session.
 
-Habituation — the line becoming invisible wallpaper within days — is
-*accepted*, not fought. A mindfulness bell you've stopped hearing still rings
-sometimes. Fighting habituation with novelty is how this becomes a feed.
+Habituation is still *accepted*, not fought with novelty for its own sake: the
+15-minute step exists to meet the return moment freshly, not to manufacture a
+stream of new things to see. A mindfulness bell rung on your return still rings.
 
 ## Architecture (Android, as implemented)
 
@@ -147,15 +167,16 @@ Everything extends what exists; nothing new is invented.
 [card ≥ ~3×2]  =  intervention screen in miniature:
                   [app sky] over [serif line] over [sun]
       |                              |
-  SizeMode.Responsive         WidgetPrompts.promptForMoment(epochDay, hour)
-  (below card size →          (pure Kotlin, epoch-day indexed, unit-tested —
+  SizeMode.Responsive         WidgetPrompts.promptForMoment(epochDay, hour, minute)
+  (below card size →          (pure Kotlin, 15-min-slot indexed, unit-tested —
    plain floating sun)         the SunWidgetPhase pattern; night → null)
       |
   tap → actionStartActivity(EXTRA_LAUNCH_ROUTE = "/?sun=open",
                             EXTRA_WIDGET_LINE = the shown line)  ← lands on that line
       |
-  MyAppWidgetReceiver alarm: next sky-step boundary (⊇ the phase flips
-   ⊇ the prompt slots) → 05/09/13/17/19/21 (≈6 inexact wakeups/day)
+  MyAppWidgetReceiver alarm: next 15-min prompt step (the finest cadence,
+   ⊇ the sky steps ⊇ the phase flips); one alarm spans the night
+   (~60 inexact, non-wake wakeups per waking day — only while the screen's on)
 ```
 
 - **`MyAppWidget.kt`**: `SizeMode.Responsive` with two faces — `SUN_ONLY`
@@ -177,22 +198,24 @@ Everything extends what exists; nothing new is invented.
   `cornerRadius(24dp)` on API 31+ (square below). Sky follows the clock via
   `WidgetSky`/`SunWidgetPhase`, never the system theme.
 - **`WidgetPrompts.kt`** (new, `widget/` package): the curated waking-hours
-  pool (`WAKING_PROMPTS`), plus pure `promptForMoment(epochDay, hour)`,
+  pool (`WAKING_PROMPTS`), plus pure `promptForMoment(epochDay, hour, minute)`,
   `minutesUntilNextChange`, and `isWidgetSafeLine` (the tap's allow-list) —
-  R-free, JVM-unit-tested like `SunWidgetPhase` (`WidgetPromptsTest`). The slot
-  boundaries are built from `SunWidgetPhase`'s own `DAY_START`/`NIGHT_START`
-  constants, so the no-text window *is* the moon's window and can't drift. Tests
-  enforce the guardrails mechanically: determinism, ≤60 chars, full-pool
-  one-step-a-day rotation, night returns `null`, text-iff-light-sky, the
-  allow-list, and (`WidgetSkyTest`) the sky boundaries covering both the
-  phase flips and the prompt slots. The shared boundary walk lives in
-  `clockBoundaries.kt`, used by `WidgetSky`, `WidgetPrompts`, and
-  `SunWidgetPhase`.
-- **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact alarm
-  arms at the next sky-step boundary, which contains the sun's phase flips
-  and the prompt slots by construction. Same pattern, same permissions
-  (none). DST drift (±1h twice a year, self-correcting) is documented and
-  accepted.
+  R-free, JVM-unit-tested like `SunWidgetPhase` (`WidgetPromptsTest`). The
+  wordless-night window is built from `SunWidgetPhase`'s own
+  `DAY_START`/`NIGHT_START` constants, so it *is* the moon's window and can't
+  drift. Tests enforce the guardrails mechanically: determinism, ≤60 chars,
+  full-pool one-step-per-15-min-slot rotation with no adjacent repeats, night
+  returns `null`, text-iff-light-sky, the allow-list, and that the 15-minute
+  prompt schedule (the finest cadence) covers both the sky steps and the phase
+  flips. The shared boundary walk lives in `clockBoundaries.kt`, used by
+  `WidgetSky`, `WidgetPrompts`, and `SunWidgetPhase`.
+- **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact,
+  non-wake alarm now arms at the next 15-minute prompt step — the finest
+  cadence, which contains the sky steps and the sun's phase flips by
+  construction — and a single alarm spans the wordless night. Non-wake (RTC)
+  means it only fires while the device is already awake, i.e. right when
+  someone's looking. Same pattern, same permissions (none). DST drift (±1h
+  twice a year, self-correcting) is documented and accepted.
 - **`app_widget_info.xml`**: target 3×2 on API 31+, and `minWidth/minHeight`
   170×110dp so pre-31 launchers also default to a 3×2 drop; `minResize`
   40dp keeps 1×1 reachable and already-placed widgets keep their spans.
@@ -247,9 +270,13 @@ private state the widget must never hold.
 The shape maps cleanly to WidgetKit, arguably more naturally than Android:
 
 - `systemMedium` family = the wide variant; `systemSmall` stays the pure sun.
-- The timeline already pre-places day/night boundary entries; daypart prompt
-  changes are just more pre-placed entries — **no App Group, no refresh
-  budget pressure, no entitlement**, same as today.
+- The timeline already pre-places day/night boundary entries; the 15-minute
+  prompt steps are just more pre-placed entries (a waking day ≈ 64, well within
+  a timeline batch) — **no App Group, no refresh budget pressure** (the entries
+  are deterministic, so nothing regenerates on unlock), **no entitlement**. This
+  is exactly why the iOS shape fits: WidgetKit can't fire *on* unlock, but a
+  dense pre-placed timeline renders the current slot's line whenever the user
+  returns — the same effect, at zero refresh-budget cost.
 - The pool ships bundled in the widget target (the shared-JSON extraction
   above happens here).
 - Prerequisite regardless of this concept: the `MindedWidget` target still
