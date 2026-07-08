@@ -27,10 +27,16 @@ enum SunWidgetPhase {
     // do not split out dawn/dusk — their saturated, in-between colours (amber/coral)
     // read as an evaluative *signal* on a surface that must never grade the user, and
     // sun-vs-moon is the one shift everyone reads as "the world", not "a message to
-    // me". Boundaries ascending on the 24h clock; coarse on purpose — the sun does
-    // not tick.
-    static let dayStart = 5    // the sun is up
-    static let nightStart = 21 // the moon
+    // me".
+    //
+    // These are the app's own day/night boundary, not a widget-local one:
+    // skyTimeline.ts turns the background dark AND the companion sun into the moon at
+    // NIGHT_START_HOUR (19), back at NIGHT_END_HOUR (6). The widget must flip on the
+    // same hours, or the home-screen sun shows a different time of day than the app.
+    // widgetClockMirror.test.ts guards that both native copies (this and the Android
+    // SunWidgetPhase.kt) stay in lockstep with skyTimeline.
+    static let dayStart = 6    // sun up = skyTimeline NIGHT_END_HOUR
+    static let nightStart = 19 // moon = skyTimeline NIGHT_START_HOUR
 
     var isNight: Bool { self == .night }
 
@@ -46,7 +52,7 @@ enum SunWidgetPhase {
     }
 
     /// The next instant the phase changes, strictly after `date` (the next local
-    /// 05:00 or 21:00, whichever comes first). The timeline uses this to place each
+    /// 06:00 or 19:00, whichever comes first). The timeline uses this to place each
     /// boundary entry so the sun gives way to the moon — and back — exactly on the
     /// hour: the WidgetKit-native equivalent of the Android receiver's per-phase
     /// alarm. DST/timezone-safe via `Calendar`. Strictly *after* `date`, so landing

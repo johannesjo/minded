@@ -278,12 +278,8 @@
 
 // The card face of the widget across the day: the time-of-day sky (WidgetSky)
 // with the serif line and sun beneath, a still of MyAppWidget.PromptCard.
-.widgetSkyGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-}
-
+// The grid reuses .widgetGrid (identical flex-wrap layout); only the card and
+// disc differ from the disc gallery's.
 .widgetSkyCard {
   margin: 0;
   display: flex;

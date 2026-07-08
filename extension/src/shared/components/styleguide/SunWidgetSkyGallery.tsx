@@ -63,7 +63,7 @@ const SKY_CARDS: SkyCard[] = [
 ];
 
 const SunWidgetSkyGallery = (): JSX.Element => (
-  <div class={styles.widgetSkyGrid}>
+  <div class={styles.widgetGrid}>
     <For each={SKY_CARDS}>
       {(sky) => (
         <figure class={styles.widgetSkyCard}>

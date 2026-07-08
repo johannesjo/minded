@@ -22,11 +22,12 @@ const outFile = resolve(
   "../src/shared/components/styleguide/generated/sunWidgetPreviews.ts",
 );
 
-// Mirrors SunWidgetPhase.kt's boundaries (day 5–21, the moon otherwise) — for
-// display only; the phase math itself lives in Kotlin.
+// Mirrors SunWidgetPhase.kt's boundaries (day 6–19, the moon otherwise), which
+// are the app's own skyTimeline day/night edges — for display only; the phase
+// math itself lives in Kotlin (guarded against drift by widgetClockMirror.test).
 const PHASES = [
-  { key: "day", label: "Day", hours: "05–21" },
-  { key: "night", label: "Night", hours: "21–05" },
+  { key: "day", label: "Day", hours: "06–19" },
+  { key: "night", label: "Night", hours: "19–06" },
 ];
 
 /** Android #AARRGGBB | #RRGGBB -> { color: '#rrggbb', opacity: number }. */

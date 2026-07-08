@@ -190,8 +190,8 @@ Everything extends what exists; nothing new is invented.
   undersample the dither and re-band; these also cut the launcher-side
   decode ~5×). Like the app's ambient background the sky moves through the
   day: one render per `AMBIENT_SKY_KEYFRAMES` entry (`skyTimeline.ts`),
-  stepped on whole hours by `WidgetSky.kt` (dawn 05 → morning 09 → midday 13
-  → afternoon 17 → dusk 19 → the dark night sky at 21). Text is 15sp
+  stepped on whole hours by `WidgetSky.kt` (dawn 06 → morning 09 → midday 13
+  → afternoon 17 → dusk 18 → the dark night sky at 19). Text is 15sp
   platform serif (widgets can't embed Newsreader; the serif register
   carries), colored `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) — only
   ever drawn on the light pastel day skies, by construction (see below).
@@ -304,8 +304,8 @@ The shape maps cleanly to WidgetKit, arguably more naturally than Android:
 
 - **Pool has no questions** — anchors and suggestions only; every line must
   map to a widget-safe interaction the tap can open (NOTICE / ACTION_ADVICE).
-- **Boundaries are the app's existing lines** (05 / 21); nothing new. *(The 20
-  evening boundary went with the gratitude register.)*
+- **Boundaries are the app's own day/night edges** (06 / 19); nothing new. *(The
+  20 evening boundary went with the gratitude register.)*
 - **The card is the gallery default** (3×2 target) — per the product call
   that the widget should read as the intervention screen; the wordless sun
   remains one resize away and existing 1×1 placements are untouched.

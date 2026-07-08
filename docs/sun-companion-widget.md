@@ -34,7 +34,8 @@ It passes the product's bar cleanly: it states the **present moment, never a
 stale timestamp** (it reads the live local hour), it reflects an **observed fact,
 never an inferred feeling** (the time of day, not "you seem tired"), and it
 carries no count, streak, or budget. The phase is decided from the local hour in
-`SunWidgetPhase` (the sun 5–21, the moon otherwise); the shared receiver refreshes
+`SunWidgetPhase` (the sun 6–19, the moon otherwise, matching the app's own
+skyTimeline day/night boundary); the shared receiver refreshes
 with one inexact, non-wake alarm. The card face steps its line every 15 minutes by
 day (`docs/widget-prompts-concept.md`), so that is the schedule it arms; a sun-only
 placement rides along — its own phase still flips just twice a day — and only ever
