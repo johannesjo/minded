@@ -70,7 +70,25 @@ feature screenshot in light and dark system themes.
 
 ## 5. Publish Google Play screenshots
 
-The upload workflow must first exist on the repository's default branch.
+The upload runs in CI (the `PLAY_SERVICE_ACCOUNT_JSON` secret is not available
+locally), and the `Update store screenshots` workflow must exist on the
+repository's default branch for either path below to dispatch it.
+
+The recommended path is the local helper, which regenerates the screenshots for
+review and then triggers that workflow:
+
+```bash
+cd extension
+npm run screenshots:publish
+```
+
+Confirming at its prompt **is the approval** — there is no separate reviewer
+gate, so the run publishes to the production listing on its own once CI
+finishes. Pass `--language <tag>` for another locale, `--skip-generate` to reuse
+the current local set, or `--watch` to stream the run. Then verify the phone
+screenshots and their order in Play Console.
+
+Equivalently, from the GitHub Actions UI:
 
 1. Open GitHub Actions in the `minded` repository.
 2. Select **Update store screenshots**.
@@ -78,8 +96,7 @@ The upload workflow must first exist on the repository's default branch.
 4. Set the listing language, normally `en-US`.
 5. Enable **Replace the live Google Play phone screenshots**.
 6. Run the workflow.
-7. Approve the `production` environment when requested.
-8. Verify the phone screenshots and their order in Play Console.
+7. Verify the phone screenshots and their order in Play Console.
 
 The workflow deletes and uploads the phone screenshots inside one Google Play
 edit, then commits the edit only after every upload succeeds. A failed upload

@@ -17,12 +17,12 @@
 # your working tree. If you have UI changes that should appear in the shots,
 # merge them to that ref first, or pass --ref <your-branch>.
 #
-# What happens after dispatch depends on the `production` environment's
-# protection rules. WITH a required reviewer, the run waits for your approval in
-# the Actions UI before publishing (that click can't be done from here). WITHOUT
-# one, it publishes as soon as CI finishes — so the confirm prompt below is your
-# only checkpoint. Add a gate at: repo Settings > Environments > production >
-# Required reviewers.
+# Running this script IS the approval: after you confirm at the prompt, the run
+# builds and publishes the screenshots straight to the Play production listing —
+# there is no separate reviewer gate. The confirm prompt is therefore the single
+# deliberate checkpoint, so there is intentionally no --yes flag. (If you ever
+# want a second gate, add a required reviewer to the `production` environment:
+# repo Settings > Environments.)
 #
 # Usage: extension/scripts/publish-play-screenshots.sh [options]
 #   --language <tag>   Play listing language (default: en-US)
@@ -30,7 +30,6 @@
 #   --skip-generate    Don't regenerate/review locally, just trigger the workflow
 #   --install          Run `playwright install chromium` before generating
 #   --watch            Stream the run with `gh run watch` after dispatch
-#   --yes, -y          Skip the confirmation prompt
 #   -h, --help         Show this help
 
 set -euo pipefail
@@ -41,7 +40,6 @@ REF="main"
 GENERATE=1
 INSTALL=0
 WATCH=0
-ASSUME_YES=0
 
 # The phone set, in the exact order the CI upload script publishes it.
 # Keep in sync with PHONE_SCREENSHOT_FILES in .github/scripts/upload-play-screenshots.mjs.
@@ -75,7 +73,6 @@ while [[ $# -gt 0 ]]; do
     --skip-generate) GENERATE=0; shift ;;
     --install) INSTALL=1; shift ;;
     --watch) WATCH=1; shift ;;
-    --yes|-y) ASSUME_YES=1; shift ;;
     -h|--help) usage 0 ;;
     *) die "unknown option: $1 (try --help)" ;;
   esac
@@ -120,13 +117,11 @@ echo
 echo "Review the images above before publishing. Note: these local files are for"
 echo "review only — CI regenerates and uploads its own copy from ref '$REF'."
 
-# --- Confirm --------------------------------------------------------------
-if [[ "$ASSUME_YES" -ne 1 ]]; then
-  if ! read -r -p "Trigger 'Update store screenshots' (language=$LANGUAGE, ref=$REF)? [y/N] " reply; then
-    die "aborted (no input)."
-  fi
-  [[ "$reply" =~ ^[Yy]$ ]] || die "aborted."
+# --- Confirm (this prompt is the approval) --------------------------------
+if ! read -r -p "Publish these screenshots to Play PRODUCTION (language=$LANGUAGE, ref=$REF)? [y/N] " reply; then
+  die "aborted (no input)."
 fi
+[[ "$reply" =~ ^[Yy]$ ]] || die "aborted."
 
 # --- Trigger --------------------------------------------------------------
 echo "==> Dispatching workflow..."
@@ -159,16 +154,13 @@ fi
 
 cat <<'NEXT'
 
-Next steps:
-  1. If `production` has a required reviewer, approve the run in the Actions UI
-     (that click can't be done from the CLI). With no reviewer configured, it
-     publishes automatically once CI finishes.
-  2. After it finishes, verify the phone screenshots and their order in Play
-     Console.
+Next step:
+  The run builds and publishes on its own — no further action needed. When it
+  finishes, verify the phone screenshots and their order in Play Console.
 NEXT
 
 if [[ "$WATCH" -eq 1 && -n "$run_url" ]]; then
   echo
-  echo "==> Watching run (may sit at 'waiting' if production needs approval)..."
+  echo "==> Watching run through build + publish..."
   gh run watch "$(basename "$run_url")" || true
 fi
