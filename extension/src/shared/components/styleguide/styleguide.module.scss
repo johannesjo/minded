@@ -275,3 +275,62 @@
   width: 96px;
   height: 96px;
 }
+
+// The card face of the widget across the day: the time-of-day sky (WidgetSky)
+// with the serif line and sun beneath, a still of MyAppWidget.PromptCard.
+.widgetSkyGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.widgetSkyCard {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  figcaption {
+    font-size: var(--fz-s);
+    letter-spacing: 0.04em;
+  }
+}
+
+// ~170×140dp scaled down; rounded and clipped like the device card.
+.widgetSkyFace {
+  width: 156px;
+  height: 128px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.widgetSkyLine {
+  margin: 0;
+  // Platform serif: the widget can't embed the app's Newsreader, so Android
+  // renders the line in its own serif — a generic serif stack mirrors that.
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: center;
+  // --c-fg-full-emphasis (light): the card sky is always light, so the near-
+  // black line stays legible even under the styleguide's dark theme.
+  color: rgba(0, 0, 0, 0.85);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.widgetSkyDisc {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}

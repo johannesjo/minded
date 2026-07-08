@@ -57,6 +57,7 @@ import {
 // @ts-ignore
 import styles from "./styleguide.module.scss";
 import SunWidgetGallery from "./SunWidgetGallery";
+import SunWidgetSkyGallery from "./SunWidgetSkyGallery";
 
 const ROOT_ID = "minded-6622";
 const DARK_CLASS = "minded-6622-dark";
@@ -575,15 +576,26 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="sun-widget" title="Sun widget (Android)">
         <p class={styles.muted}>
-          The two time-of-day phases of the home-screen companion sun — the warm
-          sun by day, the cool moon by night. The day sun is the real vector
-          drawable; the night moon is the actual lunar photo with a baked glow (
-          <code>ic_sun_widget_night.webp</code>), the same art the widget shows.
-          Phase is chosen by the local clock, not the system theme — toggle dark
-          mode above to preview the discs on a dark wallpaper. Indicative, not a
-          pixel-exact device render.
+          The home-screen companion sun. The floating disc is the warm sun by
+          day, the cool moon by night — the day sun is the real vector drawable,
+          the night moon the actual lunar photo with a baked glow (
+          <code>ic_sun_widget_night.webp</code>). Phase is chosen by the local
+          clock, not the system theme — toggle dark mode above to preview the
+          discs on a dark wallpaper. Indicative, not a pixel-exact device
+          render.
         </p>
         <SunWidgetGallery />
+        <p class={styles.muted}>
+          At card size the widget adds a still of the intervention screen: the
+          sky (<code>WidgetSky</code>) steps through the day’s ambient keyframes
+          — dawn → morning → midday → afternoon → dusk — a serif line resting
+          above the sun; at night the moon carries it alone, wordless. The day
+          skies stay light pastels <em>by design</em> so the line stays legible,
+          so there is deliberately no saturated sunset — “evening” is the pale
+          dusk pastel, then the clock hands the card to the dark night sky at
+          19:00, in step with the app.
+        </p>
+        <SunWidgetSkyGallery />
       </Section>
     </div>
   );
