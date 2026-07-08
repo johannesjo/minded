@@ -7,6 +7,12 @@ export const ACTION_ADVICES_MIN_HOUR = 5;
 // (See #168/#177, follow-up to #129.)
 export const ACTION_ADVICES: {
   txt: string;
+  // A few lines nudge toward *doing a task* (getting on with work you're
+  // avoiding). Fine as a daytime redirect, but off-tone in the evening
+  // wind-down, where pressure to be productive reads as striving — the one
+  // thing the app never does. `daytimeOnly` keeps them out of the evening pool
+  // (see EVENING_ACTION_ADVICES); everything else is calm anytime.
+  daytimeOnly?: true;
 }[] = [
   { txt: "How about looking out the window for a minute?" },
   { txt: "How about a short break?" },
@@ -22,8 +28,17 @@ export const ACTION_ADVICES: {
   { txt: "How about washing your face with cold water?" },
   {
     txt: "Sometimes procrastination is an indicator that you actually should be doing something else than the task you are avoiding...",
+    daytimeOnly: true,
   },
   {
     txt: "If you have a task to finish, try to think about the smallest possible step you can do right now!",
+    daytimeOnly: true,
   },
 ] as const;
+
+// The evening (wind-down) subset: everything except the task/productivity
+// nudges. In the evening the app should invite rest, never push you to tackle
+// work — so the `evening_action_advice` slot draws only from here.
+export const EVENING_ACTION_ADVICES = ACTION_ADVICES.filter(
+  (advice) => !advice.daytimeOnly,
+);

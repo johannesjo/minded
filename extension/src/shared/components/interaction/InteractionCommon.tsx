@@ -204,6 +204,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     createSignal<(typeof NOTICE_CUES)[number]>();
   const [getForcedAdvice, setForcedAdvice] =
     createSignal<(typeof ACTION_ADVICES)[number]>();
+  // True when the ACTION_ADVICE was chosen as the evening wind-down prompt, so
+  // the switch draws from the calmer evening pool (no task/productivity nudges).
+  const [getIsEveningAdvice, setIsEveningAdvice] = createSignal(false);
   const [, setPendingAnswer] = createSignal<Answer | undefined>();
   const [getAlternativeToReplace, setAlternativeToReplace] = createSignal<
     Alternative | undefined
@@ -1263,6 +1266,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setInitialQuestion(question);
           setFrictionLevel(modeDecision.frictionLevel);
           setPatternInsight(modeDecision.patternInsight);
+          setIsEveningAdvice(modeDecision.reason === "evening_action_advice");
           setModeWithoutReplacement(modeDecision.mode);
           // Remember what we opened with so the next intervention can avoid
           // repeating it (one-deep memory; see getInteractionMode's fallback).
@@ -1559,6 +1563,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             patternInsight={getPatternInsight()}
             forcedNoticeCue={getForcedNoticeCue()}
             forcedAdvice={getForcedAdvice()}
+            isEveningAdvice={getIsEveningAdvice()}
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
