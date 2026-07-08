@@ -553,8 +553,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.GT6,
-        t: "In what ways did you improve today",
-        prompt: "I improved by",
+        t: "What is one way you took care of yourself today",
+        prompt: "Today I",
       },
       {
         id: QID.GT7,
@@ -629,8 +629,8 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.GPT3,
-        t: "Today I will do my best to...",
-        prompt: "Today I will do my best to",
+        t: "What is one small thing you'd like to do today",
+        prompt: "Today I'd like to",
       },
       {
         id: QID.GPT4,
@@ -823,11 +823,11 @@ export const QUESTION_CATEGORIES: {
   },
   [QuestionCategoryId.SelfImprovement]: {
     frequencyModifier: 1,
-    dashboardTxt: "Becoming Your Best Self",
+    dashboardTxt: "Growth",
     questions: [
       {
         id: QID.SI1,
-        t: "What could you do tomorrow to be a little better",
+        t: "What would make tomorrow feel a little kinder",
         prompt: "Tomorrow I could",
       },
       {
@@ -849,7 +849,7 @@ export const QUESTION_CATEGORIES: {
       },
       {
         id: QID.SI6,
-        t: "What small habit would improve your life",
+        t: "What small habit would feel good to nurture",
       },
       {
         id: QID.SI7,
