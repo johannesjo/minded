@@ -17,8 +17,12 @@
 # your working tree. If you have UI changes that should appear in the shots,
 # merge them to that ref first, or pass --ref <your-branch>.
 #
-# The run waits for `production` approval in the Actions UI before it publishes;
-# that one click can't be done from here.
+# What happens after dispatch depends on the `production` environment's
+# protection rules. WITH a required reviewer, the run waits for your approval in
+# the Actions UI before publishing (that click can't be done from here). WITHOUT
+# one, it publishes as soon as CI finishes — so the confirm prompt below is your
+# only checkpoint. Add a gate at: repo Settings > Environments > production >
+# Required reviewers.
 #
 # Usage: extension/scripts/publish-play-screenshots.sh [options]
 #   --language <tag>   Play listing language (default: en-US)
@@ -26,7 +30,7 @@
 #   --skip-generate    Don't regenerate/review locally, just trigger the workflow
 #   --install          Run `playwright install chromium` before generating
 #   --watch            Stream the run with `gh run watch` after dispatch
-#   --yes              Skip the confirmation prompt
+#   --yes, -y          Skip the confirmation prompt
 #   -h, --help         Show this help
 
 set -euo pipefail
@@ -58,7 +62,9 @@ die() {
 }
 
 usage() {
-  sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  # Print the leading comment block (everything after the shebang up to the
+  # first non-comment line), stripping the "# " prefix. Robust to edits above.
+  awk 'NR==1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "${BASH_SOURCE[0]}"
   exit "${1:-0}"
 }
 
@@ -77,12 +83,12 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXTENSION_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(git -C "$EXTENSION_DIR" rev-parse --show-toplevel)"
 PHONE_DIR="$EXTENSION_DIR/screenshots/google-play/phone"
 
 # --- Preflight ------------------------------------------------------------
 command -v gh >/dev/null 2>&1 || die "the GitHub CLI (gh) is not installed."
 gh auth status >/dev/null 2>&1 || die "gh is not authenticated. Run: gh auth login"
+REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
 
 # --- Generate + review ----------------------------------------------------
 if [[ "$GENERATE" -eq 1 ]]; then
@@ -116,14 +122,19 @@ echo "review only — CI regenerates and uploads its own copy from ref '$REF'."
 
 # --- Confirm --------------------------------------------------------------
 if [[ "$ASSUME_YES" -ne 1 ]]; then
-  read -r -p "Trigger 'Update store screenshots' (language=$LANGUAGE, ref=$REF)? [y/N] " reply
+  if ! read -r -p "Trigger 'Update store screenshots' (language=$LANGUAGE, ref=$REF)? [y/N] " reply; then
+    die "aborted (no input)."
+  fi
   [[ "$reply" =~ ^[Yy]$ ]] || die "aborted."
 fi
 
 # --- Trigger --------------------------------------------------------------
 echo "==> Dispatching workflow..."
+# Timestamp the dispatch so we select the run WE just started, not an older one
+# still on this branch (the `release` concurrency group can leave one queued).
+dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 gh workflow run "$WORKFLOW" \
-  --repo "$(gh repo view --json nameWithOwner -q .nameWithOwner)" \
+  --repo "$REPO" \
   --ref "$REF" \
   -f language="$LANGUAGE" \
   -f confirm=true
@@ -132,7 +143,8 @@ echo "==> Dispatched. Fetching the run..."
 run_url=""
 for _ in 1 2 3 4 5; do
   sleep 3
-  run_url="$(gh run list --workflow "$WORKFLOW" --branch "$REF" --limit 1 \
+  run_url="$(gh run list --workflow "$WORKFLOW" --branch "$REF" \
+    --event workflow_dispatch --created ">=$dispatched_at" --limit 1 \
     --json url -q '.[0].url' 2>/dev/null || true)"
   [[ -n "$run_url" ]] && break
 done
@@ -142,20 +154,21 @@ if [[ -n "$run_url" ]]; then
   echo "Run:  $run_url"
 else
   echo "Run started — open the Actions tab to find it:"
-  echo "  $(gh repo view --json url -q .url)/actions/workflows/$WORKFLOW"
+  echo "  https://github.com/$REPO/actions/workflows/$WORKFLOW"
 fi
 
 cat <<'NEXT'
 
 Next steps:
-  1. Approve the `production` environment in the Actions UI (required — can't be
-     done from the CLI).
+  1. If `production` has a required reviewer, approve the run in the Actions UI
+     (that click can't be done from the CLI). With no reviewer configured, it
+     publishes automatically once CI finishes.
   2. After it finishes, verify the phone screenshots and their order in Play
      Console.
 NEXT
 
 if [[ "$WATCH" -eq 1 && -n "$run_url" ]]; then
   echo
-  echo "==> Watching (will sit at 'waiting' until you approve production)..."
+  echo "==> Watching run (may sit at 'waiting' if production needs approval)..."
   gh run watch "$(basename "$run_url")" || true
 fi
