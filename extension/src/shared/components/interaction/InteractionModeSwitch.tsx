@@ -11,7 +11,10 @@ import {
 import { ShowAlternativeInteraction } from "@src/shared/components/interaction/alternatives/ShowAlternative";
 import { SetAlternativeInteraction } from "@src/shared/components/interaction/alternatives/SetAlternative";
 import { EmotionLabeling } from "@src/shared/components/interaction/emotionLabeling/EmotionLabeling";
-import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
+import {
+  ACTION_ADVICES,
+  EVENING_ACTION_ADVICES,
+} from "@src/shared/data/actionAdvices";
 import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
 import { getRndEntry } from "@src/util/getRndEntry";
 import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
@@ -41,6 +44,12 @@ export interface InteractionModeSwitchProps {
    */
   forcedNoticeCue?: (typeof NOTICE_CUES)[number];
   forcedAdvice?: (typeof ACTION_ADVICES)[number];
+  /**
+   * True when the ACTION_ADVICE is the evening wind-down prompt: pick from the
+   * calmer evening pool, which drops the task/productivity nudges that would
+   * read as pressure to be busy at night. Ignored when `forcedAdvice` is set.
+   */
+  isEveningAdvice?: boolean;
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
@@ -83,8 +92,13 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
         {(() => {
           // The widget's exact line when opened from it; otherwise pick fresh
           // each mount so repeated action-advice prompts vary instead of showing
-          // one pinned line.
-          const advice = props.forcedAdvice ?? getRndEntry(ACTION_ADVICES);
+          // one pinned line. In the evening, draw from the wind-down pool that
+          // omits the task/productivity nudges.
+          const advice =
+            props.forcedAdvice ??
+            getRndEntry(
+              props.isEveningAdvice ? EVENING_ACTION_ADVICES : ACTION_ADVICES,
+            );
           return (
             <div
               id="minded-6622-action-advice"
