@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "filename": "widget_sky_dusk.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "gen_loading_sky.py",
+    "version": 1
+  }
+}

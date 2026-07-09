@@ -1,9 +1,10 @@
 # Spec: the sun companion widget (Home/Lock Screen)
 
 Status: **Android in progress; iOS implemented (pending first Xcode build).**
-Update: the Android widget has since grown a second, larger face — a
+Update: the widget has since grown a second, larger face on both platforms — a
 miniature of the in-app intervention screen carrying one quiet prompt line
-(`WidgetPrompts.kt`). The 1×1 sun described here is unchanged and remains the
+(`WidgetPrompts.kt` on Android; `WidgetPrompts.swift` + the `systemMedium`
+card on iOS). The 1×1 sun described here is unchanged and remains the
 small-size fallback; the card's rationale and guardrails live in
 `docs/widget-prompts-concept.md`.
 The iOS WidgetKit widget + deep-link plumbing now live in
@@ -131,15 +132,19 @@ Mirrors the Android shape; only the shell differs. See the folder's `README.md`
 for the one manual Xcode step (creating the Widget Extension target) and how to
 verify.
 
-- **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`). The day sun is drawn
-  with SwiftUI radial gradients (`CompanionSun.swift`), colours ported 1:1 from the
-  Android day vector; the night moon is the **same lunar photo as Android and the
-  in-app `.moon`** (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG
-  image set) rather than a gradient twin. Day/night follows the **local clock**
-  (`SunWidgetPhase.swift`, the Swift twin of the Android phase logic), with the
-  timeline pre-placing each day/night boundary so the sun flips on the hour — not
-  the system colour scheme. `.widgetURL(URL("minded://sun"))` is the tap target.
-  No special entitlement, no App Group — the widget only carries a deep link.
+- **WidgetKit widget** (SwiftUI), Home Screen. `systemSmall` is the pure sun,
+  whose day face is drawn with SwiftUI radial gradients (`CompanionSun.swift`),
+  colours ported 1:1 from the Android day vector; its night face is the **same
+  lunar photo as Android and the in-app `.moon`**
+  (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG image set)
+  rather than a gradient twin. `systemMedium` is the prompt card (sky + quiet
+  line + the same sun or moon — see `docs/widget-prompts-concept.md`). Day/night
+  follows the **local clock** (`SunWidgetPhase.swift`, the Swift twin of the
+  Android phase logic), with the timeline pre-placing every face change so the
+  card steps and the sun or moon flips on time — not the system colour scheme.
+  `.widgetURL(URL("minded://sun"))` is the tap target (the card appends
+  `?line=…`). No special entitlement, no App Group — the widget only carries a
+  deep link.
   - **Lock Screen (`accessoryCircular`) deferred:** accessory widgets render in
     the system's *vibrant* mode, which discards colour and rebuilds the view from
     its alpha channel — the near-opaque disc + soft bloom collapse to a flat tinted

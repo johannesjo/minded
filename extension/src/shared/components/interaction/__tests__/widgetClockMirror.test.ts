@@ -25,6 +25,7 @@ const ANDROID_PHASE =
 const ANDROID_SKY =
   "../android/app/src/main/java/com/minded/minded/widget/WidgetSky.kt";
 const IOS_PHASE = "ios/App/MindedWidget/SunWidgetPhase.swift";
+const IOS_SKY = "ios/App/MindedWidget/WidgetSky.swift";
 
 const read = (relPath: string): string =>
   readFileSync(resolve(process.cwd(), relPath), "utf8");
@@ -56,6 +57,17 @@ describe("the widget clock mirrors skyTimeline (native copies ↔ TS)", () => {
   it("every ambient keyframe has a matching WidgetSky face (Android)", () => {
     const faces = read(ANDROID_SKY)
       .match(/enum class WidgetSky\s*\{\s*([^;]+);/)?.[1]
+      ?.split(",")
+      .map((s) => s.trim().toUpperCase());
+    expect(faces).toBeDefined();
+    for (const kf of AMBIENT_SKY_KEYFRAMES) {
+      expect(faces).toContain(kf.label.toUpperCase());
+    }
+  });
+
+  it("every ambient keyframe has a matching WidgetSky face (iOS)", () => {
+    const faces = read(IOS_SKY)
+      .match(/enum WidgetSky\s*\{\s*case ([^\n]+)/)?.[1]
       ?.split(",")
       .map((s) => s.trim().toUpperCase());
     expect(faces).toBeDefined();

@@ -14,8 +14,12 @@ The stops are the exact app gradient (mirrors --background-gradient in
 extension/src/styles/_variables.scss), interpolated in sRGB space to match the
 web look, then dithered with triangular-PDF
 noise (TPDF, +/-1 LSB) before quantizing to 8-bit -- the textbook way to remove
-banding. Re-run after changing the stops; output goes to res/drawable-nodpi/.
+banding. Re-run after changing the stops; output goes to res/drawable-nodpi/
+and (for the iOS widget card, which needs the same dithered skies at its own
+target size) to extension/ios/App/MindedWidget/Assets.xcassets/. One generator,
+one dither, one copy of the colours -- the platforms only differ in size.
 """
+import json
 import os
 
 import numpy as np
@@ -38,6 +42,17 @@ HEIGHT = 1280
 # the dither must be applied at (about) the size the launcher will draw.
 CARD_WIDTH = 360
 CARD_HEIGHT = 240
+
+# The iOS widget card (WidgetKit systemMedium) draws the same skies at its own
+# target size -- up to ~364x170pt (@3x ~1092x510px). Rendering at @2x of the
+# largest face keeps the mild-upscale ratio the Android card already accepts
+# (its 360-wide PNG draws at up to ~510px), at a quarter of the @3x byte cost.
+IOS_OUT_DIR = os.path.join(
+    os.path.dirname(__file__),
+    "..", "..", "extension", "ios", "App", "MindedWidget", "Assets.xcassets",
+)
+IOS_CARD_WIDTH = 728
+IOS_CARD_HEIGHT = 340
 
 # (position 0..1, "#rrggbb"). Keep in sync with _variables.scss / Color.kt.
 LIGHT_STOPS = [
@@ -110,6 +125,24 @@ def write_png(path, arr):
     Image.fromarray(arr, "RGB").save(path, optimize=True)
 
 
+def write_imageset(name, arr):
+    """A single-scale universal imageset in the iOS widget's asset catalog."""
+    imageset_dir = os.path.join(IOS_OUT_DIR, name + ".imageset")
+    os.makedirs(imageset_dir, exist_ok=True)
+    write_png(os.path.join(imageset_dir, name + ".png"), arr)
+    with open(os.path.join(imageset_dir, "Contents.json"), "w") as f:
+        json.dump(
+            {
+                "images": [{"filename": name + ".png", "idiom": "universal"}],
+                "info": {"author": "gen_loading_sky.py", "version": 1},
+            },
+            f,
+            indent=2,
+        )
+        f.write("\n")
+    return imageset_dir
+
+
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     outputs = [
@@ -124,6 +157,25 @@ def main():
         path = os.path.join(OUT_DIR, name + ".png")
         write_png(path, render(stops, width, height))
         print(f"wrote {path} ({os.path.getsize(path) // 1024} KB)")
+
+    # The same six card skies for the iOS widget, at its own size. Names match
+    # the Android drawables so both platforms read greppably alike.
+    os.makedirs(IOS_OUT_DIR, exist_ok=True)
+    root_contents = os.path.join(IOS_OUT_DIR, "Contents.json")
+    if not os.path.exists(root_contents):
+        with open(root_contents, "w") as f:
+            json.dump({"info": {"author": "gen_loading_sky.py", "version": 1}}, f, indent=2)
+            f.write("\n")
+    ios_outputs = [("widget_sky_dark", DARK_STOPS)] + [
+        ("widget_sky_" + name, ambient_stops(colors))
+        for name, colors in AMBIENT_KEYFRAME_COLORS.items()
+    ]
+    for name, stops in ios_outputs:
+        imageset_dir = write_imageset(
+            name, render(stops, IOS_CARD_WIDTH, IOS_CARD_HEIGHT)
+        )
+        size = os.path.getsize(os.path.join(imageset_dir, name + ".png"))
+        print(f"wrote {imageset_dir} ({size // 1024} KB)")
 
 
 if __name__ == "__main__":

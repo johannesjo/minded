@@ -1,11 +1,14 @@
 # Concept: the speaking sun — quiet prompts on the home-screen widget
 
-Status: **implemented on Android (device verification pending); iOS port
-later.** A design note for evolving the existing sun companion widget
+Status: **implemented on Android and iOS (device verification pending on
+both).** A design note for evolving the existing sun companion widget
 (`docs/sun-companion-widget.md`) from pure presence into presence *plus one
 quiet line of text*. The Android implementation lives in
 `android/app/src/main/java/com/minded/minded/widget/` (`WidgetPrompts.kt`,
-`MyAppWidget.kt`); it has not yet been seen on a real launcher/device.
+the responsive `MyAppWidget.kt`); the iOS port in
+`extension/ios/App/MindedWidget/` (`WidgetPrompts.swift`, the `systemMedium`
+card in `MindedWidget.swift`). Neither has yet been seen on a real
+launcher/device.
 
 > **Update — per-prompt tap routing shipped.** The widget now shows *real
 > interaction content* and tapping lands on that **exact** interaction (a NOTICE
@@ -46,9 +49,10 @@ word.
   only channel, and making it slightly richer is the only way iOS minded
   grows. But the Android widget, receiver, alarms, deep link, and phase logic
   already exist and are testable without a Mac; iOS is a port of whatever
-  Android proves out (the current iOS widget was ported 1:1 from Android and
-  its extension target isn't even wired into Xcode yet). So: **prototype the
-  concept on Android, port the shape to WidgetKit once it's settled.**
+  Android proves out (the iOS widget was ported 1:1 from Android; CI wires its
+  extension target in at build time). So: **prototype the concept on Android,
+  port the shape to WidgetKit once it's settled** — which has since happened,
+  see *iOS port* below.
 - The glance at the phone is the moment a doom-scroll begins. The sun already
   re-grounds that glance with warmth; a present-moment anchor sitting next to
   it is the same re-grounding, one register more explicit — for users who
@@ -233,15 +237,19 @@ Everything extends what exists; nothing new is invented.
   `SharedPreferenceService`, but per the content rules there is nothing
   personal the widget should ever display, so it deliberately doesn't.)
 
-**Source of truth for the pool — KISS first:** the pool lives in Kotlin for
-v1 as a curated **verbatim mirror** of the TS interaction pools (`NOTICE_CUES`,
-`ACTION_ADVICES`). Because the tap now re-matches the shown line against those
-same TS pools by exact string, the copies must not drift — a jest parity test
-(`widgetPromptsMirror.test.ts`) reads `WidgetPrompts.kt` and asserts every line
-still exists verbatim in the source. When the iOS port lands (a third consumer
-in Swift), extract the pool to a small JSON generated at build time from a
-shared TS const —
-`// shortcut: Kotlin-only mirror — extract to generated shared JSON when iOS ports this`.
+**Source of truth for the pool — KISS first:** the pool lives natively as a
+curated **verbatim mirror** of the TS interaction pools (`NOTICE_CUES`,
+`ACTION_ADVICES`) — in Kotlin (`WidgetPrompts.kt`) and, since the iOS port, in
+Swift (`WidgetPrompts.swift`). Because the tap re-matches the shown line
+against those same TS pools by exact string, the copies must not drift — a
+jest parity test (`widgetPromptsMirror.test.ts`) reads both native sources and
+asserts every line still exists verbatim in TS *and* that the two native pools
+match one-to-one in order (same order + same slot arithmetic = the same line
+at the same moment on both platforms). When iOS became the third consumer, the
+planned build-time JSON extraction was weighed and deliberately deferred:
+three build systems' worth of codegen wasn't worth dodging a mechanically
+guarded copy. The upgrade path stands if a fourth consumer appears or the pool
+starts churning.
 
 ## Tapping the widget lands on the line it shows
 
@@ -271,22 +279,36 @@ time-of-day + content slice; it deliberately cannot reflect the live
 per-user context (`getInteractionMode`'s friction/usage/variety), which needs
 private state the widget must never hold.
 
-## iOS port (after Android settles)
+## iOS port (implemented)
 
-The shape maps cleanly to WidgetKit, arguably more naturally than Android:
+The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
-- `systemMedium` family = the wide variant; `systemSmall` stays the pure sun.
-- The timeline already pre-places day/night boundary entries; the 15-minute
-  prompt steps are just more pre-placed entries (a waking day ≈ 64, well within
-  a timeline batch) — **no App Group, no refresh budget pressure** (the entries
-  are deterministic, so nothing regenerates on unlock), **no entitlement**. This
-  is exactly why the iOS shape fits: WidgetKit can't fire *on* unlock, but a
-  dense pre-placed timeline renders the current slot's line whenever the user
-  returns — the same effect, at zero refresh-budget cost.
-- The pool ships bundled in the widget target (the shared-JSON extraction
-  above happens here).
-- Prerequisite regardless of this concept: the `MindedWidget` target still
-  needs to be wired into `App.xcodeproj` and built once for real.
+- `systemMedium` family = the card; `systemSmall` stays the pure sun (the
+  WidgetKit analogue of Android's responsive size fallback).
+- The timeline pre-places every face change as an entry — quarter-hour prompt
+  steps by day (which contain the sky's whole-hour steps and the phase flips by
+  construction, exactly like the Android alarm cadence), one wordless entry
+  spanning the night — **no App Group, no refresh budget pressure** (the
+  entries are deterministic, so nothing regenerates on unlock), **no
+  entitlement**. This is exactly why the iOS shape fits: WidgetKit can't fire
+  *on* unlock, but a dense pre-placed timeline renders the current slot's line
+  whenever the user returns — the same effect, at zero refresh-budget cost.
+- The pool ships bundled in the widget target as a Swift mirror
+  (`WidgetPrompts.swift`) guarded by the same parity test — see *Source of
+  truth* above for why the JSON extraction was deferred.
+- The skies are the same dithered renders as Android's, generated at the iOS
+  card's own size by the same script (`android/tools/gen_loading_sky.py` →
+  `MindedWidget/Assets.xcassets`).
+- Tap routing mirrors Android's: the card's `widgetURL` carries its exact line
+  (`minded://sun?line=…`); the native shell re-encodes it to alphanumerics+`%`
+  (`AppDelegate.encodedWidgetLine` — nothing that could break out of the JS
+  string can reach the WebView hash; the exact-pool match stays on the web,
+  where an unknown line degrades to the normal open) and appends
+  `&widgetLine=…` on both the cold (user script) and warm (notification) paths.
+- The `MindedWidget` target is wired into `App.xcodeproj` by CI
+  (`scripts/add_widget_target.rb`); like the rest of the iOS widget it was
+  written without a Mac, so the first Xcode build/TestFlight run is the real
+  verification.
 
 ## Deliberately out of scope
 

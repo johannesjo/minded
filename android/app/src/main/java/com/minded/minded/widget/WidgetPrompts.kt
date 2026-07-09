@@ -35,11 +35,13 @@ package com.minded.minded.widget
  * The lines are copied verbatim from the app's own interaction content
  * (NOTICE_CUES in notice.const.ts, ACTION_ADVICES in actionAdvices.ts), curated
  * to the widget-safe subset that fits a home-screen card.
- * // shortcut: Kotlin-only mirror of the TS pools — a jest parity test
- * // (widgetPromptsMirror.test.ts) asserts every line here still exists verbatim
- * // in NOTICE_CUES/ACTION_ADVICES, and the web tap re-matches by that exact
- * // string. Extract to a generated shared JSON if the iOS widget ports this and
- * // becomes a third consumer.
+ * // shortcut: hand-mirrored pools (this + the iOS WidgetPrompts.swift) — a jest
+ * // parity test (widgetPromptsMirror.test.ts) asserts every line here still
+ * // exists verbatim in NOTICE_CUES/ACTION_ADVICES and that the Swift pool
+ * // matches this one one-to-one in order (same order + same slot arithmetic =
+ * // the same line at the same moment on both platforms); the web tap re-matches
+ * // by that exact string. Extract to a build-time generated shared source if a
+ * // fourth consumer appears or the pool starts churning.
  *
  * Pure logic, free of Android/R references so it can be unit-tested on the JVM.
  */

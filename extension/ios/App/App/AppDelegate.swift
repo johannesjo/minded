@@ -21,6 +21,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// `application(open:)` → `.openSun` below instead.
     var launchedFromSunWidget = false
 
+    /// The exact line the tapped prompt card was showing (`minded://sun?line=…`),
+    /// already strictly re-encoded (see `encodedWidgetLine`) and held for the
+    /// cold-launch path so the very first paint opens on that same interaction.
+    /// nil for the wordless faces (small sun, the night card).
+    var launchWidgetLine: String?
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("application1")
         // Note a widget cold-launch before the WebView loads, so the controller can
@@ -29,8 +35,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // `application(open:)` retry path still opens the overlay (just a frame late).
         if let url = launchOptions?[.url] as? URL, url.scheme == "minded", url.host == "sun" {
             launchedFromSunWidget = true
+            launchWidgetLine = Self.encodedWidgetLine(from: url)
         }
         return true
+    }
+
+    /// The `line` the tapped prompt card was showing, re-encoded so that only
+    /// alphanumerics and `%` can ever reach the WebView hash — the iOS twin of
+    /// Android's `widgetLineFromIntent` allow-list: `minded://` is open to any
+    /// app, and the hash is set via a JS string literal, so a crafted URL must
+    /// never be able to break out of it. The exact-pool match stays on the web
+    /// side (`matchWidgetLine`), where an unknown line just falls through to the
+    /// normal random pick — it degrades, never breaks.
+    static func encodedWidgetLine(from url: URL) -> String? {
+        guard
+            let line = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { $0.name == "line" })?.value,
+            !line.isEmpty,
+            // Real widget lines are ≤60 chars (WidgetPrompts); anything longer
+            // is not ours.
+            line.count <= 60
+        else { return nil }
+        return line.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -68,8 +94,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // is observed by MainViewController, which sets the WebView hash. We handle
         // it here rather than passing it to Capacitor so a missing @capacitor/app
         // listener can't swallow it. See docs/sun-companion-widget.md.
+        // The prompt card also carries the exact line it was showing (`?line=…`);
+        // it rides along (re-encoded, see `encodedWidgetLine`) so the interaction
+        // opens on that same NOTICE/ACTION_ADVICE.
         if url.scheme == "minded", url.host == "sun" {
-            NotificationCenter.default.post(name: .openSun, object: nil)
+            var userInfo: [AnyHashable: Any] = [:]
+            if let line = Self.encodedWidgetLine(from: url) {
+                userInfo["line"] = line
+            }
+            NotificationCenter.default.post(name: .openSun, object: nil, userInfo: userInfo)
             return true
         }
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)

@@ -28,6 +28,25 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         (UIApplication.shared.delegate as? AppDelegate)?.launchedFromSunWidget ?? false
     }
 
+    /// The exact (already strictly re-encoded) line the tapped prompt card was
+    /// showing on a cold launch, if any — appended to the hash so the interaction
+    /// opens on that same NOTICE/ACTION_ADVICE (RouteCmp's `widgetLine`).
+    private var launchWidgetLine: String? {
+        (UIApplication.shared.delegate as? AppDelegate)?.launchWidgetLine
+    }
+
+    /// The warm-path twin of `launchWidgetLine`: the card line carried by the
+    /// last `.openSun` notification, applied (and cleared) with `pendingOpenSun`.
+    private var pendingWidgetLine: String?
+
+    /// The hash the web shell consumes: the shared `?sun=open` flag, plus the
+    /// card's line when the tap carried one. `line` is alphanumerics+`%` only
+    /// (see AppDelegate.encodedWidgetLine), so it is safe inside the JS string
+    /// literals below — mirrors Android's `MainActivity.launchHash`.
+    private static func sunHash(line: String?) -> String {
+        line.map { "\(openSunHash)&widgetLine=\($0)" } ?? openSunHash
+    }
+
     // The launch fade (item 3): a still of the brand launch screen held over the
     // loading WebView and softly faded out once the in-app sun has painted, so the
     // launch screen eases into the app instead of hard-cutting to a blank frame.
@@ -69,7 +88,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
                 source: """
                 if (!sessionStorage.getItem('mindedSunLaunched')) {
                     sessionStorage.setItem('mindedSunLaunched', '1');
-                    window.location.hash = '\(Self.openSunHash)';
+                    window.location.hash = '\(Self.sunHash(line: launchWidgetLine))';
                 }
                 """,
                 injectionTime: .atDocumentStart,
@@ -88,7 +107,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: NSNotification.Name("SWITCH_MODE"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleOpenSun), name: .openSun, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleOpenSun(_:)), name: .openSun, object: nil)
 
         // Item 3 — the launch fade. Only on a widget cold-launch, because only then
         // does the first web paint land on the sun pause (item 2); a normal launch
@@ -101,8 +120,12 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     // The companion sun widget was tapped. Open the shared interaction overlay by
     // setting the `?sun=open` launch flag the web shell consumes (RouteCmp's
     // `?sun=open` effect) — the same overlay as tapping the in-app dashboard sun.
-    @objc func handleOpenSun() {
+    // The prompt card's tap carries the exact line it was showing (userInfo,
+    // already re-encoded by AppDelegate) so the overlay opens on that same
+    // interaction; the wordless faces carry none.
+    @objc func handleOpenSun(_ notification: Notification) {
         pendingOpenSun = true
+        pendingWidgetLine = notification.userInfo?["line"] as? String
         openSunRetriesLeft = 3
         applyPendingOpenSun()
     }
@@ -118,14 +141,17 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         guard pendingOpenSun else { return }
         guard openSunRetriesLeft > 0 else {
             pendingOpenSun = false
+            pendingWidgetLine = nil
             return
         }
         openSunRetriesLeft -= 1
-        webView?.evaluateJavaScript("window.location.hash = '\(Self.openSunHash)'") { [weak self] (_, error) in
+        let hash = Self.sunHash(line: pendingWidgetLine)
+        webView?.evaluateJavaScript("window.location.hash = '\(hash)'") { [weak self] (_, error) in
             // On error the flag stays set; the next `didBecomeActive` retries
             // until openSunRetriesLeft is exhausted.
             if error == nil {
                 self?.pendingOpenSun = false
+                self?.pendingWidgetLine = nil
             }
         }
     }

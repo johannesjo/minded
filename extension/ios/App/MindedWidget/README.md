@@ -1,12 +1,21 @@
 # MindedWidget — the iOS companion sun (WidgetKit)
 
-This is the iOS implementation of the home-/lock-screen **companion sun** — "option 1"
+This is the iOS implementation of the home-screen **companion sun** — "option 1"
 from `docs/ios-platform-fit.md` and the WidgetKit twin of the Android App Widget
 (`android/.../widget/MyAppWidget.kt`). It is **presence and invitation, never an
 interrupt**: it never detects, blocks, or fires on its own. Tapping it opens the app
 and runs the _same_ interaction overlay as tapping the in-app dashboard sun.
 
-See `docs/sun-companion-widget.md` for the full spec and the shared architecture.
+Two faces, one widget (mirroring Android's responsive faces):
+
+- **`systemSmall`** — the wordless floating sun: warm by day, the cool moon by night.
+- **`systemMedium`** — the prompt card: a miniature still of the in-app intervention
+  screen (the app's time-of-day sky, one quiet serif line stepping every 15 minutes
+  through the waking day, the sun beneath it). At night the moon carries the card
+  alone. Tapping lands on the exact interaction whose line is showing.
+
+See `docs/sun-companion-widget.md` for the full spec and the shared architecture,
+and `docs/widget-prompts-concept.md` for the card's rationale and guardrails.
 
 ## How it works
 
@@ -21,16 +30,25 @@ See `docs/sun-companion-widget.md` for the full spec and the shared architecture
               (shared web, already built — RouteCmp.tsx)
 ```
 
-The web side already consumes `?sun=open` (it ships on Android today), so the only
-iOS-specific parts are: this SwiftUI widget, the `minded://` URL scheme (already
-registered in `App/Info.plist`), and the two small native edits in
+The web side already consumes `?sun=open` and `&widgetLine=…` (both ship on Android
+today), so the only iOS-specific parts are: this SwiftUI widget, the `minded://` URL
+scheme (already registered in `App/Info.plist`), and the small native edits in
 `App/AppDelegate.swift` + `App/MainViewController.swift`.
+
+The prompt card carries the exact line it is showing as `minded://sun?line=…`.
+`AppDelegate.encodedWidgetLine` re-encodes it to alphanumerics+`%` (the iOS twin of
+Android's intent-extra allow-list: `minded://` is open to any app and the hash is set
+via a JS string literal, so nothing that could break out of it may pass), and the
+shell appends it to the hash as `&widgetLine=…` on both the cold (user script) and
+warm (notification) paths. The exact-pool match stays on the web (`matchWidgetLine`);
+an unknown line falls through to the normal open.
 
 ## Files in this folder
 
 - `MindedWidget.swift` — the `@main` widget bundle, `StaticConfiguration`, timeline
-  provider (one entry per day/night phase, boundaries pre-placed so the sun flips on
-  the hour with `.atEnd`), the entry view, and the `minded://sun` `widgetURL`.
+  provider (every face change pre-placed as an entry with `.atEnd`: quarter-hour
+  prompt steps by day, one wordless entry spanning the night), the two faces
+  (`SunOnly`, `PromptCard`), and the `minded://sun` `widgetURL`.
 - `CompanionSun.swift` — the SwiftUI sun/moon. The day sun is drawn with radial
   gradients ported 1:1 from the Android day vector (`ic_sun_widget_day.xml`); the
   night moon is the `MoonWidget` image (below). It renders whichever it's told via
@@ -38,15 +56,22 @@ registered in `App/Info.plist`), and the two small native edits in
 - `SunWidgetPhase.swift` — the pure, clock-driven day/night decision (the Swift twin
   of the Android `SunWidgetPhase.kt`): the sun by day, the moon by night, by the real
   local hour — **not** the system colour scheme.
+- `WidgetSky.swift` — the card's time-of-day sky for a local hour (the Swift twin of
+  `WidgetSky.kt`), stepping through the app's ambient keyframes on whole hours.
+- `WidgetPrompts.swift` — the curated waking-hours prompt pool and the deterministic
+  15-minute-slot rotation (the Swift twin of `WidgetPrompts.kt`; the jest parity test
+  `widgetPromptsMirror.test.ts` pins both to the TS pools and to each other).
+- `Assets.xcassets` — the six card-sized sky renders, generated (dithered at target
+  size, same colours as the app and Android) by `android/tools/gen_loading_sky.py`.
 - `Media.xcassets` — the `MoonWidget` image set: the night moon, the *same* lunar
   photo the Android widget and in-app `.moon` use, re-encoded from
   `android/.../ic_sun_widget_night.webp` to PNG (@1x/@2x/@3x) so the two platforms'
   moons are identical rather than a gradient approximation.
 - `Info.plist` — the WidgetKit extension Info.plist.
 
-Only the night moon ships as an image; the day sun is drawn with SwiftUI gradients.
-The asset catalog is bundled into the `.appex` — no App Group, so this is still not
-shared *app data*, just a resource compiled into the widget.
+The day sun is drawn with SwiftUI gradients; the night moon and card skies ship as
+images. Both asset catalogs are bundled into the `.appex` — no App Group, so this is
+still not shared *app data*, just resources compiled into the widget.
 
 The three PNG scales are a mechanical re-encode of the Android source, so "identical
 to Android" is reproducible, not a one-off. To regenerate them if
@@ -100,11 +125,11 @@ edit. One-time setup:
      (we use a plain `StaticConfiguration`).
    - Embed in the `App` target when prompted.
 2. Xcode generates placeholder `MindedWidget.swift`/`Info.plist` and asset files in a
-   new group. **Delete the generated `.swift` and `Info.plist`** and instead **Add
-   Files…** the files in this folder (`MindedWidget.swift`, `CompanionSun.swift`,
-   `SunWidgetPhase.swift`, `Info.plist`, and `Media.xcassets`), with **Target
-   Membership = MindedWidget**. The `.xcassets` must be in the target's **Copy Bundle
-   Resources** phase (Xcode does this automatically for asset catalogs).
+   new group. **Delete the generated files** and instead **Add Files…** everything in
+   this folder (the five `.swift` files, `Assets.xcassets`, `Media.xcassets`, and
+   `Info.plist`), with **Target Membership = MindedWidget**. Both `.xcassets`
+   catalogs must be in the target's **Copy Bundle Resources** phase (Xcode does this
+   automatically for asset catalogs).
 3. Target settings for `MindedWidget`:
    - **Bundle Identifier:** `com.minded.app.widget` (must be the app id +
      `.something`; the app is `com.minded.app`).
@@ -120,22 +145,26 @@ link, it shares no data with the app.
 1. `cd extension && npm run buildIOS` then `npx cap sync ios` (bundles the shared web
    shell into the iOS app).
 2. Run the app once so the widget extension installs.
-3. Long-press the Home Screen ▸ **+** ▸ search "minded" ▸ add the sun. (Home
-   Screen only for v1 — see the Lock Screen note below.)
-4. **Tap the widget** → the app opens and the sun interaction begins, exactly like
+3. Long-press the Home Screen ▸ **+** ▸ search "minded" ▸ add the small sun and the
+   medium card. (Home Screen only — see the Lock Screen note below.)
+4. **Tap the sun** → the app opens and the sun interaction begins, exactly like
    tapping the in-app dashboard sun. Tap again while the app is already open (warm
    start) → it should re-open the overlay too.
-5. Confirm day/night tracks the **clock, not the theme**: set the device time past a
-   boundary (e.g. 12:00 → 23:00) and check the sun gives way to the moon and back.
-   Toggling system Dark Mode alone must _not_ change it (the disc is theme-agnostic).
+5. **Tap the card** → the interaction opens on the exact line the card was showing
+   (a NOTICE cue → that NOTICE screen, a "How about…" line → that ACTION_ADVICE),
+   on both cold and warm starts.
+6. Confirm day/night tracks the **clock, not the theme**: set the device time past a
+   boundary (e.g. 12:00 → 23:00) and check the sun gives way to the moon and back —
+   and that the card's sky steps with the hour and goes wordless at night.
+   Toggling system Dark Mode alone must _not_ change any of it.
 
 You can validate the _shared_ trigger with zero native build in the browser
 extension: `npm start`, then load `#/?sun=open`.
 
 ## Lock Screen (deferred)
 
-v1 ships `systemSmall` (Home Screen) only. A Lock Screen `accessoryCircular`
-variant was deliberately left out: accessory widgets render in the system's
+The widget ships Home Screen families only (`systemSmall`, `systemMedium`). A
+Lock Screen `accessoryCircular` variant was deliberately left out: accessory widgets render in the system's
 _vibrant_ mode, which discards colour and rebuilds the view from its **alpha
 channel**. Our near-opaque white disc + low-alpha bloom would collapse to a flat
 tinted blob, not a sun. A good Lock Screen sun needs a purpose-built alpha glyph
