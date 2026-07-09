@@ -131,9 +131,11 @@ Mirrors the Android shape; only the shell differs. See the folder's `README.md`
 for the one manual Xcode step (creating the Widget Extension target) and how to
 verify.
 
-- **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`). The sun is drawn
-  with SwiftUI radial gradients (`CompanionSun.swift`), colours ported 1:1 from
-  the Android `ic_sun_widget` vectors; day/night follows the **local clock**
+- **WidgetKit widget** (SwiftUI), Home Screen (`systemSmall`). The day sun is drawn
+  with SwiftUI radial gradients (`CompanionSun.swift`), colours ported 1:1 from the
+  Android day vector; the night moon is the **same lunar photo as Android and the
+  in-app `.moon`** (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG
+  image set) rather than a gradient twin. Day/night follows the **local clock**
   (`SunWidgetPhase.swift`, the Swift twin of the Android phase logic), with the
   timeline pre-placing each day/night boundary so the sun flips on the hour — not
   the system colour scheme. `.widgetURL(URL("minded://sun"))` is the tap target.
