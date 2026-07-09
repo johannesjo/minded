@@ -5,8 +5,7 @@ later.** A design note for evolving the existing sun companion widget
 (`docs/sun-companion-widget.md`) from pure presence into presence *plus one
 quiet line of text*. The Android implementation lives in
 `android/app/src/main/java/com/minded/minded/widget/` (`WidgetPrompts.kt`,
-the responsive `MyAppWidget.kt`); it has not yet been seen on a real
-launcher/device.
+`MyAppWidget.kt`); it has not yet been seen on a real launcher/device.
 
 > **Update — per-prompt tap routing shipped.** The widget now shows *real
 > interaction content* and tapping lands on that **exact** interaction (a NOTICE
