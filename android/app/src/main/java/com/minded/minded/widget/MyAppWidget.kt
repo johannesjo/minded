@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,12 +50,19 @@ import java.time.LocalDateTime
  * serif line (WidgetPrompts), the sun resting beneath it. See
  * docs/sun-companion-widget.md and docs/widget-prompts-concept.md.
  *
+ * The sun/moon *fills the space it's given* rather than floating as a fixed dot
+ * in an oversized tile: bigger placement → bigger sun (companionSunSize). That is
+ * why the mode is SizeMode.Exact, not Responsive — Responsive quantises
+ * LocalSize to the registered breakpoints, so it could never tell a 1×1 from a
+ * 4×4 to scale between them. Exact hands us the real tile size, from which we both
+ * pick the face (card once it's wide *and* tall enough) and scale the sun.
+ *
  * The phase and sky are chosen from the local hour; MyAppWidgetReceiver arms one
  * alarm per sky/phase/prompt change to refresh it.
  */
 class MyAppWidget : GlanceAppWidget() {
 
-    override val sizeMode: SizeMode = SizeMode.Responsive(setOf(SUN_ONLY, PROMPT_CARD))
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
@@ -63,19 +71,23 @@ class MyAppWidget : GlanceAppWidget() {
             // boundary-stale snapshot.
             val now = LocalDateTime.now()
             val phase = SunWidgetPhase.forHour(now.hour)
-            if (LocalSize.current == PROMPT_CARD) {
+            val size = LocalSize.current
+            // The card only when the tile is both wide and tall enough to fit the
+            // serif line + sun without clipping (the CARD_MIN floor); anything
+            // shorter — flat rows, dense grids, landscape — keeps the plain sun.
+            if (size.width >= CARD_MIN.width && size.height >= CARD_MIN.height) {
                 val prompt = WidgetPrompts.promptForMoment(
                     now.toLocalDate().toEpochDay(), now.hour, now.minute,
                 )
-                PromptCard(context, phase, WidgetSky.forHour(now.hour), prompt)
+                PromptCard(context, phase, WidgetSky.forHour(now.hour), prompt, size)
             } else {
-                SunOnly(context, phase)
+                SunOnly(context, phase, size)
             }
         }
     }
 
     @Composable
-    private fun SunOnly(context: Context, phase: SunWidgetPhase) {
+    private fun SunOnly(context: Context, phase: SunWidgetPhase, size: DpSize) {
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -85,7 +97,11 @@ class MyAppWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(drawableFor(phase)),
                 contentDescription = context.getString(descriptionFor(phase)),
-                modifier = GlanceModifier.size(SUN_SIZE),
+                // Grow with the tile so a 2×2 companion isn't a small dot in a big
+                // box, but never below the plain 1×1 sun (SUN_SIZE floor).
+                modifier = GlanceModifier.size(
+                    companionSunSize(size, SUN_ONLY_FRACTION, SUN_SIZE),
+                ),
             )
         }
     }
@@ -106,6 +122,7 @@ class MyAppWidget : GlanceAppWidget() {
         phase: SunWidgetPhase,
         sky: WidgetSky,
         prompt: String?,
+        size: DpSize,
     ) {
         Column(
             modifier = GlanceModifier
@@ -148,11 +165,19 @@ class MyAppWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(drawableFor(phase)),
                 contentDescription = context.getString(descriptionFor(phase)),
-                // Beneath a line the sun is a small mark; with no line (night — the
-                // moon carries the card alone) it grows to the full companion size,
-                // never smaller than the plain 1×1 sun, so it doesn't float lost in
-                // the empty card.
-                modifier = GlanceModifier.size(if (prompt != null) CARD_SUN_SIZE else SUN_SIZE),
+                // Both faces of the card scale with the tile so the sun/moon fills
+                // a large card instead of floating lost in it. Beneath a line the
+                // sun is a modest mark sharing the space (CARD_SUN_FRACTION, floored
+                // at CARD_SUN_SIZE); with no line (night — the moon carries the card
+                // alone) it grows generously to own the empty card
+                // (CARD_MOON_FRACTION, floored at the plain sun's SUN_SIZE).
+                modifier = GlanceModifier.size(
+                    if (prompt != null) {
+                        companionSunSize(size, CARD_SUN_FRACTION, CARD_SUN_SIZE)
+                    } else {
+                        companionSunSize(size, CARD_MOON_FRACTION, SUN_SIZE)
+                    },
+                ),
             )
         }
     }
@@ -190,18 +215,36 @@ class MyAppWidget : GlanceAppWidget() {
         }
 
     private companion object {
-        // The plain companion sun/moon: the 1×1 sun-only face, and the moon that
-        // carries the card alone at night (no prompt line to share the space).
+        // Size floors — the sun/moon scales up with the tile from here, never
+        // below. SUN_SIZE is the plain 1×1 sun/moon and the floor for the night
+        // moon that carries the card alone; CARD_SUN_SIZE is the smaller mark
+        // beneath a prompt line, and its floor on the smallest card.
         val SUN_SIZE = 72.dp
-        // The smaller mark beneath a prompt line on the card face.
         val CARD_SUN_SIZE = 44.dp
 
-        // The two responsive faces. The card's 140dp height floor is a fit
-        // guarantee, not a guess: 12dp padding ×2 + 3 serif lines at 15sp
-        // (~60dp) + 8dp spacer + 44dp sun ≈ 136dp. Placements too short for
-        // that (flat rows, dense grids, landscape) keep the plain floating sun
-        // rather than a clipped card.
-        val SUN_ONLY = DpSize(40.dp, 40.dp)
-        val PROMPT_CARD = DpSize(170.dp, 140.dp)
+        // How much of the tile's shorter side the sun/moon claims, per face. The
+        // plain sun fills its tile boldly; the night moon owns the card generously
+        // but leaves the card's edges breathing; the daytime sun stays a modest
+        // mark so the serif line above it keeps the card.
+        const val SUN_ONLY_FRACTION = 0.75f
+        const val CARD_MOON_FRACTION = 0.62f
+        const val CARD_SUN_FRACTION = 0.30f
+
+        // The tile size at/above which the card face fits. The 140dp height is a
+        // fit guarantee, not a guess: 12dp padding ×2 + 3 serif lines at 15sp
+        // (~60dp) + 8dp spacer + 44dp sun ≈ 136dp. Placements shorter or narrower
+        // (flat rows, dense grids, landscape) keep the plain floating sun rather
+        // than a clipped card.
+        val CARD_MIN = DpSize(170.dp, 140.dp)
     }
 }
+
+/**
+ * The size for the companion sun/moon inside a tile of [available] space: a
+ * [fraction] of the tile's shorter side (so the disc stays round at any aspect
+ * ratio), but never below [floor] (so it never shrinks under the plain companion
+ * on small placements). Bigger tile → bigger sun, instead of a fixed dot floating
+ * in an oversized tile.
+ */
+private fun companionSunSize(available: DpSize, fraction: Float, floor: Dp): Dp =
+    maxOf(floor, minOf(available.width, available.height) * fraction)
