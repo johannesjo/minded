@@ -167,9 +167,10 @@ Everything extends what exists; nothing new is invented.
 [card ≥ ~3×2]  =  intervention screen in miniature:
                   [app sky] over [serif line] over [sun]
       |                              |
-  SizeMode.Responsive         WidgetPrompts.promptForMoment(epochDay, hour, minute)
+  SizeMode.Exact              WidgetPrompts.promptForMoment(epochDay, hour, minute)
   (below card size →          (pure Kotlin, 15-min-slot indexed, unit-tested —
-   plain floating sun)         the SunWidgetPhase pattern; night → null)
+   plain floating sun;         the SunWidgetPhase pattern; night → null)
+   sun scales to the tile)
       |
   tap → actionStartActivity(EXTRA_LAUNCH_ROUTE = "/?sun=open",
                             EXTRA_WIDGET_LINE = the shown line)  ← lands on that line
@@ -179,11 +180,15 @@ Everything extends what exists; nothing new is invented.
    (~60 inexact, non-wake wakeups per waking day — only while the screen's on)
 ```
 
-- **`MyAppWidget.kt`**: `SizeMode.Responsive` with two faces — `SUN_ONLY`
-  (40×40dp) and `PROMPT_CARD` (170×140dp). The 140dp floor is a fit
+- **`MyAppWidget.kt`**: `SizeMode.Exact` with two faces, the card shown once
+  the tile clears the `CARD_MIN` 170×140dp floor. That 140dp height is a fit
   guarantee, not a guess (12dp padding ×2 + three 15sp serif lines + 8dp
   spacer + 44dp sun ≈ 136dp); anything shorter — flat rows, dense grids,
-  landscape — keeps the plain floating sun rather than a clipped card. The
+  landscape — keeps the plain floating sun rather than a clipped card. `Exact`
+  (not `Responsive`) so the real tile size is known: the sun/moon then scales
+  to fill it (`companionSunSize`, a fraction of the shorter side floored at the
+  1×1 sun) rather than floating as a fixed 72dp dot in a large tile — most
+  visibly the night card, where the wordless moon grows to own the space. The
   card is a `Column` with the sky as `background(ImageProvider)` — dedicated
   **card-sized `widget_sky_*` renders** of the exact app sky, dithered at
   target size by `gen_loading_sky.py` (minifying the full-screen sky would
