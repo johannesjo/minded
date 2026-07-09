@@ -39,7 +39,10 @@ Other comments:
       </p>
 
       <div>
-        <Btn href={mailtoLink()} target="_blank">
+        {/* Android's WebView silently drops target="_blank" (no onCreateWindow),
+            so let the mailto: navigate the main frame — MainActivity's
+            shouldOverrideUrlLoading hands it to the OS mail app. */}
+        <Btn href={mailtoLink()} target={IS_ANDROID ? undefined : "_blank"}>
           send us a quick email
         </Btn>
       </div>

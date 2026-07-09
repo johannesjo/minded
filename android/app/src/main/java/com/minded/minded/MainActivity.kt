@@ -10,6 +10,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.ValueCallback
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -243,6 +244,17 @@ class MainActivity : AppCompatActivity() {
                                         view?.animate()?.alpha(1f)
                                             ?.setDuration(WEBVIEW_FADE_IN_MS)?.start()
                                     }
+
+                                    // Outbound links the WebView can't render itself
+                                    // (mailto:, tel:, …) are handed to the OS; the app's
+                                    // own file:// content keeps loading in the WebView.
+                                    override fun shouldOverrideUrlLoading(
+                                        view: WebView?,
+                                        request: WebResourceRequest?,
+                                    ): Boolean {
+                                        val uri = request?.url ?: return false
+                                        return openUriExternally(uri)
+                                    }
                                 }
                                 // Cold start: if launched from the widget, load the
                                 // dashboard with the sun hash (plus the tapped line, if
@@ -276,6 +288,37 @@ class MainActivity : AppCompatActivity() {
             MissingCapability.SystemAlertWindow -> askPermissionForOverlay()
             MissingCapability.UsageStats -> askPermissionForUsageStats()
             MissingCapability.BatteryOptimization -> askToDisableBatteryOptimization()
+        }
+    }
+
+    /**
+     * Hand a non-web URL to the OS so the right app opens (mailto: → mail app,
+     * tel: → dialer, …). The app itself is served from file:// and any http(s)
+     * stays in the WebView, so only other schemes are externalised. Returns true
+     * when the navigation was handled (or should be swallowed), so the WebView
+     * never falls through to an ERR_UNKNOWN_URL_SCHEME error page.
+     *
+     * Safe only because this WebView loads first-party file:// content exclusively.
+     * If it ever renders remote/untrusted content, narrow this to an allowlist
+     * (mailto/tel) so it can't be coerced into launching arbitrary intents.
+     */
+    private fun openUriExternally(uri: Uri): Boolean {
+        val scheme = uri.scheme?.lowercase()
+        if (scheme == null || scheme == "file" || scheme == "http" || scheme == "https") {
+            return false
+        }
+        // ACTION_SENDTO is the canonical action for mailto: (some mail apps
+        // register only for it); ACTION_VIEW is the generic fallback for tel: etc.
+        val action = if (scheme == "mailto") Intent.ACTION_SENDTO else Intent.ACTION_VIEW
+        return try {
+            startActivity(Intent(action, uri))
+            true
+        } catch (e: Exception) {
+            // No handler (e.g. no mail app) or the target rejected the launch —
+            // broad on purpose, since any throw here would crash the activity.
+            // Still swallow it so the WebView doesn't show a broken error page.
+            Log.w(logTag, "Could not open $uri", e)
+            true
         }
     }
 
