@@ -28,6 +28,27 @@ export function normalizeLanguage(language) {
   throw new Error(`Invalid language tag: ${language}`);
 }
 
+// Releasing binaries and editing the store listing are gated by *different*
+// Play permissions, so the release service account can commit AABs yet still be
+// rejected here. Play defers that check to commit time, so the raw error is an
+// opaque "The caller does not have permission" — this points at the real fix.
+export const PERMISSION_HINT =
+  'Play rejected the store-listing edit as unauthorized. This service account ' +
+  'can release app binaries but appears to lack the "Manage store presence" ' +
+  "permission required to edit the store listing (screenshots, graphics, " +
+  "text). Grant it in Play Console -> Users & permissions for this app, then " +
+  "re-run.";
+
+export function isPermissionError(error) {
+  if (!error) return false;
+  // Check every field a googleapis/gaxios version might carry the status on
+  // (a real 403 lands on `status`, code is left undefined) instead of a `??`
+  // chain, so a non-numeric `code` can't short-circuit past a 403 `status`.
+  const codes = [error.code, error.status, error.response?.status];
+  if (codes.some((value) => Number(value) === 403)) return true;
+  return /does not have permission/i.test(String(error.message ?? ""));
+}
+
 export async function publishPhoneScreenshots({
   androidpublisher,
   packageName,
@@ -118,6 +139,9 @@ const entryPoint = process.argv[1]
 if (import.meta.url === entryPoint) {
   main().catch((error) => {
     console.error(error instanceof Error ? error.stack : error);
+    if (isPermissionError(error)) {
+      console.error(`\n${PERMISSION_HINT}`);
+    }
     process.exitCode = 1;
   });
 }

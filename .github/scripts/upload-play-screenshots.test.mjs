@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  isPermissionError,
   normalizeLanguage,
   publishPhoneScreenshots,
 } from "./upload-play-screenshots.mjs";
@@ -90,4 +91,20 @@ test("rejects an empty screenshot set before opening a Play edit", async () => {
 test("validates and canonicalizes the Play listing language", () => {
   assert.equal(normalizeLanguage("de-de"), "de-DE");
   assert.throws(() => normalizeLanguage("en-US/../../"), /Invalid language/);
+});
+
+test("flags the Play permission rejection so the CLI can hint at the fix", () => {
+  assert.equal(
+    isPermissionError(new Error("The caller does not have permission")),
+    true,
+  );
+  assert.equal(isPermissionError({ code: 403, message: "Forbidden" }), true);
+  // The real gaxios shape: numeric `status`, `code` left undefined.
+  assert.equal(isPermissionError({ status: 403 }), true);
+  // A stringly-typed status must not slip past the numeric check.
+  assert.equal(isPermissionError({ code: "403", message: "x" }), true);
+  assert.equal(isPermissionError({ response: { status: 403 } }), true);
+  assert.equal(isPermissionError({ response: { status: 500 } }), false);
+  assert.equal(isPermissionError(new Error("upload failed")), false);
+  assert.equal(isPermissionError(null), false);
 });
