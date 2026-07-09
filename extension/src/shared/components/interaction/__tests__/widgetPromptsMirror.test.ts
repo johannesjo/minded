@@ -37,13 +37,14 @@ const extractLines = (
 };
 
 describe("widget prompt mirrors stay in sync with the interaction pools", () => {
+  const kotlinSource = readSource(
+    "../android/app/src/main/java/com/minded/minded/widget/WidgetPrompts.kt",
+  );
   // Grab each pool's list body, up to the closing bracket alone at the
   // property's indentation (string entries never contain that, unlike the `)`
   // in the `// … (notice.const.ts)` comments, which extractLines strips first).
   const kotlinLines = extractLines(
-    readSource(
-      "../android/app/src/main/java/com/minded/minded/widget/WidgetPrompts.kt",
-    ),
+    kotlinSource,
     /val WAKING_PROMPTS[\s\S]*?\n {4}\)/,
   );
   const swiftLines = extractLines(
@@ -70,5 +71,28 @@ describe("widget prompt mirrors stay in sync with the interaction pools", () => 
     // Order matters: both platforms index the pool by the same 15-minute slot
     // count, so equal order is what makes the same moment show the same line.
     expect(swiftLines).toEqual(kotlinLines);
+  });
+
+  it("the length cap agrees everywhere and every line fits it as ASCII", () => {
+    // Kotlin's MAX_PROMPT_LENGTH is JVM-tested against the pool; iOS has no
+    // Swift test target, and its forwarding cap (AppDelegate.encodedWidgetLine)
+    // is a literal that silently drops longer lines (the tap degrades to a
+    // random pick). Pin all three here so raising the cap on one platform
+    // can't strand the other. ASCII matters too: the iOS cap counts UTF-8
+    // bytes and the encoder's output-alphabet claim assumes ASCII lines.
+    const kotlinCap = Number(
+      kotlinSource.match(/MAX_PROMPT_LENGTH\s*=\s*(\d+)/)?.[1],
+    );
+    const iosForwardCap = Number(
+      readSource("ios/App/App/AppDelegate.swift").match(
+        /line\.utf8\.count\s*<=\s*(\d+)/,
+      )?.[1],
+    );
+    expect(kotlinCap).toBeGreaterThan(0);
+    expect(iosForwardCap).toBe(kotlinCap);
+    for (const line of kotlinLines) {
+      expect(line.length).toBeLessThanOrEqual(kotlinCap);
+      expect(line).toMatch(/^[\x20-\x7e]+$/);
+    }
   });
 });

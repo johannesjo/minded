@@ -47,8 +47,9 @@ enum WidgetPrompts {
     // — consecutive slots never repeat (the pool holds more than one line).
     private static let slotsPerDay = 24 * 60 / slotMinutes
 
-    /// Hard cap so every line fits the card (mirrors the Kotlin MAX_PROMPT_LENGTH).
-    static let maxPromptLength = 60
+    // Every line is ≤60 chars of ASCII so it fits the card — enforced by the
+    // Kotlin twin's MAX_PROMPT_LENGTH (JVM-tested) and pinned across platforms,
+    // including AppDelegate's forwarding cap, by widgetPromptsMirror.test.ts.
 
     // Waking hours (06:00–19:00): embodied present-moment anchors and gentle
     // suggestions that complete on the spot — the NOTICE cues and short
@@ -119,11 +120,9 @@ enum WidgetPrompts {
     /// schedules the next one, never an immediate re-fire.
     static func nextChange(after date: Date, calendar: Calendar = .current) -> Date? {
         if SunWidgetPhase.phase(at: date, calendar: calendar).isNight {
-            return calendar.nextDate(
-                after: date,
-                matching: DateComponents(hour: SunWidgetPhase.dayStart, minute: 0, second: 0),
-                matchingPolicy: .nextTime
-            )
+            // From anywhere in the night the next phase boundary *is* the next
+            // dayStart, so reuse the shipped v1 boundary walk as-is.
+            return SunWidgetPhase.nextBoundary(after: date, calendar: calendar)
         }
         return stride(from: 0, to: 60, by: slotMinutes)
             .compactMap { minute in

@@ -54,11 +54,18 @@ describe("the widget clock mirrors skyTimeline (native copies ↔ TS)", () => {
   // time-of-day). It only checks the face *names* exist, not the whole-hour
   // bucket edges (9/13/17/18) — those are an intentional widget-side
   // quantization of the app's per-minute interpolation, not a mirror.
-  it("every ambient keyframe has a matching WidgetSky face (Android)", () => {
-    const faces = read(ANDROID_SKY)
-      .match(/enum class WidgetSky\s*\{\s*([^;]+);/)?.[1]
+  /** The enum face names declared in a Kotlin/Swift WidgetSky source. */
+  const facesIn = (source: string, declPattern: RegExp): string[] | undefined =>
+    source
+      .match(declPattern)?.[1]
       ?.split(",")
       .map((s) => s.trim().toUpperCase());
+
+  it("every ambient keyframe has a matching WidgetSky face (Android)", () => {
+    const faces = facesIn(
+      read(ANDROID_SKY),
+      /enum class WidgetSky\s*\{\s*([^;]+);/,
+    );
     expect(faces).toBeDefined();
     for (const kf of AMBIENT_SKY_KEYFRAMES) {
       expect(faces).toContain(kf.label.toUpperCase());
@@ -66,13 +73,22 @@ describe("the widget clock mirrors skyTimeline (native copies ↔ TS)", () => {
   });
 
   it("every ambient keyframe has a matching WidgetSky face (iOS)", () => {
-    const faces = read(IOS_SKY)
-      .match(/enum WidgetSky\s*\{\s*case ([^\n]+)/)?.[1]
-      ?.split(",")
-      .map((s) => s.trim().toUpperCase());
+    const faces = facesIn(read(IOS_SKY), /enum WidgetSky\s*\{\s*case ([^\n]+)/);
     expect(faces).toBeDefined();
     for (const kf of AMBIENT_SKY_KEYFRAMES) {
       expect(faces).toContain(kf.label.toUpperCase());
     }
+  });
+
+  // The bucket edges themselves are widget-side quantization (not a TS mirror,
+  // see above) — but Android's are pinned by WidgetSkyTest.kt while Swift has
+  // no test target, so this keeps the two platforms' skies stepping on the
+  // same hours.
+  it("the iOS sky hour buckets match Android's", () => {
+    const edges = (source: string): number[] =>
+      [...source.matchAll(/h < (\d+)/g)].map((m) => Number(m[1]));
+    const androidEdges = edges(read(ANDROID_SKY));
+    expect(androidEdges.length).toBeGreaterThan(0);
+    expect(edges(read(IOS_SKY))).toEqual(androidEdges);
   });
 });

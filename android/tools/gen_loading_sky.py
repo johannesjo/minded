@@ -47,6 +47,10 @@ CARD_HEIGHT = 240
 # target size -- up to ~364x170pt (@3x ~1092x510px). Rendering at @2x of the
 # largest face keeps the mild-upscale ratio the Android card already accepts
 # (its 360-wide PNG draws at up to ~510px), at a quarter of the @3x byte cost.
+# shortcut: the six iOS PNGs still add ~1 MB to the app download -- the baked
+# dither noise defeats PNG filtering (a clean gradient would be ~2 KB). If
+# size ever matters: let the asset catalog store these lossy/HEIF (visually
+# safe for noise), or drop to @1x (~45 KB each) and accept upscaled noise.
 IOS_OUT_DIR = os.path.join(
     os.path.dirname(__file__),
     "..", "..", "extension", "ios", "App", "MindedWidget", "Assets.xcassets",
@@ -90,6 +94,13 @@ DARK_STOPS = [
     (0.82, "#123262"),
     (0.92, "#233053"),
     (1.00, "#49313b"),
+]
+
+# The six widget-card faces, shared by the Android drawables and the iOS
+# imagesets -- one list, so a new face can't silently ship on one platform only.
+CARD_FACES = [("widget_sky_dark", DARK_STOPS)] + [
+    ("widget_sky_" + name, ambient_stops(colors))
+    for name, colors in AMBIENT_KEYFRAME_COLORS.items()
 ]
 
 
@@ -148,11 +159,7 @@ def main():
     outputs = [
         ("loading_sky_light", LIGHT_STOPS, WIDTH, HEIGHT),
         ("loading_sky_dark", DARK_STOPS, WIDTH, HEIGHT),
-        ("widget_sky_dark", DARK_STOPS, CARD_WIDTH, CARD_HEIGHT),
-    ] + [
-        ("widget_sky_" + name, ambient_stops(colors), CARD_WIDTH, CARD_HEIGHT)
-        for name, colors in AMBIENT_KEYFRAME_COLORS.items()
-    ]
+    ] + [(name, stops, CARD_WIDTH, CARD_HEIGHT) for name, stops in CARD_FACES]
     for name, stops, width, height in outputs:
         path = os.path.join(OUT_DIR, name + ".png")
         write_png(path, render(stops, width, height))
@@ -161,16 +168,10 @@ def main():
     # The same six card skies for the iOS widget, at its own size. Names match
     # the Android drawables so both platforms read greppably alike.
     os.makedirs(IOS_OUT_DIR, exist_ok=True)
-    root_contents = os.path.join(IOS_OUT_DIR, "Contents.json")
-    if not os.path.exists(root_contents):
-        with open(root_contents, "w") as f:
-            json.dump({"info": {"author": "gen_loading_sky.py", "version": 1}}, f, indent=2)
-            f.write("\n")
-    ios_outputs = [("widget_sky_dark", DARK_STOPS)] + [
-        ("widget_sky_" + name, ambient_stops(colors))
-        for name, colors in AMBIENT_KEYFRAME_COLORS.items()
-    ]
-    for name, stops in ios_outputs:
+    with open(os.path.join(IOS_OUT_DIR, "Contents.json"), "w") as f:
+        json.dump({"info": {"author": "gen_loading_sky.py", "version": 1}}, f, indent=2)
+        f.write("\n")
+    for name, stops in CARD_FACES:
         imageset_dir = write_imageset(
             name, render(stops, IOS_CARD_WIDTH, IOS_CARD_HEIGHT)
         )

@@ -43,13 +43,13 @@ struct SunEntry: TimelineEntry {
     let prompt: String?
 }
 
-private func sunEntry(at date: Date, calendar: Calendar = .current) -> SunEntry {
-    let hour = calendar.component(.hour, from: date)
+private func sunEntry(at date: Date) -> SunEntry {
+    let hour = Calendar.current.component(.hour, from: date)
     return SunEntry(
         date: date,
         phase: SunWidgetPhase.forHour(hour),
         sky: WidgetSky.forHour(hour),
-        prompt: WidgetPrompts.prompt(at: date, calendar: calendar)
+        prompt: WidgetPrompts.prompt(at: date)
     )
 }
 
@@ -73,6 +73,14 @@ struct SunProvider: TimelineProvider {
             guard let change = WidgetPrompts.nextChange(after: cursor) else { break }
             entries.append(sunEntry(at: change))
             cursor = change
+        }
+        // Never expected: if Calendar.nextDate failed outright, a single
+        // already-consumed entry with `.atEnd` would ask WidgetKit to reload
+        // immediately, in a loop — exactly the refresh-budget churn this design
+        // avoids. Retry on a quarter-hour instead.
+        guard entries.count > 1 else {
+            completion(Timeline(entries: entries, policy: .after(now.addingTimeInterval(15 * 60))))
+            return
         }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
@@ -160,9 +168,10 @@ private func skyImageName(_ sky: WidgetSky) -> String {
 }
 
 /// The tap deep link. With a line, the native shell forwards it as
-/// `&widgetLine=…` (strictly re-encoded so nothing but the widget's own
-/// quote-free text can reach the WebView hash — see AppDelegate.swift) and the
-/// shared flow opens that exact NOTICE/ACTION_ADVICE (RouteCmp's widgetLine).
+/// `&widgetLine=…` (strictly re-encoded to ASCII alphanumerics+`%`, so nothing
+/// that could break out of the WebView hash can pass — see AppDelegate.swift)
+/// and the shared flow opens that exact NOTICE/ACTION_ADVICE (RouteCmp's
+/// widgetLine).
 private func openSunURL(line: String?) -> URL? {
     var components = URLComponents()
     components.scheme = "minded"
@@ -226,7 +235,7 @@ private extension View {
                 Image(imageName).resizable()
             }
         } else {
-            self.background(Image(imageName).resizable())
+            self.background { Image(imageName).resizable() }
         }
     }
 }

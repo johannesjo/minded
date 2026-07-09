@@ -40,9 +40,9 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     private var pendingWidgetLine: String?
 
     /// The hash the web shell consumes: the shared `?sun=open` flag, plus the
-    /// card's line when the tap carried one. `line` is alphanumerics+`%` only
-    /// (see AppDelegate.encodedWidgetLine), so it is safe inside the JS string
-    /// literals below — mirrors Android's `MainActivity.launchHash`.
+    /// card's line when the tap carried one. `line` is ASCII alphanumerics+`%`
+    /// only (see AppDelegate.encodedWidgetLine), so it is safe inside the JS
+    /// string literals below — mirrors Android's `MainActivity.launchHash`.
     private static func sunHash(line: String?) -> String {
         line.map { "\(openSunHash)&widgetLine=\($0)" } ?? openSunHash
     }

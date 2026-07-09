@@ -157,6 +157,9 @@ link, it shares no data with the app.
    boundary (e.g. 12:00 → 23:00) and check the sun gives way to the moon and back —
    and that the card's sky steps with the hour and goes wordless at night.
    Toggling system Dark Mode alone must _not_ change any of it.
+7. On iOS 18+, check the card under a **tinted/dark Home Screen** (long-press ▸
+   Edit ▸ Customize): the system re-renders widgets in those modes and may darken
+   the container — make sure the near-black line doesn't land on a darkened sky.
 
 You can validate the _shared_ trigger with zero native build in the browser
 extension: `npm start`, then load `#/?sun=open`.

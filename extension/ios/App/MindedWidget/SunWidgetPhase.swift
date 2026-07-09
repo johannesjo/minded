@@ -52,10 +52,11 @@ enum SunWidgetPhase {
     }
 
     /// The next instant the phase changes, strictly after `date` (the next local
-    /// 06:00 or 19:00, whichever comes first). The timeline uses this to place each
-    /// boundary entry so the sun gives way to the moon — and back — exactly on the
-    /// hour: the WidgetKit-native equivalent of the Android receiver's per-phase
-    /// alarm. DST/timezone-safe via `Calendar`. Strictly *after* `date`, so landing
+    /// 06:00 or 19:00, whichever comes first). The timeline reaches it through
+    /// `WidgetPrompts.nextChange`, whose wordless-night branch is exactly this
+    /// walk — so the moon gives way to the sun on the hour: the WidgetKit-native
+    /// equivalent of the Android receiver's night-spanning alarm.
+    /// DST/timezone-safe via `Calendar`. Strictly *after* `date`, so landing
     /// on a boundary schedules the following one, never an immediate re-fire.
     static func nextBoundary(after date: Date, calendar: Calendar = .current) -> Date? {
         [dayStart, nightStart]

@@ -41,23 +41,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     /// The `line` the tapped prompt card was showing, re-encoded so that only
-    /// alphanumerics and `%` can ever reach the WebView hash — the iOS twin of
-    /// Android's `widgetLineFromIntent` allow-list: `minded://` is open to any
-    /// app, and the hash is set via a JS string literal, so a crafted URL must
-    /// never be able to break out of it. The exact-pool match stays on the web
-    /// side (`matchWidgetLine`), where an unknown line just falls through to the
-    /// normal random pick — it degrades, never breaks.
+    /// ASCII alphanumerics and `%` can ever reach the WebView hash. This is
+    /// sanitize-then-degrade, not Android's exact-pool allow-list
+    /// (`widgetLineFromIntent`): `minded://` is open to any app and the hash is
+    /// set via a JS string literal, so a crafted URL must never be able to break
+    /// out of it — the strict output alphabet guarantees that. The exact-pool
+    /// match stays on the web side (`matchWidgetLine`), where an unrecognised
+    /// line just falls through to the normal random pick — it degrades, never
+    /// breaks. (The pool itself compiles only into the widget target; compiling
+    /// WidgetPrompts.swift into the App target too would restore exact Android
+    /// parity if that ever matters.)
     static func encodedWidgetLine(from url: URL) -> String? {
         guard
             let line = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "line" })?.value,
             !line.isEmpty,
-            // Real widget lines are ≤60 chars (WidgetPrompts); anything longer
-            // is not ours.
-            line.count <= 60
+            // Real widget lines are ≤60 chars of ASCII (see the pool + the jest
+            // mirror test, which pins this 60 to the Kotlin cap); counting bytes
+            // keeps the bound honest for multi-scalar graphemes too.
+            line.utf8.count <= 60
         else { return nil }
-        return line.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+        return line.addingPercentEncoding(withAllowedCharacters: Self.asciiAlphanumerics)
     }
+
+    // Deliberately NOT `CharacterSet.alphanumerics`, which is Unicode-wide
+    // (every script's letters, digits, and combining marks would pass through
+    // unencoded). Real pool lines are pure ASCII, so nothing legitimate is lost,
+    // and the encoder's output alphabet is byte-exactly what the comments claim.
+    private static let asciiAlphanumerics = CharacterSet(
+        charactersIn: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    )
 
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
