@@ -39,6 +39,7 @@ import {
 } from "@src/ev.const";
 import { useNavigate } from "@solidjs/router";
 import {
+  DAILY_QUESTION_MORNING_END,
   DailyQuestionsMode,
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
@@ -51,6 +52,10 @@ export const DashboardGroups: (props: {
   forceRevealed?: boolean;
 }) => JSX.Element = (props) => {
   let t0: NodeJS.Timeout | undefined;
+  // Fires at the end of the shown banner's time window to fade it out, so a card
+  // revealed inside its window can't linger past that boundary on a long-open
+  // dashboard (see scheduleDailyQuestionsBannerExpiry).
+  let bannerExpiry: NodeJS.Timeout | undefined;
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
     createSignal<boolean>(false);
@@ -120,8 +125,12 @@ export const DashboardGroups: (props: {
       // what revealed it (and vice versa). Only when revealing — while hidden the
       // mode is irrelevant, and skipping it avoids swapping wording under a user
       // who is already looking at the banner.
-      if (showDailyQuestionsBanner)
+      if (showDailyQuestionsBanner) {
         setDailyQuestionsBannerMode(getDailyQuestionsMode());
+        scheduleDailyQuestionsBannerExpiry();
+      } else {
+        window.clearTimeout(bannerExpiry);
+      }
       setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
 
       // Steer this arrival's greeting away from the tile shown last time we
@@ -183,6 +192,7 @@ export const DashboardGroups: (props: {
     window.removeEventListener(REFRESH_DASHBOARD_EV, onRefreshEv);
     window.removeEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, reGreetHidden);
     window.clearTimeout(t0);
+    window.clearTimeout(bannerExpiry);
   });
 
   // Route to the full "look back" grid. The global page-transition guard
@@ -193,15 +203,50 @@ export const DashboardGroups: (props: {
   // shows its back arrow there, exactly like settings.
   const revealAll = () => navigate("/lookBack");
 
-  const removeDailyQuestionsBanner = () => {
+  // Fade the banner out (soft, never a snap) and unmount it once the fade
+  // finishes. Shared by the user's explicit "no" dismissal and the automatic
+  // window-boundary expiry below.
+  const fadeOutDailyQuestionsBanner = () => {
     setIsDailyQuestionsBannerBeingRemoved(true);
-    setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
     window.clearTimeout(t0);
     // Matches the --dur-soft fade-out on .isBeingRemoved so the node stays
     // mounted for the full fade instead of being pulled out mid-transition.
     t0 = setTimeout(() => {
       setIsShowDailyQuestionsBanner(false);
+      // Reset so a later reveal (e.g. the evening banner) starts fully visible
+      // rather than mid-fade.
+      setIsDailyQuestionsBannerBeingRemoved(false);
     }, 480);
+  };
+
+  const removeDailyQuestionsBanner = () => {
+    setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
+    fadeOutDailyQuestionsBanner();
+  };
+
+  // Fade the banner out when its time window closes, so a card revealed
+  // legitimately inside its window — the morning "inspiration" card before noon,
+  // the evening card before the day rolls over — can't linger past that boundary
+  // on a dashboard left open for hours. Without this, only an explicit refresh
+  // event would ever re-hide it, which is how a morning card once surfaced at
+  // 23:59. Re-armed on every refresh that shows the banner.
+  const scheduleDailyQuestionsBannerExpiry = () => {
+    window.clearTimeout(bannerExpiry);
+    const now = new Date();
+    const windowEnd = new Date(now);
+    if (getDailyQuestionsBannerMode() === "Morning") {
+      windowEnd.setHours(DAILY_QUESTION_MORNING_END, 0, 0, 0);
+    } else {
+      // End of the day; past midnight the mode/visibility no longer resolve to
+      // "Evening" anyway.
+      windowEnd.setHours(24, 0, 0, 0);
+    }
+    const msUntilWindowEnd = windowEnd.getTime() - now.getTime();
+    if (msUntilWindowEnd <= 0) {
+      fadeOutDailyQuestionsBanner();
+      return;
+    }
+    bannerExpiry = setTimeout(fadeOutDailyQuestionsBanner, msUntilWindowEnd);
   };
 
   const renderDailyQuestionsBanner = () => (
