@@ -4,16 +4,22 @@
 //
 //  The home-screen / lock-screen companion sun, rendered in SwiftUI.
 //
-//  This is the WidgetKit twin of the Android `ic_sun_widget` vector
-//  (res/drawable + res/drawable-night). The colours and proportions are ported
-//  one-to-one from there so the home-screen sun matches the app's resting sun:
-//  a near-white disc with a soft warm bloom (day), or a cool moon lit from the
-//  upper-left (night). It just renders whichever it's told via `isNight`; the
-//  day/night *decision* is the clock (`SunWidgetPhase`, picked by the timeline in
-//  MindedWidget.swift), the same time-based rule as the Android widget — not the
-//  system colour scheme. The widget is a static snapshot per phase (WidgetKit
-//  can't run the living, breathing in-app sun), so this is the calm doorway, not
-//  the experience. See docs/sun-companion-widget.md.
+//  This is the WidgetKit twin of the Android `ic_sun_widget` assets. The two
+//  phases match the app's resting sun:
+//    - Day (06–19): a near-white disc warming to the faintest gold at the rim,
+//      wrapped in a soft warm bloom. Drawn here with SwiftUI gradients, ported
+//      one-to-one from the Android day vector (`res/drawable/ic_sun_widget_day.xml`).
+//    - Night: the moon. This is the *same* lunar photo the Android widget and the
+//      in-app `.moon` use (`res/drawable-nodpi/ic_sun_widget_night.webp`, re-encoded
+//      as the `MoonWidget` image set) — the real near-side disc with its cool sheen
+//      and halo already baked in, rather than a gradient twin the app deliberately
+//      avoids (see docs/sun-companion-widget.md).
+//
+//  It just renders whichever it's told via `isNight`; the day/night *decision* is
+//  the clock (`SunWidgetPhase`, picked by the timeline in MindedWidget.swift), the
+//  same time-based rule as the Android widget — not the system colour scheme. The
+//  widget is a static snapshot per phase (WidgetKit can't run the living, breathing
+//  in-app sun), so this is the calm doorway, not the experience.
 //
 
 import SwiftUI
@@ -30,8 +36,12 @@ struct CompanionSun: View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
             ZStack {
-                glow(side: side)
-                disc(side: side)
+                if isNight {
+                    moon(side: side)
+                } else {
+                    glow(side: side)
+                    disc(side: side)
+                }
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
@@ -39,23 +49,27 @@ struct CompanionSun: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
-    // The soft bloom / idle-breath halo: gentle, low-alpha, fading to nothing
-    // at the rim. Spans the full tile (Android gradientRadius 53 over a 108
-    // viewport ≈ the whole circle).
+    // The night moon: one image, disc + cool sheen + halo baked in, filling the
+    // tile exactly as the Android night drawable fills its sun slot.
+    private func moon(side: CGFloat) -> some View {
+        // The source PNG is square, so a square frame fills it without distortion —
+        // no need for scaledToFit. Matches the .frame idiom of glow()/disc() below.
+        Image("MoonWidget")
+            .resizable()
+            .interpolation(.high)
+            .frame(width: side, height: side)
+    }
+
+    // The day sun's soft bloom / halo: gentle, low-alpha, fading to nothing at the
+    // rim. Spans the full tile (Android gradientRadius 53 over a 108 viewport ≈ the
+    // whole circle).
     private func glow(side: CGFloat) -> some View {
-        let stops: [Gradient.Stop] = isNight
-            ? [
-                .init(color: rgb(216, 229, 255, 0), location: 0.00),
-                .init(color: rgb(216, 229, 255, 0), location: 0.62),
-                .init(color: rgb(207, 224, 255, 0.16), location: 0.80),
-                .init(color: rgb(178, 202, 255, 0), location: 1.00),
-            ]
-            : [
-                .init(color: rgb(255, 216, 119, 0), location: 0.00),
-                .init(color: rgb(255, 216, 119, 0), location: 0.56),
-                .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
-                .init(color: rgb(255, 203, 90, 0), location: 1.00),
-            ]
+        let stops: [Gradient.Stop] = [
+            .init(color: rgb(255, 216, 119, 0), location: 0.00),
+            .init(color: rgb(255, 216, 119, 0), location: 0.56),
+            .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
+            .init(color: rgb(255, 203, 90, 0), location: 1.00),
+        ]
         return Circle()
             .fill(
                 RadialGradient(
@@ -68,41 +82,24 @@ struct CompanionSun: View {
             .frame(width: side, height: side)
     }
 
-    // The disc itself. Day: white warming to the faintest gold only at the very
-    // rim. Night: the moon, lit from the upper-left like the in-app `.moon`.
+    // The day disc: white, warming to the faintest gold only at the very rim.
     private func disc(side: CGFloat) -> some View {
-        // Android disc diameters: day 72/108 ≈ 0.667, moon 84/108 ≈ 0.778.
-        let diameterFactor: CGFloat = isNight ? 0.778 : 0.667
-        let diameter = side * diameterFactor
+        // Android day disc diameter: 72/108 ≈ 0.667 of the tile.
+        let diameter = side * 0.667
 
-        let stops: [Gradient.Stop] = isNight
-            ? [
-                .init(color: rgb(255, 255, 255), location: 0.00),
-                .init(color: rgb(255, 255, 255), location: 0.18),
-                .init(color: rgb(223, 232, 255), location: 0.58),
-                .init(color: rgb(169, 184, 220), location: 1.00),
-            ]
-            : [
-                .init(color: rgb(255, 255, 255), location: 0.00),
-                .init(color: rgb(255, 255, 255), location: 0.84),
-                .init(color: rgb(255, 245, 220), location: 1.00),
-            ]
-
-        // Day light source is centred; the moon's is offset upper-left to match
-        // the Android moon. Android's gradient centre (40,37) is in the 108-unit
-        // viewport; the centred 84-wide disc spans x∈[12,96], so in the disc's own
-        // coordinates that is ((40-12)/84, (37-12)/84) ≈ (0.33, 0.30).
-        let center: UnitPoint = isNight ? UnitPoint(x: 0.33, y: 0.30) : .center
-        // Android moon gradientRadius 62 over the 84 disc ≈ 0.74 of its diameter.
-        let endRadius: CGFloat = (isNight ? diameter * 0.74 : diameter / 2)
+        let stops: [Gradient.Stop] = [
+            .init(color: rgb(255, 255, 255), location: 0.00),
+            .init(color: rgb(255, 255, 255), location: 0.84),
+            .init(color: rgb(255, 245, 220), location: 1.00),
+        ]
 
         return Circle()
             .fill(
                 RadialGradient(
                     gradient: Gradient(stops: stops),
-                    center: center,
+                    center: .center,
                     startRadius: 0,
-                    endRadius: endRadius
+                    endRadius: diameter / 2
                 )
             )
             .frame(width: diameter, height: diameter)

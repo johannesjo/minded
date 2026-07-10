@@ -31,14 +31,38 @@ registered in `App/Info.plist`), and the two small native edits in
 - `MindedWidget.swift` — the `@main` widget bundle, `StaticConfiguration`, timeline
   provider (one entry per day/night phase, boundaries pre-placed so the sun flips on
   the hour with `.atEnd`), the entry view, and the `minded://sun` `widgetURL`.
-- `CompanionSun.swift` — the SwiftUI sun/moon, colours ported 1:1 from the Android
-  `ic_sun_widget` vectors. It renders whichever it's told via `isNight`.
+- `CompanionSun.swift` — the SwiftUI sun/moon. The day sun is drawn with radial
+  gradients ported 1:1 from the Android day vector (`ic_sun_widget_day.xml`); the
+  night moon is the `MoonWidget` image (below). It renders whichever it's told via
+  `isNight`.
 - `SunWidgetPhase.swift` — the pure, clock-driven day/night decision (the Swift twin
   of the Android `SunWidgetPhase.kt`): the sun by day, the moon by night, by the real
   local hour — **not** the system colour scheme.
+- `Media.xcassets` — the `MoonWidget` image set: the night moon, the *same* lunar
+  photo the Android widget and in-app `.moon` use, re-encoded from
+  `android/.../ic_sun_widget_night.webp` to PNG (@1x/@2x/@3x) so the two platforms'
+  moons are identical rather than a gradient approximation.
 - `Info.plist` — the WidgetKit extension Info.plist.
 
-No image asset is needed — the sun is drawn with SwiftUI gradients.
+Only the night moon ships as an image; the day sun is drawn with SwiftUI gradients.
+The asset catalog is bundled into the `.appex` — no App Group, so this is still not
+shared *app data*, just a resource compiled into the widget.
+
+The three PNG scales are a mechanical re-encode of the Android source, so "identical
+to Android" is reproducible, not a one-off. To regenerate them if
+`ic_sun_widget_night.webp` ever changes (from the repo root):
+
+```sh
+python3 - <<'PY'
+from PIL import Image
+src = "android/app/src/main/res/drawable-nodpi/ic_sun_widget_night.webp"  # 360×360
+out = "extension/ios/App/MindedWidget/Media.xcassets/MoonWidget.imageset"
+moon = Image.open(src).convert("RGBA")
+moon.save(f"{out}/moon@3x.png")                            # pixel-identical decode
+moon.resize((240, 240), Image.LANCZOS).save(f"{out}/moon@2x.png")
+moon.resize((120, 120), Image.LANCZOS).save(f"{out}/moon@1x.png")
+PY
+```
 
 ## Adding the target
 
@@ -77,8 +101,10 @@ edit. One-time setup:
    - Embed in the `App` target when prompted.
 2. Xcode generates placeholder `MindedWidget.swift`/`Info.plist` and asset files in a
    new group. **Delete the generated `.swift` and `Info.plist`** and instead **Add
-   Files…** the three files in this folder (`MindedWidget.swift`, `CompanionSun.swift`,
-   `Info.plist`), with **Target Membership = MindedWidget**.
+   Files…** the files in this folder (`MindedWidget.swift`, `CompanionSun.swift`,
+   `SunWidgetPhase.swift`, `Info.plist`, and `Media.xcassets`), with **Target
+   Membership = MindedWidget**. The `.xcassets` must be in the target's **Copy Bundle
+   Resources** phase (Xcode does this automatically for asset catalogs).
 3. Target settings for `MindedWidget`:
    - **Bundle Identifier:** `com.minded.app.widget` (must be the app id +
      `.something`; the app is `com.minded.app`).

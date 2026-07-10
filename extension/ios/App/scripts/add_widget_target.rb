@@ -26,6 +26,10 @@ WIDGET_NAME = 'MindedWidget'
 WIDGET_BUNDLE_SUFFIX = 'widget' # the widget id is the app's bundle id + ".widget"
 DEPLOYMENT_TARGET = '16.0'
 SOURCE_FILES = %w[MindedWidget.swift CompanionSun.swift SunWidgetPhase.swift].freeze
+# Bundled resources compiled into the .appex (asset catalogs go in the resources
+# phase, not the sources phase). Media.xcassets carries the night moon image
+# (MoonWidget) shared 1:1 with the Android widget.
+RESOURCE_FILES = %w[Media.xcassets].freeze
 
 project_path = File.expand_path(File.join(__dir__, '..', 'App.xcodeproj'))
 project = Xcodeproj::Project.open(project_path)
@@ -76,6 +80,10 @@ widget_group.set_path(WIDGET_NAME)
 SOURCE_FILES.each do |file_name|
   ref = widget_group.new_reference(file_name)
   widget_target.add_file_references([ref])
+end
+RESOURCE_FILES.each do |file_name|
+  ref = widget_group.new_reference(file_name)
+  widget_target.add_resources([ref])
 end
 widget_group.new_reference('Info.plist') # carried by INFOPLIST_FILE, not compiled
 
