@@ -1636,10 +1636,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 Off-dashboard, the let-go / grounding rituals never fire (both
                 drag handlers are gated on isFromDashboard): fling and drag-down
                 both just leave the site/app, and tapping continues into a
-                session. On the dashboard there is nothing to leave and no
-                session to continue (tapping is disabled; the back arrow is the
-                way out) — there, flinging opens the let-go reflection and
-                dragging down opens the grounding offer, so say exactly that. */}
+                session. Dragging the disc down — gently setting the light down
+                — is the calmer, primary way to let go, so lead with it; the
+                fling still works but goes unspoken (it's the same outcome, and
+                minimalism says don't say the same thing twice). On the dashboard
+                there is nothing to leave and no session to continue (tapping is
+                disabled; the back arrow is the way out) — there, flinging opens
+                the let-go reflection and dragging down opens the grounding
+                offer, so say exactly that. */}
             <div class="sun-instructions txtSmaller">
               {props.isFromDashboard ? (
                 <>
@@ -1656,7 +1660,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               ) : (
                 <>
                   <p class="sun-instructions-line is-visible">
-                    Fling the {getDragObjectName()} away to leave.
+                    Drag the {getDragObjectName()} down to let go.
                   </p>
                   <p
                     class="sun-instructions-line"
