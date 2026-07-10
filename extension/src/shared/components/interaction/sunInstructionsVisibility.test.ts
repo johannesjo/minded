@@ -4,7 +4,6 @@ const base = {
   showSunInstructions: true,
   isCompletionStarted: false,
   showPostSunOverlay: false,
-  isFromDashboard: false,
 };
 
 describe("shouldShowSunInstructionsOverlay", () => {
@@ -28,15 +27,9 @@ describe("shouldShowSunInstructionsOverlay", () => {
     ).toBe(false);
   });
 
-  it("hides them while the sun's tap-to-continue animation runs", () => {
+  it("hides them while the sun's terminal animation runs", () => {
     expect(
       shouldShowSunInstructionsOverlay({ ...base, isCompletionStarted: true }),
-    ).toBe(false);
-  });
-
-  it("never shows them on the dashboard path (back button instead)", () => {
-    expect(
-      shouldShowSunInstructionsOverlay({ ...base, isFromDashboard: true }),
     ).toBe(false);
   });
 });

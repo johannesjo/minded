@@ -994,9 +994,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       }
 
       if (props.isFromDashboard) {
+        // The answer is saved, so let the dashboard refresh now — but don't
+        // close the pause. It advances to the same sun-instructions step a real
+        // intervention gets, just with dashboard-true copy (let go / stay a
+        // while) instead of the leave/continue promises that don't apply here.
         props.onInteractionSubmitted?.();
-        props.onAfterInteractionFadeout();
-        return;
       }
 
       successTimeout = window.setTimeout(() => {
@@ -1602,7 +1604,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           showSunInstructions: getShowSunInstructions(),
           isCompletionStarted: getIsCompletionStarted(),
           showPostSunOverlay: getShowPostSunOverlay(),
-          isFromDashboard: !!props.isFromDashboard,
         }) && (
           <div
             class="interaction-content sun-instructions-overlay"
@@ -1631,21 +1632,41 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                   : "auto",
             }}
           >
-            {/* Off-dashboard the let-go / grounding rituals never fire (both
-                drag handlers are gated on isFromDashboard) — fling and
-                drag-down both just leave the site/app. So promise only what
-                happens here: leave, or tap to continue. */}
+            {/* Promise only what the gestures actually do in THIS context.
+                Off-dashboard, the let-go / grounding rituals never fire (both
+                drag handlers are gated on isFromDashboard): fling and drag-down
+                both just leave the site/app, and tapping continues into a
+                session. On the dashboard there is nothing to leave and no
+                session to continue (tapping is disabled; the back arrow is the
+                way out) — there, flinging opens the let-go reflection and
+                dragging down opens the grounding offer, so say exactly that. */}
             <div class="sun-instructions txtSmaller">
-              <p class="sun-instructions-line is-visible">
-                Fling the {getDragObjectName()} away to leave.
-              </p>
-              <p
-                class="sun-instructions-line"
-                classList={{ "is-visible": getSunHintStep() >= 1 }}
-              >
-                Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
-                continue.
-              </p>
+              {props.isFromDashboard ? (
+                <>
+                  <p class="sun-instructions-line is-visible">
+                    Fling the {getDragObjectName()} away to let go.
+                  </p>
+                  <p
+                    class="sun-instructions-line"
+                    classList={{ "is-visible": getSunHintStep() >= 1 }}
+                  >
+                    Drag the {getDragObjectName()} down to stay a while.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p class="sun-instructions-line is-visible">
+                    Fling the {getDragObjectName()} away to leave.
+                  </p>
+                  <p
+                    class="sun-instructions-line"
+                    classList={{ "is-visible": getSunHintStep() >= 1 }}
+                  >
+                    Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
+                    continue.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}

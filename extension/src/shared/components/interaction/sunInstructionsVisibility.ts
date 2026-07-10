@@ -17,17 +17,20 @@
  * same `interactionOpacity` ramp that restores the question content.
  *
  * The other flags gate the same overlay:
- * - `showSunInstructions`: we are on the "tap the sun" step.
- * - `isCompletionStarted`: the sun's tap-to-continue animation is running.
- * - `isFromDashboard`: the dashboard path shows a back button instead.
+ * - `showSunInstructions`: we are on the post-answer instructions step.
+ * - `isCompletionStarted`: the sun's terminal (fling/drag/tap) animation is
+ *   running.
+ *
+ * The dashboard is deliberately NOT excluded: a dashboard-run intervention
+ * reaches this step too, with its own copy (the gestures open the let-go /
+ * grounding rituals there instead of leaving) — see the render site in
+ * InteractionCommon.
  */
 export const shouldShowSunInstructionsOverlay = (state: {
   showSunInstructions: boolean;
   isCompletionStarted: boolean;
   showPostSunOverlay: boolean;
-  isFromDashboard: boolean;
 }): boolean =>
   state.showSunInstructions &&
   !state.isCompletionStarted &&
-  !state.showPostSunOverlay &&
-  !state.isFromDashboard;
+  !state.showPostSunOverlay;
