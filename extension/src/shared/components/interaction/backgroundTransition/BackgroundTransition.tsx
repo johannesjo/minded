@@ -215,6 +215,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
           opacity: Math.max(0, getProgress() * 0.8),
         }}
       />
+      <div class="background-transition-grain" aria-hidden="true" />
     </>,
     <Stars intensity={getStarsIntensity()} dimmed={props.dimStars} />,
   ];

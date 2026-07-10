@@ -55,6 +55,33 @@
   }
 }
 
+// One dither layer above all three transition skies. Putting the grain only on
+// the coloured wrapper does not help here: the fixed default/drag gradients
+// above it are opaque, so their 8-bit rasterisation can still band into visible
+// horizontal lines. It shares z-index 2 with the drag overlays and stars: DOM
+// order puts it after the skies but before Stars, while content begins at 10.
+.background-transition-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: var(--grain-tile);
+  background-size: 180px 180px;
+}
+
+#minded-6622.minded-6622-dark .background-transition-grain {
+  opacity: 0.09;
+  mix-blend-mode: screen;
+}
+
+#minded-6622-coloured-wrapper-dynamic.is-departing .background-transition-grain,
+#minded-6622-coloured-wrapper.is-departing .background-transition-grain {
+  opacity: 0;
+  transition: opacity 1000ms var(--ease-out);
+}
+
 .minded-6622-dark
   .background-transition.background-default.sun-gradient-attached {
   background: var(--background-gradient);
