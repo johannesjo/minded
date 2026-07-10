@@ -52,10 +52,11 @@ struct CompanionSun: View {
     // The night moon: one image, disc + cool sheen + halo baked in, filling the
     // tile exactly as the Android night drawable fills its sun slot.
     private func moon(side: CGFloat) -> some View {
+        // The source PNG is square, so a square frame fills it without distortion —
+        // no need for scaledToFit. Matches the .frame idiom of glow()/disc() below.
         Image("MoonWidget")
             .resizable()
             .interpolation(.high)
-            .scaledToFit()
             .frame(width: side, height: side)
     }
 
