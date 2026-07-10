@@ -35,17 +35,12 @@
   &.isOnDashboard {
     @media (min-width: $bpMobile) {
       opacity: 0;
-      animation: minded6622fadeIn var(--ease-out) 2s;
+      animation: minded6622fadeIn var(--ease-out) 900ms;
       animation-iteration-count: 1;
       animation-fill-mode: forwards;
 
       :global {
         animation-name: minded6622fadeIn;
-      }
-    }
-    @include onWebExtension {
-      @media (min-width: $bpDashboardMoreThan2Col) {
-        animation-delay: 1.5s;
       }
     }
   }
@@ -69,7 +64,7 @@
   // workaround the rest of this file uses. Their quiet resting opacity comes
   // from the shared plain icon-button style (btnIcoPlainModifier).
   &.isOnDashboard > a {
-    animation: minded6622fadeIn var(--ease-out) 2.5s;
+    animation: minded6622fadeIn var(--ease-out) 900ms;
 
     :global {
       animation-name: minded6622fadeIn;

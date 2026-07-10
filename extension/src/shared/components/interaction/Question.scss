@@ -67,7 +67,8 @@
   cursor: pointer;
   opacity: 0;
   // Fade softly in, then hand off into the breathing loop at the same opacity
-  // (0.4) so there is no hard cut.
+  // (0.5) so there is no hard cut. The cue stays quiet, but no longer becomes
+  // ambiguous against the pale middle of the daytime sky.
   animation:
     tapHintFadeIn 0.6s var(--ease-out) 0.6s forwards,
     tapHintBreathe 4s ease-in-out 1.2s infinite;
@@ -88,17 +89,17 @@
     opacity: 0;
   }
   100% {
-    opacity: 0.4;
+    opacity: 0.5;
   }
 }
 
 @keyframes tapHintBreathe {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.5;
   }
   50% {
-    opacity: 0.6;
+    opacity: 0.7;
   }
 }
 
@@ -186,7 +187,7 @@
     right: var(--space-sm);
     left: auto;
     // Soften the loudest pixel on the check-in: a rounder, translucent pill with
-    // a --c-fg-weight arrow, so the eye stays on the response, not the send
+    // a --c-fg-weight confirmation mark, so the eye stays on the response, not the
     // chrome (issue #130). --btn-bg is quiet in both themes, so no per-theme
     // override is needed.
     border-radius: var(--radius-lg);
@@ -194,7 +195,7 @@
     padding: var(--space-sm) var(--space-md);
     font-size: var(--fz-s);
 
-    // send.svg's #111 fill is baked into the <img>, so soften it toward --c-fg
+    // check.svg's #111 fill is baked into the <img>, so soften it toward --c-fg
     // (0.8 alpha) with opacity rather than colour.
     > .minded-6622-ico {
       opacity: 0.8;

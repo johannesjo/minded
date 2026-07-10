@@ -10,7 +10,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
 
   // Reserve the resting sun's footprint at the bottom so cards clear the disc
@@ -49,6 +49,14 @@
   @media (min-width: $bpDashboardMoreThan2Col) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     padding: 32px 32px calc(var(--hero-reserve) + 32px);
+
+    // Four cards read as a balanced 2×2 reflection set. The component applies
+    // this class only for exactly four entries, preserving the natural
+    // three-card row and avoiding a :has() dependency in older WebViews.
+    &.balancedFourCardGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 960px;
+    }
   }
 
   // Calm cascade: cards settle in one after another (DOM order, so top-to-bottom
@@ -201,7 +209,7 @@
   .box {
     width: 100%;
     max-width: 480px;
-    animation-duration: 1800ms;
+    animation-duration: 900ms;
   }
 }
 
@@ -223,9 +231,9 @@
 // holds the hidden start through the delay and the visible end after — and fails
 // safe: if the animation never runs, the button still defaults to visible.
 .revealBtn {
-  // Intentionally very slow (3s) so the invitation seeps in rather than pops,
-  // well after the card has settled. `both` keeps it hidden through the delay.
-  animation: revealFadeIn 3000ms var(--ease-out) 900ms both;
+  // Arrives after the greeting has landed, but quickly enough to remain
+  // discoverable. `both` keeps it hidden through the short delay.
+  animation: revealFadeIn 700ms var(--ease-out) 250ms both;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
@@ -238,6 +246,16 @@
   &:global(.btnTxt) {
     height: 36px;
     line-height: 36px;
-    font-size: var(--fz-s);
+    font-size: var(--fz-m);
   }
+}
+
+.revealChevron {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: var(--space-sm);
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
 }

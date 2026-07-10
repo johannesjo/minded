@@ -193,6 +193,22 @@
   }
 }
 
+// Modifier (.btnTxt.isPlain): an unboxed tertiary text action. It keeps the
+// full button hit area and focus treatment while dropping the resting surface;
+// a faint fill on hover still confirms interactivity without competing with
+// nearby choices.
+@mixin btnTxtPlainModifier() {
+  background: none;
+  border: 0;
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--btn-bg-not-selected);
+      box-shadow: none;
+    }
+  }
+}
+
 // Modifier (.btnTxt.isBig): larger primary-CTA size. Replaces .btnTxtBig.
 @mixin btnTxtBigModifier() {
   height: var(--btn-height-bigger);

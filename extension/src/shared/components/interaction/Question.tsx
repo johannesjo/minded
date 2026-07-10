@@ -170,7 +170,7 @@ export const Question: (props: {
             aria-hidden="true"
             onClick={revealInput}
           >
-            <Ico name="pen" size={26} />
+            <Ico name="pen" size={30} />
           </div>
         </Show>
 

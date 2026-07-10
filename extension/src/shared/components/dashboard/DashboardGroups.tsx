@@ -305,14 +305,20 @@ export const DashboardGroups: (props: {
           </Show>
 
           <Show when={getDashboardGroups().length > 1}>
-            <Btn outline class={styles.revealBtn} onClick={revealAll}>
+            <Btn plain class={styles.revealBtn} onClick={revealAll}>
               show all
+              <span class={styles.revealChevron} aria-hidden="true" />
             </Btn>
           </Show>
         </div>
       }
     >
-      <div class={styles.DashboardGroups}>
+      <div
+        classList={{
+          [styles.DashboardGroups]: true,
+          [styles.balancedFourCardGrid]: getDashboardGroups().length === 4,
+        }}
+      >
         <For each={getDashboardGroups()}>{(dg) => renderCard(dg)}</For>
       </div>
     </Show>

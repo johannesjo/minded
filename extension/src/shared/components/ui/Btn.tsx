@@ -32,12 +32,13 @@ interface CommonBtnProps {
 /**
  * Text button (the default). Modifiers: `outline` (ghost), `soft` (quiet
  * translucent — for a secondary exit that stays easy but shouldn't be the
- * loudest pixel) and `big` (CTA).
+ * loudest pixel), `plain` (unboxed tertiary action) and `big` (CTA).
  */
 type TextBtnProps = CommonBtnProps & {
   variant?: "text";
   outline?: boolean;
   soft?: boolean;
+  plain?: boolean;
   big?: boolean;
 };
 
@@ -114,6 +115,7 @@ const Btn = (props: BtnProps): JSX.Element => {
     if (variant === "text") {
       if (local.outline) classes.push("isOutline");
       if (local.soft) classes.push("isSoft");
+      if (local.plain) classes.push("isPlain");
       if (local.big) classes.push("isBig");
     } else if (variant === "icon") {
       if (local.small) classes.push("isSmall");

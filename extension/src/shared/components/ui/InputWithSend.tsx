@@ -1,7 +1,6 @@
 import { createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import { requestFocusAndShowKeyboard } from "@src/dataInterface/system";
 
 export const InputWithSend = (props: {
@@ -80,6 +79,7 @@ export const InputWithSend = (props: {
   return (
     <div id="minded-6622-inp" class="textarea-container">
       <textarea
+        name={props.type === "url" ? "url" : "response"}
         spellcheck={false}
         ref={inpEl!}
         disabled={getIsInputDisabled()}
@@ -96,7 +96,7 @@ export const InputWithSend = (props: {
         onClick={() => onSubmit(inpEl?.value)}
         disabled={getIsInputDisabled()}
       >
-        <Ico name="send" />
+        <Ico name="check" />
       </Btn>
     </div>
   );
