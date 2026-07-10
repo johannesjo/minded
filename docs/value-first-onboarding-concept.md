@@ -1,7 +1,14 @@
 # Concept: value-first onboarding — meet the pause before the permissions
 
-Status: **concept — not implemented.** Covers the Android first-run flow and a
-new (currently non-existent) iOS first-run. Companion docs:
+Status: **implemented** (both platforms' web flows browser-verified end to
+end; the Android pin bridge and the iOS WidgetCenter plugin method follow the
+existing native patterns but await a device/Xcode build — and the
+`MindedWidget` target still isn't wired into `App.xcodeproj`, so the iOS
+widget step points at a widget the TestFlight build only carries once that
+one-time step from `docs/sun-companion-widget.md` is done). Two details
+settled at implementation, noted inline below: the demo *returns to the
+welcome* instead of auto-advancing, and the widget-step preview is the
+resting onboarding disc itself — no asset needed. Companion docs:
 `docs/sun-companion-widget.md` (the widget this leans on),
 `docs/widget-prompts-concept.md` (why the widget is itself a mini-intervention),
 `docs/ios-platform-fit.md` (why iOS is widget-only),
@@ -79,13 +86,15 @@ the welcome already holds the demo's sun. Fewer screens survived contact with
 minimalism.) Three moves make it work:
 
 **1. The welcome is the demo.** The welcome sun the user is already holding
-becomes tappable (today `isTapEnabled={false}`), and the copy invites exactly
-that: *"Tap it."* The tap opens the real `InteractionOverlay` — the same
-overlay the dashboard companion and the widget tap open, one code path, no
-demo build, no mockup — the user answers one real prompt and the overlay's own
-exit returns them to onboarding and advances. Fling (already the advance
-gesture) and "begin" remain as the other exits; all three converge on the
-picker. The welcome thereby teaches the product's only two verbs *by doing
+becomes tappable (previously `isTapEnabled={false}`), and the copy invites
+exactly that: *"Tap it."* The tap opens the real `InteractionOverlay` — the
+same overlay the dashboard companion and the widget tap open, one code path,
+no demo build, no mockup — and the overlay's own exit returns the user *to
+the welcome* (settled at implementation: advancing behind the user's back
+after a pause they merely peeked into would surprise, and it would also force
+the closing disc through a bottom-bar detour; returning home keeps the
+open/close glides perfect mirrors). Fling and "begin" advance to the picker.
+The welcome thereby teaches the product's only two verbs *by doing
 them* — tap is the pause, fling is the dismissal — instead of describing them.
 A skipped demo is recoverable forever (the companion tap on the dashboard is
 the same pause); a forced one would be off-voice, so it is never auto-opened.
@@ -197,11 +206,12 @@ delivers; nothing is left un-demoable.
 
 **Step 1 — give it a home.** iOS has no programmatic pin, so this step is a
 minimal instruction — *long-press your Home Screen → Edit → Add Widget →
-minded* — beside a small still of the widget (the rendered previews under
-`styleguide/generated/sunWidgetPreviews.ts` already exist; a static still, not
-a live animation, matching what a widget actually is). One primary "done"
-continue, one first-class "I'll add it later." No verification dance on the
-spot; the check below handles the truth quietly.
+minded*. The preview (settled at implementation) is the resting onboarding
+disc itself, holding its hero rest above the instructions: the widget IS this
+sun relocated, so showing the live disc is more honest than any still — and
+no asset is needed. One primary "done" continue, one first-class "I'll add it
+later." No verification dance on the spot; the check below handles the truth
+quietly.
 
 ### The nudge afterwards — one invitation, truthful, self-retiring
 
@@ -251,35 +261,55 @@ and stays out.
   cliff (the extension install *was* the permission) and no widget; nothing
   here applies.
 
-## Implementation sketch (file-level)
+## Implementation notes (file-level, as landed)
+
+**Shared**
+
+- `InteractionOverlay.tsx` gained an optional `onClosingStarted` — the
+  embedding onboarding flow reclaims its disc the instant the closing fade
+  begins, so the sun glides home *during* the sky fade (one motion, no
+  companion detour).
+- `interactionOverlay/pauseTakeover.ts` — the pure takeover truth table
+  (`shouldPauseDriveSun`, unit-tested): who drives the ONE disc while the demo
+  is up — the live interaction (via the shared sunStore, exactly like the
+  dashboard shell sun) or the flow's own rests. Both platforms' onboardings
+  use it; the sunStore's companion anchor is re-seeded from each flow's own
+  probe so mid-demo companion rests (grounding) land on the real bar anchor.
+- `Stepper.tsx` — the dot array is now reactive to `nrOfSteps` (the
+  widget-only run shortens the flow mid-way).
 
 **Android**
 
-- `OnboardingAndroid.tsx` — enable `isTapEnabled` on the welcome disc, mount
-  `InteractionOverlay` for the demo (advance on its exit), and skip the
-  permission steps when no apps were picked; `Stepper`'s `nrOfSteps` (already a
-  prop) shrinks accordingly for widget-only runs. Re-entry (`initialStep`)
-  stays at the picker.
-- `SettingsAndroid.tsx` — the "Your home screen" place row (pin action +
-  `isWidgetPlaced()` state) and the continue gate relaxed from ≥1 app to
-  ≥1 place.
-- `onboardingSunSettle.ts` — an "in pause" state so the overlay takeover keeps
-  the one-disc invariant (plus tests, as for the existing states).
-- `MissingCapabilities.tsx` — copy re-anchored to the experienced pause;
-  structure unchanged.
-- `MainActivityJavaScriptInterface.kt` / `MainActivity.kt` —
-  `requestPinWidget()`, `isWidgetPlaced()`.
+- `OnboardingAndroid.tsx` — the tappable welcome disc (tap = the pause, fling
+  = advance), the store-driven demo takeover, `handlePlacesSaved` routing
+  (apps → permission steps; none → straight to "ready"), the widget-only
+  ready copy, the "Almost there" widget offer, and the 5→3-dot stepper.
+- `SettingsAndroid.tsx` — the "Your home screen" place row (pin action;
+  checked state is the observed placement; self-retires when already placed
+  at mount) and the continue gate relaxed from ≥1 app to ≥1 *place*.
+- `android/util/widgetPlacement.ts` — the shared observed-placement signal:
+  `readIsWidgetPlaced` + `createWidgetPlacement` (resume re-read + a brief
+  poll after a pin request, since the system pin sheet may not background the
+  activity).
+- `MissingCapabilities.tsx` — copy re-anchored ("one to notice the moment,
+  one to appear in it"); structure unchanged.
+- `MainAndroid.tsx` — the setup invitation is additionally gated on
+  `!isWidgetPlaced`, so a widget-only user is never nagged toward apps.
+- `MainActivityJavaScriptInterface.kt` — `requestPinWidget()`,
+  `isWidgetPlaced()` (AppWidgetManager; minSdk 29 > the API-26 pin floor).
 
 **iOS**
 
-- `MainIOS.tsx` — gate on `isOnboardingComplete`; pass the widget invitation
-  as `RoutesCmp` children (Android's pattern).
-- `OnboardingIOS.tsx` (new, `src/ios/`) — two steps; reuses `Sun`, `Stepper`,
-  `Btn`, `ButtonWrapper` and the settle/measure choreography patterns from
-  `OnboardingAndroid` (extract what's genuinely shareable rather than forking —
-  likely the welcome step's spacer/probe/settle scaffolding).
-- `MindedIOSPlugin.ts` / `definitions.ts` + the Swift plugin —
-  `isWidgetInstalled()` via `WidgetCenter`.
+- `MainIOS.tsx` — gates on the existing `isOnboardingComplete`; the widget
+  invitation rides as `RoutesCmp` children (Android's invitation pattern),
+  gated on the observed `isWidgetInstalled` (default *true*: unknown must
+  never nag — which also covers older native shells without the method).
+- `ios/components/onboardingIOS/OnboardingIOS.tsx` — the two steps; reuses
+  `Sun`, `Stepper`, `Btn`, `ButtonWrapper`, the shared `pauseTakeover`, and
+  the same probe/settle choreography (hero + companion only — no sky band).
+- `definitions.ts` + `MindedIOSPlugin.swift`/`.m` — `isWidgetInstalled()` via
+  `WidgetCenter.getCurrentConfigurations` (resolves installed=true on any
+  read failure, again so unknown never nags).
 - Prerequisite unchanged from `docs/sun-companion-widget.md`: the
   `MindedWidget` target must actually be wired into `App.xcodeproj`, or step 1
   points at a widget that isn't in the build.
@@ -302,6 +332,7 @@ and stays out.
   dashboard invitation already cover recovery.
 - **Copy sign-off.** All new lines (cards, permission re-anchors, the iOS
   invitation) deserve the same voice review the return-loop copy got.
-- **iOS preview asset.** Whether the styleguide's generated widget stills are
-  usable as-is in onboarding or need a purpose-rendered one (device-frame-free,
-  both phases?).
+- **On-device verification.** The web flows are browser-verified end to end
+  (mocked native bridge), but the pin dialog on real launchers, the
+  post-pin poll timing, and the WidgetCenter read all need one round on
+  hardware — as does the demo's sun morph under real WebView timing.

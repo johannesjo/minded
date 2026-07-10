@@ -1,5 +1,7 @@
 package com.minded.minded
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import com.minded.minded.data.SharedPreferenceService
@@ -11,6 +13,7 @@ import android.webkit.WebView
 import com.minded.minded.MissingCapability
 import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.getAppUsageObservation
+import com.minded.minded.widget.MyAppWidgetReceiver
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -99,6 +102,43 @@ open class MainActivityJavaScriptInterface(
     @JavascriptInterface
     fun getUsageObservation(): String {
         return getAppUsageObservation(context) ?: ""
+    }
+
+    /**
+     * Whether the home-screen sun widget is currently placed on any launcher
+     * surface. The web setup surfaces stay truthful with this: "your home
+     * screen" reads as a chosen place only once the widget really exists, and
+     * invitations retire themselves when it does.
+     */
+    @JavascriptInterface
+    fun isWidgetPlaced(): Boolean {
+        return try {
+            val manager = AppWidgetManager.getInstance(context)
+            val provider = ComponentName(context, MyAppWidgetReceiver::class.java)
+            manager.getAppWidgetIds(provider).isNotEmpty()
+        } catch (e: Exception) {
+            Log.e(logTag, "isWidgetPlaced failed", e)
+            false
+        }
+    }
+
+    /**
+     * Ask the launcher to pin the sun widget via the system dialog. Returns
+     * false when the launcher doesn't support pinning (the web side then shows
+     * a one-line manual instruction instead). The result of the dialog itself
+     * is not awaited — the web side observes it through [isWidgetPlaced].
+     */
+    @JavascriptInterface
+    fun requestPinWidget(): Boolean {
+        return try {
+            val manager = AppWidgetManager.getInstance(context)
+            if (!manager.isRequestPinAppWidgetSupported) return false
+            val provider = ComponentName(context, MyAppWidgetReceiver::class.java)
+            manager.requestPinAppWidget(provider, null, null)
+        } catch (e: Exception) {
+            Log.e(logTag, "requestPinWidget failed", e)
+            false
+        }
     }
 
     @JavascriptInterface

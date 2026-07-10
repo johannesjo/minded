@@ -209,9 +209,9 @@ export const MissingCapabilityView = (props: {
                 </>
               ) : (
                 <>
-                  <em>minded</em> displays an overlay when you open one of the
-                  configured apps. For this to work you need to give us
-                  permission.
+                  Two permissions let the {companionWord()} meet you in the
+                  apps you chose: one to notice the moment, one to appear in
+                  it.
                 </>
               )}
             </div>
@@ -225,9 +225,9 @@ export const MissingCapabilityView = (props: {
         <Show when={!props.optionalOnly}>
           <PermissionCard capability="Accessibility">
             <p class={styles.permissionText}>
-              <em>minded</em> uses accessibility capabilities only to detect the
-              app that is currently in the foreground, so <em>minded</em> can
-              display its interaction overlay for the apps you configured.
+              <em>minded</em> uses accessibility capabilities only to notice
+              which app is in the foreground — the moment you've opened one of
+              the apps you chose. Nothing else is read.
             </p>
             <Btn onClick={() => onMissingCapabilityClick("Accessibility")}>
               Enable Accessibility Service
@@ -251,8 +251,8 @@ export const MissingCapabilityView = (props: {
 
           <PermissionCard capability="SystemAlertWindow">
             <p class={styles.permissionText}>
-              To display its overlays, <em>minded </em>needs the overlay
-              permission.
+              The overlay permission lets the {companionWord()} appear over
+              that app — the pause itself.
             </p>
             <Btn onClick={() => onMissingCapabilityClick("SystemAlertWindow")}>
               Enable Overlay Permission

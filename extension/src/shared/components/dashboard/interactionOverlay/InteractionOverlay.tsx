@@ -23,6 +23,15 @@ export const InteractionOverlay: (props: {
    * than a random pick. Undefined for the plain sun tap and in-app companion tap.
    */
   widgetLine?: string;
+  /**
+   * Fired the instant the closing fade begins (before the 800ms fade lands and
+   * onHideInteraction unmounts). The Android/iOS onboarding demo uses it to take
+   * its one disc back the moment the sky starts fading, so the sun glides home to
+   * the onboarding rest *during* the fade instead of detouring via the shell's
+   * companion anchor first. The dashboard shell doesn't pass it — its disc's home
+   * IS the companion anchor the role flip below sends it to.
+   */
+  onClosingStarted?: () => void;
 }) => JSX.Element = (props) => {
   let wrapperEl: HTMLDivElement = undefined!;
 
@@ -31,6 +40,9 @@ export const InteractionOverlay: (props: {
   });
 
   const handleHideWithFade = () => {
+    // Let an embedding flow (the onboarding demo) reclaim its disc before the
+    // role flip below would send it to the shell's companion anchor.
+    props.onClosingStarted?.();
     // Send the shell sun (which lives above the overlay sky, z-30 over z-20)
     // gliding back to its companion rest *now*, so it travels home while the
     // sky fades out beneath it — instead of sitting still through the whole

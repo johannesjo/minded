@@ -45,6 +45,31 @@
   font-size: var(--fz-m);
 }
 
+// The home-screen place row's one-line context ("…as a widget — no
+// permissions needed"): quiet, beneath the place name.
+.appEntrySub {
+  display: block;
+  font-size: var(--fz-s);
+  opacity: 0.75;
+}
+
+// Placed: the row stays as the quiet record of the choice, but it's no longer
+// an action.
+.appEntryDone {
+  cursor: default;
+
+  &:active {
+    opacity: 1;
+  }
+}
+
+// Fallback when the launcher can't pin from in-app.
+.manualPinHint {
+  margin: 0;
+  font-size: var(--fz-s);
+  opacity: 0.75;
+}
+
 // Display-only: the row handles the tap, so the checkbox must not swallow it.
 .checkboxDisplay {
   pointer-events: none;

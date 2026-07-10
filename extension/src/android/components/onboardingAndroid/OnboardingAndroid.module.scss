@@ -74,6 +74,8 @@ $sky-strip: 88px;
   pointer-events: none;
   // The disc mounts snapped into its first rest; ease it in instead of popping.
   animation: onboardingSunIn 600ms var(--ease-out);
+  // Soft reveal after a pause surface hid the layer (mirrors .shellSunLayer).
+  transition: opacity var(--dur-soft) var(--ease-out);
 
   :global(.minded-sun) {
     pointer-events: none;
@@ -92,6 +94,40 @@ $sky-strip: 88px;
   &.isLeaving :global(.minded-sun) {
     animation: none;
     translate: none;
+  }
+
+  // Welcome-demo takeover: mirror RouteCmp's float pinning while the live
+  // interaction (or a store-driven companion rest, e.g. grounding parking the
+  // disc on the bar anchor) owns the disc — the upward idle translate would
+  // wander its centre off the point the interaction's glow / anchor expects.
+  &.isIntervention :global(.minded-sun),
+  &.isCompanion :global(.minded-sun) {
+    animation: none;
+    translate: none;
+  }
+
+  // A pause surface that replaces the sun owns the screen (the let-go
+  // question, a screen-free grounding sit) — same semantics as RouteCmp's
+  // shell layer: soft fades on the base transition, hard hide snaps (the
+  // flung disc must not careen over the incoming question) but the reveal
+  // still eases back via the base transition once the class drops.
+  &.isHiddenSoft {
+    opacity: 0;
+    pointer-events: none;
+
+    :global(.minded-sun) {
+      pointer-events: none;
+    }
+  }
+
+  &.isHidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: none;
+
+    :global(.minded-sun) {
+      pointer-events: none;
+    }
   }
 }
 
@@ -127,6 +163,13 @@ $sky-strip: 88px;
 
 .skipWrapper {
   margin-top: 16px;
+}
+
+// Fallback instruction when the launcher can't pin from in-app (the denied
+// path's widget offer) — quiet, secondary.
+.manualPinHint {
+  font-size: var(--fz-s);
+  opacity: 0.75;
 }
 
 .actions {

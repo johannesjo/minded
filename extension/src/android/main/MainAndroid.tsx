@@ -24,6 +24,7 @@ import {
   REQUIRED_CAPABILITIES,
 } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import { readIsWidgetPlaced } from "@src/android/util/widgetPlacement";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { fadeOutThen } from "@src/util/animation";
@@ -54,6 +55,11 @@ const MainAndroid = () => {
   // the user returns to the app (see the resume handler), so it recurs gently
   // and is never a permanent hide that would bury setup.
   const [getHasBlockedApps, setHasBlockedApps] = createSignal(true);
+  // The home-screen widget counts as a chosen place too: a widget-only user
+  // has told the sun where to appear, so the setup invitation must not keep
+  // re-offering forever. Starts true (like getHasBlockedApps) so the
+  // invitation never flashes before the first read.
+  const [getIsWidgetPlaced, setIsWidgetPlaced] = createSignal(true);
   const [getIsShowSetup, setIsShowSetup] = createSignal(false);
   const [getIsInviteDismissed, setIsInviteDismissed] = createSignal(false);
   const [getIsInviteDismissing, setIsInviteDismissing] = createSignal(false);
@@ -119,6 +125,7 @@ const MainAndroid = () => {
         setIsShowOnboarding(true);
       }
       setHasBlockedApps((syncData.cfg.blockedApps?.length ?? 0) > 0);
+      setIsWidgetPlaced(readIsWidgetPlaced());
       if (syncData.cfg.isOnboardingComplete) {
         maybeTriggerSleepWindDown(syncData);
       }
@@ -225,7 +232,8 @@ const MainAndroid = () => {
       ) : (
         <RoutesCmp>
           {!getHasBlockedApps() ? (
-            !getIsInviteDismissed() && (
+            !getIsInviteDismissed() &&
+            !getIsWidgetPlaced() && (
               <div
                 classList={{
                   setupInvitationMsg: true,
