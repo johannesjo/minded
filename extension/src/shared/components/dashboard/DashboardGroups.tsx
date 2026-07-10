@@ -39,6 +39,7 @@ import {
 } from "@src/ev.const";
 import { useNavigate } from "@solidjs/router";
 import {
+  DailyQuestionsMode,
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
@@ -53,6 +54,15 @@ export const DashboardGroups: (props: {
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
     createSignal<boolean>(false);
+
+  // The wording the banner shows ("inspiration for your day" vs "reflect on your
+  // day") is captured here, at the same moment `refresh()` decides to reveal the
+  // banner — never re-read independently at render time. Reading the clock a
+  // second time when the node is *built* let the two drift apart: a dashboard
+  // opened before 20:00 built a "Morning" banner node, kept it hidden, and then
+  // the evening trigger revealed that stale morning wording late at night.
+  const [getDailyQuestionsBannerMode, setDailyQuestionsBannerMode] =
+    createSignal<DailyQuestionsMode>("Morning");
 
   const [
     getIsDailyQuestionsBannerBeingRemoved,
@@ -104,7 +114,15 @@ export const DashboardGroups: (props: {
   // refresh never reshuffles the tile under the user.
   const refresh = (reselect = false) => {
     return getSyncData().then((syncData) => {
-      setIsShowDailyQuestionsBanner(isShowDailyQuestionsBanner(syncData));
+      const showDailyQuestionsBanner = isShowDailyQuestionsBanner(syncData);
+      // Lock the wording to this same clock read that just decided to show the
+      // banner, so the card can never say "morning" while the evening trigger is
+      // what revealed it (and vice versa). Only when revealing — while hidden the
+      // mode is irrelevant, and skipping it avoids swapping wording under a user
+      // who is already looking at the banner.
+      if (showDailyQuestionsBanner)
+        setDailyQuestionsBannerMode(getDailyQuestionsMode());
+      setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
 
       // Steer this arrival's greeting away from the tile shown last time we
       // landed, so each return surfaces a fresh one (see greetingMemory).
@@ -177,7 +195,7 @@ export const DashboardGroups: (props: {
 
   const removeDailyQuestionsBanner = () => {
     setIsDailyQuestionsBannerBeingRemoved(true);
-    setDailyQuestionsDoneForToday(getDailyQuestionsMode());
+    setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
     window.clearTimeout(t0);
     // Matches the --dur-soft fade-out on .isBeingRemoved so the node stays
     // mounted for the full fade instead of being pulled out mid-transition.
@@ -197,7 +215,7 @@ export const DashboardGroups: (props: {
       }}
     >
       <div class="txtSlightlyBigger">
-        {getDailyQuestionsMode() === "Morning"
+        {getDailyQuestionsBannerMode() === "Morning"
           ? "Would you like some inspiration for your day?"
           : "Would you like to reflect on your day?"}
       </div>
