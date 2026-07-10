@@ -48,6 +48,22 @@ Only the night moon ships as an image; the day sun is drawn with SwiftUI gradien
 The asset catalog is bundled into the `.appex` — no App Group, so this is still not
 shared *app data*, just a resource compiled into the widget.
 
+The three PNG scales are a mechanical re-encode of the Android source, so "identical
+to Android" is reproducible, not a one-off. To regenerate them if
+`ic_sun_widget_night.webp` ever changes (from the repo root):
+
+```sh
+python3 - <<'PY'
+from PIL import Image
+src = "android/app/src/main/res/drawable-nodpi/ic_sun_widget_night.webp"  # 360×360
+out = "extension/ios/App/MindedWidget/Media.xcassets/MoonWidget.imageset"
+moon = Image.open(src).convert("RGBA")
+moon.save(f"{out}/moon@3x.png")                            # pixel-identical decode
+moon.resize((240, 240), Image.LANCZOS).save(f"{out}/moon@2x.png")
+moon.resize((120, 120), Image.LANCZOS).save(f"{out}/moon@1x.png")
+PY
+```
+
 ## Adding the target
 
 **CI already does this.** The _iOS TestFlight_ workflow runs
