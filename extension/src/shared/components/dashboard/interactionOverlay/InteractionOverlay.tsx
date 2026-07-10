@@ -10,7 +10,8 @@ import {
 
 export const InteractionOverlay: (props: {
   onHideInteraction: () => void;
-  onPossibleNewData: () => void;
+  /** Optional: the onboarding demo has no dashboard data to refresh. */
+  onPossibleNewData?: () => void;
   /**
    * Open with no entrance fade. Used when launched from the home-screen sun
    * widget so we land straight in the interaction rather than fading the
@@ -55,7 +56,7 @@ export const InteractionOverlay: (props: {
     window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
     const { promise } = fadeOut(wrapperEl, 800); // 0.8 second fade
     promise.then(() => {
-      props.onPossibleNewData(); // Always refresh dashboard when closing
+      props.onPossibleNewData?.(); // Always refresh dashboard when closing
       props.onHideInteraction();
     });
   };
@@ -77,7 +78,7 @@ export const InteractionOverlay: (props: {
           useShellSun={true}
           interactionPlatform="web"
           onInteractionSubmitted={() => {
-            props.onPossibleNewData();
+            props.onPossibleNewData?.();
           }}
           // Grounding finish ("Not now" / a completed sit), let-go finish, and
           // dashboard success all land here. Fade the sky out (sun gliding home)

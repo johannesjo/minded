@@ -612,7 +612,6 @@ export const OnboardingAndroid = (props: {
       {getIsShowPause() && (
         <InteractionOverlay
           onClosingStarted={() => setIsPauseClosing(true)}
-          onPossibleNewData={() => undefined}
           onHideInteraction={() => {
             setIsShowPause(false);
             setIsPauseClosing(false);

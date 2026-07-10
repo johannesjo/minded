@@ -241,10 +241,16 @@ export const OnboardingIOS = (props: {
   // The sole exit: mark the run seen, then the disc glides home to the
   // companion anchor while the chrome fades; the dashboard mounts once it has
   // landed, so the shell sun takes over a disc already resting on its anchor.
-  const leaveToDashboard = () => {
+  const leaveToDashboard = async () => {
     if (getIsLeaving()) return;
     setIsLeaving(true);
-    updateUserCfg({ isOnboardingComplete: true });
+    // Await the completion write before leaving: iOS getSyncData is an uncached
+    // Preferences read, so onGoDashboard's refresh() would otherwise re-read the
+    // pre-write value and bounce the user straight back into onboarding (worst
+    // on the reduced-motion path, which has no glide to hide the race). Android
+    // writes this early via its step>=3 effect, so it never hits this.
+    await updateUserCfg({ isOnboardingComplete: true });
+    if (isDisposed) return;
     const companionY = getCompanionY();
     if (companionY != null) setCompanionBottomYPx(companionY);
     if (prefersReducedMotion()) {
@@ -274,8 +280,8 @@ export const OnboardingIOS = (props: {
                     calm pause opens, a moment to arrive before you carry on.
                   </p>
                   <p>
-                    On iPhone it lives on your Home Screen: a quiet companion
-                    at the glance where scrolling begins.
+                    On iPhone it lives on your Home Screen: a quiet companion at
+                    the glance where scrolling begins.
                   </p>
                 </div>
 
@@ -399,7 +405,6 @@ export const OnboardingIOS = (props: {
       {getIsShowPause() && (
         <InteractionOverlay
           onClosingStarted={() => setIsPauseClosing(true)}
-          onPossibleNewData={() => undefined}
           onHideInteraction={() => {
             setIsShowPause(false);
             setIsPauseClosing(false);

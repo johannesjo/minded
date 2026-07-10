@@ -114,73 +114,74 @@ export const SettingsAndroid = (props: {
           "Please select at least one app that you want to use less."}
       </div>
 
-      {getAvailableApps().length === 0 ? (
-        <div class={styles.inset}>Loading apps...</div>
-      ) : (
-        <>
-          <div class={styles.appList}>
-            <Show when={isShowWidgetRow()}>
+      {/* The widget row is a costless, permission-free place — it must stay
+          reachable even if the app enumeration is slow or fails (returns []),
+          so it lives above the loading gate, not inside it. */}
+      <div class={styles.appList}>
+        <Show when={isShowWidgetRow()}>
+          <div
+            class={styles.appEntry}
+            classList={{
+              [styles.appEntryDone]: widgetPlacement.getIsPlaced(),
+            }}
+            onClick={handleWidgetRowClick}
+          >
+            <div class={styles.checkboxDisplay}>
+              <Checkbox
+                checked={widgetPlacement.getIsPlaced()}
+                onChange={() => {}}
+              />
+            </div>
+            <span class={styles.appName}>
+              Your home screen
+              <span class={styles.appEntrySub}>
+                {widgetPlacement.getIsPlaced()
+                  ? `the ${companionWord()} rests there as a widget`
+                  : `the ${companionWord()} as a widget — no permissions needed`}
+              </span>
+            </span>
+          </div>
+          <Show when={getIsShowManualPinHint()}>
+            <p class={styles.manualPinHint}>
+              Your launcher doesn't support adding it from here: long-press your
+              home screen → Widgets → <em>minded</em>.
+            </p>
+          </Show>
+        </Show>
+        {getAvailableApps().length === 0 ? (
+          <div class={styles.inset}>Loading apps...</div>
+        ) : (
+          <For each={getAvailableApps()}>
+            {(app) => (
               <div
                 class={styles.appEntry}
-                classList={{
-                  [styles.appEntryDone]: widgetPlacement.getIsPlaced(),
-                }}
-                onClick={handleWidgetRowClick}
+                onClick={() => handleToggleApp(app.packageName)}
               >
                 <div class={styles.checkboxDisplay}>
                   <Checkbox
-                    checked={widgetPlacement.getIsPlaced()}
+                    checked={getSelectedApps().includes(app.packageName)}
                     onChange={() => {}}
                   />
                 </div>
-                <span class={styles.appName}>
-                  Your home screen
-                  <span class={styles.appEntrySub}>
-                    {widgetPlacement.getIsPlaced()
-                      ? `the ${companionWord()} rests there as a widget`
-                      : `the ${companionWord()} as a widget — no permissions needed`}
-                  </span>
-                </span>
+                <span class={styles.appName}>{app.name}</span>
               </div>
-              <Show when={getIsShowManualPinHint()}>
-                <p class={styles.manualPinHint}>
-                  Your launcher doesn't support adding it from here: long-press
-                  your home screen → Widgets → <em>minded</em>.
-                </p>
-              </Show>
-            </Show>
-            <For each={getAvailableApps()}>
-              {(app) => (
-                <div
-                  class={styles.appEntry}
-                  onClick={() => handleToggleApp(app.packageName)}
-                >
-                  <div class={styles.checkboxDisplay}>
-                    <Checkbox
-                      checked={getSelectedApps().includes(app.packageName)}
-                      onChange={() => {}}
-                    />
-                  </div>
-                  <span class={styles.appName}>{app.name}</span>
-                </div>
-              )}
-            </For>
-          </div>
+            )}
+          </For>
+        )}
+      </div>
 
-          {!props.autoSave && (
-            <div>
-              {props.isRouting && (
-                <Btn class={styles.backBtn} onClick={() => navigate("/")}>
-                  <Ico name="arrowBack" /> Back
-                </Btn>
-              )}
-
-              <Btn disabled={!hasChosenAPlace()} onClick={handleSave}>
-                <Ico name="send" /> {props.saveBtnTxt || "Save"}
-              </Btn>
-            </div>
+      {!props.autoSave && (
+        <div>
+          {props.isRouting && (
+            <Btn class={styles.backBtn} onClick={() => navigate("/")}>
+              <Ico name="arrowBack" /> Back
+            </Btn>
           )}
-        </>
+
+          <Btn disabled={!hasChosenAPlace()} onClick={handleSave}>
+            <Ico name="send" /> {props.saveBtnTxt || "Save"}
+          </Btn>
+        </div>
       )}
     </div>
   );

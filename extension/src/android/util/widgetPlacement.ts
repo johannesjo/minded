@@ -81,5 +81,5 @@ export const createWidgetPlacement = () => {
     });
   });
 
-  return { getIsPlaced, refresh, requestPin };
+  return { getIsPlaced, requestPin };
 };
