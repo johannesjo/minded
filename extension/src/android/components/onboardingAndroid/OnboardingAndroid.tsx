@@ -23,7 +23,6 @@ import {
 } from "@src/shared/components/interaction/sun/Sun";
 import { setCompanionBottomYPx } from "@src/shared/components/interaction/sun/sunStore";
 import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
-import { createOnboardingSunDemo } from "@src/shared/components/onboarding/createOnboardingSunDemo";
 import { OnboardingSunLayer } from "@src/shared/components/onboarding/OnboardingSunLayer";
 import { getOnboardingSunSettle } from "./onboardingSunSettle";
 import {
@@ -192,16 +191,6 @@ export const OnboardingAndroid = (props: {
       contentEl.style.transition = "";
     });
   };
-
-  // The welcome's tap-to-pause demo (shared with iOS): the ONE disc morphs into
-  // the real InteractionOverlay and back. The flow supplies its own rests
-  // (getSunSettle, sky-band aware) and how to advance off the welcome.
-  const sunDemo = createOnboardingSunDemo({
-    getStep,
-    getIsLeaving,
-    getBaseSettle: getSunSettle,
-    advanceFromWelcome: () => changeStep(1),
-  });
 
   // The sole exit: the disc glides home to the companion anchor while the
   // chrome fades, and the dashboard mounts only once it has landed — so the
@@ -439,7 +428,15 @@ export const OnboardingAndroid = (props: {
         />
       </div>
 
-      <OnboardingSunLayer demo={sunDemo} getIsLeaving={getIsLeaving} />
+      {/* The ONE onboarding sun + its tap-to-pause demo (shared with iOS). The
+          flow supplies its own rests (getSunSettle, sky-band aware) and how to
+          advance off the welcome. */}
+      <OnboardingSunLayer
+        getStep={getStep}
+        getIsLeaving={getIsLeaving}
+        getBaseSettle={getSunSettle}
+        advanceFromWelcome={() => changeStep(1)}
+      />
 
       <div class={styles.skyProbe} ref={skyProbeEl} />
       <div class={styles.companionProbe} ref={companionProbeEl} />

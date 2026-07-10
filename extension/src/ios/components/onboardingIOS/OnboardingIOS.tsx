@@ -21,7 +21,6 @@ import {
 import { sunCompanionSettle } from "@src/shared/components/interaction/sun/sunSettle";
 import { setCompanionBottomYPx } from "@src/shared/components/interaction/sun/sunStore";
 import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
-import { createOnboardingSunDemo } from "@src/shared/components/onboarding/createOnboardingSunDemo";
 import { OnboardingSunLayer } from "@src/shared/components/onboarding/OnboardingSunLayer";
 import {
   fadeOut,
@@ -169,16 +168,6 @@ export const OnboardingIOS = (props: {
     });
   };
 
-  // The welcome's tap-to-pause demo (shared with Android): the ONE disc morphs
-  // into the real InteractionOverlay and back. The flow supplies its own rests
-  // (getOnboardingSettle) and how to advance off the welcome.
-  const sunDemo = createOnboardingSunDemo({
-    getStep,
-    getIsLeaving,
-    getBaseSettle: getOnboardingSettle,
-    advanceFromWelcome: () => changeStep(1),
-  });
-
   // The sole exit: mark the run seen, then the disc glides home to the
   // companion anchor while the chrome fades; the dashboard mounts once it has
   // landed, so the shell sun takes over a disc already resting on its anchor.
@@ -190,7 +179,14 @@ export const OnboardingIOS = (props: {
     // pre-write value and bounce the user straight back into onboarding (worst
     // on the reduced-motion path, which has no glide to hide the race). Android
     // writes this early via its step>=3 effect, so it never hits this.
-    await updateUserCfg({ isOnboardingComplete: true });
+    // But never let a storage failure trap the user on the onboarding screen:
+    // saveSyncDataN already surfaces the error, so we leave regardless — at
+    // worst onboarding reappears next launch (the pre-fix behaviour).
+    try {
+      await updateUserCfg({ isOnboardingComplete: true });
+    } catch {
+      // already surfaced by handleDataError; fall through to the dashboard
+    }
     if (isDisposed) return;
     const companionY = getCompanionY();
     if (companionY != null) setCompanionBottomYPx(companionY);
@@ -276,7 +272,15 @@ export const OnboardingIOS = (props: {
         />
       </div>
 
-      <OnboardingSunLayer demo={sunDemo} getIsLeaving={getIsLeaving} />
+      {/* The ONE onboarding sun + its tap-to-pause demo (shared with Android).
+          The flow supplies its own rests (getOnboardingSettle) and how to
+          advance off the welcome. */}
+      <OnboardingSunLayer
+        getStep={getStep}
+        getIsLeaving={getIsLeaving}
+        getBaseSettle={getOnboardingSettle}
+        advanceFromWelcome={() => changeStep(1)}
+      />
 
       <div class={styles.companionProbe} ref={companionProbeEl} />
     </div>

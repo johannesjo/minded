@@ -1,5 +1,5 @@
 import { JSX, Show } from "solid-js";
-import Sun from "@src/shared/components/interaction/sun/Sun";
+import Sun, { SunSettle } from "@src/shared/components/interaction/sun/Sun";
 import {
   getIsShellSunHidden,
   getSunHandlers,
@@ -10,30 +10,27 @@ import InteractionOverlay from "@src/shared/components/dashboard/interactionOver
 import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
 import styles from "./onboardingSunLayer.module.scss";
 
-type SunDemo = ReturnType<typeof createOnboardingSunDemo>;
-
 /**
  * The ONE onboarding sun and its tap-to-pause demo overlay — shared by both
- * platforms' onboarding. Mirrors the dashboard shell's fixed sun layer: the
- * flow never mounts a per-step disc; this single element morphs between the
- * flow's rests and, during the welcome demo, is driven by the shared sunStore
- * exactly like the shell sun (roles, anchors, handlers) — same disc, morphing,
- * never a second one. It mounts only once its first rest is measured, snapping
- * straight into place (never a centre-flash), softened by the layer's fade-in.
+ * platforms' onboarding. It owns the shared takeover state machine
+ * (createOnboardingSunDemo), so the whole thing lives in one place; each flow
+ * supplies only its step/leaving signals, its base settle rests, and how to
+ * advance off the welcome.
  *
- * The state machine lives in `createOnboardingSunDemo`; the caller passes the
- * demo it created plus its own `getIsLeaving` (a flow signal used both here and
- * by the flow's own rests).
+ * Mirrors the dashboard shell's fixed sun layer: the flow never mounts a
+ * per-step disc; this single element morphs between the flow's rests and,
+ * during the welcome demo, is driven by the shared sunStore exactly like the
+ * shell sun (roles, anchors, handlers) — same disc, morphing, never a second
+ * one. It mounts only once its first rest is measured, snapping straight into
+ * place (never a centre-flash), softened by the layer's fade-in.
  */
 export const OnboardingSunLayer = (props: {
-  demo: SunDemo;
+  getStep: () => number;
   getIsLeaving: () => boolean;
+  getBaseSettle: () => SunSettle | null;
+  advanceFromWelcome: () => void;
 }): JSX.Element => {
-  // `demo` is created once by the parent and never reassigned, so aliasing it
-  // is safe — the reactivity lives in the accessors it holds, read live in the
-  // JSX below.
-  // eslint-disable-next-line solid/reactivity
-  const d = props.demo;
+  const d = createOnboardingSunDemo(props);
   return (
     <>
       <div
@@ -113,8 +110,8 @@ export const OnboardingSunLayer = (props: {
       */}
       {d.getIsShowPause() && (
         <InteractionOverlay
-          onClosingStarted={() => d.setIsPauseClosing(true)}
-          onHideInteraction={() => d.onPauseClosed()}
+          onClosingStarted={d.onPauseClosing}
+          onHideInteraction={d.onPauseClosed}
         />
       )}
     </>

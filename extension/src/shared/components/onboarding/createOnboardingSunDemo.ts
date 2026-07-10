@@ -105,6 +105,10 @@ export const createOnboardingSunDemo = (opts: {
   // The overlay's onHideInteraction: reset the demo and leave the store idle
   // for the next open (and for the dashboard shell sun that eventually takes
   // over).
+  // The overlay's onClosingStarted: the flow reclaims its disc the instant the
+  // closing fade begins (the isPauseClosing window in shouldPauseDriveSun).
+  const onPauseClosing = () => setIsPauseClosing(true);
+
   const onPauseClosed = () => {
     setIsShowPause(false);
     setIsPauseClosing(false);
@@ -115,7 +119,7 @@ export const createOnboardingSunDemo = (opts: {
   return {
     sunVariant,
     getIsShowPause,
-    setIsPauseClosing,
+    onPauseClosing,
     isPauseDrivingSun,
     getActiveSunSettle,
     getHasSunMounted,
