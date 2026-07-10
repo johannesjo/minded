@@ -14,27 +14,17 @@ import {
 } from "solid-js";
 // @ts-ignore
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
-import { companionWord, isDarkModeNow } from "@src/shared/addWrapperClasses";
+import { companionWord } from "@src/shared/addWrapperClasses";
 import Btn from "@src/shared/components/ui/Btn";
 import { Stepper } from "@src/shared/components/ui/Stepper";
-import Sun, {
+import {
   COMPANION_GLIDE_MS,
   SunSettle,
 } from "@src/shared/components/interaction/sun/Sun";
-import {
-  getIsShellSunHidden,
-  getIsSunHandoffInFlight,
-  getSunHandlers,
-  getSunRole,
-  getSunSettleForCurrentRole,
-  isShellSunInteractive,
-  setBreathStartedAt,
-  setCompanionBottomYPx,
-  setSunRole,
-} from "@src/shared/components/interaction/sun/sunStore";
+import { setCompanionBottomYPx } from "@src/shared/components/interaction/sun/sunStore";
 import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
-import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import { shouldPauseDriveSun } from "@src/shared/components/dashboard/interactionOverlay/pauseTakeover";
+import { createOnboardingSunDemo } from "@src/shared/components/onboarding/createOnboardingSunDemo";
+import { OnboardingSunLayer } from "@src/shared/components/onboarding/OnboardingSunLayer";
 import { getOnboardingSunSettle } from "./onboardingSunSettle";
 import {
   createWidgetPlacement,
@@ -85,15 +75,6 @@ export const OnboardingAndroid = (props: {
   // for a user who never asked for the in-app interruption.
   const [getHasApps, setHasApps] = createSignal(false);
 
-  // --- The welcome step's tap-to-pause demo: the real InteractionOverlay,
-  // opened on the disc the user is already holding. While it runs, the shared
-  // sunStore drives the ONE onboarding disc exactly as it drives the dashboard
-  // shell sun (roles, measured anchors, outcome handlers) — see
-  // shouldPauseDriveSun for the takeover windows.
-  const [getIsShowPause, setIsShowPause] = createSignal(false);
-  const [getIsPauseClosing, setIsPauseClosing] = createSignal(false);
-  const [getHasPauseTakenOver, setHasPauseTakenOver] = createSignal(false);
-
   // The widget as a place: observed launcher state for the denied-path offer
   // ("Almost there" → the costless yes). The picker row has its own instance.
   const widgetPlacement = createWidgetPlacement();
@@ -104,11 +85,6 @@ export const OnboardingAndroid = (props: {
   // rested on, then lifts it to the sky next frame — the same sun visibly
   // rises out of the bar instead of a second one popping in elsewhere.
   const [getHasLifted, setHasLifted] = createSignal(!isReEntry);
-
-  // Day/night read once at mount, matching the companionWord() the copy uses.
-  // (Same shortcut as RouteCmp: a resume across the dark-mode threshold while
-  // this is open won't flip the disc — rare; add a resume listener if it bites.)
-  const sunVariant = isDarkModeNow() ? "moon" : "sun";
 
   let contentEl!: HTMLDivElement;
   let chromeEl!: HTMLDivElement;
@@ -201,76 +177,6 @@ export const OnboardingAndroid = (props: {
     return next;
   });
 
-  // While the demo pause drives the disc, its settle comes from the shared
-  // store (the interaction measures its own anchors there); otherwise from the
-  // onboarding rests above. One disc, two drivers, never both.
-  const isPauseDrivingSun = () =>
-    shouldPauseDriveSun({
-      isPauseShown: getIsShowPause(),
-      isPauseClosing: getIsPauseClosing(),
-      hasPauseTakenOver: getHasPauseTakenOver(),
-      sunRole: getSunRole(),
-    });
-
-  const getActiveSunSettle = (): SunSettle | null =>
-    isPauseDrivingSun() ? getSunSettleForCurrentRole() : getSunSettle();
-
-  // Record the interaction's first role flip after the pause opens, so a later
-  // mid-pause "companion" role (grounding) keeps reading as the store's
-  // instruction rather than as "not started yet" (see shouldPauseDriveSun).
-  createEffect(() => {
-    if (
-      getIsShowPause() &&
-      !getIsPauseClosing() &&
-      getSunRole() !== "companion"
-    ) {
-      setHasPauseTakenOver(true);
-    }
-  });
-
-  // The sun mounts once its first rest is measured and then STAYS mounted:
-  // mid-pause the store's settle can legitimately be null for a beat (the
-  // draggable base between anchors), and unmounting on that would hard-cut the
-  // one disc out of existence.
-  const [getHasSunMounted, setHasSunMounted] = createSignal(false);
-  createEffect(() => {
-    if (getActiveSunSettle()) setHasSunMounted(true);
-  });
-
-  // Only the welcome step's disc takes input — everywhere else the sun is a
-  // quiet presence (and the closing "ready" disc can never be dismissed).
-  const isSunGrabbable = () =>
-    getStep() === 0 && !getIsLeaving() && !getIsShowPause();
-
-  // While the pause runs, input follows the shell-sun rules instead (the
-  // store's role + hand-off gate) so the demo behaves exactly like the
-  // dashboard interaction.
-  const isSunInputEnabled = () =>
-    isPauseDrivingSun()
-      ? isShellSunInteractive(getSunRole(), getIsSunHandoffInFlight())
-      : isSunGrabbable();
-
-  // The welcome gesture: advance the moment a fling/drag completes. The step
-  // change swaps the settle target synchronously inside the gesture handler,
-  // so Sun's settle-takeover guards catch the disc before it flies off-screen
-  // and it soars to its sky rest instead. onFlingAway/onDragComplete stay as
-  // fallbacks for paths where no takeover happened (reduced motion).
-  const advanceFromHero = () => {
-    if (getStep() === 0 && !getIsLeaving()) changeStep(1);
-  };
-
-  // The welcome invitation: a single tap on the held disc opens the REAL pause
-  // (the same InteractionOverlay the dashboard companion and the home-screen
-  // widget open) — value before any permission talk. Closing it returns to the
-  // welcome; nothing advances behind the user's back.
-  const openPause = () => {
-    if (getStep() !== 0 || getIsLeaving() || getIsShowPause()) return;
-    // The store should already be idle; make sure a stale role from an earlier
-    // surface can't make the takeover read as already-in-flight.
-    setSunRole("companion");
-    setIsShowPause(true);
-  };
-
   const changeStep = (next: number) => {
     if (next === getStep() || getIsLeaving()) return;
     setStep(next); // Stepper + sun move now; the content follows the fade
@@ -286,6 +192,16 @@ export const OnboardingAndroid = (props: {
       contentEl.style.transition = "";
     });
   };
+
+  // The welcome's tap-to-pause demo (shared with iOS): the ONE disc morphs into
+  // the real InteractionOverlay and back. The flow supplies its own rests
+  // (getSunSettle, sky-band aware) and how to advance off the welcome.
+  const sunDemo = createOnboardingSunDemo({
+    getStep,
+    getIsLeaving,
+    getBaseSettle: getSunSettle,
+    advanceFromWelcome: () => changeStep(1),
+  });
 
   // The sole exit: the disc glides home to the companion anchor while the
   // chrome fades, and the dashboard mounts only once it has landed — so the
@@ -523,105 +439,7 @@ export const OnboardingAndroid = (props: {
         />
       </div>
 
-      {/*
-        The ONE onboarding sun. Mirrors the shell's fixed sun layer: the flow
-        never mounts a per-step disc — this single element morphs from the
-        welcome hero to its sky rest through the chores, back down for "ready",
-        and finally glides onto the companion anchor the dashboard sun takes
-        over. During the welcome's tap-to-pause demo the shared sunStore drives
-        it through the live interaction (roles, anchors, handlers) exactly like
-        the dashboard shell sun — same disc, morphing, never a second one. It
-        mounts only once its first rest is measured, snapping straight into
-        place (never a centre-flash), softened by the layer's fade-in.
-      */}
-      <div
-        class={styles.sunLayer}
-        classList={{
-          [styles.isInteractive]: isSunInputEnabled(),
-          [styles.isLeaving]: getIsLeaving(),
-          // Mirror RouteCmp's float-pinning during a live interaction / a
-          // store-driven companion rest, so the disc stays exactly on the point
-          // the interaction's glow (or the grounding bar anchor) expects.
-          [styles.isIntervention]:
-            isPauseDrivingSun() && getSunRole() !== "companion",
-          [styles.isCompanion]:
-            isPauseDrivingSun() && getSunRole() === "companion",
-          // A pause surface that replaces the sun (the let-go question, a
-          // screen-free grounding sit) hides the layer, exactly as on the shell.
-          [styles.isHidden]: getIsShellSunHidden() === true,
-          [styles.isHiddenSoft]: getIsShellSunHidden() === "soft",
-        }}
-      >
-        <Show when={getHasSunMounted()}>
-          <Sun
-            variant={sunVariant}
-            settle={getActiveSunSettle()}
-            minimizeWillChange={true}
-            isTapEnabled={
-              isPauseDrivingSun()
-                ? isSunInputEnabled() &&
-                  (getSunHandlers()?.isTapEnabled ?? true)
-                : isSunGrabbable()
-            }
-            isDragEnabled={isSunInputEnabled()}
-            // Welcome: a single tap is the invitation into the pause. Mid-pause
-            // the tap threshold belongs to the interaction (though the
-            // dashboard-style pause disables tap-continue anyway).
-            tapThreshold={
-              isPauseDrivingSun() ? (getSunHandlers()?.tapThreshold ?? 3) : 1
-            }
-            onSkip={() =>
-              isPauseDrivingSun() ? getSunHandlers()?.onSkip() : openPause()
-            }
-            onFlingAway={() =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onFlingAway()
-                : advanceFromHero()
-            }
-            onDragComplete={() =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onDragComplete()
-                : advanceFromHero()
-            }
-            onStartBackgroundAnimation={(d) =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onStartBackgroundAnimation?.(d)
-                : undefined
-            }
-            onFlungOffscreen={() =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onFlungOffscreen?.()
-                : undefined
-            }
-            onCompletionStarted={(started) =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onCompletionStarted?.(started)
-                : started && advanceFromHero()
-            }
-            onBreathStart={setBreathStartedAt}
-          />
-        </Show>
-      </div>
-
-      {/*
-        The welcome demo: the real interaction overlay (sky z-20, under the sun
-        layer's z-30, exactly like the dashboard). Its closing fade hands the
-        disc back first (onClosingStarted), so the sun glides home to the hero
-        rest while the sky fades — one motion, never a companion detour.
-      */}
-      {getIsShowPause() && (
-        <InteractionOverlay
-          onClosingStarted={() => setIsPauseClosing(true)}
-          onHideInteraction={() => {
-            setIsShowPause(false);
-            setIsPauseClosing(false);
-            setHasPauseTakenOver(false);
-            // Leave the store idle for the next open (and for the dashboard
-            // shell sun that eventually takes over).
-            setSunRole("companion");
-          }}
-        />
-      )}
+      <OnboardingSunLayer demo={sunDemo} getIsLeaving={getIsLeaving} />
 
       <div class={styles.skyProbe} ref={skyProbeEl} />
       <div class={styles.companionProbe} ref={companionProbeEl} />

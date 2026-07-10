@@ -54,8 +54,11 @@ export const SettingsAndroid = (props: {
   const widgetPlacement = createWidgetPlacement();
   const wasWidgetPlacedAtMount = readIsWidgetPlaced();
   const [getIsShowManualPinHint, setIsShowManualPinHint] = createSignal(false);
+  // Only in the onboarding / re-entry picker (which frames the list as "places
+  // the sun can meet you"), never in the standalone "manage blocked apps"
+  // settings screen (autoSave), whose heading is about apps, not places.
   const isShowWidgetRow = () =>
-    isWidgetPinAvailable() && !wasWidgetPlacedAtMount;
+    !props.autoSave && isWidgetPinAvailable() && !wasWidgetPlacedAtMount;
 
   const handleWidgetRowClick = () => {
     if (widgetPlacement.getIsPlaced()) return;

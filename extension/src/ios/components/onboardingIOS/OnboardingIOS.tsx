@@ -7,33 +7,22 @@ import {
   on,
   onCleanup,
   onMount,
-  Show,
   Switch,
 } from "solid-js";
 // @ts-ignore
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
-import { companionWord, isDarkModeNow } from "@src/shared/addWrapperClasses";
+import { companionWord } from "@src/shared/addWrapperClasses";
 import Btn from "@src/shared/components/ui/Btn";
 import { Stepper } from "@src/shared/components/ui/Stepper";
-import Sun, {
+import {
   COMPANION_GLIDE_MS,
   SunSettle,
 } from "@src/shared/components/interaction/sun/Sun";
 import { sunCompanionSettle } from "@src/shared/components/interaction/sun/sunSettle";
-import {
-  getIsShellSunHidden,
-  getIsSunHandoffInFlight,
-  getSunHandlers,
-  getSunRole,
-  getSunSettleForCurrentRole,
-  isShellSunInteractive,
-  setBreathStartedAt,
-  setCompanionBottomYPx,
-  setSunRole,
-} from "@src/shared/components/interaction/sun/sunStore";
+import { setCompanionBottomYPx } from "@src/shared/components/interaction/sun/sunStore";
 import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
-import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import { shouldPauseDriveSun } from "@src/shared/components/dashboard/interactionOverlay/pauseTakeover";
+import { createOnboardingSunDemo } from "@src/shared/components/onboarding/createOnboardingSunDemo";
+import { OnboardingSunLayer } from "@src/shared/components/onboarding/OnboardingSunLayer";
 import {
   fadeOut,
   fadeOutThen,
@@ -76,20 +65,11 @@ export const OnboardingIOS = (props: {
   );
   const [getIsLeaving, setIsLeaving] = createSignal(false);
 
-  // The welcome's tap-to-pause demo: the real InteractionOverlay on the disc
-  // the user is already holding, driven through the shared sunStore exactly
-  // like the dashboard shell sun. See shouldPauseDriveSun for the windows.
-  const [getIsShowPause, setIsShowPause] = createSignal(false);
-  const [getIsPauseClosing, setIsPauseClosing] = createSignal(false);
-  const [getHasPauseTakenOver, setHasPauseTakenOver] = createSignal(false);
-
   const isReEntry = (props.initialStep ?? 0) > 0;
   // Re-entry starts the disc on the companion anchor the dashboard sun just
   // rested on, then lifts it next frame — the same sun visibly rises out of
   // the bar instead of a second one popping in elsewhere.
   const [getHasLifted, setHasLifted] = createSignal(!isReEntry);
-
-  const sunVariant = isDarkModeNow() ? "moon" : "sun";
 
   let contentEl!: HTMLDivElement;
   let chromeEl!: HTMLDivElement;
@@ -175,55 +155,6 @@ export const OnboardingIOS = (props: {
     return next;
   });
 
-  const isPauseDrivingSun = () =>
-    shouldPauseDriveSun({
-      isPauseShown: getIsShowPause(),
-      isPauseClosing: getIsPauseClosing(),
-      hasPauseTakenOver: getHasPauseTakenOver(),
-      sunRole: getSunRole(),
-    });
-
-  const getActiveSunSettle = (): SunSettle | null =>
-    isPauseDrivingSun() ? getSunSettleForCurrentRole() : getOnboardingSettle();
-
-  createEffect(() => {
-    if (
-      getIsShowPause() &&
-      !getIsPauseClosing() &&
-      getSunRole() !== "companion"
-    ) {
-      setHasPauseTakenOver(true);
-    }
-  });
-
-  // Mount once the first rest is measured, then stay mounted: a mid-pause null
-  // settle (the draggable base) must not unmount the one disc.
-  const [getHasSunMounted, setHasSunMounted] = createSignal(false);
-  createEffect(() => {
-    if (getActiveSunSettle()) setHasSunMounted(true);
-  });
-
-  const isSunGrabbable = () =>
-    getStep() === 0 && !getIsLeaving() && !getIsShowPause();
-
-  const isSunInputEnabled = () =>
-    isPauseDrivingSun()
-      ? isShellSunInteractive(getSunRole(), getIsSunHandoffInFlight())
-      : isSunGrabbable();
-
-  const advanceFromHero = () => {
-    if (getStep() === 0 && !getIsLeaving()) changeStep(1);
-  };
-
-  // The welcome invitation: one tap on the held disc opens the REAL pause —
-  // on iOS this is the full honest demo, since the widget tap delivers exactly
-  // this. Closing returns to the welcome; nothing advances behind the user.
-  const openPause = () => {
-    if (getStep() !== 0 || getIsLeaving() || getIsShowPause()) return;
-    setSunRole("companion");
-    setIsShowPause(true);
-  };
-
   const changeStep = (next: number) => {
     if (next === getStep() || getIsLeaving()) return;
     setStep(next);
@@ -237,6 +168,16 @@ export const OnboardingIOS = (props: {
       contentEl.style.transition = "";
     });
   };
+
+  // The welcome's tap-to-pause demo (shared with Android): the ONE disc morphs
+  // into the real InteractionOverlay and back. The flow supplies its own rests
+  // (getOnboardingSettle) and how to advance off the welcome.
+  const sunDemo = createOnboardingSunDemo({
+    getStep,
+    getIsLeaving,
+    getBaseSettle: getOnboardingSettle,
+    advanceFromWelcome: () => changeStep(1),
+  });
 
   // The sole exit: mark the run seen, then the disc glides home to the
   // companion anchor while the chrome fades; the dashboard mounts once it has
@@ -335,84 +276,7 @@ export const OnboardingIOS = (props: {
         />
       </div>
 
-      {/*
-        The ONE onboarding sun (see OnboardingAndroid's sun layer for the full
-        story): a single fixed-layer disc morphing between the hero rest, the
-        live demo pause (store-driven), and the closing companion glide the
-        dashboard shell sun takes over.
-      */}
-      <div
-        class={styles.sunLayer}
-        classList={{
-          [styles.isInteractive]: isSunInputEnabled(),
-          [styles.isLeaving]: getIsLeaving(),
-          [styles.isIntervention]:
-            isPauseDrivingSun() && getSunRole() !== "companion",
-          [styles.isCompanion]:
-            isPauseDrivingSun() && getSunRole() === "companion",
-          [styles.isHidden]: getIsShellSunHidden() === true,
-          [styles.isHiddenSoft]: getIsShellSunHidden() === "soft",
-        }}
-      >
-        <Show when={getHasSunMounted()}>
-          <Sun
-            variant={sunVariant}
-            settle={getActiveSunSettle()}
-            minimizeWillChange={true}
-            isTapEnabled={
-              isPauseDrivingSun()
-                ? isSunInputEnabled() &&
-                  (getSunHandlers()?.isTapEnabled ?? true)
-                : isSunGrabbable()
-            }
-            isDragEnabled={isSunInputEnabled()}
-            tapThreshold={
-              isPauseDrivingSun() ? (getSunHandlers()?.tapThreshold ?? 3) : 1
-            }
-            onSkip={() =>
-              isPauseDrivingSun() ? getSunHandlers()?.onSkip() : openPause()
-            }
-            onFlingAway={() =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onFlingAway()
-                : advanceFromHero()
-            }
-            onDragComplete={() =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onDragComplete()
-                : advanceFromHero()
-            }
-            onStartBackgroundAnimation={(d) =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onStartBackgroundAnimation?.(d)
-                : undefined
-            }
-            onFlungOffscreen={() =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onFlungOffscreen?.()
-                : undefined
-            }
-            onCompletionStarted={(started) =>
-              isPauseDrivingSun()
-                ? getSunHandlers()?.onCompletionStarted?.(started)
-                : started && advanceFromHero()
-            }
-            onBreathStart={setBreathStartedAt}
-          />
-        </Show>
-      </div>
-
-      {getIsShowPause() && (
-        <InteractionOverlay
-          onClosingStarted={() => setIsPauseClosing(true)}
-          onHideInteraction={() => {
-            setIsShowPause(false);
-            setIsPauseClosing(false);
-            setHasPauseTakenOver(false);
-            setSunRole("companion");
-          }}
-        />
-      )}
+      <OnboardingSunLayer demo={sunDemo} getIsLeaving={getIsLeaving} />
 
       <div class={styles.companionProbe} ref={companionProbeEl} />
     </div>

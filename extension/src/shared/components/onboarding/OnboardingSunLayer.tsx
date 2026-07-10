@@ -1,0 +1,122 @@
+import { JSX, Show } from "solid-js";
+import Sun from "@src/shared/components/interaction/sun/Sun";
+import {
+  getIsShellSunHidden,
+  getSunHandlers,
+  getSunRole,
+  setBreathStartedAt,
+} from "@src/shared/components/interaction/sun/sunStore";
+import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
+import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
+import styles from "./onboardingSunLayer.module.scss";
+
+type SunDemo = ReturnType<typeof createOnboardingSunDemo>;
+
+/**
+ * The ONE onboarding sun and its tap-to-pause demo overlay — shared by both
+ * platforms' onboarding. Mirrors the dashboard shell's fixed sun layer: the
+ * flow never mounts a per-step disc; this single element morphs between the
+ * flow's rests and, during the welcome demo, is driven by the shared sunStore
+ * exactly like the shell sun (roles, anchors, handlers) — same disc, morphing,
+ * never a second one. It mounts only once its first rest is measured, snapping
+ * straight into place (never a centre-flash), softened by the layer's fade-in.
+ *
+ * The state machine lives in `createOnboardingSunDemo`; the caller passes the
+ * demo it created plus its own `getIsLeaving` (a flow signal used both here and
+ * by the flow's own rests).
+ */
+export const OnboardingSunLayer = (props: {
+  demo: SunDemo;
+  getIsLeaving: () => boolean;
+}): JSX.Element => {
+  // `demo` is created once by the parent and never reassigned, so aliasing it
+  // is safe — the reactivity lives in the accessors it holds, read live in the
+  // JSX below.
+  // eslint-disable-next-line solid/reactivity
+  const d = props.demo;
+  return (
+    <>
+      <div
+        class={styles.sunLayer}
+        classList={{
+          [styles.isInteractive]: d.isSunInputEnabled(),
+          [styles.isLeaving]: props.getIsLeaving(),
+          // Mirror RouteCmp's float-pinning during a live interaction / a
+          // store-driven companion rest, so the disc stays exactly on the point
+          // the interaction's glow (or the grounding bar anchor) expects.
+          [styles.isIntervention]:
+            d.isPauseDrivingSun() && getSunRole() !== "companion",
+          [styles.isCompanion]:
+            d.isPauseDrivingSun() && getSunRole() === "companion",
+          // A pause surface that replaces the sun (the let-go question, a
+          // screen-free grounding sit) hides the layer, exactly as on the shell.
+          [styles.isHidden]: getIsShellSunHidden() === true,
+          [styles.isHiddenSoft]: getIsShellSunHidden() === "soft",
+        }}
+      >
+        <Show when={d.getHasSunMounted()}>
+          <Sun
+            variant={d.sunVariant}
+            settle={d.getActiveSunSettle()}
+            minimizeWillChange={true}
+            isTapEnabled={
+              d.isPauseDrivingSun()
+                ? d.isSunInputEnabled() &&
+                  (getSunHandlers()?.isTapEnabled ?? true)
+                : d.isSunGrabbable()
+            }
+            isDragEnabled={d.isSunInputEnabled()}
+            // Welcome: a single tap is the invitation into the pause. Mid-pause
+            // the tap threshold belongs to the interaction (though the
+            // dashboard-style pause disables tap-continue anyway).
+            tapThreshold={
+              d.isPauseDrivingSun() ? (getSunHandlers()?.tapThreshold ?? 3) : 1
+            }
+            onSkip={() =>
+              d.isPauseDrivingSun() ? getSunHandlers()?.onSkip() : d.openPause()
+            }
+            onFlingAway={() =>
+              d.isPauseDrivingSun()
+                ? getSunHandlers()?.onFlingAway()
+                : d.advanceFromHero()
+            }
+            onDragComplete={() =>
+              d.isPauseDrivingSun()
+                ? getSunHandlers()?.onDragComplete()
+                : d.advanceFromHero()
+            }
+            onStartBackgroundAnimation={(dur) =>
+              d.isPauseDrivingSun()
+                ? getSunHandlers()?.onStartBackgroundAnimation?.(dur)
+                : undefined
+            }
+            onFlungOffscreen={() =>
+              d.isPauseDrivingSun()
+                ? getSunHandlers()?.onFlungOffscreen?.()
+                : undefined
+            }
+            onCompletionStarted={(started) =>
+              d.isPauseDrivingSun()
+                ? getSunHandlers()?.onCompletionStarted?.(started)
+                : started && d.advanceFromHero()
+            }
+            onBreathStart={setBreathStartedAt}
+          />
+        </Show>
+      </div>
+
+      {/*
+        The welcome demo: the real interaction overlay (sky z-20, under the sun
+        layer's z-30, exactly like the dashboard). Its closing fade hands the
+        disc back first (onClosingStarted), so the sun glides home to the flow's
+        rest while the sky fades — one motion, never a companion detour.
+      */}
+      {d.getIsShowPause() && (
+        <InteractionOverlay
+          onClosingStarted={() => d.setIsPauseClosing(true)}
+          onHideInteraction={() => d.onPauseClosed()}
+        />
+      )}
+    </>
+  );
+};
