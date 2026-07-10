@@ -14,16 +14,21 @@ import {
 } from "solid-js";
 // @ts-ignore
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
-import { companionWord, isDarkModeNow } from "@src/shared/addWrapperClasses";
+import { companionWord } from "@src/shared/addWrapperClasses";
 import Btn from "@src/shared/components/ui/Btn";
 import { Stepper } from "@src/shared/components/ui/Stepper";
-import Sun, {
+import {
   COMPANION_GLIDE_MS,
   SunSettle,
 } from "@src/shared/components/interaction/sun/Sun";
 import { setCompanionBottomYPx } from "@src/shared/components/interaction/sun/sunStore";
 import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
+import { OnboardingSunLayer } from "@src/shared/components/onboarding/OnboardingSunLayer";
 import { getOnboardingSunSettle } from "./onboardingSunSettle";
+import {
+  createWidgetPlacement,
+  isWidgetPinAvailable,
+} from "@src/android/util/widgetPlacement";
 import {
   fadeOut,
   fadeOutThen,
@@ -47,7 +52,7 @@ export const OnboardingAndroid = (props: {
   onGoDashboard: () => void;
   /**
    * Where to enter the flow. First run starts at 0 (the sun intro); the
-   * dashboard's "finish setup" invitation re-enters at 1 (the app picker),
+   * dashboard's "finish setup" invitation re-enters at 1 (the places picker),
    * skipping the welcome the user has already seen.
    */
   initialStep?: number;
@@ -63,17 +68,22 @@ export const OnboardingAndroid = (props: {
   const [getPermissionNotGiven, setPermissionNotGiven] =
     createSignal<boolean>(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
+  // Whether the picker's save chose any apps. Decides the route after step 1
+  // (apps → the permission chores; none → straight to "ready") and shrinks the
+  // stepper for the widget-only run — the permission dots simply don't exist
+  // for a user who never asked for the in-app interruption.
+  const [getHasApps, setHasApps] = createSignal(false);
+
+  // The widget as a place: observed launcher state for the denied-path offer
+  // ("Almost there" → the costless yes). The picker row has its own instance.
+  const widgetPlacement = createWidgetPlacement();
+  const [getIsShowManualPinHint, setIsShowManualPinHint] = createSignal(false);
 
   const isReEntry = (props.initialStep ?? 0) > 0;
   // Re-entry starts the disc on the companion anchor the dashboard sun just
   // rested on, then lifts it to the sky next frame — the same sun visibly
   // rises out of the bar instead of a second one popping in elsewhere.
   const [getHasLifted, setHasLifted] = createSignal(!isReEntry);
-
-  // Day/night read once at mount, matching the companionWord() the copy uses.
-  // (Same shortcut as RouteCmp: a resume across the dark-mode threshold while
-  // this is open won't flip the disc — rare; add a resume listener if it bites.)
-  const sunVariant = isDarkModeNow() ? "moon" : "sun";
 
   let contentEl!: HTMLDivElement;
   let chromeEl!: HTMLDivElement;
@@ -95,7 +105,14 @@ export const OnboardingAndroid = (props: {
 
   const measureAnchors = () => {
     const companionBottom = readCompanionBottomPx(companionProbeEl);
-    if (companionBottom != null) setCompanionY(companionBottom);
+    if (companionBottom != null) {
+      setCompanionY(companionBottom);
+      // Keep the shared store's companion anchor in sync while onboarding owns
+      // the screen: a mid-demo companion rest (the grounding offer parks the
+      // disc beneath its invitation) must land on the real bar anchor, not the
+      // store's pre-mount default.
+      setCompanionBottomYPx(companionBottom);
+    }
     const skyTop = skyProbeEl.getBoundingClientRect().top;
     setSkyY(window.innerHeight - skyTop);
     if (spacerEl?.isConnected) {
@@ -159,19 +176,6 @@ export const OnboardingAndroid = (props: {
     return next;
   });
 
-  // Only the welcome step's disc takes input — everywhere else the sun is a
-  // quiet presence (and the closing "ready" disc can never be dismissed).
-  const isSunGrabbable = () => getStep() === 0 && !getIsLeaving();
-
-  // The welcome gesture: advance the moment a fling/drag completes. The step
-  // change swaps the settle target synchronously inside the gesture handler,
-  // so Sun's settle-takeover guards catch the disc before it flies off-screen
-  // and it soars to its sky rest instead. onFlingAway/onDragComplete stay as
-  // fallbacks for paths where no takeover happened (reduced motion).
-  const advanceFromHero = () => {
-    if (getStep() === 0 && !getIsLeaving()) changeStep(1);
-  };
-
   const changeStep = (next: number) => {
     if (next === getStep() || getIsLeaving()) return;
     setStep(next); // Stepper + sun move now; the content follows the fade
@@ -218,6 +222,27 @@ export const OnboardingAndroid = (props: {
     leaveToDashboard();
   };
 
+  // The picker decides the route: apps chosen → the permission chores those
+  // apps need; only the home-screen place (or nothing) chosen → straight to
+  // "ready", never showing a permission screen that has nothing to enable.
+  const handlePlacesSaved = (selectedApps: string[]) => {
+    setHasApps(selectedApps.length > 0);
+    changeStep(selectedApps.length > 0 ? 2 : 4);
+  };
+
+  // Widget-only runs never visit the permission steps, so their dots don't
+  // exist: the flow is welcome → places → ready (3), not 5 with a jump.
+  const isShortFlow = () => getStep() >= 4 && !getHasApps();
+  const displayNrOfSteps = () => (isShortFlow() ? 3 : 5);
+  const displayActiveStep = () => (isShortFlow() ? 2 : getStep());
+
+  // The denied path's costless alternative: pin the widget right there.
+  const handleOfferPin = () => {
+    if (!widgetPlacement.requestPin()) setIsShowManualPinHint(true);
+  };
+  const isShowWidgetOffer = () =>
+    isWidgetPinAvailable() && !widgetPlacement.getIsPlaced();
+
   // Mark onboarding done once the required permissions are granted (step 3
   // onward): from there minded is functional, so a force-quit shouldn't drop the
   // user back into the welcome. The denied path jumps straight to step 4.
@@ -241,12 +266,10 @@ export const OnboardingAndroid = (props: {
                 <div class="txtSlightlyBigger">
                   <p>
                     This little {companionWord()} is your anchor. When you open
-                    an app on autopilot, it appears as a calm moment to pause.
+                    an app on autopilot, it appears — a calm moment to pause,
+                    right there over the app.
                   </p>
-                  <p>
-                    To set it up, <em>minded</em> needs a few permissions and
-                    the apps where it should appear.
-                  </p>
+                  <p>Tap it to feel what that's like.</p>
                 </div>
 
                 <ButtonWrapper isVisible={true}>
@@ -269,9 +292,9 @@ export const OnboardingAndroid = (props: {
               >
                 <SettingsAndroid
                   isRouting={false}
-                  heading={`Where should the ${companionWord()} meet you? Pick at least one app.`}
+                  heading={`Where should the ${companionWord()} meet you?`}
                   saveBtnTxt="save & continue"
-                  onSave={() => changeStep(2)}
+                  onSave={handlePlacesSaved}
                 />
               </div>
             </Match>
@@ -314,7 +337,28 @@ export const OnboardingAndroid = (props: {
                       {companionWord()} can't meet you everywhere yet. You can
                       finish anytime. It'll be here.
                     </p>
+                    {/* The costless alternative, offered exactly where the
+                        permission path dead-ends: the home-screen widget needs
+                        none of what was just declined. Gated on the observed
+                        launcher state, so it's never suggested twice. */}
+                    <Show when={isShowWidgetOffer()}>
+                      <p>
+                        Or let the {companionWord()} wait on your home screen
+                        instead — that needs no permissions at all.
+                      </p>
+                    </Show>
+                    <Show when={getIsShowManualPinHint()}>
+                      <p class={styles.manualPinHint}>
+                        Your launcher doesn't support adding it from here:
+                        long-press your home screen → Widgets → <em>minded</em>.
+                      </p>
+                    </Show>
                     <div class={styles.actions}>
+                      <Show when={isShowWidgetOffer()}>
+                        <Btn onClick={handleOfferPin}>
+                          add it to your home screen
+                        </Btn>
+                      </Show>
                       <Btn
                         onClick={() => {
                           changeStep(2);
@@ -339,15 +383,25 @@ export const OnboardingAndroid = (props: {
                     <div class="h2 h2Mindful">
                       The {companionWord()} is ready
                     </div>
-                    <p>
-                      From now on, when you open one of those apps, the{" "}
-                      {companionWord()} appears: a moment to pause and notice
-                      before you carry on.
-                    </p>
-                    <p>
-                      You can always fling it away. It's an invitation, never a
-                      wall.
-                    </p>
+                    {getHasApps() ? (
+                      <>
+                        <p>
+                          From now on, when you open one of those apps, the{" "}
+                          {companionWord()} appears: a moment to pause and
+                          notice before you carry on.
+                        </p>
+                        <p>
+                          You can always fling it away. It's an invitation,
+                          never a wall.
+                        </p>
+                      </>
+                    ) : (
+                      <p>
+                        It now waits on your home screen — a quiet companion at
+                        the glance where scrolling begins. Whenever you tap it
+                        there, this pause is one touch away.
+                      </p>
+                    )}
                     <div class={styles.actions}>
                       <Btn big onClick={leaveToDashboard}>
                         continue
@@ -361,45 +415,28 @@ export const OnboardingAndroid = (props: {
         </div>
 
         <Stepper
-          nrOfSteps={5}
-          activeStep={getStep()}
+          nrOfSteps={displayNrOfSteps()}
+          activeStep={displayActiveStep()}
           // On re-entry from the dashboard invitation (initialStep > 0) the
           // welcome — with its "set this up later" skip — is behind us; don't let
           // the stepper walk back into it.
           isNoGoBack={(props.initialStep ?? 0) > 0}
+          // In the short (widget-only) flow the reachable dots map 1:1 onto the
+          // logical steps (0 welcome, 1 places) — only the collapsed permission
+          // dots are gone — so the logical step IS the display step here.
           onSetStep={(step) => changeStep(step)}
         />
       </div>
 
-      {/*
-        The ONE onboarding sun. Mirrors the shell's fixed sun layer: the flow
-        never mounts a per-step disc — this single element morphs from the
-        welcome hero to its sky rest through the chores, back down for "ready",
-        and finally glides onto the companion anchor the dashboard sun takes
-        over. It mounts only once its first rest is measured, snapping straight
-        into place (never a centre-flash), softened by the layer's fade-in.
-      */}
-      <div
-        class={styles.sunLayer}
-        classList={{
-          [styles.isInteractive]: isSunGrabbable(),
-          [styles.isLeaving]: getIsLeaving(),
-        }}
-      >
-        <Show when={getSunSettle()}>
-          <Sun
-            variant={sunVariant}
-            settle={getSunSettle()}
-            minimizeWillChange={true}
-            isTapEnabled={false}
-            isDragEnabled={isSunGrabbable()}
-            onSkip={advanceFromHero}
-            onFlingAway={advanceFromHero}
-            onDragComplete={advanceFromHero}
-            onCompletionStarted={(started) => started && advanceFromHero()}
-          />
-        </Show>
-      </div>
+      {/* The ONE onboarding sun + its tap-to-pause demo (shared with iOS). The
+          flow supplies its own rests (getSunSettle, sky-band aware) and how to
+          advance off the welcome. */}
+      <OnboardingSunLayer
+        getStep={getStep}
+        getIsLeaving={getIsLeaving}
+        getBaseSettle={getSunSettle}
+        advanceFromWelcome={() => changeStep(1)}
+      />
 
       <div class={styles.skyProbe} ref={skyProbeEl} />
       <div class={styles.companionProbe} ref={companionProbeEl} />

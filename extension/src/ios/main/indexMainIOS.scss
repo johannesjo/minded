@@ -2,11 +2,59 @@
 
 // Same treatment as Android's banner: noticeable but calm, never a
 // saturated alarm color (see indexMainAndroid.scss).
+$warm-invite-tint: rgba(255, 196, 84, 0.16);
+
 .missingCapabilitiesMsg {
-  background: rgba(255, 196, 84, 0.16);
+  background: $warm-invite-tint;
   color: inherit;
   padding: var(--space-md);
   border-radius: var(--radius-sm);
   margin: var(--space-sm);
   margin-bottom: 0;
+}
+
+// The widget invitation — the iOS twin of Android's deferred-setup
+// invitation (indexMainAndroid.scss): shown while no widget is observed on
+// the Home Screen, dismissible per visit, gone silently once one exists.
+// Fades in/out rather than snapping.
+.setupInvitationMsg {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: $warm-invite-tint;
+  color: inherit;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 8px;
+  margin-top: calc(var(--safe-area-inset-top) + 8px);
+  margin-bottom: 0;
+  opacity: 1;
+  transition: opacity 0.3s var(--ease-out);
+
+  &.isDismissing {
+    opacity: 0;
+  }
+  // Soft fade-in on appearance, never a hard cut.
+  animation: setupInvitationFadeIn 0.3s var(--ease-out);
+}
+
+.setupInvitationMsgText {
+  flex: 1;
+  cursor: pointer;
+}
+
+// Layout only — the button look (and an adequate tap target) comes from
+// <Btn variant="icon" plain>.
+.setupInvitationMsgClose {
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+
+@keyframes setupInvitationFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -61,46 +61,6 @@ $sky-strip: 88px;
   margin-bottom: 8px;
 }
 
-// Mirrors RouteCmp's .shellSunLayer: fixed + viewport-centred so the disc's
-// untransformed base is screen-centre and every rest is a settle offset from
-// there. Click-through except the disc itself while it's the interactive hero.
-.sunLayer {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  // The disc mounts snapped into its first rest; ease it in instead of popping.
-  animation: onboardingSunIn 600ms var(--ease-out);
-
-  :global(.minded-sun) {
-    pointer-events: none;
-    // The disc owns vertical-drag gestures on the welcome step; don't let a
-    // touch drag scroll the page underneath it.
-    touch-action: none;
-  }
-
-  &.isInteractive :global(.minded-sun) {
-    pointer-events: auto;
-  }
-
-  // Hold the idle float still while gliding home, so the disc lands exactly on
-  // the bar anchor the (float-less) shell companion takes over — otherwise the
-  // swap could jump by the float's offset.
-  &.isLeaving :global(.minded-sun) {
-    animation: none;
-    translate: none;
-  }
-}
-
-@keyframes onboardingSunIn {
-  from {
-    opacity: 0;
-  }
-}
-
 // Invisible measurement probes: CSS stays the single source of truth for the
 // two computed rests, JS only reads the resolved px back (the same pattern as
 // RouteCmp's reanchorCompanion).
@@ -127,6 +87,13 @@ $sky-strip: 88px;
 
 .skipWrapper {
   margin-top: 16px;
+}
+
+// Fallback instruction when the launcher can't pin from in-app (the denied
+// path's widget offer) — quiet, secondary.
+.manualPinHint {
+  font-size: var(--fz-s);
+  opacity: 0.75;
 }
 
 .actions {

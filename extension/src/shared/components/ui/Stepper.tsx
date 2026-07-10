@@ -11,7 +11,9 @@ export const Stepper = (props: {
   labelFn?: (step: number) => string | number | undefined;
 }): JSX.Element => {
   const [getStep, setStep] = createSignal<number>(props.activeStep);
-  const arr = Array.from({ length: props.nrOfSteps }, (_, i) => i);
+  // Derived reactively: the onboarding flow shortens itself when the permission
+  // steps don't apply (widget-only path), so the dot count can change mid-flow.
+  const arr = () => Array.from({ length: props.nrOfSteps }, (_, i) => i);
 
   createEffect(() => {
     setStep(props.activeStep);
@@ -24,7 +26,7 @@ export const Stepper = (props: {
         [styles.isNoGoBack]: props.isNoGoBack,
       }}
     >
-      <For each={arr}>
+      <For each={arr()}>
         {(step) => (
           <button
             type="button"

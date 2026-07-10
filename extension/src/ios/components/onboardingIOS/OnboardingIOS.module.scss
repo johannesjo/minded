@@ -1,0 +1,66 @@
+// The iOS first-run flow — a trimmed sibling of OnboardingAndroid.module.scss
+// (no sky band: both steps rest the disc on the in-flow hero spacer).
+
+.wrapper {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  // Keep everything — content and Stepper — clear of the notch and home
+  // indicator. The steps themselves only add their uniform 16px.
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right)
+    var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+}
+
+// Content + Stepper as one unit, so the closing hand-off can fade the whole
+// chrome away while the sun (its own fixed layer) keeps gliding home.
+.chrome {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentWrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+
+  > * {
+    max-height: 100%;
+    overflow: auto;
+    margin: auto;
+  }
+}
+
+.step {
+  width: 100%;
+  padding: 16px;
+}
+
+// The empty slot both steps reserve for the disc; the component measures its
+// centre and the fixed-layer sun settles exactly into the gap. On the widget
+// step the resting disc doubles as the live preview: the widget IS this sun.
+.sunSpacer {
+  min-height: 200px;
+  margin-bottom: 8px;
+}
+
+// Invisible probe: CSS stays the single source of truth for the companion
+// rest, JS reads the resolved px back (the RouteCmp reanchorCompanion pattern).
+.companionProbe {
+  position: fixed;
+  left: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  bottom: var(--companion-bar-center-y);
+}
+
+.skipWrapper {
+  margin-top: 16px;
+}

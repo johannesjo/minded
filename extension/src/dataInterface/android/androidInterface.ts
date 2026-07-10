@@ -41,6 +41,21 @@ interface InteractionWindowJavaScriptInterface {
    * builds won't have it, so callers must guard with `?.()`.
    */
   onArrivingSunReady?: () => void;
+  /**
+   * Whether the home-screen sun widget is currently placed on any launcher
+   * surface (AppWidgetManager.getAppWidgetIds non-empty). Lets setup surfaces
+   * stay truthful: the "your home screen" place reads as chosen only once the
+   * widget really exists, and invitations retire themselves when it does.
+   * Optional: older native builds won't have it — guard with `?.()`.
+   */
+  isWidgetPlaced?: () => boolean;
+  /**
+   * Ask the launcher to pin the sun widget via the system dialog
+   * (AppWidgetManager.requestPinAppWidget). Returns false when the launcher
+   * doesn't support pinning — the caller falls back to a one-line manual
+   * instruction. Optional: older native builds won't have it — guard with `?.()`.
+   */
+  requestPinWidget?: () => boolean;
   test: () => void;
 }
 
