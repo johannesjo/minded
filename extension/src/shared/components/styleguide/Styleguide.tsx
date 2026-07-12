@@ -673,10 +673,13 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
         <For each={AMBIENT_SKY_KEYFRAMES}>
           {(kf) => (
             <div class={styles.skyStrip}>
+              {/* background-image (not the background shorthand): the shorthand
+                  would reset background-size at inline priority, defeating the
+                  module's `cover` and mis-cropping the veil SVG layer. */}
               <div
                 class={styles.skyStripSample}
                 style={{
-                  background: ambientSkyLayeredBackground(
+                  "background-image": ambientSkyLayeredBackground(
                     kf.colors,
                     kf.accents,
                   ),
@@ -737,7 +740,8 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
           <div
             class={styles.skyStripSample}
             style={{
-              background: ambientSkyLayeredBackground(
+              // Longhand for the same reason as the keyframe strips above.
+              "background-image": ambientSkyLayeredBackground(
                 ambientSkyColorsAt(hour()),
                 ambientSkyAccentsAt(hour()),
               ),

@@ -17,6 +17,12 @@ interface BackgroundTransitionProps {
   // The success night sky (e.g. the sleep goodnight) leaves this off so the
   // stars stay at full brightness — nothing sits over them there. See Stars.
   dimStars?: boolean;
+  // Pin the field's variant instead of deriving it from the theme. The sleep
+  // wind-down's goodnight gesture passes "night": its sky is always the deep
+  // night wash (route-local var overrides), even when the app is still in the
+  // light theme (wind-down can start before the 19:00 dark boundary) — golden
+  // day motes over that sky would be the wrong field on a night surface.
+  starsVariant?: "night" | "day";
 }
 
 export const BackgroundTransition: Component<BackgroundTransitionProps> = (
@@ -221,7 +227,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     <Stars
       intensity={getStarsIntensity()}
       dimmed={props.dimStars}
-      variant={getIsDarkMode() ? "night" : "day"}
+      variant={props.starsVariant ?? (getIsDarkMode() ? "night" : "day")}
     />,
   ];
 };

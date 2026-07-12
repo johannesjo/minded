@@ -568,7 +568,13 @@ export const SleepWindDownView = (
                   never unmounting to reappear as a second instance. */}
           <Match when={view() === "snoozeGoodnight" || view() === "goodnight"}>
             <div class={styles.goodnightGesture}>
-              <BackgroundTransition isSunGradientAttached={false} />
+              {/* starsVariant pinned: this gesture's sky is always the deep
+                  night wash (see the route's var overrides), even when the
+                  wind-down starts before the app's 19:00 dark boundary. */}
+              <BackgroundTransition
+                isSunGradientAttached={false}
+                starsVariant="night"
+              />
               <div class={styles.goodnightContent}>
                 <h2 class="h2 h2Mindful" style={{ margin: 0 }}>
                   {view() === "snoozeGoodnight"
