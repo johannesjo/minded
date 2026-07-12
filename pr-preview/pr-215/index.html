@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>minded — styleguide</title>
+    <script>
+      // Standalone-mode shim: webextension-polyfill (used by util/browser.ts)
+      // throws on load when chrome.runtime is missing. Provide just enough
+      // surface for it to import — plus an in-memory chrome.storage so the real
+      // data interface (getSyncData/patchSyncData/...) actually works off-
+      // extension (the dashboard simulation relies on this). webextension-
+      // polyfill promisifies callback-style chrome APIs, so every method here
+      // supports both a trailing callback and a returned promise.
+      // Keep this in sync with the copy in dashboard.html.
+      if (typeof globalThis.chrome === "undefined" || !globalThis.chrome.runtime) {
+        const makeArea = () => {
+          let data = {};
+          const read = (keys) => {
+            if (keys == null) return { ...data };
+            if (typeof keys === "string")
+              return keys in data ? { [keys]: data[keys] } : {};
+            if (Array.isArray(keys)) {
+              const out = {};
+              keys.forEach((k) => {
+                if (k in data) out[k] = data[k];
+              });
+              return out;
+            }
+            return { ...keys, ...data }; // object form: defaults overlaid by stored
+          };
+          const settle = (result, cb) => {
+            if (typeof cb === "function") {
+              cb(result);
+              return undefined;
+            }
+            return Promise.resolve(result);
+          };
+          return {
+            get: (keys, cb) => {
+              if (typeof keys === "function") {
+                cb = keys;
+                keys = undefined;
+              }
+              return settle(read(keys), cb);
+            },
+            set: (items, cb) => {
+              data = { ...data, ...items };
+              return settle(undefined, cb);
+            },
+            remove: (keys, cb) => {
+              (Array.isArray(keys) ? keys : [keys]).forEach((k) => delete data[k]);
+              return settle(undefined, cb);
+            },
+            clear: (cb) => {
+              data = {};
+              return settle(undefined, cb);
+            },
+          };
+        };
+        const settleMsg = (cb) =>
+          typeof cb === "function"
+            ? (cb(undefined), undefined)
+            : Promise.resolve(undefined);
+        globalThis.chrome = {
+          runtime: {
+            id: "styleguide-standalone",
+            getURL: (p) => p,
+            getManifest: () => ({}),
+            sendMessage: (...args) => settleMsg(args[args.length - 1]),
+            onMessage: { addListener: () => undefined, removeListener: () => undefined },
+          },
+          storage: { sync: makeArea(), local: makeArea() },
+        };
+      }
+    </script>
+    <style>
+      html, body { margin: 0; padding: 0; min-height: 100vh; }
+      /* Standalone-only: in the real app this gradient lives on
+         #minded-6622-coloured-wrapper, which the styleguide entry skips.
+         The grain --grain-tile is shared (defined in _variables.scss). */
+      #minded-6622 {
+        display: block;
+        position: relative;
+        min-height: 100vh;
+        color: var(--c-fg);
+      }
+      /* Fixed gradient layer — sits behind scrolling content so the
+         ambient bg stays put exactly like in the real app's coloured-wrapper. */
+      #minded-6622::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background: var(--background-gradient);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      /* Dark theme reinstates the drifting two-orb ambient background;
+         light theme is the static vertical morning-sky wash. */
+      #minded-6622.minded-6622-dark::before {
+        background-size: 240% 220%, 240% 220%, 100% 100%;
+        background-position: 5% 10%, 95% 90%, 0% 0%;
+        animation: minded-sg-bg-drift 40s ease-in-out infinite alternate;
+      }
+      @keyframes minded-sg-bg-drift {
+        0%   { background-position: 5% 10%, 95% 90%, 0% 0%; }
+        100% { background-position: 95% 90%, 5% 10%, 0% 0%; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #minded-6622.minded-6622-dark::before { animation: none; }
+      }
+      #minded-6622::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+        opacity: 0.06;
+        mix-blend-mode: overlay;
+        background-image: var(--grain-tile);
+        background-size: 180px 180px;
+      }
+      #minded-6622.minded-6622-dark::after {
+        opacity: 0.09;
+        mix-blend-mode: screen;
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-CXEqVPqC.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/Styleguide-CDdENLwE.js">
+    <link rel="stylesheet" crossorigin href="./assets/Styleguide-DVixtV_0.css">
+  </head>
+  <body>
+    <div id="minded-6622"></div>
+    <!--
+      Day/night pre-paint — mirrors isDarkModeNow(), incl. the ?theme= dev
+      override — so a dark-theme gallery doesn't flash the light gradient
+      (#minded-6622::before above) before entry.tsx's addWrapperClasses() runs.
+      A classic inline script runs during parse, before the deferred module
+      below and before first paint. The gallery's dark ::before is scoped to
+      #minded-6622.minded-6622-dark, so the class goes on the wrapper element
+      (not documentElement, unlike dashboard.html's html.minded-loading-dark).
+    -->
+    <script>
+      var theme = new URLSearchParams(location.search).get("theme");
+      var h = new Date().getHours();
+      var dark = theme === "dark" || (theme !== "light" && (h >= 19 || h < 6));
+      if (dark) {
+        document.getElementById("minded-6622").classList.add("minded-6622-dark");
+      }
+    </script>
+  </body>
+</html>
