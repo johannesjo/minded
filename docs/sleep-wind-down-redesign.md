@@ -1,13 +1,45 @@
 # Sleep wind-down — dissolve the mini-app into a single bedtime settle
 
-Status: **design of record (v3), not yet built.** Supersedes the current
-wind-down implementation (`src/shared/components/sleepWindDown/`, the Android
-overlay branch, the dashboard card, and most of the settings section). Written
-against the *Conceptual Fundamentals* in `CLAUDE.md` and the analysis in
+Status: **design of record (v3); core implemented, cleanup pending.** Supersedes
+the current wind-down implementation (`src/shared/components/sleepWindDown/`, the
+Android overlay branch, the dashboard card, and most of the settings section).
+Written against the *Conceptual Fundamentals* in `CLAUDE.md` and the analysis in
 `docs/conceptual-analysis-2026-07.md`. v3 incorporates **six** adversarial UX
 reviews across two rounds (philosophy-fit, interaction-mechanics ×2,
 sleep/behavioral, and a minimalism critic) and the product decisions they
 surfaced.
+
+## Implementation status
+
+**Done (built + tested):**
+- Engine — `WIND_DOWN_SETTLE` mode + `isBedtimeWindow` context, once-per-night
+  guard, in-window survey suppression, strong-tier wordless fallback, anti-repeat
+  exemption (`getInteractionMode.ts`, `interactionContext.ts`; 12 new unit tests).
+- Shell — the wordless settle renders in `InteractionCommon` / `InteractionModeSwitch`
+  (tap disabled, "Sleep well" beat, guard armed on show); the Android drag-down
+  close locks the screen (`InteractionAndroid.tsx`).
+- Activation — the Android `OverlayDecisionEngine` no longer pre-empts with the old
+  overlay; the settle fires through the normal `ShowIntervention` path.
+- Old surfaces made unreachable — `/sleepWindDown` route, dashboard card, and the
+  settings "Try wind-down now" preview removed. Bedtime-window settings kept.
+- Both bundles build; all TS tests pass. (The small Kotlin edit is compile-unverified
+  — no Android SDK in the authoring environment.)
+
+**Pending (native-coupled dead-code cleanup — do where the Android build runs):**
+- Delete the old mini-app view dir (`src/shared/components/sleepWindDown/` except
+  `sleepWindDown.util.ts`, which feeds the engine) together with its native entry
+  (`indexSleepWindDownAndroid`, the vite `sleepWindDown` entry) and the native
+  overlay classes (`SleepWindDownOverlayWindow.kt`, `…JavaScriptInterface.kt`,
+  `SleepWindDownWindow.kt`).
+- Remove the now-unused `OverlayDecision.ShowSleepWindDown` / `ShowWindDownSnoozeTimer`
+  variants + `OverlayState` wind-down fields + their `OverlayControllerService`
+  dispatch/computation.
+- Drop the dead sync fields (`sleepWindDownSnoozeUntilTS`, `…ProgressNightId`,
+  `…Completed`, the three drafts); `sleepWindDownDismissedNightId` is reused as the
+  settle guard.
+- Optional polish: a soft fade-in for the fresh bedtime interrupt (T3 / #118), and
+  a new in-settings preview for the settle (decision 3a — the old route-based one
+  was removed).
 
 ## Verdict in one paragraph
 
