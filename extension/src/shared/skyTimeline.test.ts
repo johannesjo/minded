@@ -1,9 +1,12 @@
 import {
   AMBIENT_SKY_KEYFRAMES,
+  ambientSkyAccentsAt,
   ambientSkyColorsAt,
   ambientSkyGradient,
+  ambientSkyLayeredBackground,
   duskTargetColorsAt,
   duskTargetGradientAt,
+  hexToRgbChannels,
   parseSkyHourParam,
   zenithTargetColorsAt,
 } from "./skyTimeline";
@@ -37,6 +40,32 @@ describe("skyTimeline", () => {
       const dusk = AMBIENT_SKY_KEYFRAMES[AMBIENT_SKY_KEYFRAMES.length - 1];
       expect(ambientSkyColorsAt(3)).toEqual(dawn.colors);
       expect(ambientSkyColorsAt(23)).toEqual(dusk.colors);
+    });
+  });
+
+  describe("ambientSkyAccentsAt", () => {
+    it("pins the 9:00 morning accents to the _variables.scss defaults", () => {
+      // These are the --day-zenith-rgb / --day-horizon-glow-rgb defaults in
+      // _variables.scss. If this fails, either the tokens or the keyframe
+      // changed without the other.
+      const morning = ambientSkyAccentsAt(9);
+      expect(hexToRgbChannels(morning.zenith)).toBe("176, 208, 236");
+      expect(hexToRgbChannels(morning.horizonGlow)).toBe("255, 240, 205");
+    });
+
+    it("returns exact accents at every keyframe hour and clamps outside", () => {
+      for (const kf of AMBIENT_SKY_KEYFRAMES) {
+        expect(ambientSkyAccentsAt(kf.hour)).toEqual(kf.accents);
+      }
+      expect(ambientSkyAccentsAt(3)).toEqual(AMBIENT_SKY_KEYFRAMES[0].accents);
+      expect(ambientSkyAccentsAt(23)).toEqual(
+        AMBIENT_SKY_KEYFRAMES[AMBIENT_SKY_KEYFRAMES.length - 1].accents,
+      );
+    });
+
+    it("interpolates between keyframes like the base colors do", () => {
+      // dawn zenith #a8b4d8 → morning zenith #b0d0ec, midpoint at 7:30
+      expect(ambientSkyAccentsAt(7.5).zenith).toBe("#acc2e2");
     });
   });
 
@@ -91,6 +120,29 @@ describe("skyTimeline", () => {
       expect(duskTargetGradientAt(12)).toBe(
         "linear-gradient(to bottom, #4f78bb 0%, #4f78bb 14%, #f49f73 54%, #ffd36a 78%, #ef6f63 100%)",
       );
+    });
+
+    it("layers the day sky as bloom, veil, dome, base (mirrors _variables.scss)", () => {
+      const bg = ambientSkyLayeredBackground(
+        ["#111111", "#222222", "#333333", "#444444"],
+        { zenith: "#b0d0ec", horizonGlow: "#fff0cd" },
+      );
+      expect(bg).toBe(
+        [
+          "radial-gradient(ellipse 90% 32% at 50% 108%, rgba(255, 240, 205, 0.65) 0%, rgba(255, 240, 205, 0.3) 48%, transparent 78%)",
+          "var(--day-veil)",
+          "radial-gradient(ellipse 130% 52% at 50% -14%, rgba(176, 208, 236, 0.55) 0%, rgba(176, 208, 236, 0.22) 55%, transparent 80%)",
+          "linear-gradient(to bottom, #111111 0%, #111111 18%, #222222 36%, #333333 54%, #444444 100%)",
+        ].join(", "),
+      );
+    });
+  });
+
+  describe("hexToRgbChannels", () => {
+    it("converts #rrggbb to bare rgb components", () => {
+      expect(hexToRgbChannels("#000000")).toBe("0, 0, 0");
+      expect(hexToRgbChannels("#ffffff")).toBe("255, 255, 255");
+      expect(hexToRgbChannels("#f6dcd2")).toBe("246, 220, 210");
     });
   });
 
