@@ -26,13 +26,14 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getIsDarkMode, setIsDarkMode] = createSignal(false);
 
-  // Stars come out as the night sky deepens. They are tied to the downward drag
-  // (positive progress) and only after dark, squared so they emerge a beat behind
-  // the rising sky and recede the same way as the sun is pulled back up or springs
-  // home — the same gradual reveal the Android little-sun uses, rather than the old
+  // The field comes out as the revealed sky deepens — twinkling stars after
+  // dark, drifting golden motes by day (see Stars' `variant`), so the down-drag
+  // sky is never "not much going on" at either time. Tied to the downward drag
+  // (positive progress), squared so it emerges a beat behind the rising sky and
+  // recedes the same way as the sun is pulled back up or springs home — the
+  // same gradual reveal the Android little-sun uses, rather than the old
   // snap-on at completion.
   const getStarsIntensity = () => {
-    if (!getIsDarkMode()) return 0;
     const downward = Math.max(0, getProgress());
     return downward * downward;
   };
@@ -217,7 +218,11 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       />
       <div class="background-transition-grain" aria-hidden="true" />
     </>,
-    <Stars intensity={getStarsIntensity()} dimmed={props.dimStars} />,
+    <Stars
+      intensity={getStarsIntensity()}
+      dimmed={props.dimStars}
+      variant={getIsDarkMode() ? "night" : "day"}
+    />,
   ];
 };
 

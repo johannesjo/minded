@@ -261,20 +261,24 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         "--screen-fade-ms": `${SCREEN_FADE_MS}ms`,
       }}
     >
-      {/* Night mode keeps the dashboard's sparkling sky: the same twinkling stars
-          the down-drag reveals carry through onto the grounding stage instead of a
-          flat gradient. It's part of the overlay's own backdrop, so it fades in and
-          out with the stage (no separate layer to flash on close). Moon variant
-          only — the morning sky has no stars. */}
-      <Show when={props.variant === "moon"}>
-        <div class={styles.starfield} aria-hidden="true">
-          {/* Gentle twinkle only — no shooting-star flourish: a meteor streaking
-              across the frame would read as a jolt, not calm, behind a settling
-              sit. Intensity drops to 0 for the screen-free sit's near-black dim,
-              which both recedes the field and stops its animations (see Stars). */}
-          <Stars intensity={isQuietPhase() ? 0 : 1} shootingStars={false} />
-        </div>
-      </Show>
+      {/* The living sky the down-drag revealed carries through onto the
+          grounding stage instead of a flat gradient: at night the same
+          twinkling stars, by day their counterpart — warm motes of light
+          adrift in the golden sky (Stars' day variant). It's part of the
+          overlay's own backdrop, so it fades in and out with the stage (no
+          separate layer to flash on close). */}
+      <div class={styles.starfield} aria-hidden="true">
+        {/* Gentle twinkle/drift only — no shooting-star flourish: a meteor
+            streaking across the frame would read as a jolt, not calm, behind a
+            settling sit. Intensity drops to 0 for the screen-free sit's
+            near-black dim, which both recedes the field and stops its
+            animations (see Stars). */}
+        <Stars
+          intensity={isQuietPhase() ? 0 : 1}
+          shootingStars={false}
+          variant={props.variant === "moon" ? "night" : "day"}
+        />
+      </div>
 
       {/* The active screen. Crossfaded as the stage moves between offer →
           duration → sit → settle (screenFade), so the swap is soft, never a hard
