@@ -133,18 +133,22 @@ rides three urge waves in an afternoon is treated by the router like someone
 caught in a return loop, gets the heavier register next time, and may be told
 they "keep coming back" — when what they actually did was the practice. The
 signal conflates *returning to the pull* with *engaging with the pause*.
-Fix-shape: count practice completions separately from opening-attempt taps
-(or exclude them from `sunTapTimestamps`), so friction escalates only on the
-behaviour it means to reflect.
+**Fixed:** practice completions no longer count sun taps. The review of that
+fix then found the web half of the same conflation — the extension counted
+every *leave* (fling, drag-down, Little-Sun tap) and every skip as a tap while
+counting completed interactions not at all, the inverse of Android — so web
+was aligned too: taps now fire on `onInteractionSubmitted` only, on both
+platforms; leaves and skips are never counted.
 
 **T2 — "Usually around {baseline} by now" is a benchmark.** The usage
 observation ("You've spent about X on Y so far today") is a clean observed
 fact; the second line (`AppUsageOrBrowsingBehavior.tsx:96-100`) compares now
 against a personal average. Comparison-to-baseline is the grammar of a
 tracker — it invites "am I ahead or behind?", which is scoring in all but
-name. It's the single string in the app that a strict reading of the
-reflective-companion bar ("never manufacture judgment") flags. Either drop
-the baseline line or reframe it so it can't read as over/under.
+name. It was the single string in the app that a strict reading of the
+reflective-companion bar ("never manufacture judgment") flags. **Fixed:** the
+baseline was removed end-to-end (display, model, extension computation, and
+the Android bridge/Kotlin lookback).
 
 **T3 — Gentle paint on a hard-block mechanic, at the most common moment.**
 Two related findings:
@@ -164,8 +168,9 @@ Two related findings:
   the biggest unpaid design debt.
 
 **T4 — Small gamification residue.** Screen-off's "Almost — {n}s more away"
-is a countdown-to-success gate; mild, but it's the one surfaced
-remaining-count in the app. Worth a pass when touching that component.
+was a countdown-to-success gate — the one surfaced remaining-count in the
+app. **Fixed:** the copy is now "Almost — stay away a little longer." and the
+remaining-time value was removed from `screenOffEval` entirely.
 
 ### Philosophy–implementation gaps (the code letting the concept down)
 
@@ -180,8 +185,12 @@ the answer saved, and it's gone. The quota-recovery retry itself has no
 pattern (`updateSyncDataHelpers.ts`) with last-write-wins races on array
 keys, and Android/iOS patch by writing the whole blob. For a local-only,
 no-telemetry app, the user's answer journal *is* the relationship — silently
-dropping it is the worst possible failure mode, and none of this path is
-tested.
+dropping it is the worst possible failure mode, and none of this path was
+tested. **Fixed** (the save path): quota errors (including Firefox's
+differently-worded one) prune-and-retry without ever touching the just-given
+answer; anything else alerts honestly and rejects; callers were hardened so a
+rejection can't brick the input or leave an optimistic list lying; all of it
+unit-tested. The read-modify-write races remain open as #209.
 
 **G2 — iOS widget wiring: doc drift, now resolved.** The docs disagreed with
 each other: `ios-platform-fit.md` and `value-first-onboarding-concept.md`
@@ -214,18 +223,21 @@ exactly one entry, and `RndQuote` is an always-eligible greeting and the
 empty-state fallback — so the "random calming quote" is always the same
 Thich Nhat Hanh line. Everywhere else the app invests heavily in
 non-repetition on calm surfaces; here the fallback card is permanently
-frozen. Either grow the pool modestly (the widget doc rightly warns against
-building a quote-of-the-day machine) or drop the card type.
+frozen. **Fixed:** the pool grew to a small curated set (still deliberately
+not a quote-of-the-day machine).
 
-**P2 — Doc/comment drift.** A stale dashboard comment promises a
+**P2 — Doc/comment drift.** A stale dashboard comment promised a
 "minded-decisions counter" and usage charts "in the full grid" that don't
-exist (`getDashboardEntriesFromQuestions.tsx:27-37` — good riddance, but the
-comment should go); `RefocusHelperToday` is disabled yet still listed in
-`FIXED_QUESTION_CATEGORIES_ON_DASHBOARD`; dormant `last*RatingTS` fields are
-semantically reused as throttle timestamps; the iOS-widget-wiring
-contradiction (G2); template test stubs and a handful of TODO markers.
-Individually trivial; collectively they erode the docs-as-source-of-truth
-discipline the repo otherwise excels at.
+exist (`getDashboardEntriesFromQuestions.tsx` — comment rewritten); dormant
+`last*RatingTS` fields are semantically reused as throttle timestamps
+(tracked as #211); the iOS-widget-wiring contradiction (G2 — fixed); template
+test stubs (deleted) and a handful of TODO markers. One item from the first
+draft of this list turned out NOT to be drift: `RefocusHelperToday` staying
+in `FIXED_QUESTION_CATEGORIES_ON_DASHBOARD` while disabled is deliberate —
+disabled means "stop asking", but recaps of answers already given still
+render (the tests assert it; the listing now carries a comment saying so).
+Individually trivial; collectively such drift erodes the
+docs-as-source-of-truth discipline the repo otherwise excels at.
 
 **P3 — The feedback loop is honesty without eyes.** No telemetry is a
 principled, philosophy-consistent choice — but it means the 90%-helpful bar,
@@ -246,12 +258,13 @@ accessibility is truly optional) over further extension polish.
 
 ## If only five things get attention
 
-1. **Stop counting practice completions as friction fuel** (T1) — small
-   change, direct philosophy fix.
-2. **Make the extension's answer-save path loss-proof and honest** (G1) —
-   guard all failure modes, alert on loss, test it.
-3. **Resolve the iOS widget wiring question** (G2) — verify what TestFlight
-   actually ships.
+1. ~~**Stop counting practice completions as friction fuel** (T1)~~ — done,
+   including the web leave/skip counting the follow-up review surfaced.
+2. ~~**Make the extension's answer-save path loss-proof and honest** (G1)~~ —
+   done and tested; the storage races stay open as #209.
+3. ~~**Resolve the iOS widget wiring question** (G2)~~ — resolved: CI wires
+   it; on-device verification still pending.
 4. **Morph the fresh-detection interrupt** (T3) — the everyday moment should
-   be the product's softest, not its hardest.
-5. **Review the two copy strains** (T2, T4) against the 90% bar.
+   be the product's softest, not its hardest. Tracked in #118; still the
+   biggest open item.
+5. ~~**Review the two copy strains** (T2, T4)~~ — both removed.

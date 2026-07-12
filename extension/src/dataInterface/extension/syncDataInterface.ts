@@ -16,15 +16,24 @@ const ITEM_CATEGORIES_TO_ALWAYS_DELETE: QuestionCategoryId[] = [
 const MAX_PRUNE_ROUNDS = 3;
 
 /**
- * Storage rejections that pruning old answers can actually cure. Chrome's
- * quota errors carry these markers in the message: `QUOTA_BYTES` (which also
- * matches `QUOTA_BYTES_PER_ITEM`) and `MAX_ITEMS`. Rate-limit errors
- * (`MAX_WRITE_OPERATIONS_*`) and transient failures are NOT prune-recoverable —
- * deleting answers wouldn't help, so those must surface instead.
+ * Storage rejections that pruning old answers can actually cure.
+ * - Chrome marks its data quotas as `QUOTA_BYTES` (also matches
+ *   `QUOTA_BYTES_PER_ITEM`) and `MAX_ITEMS`.
+ * - Firefox throws one message for all three of its storage.sync quotas:
+ *   "QuotaExceededError: storage.sync API call exceeded its quota
+ *   limitations." (ExtensionStorageSync.sys.mjs) — matched by its distinctive
+ *   phrase. A bare /quota/i match would be wrong: Chrome's rate-limit errors
+ *   ("MAX_WRITE_OPERATIONS_* quota exceeded") contain "quota" too, and those
+ *   are NOT prune-recoverable — deleting answers wouldn't help, so they must
+ *   surface instead (as must transient failures).
  */
 const isPruneRecoverableError = (e: unknown): boolean => {
   const msg = String(e);
-  return msg.includes("QUOTA_BYTES") || msg.includes("MAX_ITEMS");
+  return (
+    msg.includes("QUOTA_BYTES") ||
+    msg.includes("MAX_ITEMS") ||
+    msg.includes("exceeded its quota limitations")
+  );
 };
 
 export const getSyncDataN = (): Promise<SyncData> => {
@@ -83,18 +92,25 @@ export const getUsageObservationRawN = (): string | null => null;
 export const saveAnswerN = async (answer: Answer): Promise<void> => {
   const syncData = await getSyncDataN();
   let answers = [...syncData.answers, answer];
+  let didPrune = false;
 
-  for (let round = 0; ; round++) {
+  for (let round = 0; round <= MAX_PRUNE_ROUNDS; round++) {
     try {
       await patchSyncDataN({ answers });
+      if (didPrune && typeof window !== "undefined" && window.alert) {
+        // Only after the write actually succeeded — stating an outcome
+        // before it happens would be a promise, not an observed fact.
+        window.alert(
+          "minded: your saved answers reached the browser's storage limit, so the oldest ones were removed to make room. Your new answer is saved.",
+        );
+      }
       return;
     } catch (e) {
-      const pruned = pruneAnswersForQuota(answers, answer);
-      const canRetry =
-        round < MAX_PRUNE_ROUNDS &&
-        isPruneRecoverableError(e) &&
-        pruned.length < answers.length;
-      if (!canRetry) {
+      const pruned =
+        round < MAX_PRUNE_ROUNDS && isPruneRecoverableError(e)
+          ? pruneAnswersForQuota(answers, answer)
+          : answers;
+      if (pruned.length >= answers.length) {
         handleDataError(
           new DataStorageError(
             "Failed to save answer",
@@ -102,36 +118,43 @@ export const saveAnswerN = async (answer: Answer): Promise<void> => {
             "write",
             e,
           ),
-          "Extension: saveAnswerN — the answer was NOT saved",
-          { alertUser: true },
+          "Extension: saveAnswerN",
+          {
+            alertUser: true,
+            userMessage:
+              "minded couldn't save this answer — it was not stored. Your earlier answers are untouched. You may want to copy your text and try again.",
+          },
         );
         throw e;
       }
       console.warn("Over the storage quota — pruning oldest answers", {
-        sizeBefore: JSON.stringify(answers).length,
-        sizeAfter: JSON.stringify(pruned).length,
+        answersBefore: answers.length,
+        answersAfter: pruned.length,
       });
-      if (round === 0 && typeof window !== "undefined" && window.alert) {
-        window.alert(
-          "minded: saved answers exceed the browser's storage limit. Making room by removing the oldest ones — your new answer is kept.",
-        );
-      }
       answers = pruned;
+      didPrune = true;
     }
   }
+  // Unreachable: the loop always returns or throws (the last round's catch
+  // takes the pruned === answers branch). Satisfies the return type.
+  throw new Error("saveAnswerN: exhausted retries");
 };
 
 /**
  * Drop the oldest answers (and the recap-only categories that are cheap to
  * lose) to get back under quota — keeping `keep` (the answer being saved)
- * no matter its age or category.
+ * no matter its age or category. `keep` is set aside before the newest-N
+ * slice so neither dropping mechanism can ever touch it (e.g. when a clock
+ * correction left stored answers with newer timestamps than the one being
+ * saved).
  */
-const pruneAnswersForQuota = (answers: Answer[], keep: Answer): Answer[] =>
-  [...answers]
+const pruneAnswersForQuota = (answers: Answer[], keep: Answer): Answer[] => {
+  const others = answers.filter((a) => a.id !== keep.id);
+  const keptOthers = others
     .sort((a, b) => b.ts - a.ts)
-    .slice(0, Math.max(1, answers.length - ITEMS_DO_DELETE_IF_OVER_QUOTE))
+    .slice(0, Math.max(0, others.length - ITEMS_DO_DELETE_IF_OVER_QUOTE))
     .filter(
-      (a) =>
-        a.id === keep.id ||
-        !ITEM_CATEGORIES_TO_ALWAYS_DELETE.includes(a.questionCategoryId),
+      (a) => !ITEM_CATEGORIES_TO_ALWAYS_DELETE.includes(a.questionCategoryId),
     );
+  return [...keptOthers, keep];
+};

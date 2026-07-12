@@ -219,6 +219,11 @@ export const InteractionWeb: (props: {
                 }
               }}
             >
+              {/* Tap-count parity with Android: only a completed interaction
+                  (onInteractionSubmitted) counts a sun tap. Skips and leaves
+                  (closeTab: fling, drag-down, Little-Sun tap) never do — taps
+                  feed friction + the return-loop insight, and counting the
+                  exits would punish exactly what the sun invites. */}
               <InteractionCommon
                 questionForPrompt={getQuestion()}
                 isInitFadeout={false}
@@ -232,9 +237,11 @@ export const InteractionWeb: (props: {
                 onAfterInteractionFadeout={() => {
                   setIsShowLittleSun(true);
                 }}
-                onSkip={async () => {
-                  await countSunTap();
+                onSkip={() => {
                   setIsShowLittleSun(true);
+                }}
+                onInteractionSubmitted={() => {
+                  void countSunTap();
                 }}
                 onUpdateQuestion={(question) => {
                   setQuestion(question);

@@ -128,6 +128,43 @@ describe("saveAnswerN", () => {
     );
   });
 
+  it("recovers from Firefox's quota message too", async () => {
+    // Firefox throws one message for all three storage.sync quotas
+    // (ExtensionStorageSync.sys.mjs); it contains neither QUOTA_BYTES nor
+    // MAX_ITEMS, so a Chrome-only matcher would strand Firefox users.
+    const oldAnswers = Array.from({ length: 40 }, (_, i) => answerAt(i + 1));
+    mockGet.mockResolvedValue({ answers: oldAnswers });
+    mockSet
+      .mockRejectedValueOnce(
+        new Error(
+          "QuotaExceededError: storage.sync API call exceeded its quota limitations.",
+        ),
+      )
+      .mockResolvedValueOnce(undefined);
+
+    await expect(saveAnswerN(NEW_ANSWER)).resolves.toBeUndefined();
+    expect(mockSet).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps the answer being saved even when stored answers have newer timestamps", async () => {
+    // Clock skew: the device clock was corrected backwards, so every stored
+    // answer's ts is NEWER than the new answer's. The newest-N slice must
+    // still never cut the answer being saved.
+    const futureAnswers = Array.from({ length: 40 }, (_, i) =>
+      answerAt(2_000_000 + i),
+    );
+    const oldTsAnswer: Answer = { ...answerAt(5), id: "older-than-everything" };
+    mockGet.mockResolvedValue({ answers: futureAnswers });
+    mockSet
+      .mockRejectedValueOnce(new Error("QUOTA_BYTES quota exceeded"))
+      .mockResolvedValueOnce(undefined);
+
+    await saveAnswerN(oldTsAnswer);
+
+    const retried = mockSet.mock.calls[1][0].answers as Answer[];
+    expect(retried.some((a) => a.id === "older-than-everything")).toBe(true);
+  });
+
   it("never prunes the answer that is being saved, even in a purge category", async () => {
     const oldAnswers = Array.from({ length: 40 }, (_, i) => answerAt(i + 1));
     const purgeCategoryAnswer: Answer = {

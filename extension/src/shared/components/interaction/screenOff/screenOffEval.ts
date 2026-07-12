@@ -23,15 +23,14 @@ export interface ScreenOffEvalInput {
 export interface ScreenOffEvalResult {
   /** Continuous away duration of this single segment, clamped to >= 0. */
   elapsedMs: number;
-  /** How much longer the user would have needed to stay away. */
-  remainingMs: number;
   /** Whether this single away segment met the target. */
   success: boolean;
 }
 
 /**
  * Evaluates one contiguous away segment. A successful screen-off must be a
- * single continuous lock — segments are intentionally not summed.
+ * single continuous lock — segments are intentionally not summed. Deliberately
+ * no remaining-time output: a countdown-to-success would gamify the break.
  */
 export const evaluateScreenOff = ({
   hiddenAt,
@@ -39,11 +38,9 @@ export const evaluateScreenOff = ({
   targetMs,
 }: ScreenOffEvalInput): ScreenOffEvalResult => {
   const elapsedMs = Math.max(0, shownAt - hiddenAt);
-  const remainingMs = Math.max(0, targetMs - elapsedMs);
 
   return {
     elapsedMs,
-    remainingMs,
     success: elapsedMs >= targetMs,
   };
 };

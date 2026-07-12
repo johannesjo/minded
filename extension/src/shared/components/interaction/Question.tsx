@@ -68,7 +68,15 @@ export const Question: (props: {
     if (!normalizedVal || normalizedVal.length < 2) return;
     if (normalizedPrompt && remainderWhenPrefilled.length < 2) return;
     if (!question.isDontSaveAnswer) {
-      await saveAnswer(answer);
+      try {
+        await saveAnswer(answer);
+      } catch (e) {
+        // The data layer already alerted the user that the answer was not
+        // saved. Stay on the question with the text intact so they can retry
+        // (or leave via the sun) — advancing would pretend the save happened.
+        console.error("Answer save failed — staying on the question", e);
+        return;
+      }
     }
     props.onSuccess(answer);
   };

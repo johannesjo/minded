@@ -1,11 +1,14 @@
 import { getIsoDate } from "@src/util/getIsoDate";
 
 /**
- * Observed usage for a single day. `byHour` holds seconds accrued in each local
- * hour (index 0–23, across all tracked hosts); `perSite` holds the per-host
- * totals for that day. We keep both so we can show *what* was used today
- * (`perSite`) and compute an honest "usual by this time of day" baseline from
- * the hour buckets — never a stale daily total.
+ * Observed usage for a single day. `perSite` holds the per-host totals for
+ * that day and feeds today's usage observation. `byHour` (seconds accrued per
+ * local hour, index 0–23, across all tracked hosts) currently has NO reader:
+ * its former consumer — the "usual by this time of day" baseline — was removed
+ * because comparison against a personal average is benchmark grammar (see
+ * usageObservation.ts). It stays written for storage-shape stability and as
+ * the substrate for the possible time-of-day insight sketched in
+ * docs/reflective-companion-concept.md; drop it if that idea is ever rejected.
  *
  * This is observed behaviour only (real foreground time), the present-moment
  * replacement for the old Great→Awful self-rating. It is intentionally NOT
@@ -26,9 +29,9 @@ export type UsageStatsByDate = { [dateISO: string]: DailyUsageStat };
 
 /**
  * Keep at most this many recent days so the store can't grow unbounded (it
- * lives in the size-limited chrome.storage.sync item). 15 = today + the 14
- * prior days the baseline can look back over (BASELINE_LOOKBACK_DAYS); older
- * days are never read, so retaining them would only waste quota.
+ * lives in the size-limited chrome.storage.sync item). Two weeks of history
+ * is plenty for the present-moment observation; older days are never read,
+ * so retaining them would only waste quota.
  */
 export const MAX_USAGE_STAT_DAYS = 15;
 
