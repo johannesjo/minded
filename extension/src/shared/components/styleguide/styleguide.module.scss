@@ -185,6 +185,12 @@
   height: 150px;
   border-radius: var(--border-radius);
   border: 1px solid var(--btn-outline-color);
+  // The layered day sky includes the cirrus-veil SVG (see --day-veil); sized
+  // like the real surfaces (coloured-wrapper.scss) so the strip previews the
+  // same crop the app shows.
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .skyControls {

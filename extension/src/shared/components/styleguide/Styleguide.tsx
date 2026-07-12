@@ -41,8 +41,9 @@ import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/int
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import {
   AMBIENT_SKY_KEYFRAMES,
+  ambientSkyAccentsAt,
   ambientSkyColorsAt,
-  ambientSkyGradient,
+  ambientSkyLayeredBackground,
   duskTargetGradientAt,
   NIGHT_END_HOUR,
   NIGHT_START_HOUR,
@@ -679,9 +680,17 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
         <For each={AMBIENT_SKY_KEYFRAMES}>
           {(kf) => (
             <div class={styles.skyStrip}>
+              {/* background-image (not the background shorthand): the shorthand
+                  would reset background-size at inline priority, defeating the
+                  module's `cover` and mis-cropping the veil SVG layer. */}
               <div
                 class={styles.skyStripSample}
-                style={{ background: ambientSkyGradient(kf.colors) }}
+                style={{
+                  "background-image": ambientSkyLayeredBackground(
+                    kf.colors,
+                    kf.accents,
+                  ),
+                }}
               />
               <code>{kf.label}</code>
               <span>{formatHour(kf.hour)}</span>
@@ -738,7 +747,11 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
           <div
             class={styles.skyStripSample}
             style={{
-              background: ambientSkyGradient(ambientSkyColorsAt(hour())),
+              // Longhand for the same reason as the keyframe strips above.
+              "background-image": ambientSkyLayeredBackground(
+                ambientSkyColorsAt(hour()),
+                ambientSkyAccentsAt(hour()),
+              ),
             }}
           />
           <code>ambient</code>

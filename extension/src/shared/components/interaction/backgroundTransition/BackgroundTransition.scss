@@ -23,6 +23,15 @@
         #f6dcd2 100%
       )
     );
+    // The composite sky contains image layers with intrinsic size (the cirrus
+    // veil / night stars SVGs). Size them exactly like the coloured wrapper
+    // beneath (coloured-wrapper.scss), or the SVG renders 1:1 top-left and
+    // tiles on large viewports — and sits at a different crop than the
+    // dashboard sky it must hand off to seamlessly. Re-declared per rule
+    // because the `background:` shorthand above resets the longhands.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   // The sun glow now rides the disc's own box-shadow (Sun.scss `.minded-sun`),
@@ -41,6 +50,10 @@
         #f6dcd2 100%
       )
     );
+    // Same composite-layer sizing as .background-default above.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   &.background-overlay {
@@ -102,6 +115,11 @@
 .minded-6622-dark
   .background-transition.background-default.sun-gradient-attached {
   background: var(--background-gradient);
+  // The shorthand resets the longhands again — keep the night composite's
+  // star SVG covered like the light rules above.
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   will-change: auto;
 }
 

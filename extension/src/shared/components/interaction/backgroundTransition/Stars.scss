@@ -24,6 +24,18 @@
   opacity: var(--twinkle-min, 0.5);
 }
 
+// The day variant of the field: warm motes of light adrift in the revealed
+// golden sky (see Stars.tsx `variant`). Warm-white bodies with a soft amber
+// halo so they read as backlit dust in the low sun — visible over both the
+// saturated sunset the drag reveals and the pale ambient sky the grounding
+// stage settles onto.
+.star.mote {
+  background: #fff3d6;
+  box-shadow:
+    0 0 3px rgba(255, 214, 140, 0.9),
+    0 0 9px rgba(244, 159, 115, 0.4);
+}
+
 // A lively shimmer, not a blink: each star eases between its own dim level
 // (`--twinkle-min`, varied per star for depth) and full brightness, with a gentle
 // scale change. It never drops to 0 — that read as a harsh, random flicker — but
@@ -37,6 +49,23 @@
   50% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+// The mote's whole life in one keyframe: it brightens as it wanders to its
+// --drift-x/--drift-y offset and dims on the way home — a glint as it crosses
+// the light, over 10-22s cycles (Stars.tsx). One animation instead of a
+// separate twinkle + drift pair, so opacity and motion can never fall out of
+// phase and the transform channel isn't fought over.
+@keyframes moteDrift {
+  0%,
+  100% {
+    opacity: var(--twinkle-min, 0.3);
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(var(--drift-x, 0px), var(--drift-y, -8px));
   }
 }
 
@@ -112,9 +141,14 @@
 
 .stars-container.active {
   // Gate the per-star twinkle on visibility so 150 animations aren't ticking the
-  // compositor while the field is hidden (by day, or at rest before any pull).
+  // compositor while the field is hidden (at rest, before any pull).
   .star {
     animation: twinkle infinite ease-in-out;
+  }
+
+  // Day motes wander instead of twinkling in place.
+  .star.mote {
+    animation: moteDrift infinite ease-in-out;
   }
 
   // Longer cycles so each meteor is a brief flourish followed by a quiet gap,
@@ -206,12 +240,15 @@
   }
 }
 
-// Honour a reduced-motion preference: hold the field still rather than twinkling
-// and streaking. The stars stay as quiet static dots (their base opacity), and the
-// shooting stars (base opacity 0) simply never appear.
+// Honour a reduced-motion preference: hold the field still rather than
+// twinkling, drifting and streaking. Stars and day motes stay as quiet static
+// dots (their base opacity), and the shooting stars (base opacity 0) simply
+// never appear. `.star.mote` is listed explicitly — its drift rule above is
+// more specific than bare `.star`, so it needs its own match to be overridden.
 @media (prefers-reduced-motion: reduce) {
   .stars-container.active {
     .star,
+    .star.mote,
     .shooting-star-1,
     .shooting-star-2,
     .shooting-star-3 {

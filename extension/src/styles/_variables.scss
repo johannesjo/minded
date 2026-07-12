@@ -162,14 +162,55 @@
   --c-gradient-2: #d8ecd6; // soft green
   --c-gradient-3: #f5efc8; // yellow
   --c-gradient-4: #f6dcd2; // warm coral (bottom)
-  --background-gradient: linear-gradient(
-    to bottom,
-    var(--c-gradient-1) 0%,
-    var(--c-gradient-1) 18%,
-    var(--c-gradient-2) 36%,
-    var(--c-gradient-3) 54%,
-    var(--c-gradient-4) 100%
-  );
+
+  // The day sky is layered like the night sky (which earns its depth from
+  // horizon glow + stars + gradient): a light bloom pooling at the horizon, a
+  // static cirrus veil, and a gently deeper zenith dome over the pastel base.
+  // The accent tints are bare rgb components (the --horizon-reflection-rgb
+  // idiom) so the composite below can wrap them at fixed alphas; like the
+  // --c-gradient stops they default to the 9:00 morning keyframe and are
+  // overridden inline by hour (skyTimeline.ts AMBIENT_SKY_KEYFRAMES accents,
+  // applied in addWrapperClasses.ts — keep the morning values in sync, a test
+  // pins them). The loading/widget skies deliberately stay the plain linear
+  // gradient, the same way the dark loading sky omits the stars.
+  --day-zenith-rgb: 176, 208, 236; // #b0d0ec
+  --day-horizon-glow-rgb: 255, 240, 205; // #fff0cd
+
+  // The static cirrus of the resting day sky — the day's counterpart to
+  // --night-stars below, and like it one full-sky 1440x900 SVG (not a tile;
+  // the consumers' `background-size: cover` stretches every layer, and the
+  // portrait crop keeps only the centre band, so streaks span many x
+  // positions to keep every crop populated). A few long, thin, blurred white
+  // streaks, upper sky only, fading in opacity toward the horizon. Static by
+  // design: the resting sky is ambient state, not animation — the moving life
+  // (the drifting light-motes) belongs to the down-drag reveal (Stars.tsx),
+  // exactly as the twinkling field does at night.
+  --day-veil: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1440' height='900' viewBox='0 0 1440 900'><defs><filter id='b' x='-40%25' y='-400%25' width='180%25' height='900%25'><feGaussianBlur stdDeviation='14'/></filter></defs><g fill='white' filter='url(%23b)'><ellipse cx='210' cy='120' rx='230' ry='9' opacity='0.3' transform='rotate(-2 210 120)'/><ellipse cx='760' cy='200' rx='300' ry='11' opacity='0.26' transform='rotate(1.5 760 200)'/><ellipse cx='1260' cy='110' rx='240' ry='8' opacity='0.3' transform='rotate(-1.5 1260 110)'/><ellipse cx='430' cy='330' rx='260' ry='9' opacity='0.2' transform='rotate(2 430 330)'/><ellipse cx='1090' cy='390' rx='280' ry='10' opacity='0.18' transform='rotate(-2 1090 390)'/><ellipse cx='150' cy='500' rx='220' ry='8' opacity='0.13' transform='rotate(1.5 150 500)'/><ellipse cx='820' cy='540' rx='250' ry='9' opacity='0.12' transform='rotate(-1 820 540)'/></g></svg>");
+
+  // Layer order (top → bottom): horizon bloom, cirrus veil, zenith dome, base
+  // gradient — mirroring the night composite (glow above stars above sky).
+  --background-gradient:
+    radial-gradient(
+      ellipse 90% 32% at 50% 108%,
+      rgba(var(--day-horizon-glow-rgb), 0.65) 0%,
+      rgba(var(--day-horizon-glow-rgb), 0.3) 48%,
+      transparent 78%
+    ),
+    var(--day-veil),
+    radial-gradient(
+      ellipse 130% 52% at 50% -14%,
+      rgba(var(--day-zenith-rgb), 0.55) 0%,
+      rgba(var(--day-zenith-rgb), 0.22) 55%,
+      transparent 80%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--c-gradient-1) 0%,
+      var(--c-gradient-1) 18%,
+      var(--c-gradient-2) 36%,
+      var(--c-gradient-3) 54%,
+      var(--c-gradient-4) 100%
+    );
 
   // Background transition target colors
   --bg-transition-bluesky-top: #0058c1;
