@@ -259,9 +259,12 @@ no bespoke navigation, no second trigger system.
   interruptions tonight." No wall-clock snooze survives; the old 15/30/60 is gone
   by design (grace grants no session for these modes, so it isn't a replacement —
   accepted: reopening may re-interrupt via the normal cascade).
-- **Fling-down ambiguity.** "Fling = skip / down = settle" is *direction* but
-  fling is *velocity* — a fast downward fling reads `direction: down`. Define it
-  explicitly (treat any fling as skip; only a slow down-drag settles+locks).
+- **Fling-down resolved as settle.** Fling is *velocity*, so a brisk downward
+  drag reads as a fling yet still means "down". Resolved by **direction, not
+  velocity**: any downward completion (slow drag or brisk fling) settles + locks;
+  only an up/away fling skips (the escape hatch). The settle fires once at the
+  drag's release and a guard (`runFlingSkip` / `hasBedtimeSettled`) suppresses the
+  fling's later terminal so it can't double-close.
 - **Migration.** Dead fields drop; `dismissedNightId` is reused with new
   semantics (nightId comparison makes stale values harmless).
 - **Tests.** Delete the util/back-nav/dismiss-transition suites with their code;

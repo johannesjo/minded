@@ -543,6 +543,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }, GOODNIGHT_MS);
   };
 
+  // A fling is the plain skip — but never once a settle has begun. A brisk
+  // downward drag classifies as a *fling* (velocity), yet direction is still
+  // "down" so it routes through the settle at release
+  // (handleStartBackgroundAnimation). The fling's own terminal callback then
+  // lands ~3s later; without this guard it would fire a second close on top of
+  // the settle's (double closeCurrentApp, after the screen already locked).
+  const runFlingSkip = () => {
+    if (hasBedtimeSettled) return;
+    runTerminalOutcome(props.onFlingAway);
+  };
+
   // Close a dashboard offer (grounding / let-go) and fade home. Nothing is
   // "submitted" on these paths, and onAfterInteractionFadeout now fades the sky
   // out via handleHideWithFade, which already refreshes the dashboard once the
@@ -1142,7 +1153,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (!props.useShellSun) return;
     const unregister = registerSunInteraction({
       onSkip: handleSunContinue,
-      onFlingAway: () => runTerminalOutcome(props.onFlingAway),
+      onFlingAway: runFlingSkip,
       onDragComplete: () =>
         getMode() === "WIND_DOWN_SETTLE"
           ? settleForBedtime(props.onDragComplete)
@@ -1765,7 +1776,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             <Sun
               variant={getDragObjectName()}
               onSkip={handleSunContinue}
-              onFlingAway={() => runTerminalOutcome(props.onFlingAway)}
+              onFlingAway={runFlingSkip}
               onDragComplete={() =>
                 getMode() === "WIND_DOWN_SETTLE"
                   ? settleForBedtime(props.onDragComplete)
