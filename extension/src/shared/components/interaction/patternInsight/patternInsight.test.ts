@@ -17,6 +17,8 @@ const baseContext = (
   hasFewAnswers: false,
   hasFreshEnergy: true,
   isEvening: false,
+  bedtimeNightId: null,
+  isBedtimeWindow: false,
   alternativeCount: 0,
   hasAlternatives: false,
   todayOpeningAttempts: 2,

@@ -10,6 +10,7 @@ import {
   hasActiveTimerInScope,
   hasExpiredTimerInScope,
 } from "@src/util/activeTimerScope";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 export type FrictionLevel = "soft" | "normal" | "strong";
 
@@ -23,6 +24,15 @@ export interface InteractionContext {
   hasFewAnswers: boolean;
   hasFreshEnergy: boolean;
   isEvening: boolean;
+  /**
+   * The sleep wind-down "night id" for right now (the ISO date the bedtime began
+   * on), or null if the moment is outside the user's configured bedtime window.
+   * Non-null means we are inside the bedtime window; the value doubles as the
+   * once-per-night key the settle guard compares against
+   * `syncData.sleepWindDownDismissedNightId`.
+   */
+  bedtimeNightId: string | null;
+  isBedtimeWindow: boolean;
   alternativeCount: number;
   hasAlternatives: boolean;
   todayOpeningAttempts: number;
@@ -67,6 +77,10 @@ export const getInteractionContext = ({
   const hasExpiredTimerForTarget = canResolveTimerScope
     ? hasExpiredTimerInScope(syncData, target, platform, now)
     : false;
+  const bedtimeCfg = syncData.cfg.sleepWindDown;
+  const bedtimeNightId = bedtimeCfg
+    ? resolveNightId(bedtimeCfg, nowDate)
+    : null;
 
   return {
     now,
@@ -78,6 +92,8 @@ export const getInteractionContext = ({
     hasFewAnswers: syncData.answers.length <= FEW_ANSWERS_MAX,
     hasFreshEnergy: isSameDate(syncData.energyLvlTS, now),
     isEvening: nowDate.getHours() >= EVENING_START_HOUR,
+    bedtimeNightId,
+    isBedtimeWindow: bedtimeNightId !== null,
     alternativeCount: enabledAlternativeCount,
     hasAlternatives: enabledAlternativeCount > 0,
     todayOpeningAttempts: syncData.attempts[dateISO] || 0,

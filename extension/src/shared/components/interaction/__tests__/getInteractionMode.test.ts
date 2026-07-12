@@ -5,7 +5,7 @@ import {
 } from "../getInteractionMode";
 import { createMockSyncData } from "@src/test-utils/mockHelpers";
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import type { Answer, SyncData } from "@src/dataInterface/syncData";
+import type { Answer, SyncData, UserCfg } from "@src/dataInterface/syncData";
 
 jest.mock("@src/dataInterface/commonSyncDataInterface", () => ({
   IS_ANDROID: false,
@@ -50,7 +50,9 @@ const answer = (
   ts: NOW,
 });
 
-const baseSyncData = (overrides: Partial<SyncData> = {}): SyncData =>
+const baseSyncData = (
+  overrides: Partial<Omit<SyncData, "cfg">> & { cfg?: Partial<UserCfg> } = {},
+): SyncData =>
   createMockSyncData({
     answers: [answer("1"), answer("2"), answer("3")],
     moodCheckTS: NOW,
@@ -733,6 +735,138 @@ describe("getInteractionMode", () => {
         mode: "QUESTION",
         reason: "strong_friction_question",
         frictionLevel: "strong",
+      });
+    });
+  });
+
+  describe("sleep wind-down bedtime settle", () => {
+    // Inside the configured window, 23:00 is in the 22:00–07:00 night.
+    const BEDTIME = new Date("2026-05-11T23:00:00").getTime();
+    const BEDTIME_NIGHT_ID = "2026-05-11";
+    const NIGHT_RANGE = { start: "22:00", end: "07:00" };
+    const bedtimeCfg = () => ({
+      sleepWindDown: {
+        enabled: true,
+        days: {
+          0: NIGHT_RANGE,
+          1: NIGHT_RANGE,
+          2: NIGHT_RANGE,
+          3: NIGHT_RANGE,
+          4: NIGHT_RANGE,
+          5: NIGHT_RANGE,
+          6: NIGHT_RANGE,
+        },
+      },
+    });
+    const atBedtime = (
+      syncData: SyncData,
+      options: InteractionModeDecisionOptions = {},
+    ) =>
+      decide(syncData, {
+        clock: () => BEDTIME,
+        isMainView: false,
+        random: () => 0.99,
+        ...options,
+      });
+
+    it("serves one wordless settle for a blocked-app interrupt in the window", () => {
+      expect(atBedtime(baseSyncData({ cfg: bedtimeCfg() }))).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle",
+        frictionLevel: "normal",
+      });
+    });
+
+    it("never settles on the dashboard main view (no lock-screen there)", () => {
+      expect(
+        atBedtime(baseSyncData({ cfg: bedtimeCfg() }), {
+          isMainView: true,
+        }).mode,
+      ).not.toBe("WIND_DOWN_SETTLE");
+    });
+
+    it("does nothing bedtime-specific outside the configured window", () => {
+      // Same config, but 10:00 (NOW) is outside 22:00–07:00.
+      expect(
+        decide(baseSyncData({ cfg: bedtimeCfg() }), {
+          isMainView: false,
+        }).mode,
+      ).not.toBe("WIND_DOWN_SETTLE");
+    });
+
+    it("does nothing when the bedtime window is disabled", () => {
+      const cfg = bedtimeCfg();
+      cfg.sleepWindDown.enabled = false;
+      expect(atBedtime(baseSyncData({ cfg })).mode).not.toBe(
+        "WIND_DOWN_SETTLE",
+      );
+    });
+
+    it("settles at most once per night (guarded by the dismissed night id)", () => {
+      expect(
+        atBedtime(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
+          }),
+        ).mode,
+      ).not.toBe("WIND_DOWN_SETTLE");
+    });
+
+    it("suppresses the onboarding survey at bedtime — settles instead", () => {
+      // With no answers this would be `few_answers_question` outside the window;
+      // a verbal survey at bedtime fails the 90% bar, so the settle wins.
+      expect(
+        atBedtime(baseSyncData({ cfg: bedtimeCfg(), answers: [] })),
+      ).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle",
+        frictionLevel: "normal",
+      });
+    });
+
+    it("gives a strong late-night pull the wordless settle, not a verbal prompt", () => {
+      expect(
+        atBedtime(
+          baseSyncData({ cfg: bedtimeCfg(), ...strongFrictionViaAttempts() }),
+        ),
+      ).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle_strong",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("after settling, a later strong pull falls through to the normal prompt", () => {
+      expect(
+        atBedtime(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
+            ...strongFrictionViaAttempts(),
+          }),
+        ),
+      ).toEqual({
+        mode: "QUESTION",
+        reason: "strong_friction_question",
+        frictionLevel: "strong",
+      });
+    });
+
+    it("is exempt from anti-repeat — repeats the settle within the same night", () => {
+      // Until it has settled tonight, the settle is a deliberate repeat; the
+      // anti-repeat that swaps a back-to-back QUESTION must never swap it out.
+      expect(
+        atBedtime(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            lastInteractionMode: "WIND_DOWN_SETTLE",
+          }),
+        ),
+      ).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle",
+        frictionLevel: "normal",
       });
     });
   });

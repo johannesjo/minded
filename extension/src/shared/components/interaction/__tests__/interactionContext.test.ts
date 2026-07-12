@@ -328,4 +328,50 @@ describe("friction level", () => {
 
     expect(getFrictionLevel(context)).toBe("soft");
   });
+
+  describe("bedtime window", () => {
+    const NIGHT_RANGE = { start: "22:00", end: "07:00" };
+    const bedtimeCfg = {
+      enabled: true,
+      days: {
+        0: NIGHT_RANGE,
+        1: NIGHT_RANGE,
+        2: NIGHT_RANGE,
+        3: NIGHT_RANGE,
+        4: NIGHT_RANGE,
+        5: NIGHT_RANGE,
+        6: NIGHT_RANGE,
+      },
+    };
+    const contextAt = (isoWithTime: string, cfg = bedtimeCfg) =>
+      getInteractionContext({
+        syncData: createMockSyncData({ cfg: { sleepWindDown: cfg } }),
+        now: new Date(isoWithTime).getTime(),
+        target: { kind: "host", id: "reddit.com" },
+        platform: "web",
+      });
+
+    it("resolves the night id inside the configured window", () => {
+      const context = contextAt("2026-05-11T23:00:00");
+      expect(context.bedtimeNightId).toBe("2026-05-11");
+      expect(context.isBedtimeWindow).toBe(true);
+    });
+
+    it("is null outside the window", () => {
+      const context = contextAt("2026-05-11T10:00:00");
+      expect(context.bedtimeNightId).toBeNull();
+      expect(context.isBedtimeWindow).toBe(false);
+    });
+
+    it("is null when there is no bedtime config at all", () => {
+      const context = getInteractionContext({
+        syncData: createMockSyncData({}),
+        now: new Date("2026-05-11T23:00:00").getTime(),
+        target: { kind: "host", id: "reddit.com" },
+        platform: "web",
+      });
+      expect(context.bedtimeNightId).toBeNull();
+      expect(context.isBedtimeWindow).toBe(false);
+    });
+  });
 });
