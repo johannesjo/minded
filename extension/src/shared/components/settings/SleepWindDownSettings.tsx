@@ -1,5 +1,4 @@
 import { createSignal, JSX, onMount, Show } from "solid-js";
-import { useNavigate } from "@solidjs/router";
 import {
   getSyncData,
   updateSyncData,
@@ -8,7 +7,6 @@ import {
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { SleepWindDownCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
-import Btn from "@src/shared/components/ui/Btn";
 import {
   DEFAULT_DAY_RANGE,
   resolveNightId,
@@ -24,7 +22,6 @@ export const SleepWindDownSettings = (props: {
   /** If true, persist each edit immediately. */
   autoSave?: boolean;
 }): JSX.Element => {
-  const navigate = useNavigate();
   const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
   const [pausedTonight, setPausedTonight] = createSignal(false);
   const [loaded, setLoaded] = createSignal(false);
@@ -104,11 +101,6 @@ export const SleepWindDownSettings = (props: {
           defaultRange={DEFAULT_DAY_RANGE}
         />
       </Show>
-      <div style={{ "margin-top": "16px", "text-align": "center" }}>
-        <Btn outline onClick={() => navigate("/sleepWindDown?preview=1")}>
-          Try wind-down now
-        </Btn>
-      </div>
     </div>
   );
 };

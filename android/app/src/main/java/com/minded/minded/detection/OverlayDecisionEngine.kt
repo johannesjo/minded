@@ -114,17 +114,14 @@ class OverlayDecisionEngine {
             return OverlayDecision.Skip(SkipReason.STALE_FOREGROUND)
         }
 
-        if (state.isWindDownActive) {
-            return if (state.isSleepWindDownOverlayShowing) {
-                OverlayDecision.Skip(SkipReason.OVERLAY_ALREADY_SHOWING)
-            } else {
-                OverlayDecision.ShowSleepWindDown
-            }
-        }
-
-        if (state.isWindDownSnoozed) {
-            return OverlayDecision.ShowWindDownSnoozeTimer
-        }
+        // Sleep wind-down is no longer a separate overlay that pre-empts the
+        // intervention here. It is now a register of the normal intervention
+        // flow: inside the user's bedtime window a blocked-app open falls through
+        // to ShowIntervention below, and the WebView's getInteractionMode serves
+        // the wordless WIND_DOWN_SETTLE (see docs/sleep-wind-down-redesign.md).
+        // Consequence: bedtime is downstream of the active-session/grace checks,
+        // so a blocked app opened during an active session shows the little sun,
+        // not the settle — an intended change.
 
         // Skip if user just switched to the app (debounce)
         if (state.lastGoToAppTimestamp > 0 &&

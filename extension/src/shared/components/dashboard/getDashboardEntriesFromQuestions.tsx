@@ -15,8 +15,6 @@ import { getRndEntries } from "@src/util/getRndEntries";
 import { isCategoryWithinTimeConstraints } from "@src/util/getQuestionSmart";
 import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
-import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
-import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 const MAX_ANSWERS = 4;
 // The slot the centre pick (or the fallback quote) is moved to — also the card
@@ -119,16 +117,10 @@ export const getDashboardEntriesFromQuestions = (
   const sortedEntries: DashboardGroup[] = dashboardGroups;
   let fixedEntriesIndexAndNr = 0;
 
-  // Wind-down is currently Android-only; show a tappable card while the user
-  // is inside their configured wind-down window so they can re-enter the flow
-  // even after snoozing or backing out to the dashboard.
-  const swdCfg = syncData.cfg.sleepWindDown;
-  if (IS_ANDROID && swdCfg?.enabled && resolveNightId(swdCfg, now) !== null) {
-    sortedEntries.splice(fixedEntriesIndexAndNr, 0, {
-      type: DashboardGroupType.SleepWindDown,
-    });
-    fixedEntriesIndexAndNr++;
-  }
+  // Wind-down no longer has a dashboard card: it is a register of the normal
+  // intervention flow (the wordless bedtime settle fires when the user reaches
+  // for a blocked app inside their window), not a place to navigate into.
+  // See docs/sleep-wind-down-redesign.md.
 
   if (isToday(syncData.energyLvlTS)) {
     sortedEntries.splice(fixedEntriesIndexAndNr, 0, {

@@ -276,13 +276,8 @@ export const DashboardGroups: (props: {
   );
 
   const renderCard = (dg: DashboardGroup) => {
-    const isInteractive =
-      "id" in dg || dg.type === DashboardGroupType.SleepWindDown;
+    const isInteractive = "id" in dg;
     const activate = () => {
-      if (dg.type === DashboardGroupType.SleepWindDown) {
-        navigate("/sleepWindDown");
-        return;
-      }
       if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);
     };
     return (
@@ -309,13 +304,6 @@ export const DashboardGroups: (props: {
       >
         {(() => {
           switch (dg.type) {
-            case DashboardGroupType.SleepWindDown:
-              return (
-                <div>
-                  <div class="dashboardHeading">wind down for sleep</div>
-                  <div class="fatTxt">it's getting late</div>
-                </div>
-              );
             case DashboardGroupType.Quote:
               return <RndQuote />;
 
