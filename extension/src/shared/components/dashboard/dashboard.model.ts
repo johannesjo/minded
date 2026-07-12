@@ -6,7 +6,6 @@ export enum DashboardGroupType {
   Quote = "Quote",
   EnergyLvl = "EnergyLvl",
   EmotionLabeling = "EmotionLabeling",
-  SleepWindDown = "SleepWindDown",
 }
 
 export interface DashboardGroupTxtQuestion {
@@ -32,13 +31,8 @@ export interface DashboardGroupEmotionLabeling {
   emotions: string[];
 }
 
-export interface DashboardGroupSleepWindDown {
-  type: DashboardGroupType.SleepWindDown;
-}
-
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
   | DashboardGroupQuote
   | DashboardGroupEnergyLvl
-  | DashboardGroupEmotionLabeling
-  | DashboardGroupSleepWindDown;
+  | DashboardGroupEmotionLabeling;

@@ -227,6 +227,16 @@ export const markInteractionModeShown = (
   mode: InteractionMode,
 ): Promise<void> => patchSyncData({ lastInteractionMode: mode });
 
+/**
+ * Record that tonight's wind-down settle has been shown, so the engine serves
+ * it at most once per night (getInteractionMode's `settledTonight` guard). The
+ * caller passes the night id it is settling — the same `resolveNightId(cfg, now)`
+ * value the decision compared against — so the two always agree. A plain key
+ * patch; the value doesn't depend on current state.
+ */
+export const markBedtimeSettled = (nightId: string): Promise<void> =>
+  patchSyncData({ sleepWindDownDismissedNightId: nightId });
+
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
     answers: syncData.answers.map((aI) =>

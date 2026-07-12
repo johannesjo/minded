@@ -50,6 +50,12 @@ export interface InteractionModeSwitchProps {
    * read as pressure to be busy at night. Ignored when `forcedAdvice` is set.
    */
   isEveningAdvice?: boolean;
+  /**
+   * True once the bedtime settle's drag-down has completed: swap the calm
+   * settle line for the wordless "Sleep well" goodnight beat before the phone
+   * closes/locks. Only meaningful for the WIND_DOWN_SETTLE mode.
+   */
+  isBedtimeGoodnight?: boolean;
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
@@ -108,6 +114,25 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
             </div>
           );
         })()}
+      </Match>
+      <Match when={props.mode === "WIND_DOWN_SETTLE"}>
+        {/* The everyday bedtime settle: wordless, no prompt, no choice. The
+            moon rests below (the shell reserves its slot); dragging it down
+            lets the day go and settles the phone into the dark. On that
+            drag-down we swap to a bare "Sleep well" beat before the close. */}
+        <div
+          id="minded-6622-wind-down-settle"
+          class="txtBig interaction-static-text"
+        >
+          {props.isBedtimeGoodnight ? (
+            <div>Sleep well</div>
+          ) : (
+            <>
+              <div class="interaction-caption">A moment before bed</div>
+              <div>Let the day go</div>
+            </>
+          )}
+        </div>
       </Match>
       <Match when={props.mode === "SCREEN_OFF"}>
         <ScreenOffInteraction

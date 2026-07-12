@@ -54,7 +54,6 @@ import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/
 import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
 import InteractionIOS from "@src/ios/interaction/InteractionIOS";
-import SleepWindDownRoute from "@src/shared/components/sleepWindDown/SleepWindDownRoute";
 import Styleguide from "@src/shared/components/styleguide/Styleguide";
 
 // Vite replaces process.env.NODE_ENV at build time. `npm start` sets NODE_ENV=development,
@@ -448,9 +447,6 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         {IS_WEB_EXT && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
         <Route path="/dailyQuestions" component={DailyQuestions} />
-        {IS_ANDROID && (
-          <Route path="/sleepWindDown" component={SleepWindDownRoute} />
-        )}
         {IS_DEV && <Route path="/styleguide" component={Styleguide} />}
       </HashRouter>
     </div>
