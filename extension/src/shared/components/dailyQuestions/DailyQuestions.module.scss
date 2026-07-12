@@ -33,7 +33,7 @@
   // vertical centre (sunDailyQuestionsSuccessSettle); the centred text lands
   // below it without overlapping.
   .success-text {
-    font-size: 1.5rem;
+    font-size: var(--fz-l);
     font-weight: 500;
     color: var(--success-sun-txt-c);
     text-align: center;

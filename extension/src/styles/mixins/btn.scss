@@ -2,7 +2,7 @@
 
 @mixin btnBase($height: var(--btn-height)) {
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: inline-block;
   cursor: pointer;
   height: $height;
@@ -151,7 +151,7 @@
   @include btnBase;
 
   & {
-    padding: 0 14px;
+    padding: 0 var(--space-md);
     font-weight: 300;
   }
 
@@ -213,7 +213,7 @@
 @mixin btnTxtBigModifier() {
   height: var(--btn-height-bigger);
   line-height: var(--btn-height-bigger);
-  padding: 0 18px;
+  padding: 0 var(--space-md);
   font-size: var(--btn-bigger-fz);
   font-weight: normal;
 }
@@ -260,7 +260,7 @@
     background: var(--btn-bg-selected);
     opacity: 1;
     //font-weight: 500;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     transform: scale(var(--btn-selected-scale));
   }
 }
@@ -272,8 +272,8 @@
   height: 34px;
   line-height: 34px;
   min-width: 0;
-  margin: 4px;
-  padding: 0 10px;
+  margin: var(--space-xs);
+  padding: 0 var(--space-sm);
   font-size: calc(var(--fz-m) - 1px);
   --extraClickArea: -4px;
 
@@ -283,6 +283,9 @@
   }
 
   &.isSelected {
+    // Off the radius scale on purpose: the scaled-down analog of the regular
+    // toggle's 8px → 16px selected morph (16px here would read pill-like at
+    // this height).
     border-radius: 12px;
   }
 }

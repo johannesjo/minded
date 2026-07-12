@@ -3,8 +3,6 @@ import { SessionGraceSettings } from "@src/shared/components/settings/SessionGra
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
-import { Ico } from "@src/shared/components/ui/Ico";
-import Btn from "@src/shared/components/ui/Btn";
 import styles from "./SettingsAndroidRoute.module.scss";
 
 export const SettingsAndroidRoute = () => {
@@ -30,11 +28,8 @@ export const SettingsAndroidRoute = () => {
 
       <SleepWindDownSettings autoSave={true} />
 
-      <div class={styles.backWrapper}>
-        <Btn href="/">
-          <Ico name="arrowBack" /> Back
-        </Btn>
-      </div>
+      {/* No in-page Back button: the bottom bar's arrow is the one way back,
+          same as every other sub-page. */}
     </div>
   );
 };

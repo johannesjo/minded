@@ -63,4 +63,19 @@
       opacity: var(--rating-active-opacity);
     }
   }
+
+  // Quiet end labels beneath the dots (same treatment as the urge-surfing
+  // scale's "barely"/"intense"): direction, not chrome. Sized to the row of
+  // five buttons (each --rating-size wide plus 4px margins) so the labels sit
+  // under the outermost dots rather than drifting to the container edges.
+  .ratingAnchors {
+    display: flex;
+    justify-content: space-between;
+    width: calc(5 * (var(--rating-size) + 8px));
+    margin: 2px auto 0;
+    box-sizing: border-box;
+    padding: 0 var(--space-xs);
+    font-size: var(--fz-s);
+    opacity: 0.6;
+  }
 }

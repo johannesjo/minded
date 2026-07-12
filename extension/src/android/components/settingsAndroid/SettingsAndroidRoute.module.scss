@@ -1,9 +1,4 @@
 .divider {
   opacity: 0.2;
-  margin: 32px 16px;
-}
-
-.backWrapper {
-  text-align: center;
-  margin: 32px 16px;
+  margin: var(--space-xl) var(--space-md);
 }

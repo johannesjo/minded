@@ -134,11 +134,11 @@ doesn't know the user — same logic as the 90% copy bar.
 
 ### 3.1 Real defects
 
-1. **The edit-confirm button is a no-op.**
-   `AnswerEntry.tsx:129-136` — the check button's `onClick={() => {}}`; the
-   edit is actually committed by the input's `onblur`. It "works" only via
-   the side effect of the tap stealing focus. Wire the button to commit
-   explicitly (and keep blur as fallback).
+1. ~~**The edit-confirm button is a no-op.**~~ **Rejected — deliberate.**
+   The check button's empty `onClick` is intentional: tapping it blurs the
+   input, and the input's `onblur` is the single commit path — a second
+   commit from the click would race it. The button is the visible "done"
+   affordance for that blur. Now documented in code (`AnswerEntry.tsx`).
 2. **Bad category id renders anyway.**
    `QuestionCategoryView.tsx:31-33` logs `illegal route param` but continues
    into `QUESTION_CATEGORIES[undefined]`. Redirect to `/` instead.
@@ -392,18 +392,27 @@ button-label casing in source ("Surf it" vs "continue"). Propose codifying:
 
 ## 7. Quick wins (small effort, visible value)
 
-1. Wire the answer-edit confirm button (§3.1.1).
-2. Undo for answer deletion, reusing the website-list pattern (§3.1.3).
-3. Engage-cancel for the grounding offer's auto-dismiss (§3.1.4).
-4. Mention fling in the sun instructions (§2.1).
-5. "low"/"high" anchors on the energy dots (§3.4).
-6. Deduplicate web settings headings (§3.4).
-7. Remove the Android settings in-page Back button (§3.4).
-8. Snap off-grid paddings/radii to tokens (§5.2).
-9. Tame the button hover bloom (§5.1).
-10. Weight 200 → 300 on `.dashboardHeading` (§5.5).
-11. Fix `BackgroundTransition` fallback gradients (§5.4).
-12. Redirect on illegal category route param (§3.1.2).
+Status after review: 1 was rejected as deliberate; 2–12 are implemented.
+
+1. ~~Wire the answer-edit confirm button (§3.1.1).~~ **Rejected — the empty
+   onClick is deliberate** (blur is the single commit path; see §3.1.1).
+2. ✅ Undo for answer deletion, reusing the website-list pattern (§3.1.3).
+3. ✅ Engage-cancel for the grounding offer's auto-dismiss (§3.1.4).
+4. ✅ Mention fling in the sun instructions (§2.1).
+5. ✅ "low"/"high" anchors on the energy dots (§3.4).
+6. ✅ Deduplicate web settings headings (§3.4) — the wrapper intros were
+   removed; the components' own headings + state-aware descriptions carry
+   the sections.
+7. ✅ Remove the Android settings in-page Back button (§3.4).
+8. ✅ Snap off-grid paddings/radii to tokens (§5.2) — with three deliberate
+   exceptions kept as-is, each already justified by an in-code comment:
+   the finger-rest pad's 40px radius (proportional to the ~420px pad), the
+   calm-read 1.05em ("a touch above inherited" has no token), and the small
+   toggle's 12px selected radius (scaled-down analog of the 8→16 morph).
+9. ✅ Tame the button hover bloom (§5.1) — alpha 0.9 → 0.55.
+10. ✅ Weight 200 → 300 on `.dashboardHeading` (§5.5).
+11. ✅ Fix `BackgroundTransition` fallback gradients (§5.4).
+12. ✅ Redirect on illegal category route param (§3.1.2).
 
 ---
 

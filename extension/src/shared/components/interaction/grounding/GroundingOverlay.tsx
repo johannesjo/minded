@@ -61,6 +61,10 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const [getIsClosing, setIsClosing] = createSignal(false);
   const [getSkySettled, setSkySettled] = createSignal(false);
   const [getRemainingMs, setRemainingMs] = createSignal(0);
+  // Set the moment the user touches or keyboard-focuses the offer: someone
+  // mid-decision is engaged, and the gentle auto-dismiss below must never
+  // whisk the offer away from under them (mirrors LetGoOverlay's onEngage).
+  const [getHasEngaged, setHasEngaged] = createSignal(false);
 
   // The shell-sun dashboard wires onSunMode; its presence means the one shell sun
   // is available to carry this stage, so the timed sit reuses it as its breath sun
@@ -134,8 +138,10 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   });
 
   // A gentle offer never nags: if it is left untouched it fades on its own.
+  // "Untouched" is literal — the first touch or keyboard focus cancels the
+  // countdown, so the offer never disappears mid-decision.
   createEffect(() => {
-    if (getPhase() !== "offer") return;
+    if (getPhase() !== "offer" || getHasEngaged()) return;
     const t = window.setTimeout(() => {
       if (!isDisposed) close();
     }, OFFER_AUTO_DISMISS_MS);
@@ -255,6 +261,8 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         [styles.isClosing]: getIsClosing(),
         [styles.skySettled]: getSkySettled(),
       }}
+      onPointerDown={() => setHasEngaged(true)}
+      onFocusIn={() => setHasEngaged(true)}
       style={{
         "--grounding-fade-ms": `${GROUNDING_FADE_MS}ms`,
         "--sky-settle-ms": `${SKY_SETTLE_MS}ms`,
