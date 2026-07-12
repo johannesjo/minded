@@ -1,4 +1,4 @@
-# Sleep wind-down — dissolve the mini-app into the sun's evening register
+# Sleep wind-down — dissolve the mini-app into bedtime interventions
 
 Status: **design proposal, not yet built.** Supersedes the current wind-down
 implementation (`src/shared/components/sleepWindDown/`, the Android overlay
@@ -16,9 +16,11 @@ intervention engine, and speaks alarm-clock grammar (snooze 15/30/60,
 triple-tap, skip tonight, a per-weekday schedule). It is the app's only menu,
 its only parallel navigation stack, and its least on-philosophy surface. The
 fix is not to polish it — it is to **delete the mini-app and re-express bedtime
-as an evening register of the one sun**: the moon appears through the normal
-interrupt, offers a single note-for-tomorrow landing, and closes by settling
-down. One flow, not two.
+as a register of the standard intervention flow**: at night the companion disc
+is *already* a moon (automatic, 19:00–06:00), so there is nothing to morph. The
+wind-down activities stop being a menu and become **individual, always-skippable
+interventions** — the engine offers one at a time, the user flings it away like
+any other. One flow, not two.
 
 ---
 
@@ -61,46 +63,59 @@ you, never a menu.*
 
 ---
 
-## The redesign: bedtime is a register of the one sun
+## The redesign: bedtime is a register of the standard flow
 
-Don't make wind-down a place you navigate into. Make it **the one sun quietly
-becoming the moon in the evening** — same single gesture, same "one thing
-chosen for you," tuned for bed. Decided direction (full dissolve; keep a single
-note-for-tomorrow landing that closes on the moon settling):
+Don't make wind-down a place you navigate into. Make it **the standard
+intervention, with its option set swapped for bedtime.** Two corrections to the
+first draft of this doc:
+
+- **Nothing to morph.** At night the companion disc is *already* a moon —
+  automatic, clock-driven, 19:00–06:00 (`isDarkModeNow()` →
+  `.minded-6622-dark` → `getSunVariant()`; `NIGHT_START_HOUR = 19`,
+  `NIGHT_END_HOUR = 6`, `skyTimeline.ts:37-38`), independent of this feature.
+  So there is no "sun becomes a moon at bedtime" step; at bedtime it simply
+  *is* the moon.
+- **The activities become interventions, not a menu.** A menu *forces* a
+  choice — the thing that felt off. A single activity *routed to you as one
+  intervention*, always fling-to-skip, does not: it is the same "one thing
+  chosen for you, never forced" the whole app runs on. Because the user only
+  ever sees one, occasionally, this is what *earns* keeping several activities
+  (note for tomorrow, gratitude, brain dump, a calm read, breathing) instead of
+  cutting them to one. The engine serves one at a time with variety.
 
 ### The moment, end to end
 
 1. You reach for a blocked app inside your bedtime window. The **normal**
-   interrupt fires — no separate overlay decision. The sun morphs in as the
-   **moon** (evening skin of the single sun, not a fresh disc).
-2. The router, which already knows it's the bedtime window, picks **one**
-   bedtime-appropriate gesture — not a menu:
-   - most nights, the **moon-settle**: the moon simply present, then *"let the
-     day go"* as you settle it down; or
-   - a single **note for tomorrow**: one free-text landing to externalise the
-     racing mind so the phone can go down, then settle.
-3. Close = **drag the moon down** — the grounding gesture the dashboard already
-   teaches, in its evening form. On Android, the settle closes the app and lets
-   the screen sleep.
-4. Not now = **fling the moon away** — the universal escape, unchanged. No
-   "skip tonight" button, no confirm.
+   interrupt fires — no separate overlay decision. The disc is already the moon.
+2. The engine offers **one** bedtime gesture, chosen for you — not a menu.
+   Bedtime swaps the daytime option set for the wind-down set, and suppresses
+   the productivity-leaning evening modes (action advice = "do a task now" is
+   wrong at bedtime). Most nights the plain **settle** (*"let the day go"*);
+   sometimes a single landing — **note for tomorrow**, **gratitude**, a
+   **brain dump**, **something calm to read**, or a **breath**.
+3. Skip = **fling the moon away** — the universal escape, unchanged, on *every*
+   bedtime offer. No "skip tonight" button, no confirm, no triple-tap.
+4. Close/settle = **drag the moon down** — the grounding gesture the dashboard
+   already teaches. On Android, the settle closes the app and lets the screen
+   sleep.
 5. Come back in a moment = the **existing little-sun grace timer**, counted up,
-   not a bespoke 15/30/60 + triple-tap.
+   not a bespoke 15/30/60 snooze.
 
 That's the whole feature. No overview menu, no activity checklist, no tips
 page, no triple-tap, no bespoke navigation stack, no second trigger system.
 
 ### Why this is on-philosophy
 
-- **One thing chosen for you**, via the same engine as every other moment.
-- **One sun, always morphs** — the moon is finally a morph of the shell sun,
-  not a hard-cut fresh disc (also chips at the T3 morph debt).
-- **The one activity worth keeping is the on-philosophy one.** Of the five,
-  note-for-tomorrow / brain-dump is the only reflect→let-go gesture and the
-  real reason you can put the phone down. The rest (gratitude prompt, calm-read
-  passages, tips list, breathing) are content a companion doesn't need at the
-  interrupt.
-- **Remove before you add**: this is a large net deletion.
+- **One thing chosen for you**, via the same engine as every other moment —
+  and **always skippable**, like every intervention.
+- **No menu, no forced choice** at the moment of least capacity (tired, in
+  bed). The engine carries the decision, not the user.
+- **Keeping several activities is now cheap**, because each is a rare single
+  offer rather than a line on a checklist. Distribution is what makes the
+  content affordable; a menu is what made it expensive.
+- **Rare and dismissible**, per the 90% bar: tune bedtime offers to be soft and
+  infrequent — mostly settle, the writing/reading offers seldom — so the
+  interrupt never feels like a nightly form to fill in.
 
 ---
 
@@ -110,25 +125,27 @@ page, no triple-tap, no bespoke navigation stack, no second trigger system.
 
 | Surface | File(s) |
 |---|---|
-| Overview/menu, tips, calm-read, gratitude & breathing screens, back-nav, dismiss transition, snooze-duration UI, triple-tap | most of `src/shared/components/sleepWindDown/` (keep only the window math + the note landing — see below) |
-| Calm-read passages, sleep tips, extra prompt pools | `src/shared/data/sleepContent.ts` (keep tomorrow/brain-dump prompts) |
+| Overview/menu, back-nav, dismiss transition, snooze-duration UI, triple-tap, "skip tonight" | most of `src/shared/components/sleepWindDown/` (the *screens/chrome* — the activity content survives as interventions, see Keep) |
+| The tips page + sleep-hygiene list (advice content, leans productivity — off-register at the interrupt) | `SLEEP_TIPS` in `src/shared/data/sleepContent.ts`; tips view in `SleepWindDownView.tsx:553-563` |
 | Dedicated web route | `RouteCmp.tsx:439`, `SleepWindDownRoute.tsx` |
 | Dashboard card | `dashboard.model.ts:35-44`, `getDashboardEntriesFromQuestions.tsx:122-131`, `DashboardGroups.tsx:278-318` |
-| Settings section (schedule stays as one window; drop the "activities" framing) | `SleepWindDownSettings.tsx` slimmed; mount `SettingsAndroidRoute.tsx:31` |
-| Separate overlay decision branch | `OverlayDecisionEngine.kt:117-127`, state build `OverlayControllerService.kt:481-491,647-648,675-683` |
+| Separate overlay decision branch (the pre-empting trigger) | `OverlayDecisionEngine.kt:117-127`, state build `OverlayControllerService.kt:481-491,647-648,675-683` |
 
 ### Keep
 
+- **The activity content, re-homed as interventions** — the note-for-tomorrow,
+  gratitude, brain-dump, calm-read and breathing gestures survive; only the
+  *menu around them* dies. Prompt/passage pools stay in
+  `src/shared/data/sleepContent.ts` (minus `SLEEP_TIPS`); the writing gesture is
+  `activities/BrainDump.tsx` reduced to a single prompt per offer and filed
+  under the existing `GoodPlans` / `SleepWindDown` categories; breathing reuses
+  the shared `BreathingExercise`.
 - **The bedtime *window* config** (`SleepWindDownCfg`, `syncData.d.ts:26-31`)
   and `resolveNightId` (`sleepWindDown.util.ts:26-105` / `SleepWindDownWindow.kt`).
-  A user-set bedtime window is the one genuinely new signal; keep it as a
-  single range, not a five-activity feature. Settings shrinks to: on/off +
-  the `WeekdaySchedule` window.
-- **The note-for-tomorrow landing** (`activities/BrainDump.tsx` reduced to the
-  single-prompt case) filed under the existing `GoodPlans` / `SleepWindDown`
-  category — no menu around it.
-- **The moon** (`Sun variant="moon"`, drag-down) and `setIsShellSunHidden`
-  single-disc handling.
+  A user-set bedtime window is the one genuinely new signal. Settings shrinks
+  to on/off + the `WeekdaySchedule` window (drop the "activities" framing).
+- **The moon** (already the night disc) and `setIsShellSunHidden` single-disc
+  handling; the drag-**down** settle as the close.
 
 ### Change (the core of the work)
 
@@ -137,14 +154,17 @@ page, no triple-tap, no bespoke navigation stack, no second trigger system.
    (`interactionContext.ts:80`, hour ≥ 20) and an `evening_action_advice`
    branch (`getInteractionMode.ts:305`). Add:
    - a context field `isBedtimeWindow` derived from the user's
-     `SleepWindDownCfg` via `resolveNightId(cfg, now) !== null` (not a fixed
-     hour — respect the configured window), threaded through
+     `SleepWindDownCfg` via `resolveNightId(cfg, now) !== null` (respect the
+     configured window, not a fixed hour), threaded through
      `getInteractionContext`;
-   - two modes, `WIND_DOWN_SETTLE` and `WIND_DOWN_NOTE`, chosen ahead of the
-     ordinary evening branch when `isBedtimeWindow && !dismissedTonight`;
-     mostly settle, occasionally the note. These become normal
-     `InteractionMode`s with reasons (`bedtime_settle`, `bedtime_note`) and
-     ride the same `InteractionCommon` shell — no new navigation.
+   - a small set of bedtime modes as normal `InteractionMode`s —
+     `WIND_DOWN_SETTLE`, `WIND_DOWN_NOTE`, `WIND_DOWN_GRATITUDE`,
+     `WIND_DOWN_BRAIN_DUMP`, `WIND_DOWN_READ`, `WIND_DOWN_BREATH` — selected
+     when `isBedtimeWindow && !dismissedTonight`, *ahead of and instead of* the
+     ordinary evening/action-advice options, with anti-repeat variety and a
+     strong lean toward the plain settle (the writing/reading offers rare). Each
+     rides the same `InteractionCommon` shell and is fling-to-skip like any
+     intervention — no new navigation.
 2. **Android: delete the pre-empting branch.** Instead of
    `ShowSleepWindDown` short-circuiting the cascade, the normal
    `ShowIntervention` path runs and the WebView-side router returns a
