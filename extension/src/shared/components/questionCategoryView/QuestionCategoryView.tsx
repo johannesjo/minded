@@ -109,7 +109,14 @@ export const QuestionCategoryView: (props: {
       title: answerToAdd.val.toString().trim(),
     };
     setAnswersForCategory([...getAnswersForCategory(), answerToAdd]);
-    saveAnswer(answerWithNewTs);
+    saveAnswer(answerWithNewTs).catch((e: unknown) => {
+      // Roll the optimistic add back so the list never shows an answer that
+      // isn't actually stored (the data layer already alerted the user).
+      console.error("Answer save failed — removing it from the list", e);
+      setAnswersForCategory(
+        getAnswersForCategory().filter((a: Answer) => a.id !== answerToAdd.id),
+      );
+    });
   };
 
   // TODO maybe remove click handler for title

@@ -55,7 +55,6 @@ const DailyQuestions = () => {
   const today = new Date();
   const isMonday = today.getDay() === 1;
   const mode: DailyQuestionsMode = getDailyQuestionsMode();
-  // const mode: DailyQuestionsMode = "Evening";
   // Morning is an energy check-in, then today's gentle plans — with a
   // lightly-held weekly intention added on Mondays (4 steps Mon / 3 steps
   // otherwise). Evening lost its opening mood check-in, so it's 3 steps too.

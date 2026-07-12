@@ -8,7 +8,7 @@ After opening this project in Android Studio, you'll find the following test con
 
 ### 1. **All Unit Tests**
 - Runs all unit tests in the `com.minded.minded` package
-- Includes all test classes: ExampleUnitTest, MyAccessibilityServiceLogicTest, and MyAccessibilityServiceTest
+- Includes all test classes, e.g. MyAccessibilityServiceLogicTest and MyAccessibilityServiceTest
 
 ### 2. **Unit Tests - MyAccessibilityService**
 - Runs both MyAccessibilityService test classes

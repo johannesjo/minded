@@ -24,6 +24,13 @@ export class DataStorageError extends Error {
 export interface DataErrorOptions {
   /** Whether to show user-facing alert on error */
   alertUser?: boolean;
+  /**
+   * Exact text for the user-facing alert. Without it the alert falls back to
+   * the generic template, whose "Your data is safe." is only true for read
+   * errors — any write-failure call site MUST provide an honest message
+   * instead (and never leak internal function names to the user).
+   */
+  userMessage?: string;
 }
 
 /**
@@ -39,13 +46,16 @@ export function handleDataError(
   context: string,
   options: DataErrorOptions = {},
 ): void {
-  const { alertUser = false } = options;
+  const { alertUser = false, userMessage } = options;
 
   // Always log with context
   console.error(`[DataError] ${context}:`, error);
 
   // Optionally alert user (only in appropriate contexts)
   if (alertUser && typeof window !== "undefined" && window.alert) {
-    window.alert(`minded encountered an error: ${context}. Your data is safe.`);
+    window.alert(
+      userMessage ??
+        `minded encountered an error: ${context}. Your data is safe.`,
+    );
   }
 }

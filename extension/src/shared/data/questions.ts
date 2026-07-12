@@ -1022,6 +1022,9 @@ export const QUESTION_CATEGORIES: {
 
 export const FIXED_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.GoodPlansToday,
+  // RefocusHelperToday stays listed although it's in DISABLED_QUESTION_CATEGORIES:
+  // disabled means "stop asking", but recaps of answers already given still
+  // belong on the dashboard/look-back (see updateDashboardEntries tests).
   QuestionCategoryId.RefocusHelperToday,
   QuestionCategoryId.GoodToday,
   QuestionCategoryId.TodayILearned,

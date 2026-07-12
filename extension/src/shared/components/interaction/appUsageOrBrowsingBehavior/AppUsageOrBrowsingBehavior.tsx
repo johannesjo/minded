@@ -87,18 +87,14 @@ export const AppUsageOrBrowsingBehavior: (props: {
           <Show when={getObservation()}>
             {(observation) => (
               <div>
+                {/* Today's observed fact only — deliberately no "usually by
+                    now" baseline: a comparison against a personal average
+                    reads as a benchmark, the register the app avoids. */}
                 <div class="txtBig" style="padding-bottom:8px;">
                   You've spent about{" "}
                   {formatUsageDuration(observation().todaySeconds)} on{" "}
                   {targetLabel()} so far today.
                 </div>
-                <Show when={observation().baselineSeconds !== null}>
-                  <div style="padding-bottom:16px;opacity:0.7;">
-                    Usually around{" "}
-                    {formatUsageDuration(observation().baselineSeconds ?? 0)} by
-                    now.
-                  </div>
-                </Show>
                 <Btn onClick={() => screenFade.toScreen(() => setStep(1))}>
                   continue
                 </Btn>

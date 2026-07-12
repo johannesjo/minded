@@ -2,10 +2,10 @@
 
 Status: **implemented** (both platforms' web flows browser-verified end to
 end; the Android pin bridge and the iOS WidgetCenter plugin method follow the
-existing native patterns but await a device/Xcode build — and the
-`MindedWidget` target still isn't wired into `App.xcodeproj`, so the iOS
-widget step points at a widget the TestFlight build only carries once that
-one-time step from `docs/sun-companion-widget.md` is done). Two details
+existing native patterns but await a device/Xcode build. The `MindedWidget`
+target is wired into `App.xcodeproj` by CI at build time —
+`extension/ios/App/scripts/add_widget_target.rb`, see `RELEASING.md` — so
+TestFlight builds carry the widget the iOS step points at). Two details
 settled at implementation, noted inline below: the demo *returns to the
 welcome* instead of auto-advancing, and the widget-step preview is the
 resting onboarding disc itself — no asset needed. Companion docs:
@@ -310,9 +310,9 @@ and stays out.
 - `definitions.ts` + `MindedIOSPlugin.swift`/`.m` — `isWidgetInstalled()` via
   `WidgetCenter.getCurrentConfigurations` (resolves installed=true on any
   read failure, again so unknown never nags).
-- Prerequisite unchanged from `docs/sun-companion-widget.md`: the
-  `MindedWidget` target must actually be wired into `App.xcodeproj`, or step 1
-  points at a widget that isn't in the build.
+- The `MindedWidget` target is wired into `App.xcodeproj` by CI at build time
+  (`add_widget_target.rb`, before `pod install` — see `RELEASING.md`), so
+  step 1 points at a widget that is in every TestFlight build.
 
 ## Open questions
 

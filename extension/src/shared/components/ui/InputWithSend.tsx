@@ -52,8 +52,13 @@ export const InputWithSend = (props: {
     }
 
     setIsInputDisabled(true);
-    await props.onSubmit(val);
-    setIsInputDisabled(false);
+    try {
+      await props.onSubmit(val);
+    } finally {
+      // A rejecting onSubmit must never leave the input dead — the user's
+      // text is still in the field and retrying has to stay possible.
+      setIsInputDisabled(false);
+    }
   };
 
   const focusInp = () => {

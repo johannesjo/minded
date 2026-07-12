@@ -7,10 +7,7 @@ import {
   onCleanup,
   Switch,
 } from "solid-js";
-import {
-  countSunTap,
-  IS_APP,
-} from "@src/dataInterface/commonSyncDataInterface";
+import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { createScreenFade } from "@src/util/screenFade";
@@ -149,13 +146,11 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     }, TICK_MS);
   };
 
-  const finish = (): void => {
-    // Reward the completed practice with a sun tap, like the screen-off minute.
-    // Fire-and-forget: the reflection screen gives the write ample time to flush.
-    void countSunTap().catch((error: unknown) => {
-      console.error("Failed to count urge-surfing sun tap", error);
-    });
-  };
+  // Deliberately NO countSunTap here: sun taps feed the friction level and the
+  // "you've come back a few times" return-loop insight, i.e. they measure
+  // returns to the pull — not engagement with the practice. Counting a
+  // completed wave would make diligent practice *escalate* the next
+  // intervention (and double-count the tap the subsequent submit records).
 
   const handleRate = (value: number): void => {
     props.onCancelCountdown();
@@ -167,7 +162,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
       goToPhase("surf");
     } else {
       setAfter(value);
-      goToPhase("done", finish);
+      goToPhase("done");
     }
   };
 

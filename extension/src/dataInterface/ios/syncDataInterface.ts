@@ -17,7 +17,11 @@ export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
     handleDataError(
       new DataStorageError("Failed to save sync data", "ios", "write", error),
       "iOS: saveSyncDataN",
-      { alertUser: true },
+      {
+        alertUser: true,
+        userMessage:
+          "minded couldn't save your latest change — it was not stored. Your earlier data is untouched. Please try again.",
+      },
     );
     throw error;
   }

@@ -290,9 +290,6 @@ const parseAndroidUsageObservation = (
       : [];
     return {
       todaySeconds: parsed.todaySeconds as number,
-      baselineSeconds: Number.isFinite(parsed.baselineSeconds)
-        ? (parsed.baselineSeconds as number)
-        : null,
       topTargets,
     };
   } catch {

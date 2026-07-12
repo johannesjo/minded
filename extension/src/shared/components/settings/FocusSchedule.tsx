@@ -63,10 +63,12 @@ export const FocusSchedule = (): JSX.Element => {
         />
       </div>
 
+      {/* "appears/rests" rather than block-list vocabulary: the outward frame
+          is an invitation ("where the sun meets you"), never a wall. */}
       <p class={styles.description}>
         {schedule().enabled
-          ? "Your block rules apply only during these hours. Outside them, nothing is blocked."
-          : "Your block rules apply around the clock. Enable to limit blocking to set hours."}
+          ? "minded appears only during these hours. Outside them, it rests."
+          : "minded appears around the clock. Enable to keep it to set hours."}
       </p>
 
       <Show when={loaded()}>

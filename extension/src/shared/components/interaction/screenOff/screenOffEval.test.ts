@@ -10,7 +10,6 @@ describe("evaluateScreenOff", () => {
 
     expect(result).toEqual({
       elapsedMs: SCREEN_OFF_TARGET_MS,
-      remainingMs: 0,
       success: true,
     });
   });
@@ -24,12 +23,11 @@ describe("evaluateScreenOff", () => {
 
     expect(result).toEqual({
       elapsedMs: SCREEN_OFF_TARGET_MS - 1,
-      remainingMs: 1,
       success: false,
     });
   });
 
-  it("reports the full target as remaining for a zero-length segment", () => {
+  it("fails a zero-length segment", () => {
     const result = evaluateScreenOff({
       hiddenAt: 5_000,
       shownAt: 5_000,
@@ -38,7 +36,6 @@ describe("evaluateScreenOff", () => {
 
     expect(result).toEqual({
       elapsedMs: 0,
-      remainingMs: SCREEN_OFF_TARGET_MS,
       success: false,
     });
   });
@@ -52,7 +49,6 @@ describe("evaluateScreenOff", () => {
 
     expect(result).toEqual({
       elapsedMs: 0,
-      remainingMs: SCREEN_OFF_TARGET_MS,
       success: false,
     });
   });
@@ -66,7 +62,6 @@ describe("evaluateScreenOff", () => {
 
     expect(result).toEqual({
       elapsedMs: 10 * 60_000,
-      remainingMs: 0,
       success: true,
     });
   });

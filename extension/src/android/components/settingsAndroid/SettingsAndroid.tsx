@@ -113,8 +113,7 @@ export const SettingsAndroid = (props: {
   return (
     <div class="pageTransitionIn">
       <div class={`txtBig ${styles.inset}`}>
-        {props.heading ||
-          "Please select at least one app that you want to use less."}
+        {props.heading || "Choose the apps where the sun should meet you."}
       </div>
 
       {/* The widget row is a costless, permission-free place — it must stay

@@ -182,14 +182,6 @@ export const getInteractionModeDecision = (
   syncData: SyncData,
   options: InteractionModeDecisionOptions = {},
 ): InteractionModeDecision => {
-  // return "EMOTION_LABELING";
-  // return "APP_USAGE_OR_BROWSING_BEHAVIOR";
-  // return "ACTION_ADVICE";
-  // return "ENERGY_LVL";
-  // return "NOTICE";
-  // return "SHOW_ALTERNATIVE";
-  // return "SET_ALTERNATIVE";
-
   const nowTS = options.clock?.() ?? Date.now();
   const platform = options.platform ?? getDefaultPlatform();
   const context = getInteractionContext({

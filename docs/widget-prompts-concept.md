@@ -129,8 +129,9 @@ see the status note at the top and the routing section below.)*
 - ❌ mood/energy echoes ("earlier you felt…") — already cut app-wide
 - ❌ the user's own words (answers, intents) — semi-public surface
 - ❌ time-sensitive greetings ("good morning") — staleness trap for no gain
-- ❌ quotes-as-content-strategy — `QUOTES` has one entry; don't build a
-  quote-of-the-day machine, that's a different (and more ornamental) product
+- ❌ quotes-as-content-strategy — `QUOTES` is a deliberately small, curated
+  dashboard pool; don't build a quote-of-the-day machine, that's a different
+  (and more ornamental) product
 
 ## The biggest risk, named: a changing widget trains checking
 
