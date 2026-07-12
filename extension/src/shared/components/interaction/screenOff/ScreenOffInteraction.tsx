@@ -1,6 +1,5 @@
 /* @refresh reload */
 import { createSignal, JSX, Match, onCleanup, Switch } from "solid-js";
-import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 import Btn from "@src/shared/components/ui/Btn";
 import {
   evaluateScreenOff,
@@ -25,7 +24,6 @@ export const ScreenOffInteraction: (props: {
   onLeaveNow: () => void;
 }) => JSX.Element = (props) => {
   const [getPhase, setPhase] = createSignal<ScreenOffPhase>("intro");
-  const [getRemainingMs, setRemainingMs] = createSignal(SCREEN_OFF_TARGET_MS);
 
   // Plain refs — these never need to drive rendering.
   let hiddenAt: number | undefined;
@@ -37,12 +35,10 @@ export const ScreenOffInteraction: (props: {
     // not trip the solid/reactivity lint rule (as StrongFrictionBreathPause does).
     const onLeaveNow = props.onLeaveNow;
     setPhase("done");
-    // Reward the user with a sun tap. Fire-and-forget: the DONE_EXIT_DELAY_MS
-    // gap before the app closes is ample for the storage write to flush, and
-    // awaiting it could otherwise strand the user on the success screen.
-    void countSunTap().catch((error: unknown) => {
-      console.error("Failed to count screen-off sun tap", error);
-    });
+    // Deliberately NO countSunTap here: sun taps feed the friction level and
+    // the return-loop insight — they measure returns to the pull, not practice.
+    // Counting a completed screen-off minute would make the calming practice
+    // escalate the next intervention (and no other leave path counts a tap).
     doneTimeoutId = window.setTimeout(() => {
       doneTimeoutId = undefined;
       if (!isDisposed) onLeaveNow();
@@ -83,7 +79,6 @@ export const ScreenOffInteraction: (props: {
       return;
     }
 
-    setRemainingMs(result.remainingMs);
     setPhase("tooEarly");
   };
 
@@ -122,9 +117,11 @@ export const ScreenOffInteraction: (props: {
           <Btn onClick={() => props.onSkip()}>Just go in</Btn>
         </Match>
 
+        {/* No seconds-remaining count here — a ticking target would gamify
+            the break ("beat the clock"), the one register the app avoids. */}
         <Match when={getPhase() === "tooEarly"}>
           <div class="txtBig interaction-heading">
-            Almost — {Math.ceil(getRemainingMs() / 1000)}s more away.
+            Almost — stay away a little longer.
           </div>
           <Btn onClick={arm}>Try again</Btn>
           <Btn onClick={() => props.onSkip()}>Just go in</Btn>

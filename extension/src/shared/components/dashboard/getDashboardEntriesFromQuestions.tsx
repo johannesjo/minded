@@ -26,11 +26,11 @@ export const CENTER_INDEX = 4;
 
 // The card types that may *greet* you on arrival (the centre pick). The greeting
 // reflects — your own answers, mood, energy, emotions — or offers a calm quote;
-// it never *measures*. The minded-decisions counter, the behaviour/app-usage
-// charts and the wind-down CTA are deliberately excluded so the first card is
-// never a tally, a trend, or a call to action. They still appear in the full
-// grid once it's revealed. (The quote is handled separately as an always-present
-// extra option, so it can greet on full days and is the natural empty fallback.)
+// it never *measures*, and it is never a call to action (the wind-down CTA is
+// excluded). No counter/chart card types exist anywhere on the dashboard — by
+// design, not omission; don't add them. (The quote is handled separately as an
+// always-present extra option, so it can greet on full days and is the natural
+// empty fallback.)
 const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.TxtQuestion,
   DashboardGroupType.EnergyLvl,

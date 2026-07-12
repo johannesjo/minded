@@ -127,7 +127,7 @@ Scope guardrails for anyone touching iOS:
 
 Build & ship: iOS is built, signed, and pushed to TestFlight from a GitHub
 macOS runner with **no local Mac** (`.github/workflows/ios-testflight.yml`).
-Remaining one-time prerequisite: the `MindedWidget` extension target is not yet
-wired into `App.xcodeproj` (the Swift sources exist; the target does not). Until
-it is added, TestFlight builds ship the WebView shell without the widget. See
+The `MindedWidget` extension target is not stored in `App.xcodeproj`; the
+workflow wires it in on the fly (`extension/ios/App/scripts/add_widget_target.rb`,
+run before `pod install`), so every archive embeds the companion sun. See
 `extension/ios/App/MindedWidget/README.md` and `RELEASING.md`.

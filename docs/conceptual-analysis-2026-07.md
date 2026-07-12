@@ -1,11 +1,21 @@
 # Conceptual analysis — what works, what doesn't (July 2026)
 
-Status: **analysis snapshot.** A full conceptual read of the app — philosophy,
-mechanics, copy, architecture — against its own stated fundamentals
-(`CLAUDE.md`, `docs/reflective-companion-concept.md`,
+Status: **analysis snapshot; in-scope findings fixed in the same change.** A
+full conceptual read of the app — philosophy, mechanics, copy, architecture —
+against its own stated fundamentals (`CLAUDE.md`,
+`docs/reflective-companion-concept.md`,
 `docs/sun-escalation-and-detection-reliability.md`). Written from a complete
 pass over the shared UI, the intervention system, the Android native side, the
 extension data layer, and the iOS widget.
+
+Fixed alongside this doc: T1 (practice completions no longer feed friction),
+T2 (baseline comparison removed end-to-end), T4 (screen-off countdown copy),
+the settings wall-vocabulary half of T3, G1's silent answer-loss path (now
+honest + tested), G2 (stale docs corrected — CI does wire the widget), the
+quote pool (P1), and the P2 comment/dead-code drift. Filed as issues: the
+fresh-detection shield morph (T3's native half), the read-modify-write races,
+the untested I/O path, the focus-hours boundary gap, and the throttle-field
+reuse.
 
 ## Verdict in one paragraph
 
@@ -172,16 +182,15 @@ no-telemetry app, the user's answer journal *is* the relationship — silently
 dropping it is the worst possible failure mode, and none of this path is
 tested.
 
-**G2 — iOS may be shipping an empty product.** The docs disagree with each
-other: `ios-platform-fit.md` and `value-first-onboarding-concept.md` say the
-`MindedWidget` target "is not yet wired into `App.xcodeproj`" (so TestFlight
-ships the bare WebView shell — an app you must remember to open, which the
-platform-fit doc itself scores as "relies on the willpower addiction
-erodes"); `widget-prompts-concept.md` says CI wires it via
-`scripts/add_widget_target.rb`. One of these is stale. Verifying which — and
-confirming a TestFlight build actually contains the widget — is arguably the
-single highest-leverage product task, since without the widget iOS minded is
-functionally empty.
+**G2 — iOS widget wiring: doc drift, now resolved.** The docs disagreed with
+each other: `ios-platform-fit.md` and `value-first-onboarding-concept.md`
+said the `MindedWidget` target "is not yet wired into `App.xcodeproj`", while
+`widget-prompts-concept.md` and `RELEASING.md` said CI wires it. The workflow
+is the ground truth: `.github/workflows/ios-testflight.yml` runs
+`extension/ios/App/scripts/add_widget_target.rb` before `pod install`, so
+every archive embeds the widget. The two stale docs have been corrected.
+(What still stands from the docs: the widget hasn't been verified on a real
+device/launcher yet.)
 
 **G3 — The untested critical path is the I/O, not the logic.** Test
 discipline is excellent for pure functions and near-zero exactly where the

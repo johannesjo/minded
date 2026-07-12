@@ -59,7 +59,7 @@ export const SessionGraceSettings = (): JSX.Element => {
 
       <p class={styles.description}>
         {isEnabled()
-          ? "Each fresh visit to a blocked site or app starts with uninterrupted time. Interventions kick in once the grace minutes are up."
+          ? "Each fresh visit to a site or app you've chosen starts with uninterrupted time. The sun arrives once the grace minutes are up."
           : "Allow the first few minutes of each session before interventions begin."}
       </p>
 

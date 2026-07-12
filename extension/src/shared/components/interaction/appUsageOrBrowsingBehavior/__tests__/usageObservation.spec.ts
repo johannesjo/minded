@@ -1,7 +1,4 @@
-import {
-  computeUsageObservation,
-  MIN_BASELINE_DAYS,
-} from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageObservation";
+import { computeUsageObservation } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageObservation";
 import {
   addUsageTime,
   UsageStatsByDate,
@@ -37,42 +34,20 @@ describe("computeUsageObservation", () => {
     expect(obs.topTargets[0].label).toBe("Instagram");
   });
 
-  it("returns null baseline without enough prior days", () => {
+  it("ignores prior days — the observation is today's fact only, no baseline", () => {
     let stats: UsageStatsByDate = {};
-    stats = addUsageTime(stats, "youtube.com", 300, at(9, 10));
-    stats = addUsageTime(stats, "youtube.com", 300, at(8, 10));
-    // Only two prior days < MIN_BASELINE_DAYS.
-    expect(MIN_BASELINE_DAYS).toBeGreaterThan(2);
-    const obs = computeUsageObservation(stats, NOW);
-    expect(obs.baselineSeconds).toBeNull();
-  });
-
-  it("averages prior days' usage *through the current hour* for the baseline", () => {
-    let stats: UsageStatsByDate = {};
-    // Three prior days: 600s before hour 14 each, plus 9999s later in the day
-    // that must NOT count toward a 14:30 baseline.
     for (const day of [7, 8, 9]) {
       stats = addUsageTime(stats, "youtube.com", 600, at(day, 9));
-      stats = addUsageTime(stats, "youtube.com", 9999, at(day, 20));
     }
+    stats = addUsageTime(stats, "youtube.com", 300, at(10, 10));
     const obs = computeUsageObservation(stats, NOW);
-    expect(obs.baselineSeconds).toBe(600);
-  });
-
-  it("ignores days beyond the recent lookback window", () => {
-    let stats: UsageStatsByDate = {};
-    // Old days (far outside lookback) should not seed a baseline.
-    for (const day of [1, 2, 3]) {
-      stats = addUsageTime(stats, "youtube.com", 600, at(day - 20, 9));
-    }
-    const obs = computeUsageObservation(stats, NOW);
-    expect(obs.baselineSeconds).toBeNull();
+    expect(obs.todaySeconds).toBe(300);
+    expect(obs).not.toHaveProperty("baselineSeconds");
   });
 
   it("handles a fresh user with no data", () => {
     const obs = computeUsageObservation({}, NOW);
     expect(obs.todaySeconds).toBe(0);
     expect(obs.topTargets).toEqual([]);
-    expect(obs.baselineSeconds).toBeNull();
   });
 });
