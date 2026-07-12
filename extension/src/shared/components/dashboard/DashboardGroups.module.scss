@@ -239,14 +239,16 @@
     animation: none;
   }
 
-  // A subordinate affordance: smaller than a primary button so it doesn't loom
-  // over a small greeting card. The design system has no small text-button
-  // variant, so this one quiet control sets its own size — selector raised over
-  // the global .btnTxt to win the cascade.
+  // A subordinate affordance: quieter than the greeting card it sits beneath,
+  // so the card stays the focus and the invitation reads as secondary. Sized at
+  // --fz-s (below the card's --fz-m content) so the serif display face doesn't
+  // loom over the card text. The design system has no small text-button variant,
+  // so this one quiet control sets its own size — selector raised over the
+  // global .btnTxt to win the cascade.
   &:global(.btnTxt) {
     height: 36px;
     line-height: 36px;
-    font-size: var(--fz-m);
+    font-size: var(--fz-s);
   }
 }
 
