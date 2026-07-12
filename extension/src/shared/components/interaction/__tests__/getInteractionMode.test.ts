@@ -837,7 +837,10 @@ describe("getInteractionMode", () => {
       });
     });
 
-    it("after settling, a later strong pull falls through to the normal prompt", () => {
+    it("keeps a repeat strong pull wordless — never escalates to a verbal prompt", () => {
+      // Even after the routine settle has fired tonight (guard set), a *strong*
+      // late-night pull still gets the wordless settle rather than a verbal
+      // "you keep coming back" / question (decision 5).
       expect(
         atBedtime(
           baseSyncData({
@@ -847,10 +850,80 @@ describe("getInteractionMode", () => {
           }),
         ),
       ).toEqual({
-        mode: "QUESTION",
-        reason: "strong_friction_question",
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle_strong",
         frictionLevel: "strong",
       });
+    });
+
+    it("settles over an expired-intent verbal prompt at bedtime", () => {
+      // An expired intent with a saved reason would normally open SHOW_REASON
+      // (a verbal prompt) — but at bedtime the wordless settle must win, since
+      // the settle sits above the expired-intent branch.
+      const decision = atBedtime(
+        baseSyncData({
+          cfg: bedtimeCfg(),
+          answers: [
+            answer("1"),
+            answer("2"),
+            answer("r", QuestionCategoryId.WhyReduceBrowsing),
+          ],
+          activeTimer: {
+            endTS: BEDTIME - 1000,
+            durationS: 300,
+            startedTS: BEDTIME - 301000,
+            target: { kind: "host", id: "youtube.com" },
+            platform: "web",
+            intent: { id: "check_one_thing" },
+          },
+        }),
+        { target: { kind: "host", id: "youtube.com" }, platform: "web" },
+      );
+      expect(decision).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle",
+        frictionLevel: "normal",
+      });
+    });
+
+    it("suppresses a pre-19:00 energy survey inside a window that starts early", () => {
+      // A window starting before 19:00 overlaps the energy-eligible hours; a
+      // stale energy reading would normally force ENERGY_LVL, but the bedtime
+      // interrupt must stay wordless.
+      const EARLY_RANGE = { start: "18:00", end: "07:00" };
+      const earlyCfg = {
+        sleepWindDown: {
+          enabled: true,
+          days: Object.fromEntries(
+            Array.from({ length: 7 }, (_, i) => [i, EARLY_RANGE]),
+          ),
+        },
+      };
+      const decision = decide(
+        baseSyncData({ cfg: earlyCfg, energyLvlTS: 1 }),
+        {
+          clock: () => new Date("2026-05-11T18:30:00").getTime(),
+          isMainView: false,
+        },
+      );
+      expect(decision.mode).toBe("WIND_DOWN_SETTLE");
+    });
+
+    it("stays guarded after midnight (same night id blocks a re-settle)", () => {
+      // The settle armed the guard at 23:00 (night id 2026-05-11). At 02:00 the
+      // window still resolves to that same night id, so no second settle.
+      expect(
+        decide(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
+          }),
+          {
+            clock: () => new Date("2026-05-12T02:00:00").getTime(),
+            isMainView: false,
+          },
+        ).mode,
+      ).not.toBe("WIND_DOWN_SETTLE");
     });
 
     it("is exempt from anti-repeat — repeats the settle within the same night", () => {

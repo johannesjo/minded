@@ -23,7 +23,6 @@ import {
   MissingCapabilityView,
   REQUIRED_CAPABILITIES,
 } from "@src/android/components/missingCapabilities/MissingCapabilities";
-import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import { readIsWidgetPlaced } from "@src/android/util/widgetPlacement";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
@@ -93,23 +92,6 @@ const MainAndroid = () => {
     addWrapperClasses();
   });
 
-  const maybeTriggerSleepWindDown = (syncData: SyncData): boolean => {
-    const cfg = syncData.cfg.sleepWindDown;
-    if (!cfg?.enabled) return false;
-    const nightId = resolveNightId(cfg);
-    if (!nightId) return false;
-    if (syncData.sleepWindDownDismissedNightId === nightId) return false;
-    if ((syncData.sleepWindDownSnoozeUntilTS ?? 0) > Date.now()) return false;
-    // Only auto-route from the dashboard root. If the user is mid-task in
-    // settings, feedback, an interaction, or already in the wind-down flow,
-    // don't yank them away on resume.
-    const hash = window.location.hash;
-    const atRoot = hash === "" || hash === "#" || hash === "#/";
-    if (!atRoot) return false;
-    window.location.hash = "#/sleepWindDown";
-    return true;
-  };
-
   const refresh = () => {
     setIsDarkModeIfApplies();
 
@@ -126,9 +108,6 @@ const MainAndroid = () => {
       }
       setHasBlockedApps((syncData.cfg.blockedApps?.length ?? 0) > 0);
       setIsWidgetPlaced(readIsWidgetPlaced());
-      if (syncData.cfg.isOnboardingComplete) {
-        maybeTriggerSleepWindDown(syncData);
-      }
     });
 
     setTimeout(() => {

@@ -277,9 +277,11 @@ export const getInteractionModeDecision = (
     // meet the wordless settle, never a verbal "you keep coming back" insight or
     // a question at the moment of least capacity. After 22:00 the practices are
     // hour-gated off anyway, so this is what a strong bedtime pull normally
-    // gets. Once-per-night: a later strong pull falls through to the verbal
-    // prompts below.
-    if (canServeBedtimeSettle) {
+    // gets. Unlike the routine settle this is NOT once-per-night: a repeated
+    // strong pull keeps getting the wordless settle rather than escalating to a
+    // verbal prompt (decision 5 — "wordless at bedtime"). The settle already
+    // bypasses the anti-repeat, so repeating it here is fine.
+    if (isBedtimeIntervention) {
       return decision(
         "WIND_DOWN_SETTLE",
         "bedtime_settle_strong",
@@ -321,6 +323,17 @@ export const getInteractionModeDecision = (
     return decision("QUESTION", "strong_friction_question", frictionLevel);
   }
 
+  // Bedtime settle (non-strong): the everyday bedtime interrupt. One wordless
+  // moon — "let the day go" — served in place of the ordinary evening options,
+  // at most once per night. Placed above the expired-intent branch (and the
+  // whole cascade below) so a bedtime interrupt is never opened by a verbal
+  // reason/alternative prompt at the moment of least capacity. Deliberately
+  // exempt from the anti-repeat below: it is a once-per-night repeat by design,
+  // like the hard gates, so it must not be swapped out for variety.
+  if (canServeBedtimeSettle) {
+    return decision("WIND_DOWN_SETTLE", "bedtime_settle", frictionLevel);
+  }
+
   if (
     canApplyInterventionFriction &&
     context.hasIntentOnExpiredTimerForTarget
@@ -339,15 +352,6 @@ export const getInteractionModeDecision = (
         frictionLevel,
       );
     }
-  }
-
-  // Bedtime settle (non-strong): the everyday bedtime interrupt. One wordless
-  // moon — "let the day go" — served in place of the ordinary evening options,
-  // at most once per night. Deliberately exempt from the anti-repeat below: it
-  // is a once-per-night repeat by design, like the hard gates, so it must not
-  // be swapped out for variety.
-  if (canServeBedtimeSettle) {
-    return decision("WIND_DOWN_SETTLE", "bedtime_settle", frictionLevel);
   }
 
   if (context.isEvening && isActionAdviceEligible) {

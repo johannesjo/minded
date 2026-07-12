@@ -20,10 +20,20 @@ surfaced.
   close locks the screen (`InteractionAndroid.tsx`).
 - Activation — the Android `OverlayDecisionEngine` no longer pre-empts with the old
   overlay; the settle fires through the normal `ShowIntervention` path.
-- Old surfaces made unreachable — `/sleepWindDown` route, dashboard card, and the
-  settings "Try wind-down now" preview removed. Bedtime-window settings kept.
-- Both bundles build; all TS tests pass. (The small Kotlin edit is compile-unverified
-  — no Android SDK in the authoring environment.)
+- Old surfaces made unreachable — `/sleepWindDown` route, dashboard card, the
+  settings "Try wind-down now" preview, the settings "Paused for tonight" banner
+  (which misread the reused guard field), and the `MainAndroid` auto-nav trigger
+  all removed. Bedtime-window settings kept.
+- `lockScreen()` added to the interaction WebView bridge
+  (`InteractionWindowJavaScriptInterface`) so the settle's drag-down actually
+  locks the screen (it previously called a method only the old bridge had).
+- The "Sleep well" beat renders correctly (fires at the drag's release with
+  content restored, not behind the 3s off-screen glide).
+- Reviewed by four adversarial code-review agents; their confirmed findings
+  (missing lock bridge, dead beat, orphaned trigger, expired-intent pre-emption,
+  strong-repeat verbal fallback) are fixed. Both bundles build; all TS tests pass.
+  (The Kotlin edits are compile-unverified — no Android SDK in the authoring
+  environment.)
 
 **Pending (native-coupled dead-code cleanup — do where the Android build runs):**
 - Delete the old mini-app view dir (`src/shared/components/sleepWindDown/` except

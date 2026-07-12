@@ -1,6 +1,7 @@
 package com.minded.minded.overlay
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -50,6 +51,21 @@ class InteractionWindowJavaScriptInterface(
     @JavascriptInterface
     fun test() {
         Log.d(logTag, "TEST - JavaScript interface is working!")
+    }
+
+    /**
+     * Locks the device screen via the accessibility service's
+     * GLOBAL_ACTION_LOCK_SCREEN (broadcast receiver in MyAccessibilityService).
+     * Called by the bedtime wind-down settle's drag-down close: the user is
+     * putting the phone down to sleep, so easing it into the dark is the point.
+     */
+    @JavascriptInterface
+    fun lockScreen() {
+        Log.v(logTag, "lockScreen() - wind-down settle")
+        val intent = Intent("com.minded.ACTION_LOCK_SCREEN").apply {
+            setPackage(ctrlSvc.packageName)
+        }
+        ctrlSvc.sendBroadcast(intent)
     }
 
     // The reverse-morph arriving sun has painted at the Little Sun's corner, so

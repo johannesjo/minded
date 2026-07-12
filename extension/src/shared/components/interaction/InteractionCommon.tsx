@@ -522,9 +522,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // closes the app and locks the screen, so the phone eases into the dark
   // rather than snapping to the OS lock. A fling still takes the plain skip
   // path (runTerminalOutcome → onFlingAway) with no goodnight and no lock.
+  //
+  // Fired from handleStartBackgroundAnimation at the drag's *release* (not from
+  // the terminal onDragComplete, which lands only after the sun's ~3s off-screen
+  // glide) so the goodnight lands promptly. The drag dimmed the content to 0 and
+  // never restored it, so lift it back to full for the words. Idempotent: the
+  // release hook and the terminal callback both call this; `hasBedtimeSettled`
+  // makes only the first take effect.
+  let bedtimeSettleTimeout: number | undefined;
+  let hasBedtimeSettled = false;
   const settleForBedtime = (close: () => void) => {
+    if (hasBedtimeSettled) return;
+    hasBedtimeSettled = true;
     setIsBedtimeGoodnight(true);
-    window.setTimeout(() => {
+    setInteractionOpacity(1);
+    bedtimeSettleTimeout = window.setTimeout(() => {
+      bedtimeSettleTimeout = undefined;
       if (isDisposed) return;
       close();
     }, GOODNIGHT_MS);
@@ -971,6 +984,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       return;
     }
 
+    // Bedtime settle: the deliberate drag-down is a goodnight, not a let-go.
+    // Don't fade the content out and don't wait on the ~3s off-screen glide —
+    // show the wordless "Sleep well" beat now and close+lock after it. (The
+    // moon still drifts down for the fraction of a second before the close.)
+    if (
+      !props.isFromDashboard &&
+      direction === "down" &&
+      getMode() === "WIND_DOWN_SETTLE"
+    ) {
+      settleForBedtime(props.onDragComplete);
+      return;
+    }
+
     runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => {
       if (isDisposed) return;
 
@@ -1395,6 +1421,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
     if (contentReadyTimeout) {
       clearTimeout(contentReadyTimeout);
+    }
+    if (bedtimeSettleTimeout) {
+      clearTimeout(bedtimeSettleTimeout);
     }
     if (groundingBgResetTimeout) {
       clearTimeout(groundingBgResetTimeout);

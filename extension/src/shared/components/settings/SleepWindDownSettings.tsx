@@ -1,16 +1,12 @@
 import { createSignal, JSX, onMount, Show } from "solid-js";
 import {
   getSyncData,
-  updateSyncData,
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { DEFAULT_SLEEP_WIND_DOWN } from "@src/dataInterface/syncData.const";
 import { SleepWindDownCfg } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
-import {
-  DEFAULT_DAY_RANGE,
-  resolveNightId,
-} from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import { DEFAULT_DAY_RANGE } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import {
   DaysMap,
   WeekdaySchedule,
@@ -23,19 +19,11 @@ export const SleepWindDownSettings = (props: {
   autoSave?: boolean;
 }): JSX.Element => {
   const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
-  const [pausedTonight, setPausedTonight] = createSignal(false);
   const [loaded, setLoaded] = createSignal(false);
 
   onMount(() => {
     getSyncData().then((sd) => {
-      const swd = sd.cfg.sleepWindDown ?? DEFAULT_SLEEP_WIND_DOWN;
       if (sd.cfg.sleepWindDown) setCfg(sd.cfg.sleepWindDown);
-      // Only surface "Paused for tonight" while we're actually inside the
-      // dismissed window — otherwise the banner sits there all day after
-      // a 22:00 skip even when wind-down would not be active anyway.
-      const dismissed = sd.sleepWindDownDismissedNightId;
-      const currentNightId = resolveNightId(swd);
-      setPausedTonight(!!currentNightId && dismissed === currentNightId);
       setLoaded(true);
     });
   });
@@ -43,11 +31,6 @@ export const SleepWindDownSettings = (props: {
   const persist = async (next: SleepWindDownCfg) => {
     if (!props.autoSave) return;
     await updateUserCfg({ sleepWindDown: next });
-    if (!next.enabled) {
-      // Clear any stale snooze deadline so re-enabling later doesn't
-      // suppress the next configured window.
-      await updateSyncData({ sleepWindDownSnoozeUntilTS: 0 });
-    }
   };
 
   const apply = (mutate: (prev: SleepWindDownCfg) => SleepWindDownCfg) => {
@@ -88,11 +71,6 @@ export const SleepWindDownSettings = (props: {
             : "When the time arrives, minded will gently prompt you to wind down."
           : "Enable to be gently prompted to wind down at bedtime."}
       </p>
-      {pausedTonight() && cfg().enabled && (
-        <p class={styles.description} style={{ "font-style": "italic" }}>
-          Paused for tonight — wind-down will resume tomorrow.
-        </p>
-      )}
       <Show when={loaded()}>
         <WeekdaySchedule
           days={cfg().days}
