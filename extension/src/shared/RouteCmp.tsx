@@ -222,8 +222,8 @@ const MainWrapper = (props: RouteSectionProps) => {
     }
 
     // Anchor the companion sun by reading the position straight off the CSS that
-    // already places the tap-target the disc rests onto: `.companionTapTarget` is
-    // `position: fixed; bottom: var(--companion-bar-center-y)`, so the browser has
+    // already places the bottom-bar anchor the disc rests onto: `.companionAnchorProbe`
+    // is `position: fixed; bottom: var(--companion-bar-center-y)`, so the browser has
     // resolved that var to a px `bottom` (vh against the layout viewport, plus the
     // live safe-area inset) exactly as the bottom bar's own layout did. Reading it
     // back makes the SCSS the single source of truth — the disc lands on the same
@@ -237,16 +237,19 @@ const MainWrapper = (props: RouteSectionProps) => {
     // paint, so the corrected value lands with no visible glide) and again next
     // frame. The late inset itself arrives via the native WebViewSafeAreaBridge
     // push, which sets the CSS var and dispatches `androidSafeAreaChanged` (which
-    // nothing else listened to) — re-measure on that so the disc catches up; if it
-    // moved, the settle glide morphs it softly into place. `resize` keeps it in
-    // sync with the viewport. The tap-target only exists while resting, which is
-    // exactly when the companion anchor matters; otherwise we keep the last value.
+    // nothing else listened to) — re-measure on that so the disc catches up; when
+    // it moved while the disc was already resting home, the settle snaps it there
+    // in lockstep with the icons (see enterSettle's companion re-anchor branch).
+    // `resize` keeps it in sync with the viewport. The probe is a permanent,
+    // invisible element (unlike the tap target, which only exists while resting),
+    // so a resize *during an interaction* is still captured — otherwise the disc
+    // returned home to a stale anchor, off the icon line, until the next resize.
     const reanchorCompanion = () => {
-      const tapTarget = document.querySelector<HTMLElement>(
-        `.${styles.companionTapTarget}`,
+      const probe = document.querySelector<HTMLElement>(
+        `.${styles.companionAnchorProbe}`,
       );
-      if (!tapTarget) return;
-      const bottomPx = readCompanionBottomPx(tapTarget);
+      if (!probe) return;
+      const bottomPx = readCompanionBottomPx(probe);
       if (bottomPx != null) setCompanionBottomYPx(bottomPx);
     };
     reanchorCompanion();
@@ -324,6 +327,16 @@ const MainWrapper = (props: RouteSectionProps) => {
           [styles.isHiddenSoft]: getIsShellSunHidden() === "soft",
         }}
       >
+        {/*
+          Permanent, invisible probe pinned to the companion anchor
+          (bottom: var(--companion-bar-center-y)). reanchorCompanion reads its
+          resolved px so the disc lands on the exact spot the settings/feedback
+          icons do. Unlike the tap target (which only mounts while resting), this
+          is always present, so a resize/rotation *during* an interaction is
+          still measured — the disc then returns home to the current anchor, not
+          a stale one.
+        */}
+        <div class={styles.companionAnchorProbe} aria-hidden="true" />
         <div class={styles.shellSunSlot}>
           <Sun
             variant={getSunVariant()}

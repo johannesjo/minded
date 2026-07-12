@@ -609,6 +609,43 @@ export const Sun: Component<SunProps> = (props) => {
 
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+
+    // Pure companion re-anchor: the disc is already home on the bottom bar and
+    // only the *measured* anchor moved — a resize/rotation, or Android's
+    // safe-area (nav-bar) inset landing a beat after first paint. The
+    // settings/feedback icons are pinned to that same anchor in plain CSS, so
+    // they jump to the new spot INSTANTLY; gliding the disc there over
+    // COMPANION_GLIDE_MS would leave it visibly lagging below the icons and
+    // sliding up into place for the whole ~900ms — which is exactly the "sun
+    // isn't aligned with the settings/feedback buttons" the companion keeps
+    // being reported for (worst on Android cold start, where the inset arrives
+    // late on ~half of launches, so it only misaligns *sometimes*). Snap it so
+    // the disc and the icons move as one and stay locked. A genuine role change
+    // into the companion (the return home from an interaction) has a
+    // non-companion `fromSettle`, so it still glides.
+    //
+    // Gated on `restingSettle` being the companion too, so this only fires when
+    // the disc is actually AT REST on the bar — never mid-glide (restingSettle is
+    // null then). A resize that lands mid-return-home therefore falls through to
+    // the normal glide, which re-targets its landing live rather than being cut
+    // short by a snap.
+    if (
+      isCompanionSettle(settle) &&
+      isCompanionSettle(fromSettle) &&
+      isCompanionSettle(restingSettle)
+    ) {
+      cancelSettleFrame();
+      const reanchorTarget = getAnchorOffset(settle);
+      setIsAnimating(true); // suppress the CSS transform-transition for the snap
+      setDragOffset(reanchorTarget);
+      setRestOffset(reanchorTarget);
+      setScale(restScaleForSettle(settle));
+      restingSettle = settle;
+      setIsSettlingIntoRole(false); // snapped, not gliding — grabbable at once
+      requestAnimationFrame(() => setIsAnimating(false));
+      return;
+    }
+
     // Take-off point: when the disc was RESTING on a settle, its offset may be
     // silently stale (a reflow since it landed moved the in-flow base the
     // offset is relative to — e.g. the async question content mounting), so

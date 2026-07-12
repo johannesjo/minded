@@ -193,6 +193,24 @@
   }
 }
 
+// Invisible, inert, zero-size measurement probe pinned to the companion anchor.
+// reanchorCompanion (RouteCmp.tsx) reads its resolved `bottom` px back so the
+// disc lands on the exact px the bottom-bar icons do — the SCSS var stays the
+// single source of truth. Permanent (unlike .companionTapTarget, which only
+// mounts while resting), so a resize during an interaction is never missed.
+.companionAnchorProbe {
+  position: fixed;
+  bottom: var(--companion-bar-center-y);
+  left: 50vw;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
 // Sits exactly on the companion's bottom-bar anchor (the disc settles to the
 // same spot) and opens the question flow on tap. Only present while resting.
 .companionTapTarget {
