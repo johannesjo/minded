@@ -220,11 +220,17 @@
     // is one tile among many and keeps the smaller, peer-level sizing. Global
     // classes, so `:global()`; specificity (0,3,0) clears the base typo rules
     // (incl. dashboardHeading's non-mobile --fz-m bump at (0,1,0)).
+    //
+    // Heading and content both step to --fz-l: the heading trails the enlarged
+    // content if left a token behind, and the base already sizes them equally
+    // on desktop (both --fz-m). Their light weight (300) and muted color keep
+    // the heading a quiet label above the content, not a competing title — the
+    // hierarchy is carried by weight/color here, not size.
     :global(.dashboardContent) {
       font-size: var(--fz-l);
     }
     :global(.dashboardHeading) {
-      font-size: var(--fz-m);
+      font-size: var(--fz-l);
     }
   }
 }
