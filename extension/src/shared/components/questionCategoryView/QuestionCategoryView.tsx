@@ -60,6 +60,9 @@ export const QuestionCategoryView: (props: {
     });
   });
 
+  // The in-flight delete write, so undo can sequence behind it (below).
+  let pendingRemove: Promise<boolean> = Promise.resolve(true);
+
   const removeAnswerI = (answerId: string) => {
     const removed = getAnswersForCategory().find(
       (a: Answer) => a.id === answerId,
@@ -68,7 +71,10 @@ export const QuestionCategoryView: (props: {
       getAnswersForCategory().filter((a: Answer) => a.id !== answerId),
     );
     setRemovedAnswer(removed ?? null);
-    removeAnswer(answerId);
+    pendingRemove = removeAnswer(answerId).then(
+      () => true,
+      () => false,
+    );
   };
 
   const undoRemove = () => {
@@ -78,7 +84,13 @@ export const QuestionCategoryView: (props: {
     setAnswersForCategory(
       [...getAnswersForCategory(), removed].sort((a, b) => b.ts - a.ts),
     );
-    saveAnswer(removed);
+    // saveAnswer is a plain append, so the re-append must land strictly after
+    // the delete's write — unsequenced, an interleaving could duplicate the
+    // answer or silently drop the restore. And if the delete itself failed,
+    // the answer never left storage, so appending again would duplicate it.
+    pendingRemove.then((didRemove) => {
+      if (didRemove) saveAnswer(removed);
+    });
   };
 
   const editAnswer = (answerToUpdate: Answer) => {

@@ -7,7 +7,9 @@ import styles from "./SettingsAndroidRoute.module.scss";
 
 export const SettingsAndroidRoute = () => {
   return (
-    <div class="pageTransitionIn">
+    <div
+      class={`pageTransitionIn pageWrapper ${styles.SettingsAndroidRoute}`}
+    >
       <h2 class="h2">Settings</h2>
 
       <SettingsAndroid autoSave={true} />
