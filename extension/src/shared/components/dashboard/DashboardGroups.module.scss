@@ -243,9 +243,17 @@
   // so the card stays the focus and the invitation reads as secondary. Sized at
   // --fz-s (below the card's --fz-m content) so the serif display face doesn't
   // loom over the card text. The design system has no small text-button variant,
-  // so this one quiet control sets its own size — selector raised over the
-  // global .btnTxt to win the cascade.
-  &:global(.btnTxt) {
+  // so this one quiet control sets its own size.
+  //
+  // The base button size arrives via `#minded-6622 .btnTxt` (btn.scss scopes it
+  // under the app-root id) — an ID selector, so a bare `.revealBtn.btnTxt`
+  // override loses the cascade and the button kept the full 44px / --btn-fz
+  // size on Android, iOS and the extension alike. Re-scope this override under
+  // the same root id so it outranks that base rule everywhere, mirroring the
+  // `:global(#minded-6622)` + raw-id pair used by the shared mixins (util.scss).
+  &:global(.btnTxt),
+  :global(#minded-6622) &:global(.btnTxt),
+  #minded-6622 &:global(.btnTxt) {
     height: 36px;
     line-height: 36px;
     font-size: var(--fz-s);
