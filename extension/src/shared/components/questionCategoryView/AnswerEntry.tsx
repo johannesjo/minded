@@ -126,6 +126,10 @@ export const AnswerEntry: (props: {
             maxlength={500}
           />
 
+          {/* Deliberately an empty onClick: tapping this button blurs the
+              input, and the input's own onblur is the single commit path — a
+              second commit here would race it. The button exists as the
+              visible "done" affordance and hit target for that blur. */}
           <Btn
             variant="icon"
             small

@@ -1,6 +1,10 @@
 @import "@src/styles/mixins/mixins";
 
 .rating {
+  // Shrink-wrap to the row of dots so the box follows the surrounding
+  // text-align (centered on app surfaces) and the anchors row below can
+  // simply span it — no width math that could drift from the button sizes.
+  display: inline-block;
   white-space: nowrap;
 
   &.showOnly {
@@ -62,5 +66,19 @@
     &.isFull {
       opacity: var(--rating-active-opacity);
     }
+  }
+
+  // Quiet end labels beneath the dots (same treatment as the urge-surfing
+  // scale's "barely"/"intense"): direction, not chrome. A block child of the
+  // shrink-wrapped .rating, so it spans exactly the dots' row and the labels
+  // sit under the outermost dots in any container.
+  .ratingAnchors {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    box-sizing: border-box;
+    padding: 0 var(--space-xs);
+    font-size: var(--fz-s);
+    opacity: 0.6;
   }
 }

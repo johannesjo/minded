@@ -55,6 +55,12 @@ body {
     inset: 0;
     z-index: -1;
     background: var(--background-gradient);
+    // The composite sky contains image layers with intrinsic size (the cirrus
+    // veil / night stars SVGs): cover them like coloured-wrapper.scss does, or
+    // they render 1:1 top-left and tile on large viewports.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     pointer-events: none;
   }
 }
@@ -99,6 +105,10 @@ textarea {
     right: 0;
     bottom: 0;
     background: var(--background-gradient);
+    // Cover the composite's image layers — see the sky-floor ::before above.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     z-index: -2;
     pointer-events: none;
   }

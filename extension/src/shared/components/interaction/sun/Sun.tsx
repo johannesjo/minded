@@ -1379,9 +1379,10 @@ export const Sun: Component<SunProps> = (props) => {
   };
   // Hover lift + halo for the resting companion, echoing the bottom-bar buttons'
   // hover feedback. The lift is slight; the glow reuses the drag box-shadow (see
-  // the inline --glow-intensity), pushed past its 0..1 drag range so the inner
-  // layer (15px·i blur @ 0.5·i alpha) reaches ~the app's strong --btn-box-shadow
-  // glow (0 0 30px rgba(255,255,255,0.9)) — i.e. as bold as a button's hover.
+  // the inline --glow-intensity), pushed past its 0..1 drag range to a bold,
+  // unmistakable halo. Deliberately brighter than a button's hover bloom
+  // (--btn-box-shadow sits at a calmer 0.55 alpha): the sun is the one hero
+  // object, so its response leads.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
   // The sun carries a warm halo at all times — the disc's box-shadow glow — so the

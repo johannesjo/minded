@@ -20,7 +20,7 @@ export const EnergyLvlInteraction: (props: {
       <div class="txtBig" style="padding-bottom:32px;">
         How would you rate your energy level today?
       </div>
-      <Rating onSetRating={onRatingSelect} />
+      <Rating onSetRating={onRatingSelect} anchors={["low", "high"]} />
     </div>
   );
 };

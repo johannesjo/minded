@@ -8,11 +8,30 @@
   transition: none; // We handle transitions manually for smooth drag
   pointer-events: none; // Allow clicks to pass through to interactive elements
 
+  // Fallbacks mirror the real token values in _variables.scss (the 9:00
+  // morning-sky keyframe / drag-target colors) so a var-resolution failure
+  // still shows the brand sky, not a stale palette.
   &.background-default {
     background: var(
       --background-gradient,
-      linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
+      linear-gradient(
+        to bottom,
+        #cfe4f5 0%,
+        #cfe4f5 18%,
+        #d8ecd6 36%,
+        #f5efc8 54%,
+        #f6dcd2 100%
+      )
     );
+    // The composite sky contains image layers with intrinsic size (the cirrus
+    // veil / night stars SVGs). Size them exactly like the coloured wrapper
+    // beneath (coloured-wrapper.scss), or the SVG renders 1:1 top-left and
+    // tiles on large viewports — and sits at a different crop than the
+    // dashboard sky it must hand off to seamlessly. Re-declared per rule
+    // because the `background:` shorthand above resets the longhands.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   // The sun glow now rides the disc's own box-shadow (Sun.scss `.minded-sun`),
@@ -22,8 +41,19 @@
   &.sun-gradient-attached {
     background: var(
       --background-gradient,
-      linear-gradient(175deg, #ccf1f6, #ffebf6, #f4f3b5)
+      linear-gradient(
+        to bottom,
+        #cfe4f5 0%,
+        #cfe4f5 18%,
+        #d8ecd6 36%,
+        #f5efc8 54%,
+        #f6dcd2 100%
+      )
     );
+    // Same composite-layer sizing as .background-default above.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 
   &.background-overlay {
@@ -35,8 +65,8 @@
   &.background-blue {
     background: linear-gradient(
       to bottom,
-      var(--bg-transition-bluesky-top, #3e88dd),
-      var(--bg-transition-bluesky-bottom, #66c5e4)
+      var(--bg-transition-bluesky-top, #0058c1),
+      var(--bg-transition-bluesky-bottom, #0a75bc)
     );
   }
 
@@ -85,6 +115,11 @@
 .minded-6622-dark
   .background-transition.background-default.sun-gradient-attached {
   background: var(--background-gradient);
+  // The shorthand resets the longhands again — keep the night composite's
+  // star SVG covered like the light rules above.
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   will-change: auto;
 }
 

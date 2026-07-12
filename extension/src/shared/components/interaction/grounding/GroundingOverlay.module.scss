@@ -17,6 +17,13 @@
   // settles onto. The down-drag's warm sky rides in on top of it (the ::before
   // below) and then dissolves away, leaving this.
   background: var(--background-gradient);
+  // The composite sky contains image layers with intrinsic size (the cirrus
+  // veil / night stars SVGs): size them exactly like the dashboard wrapper
+  // (coloured-wrapper.scss), or the SVG tiles on large viewports and sits at
+  // a different crop than the sky this stage must settle onto seamlessly.
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   animation: groundingIn var(--grounding-fade-ms, 600ms) var(--ease-out)
     forwards;
 

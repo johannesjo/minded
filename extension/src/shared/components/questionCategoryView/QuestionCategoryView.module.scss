@@ -13,6 +13,39 @@
   margin-bottom: 64px;
 }
 
+// The quiet "Answer removed. Undo" line beneath the list — the same soft
+// safety net (and the same look) as the website list's removal status.
+.removedStatus {
+  align-items: center;
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  min-height: 24px;
+  margin-top: var(--space-md);
+  opacity: 0.75;
+  text-align: center;
+  font-size: var(--fz-s);
+}
+
+.undoButton {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--c-fg-full-emphasis);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 2px 4px;
+  text-decoration: underline;
+
+  // Keyboard focus ring — same treatment as links (_sharedAll.scss).
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+    border-radius: var(--radius-xs);
+  }
+}
+
 .categoryTitle {
   // Breathing room above the title so the sub-page heading isn't crammed
   // against the top edge.

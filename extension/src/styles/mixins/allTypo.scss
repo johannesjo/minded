@@ -25,7 +25,7 @@
 @mixin allTypo() {
   .h2 {
     // 300, not 200: ultra-light hairlines get brittle on some Android subpixel
-    // rendering. (.dashboardHeading stays 200 — the dashboard's ambient signature.)
+    // rendering.
     font-weight: 300;
     margin-bottom: 8px;
     font-size: var(--fz-xxl);
@@ -92,7 +92,11 @@
   }
 
   .dashboardHeading {
-    font-weight: 200;
+    // 300, matching .h2's floor: at --fz-s over the pastel sky, weight 200
+    // drops below comfortable legibility (and hairlines get brittle on some
+    // Android subpixel rendering). Still the dashboard's quiet whisper —
+    // the muted color carries that, not a hairline stroke.
+    font-weight: 300;
     margin-bottom: 8px;
     font-size: var(--fz-s);
     user-select: none;

@@ -21,33 +21,19 @@ const Options = () => {
           <WebsiteList showSaveButton={false} />
         </section>
 
+        {/* No section intros here: these components carry their own heading
+            and a state-aware description, so a wrapper heading would just say
+            everything twice ("Grace Period" / "Grace Period"). Only the
+            website list above needs the section to speak for it. */}
         <section class={styles.section}>
-          <div class={styles.sectionIntro}>
-            <h3 class="h3">Sound</h3>
-            <p>Control whether interventions can play gentle audio cues.</p>
-          </div>
           <SoundSettings />
         </section>
 
         <section class={styles.section}>
-          <div class={styles.sectionIntro}>
-            <h3 class="h3">Grace Period</h3>
-            <p>
-              Skip the intervention for the first few minutes of each fresh
-              session.
-            </p>
-          </div>
           <SessionGraceSettings />
         </section>
 
         <section class={styles.section}>
-          <div class={styles.sectionIntro}>
-            <h3 class="h3">Active Hours</h3>
-            <p>
-              Choose the parts of the week where minded appears — the times it
-              helps most.
-            </p>
-          </div>
           <FocusSchedule />
         </section>
       </div>

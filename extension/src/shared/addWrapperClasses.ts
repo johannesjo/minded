@@ -1,8 +1,10 @@
 import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
 import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/commonSyncDataInterface";
 import {
+  ambientSkyAccentsAt,
   ambientSkyColorsAt,
   duskTargetGradientAt,
+  hexToRgbChannels,
   NIGHT_END_HOUR,
   NIGHT_START_HOUR,
   parseSkyHourParam,
@@ -110,6 +112,8 @@ const SKY_VAR_NAMES = [
   "--c-gradient-2",
   "--c-gradient-3",
   "--c-gradient-4",
+  "--day-zenith-rgb",
+  "--day-horizon-glow-rgb",
   "--background-sunset-gradient",
   "--bg-transition-bluesky-top",
   "--bg-transition-bluesky-bottom",
@@ -138,6 +142,12 @@ export const applySkyAtHour = (
   ambient.forEach((color, i) => {
     el.style.setProperty(`--c-gradient-${i + 1}`, color);
   });
+  const accents = ambientSkyAccentsAt(hour);
+  el.style.setProperty("--day-zenith-rgb", hexToRgbChannels(accents.zenith));
+  el.style.setProperty(
+    "--day-horizon-glow-rgb",
+    hexToRgbChannels(accents.horizonGlow),
+  );
   el.style.setProperty(
     "--background-sunset-gradient",
     duskTargetGradientAt(hour),
