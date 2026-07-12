@@ -10,12 +10,13 @@ extension data layer, and the iOS widget.
 
 Fixed alongside this doc: T1 (practice completions no longer feed friction),
 T2 (baseline comparison removed end-to-end), T4 (screen-off countdown copy),
-the settings wall-vocabulary half of T3, G1's silent answer-loss path (now
-honest + tested), G2 (stale docs corrected — CI does wire the widget), the
-quote pool (P1), and the P2 comment/dead-code drift. Filed as issues: the
-fresh-detection shield morph (T3's native half), the read-modify-write races,
-the untested I/O path, the focus-hours boundary gap, and the throttle-field
-reuse.
+the settings wall-vocabulary half of T3 (also resolves #185, part of #165 and
+#161), G1's silent answer-loss path (now honest + tested — resolves #153),
+G2 (stale docs corrected — CI does wire the widget), the quote pool
+(P1 — resolves #166), and the P2 comment/dead-code drift. Tracked as issues:
+the read-modify-write races (#209), the active-hours boundary gap (#210), the
+throttle-field reuse (#211); the fresh-detection shield morph and the
+untested native path were already tracked (#118, #160, #151, #71).
 
 ## Verdict in one paragraph
 
