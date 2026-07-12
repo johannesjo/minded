@@ -31,8 +31,10 @@ import {
 import {
   getSyncData,
   IS_ANDROID,
+  markBedtimeSettled,
   markInteractionModeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
@@ -185,11 +187,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // post-tap hand-off waits this long so the choices fade in only after it.
   const QUESTION_FADE_OUT_MS = 400;
   const ARM_WINDOW_MS = ANIMATION_TIMING.delay.armWindow;
+  // How long the wordless "Sleep well" beat rests on screen after the bedtime
+  // settle's drag-down, before the phone actually closes/locks — long enough to
+  // read as a soft goodnight, never a hard cut to the OS lock screen.
+  const GOODNIGHT_MS = 1100;
 
   // Data state
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getSyncDataI, setSyncDataI] = createSignal<SyncData>();
   const [getMode, setMode] = createSignal<InteractionMode | undefined>();
+  // The bedtime settle's drag-down has landed: show the "Sleep well" beat, then
+  // let the phone go dark.
+  const [getIsBedtimeGoodnight, setIsBedtimeGoodnight] = createSignal(false);
   const [getFrictionLevel, setFrictionLevel] =
     createSignal<FrictionLevel>("normal");
   const [getInitialQuestion, setInitialQuestion] = createSignal<
@@ -506,6 +515,19 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       return;
     }
     close();
+  };
+
+  // The bedtime settle's deliberate drag-down (never a fling): rest a wordless
+  // "Sleep well" beat on screen, then run the real close — on Android that
+  // closes the app and locks the screen, so the phone eases into the dark
+  // rather than snapping to the OS lock. A fling still takes the plain skip
+  // path (runTerminalOutcome → onFlingAway) with no goodnight and no lock.
+  const settleForBedtime = (close: () => void) => {
+    setIsBedtimeGoodnight(true);
+    window.setTimeout(() => {
+      if (isDisposed) return;
+      close();
+    }, GOODNIGHT_MS);
   };
 
   // Close a dashboard offer (grounding / let-go) and fade home. Nothing is
@@ -1095,7 +1117,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     const unregister = registerSunInteraction({
       onSkip: handleSunContinue,
       onFlingAway: () => runTerminalOutcome(props.onFlingAway),
-      onDragComplete: () => runTerminalOutcome(props.onDragComplete),
+      onDragComplete: () =>
+        getMode() === "WIND_DOWN_SETTLE"
+          ? settleForBedtime(props.onDragComplete)
+          : runTerminalOutcome(props.onDragComplete),
       onStartBackgroundAnimation: handleStartBackgroundAnimation,
       onFlungOffscreen: () => {
         // The let-go fling has carried the sun off the top; reveal the question
@@ -1277,6 +1302,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             (error: unknown) =>
               console.error("Failed to record interaction mode", error),
           );
+          // Arm the once-per-night guard the moment the settle is shown, so a
+          // fast re-open the same night falls through to the ordinary cascade
+          // instead of a second settle. Uses the same night id the engine
+          // compared against; fire-and-forget so it never delays the pause.
+          if (modeDecision.mode === "WIND_DOWN_SETTLE") {
+            const bedtimeCfg = syncData.cfg.sleepWindDown;
+            const nightId = bedtimeCfg
+              ? resolveNightId(bedtimeCfg, new Date())
+              : null;
+            if (nightId) {
+              void markBedtimeSettled(nightId).catch((error: unknown) =>
+                console.error("Failed to record bedtime settle", error),
+              );
+            }
+          }
         }
 
         contentReadyTimeout = window.setTimeout(() => {
@@ -1566,6 +1606,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             forcedNoticeCue={getForcedNoticeCue()}
             forcedAdvice={getForcedAdvice()}
             isEveningAdvice={getIsEveningAdvice()}
+            isBedtimeGoodnight={getIsBedtimeGoodnight()}
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
@@ -1696,7 +1737,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               variant={getDragObjectName()}
               onSkip={handleSunContinue}
               onFlingAway={() => runTerminalOutcome(props.onFlingAway)}
-              onDragComplete={() => runTerminalOutcome(props.onDragComplete)}
+              onDragComplete={() =>
+                getMode() === "WIND_DOWN_SETTLE"
+                  ? settleForBedtime(props.onDragComplete)
+                  : runTerminalOutcome(props.onDragComplete)
+              }
               onStartBackgroundAnimation={handleStartBackgroundAnimation}
               onFlungOffscreen={() => {
                 if (props.isFromDashboard && lastCompletionDirection === "up") {
@@ -1709,7 +1754,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
-              isTapEnabled={!props.isFromDashboard}
+              // The bedtime settle has no "continue into a session" — a tap must
+              // never open the intent/time grant flow at bedtime — so only the
+              // drag-down (settle) and fling (skip) are live for it.
+              isTapEnabled={
+                !props.isFromDashboard && getMode() !== "WIND_DOWN_SETTLE"
+              }
               settle={getSunSettle()}
               onBreathStart={setBreathStartedAt}
             />

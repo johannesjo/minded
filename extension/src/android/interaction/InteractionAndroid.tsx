@@ -23,6 +23,10 @@ const InteractionAndroid = () => {
     ? QUESTIONS.find((q) => q.id === questionId) || null
     : null;
   let wrapperEl: HTMLDivElement = undefined!;
+  // The wind-down settle closes into the dark: dragging the moon down closes the
+  // blocked app AND locks the screen. A plain fling (skip) just closes it.
+  // Tracked from onModeSet so onDragComplete knows whether to lock.
+  let isBedtimeSettle = false;
 
   // On a reverse morph, tell the native side once our sun has painted at the
   // corner, so it can cross-fade out the placeholder disc it holds there during
@@ -78,6 +82,7 @@ const InteractionAndroid = () => {
           if (mode !== "QUESTION") {
             androidInterface.unsetQuestion();
           }
+          isBedtimeSettle = mode === "WIND_DOWN_SETTLE";
         }}
         questionForPrompt={question || undefined}
         morphInFromCorner={morphInFromCorner}
@@ -90,7 +95,14 @@ const InteractionAndroid = () => {
         onSkip={onSkip}
         onUpdateQuestion={onUpdateQuestion}
         onFlingAway={() => androidInterface.closeCurrentApp()}
-        onDragComplete={() => androidInterface.closeCurrentApp()}
+        onDragComplete={() => {
+          androidInterface.closeCurrentApp();
+          // Bedtime settle only: ease the phone into the dark. Other modes'
+          // drag-down is a plain close (fling and drag are equivalent there).
+          if (isBedtimeSettle) {
+            androidInterface.lockScreen();
+          }
+        }}
         onSetSessionLimit={onSetSessionLimit}
       />
     </div>
