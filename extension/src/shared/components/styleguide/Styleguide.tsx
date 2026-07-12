@@ -436,6 +436,13 @@ const Styleguide = (): JSX.Element => {
             <Rating onSetRating={(v) => console.log("rating:", v)} />
           </div>
           <div>
+            <span class={styles.muted}>with anchors (energy check-in): </span>
+            <Rating
+              onSetRating={(v) => console.log("rating:", v)}
+              anchors={["low", "high"]}
+            />
+          </div>
+          <div>
             <span class={styles.muted}>show only (value=3): </span>
             <Rating value={3} isShowOnly />
           </div>

@@ -1,4 +1,4 @@
-import { createSignal, JSX, onMount } from "solid-js";
+import { createSignal, JSX, onMount, Show } from "solid-js";
 import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
@@ -12,6 +12,7 @@ import {
   updateAnswer,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { Answer } from "@src/dataInterface/syncData";
+import { Navigate } from "@solidjs/router";
 import { Location, Params } from "@solidjs/router/dist/types";
 import { QUESTION_CATEGORY_ADDITIONAL_INFO } from "@src/shared/data/questionCategoryAdditional.const";
 
@@ -25,11 +26,19 @@ export const QuestionCategoryView: (props: {
   const [getAnswersForCategory, setAnswersForCategory] = createSignal<Answer[]>(
     [],
   );
+  // The just-removed answer, kept so an accidental delete can be undone in
+  // place (same quiet safety net as the website list's "Undo").
+  const [getRemovedAnswer, setRemovedAnswer] = createSignal<Answer | null>(
+    null,
+  );
   const questionCategoryId = props.params
     .questionCategoryId as QuestionCategoryId;
 
   if (!Object.values(QuestionCategoryId).includes(questionCategoryId)) {
     console.error("illegal route param");
+    // A stale or mistyped hash shouldn't render into a broken category view —
+    // land on the dashboard instead.
+    return <Navigate href="/" />;
   }
 
   const QUESTION_CATEGORY = QUESTION_CATEGORIES[questionCategoryId];
@@ -51,11 +60,37 @@ export const QuestionCategoryView: (props: {
     });
   });
 
+  // The in-flight delete write, so undo can sequence behind it (below).
+  let pendingRemove: Promise<boolean> = Promise.resolve(true);
+
   const removeAnswerI = (answerId: string) => {
+    const removed = getAnswersForCategory().find(
+      (a: Answer) => a.id === answerId,
+    );
     setAnswersForCategory(
       getAnswersForCategory().filter((a: Answer) => a.id !== answerId),
     );
-    removeAnswer(answerId);
+    setRemovedAnswer(removed ?? null);
+    pendingRemove = removeAnswer(answerId).then(
+      () => true,
+      () => false,
+    );
+  };
+
+  const undoRemove = () => {
+    const removed = getRemovedAnswer();
+    if (!removed) return;
+    setRemovedAnswer(null);
+    setAnswersForCategory(
+      [...getAnswersForCategory(), removed].sort((a, b) => b.ts - a.ts),
+    );
+    // saveAnswer is a plain append, so the re-append must land strictly after
+    // the delete's write — unsequenced, an interleaving could duplicate the
+    // answer or silently drop the restore. And if the delete itself failed,
+    // the answer never left storage, so appending again would duplicate it.
+    pendingRemove.then((didRemove) => {
+      if (didRemove) saveAnswer(removed);
+    });
   };
 
   const editAnswer = (answerToUpdate: Answer) => {
@@ -106,6 +141,19 @@ export const QuestionCategoryView: (props: {
             onRemove={removeAnswerI}
             onAdd={addAnswerI}
           />
+
+          <Show when={getRemovedAnswer()}>
+            <div class={styles.removedStatus} aria-live="polite">
+              <span>Answer removed.</span>
+              <button
+                type="button"
+                class={styles.undoButton}
+                onClick={undoRemove}
+              >
+                Undo
+              </button>
+            </div>
+          </Show>
         </div>
       )}
 

@@ -11,7 +11,10 @@ type FadeOut = (
 
 export const createSleepWindDownDismissTransition = (opts: {
   getWrapperEl: () => HTMLElement | undefined;
-  onDismiss: (reason: SleepWindDownDismissReason, snoozeMinutes?: number) => void;
+  onDismiss: (
+    reason: SleepWindDownDismissReason,
+    snoozeMinutes?: number,
+  ) => void;
   fade?: FadeOut;
   duration?: number;
 }): ((

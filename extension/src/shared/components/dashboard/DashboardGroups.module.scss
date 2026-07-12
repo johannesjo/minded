@@ -100,7 +100,7 @@
   min-width: 0;
 
   &:global(.card) {
-    padding: 8px 6px;
+    padding: var(--space-sm) var(--space-xs);
   }
 
   // center logic — widget cards (mood, energy, quote…) centre their
@@ -177,7 +177,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
   button {
-    margin: 0 6px;
+    margin: 0 var(--space-xs);
     white-space: nowrap;
   }
 }
@@ -194,7 +194,7 @@
   justify-content: center;
   // Roomy breathing space between the greeting card and the reveal affordance,
   // so the invitation sits clearly apart from the card rather than crowding it.
-  gap: 36px;
+  gap: var(--space-xl);
   box-sizing: border-box;
   overflow-y: auto;
 

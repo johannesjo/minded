@@ -260,7 +260,7 @@ const DraggableSunShot = (props: { theme: ScreenshotTheme }) => {
       <div class={styles.draggableSunContent}>
         <div class="sun-instructions txtSmaller">
           <p class="sun-instructions-line is-visible">
-            Drag the {dragObjectName} down to let go.
+            Drag the {dragObjectName} down — or fling it away — to let go.
           </p>
           <p class="sun-instructions-line is-visible">
             Tap the {dragObjectName} 3 times to continue.
