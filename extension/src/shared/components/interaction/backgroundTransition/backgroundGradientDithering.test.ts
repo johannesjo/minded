@@ -34,15 +34,41 @@ const compileBackgroundTransition = (): string =>
   );
 
 describe("full-screen gradient dithering", () => {
-  it("uses the dark grain treatment when dark mode is inherited from the app root", () => {
-    const css = compileGrainMixin();
+  // The dither only works because the noise tile is mid-grey (RGB carries the
+  // noise) blended with soft-light. A pure-black tile — the old form — makes
+  // `screen` a no-op and `overlay` near-useless, so the sky bands into visible
+  // horizontal stripes. Pin the shape of the fix so that regression can't
+  // silently return.
+  const variablesScss = readFileSync(
+    resolve(SRC_DIR, "styles/_variables.scss"),
+    "utf8",
+  );
 
-    expect(css).toMatch(
-      /#minded-6622\.minded-6622-dark #minded-6622-coloured-wrapper::after\s*\{[^}]*opacity:\s*0\.09;[^}]*mix-blend-mode:\s*screen;/,
-    );
+  it("uses a mid-grey noise tile, not a pure-black one", () => {
+    // Grey form copies the noise into R/G/B and forces alpha to 1
+    // (feColorMatrix rows "0 0 0 1 0" ... alpha "0 0 0 0 1").
+    expect(variablesScss).toContain("0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1");
+    // The old black form zeroed RGB and only varied alpha — must be gone.
+    expect(variablesScss).not.toContain("0 0 0 0 0.55 0");
   });
 
-  it("renders one grain layer above every background-transition sky", () => {
+  it("dithers the resting sky with soft-light in both themes", () => {
+    const css = compileGrainMixin();
+
+    // Light (default) grain layer.
+    expect(css).toMatch(
+      /#minded-6622-coloured-wrapper::after\s*\{[^}]*opacity:\s*0\.55;[^}]*mix-blend-mode:\s*soft-light;[^}]*background-image:\s*var\(--grain-tile\);/,
+    );
+    // Dark inherits the same soft-light blend, only a gentler opacity — never
+    // `screen` (which over black does nothing).
+    expect(css).toMatch(
+      /#minded-6622\.minded-6622-dark #minded-6622-coloured-wrapper::after\s*\{[^}]*opacity:\s*0\.11;/,
+    );
+    expect(css).not.toContain("mix-blend-mode: screen");
+    expect(css).not.toContain("mix-blend-mode: overlay");
+  });
+
+  it("renders one soft-light grain layer above every background-transition sky", () => {
     const css = compileBackgroundTransition();
     const component = readFileSync(
       resolve(__dirname, "BackgroundTransition.tsx"),
@@ -53,10 +79,10 @@ describe("full-screen gradient dithering", () => {
       'class="background-transition-grain" aria-hidden="true"',
     );
     expect(css).toMatch(
-      /\.background-transition-grain\s*\{[^}]*z-index:\s*2;[^}]*background-image:\s*var\(--grain-tile\);/,
+      /\.background-transition-grain\s*\{[^}]*z-index:\s*2;[^}]*opacity:\s*0\.55;[^}]*mix-blend-mode:\s*soft-light;[^}]*background-image:\s*var\(--grain-tile\);/,
     );
     expect(css).toMatch(
-      /#minded-6622\.minded-6622-dark \.background-transition-grain\s*\{[^}]*opacity:\s*0\.09;[^}]*mix-blend-mode:\s*screen;/,
+      /#minded-6622\.minded-6622-dark \.background-transition-grain\s*\{[^}]*opacity:\s*0\.11;/,
     );
   });
 });
