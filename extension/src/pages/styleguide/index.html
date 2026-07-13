@@ -112,20 +112,22 @@
       @media (prefers-reduced-motion: reduce) {
         #minded-6622.minded-6622-dark::before { animation: none; }
       }
+      /* Mirrors the grainOverlay mixin (styles/mixins/_grain.scss): a
+         soft-light dither over the mid-grey --grain-tile so the preview sky
+         doesn't band, matching what the real app's coloured-wrapper ships. */
       #minded-6622::after {
         content: "";
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: -1;
-        opacity: 0.06;
-        mix-blend-mode: overlay;
+        opacity: 0.55;
+        mix-blend-mode: soft-light;
         background-image: var(--grain-tile);
         background-size: 180px 180px;
       }
       #minded-6622.minded-6622-dark::after {
-        opacity: 0.09;
-        mix-blend-mode: screen;
+        opacity: 0.11;
       }
     </style>
   </head>
