@@ -1,8 +1,14 @@
+@import "../../../styles/variablesSCSS";
+
 .styleguide {
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
   color: var(--c-fg);
+
+  @media (max-width: $bpMobileMax) {
+    padding: 16px;
+  }
 }
 
 .header {
@@ -14,6 +20,11 @@
   margin: -24px -24px 24px;
   padding: 16px 24px;
   border-radius: 0 0 16px 16px;
+
+  @media (max-width: $bpMobileMax) {
+    margin: -16px -16px 24px;
+    padding: 12px 16px;
+  }
 }
 
 .headerTop {
@@ -27,6 +38,13 @@
     font-size: var(--fz-xl);
     margin: 0;
   }
+
+  @media (max-width: $bpMobileMax) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+    margin-bottom: 8px;
+  }
 }
 
 .headerActions {
@@ -34,12 +52,55 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+
+  @media (max-width: $bpMobileMax) {
+    // Let the two buttons participate in .headerTop's grid: the theme toggle
+    // shares the title row, while the longer dashboard link gets a calm,
+    // full-width row of its own instead of wrapping inside its fixed height.
+    display: contents;
+
+    > :global(.btnTxt) {
+      white-space: nowrap;
+    }
+
+    > :first-child {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      width: 100%;
+    }
+
+    > :last-child {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
 }
 
 .toc {
   display: flex;
   flex-wrap: wrap;
   margin: -4px;
+
+  @media (max-width: $bpMobileMax) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    margin: 0 -16px;
+    padding: 0 16px 4px;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    > * {
+      flex: 0 0 auto;
+      // Btn disables browser gestures by default for app interactions; opt the
+      // TOC chips back into horizontal panning inside this scroll container.
+      touch-action: pan-x;
+    }
+  }
 }
 
 .section {
@@ -69,6 +130,21 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+}
+
+.inputPreview {
+  width: 100%;
+  max-width: 480px;
+  min-width: 0;
+}
+
+.stepperPreview {
+  width: 100%;
+  max-width: 336px;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
 }
 
 .swatchGrid {

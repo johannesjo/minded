@@ -204,9 +204,17 @@ const Styleguide = (): JSX.Element => {
   });
 
   const scrollTo = (id: string) => {
-    document
-      .getElementById(`sg-${id}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const section = document.getElementById(`sg-${id}`);
+    if (!section) return;
+
+    const headerHeight =
+      document.querySelector(`.${styles.header}`)?.getBoundingClientRect()
+        .height ?? 0;
+    const sectionTop = window.scrollY + section.getBoundingClientRect().top;
+    window.scrollTo({
+      top: Math.max(0, sectionTop - headerHeight - 16),
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -413,7 +421,7 @@ const Styleguide = (): JSX.Element => {
         </Subsection>
 
         <Subsection label="<InputWithSend>">
-          <div style={{ "max-width": "480px" }}>
+          <div class={styles.inputPreview}>
             <InputWithSend
               value=""
               onSubmit={(val) => {
@@ -486,11 +494,13 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="indicators" title="Indicators & feedback">
         <Subsection label="<Stepper>">
-          <Stepper
-            nrOfSteps={4}
-            activeStep={stepperStep()}
-            onSetStep={setStepperStep}
-          />
+          <div class={styles.stepperPreview}>
+            <Stepper
+              nrOfSteps={4}
+              activeStep={stepperStep()}
+              onSetStep={setStepperStep}
+            />
+          </div>
           <div>
             <Btn onClick={() => setStepperStep((s) => Math.max(0, s - 1))}>
               prev
