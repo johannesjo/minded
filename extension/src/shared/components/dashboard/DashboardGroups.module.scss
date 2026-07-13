@@ -159,6 +159,20 @@
   :global(.dashboardHeading) {
     font-size: var(--fz-l);
   }
+
+  // …except the category label above a reflection: it's a *category*, not a
+  // heading, so it stays at its resting size while the user's words grow. Only
+  // the reflection is meant to enlarge; letting the quiet category grow with it
+  // makes the label compete with the words it's labelling. Its combined
+  // (.dashboardHeading.categoryTitle) selector outranks the rule above, so
+  // restate the base responsive sizes rather than inheriting the --fz-l.
+  :global(.dashboardHeading.categoryTitle) {
+    font-size: var(--fz-s);
+
+    @include onNonMobileScreens {
+      font-size: var(--fz-m);
+    }
+  }
 }
 
 .energyLvl {
