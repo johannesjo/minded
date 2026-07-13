@@ -54,9 +54,12 @@
   // old pure-black-with-varying-alpha tile: a black tile only ever darkens, so
   // `overlay` barely moved a light sky (~0.04 levels) and `screen` over black
   // is a literal no-op (screen(x,0) = x) — i.e. the previous dither did nothing
-  // and the bands survived. A grey tile centred on 0.5 lets `soft-light` perturb
-  // symmetrically (both lighter and darker), which is what actually dithers a
-  // band edge. See _grain.scss for the blend/opacity and the reasoning.
+  // and the bands survived. A near-mid-grey tile lets `soft-light` perturb
+  // roughly symmetrically (both lighter and darker), which is what actually
+  // dithers a band edge. (The SVG filter runs in linearRGB, so the noise's mean
+  // lands a touch above sRGB 0.5 — measured as a small ~1–3 level lightening /
+  // faint desaturation of the sky, well below the banding it removes, not a
+  // true zero.) See _grain.scss for the blend/opacity and the reasoning.
   --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 
   // Two voices. --font-display (Newsreader serif) is the *mindful voice*: used

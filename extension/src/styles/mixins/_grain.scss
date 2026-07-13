@@ -3,15 +3,15 @@
 // element. z-index: -1 sits behind in-flow content so blend-mode dithering
 // doesn't reach the text, only the gradient behind it.
 //
-// `soft-light` with the mid-grey noise tile (see --grain-tile) is what makes
-// this actually dither: it's symmetric around 0.5 (grey = identity, so no wash;
-// deviations lighten/darken), so a 1-level gradient band edge gets ~1.4 levels
-// of noise spread across it and can no longer be seen as a horizontal stripe.
-// The earlier overlay/screen + black-noise pairing measured ~0 dithering (see
-// _variables.scss) which is why the bands came back. Opacity is tuned per
-// theme because soft-light amplifies far more over a dark backdrop than a light
-// one — matched here so both land near ~1 level of grain, imperceptible as
-// texture but enough to break the band.
+// `soft-light` with the near-mid-grey noise tile (see --grain-tile) is what
+// makes this actually dither: grey is close to a blend no-op, and deviations
+// lighten/darken, so a 1-level gradient band edge gets ~1 level of noise spread
+// across it and can no longer be seen as a horizontal stripe. The earlier
+// overlay/screen + black-noise pairing measured ~0 dithering (see
+// _variables.scss) which is why the bands came back. Opacity is tuned per theme
+// because soft-light amplifies far more over a dark backdrop than a light one:
+// ~1–1.5 levels of grain on the lightest sky, ~0.6 on the night — different
+// numbers, but both imperceptible as texture and enough to break the band.
 @mixin grainOverlay() {
   &::after {
     content: "";

@@ -84,5 +84,49 @@ describe("full-screen gradient dithering", () => {
     expect(css).toMatch(
       /#minded-6622\.minded-6622-dark \.background-transition-grain\s*\{[^}]*opacity:\s*0\.11;/,
     );
+    // Neither theme may fall back to the no-op blends (screen over black does
+    // nothing; overlay of the tile barely dithers). Guards the dark rule too,
+    // whose regex above only pins opacity.
+    expect(css).not.toContain("mix-blend-mode: screen");
+    expect(css).not.toContain("mix-blend-mode: overlay");
+  });
+
+  it("dithers the grounding stage's full-screen sky, in both themes", () => {
+    // The grounding stage paints its own opaque --background-gradient sky over
+    // the dashboard, so the wrapper's grain can't reach it — it carries its own
+    // soft-light dither. CSS-module class names are hashed, so match against the
+    // raw source rather than compiled selectors.
+    const scss = normalizeCss(
+      readFileSync(
+        resolve(__dirname, "../grounding/GroundingOverlay.module.scss"),
+        "utf8",
+      ),
+    );
+
+    expect(scss).toMatch(
+      /&::after\s*\{[^}]*opacity:\s*0\.55;[^}]*mix-blend-mode:\s*soft-light;[^}]*background-image:\s*var\(--grain-tile\);/,
+    );
+    expect(scss).toMatch(
+      /:global\(\.minded-6622-dark\)\s*&::after\s*\{\s*opacity:\s*0\.11;/,
+    );
+  });
+
+  it("keeps the standalone styleguide preview on the same soft-light dither", () => {
+    // The preview duplicates the grain rule inline (it can't @include the mixin),
+    // so pin it directly — it changed with the fix and must not drift back to
+    // overlay/screen.
+    const html = normalizeCss(
+      readFileSync(resolve(SRC_DIR, "pages/styleguide/index.html"), "utf8"),
+    );
+
+    expect(html).toMatch(
+      /#minded-6622::after\s*\{[^}]*opacity:\s*0\.55;[^}]*mix-blend-mode:\s*soft-light;[^}]*background-image:\s*var\(--grain-tile\);/,
+    );
+    expect(html).toMatch(
+      /#minded-6622\.minded-6622-dark::after\s*\{\s*opacity:\s*0\.11;/,
+    );
+    // The old, ineffective blends must be gone from the preview grain.
+    expect(html).not.toContain("mix-blend-mode: overlay");
+    expect(html).not.toContain("mix-blend-mode: screen");
   });
 });

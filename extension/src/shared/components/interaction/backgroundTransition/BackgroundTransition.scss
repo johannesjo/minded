@@ -91,11 +91,11 @@
 // horizontal lines. It shares z-index 2 with the drag overlays and stars: DOM
 // order puts it after the skies but before Stars, while content begins at 10.
 //
-// soft-light over the mid-grey noise tile (see --grain-tile / _grain.scss) is
-// the same treatment the resting dashboard sky uses, and for the same reason:
-// it dithers symmetrically so a 1-level band edge dissolves into ~1.4 levels of
-// grain instead of reading as a stripe. The old overlay/screen pairing measured
-// ~0 dithering, which is why the bands returned.
+// soft-light over the near-mid-grey noise tile (see --grain-tile / _grain.scss)
+// is the same treatment the resting dashboard sky uses, and for the same reason:
+// it dithers a 1-level band edge into ~1 level of grain instead of letting it
+// read as a stripe. The old overlay/screen pairing measured ~0 dithering, which
+// is why the bands returned.
 .background-transition-grain {
   position: fixed;
   inset: 0;
