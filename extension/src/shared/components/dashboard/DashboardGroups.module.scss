@@ -143,6 +143,24 @@
   }
 }
 
+// Elevate the card content in the single-item arrival view. The production
+// greeting and the styleguide comparison both opt into this class, keeping the
+// preview tied to the exact typography that ships.
+.box.singleCard {
+  // The reflection steps up two tokens above the grid sizing. Keep its heading
+  // one token smaller: Inter reads visually larger than the Newsreader
+  // reflection at the same nominal size, so equal CSS sizes make the label
+  // compete with the user's words. Global classes, so `:global()`; specificity
+  // (0,3,0) clears the base typography rules (including dashboardHeading's
+  // non-mobile --fz-m bump at (0,1,0)).
+  :global(.dashboardContent) {
+    font-size: var(--fz-xl);
+  }
+  :global(.dashboardHeading) {
+    font-size: var(--fz-l);
+  }
+}
+
 .energyLvl {
   margin: auto;
 
@@ -210,28 +228,6 @@
     width: 100%;
     max-width: 480px;
     animation-duration: 900ms;
-
-    // Elevate the hero. In this single-item arrival view the card is
-    // unambiguously *the* focus (it's the only one on screen, with room to
-    // spare), so its text steps up two tokens above the grid sizing — content
-    // --fz-m → --fz-xl, heading --fz-s → --fz-xl. This establishes the hierarchy
-    // over the "show all" invitation by raising the focus rather than shrinking
-    // the control, and only here: in the grid (.DashboardGroups) the same card
-    // is one tile among many and keeps the smaller, peer-level sizing. Global
-    // classes, so `:global()`; specificity (0,3,0) clears the base typo rules
-    // (incl. dashboardHeading's non-mobile --fz-m bump at (0,1,0)).
-    //
-    // Heading and content share the SAME size (--fz-xl): the greeting reads as
-    // one calm block, not a small caption under a bigger label. Their light
-    // weight (300) and muted color keep the heading a quiet label above the
-    // content, not a competing title — the hierarchy is carried by weight/color
-    // here, not size, so the two never need to differ in size to be told apart.
-    :global(.dashboardContent) {
-      font-size: var(--fz-xl);
-    }
-    :global(.dashboardHeading) {
-      font-size: var(--fz-xl);
-    }
   }
 }
 

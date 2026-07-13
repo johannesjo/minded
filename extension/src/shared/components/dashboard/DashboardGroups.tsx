@@ -275,7 +275,7 @@ export const DashboardGroups: (props: {
     </div>
   );
 
-  const renderCard = (dg: DashboardGroup) => {
+  const renderCard = (dg: DashboardGroup, isSingleCard = false) => {
     const isInteractive = "id" in dg;
     const activate = () => {
       if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);
@@ -298,6 +298,7 @@ export const DashboardGroups: (props: {
         classList={{
           ["cardDashboard"]: true,
           [styles.box]: true,
+          [styles.singleCard]: isSingleCard,
           [styles.interactive]: isInteractive,
           [styles.centerItem]: dg.type !== DashboardGroupType.TxtQuestion,
         }}
@@ -348,7 +349,7 @@ export const DashboardGroups: (props: {
               // while hidden, so the fresh tile is already easing in when revealed
               // — no in-view swap wrapper needed.
               <Show when={getHeroGroup()} keyed>
-                {(g) => renderCard(g)}
+                {(g) => renderCard(g, true)}
               </Show>
             }
           >

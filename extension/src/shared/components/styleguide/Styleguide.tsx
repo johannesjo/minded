@@ -54,6 +54,13 @@ import {
   applySkyForNow,
   getEffectiveHourNow,
 } from "@src/shared/addWrapperClasses";
+import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
+import {
+  DashboardGroupTxtQuestion,
+  DashboardGroupType,
+} from "@src/shared/components/dashboard/dashboard.model";
+import dashboardStyles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
+import { QuestionCategoryId } from "@src/shared/data/questions";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
@@ -62,6 +69,21 @@ import SunWidgetSkyGallery from "./SunWidgetSkyGallery";
 
 const ROOT_ID = "minded-6622";
 const DARK_CLASS = "minded-6622-dark";
+
+const DASHBOARD_CARD_PREVIEW: DashboardGroupTxtQuestion = {
+  id: QuestionCategoryId.Gratitude,
+  dashboardTxt: "Gratitude",
+  type: DashboardGroupType.TxtQuestion,
+  answers: [
+    {
+      id: "styleguide-dashboard-card",
+      qid: null,
+      questionCategoryId: QuestionCategoryId.Gratitude,
+      val: "Grateful for a slow morning coffee.",
+      ts: 0,
+    },
+  ],
+};
 
 const COLOR_TOKENS = [
   "--c-fg",
@@ -114,6 +136,7 @@ const TOC = [
   { id: "colors", label: "Colors" },
   { id: "sky", label: "Sky" },
   { id: "typography", label: "Typography" },
+  { id: "dashboard-cards", label: "Dashboard cards" },
   { id: "buttons", label: "Buttons" },
   { id: "inputs", label: "Inputs" },
   { id: "selectors", label: "Selectors" },
@@ -284,6 +307,17 @@ const Styleguide = (): JSX.Element => {
               </div>
             )}
           </For>
+        </div>
+      </Section>
+
+      <Section id="dashboard-cards" title="Dashboard cards">
+        <p class={styles.muted}>
+          The same reflection in its two real contexts: a peer in the full grid
+          and the larger, single-card greeting shown on arrival.
+        </p>
+        <div class={styles.dashboardCardPreviews}>
+          <DashboardCardPreview label="grid card" />
+          <DashboardCardPreview label="single-card greeting" singleCard />
         </div>
       </Section>
 
@@ -628,6 +662,29 @@ const Subsection = (props: {
     <code class={styles.subsectionLabel}>{props.label}</code>
     <div class={styles.subsectionRow}>{props.children}</div>
   </div>
+);
+
+const DashboardCardPreview = (props: {
+  label: string;
+  singleCard?: boolean;
+}): JSX.Element => (
+  <figure
+    classList={{
+      [styles.dashboardCardPreview]: true,
+      [styles.dashboardCardPreviewSingle]: props.singleCard,
+    }}
+  >
+    <figcaption>{props.label}</figcaption>
+    <div
+      classList={{
+        cardDashboard: true,
+        [dashboardStyles.box]: true,
+        [dashboardStyles.singleCard]: props.singleCard,
+      }}
+    >
+      <DashboardAnswerList dashboardGroup={DASHBOARD_CARD_PREVIEW} />
+    </div>
+  </figure>
 );
 
 const formatHour = (hour: number): string => {
