@@ -9,7 +9,7 @@
   text-align: center;
   line-height: $height;
   font-size: var(--btn-fz);
-  // Buttons speak the display serif everywhere (issue #167) — one voice for
+  // Buttons speak the display serif everywhere (issue #167) - one voice for
   // the whole app, whether the button is an invitation ("Stay a while?") or a
   // control (settings). A first pass scoped this to intervention hosts via a
   // --btn-font hook; global is simpler and the settings screens read fine.
@@ -37,7 +37,7 @@
     outline: 0;
   }
 
-  // Keyboard focus ring — same treatment as links (_sharedAll.scss), so every
+  // Keyboard focus ring - same treatment as links (_sharedAll.scss), so every
   // button stays reachable by keyboard without adding chrome for pointer users.
   &:focus-visible {
     outline: 2px solid var(--c-link-color);
@@ -118,7 +118,7 @@
 @mixin btnIcoPlainModifier() {
   background: none;
 
-  // Plain icon buttons are chrome (bottom bar, back, dismiss) — quiet them so
+  // Plain icon buttons are chrome (bottom bar, back, dismiss) - quiet them so
   // they recede behind content, full strength only on hover/press. The resting
   // opacity sits on the icon, not the button, so it doesn't fight any opacity
   // fade-in animating the button itself.
@@ -161,7 +161,7 @@
   }
 }
 
-// Modifier (.btnTxt.isOutline): outlined / ghost text button — no resting
+// Modifier (.btnTxt.isOutline): outlined / ghost text button - no resting
 // background, just a border that fills in on hover. Replaces .btnTxtOutline.
 @mixin btnTxtOutlineModifier() {
   background: none;
@@ -180,7 +180,7 @@
 // exit (the intervention "cancel"). It rests at the weight of an unselected
 // choice instead of a solid-white pill, so it stops being the loudest pixel and
 // the eye stays on the user's options rather than the escape (issue #130).
-// Presence, not prominence — deliberately a translucent fill, never a bare
+// Presence, not prominence - deliberately a translucent fill, never a bare
 // outline, which on touch (no hover to fill it in) would read as discouraging
 // the exit and betray the never-forced principle.
 @mixin btnTxtSoftModifier() {
@@ -266,7 +266,7 @@
 }
 
 // Modifier (.btnToggleSelect.isSmall): compact toggle for dense rows. Only the
-// size-related deltas from the base toggle — colors, hover and the selected
+// size-related deltas from the base toggle - colors, hover and the selected
 // scale are inherited. Replaces the old .btnToggleSelectSmall variant.
 @mixin btnToggleSelectSmallModifier() {
   height: 34px;

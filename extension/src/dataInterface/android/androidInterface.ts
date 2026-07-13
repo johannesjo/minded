@@ -46,14 +46,14 @@ interface InteractionWindowJavaScriptInterface {
    * surface (AppWidgetManager.getAppWidgetIds non-empty). Lets setup surfaces
    * stay truthful: the "your home screen" place reads as chosen only once the
    * widget really exists, and invitations retire themselves when it does.
-   * Optional: older native builds won't have it — guard with `?.()`.
+   * Optional: older native builds won't have it - guard with `?.()`.
    */
   isWidgetPlaced?: () => boolean;
   /**
    * Ask the launcher to pin the sun widget via the system dialog
    * (AppWidgetManager.requestPinAppWidget). Returns false when the launcher
-   * doesn't support pinning — the caller falls back to a one-line manual
-   * instruction. Optional: older native builds won't have it — guard with `?.()`.
+   * doesn't support pinning - the caller falls back to a one-line manual
+   * instruction. Optional: older native builds won't have it - guard with `?.()`.
    */
   requestPinWidget?: () => boolean;
   test: () => void;
@@ -65,7 +65,7 @@ export const androidInterface = IS_ANDROID ? androidMinded : ({} as never);
 
 export const ANDROID_EV_RESUME = "androidAppResume";
 export const ANDROID_EV_PAUSE = "androidAppPause";
-// onStart / onStop — the activity's true *visible* boundary (unlike pause/resume,
+// onStart / onStop - the activity's true *visible* boundary (unlike pause/resume,
 // which fire on mere focus loss: a dialog over the app, a recents peek,
 // split-screen). Used so the dashboard only re-greets while genuinely hidden.
 export const ANDROID_EV_START = "androidAppStart";

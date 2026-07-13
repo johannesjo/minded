@@ -55,7 +55,7 @@ export const InputWithSend = (props: {
     try {
       await props.onSubmit(val);
     } finally {
-      // A rejecting onSubmit must never leave the input dead — the user's
+      // A rejecting onSubmit must never leave the input dead - the user's
       // text is still in the field and retrying has to stay possible.
       setIsInputDisabled(false);
     }

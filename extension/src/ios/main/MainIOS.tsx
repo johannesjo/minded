@@ -33,7 +33,7 @@ const MainIOS = () => {
   // The widget invitation's gate: the OBSERVED Home Screen state
   // (WidgetCenter via the plugin), so the nudge is truthful and retires
   // itself the moment a widget exists. Starts true so it never flashes
-  // before the first read — and stays true on older native shells without
+  // before the first read - and stays true on older native shells without
   // the plugin method ("unknown" must never nag).
   const [getIsWidgetInstalled, setIsWidgetInstalled] = createSignal(true);
   // Dismiss is a quiet "not now": hides the invitation for the current visit,
@@ -48,7 +48,7 @@ const MainIOS = () => {
   };
   onCleanup(() => clearTimeout(dismissT));
 
-  // Fade the current top-level surface fully out, then swap — the same
+  // Fade the current top-level surface fully out, then swap - the same
   // sequential soft hand-off MainAndroid uses (never a hard cut).
   let isTopLevelLeaving = false;
   const fadeTopLevelThen = (mutate: () => void) => {
@@ -69,7 +69,7 @@ const MainIOS = () => {
     MindedIOSPlugin.isWidgetInstalled()
       .then((r) => setIsWidgetInstalled(!!r.isInstalled))
       .catch(() => {
-        // Older native shell without the method: unknown state — keep the
+        // Older native shell without the method: unknown state - keep the
         // default true so the invitation never nags about a widget the build
         // might not even carry.
       });
@@ -79,7 +79,7 @@ const MainIOS = () => {
     setIsDarkModeIfApplies();
 
     getSyncData().then((syncData: SyncData) => {
-      // Only ever *enter* onboarding from here — leaving is driven solely by
+      // Only ever *enter* onboarding from here - leaving is driven solely by
       // onGoDashboard (the flow marks itself complete on its way out), so a
       // resume mid-flow can't tear it down (same rule as MainAndroid).
       if (!syncData.cfg.isOnboardingComplete) {

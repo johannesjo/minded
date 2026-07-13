@@ -34,7 +34,7 @@ const INVITE_FADE_MS = 300;
 
 // How long the app must have been visible (onStart → onStop) before being hidden
 // re-greets the dashboard, staging a fresh tile for the next return. The swap
-// happens on *stop* — when the app is genuinely hidden, not merely unfocused — so
+// happens on *stop* - when the app is genuinely hidden, not merely unfocused - so
 // the card is never changed in front of the user; the fresh tile is simply
 // already there when they come back. Below this, a quick open-and-leave keeps the
 // current tile, so a barely-glanced-at greeting isn't churned. Tune here.
@@ -71,12 +71,12 @@ const MainAndroid = () => {
   onCleanup(() => clearTimeout(dismissT));
 
   // Fade the current top-level surface fully out, then run the state change that
-  // swaps it — so the leaving surface eases out before the next eases in via its
+  // swaps it - so the leaving surface eases out before the next eases in via its
   // own pageTransitionIn (a clean sequential fade, never a hard cut). The
   // top-level surfaces (missing-capabilities, onboarding/setup, dashboard) share
   // the id below and unmount the instant the signal flips, so the faded node is
-  // simply discarded — nothing to reset. The guard stops a second tap stacking a
-  // fade mid-flight. (The onboarding→dashboard exit deliberately bypasses this —
+  // simply discarded - nothing to reset. The guard stops a second tap stacking a
+  // fade mid-flight. (The onboarding→dashboard exit deliberately bypasses this -
   // see onGoDashboard.)
   let isTopLevelLeaving = false;
   const fadeTopLevelThen = (mutate: () => void) => {
@@ -96,7 +96,7 @@ const MainAndroid = () => {
     setIsDarkModeIfApplies();
 
     getSyncData().then((syncData: SyncData) => {
-      // Only ever *enter* onboarding from here — never leave it. Reaching the
+      // Only ever *enter* onboarding from here - never leave it. Reaching the
       // optional step marks onboarding complete (so a force-quit won't replay
       // the welcome), yet the flow is still on screen and keeps sending the user
       // out to system settings to grant permissions. Each return fires a
@@ -127,7 +127,7 @@ const MainAndroid = () => {
     refresh();
 
     const startHandler = () => {
-      // The app is visible again — start (or restart) timing this visible
+      // The app is visible again - start (or restart) timing this visible
       // session. onStart, not onResume, so a transient focus flicker (a dialog
       // over the app) doesn't reset the clock mid-session.
       foregroundedAtTs = Date.now();
@@ -153,7 +153,7 @@ const MainAndroid = () => {
       setIsInviteDismissed(false);
       setIsInviteDismissing(false);
       // Sync any data that changed while away, preserving the current
-      // arrangement — the greeting itself was already re-rolled on stop, hidden.
+      // arrangement - the greeting itself was already re-rolled on stop, hidden.
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
       refresh();
     };
@@ -170,7 +170,7 @@ const MainAndroid = () => {
 
   // Distinguishes a banner that must alarm (a required permission is missing, so
   // minded can't intervene at all) from one that should merely invite (only the
-  // advisory extras remain — minded already works).
+  // advisory extras remain - minded already works).
   const hasMissingRequired = () =>
     getMissingCapabilities().some((c) => REQUIRED_CAPABILITIES.includes(c));
 
@@ -199,7 +199,7 @@ const MainAndroid = () => {
               // onto the companion anchor (leaveToDashboard), so fading the
               // wrapper here would take that landed sun down with it and dip
               // the screen to black before the dashboard pops in. The bare swap
-              // is seamless instead — both wrappers share the id that paints
+              // is seamless instead - both wrappers share the id that paints
               // the sky, the shell sun takes over the disc in place, and the
               // dashboard content eases in via its own pageTransitionIn.
               setIsShowOnboarding(false);
@@ -248,7 +248,7 @@ const MainAndroid = () => {
             )
           ) : /* No apps configured means permissions are moot (nothing to
                 intervene on), so the missing-permissions banner is intentionally
-                suppressed until at least one app is chosen — the invitation above
+                suppressed until at least one app is chosen - the invitation above
                 is the single, calm entry point into setup. */
           getMissingCapabilities().length > 0 ? (
             <div

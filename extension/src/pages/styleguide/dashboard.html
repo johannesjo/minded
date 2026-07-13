@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <title>minded — dashboard simulation</title>
+    <title>minded - dashboard simulation</title>
     <script>
-      // In-memory chrome shim — must run before the module bundle imports
+      // In-memory chrome shim - must run before the module bundle imports
       // webextension-polyfill. Identical to the copy in index.html (keep in
       // sync). Gives the real data interface a working, session-persistent
       // backing store so the dashboard + interaction flow run off-extension.
@@ -73,7 +73,7 @@
     </script>
 
     <!--
-      Loading-screen sky — mirrors src/pages/newtab/index.html so the simulation
+      Loading-screen sky - mirrors src/pages/newtab/index.html so the simulation
       boots with the same no-flash gradient the real app uses. Keep light/dark in
       sync with isDarkModeNow() and --background-gradient.
     -->
@@ -127,7 +127,7 @@
       }
     </style>
     <script>
-      // Day/night loading sky — mirrors isDarkModeNow(), incl. the ?theme= dev
+      // Day/night loading sky - mirrors isDarkModeNow(), incl. the ?theme= dev
       // override (so forcing dark doesn't flash a light gradient before boot).
       var theme = new URLSearchParams(location.search).get("theme");
       var h = new Date().getHours();

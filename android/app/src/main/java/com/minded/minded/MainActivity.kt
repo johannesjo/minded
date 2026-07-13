@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The hash requested by the launching intent, if any — currently only the
+     * The hash requested by the launching intent, if any - currently only the
      * widget's sun hash. Allow-listed (not passed through verbatim) so a crafted
      * intent can't drive the WebView to an arbitrary location.
      */
@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     /**
-     * The widget line to open on, if the launching intent carried one — but only
+     * The widget line to open on, if the launching intent carried one - but only
      * if it's a line the widget actually shows ([WidgetPrompts.isWidgetSafeLine]).
      * Same allow-list posture as [routeFromIntent]: a crafted intent can't inject
      * arbitrary text into the WebView location; only one of the known widget lines
@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
                             // inset isn't dispatched and imePadding no-ops. They
                             // don't stack: the ime inset is measured against the
                             // already-resized window. This is the *only* keyboard
-                            // mechanism now — the web layer keys off the resulting
+                            // mechanism now - the web layer keys off the resulting
                             // viewport (visualViewport) rather than probing the
                             // window height itself.
                             .imePadding()
@@ -314,7 +314,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(action, uri))
             true
         } catch (e: Exception) {
-            // No handler (e.g. no mail app) or the target rejected the launch —
+            // No handler (e.g. no mail app) or the target rejected the launch -
             // broad on purpose, since any throw here would crash the activity.
             // Still swallow it so the WebView doesn't show a broken error page.
             Log.w(logTag, "Could not open $uri", e)
@@ -334,7 +334,7 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         Log.v(logTag, "onPause()")
         // Fires on mere focus loss (a dialog over the app, a recents peek), not
-        // just a real background — so this is NOT the signal for anything that
+        // just a real background - so this is NOT the signal for anything that
         // must only happen while hidden (e.g. the dashboard re-greet, which uses
         // onStop below). The WebView keeps running in the background, so it gets
         // no visibilitychange of its own; these lifecycle events are its only
@@ -350,7 +350,7 @@ class MainActivity : AppCompatActivity() {
         Log.v(logTag, "onStart()")
         // The activity has become *visible* again (paired with onStop). Unlike
         // onResume, it doesn't fire on a mere focus regain, so the web layer uses
-        // it to bound the true visible session — e.g. how long the app was on
+        // it to bound the true visible session - e.g. how long the app was on
         // screen before it was next hidden.
         if (this::webView.isInitialized) {
             webView.evaluateJavascript("(function() { window.dispatchEvent(new Event('${webAppStartEVName}')); })();",
@@ -362,7 +362,7 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         Log.v(logTag, "onStop()")
         // The activity is now genuinely *hidden* (not merely unfocused). This is
-        // the safe moment to change offscreen UI the user must never watch swap —
+        // the safe moment to change offscreen UI the user must never watch swap -
         // the dashboard re-greets here so a fresh tile is already in place, unseen,
         // by the time the app is shown again.
         if (this::webView.isInitialized) {

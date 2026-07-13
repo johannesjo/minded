@@ -3,7 +3,7 @@ import { addUsageTimeInBackground } from "@src/dataInterface/extension/extension
 /**
  * Tracks real foreground time on a blocked host and reports it to the
  * background, where it's stored as observed `usageStats`. "Foreground" means the
- * tab is actually visible AND focused — background tabs and blurred windows
+ * tab is actually visible AND focused - background tabs and blurred windows
  * don't count, so this measures attention, not just an open tab.
  *
  * There's no browser API for true site dwell time, so we accumulate it here and

@@ -3,7 +3,7 @@ package com.minded.minded.widget
 /**
  * The time-of-day phase of the home-screen companion sun. The widget is a calm,
  * ambient anchor: glancing at it grounds you in where you actually are in the
- * day's natural rhythm of light — the sun by day, the moon by night. This is
+ * day's natural rhythm of light - the sun by day, the moon by night. This is
  * present-moment by construction (it reflects the real local hour, never a stale
  * timestamp) and carries no metric, count, or judgment. See
  * docs/sun-companion-widget.md.
@@ -15,7 +15,7 @@ enum class SunWidgetPhase {
 
     companion object {
         // Just two phases: the warm sun by day, the cool moon by night. We
-        // deliberately do not split out dawn/dusk — their saturated, in-between
+        // deliberately do not split out dawn/dusk - their saturated, in-between
         // colours (amber/coral) read as an evaluative *signal* on a surface that
         // must never grade the user, and sun-vs-moon is the one shift everyone
         // reads as "the world", not "a message to me".
@@ -27,7 +27,7 @@ enum class SunWidgetPhase {
         // time of day than the app (its dusk sky while the app is already night).
         // widgetClockMirror.test.ts guards that the two stay in lockstep.
         // `internal` (not private) because WidgetPrompts and WidgetSky read these
-        // — the single definition is what guarantees the card's no-text window is
+        // - the single definition is what guarantees the card's no-text window is
         // exactly the moon's window.
         internal const val DAY_START = 6    // sun up = skyTimeline NIGHT_END_HOUR
         internal const val NIGHT_START = 19 // moon = skyTimeline NIGHT_START_HOUR

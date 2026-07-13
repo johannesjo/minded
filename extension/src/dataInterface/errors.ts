@@ -27,7 +27,7 @@ export interface DataErrorOptions {
   /**
    * Exact text for the user-facing alert. Without it the alert falls back to
    * the generic template, whose "Your data is safe." is only true for read
-   * errors — any write-failure call site MUST provide an honest message
+   * errors - any write-failure call site MUST provide an honest message
    * instead (and never leak internal function names to the user).
    */
   userMessage?: string;

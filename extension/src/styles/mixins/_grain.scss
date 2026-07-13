@@ -1,5 +1,5 @@
 // Apply inside a rule with `position: relative|absolute|fixed` and
-// `overflow: hidden` — emits an ::after that tiles --grain-tile across the
+// `overflow: hidden` - emits an ::after that tiles --grain-tile across the
 // element. z-index: -1 sits behind in-flow content so blend-mode dithering
 // doesn't reach the text, only the gradient behind it.
 //
@@ -10,7 +10,7 @@
 // overlay/screen + black-noise pairing measured ~0 dithering (see
 // _variables.scss) which is why the bands came back. Opacity is tuned per theme
 // because soft-light amplifies far more over a dark backdrop than a light one:
-// ~1–1.5 levels of grain on the lightest sky, ~0.6 on the night — different
+// ~1–1.5 levels of grain on the lightest sky, ~0.6 on the night - different
 // numbers, but both imperceptible as texture and enough to break the band.
 @mixin grainOverlay() {
   &::after {
@@ -27,7 +27,7 @@
 
   // The theme class normally lives on the outer #minded-6622 root. Keep the
   // same-element form for the standalone/content-script wrappers that also
-  // carry it themselves. Lower opacity keeps the night sky deep — soft-light
+  // carry it themselves. Lower opacity keeps the night sky deep - soft-light
   // over near-black would otherwise both over-grain and milk the blacks.
   &.minded-6622-dark::after,
   #minded-6622.minded-6622-dark &::after {

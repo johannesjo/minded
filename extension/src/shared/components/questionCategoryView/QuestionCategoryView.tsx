@@ -36,7 +36,7 @@ export const QuestionCategoryView: (props: {
 
   if (!Object.values(QuestionCategoryId).includes(questionCategoryId)) {
     console.error("illegal route param");
-    // A stale or mistyped hash shouldn't render into a broken category view —
+    // A stale or mistyped hash shouldn't render into a broken category view -
     // land on the dashboard instead.
     return <Navigate href="/" />;
   }
@@ -85,7 +85,7 @@ export const QuestionCategoryView: (props: {
       [...getAnswersForCategory(), removed].sort((a, b) => b.ts - a.ts),
     );
     // saveAnswer is a plain append, so the re-append must land strictly after
-    // the delete's write — unsequenced, an interleaving could duplicate the
+    // the delete's write - unsequenced, an interleaving could duplicate the
     // answer or silently drop the restore. And if the delete itself failed,
     // the answer never left storage, so appending again would duplicate it.
     pendingRemove.then((didRemove) => {
@@ -112,7 +112,7 @@ export const QuestionCategoryView: (props: {
     saveAnswer(answerWithNewTs).catch((e: unknown) => {
       // Roll the optimistic add back so the list never shows an answer that
       // isn't actually stored (the data layer already alerted the user).
-      console.error("Answer save failed — removing it from the list", e);
+      console.error("Answer save failed - removing it from the list", e);
       setAnswersForCategory(
         getAnswersForCategory().filter((a: Answer) => a.id !== answerToAdd.id),
       );

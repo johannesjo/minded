@@ -39,7 +39,7 @@ val defaultSyncData = SyncData(
     alternatives = emptyList(),
     patternInsightState = PatternInsightState(emptyMap()),
     emotionLabeling = null,
-    // Daily budget feature — REMOVED (#38). Dormant defaults kept only so the
+    // Daily budget feature - REMOVED (#38). Dormant defaults kept only so the
     // Android <-> extension sync JSON contract stays stable. No writer/reader.
     budgetPromptDismissedTS = 99L,
     activeTimer = null,

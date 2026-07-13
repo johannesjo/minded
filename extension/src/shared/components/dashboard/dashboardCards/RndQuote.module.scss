@@ -3,7 +3,7 @@
 .RndQuote {
   :global .dashboardContent {
     // No italics: we bundle no Inter italic master, so the browser would
-    // synthesize a slanted fake — and the quotation marks already frame the
+    // synthesize a slanted fake - and the quotation marks already frame the
     // quote. Centered card text balances its rag (overrides .dashboardContent's
     // reading-block `pretty`).
     text-wrap: balance;

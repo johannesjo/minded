@@ -22,14 +22,14 @@ interface BellProps {
 
 /**
  * The bell: one strike, listened all the way down into silence. A complete
- * attention practice with a built-in ending — nothing to count, rate, type, or
+ * attention practice with a built-in ending - nothing to count, rate, type, or
  * get "right"; the sound simply ends on its own and the user notices that it
  * has. The ring starts behind the user's own tap ("Ring it"), which both makes
  * the listening chosen rather than imposed and guarantees the browser lets the
  * audio play.
  *
  * While the bell rings the screen is deliberately empty and the one sun simply
- * keeps its quiet presence in its slot — no swell: a repeating pulse here would
+ * keeps its quiet presence in its slot - no swell: a repeating pulse here would
  * be exactly the unguided ambient breath the fundamentals reserve for guided
  * breath pauses, and a resting sun also stays fully interactive as the
  * universal way out for the whole ring. The "It's gone" confirmation is timed
@@ -65,7 +65,7 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
     screenFade.toScreen(() => setPhase("listen"));
 
     // Sitting still is the whole point, so no pointer input will keep the
-    // parent's auto-dismiss fade from firing mid-listen — tick it away until
+    // parent's auto-dismiss fade from firing mid-listen - tick it away until
     // the confirmation is up.
     keepAliveInterval = setInterval(
       () => onCancelCountdown(),
@@ -74,7 +74,7 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
 
     void playSingleBell().then((ringMs) => {
       // The user may have left (sun-tap/fling teardown) while playback was
-      // still starting up — never arm the timer into a disposed tree.
+      // still starting up - never arm the timer into a disposed tree.
       if (isDisposed) return;
       const durationMs = ringMs ?? SINGLE_BELL_FALLBACK_DURATION_MS;
       confirmTimeout = setTimeout(() => {

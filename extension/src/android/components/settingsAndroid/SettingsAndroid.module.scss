@@ -10,7 +10,7 @@
   gap: 8px;
   margin: 16px;
   // Ease in once the native app read resolves, rather than hard-swapping over
-  // the brief "Loading apps…" line — soft, never a cut (a pure opacity fade,
+  // the brief "Loading apps…" line - soft, never a cut (a pure opacity fade,
   // so it's safe under prefers-reduced-motion).
   animation: appListFadeIn 0.3s var(--ease-out);
 }
@@ -45,7 +45,7 @@
   font-size: var(--fz-m);
 }
 
-// The home-screen place row's one-line context ("…as a widget — no
+// The home-screen place row's one-line context ("…as a widget - no
 // permissions needed"): quiet, beneath the place name.
 .appEntrySub {
   display: block;

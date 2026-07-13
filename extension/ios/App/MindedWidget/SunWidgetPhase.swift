@@ -2,13 +2,13 @@
 //  SunWidgetPhase.swift
 //  MindedWidget
 //
-//  The time-of-day phase of the home-screen companion sun — the Swift twin of the
+//  The time-of-day phase of the home-screen companion sun - the Swift twin of the
 //  Android `widget/SunWidgetPhase.kt`. `forHour` mirrors the Kotlin one-to-one (the
 //  JVM `SunWidgetPhaseTest` covers that logic); `nextBoundary(after:)` is a
 //  WidgetKit-specific reimplementation that returns the next *Date* rather than the
-//  Kotlin's minutes-until, so it has no Kotlin twin and no test yet — verify on a
+//  Kotlin's minutes-until, so it has no Kotlin twin and no test yet - verify on a
 //  device, or add a Swift test target. The widget is a calm, ambient anchor: glancing
-//  at it grounds you in where you actually are in the day's natural light — the warm
+//  at it grounds you in where you actually are in the day's natural light - the warm
 //  sun by day, the cool moon by night. It is present-moment by construction (it
 //  reads the real local hour, never a stale timestamp) and carries no metric, count,
 //  or judgment. See docs/sun-companion-widget.md.
@@ -24,7 +24,7 @@ enum SunWidgetPhase {
     case night
 
     // Just two phases: the warm sun by day, the cool moon by night. We deliberately
-    // do not split out dawn/dusk — their saturated, in-between colours (amber/coral)
+    // do not split out dawn/dusk - their saturated, in-between colours (amber/coral)
     // read as an evaluative *signal* on a surface that must never grade the user, and
     // sun-vs-moon is the one shift everyone reads as "the world", not "a message to
     // me".
@@ -54,7 +54,7 @@ enum SunWidgetPhase {
     /// The next instant the phase changes, strictly after `date` (the next local
     /// 06:00 or 19:00, whichever comes first). The timeline reaches it through
     /// `WidgetPrompts.nextChange`, whose wordless-night branch is exactly this
-    /// walk — so the moon gives way to the sun on the hour: the WidgetKit-native
+    /// walk - so the moon gives way to the sun on the hour: the WidgetKit-native
     /// equivalent of the Android receiver's night-spanning alarm.
     /// DST/timezone-safe via `Calendar`. Strictly *after* `date`, so landing
     /// on a boundary schedules the following one, never an immediate re-fire.

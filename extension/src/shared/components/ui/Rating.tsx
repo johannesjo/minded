@@ -6,7 +6,7 @@ export const Rating: (props: {
   onSetRating?: (val: number) => void;
   /**
    * Optional end labels under the dots (e.g. ["low", "high"]) so the scale's
-   * direction is legible — the same quiet anchors the urge-surfing scale uses
+   * direction is legible - the same quiet anchors the urge-surfing scale uses
    * ("barely" / "intense").
    */
   anchors?: [string, string];

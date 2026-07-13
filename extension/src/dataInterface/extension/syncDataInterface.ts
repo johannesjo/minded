@@ -21,10 +21,10 @@ const MAX_PRUNE_ROUNDS = 3;
  *   `QUOTA_BYTES_PER_ITEM`) and `MAX_ITEMS`.
  * - Firefox throws one message for all three of its storage.sync quotas:
  *   "QuotaExceededError: storage.sync API call exceeded its quota
- *   limitations." (ExtensionStorageSync.sys.mjs) — matched by its distinctive
+ *   limitations." (ExtensionStorageSync.sys.mjs) - matched by its distinctive
  *   phrase. A bare /quota/i match would be wrong: Chrome's rate-limit errors
  *   ("MAX_WRITE_OPERATIONS_* quota exceeded") contain "quota" too, and those
- *   are NOT prune-recoverable — deleting answers wouldn't help, so they must
+ *   are NOT prune-recoverable - deleting answers wouldn't help, so they must
  *   surface instead (as must transient failures).
  */
 const isPruneRecoverableError = (e: unknown): boolean => {
@@ -84,8 +84,8 @@ export const getUsageObservationRawN = (): string | null => null;
  * - Quota-flavored rejections (`QUOTA_BYTES*`, `MAX_ITEMS`) are cured by
  *   pruning the oldest answers (plus the recap-only categories) and retrying,
  *   up to MAX_PRUNE_ROUNDS. The just-given answer is never pruned.
- * - Anything else (rate limits, transient failures) — and a prune that still
- *   can't fit — alerts the user and rethrows, so callers know the answer did
+ * - Anything else (rate limits, transient failures) - and a prune that still
+ *   can't fit - alerts the user and rethrows, so callers know the answer did
  *   NOT save. Resolving successfully after a swallowed error is the one
  *   forbidden outcome.
  */
@@ -98,7 +98,7 @@ export const saveAnswerN = async (answer: Answer): Promise<void> => {
     try {
       await patchSyncDataN({ answers });
       if (didPrune && typeof window !== "undefined" && window.alert) {
-        // Only after the write actually succeeded — stating an outcome
+        // Only after the write actually succeeded - stating an outcome
         // before it happens would be a promise, not an observed fact.
         window.alert(
           "minded: your saved answers reached the browser's storage limit, so the oldest ones were removed to make room. Your new answer is saved.",
@@ -122,12 +122,12 @@ export const saveAnswerN = async (answer: Answer): Promise<void> => {
           {
             alertUser: true,
             userMessage:
-              "minded couldn't save this answer — it was not stored. Your earlier answers are untouched. You may want to copy your text and try again.",
+              "minded couldn't save this answer - it was not stored. Your earlier answers are untouched. You may want to copy your text and try again.",
           },
         );
         throw e;
       }
-      console.warn("Over the storage quota — pruning oldest answers", {
+      console.warn("Over the storage quota - pruning oldest answers", {
         answersBefore: answers.length,
         answersAfter: pruned.length,
       });
@@ -142,7 +142,7 @@ export const saveAnswerN = async (answer: Answer): Promise<void> => {
 
 /**
  * Drop the oldest answers (and the recap-only categories that are cheap to
- * lose) to get back under quota — keeping `keep` (the answer being saved)
+ * lose) to get back under quota - keeping `keep` (the answer being saved)
  * no matter its age or category. `keep` is set aside before the newest-N
  * slice so neither dropping mechanism can ever touch it (e.g. when a clock
  * correction left stored answers with newer timestamps than the one being

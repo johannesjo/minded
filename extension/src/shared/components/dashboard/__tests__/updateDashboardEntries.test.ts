@@ -56,7 +56,7 @@ describe("updateDashboardEntriesFromQuestions", () => {
   // Regression: the incremental merge preserves the *existing* card order and
   // only refreshes contents. A greeting that was in-window when the dashboard
   // was first built (a morning "Finding Focus Today") must not stay pinned to
-  // the hero slot once its window has passed — e.g. after a night app-resume
+  // the hero slot once its window has passed - e.g. after a night app-resume
   // refresh. The merge has to re-run the hero guard.
   it("re-guards the hero so a stale out-of-window recap can't survive a merge refresh", () => {
     const night = new Date("2024-01-15T03:00:00");
@@ -69,7 +69,7 @@ describe("updateDashboardEntriesFromQuestions", () => {
       ],
     });
 
-    // A fresh night build is already guarded — the focus recap is not the hero.
+    // A fresh night build is already guarded - the focus recap is not the hero.
     const fresh = getDashboardEntriesFromQuestions(syncData, night);
     const focusIdx = fresh.findIndex(
       (e) =>

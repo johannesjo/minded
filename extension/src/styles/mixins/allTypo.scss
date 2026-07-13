@@ -1,4 +1,4 @@
-// The single Newsreader "voice" — same weight + tracking across every mindful
+// The single Newsreader "voice" - same weight + tracking across every mindful
 // surface (intervention prompts, breath labels, success overlay, opt-in h2).
 // Size and line-height are set by the consumer.
 @mixin displayVoice() {
@@ -6,7 +6,7 @@
   font-weight: 400;
   letter-spacing: -0.005em;
   // Display surfaces are short, mostly centered prompts; balance the rag so
-  // no lone word ("here?") dangles on the last line — a quiet jolt on the
+  // no lone word ("here?") dangles on the last line - a quiet jolt on the
   // app's most central text. The one multi-line *reading* consumer (dashboard
   // reflections) overrides this with `pretty`. Progressive: unsupported
   // engines just keep normal wrapping.
@@ -31,7 +31,7 @@
     font-size: var(--fz-xxl);
     // Inter is drawn for text sizes; at heading size it sits a touch loose.
     // Slight negative tracking composes it (Inter's own dynamic-metrics
-    // guidance tightens further with size — this stays gentler).
+    // guidance tightens further with size - this stays gentler).
     letter-spacing: -0.01em;
     user-select: none;
     pointer-events: all;
@@ -41,7 +41,7 @@
 
   // Opt-in modifier for mindful contexts (sleep wind-down, onboarding).
   // Pairs with .h2: `<h2 class="h2 h2Mindful">`. Only size differs from
-  // .txtBig — both share displayVoice().
+  // .txtBig - both share displayVoice().
   .h2Mindful {
     @include displayVoice;
     text-transform: none;
@@ -94,7 +94,7 @@
   .dashboardHeading {
     // 300, matching .h2's floor: at --fz-s over the pastel sky, weight 200
     // drops below comfortable legibility (and hairlines get brittle on some
-    // Android subpixel rendering). Still the dashboard's quiet whisper —
+    // Android subpixel rendering). Still the dashboard's quiet whisper -
     // the muted color carries that, not a hairline stroke.
     font-weight: 300;
     margin-bottom: 8px;
@@ -111,8 +111,8 @@
   .dashboardContent {
     // Readability close to the detail page's answer text (--fz-m at every size),
     // but kept gentle for the calm dashboard: Inter is variable, so weight sits
-    // at ~350 — between the old faint 300 and a full 400 (clear but a touch
-    // harsh) — and a slightly opener line-height lets the block breathe. The
+    // at ~350 - between the old faint 300 and a full 400 (clear but a touch
+    // harsh) - and a slightly opener line-height lets the block breathe. The
     // light-200 lowercase headings stay as the dashboard's ambient signature.
     font-size: var(--fz-m);
     line-height: 1.4;

@@ -25,7 +25,7 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
 }
 
 // When every required permission is granted and only the advisory extras
-// remain, minded already works — so the banner steps back further: a quiet
+// remain, minded already works - so the banner steps back further: a quiet
 // sun-tinted outline (echoing the confirmation tick) instead of the warm fill,
 // with calmer copy (set in MainAndroid). Declared after
 // `.missingCapabilitiesMsg` so its overrides win at equal specificity.
@@ -62,7 +62,7 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
   cursor: pointer;
 }
 
-// Layout only — the button look (and an adequate tap target) comes from
+// Layout only - the button look (and an adequate tap target) comes from
 // <Btn variant="icon" plain>.
 .setupInvitationMsgClose {
   flex: 0 0 auto;

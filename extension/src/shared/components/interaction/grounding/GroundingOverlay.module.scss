@@ -13,7 +13,7 @@
   padding: var(--space-lg);
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  // The resting sky is the dashboard's own calm sky — the surface "Stay a while"
+  // The resting sky is the dashboard's own calm sky - the surface "Stay a while"
   // settles onto. The down-drag's warm sky rides in on top of it (the ::before
   // below) and then dissolves away, leaving this.
   background: var(--background-gradient);
@@ -28,13 +28,13 @@
     forwards;
 
   // The warm sunset (light) / night sky (dark) the down-drag revealed, carried
-  // in on top of the resting sky so the hand-off from the drag is seamless — no
+  // in on top of the resting sky so the hand-off from the drag is seamless - no
   // flash. Composited exactly as the drag shows it: a 0.8-opacity wash over the
   // sky (BackgroundTransition paints it the same way), so it doesn't read
   // over-saturated, and built from the same --background-sunset-gradient (which
   // flips to the deep-night version under .minded-6622-dark, the class that also
   // sets this overlay's "moon" variant), so the two are pixel-identical. From the
-  // moment the offer opens this eases to 0 (see &.skySettled::before) — "Stay a
+  // moment the offer opens this eases to 0 (see &.skySettled::before) - "Stay a
   // while" is a place to rest, not a sunset to dwell in. It sits behind the
   // panel/session/starfield content and fades with the stage (it's a child of
   // this opacity-animated element).
@@ -52,7 +52,7 @@
   }
 
   // Dither the full-screen resting sky (and the carried-in sunset above it) so
-  // the gradient can't band into horizontal stripes — the same soft-light
+  // the gradient can't band into horizontal stripes - the same soft-light
   // grey-noise treatment the dashboard sky and interaction skies use (see
   // styles/mixins/_grain.scss). This stage paints its own opaque sky over the
   // dashboard, so the wrapper's grain can't reach it; it needs its own. Shares
@@ -71,7 +71,7 @@
     background-size: 180px 180px;
   }
 
-  // Match the interaction skies' gentler dark grain — soft-light amplifies far
+  // Match the interaction skies' gentler dark grain - soft-light amplifies far
   // more over the near-black night sky, so a lower opacity keeps the blacks deep.
   :global(.minded-6622-dark) &::after {
     opacity: 0.11;
@@ -85,7 +85,7 @@
 
   // Dissolve the carried-in sunset back to the dashboard's resting sky. JS flips
   // this class on the first frame after mount, so the sky eases home from the
-  // moment the offer opens — no hold on the sunset — over the slow --sky-settle-ms
+  // moment the offer opens - no hold on the sunset - over the slow --sky-settle-ms
   // (much longer than the entrance fade above). A calm, unhurried return.
   &.skySettled::before {
     opacity: 0;
@@ -107,7 +107,7 @@
   // Close with a dedicated fade-out animation, not `opacity: 0` + transition.
   // The entrance `animation: groundingIn … forwards` keeps *filling* opacity at 1
   // with a priority above normal declarations, so a plain `opacity: 0` here gets
-  // overridden — the overlay would hard-cut on unmount instead of fading. An
+  // overridden - the overlay would hard-cut on unmount instead of fading. An
   // animation overrides that fill, so the kept sunset / night sky actually
   // dissolves back to the dashboard sky as we return home. Its duration matches
   // GROUNDING_FADE_MS (the JS waits that long before unmounting), so the fade
@@ -146,7 +146,7 @@
   pointer-events: none;
 
   // Visibility is driven by the <Stars> intensity prop (opacity inline, animations
-  // gated on it), which drops to 0 for the screen-free sit's near-black dim — so
+  // gated on it), which drops to 0 for the screen-free sit's near-black dim - so
   // the field both recedes and stops ticking the compositor. Stars' own container
   // has no transition (it's drag-driven elsewhere); add one here so this recede
   // eases softly, matching the app's calm.
@@ -194,7 +194,7 @@
 }
 
 // The active grounding screen. createScreenFade drives this element's opacity
-// (inline) to crossfade between the offer, duration, sit and settle — soft, never
+// (inline) to crossfade between the offer, duration, sit and settle - soft, never
 // a hard cut. A centred flex column so each screen sits where it did before. The
 // sky (::before), the stars, and the shell sun are separate layers outside this,
 // so they don't fade on every screen swap.
@@ -217,7 +217,7 @@
 // Timed sit, live dashboard: the breathing disc here is the one shell sun, risen
 // from its companion rest to the surfing meditation anchor (sunSurfSettle, ~0.38
 // of the viewport). It floats on its own layer, so this block carries only the
-// remaining time + End — dropped to just below the disc and its halo so the two
+// remaining time + End - dropped to just below the disc and its halo so the two
 // read as one centred group, the same shape as the urge-surf meditation. Anchored
 // to the viewport (not flow-centred) so it tracks the fixed-ratio sun. The
 // styleguide preview keeps the flow-centred .session (a local BreathSun stands in
@@ -227,7 +227,7 @@
   left: 50%;
   // Anchor to the sun, not a bare viewport fraction: the breath sun's centre is
   // fixed at 38% of the viewport (sunSurfSettle), so place the time a constant
-  // ~96px below that — just under the disc and its halo — and it keeps the same
+  // ~96px below that - just under the disc and its halo - and it keeps the same
   // close gap on any viewport height instead of drifting as a plain % would. The
   // End button then sits further down (the wider column gap) so it reads as a
   // separate action, not part of the breathing group.

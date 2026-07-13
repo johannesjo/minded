@@ -2,18 +2,18 @@
 //  MindedWidget.swift
 //  MindedWidget
 //
-//  The home-screen companion sun widget — "option 1" from
+//  The home-screen companion sun widget - "option 1" from
 //  docs/ios-platform-fit.md and the iOS twin of the Android App Widget
 //  (widget/MyAppWidget.kt). It is presence and invitation, never an interrupt:
 //  it never detects, blocks, or fires on its own. Tapping it opens the app at
 //  `minded://sun`, which the native shell turns into the shared `?sun=open`
-//  launch flag — the exact same trigger as tapping the in-app dashboard sun
+//  launch flag - the exact same trigger as tapping the in-app dashboard sun
 //  (see RouteCmp's `?sun=open` effect). One shared trigger, two native shells.
 //
 //  Two faces, one widget (mirroring Android's responsive faces):
-//  - `systemSmall` — the familiar floating sun, wordless. Alive to the day: the
+//  - `systemSmall` - the familiar floating sun, wordless. Alive to the day: the
 //    warm sun by day, the cool moon by night (`SunWidgetPhase`).
-//  - `systemMedium` — a miniature still of the in-app intervention screen: the
+//  - `systemMedium` - a miniature still of the in-app intervention screen: the
 //    app's time-of-day sky (`WidgetSky`, card-sized dithered renders of the
 //    exact app keyframes), one quiet serif line (`WidgetPrompts`), and the sun
 //    resting beneath it. The line steps every 15 minutes through the waking day;
@@ -23,7 +23,7 @@
 //
 //  The sun never animates, but it *is* alive to the day: instead of one static
 //  `.never` snapshot, the provider pre-places every face change as a timeline
-//  entry — 15-minute prompt steps by day (which contain the sky's whole-hour
+//  entry - 15-minute prompt steps by day (which contain the sky's whole-hour
 //  steps and the day/night flips by construction), one wordless entry spanning
 //  the night. Entries are deterministic, so nothing regenerates on unlock and
 //  there is no refresh-budget pressure; `.atEnd` requests the next batch once
@@ -67,7 +67,7 @@ struct SunProvider: TimelineProvider {
         var entries: [SunEntry] = [sunEntry(at: now)]
         // Pre-place the upcoming face changes: quarter-hour prompt steps by day, a
         // single wordless entry across the night. 64 changes span a full waking
-        // day (~16h) — well within a timeline batch; `.atEnd` refills after that.
+        // day (~16h) - well within a timeline batch; `.atEnd` refills after that.
         var cursor = now
         for _ in 0..<64 {
             guard let change = WidgetPrompts.nextChange(after: cursor) else { break }
@@ -76,7 +76,7 @@ struct SunProvider: TimelineProvider {
         }
         // Never expected: if Calendar.nextDate failed outright, a single
         // already-consumed entry with `.atEnd` would ask WidgetKit to reload
-        // immediately, in a loop — exactly the refresh-budget churn this design
+        // immediately, in a loop - exactly the refresh-budget churn this design
         // avoids. Retry on a quarter-hour instead.
         guard entries.count > 1 else {
             completion(Timeline(entries: entries, policy: .after(now.addingTimeInterval(15 * 60))))
@@ -94,7 +94,7 @@ struct MindedWidgetEntryView: View {
 
     var body: some View {
         // Day/night and the sky come from the entry's clock-derived values, not
-        // the system colour scheme — so the moon shows at actual night, not
+        // the system colour scheme - so the moon shows at actual night, not
         // whenever the phone happens to be in dark mode (matches Android).
         switch family {
         case .systemMedium:
@@ -105,7 +105,7 @@ struct MindedWidgetEntryView: View {
     }
 }
 
-/// The wordless floating sun (`systemSmall`) — unchanged from v1.
+/// The wordless floating sun (`systemSmall`) - unchanged from v1.
 private struct SunOnly: View {
     var entry: SunEntry
 
@@ -114,14 +114,14 @@ private struct SunOnly: View {
             // A little breathing room so the soft bloom isn't clipped by the tile.
             .padding(12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            // The whole widget is the tap target — open the shared sun flag.
+            // The whole widget is the tap target - open the shared sun flag.
             .widgetURL(openSunURL(line: nil))
             .widgetTransparentContainerBackground()
     }
 }
 
 /// A miniature of the in-app intervention screen (`systemMedium`): the sky, a
-/// serif line in the app's voice, the sun beneath it — text above, sun below,
+/// serif line in the app's voice, the sun beneath it - text above, sun below,
 /// the intervention layout (the WidgetKit twin of Android's PromptCard).
 private struct PromptCard: View {
     var entry: SunEntry
@@ -132,11 +132,11 @@ private struct PromptCard: View {
                 Text(prompt)
                     // The app's question voice is a serif (Newsreader); widgets
                     // can't ship web fonts, so the platform serif (New York)
-                    // carries the same register — like Android's platform serif.
+                    // carries the same register - like Android's platform serif.
                     .font(.system(size: 15, design: .serif))
                     // --c-fg-full-emphasis (light theme): rgba(0,0,0,.85). Only
-                    // ever rendered on the light pastel day skies — night has no
-                    // text, by construction (see WidgetPrompts) — and pinned so
+                    // ever rendered on the light pastel day skies - night has no
+                    // text, by construction (see WidgetPrompts) - and pinned so
                     // system dark mode can't invert it off its sky.
                     .foregroundColor(Color.black.opacity(0.85))
                     .multilineTextAlignment(.center)
@@ -169,7 +169,7 @@ private func skyImageName(_ sky: WidgetSky) -> String {
 
 /// The tap deep link. With a line, the native shell forwards it as
 /// `&widgetLine=…` (strictly re-encoded to ASCII alphanumerics+`%`, so nothing
-/// that could break out of the WebView hash can pass — see AppDelegate.swift)
+/// that could break out of the WebView hash can pass - see AppDelegate.swift)
 /// and the shared flow opens that exact NOTICE/ACTION_ADVICE (RouteCmp's
 /// widgetLine).
 private func openSunURL(line: String?) -> URL? {
@@ -202,7 +202,7 @@ struct MindedSunWidget: Widget {
         .description("Open the sun for a mindful moment.")
         // Home Screen only. A Lock Screen (`accessoryCircular`) variant
         // would render in the system's *vibrant* mode, which discards colour and
-        // rebuilds the view from its alpha — our near-opaque white disc + low-alpha
+        // rebuilds the view from its alpha - our near-opaque white disc + low-alpha
         // bloom would collapse to a flat tinted blob, not a sun. That wants a
         // purpose-built alpha glyph; deferred rather than shipped looking broken.
         .supportedFamilies([.systemSmall, .systemMedium])

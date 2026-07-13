@@ -17,14 +17,14 @@ import android.util.Log
  * .triggerHaptic(type)`, which lands on the real [Vibrator] service. Native
  * surfaces used to reach for [android.view.View.performHapticFeedback] instead,
  * which on a `TYPE_APPLICATION_OVERLAY` / `FLAG_NOT_FOCUSABLE` window is
- * unreliable and respects a different system setting — so the little sun's
+ * unreliable and respects a different system setting - so the little sun's
  * drag-down never matched the WebView sun's touch. Routing both through this
  * helper keeps the tactile language identical.
  *
  * Types mirror the web `triggerHaptic` util exactly:
- *  - `light`  — a faint tick (30ms one-shot).
- *  - `medium` — a crisp click (predefined EFFECT_CLICK where available).
- *  - `heavy`  — a firm click (predefined EFFECT_HEAVY_CLICK where available).
+ *  - `light`  - a faint tick (30ms one-shot).
+ *  - `medium` - a crisp click (predefined EFFECT_CLICK where available).
+ *  - `heavy`  - a firm click (predefined EFFECT_HEAVY_CLICK where available).
  */
 object Haptics {
     private const val LOG_TAG = "Haptics"
@@ -99,7 +99,7 @@ object Haptics {
     }
 
     /**
-     * The satisfying completion pattern — a firm click, then a faint tail — that
+     * The satisfying completion pattern - a firm click, then a faint tail - that
      * the WebView sun plays when a drag completes (web `triggerHapticPattern`).
      */
     fun triggerCompletion(context: Context) {

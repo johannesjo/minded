@@ -28,7 +28,7 @@ describe("resolveNightId", () => {
   });
 
   it("returns yesterday for an early-morning moment before wake", () => {
-    // Tue 2024-01-16 02:00 local — still within Monday's wind-down
+    // Tue 2024-01-16 02:00 local - still within Monday's wind-down
     const at = new Date(2024, 0, 16, 2, 0);
     expect(resolveNightId(everyDay22to07, at)).toBe("2024-01-15");
   });
@@ -54,9 +54,9 @@ describe("resolveNightId", () => {
       ...everyDay22to07,
       days: { ...everyDay22to07.days, 1: null },
     };
-    // Mon 2024-01-15 23:00 — Monday's window disabled
+    // Mon 2024-01-15 23:00 - Monday's window disabled
     expect(resolveNightId(cfg, new Date(2024, 0, 15, 23, 0))).toBeNull();
-    // Tue 2024-01-16 02:00 — looks back to Monday, which is disabled
+    // Tue 2024-01-16 02:00 - looks back to Monday, which is disabled
     expect(resolveNightId(cfg, new Date(2024, 0, 16, 2, 0))).toBeNull();
   });
 
@@ -65,11 +65,11 @@ describe("resolveNightId", () => {
       enabled: true,
       days: { 1: { start: "20:00", end: "23:00" } },
     };
-    // Mon 2024-01-15 21:00 — inside
+    // Mon 2024-01-15 21:00 - inside
     expect(resolveNightId(cfg, new Date(2024, 0, 15, 21, 0))).toBe(
       "2024-01-15",
     );
-    // Mon 2024-01-15 23:30 — outside
+    // Mon 2024-01-15 23:30 - outside
     expect(resolveNightId(cfg, new Date(2024, 0, 15, 23, 30))).toBeNull();
   });
 
@@ -92,11 +92,11 @@ describe("resolveNightId", () => {
         3: { start: "22:00", end: "07:5" },
       },
     };
-    // Mon evening — start is malformed
+    // Mon evening - start is malformed
     expect(resolveNightId(cfg, new Date(2024, 0, 15, 23, 0))).toBeNull();
-    // Tue evening — start hour out of range
+    // Tue evening - start hour out of range
     expect(resolveNightId(cfg, new Date(2024, 0, 16, 23, 0))).toBeNull();
-    // Wed evening — end is malformed
+    // Wed evening - end is malformed
     expect(resolveNightId(cfg, new Date(2024, 0, 17, 23, 0))).toBeNull();
   });
 

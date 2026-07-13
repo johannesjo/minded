@@ -4,7 +4,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
  * Observed usage for a single day. `perSite` holds the per-host totals for
  * that day and feeds today's usage observation. `byHour` (seconds accrued per
  * local hour, index 0–23, across all tracked hosts) currently has NO reader:
- * its former consumer — the "usual by this time of day" baseline — was removed
+ * its former consumer - the "usual by this time of day" baseline - was removed
  * because comparison against a personal average is benchmark grammar (see
  * usageObservation.ts). It stays written for storage-shape stability and as
  * the substrate for the possible time-of-day insight sketched in
@@ -15,10 +15,10 @@ import { getIsoDate } from "@src/util/getIsoDate";
  * charted over time (no scoreboard / trend graph).
  *
  * NOTE: this is the live observed-usage store. The similarly shaped
- * `SyncData.dailyUsage.perSite` is the *dormant* budget-legacy store (#35) — the
+ * `SyncData.dailyUsage.perSite` is the *dormant* budget-legacy store (#35) - the
  * budget feature that wrote it was removed (#38), so it now has no writer and is
  * retained only for sync-contract/back-compat. It measured something different
- * (in-overlay sun time). Don't conflate them — new usage reads come from here.
+ * (in-overlay sun time). Don't conflate them - new usage reads come from here.
  */
 export interface DailyUsageStat {
   perSite: { [host: string]: number };
@@ -66,7 +66,7 @@ const prune = (stats: UsageStatsByDate): UsageStatsByDate => {
 
 /**
  * Add `seconds` of observed foreground time on `host` to today's record.
- * Pure — returns the new map (pruned to recent days) to persist.
+ * Pure - returns the new map (pruned to recent days) to persist.
  */
 export const addUsageTime = (
   stats: UsageStatsByDate,

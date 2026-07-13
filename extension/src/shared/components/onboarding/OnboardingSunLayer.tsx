@@ -11,7 +11,7 @@ import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
 import styles from "./onboardingSunLayer.module.scss";
 
 /**
- * The ONE onboarding sun and its tap-to-pause demo overlay — shared by both
+ * The ONE onboarding sun and its tap-to-pause demo overlay - shared by both
  * platforms' onboarding. It owns the shared takeover state machine
  * (createOnboardingSunDemo), so the whole thing lives in one place; each flow
  * supplies only its step/leaving signals, its base settle rests, and how to
@@ -20,7 +20,7 @@ import styles from "./onboardingSunLayer.module.scss";
  * Mirrors the dashboard shell's fixed sun layer: the flow never mounts a
  * per-step disc; this single element morphs between the flow's rests and,
  * during the welcome demo, is driven by the shared sunStore exactly like the
- * shell sun (roles, anchors, handlers) — same disc, morphing, never a second
+ * shell sun (roles, anchors, handlers) - same disc, morphing, never a second
  * one. It mounts only once its first rest is measured, snapping straight into
  * place (never a centre-flash), softened by the layer's fade-in.
  */
@@ -106,7 +106,7 @@ export const OnboardingSunLayer = (props: {
         The welcome demo: the real interaction overlay (sky z-20, under the sun
         layer's z-30, exactly like the dashboard). Its closing fade hands the
         disc back first (onClosingStarted), so the sun glides home to the flow's
-        rest while the sky fades — one motion, never a companion detour.
+        rest while the sky fades - one motion, never a companion detour.
       */}
       {d.getIsShowPause() && (
         <InteractionOverlay

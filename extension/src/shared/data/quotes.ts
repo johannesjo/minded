@@ -4,9 +4,9 @@ export interface Quote {
 }
 
 /**
- * A small, curated pool — deliberately NOT a quote-of-the-day machine (see
+ * A small, curated pool - deliberately NOT a quote-of-the-day machine (see
  * docs/widget-prompts-concept.md's cut list). These rotate on the dashboard
- * greeting, so the bar is: calm, present-moment, non-striving — never
+ * greeting, so the bar is: calm, present-moment, non-striving - never
  * hustle/discipline/self-improvement quotes. Grow slowly and editorially.
  */
 export const QUOTES: Quote[] = [
@@ -20,7 +20,7 @@ export const QUOTES: Quote[] = [
   },
   {
     author: "Thich Nhat Hanh",
-    txt: "Drink your tea slowly and reverently, as if it is the axis on which the earth revolves — slowly, evenly, without rushing toward the future.",
+    txt: "Drink your tea slowly and reverently, as if it is the axis on which the earth revolves - slowly, evenly, without rushing toward the future.",
   },
   {
     author: "Jon Kabat-Zinn",

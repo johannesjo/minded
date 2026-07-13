@@ -16,12 +16,12 @@
       Pick light/dark before the JS bundle mounts. The interaction's safety-net
       sky floor (#minded-6622::before in indexInteractionAndroid.scss) paints
       `var(--background-gradient)` from this static markup as soon as the CSS
-      loads — before addWrapperClasses() runs in onMount to add the dark class.
+      loads - before addWrapperClasses() runs in onMount to add the dark class.
       Without this, a night intervention first paints the *light* gradient and
       then pops to the night sky once JS mounts (the "light theme flash at
-      night" bug). Setting the class synchronously here — a classic, non-module
+      night" bug). Setting the class synchronously here - a classic, non-module
       script that runs during parse, before the deferred module below and before
-      first paint — makes the very first frame the correct night sky. The dark
+      first paint - makes the very first frame the correct night sky. The dark
       `--background-gradient` override is scoped to `#minded-6622.minded-6622-dark`,
       so the class must land on this element specifically (not documentElement).
       Keep the clock rule in sync with isDarkModeNow() (src/shared/addWrapperClasses.ts).

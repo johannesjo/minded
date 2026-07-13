@@ -121,7 +121,7 @@ class OverlayDecisionEngine {
         // the wordless WIND_DOWN_SETTLE (see docs/sleep-wind-down-redesign.md).
         // Consequence: bedtime is downstream of the active-session/grace checks,
         // so a blocked app opened during an active session shows the little sun,
-        // not the settle — an intended change.
+        // not the settle - an intended change.
 
         // Skip if user just switched to the app (debounce)
         if (state.lastGoToAppTimestamp > 0 &&

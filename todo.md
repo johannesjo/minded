@@ -1,6 +1,6 @@
-# Release Automation — What's Left For You
+# Release Automation - What's Left For You
 
-Pipeline code is committed (`791fd41c`). Phase 0 setup is manual and cannot be automated. Do these in order — each step has dependencies on the previous one.
+Pipeline code is committed (`791fd41c`). Phase 0 setup is manual and cannot be automated. Do these in order - each step has dependencies on the previous one.
 
 Full procedures and troubleshooting: see [`RELEASING.md`](RELEASING.md).
 
@@ -73,8 +73,8 @@ The slowest step. Mostly waiting on Google Cloud + Play Console UI.
 - [ ] Create a service account in that GCP project with no roles
 - [ ] Back in Play Console → grant the service account **Release Manager** role, scoped to this app only (not org-wide)
 - [ ] Download the service account JSON key
-- [ ] Confirm enrollment in **Play App Signing** (Play Console → Setup → App integrity). Almost certainly already on. If not, enroll now — without it, losing the keystore kills the app permanently.
-- [ ] Locate (or generate) the upload keystore — this is the irreversible decision. If you already have `upload.jks`, use it. If not, generate fresh with `keytool` (Play App Signing means you can reset it once if needed).
+- [ ] Confirm enrollment in **Play App Signing** (Play Console → Setup → App integrity). Almost certainly already on. If not, enroll now - without it, losing the keystore kills the app permanently.
+- [ ] Locate (or generate) the upload keystore - this is the irreversible decision. If you already have `upload.jks`, use it. If not, generate fresh with `keytool` (Play App Signing means you can reset it once if needed).
 - [ ] Base64-encode the keystore: `base64 -w0 upload.jks > upload.jks.b64`
 - [ ] Add 5 secrets to the `production` environment:
   - [ ] `PLAY_SERVICE_ACCOUNT_JSON` (paste the full JSON)
@@ -90,7 +90,7 @@ The internal track won't accept automated uploads until a production release exi
 
 - [ ] Build a signed AAB locally (same command as Step 1, but with your real keystore env vars)
 - [ ] Play Console → Internal testing → Create new release → upload the AAB → roll out
-- [ ] Promote internal → production via Play Console (or wait — promoting later also works)
+- [ ] Promote internal → production via Play Console (or wait - promoting later also works)
 
 ## 7. First end-to-end dry-run (~20 min)
 
@@ -104,6 +104,6 @@ The internal track won't accept automated uploads until a production release exi
 
 ## After first successful release
 
-- [ ] Consider whether to flip `isMinifyEnabled = true` in `android/app/build.gradle.kts` (smaller AAB, harder reverse-engineering, requires uploading `mapping.txt` to Play — add `mappingFile:` to `release-play` step)
+- [ ] Consider whether to flip `isMinifyEnabled = true` in `android/app/build.gradle.kts` (smaller AAB, harder reverse-engineering, requires uploading `mapping.txt` to Play - add `mappingFile:` to `release-play` step)
 - [ ] Consider rotating to GitHub OIDC + GCP Workload Identity Federation to drop the long-lived `PLAY_SERVICE_ACCOUNT_JSON` secret
 - [ ] Schedule quarterly secret rotation reminder

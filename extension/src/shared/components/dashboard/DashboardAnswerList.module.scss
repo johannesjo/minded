@@ -2,7 +2,7 @@
 
 .AnswerList {
   :global .dashboardContent {
-    // The user's own free-text reflections — set in the mindful serif so a
+    // The user's own free-text reflections - set in the mindful serif so a
     // page of one's own words reads like gentle writing, not a settings grid.
     // Only this list opts in; sibling cards (quote, self-assessment dots,
     // emotion labels) keep Inter, and the Inter labels above stay the contrast.
@@ -19,7 +19,7 @@
       margin-top: 16px;
     }
 
-    // Entries settle in one after another instead of all at once — a small
+    // Entries settle in one after another instead of all at once - a small
     // stagger that makes the list feel composed rather than dumped.
     animation: minded6622fadeIn var(--dur-soft) var(--ease-out) both;
 

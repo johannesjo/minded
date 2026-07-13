@@ -38,10 +38,10 @@ const ENTRANCE_ANIMATION_MS = 1100;
 const ANCHOR_TOLERANCE_PX = 6;
 
 /**
- * The iOS first run — deliberately two steps, because the iOS product is
+ * The iOS first run - deliberately two steps, because the iOS product is
  * smaller (see docs/ios-platform-fit.md): there are no permissions to ask and
  * no apps to pick. Step 0 is the welcome (the same held disc as Android's,
- * with the same tap-to-pause demo — on iOS the in-app pause IS exactly what
+ * with the same tap-to-pause demo - on iOS the in-app pause IS exactly what
  * the widget tap delivers, so nothing is left un-demoable). Step 1 gives the
  * sun its home: the Home Screen widget, minded's one surface at the glance
  * where scrolling begins. "Later" is first-class; the dashboard invitation
@@ -56,7 +56,7 @@ export const OnboardingIOS = (props: {
   initialStep?: number;
 }) => {
   // Logical step drives the Stepper and the sun at once; the shown step (what
-  // the <Switch> renders) follows the content fade — the one disc morphs
+  // the <Switch> renders) follows the content fade - the one disc morphs
   // through the change instead of popping with it (same as Android).
   const [getStep, setStep] = createSignal<number>(props.initialStep ?? 0);
   const [getShownStep, setShownStep] = createSignal<number>(
@@ -66,7 +66,7 @@ export const OnboardingIOS = (props: {
 
   const isReEntry = (props.initialStep ?? 0) > 0;
   // Re-entry starts the disc on the companion anchor the dashboard sun just
-  // rested on, then lifts it next frame — the same sun visibly rises out of
+  // rested on, then lifts it next frame - the same sun visibly rises out of
   // the bar instead of a second one popping in elsewhere.
   const [getHasLifted, setHasLifted] = createSignal(!isReEntry);
 
@@ -124,7 +124,7 @@ export const OnboardingIOS = (props: {
     }
   });
 
-  // Both steps rest the disc full-size on the measured hero spacer — the
+  // Both steps rest the disc full-size on the measured hero spacer - the
   // welcome's centrepiece, and on step 1 the live preview of exactly what the
   // widget looks like (the widget IS this sun, relocated). Leaving glides it
   // onto the companion anchor the dashboard shell sun takes over.
@@ -148,7 +148,7 @@ export const OnboardingIOS = (props: {
         (prev.anchorYPxFromBottom ?? 0) - (next.anchorYPxFromBottom ?? 0),
       ) < ANCHOR_TOLERANCE_PX
     ) {
-      // Same rest — keep the object identity so Sun doesn't re-glide.
+      // Same rest - keep the object identity so Sun doesn't re-glide.
       return prev;
     }
     return next;
@@ -180,7 +180,7 @@ export const OnboardingIOS = (props: {
     // on the reduced-motion path, which has no glide to hide the race). Android
     // writes this early via its step>=3 effect, so it never hits this.
     // But never let a storage failure trap the user on the onboarding screen:
-    // saveSyncDataN already surfaces the error, so we leave regardless — at
+    // saveSyncDataN already surfaces the error, so we leave regardless - at
     // worst onboarding reappears next launch (the pre-fix behaviour).
     try {
       await updateUserCfg({ isOnboardingComplete: true });
@@ -213,7 +213,7 @@ export const OnboardingIOS = (props: {
                 </div>
                 <div class="txtSlightlyBigger">
                   <p>
-                    This little {companionWord()} is your anchor. Tap it — a
+                    This little {companionWord()} is your anchor. Tap it - a
                     calm pause opens, a moment to arrive before you carry on.
                   </p>
                   <p>
@@ -241,7 +241,7 @@ export const OnboardingIOS = (props: {
                     <em>Add Widget</em>, and choose <em>minded</em>.
                   </p>
                   <p>
-                    It stays quiet — no numbers, no nudges. The sun by day, the
+                    It stays quiet - no numbers, no nudges. The sun by day, the
                     moon by night; tapping it opens this pause.
                   </p>
                 </div>

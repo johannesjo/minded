@@ -19,7 +19,7 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: none; /*  makes (hopefully) the active pseudo class appear quicker */
 
-  // Slim, low-contrast scrollbar instead of the chunky OS default — the latter
+  // Slim, low-contrast scrollbar instead of the chunky OS default - the latter
   // looks jarring inside our injected overlay. These standard properties are
   // inherited, so a single rule here styles every scroll container (content
   // viewport, dashboard, settings…) in modern Chrome and Firefox.
@@ -51,7 +51,7 @@
     }
   }
 
-  // Body font lives on the root only so descendants inherit naturally —
+  // Body font lives on the root only so descendants inherit naturally -
   // do NOT also set this on `*`, that prior version overrode the inherited
   // display serif on nested elements inside `.txtBig`/`.h2Mindful`.
   font-family: var(--font-body);
@@ -70,7 +70,7 @@
     font-family: inherit;
   }
 
-  // Display font — single Newsreader voice for mindful surfaces only.
+  // Display font - single Newsreader voice for mindful surfaces only.
   // Descendants inherit it because we removed `*` from the body-font rule.
   .txtBig,
   .h2Mindful {

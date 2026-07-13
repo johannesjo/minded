@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * version hook — runs after npm bumps package.json, before postversion.
+ * version hook - runs after npm bumps package.json, before postversion.
  *
  * Syncs the new semver to Android (versionName + bumped versionCode)
  * and iOS (MARKETING_VERSION + bumped CURRENT_PROJECT_VERSION). Files
@@ -32,7 +32,7 @@ const versionCodeRe =
 const versionCodeMatch = gradle.match(versionCodeRe);
 if (!versionCodeMatch) {
   throw new Error(
-    'Could not find the versionCode fallback literal in build.gradle.kts — did the gradle format change?'
+    'Could not find the versionCode fallback literal in build.gradle.kts - did the gradle format change?'
   );
 }
 const currentVersionCode = parseInt(versionCodeMatch[2], 10);

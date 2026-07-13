@@ -6,8 +6,8 @@
 
 Instead, report privately through one of:
 
-1. **GitHub Security Advisories** — preferred. Use the **Report a vulnerability** button on the [Security tab](https://github.com/johannesjo/minded/security/advisories/new) of this repository.
-2. **Email** — johannes.millan@gmail.com with `[minded security]` in the subject line.
+1. **GitHub Security Advisories** - preferred. Use the **Report a vulnerability** button on the [Security tab](https://github.com/johannesjo/minded/security/advisories/new) of this repository.
+2. **Email** - johannes.millan@gmail.com with `[minded security]` in the subject line.
 
 Please include:
 - A description of the issue and its impact
@@ -27,7 +27,7 @@ In-scope:
 
 Out-of-scope:
 - The marketing site at minded.today (report site issues separately by email)
-- Third-party dependencies — please report those upstream
+- Third-party dependencies - please report those upstream
 - Social-engineering, physical attacks, denial-of-service
 
 ## Disclosure

@@ -20,7 +20,7 @@ export const saveSyncDataN = async (syncData: SyncData): Promise<void> => {
       {
         alertUser: true,
         userMessage:
-          "minded couldn't save your latest change — it was not stored. Your earlier data is untouched. Please try again.",
+          "minded couldn't save your latest change - it was not stored. Your earlier data is untouched. Please try again.",
       },
     );
     throw error;

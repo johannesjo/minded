@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * preversion hook — runs before `npm version` bumps package.json.
+ * preversion hook - runs before `npm version` bumps package.json.
  *
  * npm itself enforces a clean working tree. We add: refuse to bump
  * if local main is behind origin/main, otherwise a subsequent pull
@@ -23,7 +23,7 @@ try {
   }).trim();
   if (behind !== '0') {
     console.error(
-      `Error: local main is ${behind} commit(s) behind origin/main. Pull first — otherwise the tag will point at an orphan commit after the next rebase.`
+      `Error: local main is ${behind} commit(s) behind origin/main. Pull first - otherwise the tag will point at an orphan commit after the next rebase.`
     );
     process.exit(1);
   }

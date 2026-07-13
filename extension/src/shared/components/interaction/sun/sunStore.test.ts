@@ -9,7 +9,7 @@ import type { SunPhase } from "./sunSettle";
 // completes, the choice buttons mount before the role flips out of "interactive"
 // (the flip is deferred to a rAF). If the disc stayed interactive during that
 // window it would sit, full-size and centred, over the just-shown buttons and eat
-// their taps — worst on a backgrounded tab where the rAF is paused. The disc must
+// their taps - worst on a backgrounded tab where the rAF is paused. The disc must
 // therefore be inert as soon as the hand-off is in flight, even while the role is
 // still "interactive". See getIsSunHandoffInFlight.
 describe("isShellSunInteractive", () => {

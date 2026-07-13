@@ -14,13 +14,13 @@
 .viewPane {
   width: 100%;
   // createScreenFade drives this element's opacity (inline) to crossfade
-  // between the wind-down views — fade out, swap hidden, fade back in — so the
+  // between the wind-down views - fade out, swap hidden, fade back in - so the
   // outgoing view eases away instead of hard-cutting (the old keyed remount
   // only faded the incoming one in). Duration must match VIEW_FADE_MS in
   // SleepWindDownView.tsx.
   transition: opacity 260ms var(--ease-out);
   // Intentionally NOT `will-change: transform` and the fade intentionally has
-  // no transform — both create a containing block, which would trap the
+  // no transform - both create a containing block, which would trap the
   // goodnight gesture's `position: fixed; inset: 0` against .viewPane's
   // collapsed box and render the screen as a tiny slit.
   will-change: opacity;
@@ -66,7 +66,7 @@
 
   // btnToggleSelect bakes in 8/16px margins for use in toggle rows. In a
   // vertical list those margins stack on top of the flex gap, making the
-  // items feel disconnected — strip the margin so the gap is the only
+  // items feel disconnected - strip the margin so the gap is the only
   // spacing between cards.
   > button {
     margin: 0;
@@ -92,7 +92,7 @@
     opacity: 0.85;
   }
 
-  // Keyboard focus ring — same treatment as links (_sharedAll.scss).
+  // Keyboard focus ring - same treatment as links (_sharedAll.scss).
   &:focus-visible {
     outline: 2px solid var(--c-link-color);
     outline-offset: 3px;

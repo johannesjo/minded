@@ -1,7 +1,7 @@
 .breath-sun {
   --breath-fill: 0;
   // The breath swings between a deep-exhale low and an inhale peak. The low is
-  // set well below the peak so the out-breath reads as a real release — the sun
+  // set well below the peak so the out-breath reads as a real release - the sun
   // empties right down before the next inhale fills it again.
   --breath-min: 0.5;
   --breath-max: 1.15;
@@ -22,7 +22,7 @@
 }
 
 // Re-use the always-visible sun (global `.minded-sun`) as the breathing visual
-// so the wind-down reads as the very same sun — we only size it and guide it
+// so the wind-down reads as the very same sun - we only size it and guide it
 // through the breath via scale. Its look (fill, warm shadow, idle-breath glow,
 // moon variant) all comes from Sun.scss.
 .breath-sun .minded-sun {
@@ -32,7 +32,7 @@
   cursor: default;
   // Scale is mapped straight from the eased breath fill (0 → min, 1 → max). The
   // caller updates `--breath-fill` every animation frame, so the disc tracks the
-  // breath clock exactly — no transform transition (it would lag the breath a
+  // breath clock exactly - no transform transition (it would lag the breath a
   // frame behind itself). (transform-origin: center comes from `.minded-sun`.)
   transform: scale(
     calc(

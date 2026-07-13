@@ -3,7 +3,7 @@ import { getIsoDate } from "@src/util/getIsoDate";
 
 /**
  * Parse a `HH:MM` 24-hour string into minutes-of-day. Returns NaN for any
- * malformed input — callers must treat NaN as "no window" rather than
+ * malformed input - callers must treat NaN as "no window" rather than
  * silently propagating it through comparisons.
  */
 const parseHHMM = (s: string): number => {
@@ -17,7 +17,7 @@ const parseHHMM = (s: string): number => {
 };
 
 /**
- * Resolves the "night id" for a given moment — the ISO date of the day on which
+ * Resolves the "night id" for a given moment - the ISO date of the day on which
  * the wind-down window started. If now is past midnight but still before wake,
  * the night id is yesterday's date.
  *
@@ -44,7 +44,7 @@ export const resolveNightId = (
           return getIsoDate(at);
         }
       } else {
-        // Crosses midnight — only the "after start" half belongs to today's nightId
+        // Crosses midnight - only the "after start" half belongs to today's nightId
         if (minutesNow >= start) {
           return getIsoDate(at);
         }
@@ -90,7 +90,7 @@ export const SNOOZE_DURATION_OPTIONS = [15, 30, 60];
 /**
  * Maps a `nightId` string ("YYYY-MM-DD") to a stable index in `[0, length)`.
  * Used to pick rotating content (e.g. calm-read passage) deterministically per
- * night — same passage all night, different across nights.
+ * night - same passage all night, different across nights.
  *
  * Returns 0 for empty inputs or zero-length pools.
  */

@@ -1,11 +1,11 @@
 # Contributing to minded
 
-Thanks for your interest. This project is small and opinionated — please read this guide before opening a PR so we don't waste each other's time.
+Thanks for your interest. This project is small and opinionated - please read this guide before opening a PR so we don't waste each other's time.
 
 ## Before you start
 
 - For anything beyond a small fix, **open an issue first** to discuss the approach. Drive-by PRs that change architecture or add dependencies will likely be closed.
-- iOS is a deliberately minimal **widget-only variant** (the companion sun — see [`docs/ios-platform-fit.md`](./docs/ios-platform-fit.md)). iOS-specific PRs should stay within that scope (the WidgetKit companion + WebView shell); new *intervention* features still target the browser extension and Android only.
+- iOS is a deliberately minimal **widget-only variant** (the companion sun - see [`docs/ios-platform-fit.md`](./docs/ios-platform-fit.md)). iOS-specific PRs should stay within that scope (the WidgetKit companion + WebView shell); new *intervention* features still target the browser extension and Android only.
 - New dependencies need justification. Check `package.json` first to see if something equivalent is already available.
 
 ## Dev setup
@@ -50,7 +50,7 @@ For Android, run `npm run startDroid` from `extension/` and open `/android` in A
 
 ## Commits and PRs
 
-- Commit format: `type(scope): description` — `feat`, `fix`, `docs`, `refactor`, `test`, `chore`. Imperative mood, under 72 chars.
+- Commit format: `type(scope): description` - `feat`, `fix`, `docs`, `refactor`, `test`, `chore`. Imperative mood, under 72 chars.
 - One concern per PR. Keep diffs small and focused.
 - Reference the issue you're closing in the PR description.
 

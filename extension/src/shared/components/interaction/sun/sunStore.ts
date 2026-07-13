@@ -14,7 +14,7 @@ import {
  * rests as the companion in the top bar and transforms into the interactive
  * intervention without ever being swapped for a second element.
  *
- * The interaction logic still lives in InteractionCommon — only the sun's
+ * The interaction logic still lives in InteractionCommon - only the sun's
  * terminal outcomes (skip/fling/drag-complete/…) route back to the currently
  * active interaction via the handler registry below. All drag physics stay
  * inside Sun.tsx.
@@ -43,7 +43,7 @@ export interface SunOutcomeHandlers {
   /**
    * Whether the triple-tap-to-continue affordance is active. Defaults to true.
    * Disabled when the interaction is shown from inside the app (not as a real
-   * intervention) — tapping to skip makes no sense there (a back button is shown
+   * intervention) - tapping to skip makes no sense there (a back button is shown
    * instead).
    */
   isTapEnabled?: boolean;
@@ -55,19 +55,19 @@ const [getSunRole, setSunRole] = createSignal<SunPhase>("companion");
  * True while an in-flight interaction is handing off to the post-sun choices but
  * the role hasn't yet flipped out of "interactive". The flip is deferred to a
  * requestAnimationFrame (InteractionCommon's enterRestingForChoices) so the disc
- * glides to the measured choices slot in one motion — but the choice buttons mount
+ * glides to the measured choices slot in one motion - but the choice buttons mount
  * a tick earlier, on a setTimeout. During that window the full-size, viewport-
  * centred disc sits right over the just-shown buttons; if it stays interactive
  * (pointer-events: auto, z-30 above the overlay) it silently eats their taps. This
  * is worst on a backgrounded/throttled tab, where the rAF that flips the role is
  * paused while the setTimeout-driven buttons already rendered. Mirrors the
  * self-owned sun's `!getIsExitingInteraction()` guard so the shell disc goes inert
- * the moment the hand-off begins — without touching the role (hence the glide).
+ * the moment the hand-off begins - without touching the role (hence the glide).
  */
 const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
 /**
  * Hide the whole shell-sun layer (opacity 0, inert) without changing its role.
- * Set while a dashboard offer that *replaces* the sun flow owns the screen — the
+ * Set while a dashboard offer that *replaces* the sun flow owns the screen - the
  * let-go question (flung up/away), and the grounding offer's screen-free sit /
  * Android lock send-off (which dim to near-black). That overlay lives inside the
  * interaction layer (z-20), but the shell sun is its own fixed layer (z-30), so
@@ -76,28 +76,28 @@ const [getIsSunHandoffInFlight, setIsSunHandoffInFlight] = createSignal(false);
  * revealed again on close. Default false.
  *
  * `true` snaps to hidden (needed when a just-flung disc must not career over the
- * incoming screen — see `.isHidden` in RouteCmp.module.scss). `"soft"` fades out
+ * incoming screen - see `.isHidden` in RouteCmp.module.scss). `"soft"` fades out
  * on the layer's own 500ms ease instead: for surfaces that bring their own
  * disc as the centrepiece (the sleep wind-down's moon), where the companion
- * must yield — there is only ever one — but nothing was flung, so a snap
+ * must yield - there is only ever one - but nothing was flung, so a snap
  * would be a hard cut.
  */
 const [getIsShellSunHidden, setIsShellSunHidden] = createSignal<
   boolean | "soft"
 >(false);
 /**
- * Bottom-bar anchor (px from the bottom edge) for the companion rest — the spot
+ * Bottom-bar anchor (px from the bottom edge) for the companion rest - the spot
  * the resting disc settles onto, matching the `--companion-bar-center-y` CSS var
  * (RouteCmp.module.scss): `--safe-area-inset-bottom` + the `clamp(64px, 10vh,
  * 88px)` band / 2.
  *
  * This is only a SEED. The real position is measured from the DOM and pushed in
  * by RouteCmp: `.companionTapTarget` is positioned at that same CSS var, so the
- * shell reads its resolved `bottom` back and calls setCompanionBottomYPx — the
+ * shell reads its resolved `bottom` back and calls setCompanionBottomYPx - the
  * SCSS stays the single source of truth (no clamp math mirrored here to drift),
  * and the disc lands on the exact px the bottom-bar icons do. RouteCmp re-measures
  * on mount, next frame, on resize, and on the native `androidSafeAreaChanged`
- * push, so the resting position is whatever the CSS currently resolves to — not
+ * push, so the resting position is whatever the CSS currently resolves to - not
  * this default. The default just covers the pre-mount / non-DOM (styleguide) gap.
  */
 const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
@@ -105,7 +105,7 @@ const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
 );
 
 /**
- * Measured viewport-px centre of the interaction's sun placeholder — the empty
+ * Measured viewport-px centre of the interaction's sun placeholder - the empty
  * slot the content flow reserves for the disc (see InteractionCommon). While
  * interactive, the shell sun rests exactly here, so it always lands in the gap
  * the real layout left for it (rather than a fixed CSS guess). null when there
@@ -113,14 +113,14 @@ const [getCompanionBottomYPx, setCompanionBottomYPx] = createSignal(
  */
 const [getInteractiveSunAnchor, setInteractiveSunAnchor] =
   createSignal<SunPosition | null>(null, {
-    // Value-equality: identical re-measurements (the common case — the slot is
+    // Value-equality: identical re-measurements (the common case - the slot is
     // stable once laid out) must not churn a fresh object and re-fire the sun's
     // settle glide. Only a real move re-targets the disc.
     equals: (a, b) => a?.x === b?.x && a?.y === b?.y,
   });
 
 /**
- * Measured viewport-px centre for the resting sun — the point just beneath the
+ * Measured viewport-px centre for the resting sun - the point just beneath the
  * live intent/time choices block (see InteractionCommon). While the choices are
  * up the disc tucks under the options here, gliding down when the taller time
  * options replace the intent ones. null when no choices are on screen, in which
@@ -132,7 +132,7 @@ const [getRestingSunAnchor, setRestingSunAnchor] =
   });
 
 /**
- * `Date.now()` at the instant the breath-pause sun actually begins its breath —
+ * `Date.now()` at the instant the breath-pause sun actually begins its breath -
  * published by the sun when its glide lands (see Sun's `onBreathStart`). The
  * StrongFrictionBreathPause cue reads the same origin so the disc's scale and the
  * cue copy share one clock and can't drift (GitHub #27). `undefined` means the
@@ -147,7 +147,7 @@ const [getBreathStartedAt, setBreathStartedAt] = createSignal<
 /**
  * Progress dots orbiting the sun while the daily-questions flow drives it (a
  * faint crown above the disc, `filled` of `total` lit). It's the gentle
- * "where am I" hint the flow shows in place of a numbered stepper — present as
+ * "where am I" hint the flow shows in place of a numbered stepper - present as
  * a companion, never a score. `null` whenever no flow is driving the sun, so
  * the dots only ever appear on that route.
  */
@@ -191,8 +191,8 @@ export {
 /**
  * Settle target for the current role.
  *
- * - companionBottomYPx is read ONLY in the companion branch so that a resize —
- *   which re-measures it — re-anchors the resting companion without spuriously
+ * - companionBottomYPx is read ONLY in the companion branch so that a resize -
+ *   which re-measures it - re-anchors the resting companion without spuriously
  *   re-firing the glide for an in-flight interaction phase (e.g. restarting the
  *   breath pause).
  * - "departing" maps to the companion rest: the new-tab shell has no Little Sun
@@ -202,7 +202,7 @@ export {
 export const getSunSettleForCurrentRole = (): SunSettle | null => {
   const role = getSunRole();
   // The daily-questions answering phase rests exactly where the companion does
-  // (the bottom bar), so entering the flow from the dashboard moves nothing —
+  // (the bottom bar), so entering the flow from the dashboard moves nothing -
   // only the orbit dots fade in. It leaves that rest on success, below.
   if (
     role === "companion" ||

@@ -1,7 +1,7 @@
 @import "variablesSCSS";
 
 #minded-6622 {
-  // Radius scale — one vocabulary so corners stay in tune across surfaces.
+  // Radius scale - one vocabulary so corners stay in tune across surfaces.
   // Extend only when a new step earns its place.
   // xs: tiny controls + focus-ring rounding. pill: fully-rounded capsules
   // (an oversized value the browser clamps to half the box's short side).
@@ -11,7 +11,7 @@
   --radius-xl: 24px;
   --radius-pill: 999px;
 
-  // Spacing scale — a strict 8px rhythm (with a 4px half-step for fine
+  // Spacing scale - a strict 8px rhythm (with a 4px half-step for fine
   // alignment) so padding and gaps stay in tune across surfaces, the same way
   // the radius/motion/type vocabularies do. Reach for a token instead of a raw
   // px value; extend only when a new step earns its place. Off-grid one-offs
@@ -39,13 +39,13 @@
   --fz-s: 14px;
   //--fz-s: 18px;
 
-  // motion vocabulary — extend only when a second consumer needs it.
+  // motion vocabulary - extend only when a second consumer needs it.
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-instant: 40ms; // tap acknowledgement — snap, no perceptible ramp
+  --dur-instant: 40ms; // tap acknowledgement - snap, no perceptible ramp
   --dur-quick: 180ms; // small UI state shifts (background, transform)
   --dur-soft: 480ms; // page-level fades
 
-  // Dither/grain tile — breaks the 8-bit quantisation of the full-screen sky
+  // Dither/grain tile - breaks the 8-bit quantisation of the full-screen sky
   // gradients into noise so they can't band into visible horizontal stripes,
   // and kills the plastic feel of pure gradients. Shared by the grainOverlay
   // mixin (coloured-wrapper.scss) and BackgroundTransition's grain layer.
@@ -53,11 +53,11 @@
   // This MUST be a mid-grey noise (RGB carries the noise, alpha = 1), not the
   // old pure-black-with-varying-alpha tile: a black tile only ever darkens, so
   // `overlay` barely moved a light sky (~0.04 levels) and `screen` over black
-  // is a literal no-op (screen(x,0) = x) — i.e. the previous dither did nothing
+  // is a literal no-op (screen(x,0) = x) - i.e. the previous dither did nothing
   // and the bands survived. A near-mid-grey tile lets `soft-light` perturb
   // roughly symmetrically (both lighter and darker), which is what actually
   // dithers a band edge. (The SVG filter runs in linearRGB, so the noise's mean
-  // lands a touch above sRGB 0.5 — measured as a small ~1–3 level lightening /
+  // lands a touch above sRGB 0.5 - measured as a small ~1–3 level lightening /
   // faint desaturation of the sky, well below the banding it removes, not a
   // true zero.) See _grain.scss for the blend/opacity and the reasoning.
   --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
@@ -80,7 +80,7 @@
   --c-fg-full-emphasis: rgba(0, 0, 0, 0.85);
   --c-fg: rgba(0, 0, 0, 0.8);
 
-  // Slim, low-contrast scrollbar thumb — see the scrollbar rule in _sharedAll.scss.
+  // Slim, low-contrast scrollbar thumb - see the scrollbar rule in _sharedAll.scss.
   --scrollbar-thumb: rgba(0, 0, 0, 0.22);
 
   // global components
@@ -96,8 +96,8 @@
   --btn-bigger-fz: 27px;
   // Buttons are frosted, not solid: translucent white lets the sky's warmth
   // through so choice surfaces stay in the same world as the gradient stage
-  // (issue #167). One alpha ladder — not-selected .25 < default .65 <
-  // hover .7 < selected .85 — so selected stays the brightest step without
+  // (issue #167). One alpha ladder - not-selected .25 < default .65 <
+  // hover .7 < selected .85 - so selected stays the brightest step without
   // reverting to an opaque slab (it also signals via scale + radius).
   --btn-bg: rgba(255, 255, 255, 0.65);
   --btn-bg-not-selected: rgba(255, 255, 255, 0.25);
@@ -105,7 +105,7 @@
   --btn-outline-color: rgba(0, 0, 0, 0.14);
   --btn-bg-selectable-hover: rgba(255, 255, 255, 0.7);
   --btn-selected-scale: 1.1;
-  // Hover bloom: a warm halo, not a flashbulb — alpha kept well below the
+  // Hover bloom: a warm halo, not a flashbulb - alpha kept well below the
   // button fills above so the hover glow never outshines the choice itself.
   --btn-box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.55);
   // components
@@ -127,7 +127,7 @@
   --rating-size: 48px;
   --rating-size-small: 24px;
 
-  // A solid, warm little sun — the same companion that was just on screen,
+  // A solid, warm little sun - the same companion that was just on screen,
   // resting in the corner. A bright top-left sheen over a warm amber body so it
   // reads unmistakably as a sun (not a pale, washed-out disc) on any page.
   --little-sun-bg:
@@ -161,7 +161,7 @@
   --rating-inactive-opacity: 0.15;
   --h4-c: rgba(0, 0, 0, 0.7);
 
-  // Light theme: a calm vertical "morning sky" — blue up top fading down
+  // Light theme: a calm vertical "morning sky" - blue up top fading down
   // through soft green and yellow to a warm coral at the horizon. Static
   // (no orbs/drift); see coloured-wrapper.scss. Dark theme overrides below
   // with the two-orb ambient background.
@@ -170,7 +170,7 @@
   // sky (skyTimeline.ts): addWrapperClasses.ts overrides the four stops
   // inline by local hour across the light window, so what ships here is the
   // no-JS/default baseline. Stop *positions* below are mirrored in
-  // skyTimeline.ts's gradient builders — change them in both places.
+  // skyTimeline.ts's gradient builders - change them in both places.
   --c-gradient-1: #cfe4f5; // sky blue (top)
   --c-gradient-2: #d8ecd6; // soft green
   --c-gradient-3: #f5efc8; // yellow
@@ -183,25 +183,25 @@
   // idiom) so the composite below can wrap them at fixed alphas; like the
   // --c-gradient stops they default to the 9:00 morning keyframe and are
   // overridden inline by hour (skyTimeline.ts AMBIENT_SKY_KEYFRAMES accents,
-  // applied in addWrapperClasses.ts — keep the morning values in sync, a test
+  // applied in addWrapperClasses.ts - keep the morning values in sync, a test
   // pins them). The loading/widget skies deliberately stay the plain linear
   // gradient, the same way the dark loading sky omits the stars.
   --day-zenith-rgb: 176, 208, 236; // #b0d0ec
   --day-horizon-glow-rgb: 255, 240, 205; // #fff0cd
 
-  // The static cirrus of the resting day sky — the day's counterpart to
+  // The static cirrus of the resting day sky - the day's counterpart to
   // --night-stars below, and like it one full-sky 1440x900 SVG (not a tile;
   // the consumers' `background-size: cover` stretches every layer, and the
   // portrait crop keeps only the centre band, so streaks span many x
   // positions to keep every crop populated). A few long, thin, blurred white
   // streaks, upper sky only, fading in opacity toward the horizon. Static by
-  // design: the resting sky is ambient state, not animation — the moving life
+  // design: the resting sky is ambient state, not animation - the moving life
   // (the drifting light-motes) belongs to the down-drag reveal (Stars.tsx),
   // exactly as the twinkling field does at night.
   --day-veil: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1440' height='900' viewBox='0 0 1440 900'><defs><filter id='b' x='-40%25' y='-400%25' width='180%25' height='900%25'><feGaussianBlur stdDeviation='14'/></filter></defs><g fill='white' filter='url(%23b)'><ellipse cx='210' cy='120' rx='230' ry='9' opacity='0.3' transform='rotate(-2 210 120)'/><ellipse cx='760' cy='200' rx='300' ry='11' opacity='0.26' transform='rotate(1.5 760 200)'/><ellipse cx='1260' cy='110' rx='240' ry='8' opacity='0.3' transform='rotate(-1.5 1260 110)'/><ellipse cx='430' cy='330' rx='260' ry='9' opacity='0.2' transform='rotate(2 430 330)'/><ellipse cx='1090' cy='390' rx='280' ry='10' opacity='0.18' transform='rotate(-2 1090 390)'/><ellipse cx='150' cy='500' rx='220' ry='8' opacity='0.13' transform='rotate(1.5 150 500)'/><ellipse cx='820' cy='540' rx='250' ry='9' opacity='0.12' transform='rotate(-1 820 540)'/></g></svg>");
 
   // Layer order (top → bottom): horizon bloom, cirrus veil, zenith dome, base
-  // gradient — mirroring the night composite (glow above stars above sky).
+  // gradient - mirroring the night composite (glow above stars above sky).
   --background-gradient:
     radial-gradient(
       ellipse 90% 32% at 50% 108%,
@@ -255,7 +255,7 @@
 
   // The bottom band the companion sun rests over, and the disc's resting Y
   // (px from the bottom edge): half the band, above the safe-area inset. The
-  // single source of truth for the companion rest — JS never re-derives this
+  // single source of truth for the companion rest - JS never re-derives this
   // math, it reads the resolved px back off an element positioned with it
   // (RouteCmp's reanchorCompanion, the Android onboarding's hand-off probe).
   // Defined at the app root (not RouteCmp.module.scss) because onboarding
@@ -272,25 +272,25 @@
     --c-gradient-3: #49313b;
     // The static stars of the ambient night sky. One full-sky SVG, not a
     // repeating tile: the consumers' `background-size: cover` stretches every
-    // layer of this composite, so a tile (grain-style) would smear — the grain
+    // layer of this composite, so a tile (grain-style) would smear - the grain
     // only tiles because it lives on its own ::after with its own sizing. Star
-    // colour is the moon body's cool white (#eef2ff — LittleSun.kt aliases its
+    // colour is the moon body's cool white (#eef2ff - LittleSun.kt aliases its
     // STAR_COLOR the same way) so the night scene stays one cool palette.
     // Static by design: the twinkling field (Stars.tsx) belongs to the down-drag
     // reveal and grounding; the resting sky stays still. Stars keep to the upper
     // sky (y ≲ 640/900) clear of the warm horizon glow.
     //
-    // DENSITY / DISTRIBUTION — the reason this isn't "just a handful": `cover`
+    // DENSITY / DISTRIBUTION - the reason this isn't "just a handful": `cover`
     // preserves the SVG's 1440×900 (landscape) aspect and crops to fill, so on a
     // portrait phone only the centre ~28%-wide band is ever on screen. A sparse,
     // spread-out set therefore leaves the phone showing only the 4-5 stars whose
-    // x happens to fall in that band — the "only a couple of stars on the
+    // x happens to fall in that band - the "only a couple of stars on the
     // dashboard" bug. The fix is a *dense, evenly distributed* field (a jittered
     // grid, ~85 stars): every possible crop band stays full. So the lever here is
-    // DISTRIBUTION+COUNT IN THIS SVG — bumping the Stars.tsx down-drag field (a
+    // DISTRIBUTION+COUNT IN THIS SVG - bumping the Stars.tsx down-drag field (a
     // different surface entirely) does nothing for the resting sky.
     --night-stars: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1440' height='900' viewBox='0 0 1440 900'><g fill='%23eef2ff'><circle cx='128' cy='80' r='1.5' opacity='0.44'/><circle cx='225' cy='112' r='1.3' opacity='0.46'/><circle cx='343' cy='90' r='1.7' opacity='0.49'/><circle cx='526' cy='75' r='1' opacity='0.31'/><circle cx='713' cy='67' r='0.9' opacity='0.26'/><circle cx='830' cy='72' r='1.7' opacity='0.49'/><circle cx='939' cy='58' r='1.7' opacity='0.54'/><circle cx='1063' cy='91' r='1.5' opacity='0.42'/><circle cx='1274' cy='86' r='1.7' opacity='0.47'/><circle cx='1381' cy='67' r='1.4' opacity='0.47'/><circle cx='56' cy='131' r='1.2' opacity='0.41'/><circle cx='206' cy='134' r='0.9' opacity='0.3'/><circle cx='301' cy='146' r='1.2' opacity='0.42'/><circle cx='391' cy='135' r='1.7' opacity='0.54'/><circle cx='517' cy='147' r='1.5' opacity='0.49'/><circle cx='679' cy='150' r='1' opacity='0.34'/><circle cx='809' cy='167' r='1.2' opacity='0.32'/><circle cx='849' cy='147' r='1.4' opacity='0.38'/><circle cx='1110' cy='132' r='1.7' opacity='0.53'/><circle cx='1402' cy='155' r='1' opacity='0.32'/><circle cx='50' cy='229' r='1.1' opacity='0.39'/><circle cx='241' cy='247' r='0.8' opacity='0.27'/><circle cx='325' cy='242' r='1.4' opacity='0.43'/><circle cx='423' cy='212' r='1' opacity='0.34'/><circle cx='546' cy='204' r='1.1' opacity='0.36'/><circle cx='642' cy='256' r='1.2' opacity='0.39'/><circle cx='733' cy='209' r='1.4' opacity='0.39'/><circle cx='900' cy='257' r='1.7' opacity='0.52'/><circle cx='980' cy='255' r='1.3' opacity='0.37'/><circle cx='1093' cy='218' r='0.8' opacity='0.23'/><circle cx='1215' cy='205' r='1.7' opacity='0.51'/><circle cx='1315' cy='212' r='1' opacity='0.35'/><circle cx='121' cy='316' r='1.4' opacity='0.46'/><circle cx='185' cy='296' r='1.5' opacity='0.53'/><circle cx='268' cy='305' r='1.6' opacity='0.46'/><circle cx='428' cy='305' r='1' opacity='0.3'/><circle cx='517' cy='302' r='1.4' opacity='0.47'/><circle cx='674' cy='296' r='0.9' opacity='0.27'/><circle cx='760' cy='294' r='1.4' opacity='0.49'/><circle cx='887' cy='285' r='0.9' opacity='0.29'/><circle cx='1017' cy='286' r='1.2' opacity='0.42'/><circle cx='1157' cy='294' r='1.7' opacity='0.52'/><circle cx='1275' cy='310' r='0.9' opacity='0.25'/><circle cx='190' cy='376' r='1.6' opacity='0.48'/><circle cx='312' cy='371' r='1.7' opacity='0.57'/><circle cx='443' cy='361' r='1.4' opacity='0.43'/><circle cx='631' cy='379' r='1.6' opacity='0.52'/><circle cx='786' cy='346' r='1' opacity='0.28'/><circle cx='908' cy='360' r='1' opacity='0.29'/><circle cx='1022' cy='404' r='1.7' opacity='0.49'/><circle cx='1097' cy='365' r='1.1' opacity='0.4'/><circle cx='1234' cy='367' r='0.8' opacity='0.29'/><circle cx='1369' cy='404' r='1.5' opacity='0.45'/><circle cx='49' cy='463' r='0.8' opacity='0.23'/><circle cx='161' cy='439' r='1.7' opacity='0.51'/><circle cx='289' cy='470' r='1.5' opacity='0.52'/><circle cx='468' cy='470' r='0.9' opacity='0.24'/><circle cx='533' cy='438' r='1.3' opacity='0.43'/><circle cx='628' cy='456' r='1.7' opacity='0.53'/><circle cx='802' cy='419' r='0.9' opacity='0.27'/><circle cx='861' cy='465' r='1.2' opacity='0.42'/><circle cx='1093' cy='457' r='0.8' opacity='0.27'/><circle cx='1266' cy='454' r='1.1' opacity='0.37'/><circle cx='1398' cy='445' r='1.3' opacity='0.36'/><circle cx='62' cy='501' r='1.1' opacity='0.34'/><circle cx='241' cy='545' r='1.4' opacity='0.49'/><circle cx='413' cy='501' r='0.9' opacity='0.29'/><circle cx='560' cy='502' r='0.9' opacity='0.32'/><circle cx='645' cy='522' r='1.7' opacity='0.48'/><circle cx='897' cy='503' r='1.7' opacity='0.58'/><circle cx='1060' cy='552' r='1.7' opacity='0.53'/><circle cx='1081' cy='556' r='1.6' opacity='0.5'/><circle cx='1268' cy='510' r='1.4' opacity='0.44'/><circle cx='1413' cy='495' r='1.1' opacity='0.34'/><circle cx='122' cy='603' r='1' opacity='0.34'/><circle cx='159' cy='623' r='1.5' opacity='0.48'/><circle cx='309' cy='611' r='1.3' opacity='0.4'/><circle cx='379' cy='572' r='1' opacity='0.28'/><circle cx='592' cy='599' r='1.3' opacity='0.35'/><circle cx='673' cy='582' r='1.3' opacity='0.39'/><circle cx='781' cy='620' r='0.9' opacity='0.33'/><circle cx='880' cy='585' r='1' opacity='0.3'/><circle cx='1009' cy='626' r='1.6' opacity='0.56'/><circle cx='1299' cy='609' r='1.7' opacity='0.56'/><circle cx='1373' cy='611' r='0.9' opacity='0.3'/></g></svg>");
-    // Layer order (top → bottom): horizon glow, stars, night gradient — so any
+    // Layer order (top → bottom): horizon glow, stars, night gradient - so any
     // low star sits under the warm glow rather than punching through it.
     --background-gradient:
       radial-gradient(
@@ -338,7 +338,7 @@
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
-    // The evening reflection's closing line renders over the night sky —
+    // The evening reflection's closing line renders over the night sky -
     // without this override it stays 60% black on near-black (#02091f).
     --success-sun-txt-c: rgba(255, 255, 255, 0.85);
     --scrollbar-thumb: rgba(255, 255, 255, 0.28);
@@ -351,7 +351,7 @@
 
     --bottom-bar-bg: rgba(0, 0, 0, 0.2);
 
-    // Elevated surfaces lift off the night sky with a faint white tint —
+    // Elevated surfaces lift off the night sky with a faint white tint -
     // the same frosted-glass model light mode uses, just at low alpha. A black
     // tint here would sink the cards into the near-black top of the gradient.
     --dashboard-card-bg: rgba(255, 255, 255, 0.07);
@@ -368,13 +368,13 @@
     --btn-bg-selectable-hover: rgba(255, 255, 255, 0.18);
     --btn-bg-not-selected: rgba(255, 255, 255, 0.06);
     --btn-outline-color: rgba(255, 255, 255, 0.3);
-    // Warm amber glow that echoes the sun — calmer than a saturated pink.
+    // Warm amber glow that echoes the sun - calmer than a saturated pink.
     --btn-box-shadow: 0 0 10px 1px rgba(255, 178, 79, 0.45);
 
     // At night the companion is the moon, not a warm sun: a cool silver disc lit
     // from the top-left, with a cool blue halo instead of the daytime amber glow.
     // The in-app moon (Sun.scss .moon) is a real lunar photo, but the Little Sun
-    // deliberately stays this clean gradient rather than reusing that photo — it
+    // deliberately stays this clean gradient rather than reusing that photo - it
     // carries a timer number, and the photo's cratered surface would hurt the
     // number's legibility at this 40px size, where craters read as noise anyway.
     // Shrunk to the corner, the gradient is barely distinguishable from the photo
@@ -391,12 +391,12 @@
     --little-sun-txt-c: #33405e;
 
     // Horizon reflection under the resting moon (GitHub #125): a faint, wide,
-    // static cool bloom hugging the bottom edge, brightest under the disc — cool
+    // static cool bloom hugging the bottom edge, brightest under the disc - cool
     // moonlight pooling on the horizon so the moon reads as seated on the
     // transparent bottom bar rather than floating over nothing. Night only: the
     // daytime sun already sits over a warm coral horizon, where a warm bloom of
     // any calm opacity is invisible (verified against the light sky), so the day
-    // companion deliberately gets none — one more surface only earns its place
+    // companion deliberately gets none - one more surface only earns its place
     // where it actually reads. Bare rgb components + a separate alpha so the
     // gradient can wrap them at a tuned opacity.
     --horizon-reflection-rgb: 198, 216, 255;

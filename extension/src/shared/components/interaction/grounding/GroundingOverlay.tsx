@@ -28,17 +28,17 @@ type Phase = "offer" | "duration" | "session" | "settle" | "androidLock";
 type Mode = "timer" | "quiet";
 
 interface GroundingOverlayProps {
-  /** "sun" (light) or "moon" (dark) — matches the dashboard theme. */
+  /** "sun" (light) or "moon" (dark) - matches the dashboard theme. */
   variant: "sun" | "moon";
   /** Called once the flow is finished (completed, declined, or ignored). */
   onClose: () => void;
   /**
-   * How the dashboard's single shell sun should behave through this stage — the
+   * How the dashboard's single shell sun should behave through this stage - the
    * one disc carries the whole flow rather than a second one being drawn:
    * - "companion": rest on the bottom bar beneath the invitation (offer/duration)
    *   or glide home there beneath the closing praise.
    * - "meditate": rise into the centre and breathe as the timed sit's breath sun
-   *   (the surfing meditation settle — the same gentle pulse the other meditations
+   *   (the surfing meditation settle - the same gentle pulse the other meditations
    *   use), so the sit reads as the same sun the user always sees.
    * - "hidden": tuck away while a screen-free sit / Android lock owns the screen.
    * Provided only by the shell-sun dashboard; its *presence* also tells this
@@ -52,7 +52,7 @@ interface GroundingOverlayProps {
 /**
  * The grounding offer the dashboard sun gives when dragged *down*. It is an
  * invitation, never a trap: declining is as easy as accepting, doing nothing
- * dismisses it, and any sit can be ended early. Two ways to ground yourself —
+ * dismisses it, and any sit can be ended early. Two ways to ground yourself -
  * eyes on a calm anchor (timer) or eyes off entirely (screen-free).
  */
 export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
@@ -68,7 +68,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
 
   // The shell-sun dashboard wires onSunMode; its presence means the one shell sun
   // is available to carry this stage, so the timed sit reuses it as its breath sun
-  // rather than drawing its own. (Absent in the styleguide preview — see the
+  // rather than drawing its own. (Absent in the styleguide preview - see the
   // BreathSun fallback in the timed-sit render.)
   const usesMainSun = () => !!props.onSunMode;
 
@@ -108,7 +108,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   // there through the wordless settle beat ("companion"); it rises into the centre and
   // breathes as the timed sit's breath sun ("meditate"); it tucks away while a
   // screen-free sit / Android lock owns the near-black screen ("hidden"). The timed
-  // sit is the morph the user sees — the companion disc rises and breathes rather
+  // sit is the morph the user sees - the companion disc rises and breathes rather
   // than a second disc popping in.
   createEffect(() => {
     const phase = getPhase();
@@ -123,12 +123,12 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   });
 
   // The down-drag's warm sunset (light) / night sky (dark) carries in with the
-  // offer — opaque and pixel-identical to the drag, so the hand-off reads as one
-  // continuous motion, no flash — and then eases straight back to the dashboard's
+  // offer - opaque and pixel-identical to the drag, so the hand-off reads as one
+  // continuous motion, no flash - and then eases straight back to the dashboard's
   // own calm sky. "Stay a while" is a place to rest, not a sunset to dwell in, so
   // the dissolve starts the moment the offer mounts (no hold on the sunset) and
   // runs slowly over SKY_SETTLE_MS (the .skySettled rule eases the ::before to 0).
-  // Two rAFs so the carried-in sunset paints once before .skySettled flips it —
+  // Two rAFs so the carried-in sunset paints once before .skySettled flips it -
   // otherwise the browser coalesces the change and hard-cuts to standard.
   settleRaf = requestAnimationFrame(() => {
     settleRaf = requestAnimationFrame(() => {
@@ -138,7 +138,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   });
 
   // A gentle offer never nags: if it is left untouched it fades on its own.
-  // "Untouched" is literal — the first touch or keyboard focus cancels the
+  // "Untouched" is literal - the first touch or keyboard focus cancels the
   // countdown, so the offer never disappears mid-decision.
   createEffect(() => {
     if (getPhase() !== "offer" || getHasEngaged()) return;
@@ -162,7 +162,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     // The most grounding thing on a phone is getting the screen out of the way
     // entirely, so the screen-free sit locks the phone rather than running an
     // on-screen timer. Lock right away (after the gong); a timer you can't see
-    // is pointless. On the web there's no phone to put away — dim instead.
+    // is pointless. On the web there's no phone to put away - dim instead.
     if (mode === "quiet" && IS_ANDROID) {
       startAndroidLock();
       return;
@@ -188,7 +188,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const startSession = (minutes: number) => {
     const durationMs = minutes * 60 * 1000;
     // Fade to the sit, then mark the threshold into stillness and start the clock
-    // as it lands — the gong and countdown begin with the screen, not before it.
+    // as it lands - the gong and countdown begin with the screen, not before it.
     screenFade.toScreen(() => {
       setRemainingMs(durationMs);
       setPhase("session");
@@ -212,11 +212,11 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   const finishSession = () => {
     // Idempotent (see `finishing`): the "End" tap and the end timer can both land
     // (or End can be double-tapped); only the first call rings the gong and
-    // advances. A flag, not a phase read — the phase swap is deferred to the fade.
+    // advances. A flag, not a phase read - the phase swap is deferred to the fade.
     if (finishing || getIsClosing()) return;
     finishing = true;
     stopTimers();
-    // The gong calls you back — ring it the instant the sit ends, then fade out.
+    // The gong calls you back - ring it the instant the sit ends, then fade out.
     void playGong();
     if (getMode() === "timer") {
       screenFade.toScreen(() => {
@@ -226,7 +226,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
         }, SETTLE_DURATION_MS);
       });
     } else {
-      // Screen-free: nothing on screen to close — the disconnect carries itself.
+      // Screen-free: nothing on screen to close - the disconnect carries itself.
       close();
     }
   };
@@ -241,7 +241,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   });
 
   // The screen-free sit (and its Android lock send-off) dims almost to black so
-  // the eyes can truly rest — the one stage where the night sky should recede.
+  // the eyes can truly rest - the one stage where the night sky should recede.
   const isQuietPhase = () =>
     getMode() === "quiet" &&
     (getPhase() === "session" || getPhase() === "androidLock");
@@ -271,12 +271,12 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     >
       {/* The living sky the down-drag revealed carries through onto the
           grounding stage instead of a flat gradient: at night the same
-          twinkling stars, by day their counterpart — warm motes of light
+          twinkling stars, by day their counterpart - warm motes of light
           adrift in the golden sky (Stars' day variant). It's part of the
           overlay's own backdrop, so it fades in and out with the stage (no
           separate layer to flash on close). */}
       <div class={styles.starfield} aria-hidden="true">
-        {/* Gentle twinkle/drift only — no shooting-star flourish: a meteor
+        {/* Gentle twinkle/drift only - no shooting-star flourish: a meteor
             streaking across the frame would read as a jolt, not calm, behind a
             settling sit. Intensity drops to 0 for the screen-free sit's
             near-black dim, which both recedes the field and stops its
@@ -293,7 +293,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           cut. The sky (::before), the stars above, and the shell sun (its own
           layer) sit outside this and don't fade per screen. */}
       <div class={styles.screen} style={{ opacity: screenFade.opacity() }}>
-        {/* Offer — "Stay a while?" with two ways to ground, and an easy decline. */}
+        {/* Offer - "Stay a while?" with two ways to ground, and an easy decline. */}
         <Show when={getPhase() === "offer"}>
           <div class={styles.panel}>
             <h2 class={styles.title}>Stay a while?</h2>
@@ -312,7 +312,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           </div>
         </Show>
 
-        {/* Duration — a small ladder for the chosen mode. */}
+        {/* Duration - a small ladder for the chosen mode. */}
         <Show when={getPhase() === "duration"}>
           <div class={styles.panel}>
             <h2 class={styles.title}>
@@ -332,7 +332,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           </div>
         </Show>
 
-        {/* Timed sit — the one sun breathes at the centre, the remaining time and
+        {/* Timed sit - the one sun breathes at the centre, the remaining time and
           End tucked just beneath it (mirrors the urge-surf meditation). The
           breathing disc IS the shell sun, risen from its companion rest (see the
           onSunMode effect); only the styleguide preview, which has no shell sun,
@@ -350,7 +350,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           </div>
         </Show>
 
-        {/* Screen-free sit — eyes off; the bell calls you back. */}
+        {/* Screen-free sit - eyes off; the bell calls you back. */}
         <Show when={getPhase() === "session" && getMode() === "quiet"}>
           <div class={styles.session}>
             <p class={styles.quietCue}>Rest your eyes.</p>
@@ -367,7 +367,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           </div>
         </Show>
 
-        {/* A finished timed sit closes on a wordless settle beat — no praise, no
+        {/* A finished timed sit closes on a wordless settle beat - no praise, no
             verdict. The sun glides home to the bottom bar and the sky settles;
             the morph carries the close (see #164). */}
       </div>

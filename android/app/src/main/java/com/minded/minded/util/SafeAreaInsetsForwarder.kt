@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
  * [WebViewSafeAreaBridge.update] so the page's `--safe-area-inset-*`
  * CSS variables stay in sync. Re-runs whenever the insets change
  * (rotation, gesture-nav swap, edge-to-edge toggling, etc.). No-ops while
- * [webView] is `null` — the AndroidView factory sets it after first
+ * [webView] is `null` - the AndroidView factory sets it after first
  * composition.
  */
 @Composable

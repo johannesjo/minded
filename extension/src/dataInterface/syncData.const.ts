@@ -97,7 +97,7 @@ export const DEFAULT_SYNC_DATA: SyncData = {
   },
   activeTimer: null,
   emotionLabeling: null,
-  // Daily budget feature — REMOVED (#38); dormant defaults kept for the sync
+  // Daily budget feature - REMOVED (#38); dormant defaults kept for the sync
   // JSON contract / back-compat only (see syncData.d.ts). No writer or reader.
   dailyBudget: null,
   dailyUsage: {},

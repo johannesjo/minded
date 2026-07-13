@@ -9,14 +9,14 @@ import { resolve } from "path";
 // `.btnToggleSelect` carries an `::after` hit-area expander with
 // `pointer-events: all` (btn.scss). So `.is-dismissed *` alone leaves those
 // pseudos live and they swallow taps meant for the choices. The fix lists the
-// `::before`/`::after` descendant pseudos explicitly — this test fails if anyone
+// `::before`/`::after` descendant pseudos explicitly - this test fails if anyone
 // collapses the rule back to the `*`-only form.
 
 const SRC_DIR = resolve(__dirname, "../../../");
 
 // InteractionCommon.scss relies on the globally-available `displayVoice` mixin
 // (provided by the build, not imported in the file), so compile it through a
-// wrapper that pulls the mixin into scope — exactly what's needed to render the
+// wrapper that pulls the mixin into scope - exactly what's needed to render the
 // real `.is-dismissed` rule.
 const compileInteractionCss = (): string =>
   compileString(
@@ -48,7 +48,7 @@ describe("InteractionCommon .is-dismissed pointer-events", () => {
   it("neutralises descendant pseudo-elements (which `*` cannot match)", () => {
     const selector = dismissRule![1];
     // Without these the btn `::after` hit-area expanders stay live above the
-    // choices and eat their taps — the exact bug this guards against.
+    // choices and eat their taps - the exact bug this guards against.
     expect(selector).toContain(".interaction-content.is-dismissed *::after");
     expect(selector).toContain(".interaction-content.is-dismissed *::before");
   });

@@ -1,7 +1,7 @@
 import { SessionTarget } from "@src/dataInterface/syncData";
 
 // App and website names can be long (deep subdomains, verbose app labels), and
-// a prompt is a single calm line — so any injected name is hard-capped here and
+// a prompt is a single calm line - so any injected name is hard-capped here and
 // ellipsised rather than allowed to blow out the layout.
 export const MAX_TARGET_NAME_LEN = 18;
 
@@ -36,7 +36,7 @@ export const displayTargetName = (
  * Swaps the generic "this website" / "this app" referent in a prompt for the
  * actual site/app name when we know it (during an in-the-moment intervention),
  * so "Why are you visiting this website" reads "Why are you visiting reddit.com".
- * Falls back to the original generic wording when there's no name — e.g. the
+ * Falls back to the original generic wording when there's no name - e.g. the
  * same prompt shown passively on the dashboard.
  */
 export const withTargetName = (text: string, targetName?: string): string => {

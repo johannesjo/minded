@@ -3,7 +3,7 @@
      lives in the foreground layer (ic_launcher_foreground.xml) so it gains
      parallax depth over this sky. Kept identical to the raster fallbacks
      (mipmap-*/ic_launcher.webp) and ic_launcher-playstore.png, so the visible
-     icon is unchanged — this only moves the sky out of the foreground and
+     icon is unchanged - this only moves the sky out of the foreground and
      retires the old Android Studio placeholder grid. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"

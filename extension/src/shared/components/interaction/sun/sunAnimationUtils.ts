@@ -97,11 +97,11 @@ export function hasVerticalCompletionIntent(vector: Vector2D): boolean {
  * pointer-down. Two states make it inert:
  *
  * - `isCompletionStarted`: a terminal animation (fling / drag-complete) is
- *   underway — the disc is on its way out and must not re-arm.
+ *   underway - the disc is on its way out and must not re-arm.
  * - `isSettlingIntoRole`: a role-transition glide (enter/exitSettle) is still
  *   carrying the disc to its rest. Taking a gesture over mid-glide cancels the
  *   glide and re-anchors the rest to the interrupted spot, stranding the disc
- *   there — the "tap the rising sun a second time and it sticks, full-size" bug.
+ *   there - the "tap the rising sun a second time and it sticks, full-size" bug.
  *   The disc becomes grabbable again the instant the glide lands.
  *
  * The breath loop, snap-back and fling are deliberately NOT covered: they keep

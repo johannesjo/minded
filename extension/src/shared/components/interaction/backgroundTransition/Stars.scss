@@ -7,7 +7,7 @@
   z-index: 2; // Above background but below content
   pointer-events: none;
   // Opacity is driven inline from the sun's drag progress (see Stars.tsx) so the
-  // night sky fills in as the sun is pulled down and recedes as it returns — no
+  // night sky fills in as the sun is pulled down and recedes as it returns - no
   // CSS transition here, or it would lag a frame behind the finger.
   opacity: 0;
 }
@@ -19,14 +19,14 @@
   box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
   // Rest at this star's own dim level so the field reads as present (and stays so
   // when motion is reduced) rather than starting blank. The twinkle only runs
-  // while the field is shown (.active) — see below. Each star's own
+  // while the field is shown (.active) - see below. Each star's own
   // delay/duration/`--twinkle-min` are set inline (Stars.tsx).
   opacity: var(--twinkle-min, 0.5);
 }
 
 // The day variant of the field: warm motes of light adrift in the revealed
 // golden sky (see Stars.tsx `variant`). Warm-white bodies with a soft amber
-// halo so they read as backlit dust in the low sun — visible over both the
+// halo so they read as backlit dust in the low sun - visible over both the
 // saturated sunset the drag reveals and the pale ambient sky the grounding
 // stage settles onto.
 .star.mote {
@@ -38,7 +38,7 @@
 
 // A lively shimmer, not a blink: each star eases between its own dim level
 // (`--twinkle-min`, varied per star for depth) and full brightness, with a gentle
-// scale change. It never drops to 0 — that read as a harsh, random flicker — but
+// scale change. It never drops to 0 - that read as a harsh, random flicker - but
 // the dip is deep enough to sparkle.
 @keyframes twinkle {
   0%,
@@ -53,7 +53,7 @@
 }
 
 // The mote's whole life in one keyframe: it brightens as it wanders to its
-// --drift-x/--drift-y offset and dims on the way home — a glint as it crosses
+// --drift-x/--drift-y offset and dims on the way home - a glint as it crosses
 // the light, over 10-22s cycles (Stars.tsx). One animation instead of a
 // separate twinkle + drift pair, so opacity and motion can never fall out of
 // phase and the transform channel isn't fought over.
@@ -74,15 +74,15 @@
 // Motion is driven entirely by `transform: rotate(θ) translateX(...)` (see the
 // keyframes), never by animating top/left. That matters: the trail is a fixed
 // horizontal line attached to the head, so the only way to guarantee it always
-// points opposite the direction of travel — instead of jutting off at an angle
-// like a plane's contrail — is to put the trail and the motion in the *same*
+// points opposite the direction of travel - instead of jutting off at an angle
+// like a plane's contrail - is to put the trail and the motion in the *same*
 // rotated frame. Translating along the rotated X axis does exactly that, on any
 // viewport aspect ratio. Each meteor only needs a fixed anchor (the point its
 // line passes through at translateX(0)); the head sweeps along that line.
 //
 // The element itself is a zero-size *point* at the anchor. Both the head
 // (`::after`) and the tail (`::before`) hang off that same point and each
-// centre themselves on it, so neither can drift relative to the other — the
+// centre themselves on it, so neither can drift relative to the other - the
 // head can't sit a pixel or two off the line the way it did when the tail was
 // measured against the head's own 3px box.
 .shooting-star {
@@ -93,7 +93,7 @@
 
   // The head: a bright glowing dot centred on the point. Kept clearly the
   // brightest, most prominent part so the leading end of the streak is never in
-  // doubt — a faint head behind a long bright trail can read as moving tail-first.
+  // doubt - a faint head behind a long bright trail can read as moving tail-first.
   &::after {
     content: "";
     position: absolute;
@@ -108,7 +108,7 @@
   }
 
   // The tail: its bright right end meets the point (the head), fading out behind
-  // it to the left — along the trailing direction of motion. Deliberately shorter
+  // it to the left - along the trailing direction of motion. Deliberately shorter
   // and dimmer than the head so it reads as a trail subordinate to the head,
   // never the brightest mass.
   &::before {
@@ -172,7 +172,7 @@
 
 // Each meteor sweeps along its own diagonal by animating translateX on the
 // rotated axis from off one side to off the other. The rotation is constant, so
-// the trail stays locked exactly opposite the motion the whole way across — no
+// the trail stays locked exactly opposite the motion the whole way across - no
 // airplane-contrail angle. Travel is packed into the first ~third of the cycle,
 // then the head is held off-screen and invisible, so meteors read as occasional
 // flourishes rather than a constant streak. The angles differ per meteor for
@@ -243,7 +243,7 @@
 // Honour a reduced-motion preference: hold the field still rather than
 // twinkling, drifting and streaking. Stars and day motes stay as quiet static
 // dots (their base opacity), and the shooting stars (base opacity 0) simply
-// never appear. `.star.mote` is listed explicitly — its drift rule above is
+// never appear. `.star.mote` is listed explicitly - its drift rule above is
 // more specific than bare `.star`, so it needs its own match to be overridden.
 @media (prefers-reduced-motion: reduce) {
   .stars-container.active {

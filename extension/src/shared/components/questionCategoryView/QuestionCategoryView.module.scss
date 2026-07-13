@@ -13,7 +13,7 @@
   margin-bottom: 64px;
 }
 
-// The quiet "Answer removed. Undo" line beneath the list — the same soft
+// The quiet "Answer removed. Undo" line beneath the list - the same soft
 // safety net (and the same look) as the website list's removal status.
 .removedStatus {
   align-items: center;
@@ -38,7 +38,7 @@
   padding: 2px 4px;
   text-decoration: underline;
 
-  // Keyboard focus ring — same treatment as links (_sharedAll.scss).
+  // Keyboard focus ring - same treatment as links (_sharedAll.scss).
   &:focus-visible {
     outline: 2px solid var(--c-link-color);
     outline-offset: 3px;

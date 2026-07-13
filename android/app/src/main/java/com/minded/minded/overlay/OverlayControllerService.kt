@@ -158,7 +158,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             goToHomeScreen()
         } else if (isOnBlockedApp) {
             // For Little Sun (active timer) or wind-down, the user explicitly
-            // opted into that state — keep restoring it via the normal flow,
+            // opted into that state - keep restoring it via the normal flow,
             // which also handles timer expiry while screen was off.
             val appToRestore = freshForegroundApp ?: savedApp
             Log.d(logTag, "Restoring overlay after unlock: savedOverlay=$savedOverlay app=$appToRestore")
@@ -336,7 +336,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         appName: String? = null,
         // Only meaningful for INTERACTION_OVERLAY: re-show the intervention by
         // gliding the sun out of the Little Sun's corner (set when a session timer
-        // ran out). Always assigned to the window below — false for a plain show —
+        // ran out). Always assigned to the window below - false for a plain show -
         // so a stale value can't leak from a prior timer expiry into a later show.
         morphInFromCorner: Boolean = false
     ) {
@@ -475,7 +475,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     /**
      * True when the user is inside their configured bedtime window AND the
      * snooze deadline is still in the future. Distinct from [isWindDownActive],
-     * which excludes the snooze period — during snooze we show the regular
+     * which excludes the snooze period - during snooze we show the regular
      * little-sun countdown instead of the full wind-down overlay.
      */
     private fun isWindDownSnoozed(syncData: SyncData): Boolean {
@@ -561,7 +561,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
         // The Little Sun bubble just timed out and faded from its corner; if this
         // leads to a fresh intervention, let its sun glide back out of that same
-        // corner — the reverse of the depart hand-off — instead of popping in.
+        // corner - the reverse of the depart hand-off - instead of popping in.
         checkToShowOverlay(currentApp, morphInterventionFromCorner = true)
     }
 
@@ -888,13 +888,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     /**
-     * The gentle redirect away from a blocked app and into minded itself — a calm
-     * space — rather than the launcher, which would dump the user back among the
+     * The gentle redirect away from a blocked app and into minded itself - a calm
+     * space - rather than the launcher, which would dump the user back among the
      * very icons (including the one just left) that re-tempt. This is the
      * "redirect" half of interrupt → reflect → redirect, shared by every calm
      * close: the full interaction, the sleep wind-down, and the little-sun
      * bubble's drag-to-horizon step-away. We can't (and the philosophy
-     * wouldn't) force-kill the blocked app — we just glide the user somewhere
+     * wouldn't) force-kill the blocked app - we just glide the user somewhere
      * calm.
      */
     fun goToApp() {
@@ -903,9 +903,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         lastGoToAppTimestamp = System.currentTimeMillis()
         // Guard the launch: a Service startActivity can be refused (background
         // activity-launch restrictions on some OEMs / Android versions). Callers
-        // run their overlay teardown *downstream* of this — the little-sun
+        // run their overlay teardown *downstream* of this - the little-sun
         // step-away fires goToApp() and only then animates the sun out and hides
-        // the window — so an uncaught throw here would abort that teardown and
+        // the window - so an uncaught throw here would abort that teardown and
         // strand the bubble mid-leave. Swallow it: worst case the redirect is
         // missed, but the overlay still closes.
         try {

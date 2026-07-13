@@ -14,11 +14,11 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.PersonalResources]:
     "Noticing your own strengths can be a quiet source of confidence to draw on when things feel hard.",
   [QuestionCategoryId.TodayILearned]:
-    "Pausing on what you noticed today lets the day's small discoveries settle — nothing to prove, just worth keeping.",
+    "Pausing on what you noticed today lets the day's small discoveries settle - nothing to prove, just worth keeping.",
   [QuestionCategoryId.RefocusHelperToday]:
     "Naming one thing that matters today can bring a little clarity, and a gentler sense of where to begin.",
   [QuestionCategoryId.Motivation]:
-    "Noticing what quietly moves you can help you begin again when things feel heavy — no pressure, just a reminder of what's yours.",
+    "Noticing what quietly moves you can help you begin again when things feel heavy - no pressure, just a reminder of what's yours.",
   [QuestionCategoryId.Gratitude]:
     "Noticing what you're grateful for, even something small, can gently soften a heavy moment.",
   [QuestionCategoryId.HelpfulTools]:
@@ -28,11 +28,11 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.PositiveThoughts]:
     "Making room for kinder, truer thoughts can gently steady you when things feel heavy.",
   [QuestionCategoryId.GoodToday]:
-    "Noticing the good in your day, however small, can quietly lift the moment — nothing needs to be earned.",
+    "Noticing the good in your day, however small, can quietly lift the moment - nothing needs to be earned.",
   [QuestionCategoryId.GoodPlans]:
     "Holding a gentle plan can ease worry about what's ahead and remind you there's no rush.",
   [QuestionCategoryId.GoodPlansToday]:
-    "A soft sense of the day ahead can settle the mind — not a checklist, just a direction to lean toward.",
+    "A soft sense of the day ahead can settle the mind - not a checklist, just a direction to lean toward.",
   [QuestionCategoryId.GoalForTheWeek]:
     "Noticing what matters to you this week can bring a quiet sense of direction, held lightly.",
   [QuestionCategoryId.UnderstandingProcrastination]:
@@ -44,7 +44,7 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
   [QuestionCategoryId.SleepWindDown]:
     "Writing down loose thoughts before sleep can reduce the need to keep them in working memory and make it easier to leave the day alone for the night.",
   [QuestionCategoryId.SelfImprovement]:
-    "Reflecting on who you'd like to become, held gently, can help you stay close to what matters to you — no pressure to be anywhere other than where you are.",
+    "Reflecting on who you'd like to become, held gently, can help you stay close to what matters to you - no pressure to be anywhere other than where you are.",
   [QuestionCategoryId.Relationships]:
     "Bringing the people who matter to mind can quietly nurture connection and remind you of the support already around you.",
   [QuestionCategoryId.MindfulEating]:

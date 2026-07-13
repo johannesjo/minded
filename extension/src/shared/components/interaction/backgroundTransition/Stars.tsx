@@ -6,23 +6,23 @@ interface StarsProps {
   // back up or springs home), rather than snapping on at completion.
   intensity: number;
   // The corner-to-corner shooting-star flourish (night only). On by default
-  // (the dashboard's down-drag sky). Calm always-on surfaces — the grounding
-  // sit — pass false: a streaking meteor reads as a jolt behind a settling
+  // (the dashboard's down-drag sky). Calm always-on surfaces - the grounding
+  // sit - pass false: a streaking meteor reads as a jolt behind a settling
   // meditation.
   shootingStars?: boolean;
   // Hold the field to FIELD_MAX_OPACITY so it stays *behind* translucent UI
   // rather than bleeding through it. Only the dashboard/interaction background
   // (stars behind cards + buttons) passes this; the full-screen success night
-  // sky — the grounding sit, the goodnight — keeps the stars at full brightness,
+  // sky - the grounding sit, the goodnight - keeps the stars at full brightness,
   // since there is no card or button there to compete with them.
   dimmed?: boolean;
   // "night" (default) is the twinkling star field. "day" is its daylight
   // counterpart over the revealed golden sky: fewer, larger, warm motes of
-  // light adrift in the low sun — the dust-in-a-sunbeam image. They glint and
+  // light adrift in the low sun - the dust-in-a-sunbeam image. They glint and
   // drift slowly instead of streaking (see the shooting-star note above: fast
   // motion reads as a jolt, so by day the slow drift *is* the magic). The
   // field regenerates if this flips (BackgroundTransition resolves dark mode a
-  // beat after mount) — always while intensity is 0, so the swap never shows.
+  // beat after mount) - always while intensity is 0, so the swap never shows.
   variant?: "night" | "day";
 }
 
@@ -35,7 +35,7 @@ interface Star {
   twinkleDuration: number;
   // The dim end of this star's twinkle (the bright end is always 1). Varied per
   // star so the field shimmers softly with a sense of depth rather than every
-  // star blinking fully on/off in lockstep — see the `twinkle` keyframe.
+  // star blinking fully on/off in lockstep - see the `twinkle` keyframe.
   minOpacity: number;
   // Day motes only: how far this mote wanders over one cycle (px, set as
   // --drift-x/--drift-y for the `moteDrift` keyframe). Stars stay in place.
@@ -46,11 +46,11 @@ interface Star {
 // Cap for the *dimmed* field only (see the `dimmed` prop). The night-mode cards
 // and buttons rest at a barely-there fill (`--btn-bg` 0.12, `--btn-bg-not-selected`
 // 0.06 white), so a field of pure-white pinpoints twinkling up to full opacity
-// behind them bled straight through and sat behind the text — the stars, buttons
+// behind them bled straight through and sat behind the text - the stars, buttons
 // and cards all competed and none read cleanly. Where stars back that UI we hold
 // the field to a fraction of the drag intensity so it stays behind the cards
 // rather than through them. The full-screen success night sky is left at full
-// brightness (dimmed omitted) — nothing sits over it to lose legibility.
+// brightness (dimmed omitted) - nothing sits over it to lose legibility.
 const FIELD_MAX_OPACITY = 0.55;
 
 const Stars: Component<StarsProps> = (props) => {
@@ -62,7 +62,7 @@ const Stars: Component<StarsProps> = (props) => {
     const newStars: Star[] = [];
 
     if (isDay()) {
-      // Day motes: far fewer and larger than the stars — sparse specks of
+      // Day motes: far fewer and larger than the stars - sparse specks of
       // light hanging in the air, not a starfield recoloured. Long cycles and
       // negative delays start every mote mid-wander, so the field fades in
       // already alive rather than moving off in lockstep.
@@ -79,7 +79,7 @@ const Stars: Component<StarsProps> = (props) => {
           // Dimmer dips than the stars: a mote drifting out of the light
           // nearly disappears, which is what makes the glints read as light.
           minOpacity: Math.random() * 0.4 + 0.15,
-          // A slow, slightly rising wander — dust in warm air.
+          // A slow, slightly rising wander - dust in warm air.
           driftX: Math.random() * 24 - 12,
           driftY: -(Math.random() * 12 + 4),
         });
@@ -97,7 +97,7 @@ const Stars: Component<StarsProps> = (props) => {
         y: Math.random() * 100,
         size: Math.random() * 2 + 1, // Size between 1-3px
         animationDelay: Math.random() * 6, // Random delay 0-6s
-        // 3-6s cycles — a lively shimmer without tipping into a harsh flicker.
+        // 3-6s cycles - a lively shimmer without tipping into a harsh flicker.
         twinkleDuration: Math.random() * 3 + 3,
         // Dip to 0.3-0.75 then back to full: enough contrast to sparkle, but
         // never blinking fully off.
@@ -123,7 +123,7 @@ const Stars: Component<StarsProps> = (props) => {
       // stays legibly behind the translucent night-mode cards/buttons rather
       // than bleeding through them; the success night sky leaves it at full.
       // `active` only switches on the shooting-star flourish once any star is
-      // showing — it no longer controls the fade (that's the inline opacity now).
+      // showing - it no longer controls the fade (that's the inline opacity now).
       classList={{
         active: props.intensity > 0,
       }}
@@ -143,7 +143,7 @@ const Stars: Component<StarsProps> = (props) => {
               "animation-delay": `${star.animationDelay}s`,
               "animation-duration": `${star.twinkleDuration}s`,
               // Per-star dim level for the twinkle (and the static brightness when
-              // motion is reduced) — see `--twinkle-min` in Stars.scss.
+              // motion is reduced) - see `--twinkle-min` in Stars.scss.
               "--twinkle-min": `${star.minOpacity}`,
               // Day motes wander by this much per cycle (see `moteDrift`).
               ...(star.driftX !== undefined && {
@@ -155,7 +155,7 @@ const Stars: Component<StarsProps> = (props) => {
         )}
       </For>
 
-      {/* Shooting stars for extra magic — night only: the day field's magic is
+      {/* Shooting stars for extra magic - night only: the day field's magic is
           the slow drift itself, and a fast streak would jolt the calm. */}
       <Show when={!isDay() && (props.shootingStars ?? true)}>
         <div class="shooting-star shooting-star-1" />

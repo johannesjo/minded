@@ -1,10 +1,10 @@
 /**
- * Timing for the FINGER_REST interaction — stillness itself as the practice.
+ * Timing for the FINGER_REST interaction - stillness itself as the practice.
  */
 
 /**
  * A touch shorter than this was a tap, not a rest: nothing happens and the
- * invitation simply returns. Deliberately NOT a hold-to-unlock gate — there is
+ * invitation simply returns. Deliberately NOT a hold-to-unlock gate - there is
  * no announced target, no progress shown, and lifting is always free; this
  * threshold only tells an accidental brush apart from an actual moment of
  * rest.
@@ -18,8 +18,8 @@ export const FINGER_REST_MIN_MS = 1200;
 export const FINGER_REST_CUE_FADE_MS = 900;
 
 /**
- * The warmth under the resting finger arrives slowly — a quiet response, not a
- * reward animation — and releases a little quicker than it gathered.
+ * The warmth under the resting finger arrives slowly - a quiet response, not a
+ * reward animation - and releases a little quicker than it gathered.
  */
 export const FINGER_REST_WARMTH_IN_MS = 3000;
 export const FINGER_REST_WARMTH_OUT_MS = 1200;

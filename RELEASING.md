@@ -1,6 +1,6 @@
 # Releasing
 
-minded ships to stores via tag-triggered CI: the Chrome Web Store (browser extension) and the Google Play Store (Android app), both in `.github/workflows/release.yml`. The iOS **widget-only variant** ships separately to TestFlight via `.github/workflows/ios-testflight.yml` — see [iOS / TestFlight](#ios--testflight) below. **You do not need a Mac**: iOS is built and signed on a GitHub-hosted macOS runner.
+minded ships to stores via tag-triggered CI: the Chrome Web Store (browser extension) and the Google Play Store (Android app), both in `.github/workflows/release.yml`. The iOS **widget-only variant** ships separately to TestFlight via `.github/workflows/ios-testflight.yml` - see [iOS / TestFlight](#ios--testflight) below. **You do not need a Mac**: iOS is built and signed on a GitHub-hosted macOS runner.
 
 See [`docs/release-automation-plan.md`](docs/release-automation-plan.md) for the design rationale and `.github/workflows/release.yml` for the pipeline definition.
 
@@ -31,11 +31,11 @@ Before the first automated release, complete these manual steps. They cannot be 
 
 ### Enroll in Play App Signing
 
-Likely already enrolled (default for apps created after 2021). Without it, the upload key is the app signing key — lose it and the app is dead forever. With it, you can reset the upload key once via the Play Console.
+Likely already enrolled (default for apps created after 2021). Without it, the upload key is the app signing key - lose it and the app is dead forever. With it, you can reset the upload key once via the Play Console.
 
 ### First-ever Play upload
 
-Must be done manually via Play Console (create a release on any track → upload AAB) — the Play API only takes over once the app has an initial release on file. After that first manual upload, CI handles everything: tagged releases go to **production**, pushes to `main` go to **internal** testing.
+Must be done manually via Play Console (create a release on any track → upload AAB) - the Play API only takes over once the app has an initial release on file. After that first manual upload, CI handles everything: tagged releases go to **production**, pushes to `main` go to **internal** testing.
 
 ## Cutting a release
 
@@ -45,10 +45,10 @@ npm version patch    # or minor / major
 ```
 
 This:
-- bumps `package.json`, `android/app/build.gradle.kts` (`versionName`; the `versionCode` literal is also bumped but is now only a local-build fallback — CI derives the real one, see [Version codes](#version-codes-the-cross-track-constraint)), and `extension/ios/App/App.xcodeproj/project.pbxproj`
+- bumps `package.json`, `android/app/build.gradle.kts` (`versionName`; the `versionCode` literal is also bumped but is now only a local-build fallback - CI derives the real one, see [Version codes](#version-codes-the-cross-track-constraint)), and `extension/ios/App/App.xcodeproj/project.pbxproj`
 - creates `chore(release): bump version to X.Y.Z` commit and `vX.Y.Z` tag
 
-Builds run in CI on tag push — no local build is required.
+Builds run in CI on tag push - no local build is required.
 
 Then:
 
@@ -58,22 +58,22 @@ git push --follow-tags
 
 The tag triggers `.github/workflows/release.yml`. Steps:
 
-1. `verify-version` — passes automatically (no approval needed).
-2. `release-chrome` and `release-play` — **both wait for your approval** in the Actions UI (Environments → `production` → review).
+1. `verify-version` - passes automatically (no approval needed).
+2. `release-chrome` and `release-play` - **both wait for your approval** in the Actions UI (Environments → `production` → review).
 3. Once approved, each job builds and uploads:
    - Chrome: extension is uploaded **and auto-submitted for review**. Google's review queue typically clears in minutes to days. No further action in the CWS dashboard.
-   - Play: AAB is uploaded straight to the **production** track and published live (`STATUS: completed`) — no manual promotion step. (Continuous internal-test builds are a separate pipeline; see below.)
+   - Play: AAB is uploaded straight to the **production** track and published live (`STATUS: completed`) - no manual promotion step. (Continuous internal-test builds are a separate pipeline; see below.)
 4. `github-release` creates a GitHub Release with auto-generated notes from commit messages.
 
 Total wall time: ~6–10 min once approved.
 
 ## Store and marketing screenshots
 
-Store and marketing screenshots have their own runbook — see
+Store and marketing screenshots have their own runbook - see
 [`docs/screenshot-publishing.md`](docs/screenshot-publishing.md) for the full
 checklist (README, minded.today, Google Play, Chrome Web Store, rollback).
 
-Quick reference — regenerate every set from `extension/`:
+Quick reference - regenerate every set from `extension/`:
 
 ```bash
 npm run screenshots
@@ -81,7 +81,7 @@ npm run screenshots
 
 This refreshes the tracked root README images and the two ignored upload sets
 (`screenshots/google-play/phone/`, `screenshots/chrome-web-store/`). Publish
-Google Play with `npm run screenshots:publish` from `extension/` — it
+Google Play with `npm run screenshots:publish` from `extension/` - it
 regenerates the set for review, then triggers the **Update store screenshots**
 workflow (confirming at its prompt is the approval; there is no separate
 reviewer gate). Chrome Web Store images are replaced by hand in the developer
@@ -93,7 +93,7 @@ dashboard. The runbook above covers each step, plus minded.today and rollback.
 **internal testing** track on every push to `main` that touches the app (a
 `paths:` filter limits it to `extension/**`, `android/**`, and the pipeline's
 own files). Internal-track installs **auto-update through the Play Store** like
-any normal app — once you've opted in and installed, your phone stays on the
+any normal app - once you've opted in and installed, your phone stays on the
 latest `main` with no sideloading. This shares the production app listing but a
 different track.
 
@@ -104,14 +104,14 @@ eligible for, and **rejects** a release that would be shadowed by a higher code
 already active on another track (`multiApkShadowedActiveApk`). Internal testers
 are also production-eligible, so a naive "give internal a permanently higher
 code" scheme would block the next production release. (It would also globally
-*consume* those codes — a `versionCode` can never be reused.)
+*consume* those codes - a `versionCode` can never be reused.)
 
 So both pipelines derive `versionCode` from the **same** source: seconds since
 2020-01-01 UTC, computed at build time (`$(date +%s) - 1577836800`). Whichever
 builds later has the higher code. Internal builds on each push; a production
 release builds at release time ("now"), so production is always **at or above**
 the latest internal build and stays publishable. `build.gradle.kts`'s literal
-`versionCode` is now only a local-build fallback — CI always overrides it.
+`versionCode` is now only a local-build fallback - CI always overrides it.
 `versionName` is untouched (`npm version` still owns the user-facing semver, and
 `verify-version` only checks `versionName`), so nothing user-visible changes;
 only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
@@ -121,29 +121,29 @@ only the invisible integer moves from `23` to a ~2e8 timestamp. It grows
 > and its upload, it could grab a higher code and shadow that production
 > release. The window is minutes and it self-heals on the next release (just
 > re-run). If you want production fully isolated from this, the alternative is a
-> separate dev app id (`com.minded.minded.dev` via a Gradle flavor) — more setup
+> separate dev app id (`com.minded.minded.dev` via a Gradle flavor) - more setup
 > (a second Play listing) but production version codes never interact at all.
 
 ### One-time setup
 
 1. **Environment / secrets.** The workflow currently reuses the existing
    **`production`** environment (`environment: production`), so **no new secrets
-   are needed** — it already has the signing + Play keys. The catch: the
+   are needed** - it already has the signing + Play keys. The catch: the
    `production` environment has a required reviewer, so **each push to `main`
    waits for a one-click approval** in the Actions UI before it ships to
    internal. To make it fully hands-off, create a separate **`internal`**
    environment (Settings → Environments → New) with **no required reviewers**,
    re-add the same five values (`ANDROID_KEYSTORE_BASE64`,
    `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`,
-   `PLAY_SERVICE_ACCOUNT_JSON` — environment secrets aren't inherited, so they
+   `PLAY_SERVICE_ACCOUNT_JSON` - environment secrets aren't inherited, so they
    must be re-entered or promoted to repo-level), and switch `environment:` in
    `play-internal.yml` to `internal`. Don't just remove the reviewer from
-   `production` — that would un-gate real production releases too.
+   `production` - that would un-gate real production releases too.
 2. **No manual AAB upload needed** (for minded). A manual first upload is only
    required for a brand-new app with zero releases; minded already ships to
    production, so the API can upload to the internal track directly. You do need
    to **set up the internal testing track and add your phone as a tester** once
-   in the Console — that's track config, not a build upload (step 3).
+   in the Console - that's track config, not a build upload (step 3).
 3. **Opt your phone into internal testing:** Play Console → Testing → Internal
    testing → Testers → copy the **opt-in URL**, open it on your phone, accept,
    then install from the link (or from the Play Store once joined). After that,
@@ -169,31 +169,31 @@ CWS review may require source code for minified bundles. When prompted:
 
 ## iOS / TestFlight
 
-iOS is the **widget-only variant** (the companion sun — see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner — **no Mac of your own required**. Signing is **manual and deterministic**: one **Apple Distribution** certificate (`.p12`) plus two **App Store** provisioning profiles (app `com.minded.app` + widget `com.minded.app.widget`) are stored as GitHub secrets and imported into a throwaway keychain on each run. The App Store Connect API key is still used, but only to *upload* the finished build to TestFlight (`altool`), not to sign.
+iOS is the **widget-only variant** (the companion sun - see `docs/ios-platform-fit.md`). It builds, signs, and uploads to **TestFlight** entirely on a GitHub-hosted macOS runner - **no Mac of your own required**. Signing is **manual and deterministic**: one **Apple Distribution** certificate (`.p12`) plus two **App Store** provisioning profiles (app `com.minded.app` + widget `com.minded.app.widget`) are stored as GitHub secrets and imported into a throwaway keychain on each run. The App Store Connect API key is still used, but only to *upload* the finished build to TestFlight (`altool`), not to sign.
 
-> **Why not cloud signing (`-allowProvisioningUpdates`)?** It's tempting because it stores no `.p12`/`.mobileprovision` in CI — but on an *ephemeral* runner it mints a **brand-new signing certificate every run** and never reuses it, because the runner's keychain (and the freshly-created private key) are destroyed when the job ends. Apple caps certificates per team, so after a couple of dozen runs the account fills up and archives start failing with *"Your account has reached the maximum number of certificates."* Manual signing reuses the **same** persisted certificate forever — no leak, and the archive is reproducible. (If you ever hit that cap again, clear the leaked certs — see the troubleshooting row at the bottom.)
+> **Why not cloud signing (`-allowProvisioningUpdates`)?** It's tempting because it stores no `.p12`/`.mobileprovision` in CI - but on an *ephemeral* runner it mints a **brand-new signing certificate every run** and never reuses it, because the runner's keychain (and the freshly-created private key) are destroyed when the job ends. Apple caps certificates per team, so after a couple of dozen runs the account fills up and archives start failing with *"Your account has reached the maximum number of certificates."* Manual signing reuses the **same** persisted certificate forever - no leak, and the archive is reproducible. (If you ever hit that cap again, clear the leaked certs - see the troubleshooting row at the bottom.)
 
 Workflow: `.github/workflows/ios-testflight.yml`. It runs on four triggers, but only some upload to TestFlight:
 
 | Trigger | What it does |
 |---|---|
-| **push to `main`** | Build + signed archive **only — no upload.** A verification gate: iOS is the can't-test-locally variant, so this catches silent compile/signing breakage on every commit (it's free on this public repo). |
-| **nightly cron** (04:00 UTC) | Full build **+ TestFlight upload** — one fresh beta per day. `main` changes daily, so it isn't a redundant rebuild. |
+| **push to `main`** | Build + signed archive **only - no upload.** A verification gate: iOS is the can't-test-locally variant, so this catches silent compile/signing breakage on every commit (it's free on this public repo). |
+| **nightly cron** (04:00 UTC) | Full build **+ TestFlight upload** - one fresh beta per day. `main` changes daily, so it isn't a redundant rebuild. |
 | **`vX.Y.Z` tag** | Full build **+ upload**, alongside the store releases. |
 | **manual dispatch** (Actions → *iOS TestFlight* → *Run workflow*) | Full build **+ upload**, on demand. |
 
-The upload is gated by `if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')` on the *Upload to TestFlight* step — i.e. plain `main` pushes verify but don't distribute.
+The upload is gated by `if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')` on the *Upload to TestFlight* step - i.e. plain `main` pushes verify but don't distribute.
 
 ### Why "no Mac" still isn't "no Apple"
 
-There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS. "Without a Mac" means *without owning one*: you rent Apple's hosted macOS runner per build. You still need a paid **Apple Developer Program** membership ($99/yr) for any signing or distribution.
+There is no pure-Linux iOS build - `xcodebuild`/archive/sign only run on macOS. "Without a Mac" means *without owning one*: you rent Apple's hosted macOS runner per build. You still need a paid **Apple Developer Program** membership ($99/yr) for any signing or distribution.
 
 ### One-time setup
 
 1. **Apple Developer Program** membership (Team ID `363FAFK383`).
-2. **Register the app** in App Store Connect once: bundle id `com.minded.app`, then create the app record. TestFlight uploads fail until the record exists. (Note: the iOS bundle id `com.minded.app` is intentionally *not* the same as `capacitor.config.ts`'s `appId` / the Android `applicationId`, which are both `com.minded.minded`. The iOS Xcode project — `project.pbxproj` — is the source of truth for iOS; `cap sync` does not change it.)
-3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **App Manager** access (it's now only used to *upload* to TestFlight, not to sign, so Admin is no longer required). Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**. Keep the `.p8` file around — the cert-cleanup helper in the troubleshooting section reuses it.
-4. **Create the signing identity — one Apple Distribution certificate + two App Store profiles.** This is Mac-free (OpenSSL on Linux for the key material, the Developer portal in a browser for the Apple side):
+2. **Register the app** in App Store Connect once: bundle id `com.minded.app`, then create the app record. TestFlight uploads fail until the record exists. (Note: the iOS bundle id `com.minded.app` is intentionally *not* the same as `capacitor.config.ts`'s `appId` / the Android `applicationId`, which are both `com.minded.minded`. The iOS Xcode project - `project.pbxproj` - is the source of truth for iOS; `cap sync` does not change it.)
+3. **App Store Connect API key**: Users and Access → Integrations → App Store Connect API → generate a key with **App Manager** access (it's now only used to *upload* to TestFlight, not to sign, so Admin is no longer required). Download the `.p8` **once** (you can't re-download it). Note its **Key ID** and the team **Issuer ID**. Keep the `.p8` file around - the cert-cleanup helper in the troubleshooting section reuses it.
+4. **Create the signing identity - one Apple Distribution certificate + two App Store profiles.** This is Mac-free (OpenSSL on Linux for the key material, the Developer portal in a browser for the Apple side):
 
    ```bash
    # a) Generate a private key + certificate signing request (CSR)
@@ -202,7 +202,7 @@ There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS
    ```
 
    - **b) Certificate.** Developer portal → *Certificates, Identifiers & Profiles* → **Certificates** → **+** → **Apple Distribution** → upload `dist.csr` → download the resulting `distribution.cer`.
-   - **c) Bundle it into a `.p12`** (pick any password — it becomes the `IOS_DIST_CERT_PASSWORD` secret):
+   - **c) Bundle it into a `.p12`** (pick any password - it becomes the `IOS_DIST_CERT_PASSWORD` secret):
 
      ```bash
      openssl x509 -in distribution.cer -inform DER -out dist.pem -outform PEM
@@ -212,7 +212,7 @@ There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS
      #  macOS `security import` can read the .p12)
      ```
 
-   - **d) App IDs.** Under **Identifiers**, confirm both `com.minded.app` and `com.minded.app.widget` exist (the app already does; create the widget one if missing — type *App*, no special capabilities). 
+   - **d) App IDs.** Under **Identifiers**, confirm both `com.minded.app` and `com.minded.app.widget` exist (the app already does; create the widget one if missing - type *App*, no special capabilities). 
    - **e) Two App Store profiles.** Under **Profiles** → **+** → **App Store** (Distribution):
      - App ID `com.minded.app` → select the *Apple Distribution* cert from (b) → **name it exactly `minded profile main`** → download `minded-app.mobileprovision`.
      - App ID `com.minded.app.widget` → same cert → **name it exactly `minded profile widget`** → download `minded-widget.mobileprovision`.
@@ -231,23 +231,23 @@ There is no pure-Linux iOS build — `xcodebuild`/archive/sign only run on macOS
    | `IOS_APP_PROVISIONING_PROFILE_BASE64` | `base64 -w0 minded-app.mobileprovision` |
    | `IOS_WIDGET_PROVISIONING_PROFILE_BASE64` | `base64 -w0 minded-widget.mobileprovision` |
 
-6. **Widget target — wired in automatically by CI.** The `MindedWidget` Swift sources live in `extension/ios/App/MindedWidget/`, but the WidgetKit **extension target is not stored in `App.xcodeproj`**. The TestFlight workflow adds it on the fly: a *Wire in the widget extension target* step runs `extension/ios/App/scripts/add_widget_target.rb` (via the `xcodeproj` gem) before `pod install`, so every archive embeds the companion sun. The same script also pins **both** targets to manual signing (the shared distribution cert + each target's App Store profile) when the workflow passes the `IOS_*_PROFILE_NAME` env — a local run without those env vars leaves signing on Automatic so the project still opens in Xcode. The script is idempotent and the archive step is the real verification — a malformed project fails CI rather than silently shipping the WebView shell without the sun. Nothing to do here; to wire it into a checked-in project instead, run that script once locally and commit the `project.pbxproj` diff (see that folder's `README.md`).
+6. **Widget target - wired in automatically by CI.** The `MindedWidget` Swift sources live in `extension/ios/App/MindedWidget/`, but the WidgetKit **extension target is not stored in `App.xcodeproj`**. The TestFlight workflow adds it on the fly: a *Wire in the widget extension target* step runs `extension/ios/App/scripts/add_widget_target.rb` (via the `xcodeproj` gem) before `pod install`, so every archive embeds the companion sun. The same script also pins **both** targets to manual signing (the shared distribution cert + each target's App Store profile) when the workflow passes the `IOS_*_PROFILE_NAME` env - a local run without those env vars leaves signing on Automatic so the project still opens in Xcode. The script is idempotent and the archive step is the real verification - a malformed project fails CI rather than silently shipping the WebView shell without the sun. Nothing to do here; to wire it into a checked-in project instead, run that script once locally and commit the `project.pbxproj` diff (see that folder's `README.md`).
 
-> **Caveats for the first build.** (a) With manual signing you reuse one persisted distribution certificate, so the per-team certificate cap no longer creeps up on you — but if you're migrating from the old cloud-signing setup, clear its leaked certs first (see the troubleshooting row below). (b) This iOS app has never been compiled; treat the first run as real verification, especially that the WebView loads the `distIOS` bundle (asset paths use base `/`). (c) `altool --upload-app` is deprecated though still functional on Xcode 16 — see the comment in the workflow for the migration path if a future Xcode drops it.
+> **Caveats for the first build.** (a) With manual signing you reuse one persisted distribution certificate, so the per-team certificate cap no longer creeps up on you - but if you're migrating from the old cloud-signing setup, clear its leaked certs first (see the troubleshooting row below). (b) This iOS app has never been compiled; treat the first run as real verification, especially that the WebView loads the `distIOS` bundle (asset paths use base `/`). (c) `altool --upload-app` is deprecated though still functional on Xcode 16 - see the comment in the workflow for the migration path if a future Xcode drops it.
 
 ### Testing on a specific person's phone (e.g. a friend's), no public release
 
-Yes — this is exactly what TestFlight is for. A TestFlight build is **not** a public App Store release; only invited testers see it.
+Yes - this is exactly what TestFlight is for. A TestFlight build is **not** a public App Store release; only invited testers see it.
 
 1. Run the *iOS TestFlight* workflow (manual dispatch is fine). It uploads the build to App Store Connect → TestFlight.
 2. In **App Store Connect → TestFlight**, add the tester:
-   - **Internal testers** (up to 100) get builds **immediately, no review** — but each must be added as a user on your App Store Connect team.
-   - **External testers** (just their email, no team access) are simpler for a friend/partner: create a tester group, add their email, and submit the build for **Beta App Review** (a light, usually-fast review — much quicker than App Store review). Once approved, they install the **TestFlight** app from the App Store and accept the invite.
+   - **Internal testers** (up to 100) get builds **immediately, no review** - but each must be added as a user on your App Store Connect team.
+   - **External testers** (just their email, no team access) are simpler for a friend/partner: create a tester group, add their email, and submit the build for **Beta App Review** (a light, usually-fast review - much quicker than App Store review). Once approved, they install the **TestFlight** app from the App Store and accept the invite.
 3. They install via the **TestFlight** app on their iPhone. Builds expire after 90 days.
 
 **Export compliance** (would otherwise block external testing on *every* build): minded sets `ITSAppUsesNonExemptEncryption = false` in `extension/ios/App/App/Info.plist` (it uses only standard HTTPS/system crypto, which is exempt), so builds skip the "Missing Compliance" prompt automatically. If you ever add non-exempt encryption, remove that key and answer the question in App Store Connect instead. External testers also need a one-line **Beta App Description** and a **feedback email** in the TestFlight *Test Information* tab.
 
-Ad-hoc distribution (register the device UDID, install an `.ipa` directly) also works without a release but is clunkier and capped at the devices you register — TestFlight is the recommended path.
+Ad-hoc distribution (register the device UDID, install an `.ipa` directly) also works without a release but is clunkier and capped at the devices you register - TestFlight is the recommended path.
 
 ### Versioning
 
@@ -260,7 +260,7 @@ Neither store supports true rollback. The fix is always **fix-forward** with a h
 ### Play Store
 
 - Play Console → Production → "Halt managed publishing rollout" to pause distribution while you ship a fix.
-- Cut a new version (`npm version patch`) and push the tag — the release pipeline ships the fix straight to production.
+- Cut a new version (`npm version patch`) and push the tag - the release pipeline ships the fix straight to production.
 
 ### Chrome Web Store
 
@@ -273,20 +273,20 @@ Do this quarterly, or immediately on any suspicion of compromise.
 
 - **CWS refresh token:** regenerate via `chrome-webstore-upload-keys`. Update `CWS_REFRESH_TOKEN`.
 - **Play service account:** Play Console → API access → rotate key. Update `PLAY_SERVICE_ACCOUNT_JSON`.
-- **Keystore:** if compromise is suspected, generate a new upload key. Play App Signing supports one upload-key reset via Play Console. Without Play App Signing, the app is dead — you cannot rotate.
+- **Keystore:** if compromise is suspected, generate a new upload key. Play App Signing supports one upload-key reset via Play Console. Without Play App Signing, the app is dead - you cannot rotate.
 
 ## Lost keystore
 
-- With Play App Signing enrolled (recommended): Play Console → request upload key reset (one-time-ish — do not lose the new one).
+- With Play App Signing enrolled (recommended): Play Console → request upload key reset (one-time-ish - do not lose the new one).
 - Without Play App Signing: app cannot be updated. Period. Publish a new app under a new package name.
 
 ## Troubleshooting
 
 | Symptom | Cause |
 |---|---|
-| `verify-version` fails on version mismatch | Tag created without `npm run version` — files weren't bumped. Re-run the version script. |
+| `verify-version` fails on version mismatch | Tag created without `npm run version` - files weren't bumped. Re-run the version script. |
 | `verify-version` fails on ancestry | Tag was created on a non-main branch. Merge to main first, then re-tag from the merge commit. |
-| Play upload rejected: "versionCode already exists" / `multiApkShadowedActiveApk` | Two builds landed in the same second, or an internal push minted a higher code mid-release and shadowed it. versionCode is time-derived, so don't edit it — just **re-run the workflow** to mint a fresh timestamp code. |
+| Play upload rejected: "versionCode already exists" / `multiApkShadowedActiveApk` | Two builds landed in the same second, or an internal push minted a higher code mid-release and shadowed it. versionCode is time-derived, so don't edit it - just **re-run the workflow** to mint a fresh timestamp code. |
 | CWS upload rejected: "package size too large" | Bundle exceeds 50MB recommended. Investigate large assets. (Hard limit is 2GB.) |
 | Gradle: "keystore file not found" | Workflow secrets missing or wrong base64. Re-encode with `base64 -w0`. |
 | iOS Archive: *"Your account has reached the maximum number of certificates"* | Leftover certs from the old cloud-signing setup (it leaked one per run). Clear them with the helper below, then re-run. Won't recur under manual signing. |

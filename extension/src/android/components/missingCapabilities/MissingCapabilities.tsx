@@ -22,7 +22,7 @@ export const REQUIRED_CAPABILITIES = ["Accessibility", "SystemAlertWindow"];
 const OPTIONAL_CAPABILITIES = ["UsageStats", "BatteryOptimization"];
 
 // How long a granted card takes to glide out. Matches --dur-soft so the JS
-// unmount lines up with the CSS collapse — the card finishes easing away exactly
+// unmount lines up with the CSS collapse - the card finishes easing away exactly
 // as we drop it from the list (and as 0ms under reduced-motion, it's instant).
 const EXIT_MS = 480;
 
@@ -87,7 +87,7 @@ export const MissingCapabilityView = (props: {
 
     // A capability that's missing again before its exit finished (granted then
     // re-revoked within EXIT_MS) must leave the exiting set at once, so it shows
-    // straight away instead of staying collapsed — a re-revoke must not hard-pop.
+    // straight away instead of staying collapsed - a re-revoke must not hard-pop.
     // Keeps the invariant: exiting ⊆ not-currently-missing.
     setExiting((prev) =>
       [...prev].some((c) => mc.includes(c))
@@ -110,7 +110,7 @@ export const MissingCapabilityView = (props: {
     // Optional step never auto-concludes. Granting one advisory permission must
     // not skip past the other (devices vary in which of the two start missing),
     // and even granting all of them leaves the user here to move on at their own
-    // pace via Continue — which is always available, since nothing blocks.
+    // pace via Continue - which is always available, since nothing blocks.
     if (props.optionalOnly) {
       setCanContinue(true);
       return;
@@ -153,7 +153,7 @@ export const MissingCapabilityView = (props: {
   const hasOptionalVisible = () =>
     OPTIONAL_CAPABILITIES.some((c) => isVisible(c));
 
-  // Positive confirmation once every required capability is granted — shown only
+  // Positive confirmation once every required capability is granted - shown only
   // on the requiredOnly step, where the user lingers to press Continue (the
   // optional step hands off to the celebratory "sun is ready" screen instead).
   // Held back until the last required card has finished exiting so the card and
@@ -203,7 +203,7 @@ export const MissingCapabilityView = (props: {
             <div class="txtSlightlyBigger">
               {props.optionalOnly ? (
                 <>
-                  You're all set. These extras are optional — they just help the{" "}
+                  You're all set. These extras are optional - they just help the{" "}
                   {companionWord()} appear more reliably. Add them now or skip;
                   you can always do it later.
                 </>
@@ -226,7 +226,7 @@ export const MissingCapabilityView = (props: {
           <PermissionCard capability="Accessibility">
             <p class={styles.permissionText}>
               <em>minded</em> uses accessibility capabilities only to notice
-              which app is in the foreground — the moment you've opened one of
+              which app is in the foreground - the moment you've opened one of
               the apps you chose. Nothing else is read.
             </p>
             <Btn onClick={() => onMissingCapabilityClick("Accessibility")}>
@@ -252,7 +252,7 @@ export const MissingCapabilityView = (props: {
           <PermissionCard capability="SystemAlertWindow">
             <p class={styles.permissionText}>
               The overlay permission lets the {companionWord()} appear over
-              that app — the pause itself.
+              that app - the pause itself.
             </p>
             <Btn onClick={() => onMissingCapabilityClick("SystemAlertWindow")}>
               Enable Overlay Permission

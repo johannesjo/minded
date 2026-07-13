@@ -35,7 +35,7 @@ class WidgetPromptsTest {
     fun `text exists exactly when the sky is light`() {
         // The near-black prompt text is only legible on the day sky. The slot
         // boundaries are built from SunWidgetPhase's constants so this holds by
-        // construction — this guards the construction (e.g. someone reintroducing
+        // construction - this guards the construction (e.g. someone reintroducing
         // a local night constant).
         for (hour in 0..23) {
             assertEquals(

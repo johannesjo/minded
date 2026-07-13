@@ -5,7 +5,7 @@
  * Upload an AAB to the Google Play Developer API.
  *
  * Replaces r0adkll/upload-google-play, whose error handler reports every
- * API failure as "Unknown error occurred" — it reads err.message, but the
+ * API failure as "Unknown error occurred" - it reads err.message, but the
  * Play API attaches the real message to err.errors[0].message and
  * err.response.data.error. We surface both so CI failures are debuggable.
  *
@@ -30,15 +30,15 @@ import net from 'node:net';
 // Google's endpoints: the TLS connection establishes, then the response body is
 // truncated mid-stream (ERR_STREAM_PREMATURE_CLOSE). The OAuth token fetch to
 // www.googleapis.com/oauth2/v4/token hits this on *every* run and burns through
-// the entire retry budget below — a sustained network-path failure, not a blip.
+// the entire retry budget below - a sustained network-path failure, not a blip.
 //
 // A previous attempt (#98) set only dns.setDefaultResultOrder('ipv4first'), and
-// it was inert — the run failed byte-for-byte identically. The reason: Node 22
+// it was inert - the run failed byte-for-byte identically. The reason: Node 22
 // enables autoSelectFamily (Happy Eyeballs) by default, and that path resolves
 // addresses with `verbatim` forced, ignoring setDefaultResultOrder entirely. So
 // the IPv4 path was never actually exercised. Happy Eyeballs also can't rescue
 // this case: the IPv6 socket *connects* fine (so it wins the race) and only
-// fails later when the body truncates — connection-level fallback never trips.
+// fails later when the body truncates - connection-level fallback never trips.
 //
 // The fix that actually holds is to pin the address family at the socket level
 // so the AAAA path is never used at all. gaxios -> node-fetch sends requests
@@ -84,7 +84,7 @@ const auth = new google.auth.GoogleAuth({
 });
 
 // Network-level hiccups and 5xx/429 responses from the Google APIs are
-// transient — the token endpoint in particular likes to drop the connection
+// transient - the token endpoint in particular likes to drop the connection
 // mid-response (ERR_STREAM_PREMATURE_CLOSE), which would otherwise fail an
 // entire release. Genuine errors (auth, duplicate version code, bad request)
 // are not retried so they still surface fast.
@@ -106,7 +106,7 @@ function isRetryable(err) {
 }
 
 // Google intermittently reports a seconds-old edit as expired/not-found in the
-// middle of the upload sequence — a transient backend condition, not a real
+// middle of the upload sequence - a transient backend condition, not a real
 // precondition failure (the edit is only seconds old and nothing else touches
 // this app). It surfaces as HTTP 400 "This edit has expired, please create a
 // new Edit." (reason failedPrecondition) or 404 editNotFound. Unlike the network
@@ -157,7 +157,7 @@ async function runEdit(androidpublisher) {
   console.log(`  editId=${editId}`);
 
   console.log('[2/4] Uploading bundle...');
-  // Recreate the read stream on each attempt — a consumed stream can't replay.
+  // Recreate the read stream on each attempt - a consumed stream can't replay.
   const upload = await withRetry('Upload bundle', () =>
     androidpublisher.edits.bundles.upload({
       packageName: PACKAGE_NAME,
@@ -188,7 +188,7 @@ async function runEdit(androidpublisher) {
   // *after* the server commits would leave a retry calling commit on a now-
   // consumed editId, which fails with editNotFound and masks the successful
   // publish. A single attempt fails honestly instead. (A *stale-edit* error
-  // here is safe to replay — see publish() — because an expired edit provably
+  // here is safe to replay - see publish() - because an expired edit provably
   // never committed; a network drop is not classed as stale, so it still fails
   // honestly.)
   console.log('[4/4] Committing edit...');
@@ -226,7 +226,7 @@ async function main() {
   // calls, acquiring a token is fully idempotent, so isolate it into its own
   // aggressively-retried phase up front. google-auth-library caches the token
   // on the client, so once this succeeds the calls below reuse it and never
-  // re-hit the token endpoint — confining the flakiness to one safe-to-retry
+  // re-hit the token endpoint - confining the flakiness to one safe-to-retry
   // step instead of leaking it into every API call.
   console.log('\n[0/4] Authenticating...');
   const authClient = await withRetry(

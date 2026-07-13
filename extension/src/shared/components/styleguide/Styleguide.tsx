@@ -254,7 +254,7 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="flags" title="Theme & wrapper flags">
         <p class="txtBig">
-          Live class list on <code>#{ROOT_ID}</code> — toggle dark mode above to
+          Live class list on <code>#{ROOT_ID}</code> - toggle dark mode above to
           see <code>{DARK_CLASS}</code> appear.
         </p>
         <div class={styles.chipRow}>
@@ -274,7 +274,7 @@ const Styleguide = (): JSX.Element => {
                   style={{ background: entry.value || "transparent" }}
                 />
                 <code>{entry.name}</code>
-                <span>{entry.value || "—"}</span>
+                <span>{entry.value || "-"}</span>
               </div>
             )}
           </For>
@@ -287,7 +287,7 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="typography" title="Typography">
         <p class={styles.muted}>
-          Two voices. Newsreader (serif) is the <em>mindful voice</em> — used
+          Two voices. Newsreader (serif) is the <em>mindful voice</em> - used
           only when the app speaks gently to you (intervention prompts, breath
           &amp; pause copy, the "be proud" success message) or when you read
           your own words (dashboard reflections, the reflection detail page).
@@ -296,21 +296,21 @@ const Styleguide = (): JSX.Element => {
           <code>.txtBig</code>, <code>.h2Mindful</code>, or the{" "}
           <code>displayVoice()</code> mixin; Inter is inherited, never declared.
           One deliberate exception carries serif outside that rule: every{" "}
-          <code>&lt;Btn&gt;</code> app-wide (buttons are invitations — issue
+          <code>&lt;Btn&gt;</code> app-wide (buttons are invitations - issue
           #167).
         </p>
-        <h2 class="h2">.h2 — functional heading (Inter)</h2>
+        <h2 class="h2">.h2 - functional heading (Inter)</h2>
         <h2 class="h2 h2Mindful">
-          .h2.h2Mindful — mindful heading (display serif)
+          .h2.h2Mindful - mindful heading (display serif)
         </h2>
-        <h3 class="h3">.h3 — subsection heading (Inter)</h3>
-        <p class="txtBig">.txtBig — display body (display serif)</p>
+        <h3 class="h3">.h3 - subsection heading (Inter)</h3>
+        <p class="txtBig">.txtBig - display body (display serif)</p>
         <p>plain paragraph text using --c-fg (Inter)</p>
         <div class={styles.fontList}>
           <For each={fontEntries()}>
             {(entry) => (
               <div class={styles.fontRow} style={{ "font-size": entry.value }}>
-                <code>{entry.name}</code> <span>{entry.value || "—"}</span> the
+                <code>{entry.name}</code> <span>{entry.value || "-"}</span> the
                 quick brown fox
               </div>
             )}
@@ -331,9 +331,9 @@ const Styleguide = (): JSX.Element => {
 
       <Section id="buttons" title="Buttons">
         <p class={styles.muted}>
-          Every button is the <code>&lt;Btn&gt;</code> component. Three bases —{" "}
+          Every button is the <code>&lt;Btn&gt;</code> component. Three bases -{" "}
           text (default), <code>variant="icon"</code> and{" "}
-          <code>variant="toggle"</code> — each with a small, typed set of
+          <code>variant="toggle"</code> - each with a small, typed set of
           modifiers. The type system only permits these combinations, so there's
           no way to stack one-off looks.
         </p>
@@ -350,7 +350,7 @@ const Styleguide = (): JSX.Element => {
           </Btn>
         </Subsection>
 
-        <Subsection label="<Btn soft> (quiet translucent — secondary exit)">
+        <Subsection label="<Btn soft> (quiet translucent - secondary exit)">
           <Btn soft>cancel</Btn>
           <Btn soft disabled>
             disabled
@@ -579,12 +579,12 @@ const Styleguide = (): JSX.Element => {
           </div>
         </Subsection>
 
-        <Subsection label="<GroundingOverlay> — dashboard down-drag">
+        <Subsection label="<GroundingOverlay> - dashboard down-drag">
           <p class={styles.muted}>
             On the dashboard, dragging the sun down offers a moment to ground
             yourself: a timed meditation (still sun + start/end gong) or a
             screen-free sit (on the web the screen dims; on Android the phone
-            locks). A gentle offer — declining is easy and ignoring it dismisses
+            locks). A gentle offer - declining is easy and ignoring it dismisses
             it. Opens a full-screen stage.
           </p>
           <Btn outline onClick={() => setGroundingOpen(true)}>
@@ -598,11 +598,11 @@ const Styleguide = (): JSX.Element => {
           )}
         </Subsection>
 
-        <Subsection label="<LetGoOverlay> — dashboard fling-away">
+        <Subsection label="<LetGoOverlay> - dashboard fling-away">
           <p class={styles.muted}>
             The sibling of the grounding offer: flinging the sun up/away ("let
             go") offers the standard intervention question "What do you want to
-            let go of?". A gentle offer — declining is easy and ignoring it
+            let go of?". A gentle offer - declining is easy and ignoring it
             dismisses it. It sits on the standard (transparent) interaction
             background; in the live app the just-flung shell sun is hidden while
             it's open and returns home on close.
@@ -615,11 +615,11 @@ const Styleguide = (): JSX.Element => {
           )}
         </Subsection>
 
-        <Subsection label="Persistent sun — post-interaction morph">
+        <Subsection label="Persistent sun - post-interaction morph">
           <p class={styles.muted}>
             The same sun is never hidden: it glides down + breathes for the
             pause, then glides up + shrinks into a calm anchor for the choices,
-            with the background light tracking it. Step through the phases —
+            with the background light tracking it. Step through the phases -
             opens a full-screen stage.
           </p>
           <SunMorphHarness />
@@ -629,10 +629,10 @@ const Styleguide = (): JSX.Element => {
       <Section id="sun-widget" title="Sun widget (Android)">
         <p class={styles.muted}>
           The home-screen companion sun. The floating disc is the warm sun by
-          day, the cool moon by night — the day sun is the real vector drawable,
+          day, the cool moon by night - the day sun is the real vector drawable,
           the night moon the actual lunar photo with a baked glow (
           <code>ic_sun_widget_night.webp</code>). Phase is chosen by the local
-          clock, not the system theme — toggle dark mode above to preview the
+          clock, not the system theme - toggle dark mode above to preview the
           discs on a dark wallpaper. Indicative, not a pixel-exact device
           render.
         </p>
@@ -640,10 +640,10 @@ const Styleguide = (): JSX.Element => {
         <p class={styles.muted}>
           At card size the widget adds a still of the intervention screen: the
           sky (<code>WidgetSky</code>) steps through the day’s ambient keyframes
-          — dawn → morning → midday → afternoon → dusk — a serif line resting
+          - dawn → morning → midday → afternoon → dusk - a serif line resting
           above the sun; at night the moon carries it alone, wordless. The day
           skies stay light pastels <em>by design</em> so the line stays legible,
-          so there is deliberately no saturated sunset — “evening” is the pale
+          so there is deliberately no saturated sunset - “evening” is the pale
           dusk pastel, then the clock hands the card to the dark night sky at
           19:00, in step with the app.
         </p>
@@ -796,7 +796,7 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
         when={!isNight()}
         fallback={
           <p class={styles.muted}>
-            {formatHour(hour())} is night — the dark theme's two-orb sky and
+            {formatHour(hour())} is night - the dark theme's two-orb sky and
             deep-night reveal apply (toggle dark mode above to see them); inline
             sky overrides are cleared. The strips below show the clamped
             light-window edge.
@@ -804,7 +804,7 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
         }
       >
         <p class={styles.muted}>
-          apply-to-page only takes effect in light mode — in dark mode the night
+          apply-to-page only takes effect in light mode - in dark mode the night
           theme owns the sky.
         </p>
       </Show>

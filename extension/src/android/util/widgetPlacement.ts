@@ -9,10 +9,10 @@ import {
  * that offers the widget as a place (the onboarding picker row, the denied-path
  * offer, the dashboard invitation gate).
  *
- * The observed launcher state is the single source of truth — never an intent
+ * The observed launcher state is the single source of truth - never an intent
  * flag: a checkbox can't place a widget, so nothing here pretends one did. The
  * signal re-reads on resume (returning from the launcher) and, after a pin
- * request, polls briefly — the pin dialog is a system sheet that may not
+ * request, polls briefly - the pin dialog is a system sheet that may not
  * background the activity, so resume alone can miss the confirmation.
  */
 

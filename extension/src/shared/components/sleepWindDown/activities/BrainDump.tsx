@@ -48,7 +48,7 @@ export const BrainDump = (props: {
   };
 
   let debounceHandle: ReturnType<typeof setTimeout> | null = null;
-  // Once the user submits, we MUST NOT re-flush the local text — the parent
+  // Once the user submits, we MUST NOT re-flush the local text - the parent
   // has already cleared the draft and we'd otherwise overwrite "" with the
   // text the user just submitted, causing it to reappear next mount.
   let isSubmitted = false;

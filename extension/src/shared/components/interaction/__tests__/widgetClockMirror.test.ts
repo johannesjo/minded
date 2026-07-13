@@ -7,8 +7,8 @@ import {
 } from "@src/shared/skyTimeline";
 
 /**
- * Both native widgets re-implement the app's day/night clock — Android in Kotlin
- * (SunWidgetPhase.kt), iOS in Swift (SunWidgetPhase.swift) — because they repaint
+ * Both native widgets re-implement the app's day/night clock - Android in Kotlin
+ * (SunWidgetPhase.kt), iOS in Swift (SunWidgetPhase.swift) - because they repaint
  * on the OS's schedule while the app (and its WebView, where skyTimeline runs) is
  * closed, so they can't read a value the JS wrote. Those native copies must not
  * drift from skyTimeline's boundary, or the home-screen sun shows a different
@@ -52,7 +52,7 @@ describe("the widget clock mirrors skyTimeline (native copies ↔ TS)", () => {
 
   // Guards that the widget gains a sky whenever the app gains a keyframe (a new
   // time-of-day). It only checks the face *names* exist, not the whole-hour
-  // bucket edges (9/13/17/18) — those are an intentional widget-side
+  // bucket edges (9/13/17/18) - those are an intentional widget-side
   // quantization of the app's per-minute interpolation, not a mirror.
   /** The enum face names declared in a Kotlin/Swift WidgetSky source. */
   const facesIn = (source: string, declPattern: RegExp): string[] | undefined =>
@@ -81,7 +81,7 @@ describe("the widget clock mirrors skyTimeline (native copies ↔ TS)", () => {
   });
 
   // The bucket edges themselves are widget-side quantization (not a TS mirror,
-  // see above) — but Android's are pinned by WidgetSkyTest.kt while Swift has
+  // see above) - but Android's are pinned by WidgetSkyTest.kt while Swift has
   // no test target, so this keeps the two platforms' skies stepping on the
   // same hours.
   it("the iOS sky hour buckets match Android's", () => {

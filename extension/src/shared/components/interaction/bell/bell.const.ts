@@ -1,5 +1,5 @@
 /**
- * Timing for the BELL interaction — one strike, listened all the way down into
+ * Timing for the BELL interaction - one strike, listened all the way down into
  * silence.
  */
 

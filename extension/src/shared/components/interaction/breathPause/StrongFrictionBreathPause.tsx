@@ -32,7 +32,7 @@ export const StrongFrictionBreathPause: Component<
   // the sun: both compute elapsed from `breathStartedAt`, published by the sun
   // when its glide lands (Sun's onBreathStart → sunStore). So the copy and the
   // disc turn through inhale → hold → exhale on exactly the same beats, and
-  // CUE_FADE_MS only tunes the fade feel — it is no longer load-bearing for sync
+  // CUE_FADE_MS only tunes the fade feel - it is no longer load-bearing for sync
   // (GitHub #27). Under reduced motion the sun is frozen and never publishes an
   // origin, so the clock falls back to its mount origin and the countdown still
   // ticks to completion.
@@ -41,7 +41,7 @@ export const StrongFrictionBreathPause: Component<
     originAt: getBreathStartedAt,
     reducedMotion,
     // Snapshot the duration once: the pause length is fixed for a given pause
-    // (getPostSunPauseSeconds), so read it untracked — it never changes mid-pause.
+    // (getPostSunPauseSeconds), so read it untracked - it never changes mid-pause.
     durationMs: untrack(() => Math.max(1, props.seconds) * 1000),
     onComplete: () => props.onComplete(),
   });
@@ -59,7 +59,7 @@ export const StrongFrictionBreathPause: Component<
   return (
     <div class="strong-friction-breath-pause">
       {/* The persistent interaction sun (owned by InteractionCommon) glides in
-          and breathes over this space — see the `breathe` prop on <Sun>. The
+          and breathes over this space - see the `breathe` prop on <Sun>. The
           spacer reserves its footprint so the cue copy keeps its position. */}
       <div class="strong-friction-breath-pause__sun-space" aria-hidden="true" />
 

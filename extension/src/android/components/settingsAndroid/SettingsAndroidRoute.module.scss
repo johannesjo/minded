@@ -1,5 +1,5 @@
 // Roomy tail so the last settings block scrolls clear of the bottom-edge fade
-// mask (.withCompanionBar dissolves the final ~48px into the sun's bar) —
+// mask (.withCompanionBar dissolves the final ~48px into the sun's bar) -
 // without it the last controls would sit permanently semi-transparent. The
 // removed in-page Back button used to provide this space implicitly.
 // Doubled with .pageWrapper for specificity over its shorthand padding.

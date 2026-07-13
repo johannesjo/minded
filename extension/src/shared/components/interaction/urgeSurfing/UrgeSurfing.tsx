@@ -52,7 +52,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   // Hold the first surf cue back this long so the pulsing sun reads on its own
   // for a beat before the guidance arrives.
   const FIRST_CUE_DELAY_MS = 1400;
-  // The surf cues ease into one another slowly and softly — much gentler than the
+  // The surf cues ease into one another slowly and softly - much gentler than the
   // quick screen fade.
   const CUE_FADE_MS = 900;
   let intervalId: ReturnType<typeof setInterval> | undefined;
@@ -148,7 +148,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
 
   // Deliberately NO countSunTap here: sun taps feed the friction level and the
   // "you've come back a few times" return-loop insight, i.e. they measure
-  // returns to the pull — not engagement with the practice. Counting a
+  // returns to the pull - not engagement with the practice. Counting a
   // completed wave would make diligent practice *escalate* the next
   // intervention (and double-count the tap the subsequent submit records).
 

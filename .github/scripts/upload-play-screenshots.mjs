@@ -31,7 +31,7 @@ export function normalizeLanguage(language) {
 // Releasing binaries and editing the store listing are gated by *different*
 // Play permissions, so the release service account can commit AABs yet still be
 // rejected here. Play defers that check to commit time, so the raw error is an
-// opaque "The caller does not have permission" — this points at the real fix.
+// opaque "The caller does not have permission" - this points at the real fix.
 export const PERMISSION_HINT =
   'Play rejected the store-listing edit as unauthorized. This service account ' +
   'can release app binaries but appears to lack the "Manage store presence" ' +

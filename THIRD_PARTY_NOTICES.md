@@ -2,20 +2,20 @@
 
 minded bundles a small number of third-party assets. This file records their origin and license.
 
-## Icons — Google Material Symbols
+## Icons - Google Material Symbols
 
 SVG icons under `extension/src/assets/img/` and `extension/icons/` (recognizable by `viewBox="0 -960 960 960"`) are derived from [Google Material Symbols](https://fonts.google.com/icons), licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 No modifications other than export from the Material Symbols web tool.
 
-## Fonts — Inter and Fraunces
+## Fonts - Inter and Fraunces
 
 Web fonts are sourced from [Fontsource](https://fontsource.org/):
 
-- **Inter** — [SIL Open Font License 1.1](https://openfontlicense.org/) — © The Inter Project Authors
-- **Fraunces** — [SIL Open Font License 1.1](https://openfontlicense.org/) — © The Fraunces Project Authors
+- **Inter** - [SIL Open Font License 1.1](https://openfontlicense.org/) - © The Inter Project Authors
+- **Fraunces** - [SIL Open Font License 1.1](https://openfontlicense.org/) - © The Fraunces Project Authors
 
-## Audio — bell sounds
+## Audio - bell sounds
 
 Files under `extension/src/assets/` (`single-bell.mp3`, `warm-bells.mp3`, `warm-bells-sequence.mp3`) require source/license attribution. **Maintainer: please complete this section before publishing.** If you contribute new audio assets, add their source and license here.
 

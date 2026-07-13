@@ -26,7 +26,7 @@ import com.minded.minded.util.isDarkModeNow
  * one frame stale; every subsequent launch within the phase is correct. On API
  * < 31 there is no per-app override, so those devices keep the prior behaviour
  * (MainActivity's onCreate swap corrects the activity window; the starting
- * window still flashes light at night — unavoidable without the override).
+ * window still flashes light at night - unavoidable without the override).
  */
 class MindedApplication : Application() {
     override fun onCreate() {

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <!--
       Day sky's top gradient stop (matches the linear-gradient below). Inert in
-      the embedded Android WebView — the native side owns the real system bars
+      the embedded Android WebView - the native side owns the real system bars
       (edge-to-edge + transparent, see MainActivity.enableEdgeToEdge). This only
       matters if the page is ever loaded in a browser/PWA, and it can't track
       the clock-based night sky, so it stays on the day value.
@@ -19,7 +19,7 @@
       before the JS/CSS bundle loads, so booting no longer flashes a blank page.
       The root <html> background propagates to the whole viewport, so the opaque
       black on <body> below stays as a harmless fallback. Light/dark is chosen by
-      clock (not OS theme) to match how the app itself decides — keep the rule in
+      clock (not OS theme) to match how the app itself decides - keep the rule in
       sync with isDarkModeNow() (src/shared/addWrapperClasses.ts) and the
       gradients with --background-gradient (src/styles/_variables.scss).
     -->

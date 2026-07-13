@@ -27,7 +27,7 @@ open class MainActivityJavaScriptInterface(
      * [com.minded.minded.util.ForwardSafeAreaInsetsToWebView] and read by
      * the web layer via [getSafeAreaInsets] on init. Passed in by the
      * caller so the same holder is shared with the Compose-side forwarder
-     * — the main activity and each overlay window own their own holder
+     * - the main activity and each overlay window own their own holder
      * because they live in different windows with independent insets.
      */
     val safeAreaInsets: SafeAreaInsetsHolder = SafeAreaInsetsHolder(),
@@ -76,7 +76,7 @@ open class MainActivityJavaScriptInterface(
      * be read. The web layer uses this to keep sound-dependent interventions
      * (the bell) from being offered when they'd ring silently: the WebView
      * plays on STREAM_MUSIC, which the silent/vibrate ringer switch does NOT
-     * mute — media volume turned all the way down is the case that matters.
+     * mute - media volume turned all the way down is the case that matters.
      * -1 (unknown) is treated as audible on the web side, so failure here
      * degrades softly instead of removing the mode.
      */
@@ -126,7 +126,7 @@ open class MainActivityJavaScriptInterface(
      * Ask the launcher to pin the sun widget via the system dialog. Returns
      * false when the launcher doesn't support pinning (the web side then shows
      * a one-line manual instruction instead). The result of the dialog itself
-     * is not awaited — the web side observes it through [isWidgetPlaced].
+     * is not awaited - the web side observes it through [isWidgetPlaced].
      */
     @JavascriptInterface
     fun requestPinWidget(): Boolean {

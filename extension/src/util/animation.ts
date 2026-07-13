@@ -29,11 +29,11 @@ export function fadeOut(
 }
 
 // Page-level fade duration: matches --dur-soft so every page-to-page move eases
-// out at the same pace it eases back in (standardPageTransitionIn) — never a
-// hard cut (see the "transitions — always soft" styling rule).
+// out at the same pace it eases back in (standardPageTransitionIn) - never a
+// hard cut (see the "transitions - always soft" styling rule).
 export const PAGE_FADE_MS = 480;
 
-// Fade `el` fully out over the page-fade beat, then run `done` — the shared
+// Fade `el` fully out over the page-fade beat, then run `done` - the shared
 // core of every "leaving surface eases out before the next eases in" swap
 // (Android top-level surface swaps, onboarding step changes). Under reduced
 // motion, or with nothing to fade, it skips straight to `done` synchronously.
@@ -48,7 +48,7 @@ export function fadeOutThen(el: HTMLElement | null, done: () => void): void {
 }
 
 // Fade the current page's own root node (`<main>`'s first child) fully out and
-// resolve once it's gone — so the leaving surface is gone before the destination
+// resolve once it's gone - so the leaving surface is gone before the destination
 // eases in via its own pageTransitionIn (a clean sequential fade, never a hard
 // cut or a cross-fade). We fade the page node, not <main> itself, so it's simply
 // discarded when the route remounts: nothing to reset, no flash of the old page

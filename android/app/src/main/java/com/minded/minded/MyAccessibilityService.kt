@@ -234,7 +234,7 @@ class MyAccessibilityService : AccessibilityService() {
             registerReceiver(homeActionReceiver, filter)
         }
 
-        // Register broadcast receiver for screen-lock action — used by the
+        // Register broadcast receiver for screen-lock action - used by the
         // wind-down completion gesture to put the phone to sleep.
         val lockFilter = android.content.IntentFilter("com.minded.ACTION_LOCK_SCREEN")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

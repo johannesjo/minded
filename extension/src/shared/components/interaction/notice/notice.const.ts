@@ -2,7 +2,7 @@
  * Cues for the "notice → tap" micro-action (the NOTICE interaction).
  *
  * Each cue invites one small, embodied or sensory anchor in the *present
- * moment* — something the user actually does, then confirms with a single tap.
+ * moment* - something the user actually does, then confirms with a single tap.
  * That keeps it on the right side of the bar for what we say: we name an
  * observed action, never an inferred feeling; the here-and-now, never a stale
  * timestamp; and there is nothing to score, type, or get "right".
@@ -12,13 +12,13 @@
  * prompt would step on it.
  *
  * No decorative glyph, by design: platform emoji are the loudest, most chat-app
- * mark available — they render differently on every OS, sit at full saturation,
+ * mark available - they render differently on every OS, sit at full saturation,
  * and clash with the hand-tuned serif/sky language around them. The serif cue
  * line carries the screen on its own, and the minimalism principle says the
  * glyph must earn its place; it doesn't. (See #168, follow-up to #129.)
  *
- * - `cue`  the invitation — gentle, never an order
- * - `done` the confirming tap's label — a quiet acknowledgement of the doing
+ * - `cue`  the invitation - gentle, never an order
+ * - `done` the confirming tap's label - a quiet acknowledgement of the doing
  */
 export const NOTICE_CUES: {
   cue: string;

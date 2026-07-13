@@ -138,7 +138,7 @@ export async function playInterventionSound(): Promise<void> {
 }
 
 // The meditation gong (start/end of a sit) is the same calm single bell used
-// when an intervention opens — one clear tone to mark the threshold.
+// when an intervention opens - one clear tone to mark the threshold.
 export async function playGong(): Promise<void> {
   await playInterventionSound();
 }

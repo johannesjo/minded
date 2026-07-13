@@ -3,14 +3,14 @@
  *
  * One timeline drives every sky surface. The ambient app background quietly
  * tracks the local hour through pastel keyframes, and the sun-drag reveals
- * (down → sunset/dusk, up → zenith blue) are targets on the *same* timeline —
+ * (down → sunset/dusk, up → zenith blue) are targets on the *same* timeline -
  * so the gesture reads as leaning away from "now" toward evening or toward
  * the zenith, and releasing springs back to the present, instead of jumping
  * to a fixed postcard sky that may contradict the actual time of day.
  *
  * Night (19:00–06:00) stays owned by the dark theme's two-orb background in
  * _variables.scss; this module only shapes the light window. Guardrail from
- * the issue: this is slow ambient *state*, not animation — values step per
+ * the issue: this is slow ambient *state*, not animation - values step per
  * minute (see applySkyForNow), nothing drifts visibly.
  *
  * All values are pure data/functions; DOM application lives in
@@ -22,10 +22,10 @@ export type SkyColors = [string, string, string, string];
 
 /**
  * The two accent tints of the layered day sky (issue: "day skies should be as
- * beautiful as night"). The night sky earns its depth from layers — a warm
- * horizon glow over a star field over the deep gradient — so the day sky gets
+ * beautiful as night"). The night sky earns its depth from layers - a warm
+ * horizon glow over a star field over the deep gradient - so the day sky gets
  * the same build: a light bloom pooling at the horizon, a static cirrus veil
- * (the day's stars — see --day-veil in _variables.scss), and a gently deeper
+ * (the day's stars - see --day-veil in _variables.scss), and a gently deeper
  * zenith dome up top. These are the per-hour tints of the two gradient layers;
  * their fixed alphas and ellipse geometry live in _variables.scss.
  */
@@ -40,7 +40,7 @@ export const NIGHT_END_HOUR = 6;
 /**
  * Ambient pastel keyframes across the light window. These are the *resting*
  * app background, so they must stay light enough for the light theme's dark
- * text at every hour — the saturated skies live in the drag targets below.
+ * text at every hour - the saturated skies live in the drag targets below.
  * The 9:00 "morning" keyframe is the classic static sky from _variables.scss
  * (pinned by a test) so the long-standing brand look is the timeline's anchor.
  */
@@ -123,7 +123,7 @@ const lerpColors = <T extends string[]>(a: T, b: T, t: number): T =>
  * Piecewise-linear lerp across the ambient keyframes. Hours outside the light
  * window clamp to its edges: the dark theme owns the real night sky, and the
  * only light-mode caller outside the window is a stale tab whose theme was
- * decided at load — holding the dusk (or dawn) edge is the honest sky for it.
+ * decided at load - holding the dusk (or dawn) edge is the honest sky for it.
  */
 const ambientKeyframeLerp = <T extends string[]>(
   hour: number,
@@ -182,17 +182,17 @@ export const zenithTargetColorsAt = (hour: number): [string, string] =>
 /**
  * Gradient builders. Stop positions mirror the composed gradients in
  * _variables.scss (--background-gradient / --background-sunset-gradient) and
- * BackgroundTransition.scss (.background-blue) — keep them in sync so an
+ * BackgroundTransition.scss (.background-blue) - keep them in sync so an
  * inline override is pixel-compatible with the stylesheet default.
  */
 export const ambientSkyGradient = (c: SkyColors): string =>
   `linear-gradient(to bottom, ${c[0]} 0%, ${c[0]} 18%, ${c[1]} 36%, ${c[2]} 54%, ${c[3]} 100%)`;
 
 /**
- * The full layered ambient day sky as a CSS background value — horizon bloom
+ * The full layered ambient day sky as a CSS background value - horizon bloom
  * over cirrus veil over zenith dome over the pastel base. Mirrors the light
  * theme's composed --background-gradient in _variables.scss (which builds the
- * same layers from the --day-*-rgb vars) — keep geometry and alphas in sync.
+ * same layers from the --day-*-rgb vars) - keep geometry and alphas in sync.
  * The veil is referenced as var(--day-veil) so the SVG in _variables.scss
  * stays the only copy; callers must render inside the app root. Used by the
  * styleguide's sky strips so previews show the sky that actually ships.

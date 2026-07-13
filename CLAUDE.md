@@ -7,11 +7,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 minded is a multi-platform mindfulness and productivity application designed to help users fight social media addiction, doom-scrolling, and procrastination. It runs on:
 - Browser Extension (Chrome/Firefox with Manifest V3)
 - Android App (Native Kotlin + WebView)
-- iOS App (Native Swift + Capacitor) — **deliberately a minimal, widget-only variant**, not a port of the Android app. The reasoning: iOS *can* technically block apps (the Screen Time API — `FamilyControls`/`ManagedSettings`/`DeviceActivity` — the way one sec/Opal do), so "iOS can't intervene" is false. The real blocker is conceptual: that primitive is a parental-controls *wall*, and iOS gives no way to deliver the sun *as* the interrupt. The only effective interrupt (a shield) is the wrong shape for minded's soft, never-forced approach. So iOS does **not** attempt the forced intervention/overlay at all. Instead it ships only the on-philosophy "option 1" from `docs/ios-platform-fit.md`: the **companion sun** as a Home Screen WidgetKit widget (`extension/ios/App/MindedWidget/`) — presence + invitation, never an interrupt. Tapping it opens the shared WebView pause. New *intervention* features still target Browser Extension and Android only; on iOS, keep scope to the companion widget + WebView shell and don't reintroduce shields/overlays. iOS builds + TestFlight ship from a macOS CI runner with no local Mac (`.github/workflows/ios-testflight.yml`, see `RELEASING.md`). Full reasoning: `docs/ios-platform-fit.md`.
+- iOS App (Native Swift + Capacitor) - **deliberately a minimal, widget-only variant**, not a port of the Android app. The reasoning: iOS *can* technically block apps (the Screen Time API - `FamilyControls`/`ManagedSettings`/`DeviceActivity` - the way one sec/Opal do), so "iOS can't intervene" is false. The real blocker is conceptual: that primitive is a parental-controls *wall*, and iOS gives no way to deliver the sun *as* the interrupt. The only effective interrupt (a shield) is the wrong shape for minded's soft, never-forced approach. So iOS does **not** attempt the forced intervention/overlay at all. Instead it ships only the on-philosophy "option 1" from `docs/ios-platform-fit.md`: the **companion sun** as a Home Screen WidgetKit widget (`extension/ios/App/MindedWidget/`) - presence + invitation, never an interrupt. Tapping it opens the shared WebView pause. New *intervention* features still target Browser Extension and Android only; on iOS, keep scope to the companion widget + WebView shell and don't reintroduce shields/overlays. iOS builds + TestFlight ship from a macOS CI runner with no local Mac (`.github/workflows/ios-testflight.yml`, see `RELEASING.md`). Full reasoning: `docs/ios-platform-fit.md`.
 
 Platform scoping beyond iOS: **sleep wind-down is deliberately Android-only.**
 The phone in bed is where evening doom-scrolling actually happens, so Android is
-where the feature earns its keep — and it's still half-experimental, so the
+where the feature earns its keep - and it's still half-experimental, so the
 extra desktop effort isn't warranted while the extension has almost no users.
 The view itself is shared code (`src/shared/components/sleepWindDown/`); only
 the trigger, settings entry, and dashboard card are Android-gated, so widening
@@ -21,20 +21,20 @@ product decision.
 ## Conceptual Fundamentals
 
 These are the load-bearing ideas behind the product. They shape almost every
-feature decision — read them before proposing changes to interventions.
+feature decision - read them before proposing changes to interventions.
 
 - **Mindfulness app first, not a productivity tracker.** The goal is *awareness
   without judgment*, not "be more efficient" or "scroll less and prove it."
   Anything that reintroduces striving betrays the premise. Deliberately avoid:
   streaks, "days clean", "minutes saved", efficiency scores, success/failure
-  tallies, daily goals, trend-up graphs, social comparison — and anything that
+  tallies, daily goals, trend-up graphs, social comparison - and anything that
   manufactures scarcity, urgency, or guilt (e.g. "you've used up your budget").
 
 - **The sun is the central mechanic and *is* the pause.** When an intervention
   fires, a draggable animated sun appears; tapping/flinging it is the universal,
-  always-available escape hatch. Tapping it opens a calm pause — but the everyday
+  always-available escape hatch. Tapping it opens a calm pause - but the everyday
   *soft/companion* sun does **not** "breathe" on its own. A repeating breathing
-  swell belongs only to *guided* breath pauses — guided meditations (e.g.
+  swell belongs only to *guided* breath pauses - guided meditations (e.g.
   urge-surfing) and the deliberate strong-friction breath pause
   (`StrongFrictionBreathPause`, which guides breathe-in / hold / out). The
   ambient/companion sun and the everyday soft interaction never carry an unguided
@@ -45,7 +45,7 @@ feature decision — read them before proposing changes to interventions.
 
 - **The sun always *morphs*, and there is only ever one.** Across screens and
   states the sun is a single continuous object that glides/scales from one
-  surface to the next — it must never hard-cut, vanish, or appear in two places
+  surface to the next - it must never hard-cut, vanish, or appear in two places
   at once. Where the architecture can't currently morph (e.g. a native overlay
   handing off to a WebView surface), the job is to *make* it morph, not to
   accept the cut.
@@ -69,7 +69,7 @@ feature decision — read them before proposing changes to interventions.
   know the user. See `docs/reflective-companion-concept.md` for the worked
   example (and the cut list of ideas that failed this bar).
 
-- **Minimalism is the default design principle — for both UX and UI.** Always
+- **Minimalism is the default design principle - for both UX and UI.** Always
   prefer the simplest thing that works. Fewer screens, fewer options, fewer
   words, fewer controls, less visual chrome. Every element must earn its place;
   when in doubt, leave it out. This reinforces the calm, never-striving premise:
@@ -78,7 +78,7 @@ feature decision — read them before proposing changes to interventions.
 
 ## Essential Commands
 
-All npm scripts live in `extension/package.json` — run them from the `extension/` directory.
+All npm scripts live in `extension/package.json` - run them from the `extension/` directory.
 
 **Development:**
 ```bash
@@ -176,7 +176,7 @@ Path aliases change based on build mode to load platform-specific code.
 ## Styling Guidelines
 
 **Always use existing global styles for consistency:**
-- Buttons: use the `<Btn>` component (`src/shared/components/ui/Btn.tsx`) — never write raw `<button class="btn…">`. It has three typed bases and a curated, type-checked set of modifiers, so screens can't sprout one-off button looks:
+- Buttons: use the `<Btn>` component (`src/shared/components/ui/Btn.tsx`) - never write raw `<button class="btn…">`. It has three typed bases and a curated, type-checked set of modifiers, so screens can't sprout one-off button looks:
   - `<Btn>` (text, default) with `outline` / `big`
   - `<Btn variant="icon">` with `small` / `plain`
   - `<Btn variant="toggle">` with `small` / `selected`
@@ -186,20 +186,20 @@ Path aliases change based on build mode to load platform-specific code.
 - Global styles are in `src/styles/componentsShared/` and `src/styles/mixins/`
 - Only create component-specific SCSS modules for layout, not for recreating existing button/input styles
 
-**Transitions — always soft, never hard cuts:**
+**Transitions - always soft, never hard cuts:**
 - As a rule, *all* transitions should aim for softness. Anything that changes
-  on screen — a surface, a state, a value, a piece of motion — should ease in
+  on screen - a surface, a state, a value, a piece of motion - should ease in
   and out rather than snap. Softness is the default; a hard cut needs a reason.
 - Every overlay and page transition (open, close, decline, "Not now", success)
-  must fade — never snap in or out. Calmness is the product; an abrupt cut reads
+  must fade - never snap in or out. Calmness is the product; an abrupt cut reads
   as a jolt and betrays the premise. Reuse the existing fade helpers
   (`fadeOut` in `src/util/animation.ts`, `ANIMATION_TIMING`) and the established
   patterns (e.g. `InteractionOverlay`'s `handleHideWithFade`) rather than
   unmounting straight to the next surface.
 
-**Minimalism — remove before you add:**
+**Minimalism - remove before you add:**
 - Default to the simplest UI that works: less visual chrome, fewer controls,
   fewer words. Every element must earn its place; when in doubt, leave it out.
 - This is the UI expression of the minimalism principle in *Conceptual
-  Fundamentals* — a quiet, uncluttered surface keeps cognitive load low and
+  Fundamentals* - a quiet, uncluttered surface keeps cognitive load low and
   upholds the calm, never-striving premise.

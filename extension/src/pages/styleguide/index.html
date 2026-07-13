@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>minded — styleguide</title>
+    <title>minded - styleguide</title>
     <script>
       // Standalone-mode shim: webextension-polyfill (used by util/browser.ts)
       // throws on load when chrome.runtime is missing. Provide just enough
-      // surface for it to import — plus an in-memory chrome.storage so the real
+      // surface for it to import - plus an in-memory chrome.storage so the real
       // data interface (getSyncData/patchSyncData/...) actually works off-
       // extension (the dashboard simulation relies on this). webextension-
       // polyfill promisifies callback-style chrome APIs, so every method here
@@ -85,7 +85,7 @@
         min-height: 100vh;
         color: var(--c-fg);
       }
-      /* Fixed gradient layer — sits behind scrolling content so the
+      /* Fixed gradient layer - sits behind scrolling content so the
          ambient bg stays put exactly like in the real app's coloured-wrapper. */
       #minded-6622::before {
         content: "";
@@ -134,8 +134,8 @@
   <body>
     <div id="minded-6622"></div>
     <!--
-      Day/night pre-paint — mirrors isDarkModeNow(), incl. the ?theme= dev
-      override — so a dark-theme gallery doesn't flash the light gradient
+      Day/night pre-paint - mirrors isDarkModeNow(), incl. the ?theme= dev
+      override - so a dark-theme gallery doesn't flash the light gradient
       (#minded-6622::before above) before entry.tsx's addWrapperClasses() runs.
       A classic inline script runs during parse, before the deferred module
       below and before first paint. The gallery's dark ::before is scoped to

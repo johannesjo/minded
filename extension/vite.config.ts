@@ -27,7 +27,7 @@ export default defineConfig(({ mode }): UserConfig => {
   };
   return mode === "screenshots"
     ? {
-        // Standalone screenshot page — no CRXJS, no extension context.
+        // Standalone screenshot page - no CRXJS, no extension context.
         // Used by `npm run screenshots` to render deterministic marketing
         // screenshots with the real app components and styles.
         plugins: [solidPlugin()],
@@ -54,11 +54,11 @@ export default defineConfig(({ mode }): UserConfig => {
       }
     : mode === "styleguide"
       ? {
-          // Standalone styleguide page — no CRXJS, no extension context.
+          // Standalone styleguide page - no CRXJS, no extension context.
           // `npm run styleguide` does a one-shot build + vite preview at :5174.
           // (vite's dev server hits a pre-existing TDZ in syncData.const ↔
           // commonSyncDataInterface that build mode handles fine.)
-          // Relative base so the build works at any path — both local preview
+          // Relative base so the build works at any path - both local preview
           // (served at /) and the per-PR GitHub Pages subpath
           // (/<repo>/pr-preview/pr-N/) the preview workflow deploys to.
           base: "./",

@@ -132,7 +132,7 @@ interface InteractionCommonProps {
    * Reverse of the departing hand-off: this interaction is being re-shown after a
    * Little Sun session timer ran out, so the sun should *arrive* by gliding out of
    * the Little Sun's corner (small + amber) and growing into the centred
-   * interactive disc — the mirror of the depart morph — rather than snapping in at
+   * interactive disc - the mirror of the depart morph - rather than snapping in at
    * full size. The same one sun reads as continuing from where the timer rested.
    * Default false (a first intervention, with no Little Sun to morph from, just
    * appears).
@@ -168,7 +168,7 @@ type ForcedWidgetContent =
  * content item it came from. `NOTICE` and `ACTION_ADVICE` are the only
  * widget-safe modes, and the widget shows those pools' lines verbatim, so an
  * exact string match recovers the item. Returns undefined for anything
- * unrecognised — other content, a copy drift, or a crafted intent — so the
+ * unrecognised - other content, a copy drift, or a crafted intent - so the
  * caller falls back to the normal random pick instead of breaking.
  */
 const matchWidgetLine = (line: string): ForcedWidgetContent | undefined => {
@@ -183,12 +183,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
   const SCREEN_TRANSITION_MS = ANIMATION_TIMING.fadeOut.standard;
   // The question fades out quickly once the user advances past it (triple tap),
-  // so it's gone before the choices arrive — no slow lingering, no overlap. The
+  // so it's gone before the choices arrive - no slow lingering, no overlap. The
   // post-tap hand-off waits this long so the choices fade in only after it.
   const QUESTION_FADE_OUT_MS = 400;
   const ARM_WINDOW_MS = ANIMATION_TIMING.delay.armWindow;
   // How long the wordless "Sleep well" beat rests on screen after the bedtime
-  // settle's drag-down, before the phone actually closes/locks — long enough to
+  // settle's drag-down, before the phone actually closes/locks - long enough to
   // read as a soft goodnight, never a hard cut to the OS lock screen.
   const GOODNIGHT_MS = 1100;
 
@@ -233,7 +233,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getIsModeTransitioning, setIsModeTransitioning] = createSignal(false);
   // Suppresses the content's opacity transition for a single commit so the
   // outgoing block can be hidden instantly (no fade-out) before the new one
-  // fades in — see transitionToMode.
+  // fades in - see transitionToMode.
   const [getIsContentSwapInstant, setIsContentSwapInstant] =
     createSignal(false);
   const [getIsDragging, setIsDragging] = createSignal(false);
@@ -246,7 +246,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getHasAnswered, setHasAnswered] = createSignal(false);
   // Dashboard only: dragging the sun *down* opens the "Stay a while?" grounding
   // offer (meditate / be present), and flinging it *up/away* opens the "What do
-  // you want to let go of?" reflection — instead of just completing. The gesture
+  // you want to let go of?" reflection - instead of just completing. The gesture
   // direction picks the ritual; randomness never enters here.
   const [getShowGroundingOffer, setShowGroundingOffer] = createSignal(false);
   const [getShowLetGoOffer, setShowLetGoOffer] = createSignal(false);
@@ -265,8 +265,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // transparently, so the rest of the flow logic is identical in both modes.
   // True while the sun is gliding *in* from the Little Sun's corner (the reverse
   // of the departing hand-off). Seeded from the prop so the very first paint
-  // already places the disc at the corner — getSunSettle reads this before the
-  // mount effect can run — then cleared a couple frames after mount to launch the
+  // already places the disc at the corner - getSunSettle reads this before the
+  // mount effect can run - then cleared a couple frames after mount to launch the
   // glide home. Self-owned sun only; the shell sun never re-shows after a Little
   // Sun, so it has no corner to arrive from.
   const [getIsArrivingFromCorner, setIsArrivingFromCorner] = createSignal(
@@ -274,7 +274,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       !!props.morphInFromCorner &&
       // Only morph when the glide can actually be seen and is wanted: skip under
       // reduced-motion (just appear centred, no animation) and when the tab is
-      // hidden — rAF is paused there, so the disc would otherwise sit frozen in
+      // hidden - rAF is paused there, so the disc would otherwise sit frozen in
       // the corner until the tab is foregrounded (a cross-tab timer-clear can
       // swap a backgrounded tab straight to the intervention).
       !prefersReducedMotion() &&
@@ -322,7 +322,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   // The Little Sun's resting spot, expressed as a sun settle (corner, exact disc
   // size, amber halo). The departing hand-off glides *to* it; the arriving morph
-  // mounts the disc *at* it and glides home — both must target the same point so
+  // mounts the disc *at* it and glides home - both must target the same point so
   // the two morphs are perfect mirrors. On Android the native Little Sun is a
   // free-floating bubble the user can park anywhere (the persisted spot is read on
   // mount), so glide to its real centre; fall back to the fixed corner when the
@@ -330,7 +330,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // platform (native overlay is smaller), so match the right ones.
   // Memoized so it returns a STABLE object identity (it only re-derives when the
   // Android bubble position signal changes). getSunSettle is read reactively, and
-  // the <Sun> settle effect keys off object identity — a fresh object each call
+  // the <Sun> settle effect keys off object identity - a fresh object each call
   // would risk a spurious corner→corner glide on the Android branch, which reads
   // getLittleSunRestCenter(). Pure constants on web, so it's computed once there.
   const getCornerSettle = createMemo(() => {
@@ -342,7 +342,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     return getSunSettleForPhase(
       "departing",
       // companionBottomYPx is only read for the "companion" phase, which the
-      // local (non-shell) sun never enters — keep the default.
+      // local (non-shell) sun never enters - keep the default.
       undefined,
       isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
       isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
@@ -352,7 +352,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const getSunSettle = () => {
     // Arriving: hold the disc at the Little Sun's corner so it mounts exactly
     // where the timer rested; clearing the flag (post-mount) drops the settle to
-    // the interactive rest and the sun glides home — the reverse of departing.
+    // the interactive rest and the sun glides home - the reverse of departing.
     if (getIsArrivingFromCorner()) {
       return getCornerSettle();
     }
@@ -372,7 +372,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     return getSunSettleForPhase(
       getSunPhase(),
       // companionBottomYPx is only read for the "companion" phase, which the
-      // local (non-shell) sun never enters — keep the default.
+      // local (non-shell) sun never enters - keep the default.
       undefined,
       isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
       isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
@@ -382,7 +382,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // Launch the arrive-from-corner glide: the disc has mounted snapped to the
   // Little Sun's corner (settle = getCornerSettle while arriving), so clearing the
   // flag drops the settle to the interactive rest and the <Sun>'s settle effect
-  // glides it home, growing back to full size and warming amber → white — the
+  // glides it home, growing back to full size and warming amber → white - the
   // mirror of the departing morph. Deferred two frames so the corner snap has
   // committed first; a same-tick clear would never paint the corner and the disc
   // would just fade in centred (no morph).
@@ -479,8 +479,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // away behind it. Deferred from the fling's *start* to the moment the sun has
   // actually flown off the screen (onFlungOffscreen), so the gesture reads as a
   // release rather than an instant cut. Idempotent: three triggers race to open
-  // it — the off-screen watcher, the LET_GO_REVEAL_MAX_MS cap, and the terminal
-  // callback — and whichever wins opens it; the rest no-op.
+  // it - the off-screen watcher, the LET_GO_REVEAL_MAX_MS cap, and the terminal
+  // callback - and whichever wins opens it; the rest no-op.
   const openLetGoOffer = () => {
     if (letGoRevealTimeout) {
       window.clearTimeout(letGoRevealTimeout);
@@ -489,7 +489,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (getShowLetGoOffer()) return;
     // Soft-fade the shell-sun layer out rather than snapping it: by now the disc
     // has flown up and off the top (or is high up, still rising), so it only ever
-    // drifts further *away* as it fades — never careening back over the question —
+    // drifts further *away* as it fades - never careening back over the question -
     // which keeps the hand-off soft (never a hard cut). It is sent home / revealed
     // again on close (see finishLetGo).
     if (props.useShellSun) setIsShellSunHidden("soft");
@@ -509,7 +509,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
     if (props.isFromDashboard && lastCompletionDirection === "up") {
       // The fling has finished carrying the sun off the top (or stalled on-screen
-      // without ever clearing it — a gentle fling). Either way, reveal the let-go
+      // without ever clearing it - a gentle fling). Either way, reveal the let-go
       // question now as the fallback if the off-screen watcher hasn't already.
       openLetGoOffer();
       return;
@@ -518,7 +518,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   // The bedtime settle's deliberate drag-down (never a fling): rest a wordless
-  // "Sleep well" beat on screen, then run the real close — on Android that
+  // "Sleep well" beat on screen, then run the real close - on Android that
   // closes the app and locks the screen, so the phone eases into the dark
   // rather than snapping to the OS lock. A fling still takes the plain skip
   // path (runTerminalOutcome → onFlingAway) with no goodnight and no lock.
@@ -543,7 +543,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }, GOODNIGHT_MS);
   };
 
-  // A fling is the plain skip — but never once a settle has begun. A brisk
+  // A fling is the plain skip - but never once a settle has begun. A brisk
   // downward drag classifies as a *fling* (velocity), yet direction is still
   // "down" so it routes through the settle at release
   // (handleStartBackgroundAnimation). The fling's own terminal callback then
@@ -557,7 +557,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // Close a dashboard offer (grounding / let-go) and fade home. Nothing is
   // "submitted" on these paths, and onAfterInteractionFadeout now fades the sky
   // out via handleHideWithFade, which already refreshes the dashboard once the
-  // fade lands — so we don't also call onInteractionSubmitted here (that would
+  // fade lands - so we don't also call onInteractionSubmitted here (that would
   // refresh twice per close).
   const finishGrounding = () => {
     setShowGroundingOffer(false);
@@ -620,8 +620,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   // Tell the shell sun to go inert the moment we begin handing off to the choices
   // (isExitingInteraction flips true at the top of handleSunContinue, ~400ms
-  // before the buttons mount). Without this the disc stays interactive — and so
-  // pointer-grabbing — over the just-shown choices until the deferred rAF flips
+  // before the buttons mount). Without this the disc stays interactive - and so
+  // pointer-grabbing - over the just-shown choices until the deferred rAF flips
   // the role to "resting", swallowing taps (see getIsSunHandoffInFlight).
   if (props.useShellSun) {
     createEffect(() => setIsSunHandoffInFlight(getIsExitingInteraction()));
@@ -665,7 +665,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setIsModeTransitioning(true);
 
     // Swap straight to the new block while it's hidden, then fade only the new
-    // block in — no fade-out of the outgoing one. The hide is instant (the
+    // block in - no fade-out of the outgoing one. The hide is instant (the
     // content transition is suppressed for this commit) and the content swaps in
     // the same commit, so the old block is never shown mid-fade. Restoring the
     // transition a frame before raising opacity lets the fade-in actually play.
@@ -749,8 +749,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     // No breath pause: let the question fade out first (the sun stays put and
     // visible via isAdvancingToChoices), THEN reveal the choices and glide the
-    // sun to its reserved slot in one motion. Sequential — the question is gone
-    // before the choices arrive, so they never overlap (no misclicks) — and the
+    // sun to its reserved slot in one motion. Sequential - the question is gone
+    // before the choices arrive, so they never overlap (no misclicks) - and the
     // sun never detours via the static fallback.
     setIsAdvancingToChoices(true);
     if (postSunScreenTransitionTimeout) {
@@ -866,7 +866,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // the overlay fades, so the persistent timer reads as the same sun settling
     // in rather than a new element popping up.
     setSunPhase("departing");
-    // Reveal the page beneath by fading the sky and the choices — but NOT the
+    // Reveal the page beneath by fading the sky and the choices - but NOT the
     // sun. Fading the whole wrapper's opacity (the old approach) faded the sun
     // along with it, so by the time it reached the corner it had all but
     // dissolved. `is-departing` fades only the background layers, leaving the
@@ -923,7 +923,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Down = ground yourself: the "Stay a while?" offer takes over with its own
     // full-screen, opaque layer that the drag's warm sky carries *into*
     // (--background-sunset-gradient), so the hand-off from the drag reads as one
-    // continuous motion — no flash. But "Stay a while" is a place to rest, not a
+    // continuous motion - no flash. But "Stay a while" is a place to rest, not a
     // sunset to dwell in: once the offer has landed it eases that carried-in wash
     // back to the dashboard's calm sky (see GroundingOverlay's skySettled). We
     // also ease the transition background beneath it home, so any peek on close
@@ -935,14 +935,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // above the offer's sky. (The down-drag's own completion would otherwise
     // slide the disc off the bottom edge and fade it out.) From there it carries
     // the whole stage as the one sun: it rises into the centre and breathes for a
-    // timed sit, and tucks away only for a screen-free sit / Android lock — so
+    // timed sit, and tucks away only for a screen-free sit / Android lock - so
     // there's never two suns at once; see GroundingOverlay's onSunMode.
     if (props.isFromDashboard && direction === "down") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
       // Ease the transition background home only *after* the offer has faded in
       // and gone opaque (GROUNDING_FADE_MS). The offer carries the drag's sunset
       // and dissolves it back to standard itself; resetting the layer beneath it
-      // *now* — while the offer is still translucent over it — would race the
+      // *now* - while the offer is still translucent over it - would race the
       // offer's slow settle and make the sky dip toward standard then bounce back
       // toward sunset mid-fade. Once the offer is opaque this reset is hidden, so
       // it only matters for the close fade (where it must reveal the default sky,
@@ -960,16 +960,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     // Up/away = let go: the disc is flung off and the "What do you want to let go
-    // of?" question takes over. Let the fling actually play out first — the sun
+    // of?" question takes over. Let the fling actually play out first - the sun
     // should visibly fly off the top before the question appears, so the gesture
     // reads as a release, not an instant swap. So here we only calm the stage for
     // the flight: (a) reset the background to its neutral default rather than
-    // completing to the cold "night" extreme the up-drag was heading toward — the
-    // transparent let-go overlay shows that standard background through — and
+    // completing to the cold "night" extreme the up-drag was heading toward - the
+    // transparent let-go overlay shows that standard background through - and
     // ease the interaction sky out to reveal the dashboard the sun flies over.
     // Hiding the shell sun and revealing the question is deferred to
     // openLetGoOffer, fired once the disc has cleared the viewport (onFlungOffscreen)
-    // — or, as a fallback for a gentle fling that never clears, when the terminal
+    // - or, as a fallback for a gentle fling that never clears, when the terminal
     // animation completes (runTerminalOutcome).
     if (props.isFromDashboard && direction === "up") {
       runFadeAnimation(ANIMATION_TIMING.fadeOut.standard, () => undefined);
@@ -996,7 +996,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     // Bedtime settle: the deliberate drag-down is a goodnight, not a let-go.
-    // Don't fade the content out and don't wait on the ~3s off-screen glide —
+    // Don't fade the content out and don't wait on the ~3s off-screen glide -
     // show the wordless "Sleep well" beat now and close+lock after it. (The
     // moon still drifts down for the fraction of a second before the close.)
     if (
@@ -1053,7 +1053,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       }
 
       if (props.isFromDashboard) {
-        // The answer is saved, so let the dashboard refresh now — but don't
+        // The answer is saved, so let the dashboard refresh now - but don't
         // close the pause. It advances to the same sun-instructions step a real
         // intervention gets, just with dashboard-true copy (let go / stay a
         // while) instead of the leave/continue promises that don't apply here.
@@ -1140,7 +1140,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // resetToInitial normally means a sub-threshold drag snapped back, so the
       // dimmed content returns to full opacity. But the let-go open *also*
       // dispatches resetToInitial (to reset the sky to neutral) while it is
-      // deliberately fading the content out — guard on isFinalAnimation so this
+      // deliberately fading the content out - guard on isFinalAnimation so this
       // listener doesn't fight that fade by popping the content back to opaque.
       setInteractionOpacity(1);
     }
@@ -1148,7 +1148,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   // Shell-sun mode: route the single shell-owned disc's terminal outcomes back
   // to this interaction. These are the exact closures the own <Sun> is wired to
-  // below — just relocated. Last registration wins; cleared on unmount.
+  // below - just relocated. Last registration wins; cleared on unmount.
   onMount(() => {
     if (!props.useShellSun) return;
     const unregister = registerSunInteraction({
@@ -1173,7 +1173,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       },
       tapThreshold: SUN_TAP_THRESHOLD,
       // Shown from inside the app (not a real intervention): the triple-tap
-      // continue makes no sense here — a back button is shown instead.
+      // continue makes no sense here - a back button is shown instead.
       isTapEnabled: !props.isFromDashboard,
     });
     onCleanup(unregister);
@@ -1222,7 +1222,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   // Resting sun: measure the live choices block (question + options) and publish
   // a centre just beneath it so the disc tucks under whatever options are showing
-  // — the 4-option intent screen or the taller 6-option time screen — and glides
+  // - the 4-option intent screen or the taller 6-option time screen - and glides
   // down when they swap. Skip mid-drag so a reflow can't yank the disc.
   // `force` measures even before the phase flips to "resting", so the anchor is
   // ready when the glide starts and the disc moves to its slot in one motion
@@ -1309,7 +1309,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         } else if (forcedFromWidget) {
           // Opened from the widget on a recognised line: land on that exact
           // NOTICE/ACTION_ADVICE, skipping the random pick (and its anti-repeat
-          // memory — this wasn't a rolled decision).
+          // memory - this wasn't a rolled decision).
           if (forcedFromWidget.mode === "NOTICE") {
             setForcedNoticeCue(forcedFromWidget.cue);
           } else {
@@ -1362,7 +1362,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
           setIsContentReady(true);
           // The BELL mode's whole practice is a single strike listened down
-          // into silence — the usual opening chime (the very same bell) would
+          // into silence - the usual opening chime (the very same bell) would
           // step on it, so that mode opens quiet and rings on the user's tap.
           if (getMode() !== "BELL") {
             playInterventionSound();
@@ -1482,7 +1482,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             //  - "meditate": rise into the centre and breathe as the timed sit's
             //    breath sun. Reuse the "surfing" role so the sit breathes with the
             //    same gentle meditation pulse the urge-surf wave uses, gliding up
-            //    from the companion rest — one sun, morphing, never a second disc.
+            //    from the companion rest - one sun, morphing, never a second disc.
             //  - "hidden": tuck away while a screen-free sit / Android lock owns
             //    the near-black screen. (Snap-hide, per the shell-sun layer.)
             props.useShellSun
@@ -1516,7 +1516,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             if (el) {
               // Observe the overlay so the choices reflow inside it (intent↔time,
               // async copy) re-measures the slot. The observer also fires once on
-              // observe() — after layout, with the overlay attached — which is the
+              // observe() - after layout, with the overlay attached - which is the
               // initial measurement (a synchronous read here would see a
               // detached, zero-size element).
               restingSunObserver = new ResizeObserver(() =>
@@ -1679,7 +1679,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           />
         )}
 
-        {/* Sun instructions overlay — see shouldShowSunInstructionsOverlay for
+        {/* Sun instructions overlay - see shouldShowSunInstructionsOverlay for
             why it unmounts once the post-sun choices/breath overlay is up. */}
         {shouldShowSunInstructionsOverlay({
           showSunInstructions: getShowSunInstructions(),
@@ -1717,12 +1717,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 Off-dashboard, the let-go / grounding rituals never fire (both
                 drag handlers are gated on isFromDashboard): fling and drag-down
                 both just leave the site/app, and tapping continues into a
-                session. Dragging the disc down — gently setting the light down
-                — is the calmer, primary way to let go, so lead with it, and
+                session. Dragging the disc down - gently setting the light down
+                - is the calmer, primary way to let go, so lead with it, and
                 name the fling in the same breath: it's the same outcome, and a
                 first-timer who flings shouldn't get an unexplained exit. On the
                 dashboard there is nothing to leave and no session to continue
-                (tapping is disabled; the back arrow is the way out) — there,
+                (tapping is disabled; the back arrow is the way out) - there,
                 flinging opens the let-go reflection and dragging down opens the
                 grounding offer, so say exactly that. */}
             <div class="sun-instructions txtSmaller">
@@ -1763,7 +1763,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             style={{
               opacity: getIsInteractionSunShown() ? 1 : 0,
               transition: `opacity ${SCREEN_TRANSITION_MS}ms ease-out`,
-              // Draggable only during the live interaction — not once the gesture
+              // Draggable only during the live interaction - not once the gesture
               // is done and we're advancing/exiting (the disc is just gliding).
               "pointer-events":
                 getIsInteractionSunShown() &&
@@ -1794,8 +1794,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
-              // The bedtime settle has no "continue into a session" — a tap must
-              // never open the intent/time grant flow at bedtime — so only the
+              // The bedtime settle has no "continue into a session" - a tap must
+              // never open the intent/time grant flow at bedtime - so only the
               // drag-down (settle) and fling (skip) are live for it.
               isTapEnabled={
                 !props.isFromDashboard && getMode() !== "WIND_DOWN_SETTLE"

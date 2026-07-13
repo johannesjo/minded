@@ -55,7 +55,7 @@ export const getLittleSunTimerSource = (
     };
   }
 
-  // Grace was configured and is now exhausted — signal intervention rather than
+  // Grace was configured and is now exhausted - signal intervention rather than
   // silently dropping into elapsed mode.
   if (graceCfg) {
     return { type: "grace-exhausted" };

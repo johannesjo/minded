@@ -13,7 +13,7 @@
   // much taller for the *content* region (where align-items: center places the
   // icons) to stay a full companion-bar-height above the inset. Because
   // box-sizing is border-box, folding the inset into min-height keeps the
-  // flex-centred line at inset + companion-bar-height/2 — exactly where the sun
+  // flex-centred line at inset + companion-bar-height/2 - exactly where the sun
   // rests. Without the inset here the icons would sit safe-area/2 below the sun
   // (the sun floating that much above them) on platforms with a non-zero bottom
   // inset (Android nav bar, iOS home indicator); on desktop the inset is 0 so
@@ -59,7 +59,7 @@
   }
 
   // The dashboard's feedback & settings icons (its only > a children) reveal
-  // slowly — a gentle settle on arrival — rather than snapping in at the 200ms
+  // slowly - a gentle settle on arrival - rather than snapping in at the 200ms
   // default above. Re-declares the animation with the same global-keyframe
   // workaround the rest of this file uses. Their quiet resting opacity comes
   // from the shared plain icon-button style (btnIcoPlainModifier).

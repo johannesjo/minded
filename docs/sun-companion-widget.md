@@ -1,7 +1,7 @@
 # Spec: the sun companion widget (Home/Lock Screen)
 
 Status: **Android in progress; iOS implemented (pending first Xcode build).**
-Update: the widget has since grown a second, larger face on both platforms — a
+Update: the widget has since grown a second, larger face on both platforms - a
 miniature of the in-app intervention screen carrying one quiet prompt line
 (`WidgetPrompts.kt` on Android; `WidgetPrompts.swift` + the `systemMedium`
 card on iOS). The 1×1 sun described here is unchanged and remains the
@@ -11,17 +11,17 @@ The iOS WidgetKit widget + deep-link plumbing now live in
 `extension/ios/App/MindedWidget/` (see its README); they were written without a
 macOS build available, so the first Xcode build is the real verification. This is
 "option 1" from
-`docs/ios-platform-fit.md` — the always-present, invitation-only sun, moved off
+`docs/ios-platform-fit.md` - the always-present, invitation-only sun, moved off
 the dashboard bottom bar and onto the device home screen. It is the
 entitlement-free, on-philosophy first step toward an iOS presence, and it is a
 genuinely nice addition to Android in its own right.
 
 ## What it is
 
-A calm sun sits on the home screen as an ambient companion — no numbers, no
+A calm sun sits on the home screen as an ambient companion - no numbers, no
 streaks, no badge, nothing to grade. It is *living*: it tracks the day's natural
 light, glowing as the warm sun by day and the cool moon by night. That is the
-whole of what it "shows" — where you actually are in the day, reflected back as
+whole of what it "shows" - where you actually are in the day, reflected back as
 warmth and colour, never a metric. **Tapping it does
 exactly what tapping the in-app dashboard sun does**: it opens the app's existing
 interaction overlay, and the existing flow handles the exit the same way too. The
@@ -39,7 +39,7 @@ carries no count, streak, or budget. The phase is decided from the local hour in
 skyTimeline day/night boundary); the shared receiver refreshes
 with one inexact, non-wake alarm. The card face steps its line every 15 minutes by
 day (`docs/widget-prompts-concept.md`), so that is the schedule it arms; a sun-only
-placement rides along — its own phase still flips just twice a day — and only ever
+placement rides along - its own phase still flips just twice a day - and only ever
 repaints while the screen is already on.
 
 It is **presence and invitation**, never an interrupt. It does not detect
@@ -53,7 +53,7 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   bespoke screen or pause. It launches the app and triggers the *same*
   `setIsShowQuestionOverlay(true)` that the dashboard companion's tap-target
   fires (`RouteCmp.tsx` / `MainWrapper`). Same experience, same exit, one code
-  path — and no new surface to keep in sync (the concept doc warns against
+  path - and no new surface to keep in sync (the concept doc warns against
   duplicating surfaces).
 - **One shared trigger, two native shells.** The only platform-specific part is
   the widget itself + how it tells the web shell to open the sun. That signal is
@@ -86,12 +86,12 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   resume/re-render can't reopen it. Being reactive, it covers a **cold start**
   (flag in the initial hash) and a **warm re-tap** (native sets the hash on the
   live page) with one code path.
-- No new route, no new component — it routes into the existing dashboard +
+- No new route, no new component - it routes into the existing dashboard +
   overlay.
 
 ### Android (this change)
 
-- **Widget** (`widget/MyAppWidget.kt`, Jetpack Glance — already a dependency):
+- **Widget** (`widget/MyAppWidget.kt`, Jetpack Glance - already a dependency):
   a single centered sun `Image` on a transparent background,
   `clickable(actionStartActivity(...))` launching `MainActivity` with
   `EXTRA_LAUNCH_ROUTE = OPEN_SUN_HASH` (`"/?sun=open"`). The drawable is chosen
@@ -100,7 +100,7 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   (`SunWidgetPhaseTest`). Maps the local hour to a phase and computes the minutes
   to the next boundary.
 - **Assets**: the day sun is a vector disc (`res/drawable/ic_sun_widget_day.xml`
-  — a white disc warming to a faint gold rim, on the app's warm glow). The night
+  - a white disc warming to a faint gold rim, on the app's warm glow). The night
   moon is the real lunar photo with a cool glow baked in
   (`res/drawable-nodpi/ic_sun_widget_night.webp`), matching the in-app `.moon`
   (the same NASA near-side disc + sheen + cool halo) rather than a gradient twin.
@@ -108,7 +108,7 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   the old dawn/dusk discs wore saturated amber/coral that read as a *signal*
   ("caution") on a surface that must never grade the user, whereas sun-vs-moon is
   the one shift everyone reads as the world, not a message. Selection is by clock
-  in code, **not** by the `drawable-night` qualifier — so the moon shows at actual
+  in code, **not** by the `drawable-night` qualifier - so the moon shows at actual
   night, not whenever the system theme happens to be dark.
 - **`MyAppWidgetReceiver.kt`**: the Glance receiver, plus a per-phase refresh. It
   arms one inexact `setAndAllowWhileIdle` alarm at the next boundary and re-arms
@@ -126,7 +126,7 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   clobber the flag.
 - **`AndroidManifest.xml`**: uncomment + wire the `MyAppWidgetReceiver`.
 
-### iOS (implemented — `extension/ios/App/MindedWidget/`)
+### iOS (implemented - `extension/ios/App/MindedWidget/`)
 
 Mirrors the Android shape; only the shell differs. See the folder's `README.md`
 for the one manual Xcode step (creating the Widget Extension target) and how to
@@ -138,16 +138,16 @@ verify.
   lunar photo as Android and the in-app `.moon`**
   (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG image set)
   rather than a gradient twin. `systemMedium` is the prompt card (sky + quiet
-  line + the same sun or moon — see `docs/widget-prompts-concept.md`). Day/night
+  line + the same sun or moon - see `docs/widget-prompts-concept.md`). Day/night
   follows the **local clock** (`SunWidgetPhase.swift`, the Swift twin of the
   Android phase logic), with the timeline pre-placing every face change so the
-  card steps and the sun or moon flips on time — not the system colour scheme.
+  card steps and the sun or moon flips on time - not the system colour scheme.
   `.widgetURL(URL("minded://sun"))` is the tap target (the card appends
-  `?line=…`). No special entitlement, no App Group — the widget only carries a
+  `?line=…`). No special entitlement, no App Group - the widget only carries a
   deep link.
   - **Lock Screen (`accessoryCircular`) deferred:** accessory widgets render in
     the system's *vibrant* mode, which discards colour and rebuilds the view from
-    its alpha channel — the near-opaque disc + soft bloom collapse to a flat tinted
+    its alpha channel - the near-opaque disc + soft bloom collapse to a flat tinted
     blob. A Lock Screen variant needs a purpose-built alpha glyph, not the colour
     sun; left for later rather than shipped looking broken.
 - **Deep link → `?sun=open`.** The `minded://` URL scheme is already registered
@@ -158,21 +158,21 @@ verify.
   **cold** launch the app delegate flags it from the launch options and
   `capacitorDidLoad` injects an `.atDocumentStart` user script that sets the hash
   *before* the bundle runs (guarded by a `sessionStorage` flag so a later WebView
-  reload can't re-force the pause open) — so the pause is in the first paint, no
+  reload can't re-force the pause open) - so the pause is in the first paint, no
   dashboard frame first. The cold launch also **fades** the brand launch screen out
   softly rather than hard-cutting it: a still of the `Splash` image is held over the
   loading WebView and faded once the web posts `mindedSunReady` (the sun has painted).
 - Below the deep link the interaction itself is already shared; the iOS-specific code
   is the SwiftUI widget, the URL plumbing, and a small native launch fade
-  (`installLaunchFade` — a `Splash` overlay faded out on the web's paint signal).
+  (`installLaunchFade` - a `Splash` overlay faded out on the web's paint signal).
 
 ## Deliberately out of scope (v1)
 
 Keeping it honest and small, per the product's bar:
 
-- **No metrics on the widget** — no clock readout, no streak, no count, no usage.
+- **No metrics on the widget** - no clock readout, no streak, no count, no usage.
   Reflecting the time of day as *warmth and colour* is ambience, not a number; it
-  is a sun, not a scoreboard. (Still absolute — the later prompt card added
+  is a sun, not a scoreboard. (Still absolute - the later prompt card added
   words, never numbers; see `docs/widget-prompts-concept.md`.)
 - **No bespoke widget-only experience.** Tapping reuses the in-app sun exactly;
   if that flow changes, the widget follows for free. No separate pause/route to

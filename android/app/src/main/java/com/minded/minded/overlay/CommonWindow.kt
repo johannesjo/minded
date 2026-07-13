@@ -21,14 +21,14 @@ open class CommonWindow(
 
     /**
      * Run [block] on the live window root, but only while no hideWindow()
-     * fade-out is in flight — holding the same lock hideWindow() takes, so the
+     * fade-out is in flight - holding the same lock hideWindow() takes, so the
      * "is a hide running?" check and [block] are atomic against it. A subclass
      * that animates [window] must go through here: starting a second
      * ViewPropertyAnimator on the same view cancels the fade-out's withEndAction,
      * so the view is never removed and the window wedges open permanently
      * (isHiding never resets either). hideWindow() can be invoked off the main
      * thread (e.g. from the WebView JS-bridge thread), so a plain unsynchronized
-     * isHiding check would not actually close that race. Keep [block] short — it
+     * isHiding check would not actually close that race. Keep [block] short - it
      * runs under the lock; starting an animation is fine since that only posts to
      * the UI thread.
      */
@@ -135,7 +135,7 @@ open class CommonWindow(
      * intervention overlay is shown right after (gated on this window being gone,
      * via onWindowRemoved), and its opaque shield then covers this corner. A fade
      * here would just leave the corner empty / the blocked app flashing through
-     * for those 300ms before the intervention appears — so drop the bubble at once
+     * for those 300ms before the intervention appears - so drop the bubble at once
      * and let the shield take over as soon as possible.
      */
     open fun hideWindowImmediate() {

@@ -52,7 +52,7 @@
 
 // A faint pen icon hinting the question can be tapped to answer. The hint
 // fills the whole reserved input area so the entire quiet space below the
-// question is a generous tap target — the pen is just the visible cue, pinned
+// question is a generous tap target - the pen is just the visible cue, pinned
 // near the top where the textarea's first line lands. Fades out as the field
 // fades in. An invitation, never a CTA: softly faded in, gently breathing, muted.
 .question-tap-hint {
@@ -109,11 +109,11 @@
   max-width: 100%;
   margin: var(--space-xl) auto 0;
   text-align: center;
-  // Soft entrance — same gentle rise the question text uses, never a hard cut.
+  // Soft entrance - same gentle rise the question text uses, never a hard cut.
   animation: slideUpFadeIn 0.5s var(--ease-out) 0.3s both;
   transition: opacity 0.25s var(--ease-out);
 
-  // Soft exit when "Something else…" swaps in the text input — never a snap-out.
+  // Soft exit when "Something else…" swaps in the text input - never a snap-out.
   // Dropping the entrance animation lets the opacity transition take over.
   &.is-exiting {
     animation: none;

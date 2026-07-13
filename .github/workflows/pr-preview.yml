@@ -3,7 +3,7 @@ name: PR Preview
 # Builds the standalone styleguide (component gallery + full dashboard
 # simulation) for each PR and deploys it to GitHub Pages under
 # pr-preview/pr-<N>/, posting a sticky comment with the live URL. Uses the
-# built-in GITHUB_TOKEN only — no external secrets.
+# built-in GITHUB_TOKEN only - no external secrets.
 #
 # One-time setup: enable GitHub Pages (Settings → Pages → Deploy from a branch
 # → gh-pages / root). The gh-pages branch is created on the first preview run.
@@ -84,8 +84,8 @@ jobs:
 
             | | |
             |---|---|
-            | 🎨 **Styleguide** — components & interactions | ${{ steps.links.outputs.gallery }} |
-            | 🌥️ **Dashboard simulation** — the full app shell | ${{ steps.links.outputs.dashboard }} |
+            | 🎨 **Styleguide** - components & interactions | ${{ steps.links.outputs.gallery }} |
+            | 🌥️ **Dashboard simulation** - the full app shell | ${{ steps.links.outputs.dashboard }} |
 
             <sub>Updated for ${{ github.event.pull_request.head.sha }}. Auto-removed when the PR closes.</sub>
 

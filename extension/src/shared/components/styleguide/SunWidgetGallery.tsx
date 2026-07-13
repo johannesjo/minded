@@ -1,12 +1,12 @@
 import { For, JSX } from "solid-js";
 
-// @ts-ignore — side-effect-free css module import
+// @ts-ignore - side-effect-free css module import
 import styles from "./styleguide.module.scss";
 import { SUN_WIDGET_PREVIEWS } from "./generated/sunWidgetPreviews";
 
 /**
- * The two time-of-day phases of the Android home-screen companion sun widget —
- * the warm sun by day, the cool moon by night — built from the real widget
+ * The two time-of-day phases of the Android home-screen companion sun widget -
+ * the warm sun by day, the cool moon by night - built from the real widget
  * assets by scripts/generate-widget-previews.mjs (single source of truth,
  * regenerated on every styleguide build): the day sun is the vector drawable
  * converted to SVG; the night moon is the actual lunar photo + baked glow

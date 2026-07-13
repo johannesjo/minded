@@ -17,15 +17,15 @@ import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 
 const MAX_ANSWERS = 4;
-// The slot the centre pick (or the fallback quote) is moved to — also the card
+// The slot the centre pick (or the fallback quote) is moved to - also the card
 // the dashboard greets you with before you reveal the rest. Exported so the view
 // can identify the greeting without re-deriving the placement logic.
 export const CENTER_INDEX = 4;
 
 // The card types that may *greet* you on arrival (the centre pick). The greeting
-// reflects — your own answers, mood, energy, emotions — or offers a calm quote;
+// reflects - your own answers, mood, energy, emotions - or offers a calm quote;
 // it never *measures*, and it is never a call to action (the wind-down CTA is
-// excluded). No counter/chart card types exist anywhere on the dashboard — by
+// excluded). No counter/chart card types exist anywhere on the dashboard - by
 // design, not omission; don't add them. (The quote is handled separately as an
 // always-present extra option, so it can greet on full days and is the natural
 // empty fallback.)
@@ -36,7 +36,7 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
 ]);
 
 // A question recap whose category is outside its time-of-day / work-day window
-// right now (e.g. a "Finding Focus Today" card — a morning, work-day category —
+// right now (e.g. a "Finding Focus Today" card - a morning, work-day category -
 // shown in the evening or the middle of the night). Such a recap shouldn't be
 // the card that *greets* you, but still belongs in the full "look back" grid,
 // which is explicitly historical. The other reflective cards (energy, emotions)
@@ -51,13 +51,13 @@ const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
 export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
   GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
 
-// Guard the card that actually greets you (the hero slot the view reads — see
+// Guard the card that actually greets you (the hero slot the view reads - see
 // DashboardGroups.heroOf). If it holds an out-of-window recap, move it out
-// (it stays available in "look back") and greet with a calm quote instead —
+// (it stays available in "look back") and greet with a calm quote instead -
 // matching the fallback when nothing reflective qualifies. The random pick
 // already keeps the hero in-window (isGreetingEligible), but the incremental
 // merge (updateDashboardEntries) preserves the existing order, so a greeting
-// that was in-window when first built can go stale as the hours pass — this is
+// that was in-window when first built can go stale as the hours pass - this is
 // that path's safety net. Mutates and returns `entries`.
 export const guardHeroSlot = (
   entries: DashboardGroup[],
@@ -82,7 +82,7 @@ export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
   // The greeting shown on the previous arrival, if any. We avoid repeating it so
-  // each landing surfaces a fresh tile — but only when an alternative exists, so
+  // each landing surfaces a fresh tile - but only when an alternative exists, so
   // we never end up with nothing to greet with.
   avoidGreetingKey?: string,
 ): DashboardGroup[] => {
@@ -143,13 +143,13 @@ export const getDashboardEntriesFromQuestions = (
   // Move the greeting (the centre pick the dashboard opens on) to CENTER_INDEX.
   // The pick is drawn only from the reflective/self-report cards
   // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
-  // option — so a calm quote can greet you even on a full day, and is the
+  // option - so a calm quote can greet you even on a full day, and is the
   // natural fallback when nothing reflective qualifies yet (an empty eligible
   // pool always lands on the quote). Runs on every platform: each arrival
   // re-rolls the greeting (see avoidGreetingKey + the RE_GREET trigger) so the
   // dashboard never greets you with the same tile twice in a row. Out-of-window
   // question recaps are kept out of the pool (isGreetingEligible) so a morning
-  // card never greets you at night — it stays in "look back" only.
+  // card never greets you at night - it stays in "look back" only.
   const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
     if (isGreetingEligible(entry, now)) acc.push(i);
     return acc;
@@ -167,7 +167,7 @@ export const getDashboardEntriesFromQuestions = (
 
   // Prefer a tile different from the one shown last time we landed, so each
   // arrival feels fresh rather than possibly repeating. Only narrow the pool
-  // when an alternative remains — never leave nothing to greet with.
+  // when an alternative remains - never leave nothing to greet with.
   const pickable = options.filter((o) => o.key !== avoidGreetingKey);
   const pool = pickable.length > 0 ? pickable : options;
 

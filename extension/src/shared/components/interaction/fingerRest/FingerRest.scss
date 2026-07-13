@@ -46,7 +46,7 @@
     position: absolute;
     inset: 0;
     // The quiet response to a resting finger: a soft pool of the companion's
-    // own light (amber by day, the moon's cool blue at night — same variable
+    // own light (amber by day, the moon's cool blue at night - same variable
     // the little sun's halo breathes with). Opacity and its slow ease are
     // driven inline from the component.
     background: radial-gradient(
@@ -69,7 +69,7 @@
 
     .finger-rest-why {
       // The why (the scrolling finger, at rest) and the how (press and stay),
-      // kept quiet beneath the cue — present enough to orient a first meeting,
+      // kept quiet beneath the cue - present enough to orient a first meeting,
       // dim enough not to become something to study.
       margin-top: 0.85em;
       max-width: 30ch;

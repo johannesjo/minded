@@ -29,7 +29,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     }
 
     /// The exact (already strictly re-encoded) line the tapped prompt card was
-    /// showing on a cold launch, if any — appended to the hash so the interaction
+    /// showing on a cold launch, if any - appended to the hash so the interaction
     /// opens on that same NOTICE/ACTION_ADVICE (RouteCmp's `widgetLine`).
     private var launchWidgetLine: String? {
         (UIApplication.shared.delegate as? AppDelegate)?.launchWidgetLine
@@ -42,7 +42,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     /// The hash the web shell consumes: the shared `?sun=open` flag, plus the
     /// card's line when the tap carried one. `line` is ASCII alphanumerics+`%`
     /// only (see AppDelegate.encodedWidgetLine), so it is safe inside the JS
-    /// string literals below — mirrors Android's `MainActivity.launchHash`.
+    /// string literals below - mirrors Android's `MainActivity.launchHash`.
     private static func sunHash(line: String?) -> String {
         line.map { "\(openSunHash)&widgetLine=\($0)" } ?? openSunHash
     }
@@ -58,7 +58,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     // hash is set, clearing it only once the JS actually runs.
     private var pendingOpenSun = false
     // Bounded backstop for the retry above: if no live WebView ever accepts the
-    // hash we give up after a few beats instead of leaving the flag armed — a
+    // hash we give up after a few beats instead of leaving the flag armed - a
     // stale flag must never pop the overlay on some unrelated later foreground
     // (this app never interrupts unasked).
     private var openSunRetriesLeft = 0
@@ -66,13 +66,13 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(MindedIOSPlugin())
 
-        // Item 2 — synchronous, no-flash open from the widget. `capacitorDidLoad`
+        // Item 2 - synchronous, no-flash open from the widget. `capacitorDidLoad`
         // runs after the WebView is built but *before* the first load (see
         // CAPBridgeViewController.loadView), so a `.atDocumentStart` user script set
         // here runs before the web bundle evaluates. On a widget cold-launch we use
         // it to put `?sun=open` in the hash up front, so RouteCmp reads it
         // synchronously at mount and the interaction overlay is in the very first
-        // render — no dashboard frame flashing past first. (The post-load
+        // render - no dashboard frame flashing past first. (The post-load
         // `handleOpenSun` retry covers warm re-taps, where the app is already running;
         // on a cold launch this user script is what opens the sun.)
         if launchedFromSunWidget,
@@ -80,7 +80,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
             // One-shot guard: a WKUserScript runs at the start of *every* main-frame
             // load, so if WKWebView reloads (e.g. after iOS jettisons the web content
             // process under memory pressure) an unguarded script would re-force the
-            // pause open on a later return — exactly the "never pop the overlay on
+            // pause open on a later return - exactly the "never pop the overlay on
             // some unrelated foreground" rule the retry path protects. The
             // sessionStorage flag survives an in-session reload, so the hash is forced
             // only on the genuine launch.
@@ -109,7 +109,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         NotificationCenter.default.addObserver(self, selector: #selector(handleNotification(_:)), name: NSNotification.Name("SWITCH_MODE"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleOpenSun(_:)), name: .openSun, object: nil)
 
-        // Item 3 — the launch fade. Only on a widget cold-launch, because only then
+        // Item 3 - the launch fade. Only on a widget cold-launch, because only then
         // does the first web paint land on the sun pause (item 2); a normal launch
         // lands on the dashboard, where the system launch screen already suffices.
         if launchedFromSunWidget {
@@ -119,7 +119,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
     // The companion sun widget was tapped. Open the shared interaction overlay by
     // setting the `?sun=open` launch flag the web shell consumes (RouteCmp's
-    // `?sun=open` effect) — the same overlay as tapping the in-app dashboard sun.
+    // `?sun=open` effect) - the same overlay as tapping the in-app dashboard sun.
     // The prompt card's tap carries the exact line it was showing (userInfo,
     // already re-encoded by AppDelegate) so the overlay opens on that same
     // interaction; the wordless faces carry none.
@@ -173,7 +173,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         print("App will enter foreground")
         dispatchJSEvent(evName: "WILL_ENTER_FOREGROUND")
         // A pending widget open is retried in `appDidBecomeActive` (which always
-        // follows this beat) — kept to a single hook so one tap can't double-fire.
+        // follows this beat) - kept to a single hook so one tap can't double-fire.
     }
 
     @objc func appDidBecomeActive() {
@@ -191,12 +191,12 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
     // The springboard→app seam would otherwise hard-cut: tapping the widget hands off
     // to a freshly loading WebView, and iOS removes the launch screen the instant the
-    // web view paints — which on a cold start can be a blank frame before the bundle
+    // web view paints - which on a cold start can be a blank frame before the bundle
     // renders. Soften it: lay a still of the brand launch screen (the same `Splash`
     // image) over the loading WebView so the system launch screen is replaced by an
     // identical image (no visible swap), then fade it out once the interaction sun has
     // actually painted underneath. (The overlay is the brand mark, not the sun itself
-    // — item 2 already puts the real sun in the first web paint; this just eases the
+    // - item 2 already puts the real sun in the first web paint; this just eases the
     // launch screen out instead of cutting to it.)
     private func installLaunchFade() {
         guard launchOverlay == nil, isViewLoaded else { return }
@@ -210,7 +210,7 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         launchOverlay = overlay
 
         // Fade out on the real first paint: the web posts `mindedSunReady` once the
-        // interaction sun has mounted (see RouteCmp). That's the accurate signal —
+        // interaction sun has mounted (see RouteCmp). That's the accurate signal -
         // page-load progress only says resources finished, not that the sun rendered,
         // so it could reveal a blank frame. A hard cap always clears the overlay so a
         // stalled or silent load can never strand the launch screen on top.
@@ -220,14 +220,14 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         }
     }
 
-    // The web signalled the sun has painted — ease the launch screen out.
+    // The web signalled the sun has painted - ease the launch screen out.
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.name == Self.sunReadyMessage else { return }
         fadeOutLaunch(delay: 0)
     }
 
     private func fadeOutLaunch(delay: TimeInterval) {
-        // Stop listening either way — also breaks the retain cycle from `add(self)`.
+        // Stop listening either way - also breaks the retain cycle from `add(self)`.
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: Self.sunReadyMessage)
         guard let overlay = launchOverlay else { return }
         launchOverlay = nil           // one-shot: the ready message and the cap can both arrive

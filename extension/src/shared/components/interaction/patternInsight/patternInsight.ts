@@ -17,7 +17,7 @@ const MAX_SHOWN_DATE_BUCKETS = 60;
 // How many recent returns (sun taps inside the ~5h window, see sunTapHistory.ts)
 // it takes before we gently name the loop. The current visit isn't counted yet
 // at decision time, so 3 prior returns means the user is here for at least the
-// fourth time — a real, observed pull, not a fluke.
+// fourth time - a real, observed pull, not a fluke.
 const RETURN_LOOP_MIN_RECENT_SUN_TAPS = 3;
 
 const getShownInsightIdsForDate = (
@@ -79,11 +79,11 @@ const getInsightCandidates = (
 ): PatternInsight[] => {
   const candidates: PatternInsight[] = [];
 
-  // Present-session return loop — currently the only pattern insight. It is the
+  // Present-session return loop - currently the only pattern insight. It is the
   // one noticing that is true by observation, not inference: we counted these
   // returns ourselves and they are happening now. It is not target-scoped (it
   // reflects the whole recent session) and works on every platform. The count
-  // is left vague ("a few times") on purpose — a gentle noticing, never a tally
+  // is left vague ("a few times") on purpose - a gentle noticing, never a tally
   // to beat. Candidate selection has no fall-through (see
   // getPatternInsightCandidate), so once shown it is intentionally suppressed
   // for the rest of the day while it stays eligible.
@@ -92,7 +92,7 @@ const getInsightCandidates = (
       createInsight(
         context,
         "return-loop",
-        "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
+        "You've come back a few times in a short while. That's okay - see if you can just notice the pull, without having to act on it.",
       ),
     );
   }

@@ -6,8 +6,8 @@ labels: bug
 ---
 
 **Platform**
-- [ ] Browser extension (Chrome / Firefox / Edge / Brave) — version:
-- [ ] Android — version & device:
+- [ ] Browser extension (Chrome / Firefox / Edge / Brave) - version:
+- [ ] Android - version & device:
 
 **minded version**
 e.g. 4.0.0 (see `chrome://extensions` or Play Store listing)

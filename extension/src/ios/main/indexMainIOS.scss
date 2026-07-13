@@ -13,7 +13,7 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
   margin-bottom: 0;
 }
 
-// The widget invitation — the iOS twin of Android's deferred-setup
+// The widget invitation - the iOS twin of Android's deferred-setup
 // invitation (indexMainAndroid.scss): shown while no widget is observed on
 // the Home Screen, dismissible per visit, gone silently once one exists.
 // Fades in/out rather than snapping.
@@ -43,7 +43,7 @@ $warm-invite-tint: rgba(255, 196, 84, 0.16);
   cursor: pointer;
 }
 
-// Layout only — the button look (and an adequate tap target) comes from
+// Layout only - the button look (and an adequate tap target) comes from
 // <Btn variant="icon" plain>.
 .setupInvitationMsgClose {
   flex: 0 0 auto;

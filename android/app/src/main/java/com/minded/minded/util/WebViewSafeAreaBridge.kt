@@ -5,14 +5,14 @@ import android.webkit.WebView
 /**
  * Forwards system-bar + display-cutout insets to the WebView as
  * `--safe-area-inset-{top|right|bottom|left}` CSS variables on the
- * `#minded-6622` container — mirroring iOS `capacitor-plugin-safe-area`
+ * `#minded-6622` container - mirroring iOS `capacitor-plugin-safe-area`
  * so `padding-bottom: var(--safe-area-inset-bottom)` works identically on
  * both platforms.
  *
  * The insets must be supplied in CSS pixels (DP) by the caller. The
  * canonical caller is [ForwardSafeAreaInsetsToWebView], which reads them
  * from Compose's `WindowInsets.systemBars` + `WindowInsets.displayCutout`
- * — the same source that powers `imePadding`/`statusBarsPadding`. We
+ * - the same source that powers `imePadding`/`statusBarsPadding`. We
  * deliberately don't use `ViewCompat.setOnApplyWindowInsetsListener` on
  * the WebView itself: inside Compose's `AndroidView` interop tree the
  * dispatch path runs through `AndroidViewHolder`, which transforms insets
@@ -21,7 +21,7 @@ import android.webkit.WebView
  *
  * The supplied [SafeAreaInsetsHolder] is updated in lockstep so the page
  * can pull the latest values synchronously on init via
- * `androidMinded.getSafeAreaInsets()` (boot-race protection — Compose may
+ * `androidMinded.getSafeAreaInsets()` (boot-race protection - Compose may
  * deliver the first inset update after the page has begun parsing, so
  * `evaluateJavascript` alone can race the very first paint).
  *

@@ -39,11 +39,11 @@ jobs:
   release-internal:
     runs-on: ubuntu-latest
     # Reusing the existing `production` environment for now, so no new secrets
-    # are needed — but it has a required reviewer, so each push waits for a
+    # are needed - but it has a required reviewer, so each push waits for a
     # one-click approval in the Actions UI before it ships. To make this fully
     # hands-off later, create a separate ungated `internal` environment (no
     # reviewers) with the same secrets and switch this back to it. (Don't drop
-    # the reviewer from `production` — that would un-gate real releases too.)
+    # the reviewer from `production` - that would un-gate real releases too.)
     environment: production
     timeout-minutes: 20
     steps:
@@ -79,7 +79,7 @@ jobs:
           # formula is used by the production pipeline (release.yml), so
           # whichever builds later has the higher code. Internal builds run on
           # pushes; a production release builds at release time ("now"), so it
-          # always sits at or above the latest internal build — which is what
+          # always sits at or above the latest internal build - which is what
           # avoids Play's cross-track multiApkShadowedActiveApk rejection.
           # ~2e8 today, growing ~3.2e7/yr, far under the 2.1e9 versionCode max.
           export ANDROID_VERSION_CODE=$(( $(date +%s) - 1577836800 ))

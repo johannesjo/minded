@@ -43,10 +43,10 @@ const PATTERN_INSIGHT_PROBABILITY = 1 / 3;
 // minute (the rest fall through to the existing strong-friction prompts).
 const SCREEN_OFF_PROBABILITY = 1 / 3;
 // Share of (remaining) strong-friction interventions that offer urge surfing.
-// Strong friction means the pull is highest — exactly when riding the urge out
+// Strong friction means the pull is highest - exactly when riding the urge out
 // is the right practice. Cross-platform, unlike the Android-only screen-off.
 const URGE_SURFING_PROBABILITY = 1 / 3;
-// Share of (remaining) strong-friction interventions that ring the bell —
+// Share of (remaining) strong-friction interventions that ring the bell -
 // one strike, listened all the way down into silence. Deliberately below
 // urge surfing (at peak pull the urge work is the more specific practice)
 // and below a ready pattern insight (see the strong branch).
@@ -55,7 +55,7 @@ const BELL_PROBABILITY = 1 / 4;
 // due" register as NOTICE (and slightly more common than it, being the richer
 // moment of the two).
 const BELL_SAMPLE_PROBABILITY = 1 / 25;
-// The one wordless intervention: no question, no advice — an invitation to let
+// The one wordless intervention: no question, no advice - an invitation to let
 // the scrolling finger be still for a moment. Same everyday register as the
 // bell and NOTICE; unlike them it needs no sound and no waking-hours gate, so
 // it is also the softest thing the small hours can serve.
@@ -130,11 +130,11 @@ export interface InteractionModeDecisionOptions {
   isAudioAudible?: boolean;
   /**
    * Whether the primary input is touch. The finger-rest invitation is a
-   * press-and-hold on a pad — meaningless with a mouse — so it is only offered
+   * press-and-hold on a pad - meaningless with a mouse - so it is only offered
    * on touch-primary devices. The live device read (`IS_TOUCH_PRIMARY`) lives
    * in `@src/util/touch`, which touches `window` at import; passing it in keeps
    * this decision module DOM-free (and node-testable). Defaults to `false` so
-   * an unknown environment fails safe — never inviting a finger to rest where
+   * an unknown environment fails safe - never inviting a finger to rest where
    * there is only a mouse.
    */
   isTouchPrimary?: boolean;
@@ -209,7 +209,7 @@ export const getInteractionModeDecision = (
   // settle, at most once per night. `settledTonight` is the once-per-night
   // guard (the settle's night id, once shown, is written to
   // `sleepWindDownDismissedNightId`); a matching value means "already settled
-  // tonight — don't serve it again." Gated to real interventions
+  // tonight - don't serve it again." Gated to real interventions
   // (`canApplyInterventionFriction`) so the settle never pops up on the
   // dashboard (and never triggers the native lock-screen close there).
   const isBedtimeIntervention =
@@ -235,7 +235,7 @@ export const getInteractionModeDecision = (
   // setting off, never with the media volume at zero (a silent bell is a
   // broken moment, so the gate is structural rather than a setting). Kept to
   // real interventions (not the dashboard, whose sun already offers grounding)
-  // and — like the other audible/attention prompts — to waking hours.
+  // and - like the other audible/attention prompts - to waking hours.
   const canOfferBell =
     !isMainView &&
     isActionAdviceEligible &&
@@ -245,7 +245,7 @@ export const getInteractionModeDecision = (
   // Never open a bedtime interrupt with a verbal survey. A first-night
   // onboarding QUESTION or a pre-19:00 ENERGY_LVL prompt at bedtime is a
   // textbook 90%-bar violation ("a form at the moment of least capacity"), so
-  // inside a bedtime intervention these gates are skipped entirely — the window
+  // inside a bedtime intervention these gates are skipped entirely - the window
   // falls through to the wordless settle (or, once settled, the ordinary
   // cascade). They still fire normally outside the bedtime window.
   if (context.hasFewAnswers && !isBedtimeIntervention) {
@@ -272,14 +272,14 @@ export const getInteractionModeDecision = (
     }
 
     // Bedtime, strong pull: the active practices above (screen-off, urge
-    // surfing) still fire when they're eligible — a genuinely strong late-night
+    // surfing) still fire when they're eligible - a genuinely strong late-night
     // pull deserves the real practice. But once they pass, a strong pull should
     // meet the wordless settle, never a verbal "you keep coming back" insight or
     // a question at the moment of least capacity. After 22:00 the practices are
     // hour-gated off anyway, so this is what a strong bedtime pull normally
     // gets. Unlike the routine settle this is NOT once-per-night: a repeated
     // strong pull keeps getting the wordless settle rather than escalating to a
-    // verbal prompt (decision 5 — "wordless at bedtime"). The settle already
+    // verbal prompt (decision 5 - "wordless at bedtime"). The settle already
     // bypasses the anti-repeat, so repeating it here is fine.
     if (isBedtimeIntervention) {
       return decision(
@@ -324,7 +324,7 @@ export const getInteractionModeDecision = (
   }
 
   // Bedtime settle (non-strong): the everyday bedtime interrupt. One wordless
-  // moon — "let the day go" — served in place of the ordinary evening options,
+  // moon - "let the day go" - served in place of the ordinary evening options,
   // at most once per night. Placed above the expired-intent branch (and the
   // whole cascade below) so a bedtime interrupt is never opened by a verbal
   // reason/alternative prompt at the moment of least capacity. Deliberately
@@ -416,7 +416,7 @@ export const getInteractionModeDecision = (
     ? syncData.lastAppUsageRatingTS
     : syncData.lastBrowsingBehaviorRatingTS;
   // The usage observation ("You've spent about X on Y so far today.") is a
-  // present-moment awareness nudge for a *real* intervention — when the user is
+  // present-moment awareness nudge for a *real* intervention - when the user is
   // mid-doom-scroll on a site/app. Starting an intervention deliberately from
   // the dashboard isn't that moment: replaying their own day's stats back at
   // them there reads as a tracker, not a pause. Keep it to real interventions.
@@ -459,7 +459,7 @@ export const getInteractionModeDecision = (
   }
 
   // Anti-repeat: this fallback is QUESTION, and because every richer mode above
-  // is low-probability, it is by far the most common outcome — so when the user
+  // is low-probability, it is by far the most common outcome - so when the user
   // returns again and again in one sitting it would otherwise serve QUESTION
   // back-to-back, making the loop feel like the same screen each time. If the
   // last intervention already opened with QUESTION, offer the gentle no-typing

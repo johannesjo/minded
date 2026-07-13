@@ -174,7 +174,7 @@ export interface SyncData {
    * present-moment usage observation. Never charted over time.
    */
   usageStats: UsageStatsByDate;
-  /** Dormant since the self-assessment removal — see SelfAssessmentData note. */
+  /** Dormant since the self-assessment removal - see SelfAssessmentData note. */
   selfAssessment: SelfAssessmentData;
   alternativeApps: string[];
   alternativeWebsites: string[];
@@ -193,7 +193,7 @@ export interface SyncData {
    */
   lastInteractionMode?: InteractionMode;
 
-  // Daily budget feature — REMOVED (#38). Retained dormant: no writer or reader
+  // Daily budget feature - REMOVED (#38). Retained dormant: no writer or reader
   // remains; kept only so the Android <-> extension sync JSON contract stays
   // stable and already-synced installs round-trip losslessly. Do not wire new
   // logic to these. Live observed usage now lives in `usageStats`
@@ -205,7 +205,7 @@ export interface SyncData {
   budgetPromptDismissedTS: number;
 
   /**
-   * Sleep wind-down — per-night state.
+   * Sleep wind-down - per-night state.
    * `nightId` is the ISO date of the day on which bedtime begins (so e.g.
    * unlocking at 02:00 still resolves to the previous evening's nightId).
    *
@@ -225,7 +225,7 @@ export interface StaticCfg {
   ShowAgainThreshold: number;
 }
 
-/** Daily usage budget configuration (dormant since #38 — see field note). */
+/** Daily usage budget configuration (dormant since #38 - see field note). */
 export interface DailyBudget {
   globalMinutes: number; // Total allowed minutes across all sites (e.g., 30)
   perSiteMinutes?: {
@@ -234,7 +234,7 @@ export interface DailyBudget {
   };
 }
 
-/** Daily usage tracking (dormant since #38 — see field note). */
+/** Daily usage tracking (dormant since #38 - see field note). */
 export interface DailyUsage {
   totalSeconds: number; // Total time today across all blocked sites
   perSite: {

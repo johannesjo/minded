@@ -11,13 +11,13 @@
 //      one-to-one from the Android day vector (`res/drawable/ic_sun_widget_day.xml`).
 //    - Night: the moon. This is the *same* lunar photo the Android widget and the
 //      in-app `.moon` use (`res/drawable-nodpi/ic_sun_widget_night.webp`, re-encoded
-//      as the `MoonWidget` image set) — the real near-side disc with its cool sheen
+//      as the `MoonWidget` image set) - the real near-side disc with its cool sheen
 //      and halo already baked in, rather than a gradient twin the app deliberately
 //      avoids (see docs/sun-companion-widget.md).
 //
 //  It just renders whichever it's told via `isNight`; the day/night *decision* is
 //  the clock (`SunWidgetPhase`, picked by the timeline in MindedWidget.swift), the
-//  same time-based rule as the Android widget — not the system colour scheme. The
+//  same time-based rule as the Android widget - not the system colour scheme. The
 //  widget is a static snapshot per phase (WidgetKit can't run the living, breathing
 //  in-app sun), so this is the calm doorway, not the experience.
 //
@@ -52,7 +52,7 @@ struct CompanionSun: View {
     // The night moon: one image, disc + cool sheen + halo baked in, filling the
     // tile exactly as the Android night drawable fills its sun slot.
     private func moon(side: CGFloat) -> some View {
-        // The source PNG is square, so a square frame fills it without distortion —
+        // The source PNG is square, so a square frame fills it without distortion -
         // no need for scaledToFit. Matches the .frame idiom of glow()/disc() below.
         Image("MoonWidget")
             .resizable()

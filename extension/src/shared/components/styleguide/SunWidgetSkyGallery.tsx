@@ -1,6 +1,6 @@
 import { For, JSX } from "solid-js";
 
-// @ts-ignore — side-effect-free css module import
+// @ts-ignore - side-effect-free css module import
 import styles from "./styleguide.module.scss";
 import {
   AMBIENT_SKY_KEYFRAMES,
@@ -9,14 +9,14 @@ import {
 import { SUN_WIDGET_PREVIEWS } from "./generated/sunWidgetPreviews";
 
 /**
- * The card face of the Android widget across the day — a still of
+ * The card face of the Android widget across the day - a still of
  * MyAppWidget.PromptCard: the time-of-day sky with a serif line resting above
  * the sun (at night the moon carries it alone, wordless). The disc gallery next
  * to this shows the sun/moon art; this shows the sky that steps behind it.
  *
- * The five day skies are the app's ambient keyframes (skyTimeline.ts) — the same
+ * The five day skies are the app's ambient keyframes (skyTimeline.ts) - the same
  * data gen_loading_sky.py bakes into the widget_sky_* PNGs, and the same
- * per-hour choice WidgetSky.forHour makes — so this preview can't silently drift
+ * per-hour choice WidgetSky.forHour makes - so this preview can't silently drift
  * from what ships. Indicative of palette and layout, not a pixel-exact device
  * render (the device sky is a dithered PNG; this is a CSS gradient).
  */
@@ -71,7 +71,7 @@ const SunWidgetSkyGallery = (): JSX.Element => (
             class={styles.widgetSkyFace}
             style={{ background: sky.gradient }}
           >
-            {/* Day carries a serif line above the sun; night is the moon alone —
+            {/* Day carries a serif line above the sun; night is the moon alone -
                 a line at 2 a.m. reads as a nudge (WidgetPrompts). */}
             {!sky.isNight && <p class={styles.widgetSkyLine}>{SAMPLE_LINE}</p>}
             <img

@@ -37,9 +37,9 @@ const isSessionGraceCfgChanged = (changes: {
 export const LittleSunComponent: (props: {
   teardown: () => void;
   // Re-show the full intervention. `morphFromCorner` is true only when the
-  // session genuinely ran out (countdown hit zero, or grace exhausted) — then the
+  // session genuinely ran out (countdown hit zero, or grace exhausted) - then the
   // sun arrives by gliding out of this Little Sun's corner. It's false for the
-  // periodic re-question (the session is still running — nothing "returned") and
+  // periodic re-question (the session is still running - nothing "returned") and
   // for a deliberate tap, which aren't "the timer ran out" moments.
   onShowFreshInteraction: (morphFromCorner: boolean) => void;
   onTap?: () => void;
@@ -118,7 +118,7 @@ export const LittleSunComponent: (props: {
 
     if (source.type === "grace-exhausted") {
       window.clearInterval(currentSessionInterval);
-      // Grace ran out after a real session — a genuine "timer ran out", so morph.
+      // Grace ran out after a real session - a genuine "timer ran out", so morph.
       props.onShowFreshInteraction(true);
       return true;
     }
@@ -216,7 +216,7 @@ export const LittleSunComponent: (props: {
         v % RE_QUESTION_INTERVAL_IN_S === 0
       ) {
         // Periodic re-question mid-session: the session is still running, so this
-        // isn't a "timer ran out" return — don't morph from the corner.
+        // isn't a "timer ran out" return - don't morph from the corner.
         props.onShowFreshInteraction(false);
       }
     }, 1000);
@@ -239,7 +239,7 @@ export const LittleSunComponent: (props: {
 
       if (remaining <= 0) {
         window.clearInterval(currentSessionInterval);
-        // The countdown ran out — clear the session and morph the intervention
+        // The countdown ran out - clear the session and morph the intervention
         // back out of the corner (the headline reverse-morph case).
         updateHostsEntry(props.host, { sessionDurationInS: 0 });
         void clearScopedActiveTimer(sessionEndTS);
@@ -275,7 +275,7 @@ export const LittleSunComponent: (props: {
 
       if (nextRemaining <= 0) {
         window.clearInterval(currentSessionInterval);
-        // Grace exhausted — fall through to full intervention.
+        // Grace exhausted - fall through to full intervention.
         void refreshTimerSource();
       }
     };
@@ -293,14 +293,14 @@ export const LittleSunComponent: (props: {
     if (props.onTap) {
       props.onTap();
     } else {
-      // A deliberate tap to choose again — the user ended it, the timer didn't
-      // run out — so re-show without the corner morph.
+      // A deliberate tap to choose again - the user ended it, the timer didn't
+      // run out - so re-show without the corner morph.
       props.onShowFreshInteraction(false);
     }
   };
 
   const getDisplayTime = () => {
-    // During grace, count the elapsed session time *up* — a calm companion
+    // During grace, count the elapsed session time *up* - a calm companion
     // resting in the corner, not a countdown ticking down toward the next
     // intervention (which would manufacture the very urgency we avoid).
     if (getIsGraceMode()) {

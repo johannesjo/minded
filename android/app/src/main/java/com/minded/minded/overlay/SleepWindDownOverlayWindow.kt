@@ -22,7 +22,7 @@ import com.minded.minded.util.SafeAreaInsetsHolder
 /**
  * Fullscreen overlay that hosts the bedtime wind-down UI when the user opens
  * a blocked app inside the configured wind-down window. Mirrors the structure
- * of [InteractionWindow] — it loads its own webview entry point that renders
+ * of [InteractionWindow] - it loads its own webview entry point that renders
  * `SleepWindDownView` and uses the standard JS bridge for closing the app.
  */
 class SleepWindDownOverlayWindow(

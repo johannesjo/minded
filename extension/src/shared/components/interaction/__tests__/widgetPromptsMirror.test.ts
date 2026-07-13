@@ -4,17 +4,17 @@ import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.co
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 
 /**
- * The home-screen widgets mirror these two interaction pools natively — Android
+ * The home-screen widgets mirror these two interaction pools natively - Android
  * in Kotlin (`WidgetPrompts.WAKING_PROMPTS`), iOS in Swift
- * (`WidgetPrompts.wakingPrompts`) — so their cards show real interaction content
+ * (`WidgetPrompts.wakingPrompts`) - so their cards show real interaction content
  * and tapping lands on that exact NOTICE/ACTION_ADVICE line. Those native lists
  * are hand-maintained copies; this is the drift guard.
  *
- * Every line a widget can show MUST still exist verbatim in the TS source —
+ * Every line a widget can show MUST still exist verbatim in the TS source -
  * otherwise the tap's string match (`matchWidgetLine` in InteractionCommon, and
  * the native allow-listing on the way in) silently stops recognising it and the
  * user lands on a random pick instead of the line they tapped. And the two
- * native pools must match each other one-to-one *in order* — same order + same
+ * native pools must match each other one-to-one *in order* - same order + same
  * slot arithmetic = the same line at the same moment on both platforms. Keeping
  * it a test (rather than build-time codegen) is the KISS mirror; extracting a
  * generated shared source is the upgrade path if a fourth consumer appears.

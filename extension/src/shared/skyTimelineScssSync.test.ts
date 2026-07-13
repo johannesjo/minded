@@ -11,7 +11,7 @@ import {
 /**
  * Compiles the real stylesheet and asserts the light theme's composed
  * --background-gradient (and the --day-*-rgb defaults) against skyTimeline's
- * mirrors. The unit tests in skyTimeline.test.ts pin the TS side only — this
+ * mirrors. The unit tests in skyTimeline.test.ts pin the TS side only - this
  * is the other half, so a geometry/alpha tweak in _variables.scss can't
  * silently diverge from ambientSkyLayeredBackground (the styleguide preview)
  * or the accent keyframes.

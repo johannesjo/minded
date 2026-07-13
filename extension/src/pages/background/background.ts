@@ -90,7 +90,7 @@ bro.runtime.onMessage.addListener((request, sender) => {
   if (request.closeTab && sender.tab?.id) {
     // Deliberately NO countSunTap here: closeTab is the LEAVE path (fling,
     // drag-down, Little-Sun tap). Sun taps feed friction escalation and the
-    // return-loop insight — counting leaves would punish exactly the choice
+    // return-loop insight - counting leaves would punish exactly the choice
     // the sun invites, and Android's leave path counts nothing either. Taps
     // are counted on completed interactions only (onInteractionSubmitted).
     bro.tabs.remove(sender.tab.id);

@@ -6,11 +6,11 @@ import { sunCompanionSettle } from "@src/shared/components/interaction/sun/sunSe
  * persistent disc (never a per-step remount) between three rests:
  *
  * - hero: full-size in the slot the welcome / "ready" copy reserves for it
- *   (the measured spacer centre) — the disc the user meets and, at the end,
+ *   (the measured spacer centre) - the disc the user meets and, at the end,
  *   the disc that's "ready".
  * - sky: small and high, a quiet presence watching over the setup chores
  *   (app picker, permissions) without crowding them.
- * - companion: the bottom-bar rest — the closing glide that hands the very
+ * - companion: the bottom-bar rest - the closing glide that hands the very
  *   same disc over to the dashboard shell sun.
  *
  * Every target anchors from the BOTTOM edge with a centred x on purpose: that
@@ -66,7 +66,7 @@ export const getOnboardingSunSettle = (
     };
   }
   // Step 0 before the spacer is measured: no target yet (the disc mounts once
-  // it can snap straight into the hero slot — never a centre-flash first).
+  // it can snap straight into the hero slot - never a centre-flash first).
   // Step 4 keeps the sky rest until its spacer lands, then glides down.
   if (wantsHero && state.step === 0) return null;
   return anchors.skyYFromBottom == null
