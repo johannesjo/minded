@@ -8,7 +8,7 @@
   // single source of truth) live on the app root in _variables.scss, because
   // the Android onboarding renders outside this shell yet lands its hand-off
   // on the same anchor. The JS-positioned disc reads the resolved px back off
-  // `.companionTapTarget` rather than re-deriving the math — see
+  // `.companionTapTarget` rather than re-deriving the math - see
   // reanchorCompanion in RouteCmp.tsx.
   // Radius of the soft round fade "pocket" that opens around the resting
   // companion sun (bottom-centre). Content scrolling into this radius dissolves
@@ -16,7 +16,7 @@
   // where the sun sits. Just larger than the ~50px companion footprint so the
   // halo clears the disc without lifting the fade band too far up the viewport.
   // Shared so the dashboard grid (DashboardGroups) and the route content wrapper
-  // open the same pocket — both inherit it from here. A matching fallback lives
+  // open the same pocket - both inherit it from here. A matching fallback lives
   // in the bottomFadeWithSunPocket mixin for the edge case where this is ever
   // out of scope.
   --sun-fade-radius: clamp(44px, 6vh, 64px);
@@ -32,7 +32,7 @@
 
 // The single shell-owned sun lives here. Fixed + viewport-centred so the sun's
 // untransformed base is screen-centre (its interactive rest); the companion
-// settle offsets it down to the bottom bar. The layer is click-through — only
+// settle offsets it down to the bottom bar. The layer is click-through - only
 // the disc (when interactive) or the companion tap-target receives input.
 .shellSunLayer {
   position: fixed;
@@ -71,14 +71,14 @@
   // The resting daytime companion wears a *tight* halo, not the broad bloom the
   // interaction sun carries. Its disc is centred exactly on the bottom-bar icon
   // line (the JS anchor + the bar's min-height math), and the solid disc reads
-  // dead level there — but the shared glow (Sun.scss: 15/40/80px blur layers)
+  // dead level there - but the shared glow (Sun.scss: 15/40/80px blur layers)
   // blooms ~80px past the disc, and the companion rests so low that this bloom is
   // clipped by the screen edge *below* while spreading freely *above*. That
   // one-sided, upward-only plume pulls the sun's visible mass up, so the disc
-  // reads as floating above the icons — an effect that grew when the companion
+  // reads as floating above the icons - an effect that grew when the companion
   // was enlarged and sat closer to the edge. #106 tried to tame it by lowering
   // the rest intensity (COMPANION_REST_GLOW), but intensity scales the *whole*
-  // profile, so even at 1.25 the 80px layer still plumes ~100px up — far broader
+  // profile, so even at 1.25 the 80px layer still plumes ~100px up - far broader
   // than the moon's halo, which at the very same spot never showed the bias
   // because its glow is genuinely tight (Sun.scss .moon: max ~32px blur).
   //
@@ -86,7 +86,7 @@
   // halo with no far plume, so the clip below removes almost nothing and the
   // visible glow stays symmetric around the centred disc. It still scales with
   // --glow-intensity, so the hover lift (COMPANION_HOVER_GLOW) keeps blooming and
-  // any drag/tap glow still reads — only the blur reach is reined in. Daytime sun
+  // any drag/tap glow still reads - only the blur reach is reined in. Daytime sun
   // only: the moon (.moon) keeps its own already-tight glow. Lifted off the
   // companion the moment it morphs into an intervention (the role, and this
   // class, change), so the interaction sun is unaffected and regains the broad
@@ -104,36 +104,36 @@
   // static cool glow hugging the bottom edge and brightest under the disc, so the
   // night companion reads as moonlight pooling on the horizon rather than
   // floating over the transparent bottom bar. Bottom-anchored (an ellipse whose
-  // brightest point sits at 50% 100% — the content floor, centred under the disc)
+  // brightest point sits at 50% 100% - the content floor, centred under the disc)
   // rather than wrapped around the disc centre: a disc-anchored bloom just merges
   // into the moon's own halo and adds nothing, while ground-hugging light reads
   // as a distinct horizon. It reuses the app's existing night horizon-glow idiom
   // (the warm `ellipse … at 50% 112%` in --background-gradient). Painted behind
   // the disc (z 0 < the disc's z 30); its transparent tail dies out well inside
-  // the edge icons, so it never washes them. Static, no breath — the soft
+  // the edge icons, so it never washes them. Static, no breath - the soft
   // companion never inhales.
   //
   // Night only. The daytime sun rests over a warm coral horizon where a warm
   // bloom of any calm opacity is invisible (verified against the light sky), so
-  // adding one there would be dead chrome — the day companion is already seated
+  // adding one there would be dead chrome - the day companion is already seated
   // by the sky. Scoping the whole pseudo-element (not just its colour) under the
   // dark theme means light mode paints no extra layer at all.
   //
   // Hidden by default and revealed only while the moon actually rests as the
   // companion, so it fades in with that role and dissolves as the disc morphs up
-  // into an intervention — never a hard cut.
+  // into an intervention - never a hard cut.
   :global(.minded-6622-dark) &::before {
     content: "";
     position: fixed;
     left: 50vw;
     // Sit the glow's floor on the content bottom (above any safe-area nav inset),
-    // so its brightest band lands at the disc's base — the disc rests half a bar
+    // so its brightest band lands at the disc's base - the disc rests half a bar
     // height above this floor.
     bottom: var(--safe-area-inset-bottom);
     transform: translateX(-50%);
     width: clamp(300px, 90vw, 560px);
     height: clamp(120px, 20vh, 176px);
-    // A wide, bottom-weighted ellipse, soft by construction — a gradient needs no
+    // A wide, bottom-weighted ellipse, soft by construction - a gradient needs no
     // blur filter, so it's cheap: rasterised once, no per-frame work.
     background: radial-gradient(
       ellipse 55% 100% at 50% 100%,
@@ -142,7 +142,7 @@
     );
     pointer-events: none;
     opacity: 0;
-    // Soft reveal on rest / soft dissolve on morph — matches the shell layer's
+    // Soft reveal on rest / soft dissolve on morph - matches the shell layer's
     // own --dur-soft opacity ease and the never-hard-cut rule.
     transition: opacity var(--dur-soft) var(--ease-out);
     z-index: 0;
@@ -156,7 +156,7 @@
 // The sun's untransformed base is viewport centre (the flex-centred layer). Every
 // rest is reached as an offset from here: the companion via its bottom-bar anchor,
 // and the interactive intervention via the measured placeholder centre (the disc
-// settles onto the empty slot the content flow reserves for it — see
+// settles onto the empty slot the content flow reserves for it - see
 // InteractionCommon). So nothing here is a fixed guess.
 .shellSunSlot {
   pointer-events: none;
@@ -164,7 +164,7 @@
 
 // Soft variant of .isHidden: fades out on the base layer's own --dur-soft opacity
 // ease. For surfaces whose own disc becomes the centrepiece (the sleep
-// wind-down's moon) — the companion yields, since there is only ever one, but
+// wind-down's moon) - the companion yields, since there is only ever one, but
 // nothing was flung, so the snap below would be an uncalled-for hard cut.
 .shellSunLayer.isHiddenSoft {
   opacity: 0;
@@ -178,7 +178,7 @@
 .shellSunLayer.isHidden {
   opacity: 0;
   pointer-events: none;
-  // Snap to hidden — no fade. The base layer keeps a --dur-soft opacity transition
+  // Snap to hidden - no fade. The base layer keeps a --dur-soft opacity transition
   // for the *reveal* (gliding back as an offer closes), but on the way *in* a
   // fade would leave the just-flung disc visibly careening over the question for
   // that half-second. Killing the transition here only affects the hide
@@ -186,7 +186,7 @@
   transition: none;
 
   // The disc keeps `pointer-events: auto` while interactive, which a parent's
-  // `none` does not override — force it inert too so a hidden disc can't still
+  // `none` does not override - force it inert too so a hidden disc can't still
   // catch taps meant for the offer that replaced it.
   :global(.minded-sun) {
     pointer-events: none;
@@ -195,7 +195,7 @@
 
 // Invisible, inert, zero-size measurement probe pinned to the companion anchor.
 // reanchorCompanion (RouteCmp.tsx) reads its resolved `bottom` px back so the
-// disc lands on the exact px the bottom-bar icons do — the SCSS var stays the
+// disc lands on the exact px the bottom-bar icons do - the SCSS var stays the
 // single source of truth. Permanent (unlike .companionTapTarget, which only
 // mounts while resting), so a resize during an interaction is never missed.
 .companionAnchorProbe {

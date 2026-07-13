@@ -6,8 +6,8 @@ import { resolve } from "path";
 // The intent/time selection's "cancel" used to be pinned as a full-bleed
 // absolute band (`position: absolute; left: 0; right: 0; bottom: 48px`) so the
 // choices group could centre on the full page height. But that band spans the
-// whole width and, carrying its own pointer events, floats over — and steals
-// taps from — the lower options whenever vertical space is tight (landscape,
+// whole width and, carrying its own pointer events, floats over - and steals
+// taps from - the lower options whenever vertical space is tight (landscape,
 // short browser windows, Android nav-bar insets / keyboard). To the user the
 // options simply stop responding with nothing visible over them.
 //

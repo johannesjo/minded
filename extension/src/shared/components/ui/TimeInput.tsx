@@ -6,7 +6,7 @@ export interface TimeInputProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
-  /** Accessible name — the field has no visible <label> association. */
+  /** Accessible name - the field has no visible <label> association. */
   "aria-label"?: string;
 }
 

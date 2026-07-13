@@ -9,7 +9,7 @@
 
   // The white halo lives on box-shadow, scaled by --glow-intensity (JS-driven).
   // The resting sun holds it at the hover intensity (Sun.tsx COMPANION_REST_GLOW),
-  // so the idle disc already wears the bold hover glow rather than a dimmer one —
+  // so the idle disc already wears the bold hover glow rather than a dimmer one -
   // and Sun.tsx floors the value there, so the 0..1 drag ramp (always dimmer)
   // can't dim it mid-drag. It's a static shadow at rest (constant intensity →
   // rasterised once, not per frame); the gentle breath is carried separately by
@@ -29,10 +29,10 @@
   transform-origin: center;
   will-change: transform, box-shadow;
 
-  // A slow idle float — a gentle 4px rise and fall, in step with the ::after
+  // A slow idle float - a gentle 4px rise and fall, in step with the ::after
   // breath halo (same 9s) so the resting disc subtly inhales rather than sitting
   // dead still. Driven on the independent `translate` property, not `transform`,
-  // which the drag/settle physics own via the inline style — the two compose,
+  // which the drag/settle physics own via the inline style - the two compose,
   // so the float never fights the JS-driven motion. Paused while dragging and
   // under reduced motion (below).
   animation: mindedSunIdleFloat 9s ease-in-out infinite;
@@ -63,7 +63,7 @@
   }
 
   // The sun's resting glow is the box-shadow above (held at the hover intensity),
-  // so the sun face needs no halo of its own here — a second ring layered on the
+  // so the sun face needs no halo of its own here - a second ring layered on the
   // box-shadow bloom just reads as an unwanted double halo. This ::after is kept
   // purely as the carrier for the *moon's* cool resting halo (.moon override
   // below): the moon doesn't take the box-shadow rest glow, so it breathes its
@@ -97,7 +97,7 @@
     }
   }
 
-  // The moon must read unmistakably as the moon — not a dimmer sun — or the
+  // The moon must read unmistakably as the moon - not a dimmer sun - or the
   // morning/evening cue it carries says nothing. So it's the real near-side full
   // moon: NASA's public-domain lunar albedo map orthographically projected into a
   // front-facing disc (the recognizable "man in the moon" maria), with gentle
@@ -115,12 +115,12 @@
         rgba(190, 210, 255, calc(0.3 * var(--glow-intensity)));
 
     // A soft luminous sheen over the photo: a faint overall lift plus a brighter
-    // top-left highlight, screen-blended so it lights the disc — reading as a
-    // glowing orb the way the old gradient moon did — without flattening the real
+    // top-left highlight, screen-blended so it lights the disc - reading as a
+    // glowing orb the way the old gradient moon did - without flattening the real
     // craters, which stay clearly visible underneath. This repurposes the shared
     // ::before (which for the sun carries the warm down-drag overlay): a fixed white
     // sheen at full opacity, so a downward drag's --sun-warmth can no longer bleed
-    // amber across the moon — the warm overlay is replaced here, not just hidden.
+    // amber across the moon - the warm overlay is replaced here, not just hidden.
     &::before {
       display: block;
       opacity: 1;
@@ -140,7 +140,7 @@
     }
 
     // The moon's resting glow is the cool/white box-shadow bloom above, floored at
-    // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's — the near-white disc
+    // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's - the near-white disc
     // would otherwise wash out a halo this faint. This cool ::after ring sits under
     // that bloom and carries the gentle breath via its opacity pulse; the scene
     // stays cool, so there is no warm bloom.
@@ -155,7 +155,7 @@
   // Deliberately faint: tapping to continue is meant to stay a slightly-awkward
   // speed bump, not a bright progress meter that teaches the rhythm and trains
   // fast muscle memory. The dots are a barely-there confirmation the taps
-  // registered — dim enough that they never read as a tally to race to the end
+  // registered - dim enough that they never read as a tally to race to the end
   // of, with little contrast between filled and unfilled so there's no
   // countdown to optimise.
   .tap-indicator {

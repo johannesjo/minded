@@ -147,7 +147,7 @@ export const LITTLE_SUN_CORNER_PX_WEB = 40;
 export const LITTLE_SUN_CORNER_PX_ANDROID = 30;
 
 /**
- * The Little Sun's white-disc diameter in CSS px, per platform — the departing
+ * The Little Sun's white-disc diameter in CSS px, per platform - the departing
  * sun shrinks to *exactly* this so there's no size jump when the persistent timer
  * blooms in (a constant scale landed ~27px regardless, missing both targets):
  * - Web extension: the 40px SolidJS Little Sun (LittleSun.scss `$sun-size: 40px`).
@@ -162,7 +162,7 @@ export const LITTLE_SUN_DISC_PX_ANDROID = 30;
  * Both Little Suns wear a warm amber breath halo (web: `rgba(233,132,58,…)` in
  * LittleSun.scss; Android: `#E99A3A` ≈ 233,154,58 in LittleSun.kt). The departing
  * sun warms its normally-white glow to this amber as it settles, so the halo
- * *colour* matches at hand-off too — not just the position and size. One shared
+ * *colour* matches at hand-off too - not just the position and size. One shared
  * value: the two ambers differ by an imperceptible amount in a soft glow.
  */
 export const LITTLE_SUN_GLOW_RGB = "233, 140, 58";
@@ -184,7 +184,7 @@ export const DEPART_GLOW_INTENSITY = 1.0;
  * settling in.
  *
  * Anchored in fixed px (not viewport ratios) to match the Little Sun's fixed
- * corner exactly — otherwise the two drift apart on wide monitors (a 5vw anchor
+ * corner exactly - otherwise the two drift apart on wide monitors (a 5vw anchor
  * is 64px at 1280px but 128px at 2560px, while the Little Sun stays put). The disc
  * is pinned in px (discPx) for the same reason: a constant scale tracks the base
  * disc, which varies with viewport, so it can't match a fixed-px Little Sun.
@@ -212,7 +212,7 @@ export const SUN_DEPART_SETTLE: SunSettle = sunDepartSettle();
  * `frac` is the bubble's centre expressed as a fraction (0..1) of the device
  * display, read from the native side (see InteractionWindowJavaScriptInterface
  * .getLittleSunRestCenter). Because the interaction WebView covers the full
- * display, that fraction maps 1:1 onto its viewport — so the departing sun
+ * display, that fraction maps 1:1 onto its viewport - so the departing sun
  * glides to exactly where the native bubble will bloom in, on a wide phone or a
  * tall one, wherever it was dragged. Disc size + amber glow match
  * `sunDepartSettle` so the whole hand-off (position, size, halo) is seamless;
@@ -237,7 +237,7 @@ export const sunDepartSettleAt = (
 /**
  * Companion rest: the idle home in the app shell, centred over the bottom bar.
  * Anchored in fixed px from the bottom (the measured `--companion-bar-center-y`)
- * so it lands on the bottom-bar anchor. No JS breath — the CSS idle-breath glow
+ * so it lands on the bottom-bar anchor. No JS breath - the CSS idle-breath glow
  * on `.minded-sun` resumes on its own once the sun settles.
  */
 /** Placeholder bottom-bar anchor used until MainWrapper measures the real px. */
@@ -247,7 +247,7 @@ export const DEFAULT_COMPANION_BOTTOM_Y_PX = 44;
  * Daily-questions success bloom: the same companion disc that carried the user
  * through the questions glides up off the bottom bar to a calm upper-middle rest
  * and grows into the closing "have a wonderful day" sun. The success sun is
- * literally the sun that was already there — no separate element pops in, so
+ * literally the sun that was already there - no separate element pops in, so
  * there's nothing to jump. Tune the bloom (height / size) here.
  */
 export const sunDailyQuestionsSuccessSettle = (): SunSettle => ({
@@ -256,7 +256,7 @@ export const sunDailyQuestionsSuccessSettle = (): SunSettle => ({
   // raising it widens the gap at every viewport height (and as the line wraps),
   // rather than relying on the two coordinate systems lining up by coincidence.
   anchorYRatio: 0.33,
-  scale: 0.62, // larger than the companion (0.52) — a warm bloom, not full size
+  scale: 0.62, // larger than the companion (0.52) - a warm bloom, not full size
   breathe: false,
 });
 

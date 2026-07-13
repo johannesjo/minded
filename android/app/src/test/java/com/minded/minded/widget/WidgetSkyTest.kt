@@ -33,7 +33,7 @@ class WidgetSkyTest {
         // The near-black prompt text is only legible on the light day skies, and
         // the text window is the sun's window (WidgetPromptsTest). Tying the dark
         // sky exactly to the moon's phase closes the loop: text can never meet a
-        // dark sky. Built from SunWidgetPhase's constants by construction — this
+        // dark sky. Built from SunWidgetPhase's constants by construction - this
         // guards the construction.
         for (hour in 0..23) {
             assertEquals(

@@ -15,12 +15,12 @@ interface BackgroundTransitionProps {
   // Dim the star field so it stays behind the dashboard/interaction UI (cards +
   // buttons) rather than bleeding through their translucent night-mode fills.
   // The success night sky (e.g. the sleep goodnight) leaves this off so the
-  // stars stay at full brightness — nothing sits over them there. See Stars.
+  // stars stay at full brightness - nothing sits over them there. See Stars.
   dimStars?: boolean;
   // Pin the field's variant instead of deriving it from the theme. The sleep
   // wind-down's goodnight gesture passes "night": its sky is always the deep
   // night wash (route-local var overrides), even when the app is still in the
-  // light theme (wind-down can start before the 19:00 dark boundary) — golden
+  // light theme (wind-down can start before the 19:00 dark boundary) - golden
   // day motes over that sky would be the wrong field on a night surface.
   starsVariant?: "night" | "day";
 }
@@ -32,11 +32,11 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   const [getIsDarkMode, setIsDarkMode] = createSignal(false);
 
-  // The field comes out as the revealed sky deepens — twinkling stars after
+  // The field comes out as the revealed sky deepens - twinkling stars after
   // dark, drifting golden motes by day (see Stars' `variant`), so the down-drag
   // sky is never "not much going on" at either time. Tied to the downward drag
   // (positive progress), squared so it emerges a beat behind the rising sky and
-  // recedes the same way as the sun is pulled back up or springs home — the
+  // recedes the same way as the sun is pulled back up or springs home - the
   // same gradual reveal the Android little-sun uses, rather than the old
   // snap-on at completion.
   const getStarsIntensity = () => {
@@ -91,7 +91,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
     // A dashboard offer (grounding / let-go) takes over with its own full-screen
     // app-sky layer, so the transition background eases back to its default sky
-    // rather than warming to night — otherwise that warmed sky (stars and all)
+    // rather than warming to night - otherwise that warmed sky (stars and all)
     // flashes when the offer fades out on close. Background-only: unlike the
     // dragProgress reset, it must not touch the interaction content's opacity.
     const handleResetBackground = () => animateToDefault();

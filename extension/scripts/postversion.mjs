@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * postversion hook — runs last, after npm bumps package.json/lock and
+ * postversion hook - runs last, after npm bumps package.json/lock and
  * after sync-platforms.mjs syncs gradle + pbxproj.
  *
  * Why this script exists:
  * npm's `npm version` is documented to commit + tag between the version
  * and postversion hooks. We observed it silently skipping that step in
- * this repo (postversion ran, but no commit and no tag — git status left
+ * this repo (postversion ran, but no commit and no tag - git status left
  * package.json/lock unstaged and gradle/pbxproj staged from the version
  * hook). Likely cause: npm's commit logic abandons quietly when the
  * version hook stages files outside the package directory.

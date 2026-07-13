@@ -21,4 +21,4 @@ Closes #
 
 ## Notes for reviewer
 
-Anything reviewers should pay particular attention to — tricky logic, deliberate trade-offs, follow-ups deferred to another PR.
+Anything reviewers should pay particular attention to - tricky logic, deliberate trade-offs, follow-ups deferred to another PR.

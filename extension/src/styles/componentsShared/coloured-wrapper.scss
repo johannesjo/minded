@@ -21,7 +21,7 @@
   color: var(--c-fg-full-emphasis);
 
   // ::after (not ::before) avoids colliding with Android's gradient ::before.
-  // A single faint grain over the static gradient is the whole atmosphere — no
+  // A single faint grain over the static gradient is the whole atmosphere - no
   // drifting orb, no vignette. The calm surface earns its calm by staying still.
   @include grainOverlay;
 
@@ -49,8 +49,8 @@
 
   // The mirror of is-departing: the intervention is being re-shown because a
   // Little Sun session timer ran out, so the sky fades back *in* (page beneath →
-  // full gradient) while the sun — kept fully opaque, because the morph-in case
-  // is rendered WITHOUT the .aniIn surface fade — glides out of the corner to the
+  // full gradient) while the sun - kept fully opaque, because the morph-in case
+  // is rendered WITHOUT the .aniIn surface fade - glides out of the corner to the
   // centre. Only the sky layer animates; the disc stays one continuous, opaque
   // object, just as is-departing fades only the sky out and leaves the sun be. A
   // one-shot animation (no transition needed in both states), removed once played.

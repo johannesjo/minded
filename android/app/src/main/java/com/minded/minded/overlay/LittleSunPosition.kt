@@ -10,7 +10,7 @@ import kotlin.math.roundToInt
  * Single source of truth for where the draggable Little Sun bubble rests on
  * screen.
  *
- * Shared by [LittleSunWindow] — which positions the actual overlay — and the
+ * Shared by [LittleSunWindow] - which positions the actual overlay - and the
  * interaction WebView's departing-sun morph, which needs to know where the
  * bubble will appear so the gliding sun lands exactly there as it hands off to
  * the persistent timer (see InteractionWindowJavaScriptInterface

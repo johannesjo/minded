@@ -54,7 +54,7 @@ export interface AndroidMindedBridge {
   setSessionLimit: (payloadJson: string) => void;
   /**
    * Media-stream volume in percent (0–100), -1 when unreadable. Optional:
-   * only present on app builds that ship it — callers must treat "missing"
+   * only present on app builds that ship it - callers must treat "missing"
    * as audible (see getIsMediaAudible).
    */
   getMediaVolume?: () => number;

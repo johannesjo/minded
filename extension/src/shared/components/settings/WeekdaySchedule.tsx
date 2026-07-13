@@ -3,7 +3,7 @@ import { TimeRange } from "@src/dataInterface/syncData";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
 import { TimeInput } from "@src/shared/components/ui/TimeInput";
 import Btn from "@src/shared/components/ui/Btn";
-// @ts-ignore — reuse FocusSchedule's layout styles
+// @ts-ignore - reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
 
 const DAY_NAMES = [
@@ -48,7 +48,7 @@ const representativeRange = (days: DaysMap, fallback: TimeRange): TimeRange => {
 
 /**
  * Weekday schedule editor. By default it shows a single time range that applies
- * to every day — the simplest setting that works. Users who need per-day
+ * to every day - the simplest setting that works. Users who need per-day
  * control can expand to toggle individual days and give each its own times.
  *
  * The collapsed/expanded choice is purely a UI affordance: the stored shape is
@@ -58,7 +58,7 @@ const representativeRange = (days: DaysMap, fallback: TimeRange): TimeRange => {
 export const WeekdaySchedule = (props: {
   days: DaysMap;
   onChange: (days: DaysMap) => void;
-  /** Whole feature toggled off — render everything as inert. */
+  /** Whole feature toggled off - render everything as inert. */
   disabled?: boolean;
   /** Seed range for a freshly enabled day / the collapsed view. */
   defaultRange: TimeRange;
@@ -107,7 +107,7 @@ export const WeekdaySchedule = (props: {
         when={expanded()}
         fallback={
           // <Show> remounts whichever branch is active on each toggle, so the
-          // fadeIn animation replays — keeping open/close soft, not a hard cut.
+          // fadeIn animation replays - keeping open/close soft, not a hard cut.
           <div
             class={`${styles.dayRow} ${styles.fadeIn} ${props.disabled ? styles.isDisabled : ""}`}
           >

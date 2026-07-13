@@ -44,7 +44,7 @@ export const SettingsAndroid = (props: {
   const navigate = props.isRouting ? useNavigate() : () => undefined;
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
 
-  // "Your home screen" is one more PLACE the sun can meet you — a peer of the
+  // "Your home screen" is one more PLACE the sun can meet you - a peer of the
   // apps below, under the same heading. It is select-by-doing: the row fires
   // the system pin dialog (a checkbox can't place a widget), and its checked
   // state is the OBSERVED launcher state, never an intent flag. A widget
@@ -104,7 +104,7 @@ export const SettingsAndroid = (props: {
     props.onSave?.(getSelectedApps());
   };
 
-  // At least one place — an app, or the (really) placed widget — makes the
+  // At least one place - an app, or the (really) placed widget - makes the
   // choice complete. Apps alone used to be the only gate; the home-screen
   // place is a peer, so it satisfies it too.
   const hasChosenAPlace = () =>
@@ -116,7 +116,7 @@ export const SettingsAndroid = (props: {
         {props.heading || "Choose the apps where the sun should meet you."}
       </div>
 
-      {/* The widget row is a costless, permission-free place — it must stay
+      {/* The widget row is a costless, permission-free place - it must stay
           reachable even if the app enumeration is slow or fails (returns []),
           so it lives above the loading gate, not inside it. */}
       <div class={styles.appList}>
@@ -139,7 +139,7 @@ export const SettingsAndroid = (props: {
               <span class={styles.appEntrySub}>
                 {widgetPlacement.getIsPlaced()
                   ? `the ${companionWord()} rests there as a widget`
-                  : `the ${companionWord()} as a widget — no permissions needed`}
+                  : `the ${companionWord()} as a widget - no permissions needed`}
               </span>
             </span>
           </div>

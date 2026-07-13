@@ -39,7 +39,7 @@ describe("getSunSettleForPhase", () => {
     expect(settle!.breathe).toBe(false);
   });
 
-  it("resting sits lower than breathing — beneath the choices — and smaller", () => {
+  it("resting sits lower than breathing - beneath the choices - and smaller", () => {
     const breathing = sunBreatheSettle();
     // The choices ride at the top now, so the rest target drops below the breath
     // anchor (larger anchorYRatio == closer to the bottom) while staying smaller.

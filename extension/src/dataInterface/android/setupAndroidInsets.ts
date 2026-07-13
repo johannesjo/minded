@@ -16,7 +16,7 @@ interface AndroidInsets {
  * works the same on both platforms.
  *
  * Subsequent updates are pushed by the native side directly via
- * `evaluateJavascript` (see WebViewSafeAreaBridge.kt) — this function only
+ * `evaluateJavascript` (see WebViewSafeAreaBridge.kt) - this function only
  * covers the boot-race where the OS dispatches insets before the page is
  * parsed. The native side keeps a holder we read once on init.
  */

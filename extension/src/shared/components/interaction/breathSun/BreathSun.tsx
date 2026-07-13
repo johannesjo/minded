@@ -4,7 +4,7 @@ interface BreathSunProps {
   /** Breath fullness, 0 (emptied/exhaled) → 1 (full/inhaled). Defaults to 0. */
   fill?: number;
   size?: "compact" | "large";
-  /** "sun" (default) or "moon" — picks the matching `.minded-sun` look. */
+  /** "sun" (default) or "moon" - picks the matching `.minded-sun` look. */
   variant?: "sun" | "moon";
 }
 

@@ -46,7 +46,7 @@ export const updateDashboardEntriesFromQuestions = (
   }
 
   // The merge keeps the *existing* card order (so cards don't jump around as you
-  // look), only refreshing their contents — which means a greeting that was
+  // look), only refreshing their contents - which means a greeting that was
   // in-window when the dashboard was first built can go stale as the hours pass
   // (e.g. a morning "Finding Focus Today" hero still showing at night after an
   // app-resume refresh). Re-run the hero guard so the greeting honours the

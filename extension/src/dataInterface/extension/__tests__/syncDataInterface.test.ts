@@ -63,7 +63,7 @@ describe("saveAnswerN", () => {
     await expect(saveAnswerN(NEW_ANSWER)).rejects.toThrow(
       "MAX_WRITE_OPERATIONS_PER_MINUTE",
     );
-    // No pointless prune-retry for a rate limit — deleting answers can't cure it.
+    // No pointless prune-retry for a rate limit - deleting answers can't cure it.
     expect(mockSet).toHaveBeenCalledTimes(1);
   });
 
@@ -119,7 +119,7 @@ describe("saveAnswerN", () => {
 
   it("rejects when pruning can no longer make room", async () => {
     // A single huge answer that never fits: pruning leaves only the new
-    // answer, and the write still fails — must surface, not loop or swallow.
+    // answer, and the write still fails - must surface, not loop or swallow.
     mockGet.mockResolvedValue({ answers: [] });
     mockSet.mockRejectedValue(new Error("QUOTA_BYTES_PER_ITEM quota exceeded"));
 

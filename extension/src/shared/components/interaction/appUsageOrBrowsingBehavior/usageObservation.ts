@@ -12,11 +12,11 @@ export interface UsageTarget {
 }
 
 /**
- * A present-moment, judgment-free read of actual usage — the replacement for
+ * A present-moment, judgment-free read of actual usage - the replacement for
  * the Great→Awful self-rating. Deliberately carries NO baseline/"usual by now"
  * comparison: comparing today against a personal average is the grammar of a
  * tracker ("am I ahead or behind?") and fails the no-judgment bar. Today's
- * observed fact only — no good/bad, no trend, no chart.
+ * observed fact only - no good/bad, no trend, no chart.
  */
 export interface UsageObservation {
   todaySeconds: number;
@@ -30,7 +30,7 @@ export const MAX_OBSERVATION_TARGETS = 3;
 
 /**
  * Format observed seconds as a calm, rounded, human duration ("about 25 min",
- * "1 h 10 min"). Deliberately coarse — this is a soft awareness cue, not a
+ * "1 h 10 min"). Deliberately coarse - this is a soft awareness cue, not a
  * precise stopwatch.
  */
 export const formatUsageDuration = (seconds: number): string => {

@@ -2,7 +2,7 @@
 <!-- Adaptive-icon MONOCHROME (Android 13+ themed icons): the app's resting sun
      as a single centred disc. The system ignores the fill colour and tints the
      shape by its alpha, so this is a flat silhouette. It mirrors the companion
-     sun (ic_sun_widget_day.xml) — a centred disc — rather than the rising
+     sun (ic_sun_widget_day.xml) - a centred disc - rather than the rising
      launcher sun, so the tinted glyph reads unmistakably as the sun and stays
      within the ~66dp safe zone (r=32 of the 108 grid) instead of bleeding off
      the bottom under the launcher mask. -->

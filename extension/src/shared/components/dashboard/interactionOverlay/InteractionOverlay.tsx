@@ -20,7 +20,7 @@ export const InteractionOverlay: (props: {
   instant?: boolean;
   /**
    * The exact line the widget was showing, when opened from the widget's prompt
-   * card — so the interaction lands on that same NOTICE/ACTION_ADVICE line rather
+   * card - so the interaction lands on that same NOTICE/ACTION_ADVICE line rather
    * than a random pick. Undefined for the plain sun tap and in-app companion tap.
    */
   widgetLine?: string;
@@ -29,7 +29,7 @@ export const InteractionOverlay: (props: {
    * onHideInteraction unmounts). The Android/iOS onboarding demo uses it to take
    * its one disc back the moment the sky starts fading, so the sun glides home to
    * the onboarding rest *during* the fade instead of detouring via the shell's
-   * companion anchor first. The dashboard shell doesn't pass it — its disc's home
+   * companion anchor first. The dashboard shell doesn't pass it - its disc's home
    * IS the companion anchor the role flip below sends it to.
    */
   onClosingStarted?: () => void;
@@ -46,12 +46,12 @@ export const InteractionOverlay: (props: {
     props.onClosingStarted?.();
     // Send the shell sun (which lives above the overlay sky, z-30 over z-20)
     // gliding back to its companion rest *now*, so it travels home while the
-    // sky fades out beneath it — instead of sitting still through the whole
+    // sky fades out beneath it - instead of sitting still through the whole
     // fade and only starting to move once the overlay is gone.
     setSunRole("companion");
     // Re-roll the dashboard greeting now, while the sky still fully covers it, so
-    // the fresh tile is already in place — gently easing in — by the time the sky
-    // fades away. You never land on the old tile and watch it swap — there's only
+    // the fresh tile is already in place - gently easing in - by the time the sky
+    // fades away. You never land on the old tile and watch it swap - there's only
     // ever the one fresh card. (Hidden = instant swap; see RE_GREET_DASHBOARD_HIDDEN_EV.)
     window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
     const { promise } = fadeOut(wrapperEl, 800); // 0.8 second fade

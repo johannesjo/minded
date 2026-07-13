@@ -18,4 +18,4 @@ Other approaches you've thought about.
 Browser extension, Android, or both?
 
 **Additional context**
-Anything else — mockups, references, related issues.
+Anything else - mockups, references, related issues.

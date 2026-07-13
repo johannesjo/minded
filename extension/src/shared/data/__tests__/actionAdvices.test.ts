@@ -3,7 +3,7 @@ import {
   EVENING_ACTION_ADVICES,
 } from "@src/shared/data/actionAdvices";
 
-// The evening (wind-down) slot must never push the user toward doing a task —
+// The evening (wind-down) slot must never push the user toward doing a task -
 // pressure to be productive at night reads as striving, the one thing the app
 // avoids. This guards the data contract behind that: the evening pool is the
 // full pool minus the `daytimeOnly` (task/productivity) lines.

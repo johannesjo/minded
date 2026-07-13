@@ -28,7 +28,7 @@
 }
 
 // The product's shared "level" mark: a small round dot whose opacity carries
-// the filled/unfilled state — the same quiet language as the sun's orbit crown
+// the filled/unfilled state - the same quiet language as the sun's orbit crown
 // (Sun.scss .sun-orbit-dot) and the self-assessment answer dots. Consumers set
 // their own filled-state opacity.
 @mixin levelDot($size) {

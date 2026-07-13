@@ -1,14 +1,14 @@
 const FIELD_BOTTOM_MARGIN = 24;
 
 // Single signal for "the keyboard is up" across the Android web layer. Consumed
-// by CSS (e.g. hiding the bottom bar — see BottomBar.module.scss). Formerly set
+// by CSS (e.g. hiding the bottom bar - see BottomBar.module.scss). Formerly set
 // by a native global-layout probe in MyWebView; now derived here from a focused
 // text field so there is one source of truth (plus a viewport-growth backstop
 // for the back-gesture IME dismiss, which hides the keyboard without blurring).
 const KEYBOARD_OPEN_CLASS = "androidKeyboardOpen";
 
 // Input types that never summon a keyboard (toggles, pickers, buttons):
-// focusing one — e.g. tapping a settings checkbox — must not count as text
+// focusing one - e.g. tapping a settings checkbox - must not count as text
 // entry, or the class would hide the bottom bar with no keyboard on screen.
 const NON_TEXT_INPUT_TYPES = new Set([
   "button",
@@ -133,7 +133,7 @@ export function setupKeyboardScrolling(): void {
   // Focus alone can't see the back-gesture IME dismiss: Android hides the
   // keyboard without blurring the field, so no focusout ever fires and the
   // class (and hidden bottom bar) would stick. The signal that survives is the
-  // window growing back — adjustResize shrank it for the IME — so a meaningful
+  // window growing back - adjustResize shrank it for the IME - so a meaningful
   // height gain while a text field is focused means the keyboard left. Blur the
   // field so focus and keyboard state agree again (the focusout path above then
   // clears the class, and a re-tap cleanly re-opens both).

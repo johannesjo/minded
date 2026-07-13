@@ -14,23 +14,23 @@ interface FingerRestProps {
 }
 
 /**
- * The near-wordless intervention: an invitation for the scrolling finger — the
- * very organ of the habit — to simply be still for a moment. The invitation
+ * The near-wordless intervention: an invitation for the scrolling finger - the
+ * very organ of the habit - to simply be still for a moment. The invitation
  * names the why (the finger that scrolls, at rest), the how (press and stay),
  * and where the attention goes (feel it there) so a first-time meeting isn't a
  * guess, and a soft outlined pad shows exactly where to lay the finger down.
  * Press anywhere on the pad and rest; the
  * words and the outline dissolve, a warmth gathers under the fingertip, and
- * lifting continues on. Nothing is counted, timed on screen, or scored, and —
- * true to the wordless heart of it — there is nothing left to read once it has
+ * lifting continues on. Nothing is counted, timed on screen, or scored, and -
+ * true to the wordless heart of it - there is nothing left to read once it has
  * begun; only the warmth remains.
  *
  * Deliberately NOT a hold-to-unlock gate (the attention-check dark pattern):
- * no progress ring, no announced duration, and release is always free — a
+ * no progress ring, no announced duration, and release is always free - a
  * quick accidental brush just lets the invitation return. The rest zone is the
  * invitation itself, not the sun: the persistent sun keeps its own gestures
  * (tap ×3 / fling / drag) as the universal way through, and per the
- * fundamentals its calm stays a quiet presence — the warmth here responds
+ * fundamentals its calm stays a quiet presence - the warmth here responds
  * monotonically to the touch, never as a rhythmic breath.
  */
 export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
@@ -49,7 +49,7 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
 
   const handleRestStart = (e: PointerEvent): void => {
     // One rest at a time: a second fingertip brushing the zone mid-rest must
-    // not restart the clock or orphan the keep-alive interval — the first
+    // not restart the clock or orphan the keep-alive interval - the first
     // finger keeps the rest, and only its lift ends it (pointer-id checks in
     // the end handlers below).
     if (getIsResting()) return;
@@ -88,7 +88,7 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
   };
 
   const handleRestInterrupted = (e: PointerEvent): void => {
-    // The system took the pointer (gesture, palm rejection) — that is not a
+    // The system took the pointer (gesture, palm rejection) - that is not a
     // chosen lift, so never complete from here; just return to the invitation.
     if (e.pointerId !== restingPointerId) return;
     restingPointerId = undefined;
@@ -109,7 +109,7 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
         onPointerCancel={handleRestInterrupted}
       >
         {/* The soft outline that shows where to lay the finger down. It fades
-            with the words as stillness begins — once resting, the warmth alone
+            with the words as stillness begins - once resting, the warmth alone
             marks the spot. */}
         <div
           class="finger-rest-pad"

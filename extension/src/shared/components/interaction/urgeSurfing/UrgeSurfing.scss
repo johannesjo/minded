@@ -18,8 +18,8 @@
   }
 
   // Meditation screen: the sun sits just above centre (see sunSurfSettle), so
-  // drop the cue to the very bottom of its box — just below the disc and its halo
-  // — so the two read as one group around the centre. No bottom padding here (that
+  // drop the cue to the very bottom of its box - just below the disc and its halo
+  // - so the two read as one group around the centre. No bottom padding here (that
   // gap is only for the rating screens, whose sun rests below the content).
   &.is-surf {
     justify-content: flex-end;
@@ -28,7 +28,7 @@
 
   // Hold a constant height across every screen so the sun's slot (the
   // InteractionCommon placeholder that follows this content) never shifts as the
-  // copy changes — that shift is what made the disc jump between screens (and what
+  // copy changes - that shift is what made the disc jump between screens (and what
   // desynced its background glow, which tracks the disc's position). For this to
   // hold, every screen's content must stay under min-height; the heading-padding
   // trim and the wider sub below keep the tallest screen (intro) comfortably under
@@ -38,7 +38,7 @@
   // below the copy above instead of crowding it.
   padding-bottom: var(--space-2xl);
 
-  // The shared interaction heading carries 64px of its own padding — far more than
+  // The shared interaction heading carries 64px of its own padding - far more than
   // these compact screens need, and enough to push intro past min-height (which
   // reintroduces the jump). The 18px flex gap already spaces the heading; trim its
   // padding so every screen stays well under the fixed box.

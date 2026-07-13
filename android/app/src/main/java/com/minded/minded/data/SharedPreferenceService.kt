@@ -80,7 +80,7 @@ class SharedPreferenceService(context: Context) {
 
     /**
      * Where the user parked the draggable little-sun bubble, so it reappears in
-     * the same spot. Stored outside the JSON sync blob — it is a purely local,
+     * the same spot. Stored outside the JSON sync blob - it is a purely local,
      * per-device UI preference with no place in synced data.
      */
     fun saveLittleSunPosition(x: Int, y: Int) {

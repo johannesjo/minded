@@ -27,7 +27,7 @@ const BottomBar = () => {
       return;
     }
 
-    // Return to the dashboard — never a hard cut. The router-level page-fade
+    // Return to the dashboard - never a hard cut. The router-level page-fade
     // interceptor (RouteCmp) eases the leaving page out before the dashboard
     // eases back in via its own pageTransitionIn.
     navigate("/");
@@ -41,13 +41,13 @@ const BottomBar = () => {
     >
       {getIsOnDashboard() ? (
         // iOS is the widget-only variant: it has no settings page (nothing to
-        // configure), so it carries no feedback icon either — a lone feedback
+        // configure), so it carries no feedback icon either - a lone feedback
         // button with no settings beside it reads as misplaced/incomplete. The
         // other platforms show both. The sun still rests centred over this bar.
         !IS_IOS && (
           <>
             {/*
-              Real internal links (router <A>) — the router-level page-fade
+              Real internal links (router <A>) - the router-level page-fade
               interceptor eases the transition, so no onClick wrapping is needed.
               These only render on the dashboard, where the wrapper's goBack()
               early-returns, so the bubbling click is harmless.

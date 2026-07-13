@@ -17,13 +17,13 @@ private fun isoDate(d: Date): String {
  *
  * Mirrors the TypeScript helpers in
  * extension/src/shared/components/sleepWindDown/sleepWindDown.util.ts
- * — both must agree on what counts as "inside the window" and on how a night
+ * - both must agree on what counts as "inside the window" and on how a night
  * is identified across midnight.
  */
 object SleepWindDownWindow {
 
     /**
-     * Parse `HH:MM`. Returns null on any malformed input — callers must treat
+     * Parse `HH:MM`. Returns null on any malformed input - callers must treat
      * null as "no window" rather than crashing or silently using a wrong value.
      */
     internal fun parseHHMM(s: String): Int? {

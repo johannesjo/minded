@@ -1,7 +1,7 @@
 export const ACTION_ADVICES_MAX_HOUR = 22;
 export const ACTION_ADVICES_MIN_HOUR = 5;
 // No decorative glyph, by design: platform emoji are the loudest, most chat-app
-// mark available — they render differently on every OS, sit at full saturation,
+// mark available - they render differently on every OS, sit at full saturation,
 // and clash with the calm serif/sky language around them. One advice shows at a
 // time, so the serif line carries the screen on its own (like the NOTICE cues).
 // (See #168/#177, follow-up to #129.)
@@ -9,7 +9,7 @@ export const ACTION_ADVICES: {
   txt: string;
   // A few lines nudge toward *doing a task* (getting on with work you're
   // avoiding). Fine as a daytime redirect, but off-tone in the evening
-  // wind-down, where pressure to be productive reads as striving — the one
+  // wind-down, where pressure to be productive reads as striving - the one
   // thing the app never does. `daytimeOnly` keeps them out of the evening pool
   // (see EVENING_ACTION_ADVICES); everything else is calm anytime.
   daytimeOnly?: true;
@@ -38,7 +38,7 @@ export const ACTION_ADVICES: {
 
 // The evening (wind-down) subset: everything except the task/productivity
 // nudges. In the evening the app should invite rest, never push you to tackle
-// work — so the `evening_action_advice` slot draws only from here.
+// work - so the `evening_action_advice` slot draws only from here.
 export const EVENING_ACTION_ADVICES = ACTION_ADVICES.filter(
   (advice) => !advice.daytimeOnly,
 );

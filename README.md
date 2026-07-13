@@ -1,6 +1,6 @@
 # minded
 
-A mindfulness layer that sits between you and the apps and sites that pull you in. minded interrupts doom-scrolling, social-media compulsion, and procrastination with short interventions — a breath, a check-in, a moment to ask whether you actually meant to open this.
+A mindfulness layer that sits between you and the apps and sites that pull you in. minded interrupts doom-scrolling, social-media compulsion, and procrastination with short interventions - a breath, a check-in, a moment to ask whether you actually meant to open this.
 
 - **Browser extension** for Chrome and Firefox (Manifest V3)
 - **Android app** (native Kotlin host + shared web UI)
@@ -14,7 +14,7 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
     <td width="50%"><img src="docs/screenshots/dashboard.png" alt="minded dashboard showing today's energy check-in" /></td>
   </tr>
   <tr>
-    <td align="center"><em>A pause before the scroll — name what you actually came to do.</em></td>
+    <td align="center"><em>A pause before the scroll - name what you actually came to do.</em></td>
     <td align="center"><em>A calm dashboard of the day's intentions and check-ins.</em></td>
   </tr>
 </table>
@@ -28,15 +28,15 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
     <td width="33%"><img src="docs/screenshots/mobile/intervention.png" alt="minded asking what you came to do on Android" /></td>
   </tr>
   <tr>
-    <td colspan="3" align="center"><em>The same gentle nudges on Android — a breath, a check-in, a moment to ask whether you meant to open this.</em></td>
+    <td colspan="3" align="center"><em>The same gentle nudges on Android - a breath, a check-in, a moment to ask whether you meant to open this.</em></td>
   </tr>
 </table>
 
 ## Install
 
-- **Chrome / Edge / Brave** — [Chrome Web Store](https://chromewebstore.google.com/detail/minded/obghjflblojheamhnchaklenibffehjk)
-- **Android** — [Google Play](https://play.google.com/store/apps/details?id=com.minded.minded)
-- **Firefox** — load `dist/` as an unpacked extension after building locally (AMO listing pending)
+- **Chrome / Edge / Brave** - [Chrome Web Store](https://chromewebstore.google.com/detail/minded/obghjflblojheamhnchaklenibffehjk)
+- **Android** - [Google Play](https://play.google.com/store/apps/details?id=com.minded.minded)
+- **Firefox** - load `dist/` as an unpacked extension after building locally (AMO listing pending)
 
 Learn more at [minded.today](https://minded.today).
 
@@ -83,9 +83,9 @@ common/         Shared assets (logos, icons)
 docs/           Architecture and design notes
 ```
 
-The web UI under `extension/src/shared/` is reused across all platforms. Platform-specific data access goes through the **dataInterface pattern** documented in [`CLAUDE.md`](./CLAUDE.md) — that file is the best entry point for understanding the architecture.
+The web UI under `extension/src/shared/` is reused across all platforms. Platform-specific data access goes through the **dataInterface pattern** documented in [`CLAUDE.md`](./CLAUDE.md) - that file is the best entry point for understanding the architecture.
 
-> **iOS note:** iOS ships as a deliberately minimal **widget-only variant** — the companion sun as a Home Screen widget (`extension/ios/App/MindedWidget/`), presence + invitation only. It does *not* attempt the forced intervention/overlay, which is the wrong shape for iOS (see [`docs/ios-platform-fit.md`](./docs/ios-platform-fit.md)). New *intervention* features still target the browser extension and Android. iOS builds and TestFlight ship from CI with no local Mac — see [`RELEASING.md`](./RELEASING.md).
+> **iOS note:** iOS ships as a deliberately minimal **widget-only variant** - the companion sun as a Home Screen widget (`extension/ios/App/MindedWidget/`), presence + invitation only. It does *not* attempt the forced intervention/overlay, which is the wrong shape for iOS (see [`docs/ios-platform-fit.md`](./docs/ios-platform-fit.md)). New *intervention* features still target the browser extension and Android. iOS builds and TestFlight ship from CI with no local Mac - see [`RELEASING.md`](./RELEASING.md).
 
 ## Contributing
 
@@ -93,7 +93,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md). Bug reports, feature ideas, and PRs ar
 
 ## Security
 
-Found a vulnerability? Please don't open a public issue — see [SECURITY.md](./SECURITY.md).
+Found a vulnerability? Please don't open a public issue - see [SECURITY.md](./SECURITY.md).
 
 ## License
 

@@ -36,7 +36,7 @@ export const Question: (props: {
   // name for the *displayed question* only (recreated per question, so a
   // one-time read is fine). Deliberately NOT applied to `prompt`: the prompt
   // becomes part of the saved answer, and baking a specific host into stored
-  // history would read wrong out of its moment — a stale, site-specific log
+  // history would read wrong out of its moment - a stale, site-specific log
   // instead of the timeless reflection it's meant to be.
   const displayText = withTargetName(question.t, props.targetName);
   const initialInputValue = question.prompt
@@ -73,8 +73,8 @@ export const Question: (props: {
       } catch (e) {
         // The data layer already alerted the user that the answer was not
         // saved. Stay on the question with the text intact so they can retry
-        // (or leave via the sun) — advancing would pretend the save happened.
-        console.error("Answer save failed — staying on the question", e);
+        // (or leave via the sun) - advancing would pretend the save happened.
+        console.error("Answer save failed - staying on the question", e);
         return;
       }
     }
@@ -92,7 +92,7 @@ export const Question: (props: {
   const [getChipsExiting, setChipsExiting] = createSignal(false);
 
   // "Something else…" swaps the chips for the text input. Fade the chips out
-  // first rather than snapping them away — calmness is the product, so even
+  // first rather than snapping them away - calmness is the product, so even
   // this small swap softens (matches the input's own fade-in).
   const revealInputFromChips = () => {
     props.onCancelCountdown();
@@ -102,7 +102,7 @@ export const Question: (props: {
 
   // A tapped chip is the same answer a typed one would be: when the question
   // has a prompt prefix, append the chip to it so the saved text matches the
-  // pre-filled input exactly. Submits immediately — taps are the whole point.
+  // pre-filled input exactly. Submits immediately - taps are the whole point.
   const submitChip = (chip: string) => {
     props.onCancelCountdown();
     const answerTxt = question.prompt ? `${question.prompt} ${chip}` : chip;
@@ -115,8 +115,8 @@ export const Question: (props: {
         id="minded-6622-question"
         class="txtBig"
         classList={{ "show-input": getShowInput() }}
-        // With chips the question is plain text — the chips (and "Something
-        // else…") drive input — so it isn't a button. Without chips it stays
+        // With chips the question is plain text - the chips (and "Something
+        // else…") drive input - so it isn't a button. Without chips it stays
         // the tap-to-type reveal target it has always been.
         role={hasChips ? undefined : "button"}
         tabindex={hasChips ? undefined : getShowInput() ? -1 : 0}
@@ -146,7 +146,7 @@ export const Question: (props: {
         >
           <For each={question.chips}>
             {(chip) => (
-              // `toggle` is borrowed only for its compact pill shape — these
+              // `toggle` is borrowed only for its compact pill shape - these
               // chips submit-and-dismiss and never show a selected state.
               <Btn variant="toggle" small onClick={() => submitChip(chip)}>
                 {chip}
@@ -169,7 +169,7 @@ export const Question: (props: {
             textarea's first line lands: it shows you can tap to write, and
             where, then fades out as the field fades in. Chips carry their own
             tappable affordance, so they skip the hint. The question div above is
-            the labelled button, so the hint is decorative (aria-hidden) — a
+            the labelled button, so the hint is decorative (aria-hidden) - a
             touch/mouse affordance only. */}
         <Show when={!hasChips}>
           <div

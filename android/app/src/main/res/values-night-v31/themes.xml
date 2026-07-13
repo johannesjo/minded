@@ -8,12 +8,12 @@
          decision with the system via UiModeManager.setApplicationNightMode
          (API 31+); the system then resolves this resource for the *starting
          window* it paints before any activity code runs, and persists it for the
-         next cold start — so at night the sky arrives already dark instead of
+         next cold start - so at night the sky arrives already dark instead of
          flashing the light sky then swapping.
 
          Qualified -v31 on purpose: setApplicationNightMode only exists on API
          31+. Below that there is no per-app override, so a plain values-night
-         would be driven by the *system* dark mode — coupling the sky to the very
+         would be driven by the *system* dark mode - coupling the sky to the very
          setting the design rejects. Excluding <31 keeps their behaviour exactly
          as before (light window background; MainActivity's onCreate swap still
          corrects the activity window). -->

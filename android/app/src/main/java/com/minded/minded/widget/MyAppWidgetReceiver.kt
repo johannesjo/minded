@@ -21,7 +21,7 @@ import java.util.Calendar
  * mini-intervention (WidgetPrompts): it steps every 15 minutes through the day so
  * a glance on return finds a fresh invitation, then rests wordless through the
  * night. So rather than polling, we arm a single inexact, *non-wake* alarm for
- * the next 15-minute step and re-arm each time it fires — one alarm spans the
+ * the next 15-minute step and re-arm each time it fires - one alarm spans the
  * whole night. Non-wake (RTC) means it only fires while the device is already
  * awake, i.e. right when someone is looking: a busy day is ~60-odd cheap
  * piggybacked repaints, a sleeping phone schedules nothing until it wakes. What
@@ -35,8 +35,8 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         when (intent.action) {
             // Our per-phase alarm, plus the clock/timezone changes that would
             // otherwise strand the sun on the wrong phase (manual clock set, DST,
-            // travel). A reboot is covered by onUpdate — the host calls it when it
-            // rebinds the widget after boot — so no BOOT_COMPLETED receiver (and
+            // travel). A reboot is covered by onUpdate - the host calls it when it
+            // rebinds the widget after boot - so no BOOT_COMPLETED receiver (and
             // its permission) is needed.
             ACTION_REFRESH_SUN,
             Intent.ACTION_TIME_CHANGED,
@@ -48,7 +48,7 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         super.onReceive(context, intent)
     }
 
-    // Fires on add, host request, and after reboot — a good moment to (re)arm.
+    // Fires on add, host request, and after reboot - a good moment to (re)arm.
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -79,7 +79,7 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         val alarmManager = alarmManager(context) ?: return
         // Only a placed sun needs refreshing. Without this guard a clock/timezone
         // change (delivered to the manifest receiver even with no widget on screen)
-        // would arm a self-rescheduling alarm that ticks on forever — onDisabled, the
+        // would arm a self-rescheduling alarm that ticks on forever - onDisabled, the
         // only canceller, never fires because onEnabled never did. Tie the alarm's
         // life to the sun's: bail and clear any stray alarm when none is placed.
         if (!hasPlacedWidget(context)) {
@@ -100,10 +100,10 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         // minutes of drift is invisible on a sun that changes warmth, not time.
         // DST shifts broadcast neither TIME_SET nor TIMEZONE_CHANGED, so an alarm
         // armed across a transition lands up to an hour off the wall-clock
-        // boundary twice a year — accepted for the same reason, and it
+        // boundary twice a year - accepted for the same reason, and it
         // self-corrects when that alarm re-arms.
         // RTC, not RTC_WAKEUP: never wake the device to repaint a widget nobody is
-        // looking at — an overdue phase change is delivered the moment the device
+        // looking at - an overdue phase change is delivered the moment the device
         // next wakes, i.e. right when someone glances at the phone.
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC,

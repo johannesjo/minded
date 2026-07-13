@@ -14,7 +14,7 @@ import { shouldPauseDriveSun } from "./pauseTakeover";
  * The welcome step's tap-to-pause demo, shared by both platforms' onboarding.
  * The flow owns a single disc (its `getBaseSettle` rests); tapping it opens the
  * real InteractionOverlay, and while the pause is up the shared sunStore drives
- * that same disc through the live interaction — exactly like the dashboard
+ * that same disc through the live interaction - exactly like the dashboard
  * shell sun. This owns the takeover state machine (see `shouldPauseDriveSun`)
  * so the riskiest part of the flow lives in ONE place instead of copied per
  * platform; the components differ only in step content and their base rests.
@@ -74,7 +74,7 @@ export const createOnboardingSunDemo = (opts: {
     if (getActiveSunSettle()) setHasSunMounted(true);
   });
 
-  // Only the welcome step's disc takes input — everywhere else the sun is a
+  // Only the welcome step's disc takes input - everywhere else the sun is a
   // quiet presence (and the closing "ready" disc can never be dismissed).
   const isSunGrabbable = () =>
     opts.getStep() === 0 && !opts.getIsLeaving() && !getIsShowPause();

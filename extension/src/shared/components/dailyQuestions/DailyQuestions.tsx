@@ -34,9 +34,9 @@ const AFTER_ANI_WAIT_DURATION = 1100;
 
 // The evening reflection's second step draws from a small pool of gentle,
 // low-demand prompts instead of a single category, so no one question comes up
-// every night. In particular the more effortful "Today I Learned" prompts —
+// every night. In particular the more effortful "Today I Learned" prompts -
 // which read like an end-of-day performance review rather than a restful
-// noticing — become just one occasional voice among letting-go, present-moment,
+// noticing - become just one occasional voice among letting-go, present-moment,
 // self-compassion and calming prompts. Winding down should feel relaxing, never
 // like homework.
 const EVENING_WIND_DOWN_CATEGORIES: QuestionCategoryId[] = [
@@ -55,7 +55,7 @@ const DailyQuestions = () => {
   const today = new Date();
   const isMonday = today.getDay() === 1;
   const mode: DailyQuestionsMode = getDailyQuestionsMode();
-  // Morning is an energy check-in, then today's gentle plans — with a
+  // Morning is an energy check-in, then today's gentle plans - with a
   // lightly-held weekly intention added on Mondays (4 steps Mon / 3 steps
   // otherwise). Evening lost its opening mood check-in, so it's 3 steps too.
   // The last step is the success beat; the rest are questions.
@@ -99,7 +99,7 @@ const DailyQuestions = () => {
   // The one shell sun is this flow's through-line: it rests on the bottom bar
   // wearing a progress crown while the questions are answered, then blooms into
   // the closing sun. Driven reactively off the step so each transition is a
-  // glide of the same disc — never a new element popping in (which is what made
+  // glide of the same disc - never a new element popping in (which is what made
   // the old separate suns jump).
   createEffect(() => {
     if (getStep() === lastStep) {
@@ -113,7 +113,7 @@ const DailyQuestions = () => {
 
   onCleanup(() => {
     window.clearTimeout(t0);
-    // Hand the disc back to its companion rest — from the success bloom it
+    // Hand the disc back to its companion rest - from the success bloom it
     // glides down to the bottom bar of the dashboard we navigate to.
     setSunOrbit(null);
     setSunRole("companion");
@@ -131,7 +131,7 @@ const DailyQuestions = () => {
   };
 
   // The success message arms afterAni once it mounts. Track the timer on `t0`
-  // (the same one onCleanup clears) so leaving mid-celebration cancels it —
+  // (the same one onCleanup clears) so leaving mid-celebration cancels it -
   // otherwise the stray timer would later fade whatever page the user moved on
   // to and yank them back to the dashboard.
   const scheduleAfterAni = () => {

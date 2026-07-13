@@ -50,7 +50,7 @@
   }
 
   // The native input is visually hidden, so keyboard focus needs to show on the
-  // box itself — same ring as links/buttons.
+  // box itself - same ring as links/buttons.
   input:focus-visible ~ & {
     outline: 2px solid var(--c-link-color);
     outline-offset: 3px;

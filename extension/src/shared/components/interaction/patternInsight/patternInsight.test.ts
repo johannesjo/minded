@@ -42,7 +42,7 @@ describe("pattern insights", () => {
       id: "return-loop",
       dateISO: "2026-05-11",
       message:
-        "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
+        "You've come back a few times in a short while. That's okay - see if you can just notice the pull, without having to act on it.",
       actions: ["still_on_purpose", "leave_now"],
     });
   });

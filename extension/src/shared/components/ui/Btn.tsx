@@ -7,7 +7,7 @@ interface CommonBtnProps {
   children?: JSX.Element;
   /**
    * Extra layout-only classes (margins, grid placement, …). The visual variant
-   * and its modifiers come from the typed props below — don't pass `btn*`
+   * and its modifiers come from the typed props below - don't pass `btn*`
    * classes here.
    */
   class?: string;
@@ -31,7 +31,7 @@ interface CommonBtnProps {
 
 /**
  * Text button (the default). Modifiers: `outline` (ghost), `soft` (quiet
- * translucent — for a secondary exit that stays easy but shouldn't be the
+ * translucent - for a secondary exit that stays easy but shouldn't be the
  * loudest pixel), `plain` (unboxed tertiary action) and `big` (CTA).
  */
 type TextBtnProps = CommonBtnProps & {
@@ -60,7 +60,7 @@ export type BtnProps = TextBtnProps | IconBtnProps | ToggleBtnProps;
 
 // Relaxed view used only inside this file so we can read every modifier without
 // fighting the discriminated union. The public `BtnProps` is what keeps call
-// sites honest — e.g. `plain` is accepted only on `variant="icon"`, and there
+// sites honest - e.g. `plain` is accepted only on `variant="icon"`, and there
 // is no way to stack arbitrary one-off looks.
 type InternalBtnProps = CommonBtnProps & {
   variant?: Variant;
@@ -79,7 +79,7 @@ const BASE_CLASS: Record<Variant, string> = {
 };
 
 /**
- * The single button primitive. Three bases — text / icon / toggle — each with a
+ * The single button primitive. Three bases - text / icon / toggle - each with a
  * small, typed set of modifiers. The type system only permits the curated
  * combinations, so screens can't sprout one-off button looks; the underlying
  * `btn*` SCSS classes are an implementation detail of this component.
@@ -102,8 +102,8 @@ const Btn = (props: BtnProps): JSX.Element => {
     "type",
   ]);
 
-  // Internal routes go through the router's <A>; mailto/tel/http(s) links — or
-  // anything opening a new tab — are plain anchors so the router doesn't try to
+  // Internal routes go through the router's <A>; mailto/tel/http(s) links - or
+  // anything opening a new tab - are plain anchors so the router doesn't try to
   // navigate them.
   const isExternalLink = (): boolean =>
     local.href !== undefined &&

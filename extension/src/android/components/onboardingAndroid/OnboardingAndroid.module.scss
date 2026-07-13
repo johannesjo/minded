@@ -8,7 +8,7 @@ $sky-strip: 88px;
   inset: 0;
   display: flex;
   flex-direction: column;
-  // Keep everything — content and Stepper — clear of the status bar, display
+  // Keep everything - content and Stepper - clear of the status bar, display
   // cutout and gesture pill. The steps themselves only add their uniform 16px.
   padding: var(--safe-area-inset-top) var(--safe-area-inset-right)
     var(--safe-area-inset-bottom) var(--safe-area-inset-left);
@@ -47,13 +47,13 @@ $sky-strip: 88px;
 
 // Chore steps (app picker, permissions) additionally reserve the sky band so
 // tall, scrollable content never slides under the small resting sun. The hero
-// steps skip it — their disc sits in the in-flow spacer, and the extra band
+// steps skip it - their disc sits in the in-flow spacer, and the extra band
 // would squeeze the welcome copy into scrolling.
 .stepUnderSky {
   padding-top: $sky-strip;
 }
 
-// The empty slot the hero steps (welcome / "ready") reserve for the disc —
+// The empty slot the hero steps (welcome / "ready") reserve for the disc -
 // same footprint the old in-flow OnboardingSun stage had. The component
 // measures its centre and the fixed-layer sun settles exactly into the gap.
 .sunSpacer {
@@ -79,7 +79,7 @@ $sky-strip: 88px;
   top: calc(var(--safe-area-inset-top) + #{$sky-strip * 0.5});
 }
 
-// The dashboard companion's rest — the hand-off glide lands here, on the very
+// The dashboard companion's rest - the hand-off glide lands here, on the very
 // anchor the shell sun will mount on.
 .companionProbe {
   bottom: var(--companion-bar-center-y);
@@ -90,7 +90,7 @@ $sky-strip: 88px;
 }
 
 // Fallback instruction when the launcher can't pin from in-app (the denied
-// path's widget offer) — quiet, secondary.
+// path's widget offer) - quiet, secondary.
 .manualPinHint {
   font-size: var(--fz-s);
   opacity: 0.75;

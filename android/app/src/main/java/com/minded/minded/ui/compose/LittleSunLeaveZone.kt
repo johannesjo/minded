@@ -35,10 +35,10 @@ import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
 
 /**
- * Downward "set" below the horizon — same ease-in-out curve as the in-app sun's
+ * Downward "set" below the horizon - same ease-in-out curve as the in-app sun's
  * downward completion (`animateToCompletion` / `easeInOut`), at the brisk beat
  * the little sun's leave has always used (the exit must feel *wanted*, not
- * slow — CLAUDE.md).
+ * slow - CLAUDE.md).
  */
 private const val SET_MS = 620
 
@@ -50,17 +50,17 @@ private val EaseInOutQuad = Easing { p ->
 /**
  * The little sun's step-away target: a soft horizon glow at the bottom-centre
  * of the screen, shown (in its own non-touchable overlay window) only while the
- * bubble is being dragged — so the leave gesture has a *visible* trigger area
+ * bubble is being dragged - so the leave gesture has a *visible* trigger area
  * instead of an invisible threshold, and parking the bubble anywhere else is
  * never at risk of leaving by accident.
  *
  * While the dragged disc is inside the magnet's capture radius ([armed]) this
- * zone draws the disc itself, sprung onto the magnet centre — the unmistakable
- * "release to step away" state — while the bubble's own disc crossfades out, so
+ * zone draws the disc itself, sprung onto the magnet centre - the unmistakable
+ * "release to step away" state - while the bubble's own disc crossfades out, so
  * there is only ever one sun. Dragging back out hands the disc back the same
  * way. On release inside the zone ([committed]) the sun sets: an ease-in-out
- * sink below the window's bottom edge — which is the physical screen edge, so
- * the clip *is* the horizon — animated entirely inside this window (a
+ * sink below the window's bottom edge - which is the physical screen edge, so
+ * the clip *is* the horizon - animated entirely inside this window (a
  * frame-synced Compose transform, smooth in a way per-frame overlay-window
  * moves never were).
  *
@@ -70,9 +70,9 @@ private val EaseInOutQuad = Easing { p ->
 @Composable
 fun LittleSunLeaveZone(
     elapsedSeconds: Int,
-    // Disc captured by the magnet — glow brightens, this zone draws the disc.
+    // Disc captured by the magnet - glow brightens, this zone draws the disc.
     armed: Boolean,
-    // Released while armed — play the set (sink below the horizon), then
+    // Released while armed - play the set (sink below the horizon), then
     // onSetComplete.
     committed: Boolean,
     // The dragged disc's centre under the finger (zone-local px): the snapped

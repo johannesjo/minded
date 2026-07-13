@@ -15,7 +15,7 @@ import com.minded.minded.util.SafeAreaInsetsHolder
 
 /**
  * JavaScript bridge for [SleepWindDownOverlayWindow]. Smaller than the
- * interaction overlay's interface — wind-down has no question/sun-tap flow,
+ * interaction overlay's interface - wind-down has no question/sun-tap flow,
  * just the option to close the blocked app or hide the overlay. Inherits
  * the standard data + insets methods from [MainActivityJavaScriptInterface].
  */
@@ -53,7 +53,7 @@ class SleepWindDownWindowJavaScriptInterface(
     /**
      * Locks the device screen via the accessibility service's
      * GLOBAL_ACTION_LOCK_SCREEN. Used when the user completes the wind-down
-     * gesture (drag/fling the moon down) — at that point they're putting the
+     * gesture (drag/fling the moon down) - at that point they're putting the
      * phone down to sleep, so locking immediately is the right behavior.
      */
     @JavascriptInterface

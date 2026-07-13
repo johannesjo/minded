@@ -17,7 +17,7 @@ private const val MAX_TARGETS = 3
 
 /**
  * Builds the present-moment usage observation (the replacement for the old
- * Great→Awful self-rating) from real OS data — `UsageStatsManager` foreground
+ * Great→Awful self-rating) from real OS data - `UsageStatsManager` foreground
  * time for the user's configured "use less" apps. Returns a JSON string of
  * `{ todaySeconds, topTargets:[{id,label,seconds}] }`, or null when there's
  * nothing usable to show (usage access not granted, no configured apps, or no
@@ -77,7 +77,7 @@ fun getAppUsageObservation(context: Context, now: Long = System.currentTimeMilli
 
 /**
  * Sums precise foreground time (ms) per package within [begin, end] from the
- * UsageEvents stream — pairing RESUMED with the next PAUSED/STOPPED, and
+ * UsageEvents stream - pairing RESUMED with the next PAUSED/STOPPED, and
  * counting an app still foreground at `end` up to `end`.
  */
 private fun foregroundMsPerPackage(

@@ -162,7 +162,7 @@ describe("getInteractionMode", () => {
         id: "return-loop",
         dateISO: TODAY,
         message:
-          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
+          "You've come back a few times in a short while. That's okay - see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "show_alternative", "leave_now"],
       },
     });
@@ -170,7 +170,7 @@ describe("getInteractionMode", () => {
 
   it("gently names a present-session return loop in strong friction", () => {
     // Strong friction here comes from repeated recent returns, which is exactly
-    // what the return-loop noticing observes — so it surfaces (once per day)
+    // what the return-loop noticing observes - so it surfaces (once per day)
     // ahead of the saved-reason / alternative / question prompts.
     const decision = decide(
       baseSyncData({
@@ -423,7 +423,7 @@ describe("getInteractionMode", () => {
     it("is available in the small hours, when the hour-gated prompts are not", () => {
       // At 3am action advice and the bell are outside their hour window and
       // consume no roll; set-alternative fails its roll, and the finger-rest
-      // roll passes — stillness has no wrong hour.
+      // roll passes - stillness has no wrong hour.
       const lateNight = new Date("2026-05-11T03:00:00").getTime();
       expect(
         decide(baseSyncData(), {
@@ -439,7 +439,7 @@ describe("getInteractionMode", () => {
     });
 
     it("never invites a finger to rest on mouse-primary devices", () => {
-      // "Let your finger rest here" is a press-and-hold on a pad — meaningless
+      // "Let your finger rest here" is a press-and-hold on a pad - meaningless
       // with a mouse. On a mouse-primary device the finger-rest roll is never
       // taken (it consumes no roll), so the low value falls through to the
       // notice anchor instead.
@@ -539,7 +539,7 @@ describe("getInteractionMode", () => {
         id: "return-loop",
         dateISO: TODAY,
         message:
-          "You've come back a few times in a short while. That's okay — see if you can just notice the pull, without having to act on it.",
+          "You've come back a few times in a short while. That's okay - see if you can just notice the pull, without having to act on it.",
         actions: ["still_on_purpose", "leave_now"],
       },
     });
@@ -685,7 +685,7 @@ describe("getInteractionMode", () => {
   describe("anti-repeat memory of the last interaction mode", () => {
     it("swaps the QUESTION fallback for a NOTICE when the last mode was already QUESTION", () => {
       // Same fallback context as the test above, but the previous intervention
-      // already opened with QUESTION — so back-to-back repetition is broken by
+      // already opened with QUESTION - so back-to-back repetition is broken by
       // offering the gentle no-typing present-moment anchor instead.
       expect(decide(baseSyncData({ lastInteractionMode: "QUESTION" }))).toEqual(
         {
@@ -813,7 +813,7 @@ describe("getInteractionMode", () => {
       ).not.toBe("WIND_DOWN_SETTLE");
     });
 
-    it("suppresses the onboarding survey at bedtime — settles instead", () => {
+    it("suppresses the onboarding survey at bedtime - settles instead", () => {
       // With no answers this would be `few_answers_question` outside the window;
       // a verbal survey at bedtime fails the 90% bar, so the settle wins.
       expect(
@@ -837,7 +837,7 @@ describe("getInteractionMode", () => {
       });
     });
 
-    it("keeps a repeat strong pull wordless — never escalates to a verbal prompt", () => {
+    it("keeps a repeat strong pull wordless - never escalates to a verbal prompt", () => {
       // Even after the routine settle has fired tonight (guard set), a *strong*
       // late-night pull still gets the wordless settle rather than a verbal
       // "you keep coming back" / question (decision 5).
@@ -858,7 +858,7 @@ describe("getInteractionMode", () => {
 
     it("settles over an expired-intent verbal prompt at bedtime", () => {
       // An expired intent with a saved reason would normally open SHOW_REASON
-      // (a verbal prompt) — but at bedtime the wordless settle must win, since
+      // (a verbal prompt) - but at bedtime the wordless settle must win, since
       // the settle sits above the expired-intent branch.
       const decision = atBedtime(
         baseSyncData({
@@ -926,7 +926,7 @@ describe("getInteractionMode", () => {
       ).not.toBe("WIND_DOWN_SETTLE");
     });
 
-    it("is exempt from anti-repeat — repeats the settle within the same night", () => {
+    it("is exempt from anti-repeat - repeats the settle within the same night", () => {
       // Until it has settled tonight, the settle is a deliberate repeat; the
       // anti-repeat that swaps a back-to-back QUESTION must never swap it out.
       expect(

@@ -41,8 +41,8 @@ body {
 
   // Safety-net sky floor. The gradient is normally painted by the
   // SolidJS-rendered #minded-6622-coloured-wrapper-dynamic, so if that app
-  // fails to mount — a freshly created overlay WebView occasionally never
-  // paints its content on first open — nothing covers the opaque dark native
+  // fails to mount - a freshly created overlay WebView occasionally never
+  // paints its content on first open - nothing covers the opaque dark native
   // shield and the intervention sticks on a black screen until the user
   // reopens the app. #minded-6622 lives in the static HTML and carries the
   // gradient variables, so this ::before still renders the sky with no JS,
@@ -105,7 +105,7 @@ textarea {
     right: 0;
     bottom: 0;
     background: var(--background-gradient);
-    // Cover the composite's image layers — see the sky-floor ::before above.
+    // Cover the composite's image layers - see the sky-floor ::before above.
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

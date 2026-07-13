@@ -34,7 +34,7 @@ describe("computeUsageObservation", () => {
     expect(obs.topTargets[0].label).toBe("Instagram");
   });
 
-  it("ignores prior days — the observation is today's fact only, no baseline", () => {
+  it("ignores prior days - the observation is today's fact only, no baseline", () => {
     let stats: UsageStatsByDate = {};
     for (const day of [7, 8, 9]) {
       stats = addUsageTime(stats, "youtube.com", 600, at(day, 9));

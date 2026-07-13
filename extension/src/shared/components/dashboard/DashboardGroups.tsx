@@ -62,7 +62,7 @@ export const DashboardGroups: (props: {
 
   // The wording the banner shows ("inspiration for your day" vs "reflect on your
   // day") is captured here, at the same moment `refresh()` decides to reveal the
-  // banner — never re-read independently at render time. Reading the clock a
+  // banner - never re-read independently at render time. Reading the clock a
   // second time when the node is *built* let the two drift apart: a dashboard
   // opened before 20:00 built a "Morning" banner node, kept it hidden, and then
   // the evening trigger revealed that stale morning wording late at night.
@@ -74,11 +74,11 @@ export const DashboardGroups: (props: {
     setIsDailyQuestionsBannerBeingRemoved,
   ] = createSignal<boolean>(false);
 
-  // Arrival is calm: a single greeting card (the centre pick — a random
+  // Arrival is calm: a single greeting card (the centre pick - a random
   // reflection, or the quote when there's little to show) instead of the full
   // wall of cards. The rest stay tucked away until you choose to "look back",
   // which routes to the full grid (the /lookBack page) rather than toggling an
-  // internal flag — so the grid is a real, back-able view.
+  // internal flag - so the grid is a real, back-able view.
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
@@ -94,9 +94,9 @@ export const DashboardGroups: (props: {
   // The greeting the user is actually looking at. Deliberately its *own* signal
   // rather than a memo over getDashboardGroups (the live data): the displayed
   // greeting is only ever (re)set when the screen opens or on a deliberate
-  // re-greet — which only ever fires while the dashboard is hidden. A routine
+  // re-greet - which only ever fires while the dashboard is hidden. A routine
   // in-view refresh updates the underlying data (and the "show all" count) but
-  // leaves this hero untouched, so the card — and its random quote — is never
+  // leaves this hero untouched, so the card - and its random quote - is never
   // seen to change under the user (calm is the product; a card only ever
   // changes offscreen). Without this, a visible REFRESH_DASHBOARD_EV that
   // altered the group count, re-ran guardHeroSlot, or diffed the hero's data
@@ -122,7 +122,7 @@ export const DashboardGroups: (props: {
       const showDailyQuestionsBanner = isShowDailyQuestionsBanner(syncData);
       // Lock the wording to this same clock read that just decided to show the
       // banner, so the card can never say "morning" while the evening trigger is
-      // what revealed it (and vice versa). Only when revealing — while hidden the
+      // what revealed it (and vice versa). Only when revealing - while hidden the
       // mode is irrelevant, and skipping it avoids swapping wording under a user
       // who is already looking at the banner.
       if (showDailyQuestionsBanner) {
@@ -155,7 +155,7 @@ export const DashboardGroups: (props: {
       setDashboardGroups(groups);
 
       // Reveal the greeting the user sees only when the screen is opening (no
-      // hero on screen yet) or on a deliberate re-greet — which only ever fires
+      // hero on screen yet) or on a deliberate re-greet - which only ever fires
       // while the dashboard is hidden. A routine in-view refresh (reselect
       // false, hero already shown) deliberately leaves the displayed hero as it
       // is, so the card never changes in front of the user; it always just
@@ -166,11 +166,11 @@ export const DashboardGroups: (props: {
     });
   };
 
-  // Re-roll the greeting *while the dashboard is hidden from the user* — behind a
+  // Re-roll the greeting *while the dashboard is hidden from the user* - behind a
   // fading-out interaction overlay, or while the app is backgrounded (Android
   // pause). The swap is instant: the fresh tile mounts and plays its own gentle
-  // entrance behind the cover, so it's already in place — gently easing in, and
-  // the only card ever seen — by the time the dashboard is revealed. A card is
+  // entrance behind the cover, so it's already in place - gently easing in, and
+  // the only card ever seen - by the time the dashboard is revealed. A card is
   // never changed in front of the user (calm is the product); it only ever
   // changes offscreen. The grid view has no single greeting, so it sits this out.
   const reGreetHidden = () => {
@@ -197,7 +197,7 @@ export const DashboardGroups: (props: {
 
   // Route to the full "look back" grid. The global page-transition guard
   // (useBeforeLeave in RouteCmp) already fades the leaving greeting out before
-  // the destination eases in, so this navigates like any other card tap — no
+  // the destination eases in, so this navigates like any other card tap - no
   // local fade-out (a second one only stacked into an awkward double pause).
   // Routing (not an internal flag) makes it a real page: the global bottom bar
   // shows its back arrow there, exactly like settings.
@@ -225,8 +225,8 @@ export const DashboardGroups: (props: {
   };
 
   // Fade the banner out when its time window closes, so a card revealed
-  // legitimately inside its window — the morning "inspiration" card before noon,
-  // the evening card before the day rolls over — can't linger past that boundary
+  // legitimately inside its window - the morning "inspiration" card before noon,
+  // the evening card before the day rolls over - can't linger past that boundary
   // on a dashboard left open for hours. Without this, only an explicit refresh
   // event would ever re-hide it, which is how a morning card once surfaced at
   // 23:59. Re-armed on every refresh that shows the banner.
@@ -347,7 +347,7 @@ export const DashboardGroups: (props: {
               // `keyed` so a fresh pick remounts the card and replays its gentle
               // entrance fade-in (see .collapsed .box). Re-greets only ever happen
               // while hidden, so the fresh tile is already easing in when revealed
-              // — no in-view swap wrapper needed.
+              // - no in-view swap wrapper needed.
               <Show when={getHeroGroup()} keyed>
                 {(g) => renderCard(g, true)}
               </Show>

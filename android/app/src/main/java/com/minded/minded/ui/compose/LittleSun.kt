@@ -37,7 +37,7 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 // sun's #e9843a (a more golden glow reads softer and sunnier).
 internal val GLOW_COLOR = Color(0xFFE99A3A)
 
-// At night the companion is the moon, not a warm sun — so the little sun
+// At night the companion is the moon, not a warm sun - so the little sun
 // mirrors the in-app moon (web Sun.scss .moon): a cool silver disc with a cool
 // blue halo instead of the daytime amber glow, so it belongs in the night sky
 // rather than reading as an out-of-place orange dot.
@@ -45,7 +45,7 @@ private val SUN_COLOR_NIGHT = Color(0xFFEEF2FF)
 private val SUN_TEXT_COLOR_NIGHT = Color(0xFF33405E)
 internal val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
-/** The bubble's timer text — shared with the leave zone's snapped disc. */
+/** The bubble's timer text - shared with the leave zone's snapped disc. */
 internal fun littleSunClockString(elapsedSeconds: Int): String =
     if (elapsedSeconds >= 0)
         String.format("%2d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)
@@ -53,18 +53,18 @@ internal fun littleSunClockString(elapsedSeconds: Int): String =
 
 /**
  * The little sun overlay: a small, draggable companion bubble (like a chat-head)
- * resting over a blocked app. The app underneath stays fully interactive — the
+ * resting over a blocked app. The app underneath stays fully interactive - the
  * window only intercepts touches within the bubble's own bounds.
  *
  * It is both the gentle presence and the escape hatch, and it offers to step
- * away *on the bubble itself* — while it is being dragged, a soft horizon glow
+ * away *on the bubble itself* - while it is being dragged, a soft horizon glow
  * ([LittleSunLeaveZone], its own non-touchable window) appears at the
  * bottom-centre of the screen; carrying the sun into it and releasing lets the
  * sun set below the horizon and opens minded. Any other drag just repositions
  * the bubble (parkable anywhere the clamp allows); a plain tap does nothing (so
  * a stray touch neither ejects the user nor detonates a surface).
  *
- * This composable is only the disc and its drag gesture — the zone, the capture
+ * This composable is only the disc and its drag gesture - the zone, the capture
  * test and the leave commit live in LittleSunWindow, which knows the screen
  * geometry. While the zone holds the disc ([discHidden]), the bubble's own disc
  * crossfades out so there is only ever one visible sun.
@@ -72,19 +72,19 @@ internal fun littleSunClockString(elapsedSeconds: Int): String =
 @Composable
 fun LittleSun(
     elapsedSeconds: Int = 0,
-    // True while the leave zone draws the disc snapped to its magnet — the
+    // True while the leave zone draws the disc snapped to its magnet - the
     // bubble's own disc fades out so the sun never appears twice.
     discHidden: Boolean = false,
     onDragStart: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
-    // Fired on release AND on cancel — the window decides whether the drop
+    // Fired on release AND on cancel - the window decides whether the drop
     // rests the bubble or (inside the zone) commits the leave.
     onDragEnd: () -> Unit = {},
 ) {
     val clockString = littleSunClockString(elapsedSeconds)
 
     // Soft crossfade, timed with the zone's snapped disc fading in, so the
-    // hand-off reads as the one sun hopping to the magnet — never a hard cut.
+    // hand-off reads as the one sun hopping to the magnet - never a hard cut.
     val discAlpha by animateFloatAsState(
         targetValue = if (discHidden) 0f else 1f,
         animationSpec = tween(durationMillis = DISC_HANDOFF_FADE_MS),
@@ -128,7 +128,7 @@ internal fun SunDisc(
     scale: Float = 1f,
     modifier: Modifier = Modifier,
 ) {
-    // At night the companion becomes the moon — cool silver body, cool halo —
+    // At night the companion becomes the moon - cool silver body, cool halo -
     // matching the in-app sun, which is also a moon after dark.
     val night = isDarkModeNow()
     val glowColor = if (night) GLOW_COLOR_NIGHT else GLOW_COLOR
@@ -142,7 +142,7 @@ internal fun SunDisc(
         contentAlignment = Alignment.Center,
     ) {
         // Soft glow, drawn behind the disc so only the halo around the body
-        // shows — mirrors the web extension's box-shadow glow. The disc radius
+        // shows - mirrors the web extension's box-shadow glow. The disc radius
         // is 0.5 of the glow radius, so the colour is saturated right where the
         // body edge sits and then feathers to fully transparent before the
         // layout bound (0.9), so the wrap-content window never hard-cuts the halo.

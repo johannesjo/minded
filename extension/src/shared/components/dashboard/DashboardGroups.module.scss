@@ -3,7 +3,7 @@
 
 .DashboardGroups {
   // The revealed "everything" view: a responsive grid of *all* tiles that
-  // scrolls — no card cap, no fixed-height squeeze. (The calm arrival is the
+  // scrolls - no card cap, no fixed-height squeeze. (The calm arrival is the
   // separate .collapsed view below.)
   position: absolute;
   inset: 0;
@@ -18,7 +18,7 @@
   --hero-reserve: calc(var(--companion-bar-height) - 48px);
   padding: 16px 16px calc(var(--hero-reserve) + 16px);
 
-  // One column on phones, two once there's room, three on wide screens —
+  // One column on phones, two once there's room, three on wide screens -
   // matching the old dashboard's column feel, but scrollable and uncapped.
   display: grid;
   grid-template-columns: 1fr;
@@ -60,7 +60,7 @@
   }
 
   // Calm cascade: cards settle in one after another (DOM order, so top-to-bottom
-  // across the 1–3 columns) instead of the whole dense grid arriving at once —
+  // across the 1–3 columns) instead of the whole dense grid arriving at once -
   // the same "room assembles quietly" feel as the collapsed greeting, and a
   // mirror of the DashboardAnswerList entry stagger.
   .box {
@@ -68,7 +68,7 @@
     // fill-mode, so hover/active scale keeps working once it ends. But a bare
     // animation-delay would then leave each card at its natural, *visible* state
     // through the delay and only snap to the entrance's opacity-0 start when its
-    // animation begins — a flash-then-fade pop. `backwards` holds that hidden
+    // animation begins - a flash-then-fade pop. `backwards` holds that hidden
     // start through the delay; unlike `forwards`/`both` it never touches the end
     // state, so the mixin's no-fill-mode intent is preserved.
     animation-fill-mode: backwards;
@@ -85,7 +85,7 @@
     }
 
     // Reduced motion already drops the entrance to `animation: none` (via the
-    // mixin), leaving these delays inert — but zero them too so no card can be
+    // mixin), leaving these delays inert - but zero them too so no card can be
     // held hidden should that entrance ever change.
     @media (prefers-reduced-motion: reduce) {
       animation-delay: 0s;
@@ -103,7 +103,7 @@
     padding: var(--space-sm) var(--space-xs);
   }
 
-  // center logic — widget cards (mood, energy, quote…) centre their
+  // center logic - widget cards (mood, energy, quote…) centre their
   // content; lists, charts and tables keep their natural left alignment.
   @mixin centerItem() {
     display: flex;
@@ -134,7 +134,7 @@
 
     @media (hover: hover) {
       &:hover {
-        // Brighten the frosted fill on hover — no lift or shadow. The
+        // Brighten the frosted fill on hover - no lift or shadow. The
         // bg-opacity bump already reads as "frosted"; no backdrop-filter toggle
         // (it can't ease and forces a full backdrop repaint on hover).
         background: var(--dashboard-card-bg-hover);
@@ -261,7 +261,7 @@
 
 // The reveal button eases in a beat *after* the greeting card has settled, so
 // the eye lands on the card first and the invitation arrives second. `both`
-// holds the hidden start through the delay and the visible end after — and fails
+// holds the hidden start through the delay and the visible end after - and fails
 // safe: if the animation never runs, the button still defaults to visible.
 .revealBtn {
   // Arrives after the greeting has landed, but quickly enough to remain
@@ -274,8 +274,8 @@
 
   // A subordinate affordance: quieter than the greeting card it sits beneath,
   // so the card stays the focus and the invitation reads as secondary. The
-  // hierarchy is carried by the *font* — --fz-s, well below the enlarged hero
-  // card in the collapsed view (see `.collapsed .box` below) — so the small,
+  // hierarchy is carried by the *font* - --fz-s, well below the enlarged hero
+  // card in the collapsed view (see `.collapsed .box` below) - so the small,
   // quiet serif never looms over the greeting. The tap height stays a
   // comfortable 44px (a shorter 36px cramped the one navigation control on the
   // arrival screen below a comfortable thumb target); the generous vertical
@@ -283,7 +283,7 @@
   // no small text-button variant, so this one quiet control sets its own size.
   //
   // The base button size arrives via `#minded-6622 .btnTxt` (btn.scss scopes it
-  // under the app-root id) — an ID selector, so a bare `.revealBtn.btnTxt`
+  // under the app-root id) - an ID selector, so a bare `.revealBtn.btnTxt`
   // override loses the cascade and the button kept the full --btn-height /
   // --btn-fz size on Android, iOS and the extension alike. Re-scope this
   // override under the same root id so it outranks that base rule everywhere,

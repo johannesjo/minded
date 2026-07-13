@@ -14,8 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// True when the app was *cold-launched* by tapping the companion sun widget
     /// (`minded://sun` arrived in the launch options). MainViewController reads this
-    /// to seed the WebView's very first paint straight into the sun pause — and to
-    /// bridge the launch with a morphing sun instead of a hard splash cut — rather
+    /// to seed the WebView's very first paint straight into the sun pause - and to
+    /// bridge the launch with a morphing sun instead of a hard splash cut - rather
     /// than relying on the post-load hash retry (which paints a dashboard frame
     /// first). A warm re-tap, where the app is already running, goes through
     /// `application(open:)` → `.openSun` below instead.
@@ -45,9 +45,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// sanitize-then-degrade, not Android's exact-pool allow-list
     /// (`widgetLineFromIntent`): `minded://` is open to any app and the hash is
     /// set via a JS string literal, so a crafted URL must never be able to break
-    /// out of it — the strict output alphabet guarantees that. The exact-pool
+    /// out of it - the strict output alphabet guarantees that. The exact-pool
     /// match stays on the web side (`matchWidgetLine`), where an unrecognised
-    /// line just falls through to the normal random pick — it degrades, never
+    /// line just falls through to the normal random pick - it degrades, never
     /// breaks. (The pool itself compiles only into the widget target; compiling
     /// WidgetPrompts.swift into the App target too would restore exact Android
     /// parity if that ever matters.)

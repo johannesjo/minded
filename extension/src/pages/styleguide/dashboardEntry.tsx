@@ -1,11 +1,11 @@
 import { render } from "solid-js/web";
-// @ts-ignore — side-effect import of global styles
+// @ts-ignore - side-effect import of global styles
 import "@src/styles/sharedMain.scss";
 import RoutesCmp from "@src/shared/RouteCmp";
 import { applySkyForNow, isDarkModeNow } from "@src/shared/addWrapperClasses";
 import { seedMockData } from "./seedMockData";
 
-// Dashboard simulation: mounts the real app shell (RouteCmp's RoutesCmp — the
+// Dashboard simulation: mounts the real app shell (RouteCmp's RoutesCmp - the
 // MainWrapper, persistent companion sun, bottom bar, interaction overlay and the
 // dashboard at "/") on a plain web page, backed by the in-memory chrome shim in
 // dashboard.html. Lets the full dashboard + interaction flow be exercised and
@@ -18,7 +18,7 @@ if (!root) throw new Error("Cannot find #minded-6622 root element");
 
 // Apply the day/night theme to the wrapper up front. The shell normally does
 // this in RouteCmp's onMount via addWrapperClasses(), but in this standalone
-// simulation chunk that call's DOM side effects get tree-shaken away — leaving
+// simulation chunk that call's DOM side effects get tree-shaken away - leaving
 // the dashboard stuck in light mode at night (black icons that never get their
 // dark-mode `filter: invert(1)`, wrong surface colours, a sun instead of the
 // moon). Setting the class here, from the entry module on a runtime value, can't

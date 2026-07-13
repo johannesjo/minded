@@ -1,6 +1,6 @@
 name: iOS TestFlight
 
-# Builds and signs the iOS app on a GitHub-hosted macOS runner — no local Mac
+# Builds and signs the iOS app on a GitHub-hosted macOS runner - no local Mac
 # required. Signing is MANUAL and deterministic: one Apple Distribution
 # certificate (.p12) plus two App Store provisioning profiles (the app
 # com.minded.app and the widget com.minded.app.widget) are imported from GitHub
@@ -31,7 +31,7 @@ on:
     # without uploading one per commit (main sees ~15 commits/day).
     - cron: '0 4 * * *'
   push:
-    branches: [main] # verify-only — the upload step is skipped for these
+    branches: [main] # verify-only - the upload step is skipped for these
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
 
 permissions:
@@ -90,10 +90,10 @@ jobs:
           # app-extension target is added to App.xcodeproj programmatically (no
           # Mac/Xcode GUI needed). The script is idempotent. Run it before the
           # `pod install` below so CocoaPods integrates with the widget target
-          # already in place; the archive step is the real verification — a
+          # already in place; the archive step is the real verification - a
           # malformed project fails CI here, not silently at upload.
           # CocoaPods already vendors the xcodeproj gem on the runner, so only
-          # install it if the script's `require` can't find it — this avoids a
+          # install it if the script's `require` can't find it - this avoids a
           # version bump and any non-sudo gem-install permission issue.
           ruby -e "require 'xcodeproj'" 2>/dev/null || gem install xcodeproj --no-document
           ruby scripts/add_widget_target.rb
@@ -107,7 +107,7 @@ jobs:
           ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ASC_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
         run: |
-          # Only the TestFlight upload (altool) uses this key now — signing is
+          # Only the TestFlight upload (altool) uses this key now - signing is
           # manual (see the import step below). altool discovers the key by KEY_ID
           # under ~/.appstoreconnect/private_keys; the $RUNNER_TEMP copy just gives
           # the cleanup step a stable path to remove.
@@ -127,7 +127,7 @@ jobs:
           set -euo pipefail
           # Import the one persisted Apple Distribution identity into a throwaway
           # keychain unlocked only for this job. The keychain password is
-          # ephemeral (generated here, never leaves the runner) — the real secret
+          # ephemeral (generated here, never leaves the runner) - the real secret
           # is the .p12, protected by DIST_CERT_PASSWORD.
           KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
           KEYCHAIN_PW="$(openssl rand -base64 24)"
@@ -173,7 +173,7 @@ jobs:
         run: |
           # Marketing version tracks package.json; build number tracks the run
           # number so every upload is strictly higher than the last (TestFlight
-          # rejects duplicate build numbers). Signing is manual — the per-target
+          # rejects duplicate build numbers). Signing is manual - the per-target
           # profile specifiers were baked into the project by the widget-wiring
           # step, and the identity + profiles are in the keychain imported above.
           MARKETING_VERSION=$(node -p "require('./extension/package.json').version")
@@ -191,7 +191,7 @@ jobs:
         run: |
           set -euo pipefail
           # Generated here (not committed) so the profile NAMES have a single
-          # source of truth — the IOS_*_PROFILE_NAME env above. Manual signing:
+          # source of truth - the IOS_*_PROFILE_NAME env above. Manual signing:
           # each bundle id maps to its App Store profile; no API key needed.
           EXPORT_OPTS="$RUNNER_TEMP/ExportOptions.plist"
           cat > "$EXPORT_OPTS" <<PLIST
@@ -229,7 +229,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload to TestFlight
-        # Plain pushes to main are verification builds — everything above runs
+        # Plain pushes to main are verification builds - everything above runs
         # (so a broken archive/sign still fails CI), but we don't distribute.
         # Upload only on tags, manual dispatch, and the nightly cron.
         if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')
@@ -240,7 +240,7 @@ jobs:
           set -euo pipefail
           IPA=$(ls "$RUNNER_TEMP/export/"*.ipa 2>/dev/null | head -n1 || true)
           if [ -z "$IPA" ] || [ ! -f "$IPA" ]; then
-            echo "::error::Export produced no .ipa — nothing to upload to TestFlight."
+            echo "::error::Export produced no .ipa - nothing to upload to TestFlight."
             exit 1
           fi
           # `altool --upload-app` is deprecated but functional on Xcode 16. If a

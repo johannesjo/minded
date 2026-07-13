@@ -63,7 +63,7 @@ const IS_DEV: boolean = process.env.NODE_ENV !== "production";
 
 const MainWrapper = (props: RouteSectionProps) => {
   // A widget cold-start arrives with `?sun=open` already in the hash. Read it
-  // synchronously here so the interaction overlay is part of the FIRST render —
+  // synchronously here so the interaction overlay is part of the FIRST render -
   // otherwise the dashboard paints for a frame before a post-mount effect could
   // open it. (Warm re-taps are handled by the effect below.)
   const [searchParams, setSearchParams] = useSearchParams();
@@ -92,15 +92,15 @@ const MainWrapper = (props: RouteSectionProps) => {
     openedFromWidgetAtLaunch,
   );
   // Pointer hover over the resting companion (relayed from its tap target, since
-  // the disc itself is pointer-transparent) — lifts + glows the sun.
+  // the disc itself is pointer-transparent) - lifts + glows the sun.
   const [getIsCompanionHovered, setIsCompanionHovered] =
     createSignal<boolean>(false);
 
   const location = useLocation();
   const isDashboard = () => location.pathname === "/";
   // Day/night for the sun. Seed from the time-based rule for the first paint,
-  // then (in onMount) mirror the actual `.minded-6622-dark` class — reactively,
-  // via a MutationObserver — so the companion can never disagree with the
+  // then (in onMount) mirror the actual `.minded-6622-dark` class - reactively,
+  // via a MutationObserver - so the companion can never disagree with the
   // rendered theme. The class is the single source of truth and it *can* flip
   // after mount without a reload: on Android a background→resume across the
   // day/night threshold re-runs setIsDarkModeIfApplies (MainAndroid's refresh),
@@ -111,7 +111,7 @@ const MainWrapper = (props: RouteSectionProps) => {
   );
 
   // The disc is interactive only while the role is "interactive" AND no hand-off
-  // to the post-sun choices is in flight — otherwise the centred, full-size disc
+  // to the post-sun choices is in flight - otherwise the centred, full-size disc
   // (z-30, above the overlay) would grab taps meant for the choices that mount
   // before the deferred role flip (see getIsSunHandoffInFlight).
   const isSunInteractive = () =>
@@ -126,7 +126,7 @@ const MainWrapper = (props: RouteSectionProps) => {
   // then `retry(true)` so it goes through without re-entering this guard; the
   // route remounts and discards the faded node, and the destination eases in via
   // its own pageTransitionIn. Skipped for:
-  //  - browser/hardware back+forward: leave those instant — fading would add
+  //  - browser/hardware back+forward: leave those instant - fading would add
   //    latency and force the router's block-then-restore history bounce on
   //    every press. Only a *backward* move arrives as a numeric history delta;
   //    the router hands a forward move over as a plain path string, so history
@@ -151,7 +151,7 @@ const MainWrapper = (props: RouteSectionProps) => {
       normalizeHashPath(e.to) === normalizeHashPath(window.location.hash)
     ) {
       // A history move (back delta, or the hash already points at the
-      // destination) — instant, and it drops any queued retry.
+      // destination) - instant, and it drops any queued retry.
       pendingRetry = null;
       return;
     }
@@ -162,7 +162,7 @@ const MainWrapper = (props: RouteSectionProps) => {
     e.preventDefault();
     pendingRetry = () => e.retry(true);
     // A fade is already mid-flight (double-tap, or a quick second tap on a
-    // different card) — the pending retry above hands it the newest target.
+    // different card) - the pending retry above hands it the newest target.
     if (isPageFading) return;
 
     isPageFading = true;
@@ -182,7 +182,7 @@ const MainWrapper = (props: RouteSectionProps) => {
   // render. The flag is cleared once consumed so a resume can't reopen it.
   createEffect(() => {
     if (searchParams.sun !== "open") return;
-    // Only while the sun is resting as the companion — never cut into an
+    // Only while the sun is resting as the companion - never cut into an
     // interaction that's already in flight.
     if (getSunRole() === "companion" && !getIsShowQuestionOverlay()) {
       setIsOverlayInstant(true);
@@ -198,7 +198,7 @@ const MainWrapper = (props: RouteSectionProps) => {
 
   onMount(() => {
     addWrapperClasses();
-    // addWrapperClasses just set (or cleared) the dark class — read the real
+    // addWrapperClasses just set (or cleared) the dark class - read the real
     // value so the sun matches the wrapper exactly, then keep mirroring it: the
     // class can flip later without a reload (Android resume across the day/night
     // threshold), and the companion disc must follow rather than stay on the
@@ -225,7 +225,7 @@ const MainWrapper = (props: RouteSectionProps) => {
     // is `position: fixed; bottom: var(--companion-bar-center-y)`, so the browser has
     // resolved that var to a px `bottom` (vh against the layout viewport, plus the
     // live safe-area inset) exactly as the bottom bar's own layout did. Reading it
-    // back makes the SCSS the single source of truth — the disc lands on the same
+    // back makes the SCSS the single source of truth - the disc lands on the same
     // px the icons do, with no clamp math mirrored in JS to drift out of sync.
     //
     // This also drives the fix for the startup race: the store seeds the signal
@@ -236,12 +236,12 @@ const MainWrapper = (props: RouteSectionProps) => {
     // paint, so the corrected value lands with no visible glide) and again next
     // frame. The late inset itself arrives via the native WebViewSafeAreaBridge
     // push, which sets the CSS var and dispatches `androidSafeAreaChanged` (which
-    // nothing else listened to) — re-measure on that so the disc catches up; when
+    // nothing else listened to) - re-measure on that so the disc catches up; when
     // it moved while the disc was already resting home, the settle snaps it there
     // in lockstep with the icons (see enterSettle's companion re-anchor branch).
     // `resize` keeps it in sync with the viewport. The probe is a permanent,
     // invisible element (unlike the tap target, which only exists while resting),
-    // so a resize *during an interaction* is still captured — otherwise the disc
+    // so a resize *during an interaction* is still captured - otherwise the disc
     // returned home to a stale anchor, off the icon line, until the next resize.
     const reanchorCompanion = () => {
       const probe = document.querySelector<HTMLElement>(
@@ -264,7 +264,7 @@ const MainWrapper = (props: RouteSectionProps) => {
     // iOS widget cold-launch only: tell the native launch overlay the sun has
     // actually painted, so it fades out on the real first paint instead of guessing
     // from page-load progress (which only signals resources finished, not render).
-    // No-op elsewhere — the handler is only registered during an iOS widget launch,
+    // No-op elsewhere - the handler is only registered during an iOS widget launch,
     // and the optional chain makes the call harmless on Android/web/web-ext.
     if (IS_IOS && openedFromWidgetAtLaunch) {
       requestAnimationFrame(() => {
@@ -293,7 +293,7 @@ const MainWrapper = (props: RouteSectionProps) => {
       {/*
         One persistent sun for the whole shell: it rests as the companion over
         the bottom bar and (Phase 2) transforms into the interactive intervention
-        — never swapped for a second element. The layer is fixed + viewport-centred
+        - never swapped for a second element. The layer is fixed + viewport-centred
         so the sun's base is screen-centre (interactive rest); the companion
         settle offsets it down to the bottom bar. Click-through except the disc /
         the companion tap-target.
@@ -332,7 +332,7 @@ const MainWrapper = (props: RouteSectionProps) => {
           resolved px so the disc lands on the exact spot the settings/feedback
           icons do. Unlike the tap target (which only mounts while resting), this
           is always present, so a resize/rotation *during* an interaction is
-          still measured — the disc then returns home to the current anchor, not
+          still measured - the disc then returns home to the current anchor, not
           a stale one.
         */}
         <div class={styles.companionAnchorProbe} aria-hidden="true" />
@@ -382,7 +382,7 @@ const MainWrapper = (props: RouteSectionProps) => {
               // straight onto its slot in one slow glide (no base detour).
               setIsCompanionHovered(false);
               setIsOverlayInstant(false); // in-app tap keeps the gentle fade
-              // A plain in-app tap is a fresh random pick — never reuse a line
+              // A plain in-app tap is a fresh random pick - never reuse a line
               // left over from an earlier widget tap.
               setWidgetLine(undefined);
               setIsShowQuestionOverlay(true);
@@ -413,7 +413,7 @@ const MainWrapper = (props: RouteSectionProps) => {
             setWidgetLine(undefined);
             // The greeting was already re-rolled when the overlay *started*
             // fading (RE_GREET_DASHBOARD_HIDDEN_EV, dispatched from the overlay),
-            // so the fresh tile is in place behind it — nothing to swap here, or
+            // so the fresh tile is in place behind it - nothing to swap here, or
             // you'd see it change a second time after the sky is gone.
           }}
         />
@@ -431,7 +431,7 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         <Route path="*" component={() => <Dashboard />} />
         {/*
           The "show all" / look-back view: the full grid of every tile, as its
-          own route so it behaves exactly like settings — the global bottom bar
+          own route so it behaves exactly like settings - the global bottom bar
           shows its back arrow (and Android's hardware back returns here) instead
           of stranding the user in the expanded grid with no way back.
         */}

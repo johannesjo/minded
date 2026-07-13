@@ -55,14 +55,14 @@ interface SunProps {
    * fully cleared the viewport. The dashboard let-go uses this to hold its
    * question back until the sun has visibly flown off the top, rather than
    * revealing it the moment the fling begins. Not fired if the disc never leaves
-   * the screen (a gentle fling that stalls on-screen) — the terminal callback
+   * the screen (a gentle fling that stalls on-screen) - the terminal callback
    * covers that as a fallback.
    */
   onFlungOffscreen?: () => void;
   eventRoot?: ShadowRoot;
   /**
    * Opt-in: fired with `Date.now()` at the instant a once-through breath actually
-   * begins — i.e. after the glide lands, when `startBreathCycle` captures its
+   * begins - i.e. after the glide lands, when `startBreathCycle` captures its
    * origin. A cue (the strong-friction breath pause) can share this exact
    * timestamp so its copy and the disc breathe on one clock (GitHub #27). NOT
    * fired for a looping breath (the surf pulse), whose cue is fraction-based and
@@ -89,7 +89,7 @@ interface SunProps {
   completionDirection?: "any" | "down";
   /**
    * Post-interaction resting state. When set, the sun glides to a viewport
-   * anchor and holds there (optionally breathing) instead of being hidden —
+   * anchor and holds there (optionally breathing) instead of being hidden -
    * the same element transforms across the breath pause and the intent/time
    * choices, so it is never swapped out. null returns it to its interactive
    * position.
@@ -177,7 +177,7 @@ export const Sun: Component<SunProps> = (props) => {
   const [getDragOffset, setDragOffset] = createSignal({ x: 0, y: 0 });
   // The offset the disc rests at when not being dragged. {0,0} (the base) for the
   // plain interactive sun, but the shell sun's interactive rest is the measured
-  // placeholder anchor — drags add to this and a release snaps back to it, so the
+  // placeholder anchor - drags add to this and a release snaps back to it, so the
   // disc is draggable from wherever it actually rests.
   const [getRestOffset, setRestOffset] = createSignal({ x: 0, y: 0 });
   const [getOpacity, setOpacity] = createSignal(1);
@@ -187,11 +187,11 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsAnimating, setIsAnimating] = createSignal(false);
   // True only while a role-transition glide (enter/exitSettle) is carrying the
   // disc to a new rest. This is a strict subset of getIsAnimating, which is also
-  // true during the breath loop, snap-back and fling — all of which stay
+  // true during the breath loop, snap-back and fling - all of which stay
   // grabbable (handleStart takes them over cleanly). A settle glide must NOT be
   // grabbable mid-flight: taking it over cancels the glide and re-anchors the
   // rest to the interrupted spot, stranding the disc there. That's the "tap the
-  // rising sun a second time and it sticks, full-size" bug — the companion→
+  // rising sun a second time and it sticks, full-size" bug - the companion→
   // interactive glide gets cancelled half-way and never lands. So while this is
   // true the disc ignores pointer input and just finishes gliding into place.
   const [getIsSettlingIntoRole, setIsSettlingIntoRole] = createSignal(false);
@@ -218,12 +218,12 @@ export const Sun: Component<SunProps> = (props) => {
   let velocitySamples: VelocitySample[] = [];
   let settleFrame: number | undefined;
   // The settle the disc currently RESTS on (mount snap applied, or a settle
-  // glide landed) — null while gliding, dragging, or interactive. The resting
+  // glide landed) - null while gliding, dragging, or interactive. The resting
   // offset can silently go stale (a layout reflow moves the in-flow base the
-  // offset is relative to — e.g. the async question content mounting right
+  // offset is relative to - e.g. the async question content mounting right
   // after the arriving hand-off snapped to the Little Sun's corner), so when
   // the next glide takes off from a rest it re-resolves THIS settle's anchor
-  // as its start point instead of trusting the offset — healing any staleness
+  // as its start point instead of trusting the offset - healing any staleness
   // exactly at the hand-off (see enter/exitSettle). Tracked here rather than
   // relying on the settle effect's prev value, which is undefined on the first
   // change after mount (`on` with defer never records its initial input).
@@ -240,7 +240,7 @@ export const Sun: Component<SunProps> = (props) => {
     // This forces the browser to create the transform matrix early
     if (sunEl) {
       sunEl.style.transform = "translate(0px, 0px) scale(1)";
-      // Ensure we include box-shadow to avoid jank — except for a permanently
+      // Ensure we include box-shadow to avoid jank - except for a permanently
       // mounted sun, where holding a box-shadow layer hint alive isn't worth it.
       sunEl.style.willChange = props.minimizeWillChange
         ? "transform"
@@ -249,7 +249,7 @@ export const Sun: Component<SunProps> = (props) => {
       sunEl.offsetHeight;
 
       // If we mount already in a settled role (the shell companion rests in the
-      // top bar from the first paint), snap straight to it — no glide. The
+      // top bar from the first paint), snap straight to it - no glide. The
       // settle effect is deferred, so it only animates later role changes.
       // Suppress the CSS transform-transition for this frame; otherwise the
       // jump from the base (centre) to the anchor would glide in over 160ms on
@@ -296,7 +296,7 @@ export const Sun: Component<SunProps> = (props) => {
   // inline style. The rect and the style attribute are always mutually
   // consistent DOM state, whereas the dragOffset signal can briefly run ahead
   // of the DOM (a write in the same update cycle that hasn't flushed to the
-  // style yet — observed between the mount snap and the next frame). Deriving
+  // style yet - observed between the mount snap and the next frame). Deriving
   // the disc's base from rect − styleTranslate therefore never mixes a fresh
   // offset with a stale rect, which would double-count the offset and place a
   // settle target hundreds of px off.
@@ -332,7 +332,7 @@ export const Sun: Component<SunProps> = (props) => {
   // interaction, and the return home) get a gentler, slower duration than other
   // transitions (e.g. cancelling the intent/time choices), which keep the
   // snappier default. (COMPANION_GLIDE_MS lives at module scope, exported.)
-  // Returning home *after a fling* doesn't glide — the disc is off-screen, so a
+  // Returning home *after a fling* doesn't glide - the disc is off-screen, so a
   // glide would streak it across the whole screen. It fades in at the rest over
   // this instead (see settleInAtRest).
   const COMPANION_FADE_IN_MS = 500;
@@ -349,7 +349,7 @@ export const Sun: Component<SunProps> = (props) => {
   // life. Used both to render the disc and to convert a settle's pinned disc
   // diameter (discPx) into a scale.
   const sunSize = getSunSize(window.innerWidth);
-  // A settle may pin an exact disc diameter (discPx) instead of a scale — the
+  // A settle may pin an exact disc diameter (discPx) instead of a scale - the
   // departing hand-off does, so the disc lands at the Little Sun's real px size
   // on any viewport. Convert that to a scale of the base disc; otherwise use the
   // settle's explicit scale (or the default).
@@ -373,7 +373,7 @@ export const Sun: Component<SunProps> = (props) => {
   // Stop an in-flight terminal animation (fling / drag-complete / snap-back),
   // which drive the disc on `animationFrame`. The fling in particular runs for a
   // full 3s (FLING_ANIMATION_CONFIG.duration), so it's almost always still going
-  // when a dashboard offer it opened is dismissed — its per-frame writes would
+  // when a dashboard offer it opened is dismissed - its per-frame writes would
   // otherwise keep shoving the disc off-screen on top of the return-home fade.
   const cancelCompletionFrame = () => {
     if (animationFrame) {
@@ -385,7 +385,7 @@ export const Sun: Component<SunProps> = (props) => {
   // The layout viewport the settle anchors are expressed in. The anchors'
   // real-world counterparts (the Little Sun's corner, the bottom bar, the
   // centred overlays) are all `position: fixed`, and a fixed element's
-  // containing block EXCLUDES classic scrollbars — which window.inner* still
+  // containing block EXCLUDES classic scrollbars - which window.inner* still
   // include. On a host page with a scrollbar (the content-script overlay) an
   // innerHeight-derived corner therefore lands a scrollbar's thickness off the
   // fixed-positioned Little Sun. documentElement.clientWidth/Height is exactly
@@ -401,7 +401,7 @@ export const Sun: Component<SunProps> = (props) => {
 
   // Offset that places the sun's center on a resting anchor. The anchor is a
   // fraction of viewport width/height (x defaults to centered), unless a fixed
-  // px anchor is given — px wins so the sun can land exactly on a fixed-px
+  // px anchor is given - px wins so the sun can land exactly on a fixed-px
   // element (the Little Sun corner) without drifting on wide viewports.
   const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
@@ -427,8 +427,8 @@ export const Sun: Component<SunProps> = (props) => {
   // pinned in viewport space: the disc's untransformed base is an in-flow
   // layout position that can shift mid-glide (the async question content
   // mounting reflows the centred wrapper box). Interpolating raw offsets
-  // against a one-shot target would let such a shift drag the whole path —
-  // and the landing — off with it; re-basing both endpoints against the live
+  // against a one-shot target would let such a shift drag the whole path -
+  // and the landing - off with it; re-basing both endpoints against the live
   // base each frame keeps the visible path anchored, so the disc takes off
   // from where it actually stood and still lands exactly on its target even
   // when the ground moves beneath it (the corner hand-off's headline bug).
@@ -527,8 +527,8 @@ export const Sun: Component<SunProps> = (props) => {
   // The shell sun is permanently mounted and reused for every interaction, so a
   // finished gesture's terminal state (set in handleEnd/long-press and never
   // otherwise cleared) would otherwise persist into the next one: the disc stays
-  // "completion started" — its drag/tap handlers early-return, so it's frozen and
-  // can't be dragged down to ground again — and the completion animation leaves it
+  // "completion started" - its drag/tap handlers early-return, so it's frozen and
+  // can't be dragged down to ground again - and the completion animation leaves it
   // faded/rotated. Clear all of that when it glides back to its idle companion
   // home, the single point every interaction returns through, so the next one
   // starts from a clean, fully interactive disc. Self-owned suns (interventions)
@@ -555,9 +555,9 @@ export const Sun: Component<SunProps> = (props) => {
   // Bring a disc that was flung off-screen home *without* streaking it across the
   // whole screen: place it straight on its rest and gently fade (with a touch of
   // scale) it in there. Used when a disc a terminal gesture flung off-screen
-  // returns to the bottom bar — e.g. the let-go offer (flung all the way up, then
+  // returns to the bottom bar - e.g. the let-go offer (flung all the way up, then
   // declined): a glide from that off-screen position would zip back unpleasantly
-  // fast. (A still-on-screen disc glides instead — see enterSettle.)
+  // fast. (A still-on-screen disc glides instead - see enterSettle.)
   const settleInAtRest = (
     target: SunPosition,
     restScale: number,
@@ -568,7 +568,7 @@ export const Sun: Component<SunProps> = (props) => {
     // 3s); kill it so it can't fight the fade-in below and drag the disc back out.
     cancelCompletionFrame();
     setIsAnimating(true);
-    setDragOffset(target); // snap home — no cross-screen glide
+    setDragOffset(target); // snap home - no cross-screen glide
     const startScale = restScale * 0.6;
     setScale(startScale);
     setOpacity(0);
@@ -595,7 +595,7 @@ export const Sun: Component<SunProps> = (props) => {
   // gesture that *flung* the disc away (let-go up) leaves it off-screen; a
   // down-drag whose completion has only just begun (the grounding offer, which
   // hands straight to the companion settle) leaves it still on-screen near its
-  // release point. The two want different homecomings — see enterSettle.
+  // release point. The two want different homecomings - see enterSettle.
   const isDiscCenterOnScreen = (): boolean => {
     const c = getSunCenterForOffset();
     if (!c) return false;
@@ -611,12 +611,12 @@ export const Sun: Component<SunProps> = (props) => {
     setIsDragging(false);
 
     // Pure companion re-anchor: the disc is already home on the bottom bar and
-    // only the *measured* anchor moved — a resize/rotation, or Android's
+    // only the *measured* anchor moved - a resize/rotation, or Android's
     // safe-area (nav-bar) inset landing a beat after first paint. The
     // settings/feedback icons are pinned to that same anchor in plain CSS, so
     // they jump to the new spot INSTANTLY; gliding the disc there over
     // COMPANION_GLIDE_MS would leave it visibly lagging below the icons and
-    // sliding up into place for the whole ~900ms — which is exactly the "sun
+    // sliding up into place for the whole ~900ms - which is exactly the "sun
     // isn't aligned with the settings/feedback buttons" the companion keeps
     // being reported for (worst on Android cold start, where the inset arrives
     // late on ~half of launches, so it only misaligns *sometimes*). Snap it so
@@ -625,7 +625,7 @@ export const Sun: Component<SunProps> = (props) => {
     // non-companion `fromSettle`, so it still glides.
     //
     // Gated on `restingSettle` being the companion too, so this only fires when
-    // the disc is actually AT REST on the bar — never mid-glide (restingSettle is
+    // the disc is actually AT REST on the bar - never mid-glide (restingSettle is
     // null then). A resize that lands mid-return-home therefore falls through to
     // the normal glide, which re-targets its landing live rather than being cut
     // short by a snap.
@@ -641,14 +641,14 @@ export const Sun: Component<SunProps> = (props) => {
       setRestOffset(reanchorTarget);
       setScale(restScaleForSettle(settle));
       restingSettle = settle;
-      setIsSettlingIntoRole(false); // snapped, not gliding — grabbable at once
+      setIsSettlingIntoRole(false); // snapped, not gliding - grabbable at once
       requestAnimationFrame(() => setIsAnimating(false));
       return;
     }
 
     // Take-off point: when the disc was RESTING on a settle, its offset may be
     // silently stale (a reflow since it landed moved the in-flow base the
-    // offset is relative to — e.g. the async question content mounting), so
+    // offset is relative to - e.g. the async question content mounting), so
     // re-resolve that settle's anchor against the live layout and take off
     // from there; the two only differ when the offset went stale. A disc not
     // at rest (interrupted mid-glide, mid-gesture) keeps its actual current
@@ -657,12 +657,12 @@ export const Sun: Component<SunProps> = (props) => {
       ? getAnchorOffset(restingSettle)
       : undefined;
     restingSettle = null;
-    // The disc is now gliding to a new rest — go inert until it lands (see
+    // The disc is now gliding to a new rest - go inert until it lands (see
     // getIsSettlingIntoRole) so a tap can't strand it mid-glide.
     setIsSettlingIntoRole(true);
     // A terminal gesture can leave the disc flung off-screen (the let-go fling
     // runs a full 3s). Only then must the return home fade in at the rest rather
-    // than glide — a glide from off-screen would streak across the whole screen.
+    // than glide - a glide from off-screen would streak across the whole screen.
     // When the disc is still on-screen (the down-drag-to-ground hands to the
     // companion settle the instant its completion starts, before it has moved),
     // a glide to the bottom is the cleaner morph and avoids a hard cut. Capture
@@ -710,7 +710,7 @@ export const Sun: Component<SunProps> = (props) => {
       setScale(restScale);
       restingSettle = settle;
       setIsAnimating(false);
-      setIsSettlingIntoRole(false); // snapped, not gliding — grabbable at once
+      setIsSettlingIntoRole(false); // snapped, not gliding - grabbable at once
       return;
     }
 
@@ -739,14 +739,14 @@ export const Sun: Component<SunProps> = (props) => {
     cancelSettleFrame();
     // Same staleness heal as enterSettle: take off from the rested settle's
     // live-resolved anchor (the arriving hand-off leaves the corner exactly as
-    // the question content mounts and reflows the base — without this the
+    // the question content mounts and reflows the base - without this the
     // glide home would take off from wherever the stale corner offset happens
     // to render).
     const startOffsetOverride = restingSettle
       ? getAnchorOffset(restingSettle)
       : undefined;
     restingSettle = null;
-    // Gliding back to base — inert until it lands (see getIsSettlingIntoRole).
+    // Gliding back to base - inert until it lands (see getIsSettlingIntoRole).
     setIsSettlingIntoRole(true);
     // Returns the disc to its untransformed base (e.g. the plain interactive sun
     // with no placeholder). A return from the companion keeps the slower glide.
@@ -790,16 +790,16 @@ export const Sun: Component<SunProps> = (props) => {
     ),
   );
 
-  // --- Corner hand-off pin. A settle with a pinned disc size (discPx — set
+  // --- Corner hand-off pin. A settle with a pinned disc size (discPx - set
   // only by the Little Sun hand-offs, departing and arriving) must hold the
   // disc *exactly* on the Little Sun's spot while it rests there, or the two
   // suns visibly disagree at the swap. But the disc's offset is relative to an
-  // in-flow base that shifts whenever the surrounding layout reflows — most
+  // in-flow base that shifts whenever the surrounding layout reflows - most
   // notably when the async-loaded question content mounts a beat after the
   // arriving sun measured its corner, moving the centred wrapper box (and the
   // snapped disc with it) off the spot the Little Sun just left. While such a
-  // settle is active and the disc is at rest (not gliding — the glide re-bases
-  // itself — and not being dragged), re-derive the anchor offset every frame
+  // settle is active and the disc is at rest (not gliding - the glide re-bases
+  // itself - and not being dragged), re-derive the anchor offset every frame
   // and snap out any drift the moment it appears. Bounded by construction:
   // these settles only exist for the ~1s around the hand-off.
   let pinFrame: number | undefined;
@@ -810,10 +810,10 @@ export const Sun: Component<SunProps> = (props) => {
     // The base seen on the previous tick. A correction is only applied once
     // the base has held still for two consecutive ticks: in the frames right
     // around mount the layout passes through transient states (styles and the
-    // async content still settling — observed as an internally-consistent but
+    // async content still settling - observed as an internally-consistent but
     // short-lived base), and a correction computed against such a state flings
     // the disc hundreds of px off once the layout settles. A genuine reflow
-    // shift lands once and then holds, so it is corrected one tick later —
+    // shift lands once and then holds, so it is corrected one tick later -
     // still before that frame's paint on the next reflow-free frame.
     let lastBase: SunPosition | null = null;
     const step = () => {
@@ -834,7 +834,7 @@ export const Sun: Component<SunProps> = (props) => {
       const drift = Math.hypot(target.x - current.x, target.y - current.y);
       if (drift > 0.5 && isBaseStable) {
         // The base jumped (a reflow is instant), so the compensation must be
-        // instant too — suppress the CSS transform-transition while correcting.
+        // instant too - suppress the CSS transform-transition while correcting.
         setIsAnimating(true);
         didSuppressTransition = true;
         setDragOffset(target);
@@ -871,7 +871,7 @@ export const Sun: Component<SunProps> = (props) => {
       // out. A completion animation (fling / drag-complete) or a role-transition
       // glide both make it inert: taking the gesture over (below) mid-glide would
       // cancel the glide and re-anchor the rest to the interrupted spot, leaving
-      // the disc stranded mid-transition — e.g. tapping the rising sun a second
+      // the disc stranded mid-transition - e.g. tapping the rising sun a second
       // time froze it full-size. Let the glide land first; the disc becomes
       // grabbable the instant it does. (See shouldAcceptSunPointerStart.)
       if (
@@ -882,9 +882,9 @@ export const Sun: Component<SunProps> = (props) => {
       )
         return;
 
-      // Grabbing the sun mid-animation (the breath cycle or a snap-back — the
+      // Grabbing the sun mid-animation (the breath cycle or a snap-back - the
       // role-transition glide is already excluded above) used to leave the
-      // animation's rAF loop running alongside the drag's — both write
+      // animation's rAF loop running alongside the drag's - both write
       // dragOffset/scale/opacity every frame and fight each other. Worse, the
       // drag anchors its delta to getRestOffset(), which the animation may have
       // already advanced to its final anchor while the disc is still mid-flight,
@@ -898,7 +898,7 @@ export const Sun: Component<SunProps> = (props) => {
         setRestOffset(getDragOffset());
         setIsAnimating(false);
       }
-      // The finger owns the disc now — it's off its settle anchor.
+      // The finger owns the disc now - it's off its settle anchor.
       restingSettle = null;
 
       touchStartTime = Date.now();
@@ -1056,7 +1056,7 @@ export const Sun: Component<SunProps> = (props) => {
       const duration = Date.now() - touchStartTime;
       const offset = getDragOffset();
       // Movement relative to the rest, so tap detection and release thresholds
-      // measure the actual drag — not the (possibly large) placeholder anchor the
+      // measure the actual drag - not the (possibly large) placeholder anchor the
       // shell sun rests at.
       const rest = getRestOffset();
       const dragDelta = { x: offset.x - rest.x, y: offset.y - rest.y };
@@ -1113,7 +1113,7 @@ export const Sun: Component<SunProps> = (props) => {
         // bottom (the "Stay a while?" offer) rather than completing: the role flip
         // in the line above starts a settle glide *synchronously*, so an
         // off-screen fling here would run concurrently and override it, dragging
-        // the disc off the bottom edge — no sun on the offer. When a settle has
+        // the disc off the bottom edge - no sun on the offer. When a settle has
         // taken over, skip the fling and let the glide bring the disc home.
         if (!getIsSettlingIntoRole()) animateFling(velocity);
       } else if (releaseAction.type === "dragComplete") {
@@ -1159,7 +1159,7 @@ export const Sun: Component<SunProps> = (props) => {
     // Watch the live disc rect during a terminal animation and fire
     // onFlungOffscreen the frame it fully clears the viewport. The fling /
     // completion run for a fixed 3s, but the disc leaves the screen long before
-    // that — this lets a consumer (the dashboard let-go) act on "the sun has
+    // that - this lets a consumer (the dashboard let-go) act on "the sun has
     // flown off" without waiting out the whole animation. Reset per gesture.
     let hasFlungOffscreen = false;
     const notifyIfFlungOffscreen = () => {
@@ -1422,7 +1422,7 @@ export const Sun: Component<SunProps> = (props) => {
   // object, so its response leads.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
-  // The sun carries a warm halo at all times — the disc's box-shadow glow — so the
+  // The sun carries a warm halo at all times - the disc's box-shadow glow - so the
   // idle sun glows gently and, crucially, the glow never drops out while it's being
   // dragged or tapped (both reset getGlowIntensity toward 0). We floor at this
   // baseline rather than gate on drag: the drag ramp (0..1) is dimmer than the rest
@@ -1434,28 +1434,28 @@ export const Sun: Component<SunProps> = (props) => {
   // the companion's halo *shape* is tightened separately in CSS so it reads level
   // with the bottom-bar icons. The disc sits low in the band, where the shared
   // broad glow (Sun.scss: 15/40/80px) would be clipped by the screen edge below
-  // while pluming freely above — a one-sided, upward-only bloom that pulls the
+  // while pluming freely above - a one-sided, upward-only bloom that pulls the
   // sun's visible mass up so it reads as sitting high, even though its body is
   // centred on the icon line (worse the larger the disc). Lowering this intensity
   // alone can't fix it (it scales the *whole* profile, so the 80px layer still
   // plumes ~100px up); instead the resting daytime companion gets a snug 2-layer
-  // halo with no far plume — see `.isCompanion .minded-sun:not(.moon)` in
+  // halo with no far plume - see `.isCompanion .minded-sun:not(.moon)` in
   // RouteCmp.module.scss. With that tight shape the clip below removes almost
   // nothing, so 1.25 keeps a warm, symmetric rest halo that stays level.
   const COMPANION_REST_GLOW = 1.25;
   // The moon carries a resting glow too, the same way the sun does. Its disc is a
   // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
-  // "a rock with a ring" rather than a glowing moon — it needs a genuinely bright
+  // "a rock with a ring" rather than a glowing moon - it needs a genuinely bright
   // bloom to glow like the gradient moon did. Floored a touch above the sun's rest
   // (the photo disc isn't self-luminous like the gradient was) so the white/cool
-  // bloom layers (Sun.scss .moon box-shadow) light softly at rest — a gentle moon
+  // bloom layers (Sun.scss .moon box-shadow) light softly at rest - a gentle moon
   // halo, not the loud first pass; hover lifts it further, echoing the bottom-bar
   // hover. Paired with the disc sheen in Sun.scss, which carries most of the
   // "glowing orb" read, so the halo itself can stay restrained.
   const MOON_REST_GLOW = 1.1;
   const MOON_HOVER_GLOW = 1.7;
   // Keep the progress crown mounted through one soft fade when the flow clears
-  // it (the success bloom), so the dots dissolve rather than snapping out — a
+  // it (the success bloom), so the dots dissolve rather than snapping out - a
   // hard cut reads as a jolt (see the styling rules). We hold the last orbit
   // value for the duration of the fade, then unmount.
   const ORBIT_FADE_MS = 600;
@@ -1516,7 +1516,7 @@ export const Sun: Component<SunProps> = (props) => {
         transform: `translate(${getDragOffset().x}px, ${getDragOffset().y}px) scale(${sunSize.baseScale * getScale() * getInteractionScale()}) rotate(${getRotation()}deg)`,
         opacity: getOpacity(),
         // transform/opacity are JS-driven every frame during a drag or settle
-        // glide, so a CSS transition there would fight the inline updates — keep
+        // glide, so a CSS transition there would fight the inline updates - keep
         // them off then. box-shadow is NOT per-frame (it changes on phase/glow
         // shifts), so let it ease whenever the finger isn't on the disc: that way
         // the departing hand-off's white→amber glow warms softly mid-glide rather
@@ -1534,7 +1534,7 @@ export const Sun: Component<SunProps> = (props) => {
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         // A settle may warm the halo to the Little Sun's amber and tighten it for
-        // the departing hand-off (sun only — the moon keeps its own cool glow).
+        // the departing hand-off (sun only - the moon keeps its own cool glow).
         "--glow-color":
           props.variant !== "moon" && props.settle?.glowColor
             ? props.settle.glowColor
@@ -1579,8 +1579,8 @@ export const Sun: Component<SunProps> = (props) => {
                 const total = orbit().total;
                 // A fixed gap between adjacent dots, centred on straight-up, so the
                 // crown stays a tidy shallow arc over the top of the disc for any
-                // count. (A fixed *total* span splayed the few dots we ever show —
-                // 2 or 3 — out to the sides at ±60°, reading as scattered rather
+                // count. (A fixed *total* span splayed the few dots we ever show -
+                // 2 or 3 - out to the sides at ±60°, reading as scattered rather
                 // than a crown.) At 26° apart, 3 dots span just ±26° and sit high
                 // above the cap.
                 const gapDeg = 26;

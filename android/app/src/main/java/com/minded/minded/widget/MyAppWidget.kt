@@ -39,20 +39,20 @@ import java.time.LocalDateTime
 
 /**
  * The home-screen companion sun: a calm, living anchor that tracks the day's
- * natural light — the warm sun by day, the cool moon at night. It carries no
+ * natural light - the warm sun by day, the cool moon at night. It carries no
  * metrics, badge, or anything to grade; it just reflects where you actually are
  * in the day (present-moment, never a stale timestamp).
  * Tapping it launches the app and opens the same sun interaction as tapping the
  * in-app dashboard companion. It is presence and invitation, never an interrupt.
  *
  * Two faces, one widget: at small sizes the familiar floating sun; at card size
- * a miniature still of the in-app intervention screen — the same sky, one quiet
+ * a miniature still of the in-app intervention screen - the same sky, one quiet
  * serif line (WidgetPrompts), the sun resting beneath it. See
  * docs/sun-companion-widget.md and docs/widget-prompts-concept.md.
  *
  * The sun/moon *fills the space it's given* rather than floating as a fixed dot
  * in an oversized tile: bigger placement → bigger sun (companionSunSize). That is
- * why the mode is SizeMode.Exact, not Responsive — Responsive quantises
+ * why the mode is SizeMode.Exact, not Responsive - Responsive quantises
  * LocalSize to the registered breakpoints, so it could never tell a 1×1 from a
  * 4×4 to scale between them. Exact hands us the real tile size, from which we both
  * pick the face (card once it's wide *and* tall enough) and scale the sun.
@@ -74,7 +74,7 @@ class MyAppWidget : GlanceAppWidget() {
             val size = LocalSize.current
             // The card only when the tile is both wide and tall enough to fit the
             // serif line + sun without clipping (the CARD_MIN floor); anything
-            // shorter — flat rows, dense grids, landscape — keeps the plain sun.
+            // shorter - flat rows, dense grids, landscape - keeps the plain sun.
             if (size.width >= CARD_MIN.width && size.height >= CARD_MIN.height) {
                 val prompt = WidgetPrompts.promptForMoment(
                     now.toLocalDate().toEpochDay(), now.hour, now.minute,
@@ -108,10 +108,10 @@ class MyAppWidget : GlanceAppWidget() {
 
     /**
      * A miniature of the in-app intervention screen: the sky (card-sized renders
-     * of the exact app sky, dithered at target size — see gen_loading_sky.py), a
-     * serif line in the app's voice, and the sun beneath it — text above, sun
+     * of the exact app sky, dithered at target size - see gen_loading_sky.py), a
+     * serif line in the app's voice, and the sun beneath it - text above, sun
      * below, the intervention layout. Like everything on this widget the sky
-     * follows the clock, not the system theme — and like the app's ambient
+     * follows the clock, not the system theme - and like the app's ambient
      * background it moves through the day's keyframes (WidgetSky, stepping
      * dawn → morning → midday → afternoon → dusk); at night the prompt is null
      * and the moon carries the card alone (words at 2 a.m. read as a nudge).
@@ -127,7 +127,7 @@ class MyAppWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                // background(ImageProvider) stretches by default (FillBounds) —
+                // background(ImageProvider) stretches by default (FillBounds) -
                 // right for a vertical gradient: the full top-to-horizon sweep is
                 // the look, and distortion is invisible on a gradient.
                 .background(ImageProvider(skyFor(sky)))
@@ -137,7 +137,7 @@ class MyAppWidget : GlanceAppWidget() {
                 // Carry the exact line being shown so the tap lands on that same
                 // interaction (null at night → a plain sun-open). Every placed card
                 // shows the same deterministic line for a moment, so all their
-                // intents carry the same value — no PendingIntent-uniqueness worry.
+                // intents carry the same value - no PendingIntent-uniqueness worry.
                 .clickable(actionStartActivity(openSunIntent(context, prompt)))
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -148,7 +148,7 @@ class MyAppWidget : GlanceAppWidget() {
                     text = prompt,
                     style = TextStyle(
                         // --c-fg-full-emphasis (light theme): rgba(0,0,0,.85).
-                        // Only ever rendered on the light sky — night has no text,
+                        // Only ever rendered on the light sky - night has no text,
                         // by construction (see WidgetPrompts).
                         color = ColorProvider(Color(0xD9000000)),
                         fontSize = 15.sp,
@@ -168,7 +168,7 @@ class MyAppWidget : GlanceAppWidget() {
                 // Both faces of the card scale with the tile so the sun/moon fills
                 // a large card instead of floating lost in it. Beneath a line the
                 // sun is a modest mark sharing the space (CARD_SUN_FRACTION, floored
-                // at CARD_SUN_SIZE); with no line (night — the moon carries the card
+                // at CARD_SUN_SIZE); with no line (night - the moon carries the card
                 // alone) it grows generously to own the empty card
                 // (CARD_MOON_FRACTION, floored at the plain sun's SUN_SIZE).
                 modifier = GlanceModifier.size(
@@ -215,7 +215,7 @@ class MyAppWidget : GlanceAppWidget() {
         }
 
     private companion object {
-        // Size floors — the sun/moon scales up with the tile from here, never
+        // Size floors - the sun/moon scales up with the tile from here, never
         // below. SUN_SIZE is the plain 1×1 sun/moon and the floor for the night
         // moon that carries the card alone; CARD_SUN_SIZE is the smaller mark
         // beneath a prompt line, and its floor on the smallest card.

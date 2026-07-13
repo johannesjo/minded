@@ -59,7 +59,7 @@ export const OnboardingAndroid = (props: {
 }) => {
   // The logical step drives the Stepper and the sun's rest immediately; the
   // shown step (what the <Switch> renders) follows once the departing content
-  // has faded out — so steps hand over softly and the one disc morphs through
+  // has faded out - so steps hand over softly and the one disc morphs through
   // the change instead of popping with it.
   const [getStep, setStep] = createSignal<number>(props.initialStep ?? 0);
   const [getShownStep, setShownStep] = createSignal<number>(
@@ -70,7 +70,7 @@ export const OnboardingAndroid = (props: {
   const [getIsLeaving, setIsLeaving] = createSignal(false);
   // Whether the picker's save chose any apps. Decides the route after step 1
   // (apps → the permission chores; none → straight to "ready") and shrinks the
-  // stepper for the widget-only run — the permission dots simply don't exist
+  // stepper for the widget-only run - the permission dots simply don't exist
   // for a user who never asked for the in-app interruption.
   const [getHasApps, setHasApps] = createSignal(false);
 
@@ -81,7 +81,7 @@ export const OnboardingAndroid = (props: {
 
   const isReEntry = (props.initialStep ?? 0) > 0;
   // Re-entry starts the disc on the companion anchor the dashboard sun just
-  // rested on, then lifts it to the sky next frame — the same sun visibly
+  // rested on, then lifts it to the sky next frame - the same sun visibly
   // rises out of the bar instead of a second one popping in elsewhere.
   const [getHasLifted, setHasLifted] = createSignal(!isReEntry);
 
@@ -98,7 +98,7 @@ export const OnboardingAndroid = (props: {
 
   // --- Sun anchors: CSS is the single source of truth for the computed rests
   // (the sky band, the companion bar anchor); JS only reads the resolved px
-  // back off probe elements — the same pattern as RouteCmp's reanchorCompanion.
+  // back off probe elements - the same pattern as RouteCmp's reanchorCompanion.
   const [getHeroY, setHeroY] = createSignal<number | null>(null);
   const [getSkyY, setSkyY] = createSignal<number | null>(null);
   const [getCompanionY, setCompanionY] = createSignal<number | null>(null);
@@ -170,7 +170,7 @@ export const OnboardingAndroid = (props: {
         (prev.anchorYPxFromBottom ?? 0) - (next.anchorYPxFromBottom ?? 0),
       ) < ANCHOR_TOLERANCE_PX
     ) {
-      // Same rest — keep the object identity so Sun doesn't re-glide.
+      // Same rest - keep the object identity so Sun doesn't re-glide.
       return prev;
     }
     return next;
@@ -193,7 +193,7 @@ export const OnboardingAndroid = (props: {
   };
 
   // The sole exit: the disc glides home to the companion anchor while the
-  // chrome fades, and the dashboard mounts only once it has landed — so the
+  // chrome fades, and the dashboard mounts only once it has landed - so the
   // shell sun takes over a disc already resting on its own anchor.
   const leaveToDashboard = () => {
     if (getIsLeaving()) return;
@@ -266,7 +266,7 @@ export const OnboardingAndroid = (props: {
                 <div class="txtSlightlyBigger">
                   <p>
                     This little {companionWord()} is your anchor. When you open
-                    an app on autopilot, it appears — a calm moment to pause,
+                    an app on autopilot, it appears - a calm moment to pause,
                     right there over the app.
                   </p>
                   <p>Tap it to feel what that's like.</p>
@@ -344,7 +344,7 @@ export const OnboardingAndroid = (props: {
                     <Show when={isShowWidgetOffer()}>
                       <p>
                         Or let the {companionWord()} wait on your home screen
-                        instead — that needs no permissions at all.
+                        instead - that needs no permissions at all.
                       </p>
                     </Show>
                     <Show when={getIsShowManualPinHint()}>
@@ -397,7 +397,7 @@ export const OnboardingAndroid = (props: {
                       </>
                     ) : (
                       <p>
-                        It now waits on your home screen — a quiet companion at
+                        It now waits on your home screen - a quiet companion at
                         the glance where scrolling begins. Whenever you tap it
                         there, this pause is one touch away.
                       </p>
@@ -418,12 +418,12 @@ export const OnboardingAndroid = (props: {
           nrOfSteps={displayNrOfSteps()}
           activeStep={displayActiveStep()}
           // On re-entry from the dashboard invitation (initialStep > 0) the
-          // welcome — with its "set this up later" skip — is behind us; don't let
+          // welcome - with its "set this up later" skip - is behind us; don't let
           // the stepper walk back into it.
           isNoGoBack={(props.initialStep ?? 0) > 0}
           // In the short (widget-only) flow the reachable dots map 1:1 onto the
-          // logical steps (0 welcome, 1 places) — only the collapsed permission
-          // dots are gone — so the logical step IS the display step here.
+          // logical steps (0 welcome, 1 places) - only the collapsed permission
+          // dots are gone - so the logical step IS the display step here.
           onSetStep={(step) => changeStep(step)}
         />
       </div>

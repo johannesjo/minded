@@ -87,7 +87,7 @@ export const AppUsageOrBrowsingBehavior: (props: {
           <Show when={getObservation()}>
             {(observation) => (
               <div>
-                {/* Today's observed fact only — deliberately no "usually by
+                {/* Today's observed fact only - deliberately no "usually by
                     now" baseline: a comparison against a personal average
                     reads as a benchmark, the register the app avoids. */}
                 <div class="txtBig" style="padding-bottom:8px;">

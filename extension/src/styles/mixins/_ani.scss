@@ -9,7 +9,7 @@
     animation-name: minded6622fadeInScale;
   }
 
-  // Reduced-motion asks for instant, not a slow fade — drop the animation.
+  // Reduced-motion asks for instant, not a slow fade - drop the animation.
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }

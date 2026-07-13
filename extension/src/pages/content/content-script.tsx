@@ -29,7 +29,7 @@ const CURRENT_URL = window.location.href;
 // image (Sun.scss `.moon`), and its `background` shorthand leaves the disc's
 // background-color transparent, so that 404 renders the moon as a see-through
 // hole rather than the lunar photo (the "dark-mode sun is semi-transparent"
-// bug). Repoint image URLs at the extension origin instead — the same trick
+// bug). Repoint image URLs at the extension origin instead - the same trick
 // sunAudio.getAudioUrl uses for the completion sounds. The moon is already in
 // web_accessible_resources (CRXJS auto-exposes content-script-referenced
 // assets), so the host page is allowed to fetch it once the URL is correct.
@@ -106,9 +106,9 @@ const withExtensionAssetUrls = (css: string): string => {
         // page's document/activeElement, so the page reads a non-editable target and
         // fires its shortcut on every character (and preventDefaults it, so the char
         // never lands in minded's input either). Marking the host editable makes the
-        // page's guard recognise that a field has focus — true: minded's field does.
+        // page's guard recognise that a field has focus - true: minded's field does.
         // Covers guards that consult contenteditable/isContentEditable, in either
-        // capture or bubble, on document or window, by target or activeElement — where
+        // capture or bubble, on document or window, by target or activeElement - where
         // stopPropagation from inside the shadow cannot (it runs too late for capture).
         // Shortcut: won't help a guard that checks element type only (INPUT/TEXTAREA,
         // never isContentEditable); upgrade path would re-dispatch into a real field.
@@ -119,7 +119,7 @@ const withExtensionAssetUrls = (css: string): string => {
         // Apply critical styles inline to prevent host page CSS from hiding the element
         // (e.g., Reddit sets visibility:hidden on elements which overrides :host styles).
         // The host now matches [contenteditable] selectors, so neutralise any paint a
-        // host page hangs on that selector — this is a full-viewport, max-z-index box.
+        // host page hangs on that selector - this is a full-viewport, max-z-index box.
         hostEl.style.cssText = `
           position: fixed !important;
           top: 0 !important;

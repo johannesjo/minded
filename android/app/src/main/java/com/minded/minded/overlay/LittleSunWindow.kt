@@ -187,7 +187,7 @@ class LittleSunWindow(
             // Restore the bubble's parked position.
             initPosition()
         }
-        // A fresh appearance starts at rest — no capture, no committed leave.
+        // A fresh appearance starts at rest - no capture, no committed leave.
         isDiscInZone = false
         isLeaveCommitted = false
         super.showWindow()
@@ -200,7 +200,7 @@ class LittleSunWindow(
     /**
      * The little sun is always a small wrap-content overlay positioned anywhere
      * on screen. It is touchable (so it can be dragged) but NOT full-screen, so
-     * the app underneath stays fully interactive — Android only routes touches
+     * the app underneath stays fully interactive - Android only routes touches
      * inside the bubble's own bounds to us, exactly like a chat-head.
      * [FLAG_NOT_FOCUSABLE] keeps it from stealing keyboard focus from the app
      * the user is typing in.
@@ -252,7 +252,7 @@ class LittleSunWindow(
     }
 
     private fun onDragStart() {
-        // Resolve the zone geometry fresh — insets/orientation may have changed
+        // Resolve the zone geometry fresh - insets/orientation may have changed
         // since the last drag.
         val density = ctrlSvc.resources.displayMetrics.density
         val (mx, my) = LittleSunPosition.magnetCenter(ctrlSvc, windowManager)
@@ -294,7 +294,7 @@ class LittleSunWindow(
         if (inZone != isDiscInZone) {
             isDiscInZone = inZone
             if (inZone) {
-                // A crisp click marks the capture — release now and the sun sets.
+                // A crisp click marks the capture - release now and the sun sets.
                 // The same real Vibrator "medium" the WebView sun fires when a
                 // drag crosses its threshold, so the two suns feel identical
                 // (view-level performHapticFeedback was weaker and unreliable on
@@ -310,7 +310,7 @@ class LittleSunWindow(
             commitLeave()
             return
         }
-        // Rest wherever it was dropped — a free-floating companion, parkable
+        // Rest wherever it was dropped - a free-floating companion, parkable
         // anywhere, not edge-locked. clampPosition keeps it on-screen and a
         // margin in from every edge, clear of the system gesture zones.
         clampPosition()
@@ -323,7 +323,7 @@ class LittleSunWindow(
     private fun updateZoneFingerCenter() {
         // The CLAMPED centre, deliberately: when the magnet lets the disc go,
         // the zone's disc springs back to exactly where the bubble's own disc
-        // fades back in (the clamped window position) — one sun, no seam. The
+        // fades back in (the clamped window position) - one sun, no seam. The
         // capture test above is what reads the raw finger position.
         val bubbleHalf = LittleSunPosition.bubbleSizePx(
             ctrlSvc.resources.displayMetrics.density,
@@ -335,9 +335,9 @@ class LittleSunWindow(
     }
 
     /**
-     * Released inside the zone — the step-away is chosen. Launch minded *now*,
+     * Released inside the zone - the step-away is chosen. Launch minded *now*,
      * behind the still-visible sun, so the app is drawn and ready by the time
-     * the sun has set — the calm "redirect" half of interrupt → reflect →
+     * the sun has set - the calm "redirect" half of interrupt → reflect →
      * redirect, into minded (a calm space) rather than the launcher that
      * re-tempts. Matches the full interaction's close
      * ([OverlayControllerService.goToApp]).
@@ -349,7 +349,7 @@ class LittleSunWindow(
      *
      * Deliberately NOT counted via countUserDrivenClose(): that tally feeds the
      * "set up a daily budget" prompt (5+/day), so logging a calm step-away would
-     * manufacture a scarcity nudge out of a healthy outcome — it leaves no tally.
+     * manufacture a scarcity nudge out of a healthy outcome - it leaves no tally.
      */
     private fun commitLeave() {
         // The satisfying completion pattern the WebView sun plays on a completed
@@ -361,10 +361,10 @@ class LittleSunWindow(
         // its hands off the zone only while a committed set is playing there.
         isLeaveCommitted = true
         // Removing a view from inside its own gesture callback is asking for
-        // trouble — let this dispatch finish first.
+        // trouble - let this dispatch finish first.
         handler.post { hideWindowImmediate() }
         // Failsafe: if the zone's composition dies before the set finishes
-        // (service teardown mid-animation), onSetComplete never fires — don't
+        // (service teardown mid-animation), onSetComplete never fires - don't
         // leave the glow stranded on screen. Idempotent with the normal path.
         handler.postDelayed({ removeZoneImmediate() }, 2000)
     }
@@ -405,7 +405,7 @@ class LittleSunWindow(
                     committed = isLeaveCommitted,
                     fingerDiscCenter = zoneFingerCenter,
                     magnetCenter = zoneMagnetCenter,
-                    // The sun has fully set and minded is already showing —
+                    // The sun has fully set and minded is already showing -
                     // remove the spent window at once, no second fade. Posted:
                     // don't remove the view from inside its own composition.
                     onSetComplete = { handler.post { removeZoneImmediate() } },
@@ -423,7 +423,7 @@ class LittleSunWindow(
         v.animate().alpha(1f).setDuration(300).start()
     }
 
-    /** The drag ended in a plain rest — breathe the horizon back out. */
+    /** The drag ended in a plain rest - breathe the horizon back out. */
     private fun hideZoneFaded() {
         val v = zoneView ?: return
         zoneView = null
@@ -452,7 +452,7 @@ class LittleSunWindow(
 
     override fun hideWindow() {
         stopTimer()
-        // A hide can land mid-drag (timer expiry, re-validation) — never leave
+        // A hide can land mid-drag (timer expiry, re-validation) - never leave
         // the horizon glow orphaned on screen. During a committed set the zone
         // outlives the bubble on purpose and removes itself.
         if (!isLeaveCommitted) removeZoneImmediate()

@@ -1,10 +1,10 @@
 /**
- * Sleep wind-down — deliberately Android-only for now (gated at the trigger,
+ * Sleep wind-down - deliberately Android-only for now (gated at the trigger,
  * settings entry, and dashboard card, not here): the phone in bed is where
  * evening doom-scrolling actually happens, and the feature is still
  * half-experimental, so the extra desktop effort isn't warranted while the
  * extension has almost no users. This view stays platform-agnostic on purpose
- * so widening later is cheap — but don't, without a product decision
+ * so widening later is cheap - but don't, without a product decision
  * (see CLAUDE.md, Project Overview).
  */
 import {
@@ -95,7 +95,7 @@ export interface SleepWindDownViewProps {
   isPreview?: boolean;
   /**
    * Called after persistence completes. The host decides what "leaving" means
-   * — main app navigates to dashboard, Android overlay closes the blocked app.
+   * - main app navigates to dashboard, Android overlay closes the blocked app.
    * `snoozeMinutes` is the chosen duration on the "snooze" path so the host can
    * arm its own timer (Android's little-sun countdown) to the same length.
    */
@@ -127,7 +127,7 @@ export const SleepWindDownView = (
   let currentNightId: string | null = null;
   let wrapperEl: HTMLDivElement | undefined;
   let hasOverviewBackCheckpoint = false;
-  // Serialize ALL writes through this chain — `updateSyncData` is a full-blob
+  // Serialize ALL writes through this chain - `updateSyncData` is a full-blob
   // read-modify-write, so concurrent writes silently drop each other's deltas.
   let pendingWritePromise: Promise<void> = Promise.resolve();
   const dismissWithFade = createSleepWindDownDismissTransition({
@@ -139,13 +139,13 @@ export const SleepWindDownView = (
   // hard-cutting the outgoing view: fade the pane out, swap the view at the
   // hidden midpoint, ease back in. Matches the transition on .viewPane.
   const screenFade = createScreenFade(VIEW_FADE_MS);
-  // Where the user has navigated, updated synchronously — the rendered view()
+  // Where the user has navigated, updated synchronously - the rendered view()
   // lags behind by the crossfade's hidden midpoint, so navigation decisions
   // (the back checkpoint, the same-view guard) must not read the stale view()
   // or a back press landing mid-fade gets judged against the outgoing view.
   let logicalView: SleepWindDownViewName = "prompt";
 
-  // The goodnight gesture brings its own disc — the moon as the centrepiece of
+  // The goodnight gesture brings its own disc - the moon as the centrepiece of
   // the night sky. There is only ever one, so the shell's companion moon yields
   // (a soft fade on its own layer, keyed to the rendered view so it leaves as
   // the gesture fades in) and is revealed again on the way out.
@@ -408,7 +408,7 @@ export const SleepWindDownView = (
             <div class={styles.center}>
               <h2 class="h2 h2Mindful">Wind down for sleep?</h2>
               <p class={styles.subtle}>
-                It's getting late — would you like to take a moment before bed?
+                It's getting late - would you like to take a moment before bed?
               </p>
               <div class={styles.btnRow}>
                 <Btn
@@ -461,7 +461,7 @@ export const SleepWindDownView = (
                 </For>
               </div>
               <div class={styles.menuFooter}>
-                {/* Always just "Goodnight" — the menu is a calm offering to
+                {/* Always just "Goodnight" - the menu is a calm offering to
                         dip into, not a checklist to complete, so the exit never
                         turns into an "all done" tally. */}
                 <Btn onClick={enterGoodnight} disabled={!hydrated()}>

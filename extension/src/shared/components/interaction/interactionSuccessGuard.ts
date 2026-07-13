@@ -10,7 +10,7 @@
  * Each flag marks a way the question has already been left:
  * - `hasAnswered`: a success was already handled (guards duplicate callbacks).
  * - `showSunInstructions`: we advanced to the "tap the sun" step.
- * - `showPostSunOverlay`: the breath/intent/time choices are showing — this is
+ * - `showPostSunOverlay`: the breath/intent/time choices are showing - this is
  *   the skip-to-choices path, where `hasAnswered` was never set.
  */
 export const shouldIgnoreStaleSuccess = (state: {

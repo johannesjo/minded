@@ -35,7 +35,7 @@ const compileBackgroundTransition = (): string =>
 
 describe("full-screen gradient dithering", () => {
   // The dither only works because the noise tile is mid-grey (RGB carries the
-  // noise) blended with soft-light. A pure-black tile — the old form — makes
+  // noise) blended with soft-light. A pure-black tile - the old form - makes
   // `screen` a no-op and `overlay` near-useless, so the sky bands into visible
   // horizontal stripes. Pin the shape of the fix so that regression can't
   // silently return.
@@ -48,7 +48,7 @@ describe("full-screen gradient dithering", () => {
     // Grey form copies the noise into R/G/B and forces alpha to 1
     // (feColorMatrix rows "0 0 0 1 0" ... alpha "0 0 0 0 1").
     expect(variablesScss).toContain("0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1");
-    // The old black form zeroed RGB and only varied alpha — must be gone.
+    // The old black form zeroed RGB and only varied alpha - must be gone.
     expect(variablesScss).not.toContain("0 0 0 0 0.55 0");
   });
 
@@ -59,7 +59,7 @@ describe("full-screen gradient dithering", () => {
     expect(css).toMatch(
       /#minded-6622-coloured-wrapper::after\s*\{[^}]*opacity:\s*0\.55;[^}]*mix-blend-mode:\s*soft-light;[^}]*background-image:\s*var\(--grain-tile\);/,
     );
-    // Dark inherits the same soft-light blend, only a gentler opacity — never
+    // Dark inherits the same soft-light blend, only a gentler opacity - never
     // `screen` (which over black does nothing).
     expect(css).toMatch(
       /#minded-6622\.minded-6622-dark #minded-6622-coloured-wrapper::after\s*\{[^}]*opacity:\s*0\.11;/,
@@ -93,7 +93,7 @@ describe("full-screen gradient dithering", () => {
 
   it("dithers the grounding stage's full-screen sky, in both themes", () => {
     // The grounding stage paints its own opaque --background-gradient sky over
-    // the dashboard, so the wrapper's grain can't reach it — it carries its own
+    // the dashboard, so the wrapper's grain can't reach it - it carries its own
     // soft-light dither. CSS-module class names are hashed, so match against the
     // raw source rather than compiled selectors.
     const scss = normalizeCss(
@@ -113,7 +113,7 @@ describe("full-screen gradient dithering", () => {
 
   it("keeps the standalone styleguide preview on the same soft-light dither", () => {
     // The preview duplicates the grain rule inline (it can't @include the mixin),
-    // so pin it directly — it changed with the fix and must not drift back to
+    // so pin it directly - it changed with the fix and must not drift back to
     // overlay/screen.
     const html = normalizeCss(
       readFileSync(resolve(SRC_DIR, "pages/styleguide/index.html"), "utf8"),

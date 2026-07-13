@@ -24,7 +24,7 @@ export const InteractionWeb: (props: {
   shadowRoot?: ShadowRoot;
   /**
    * The page opened straight into a Little Sun (an active session was already
-   * running), and its timer has now run out — so this first intervention should
+   * running), and its timer has now run out - so this first intervention should
    * arrive by morphing out of the Little Sun's corner rather than appearing fresh.
    * Re-shows that happen *within* this component (a session set here, then its
    * timer expiring) drive the same morph via the internal signal below.
@@ -38,7 +38,7 @@ export const InteractionWeb: (props: {
   // (the reverse of the departing hand-off). Seeded from the prop for the very
   // first intervention; set true whenever a Little Sun shown *here* hands back to
   // the intervention because its timer ran out. Once any Little Sun has appeared,
-  // every re-show is a morph-in — only a first intervention with no prior timer
+  // every re-show is a morph-in - only a first intervention with no prior timer
   // (prop false) simply appears.
   const [getMorphInFromCorner, setMorphInFromCorner] = createSignal(
     !!props.morphInFromCorner,
@@ -54,7 +54,7 @@ export const InteractionWeb: (props: {
 
   // When morphing in, the sun must stay fully opaque (so it reads as the same disc
   // gliding out of the corner), so the surface is rendered WITHOUT the .aniIn fade
-  // and instead the sky alone fades in via the wrapper's `is-arriving` class — the
+  // and instead the sky alone fades in via the wrapper's `is-arriving` class - the
   // mirror of the departing hand-off (is-departing fades only the sky out). This
   // signal carries that class for the ~1s the sky fade plays, then drops it.
   const SKY_ARRIVE_MS = 1050;
@@ -221,7 +221,7 @@ export const InteractionWeb: (props: {
             >
               {/* Tap-count parity with Android: only a completed interaction
                   (onInteractionSubmitted) counts a sun tap. Skips and leaves
-                  (closeTab: fling, drag-down, Little-Sun tap) never do — taps
+                  (closeTab: fling, drag-down, Little-Sun tap) never do - taps
                   feed friction + the return-loop insight, and counting the
                   exits would punish exactly what the sun invites. */}
               <InteractionCommon

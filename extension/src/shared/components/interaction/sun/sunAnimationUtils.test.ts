@@ -121,7 +121,7 @@ describe("sun animation utils", () => {
     it("ignores a tap while a role-transition glide is still in flight", () => {
       // The regression guard: tapping the disc as it glides from the bottom-bar
       // companion up into the interactive form must not take the glide over and
-      // strand it full-size — it stays inert until the glide lands.
+      // strand it full-size - it stays inert until the glide lands.
       expect(
         shouldAcceptSunPointerStart({
           isCompletionStarted: false,

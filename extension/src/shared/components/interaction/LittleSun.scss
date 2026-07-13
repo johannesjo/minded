@@ -33,8 +33,8 @@ $shadow: var(--little-sun-shadow);
     left: 50%;
 
     &.isOutOfTheWay {
-      // Pin the disc *centre* to the corner point — 40px in from the left and
-      // bottom edges — exactly where the departing interaction sun lands, so the
+      // Pin the disc *centre* to the corner point - 40px in from the left and
+      // bottom edges - exactly where the departing interaction sun lands, so the
       // hand-off is seamless (see sunSettle.ts LITTLE_SUN_CORNER_PX_WEB).
       // Anchoring the centre (offset by ±50% of the box) keeps it on that point
       // regardless of the disc's box size, instead of relying on the box being
@@ -108,7 +108,7 @@ $shadow: var(--little-sun-shadow);
   padding: 0;
 
   // It's the same sun that was just on screen, now keeping you company in the
-  // corner — so it stays alive: a slow, warm breath in its halo.
+  // corner - so it stays alive: a slow, warm breath in its halo.
   animation: minded6622littleSunBreath 9s ease-in-out infinite;
 
   &:focus-visible {
@@ -120,7 +120,7 @@ $shadow: var(--little-sun-shadow);
 #minded-6622-little-sun-time {
   // The disc glides in from the intervention and lands as the Little Sun; once
   // it has settled, the timer gently fades in so the number reads as the sun
-  // arriving rather than popping in alongside it. Runs once on mount — the
+  // arriving rather than popping in alongside it. Runs once on mount - the
   // per-second text update mutates this span in place, it isn't remounted.
   // Kept inline (no display change) so the disc's text centring is unaffected.
   animation: minded6622littleSunTextIn 0.7s var(--ease-out) 0.15s both;

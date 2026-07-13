@@ -7,7 +7,7 @@
   // no drag) reuses the same stage purely to reserve that vertical space.
   min-height: 200px;
   margin-bottom: 8px;
-  // The glow and an in-progress drag spill past the box — never clip them.
+  // The glow and an in-progress drag spill past the box - never clip them.
   overflow: visible;
   // The disc owns vertical-drag gestures; keep the page from scrolling under a
   // touch drag, and don't let a missed grab select the surrounding copy.

@@ -2,7 +2,7 @@
 
 This project follows the [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
 
-By participating in this project — through issues, pull requests, discussions, or any other contribution channel — you agree to abide by its terms.
+By participating in this project - through issues, pull requests, discussions, or any other contribution channel - you agree to abide by its terms.
 
 ## Reporting
 

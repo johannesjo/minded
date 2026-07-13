@@ -20,7 +20,7 @@ interface NoticeProps {
  * moment ("Feel both feet on the floor"), confirmed with a single tap.
  *
  * Where ACTION_ADVICE is a passive "How about…" suggestion you read and leave,
- * this invites a small thing to *do* right now and waits for the doing — a
+ * this invites a small thing to *do* right now and waits for the doing - a
  * gentler, quicker alternative to typing a reflection. It asks nothing it can't
  * observe and offers nothing to score, so it stays inside minded's bar for what
  * we put in front of the user.

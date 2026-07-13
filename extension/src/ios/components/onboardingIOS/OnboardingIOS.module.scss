@@ -1,4 +1,4 @@
-// The iOS first-run flow — a trimmed sibling of OnboardingAndroid.module.scss
+// The iOS first-run flow - a trimmed sibling of OnboardingAndroid.module.scss
 // (no sky band: both steps rest the disc on the in-flow hero spacer).
 
 .wrapper {
@@ -6,7 +6,7 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  // Keep everything — content and Stepper — clear of the notch and home
+  // Keep everything - content and Stepper - clear of the notch and home
   // indicator. The steps themselves only add their uniform 16px.
   padding: var(--safe-area-inset-top) var(--safe-area-inset-right)
     var(--safe-area-inset-bottom) var(--safe-area-inset-left);

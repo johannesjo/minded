@@ -17,10 +17,10 @@
       interaction's safety-net sky floor (#minded-6622::before in
       indexInteractionAndroid.scss, imported by this entry), which paints
       `var(--background-gradient)` from this static markup as soon as the CSS
-      loads — before addWrapperClasses() runs in onMount to add the dark class.
+      loads - before addWrapperClasses() runs in onMount to add the dark class.
       Wind-down is an evening feature, so without this the first frame paints
       the *light* gradient and then pops to the night sky once JS mounts. Set
-      the class synchronously here — a classic, non-module script that runs
+      the class synchronously here - a classic, non-module script that runs
       during parse, before the deferred module below and before first paint. The
       dark `--background-gradient` override is scoped to
       `#minded-6622.minded-6622-dark`, so the class must land on this element

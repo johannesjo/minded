@@ -1,5 +1,5 @@
 import { render } from "solid-js/web";
-// @ts-ignore — side-effect import of global styles
+// @ts-ignore - side-effect import of global styles
 import "@src/styles/sharedMain.scss";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import Styleguide from "@src/shared/components/styleguide/Styleguide";

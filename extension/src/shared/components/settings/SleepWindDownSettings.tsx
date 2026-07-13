@@ -11,7 +11,7 @@ import {
   DaysMap,
   WeekdaySchedule,
 } from "@src/shared/components/settings/WeekdaySchedule";
-// @ts-ignore — reuse FocusSchedule's layout styles
+// @ts-ignore - reuse FocusSchedule's layout styles
 import styles from "./FocusSchedule.module.scss";
 
 export const SleepWindDownSettings = (props: {
@@ -67,7 +67,7 @@ export const SleepWindDownSettings = (props: {
       <p class={styles.description}>
         {cfg().enabled
           ? enabledDayCount() === 0
-            ? "Wind-down is on, but no days are selected — turn at least one day on below."
+            ? "Wind-down is on, but no days are selected - turn at least one day on below."
             : "When the time arrives, minded will gently prompt you to wind down."
           : "Enable to be gently prompted to wind down at bedtime."}
       </p>

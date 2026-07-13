@@ -18,9 +18,9 @@ import {
  * countdown all read the same elapsed time and can't drift.
  *
  * Two modes:
- * - **owned** (no `originAt`): the clock starts its own origin on `start()` —
+ * - **owned** (no `originAt`): the clock starts its own origin on `start()` -
  *   e.g. the wind-down exercise's Start button.
- * - **follow** (`originAt` given): the clock reads an external start timestamp —
+ * - **follow** (`originAt` given): the clock reads an external start timestamp -
  *   e.g. the strong-friction pause reads the sun's `breathStartedAt`, so the
  *   sun's disc and the cue share one origin (GitHub #27). It begins ticking only
  *   once that origin lands, and fires `onComplete` `durationMs` later.
@@ -36,8 +36,8 @@ export interface UseBreathClockOptions {
    */
   originAt?: Accessor<number | undefined>;
   /**
-   * When set, the cue holds steady and — in follow mode where the sun is frozen
-   * and never publishes an origin — the clock falls back to its mount origin so
+   * When set, the cue holds steady and - in follow mode where the sun is frozen
+   * and never publishes an origin - the clock falls back to its mount origin so
    * the countdown still ticks to completion.
    */
   reducedMotion?: boolean;
@@ -126,7 +126,7 @@ export const useBreathClock = (options: UseBreathClockOptions): BreathClock => {
   };
 
   // Follow mode: begin ticking and schedule completion the moment the breath
-  // actually starts — when the origin lands, or immediately under reduced motion.
+  // actually starts - when the origin lands, or immediately under reduced motion.
   // Gating on the origin means no frames are spent during the sun's glide-in, and
   // both visuals and completion read one origin. Fires once (the origin is
   // published a single time per pause). A setTimeout (not the rAF) so a

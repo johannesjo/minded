@@ -5,7 +5,7 @@
          draws) instead of white. Light is the day/default; at night the system
          picks the dark variant from values-night-v31, driven by the app's own
          clock (MindedApplication registers it via setApplicationNightMode) so the
-         starting window itself arrives dark — see issue #117. On API < 31 there
+         starting window itself arrives dark - see issue #117. On API < 31 there
          is no per-app override, so MainActivity's onCreate swap corrects the
          activity window instead. -->
     <style name="Theme.MindedAppCompat" parent="Theme.AppCompat.Light.NoActionBar">

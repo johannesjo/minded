@@ -46,7 +46,7 @@ export const isDarkModeNow = (): boolean => {
   // Dev/preview override: the standalone styleguide + dashboard simulation are
   // served at a real URL with no OS theme hook, so `?theme=dark` / `?theme=light`
   // forces the mode for testing at any time of day. Honoured here (rather than
-  // only in the entry) so the whole shell agrees — addWrapperClasses' class, the
+  // only in the entry) so the whole shell agrees - addWrapperClasses' class, the
   // companion's moon/sun variant and the interaction sky all read this. Inert in
   // the extension/app, where no such query param is ever present.
   if (typeof window !== "undefined" && window.location?.search) {
@@ -62,10 +62,10 @@ export const isDarkModeNow = (): boolean => {
 /**
  * The fractional local hour driving every time-of-day surface (dark-mode
  * class, ambient sky, drag-target skies). Honours the `?skyHour=` dev
- * override the same way isDarkModeNow honours `?theme=` — meant for the
+ * override the same way isDarkModeNow honours `?theme=` - meant for the
  * styleguide / dashboard simulation. Like `?theme=`, a content script reads
  * the *host page's* URL here, so a page carrying the param could pin the
- * overlay's sky — accepted as vanishingly unlikely, same as the existing
+ * overlay's sky - accepted as vanishingly unlikely, same as the existing
  * pattern.
  */
 export const getEffectiveHourNow = (): number => {
@@ -80,7 +80,7 @@ export const getEffectiveHourNow = (): number => {
 /**
  * What to call the companion in copy. The disc already morphs sun↔moon with the
  * time of day (see RouteCmp's sunVariant), so text that names it should agree:
- * "moon" at night, "sun" by day. Lowercase — callers supply any leading capital.
+ * "moon" at night, "sun" by day. Lowercase - callers supply any leading capital.
  */
 export const companionWord = (): "sun" | "moon" =>
   isDarkModeNow() ? "moon" : "sun";
@@ -124,7 +124,7 @@ const SKY_VAR_NAMES = [
  * ambient gradient stops and the drag-target skies as inline var overrides
  * on the wrapper. Keyed off the wrapper's *class*, not the clock: in dark
  * mode the overrides are cleared so the dark theme's own sky (two-orb
- * background, deep-night reveal) applies untouched — an inline value would
+ * background, deep-night reveal) applies untouched - an inline value would
  * beat the .minded-6622-dark stylesheet overrides.
  */
 export const applySkyAtHour = (
@@ -161,7 +161,7 @@ export const applySkyForNow = (shadowRoot?: ShadowRoot) =>
   applySkyAtHour(getEffectiveHourNow(), getWrapperEl(shadowRoot));
 
 // One interval per JS context, re-resolving the wrapper each tick.
-// Per-minute steps are sub-perceptual by design — the sky is ambient state,
+// Per-minute steps are sub-perceptual by design - the sky is ambient state,
 // not animation.
 let isSkyTickerStarted = false;
 const ensureSkyTicker = (shadowRoot?: ShadowRoot) => {

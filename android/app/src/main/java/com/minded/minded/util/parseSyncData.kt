@@ -3,7 +3,7 @@ package com.minded.minded.util
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Must match TypeScript DEFAULT_TS_VAL (99) — used to pass isToday() check on fresh data. */
+/** Must match TypeScript DEFAULT_TS_VAL (99) - used to pass isToday() check on fresh data. */
 const val DEFAULT_TS_VAL = 99L
 
 private fun jsonObjectToMap(obj: JSONObject): Map<String, Any?> {
@@ -157,7 +157,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     // Session Grace is on by default (5 min), matching the extension's
     // DEFAULT_SYNC_DATA. Existing installs have JSON predating this setting, so
     // when "sessionGrace" is absent the native overlay must still see grace
-    // enabled — otherwise interventions would fire immediately after the budget
+    // enabled - otherwise interventions would fire immediately after the budget
     // removal (#38), the very nagging this default exists to prevent. An explicit
     // (possibly disabled) value the user set is always honoured.
     val sessionGrace = cfg.optJSONObject("sessionGrace")?.let { graceObj ->

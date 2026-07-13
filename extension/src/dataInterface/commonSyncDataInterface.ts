@@ -220,7 +220,7 @@ export const markPatternInsightShown = (
 /**
  * Remember the mode the last router-decided intervention opened with, powering
  * getInteractionMode's anti-repeat fallback. Stores the full mode (not a boolean)
- * so the memory updates after a NOTICE too. A plain key patch — no read needed,
+ * so the memory updates after a NOTICE too. A plain key patch - no read needed,
  * since the value doesn't depend on current state.
  */
 export const markInteractionModeShown = (
@@ -230,8 +230,8 @@ export const markInteractionModeShown = (
 /**
  * Record that tonight's wind-down settle has been shown, so the engine serves
  * it at most once per night (getInteractionMode's `settledTonight` guard). The
- * caller passes the night id it is settling — the same `resolveNightId(cfg, now)`
- * value the decision compared against — so the two always agree. A plain key
+ * caller passes the night id it is settling - the same `resolveNightId(cfg, now)`
+ * value the decision compared against - so the two always agree. A plain key
  * patch; the value doesn't depend on current state.
  */
 export const markBedtimeSettled = (nightId: string): Promise<void> =>
@@ -263,7 +263,7 @@ export const countSunTap = (): Promise<void> =>
   );
 
 /**
- * Present-moment, judgment-free read of actual usage — the replacement for the
+ * Present-moment, judgment-free read of actual usage - the replacement for the
  * old Great→Awful self-rating. Extension computes it from observed `usageStats`;
  * Android reads real per-app foreground time from the OS via the native bridge.
  * Returns null when there's no usable signal (e.g. Android usage-access not

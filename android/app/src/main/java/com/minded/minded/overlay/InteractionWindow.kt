@@ -81,7 +81,7 @@ class InteractionWindow(
     // holds the Little Sun's resting corner so that spot is never empty before the
     // web sun appears there. Set true for a morph show (in showWindow), cross-faded
     // out when the web signals its sun has painted (onArrivingSunReady) or by the
-    // fallback above — so it can never strand on screen.
+    // fallback above - so it can never strand on screen.
     private val showCornerPlaceholder = mutableStateOf(false)
 
 
@@ -125,7 +125,7 @@ class InteractionWindow(
                 // already hardware-accelerated at the window level, and forcing it
                 // onto its own hardware layer inside a TYPE_APPLICATION_OVERLAY +
                 // translucent window makes a freshly-created overlay WebView often
-                // never composite its first frame — leaving the user on the opaque
+                // never composite its first frame - leaving the user on the opaque
                 // dark shield (the "black screen on first open, clears on reopen"
                 // reports). Let the WebView use the default layer so the first frame
                 // paints. We also pump invalidate()s after load (see pumpFirstFrame /
@@ -144,14 +144,14 @@ class InteractionWindow(
 
                     // Guarantee the first frame composites without needing a tap.
                     // This overlay is a TYPE_APPLICATION_OVERLAY + TRANSLUCENT window
-                    // with fadeInDurationMs = 0L, so — unlike the other overlays — no
+                    // with fadeInDurationMs = 0L, so - unlike the other overlays - no
                     // native alpha animation runs after addView to drive a frame. With
                     // nothing invalidating, a hardware-accelerated overlay WebView can
                     // fail to schedule its first composite and the user is left on the
                     // opaque dark shield; the next touch schedules a frame, which is the
                     // "black screen until I tap it" report. Force that first frame two
                     // ways: a near-opaque window alpha animation (recomposites the whole
-                    // overlay window — the lever the other overlays' fade-in proves out)
+                    // overlay window - the lever the other overlays' fade-in proves out)
                     // plus a short burst of view invalidates.
                     override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
                         super.onPageFinished(view, url)
@@ -162,7 +162,7 @@ class InteractionWindow(
                     // Diagnostics for the "stuck on a black screen" reports: the web
                     // layer goes transparent ~100ms after load, so if it never paints
                     // the dark native shield is what the user sees. A main-frame load
-                    // error means the interaction app never booted at all — log it so a
+                    // error means the interaction app never booted at all - log it so a
                     // logcat from a repro tells us this is the failure mode.
                     override fun onReceivedError(
                         view: android.webkit.WebView?,
@@ -179,12 +179,12 @@ class InteractionWindow(
                     }
 
                     // A gone render process leaves a blank WebView that only recovers on
-                    // a fresh instance — which matches the "clears on reopen" symptom.
+                    // a fresh instance - which matches the "clears on reopen" symptom.
                     // Without this override the whole host app process is killed when it
                     // happens; survive it, log whether it crashed vs was reclaimed, and
                     // tear the window down so the user isn't left staring at a dead black
                     // overlay (reopening the app yields a fresh interaction).
-                    // shortcut: log-and-teardown — auto re-show the intervention here
+                    // shortcut: log-and-teardown - auto re-show the intervention here
                     // once a repro confirms this is the cause.
                     override fun onRenderProcessGone(
                         view: android.webkit.WebView?,
@@ -254,7 +254,7 @@ class InteractionWindow(
 
     // Run a near-opaque alpha animation on the overlay window root after load.
     // Animating the window's alpha forces the WindowManager to recomposite the
-    // overlay across several frames — the same mechanism the other overlays' fade-in
+    // overlay across several frames - the same mechanism the other overlays' fade-in
     // relies on, and the strongest nudge for a stuck first composite. The range is
     // 0.996 -> 1.0 (not 0 -> 1): visually imperceptible, so the opaque-shield
     // guarantee that fadeInDurationMs = 0L exists to provide is preserved and the
@@ -265,7 +265,7 @@ class InteractionWindow(
         // same window view, so racing ours in would cancel the fade-out's
         // withEndAction and wedge the window open. hideWindow() can fire off the main
         // thread (a fast JS-bridge dismiss, or onRenderProcessGone), so the guard
-        // must hold the lock — not merely assume same-thread ordering.
+        // must hold the lock - not merely assume same-thread ordering.
         withWindowUnlessHiding { root ->
             root.alpha = 0.996f
             root.animate()
@@ -323,8 +323,8 @@ class InteractionWindow(
             x = 0
             y = 0
 
-            // Draw under the system bars — including the bottom gesture /
-            // navigation bar — so the sky covers the full screen with no
+            // Draw under the system bars - including the bottom gesture /
+            // navigation bar - so the sky covers the full screen with no
             // uncovered strip. FLAG_LAYOUT_NO_LIMITS only extends the window
             // *frame*; on API 30+ the window still keeps clear of the system-bar
             // insets unless we opt out here, and the legacy systemUiVisibility /

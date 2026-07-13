@@ -27,7 +27,7 @@ const BreathingExercise = () => {
   const reducedMotion = prefersReducedMotion();
 
   // One shared clock drives the sun, label, cue and countdown, so they can't
-  // drift — and each derived memo only re-renders its own node when its value
+  // drift - and each derived memo only re-renders its own node when its value
   // actually changes (the label 3×/cycle, the count once/sec), while the sun and
   // fade update every frame.
   const clock = useBreathClock({ pattern: WIND_DOWN_PATTERN, loop: true });
@@ -51,14 +51,14 @@ const BreathingExercise = () => {
   return (
     <div class={styles.BreathingExercise}>
       {/* The wind-down is a sleep flow, so it re-uses the same moon as the
-          rest of it (the "Sleep well" screen) — not a time-of-day sun/moon. */}
+          rest of it (the "Sleep well" screen) - not a time-of-day sun/moon. */}
       <BreathSun fill={fill()} size="large" variant="moon" />
       <div class={styles.copy}>
         <h1 style={{ opacity: opacity() }}>{label()}</h1>
         <p style={{ opacity: opacity() }}>{cue()}</p>
         <strong>{count()}</strong>
       </div>
-      {/* Start only — no restart: once the breath is flowing we don't offer to
+      {/* Start only - no restart: once the breath is flowing we don't offer to
           yank the user back to the beginning of a wind-down meditation. */}
       <Show when={!clock.isStarted()}>
         <Btn outline onClick={() => clock.start()}>

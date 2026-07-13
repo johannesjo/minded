@@ -10,7 +10,7 @@ export const ON_SHOW_INTERACTION_OVERLAY_EV = "showInterActionOverlay";
 //   - behind a fading-out interaction overlay (an interaction closing), or
 //   - while the app itself is backgrounded (Android pause), so the fresh tile is
 //     already in place by the time the user returns.
-// The greeting is swapped *instantly* — no in-view cross-fade — because nothing
+// The greeting is swapped *instantly* - no in-view cross-fade - because nothing
 // is on screen to jar: you never land on the old tile and then watch it change;
 // there is only ever the one fresh card. Changing a card in front of the user is
 // deliberately avoided (calm is the product); a card only ever changes offscreen.

@@ -1,7 +1,7 @@
 .cardDashboard,
 .card {
   user-select: none;
-  // Frosted translucent fill over the sky — no border, no top-edge highlight.
+  // Frosted translucent fill over the sky - no border, no top-edge highlight.
   // The card reads by its soft fill alone.
   background: var(--dashboard-card-bg);
   border-radius: var(--dashboard-card-border-radius);

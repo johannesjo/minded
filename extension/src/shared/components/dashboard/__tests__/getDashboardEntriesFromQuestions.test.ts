@@ -102,7 +102,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       (isThisWeek as jest.Mock).mockReturnValue(false);
     });
 
-    it("lets a self-report card (energy) be the greeting — it's no longer pinned out of the pool", () => {
+    it("lets a self-report card (energy) be the greeting - it's no longer pinned out of the pool", () => {
       const syncData = createMockSyncData({
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
@@ -140,7 +140,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       const firstKey = "id" in first ? first.id : first.type;
 
       // Next landing with the SAME random draw would normally repeat the same
-      // tile — but passing the last key as avoidGreetingKey must steer it away.
+      // tile - but passing the last key as avoidGreetingKey must steer it away.
       mockRandom(0.1);
       const second = greetingOf(
         getDashboardEntriesFromQuestions(syncData, now, firstKey),
@@ -156,7 +156,7 @@ describe("getDashboardEntriesFromQuestions", () => {
         answers: [reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1")],
       });
 
-      // Avoid the quote AND draw toward the quote slot — it must still produce a
+      // Avoid the quote AND draw toward the quote slot - it must still produce a
       // valid greeting rather than nothing.
       mockRandom(0.999);
       const entries = getDashboardEntriesFromQuestions(
@@ -172,7 +172,7 @@ describe("getDashboardEntriesFromQuestions", () => {
     // greet inside the same time-of-day / work-day window its live question
     // would (e.g. "Finding Focus Today" is a morning, work-day category).
     it("never greets with an out-of-window question recap (no 'Finding Focus Today' in the middle of the night)", () => {
-      // Monday 03:00 — past the morning window the focus category is gated to.
+      // Monday 03:00 - past the morning window the focus category is gated to.
       const night = new Date("2024-01-15T03:00:00");
       const syncData = createMockSyncData({
         answers: [
@@ -196,7 +196,7 @@ describe("getDashboardEntriesFromQuestions", () => {
     });
 
     it("can greet with a question recap once it's inside its window ('Finding Focus Today' on a work-day morning)", () => {
-      // Monday 09:00 — inside the morning / work-day window.
+      // Monday 09:00 - inside the morning / work-day window.
       const morning = new Date("2024-01-15T09:00:00");
       const syncData = createMockSyncData({
         answers: [
@@ -226,7 +226,7 @@ describe("getDashboardEntriesFromQuestions", () => {
     // guardHeroSlot is the safety net for that path: if the hero is a stale
     // recap, move it out (it stays in "look back") and greet with a quote.
     it("guardHeroSlot evicts a stale recap from the hero slot and greets with a quote", () => {
-      // Monday 03:00 — past the morning window RefocusHelperToday is gated to.
+      // Monday 03:00 - past the morning window RefocusHelperToday is gated to.
       const night = new Date("2024-01-15T03:00:00");
       const recap = (id: QuestionCategoryId): DashboardGroup => ({
         id,
@@ -245,8 +245,8 @@ describe("getDashboardEntriesFromQuestions", () => {
 
       const guarded = guardHeroSlot(entries, night);
 
-      // The greeting must not be the stale morning recap — it falls back to a
-      // quote — but the recap is still present for the "look back" grid.
+      // The greeting must not be the stale morning recap - it falls back to a
+      // quote - but the recap is still present for the "look back" grid.
       expect(greetingOf(guarded).type).toBe(DashboardGroupType.Quote);
       expect(
         guarded.some(
@@ -277,7 +277,7 @@ describe("getDashboardEntriesFromQuestions", () => {
     });
 
     // Symmetry with the night/focus case: an evening recap shouldn't greet in
-    // the morning either. (GoodToday — "What went well today" — is evening-only.)
+    // the morning either. (GoodToday - "What went well today" - is evening-only.)
     it("never greets with an evening recap in the morning", () => {
       const morning = new Date("2024-01-15T09:00:00");
       const syncData = createMockSyncData({
@@ -301,7 +301,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       }
 
       // Sanity: the evening recap IS built (so the test isn't passing only
-      // because the card was never there) — it just never greets in the morning.
+      // because the card was never there) - it just never greets in the morning.
       const built = getDashboardEntriesFromQuestions(syncData, morning).some(
         (e) =>
           e.type === DashboardGroupType.TxtQuestion &&
@@ -315,7 +315,7 @@ describe("getDashboardEntriesFromQuestions", () => {
 
 // Unit-level coverage of the web-pick filter itself. The integration tests above
 // assert the end-to-end "no stale greeting" outcome, but the cross-platform hero
-// guard backstops that outcome — so these isolate the pick-pool filter so a
+// guard backstops that outcome - so these isolate the pick-pool filter so a
 // regression in it alone is caught.
 describe("isGreetingEligible", () => {
   const txt = (id: QuestionCategoryId): DashboardGroupTxtQuestion => ({

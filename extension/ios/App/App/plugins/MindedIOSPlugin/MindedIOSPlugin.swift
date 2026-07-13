@@ -20,7 +20,7 @@ public class MindedIOSPlugin: CAPPlugin {
   /// Whether any minded widget is currently placed on the Home Screen.
   /// The web layer gates its "add the widget" invitation on this observed
   /// state, so the nudge is truthful and retires itself the moment a widget
-  /// exists — no counters, no stored flags. A read failure resolves as
+  /// exists - no counters, no stored flags. A read failure resolves as
   /// installed=true on purpose: "unknown" must never nag.
   @objc public func isWidgetInstalled(_ call: CAPPluginCall) {
       guard #available(iOS 14.0, *) else {

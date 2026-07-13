@@ -18,7 +18,7 @@ interface LetGoOverlayProps {
 
 /**
  * The "let go" reflection the dashboard sun offers when flung *away* (up). The
- * sibling of the down-drag grounding offer: an invitation, never a trap —
+ * sibling of the down-drag grounding offer: an invitation, never a trap -
  * declining is as easy as answering, and doing nothing dismisses it. It hosts
  * the standard intervention `Question` on the standard (transparent) interaction
  * background so it reads like any other prompt; the just-flung shell sun is
@@ -47,7 +47,7 @@ export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
   }, LET_GO_AUTO_DISMISS_MS);
 
   // The Question calls onCancelCountdown the moment the user reveals/touches the
-  // input — reuse it to cancel the auto-dismiss so a half-written thought is
+  // input - reuse it to cancel the auto-dismiss so a half-written thought is
   // never snatched away mid-sentence.
   const onEngage = () => {
     hasEngaged = true;

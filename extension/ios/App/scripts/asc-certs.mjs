@@ -7,7 +7,7 @@
 // "maximum number of certificates". Run this to clear the leaked certs before
 // switching to manual signing with one persisted certificate.
 //
-// No dependencies — Node 18+ (uses global fetch + built-in crypto for the ES256 JWT).
+// No dependencies - Node 18+ (uses global fetch + built-in crypto for the ES256 JWT).
 //
 // Usage (needs the App Store Connect API .p8 you downloaded during setup):
 //   ASC_KEY_ID=XXXXXXXXXX \
@@ -18,7 +18,7 @@
 //     node asc-certs.mjs revoke-all    # revoke ALL of them
 //
 // Revoking a distribution certificate does NOT break already-uploaded TestFlight
-// or App Store builds (Apple re-signs those) — it only stops NEW local signing,
+// or App Store builds (Apple re-signs those) - it only stops NEW local signing,
 // and you're about to create one fresh cert for manual signing anyway.
 // CAUTION: if this Apple team signs OTHER apps too, `revoke-all` hits their certs
 // as well. Use `list` first and revoke by id if you're unsure.
@@ -39,7 +39,7 @@ function jwt() {
   const now = Math.floor(Date.now() / 1000);
   const head = b64url({ alg: 'ES256', kid: ASC_KEY_ID, typ: 'JWT' });
   const body = b64url({ iss: ASC_ISSUER_ID, iat: now, exp: now + 600, aud: 'appstoreconnect-v1' });
-  // ES256 for JOSE needs the raw R||S signature, not DER — hence ieee-p1363.
+  // ES256 for JOSE needs the raw R||S signature, not DER - hence ieee-p1363.
   const sig = crypto
     .sign('sha256', Buffer.from(`${head}.${body}`), { key, dsaEncoding: 'ieee-p1363' })
     .toString('base64url');

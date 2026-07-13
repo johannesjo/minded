@@ -56,10 +56,10 @@ export const filterSpecialWidgets = (categoryId: QuestionCategoryId): boolean =>
 /**
  * Categories switched off for now. Their enum entry (and any answers already
  * saved) stay intact so re-enabling is a one-line change, but their questions
- * never enter the pool — no interventions, no daily-question steps, and (being
+ * never enter the pool - no interventions, no daily-question steps, and (being
  * today-only) they quietly drop off the dashboard once we stop asking them.
  *
- * RefocusHelperToday ("Finding Focus Today" — "your most important task today",
+ * RefocusHelperToday ("Finding Focus Today" - "your most important task today",
  * "the plan for today") leans productivity / task-completion rather than mindful
  * awareness, so it's parked until it earns a shape that fits the theme.
  */
@@ -73,11 +73,11 @@ export interface Question {
   id: QID;
   prompt?: string;
   /**
-   * Optional tappable quick answers — a no-typing path that submits the moment
+   * Optional tappable quick answers - a no-typing path that submits the moment
    * one is tapped. Add only to questions with a small, *neutral* set of natural
    * answers; never to open or emotionally-loaded prompts, where a fixed list
    * would nudge what someone reports (it must still clear the "~90% sure it
-   * helps" bar). The typed input never goes away — a "Something else…" chip
+   * helps" bar). The typed input never goes away - a "Something else…" chip
    * always reveals it. When `prompt` is set, the tapped chip is appended to it,
    * exactly as a typed continuation would be, so the saved answer reads the same
    * whether tapped or typed.

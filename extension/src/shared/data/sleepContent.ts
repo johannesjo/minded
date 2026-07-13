@@ -24,7 +24,7 @@ export const TOMORROW_PROMPTS: string[] = [
 ];
 
 /**
- * Deliberately monotonous prose. The point is mild, slightly dull engagement —
+ * Deliberately monotonous prose. The point is mild, slightly dull engagement -
  * something to read until the mind quiets, not something interesting.
  *
  * One passage is picked per night (stable within the night, varies across nights).
@@ -88,7 +88,7 @@ The cold is kept outside. You are not in the field. You are warm, and the snow i
 export const SLEEP_TIPS: string[] = [
   "Keep your bedroom cool, dark, and quiet.",
   "Try to go to bed and wake up at roughly the same times every day.",
-  "Avoid bright screens for the last hour before sleep — even dimmed.",
+  "Avoid bright screens for the last hour before sleep - even dimmed.",
   "Caffeine sticks around for 6+ hours. Cut it off after lunch if you can.",
   "If you can't sleep after 20 minutes, get up, do something dull in dim light, and try again.",
   "Write tomorrow's worries down on paper so your brain doesn't have to hold them.",

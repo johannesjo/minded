@@ -3,15 +3,15 @@
 //
 // Two masks composited with `intersect` (their alphas multiply, so content is
 // hidden where *either* mask hides it):
-//   1. $linear — the caller's flat bottom-band fade. Its height/feather differ
+//   1. $linear - the caller's flat bottom-band fade. Its height/feather differ
 //      per site, so it stays the caller's to define.
 //   2. a radial "pocket" centred on the bottom-centre, where the sun rests, so
-//      content also dissolves in a soft circle around the disc — lifting the
+//      content also dissolves in a soft circle around the disc - lifting the
 //      fade upward right where the sun sits. Same 0.55 midpoint as the linear
 //      fade so the softness matches.
 //
 // The pocket radius is the shared `--sun-fade-radius` (declared once on the
-// shell wrapper — see RouteCmp.module.scss `.mainWrapper` — and inherited by
+// shell wrapper - see RouteCmp.module.scss `.mainWrapper` - and inherited by
 // every call site, so they all open the same pocket). The fallback mirrors that
 // default and only guards the edge case where the var is out of scope: an
 // undefined custom property is invalid at computed-value time, which would void

@@ -7,7 +7,7 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 // A representative, deterministic dataset for the dashboard simulation: enough
 // signal across the different card types (energy, stats, browsing
 // behaviour, reflections) that the "show all" grid is populated
-// and true to life — without depending on the questions catalogue beyond a
+// and true to life - without depending on the questions catalogue beyond a
 // couple of free-text answers.
 const isoDaysAgo = (now: number, days: number): string =>
   getIsoDate(new Date(now - days * 24 * 60 * 60 * 1000));

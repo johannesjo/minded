@@ -7,7 +7,7 @@ import {
 } from "@src/shared/components/interaction/screenOff/screenOffEval";
 
 /**
- * "Screen-Off Minute" — an Android-only strong-friction intervention that
+ * "Screen-Off Minute" - an Android-only strong-friction intervention that
  * asks the user to physically lock their phone for a minute. Success is
  * verified via the page `visibilitychange` event (the WebView reports hidden
  * when the screen turns off / the app is backgrounded).
@@ -25,7 +25,7 @@ export const ScreenOffInteraction: (props: {
 }) => JSX.Element = (props) => {
   const [getPhase, setPhase] = createSignal<ScreenOffPhase>("intro");
 
-  // Plain refs — these never need to drive rendering.
+  // Plain refs - these never need to drive rendering.
   let hiddenAt: number | undefined;
   let doneTimeoutId: number | undefined;
   let isDisposed = false;
@@ -36,7 +36,7 @@ export const ScreenOffInteraction: (props: {
     const onLeaveNow = props.onLeaveNow;
     setPhase("done");
     // Deliberately NO countSunTap here: sun taps feed the friction level and
-    // the return-loop insight — they measure returns to the pull, not practice.
+    // the return-loop insight - they measure returns to the pull, not practice.
     // Counting a completed screen-off minute would make the calming practice
     // escalate the next intervention (and no other leave path counts a tap).
     doneTimeoutId = window.setTimeout(() => {
@@ -47,7 +47,7 @@ export const ScreenOffInteraction: (props: {
 
   const handleVisibilityChange = (): void => {
     const phase = getPhase();
-    // Only an active ("armed") or just-failed ("tooEarly") attempt counts —
+    // Only an active ("armed") or just-failed ("tooEarly") attempt counts -
     // visibility changes during intro/done are ignored.
     if (phase !== "armed" && phase !== "tooEarly") {
       return;
@@ -112,23 +112,23 @@ export const ScreenOffInteraction: (props: {
 
         <Match when={getPhase() === "armed"}>
           <div class="txtBig interaction-heading">
-            Lock your phone now — come back in a minute.
+            Lock your phone now - come back in a minute.
           </div>
           <Btn onClick={() => props.onSkip()}>Just go in</Btn>
         </Match>
 
-        {/* No seconds-remaining count here — a ticking target would gamify
+        {/* No seconds-remaining count here - a ticking target would gamify
             the break ("beat the clock"), the one register the app avoids. */}
         <Match when={getPhase() === "tooEarly"}>
           <div class="txtBig interaction-heading">
-            Almost — stay away a little longer.
+            Almost - stay away a little longer.
           </div>
           <Btn onClick={arm}>Try again</Btn>
           <Btn onClick={() => props.onSkip()}>Just go in</Btn>
         </Match>
 
         <Match when={getPhase() === "done"}>
-          <div class="txtBig interaction-heading">Nice — enjoy the break.</div>
+          <div class="txtBig interaction-heading">Nice - enjoy the break.</div>
         </Match>
       </Switch>
     </div>

@@ -1,9 +1,9 @@
 /**
  * One shared, pure model for breath-guided animations. The sun visual and the
  * cue copy both read their state from here, so they are computed from a single
- * formula and can't drift out of sync — the bug this module exists to kill.
+ * formula and can't drift out of sync - the bug this module exists to kill.
  *
- * A breath is three phases — inhale → hold → exhale — and `fill` is the eased
+ * A breath is three phases - inhale → hold → exhale - and `fill` is the eased
  * fullness of the breath (0 = emptied/exhaled, 1 = full/inhaled). Map `fill` to
  * whatever the visual needs (a scale, an opacity); map `phase` to the cue copy.
  */
@@ -31,7 +31,7 @@ export interface BreathState {
 const clamp01 = (n: number): number => Math.max(0, Math.min(1, n));
 
 // Eases the breath in and settles it gently at the turn rather than snapping.
-// Named distinctly from sunAnimationUtils' (quadratic) easeInOut — this is the
+// Named distinctly from sunAnimationUtils' (quadratic) easeInOut - this is the
 // cosine breath curve, used only here.
 const easeBreath = (p: number): number =>
   0.5 - 0.5 * Math.cos(Math.PI * clamp01(p));
@@ -44,7 +44,7 @@ export const breathCycleSeconds = (pattern: BreathPattern): number =>
 
 /**
  * The breath state at a moment in time. `loop` repeats the cycle (the wind-down
- * exercise); without it, time past the final exhale clamps to empty — the
+ * exercise); without it, time past the final exhale clamps to empty - the
  * single-breath intervention pause that ends on a full release.
  */
 export const getBreathStateAt = (
@@ -115,8 +115,8 @@ export const cueOpacity = (
 
 /**
  * Intervention breath pause (strong friction): one full breath with a longer
- * exhale than inhale, and a held top. Calming, and — with three distinct phases
- * — the cue copy and the sun line up on legible beats instead of a single
+ * exhale than inhale, and a held top. Calming, and - with three distinct phases
+ * - the cue copy and the sun line up on legible beats instead of a single
  * continuous swing.
  */
 export const BREATH_PAUSE_PATTERN: BreathPattern = {

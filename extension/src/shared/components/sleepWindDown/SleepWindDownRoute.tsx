@@ -15,7 +15,7 @@ export const SleepWindDownRoute = (): JSX.Element => {
     <SleepWindDownView
       isPreview={isPreview}
       // The dismiss transition already faded this view's own wrapper out, so tell
-      // the router-level page-fade interceptor (RouteCmp) to skip re-fading it —
+      // the router-level page-fade interceptor (RouteCmp) to skip re-fading it -
       // otherwise it would flash the just-dismissed content back to full opacity
       // for a frame before fading again.
       onDismiss={() => navigate(dismissTo, { state: { skipPageFade: true } })}

@@ -17,7 +17,7 @@
 #   gem install xcodeproj         # one-time (or `bundle add xcodeproj`)
 #   ruby extension/ios/App/scripts/add_widget_target.rb
 #
-# NOTE: authored without a macOS/Xcode build available — like the widget Swift it
+# NOTE: authored without a macOS/Xcode build available - like the widget Swift it
 # wires in, the first `xcodebuild`/Xcode build is the real verification.
 
 require 'xcodeproj'
@@ -44,7 +44,7 @@ app_target = project.targets.find { |t| t.name == 'App' }
 raise 'App target not found in App.xcodeproj' unless app_target
 
 if project.targets.any? { |t| t.name == WIDGET_NAME }
-  puts "#{WIDGET_NAME} target already exists — nothing to do."
+  puts "#{WIDGET_NAME} target already exists - nothing to do."
   exit 0
 end
 
@@ -63,7 +63,7 @@ project_version = app_settings['CURRENT_PROJECT_VERSION'] || '1'
 # Manual code signing for CI archives. When the workflow passes the App Store
 # profile NAMES (IOS_APP_PROFILE_NAME / IOS_WIDGET_PROFILE_NAME), pin both the
 # app and widget targets to the shared Apple Distribution cert + their App Store
-# profiles — ephemeral runners can't use cloud/automatic signing without leaking
+# profiles - ephemeral runners can't use cloud/automatic signing without leaking
 # a fresh certificate every run (see .github/workflows/ios-testflight.yml).
 # Absent these (a local run of this script), signing stays Automatic so the
 # project still opens and builds in Xcode with a developer's own account.
@@ -138,7 +138,7 @@ build_file.settings = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
 
 # The app target is checked in as Automatic signing (so Xcode opens cleanly for
 # local dev). Flip its Release config to the same manual identity as the widget
-# for the CI archive — both targets must resolve a distribution profile or the
+# for the CI archive - both targets must resolve a distribution profile or the
 # archive fails. Guarded by manual_signing so local runs leave the project alone.
 if manual_signing
   app_release.build_settings['CODE_SIGN_STYLE'] = 'Manual'

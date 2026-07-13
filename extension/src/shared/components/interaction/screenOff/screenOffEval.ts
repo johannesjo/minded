@@ -5,7 +5,7 @@
  * keep ticking while the Android WebView is backgrounded, but `Date.now()`
  * (wall clock) keeps advancing across screen-off and device sleep. So we only
  * compare the moment the page became hidden with the moment it became visible
- * again — never a counter that ran while hidden.
+ * again - never a counter that ran while hidden.
  */
 
 /** How long the phone must stay locked/away to count as a success. */
@@ -29,7 +29,7 @@ export interface ScreenOffEvalResult {
 
 /**
  * Evaluates one contiguous away segment. A successful screen-off must be a
- * single continuous lock — segments are intentionally not summed. Deliberately
+ * single continuous lock - segments are intentionally not summed. Deliberately
  * no remaining-time output: a countdown-to-success would gamify the break.
  */
 export const evaluateScreenOff = ({

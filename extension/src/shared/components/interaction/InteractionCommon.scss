@@ -12,11 +12,11 @@
   // question must not intercept taps or hovers meant for the choices above it:
   // the wrapper box sits at z-index 1101, above the overlay (1100), so any
   // descendant that opts back into pointer events (e.g. #minded-6622-inp:
-  // `pointer-events: all`, or every `.btnToggleSelect::after` hit-area expander —
+  // `pointer-events: all`, or every `.btnToggleSelect::after` hit-area expander -
   // see btn.scss) would otherwise swallow them. The `*` selector does NOT match
   // pseudo-elements, so the `::after`/`::before` pseudos must be listed
   // explicitly or stale dismissed buttons keep eating taps meant for the choices.
-  // Force the whole subtree — elements and pseudos — click-through while dismissed.
+  // Force the whole subtree - elements and pseudos - click-through while dismissed.
   &.is-dismissed,
   &.is-dismissed *,
   &.is-dismissed::before,
@@ -44,7 +44,7 @@
 // Give every intervention type the same soft entrance the question has: the
 // content rises a touch as it fades in, rather than snapping into place. The
 // opacity fade is already carried by `.interaction-content` above (for every
-// mode), so this animates the *transform only* — that way it layers cleanly on
+// mode), so this animates the *transform only* - that way it layers cleanly on
 // top of each mode's own opacity work (e.g. the emotion-labeling / urge-surfing
 // step cross-fades) without fighting it. Values mirror the question's own
 // `slideUpFadeIn` (15px, 0.6s ease-out, 0.2s delay) so the feel is identical.
@@ -181,11 +181,11 @@
 }
 
 // During the intent/time choices the resting sun rests in a reserved spacer
-// beneath the options, so the whole group — question, options, and sun — centres
+// beneath the options, so the whole group - question, options, and sun - centres
 // on the page as one unit (the sun is a fixed overlay measured to the spacer's
 // centre; see measureRestingSunAnchor). The spacer is gated on the overlay, not
 // the resting phase, so its height is already in place the moment the choices
-// mount — letting the sun be measured and glided straight to its slot.
+// mount - letting the sun be measured and glided straight to its slot.
 .time-selection-overlay {
   .resting-sun-spacer {
     height: 132px;
@@ -196,8 +196,8 @@
 
   // Keep the cancel in the flow at the bottom of the choices column rather than
   // pinning it as a full-width absolute band. A bottom-pinned `inset` band spans
-  // the whole width and, with its own pointer events, floats over — and silently
-  // steals taps from — the lower options whenever vertical space is tight
+  // the whole width and, with its own pointer events, floats over - and silently
+  // steals taps from - the lower options whenever vertical space is tight
   // (landscape, short browser windows, Android nav-bar insets / keyboard). In the
   // flow the click-through resting-sun spacer always sits between the options and
   // the cancel, so every choice stays tappable; the choices still read as centred
@@ -210,7 +210,7 @@
 }
 
 // Outside the intervention overlay (e.g. the marketing screenshots) the spacer
-// adds no height — the sun only appears in the real flow.
+// adds no height - the sun only appears in the real flow.
 .resting-sun-spacer {
   height: 0;
 }

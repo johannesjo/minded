@@ -17,7 +17,7 @@ MINDED_LANDING_PAGE_DIR="$HOME/www/minded-landing-page" npm run screenshots
 The generator uses real app components, pins the marketing sky to 09:00, waits
 for fonts, and completes animations before capture, so re-running it should
 leave the tracked files unchanged unless the UI itself changed. Always review
-the screenshot diff before committing — an unexpected change means the UI moved.
+the screenshot diff before committing - an unexpected change means the UI moved.
 
 | Destination       | Generated files                                | Tracked by Git                |
 | ----------------- | ---------------------------------------------- | ----------------------------- |
@@ -82,7 +82,7 @@ cd extension
 npm run screenshots:publish
 ```
 
-Confirming at its prompt **is the approval** — there is no separate reviewer
+Confirming at its prompt **is the approval** - there is no separate reviewer
 gate, so the run publishes to the production listing on its own once CI
 finishes. Pass `--language <tag>` for another locale, `--skip-generate` to reuse
 the current local set, or `--watch` to stream the run. Then verify the phone
