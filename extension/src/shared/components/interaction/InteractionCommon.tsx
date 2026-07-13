@@ -1,16 +1,10 @@
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import {
-  batch,
-  Component,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-} from "solid-js";
-import {
-  getInteractionModeDecision,
-  InteractionMode,
-} from "@src/shared/components/interaction/getInteractionMode";
+  getSyncData,
+  IS_ANDROID,
+  markBedtimeSettled,
+  markInteractionModeShown,
+} from "@src/dataInterface/commonSyncDataInterface";
 import {
   Alternative,
   Answer,
@@ -19,24 +13,36 @@ import {
   SessionTarget,
   SyncData,
 } from "@src/dataInterface/syncData";
-import { QuestionForPrompt } from "@src/shared/data/questions";
+import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
+import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
+import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
+import {
+  getInteractionModeDecision,
+  InteractionMode,
+} from "@src/shared/components/interaction/getInteractionMode";
+import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
+import { GROUNDING_FADE_MS } from "@src/shared/components/interaction/grounding/grounding.const";
+import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
+import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
+import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
+import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/interactionSuccessGuard";
+import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
+import { LET_GO_REVEAL_MAX_MS } from "@src/shared/components/interaction/letGo/letGo.const";
 import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
-import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
-import { fadeOut } from "@src/util/animation";
-import { IS_TOUCH_PRIMARY } from "@src/util/touch";
+import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
 import {
-  getQuestionSmart,
-  getQuestionSemiSmart,
-} from "@src/util/getQuestionSmart";
-import {
-  getSyncData,
-  IS_ANDROID,
-  markBedtimeSettled,
-  markInteractionModeShown,
-} from "@src/dataInterface/commonSyncDataInterface";
-import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
+  advanceIntentSelectionToTime,
+  cancelIntentSelection,
+  cancelTimeSelection,
+  shouldAskIntent,
+} from "@src/shared/components/interaction/sessionLimit";
 import Sun from "@src/shared/components/interaction/sun/Sun";
+import {
+  playInterventionSound,
+  preloadSounds,
+  setSoundEnabled,
+} from "@src/shared/components/interaction/sun/sunAudio";
 import {
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
@@ -59,40 +65,34 @@ import {
   setRestingSunAnchor,
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
-import {
-  setSoundEnabled,
-  preloadSounds,
-  playInterventionSound,
-} from "@src/shared/components/interaction/sun/sunAudio";
-import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
-import { Ico } from "@src/shared/components/ui/Ico";
-import Btn from "@src/shared/components/ui/Btn";
-import { InteractionModeSwitch } from "@src/shared/components/interaction/InteractionModeSwitch";
-import { displayTargetName } from "@src/util/displayTargetName";
+import { shouldShowSunInstructionsOverlay } from "@src/shared/components/interaction/sunInstructionsVisibility";
+import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
 import {
   calculateFadeProgress,
   calculateOpacity,
 } from "@src/shared/components/interaction/useFadeAnimation";
-import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
-import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
-import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
+import Btn from "@src/shared/components/ui/Btn";
+import { Ico } from "@src/shared/components/ui/Ico";
+import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
+import { QuestionForPrompt } from "@src/shared/data/questions";
+import { fadeOut } from "@src/util/animation";
+import { displayTargetName } from "@src/util/displayTargetName";
 import {
-  advanceIntentSelectionToTime,
-  cancelIntentSelection,
-  cancelTimeSelection,
-  shouldAskIntent,
-} from "@src/shared/components/interaction/sessionLimit";
-import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
-import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
-import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/interactionSuccessGuard";
-import { shouldShowSunInstructionsOverlay } from "@src/shared/components/interaction/sunInstructionsVisibility";
+  getQuestionSemiSmart,
+  getQuestionSmart,
+} from "@src/util/getQuestionSmart";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
-import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
-import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
-import { GROUNDING_FADE_MS } from "@src/shared/components/interaction/grounding/grounding.const";
-import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
-import { LET_GO_REVEAL_MAX_MS } from "@src/shared/components/interaction/letGo/letGo.const";
-import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
+import { IS_TOUCH_PRIMARY } from "@src/util/touch";
+import {
+  batch,
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
@@ -1741,8 +1741,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               ) : (
                 <>
                   <p class="sun-instructions-line is-visible">
-                    Drag the {getDragObjectName()} down — or fling it away — to
-                    let go.
+                    Drag the {getDragObjectName()} down or fling it away to let
+                    go.
                   </p>
                   <p
                     class="sun-instructions-line"
