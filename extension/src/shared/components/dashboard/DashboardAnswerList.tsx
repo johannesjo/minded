@@ -17,6 +17,11 @@ export const DashboardAnswerList: (props: {
         classList={{
           [styles.categoryTitle]: true,
           ["dashboardHeading"]: true,
+          // Global hook so the enlarged single greeting card can keep *this*
+          // label (a category, not a heading) at its resting size while the
+          // reflection grows. The .categoryTitle module class is hashed, so a
+          // cross-module selector needs a stable global name to target.
+          ["dashboardCategory"]: true,
         }}
       >
         {props.dashboardGroup.dashboardTxt}
