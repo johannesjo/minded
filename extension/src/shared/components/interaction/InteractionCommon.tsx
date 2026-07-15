@@ -768,6 +768,17 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }, QUESTION_FADE_OUT_MS);
   };
 
+  // A tap on the disc is the app-wide, learned slip-out ("tap the sun to get
+  // past this"). At bedtime it must NOT open the daytime intent/time
+  // session-grant (handleSunContinue) - that flow is absurd at night. So a tap
+  // on the wordless settle just skips, exactly like a fling: close the interrupt
+  // without the goodnight lock and drop the user back where they were. This is
+  // the discoverable escape the settle otherwise lacked - only the drag-down
+  // settles + locks, and the fling was invisible. Everywhere else a tap still
+  // continues into the session, unchanged.
+  const handleSunTap = () =>
+    getMode() === "WIND_DOWN_SETTLE" ? runFlingSkip() : handleSunContinue();
+
   // The choices (and their reserved sun slot) are mounting now. Measure the slot
   // on the next frame, then flip to resting, so the disc glides straight to its
   // spot in one motion rather than detouring via the static fallback (down, then
@@ -1152,7 +1163,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   onMount(() => {
     if (!props.useShellSun) return;
     const unregister = registerSunInteraction({
-      onSkip: handleSunContinue,
+      onSkip: handleSunTap,
       onFlingAway: runFlingSkip,
       onDragComplete: () =>
         getMode() === "WIND_DOWN_SETTLE"
@@ -1775,7 +1786,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           >
             <Sun
               variant={getDragObjectName()}
-              onSkip={handleSunContinue}
+              onSkip={handleSunTap}
               onFlingAway={runFlingSkip}
               onDragComplete={() =>
                 getMode() === "WIND_DOWN_SETTLE"
@@ -1794,12 +1805,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               }}
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
-              // The bedtime settle has no "continue into a session" - a tap must
-              // never open the intent/time grant flow at bedtime - so only the
-              // drag-down (settle) and fling (skip) are live for it.
-              isTapEnabled={
-                !props.isFromDashboard && getMode() !== "WIND_DOWN_SETTLE"
-              }
+              // Tap stays live for the bedtime settle - it's the discoverable
+              // slip-out (routed to skip via handleSunTap, never the session
+              // grant), and it lights the tap-progress dots as a wordless hint
+              // that the moon responds. Only the dashboard (grounding) disables
+              // tap, where a back arrow is the way out instead.
+              isTapEnabled={!props.isFromDashboard}
               settle={getSunSettle()}
               onBreathStart={setBreathStartedAt}
             />
