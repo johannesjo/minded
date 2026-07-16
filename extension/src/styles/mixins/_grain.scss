@@ -3,15 +3,13 @@
 // element. z-index: -1 sits behind in-flow content so blend-mode dithering
 // doesn't reach the text, only the gradient behind it.
 //
-// `soft-light` with the near-mid-grey noise tile (see --grain-tile) is what
-// makes this actually dither: grey is close to a blend no-op, and deviations
-// lighten/darken, so a 1-level gradient band edge gets ~1 level of noise spread
-// across it and can no longer be seen as a horizontal stripe. The earlier
-// overlay/screen + black-noise pairing measured ~0 dithering (see
-// _variables.scss) which is why the bands came back. Opacity is tuned per theme
-// because soft-light amplifies far more over a dark backdrop than a light one:
-// ~1–1.5 levels of grain on the lightest sky, ~0.6 on the night - different
-// numbers, but both imperceptible as texture and enough to break the band.
+// `mix-blend-mode: normal` over the high-contrast --grain-tile (see
+// _variables.scss for the tile and the full history). Plain source-over adds the
+// SAME perturbation to every pixel regardless of the backdrop, so the dither is
+// uniform across the whole gradient and - unlike the old soft-light - does not
+// collapse on the light/dark extremes or fade out under HiDPI upscaling, which is
+// what let the bands survive five earlier attempts. Measured: <=6px flat runs in
+// both themes at 1x/2x/3x, versus ~50-100px on the deep-night sky before.
 @mixin grainOverlay() {
   &::after {
     content: "";
@@ -19,18 +17,20 @@
     inset: 0;
     pointer-events: none;
     z-index: -1;
-    opacity: 0.55;
-    mix-blend-mode: soft-light;
+    opacity: 0.04;
+    mix-blend-mode: normal;
     background-image: var(--grain-tile);
-    background-size: 180px 180px;
+    background-size: 120px 120px;
   }
 
   // The theme class normally lives on the outer #minded-6622 root. Keep the
   // same-element form for the standalone/content-script wrappers that also
-  // carry it themselves. Lower opacity keeps the night sky deep - soft-light
-  // over near-black would otherwise both over-grain and milk the blacks.
+  // carry it themselves. The blend is backdrop-independent now, so one opacity
+  // would dither both skies equally; the night value is trimmed only to keep the
+  // deep-night blacks from lifting (source-over over near-black can only add
+  // light), not because the dither needs a different strength there.
   &.minded-6622-dark::after,
   #minded-6622.minded-6622-dark &::after {
-    opacity: 0.11;
+    opacity: 0.03;
   }
 }

@@ -91,26 +91,28 @@
 // horizontal lines. It shares z-index 2 with the drag overlays and stars: DOM
 // order puts it after the skies but before Stars, while content begins at 10.
 //
-// soft-light over the near-mid-grey noise tile (see --grain-tile / _grain.scss)
-// is the same treatment the resting dashboard sky uses, and for the same reason:
-// it dithers a 1-level band edge into ~1 level of grain instead of letting it
-// read as a stripe. The old overlay/screen pairing measured ~0 dithering, which
-// is why the bands returned.
+// mix-blend-mode: normal over the high-contrast noise tile (see --grain-tile /
+// _grain.scss) is the same treatment the resting dashboard sky uses, and for the
+// same reason: source-over adds a uniform, backdrop-independent perturbation that
+// dithers a band edge into grain instead of letting it read as a stripe - and,
+// unlike the old soft-light, does not weaken on the light/dark extremes or fade
+// under HiDPI upscaling (which is why the bands kept returning).
 .background-transition-grain {
   position: fixed;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  opacity: 0.55;
-  mix-blend-mode: soft-light;
+  opacity: 0.04;
+  mix-blend-mode: normal;
   background-image: var(--grain-tile);
-  background-size: 180px 180px;
+  background-size: 120px 120px;
 }
 
-// Lower opacity in dark mode: soft-light amplifies over the near-black night
-// sky, so match the resting-sky grain and keep the blacks deep.
+// Trim the night opacity only to keep the deep-night blacks from lifting (the
+// blend is backdrop-independent now, so this is not a strength correction) -
+// matches the resting-sky grain.
 #minded-6622.minded-6622-dark .background-transition-grain {
-  opacity: 0.11;
+  opacity: 0.03;
 }
 
 #minded-6622-coloured-wrapper-dynamic.is-departing .background-transition-grain,
