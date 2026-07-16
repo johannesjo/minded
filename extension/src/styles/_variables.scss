@@ -50,17 +50,32 @@
   // and kills the plastic feel of pure gradients. Shared by the grainOverlay
   // mixin (coloured-wrapper.scss) and BackgroundTransition's grain layer.
   //
-  // This MUST be a mid-grey noise (RGB carries the noise, alpha = 1), not the
-  // old pure-black-with-varying-alpha tile: a black tile only ever darkens, so
-  // `overlay` barely moved a light sky (~0.04 levels) and `screen` over black
-  // is a literal no-op (screen(x,0) = x) - i.e. the previous dither did nothing
-  // and the bands survived. A near-mid-grey tile lets `soft-light` perturb
-  // roughly symmetrically (both lighter and darker), which is what actually
-  // dithers a band edge. (The SVG filter runs in linearRGB, so the noise's mean
-  // lands a touch above sRGB 0.5 - measured as a small ~1–3 level lightening /
-  // faint desaturation of the sky, well below the banding it removes, not a
-  // true zero.) See _grain.scss for the blend/opacity and the reasoning.
-  --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  // HISTORY - why this took several tries. Every earlier version leaned on a
+  // *blend mode* to turn a low-contrast grey tile into dither: `screen`/`overlay`
+  // over a black tile (a literal no-op on the extremes), then `soft-light` over a
+  // mid-grey tile. `soft-light` looks right on a mid-tone but its perturbation
+  // SCALES WITH BACKDROP LUMINANCE and collapses toward the light and dark ends
+  // of the gradient - exactly the wide, shallow stretches that band worst. Worse,
+  // it's DPR-fragile: the SVG tile is bilinear-upscaled on HiDPI screens, halving
+  // the noise amplitude, so the deep-night sky measured a ~50-100px flat (fully
+  // banded) run in the red channel at 2x-3x. That's why the bands "kept coming
+  // back" no matter how the opacity was tuned.
+  //
+  // THE FIX is to stop amplifying and instead ship the contrast in the tile, then
+  // composite it with `mix-blend-mode: normal` (see _grain.scss). Plain source-over
+  // adds the SAME per-pixel perturbation regardless of backdrop, so the dither is
+  // uniform across the whole gradient and survives HiDPI upscaling (measured: <=6px
+  // flat runs in both themes at 1x/2x/3x). The tradeoff of `normal` is a flat,
+  // uniform tint toward the tile's mean - which is imperceptible (no edge, no band)
+  // as long as the mean is grey and the opacity is low.
+  //
+  // TILE ANATOMY: fractalNoise -> feColorMatrix copies the noise into R/G/B and
+  // forces alpha = 1 (a grey, mean ~0.5 tile). `color-interpolation-filters=sRGB`
+  // keeps the mean exactly grey (the default linearRGB pushed it off-centre and
+  // milked the sky). feComponentTransfer (slope 2.6, intercept -0.8: maps 0.5->0.5)
+  // is the crucial part - it stretches the contrast so a *low* opacity still crosses
+  // a full code-level, which is what lets `normal` dither without visible milking.
+  --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1'/><feComponentTransfer><feFuncR type='linear' slope='2.6' intercept='-0.8'/><feFuncG type='linear' slope='2.6' intercept='-0.8'/><feFuncB type='linear' slope='2.6' intercept='-0.8'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 
   // Two voices. --font-display (Newsreader serif) is the *mindful voice*: used
   // only when the app speaks gently to you (intervention prompts, breath/pause

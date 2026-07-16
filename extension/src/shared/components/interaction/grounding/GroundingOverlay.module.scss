@@ -52,29 +52,30 @@
   }
 
   // Dither the full-screen resting sky (and the carried-in sunset above it) so
-  // the gradient can't band into horizontal stripes - the same soft-light
-  // grey-noise treatment the dashboard sky and interaction skies use (see
-  // styles/mixins/_grain.scss). This stage paints its own opaque sky over the
-  // dashboard, so the wrapper's grain can't reach it; it needs its own. Shares
-  // z-index -1 with the sunset ::before but, as the later pseudo-element, paints
-  // above it and below the starfield (z 0) / content (z 1), so it dithers only
-  // the sky, never the text.
+  // the gradient can't band into horizontal stripes - the same normal-blend
+  // high-contrast grain the dashboard sky and interaction skies use (see
+  // styles/mixins/_grain.scss for why source-over beats the old soft-light).
+  // This stage paints its own opaque sky over the dashboard, so the wrapper's
+  // grain can't reach it; it needs its own. Shares z-index -1 with the sunset
+  // ::before but, as the later pseudo-element, paints above it and below the
+  // starfield (z 0) / content (z 1), so it dithers only the sky, never the text.
   &::after {
     content: "";
     position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.55;
-    mix-blend-mode: soft-light;
+    opacity: 0.04;
+    mix-blend-mode: normal;
     background-image: var(--grain-tile);
-    background-size: 180px 180px;
+    background-size: 120px 120px;
   }
 
-  // Match the interaction skies' gentler dark grain - soft-light amplifies far
-  // more over the near-black night sky, so a lower opacity keeps the blacks deep.
+  // Match the interaction skies' gentler dark grain - trimmed only to keep the
+  // near-black night sky's blacks deep, not because the blend needs it (it's
+  // backdrop-independent now).
   :global(.minded-6622-dark) &::after {
-    opacity: 0.11;
+    opacity: 0.03;
   }
 
   // The screen-free sit dims almost to black to rest the eyes; drop the grain
