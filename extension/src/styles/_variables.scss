@@ -170,8 +170,6 @@
     --little-sun-txt-c: #956969;
   }
 
-  --success-sun-txt-c: rgba(0, 0, 0, 0.6);
-
   --rating-active-opacity: 0.55;
   --rating-inactive-opacity: 0.15;
   --h4-c: rgba(0, 0, 0, 0.7);
@@ -353,9 +351,6 @@
 
     --c-fg: rgba(255, 255, 255, 0.8);
     --c-fg-full-emphasis: rgba(255, 255, 255, 0.95);
-    // The evening reflection's closing line renders over the night sky -
-    // without this override it stays 60% black on near-black (#02091f).
-    --success-sun-txt-c: rgba(255, 255, 255, 0.85);
     --scrollbar-thumb: rgba(255, 255, 255, 0.28);
     --c-link-color: #8de9ee;
     --c-link-hover-color: #c4fbff;
