@@ -22,6 +22,10 @@ const screenshotsStyles = await readFile(
   new URL("../src/pages/screenshots/screenshots.module.scss", import.meta.url),
   "utf8",
 );
+const videoSource = await readFile(
+  new URL("./create-video.mjs", import.meta.url),
+  "utf8",
+);
 
 test("the product video enters the real question-first intervention flow", () => {
   assert.deepEqual(
@@ -31,7 +35,35 @@ test("the product video enters the real question-first intervention flow", () =>
 });
 
 test("the opening makes the social-media loop tangible", () => {
-  assert.deepEqual(VIDEO_SITES, ["youtube", "x", "instagram"]);
+  assert.deepEqual(VIDEO_SITES, [
+    "youtube",
+    "reddit",
+    "x",
+    "tiktok",
+    "instagram",
+  ]);
+});
+
+test("visited social sites remain visible in a literal page pile", () => {
+  assert.match(screenshotsSource, /styles\.isYoutubePile/);
+  assert.match(screenshotsSource, /styles\.isRedditPile/);
+  assert.match(screenshotsSource, /styles\.isXPile/);
+  assert.match(screenshotsSource, /styles\.isTiktokPile/);
+  assert.match(screenshotsSource, /styles\.isInstagramPile/);
+  assert.match(
+    screenshotsStyles,
+    /\.isInstagramPile[\s\S]*\.youtubePage[\s\S]*\.redditPage[\s\S]*\.xPage[\s\S]*\.tiktokPage[\s\S]*\.instagramPage/,
+  );
+});
+
+test("the pile names the loop once the first new page lands", () => {
+  assert.match(screenshotsSource, /Stuck in a loop\?/);
+  assert.match(screenshotsSource, /styles\.loopCaption/);
+  assert.match(screenshotsSource, /props\.site !== "youtube"/);
+  assert.match(
+    screenshotsStyles,
+    /\.loopCaption[\s\S]*\.isVisible[\s\S]*opacity: 1/,
+  );
 });
 
 test("video scenes use the real animated marketing surface", () => {
@@ -71,6 +103,13 @@ test("the story chooses an alternative and makes the outcome explicit", () => {
     endSubtitle: "You decide what happens next.",
   });
   assert.ok(VIDEO_TIMING.tabCloseMs >= 1000);
+});
+
+test("the final message eases in after its backdrop starts softening", () => {
+  assert.ok(VIDEO_TIMING.endBackdropLeadMs >= 250);
+  assert.ok(VIDEO_TIMING.endHoldMs >= 2200);
+  assert.match(videoSource, /minded-video-card-content/);
+  assert.match(videoSource, /is-backdrop-visible[\s\S]*is-content-visible/);
 });
 
 test("quick-answer interventions do not reserve hidden input space in the video", () => {

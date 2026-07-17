@@ -32,7 +32,7 @@ type ScreenshotTarget =
 
 type ScreenshotTheme = "light" | "dark";
 type ScreenshotPlatform = "web-extension" | "android";
-type BrowserSite = "youtube" | "x" | "instagram";
+type BrowserSite = "youtube" | "reddit" | "x" | "tiktok" | "instagram";
 
 const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
@@ -46,7 +46,13 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "q-this-week-i-will-do-my-best-to",
 ];
 
-const BROWSER_SITES: BrowserSite[] = ["youtube", "x", "instagram"];
+const BROWSER_SITES: BrowserSite[] = [
+  "youtube",
+  "reddit",
+  "x",
+  "tiktok",
+  "instagram",
+];
 
 const SCREENSHOT_SESSION_INTENT = { id: "check_one_thing" } as const;
 
@@ -287,10 +293,24 @@ const BrowserChrome = (props: { isTabClosed: boolean; site: BrowserSite }) => (
       </span>
       <span
         class={styles.browserSiteValue}
+        classList={{ [styles.isVisible]: props.site === "reddit" }}
+      >
+        <span class={styles.redditTabMark}>r/</span>
+        <span>Reddit</span>
+      </span>
+      <span
+        class={styles.browserSiteValue}
         classList={{ [styles.isVisible]: props.site === "x" }}
       >
         <span class={styles.xTabMark}>X</span>
         <span>X</span>
+      </span>
+      <span
+        class={styles.browserSiteValue}
+        classList={{ [styles.isVisible]: props.site === "tiktok" }}
+      >
+        <span class={styles.tiktokTabMark}>♪</span>
+        <span>TikTok</span>
       </span>
       <span
         class={styles.browserSiteValue}
@@ -310,9 +330,21 @@ const BrowserChrome = (props: { isTabClosed: boolean; site: BrowserSite }) => (
       </span>
       <span
         class={styles.currentAddress}
+        classList={{ [styles.isVisible]: props.site === "reddit" }}
+      >
+        reddit.com
+      </span>
+      <span
+        class={styles.currentAddress}
         classList={{ [styles.isVisible]: props.site === "x" }}
       >
         x.com
+      </span>
+      <span
+        class={styles.currentAddress}
+        classList={{ [styles.isVisible]: props.site === "tiktok" }}
+      >
+        tiktok.com
       </span>
       <span
         class={styles.currentAddress}
@@ -339,8 +371,8 @@ const BrowserNewTabShot = (props: { isVisible: boolean }) => (
   </div>
 );
 
-const BrowserInstagramShot = () => (
-  <div id="minded-6622-coloured-wrapper" class={styles.browserInstagram}>
+const BrowserInstagramContent = () => (
+  <>
     <header class={styles.socialNav}>
       <div class={styles.socialNavInner}>
         <div class={styles.socialBrand}>Instagram</div>
@@ -428,118 +460,228 @@ const BrowserInstagramShot = () => (
         </div>
       </aside>
     </main>
+  </>
+);
+
+const BrowserInstagramShot = () => (
+  <div id="minded-6622-coloured-wrapper" class={styles.browserInstagram}>
+    <BrowserInstagramContent />
+  </div>
+);
+
+const BrowserRedditContent = () => (
+  <>
+    <header class={styles.redditHeader}>
+      <div class={styles.redditBrand}>
+        <span>●</span> reddit
+      </div>
+      <div class={styles.redditSearch}>⌕&nbsp;&nbsp; Search Reddit</div>
+      <div class={styles.redditUser}>＋ Create&nbsp;&nbsp;&nbsp; ◉</div>
+    </header>
+    <div class={styles.redditLayout}>
+      <aside class={styles.redditNavigation}>
+        <b>⌂&nbsp;&nbsp;Home</b>
+        <span>↗&nbsp;&nbsp;Popular</span>
+        <small>COMMUNITIES</small>
+        <span>r/todayilearned</span>
+        <span>r/interesting</span>
+        <span>r/AskReddit</span>
+      </aside>
+      <main class={styles.redditFeed}>
+        <h2>Popular</h2>
+        <article>
+          <div class={styles.redditVotes}>
+            ▲<b>18k</b>▼
+          </div>
+          <div>
+            <small>r/todayilearned · 3 hr. ago</small>
+            <h3>Just learned this and had to keep scrolling</h3>
+            <div class={`${styles.redditImage} ${styles.redditImageOne}`} />
+            <span>◯ 842 comments&nbsp;&nbsp;&nbsp; ↗ Share</span>
+          </div>
+        </article>
+        <article>
+          <div class={styles.redditVotes}>
+            ▲<b>9k</b>▼
+          </div>
+          <div>
+            <small>r/interesting · 12 min. ago</small>
+            <h3>One more post before getting back to the day</h3>
+            <span>◯ 316 comments&nbsp;&nbsp;&nbsp; ↗ Share</span>
+          </div>
+        </article>
+      </main>
+    </div>
+  </>
+);
+
+const BrowserTiktokContent = () => (
+  <div class={styles.tiktokLayout}>
+    <aside class={styles.tiktokNavigation}>
+      <div class={styles.tiktokBrand}>♪ TikTok</div>
+      <b>⌂&nbsp;&nbsp;For You</b>
+      <span>⌕&nbsp;&nbsp;Explore</span>
+      <span>☷&nbsp;&nbsp;Following</span>
+      <span>◯&nbsp;&nbsp;Friends</span>
+      <span>☁&nbsp;&nbsp;Upload</span>
+      <span>◉&nbsp;&nbsp;Profile</span>
+    </aside>
+    <main class={styles.tiktokFeed}>
+      <div class={styles.tiktokVideo}>
+        <div class={styles.tiktokScene} />
+        <div class={styles.tiktokCopy}>
+          <b>@somewhereoutside</b>
+          <p>wait for the view at the end</p>
+          <span>♪ original sound</span>
+        </div>
+        <div class={styles.tiktokActions}>
+          <span>
+            ◉<small>482K</small>
+          </span>
+          <span>
+            ♥<small>73K</small>
+          </span>
+          <span>
+            ●<small>1,903</small>
+          </span>
+          <span>
+            ↗<small>Share</small>
+          </span>
+        </div>
+      </div>
+    </main>
   </div>
 );
 
 const BrowserSocialPileShot = (props: { site: BrowserSite }) => (
-  <>
-    <BrowserInstagramShot />
+  <div
+    id="minded-video-social-pile"
+    class={styles.socialPile}
+    classList={{
+      [styles.isYoutubePile]: props.site === "youtube",
+      [styles.isRedditPile]: props.site === "reddit",
+      [styles.isXPile]: props.site === "x",
+      [styles.isTiktokPile]: props.site === "tiktok",
+      [styles.isInstagramPile]: props.site === "instagram",
+    }}
+    aria-label="Social media switching demo"
+  >
     <div
-      id="minded-video-social-pile"
-      class={styles.socialPile}
-      aria-label="Social media switching demo"
+      class={`${styles.socialPilePage} ${styles.instagramPage} ${styles.browserInstagram}`}
     >
-      <div
-        class={`${styles.socialPilePage} ${styles.xPage}`}
-        classList={{ [styles.isVisible]: props.site === "x" }}
-      >
-        <div class={styles.xLayout}>
-          <aside class={styles.xNavigation}>
-            <div class={styles.xLogo}>X</div>
-            <div>⌂&nbsp;&nbsp;Home</div>
-            <div>⌕&nbsp;&nbsp;Explore</div>
-            <div>♡&nbsp;&nbsp;Notifications</div>
-            <div>✉&nbsp;&nbsp;Messages</div>
-          </aside>
-          <main class={styles.xFeed}>
-            <header>
-              <b>For you</b>
-              <span>Following</span>
-            </header>
-            <article>
-              <span class={`${styles.profileDot} ${styles.xAvatar}`} />
-              <div>
-                <b>small moments</b> <small>@smallmoments · 2m</small>
-                <p>one more thing before getting back to the day</p>
-                <div class={styles.xPostImage} />
-                <div class={styles.xPostActions}>
-                  ○ 148&nbsp;&nbsp; ♡ 1.2K&nbsp;&nbsp; ↗
-                </div>
-              </div>
-            </article>
-            <article>
-              <span class={`${styles.profileDot} ${styles.xAvatar}`} />
-              <div>
-                <b>daily notes</b> <small>@dailynotes · 5m</small>
-                <p>the feed keeps going. and going.</p>
-              </div>
-            </article>
-          </main>
-          <aside class={styles.xTrends}>
-            <b>What’s happening</b>
-            <small>Trending</small>
-            <strong>For you</strong>
-            <small>Popular now</small>
-            <strong>Another update</strong>
-          </aside>
-        </div>
-      </div>
+      <BrowserInstagramContent />
+    </div>
 
-      <div
-        class={`${styles.socialPilePage} ${styles.youtubePage}`}
-        classList={{ [styles.isVisible]: props.site === "youtube" }}
-      >
-        <header class={styles.youtubeHeader}>
-          <div class={styles.youtubeBrand}>
-            <span>▶</span> YouTube
-          </div>
-          <div class={styles.youtubeSearch}>Search</div>
-          <div>＋&nbsp;&nbsp; ◯</div>
-        </header>
-        <div class={styles.youtubeLayout}>
-          <aside class={styles.youtubeNavigation}>
-            <div>⌂&nbsp;&nbsp;Home</div>
-            <div>▶&nbsp;&nbsp;Shorts</div>
-            <div>▣&nbsp;&nbsp;Subscriptions</div>
-            <div>◷&nbsp;&nbsp;History</div>
-          </aside>
-          <main class={styles.youtubeFeed}>
-            <h2>Recommended</h2>
-            <div class={styles.youtubeGrid}>
-              <article>
-                <div class={`${styles.videoThumb} ${styles.videoOne}`}>
-                  <small>12:48</small>
-                </div>
-                <b>Things worth seeing today</b>
-                <span>new every hour · 84K views</span>
-              </article>
-              <article>
-                <div class={`${styles.videoThumb} ${styles.videoTwo}`}>
-                  <small>8:12</small>
-                </div>
-                <b>You won’t believe what happened</b>
-                <span>recommended · 211K views</span>
-              </article>
-              <article>
-                <div class={`${styles.videoThumb} ${styles.videoThree}`}>
-                  <small>22:03</small>
-                </div>
-                <b>One more video before you go</b>
-                <span>watch next · 59K views</span>
-              </article>
-              <article>
-                <div class={`${styles.videoThumb} ${styles.videoFour}`}>
-                  <small>15:21</small>
-                </div>
-                <b>The update everyone is watching</b>
-                <span>trending · 126K views</span>
-              </article>
+    <div class={`${styles.socialPilePage} ${styles.tiktokPage}`}>
+      <BrowserTiktokContent />
+    </div>
+
+    <div class={`${styles.socialPilePage} ${styles.xPage}`}>
+      <div class={styles.xLayout}>
+        <aside class={styles.xNavigation}>
+          <div class={styles.xLogo}>X</div>
+          <div>⌂&nbsp;&nbsp;Home</div>
+          <div>⌕&nbsp;&nbsp;Explore</div>
+          <div>♡&nbsp;&nbsp;Notifications</div>
+          <div>✉&nbsp;&nbsp;Messages</div>
+        </aside>
+        <main class={styles.xFeed}>
+          <header>
+            <b>For you</b>
+            <span>Following</span>
+          </header>
+          <article>
+            <span class={`${styles.profileDot} ${styles.xAvatar}`} />
+            <div>
+              <b>small moments</b> <small>@smallmoments · 2m</small>
+              <p>one more thing before getting back to the day</p>
+              <div class={styles.xPostImage} />
+              <div class={styles.xPostActions}>
+                ○ 148&nbsp;&nbsp; ♡ 1.2K&nbsp;&nbsp; ↗
+              </div>
             </div>
-          </main>
-        </div>
+          </article>
+          <article>
+            <span class={`${styles.profileDot} ${styles.xAvatar}`} />
+            <div>
+              <b>daily notes</b> <small>@dailynotes · 5m</small>
+              <p>the feed keeps going. and going.</p>
+            </div>
+          </article>
+        </main>
+        <aside class={styles.xTrends}>
+          <b>What’s happening</b>
+          <small>Trending</small>
+          <strong>For you</strong>
+          <small>Popular now</small>
+          <strong>Another update</strong>
+        </aside>
       </div>
     </div>
-  </>
+
+    <div class={`${styles.socialPilePage} ${styles.redditPage}`}>
+      <BrowserRedditContent />
+    </div>
+
+    <div class={`${styles.socialPilePage} ${styles.youtubePage}`}>
+      <header class={styles.youtubeHeader}>
+        <div class={styles.youtubeBrand}>
+          <span>▶</span> YouTube
+        </div>
+        <div class={styles.youtubeSearch}>Search</div>
+        <div>＋&nbsp;&nbsp; ◯</div>
+      </header>
+      <div class={styles.youtubeLayout}>
+        <aside class={styles.youtubeNavigation}>
+          <div>⌂&nbsp;&nbsp;Home</div>
+          <div>▶&nbsp;&nbsp;Shorts</div>
+          <div>▣&nbsp;&nbsp;Subscriptions</div>
+          <div>◷&nbsp;&nbsp;History</div>
+        </aside>
+        <main class={styles.youtubeFeed}>
+          <h2>Recommended</h2>
+          <div class={styles.youtubeGrid}>
+            <article>
+              <div class={`${styles.videoThumb} ${styles.videoOne}`}>
+                <small>12:48</small>
+              </div>
+              <b>Things worth seeing today</b>
+              <span>new every hour · 84K views</span>
+            </article>
+            <article>
+              <div class={`${styles.videoThumb} ${styles.videoTwo}`}>
+                <small>8:12</small>
+              </div>
+              <b>You won’t believe what happened</b>
+              <span>recommended · 211K views</span>
+            </article>
+            <article>
+              <div class={`${styles.videoThumb} ${styles.videoThree}`}>
+                <small>22:03</small>
+              </div>
+              <b>One more video before you go</b>
+              <span>watch next · 59K views</span>
+            </article>
+            <article>
+              <div class={`${styles.videoThumb} ${styles.videoFour}`}>
+                <small>15:21</small>
+              </div>
+              <b>The update everyone is watching</b>
+              <span>trending · 126K views</span>
+            </article>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div
+      class={styles.loopCaption}
+      classList={{ [styles.isVisible]: props.site !== "youtube" }}
+      aria-hidden={props.site === "youtube"}
+    >
+      Stuck in a loop?
+    </div>
+  </div>
 );
 
 const BrowserInterventionFlow = () => {

@@ -99,6 +99,8 @@
 
 .newTabMark,
 .youtubeTabMark,
+.redditTabMark,
+.tiktokTabMark,
 .xTabMark {
   border-radius: 50%;
   display: grid;
@@ -151,6 +153,21 @@
 .xTabMark {
   background: #111;
   color: #fff;
+}
+
+.redditTabMark {
+  background: #ff4500;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.tiktokTabMark {
+  background: #111;
+  color: #fff;
+  text-shadow:
+    -1px 0 #25f4ee,
+    1px 0 #fe2c55;
 }
 
 .tabMark {
@@ -516,28 +533,404 @@
 }
 
 .socialPile {
+  background: #e5e2dc;
   color: #161616;
   font-family: var(--font-body);
   inset: 68px 0 0;
+  overflow: hidden;
+  perspective: 1400px;
   position: fixed;
   text-align: left;
   z-index: 9999999999999999;
 }
 
 .socialPilePage {
+  border: 1px solid rgb(35 36 38 / 12%);
+  box-shadow: 0 28px 70px rgb(31 32 34 / 22%);
   background: #fff;
   inset: 0;
   opacity: 0;
+  overflow: hidden;
   position: absolute;
-  transition: opacity 420ms ease;
+  transform-origin: center;
+  transition:
+    border-radius 650ms var(--ease-out),
+    opacity 480ms var(--ease-out),
+    transform 650ms var(--ease-out);
+  will-change: opacity, transform;
 }
 
-.socialPilePage.isVisible {
+.loopCaption {
+  align-items: flex-end;
+  background: linear-gradient(
+    180deg,
+    rgb(247 244 231 / 0%) 0%,
+    rgb(247 244 231 / 84%) 100%
+  );
+  bottom: 0;
+  color: #252525;
+  display: flex;
+  font-family: var(--font-display);
+  font-size: 32px;
+  inset-inline: 0;
+  justify-content: center;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  opacity: 0;
+  padding-bottom: 24px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity 600ms var(--ease-out),
+    transform 700ms var(--ease-out);
+  z-index: 10;
+}
+
+.loopCaption.isVisible {
   opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.instagramPage {
+  transform: translate3d(92px, -30px, 0) scale(0.9) rotate(2.2deg);
+  z-index: 1;
+}
+
+.tiktokPage {
+  transform: translate3d(-88px, -26px, 0) scale(0.91) rotate(-2deg);
+  z-index: 2;
 }
 
 .xPage {
-  z-index: 1;
+  transform: translate3d(72px, -22px, 0) scale(0.93) rotate(1.8deg);
+  z-index: 3;
+}
+
+.redditPage {
+  transform: translate3d(-74px, -20px, 0) scale(0.94) rotate(-1.6deg);
+  z-index: 4;
+}
+
+.isYoutubePile .youtubePage {
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0);
+  z-index: 3;
+}
+
+.isRedditPile {
+  .youtubePage {
+    border-radius: 18px;
+    opacity: 0.92;
+    transform: translate3d(-42px, 14px, 0) scale(0.94) rotate(-1.2deg);
+    z-index: 1;
+  }
+
+  .redditPage {
+    border-radius: 14px;
+    opacity: 1;
+    transform: translate3d(20px, 6px, 0) scale(0.97) rotate(0.6deg);
+    z-index: 2;
+  }
+}
+
+.isXPile {
+  .youtubePage {
+    border-radius: 20px;
+    opacity: 0.88;
+    transform: translate3d(-66px, 24px, 0) scale(0.89) rotate(-1.8deg);
+    z-index: 1;
+  }
+
+  .redditPage {
+    border-radius: 18px;
+    opacity: 0.93;
+    transform: translate3d(52px, 15px, 0) scale(0.93) rotate(1.3deg);
+    z-index: 2;
+  }
+
+  .xPage {
+    border-radius: 14px;
+    opacity: 1;
+    transform: translate3d(0, 5px, 0) scale(0.96) rotate(-0.35deg);
+    z-index: 3;
+  }
+}
+
+.isTiktokPile {
+  .youtubePage {
+    border-radius: 22px;
+    opacity: 0.82;
+    transform: translate3d(-82px, 34px, 0) scale(0.85) rotate(-2.3deg);
+    z-index: 1;
+  }
+
+  .redditPage {
+    border-radius: 20px;
+    opacity: 0.88;
+    transform: translate3d(72px, 25px, 0) scale(0.88) rotate(2deg);
+    z-index: 2;
+  }
+
+  .xPage {
+    border-radius: 18px;
+    opacity: 0.94;
+    transform: translate3d(46px, 15px, 0) scale(0.92) rotate(1.1deg);
+    z-index: 3;
+  }
+
+  .tiktokPage {
+    border-radius: 14px;
+    opacity: 1;
+    transform: translate3d(-8px, 5px, 0) scale(0.96) rotate(-0.45deg);
+    z-index: 4;
+  }
+}
+
+.isInstagramPile {
+  .youtubePage {
+    border-radius: 24px;
+    opacity: 0.76;
+    transform: translate3d(-104px, 42px, 0) scale(0.8) rotate(-2.8deg);
+    z-index: 1;
+  }
+
+  .redditPage {
+    border-radius: 22px;
+    opacity: 0.82;
+    transform: translate3d(96px, 30px, 0) scale(0.83) rotate(2.5deg);
+    z-index: 2;
+  }
+
+  .xPage {
+    border-radius: 20px;
+    opacity: 0.88;
+    transform: translate3d(68px, 38px, 0) scale(0.86) rotate(1.8deg);
+    z-index: 3;
+  }
+
+  .tiktokPage {
+    border-radius: 18px;
+    opacity: 0.94;
+    transform: translate3d(-58px, 23px, 0) scale(0.9) rotate(-1.3deg);
+    z-index: 4;
+  }
+
+  .instagramPage {
+    border-radius: 14px;
+    opacity: 1;
+    transform: translate3d(0, 5px, 0) scale(0.94) rotate(-0.2deg);
+    z-index: 5;
+  }
+}
+
+.redditHeader {
+  align-items: center;
+  border-bottom: 1px solid #edeff1;
+  display: flex;
+  height: 58px;
+  padding: 0 24px;
+}
+
+.redditBrand {
+  align-items: center;
+  display: flex;
+  font-size: 22px;
+  font-weight: 700;
+  gap: 7px;
+  width: 220px;
+
+  span {
+    color: #ff4500;
+    font-size: 30px;
+  }
+}
+
+.redditSearch {
+  background: #f6f7f8;
+  border: 1px solid #edeff1;
+  border-radius: 22px;
+  color: #777;
+  flex: 1;
+  font-size: 14px;
+  max-width: 620px;
+  padding: 11px 18px;
+}
+
+.redditUser {
+  font-size: 14px;
+  margin-left: auto;
+}
+
+.redditLayout {
+  background: #dae0e6;
+  display: grid;
+  grid-template-columns: 220px 720px;
+  height: calc(100% - 58px);
+  justify-content: center;
+}
+
+.redditNavigation {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  gap: 23px;
+  padding: 28px 24px;
+
+  small {
+    color: #777;
+    font-size: 10px;
+    margin-top: 8px;
+  }
+}
+
+.redditFeed {
+  padding: 22px 28px;
+
+  h2 {
+    font-size: 19px;
+    margin: 0 0 14px;
+  }
+
+  article {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 42px 1fr;
+    margin-bottom: 12px;
+    padding: 14px;
+
+    h3 {
+      font-size: 18px;
+      margin: 8px 0 12px;
+    }
+
+    small,
+    span {
+      color: #787c7e;
+      font-size: 11px;
+    }
+  }
+}
+
+.redditVotes {
+  align-items: center;
+  color: #878a8c;
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  gap: 5px;
+
+  b {
+    color: #1a1a1b;
+    font-size: 12px;
+  }
+}
+
+.redditImage {
+  border-radius: 3px;
+  height: 170px;
+  margin-bottom: 10px;
+}
+
+.redditImageOne {
+  background:
+    radial-gradient(circle at 70% 30%, #fff6b6 0 6%, transparent 6.5%),
+    linear-gradient(150deg, #9ccad0 0 42%, #4e7074 43% 61%, #d8b17d 62%);
+}
+
+.tiktokLayout {
+  background: #fff;
+  color: #161823;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  height: 100%;
+}
+
+.tiktokNavigation {
+  border-right: 1px solid #ececec;
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  gap: 27px;
+  padding: 24px 30px;
+
+  b {
+    color: #fe2c55;
+  }
+}
+
+.tiktokBrand {
+  font-size: 27px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  text-shadow:
+    -1px 0 #25f4ee,
+    1px 0 #fe2c55;
+}
+
+.tiktokFeed {
+  align-items: center;
+  background: #f7f7f7;
+  display: flex;
+  justify-content: center;
+  padding: 18px;
+}
+
+.tiktokVideo {
+  background: #151515;
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgb(20 20 20 / 22%);
+  color: #fff;
+  height: 560px;
+  overflow: hidden;
+  position: relative;
+  width: 360px;
+}
+
+.tiktokScene {
+  background:
+    radial-gradient(circle at 68% 19%, #fff8c9 0 7%, transparent 7.5%),
+    linear-gradient(165deg, #8fb6c2 0 45%, #47747c 46% 66%, #c5a273 67%);
+  inset: 0;
+  position: absolute;
+}
+
+.tiktokCopy {
+  bottom: 24px;
+  left: 18px;
+  position: absolute;
+
+  p {
+    margin: 8px 0;
+  }
+}
+
+.tiktokActions {
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  font-size: 26px;
+  gap: 18px;
+  position: absolute;
+  right: 14px;
+
+  span {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+
+  small {
+    font-size: 10px;
+    margin-top: 3px;
+  }
 }
 
 .xLayout {
@@ -634,7 +1027,7 @@
 }
 
 .youtubePage {
-  z-index: 2;
+  z-index: 3;
 }
 
 .youtubeHeader {

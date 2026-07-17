@@ -21,7 +21,13 @@ export const VIDEO_SCENES = [
   { target: "browser-intervention", theme: "light" },
 ];
 
-export const VIDEO_SITES = Object.freeze(["youtube", "x", "instagram"]);
+export const VIDEO_SITES = Object.freeze([
+  "youtube",
+  "reddit",
+  "x",
+  "tiktok",
+  "instagram",
+]);
 
 export const VIDEO_COPY = Object.freeze({
   choice: "take a short walk",
@@ -30,12 +36,14 @@ export const VIDEO_COPY = Object.freeze({
 });
 
 export const VIDEO_TIMING = Object.freeze({
-  socialSiteMs: 750,
-  instagramMs: 1200,
+  socialSiteMs: 600,
+  instagramMs: 1100,
   questionMs: 1200,
   instructionsMs: 2200,
   afterDragMs: 900,
   tabCloseMs: 1300,
+  endBackdropLeadMs: 320,
+  endHoldMs: 2200,
 });
 
 export const createVideoUrl = (baseUrl, scene) => {
@@ -278,20 +286,38 @@ const installVideoChrome = async (page) => {
 
       .minded-video-card {
         align-items: center;
-        backdrop-filter: blur(18px);
-        background: rgba(247, 244, 231, 0.72);
+        backdrop-filter: blur(0);
+        background-color: rgba(247, 244, 231, 0);
         display: flex;
         flex-direction: column;
         inset: 0;
         justify-content: center;
-        opacity: 0;
         padding: 80px;
         text-align: center;
         top: 68px;
-        transition: opacity 800ms ease;
+        transition:
+          backdrop-filter 1200ms cubic-bezier(0.22, 1, 0.36, 1),
+          background-color 1200ms cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      .minded-video-card.is-visible { opacity: 1; }
+      .minded-video-card.is-backdrop-visible {
+        backdrop-filter: blur(18px);
+        background-color: rgba(247, 244, 231, 0.82);
+      }
+      .minded-video-card-content {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translate3d(0, 18px, 0) scale(0.985);
+        transition:
+          opacity 900ms ease,
+          transform 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .minded-video-card.is-content-visible .minded-video-card-content {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
       .minded-video-card .brand {
         font-size: 18px;
         letter-spacing: 0.16em;
@@ -325,6 +351,9 @@ const addCard = async (page, { title, subtitle }) => {
       const card = document.createElement("div");
       card.className = "minded-video-card";
 
+      const content = document.createElement("div");
+      content.className = "minded-video-card-content";
+
       const brand = document.createElement("div");
       brand.className = "brand";
       brand.textContent = "minded";
@@ -335,12 +364,18 @@ const addCard = async (page, { title, subtitle }) => {
       const supportingCopy = document.createElement("p");
       supportingCopy.textContent = copy.subtitle;
 
-      card.append(brand, heading, supportingCopy);
+      content.append(brand, heading, supportingCopy);
+      card.appendChild(content);
       body.appendChild(card);
-      requestAnimationFrame(() => card.classList.add("is-visible"));
+      requestAnimationFrame(() => card.classList.add("is-backdrop-visible"));
     },
     { title, subtitle },
   );
+
+  await wait(page, VIDEO_TIMING.endBackdropLeadMs);
+  await page.locator(".minded-video-card").evaluate((card) => {
+    card.classList.add("is-content-visible");
+  });
 };
 
 const revealScene = async (page) => {
@@ -425,8 +460,14 @@ const playScene = async (page, scene, baseUrl, pageErrors, isFirstScene) => {
   if (scene.target === "browser-social") {
     await revealScene(page);
     await wait(page, VIDEO_TIMING.socialSiteMs);
-    await showBrowserSite(page, VIDEO_SITES[1], VIDEO_TIMING.socialSiteMs);
-    await showBrowserSite(page, VIDEO_SITES[2], VIDEO_TIMING.instagramMs);
+    for (const [index, site] of VIDEO_SITES.slice(1).entries()) {
+      const isLastSite = index === VIDEO_SITES.length - 2;
+      await showBrowserSite(
+        page,
+        site,
+        isLastSite ? VIDEO_TIMING.instagramMs : VIDEO_TIMING.socialSiteMs,
+      );
+    }
     return;
   }
 
@@ -525,7 +566,7 @@ export const captureVideo = async () => {
       title: VIDEO_COPY.endTitle,
       subtitle: VIDEO_COPY.endSubtitle,
     });
-    await wait(page, 2200);
+    await wait(page, VIDEO_TIMING.endHoldMs);
 
     await context.close();
     context = undefined;
