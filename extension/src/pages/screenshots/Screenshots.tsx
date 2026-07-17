@@ -76,6 +76,9 @@ const getScreenshotPlatform = (): ScreenshotPlatform =>
 const getIsBrowserVideo = (): boolean =>
   new URLSearchParams(window.location.search).get("browser") === "1";
 
+const getIsMobileVideo = (): boolean =>
+  new URLSearchParams(window.location.search).get("mobile") === "1";
+
 const getQuestion = (
   categoryId: QuestionCategoryId,
   qid: QID,
@@ -463,8 +466,12 @@ const BrowserInstagramContent = () => (
   </>
 );
 
-const BrowserInstagramShot = () => (
-  <div id="minded-6622-coloured-wrapper" class={styles.browserInstagram}>
+const BrowserInstagramShot = (props: { isMobile: boolean }) => (
+  <div
+    id="minded-6622-coloured-wrapper"
+    class={styles.browserInstagram}
+    classList={{ [styles.mobileInstagram]: props.isMobile }}
+  >
     <BrowserInstagramContent />
   </div>
 );
@@ -553,7 +560,10 @@ const BrowserTiktokContent = () => (
   </div>
 );
 
-const BrowserSocialPileShot = (props: { site: BrowserSite }) => (
+const BrowserSocialPileShot = (props: {
+  site: BrowserSite;
+  isMobile: boolean;
+}) => (
   <div
     id="minded-video-social-pile"
     class={styles.socialPile}
@@ -563,6 +573,7 @@ const BrowserSocialPileShot = (props: { site: BrowserSite }) => (
       [styles.isXPile]: props.site === "x",
       [styles.isTiktokPile]: props.site === "tiktok",
       [styles.isInstagramPile]: props.site === "instagram",
+      [styles.mobileSocialPile]: props.isMobile,
     }}
     aria-label="Social media switching demo"
   >
@@ -684,15 +695,16 @@ const BrowserSocialPileShot = (props: { site: BrowserSite }) => (
   </div>
 );
 
-const BrowserInterventionFlow = () => {
+const BrowserInterventionFlow = (props: { isMobile: boolean }) => {
   let wrapperEl: HTMLDivElement = undefined!;
 
   return (
     <>
-      <BrowserInstagramShot />
+      <BrowserInstagramShot isMobile={props.isMobile} />
       <div
         id="minded-6622-coloured-wrapper-dynamic"
         class={styles.browserIntervention}
+        classList={{ [styles.mobileIntervention]: props.isMobile }}
         style={{ opacity: "1" }}
         ref={(element) => {
           wrapperEl = element;
@@ -700,13 +712,19 @@ const BrowserInterventionFlow = () => {
       >
         <InteractionCommon
           questionForPrompt={getQuestion(
-            QuestionCategoryId.HealthierBrowsingHabits,
-            QID.HBH6,
+            props.isMobile
+              ? QuestionCategoryId.HealthierAppUsage
+              : QuestionCategoryId.HealthierBrowsingHabits,
+            props.isMobile ? QID.HAU6 : QID.HBH6,
           )}
           isInitFadeout={false}
           wrapperEl={wrapperEl}
-          interactionTarget={{ kind: "host", id: "instagram.com" }}
-          interactionPlatform="web"
+          interactionTarget={
+            props.isMobile
+              ? { kind: "app", id: "Instagram" }
+              : { kind: "host", id: "instagram.com" }
+          }
+          interactionPlatform={props.isMobile ? "android" : "web"}
           onAfterInteractionFadeout={() => undefined}
           onSetAnswer={() => undefined}
           onUpdateQuestion={() => undefined}
@@ -761,6 +779,7 @@ const Screenshots = (): JSX.Element => {
   const theme = getScreenshotTheme();
   const platform = getScreenshotPlatform();
   const isBrowserVideo = getIsBrowserVideo();
+  const isMobileVideo = getIsMobileVideo();
 
   (window as any).IS_MAIN_MINDED_6622 = true;
   (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ = createScreenshotSyncData();
@@ -809,9 +828,9 @@ const Screenshots = (): JSX.Element => {
   return (
     <>
       {target() === "browser-social" ? (
-        <BrowserSocialPileShot site={browserSite()} />
+        <BrowserSocialPileShot site={browserSite()} isMobile={isMobileVideo} />
       ) : target() === "browser-intervention" ? (
-        <BrowserInterventionFlow />
+        <BrowserInterventionFlow isMobile={isMobileVideo} />
       ) : (
         <ScreenshotSurface theme={theme}>
           {target() === "energy-lvl" && (
@@ -862,7 +881,7 @@ const Screenshots = (): JSX.Element => {
           )}
         </ScreenshotSurface>
       )}
-      {isBrowserVideo && (
+      {isBrowserVideo && !isMobileVideo && (
         <>
           <BrowserNewTabShot isVisible={isBrowserTabClosed()} />
           <BrowserChrome

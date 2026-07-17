@@ -1398,3 +1398,276 @@
 .videoFour {
   background: linear-gradient(135deg, #69829d, #ba876e);
 }
+
+.mobileSocialPile {
+  inset: 0;
+
+  .tiktokNavigation,
+  .xNavigation,
+  .xTrends,
+  .redditNavigation,
+  .youtubeNavigation {
+    display: none;
+  }
+
+  .tiktokLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .tiktokFeed {
+    background: #151515;
+    padding: 0;
+  }
+
+  .tiktokVideo {
+    border-radius: 0;
+    box-shadow: none;
+    height: 100%;
+    width: 100%;
+  }
+
+  .tiktokCopy {
+    bottom: 48px;
+    font-size: 20px;
+    left: 28px;
+  }
+
+  .tiktokActions {
+    bottom: 52px;
+    font-size: 36px;
+    gap: 26px;
+    right: 24px;
+
+    small {
+      font-size: 13px;
+    }
+  }
+
+  .xLayout {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .xFeed {
+    border-right: 0;
+    font-size: 20px;
+
+    > header {
+      font-size: 22px;
+      padding: 28px;
+    }
+
+    article {
+      gap: 18px;
+      padding: 26px;
+    }
+
+    small {
+      font-size: 16px;
+    }
+  }
+
+  .xAvatar {
+    height: 56px;
+    width: 56px;
+  }
+
+  .xPostImage {
+    height: 500px;
+  }
+
+  .xPostActions {
+    font-size: 16px;
+  }
+
+  .redditHeader {
+    height: 88px;
+    padding: 0 28px;
+  }
+
+  .redditBrand {
+    font-size: 30px;
+    width: auto;
+  }
+
+  .redditSearch {
+    font-size: 18px;
+    margin-left: 28px;
+  }
+
+  .redditUser {
+    display: none;
+  }
+
+  .redditLayout {
+    grid-template-columns: 1fr;
+    height: calc(100% - 88px);
+  }
+
+  .redditFeed {
+    padding: 28px;
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    article {
+      gap: 18px;
+      grid-template-columns: 54px 1fr;
+      margin-bottom: 18px;
+      padding: 20px;
+
+      h3 {
+        font-size: 25px;
+      }
+
+      small,
+      span {
+        font-size: 15px;
+      }
+    }
+  }
+
+  .redditImage {
+    height: 420px;
+  }
+
+  .youtubeHeader {
+    height: 88px;
+    padding: 0 28px;
+  }
+
+  .youtubeBrand {
+    font-size: 29px;
+  }
+
+  .youtubeSearch {
+    display: none;
+  }
+
+  .youtubeLayout {
+    grid-template-columns: 1fr;
+    height: calc(100% - 88px);
+  }
+
+  .youtubeFeed {
+    padding: 28px;
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 22px;
+    }
+  }
+
+  .youtubeGrid {
+    gap: 28px;
+    grid-template-columns: 1fr;
+
+    b {
+      font-size: 22px;
+    }
+
+    span {
+      font-size: 16px;
+    }
+  }
+
+  .videoThumb {
+    height: 340px;
+  }
+
+  .loopCaption {
+    font-size: 44px;
+    padding-bottom: 44px;
+  }
+}
+
+.mobileInstagram,
+.mobileSocialPile {
+  .socialNav {
+    height: 88px;
+  }
+
+  .socialNavInner {
+    padding: 0 28px;
+  }
+
+  .socialBrand {
+    font-size: 38px;
+  }
+
+  .socialSearch {
+    display: none;
+  }
+
+  .socialNavActions {
+    font-size: 30px;
+    gap: 24px;
+  }
+
+  .socialLayout {
+    display: block;
+    margin: 0;
+    max-width: none;
+  }
+
+  .stories {
+    border-inline: 0;
+    gap: 30px;
+    height: 124px;
+    margin: 0;
+    overflow: hidden;
+    padding: 18px 28px;
+
+    > div {
+      font-size: 14px;
+      gap: 8px;
+    }
+
+    span {
+      height: 66px;
+      width: 66px;
+    }
+  }
+
+  .socialSidebar {
+    display: none;
+  }
+
+  .socialPost {
+    border-inline: 0;
+  }
+
+  .postHeader {
+    height: 80px;
+    padding: 12px 22px;
+
+    > div {
+      font-size: 17px;
+    }
+  }
+
+  .postAvatar {
+    height: 48px;
+    width: 48px;
+  }
+
+  .mockPhoto {
+    height: 600px;
+  }
+
+  .postActions {
+    font-size: 30px;
+    padding: 16px 22px 6px;
+  }
+
+  .postCopy {
+    font-size: 17px;
+    padding: 0 22px 20px;
+  }
+}
+
+.mobileIntervention {
+  inset: 0 !important;
+}

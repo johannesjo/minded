@@ -46,15 +46,52 @@ test("the dark-mode capture keeps both scenes dark", () => {
 
 test("the mobile cut records a separate 9:16 master", () => {
   assert.deepEqual(VIDEO_FORMATS.mobile.viewport, {
+    width: 360,
+    height: 640,
+  });
+  assert.deepEqual(VIDEO_FORMATS.mobile.videoSize, {
     width: 720,
     height: 1280,
   });
+  assert.equal(VIDEO_FORMATS.mobile.deviceScaleFactor, 2);
   assert.equal(VIDEO_FORMATS.mobile.outputName, "minded-intro-mobile.mp4");
   assert.equal(resolveVideoFormat(["--mobile"]), VIDEO_FORMATS.mobile);
   assert.equal(resolveVideoFormat([]), VIDEO_FORMATS.desktop);
   assert.match(
     videoSource,
+    /recordVideo: \{ dir: recordingDir, size: format\.viewport \}/,
+  );
+  assert.match(
+    videoSource,
+    /scale=\$\{format\.videoSize\.width\}:\$\{format\.videoSize\.height\}/,
+  );
+  assert.match(
+    videoSource,
     /@media \(max-width: 720px\)[\s\S]*\.minded-video-card h1[\s\S]*font-size: 54px/,
+  );
+
+  const mobileUrl = createVideoUrl(
+    "http://127.0.0.1:5175/",
+    { target: "browser-social", theme: "light" },
+    VIDEO_FORMATS.mobile,
+  );
+  assert.equal(
+    mobileUrl,
+    "http://127.0.0.1:5175/?target=browser-social&theme=light&platform=android&skyHour=9&browser=1&mobile=1",
+  );
+});
+
+test("the mobile cut uses full-screen apps and a full-screen intervention", () => {
+  assert.match(screenshotsSource, /const getIsMobileVideo/);
+  assert.match(screenshotsSource, /isBrowserVideo && !isMobileVideo/);
+  assert.match(
+    screenshotsSource,
+    /QuestionCategoryId\.HealthierAppUsage[\s\S]*QID\.HAU6/,
+  );
+  assert.match(screenshotsStyles, /\.mobileSocialPile\s*\{[^}]*inset: 0;/);
+  assert.match(
+    screenshotsStyles,
+    /\.mobileSocialPile[\s\S]*\.tiktokNavigation[\s\S]*display: none;/,
   );
 });
 
@@ -157,6 +194,13 @@ test("the visible pointer approaches the sun before dragging it", () => {
   assert.deepEqual(path[0], { x: 250, y: 190 });
   assert.deepEqual(path.at(-1), { x: 160, y: 260 });
   assert.equal(path.length, 9);
+});
+
+test("the mobile gesture shows a fingertip while desktop keeps its cursor", () => {
+  assert.match(videoSource, /format\.name === "mobile" \? "touch" : "mouse"/);
+  assert.match(videoSource, /minded-video-touch-hand/);
+  assert.match(videoSource, /is-touch/);
+  assert.match(videoSource, /pointer\.style\.transform = `translate3d/);
 });
 
 test("the transition curtain waits for the document root", () => {

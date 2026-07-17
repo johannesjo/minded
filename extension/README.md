@@ -35,3 +35,6 @@ deterministic Playwright surface. The shareable MP4 is written to
 
 Run `npm run video:dark` for the dark-mode variant. It writes
 `output/playwright/minded-intro-dark.mp4`.
+
+Run `npm run video:mobile` for the 720px by 1280px portrait cut. It writes
+`output/playwright/minded-intro-mobile.mp4`.
