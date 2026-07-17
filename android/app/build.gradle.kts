@@ -17,8 +17,8 @@ android {
         // latest internal-test build and Play's cross-track shadowing rule is
         // never tripped. This literal is only the local-build fallback; the
         // user-facing version is versionName below. See RELEASING.md.
-        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 27
-        versionName = "7.2.0"
+        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 28
+        versionName = "7.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
