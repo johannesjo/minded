@@ -17,28 +17,26 @@ const outputPath = path.join(outputDir, "minded-intro.mp4");
 const viewport = { width: 1280, height: 720 };
 
 export const VIDEO_SCENES = [
-  { target: "dashboard", theme: "light" },
-  {
-    target: "draggable-sun",
-    theme: "light",
-    caption: "interrupt, gently.",
-  },
-  {
-    target: "intent-selection",
-    theme: "light",
-    caption: "choose with intention.",
-  },
-  {
-    target: "duration-selection",
-    theme: "light",
-    caption: "set a calm boundary.",
-  },
-  {
-    target: "q-something-i-am-looking-forward-to",
-    theme: "light",
-    caption: "make room for what matters.",
-  },
+  { target: "browser-social", theme: "light" },
+  { target: "browser-intervention", theme: "light" },
 ];
+
+export const VIDEO_SITES = Object.freeze(["youtube", "x", "instagram"]);
+
+export const VIDEO_COPY = Object.freeze({
+  choice: "take a short walk",
+  endTitle: "A pause\nbefore the scroll.",
+  endSubtitle: "You decide what happens next.",
+});
+
+export const VIDEO_TIMING = Object.freeze({
+  socialSiteMs: 750,
+  instagramMs: 1200,
+  questionMs: 1200,
+  instructionsMs: 2200,
+  afterDragMs: 900,
+  tabCloseMs: 1300,
+});
 
 export const createVideoUrl = (baseUrl, scene) => {
   const url = new URL(baseUrl);
@@ -46,18 +44,33 @@ export const createVideoUrl = (baseUrl, scene) => {
   url.searchParams.set("theme", scene.theme);
   url.searchParams.set("platform", "web-extension");
   url.searchParams.set("skyHour", "9");
+  url.searchParams.set("browser", "1");
   return url.toString();
 };
 
-export const getDownwardDragPath = (box, distance = 170, steps = 12) => {
+export const getDownwardDragPath = (box, distance = 170, steps = 32) => {
   const center = {
     x: box.x + box.width / 2,
     y: box.y + box.height / 2,
   };
 
+  return Array.from({ length: steps + 1 }, (_, index) => {
+    const progress = index / steps;
+    const easedProgress = progress * progress * (3 - 2 * progress);
+
+    return {
+      x: center.x,
+      y: center.y + distance * easedProgress,
+    };
+  });
+};
+
+export const getPointerApproachPath = (target, steps = 8) => {
+  const start = { x: target.x + 90, y: target.y - 70 };
+
   return Array.from({ length: steps + 1 }, (_, index) => ({
-    x: center.x,
-    y: center.y + (distance * index) / steps,
+    x: start.x + ((target.x - start.x) * index) / steps,
+    y: start.y + ((target.y - start.y) * index) / steps,
   }));
 };
 
@@ -68,10 +81,13 @@ export const installTransitionCurtain = () => {
       html::after {
         background: #f4ecd6;
         content: "";
-        inset: 0;
+        bottom: 0;
+        left: 0;
         opacity: 1;
         pointer-events: none;
         position: fixed;
+        right: 0;
+        top: 68px;
         transition: opacity 700ms ease;
         z-index: 2147483647;
       }
@@ -86,57 +102,178 @@ export const installTransitionCurtain = () => {
 
 const wait = (page, milliseconds) => page.waitForTimeout(milliseconds);
 
+const installVideoPointer = async (page, initialPosition) => {
+  await page.locator("body").evaluate((body, position) => {
+    document.getElementById("minded-video-pointer")?.remove();
+    document.getElementById("minded-video-pointer-style")?.remove();
+
+    const style = document.createElement("style");
+    style.id = "minded-video-pointer-style";
+    style.textContent = `
+      #minded-video-pointer {
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.18));
+        height: 40px;
+        opacity: 0;
+        pointer-events: none;
+        position: fixed;
+        transition:
+          left 40ms linear,
+          top 40ms linear,
+          opacity 240ms ease;
+        width: 32px;
+        z-index: 2147483647;
+      }
+      #minded-video-pointer.is-visible { opacity: 1; }
+      #minded-video-pointer.is-hidden { opacity: 0; }
+      #minded-video-pointer svg {
+        overflow: visible;
+        transform-origin: 4px 3px;
+        transition: transform 150ms ease;
+      }
+      #minded-video-pointer::after {
+        border: 2px solid rgba(37, 37, 37, 0.55);
+        border-radius: 50%;
+        content: "";
+        height: 14px;
+        left: -5px;
+        opacity: 0;
+        position: absolute;
+        top: -5px;
+        transform: scale(0.5);
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+        width: 14px;
+      }
+      #minded-video-pointer.is-dragging svg {
+        transform: scale(0.9) translate(1px, 2px);
+      }
+      #minded-video-pointer.is-dragging::after {
+        opacity: 0.65;
+        transform: scale(1.5);
+      }
+    `;
+    document.documentElement.appendChild(style);
+
+    const pointer = document.createElement("div");
+    pointer.id = "minded-video-pointer";
+    pointer.setAttribute("aria-hidden", "true");
+    pointer.innerHTML = `
+      <svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
+        <path
+          d="M4 3v26l7-6 6 13 6-3-6-12h10L4 3Z"
+          fill="#fff"
+          stroke="#252525"
+          stroke-linejoin="round"
+          stroke-width="2.2"
+        />
+      </svg>
+    `;
+
+    const movePointer = (x, y) => {
+      pointer.style.left = `${x - 4}px`;
+      pointer.style.top = `${y - 3}px`;
+    };
+    movePointer(position.x, position.y);
+
+    window.addEventListener(
+      "mousemove",
+      (event) => movePointer(event.clientX, event.clientY),
+      true,
+    );
+    window.addEventListener(
+      "mousedown",
+      () => pointer.classList.add("is-dragging"),
+      true,
+    );
+    window.addEventListener(
+      "mouseup",
+      () => pointer.classList.remove("is-dragging"),
+      true,
+    );
+
+    body.appendChild(pointer);
+    requestAnimationFrame(() => pointer.classList.add("is-visible"));
+  }, initialPosition);
+};
+
+const hideVideoPointer = async (page) => {
+  await page.locator("#minded-video-pointer").evaluate((pointer) => {
+    pointer.classList.add("is-hidden");
+  });
+};
+
+const chooseAlternative = async (page, alternative) => {
+  const box = await alternative.boundingBox();
+  if (!box) throw new Error("Could not measure the alternative for the video.");
+
+  const target = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const [pointerStart, ...pointerApproach] = getPointerApproachPath(target);
+  await installVideoPointer(page, pointerStart);
+  await wait(page, 180);
+  for (const point of pointerApproach) {
+    await page.mouse.move(point.x, point.y);
+    await wait(page, 65);
+  }
+  await wait(page, 180);
+  await page.mouse.down();
+  await wait(page, 180);
+  await page.mouse.up();
+  await wait(page, 180);
+  await hideVideoPointer(page);
+};
+
 const dragSunDown = async (page, sun) => {
   const box = await sun.boundingBox();
   if (!box) throw new Error("Could not measure the sun for the video drag.");
 
   const [start, ...dragPath] = getDownwardDragPath(box);
-  await page.mouse.move(start.x, start.y);
+  const [pointerStart, ...pointerApproach] = getPointerApproachPath(start);
+  await installVideoPointer(page, pointerStart);
+  await wait(page, 250);
+  for (const point of pointerApproach) {
+    await page.mouse.move(point.x, point.y);
+    await wait(page, 70);
+  }
+  await wait(page, 250);
   await page.mouse.down();
   try {
+    await wait(page, 180);
     for (const point of dragPath) {
       await page.mouse.move(point.x, point.y);
-      await wait(page, 90);
+      await wait(page, 40);
     }
     await wait(page, 120);
   } finally {
     await page.mouse.up();
   }
+  await wait(page, 180);
+  await hideVideoPointer(page);
 };
 
 const installVideoChrome = async (page) => {
-  await page.locator("#minded-motion-freeze").evaluate((element) => {
-    element.remove();
-  });
+  await page
+    .locator("#minded-motion-freeze")
+    .evaluateAll((elements) => elements.forEach((element) => element.remove()));
   await page.addStyleTag({
     content: `
       html, body { overflow: hidden; }
+      #minded-6622-coloured-wrapper,
+      #minded-6622-coloured-wrapper-dynamic {
+        height: calc(100vh - 68px) !important;
+        top: 68px !important;
+      }
+      .background-transition,
+      .background-transition-grain {
+        top: 68px !important;
+      }
 
-      .minded-video-caption,
       .minded-video-card {
         color: #252525;
         font-family: inherit;
         pointer-events: none;
         position: fixed;
-        z-index: 2147483647;
-      }
-
-      .minded-video-caption {
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 24px;
-        left: 42px;
-        letter-spacing: -0.02em;
-        opacity: 0;
-        top: 34px;
-        transform: translateY(10px);
-        transition:
-          opacity 700ms ease,
-          transform 700ms ease;
-      }
-
-      .minded-video-caption.is-visible {
-        opacity: 0.72;
-        transform: translateY(0);
+        z-index: 10000000000000000;
       }
 
       .minded-video-card {
@@ -150,6 +287,7 @@ const installVideoChrome = async (page) => {
         opacity: 0;
         padding: 80px;
         text-align: center;
+        top: 68px;
         transition: opacity 800ms ease;
       }
 
@@ -181,22 +319,6 @@ const installVideoChrome = async (page) => {
   });
 };
 
-const addCaption = async (page, caption) => {
-  if (!caption) return;
-
-  await page.locator("body").evaluate((body, text) => {
-    const element = document.createElement("div");
-    element.className = "minded-video-caption";
-    element.textContent = text;
-    const host =
-      document.getElementById("minded-6622-coloured-wrapper-dynamic") ||
-      document.getElementById("minded-6622-coloured-wrapper") ||
-      body;
-    host.appendChild(element);
-    requestAnimationFrame(() => element.classList.add("is-visible"));
-  }, caption);
-};
-
 const addCard = async (page, { title, subtitle }) => {
   await page.locator("body").evaluate(
     (body, copy) => {
@@ -214,22 +336,11 @@ const addCard = async (page, { title, subtitle }) => {
       supportingCopy.textContent = copy.subtitle;
 
       card.append(brand, heading, supportingCopy);
-      const host =
-        document.getElementById("minded-6622-coloured-wrapper-dynamic") ||
-        document.getElementById("minded-6622-coloured-wrapper") ||
-        body;
-      host.appendChild(card);
+      body.appendChild(card);
       requestAnimationFrame(() => card.classList.add("is-visible"));
     },
     { title, subtitle },
   );
-};
-
-const hideCard = async (page) => {
-  await page.locator(".minded-video-card").evaluate((card) => {
-    card.classList.remove("is-visible");
-  });
-  await wait(page, 700);
 };
 
 const revealScene = async (page) => {
@@ -246,21 +357,60 @@ const coverScene = async (page) => {
   await wait(page, 600);
 };
 
+const closeBrowserTab = async (page) => {
+  await page.evaluate(() => {
+    const closeTab = window.__MINDED_CLOSE_BROWSER_TAB__;
+    if (typeof closeTab !== "function") {
+      throw new Error("The screenshot surface cannot close the demo tab.");
+    }
+    closeTab();
+  });
+  await wait(page, VIDEO_TIMING.tabCloseMs);
+};
+
+const showBrowserSite = async (page, site, milliseconds) => {
+  await page.evaluate((nextSite) => {
+    const showSite = window.__MINDED_SET_BROWSER_SITE__;
+    if (typeof showSite !== "function") {
+      throw new Error("The screenshot surface cannot switch demo websites.");
+    }
+    showSite(nextSite);
+  }, site);
+  await wait(page, milliseconds);
+};
+
 const waitForScene = async (page, target) => {
   const selectors = {
-    dashboard: ".cardDashboard",
-    "draggable-sun": ".sun-container .minded-sun",
-    "intent-selection": ".intent-selection-wrapper",
-    "duration-selection": ".time-selection-wrapper",
-    "q-something-i-am-looking-forward-to": "#minded-6622-question",
+    "browser-social": "#minded-video-social-pile",
+    "browser-intervention": "#minded-6622-question",
   };
   const selector = selectors[target];
   if (!selector) throw new Error(`Unknown video scene: ${target}`);
   await page.waitForSelector(selector);
 };
 
-const playScene = async (page, scene, sceneIndex, baseUrl, pageErrors) => {
-  await page.goto(createVideoUrl(baseUrl, scene), { waitUntil: "networkidle" });
+export const loadScene = async (page, scene, baseUrl, isFirstScene) => {
+  const url = createVideoUrl(baseUrl, scene);
+  if (isFirstScene) {
+    await page.goto(url, { waitUntil: "networkidle" });
+    return;
+  }
+
+  await page.evaluate(
+    ({ target, url: nextUrl }) => {
+      const setTarget = window.__MINDED_SET_SCREENSHOT_TARGET__;
+      if (typeof setTarget !== "function") {
+        throw new Error("The screenshot surface cannot switch video scenes.");
+      }
+      history.replaceState(null, "", nextUrl);
+      setTarget(target);
+    },
+    { target: scene.target, url },
+  );
+};
+
+const playScene = async (page, scene, baseUrl, pageErrors, isFirstScene) => {
+  await loadScene(page, scene, baseUrl, isFirstScene);
   await page.waitForFunction(() => window.__MINDED_SCREENSHOT_READY__ === true);
   await page.evaluate(() => document.fonts?.ready);
   await waitForScene(page, scene.target);
@@ -272,44 +422,29 @@ const playScene = async (page, scene, sceneIndex, baseUrl, pageErrors) => {
     );
   }
 
-  if (sceneIndex === 0) {
-    await addCard(page, {
-      title: "A gentle pause\nbetween you and the scroll.",
-      subtitle: "Notice. Choose. Continue.",
-    });
+  if (scene.target === "browser-social") {
     await revealScene(page);
-    await wait(page, 2200);
-    await hideCard(page);
-    await wait(page, 800);
+    await wait(page, VIDEO_TIMING.socialSiteMs);
+    await showBrowserSite(page, VIDEO_SITES[1], VIDEO_TIMING.socialSiteMs);
+    await showBrowserSite(page, VIDEO_SITES[2], VIDEO_TIMING.instagramMs);
     return;
   }
 
-  await addCaption(page, scene.caption);
   await revealScene(page);
-  await wait(page, 650);
+  await wait(page, VIDEO_TIMING.questionMs);
 
-  if (scene.target === "draggable-sun") {
-    const sun = page.locator(".sun-container .minded-sun");
-    await dragSunDown(page, sun);
-    await wait(page, 1500);
-  } else if (scene.target === "intent-selection") {
-    const intent = page.getByRole("button", { name: "check one thing" });
-    await intent.hover();
-    await wait(page, 550);
-    await intent.click();
-    await wait(page, 300);
-  } else if (scene.target === "duration-selection") {
-    const duration = page.getByRole("button", { name: "5 min", exact: true });
-    await duration.hover();
-    await wait(page, 550);
-    await duration.click();
-    await wait(page, 300);
-  } else if (scene.target === "q-something-i-am-looking-forward-to") {
-    await wait(page, 450);
-    await page.locator("#minded-6622-question").click();
-    await page.waitForSelector("#minded-6622-inp textarea");
-    await wait(page, 800);
-  }
+  const alternative = page.getByRole("button", {
+    name: VIDEO_COPY.choice,
+    exact: true,
+  });
+  await chooseAlternative(page, alternative);
+  await page.waitForSelector(".sun-instructions-line.is-visible");
+  await wait(page, VIDEO_TIMING.instructionsMs);
+
+  const sun = page.locator(".sun-container .minded-sun");
+  await dragSunDown(page, sun);
+  await wait(page, VIDEO_TIMING.afterDragMs);
+  await closeBrowserTab(page);
 };
 
 const transcodeVideo = async (recordedPath) => {
@@ -382,13 +517,13 @@ export const captureVideo = async () => {
 
     for (const [index, scene] of VIDEO_SCENES.entries()) {
       pageErrors.length = 0;
-      await playScene(page, scene, index, baseUrl, pageErrors);
+      await playScene(page, scene, baseUrl, pageErrors, index === 0);
       if (index < VIDEO_SCENES.length - 1) await coverScene(page);
     }
 
     await addCard(page, {
-      title: "Less autopilot.\nMore intention.",
-      subtitle: "A mindfulness app for the moments you reach for a scroll.",
+      title: VIDEO_COPY.endTitle,
+      subtitle: VIDEO_COPY.endSubtitle,
     });
     await wait(page, 2200);
 

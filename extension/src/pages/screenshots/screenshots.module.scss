@@ -42,3 +42,710 @@
 .draggableSunContent :global(.sun-container) {
   margin-top: 0;
 }
+
+.browserChrome {
+  align-items: flex-end;
+  background: #eef0f3;
+  border-bottom: 1px solid #cdd1d7;
+  color: #303238;
+  display: flex;
+  font-family: var(--font-body);
+  gap: 12px;
+  height: 68px;
+  left: 0;
+  padding: 10px 16px 9px;
+  position: fixed;
+  right: 0;
+  text-align: left;
+  top: 0;
+  z-index: 2147483647;
+}
+
+.windowControls {
+  display: flex;
+  gap: 7px;
+  padding: 0 8px 10px 0;
+
+  span {
+    background: #b5bac2;
+    border-radius: 50%;
+    display: block;
+    height: 10px;
+    width: 10px;
+  }
+}
+
+.browserTab {
+  align-items: center;
+  background: #fff;
+  border-radius: 9px 9px 0 0;
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  height: 38px;
+  padding: 0 18px;
+  width: 190px;
+}
+
+.previousBrowserTab {
+  background: transparent;
+  color: #70747b;
+  flex: 0 0 130px;
+  transition:
+    background 500ms ease,
+    color 500ms ease;
+  width: 130px;
+}
+
+.newTabMark,
+.youtubeTabMark,
+.xTabMark {
+  border-radius: 50%;
+  display: grid;
+  flex: 0 0 auto;
+  font-size: 10px;
+  height: 18px;
+  place-items: center;
+  width: 18px;
+}
+
+.newTabMark {
+  background: #dfe2e6;
+  color: #555a62;
+}
+
+.currentBrowserTab {
+  flex: 0 0 190px;
+  overflow: hidden;
+  position: relative;
+  transition:
+    flex-basis 650ms ease,
+    opacity 450ms ease,
+    padding 650ms ease,
+    transform 650ms ease,
+    width 650ms ease;
+}
+
+.browserSiteValue {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  inset: 0 18px;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 380ms ease;
+  white-space: nowrap;
+}
+
+.browserSiteValue.isVisible {
+  opacity: 1;
+}
+
+.youtubeTabMark {
+  background: #ff0033;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 8px;
+}
+
+.xTabMark {
+  background: #111;
+  color: #fff;
+}
+
+.tabMark {
+  background: linear-gradient(145deg, #8a3ab9, #e95950 56%, #fccc63);
+  border-radius: 50%;
+  color: #fff;
+  display: grid;
+  font-size: 12px;
+  height: 18px;
+  place-items: center;
+  width: 18px;
+}
+
+.addressBar {
+  align-items: center;
+  align-self: center;
+  background: #fff;
+  border: 1px solid #d9dce1;
+  border-radius: 18px;
+  display: flex;
+  font-size: 13px;
+  gap: 9px;
+  height: 36px;
+  margin-bottom: 1px;
+  max-width: 620px;
+  padding: 0 16px;
+  position: relative;
+  width: 50vw;
+}
+
+.addressLock {
+  color: #777b83;
+  font-size: 7px;
+  flex: 0 0 auto;
+}
+
+.currentAddress,
+.previousAddress {
+  left: 34px;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 380ms ease;
+}
+
+.currentAddress.isVisible {
+  opacity: 1;
+}
+
+.browserChrome.isTabClosed {
+  .previousBrowserTab {
+    background: #fff;
+    color: #303238;
+  }
+
+  .currentBrowserTab {
+    flex-basis: 0;
+    opacity: 0;
+    padding-left: 0;
+    padding-right: 0;
+    transform: translateX(-18px);
+    width: 0;
+  }
+
+  .currentAddress {
+    opacity: 0;
+  }
+
+  .previousAddress {
+    opacity: 1;
+  }
+}
+
+.browserActions {
+  align-self: center;
+  font-size: 17px;
+  margin: 0 0 1px auto;
+  white-space: nowrap;
+}
+
+.browserNewTab {
+  background: #f7f8fa;
+  inset: 68px 0 0;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  transition: opacity 650ms ease;
+  z-index: 9999999999999999;
+}
+
+.browserNewTab.isVisible {
+  opacity: 1;
+}
+
+.browserIntervention {
+  // Quick answers submit directly, so their hidden text input does not need to
+  // reserve space in this video-only surface. Collapsing it keeps the prompt,
+  // choices, and sun centred as one calm group.
+  :global(#minded-6622-question-wrapper:has(.question-chips) .question-body) {
+    display: none;
+  }
+}
+
+.newTabContent {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  left: 50%;
+  position: absolute;
+  top: 43%;
+  transform: translate(-50%, -50%);
+}
+
+.newTabLogo {
+  background: #eceef1;
+  border-radius: 50%;
+  color: #80858d;
+  display: grid;
+  font-size: 34px;
+  height: 72px;
+  place-items: center;
+  width: 72px;
+}
+
+.newTabSearch {
+  background: #fff;
+  border: 1px solid #e2e4e8;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgb(25 30 38 / 8%);
+  color: #969ba3;
+  font-size: 14px;
+  padding: 15px 24px;
+  width: 480px;
+}
+
+.browserInstagram {
+  background: #fafafa !important;
+  color: #161616;
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+.socialNav {
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid #dbdbdb;
+  height: 60px;
+}
+
+.socialNavInner {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 935px;
+}
+
+.socialBrand {
+  font-family: var(--font-display);
+  font-size: 29px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+
+.socialSearch {
+  background: #efefef;
+  border-radius: 8px;
+  color: #8e8e8e;
+  font-size: 14px;
+  padding: 8px 16px;
+  width: 240px;
+}
+
+.socialNavActions {
+  align-items: center;
+  display: flex;
+  font-size: 24px;
+  gap: 20px;
+}
+
+.profileDot,
+.stories span,
+.suggestion > span {
+  background: linear-gradient(145deg, #f9ce34, #ee2a7b 55%, #6228d7);
+  border-radius: 50%;
+  display: block;
+  height: 30px;
+  width: 30px;
+}
+
+.socialLayout {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 600px 280px;
+  margin: 24px auto 0;
+  max-width: 935px;
+}
+
+.feedColumn {
+  min-width: 0;
+}
+
+.stories {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dbdbdb;
+  display: flex;
+  gap: 26px;
+  height: 92px;
+  margin-bottom: 20px;
+  padding: 13px 22px;
+
+  > div {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  span {
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #e73c75;
+    height: 48px;
+    width: 48px;
+  }
+}
+
+.storyTwo {
+  filter: hue-rotate(35deg);
+}
+.storyThree {
+  filter: hue-rotate(75deg);
+}
+.storyFour {
+  filter: hue-rotate(125deg);
+}
+.storyFive {
+  filter: hue-rotate(190deg);
+}
+
+.socialPost {
+  background: #fff;
+  border: 1px solid #dbdbdb;
+}
+
+.postHeader {
+  align-items: center;
+  display: flex;
+  height: 56px;
+  padding: 8px 14px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    gap: 2px;
+    margin-left: 10px;
+  }
+
+  small {
+    color: #6e6e6e;
+  }
+}
+
+.postAvatar {
+  height: 34px;
+  width: 34px;
+}
+
+.postMore {
+  margin-left: auto;
+}
+
+.mockPhoto {
+  background:
+    radial-gradient(circle at 72% 24%, #fff4b0 0 6%, transparent 6.5%),
+    linear-gradient(180deg, #8ebbd9 0 45%, #f7c78c 46% 61%, #517785 62% 100%);
+  height: 330px;
+  position: relative;
+
+  &::after {
+    background: #324f58;
+    bottom: 25%;
+    clip-path: polygon(
+      0 100%,
+      22% 36%,
+      35% 62%,
+      55% 20%,
+      76% 68%,
+      100% 38%,
+      100% 100%
+    );
+    content: "";
+    height: 38%;
+    left: 0;
+    opacity: 0.72;
+    position: absolute;
+    right: 0;
+  }
+}
+
+.postActions {
+  display: flex;
+  font-size: 23px;
+  gap: 20px;
+  padding: 11px 14px 4px;
+}
+
+.postCopy {
+  font-size: 13px;
+  padding: 0 14px 14px;
+
+  p {
+    margin: 5px 0 0;
+  }
+}
+
+.socialSidebar {
+  padding-top: 18px;
+}
+
+.sidebarProfile,
+.suggestion {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.sidebarProfile > div {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+
+.sidebarProfile small {
+  color: #8e8e8e;
+}
+.sidebarAvatar {
+  height: 52px;
+  width: 52px;
+}
+.suggestionTitle {
+  color: #8e8e8e;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 24px 0 15px;
+}
+.suggestion {
+  font-size: 12px;
+  margin: 13px 0;
+}
+.suggestion > span {
+  height: 34px;
+  width: 34px;
+}
+.suggestion em {
+  color: #0095f6;
+  font-style: normal;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.socialPile {
+  color: #161616;
+  font-family: var(--font-body);
+  inset: 68px 0 0;
+  position: fixed;
+  text-align: left;
+  z-index: 9999999999999999;
+}
+
+.socialPilePage {
+  background: #fff;
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 420ms ease;
+}
+
+.socialPilePage.isVisible {
+  opacity: 1;
+}
+
+.xPage {
+  z-index: 1;
+}
+
+.xLayout {
+  display: grid;
+  grid-template-columns: 210px 600px 280px;
+  height: 100%;
+  justify-content: center;
+}
+
+.xNavigation {
+  border-right: 1px solid #eff1f2;
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  gap: 28px;
+  padding: 22px 28px;
+}
+
+.xLogo {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.xFeed {
+  border-right: 1px solid #eff1f2;
+
+  > header {
+    border-bottom: 1px solid #eff1f2;
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+  }
+
+  article {
+    border-bottom: 1px solid #eff1f2;
+    display: flex;
+    gap: 12px;
+    padding: 18px;
+  }
+
+  article > div {
+    flex: 1;
+  }
+
+  small {
+    color: #68727b;
+  }
+
+  p {
+    margin: 7px 0 14px;
+  }
+}
+
+.xAvatar {
+  background: linear-gradient(145deg, #62a5bd, #d8c78c);
+  flex: 0 0 auto;
+  height: 42px;
+  width: 42px;
+}
+
+.xPostImage {
+  background:
+    radial-gradient(circle at 72% 28%, #f9dda5 0 8%, transparent 8.5%),
+    linear-gradient(155deg, #6898ad, #d2ad7d 58%, #485c62);
+  border-radius: 14px;
+  height: 220px;
+}
+
+.xPostActions {
+  color: #68727b;
+  font-size: 13px;
+  margin-top: 13px;
+}
+
+.xTrends {
+  background: #f6f8f9;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  height: max-content;
+  margin: 18px;
+  padding: 18px;
+
+  b {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  small {
+    color: #68727b;
+    margin-top: 10px;
+  }
+}
+
+.youtubePage {
+  z-index: 2;
+}
+
+.youtubeHeader {
+  align-items: center;
+  display: flex;
+  height: 60px;
+  justify-content: space-between;
+  padding: 0 28px;
+}
+
+.youtubeBrand {
+  align-items: center;
+  display: flex;
+  font-size: 21px;
+  font-weight: 700;
+  gap: 7px;
+
+  span {
+    background: #ff0033;
+    border-radius: 6px;
+    color: #fff;
+    display: grid;
+    font-size: 10px;
+    height: 22px;
+    place-items: center;
+    width: 32px;
+  }
+}
+
+.youtubeSearch {
+  border: 1px solid #d6d6d6;
+  border-radius: 20px;
+  color: #777;
+  font-size: 14px;
+  padding: 10px 18px;
+  width: 430px;
+}
+
+.youtubeLayout {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  height: calc(100% - 60px);
+}
+
+.youtubeNavigation {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  gap: 27px;
+  padding: 24px 28px;
+}
+
+.youtubeFeed {
+  background: #f8f8f8;
+  padding: 22px 30px 30px;
+
+  h2 {
+    font-size: 21px;
+    margin: 0 0 18px;
+  }
+}
+
+.youtubeGrid {
+  display: grid;
+  gap: 28px 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  article {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  b {
+    font-size: 15px;
+  }
+
+  span {
+    color: #707070;
+    font-size: 12px;
+  }
+}
+
+.videoThumb {
+  border-radius: 12px;
+  height: 170px;
+  position: relative;
+
+  small {
+    background: rgb(0 0 0 / 76%);
+    border-radius: 4px;
+    bottom: 8px;
+    color: #fff;
+    padding: 3px 5px;
+    position: absolute;
+    right: 8px;
+  }
+}
+
+.videoOne {
+  background: linear-gradient(135deg, #78a9b7, #e5bd76);
+}
+
+.videoTwo {
+  background: linear-gradient(135deg, #d99b9b, #785f86);
+}
+
+.videoThree {
+  background: linear-gradient(135deg, #7f8f68, #d4ca9e);
+}
+
+.videoFour {
+  background: linear-gradient(135deg, #69829d, #ba876e);
+}

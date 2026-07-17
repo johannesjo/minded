@@ -1,4 +1,4 @@
-import { JSX, onMount } from "solid-js";
+import { createSignal, JSX, onMount } from "solid-js";
 
 import RoutesCmp from "@src/shared/RouteCmp";
 import type { SyncData, Answer } from "@src/dataInterface/syncData";
@@ -12,6 +12,7 @@ import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyL
 import { Question } from "@src/shared/components/interaction/Question";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
+import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
 
@@ -20,6 +21,8 @@ import styles from "./screenshots.module.scss";
 
 type ScreenshotTarget =
   | "dashboard"
+  | "browser-social"
+  | "browser-intervention"
   | "energy-lvl"
   | "draggable-sun"
   | "intent-selection"
@@ -29,9 +32,12 @@ type ScreenshotTarget =
 
 type ScreenshotTheme = "light" | "dark";
 type ScreenshotPlatform = "web-extension" | "android";
+type BrowserSite = "youtube" | "x" | "instagram";
 
 const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
+  "browser-social",
+  "browser-intervention",
   "energy-lvl",
   "draggable-sun",
   "intent-selection",
@@ -39,6 +45,8 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "q-something-i-am-looking-forward-to",
   "q-this-week-i-will-do-my-best-to",
 ];
+
+const BROWSER_SITES: BrowserSite[] = ["youtube", "x", "instagram"];
 
 const SCREENSHOT_SESSION_INTENT = { id: "check_one_thing" } as const;
 
@@ -58,6 +66,9 @@ const getScreenshotPlatform = (): ScreenshotPlatform =>
   new URLSearchParams(window.location.search).get("platform") === "android"
     ? "android"
     : "web-extension";
+
+const getIsBrowserVideo = (): boolean =>
+  new URLSearchParams(window.location.search).get("browser") === "1";
 
 const getQuestion = (
   categoryId: QuestionCategoryId,
@@ -251,6 +262,322 @@ const PostSunFlowFrame = (props: { children: JSX.Element }) => (
 const getDragObjectName = (theme: ScreenshotTheme): "sun" | "moon" =>
   theme === "dark" ? "moon" : "sun";
 
+const BrowserChrome = (props: { isTabClosed: boolean; site: BrowserSite }) => (
+  <div
+    class={styles.browserChrome}
+    classList={{ [styles.isTabClosed]: props.isTabClosed }}
+    aria-hidden="true"
+  >
+    <div class={styles.windowControls}>
+      <span />
+      <span />
+      <span />
+    </div>
+    <div class={`${styles.browserTab} ${styles.previousBrowserTab}`}>
+      <span class={styles.newTabMark}>+</span>
+      <span>New Tab</span>
+    </div>
+    <div class={`${styles.browserTab} ${styles.currentBrowserTab}`}>
+      <span
+        class={styles.browserSiteValue}
+        classList={{ [styles.isVisible]: props.site === "youtube" }}
+      >
+        <span class={styles.youtubeTabMark}>▶</span>
+        <span>YouTube</span>
+      </span>
+      <span
+        class={styles.browserSiteValue}
+        classList={{ [styles.isVisible]: props.site === "x" }}
+      >
+        <span class={styles.xTabMark}>X</span>
+        <span>X</span>
+      </span>
+      <span
+        class={styles.browserSiteValue}
+        classList={{ [styles.isVisible]: props.site === "instagram" }}
+      >
+        <span class={styles.tabMark}>◎</span>
+        <span>Instagram</span>
+      </span>
+    </div>
+    <div class={styles.addressBar}>
+      <span class={styles.addressLock}>●</span>
+      <span
+        class={styles.currentAddress}
+        classList={{ [styles.isVisible]: props.site === "youtube" }}
+      >
+        youtube.com
+      </span>
+      <span
+        class={styles.currentAddress}
+        classList={{ [styles.isVisible]: props.site === "x" }}
+      >
+        x.com
+      </span>
+      <span
+        class={styles.currentAddress}
+        classList={{ [styles.isVisible]: props.site === "instagram" }}
+      >
+        instagram.com
+      </span>
+      <span class={styles.previousAddress}>Search or enter address</span>
+    </div>
+    <div class={styles.browserActions}>☆ ···</div>
+  </div>
+);
+
+const BrowserNewTabShot = (props: { isVisible: boolean }) => (
+  <div
+    class={styles.browserNewTab}
+    classList={{ [styles.isVisible]: props.isVisible }}
+    aria-hidden="true"
+  >
+    <div class={styles.newTabContent}>
+      <div class={styles.newTabLogo}>+</div>
+      <div class={styles.newTabSearch}>Search or enter address</div>
+    </div>
+  </div>
+);
+
+const BrowserInstagramShot = () => (
+  <div id="minded-6622-coloured-wrapper" class={styles.browserInstagram}>
+    <header class={styles.socialNav}>
+      <div class={styles.socialNavInner}>
+        <div class={styles.socialBrand}>Instagram</div>
+        <div class={styles.socialSearch}>Search</div>
+        <div class={styles.socialNavActions}>
+          <span>⌂</span>
+          <span>♡</span>
+          <span class={styles.profileDot} />
+        </div>
+      </div>
+    </header>
+
+    <main class={styles.socialLayout} aria-label="Instagram-like demo feed">
+      <section class={styles.feedColumn}>
+        <div class={styles.stories}>
+          <div>
+            <span />
+            <small>maya</small>
+          </div>
+          <div>
+            <span class={styles.storyTwo} />
+            <small>noah</small>
+          </div>
+          <div>
+            <span class={styles.storyThree} />
+            <small>lin</small>
+          </div>
+          <div>
+            <span class={styles.storyFour} />
+            <small>alex</small>
+          </div>
+          <div>
+            <span class={styles.storyFive} />
+            <small>sam</small>
+          </div>
+        </div>
+
+        <article class={styles.socialPost}>
+          <header class={styles.postHeader}>
+            <span class={`${styles.profileDot} ${styles.postAvatar}`} />
+            <div>
+              <strong>slow.weekends</strong>
+              <small>Somewhere outside</small>
+            </div>
+            <span class={styles.postMore}>•••</span>
+          </header>
+          <div class={styles.mockPhoto} aria-label="A sunset by the water" />
+          <div class={styles.postActions}>
+            <span>♡</span>
+            <span>◯</span>
+            <span>⌁</span>
+          </div>
+          <div class={styles.postCopy}>
+            <strong>1,248 likes</strong>
+            <p>
+              <b>slow.weekends</b> nowhere else to be.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <aside class={styles.socialSidebar}>
+        <div class={styles.sidebarProfile}>
+          <span class={`${styles.profileDot} ${styles.sidebarAvatar}`} />
+          <div>
+            <strong>jules</strong>
+            <small>Jules</small>
+          </div>
+        </div>
+        <div class={styles.suggestionTitle}>Suggested for you</div>
+        <div class={styles.suggestion}>
+          <span class={styles.storyTwo} />
+          <b>outside.daily</b>
+          <em>Follow</em>
+        </div>
+        <div class={styles.suggestion}>
+          <span class={styles.storyFour} />
+          <b>small.rituals</b>
+          <em>Follow</em>
+        </div>
+        <div class={styles.suggestion}>
+          <span class={styles.storyFive} />
+          <b>quiet.frames</b>
+          <em>Follow</em>
+        </div>
+      </aside>
+    </main>
+  </div>
+);
+
+const BrowserSocialPileShot = (props: { site: BrowserSite }) => (
+  <>
+    <BrowserInstagramShot />
+    <div
+      id="minded-video-social-pile"
+      class={styles.socialPile}
+      aria-label="Social media switching demo"
+    >
+      <div
+        class={`${styles.socialPilePage} ${styles.xPage}`}
+        classList={{ [styles.isVisible]: props.site === "x" }}
+      >
+        <div class={styles.xLayout}>
+          <aside class={styles.xNavigation}>
+            <div class={styles.xLogo}>X</div>
+            <div>⌂&nbsp;&nbsp;Home</div>
+            <div>⌕&nbsp;&nbsp;Explore</div>
+            <div>♡&nbsp;&nbsp;Notifications</div>
+            <div>✉&nbsp;&nbsp;Messages</div>
+          </aside>
+          <main class={styles.xFeed}>
+            <header>
+              <b>For you</b>
+              <span>Following</span>
+            </header>
+            <article>
+              <span class={`${styles.profileDot} ${styles.xAvatar}`} />
+              <div>
+                <b>small moments</b> <small>@smallmoments · 2m</small>
+                <p>one more thing before getting back to the day</p>
+                <div class={styles.xPostImage} />
+                <div class={styles.xPostActions}>
+                  ○ 148&nbsp;&nbsp; ♡ 1.2K&nbsp;&nbsp; ↗
+                </div>
+              </div>
+            </article>
+            <article>
+              <span class={`${styles.profileDot} ${styles.xAvatar}`} />
+              <div>
+                <b>daily notes</b> <small>@dailynotes · 5m</small>
+                <p>the feed keeps going. and going.</p>
+              </div>
+            </article>
+          </main>
+          <aside class={styles.xTrends}>
+            <b>What’s happening</b>
+            <small>Trending</small>
+            <strong>For you</strong>
+            <small>Popular now</small>
+            <strong>Another update</strong>
+          </aside>
+        </div>
+      </div>
+
+      <div
+        class={`${styles.socialPilePage} ${styles.youtubePage}`}
+        classList={{ [styles.isVisible]: props.site === "youtube" }}
+      >
+        <header class={styles.youtubeHeader}>
+          <div class={styles.youtubeBrand}>
+            <span>▶</span> YouTube
+          </div>
+          <div class={styles.youtubeSearch}>Search</div>
+          <div>＋&nbsp;&nbsp; ◯</div>
+        </header>
+        <div class={styles.youtubeLayout}>
+          <aside class={styles.youtubeNavigation}>
+            <div>⌂&nbsp;&nbsp;Home</div>
+            <div>▶&nbsp;&nbsp;Shorts</div>
+            <div>▣&nbsp;&nbsp;Subscriptions</div>
+            <div>◷&nbsp;&nbsp;History</div>
+          </aside>
+          <main class={styles.youtubeFeed}>
+            <h2>Recommended</h2>
+            <div class={styles.youtubeGrid}>
+              <article>
+                <div class={`${styles.videoThumb} ${styles.videoOne}`}>
+                  <small>12:48</small>
+                </div>
+                <b>Things worth seeing today</b>
+                <span>new every hour · 84K views</span>
+              </article>
+              <article>
+                <div class={`${styles.videoThumb} ${styles.videoTwo}`}>
+                  <small>8:12</small>
+                </div>
+                <b>You won’t believe what happened</b>
+                <span>recommended · 211K views</span>
+              </article>
+              <article>
+                <div class={`${styles.videoThumb} ${styles.videoThree}`}>
+                  <small>22:03</small>
+                </div>
+                <b>One more video before you go</b>
+                <span>watch next · 59K views</span>
+              </article>
+              <article>
+                <div class={`${styles.videoThumb} ${styles.videoFour}`}>
+                  <small>15:21</small>
+                </div>
+                <b>The update everyone is watching</b>
+                <span>trending · 126K views</span>
+              </article>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </>
+);
+
+const BrowserInterventionFlow = () => {
+  let wrapperEl: HTMLDivElement = undefined!;
+
+  return (
+    <>
+      <BrowserInstagramShot />
+      <div
+        id="minded-6622-coloured-wrapper-dynamic"
+        class={styles.browserIntervention}
+        style={{ opacity: "1" }}
+        ref={(element) => {
+          wrapperEl = element;
+        }}
+      >
+        <InteractionCommon
+          questionForPrompt={getQuestion(
+            QuestionCategoryId.HealthierBrowsingHabits,
+            QID.HBH6,
+          )}
+          isInitFadeout={false}
+          wrapperEl={wrapperEl}
+          interactionTarget={{ kind: "host", id: "instagram.com" }}
+          interactionPlatform="web"
+          onAfterInteractionFadeout={() => undefined}
+          onSetAnswer={() => undefined}
+          onUpdateQuestion={() => undefined}
+          onModeSet={() => undefined}
+          onSkip={() => undefined}
+          onFlingAway={() => undefined}
+          onDragComplete={() => undefined}
+        />
+      </div>
+    </>
+  );
+};
+
 const DraggableSunShot = (props: { theme: ScreenshotTheme }) => {
   const dragObjectName = getDragObjectName(props.theme);
 
@@ -285,9 +612,13 @@ const DraggableSunShot = (props: { theme: ScreenshotTheme }) => {
 };
 
 const Screenshots = (): JSX.Element => {
-  const target = getScreenshotTarget();
+  const initialTarget = getScreenshotTarget();
+  const [target, setTarget] = createSignal(initialTarget);
+  const [browserSite, setBrowserSite] = createSignal<BrowserSite>("youtube");
+  const [isBrowserTabClosed, setIsBrowserTabClosed] = createSignal(false);
   const theme = getScreenshotTheme();
   const platform = getScreenshotPlatform();
+  const isBrowserVideo = getIsBrowserVideo();
 
   (window as any).IS_MAIN_MINDED_6622 = true;
   (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ = createScreenshotSyncData();
@@ -298,65 +629,107 @@ const Screenshots = (): JSX.Element => {
   (window as any).__MINDED_SCREENSHOT_READY__ = false;
   sessionStorage.setItem("dashboardGroupShown", "true");
 
-  if (target === "dashboard") {
+  if (initialTarget === "dashboard") {
     setDashboardRandomSequence();
   }
 
   onMount(() => {
+    (window as any).__MINDED_SET_BROWSER_SITE__ = (nextSite: string) => {
+      if (!BROWSER_SITES.includes(nextSite as BrowserSite)) {
+        throw new Error(`Unknown browser site: ${nextSite}`);
+      }
+
+      setBrowserSite(nextSite as BrowserSite);
+    };
+    (window as any).__MINDED_CLOSE_BROWSER_TAB__ = () => {
+      setIsBrowserTabClosed(true);
+    };
+    (window as any).__MINDED_SET_SCREENSHOT_TARGET__ = (nextTarget: string) => {
+      if (!SCREENSHOT_TARGETS.includes(nextTarget as ScreenshotTarget)) {
+        throw new Error(`Unknown screenshot target: ${nextTarget}`);
+      }
+
+      (window as any).__MINDED_SCREENSHOT_READY__ = false;
+      setTarget(nextTarget as ScreenshotTarget);
+      window.requestAnimationFrame(() => {
+        applyScreenshotTheme(theme, platform);
+        (window as any).__MINDED_SCREENSHOT_READY__ = true;
+      });
+    };
     applyScreenshotTheme(theme, platform);
     markReadyAfterPaint(theme, platform);
   });
 
-  if (target === "dashboard") {
+  if (initialTarget === "dashboard") {
     return <RoutesCmp />;
   }
 
   return (
-    <ScreenshotSurface theme={theme}>
-      {target === "energy-lvl" && (
-        <EnergyLvlInteraction
-          onSuccess={() => undefined}
-          onSkip={() => undefined}
-          onCancelCountdown={() => undefined}
-        />
+    <>
+      {target() === "browser-social" ? (
+        <BrowserSocialPileShot site={browserSite()} />
+      ) : target() === "browser-intervention" ? (
+        <BrowserInterventionFlow />
+      ) : (
+        <ScreenshotSurface theme={theme}>
+          {target() === "energy-lvl" && (
+            <EnergyLvlInteraction
+              onSuccess={() => undefined}
+              onSkip={() => undefined}
+              onCancelCountdown={() => undefined}
+            />
+          )}
+
+          {target() === "draggable-sun" && <DraggableSunShot theme={theme} />}
+
+          {target() === "intent-selection" && (
+            <PostSunFlowFrame>
+              <IntentSelection
+                isArmed={true}
+                onCancel={() => undefined}
+                onCancelCountdown={() => undefined}
+                onSelectIntent={() => undefined}
+              />
+            </PostSunFlowFrame>
+          )}
+
+          {target() === "duration-selection" && (
+            <PostSunFlowFrame>
+              <TimeSelection
+                intent={SCREENSHOT_SESSION_INTENT}
+                isArmed={true}
+                onCancel={() => undefined}
+                onSelectTime={() => undefined}
+              />
+            </PostSunFlowFrame>
+          )}
+
+          {target() === "q-something-i-am-looking-forward-to" && (
+            <ScreenshotQuestion
+              question={getQuestion(
+                QuestionCategoryId.GoodPlansToday,
+                QID.GPT6,
+              )}
+            />
+          )}
+
+          {target() === "q-this-week-i-will-do-my-best-to" && (
+            <ScreenshotQuestion
+              question={getQuestion(QuestionCategoryId.GoalForTheWeek, QID.GW2)}
+            />
+          )}
+        </ScreenshotSurface>
       )}
-
-      {target === "draggable-sun" && <DraggableSunShot theme={theme} />}
-
-      {target === "intent-selection" && (
-        <PostSunFlowFrame>
-          <IntentSelection
-            isArmed={true}
-            onCancel={() => undefined}
-            onCancelCountdown={() => undefined}
-            onSelectIntent={() => undefined}
+      {isBrowserVideo && (
+        <>
+          <BrowserNewTabShot isVisible={isBrowserTabClosed()} />
+          <BrowserChrome
+            isTabClosed={isBrowserTabClosed()}
+            site={browserSite()}
           />
-        </PostSunFlowFrame>
+        </>
       )}
-
-      {target === "duration-selection" && (
-        <PostSunFlowFrame>
-          <TimeSelection
-            intent={SCREENSHOT_SESSION_INTENT}
-            isArmed={true}
-            onCancel={() => undefined}
-            onSelectTime={() => undefined}
-          />
-        </PostSunFlowFrame>
-      )}
-
-      {target === "q-something-i-am-looking-forward-to" && (
-        <ScreenshotQuestion
-          question={getQuestion(QuestionCategoryId.GoodPlansToday, QID.GPT6)}
-        />
-      )}
-
-      {target === "q-this-week-i-will-do-my-best-to" && (
-        <ScreenshotQuestion
-          question={getQuestion(QuestionCategoryId.GoalForTheWeek, QID.GW2)}
-        />
-      )}
-    </ScreenshotSurface>
+    </>
   );
 };
 
