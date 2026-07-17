@@ -6,6 +6,10 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
 - **Android app** (native Kotlin host + shared web UI)
 - Shared SolidJS codebase across platforms
 
+<p align="center">
+  <a href="./docs/minded-intro.webm"><strong>▶ Watch minded turn a social-media loop into a pause (23 seconds)</strong></a>
+</p>
+
 <p align="center"><b>Browser extension</b></p>
 
 <table>
