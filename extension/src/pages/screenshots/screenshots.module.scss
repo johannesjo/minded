@@ -262,6 +262,20 @@
 }
 
 .browserIntervention {
+  :global(.sun-instructions) {
+    font-family: var(--font-display);
+    font-size: var(--fz-l);
+    font-optical-sizing: auto;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+
+  :global(.sun-instructions-line) {
+    margin: 0.35em 0;
+  }
+
   // Quick answers submit directly, so their hidden text input does not need to
   // reserve space in this video-only surface. Collapsing it keeps the prompt,
   // choices, and sun centred as one calm group.

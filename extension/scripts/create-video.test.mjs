@@ -120,6 +120,13 @@ test("quick-answer interventions do not reserve hidden input space in the video"
   );
 });
 
+test("the video gesture instructions use minded's mindful display voice", () => {
+  assert.match(
+    screenshotsStyles,
+    /:global\(\.sun-instructions\)\s*\{[^}]*font-family: var\(--font-display\);[^}]*font-optical-sizing: auto;/,
+  );
+});
+
 test("the visible pointer approaches the sun before dragging it", () => {
   const path = getPointerApproachPath({ x: 160, y: 260 });
 
