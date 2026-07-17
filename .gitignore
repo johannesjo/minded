@@ -24,3 +24,4 @@ dist/
 
 # Landing page lives in a separate repository (johannesjo/minded-landing-page)
 /landing-page/
+/output/playwright/

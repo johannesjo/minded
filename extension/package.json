@@ -17,6 +17,8 @@
     "screenshots": "node scripts/create-screenshots.mjs",
     "screenshots:install": "playwright install chromium",
     "screenshots:publish": "bash scripts/publish-play-screenshots.sh",
+    "video": "node scripts/create-video.mjs",
+    "test:video": "node scripts/create-video.test.mjs",
     "build": "vite build && npm run pack",
     "buildDroid": "vite build --mode android --emptyOutDir",
     "buildIOS": "vite build --mode ios --emptyOutDir && npx cap sync",

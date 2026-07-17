@@ -25,3 +25,10 @@ Five ordered 1280px by 800px Chrome Web Store images are written to
 `extension/screenshots/chrome-web-store/`. Upload these manually in the
 Chrome Web Store developer dashboard; the publishing API does not manage
 store-listing images.
+
+## Product video
+
+Run `npm run video` to record the short product introduction with the same
+deterministic Playwright surface. The shareable MP4 is written to
+`output/playwright/minded-intro.mp4` at the repository root. Chromium and
+`ffmpeg` must be available locally.
