@@ -13,13 +13,41 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const extensionDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(extensionDir, "..");
 const outputDir = path.join(repoRoot, "output", "playwright");
-const outputPath = path.join(outputDir, "minded-intro.mp4");
-const viewport = { width: 1280, height: 720 };
+const DEFAULT_VIDEO_THEME =
+  process.env.VIDEO_THEME === "dark" ? "dark" : "light";
 
-export const VIDEO_SCENES = [
-  { target: "browser-social", theme: "light" },
-  { target: "browser-intervention", theme: "light" },
+export const VIDEO_FORMATS = Object.freeze({
+  desktop: Object.freeze({
+    name: "desktop",
+    viewport: Object.freeze({ width: 1280, height: 720 }),
+    outputName: "minded-intro.mp4",
+  }),
+  mobile: Object.freeze({
+    name: "mobile",
+    viewport: Object.freeze({ width: 720, height: 1280 }),
+    outputName: "minded-intro-mobile.mp4",
+  }),
+});
+
+export const resolveVideoFormat = (argv = []) =>
+  argv.includes("--mobile") ? VIDEO_FORMATS.mobile : VIDEO_FORMATS.desktop;
+
+const getOutputPath = (theme, format) =>
+  path.join(
+    outputDir,
+    theme === "dark"
+      ? format.name === "mobile"
+        ? "minded-intro-mobile-dark.mp4"
+        : "minded-intro-dark.mp4"
+      : format.outputName,
+  );
+
+export const getVideoScenes = (theme) => [
+  { target: "browser-social", theme },
+  { target: "browser-intervention", theme },
 ];
+
+export const VIDEO_SCENES = getVideoScenes("light");
 
 export const VIDEO_SITES = Object.freeze([
   "youtube",
@@ -82,12 +110,12 @@ export const getPointerApproachPath = (target, steps = 8) => {
   }));
 };
 
-export const installTransitionCurtain = () => {
+export const installTransitionCurtain = (theme = "light") => {
   const install = () => {
     const style = document.createElement("style");
     style.textContent = `
       html::after {
-        background: #f4ecd6;
+        background: ${theme === "dark" ? "#10131a" : "#f4ecd6"};
         content: "";
         bottom: 0;
         left: 0;
@@ -110,14 +138,16 @@ export const installTransitionCurtain = () => {
 
 const wait = (page, milliseconds) => page.waitForTimeout(milliseconds);
 
-const installVideoPointer = async (page, initialPosition) => {
-  await page.locator("body").evaluate((body, position) => {
-    document.getElementById("minded-video-pointer")?.remove();
-    document.getElementById("minded-video-pointer-style")?.remove();
+const installVideoPointer = async (page, initialPosition, theme) => {
+  await page.locator("body").evaluate(
+    (body, payload) => {
+      const { position, theme: pointerTheme } = payload;
+      document.getElementById("minded-video-pointer")?.remove();
+      document.getElementById("minded-video-pointer-style")?.remove();
 
-    const style = document.createElement("style");
-    style.id = "minded-video-pointer-style";
-    style.textContent = `
+      const style = document.createElement("style");
+      style.id = "minded-video-pointer-style";
+      style.textContent = `
       #minded-video-pointer {
         filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.18));
         height: 40px;
@@ -139,7 +169,7 @@ const installVideoPointer = async (page, initialPosition) => {
         transition: transform 150ms ease;
       }
       #minded-video-pointer::after {
-        border: 2px solid rgba(37, 37, 37, 0.55);
+        border: 2px solid ${pointerTheme === "dark" ? "rgba(255, 255, 255, 0.55)" : "rgba(37, 37, 37, 0.55)"};
         border-radius: 50%;
         content: "";
         height: 14px;
@@ -161,12 +191,12 @@ const installVideoPointer = async (page, initialPosition) => {
         transform: scale(1.5);
       }
     `;
-    document.documentElement.appendChild(style);
+      document.documentElement.appendChild(style);
 
-    const pointer = document.createElement("div");
-    pointer.id = "minded-video-pointer";
-    pointer.setAttribute("aria-hidden", "true");
-    pointer.innerHTML = `
+      const pointer = document.createElement("div");
+      pointer.id = "minded-video-pointer";
+      pointer.setAttribute("aria-hidden", "true");
+      pointer.innerHTML = `
       <svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
         <path
           d="M4 3v26l7-6 6 13 6-3-6-12h10L4 3Z"
@@ -178,31 +208,33 @@ const installVideoPointer = async (page, initialPosition) => {
       </svg>
     `;
 
-    const movePointer = (x, y) => {
-      pointer.style.left = `${x - 4}px`;
-      pointer.style.top = `${y - 3}px`;
-    };
-    movePointer(position.x, position.y);
+      const movePointer = (x, y) => {
+        pointer.style.left = `${x - 4}px`;
+        pointer.style.top = `${y - 3}px`;
+      };
+      movePointer(position.x, position.y);
 
-    window.addEventListener(
-      "mousemove",
-      (event) => movePointer(event.clientX, event.clientY),
-      true,
-    );
-    window.addEventListener(
-      "mousedown",
-      () => pointer.classList.add("is-dragging"),
-      true,
-    );
-    window.addEventListener(
-      "mouseup",
-      () => pointer.classList.remove("is-dragging"),
-      true,
-    );
+      window.addEventListener(
+        "mousemove",
+        (event) => movePointer(event.clientX, event.clientY),
+        true,
+      );
+      window.addEventListener(
+        "mousedown",
+        () => pointer.classList.add("is-dragging"),
+        true,
+      );
+      window.addEventListener(
+        "mouseup",
+        () => pointer.classList.remove("is-dragging"),
+        true,
+      );
 
-    body.appendChild(pointer);
-    requestAnimationFrame(() => pointer.classList.add("is-visible"));
-  }, initialPosition);
+      body.appendChild(pointer);
+      requestAnimationFrame(() => pointer.classList.add("is-visible"));
+    },
+    { position: initialPosition, theme },
+  );
 };
 
 const hideVideoPointer = async (page) => {
@@ -211,13 +243,13 @@ const hideVideoPointer = async (page) => {
   });
 };
 
-const chooseAlternative = async (page, alternative) => {
+const chooseAlternative = async (page, alternative, theme) => {
   const box = await alternative.boundingBox();
   if (!box) throw new Error("Could not measure the alternative for the video.");
 
   const target = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   const [pointerStart, ...pointerApproach] = getPointerApproachPath(target);
-  await installVideoPointer(page, pointerStart);
+  await installVideoPointer(page, pointerStart, theme);
   await wait(page, 180);
   for (const point of pointerApproach) {
     await page.mouse.move(point.x, point.y);
@@ -231,13 +263,13 @@ const chooseAlternative = async (page, alternative) => {
   await hideVideoPointer(page);
 };
 
-const dragSunDown = async (page, sun) => {
+const dragSunDown = async (page, sun, theme) => {
   const box = await sun.boundingBox();
   if (!box) throw new Error("Could not measure the sun for the video drag.");
 
   const [start, ...dragPath] = getDownwardDragPath(box);
   const [pointerStart, ...pointerApproach] = getPointerApproachPath(start);
-  await installVideoPointer(page, pointerStart);
+  await installVideoPointer(page, pointerStart, theme);
   await wait(page, 250);
   for (const point of pointerApproach) {
     await page.mouse.move(point.x, point.y);
@@ -259,7 +291,7 @@ const dragSunDown = async (page, sun) => {
   await hideVideoPointer(page);
 };
 
-const installVideoChrome = async (page) => {
+const installVideoChrome = async (page, theme) => {
   await page
     .locator("#minded-motion-freeze")
     .evaluateAll((elements) => elements.forEach((element) => element.remove()));
@@ -277,7 +309,7 @@ const installVideoChrome = async (page) => {
       }
 
       .minded-video-card {
-        color: #252525;
+        color: ${theme === "dark" ? "#f4f6fa" : "#252525"};
         font-family: inherit;
         pointer-events: none;
         position: fixed;
@@ -287,7 +319,7 @@ const installVideoChrome = async (page) => {
       .minded-video-card {
         align-items: center;
         backdrop-filter: blur(0);
-        background-color: rgba(247, 244, 231, 0);
+        background-color: transparent;
         display: flex;
         flex-direction: column;
         inset: 0;
@@ -302,7 +334,7 @@ const installVideoChrome = async (page) => {
 
       .minded-video-card.is-backdrop-visible {
         backdrop-filter: blur(18px);
-        background-color: rgba(247, 244, 231, 0.82);
+        background-color: ${theme === "dark" ? "rgba(16, 19, 26, 0.82)" : "rgba(247, 244, 231, 0.82)"};
       }
       .minded-video-card-content {
         align-items: center;
@@ -322,7 +354,7 @@ const installVideoChrome = async (page) => {
         font-size: 18px;
         letter-spacing: 0.16em;
         margin-bottom: 28px;
-        opacity: 0.55;
+        opacity: ${theme === "dark" ? "0.65" : "0.55"};
       }
       .minded-video-card h1 {
         font-family: Georgia, "Times New Roman", serif;
@@ -339,7 +371,23 @@ const installVideoChrome = async (page) => {
         line-height: 1.45;
         margin: 28px 0 0;
         max-width: 620px;
-        opacity: 0.68;
+        opacity: ${theme === "dark" ? "0.76" : "0.68"};
+      }
+
+      @media (max-width: 720px) {
+        .minded-video-card {
+          padding: 56px 32px;
+        }
+
+        .minded-video-card h1 {
+          font-size: 54px;
+        }
+
+        .minded-video-card p {
+          font-size: 18px;
+          margin-top: 22px;
+          max-width: 540px;
+        }
       }
     `,
   });
@@ -449,7 +497,7 @@ const playScene = async (page, scene, baseUrl, pageErrors, isFirstScene) => {
   await page.waitForFunction(() => window.__MINDED_SCREENSHOT_READY__ === true);
   await page.evaluate(() => document.fonts?.ready);
   await waitForScene(page, scene.target);
-  await installVideoChrome(page);
+  await installVideoChrome(page, scene.theme);
 
   if (pageErrors.length) {
     throw new Error(
@@ -478,17 +526,17 @@ const playScene = async (page, scene, baseUrl, pageErrors, isFirstScene) => {
     name: VIDEO_COPY.choice,
     exact: true,
   });
-  await chooseAlternative(page, alternative);
+  await chooseAlternative(page, alternative, scene.theme);
   await page.waitForSelector(".sun-instructions-line.is-visible");
   await wait(page, VIDEO_TIMING.instructionsMs);
 
   const sun = page.locator(".sun-container .minded-sun");
-  await dragSunDown(page, sun);
+  await dragSunDown(page, sun, scene.theme);
   await wait(page, VIDEO_TIMING.afterDragMs);
   await closeBrowserTab(page);
 };
 
-const transcodeVideo = async (recordedPath) => {
+const transcodeVideo = async (recordedPath, targetPath) => {
   await execFileAsync("ffmpeg", [
     "-y",
     "-loglevel",
@@ -505,15 +553,21 @@ const transcodeVideo = async (recordedPath) => {
     "yuv420p",
     "-movflags",
     "+faststart",
-    outputPath,
+    targetPath,
   ]);
 
-  if ((await stat(outputPath)).size === 0) {
+  if ((await stat(targetPath)).size === 0) {
     throw new Error("The generated product video is empty.");
   }
 };
 
-export const captureVideo = async () => {
+export const captureVideo = async (
+  theme = DEFAULT_VIDEO_THEME,
+  format = resolveVideoFormat(process.argv.slice(2)),
+) => {
+  const outputPath = getOutputPath(theme, format);
+  const scenes = getVideoScenes(theme);
+
   await mkdir(outputDir, { recursive: true });
   const recordingDir = await mkdtemp(path.join(tmpdir(), "minded-video-"));
   const server = await createServer({
@@ -530,8 +584,8 @@ export const captureVideo = async () => {
     if (!baseUrl) throw new Error("Vite did not expose a local server URL.");
 
     browser = await chromium.launch();
-    const warmupPage = await browser.newPage({ viewport });
-    await warmupPage.goto(createVideoUrl(baseUrl, VIDEO_SCENES[0]), {
+    const warmupPage = await browser.newPage({ viewport: format.viewport });
+    await warmupPage.goto(createVideoUrl(baseUrl, scenes[0]), {
       waitUntil: "networkidle",
     });
     await warmupPage.waitForFunction(
@@ -540,11 +594,11 @@ export const captureVideo = async () => {
     await warmupPage.close();
 
     context = await browser.newContext({
-      viewport,
+      viewport: format.viewport,
       deviceScaleFactor: 1,
-      recordVideo: { dir: recordingDir, size: viewport },
+      recordVideo: { dir: recordingDir, size: format.viewport },
     });
-    await context.addInitScript(installTransitionCurtain);
+    await context.addInitScript(installTransitionCurtain, theme);
 
     const page = await context.newPage();
     const video = page.video();
@@ -556,10 +610,10 @@ export const captureVideo = async () => {
       if (message.type() === "error") pageErrors.push(message.text());
     });
 
-    for (const [index, scene] of VIDEO_SCENES.entries()) {
+    for (const [index, scene] of scenes.entries()) {
       pageErrors.length = 0;
       await playScene(page, scene, baseUrl, pageErrors, index === 0);
-      if (index < VIDEO_SCENES.length - 1) await coverScene(page);
+      if (index < scenes.length - 1) await coverScene(page);
     }
 
     await addCard(page, {
@@ -572,7 +626,7 @@ export const captureVideo = async () => {
     context = undefined;
     if (!video) throw new Error("Playwright did not create a video recording.");
 
-    await transcodeVideo(await video.path());
+    await transcodeVideo(await video.path(), outputPath);
     console.log(`Created ${path.relative(repoRoot, outputPath)}`);
   } finally {
     await context?.close();

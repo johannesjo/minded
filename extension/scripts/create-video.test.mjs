@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
+  VIDEO_FORMATS,
   VIDEO_SCENES,
   VIDEO_COPY,
   VIDEO_SITES,
@@ -10,8 +11,10 @@ import {
   createVideoUrl,
   getDownwardDragPath,
   getPointerApproachPath,
+  getVideoScenes,
   installTransitionCurtain,
   loadScene,
+  resolveVideoFormat,
 } from "./create-video.mjs";
 
 const screenshotsSource = await readFile(
@@ -31,6 +34,27 @@ test("the product video enters the real question-first intervention flow", () =>
   assert.deepEqual(
     VIDEO_SCENES.map((scene) => scene.target),
     ["browser-social", "browser-intervention"],
+  );
+});
+
+test("the dark-mode capture keeps both scenes dark", () => {
+  assert.deepEqual(
+    getVideoScenes("dark").map((scene) => scene.theme),
+    ["dark", "dark"],
+  );
+});
+
+test("the mobile cut records a separate 9:16 master", () => {
+  assert.deepEqual(VIDEO_FORMATS.mobile.viewport, {
+    width: 720,
+    height: 1280,
+  });
+  assert.equal(VIDEO_FORMATS.mobile.outputName, "minded-intro-mobile.mp4");
+  assert.equal(resolveVideoFormat(["--mobile"]), VIDEO_FORMATS.mobile);
+  assert.equal(resolveVideoFormat([]), VIDEO_FORMATS.desktop);
+  assert.match(
+    videoSource,
+    /@media \(max-width: 720px\)[\s\S]*\.minded-video-card h1[\s\S]*font-size: 54px/,
   );
 });
 

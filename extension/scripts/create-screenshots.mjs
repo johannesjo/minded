@@ -35,7 +35,12 @@ const desktopShots = [
       path.join(chromeWebStoreScreenshotsDir, "01-dashboard.png"),
     ],
   },
-  { file: "dashboard-dark.png", target: "dashboard", theme: "dark" },
+  {
+    file: "dashboard-dark.png",
+    target: "dashboard",
+    theme: "dark",
+    copyAs: [path.join(readmeScreenshotsDir, "dashboard-dark.png")],
+  },
   { file: "energy-lvl.png", target: "energy-lvl", theme: "light" },
   {
     file: "q-something-i-am-looking-forward-to.png",
@@ -82,6 +87,7 @@ const desktopShots = [
     file: "intent-selection-dark.png",
     target: "intent-selection",
     theme: "dark",
+    copyAs: [path.join(readmeScreenshotsDir, "intervention-dark.png")],
   },
   {
     file: "duration-selection-dark.png",
@@ -125,16 +131,21 @@ const googlePlayPhoneShots = [
     file: "draggable-moon-dark.png",
     target: "draggable-sun",
     theme: "dark",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "breathe-dark.png")],
   },
   {
     file: "intent-selection-dark.png",
     target: "intent-selection",
     theme: "dark",
+    copyAs: [
+      path.join(readmeScreenshotsDir, "mobile", "intervention-dark.png"),
+    ],
   },
   {
     file: "duration-selection-dark.png",
     target: "duration-selection",
     theme: "dark",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "check-in-dark.png")],
   },
 ].map((shot) => ({
   ...shot,

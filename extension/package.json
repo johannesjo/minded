@@ -18,6 +18,8 @@
     "screenshots:install": "playwright install chromium",
     "screenshots:publish": "bash scripts/publish-play-screenshots.sh",
     "video": "node scripts/create-video.mjs",
+    "video:dark": "VIDEO_THEME=dark node scripts/create-video.mjs",
+    "video:mobile": "node scripts/create-video.mjs --mobile",
     "test:video": "node scripts/create-video.test.mjs",
     "build": "vite build && npm run pack",
     "buildDroid": "vite build --mode android --emptyOutDir",

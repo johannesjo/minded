@@ -32,3 +32,6 @@ Run `npm run video` to record the short product introduction with the same
 deterministic Playwright surface. The shareable MP4 is written to
 `output/playwright/minded-intro.mp4` at the repository root. Chromium and
 `ffmpeg` must be available locally.
+
+Run `npm run video:dark` for the dark-mode variant. It writes
+`output/playwright/minded-intro-dark.mp4`.

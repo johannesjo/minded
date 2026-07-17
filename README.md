@@ -10,12 +10,28 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
   <a href="./docs/minded-intro.webm"><strong>▶ Watch minded turn a social-media loop into a pause (23 seconds)</strong></a>
 </p>
 
+<p align="center">
+  <a href="./docs/minded-intro-dark.webm"><strong>▶ Dark mode version</strong></a>
+  &nbsp;·&nbsp;
+  <a href="./docs/minded-intro-mobile.webm">Mobile version</a>
+</p>
+
 <p align="center"><b>Browser extension</b></p>
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/intervention.png" alt="minded pausing a distracting site to ask what you actually came to do" /></td>
-    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="minded dashboard showing today's energy check-in" /></td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/intervention-dark.png" />
+        <img src="docs/screenshots/intervention.png" alt="minded pausing a distracting site to ask what you actually came to do" />
+      </picture>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark.png" />
+        <img src="docs/screenshots/dashboard.png" alt="minded dashboard showing today's energy check-in" />
+      </picture>
+    </td>
   </tr>
   <tr>
     <td align="center"><em>A pause before the scroll - name what you actually came to do.</em></td>
@@ -27,9 +43,24 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/screenshots/mobile/breathe.png" alt="minded's grounding breath on Android" /></td>
-    <td width="33%"><img src="docs/screenshots/mobile/check-in.png" alt="minded's daily check-in prompt on Android" /></td>
-    <td width="33%"><img src="docs/screenshots/mobile/intervention.png" alt="minded asking what you came to do on Android" /></td>
+    <td width="33%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile/breathe-dark.png" />
+        <img src="docs/screenshots/mobile/breathe.png" alt="minded's grounding breath on Android" />
+      </picture>
+    </td>
+    <td width="33%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile/check-in-dark.png" />
+        <img src="docs/screenshots/mobile/check-in.png" alt="minded's daily check-in prompt on Android" />
+      </picture>
+    </td>
+    <td width="33%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile/intervention-dark.png" />
+        <img src="docs/screenshots/mobile/intervention.png" alt="minded asking what you came to do on Android" />
+      </picture>
+    </td>
   </tr>
   <tr>
     <td colspan="3" align="center"><em>The same gentle nudges on Android - a breath, a check-in, a moment to ask whether you meant to open this.</em></td>
