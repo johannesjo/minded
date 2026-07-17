@@ -251,11 +251,12 @@ export const DEFAULT_COMPANION_BOTTOM_Y_PX = 44;
  * there's nothing to jump. Tune the bloom (height / size) here.
  */
 export const sunDailyQuestionsSuccessSettle = (): SunSettle => ({
-  // Sits in the upper third. The closing line is flow-centred (~mid-screen) while
-  // this disc is anchored to the viewport, so keep the disc clearly above centre:
-  // raising it widens the gap at every viewport height (and as the line wraps),
-  // rather than relying on the two coordinate systems lining up by coincidence.
-  anchorYRatio: 0.33,
+  // Sits just above the vertical centre. The closing line is flow-centred
+  // (~mid-screen) while this disc is anchored to the viewport, so keep the disc a
+  // touch above centre - close enough that the sun and its line read as one calm
+  // group. An earlier 0.33 (upper third) flew the disc far off the bottom bar and
+  // left a big gap over the text, reading as a jump rather than a gentle bloom.
+  anchorYRatio: 0.42,
   scale: 0.62, // larger than the companion (0.52) - a warm bloom, not full size
   breathe: false,
 });
