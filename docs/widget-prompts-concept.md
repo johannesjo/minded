@@ -445,12 +445,12 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 33 lines (8 NOTICE + 7 ACTION_ADVICE + 18 QUESTION). Growing it
-further is cheap and safe by construction - the `DAILY_STRIDE`/`dailyStride` = 97
-(prime) fix makes full-pool coverage independent of size, so there is no
-arithmetic risk to adding lines. What follows is the checklist and the curated
-candidate shortlist so a future session can extend it without re-deriving any of
-this.
+The pool is now 51 lines (8 NOTICE + 7 ACTION_ADVICE + 36 QUESTION) after the
+"second wave" batch below was pulled in. Growing it further is cheap and safe by
+construction - the `DAILY_STRIDE`/`dailyStride` = 97 (prime) fix makes full-pool
+coverage independent of size, so there is no arithmetic risk to adding lines.
+What follows is the checklist and the curated candidate shortlist so a future
+session can extend it without re-deriving any of this.
 
 **Mechanical checklist (all must move together):**
 1. Add the line - in its `formatQuestionText` display form for questions (i.e.
@@ -483,8 +483,8 @@ hours - stricter than the in-app `~90%` bar):
   (`Healthier*`, `WhyReduce*`, "…use this app less").
 - **Register:** world-voiced, present-moment or gently reflective, calm.
 
-**Curated shortlist to pull from next (all ≤70, judged to clear the bar - still
-needs the copy sign-off above):**
+**~~Curated shortlist~~ (pulled in - the "second wave" batch, now shipping in
+both pools):**
 - `PersonalResources`: "What is something you are good at?" · "What is a strength of yours?"
 - `CalmingThoughts`: "What makes you feel relaxed?"
 - `PositiveThoughts`: "What do you love about life?" · "What accomplishments are you most proud of?"
@@ -494,8 +494,12 @@ needs the copy sign-off above):**
 - `Relationships`: "Who makes you feel supported?" · "Who brings out the best in you?" · "Who would you like to thank?"
 - `MindfulEating`: "What food makes you happy?" · "What helps you eat more slowly?"
 
-That is ~20 more without touching the exclude-classes, easily doubling the pool
-again if wanted. **Exclude-classes (so they don't creep back):** all `Healthier*`
+That batch of 18 landed the pool at 51. A **third wave** of comparable lines
+still sits unused in the same categories (e.g. `GoodPlans` "What is a good habit
+you might want to establish?", `Relationships` "Who would you like to reconnect
+with?", `PositiveThoughts` "What is something small that delighted you recently?"
+- already in) without touching the exclude-classes, if a future session wants to
+grow it again. **Exclude-classes (so they don't creep back):** all `Healthier*`
 / `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
 lines (striving), `*Today` categories (stale), `Insomnia` (night/exposing), the
 existential/self-exposing `SelfDiscovery`+`SelfCompassion` lines ("forgive

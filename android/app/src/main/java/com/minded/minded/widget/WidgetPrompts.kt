@@ -117,6 +117,28 @@ object WidgetPrompts {
         "What can you do to make yourself more comfortable in this moment?",
         "What is something outside your control you could set down for now?",
         "What are you holding onto that you could loosen your grip on a little?",
+        // Second wave of ambient-safe questions (docs/widget-prompts-concept.md,
+        // "Extending the pool") - world-voiced, present-moment or gently
+        // reflective, self-exposing to no onlooker, picked line-by-line across
+        // categories. Must stay in the same order as the Swift pool.
+        "What is something you are good at?",
+        "What is a strength of yours?",
+        "What makes you feel relaxed?",
+        "What do you love about life?",
+        "What accomplishments are you most proud of?",
+        "What is something you always wanted to do?",
+        "What is something new you could try?",
+        "What is something you'd like to learn?",
+        "What do you want in life?",
+        "What makes you happy?",
+        "What part of your life feels most alive right now?",
+        "What would make tomorrow feel a little kinder?",
+        "When are you at your best?",
+        "Who makes you feel supported?",
+        "Who brings out the best in you?",
+        "Who would you like to thank?",
+        "What food makes you happy?",
+        "What helps you eat more slowly?",
     )
 
     /**
