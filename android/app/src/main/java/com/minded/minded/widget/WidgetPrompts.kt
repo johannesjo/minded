@@ -150,7 +150,6 @@ object WidgetPrompts {
         "What is a good habit you might want to establish?",
         "Who would you like to reconnect with?",
         "What does a good relationship look like to you?",
-        "How could you be a better listener?",
         "What small habit would feel good to nurture?",
         "What do you want to be different a year from now?",
         "What actions would make you proud of yourself?",

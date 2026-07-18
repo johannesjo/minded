@@ -445,7 +445,7 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 67 lines (9 NOTICE + 11 ACTION_ADVICE + 47 QUESTION) after the
+The pool is now 66 lines (9 NOTICE + 11 ACTION_ADVICE + 46 QUESTION) after the
 "second wave" and "third wave" batches below were pulled in - the NOTICE and
 ACTION_ADVICE sources are now fully drained except the two `daytimeOnly`
 task/productivity advices (striving) and the one social-obligation advice
@@ -497,14 +497,16 @@ both pools):**
 - `Relationships`: "Who makes you feel supported?" · "Who brings out the best in you?" · "Who would you like to thank?"
 - `MindfulEating`: "What food makes you happy?" · "What helps you eat more slowly?"
 
-That batch of 18 (second wave), plus a **third wave** of 11 more questions and
-the last untapped NOTICE cue + 4 ACTION_ADVICE lines, landed the pool at 67. The
+That batch of 18 (second wave), plus a **third wave** of 10 more questions and
+the last untapped NOTICE cue + 4 ACTION_ADVICE lines, landed the pool at 66. The
 NOTICE and ACTION_ADVICE wells are now dry (bar the excluded striving/social
 lines noted above), so any further growth is questions-only. What remains in the
 question pool is thinner - mostly the ellipsis fill-in prompts ("I am happy
 when…"), the heavier/existential `SelfDiscovery` lines, and the focus/productivity
-`HelpfulTools` set - i.e. the exclude-classes, not fresh clean candidates. Treat
-67 as roughly the natural ceiling for the current bar; growing past it means
+`HelpfulTools` set - i.e. the exclude-classes, not fresh clean candidates.
+(`REL7` "How could you be a better listener?" was pulled from the third wave on
+review as self-improvement-register.) Treat 66 as roughly the natural ceiling for
+the current bar; growing past it means
 either relaxing the bar or an on-device fit-check + copy pass first (both still
 open, see above). **Exclude-classes (so they don't creep back):** all `Healthier*`
 / `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
