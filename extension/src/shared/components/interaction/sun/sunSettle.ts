@@ -245,18 +245,20 @@ export const DEFAULT_COMPANION_BOTTOM_Y_PX = 44;
 
 /**
  * Daily-questions success bloom: the same companion disc that carried the user
- * through the questions glides up off the bottom bar to a calm upper-middle rest
- * and grows into the closing "have a wonderful day" sun. The success sun is
- * literally the sun that was already there - no separate element pops in, so
- * there's nothing to jump. Tune the bloom (height / size) here.
+ * through the questions glides up off the bottom bar and grows into the closing
+ * "have a wonderful day" sun. The success sun is literally the sun that was
+ * already there - no separate element pops in, so there's nothing to jump. Tune
+ * the bloom (height / size) here.
  */
 export const sunDailyQuestionsSuccessSettle = (): SunSettle => ({
-  // Sits just above the vertical centre. The closing line is flow-centred
+  // Sits just below the vertical centre. The closing line is flow-centred
   // (~mid-screen) while this disc is anchored to the viewport, so keep the disc a
-  // touch above centre - close enough that the sun and its line read as one calm
-  // group. An earlier 0.33 (upper third) flew the disc far off the bottom bar and
-  // left a big gap over the text, reading as a jump rather than a gentle bloom.
-  anchorYRatio: 0.42,
+  // touch below centre - the sun rises from the bottom bar and settles *beneath*
+  // the closing line rather than climbing over it, so the line stays clear at the
+  // top of the group and the sun rests below it (close enough that the two still
+  // read as one calm group). Above the text it competed with / overlapped the
+  // line; below, the rising disc comes to rest without ever passing over it.
+  anchorYRatio: 0.6,
   scale: 0.62, // larger than the companion (0.52) - a warm bloom, not full size
   breathe: false,
 });

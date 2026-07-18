@@ -190,7 +190,7 @@ const DailyQuestions = () => {
             <Match when={getStep() === lastStep}>
               {/* TODO component */}
               <div class="success-message" ref={scheduleAfterAni}>
-                {/* No sun here: the shell sun blooms above this line. */}
+                {/* No sun here: the shell sun blooms below this line. */}
                 <div class="success-text">Have a wonderful day today!</div>
               </div>
             </Match>
@@ -229,7 +229,7 @@ const DailyQuestions = () => {
             <Match when={getStep() === 2}>
               {/* TODO component */}
               <div class="success-message" ref={scheduleAfterAni}>
-                {/* No sun here: the shell sun blooms above this line. */}
+                {/* No sun here: the shell sun blooms below this line. */}
                 <div class="success-text">
                   Have a wonderful rest of the day!
                 </div>

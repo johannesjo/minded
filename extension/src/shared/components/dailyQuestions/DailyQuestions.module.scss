@@ -29,9 +29,10 @@
   align-items: center;
   animation: minded6622fadeIn 0.6s var(--ease-out);
 
-  // The closing line sits just beneath the shell sun, which blooms just above
-  // the vertical centre (sunDailyQuestionsSuccessSettle); the centred text lands
-  // below it without overlapping. Styled like the sun-instructions lines - a
+  // The closing line sits just above the shell sun, which blooms just below the
+  // vertical centre (sunDailyQuestionsSuccessSettle); the centred text lands
+  // above it without overlapping - the rising disc comes to rest beneath the line
+  // rather than climbing over it. Styled like the sun-instructions lines - a
   // quiet, full-emphasis whisper (not a bold banner) so the closing beat stays
   // calm and reads as the same soft voice the interaction uses.
   .success-text {
