@@ -74,6 +74,7 @@ enum WidgetPrompts {
         "Feel both feet on the floor.",
         "Let your jaw and shoulders soften.",
         "Let your hands fall open and rest.",
+        "Find the farthest thing you can see, and rest your eyes on it.",
         "Listen for the most distant sound you can hear.",
         "Notice the texture under your fingertips.",
         "Feel the weight of your body, wherever you are.",
@@ -87,6 +88,10 @@ enum WidgetPrompts {
         "How about some water?",
         "How about a minute away from the screen?",
         "How about resting your eyes on something far away?",
+        "How about a short break?",
+        "How about making a tea or coffee?",
+        "How about tidying one small thing nearby?",
+        "How about washing your face with cold water?",
         // Present-moment questions (questions.ts, rendered via formatQuestionText,
         // so the "?" is part of the shown line the tap matches back). Only the
         // ambient-safe slice: world-voiced, universal, and self-exposing to no
@@ -111,6 +116,40 @@ enum WidgetPrompts {
         "What can you do to make yourself more comfortable in this moment?",
         "What is something outside your control you could set down for now?",
         "What are you holding onto that you could loosen your grip on a little?",
+        // Second wave of ambient-safe questions (docs/widget-prompts-concept.md,
+        // "Extending the pool") - world-voiced, present-moment or gently
+        // reflective, self-exposing to no onlooker, picked line-by-line across
+        // categories. Must stay in the same order as the Kotlin pool.
+        "What is something you are good at?",
+        "What is a strength of yours?",
+        "What makes you feel relaxed?",
+        "What do you love about life?",
+        "What accomplishments are you most proud of?",
+        "What is something you always wanted to do?",
+        "What is something new you could try?",
+        "What is something you'd like to learn?",
+        "What do you want in life?",
+        "What makes you happy?",
+        "What part of your life feels most alive right now?",
+        "What would make tomorrow feel a little kinder?",
+        "When are you at your best?",
+        "Who makes you feel supported?",
+        "Who brings out the best in you?",
+        "Who would you like to thank?",
+        "What food makes you happy?",
+        "What helps you eat more slowly?",
+        // Third wave (same bar, same categories) - see the "Extending the pool"
+        // note in docs/widget-prompts-concept.md. Same order as the Kotlin pool.
+        "What is a challenge you overcame?",
+        "What is a good habit you might want to establish?",
+        "Who would you like to reconnect with?",
+        "What does a good relationship look like to you?",
+        "What small habit would feel good to nurture?",
+        "What do you want to be different a year from now?",
+        "What actions would make you proud of yourself?",
+        "What would you attempt if you knew you could not fail?",
+        "What meal makes you feel good afterward?",
+        "What could help you enjoy your meals more?",
     ]
 
     /// The line for a given local moment, or nil at night (the moon carries the

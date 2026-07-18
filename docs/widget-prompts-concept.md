@@ -445,12 +445,15 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 33 lines (8 NOTICE + 7 ACTION_ADVICE + 18 QUESTION). Growing it
-further is cheap and safe by construction - the `DAILY_STRIDE`/`dailyStride` = 97
-(prime) fix makes full-pool coverage independent of size, so there is no
-arithmetic risk to adding lines. What follows is the checklist and the curated
-candidate shortlist so a future session can extend it without re-deriving any of
-this.
+The pool is now 66 lines (9 NOTICE + 11 ACTION_ADVICE + 46 QUESTION) after the
+"second wave" and "third wave" batches below were pulled in - the NOTICE and
+ACTION_ADVICE sources are now fully drained except the two `daytimeOnly`
+task/productivity advices (striving) and the one social-obligation advice
+("someone you've been meaning to reach out to", held for register). Growing it further is cheap and safe by
+construction - the `DAILY_STRIDE`/`dailyStride` = 97 (prime) fix makes full-pool
+coverage independent of size, so there is no arithmetic risk to adding lines.
+What follows is the checklist and the curated candidate shortlist so a future
+session can extend it without re-deriving any of this.
 
 **Mechanical checklist (all must move together):**
 1. Add the line - in its `formatQuestionText` display form for questions (i.e.
@@ -483,8 +486,8 @@ hours - stricter than the in-app `~90%` bar):
   (`Healthier*`, `WhyReduce*`, "…use this app less").
 - **Register:** world-voiced, present-moment or gently reflective, calm.
 
-**Curated shortlist to pull from next (all ≤70, judged to clear the bar - still
-needs the copy sign-off above):**
+**~~Curated shortlist~~ (pulled in - the "second wave" batch, now shipping in
+both pools):**
 - `PersonalResources`: "What is something you are good at?" · "What is a strength of yours?"
 - `CalmingThoughts`: "What makes you feel relaxed?"
 - `PositiveThoughts`: "What do you love about life?" · "What accomplishments are you most proud of?"
@@ -494,8 +497,18 @@ needs the copy sign-off above):**
 - `Relationships`: "Who makes you feel supported?" · "Who brings out the best in you?" · "Who would you like to thank?"
 - `MindfulEating`: "What food makes you happy?" · "What helps you eat more slowly?"
 
-That is ~20 more without touching the exclude-classes, easily doubling the pool
-again if wanted. **Exclude-classes (so they don't creep back):** all `Healthier*`
+That batch of 18 (second wave), plus a **third wave** of 10 more questions and
+the last untapped NOTICE cue + 4 ACTION_ADVICE lines, landed the pool at 66. The
+NOTICE and ACTION_ADVICE wells are now dry (bar the excluded striving/social
+lines noted above), so any further growth is questions-only. What remains in the
+question pool is thinner - mostly the ellipsis fill-in prompts ("I am happy
+when…"), the heavier/existential `SelfDiscovery` lines, and the focus/productivity
+`HelpfulTools` set - i.e. the exclude-classes, not fresh clean candidates.
+(`REL7` "How could you be a better listener?" was pulled from the third wave on
+review as self-improvement-register.) Treat 66 as roughly the natural ceiling for
+the current bar; growing past it means
+either relaxing the bar or an on-device fit-check + copy pass first (both still
+open, see above). **Exclude-classes (so they don't creep back):** all `Healthier*`
 / `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
 lines (striving), `*Today` categories (stale), `Insomnia` (night/exposing), the
 existential/self-exposing `SelfDiscovery`+`SelfCompassion` lines ("forgive
