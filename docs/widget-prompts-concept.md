@@ -152,7 +152,10 @@ clears *both*:
    "What is something you can forgive yourself for", "Is there a conversation
    you've been avoiding", or anything that outs the app's addiction framing
    ("a good reason to use this app less") expose a fragile inner state and are
-   **out**.
+   **out**. Note this filter is **per line, not per category**: `SelfCompassion`
+   contributes "What do you need right now?" (in - a universal present-moment
+   ask) yet not "What is something you can forgive yourself for?" (out - presumes
+   something to forgive). The category label carries no verdict; the line does.
 2. **Answerability-in-context** - can the reader engage with the line where they
    meet it? This was the stated reason to ban questions, but it applies *equally*
    to every widget line: you can't "do" "Feel both feet on the floor" on the card
@@ -161,10 +164,13 @@ clears *both*:
    axis mostly rules out lines that demand a *typed* reply to make any sense at
    all, not questions as a category.
 
-Under this model the admitted questions are the ones indistinguishable in
-register from the NOTICE cues: world-voiced, present-moment, universal,
-self-exposing to no one - drawn from `NoticingNow`, `LettingGo`,
-`CalmingThoughts`, and the plainest `Gratitude`/`PositiveThoughts` lines. The
+Under this model the admitted questions are the ones close in register to the
+NOTICE cues: world-voiced, present-moment or gently reflective, universal,
+self-exposing to no one - picked line-by-line (not by category) from
+`NoticingNow`, `LettingGo`, `CalmingThoughts`, `Gratitude`, `PositiveThoughts`,
+and single self-standing lines from `SelfCompassion` ("What do you need right
+now?") and `Insomnia` ("What can you do to make yourself more comfortable in
+this moment?" - time-neutral despite its late-night home category). The
 same pool ships on both platforms (the parity test requires it), so Android's
 companion card gets the richer variety too; that is deliberate, not a compromise.
 The push for it came from iOS: there the card is the *only* ambient intervention
