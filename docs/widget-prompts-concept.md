@@ -428,10 +428,75 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 - **Copy sign-off.** The pool reuses the app's own words verbatim, but the
   selection is an editorial act and deserves the same voice review the
-  return-loop copy got.
+  return-loop copy got. Two lines to revisit specifically (flagged in review):
+  `"What are you holding onto that you could loosen your grip on a little?"`
+  (therapy-register, most presumes a feeling, and sits **exactly at the 70-char
+  cap** - zero headroom) and `"What helps you feel safe and at peace?"` (implies
+  the user may not feel safe). Both clear the self-exposure axis; the question is
+  register, not safety.
 - **On-device look.** The card has not been seen on a real launcher yet:
   serif rendering, the card sky's dither under mild scaling, and how the
   170×140dp face maps to 3×2 across launchers/grid densities all need one
-  round on hardware. (The RemoteViews bitmap budget turned out to be a
-  non-issue - Glance ships resource *references*, not parceled bitmaps; the
-  real cost was the launcher-side decode, addressed by the card-sized sky.)
+  round on hardware. **The 60→70 cap raise was not visually verified** - confirm
+  70 chars still renders in ~3 serif lines on the smallest 3×2 card. (The
+  RemoteViews bitmap budget turned out to be a non-issue - Glance ships resource
+  *references*, not parceled bitmaps; the real cost was the launcher-side decode,
+  addressed by the card-sized sky.)
+
+## Extending the pool (working notes)
+
+The pool is now 33 lines (8 NOTICE + 7 ACTION_ADVICE + 18 QUESTION). Growing it
+further is cheap and safe by construction - the `DAILY_STRIDE`/`dailyStride` = 97
+(prime) fix makes full-pool coverage independent of size, so there is no
+arithmetic risk to adding lines. What follows is the checklist and the curated
+candidate shortlist so a future session can extend it without re-deriving any of
+this.
+
+**Mechanical checklist (all must move together):**
+1. Add the line - in its `formatQuestionText` display form for questions (i.e.
+   with the "?") - to **both** pools, in the **same position**:
+   `android/.../widget/WidgetPrompts.kt` `WAKING_PROMPTS` and
+   `extension/ios/App/MindedWidget/WidgetPrompts.swift` `wakingPrompts`. Order
+   must stay one-to-one (same slot arithmetic ⇒ same line at the same moment).
+2. The line must exist **verbatim** in a TS source pool: `NOTICE_CUES`,
+   `ACTION_ADVICES`, or `formatQuestionText(q.t)` for some `q` in `QUESTIONS`
+   (`extension/src/shared/data/questions.ts`). Otherwise the tap silently
+   degrades to a random pick. (`matchWidgetLine` in `InteractionCommon.tsx` does
+   the reverse lookup; questions reuse the `questionForPrompt` open path.)
+3. Keep every line **≤ the char cap**, currently 70, kept in lockstep across
+   `WidgetPrompts.kt` `MAX_PROMPT_LENGTH`, `AppDelegate.encodedWidgetLine`'s
+   `line.utf8.count <= 70`, and the jest mirror test's cross-check. Raising it
+   again means all three plus an on-device fit check.
+4. Run `npx jest widgetPromptsMirror` (parity/order/cap/ASCII) and the JVM
+   `WidgetPromptsTest` (rotation, full-pool coverage, allow-list). Both read
+   pool size / cap dynamically, so they auto-adapt.
+
+**The content bar for a candidate line** (a semi-public surface that lingers for
+hours - stricter than the in-app `~90%` bar):
+- **Self-exposure = the dominant axis.** Reveals nothing private to an onlooker.
+  Filter **per line, not per category**.
+- **Timeless.** True and helpful at *any* waking moment in 06–19. This rules out
+  "today" retrospectives (`GoodToday`, `TodayILearned`) - stale at 6am.
+- **No striving.** No task/productivity/focus nudges (`RefocusHelperToday`,
+  `HelpfulTools` focus lines, `UnderstandingProcrastination`).
+- **No addiction framing.** Nothing that outs what the app is
+  (`Healthier*`, `WhyReduce*`, "…use this app less").
+- **Register:** world-voiced, present-moment or gently reflective, calm.
+
+**Curated shortlist to pull from next (all ≤70, judged to clear the bar - still
+needs the copy sign-off above):**
+- `PersonalResources`: "What is something you are good at?" · "What is a strength of yours?"
+- `CalmingThoughts`: "What makes you feel relaxed?"
+- `PositiveThoughts`: "What do you love about life?" · "What accomplishments are you most proud of?"
+- `GoodPlans` (timeless, *not* the `*Today` variants): "What is something you always wanted to do?" · "What is something new you could try?" · "What is something you'd like to learn?"
+- `SelfDiscovery` (line-by-line - skip the heavy/existential ones like "What am I really scared of?", "Do you live a fulfilling life?"): "What do you want in life?" · "What makes you happy?" · "What part of your life feels most alive right now?"
+- `SelfImprovement`: "What would make tomorrow feel a little kinder?" · "When are you at your best?"
+- `Relationships`: "Who makes you feel supported?" · "Who brings out the best in you?" · "Who would you like to thank?"
+- `MindfulEating`: "What food makes you happy?" · "What helps you eat more slowly?"
+
+That is ~20 more without touching the exclude-classes, easily doubling the pool
+again if wanted. **Exclude-classes (so they don't creep back):** all `Healthier*`
+/ `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
+lines (striving), `*Today` categories (stale), `Insomnia` (night/exposing), the
+existential/self-exposing `SelfDiscovery`+`SelfCompassion` lines ("forgive
+yourself", "gentler with yourself", "good friend in your situation").
