@@ -68,7 +68,7 @@ object WidgetPrompts {
     private const val DAILY_STRIDE = SLOTS_PER_DAY + 1
 
     /** Hard cap so every line fits ~3 serif lines on a 3×2 card. */
-    const val MAX_PROMPT_LENGTH = 60
+    const val MAX_PROMPT_LENGTH = 70
 
     // Waking hours (06:00–19:00): embodied present-moment anchors and gentle
     // suggestions that complete on the spot - the NOTICE cues and short
@@ -110,6 +110,13 @@ object WidgetPrompts {
         "What is one worry you could leave for tomorrow?",
         "What is something you are grateful for?",
         "What is something small that delighted you recently?",
+        "What do you need right now?",
+        "What is something you take for granted?",
+        "What helps you feel safe and at peace?",
+        "Can you describe a calm place you might like?",
+        "What can you do to make yourself more comfortable in this moment?",
+        "What is something outside your control you could set down for now?",
+        "What are you holding onto that you could loosen your grip on a little?",
     )
 
     /**

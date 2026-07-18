@@ -60,7 +60,7 @@ enum WidgetPrompts {
     // repeats). Must match the Kotlin `DAILY_STRIDE` one-to-one.
     private static let dailyStride = slotsPerDay + 1
 
-    // Every line is ≤60 chars of ASCII so it fits the card - enforced by the
+    // Every line is ≤70 chars of ASCII so it fits the card - enforced by the
     // Kotlin twin's MAX_PROMPT_LENGTH (JVM-tested) and pinned across platforms,
     // including AppDelegate's forwarding cap, by widgetPromptsMirror.test.ts.
 
@@ -104,6 +104,13 @@ enum WidgetPrompts {
         "What is one worry you could leave for tomorrow?",
         "What is something you are grateful for?",
         "What is something small that delighted you recently?",
+        "What do you need right now?",
+        "What is something you take for granted?",
+        "What helps you feel safe and at peace?",
+        "Can you describe a calm place you might like?",
+        "What can you do to make yourself more comfortable in this moment?",
+        "What is something outside your control you could set down for now?",
+        "What are you holding onto that you could loosen your grip on a little?",
     ]
 
     /// The line for a given local moment, or nil at night (the moon carries the

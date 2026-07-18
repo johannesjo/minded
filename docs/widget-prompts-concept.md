@@ -124,7 +124,9 @@ out most of the app's content:
 | Waking (06–19) | `NOTICE_CUES` + the short `ACTION_ADVICES` + the **ambient-safe slice of `QUESTIONS`** | "Feel both feet on the floor." / "How about a deep breath?" / "What is already enough about this moment?" |
 | Night (19–06) | **nothing - the moon, alone** | words at 2 a.m. read as a nudge; the calm answer is silence |
 
-The pool is one `WAKING_PROMPTS` list, ≤60 chars each (enforced by test). It is
+The pool is one `WAKING_PROMPTS` list, ≤70 chars each (enforced by test - the cap
+was 60 in v1, raised to 70 so a few longer letting-go/present-moment questions
+fit; three caps move in lockstep, see *Source of truth*). It is
 still small and hand-curated, but it is **no longer questionless** - see
 *Ambient-safety is a spectrum, not a "no questions" rule* below for why the
 original blanket ban was too coarse. Lines are copied **verbatim** from the three
@@ -286,7 +288,7 @@ Everything extends what exists; nothing new is invented.
   R-free, JVM-unit-tested like `SunWidgetPhase` (`WidgetPromptsTest`). The
   wordless-night window is built from `SunWidgetPhase`'s own
   `DAY_START`/`NIGHT_START` constants, so it *is* the moon's window and can't
-  drift. Tests enforce the guardrails mechanically: determinism, ≤60 chars,
+  drift. Tests enforce the guardrails mechanically: determinism, ≤70 chars,
   full-pool one-step-per-15-min-slot rotation with no adjacent repeats, the
   15-minute day cadence with a single night-spanning alarm, night returns
   `null`, text-iff-light-sky, and the allow-list. `WidgetSky` and
