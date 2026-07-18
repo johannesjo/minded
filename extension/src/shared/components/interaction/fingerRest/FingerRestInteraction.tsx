@@ -1,6 +1,7 @@
 import { createSignal, JSX, onCleanup } from "solid-js";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import {
+  FINGER_REST_CONFIRM_MS,
   FINGER_REST_CUE_FADE_MS,
   FINGER_REST_KEEP_ALIVE_TICK_MS,
   FINGER_REST_MIN_MS,
@@ -23,7 +24,9 @@ interface FingerRestProps {
  * words and the outline dissolve, a warmth gathers under the fingertip, and
  * lifting continues on. Nothing is counted, timed on screen, or scored, and -
  * true to the wordless heart of it - there is nothing left to read once it has
- * begun; only the warmth remains.
+ * begun; only the warmth remains. When the rest is long enough, lifting is met
+ * by a single soft bloom of that warmth - a wordless "received" - and the words
+ * stay gone; a too-short brush instead just lets the invitation fade back.
  *
  * Deliberately NOT a hold-to-unlock gate (the attention-check dark pattern):
  * no progress ring, no announced duration, and release is always free - a
@@ -35,6 +38,10 @@ interface FingerRestProps {
  */
 export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
   const [getIsResting, setIsResting] = createSignal(false);
+  // A completed rest: the finger has lifted after staying long enough. The
+  // words never come back from here - the warmth blooms once as the "received"
+  // and the surface hands off to the parent's success fade.
+  const [getIsConfirmed, setIsConfirmed] = createSignal(false);
 
   let restStartTS: number | undefined;
   let restingPointerId: number | undefined;
@@ -77,14 +84,21 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
     if (!getIsResting() || e.pointerId !== restingPointerId) return;
     restingPointerId = undefined;
     stopKeepAlive();
-    setIsResting(false);
     const restedMs = restStartTS !== undefined ? Date.now() - restStartTS : 0;
     restStartTS = undefined;
     if (restedMs >= FINGER_REST_MIN_MS) {
+      // Long enough: mark the rest complete *before* clearing `isResting` so the
+      // words and pad never get a transient tick where both flags are false
+      // (which would start their fade-in for a frame). With confirmed set first,
+      // the warmth simply stays lit and blooms once as the "received"; the
+      // invitation never snaps back against the parent's success fade.
+      setIsConfirmed(true);
+      setIsResting(false);
       props.onSuccess();
+      return;
     }
-    // Shorter was a tap, not a rest: the invitation has already begun fading
-    // back in via the signal above; no nudge, no message.
+    // Shorter was a tap, not a rest: let the invitation ease back in.
+    setIsResting(false);
   };
 
   const handleRestInterrupted = (e: PointerEvent): void => {
@@ -103,19 +117,22 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
     <div class="finger-rest" onMouseMove={() => props.onCancelCountdown()}>
       <div
         class="finger-rest-zone"
-        classList={{ "is-resting": getIsResting() }}
+        classList={{
+          "is-resting": getIsResting(),
+          "is-confirmed": getIsConfirmed(),
+        }}
         onPointerDown={handleRestStart}
         onPointerUp={handleRestEnd}
         onPointerCancel={handleRestInterrupted}
       >
         {/* The soft outline that shows where to lay the finger down. It fades
             with the words as stillness begins - once resting, the warmth alone
-            marks the spot. */}
+            marks the spot - and stays gone once a rest has completed. */}
         <div
           class="finger-rest-pad"
           aria-hidden="true"
           style={{
-            opacity: getIsResting() ? 0 : 1,
+            opacity: getIsResting() || getIsConfirmed() ? 0 : 1,
             transition: prefersReducedMotion()
               ? "none"
               : `opacity ${FINGER_REST_CUE_FADE_MS}ms ease-in-out`,
@@ -125,7 +142,7 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
           class="finger-rest-warmth"
           aria-hidden="true"
           style={{
-            opacity: getIsResting() ? 1 : 0,
+            opacity: getIsResting() || getIsConfirmed() ? 1 : 0,
             transition: prefersReducedMotion()
               ? "none"
               : `opacity ${
@@ -135,12 +152,23 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
                 }ms ease-in-out`,
           }}
         />
+        {/* The "received": a single soft bloom of the companion's light that
+            swells outward once and dissolves when a rest completes - the calm
+            confirmation in place of the words snapping back. One-shot only, and
+            skipped under reduced motion, where the steady warmth carries it. */}
+        {getIsConfirmed() && !prefersReducedMotion() && (
+          <div
+            class="finger-rest-bloom"
+            aria-hidden="true"
+            style={{ "animation-duration": `${FINGER_REST_CONFIRM_MS}ms` }}
+          />
+        )}
         {/* Cue and its why/how share one fade: everything to read dissolves the
-            moment stillness begins. */}
+            moment stillness begins, and stays gone once a rest has completed. */}
         <div
           class="finger-rest-cue"
           style={{
-            opacity: getIsResting() ? 0 : 1,
+            opacity: getIsResting() || getIsConfirmed() ? 0 : 1,
             transition: prefersReducedMotion()
               ? "none"
               : `opacity ${FINGER_REST_CUE_FADE_MS}ms ease-in-out`,

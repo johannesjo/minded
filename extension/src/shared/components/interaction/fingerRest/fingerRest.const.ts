@@ -25,6 +25,17 @@ export const FINGER_REST_WARMTH_IN_MS = 3000;
 export const FINGER_REST_WARMTH_OUT_MS = 1200;
 
 /**
+ * When a rest completes, lifting is met not by the words fading back (which read
+ * as a jarring "field flashes in again" against the parent's success fade) but
+ * by a single soft bloom of the companion's own light: the warmth swells once,
+ * outward, and dissolves - a wordless "received", never a reward badge or score.
+ * The words stay gone once stillness has been kept. Tuned to bloom fully within
+ * the parent's ~700ms success fade so the acknowledgment is seen before the
+ * surface hands off.
+ */
+export const FINGER_REST_CONFIRM_MS = 800;
+
+/**
  * How often the resting screen pokes the parent's auto-dismiss countdown while
  * the finger rests: stillness produces no pointer events, so nothing else
  * would reset it (mirrors the bell's ring and urge surfing's wave).

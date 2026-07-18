@@ -57,6 +57,43 @@
     pointer-events: none;
   }
 
+  .finger-rest-bloom {
+    position: absolute;
+    inset: 0;
+    // The "received": one soft outward swell of the companion's own light when
+    // a rest completes, in place of the words snapping back. Same light as the
+    // warmth and the little sun's halo, a touch brighter at its peak so the
+    // acknowledgment reads, then dissolved to nothing. One-shot (forwards, no
+    // iteration) - deliberately never a repeating breath, per the fundamentals.
+    // Duration is driven inline from the component.
+    background: radial-gradient(
+      closest-side,
+      rgba(var(--little-sun-breath-rgb), 0.3) 0%,
+      rgba(var(--little-sun-breath-rgb), 0) 70%
+    );
+    pointer-events: none;
+    transform-origin: center;
+    animation-name: finger-rest-bloom;
+    animation-timing-function: ease-out;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes finger-rest-bloom {
+    0% {
+      opacity: 0;
+      transform: scale(0.72);
+    }
+    35% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.28);
+    }
+  }
+
   .finger-rest-cue {
     position: relative;
     display: flex;
