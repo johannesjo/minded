@@ -33,6 +33,17 @@ launcher/device.
 > deterministic, pre-placed rotation that simply renders the current slot's line
 > whenever the user returns.
 
+> **Update - ambient-safe questions admitted, and the rotation fixed.** Two
+> changes. (1) The "no questions" rule was reframed: "ambient-safe" is a
+> *two-axis spectrum* (self-exposure × answerability-in-context), not a blanket
+> ban, so a curated subset of world-voiced, non-self-exposing questions now rides
+> the widget and its tap opens that exact `QUESTION`. See *Ambient-safety is a
+> spectrum* below; this reverses "Pool has no questions". (2) The deterministic
+> rotation had a hidden defect - at a fixed time of day it only surfaced a
+> fraction of the pool (5 of 15), which read as "it always says the same thing".
+> Fixed by advancing one extra step per day (a prime `DAILY_STRIDE`); see *The
+> biggest risk* below.
+
 ## The idea in one line
 
 The home-screen widget becomes **a miniature still of the in-app intervention
@@ -110,17 +121,81 @@ out most of the app's content:
 
 | Slot | Source | Examples (verbatim from the app) |
 |---|---|---|
-| Waking (06–19) | `NOTICE_CUES` (`notice.const.ts`) + the short `ACTION_ADVICES` (`actionAdvices.ts`) | "Feel both feet on the floor." / "How about a deep breath?" |
+| Waking (06–19) | `NOTICE_CUES` + the short `ACTION_ADVICES` + the **ambient-safe slice of `QUESTIONS`** | "Feel both feet on the floor." / "How about a deep breath?" / "What is already enough about this moment?" |
 | Night (19–06) | **nothing - the moon, alone** | words at 2 a.m. read as a nudge; the calm answer is silence |
 
-The pool is deliberately small (one `WAKING_PROMPTS` list, ≤60 chars each -
-enforced by test) and carries **no open questions**: an unanswerable question on
-an ambient surface reads as friction, and - since tapping must now open the
-line's real interaction - every entry must be a NOTICE cue or an ACTION_ADVICE,
-the app's only widget-safe modes. The lines are copied **verbatim** from those
-two interaction pools (a jest parity test guards the copy against drift), not an
-automatic feed of `QUESTIONS`. *(The former evening gratitude row was dropped -
-see the status note at the top and the routing section below.)*
+The pool is one `WAKING_PROMPTS` list, ≤70 chars each (enforced by test - the cap
+was 60 in v1, raised to 70 so a few longer letting-go/present-moment questions
+fit; three caps move in lockstep, see *Source of truth*). It is
+still small and hand-curated, but it is **no longer questionless** - see
+*Ambient-safety is a spectrum, not a "no questions" rule* below for why the
+original blanket ban was too coarse. Lines are copied **verbatim** from the three
+interaction pools (`NOTICE_CUES`, `ACTION_ADVICES`, and `QUESTIONS` - the last in
+their `formatQuestionText` display form, "?" included), guarded by the jest parity
+test against drift; it is not an automatic feed of *all* `QUESTIONS`, only a
+hand-picked ambient-safe subset. *(The former evening gratitude row was dropped
+for an unrelated reason - it had no dashboard interaction to land on - but plain
+gratitude questions that do, like "What is something you are grateful for?", are
+now in the pool.)*
+
+#### Ambient-safety is a spectrum, not a "no questions" rule
+
+The v1 ban ("no open questions") bundled several different worries into one
+prohibition, and most questions only trip one of them. Separated out, the real
+constraints are **two independent axes**, and a line is widget-safe only when it
+clears *both*:
+
+1. **Self-exposure** - does displaying this line reveal something private about
+   the user to an onlooker? The home screen is semi-public and the card lingers
+   for hours, so this is the dominant axis here. "Feel both feet on the floor"
+   and "What can you hear right now?" leak nothing. "What am I really scared of",
+   "What is something you can forgive yourself for", "Is there a conversation
+   you've been avoiding", or anything that outs the app's addiction framing
+   ("a good reason to use this app less") expose a fragile inner state and are
+   **out**. Note this filter is **per line, not per category**: `SelfCompassion`
+   contributes "What do you need right now?" (in - a universal present-moment
+   ask) yet not "What is something you can forgive yourself for?" (out - presumes
+   something to forgive). The category label carries no verdict; the line does.
+2. **Answerability-in-context** - can the reader engage with the line where they
+   meet it? This was the stated reason to ban questions, but it applies *equally*
+   to every widget line: you can't "do" "Feel both feet on the floor" on the card
+   either - you tap, and the shared flow opens. A gentle question is no more
+   "left hanging" than a NOTICE cue; the tap is the answer path for both. So this
+   axis mostly rules out lines that demand a *typed* reply to make any sense at
+   all, not questions as a category.
+
+Under this model the admitted questions are the ones close in register to the
+NOTICE cues: world-voiced, present-moment or gently reflective, universal,
+self-exposing to no one - picked line-by-line (not by category) from
+`NoticingNow`, `LettingGo`, `CalmingThoughts`, `Gratitude`, `PositiveThoughts`,
+and single self-standing lines from `SelfCompassion` ("What do you need right
+now?") and `Insomnia` ("What can you do to make yourself more comfortable in
+this moment?" - time-neutral despite its late-night home category). The
+same pool ships on both platforms (the parity test requires it), so Android's
+companion card gets the richer variety too; that is deliberate, not a compromise.
+The push for it came from iOS: there the card is the *only* ambient intervention
+surface (`docs/ios-platform-fit.md`), so invitation variety matters most, and a
+single shared pool is the simplest way to deliver it (per the minimalism
+principle - no per-platform fork). What the reader gets *after* the tap was never
+in question: tapping a question opens that exact `QUESTION` interaction in the
+shared flow, typed answer and all - the card is the invitation, the tap is the
+full intervention.
+
+#### The same spectrum applies to interventions - just further down it
+
+Worth recording, because it reframes "ambient-safe" as a general principle
+rather than a widget quirk: the intervention screen sits on the *same* exposure
+continuum as the widget, only lower. It is transient (gone when you look away,
+not lingering for hours), and it is *summoned* (you triggered it), so its
+onlooker risk is real but smaller - a glance over your shoulder on a train, not a
+persistent home-screen billboard. The difference from the widget is **degree,
+not kind**. And the app already half-enforces this: the `~90% sure it helps` bar
+(`docs/reflective-companion-concept.md`), "state observed behaviour, never
+inferred feeling", and the app-wide cut of mood/energy echoes are the *same
+instinct* - don't surface something fragile or wrong-feeling. So the self-exposure
+axis is worth a light pass over intervention content too, even though the
+answerability axis relaxes there (the full surface is present). The widget just
+sits at the strict end of a line the whole app lives on.
 
 ### The cut list (so it doesn't creep back)
 
@@ -153,11 +228,18 @@ day. Two properties keep that an intervention, not a slot machine:
   pool stays gentle present-moment *invitations* in the world's voice - never
   confrontation, never a command. You get the intervention's *timing* without
   its *tone*.
-- **Rotation is still deterministic**: the slot index is a continuous count of
-  15-minute slots since the epoch, so the same moment always shows the same line
-  (a Glance/WidgetKit recomposition on a host event can't shuffle it) and the
-  pool is walked one step per slot with no adjacent repeats - the whole pool in
-  ~3¾ h, so no line recurs within a session.
+- **Rotation is still deterministic**: the same moment always shows the same line
+  (a Glance/WidgetKit recomposition on a host event can't shuffle it). Within a
+  day the index steps one per slot with no adjacent repeats - the whole pool
+  walked in a session - and at each day boundary it advances one *extra* step
+  (`DAILY_STRIDE` / `dailyStride` = `SLOTS_PER_DAY + 1` = 97). That "+1" is not
+  cosmetic: a plain slot count advances `96 % size` per day at a fixed clock
+  time, which shared a factor of 3 with the original 15-line pool, so a habitual
+  same-time glance only ever surfaced **5 of the 15 lines** (one residue class
+  mod 3) - the "why does it always say *let your hands fall open*?" bug. 97 is
+  prime, hence coprime with any pool size below 97, so a fixed-time glance now
+  walks the *whole* pool across days regardless of how many lines the pool holds.
+  A JVM test (`a fixed time of day walks the whole pool across days`) guards it.
 
 Habituation is still *accepted*, not fought with novelty for its own sake: the
 15-minute step exists to meet the return moment freshly, not to manufacture a
@@ -212,7 +294,7 @@ Everything extends what exists; nothing new is invented.
   R-free, JVM-unit-tested like `SunWidgetPhase` (`WidgetPromptsTest`). The
   wordless-night window is built from `SunWidgetPhase`'s own
   `DAY_START`/`NIGHT_START` constants, so it *is* the moon's window and can't
-  drift. Tests enforce the guardrails mechanically: determinism, ≤60 chars,
+  drift. Tests enforce the guardrails mechanically: determinism, ≤70 chars,
   full-pool one-step-per-15-min-slot rotation with no adjacent repeats, the
   15-minute day cadence with a single night-spanning alarm, night returns
   `null`, text-iff-light-sky, and the allow-list. `WidgetSky` and
@@ -268,17 +350,18 @@ carries no user data:
   lines.
 - **The web shell forces the matching mode** (`RouteCmp` reads `widgetLine` →
   `InteractionOverlay` → `InteractionCommon`): `matchWidgetLine` looks the string
-  up in `NOTICE_CUES`/`ACTION_ADVICES` and pins that exact NOTICE cue or
-  ACTION_ADVICE, mirroring the existing `questionForPrompt` injection. An
+  up in `NOTICE_CUES`, `ACTION_ADVICES`, and `QUESTIONS` (the last matched by
+  `formatQuestionText(q.t) === line`, so the shown "?" form maps back to its
+  question) and pins that exact NOTICE cue, ACTION_ADVICE, or `QUESTION` -
+  questions reuse the existing `questionForPrompt` injection path exactly. An
   unrecognised line (copy drift, a crafted intent) falls through to the normal
   random pick - it degrades, never breaks.
 
-This is why only NOTICE and ACTION_ADVICE may appear on the widget, and why the
-gratitude register had to go: they are the only ambient-safe modes that *also*
-have a dashboard-sun interaction to land on. The widget can only mirror this
-time-of-day + content slice; it deliberately cannot reflect the live
-per-user context (`getInteractionMode`'s friction/usage/variety), which needs
-private state the widget must never hold.
+Any interaction mode with a stable, ambient-safe line that the tap can reopen
+may appear on the widget - now NOTICE, ACTION_ADVICE, and QUESTION. The widget
+can only mirror this time-of-day + content slice; it deliberately cannot reflect
+the live per-user context (`getInteractionMode`'s friction/usage/variety), which
+needs private state the widget must never hold.
 
 ## iOS port (implemented)
 
@@ -315,11 +398,13 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 - ~~**Per-prompt tap routing**~~ - **now shipped** (see *Tapping the widget
   lands on the line it shows*). The original worry was that it couples the
-  widget to a question pool and builds a bespoke widget-experience; keeping the
-  widget to the two ambient-safe interaction modes (whose lines it already
-  showed verbatim) and re-matching by string sidesteps both - no new pool, no
-  new surface, and an unrecognised line just falls back to the universal
-  invitation.
+  widget to a question pool and builds a bespoke widget-experience; re-matching
+  the shown line by exact string against the app's own pools sidesteps the
+  second (no new surface - an unrecognised line just falls back to the universal
+  invitation). The first worry - "couples the widget to a question pool" - was
+  later *accepted on purpose*: a curated ambient-safe question subset now rides
+  the same string-match path (see *Ambient-safety is a spectrum*). Still no
+  bespoke widget surface; the tap runs the shared flow.
 - **Lock-screen / AOD variants** - the iOS accessory-widget alpha problem is
   documented; same restraint on Android.
 - **Notifications of any kind** - the product has none, deliberately; the
@@ -329,8 +414,10 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Decisions taken at implementation (were open questions)
 
-- **Pool has no questions** - anchors and suggestions only; every line must
-  map to a widget-safe interaction the tap can open (NOTICE / ACTION_ADVICE).
+- **Pool now includes an ambient-safe question subset** (revised - was "no
+  questions"). Every line must still map to a widget-safe interaction the tap can
+  open (NOTICE / ACTION_ADVICE / QUESTION) and clear both exposure axes; the
+  blanket question ban was found too coarse (see *Ambient-safety is a spectrum*).
 - **Boundaries are the app's own day/night edges** (06 / 19); nothing new. *(The
   20 evening boundary went with the gratitude register.)*
 - **The card is the gallery default** (3×2 target) - per the product call
@@ -341,10 +428,75 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 - **Copy sign-off.** The pool reuses the app's own words verbatim, but the
   selection is an editorial act and deserves the same voice review the
-  return-loop copy got.
+  return-loop copy got. Two lines to revisit specifically (flagged in review):
+  `"What are you holding onto that you could loosen your grip on a little?"`
+  (therapy-register, most presumes a feeling, and sits **exactly at the 70-char
+  cap** - zero headroom) and `"What helps you feel safe and at peace?"` (implies
+  the user may not feel safe). Both clear the self-exposure axis; the question is
+  register, not safety.
 - **On-device look.** The card has not been seen on a real launcher yet:
   serif rendering, the card sky's dither under mild scaling, and how the
   170×140dp face maps to 3×2 across launchers/grid densities all need one
-  round on hardware. (The RemoteViews bitmap budget turned out to be a
-  non-issue - Glance ships resource *references*, not parceled bitmaps; the
-  real cost was the launcher-side decode, addressed by the card-sized sky.)
+  round on hardware. **The 60→70 cap raise was not visually verified** - confirm
+  70 chars still renders in ~3 serif lines on the smallest 3×2 card. (The
+  RemoteViews bitmap budget turned out to be a non-issue - Glance ships resource
+  *references*, not parceled bitmaps; the real cost was the launcher-side decode,
+  addressed by the card-sized sky.)
+
+## Extending the pool (working notes)
+
+The pool is now 33 lines (8 NOTICE + 7 ACTION_ADVICE + 18 QUESTION). Growing it
+further is cheap and safe by construction - the `DAILY_STRIDE`/`dailyStride` = 97
+(prime) fix makes full-pool coverage independent of size, so there is no
+arithmetic risk to adding lines. What follows is the checklist and the curated
+candidate shortlist so a future session can extend it without re-deriving any of
+this.
+
+**Mechanical checklist (all must move together):**
+1. Add the line - in its `formatQuestionText` display form for questions (i.e.
+   with the "?") - to **both** pools, in the **same position**:
+   `android/.../widget/WidgetPrompts.kt` `WAKING_PROMPTS` and
+   `extension/ios/App/MindedWidget/WidgetPrompts.swift` `wakingPrompts`. Order
+   must stay one-to-one (same slot arithmetic ⇒ same line at the same moment).
+2. The line must exist **verbatim** in a TS source pool: `NOTICE_CUES`,
+   `ACTION_ADVICES`, or `formatQuestionText(q.t)` for some `q` in `QUESTIONS`
+   (`extension/src/shared/data/questions.ts`). Otherwise the tap silently
+   degrades to a random pick. (`matchWidgetLine` in `InteractionCommon.tsx` does
+   the reverse lookup; questions reuse the `questionForPrompt` open path.)
+3. Keep every line **≤ the char cap**, currently 70, kept in lockstep across
+   `WidgetPrompts.kt` `MAX_PROMPT_LENGTH`, `AppDelegate.encodedWidgetLine`'s
+   `line.utf8.count <= 70`, and the jest mirror test's cross-check. Raising it
+   again means all three plus an on-device fit check.
+4. Run `npx jest widgetPromptsMirror` (parity/order/cap/ASCII) and the JVM
+   `WidgetPromptsTest` (rotation, full-pool coverage, allow-list). Both read
+   pool size / cap dynamically, so they auto-adapt.
+
+**The content bar for a candidate line** (a semi-public surface that lingers for
+hours - stricter than the in-app `~90%` bar):
+- **Self-exposure = the dominant axis.** Reveals nothing private to an onlooker.
+  Filter **per line, not per category**.
+- **Timeless.** True and helpful at *any* waking moment in 06–19. This rules out
+  "today" retrospectives (`GoodToday`, `TodayILearned`) - stale at 6am.
+- **No striving.** No task/productivity/focus nudges (`RefocusHelperToday`,
+  `HelpfulTools` focus lines, `UnderstandingProcrastination`).
+- **No addiction framing.** Nothing that outs what the app is
+  (`Healthier*`, `WhyReduce*`, "…use this app less").
+- **Register:** world-voiced, present-moment or gently reflective, calm.
+
+**Curated shortlist to pull from next (all ≤70, judged to clear the bar - still
+needs the copy sign-off above):**
+- `PersonalResources`: "What is something you are good at?" · "What is a strength of yours?"
+- `CalmingThoughts`: "What makes you feel relaxed?"
+- `PositiveThoughts`: "What do you love about life?" · "What accomplishments are you most proud of?"
+- `GoodPlans` (timeless, *not* the `*Today` variants): "What is something you always wanted to do?" · "What is something new you could try?" · "What is something you'd like to learn?"
+- `SelfDiscovery` (line-by-line - skip the heavy/existential ones like "What am I really scared of?", "Do you live a fulfilling life?"): "What do you want in life?" · "What makes you happy?" · "What part of your life feels most alive right now?"
+- `SelfImprovement`: "What would make tomorrow feel a little kinder?" · "When are you at your best?"
+- `Relationships`: "Who makes you feel supported?" · "Who brings out the best in you?" · "Who would you like to thank?"
+- `MindfulEating`: "What food makes you happy?" · "What helps you eat more slowly?"
+
+That is ~20 more without touching the exclude-classes, easily doubling the pool
+again if wanted. **Exclude-classes (so they don't creep back):** all `Healthier*`
+/ `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
+lines (striving), `*Today` categories (stale), `Insomnia` (night/exposing), the
+existential/self-exposing `SelfDiscovery`+`SelfCompassion` lines ("forgive
+yourself", "gentler with yourself", "good friend in your situation").

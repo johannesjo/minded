@@ -75,7 +75,8 @@ import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDo
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
-import { QuestionForPrompt } from "@src/shared/data/questions";
+import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
+import { formatQuestionText } from "@src/util/formatQuestionText";
 import { fadeOut } from "@src/util/animation";
 import { displayTargetName } from "@src/util/displayTargetName";
 import {
@@ -161,21 +162,25 @@ const getInteractionRoot = (shadowRoot?: ShadowRoot) =>
 
 type ForcedWidgetContent =
   | { mode: "NOTICE"; cue: (typeof NOTICE_CUES)[number] }
-  | { mode: "ACTION_ADVICE"; advice: (typeof ACTION_ADVICES)[number] };
+  | { mode: "ACTION_ADVICE"; advice: (typeof ACTION_ADVICES)[number] }
+  | { mode: "QUESTION"; question: QuestionForPrompt };
 
 /**
  * Resolve the widget's displayed line back to the interaction mode + exact
- * content item it came from. `NOTICE` and `ACTION_ADVICE` are the only
- * widget-safe modes, and the widget shows those pools' lines verbatim, so an
- * exact string match recovers the item. Returns undefined for anything
- * unrecognised - other content, a copy drift, or a crafted intent - so the
- * caller falls back to the normal random pick instead of breaking.
+ * content item it came from. `NOTICE`, `ACTION_ADVICE`, and the ambient-safe
+ * slice of `QUESTION` are the widget-safe modes, and the widget shows those
+ * pools' lines verbatim (questions in their `formatQuestionText` display form,
+ * "?" included), so an exact string match recovers the item. Returns undefined
+ * for anything unrecognised - other content, a copy drift, or a crafted intent -
+ * so the caller falls back to the normal random pick instead of breaking.
  */
 const matchWidgetLine = (line: string): ForcedWidgetContent | undefined => {
   const cue = NOTICE_CUES.find((c) => c.cue === line);
   if (cue) return { mode: "NOTICE", cue };
   const advice = ACTION_ADVICES.find((a) => a.txt === line);
   if (advice) return { mode: "ACTION_ADVICE", advice };
+  const question = QUESTIONS.find((q) => formatQuestionText(q.t) === line);
+  if (question) return { mode: "QUESTION", question };
   return undefined;
 };
 
@@ -1354,12 +1359,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setModeWithoutReplacement("QUESTION");
         } else if (forcedFromWidget) {
           // Opened from the widget on a recognised line: land on that exact
-          // NOTICE/ACTION_ADVICE, skipping the random pick (and its anti-repeat
-          // memory - this wasn't a rolled decision).
+          // NOTICE/ACTION_ADVICE/QUESTION, skipping the random pick (and its
+          // anti-repeat memory - this wasn't a rolled decision).
           if (forcedFromWidget.mode === "NOTICE") {
             setForcedNoticeCue(forcedFromWidget.cue);
-          } else {
+          } else if (forcedFromWidget.mode === "ACTION_ADVICE") {
             setForcedAdvice(forcedFromWidget.advice);
+          } else {
+            // A widget-safe question: pin it exactly like a questionForPrompt open.
+            setInitialQuestion(forcedFromWidget.question);
           }
           setFrictionLevel("normal");
           setModeWithoutReplacement(forcedFromWidget.mode);

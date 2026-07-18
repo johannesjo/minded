@@ -56,10 +56,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let line = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "line" })?.value,
             !line.isEmpty,
-            // Real widget lines are ≤60 chars of ASCII (see the pool + the jest
-            // mirror test, which pins this 60 to the Kotlin cap); counting bytes
+            // Real widget lines are ≤70 chars of ASCII (see the pool + the jest
+            // mirror test, which pins this 70 to the Kotlin cap); counting bytes
             // keeps the bound honest for multi-scalar graphemes too.
-            line.utf8.count <= 60
+            line.utf8.count <= 70
         else { return nil }
         return line.addingPercentEncoding(withAllowedCharacters: Self.asciiAlphanumerics)
     }
