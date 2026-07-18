@@ -445,8 +445,11 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 51 lines (8 NOTICE + 7 ACTION_ADVICE + 36 QUESTION) after the
-"second wave" batch below was pulled in. Growing it further is cheap and safe by
+The pool is now 67 lines (9 NOTICE + 11 ACTION_ADVICE + 47 QUESTION) after the
+"second wave" and "third wave" batches below were pulled in - the NOTICE and
+ACTION_ADVICE sources are now fully drained except the two `daytimeOnly`
+task/productivity advices (striving) and the one social-obligation advice
+("someone you've been meaning to reach out to", held for register). Growing it further is cheap and safe by
 construction - the `DAILY_STRIDE`/`dailyStride` = 97 (prime) fix makes full-pool
 coverage independent of size, so there is no arithmetic risk to adding lines.
 What follows is the checklist and the curated candidate shortlist so a future
@@ -494,12 +497,16 @@ both pools):**
 - `Relationships`: "Who makes you feel supported?" · "Who brings out the best in you?" · "Who would you like to thank?"
 - `MindfulEating`: "What food makes you happy?" · "What helps you eat more slowly?"
 
-That batch of 18 landed the pool at 51. A **third wave** of comparable lines
-still sits unused in the same categories (e.g. `GoodPlans` "What is a good habit
-you might want to establish?", `Relationships` "Who would you like to reconnect
-with?", `PositiveThoughts` "What is something small that delighted you recently?"
-- already in) without touching the exclude-classes, if a future session wants to
-grow it again. **Exclude-classes (so they don't creep back):** all `Healthier*`
+That batch of 18 (second wave), plus a **third wave** of 11 more questions and
+the last untapped NOTICE cue + 4 ACTION_ADVICE lines, landed the pool at 67. The
+NOTICE and ACTION_ADVICE wells are now dry (bar the excluded striving/social
+lines noted above), so any further growth is questions-only. What remains in the
+question pool is thinner - mostly the ellipsis fill-in prompts ("I am happy
+when…"), the heavier/existential `SelfDiscovery` lines, and the focus/productivity
+`HelpfulTools` set - i.e. the exclude-classes, not fresh clean candidates. Treat
+67 as roughly the natural ceiling for the current bar; growing past it means
+either relaxing the bar or an on-device fit-check + copy pass first (both still
+open, see above). **Exclude-classes (so they don't creep back):** all `Healthier*`
 / `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
 lines (striving), `*Today` categories (stale), `Insomnia` (night/exposing), the
 existential/self-exposing `SelfDiscovery`+`SelfCompassion` lines ("forgive

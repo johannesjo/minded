@@ -74,6 +74,7 @@ enum WidgetPrompts {
         "Feel both feet on the floor.",
         "Let your jaw and shoulders soften.",
         "Let your hands fall open and rest.",
+        "Find the farthest thing you can see, and rest your eyes on it.",
         "Listen for the most distant sound you can hear.",
         "Notice the texture under your fingertips.",
         "Feel the weight of your body, wherever you are.",
@@ -87,6 +88,10 @@ enum WidgetPrompts {
         "How about some water?",
         "How about a minute away from the screen?",
         "How about resting your eyes on something far away?",
+        "How about a short break?",
+        "How about making a tea or coffee?",
+        "How about tidying one small thing nearby?",
+        "How about washing your face with cold water?",
         // Present-moment questions (questions.ts, rendered via formatQuestionText,
         // so the "?" is part of the shown line the tap matches back). Only the
         // ambient-safe slice: world-voiced, universal, and self-exposing to no
@@ -133,6 +138,19 @@ enum WidgetPrompts {
         "Who would you like to thank?",
         "What food makes you happy?",
         "What helps you eat more slowly?",
+        // Third wave (same bar, same categories) - see the "Extending the pool"
+        // note in docs/widget-prompts-concept.md. Same order as the Kotlin pool.
+        "What is a challenge you overcame?",
+        "What is a good habit you might want to establish?",
+        "Who would you like to reconnect with?",
+        "What does a good relationship look like to you?",
+        "How could you be a better listener?",
+        "What small habit would feel good to nurture?",
+        "What do you want to be different a year from now?",
+        "What actions would make you proud of yourself?",
+        "What would you attempt if you knew you could not fail?",
+        "What meal makes you feel good afterward?",
+        "What could help you enjoy your meals more?",
     ]
 
     /// The line for a given local moment, or nil at night (the moon carries the
