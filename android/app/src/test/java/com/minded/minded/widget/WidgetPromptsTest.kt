@@ -82,6 +82,21 @@ class WidgetPromptsTest {
     }
 
     @Test
+    fun `a fixed time of day walks the whole pool across days`() {
+        // The bug this guards: with a plain slot count the daily advance was
+        // 96 % size, which shared a factor of 3 with a 15-line pool, so a glance
+        // at the same time each day only ever surfaced 5 of 15 lines. DAILY_STRIDE
+        // (97, prime) is coprime with the pool size, so consecutive days at a
+        // fixed clock time cover every line. Sample one line per day for `size`
+        // days at a fixed waking time.
+        val n = WidgetPrompts.WAKING_PROMPTS.size
+        val lines = (0 until n).map { d ->
+            WidgetPrompts.promptForMoment(day + d, 9, 0)
+        }
+        assertEquals(n, lines.distinct().size, "a fixed time of day misses lines")
+    }
+
+    @Test
     fun `every line fits the card and says something`() {
         for (prompt in WidgetPrompts.WAKING_PROMPTS) {
             assertTrue(prompt.isNotBlank())
@@ -99,7 +114,9 @@ class WidgetPromptsTest {
         // actually shows can reach the WebView location.
         assertTrue(WidgetPrompts.isWidgetSafeLine("Feel both feet on the floor."))
         assertTrue(WidgetPrompts.isWidgetSafeLine("How about a deep breath?"))
-        // A gratitude line (no longer shown, no widget-safe interaction) and junk.
+        // A widget-safe question is shown in its displayed form, "?" included.
+        assertTrue(WidgetPrompts.isWidgetSafeLine("What is already enough about this moment?"))
+        // A question NOT on the widget's curated list, and junk.
         assertFalse(WidgetPrompts.isWidgetSafeLine("What went well today?"))
         assertFalse(WidgetPrompts.isWidgetSafeLine(""))
         assertFalse(WidgetPrompts.isWidgetSafeLine("/?sun=open"))

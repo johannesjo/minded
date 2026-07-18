@@ -16,9 +16,11 @@
 //  - The card is a mini-intervention, not wallpaper: the line steps every
 //    `slotMinutes` through the day, fresh across returns yet far too slow to
 //    reward re-checking within a session.
-//  - Rotation is deterministic: the index is a continuous count of 15-minute
-//    slots since the epoch, so the same moment always shows the same line - on
-//    both platforms, since the arithmetic mirrors the Kotlin exactly.
+//  - Rotation is deterministic: the same moment always shows the same line - on
+//    both platforms, since the arithmetic mirrors the Kotlin exactly. The index
+//    steps once per 15-minute slot within the day AND one extra step at each day
+//    boundary (`dailyStride`), so a habitual same-time-of-day glance walks the
+//    whole pool across days instead of being locked to a fraction of it.
 //  - At night: no words. The moon, alone. The no-text window is the moon's
 //    window *by construction* - gated by SunWidgetPhase's own
 //    dayStart/nightStart, so the near-black text can never meet the dark sky.
@@ -47,6 +49,17 @@ enum WidgetPrompts {
     // - consecutive slots never repeat (the pool holds more than one line).
     private static let slotsPerDay = 24 * 60 / slotMinutes
 
+    // How far the index advances at each *day* boundary: one extra step beyond a
+    // day's slots. That "+1" fixes the same-time-of-day lock. With a plain slot
+    // count the daily advance is `slotsPerDay % count` (= 96 % count), which
+    // shared a factor of 3 with the old 15-line pool - so a glance at a habitual
+    // time only ever surfaced 5 of the 15 lines (one residue class mod 3).
+    // `slotsPerDay + 1` = 97 is prime, hence coprime with every pool size below
+    // 97, so a fixed-time glance now walks the *whole* pool day to day whatever
+    // its size - while within a day the step is still exactly one (no adjacent
+    // repeats). Must match the Kotlin `DAILY_STRIDE` one-to-one.
+    private static let dailyStride = slotsPerDay + 1
+
     // Every line is ≤60 chars of ASCII so it fits the card - enforced by the
     // Kotlin twin's MAX_PROMPT_LENGTH (JVM-tested) and pinned across platforms,
     // including AppDelegate's forwarding cap, by widgetPromptsMirror.test.ts.
@@ -74,22 +87,45 @@ enum WidgetPrompts {
         "How about some water?",
         "How about a minute away from the screen?",
         "How about resting your eyes on something far away?",
+        // Present-moment questions (questions.ts, rendered via formatQuestionText,
+        // so the "?" is part of the shown line the tap matches back). Only the
+        // ambient-safe slice: world-voiced, universal, and self-exposing to no
+        // onlooker on a semi-public home screen - the same bar as the NOTICE cues
+        // above (see docs/widget-prompts-concept.md). The tap opens that exact
+        // QUESTION interaction.
+        "What can you hear right now, if you pause to listen?",
+        "What do you notice in your body right now?",
+        "What is one thing you can see that you usually overlook?",
+        "What does the air feel like around you right now?",
+        "What is one thing around you that is fine just as it is?",
+        "Where do you feel tension in your body right now?",
+        "What is one slow, ordinary thing you could do right now?",
+        "What is already enough about this moment?",
+        "What is one worry you could leave for tomorrow?",
+        "What is something you are grateful for?",
+        "What is something small that delighted you recently?",
     ]
 
     /// The line for a given local moment, or nil at night (the moon carries the
-    /// night alone). Mirrors the Kotlin `promptForMoment` one-to-one: the index
-    /// is a continuous count of `slotMinutes` slots since the epoch, stepping
-    /// exactly one line per slot - deterministic, no adjacent-slot repeats -
-    /// walking the whole pool every `wakingPrompts.count` slots (~3¾ h).
+    /// night alone). Mirrors the Kotlin `promptForMoment` one-to-one: within a day
+    /// the index steps exactly one line per slot - deterministic, no adjacent-slot
+    /// repeats - walking the whole pool every `wakingPrompts.count` slots; across
+    /// days it advances `dailyStride` so a fixed-time glance covers the whole pool
+    /// too (see the `dailyStride` note).
     static func promptForMoment(epochDay: Int, hour: Int, minute: Int) -> String? {
         let h = ((hour % 24) + 24) % 24
         guard h >= SunWidgetPhase.dayStart && h < SunWidgetPhase.nightStart else {
             return nil
         }
         let m = ((minute % 60) + 60) % 60
-        let slot = epochDay * slotsPerDay + (h * 60 + m) / slotMinutes
+        let slotOfDay = (h * 60 + m) / slotMinutes
+        // Continuous slot count, but advancing `dailyStride` (not `slotsPerDay`)
+        // per day so a habitual same-time glance walks the whole pool - see the
+        // `dailyStride` note. Within a day epochDay is fixed, so the step is still
+        // exactly one per slot.
+        let index = epochDay * dailyStride + slotOfDay
         let count = wakingPrompts.count
-        return wakingPrompts[((slot % count) + count) % count]
+        return wakingPrompts[((index % count) + count) % count]
     }
 
     /// The line for a moment, read from its local wall clock.
