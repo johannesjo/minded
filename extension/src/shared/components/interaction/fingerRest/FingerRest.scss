@@ -65,7 +65,8 @@
     // warmth and the little sun's halo, a touch brighter at its peak so the
     // acknowledgment reads, then dissolved to nothing. One-shot (forwards, no
     // iteration) - deliberately never a repeating breath, per the fundamentals.
-    // Duration is driven inline from the component.
+    // Duration is driven inline from the component; the swell peaks early (35%)
+    // so the "received" lands well inside the parent's success fade.
     background: radial-gradient(
       closest-side,
       rgba(var(--little-sun-breath-rgb), 0.3) 0%,

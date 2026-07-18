@@ -29,9 +29,9 @@ export const FINGER_REST_WARMTH_OUT_MS = 1200;
  * as a jarring "field flashes in again" against the parent's success fade) but
  * by a single soft bloom of the companion's own light: the warmth swells once,
  * outward, and dissolves - a wordless "received", never a reward badge or score.
- * The words stay gone once stillness has been kept. Tuned to bloom fully within
- * the parent's ~700ms success fade so the acknowledgment is seen before the
- * surface hands off.
+ * The words stay gone once stillness has been kept. The bloom peaks early (~35%
+ * in) so the acknowledgment lands well within the parent's ~700ms success fade;
+ * its faint tail rides out under the fading surface.
  */
 export const FINGER_REST_CONFIRM_MS = 800;
 

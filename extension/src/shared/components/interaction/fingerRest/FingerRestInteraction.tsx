@@ -87,11 +87,11 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
     const restedMs = restStartTS !== undefined ? Date.now() - restStartTS : 0;
     restStartTS = undefined;
     if (restedMs >= FINGER_REST_MIN_MS) {
-      // Long enough: mark the rest complete *before* clearing `isResting` so the
-      // words and pad never get a transient tick where both flags are false
-      // (which would start their fade-in for a frame). With confirmed set first,
-      // the warmth simply stays lit and blooms once as the "received"; the
-      // invitation never snaps back against the parent's success fade.
+      // Long enough: `isConfirmed` holds the words and pad hidden and the warmth
+      // lit through the parent's success fade (see the opacity gates in the
+      // render), so the invitation never snaps back. Set it before clearing
+      // `isResting` as a belt-and-braces guard against any transient tick where
+      // both flags read false; the warmth then blooms once as the "received".
       setIsConfirmed(true);
       setIsResting(false);
       props.onSuccess();
@@ -117,10 +117,6 @@ export const FingerRestInteraction = (props: FingerRestProps): JSX.Element => {
     <div class="finger-rest" onMouseMove={() => props.onCancelCountdown()}>
       <div
         class="finger-rest-zone"
-        classList={{
-          "is-resting": getIsResting(),
-          "is-confirmed": getIsConfirmed(),
-        }}
         onPointerDown={handleRestStart}
         onPointerUp={handleRestEnd}
         onPointerCancel={handleRestInterrupted}
