@@ -424,6 +424,19 @@ export const QUESTION_CATEGORIES: {
         t: "What is something you take for granted",
         prompt: "I am grateful for",
       },
+      {
+        id: QID.GR3,
+        t: "What is one small thing right here you're glad of",
+        prompt: "I am glad of",
+      },
+      {
+        id: QID.GR4,
+        t: "What is something ordinary you'd miss if it were gone",
+      },
+      {
+        id: QID.GR5,
+        t: "Who has quietly made your day a little easier",
+      },
     ],
   },
   [QuestionCategoryId.HelpfulTools]: {
@@ -955,6 +968,23 @@ export const QUESTION_CATEGORIES: {
         id: QID.NN5,
         t: "What is one thing around you that is fine just as it is",
       },
+      {
+        id: QID.NN6,
+        t: "What can you smell right now",
+      },
+      {
+        id: QID.NN7,
+        t: "What is the light doing around you right now",
+      },
+      {
+        id: QID.NN8,
+        t: "What is one thing nearby you could touch slowly",
+      },
+      {
+        id: QID.NN9,
+        t: "What is supporting your body right now",
+        prompt: "Right now I'm held by",
+      },
     ],
   },
   [QuestionCategoryId.SelfCompassion]: {
@@ -999,6 +1029,10 @@ export const QUESTION_CATEGORIES: {
       {
         id: QID.LG4,
         t: "What is one worry you could leave for tomorrow",
+      },
+      {
+        id: QID.LG5,
+        t: "What would it feel like to do nothing for a moment",
       },
     ],
   },

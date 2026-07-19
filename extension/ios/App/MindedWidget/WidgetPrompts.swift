@@ -150,6 +150,16 @@ enum WidgetPrompts {
         "What would you attempt if you knew you could not fail?",
         "What meal makes you feel good afterward?",
         "What could help you enjoy your meals more?",
+        // Fourth wave (same bar, same categories) - present-moment sensory
+        // (NoticingNow), present gratitude, and one "making room" line, after a
+        // product copy pass. Same order as the Kotlin pool.
+        "What can you smell right now?",
+        "What is the light doing around you right now?",
+        "What is one thing nearby you could touch slowly?",
+        "What is supporting your body right now?",
+        "What is one small thing right here you're glad of?",
+        "What is something ordinary you'd miss if it were gone?",
+        "What would it feel like to do nothing for a moment?",
     ]
 
     /// The line for a given local moment, or nil at night (the moon carries the

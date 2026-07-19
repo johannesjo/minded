@@ -445,8 +445,8 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 66 lines (9 NOTICE + 11 ACTION_ADVICE + 46 QUESTION) after the
-"second wave" and "third wave" batches below were pulled in - the NOTICE and
+The pool is now 73 lines (9 NOTICE + 11 ACTION_ADVICE + 53 QUESTION) after the
+"second wave", "third wave", and "fourth wave" batches below were pulled in - the NOTICE and
 ACTION_ADVICE sources are now fully drained except the two `daytimeOnly`
 task/productivity advices (striving) and the one social-obligation advice
 ("someone you've been meaning to reach out to", held for register). Growing it further is cheap and safe by
@@ -505,10 +505,25 @@ question pool is thinner - mostly the ellipsis fill-in prompts ("I am happy
 when…"), the heavier/existential `SelfDiscovery` lines, and the focus/productivity
 `HelpfulTools` set - i.e. the exclude-classes, not fresh clean candidates.
 (`REL7` "How could you be a better listener?" was pulled from the third wave on
-review as self-improvement-register.) Treat 66 as roughly the natural ceiling for
-the current bar; growing past it means
-either relaxing the bar or an on-device fit-check + copy pass first (both still
-open, see above). **Exclude-classes (so they don't creep back):** all `Healthier*`
+review as self-improvement-register.)
+
+**Fourth wave (7 lines, after a product copy pass - landed the pool at 73):**
+- `NoticingNow` (present-moment sensory, the safest widget register - two senses
+  the pool never touched): "What can you smell right now?" (smell) · "What is the
+  light doing around you right now?" (light) · "What is one thing nearby you could
+  touch slowly?" · "What is supporting your body right now?"
+- `Gratitude` (present-tense, not the evening `GoodToday` retrospectives): "What
+  is one small thing right here you're glad of?" · "What is something ordinary
+  you'd miss if it were gone?"
+- `LettingGo`: "What would it feel like to do nothing for a moment?"
+
+This was the explicit copy pass the "Still open" note asked for, so the 66 ceiling
+moved with product sign-off rather than by relaxing the bar. **The on-device fit
+check is still open** - these are all ≤54 chars (well under the 70 cap), but like
+every line they've not been seen on a real 3×2 card. Treat 73 as the new rough
+ceiling for the current bar; growing past it means
+either relaxing the bar or an on-device fit-check + copy pass first (the fit-check
+still open, see above). **Exclude-classes (so they don't creep back):** all `Healthier*`
 / `WhyReduce*` (addiction framing), `RefocusHelperToday` + focus/productivity
 lines (striving), `*Today` categories (stale), `Insomnia` (night/exposing), the
 existential/self-exposing `SelfDiscovery`+`SelfCompassion` lines ("forgive
