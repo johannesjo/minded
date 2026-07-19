@@ -59,6 +59,9 @@ export enum QID {
 
   GR1 = "GR1",
   GR2 = "GR2",
+  GR3 = "GR3",
+  GR4 = "GR4",
+  GR5 = "GR5",
 
   HT1 = "HT1",
   HT2 = "HT2",
@@ -186,6 +189,10 @@ export enum QID {
   NN3 = "NN3",
   NN4 = "NN4",
   NN5 = "NN5",
+  NN6 = "NN6",
+  NN7 = "NN7",
+  NN8 = "NN8",
+  NN9 = "NN9",
 
   SC1 = "SC1",
   SC2 = "SC2",
@@ -196,6 +203,7 @@ export enum QID {
   LG2 = "LG2",
   LG3 = "LG3",
   LG4 = "LG4",
+  LG5 = "LG5",
 
   // The reflective question offered when the dashboard sun is flung away ("let
   // go"). Standalone (not part of any random category pool) - surfaced only by
