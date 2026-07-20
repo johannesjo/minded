@@ -2,6 +2,7 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import {
   getSyncData,
   IS_ANDROID,
+  markBedtimeSettled,
   markInteractionModeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
 import {
@@ -70,6 +71,7 @@ import {
   calculateFadeProgress,
   calculateOpacity,
 } from "@src/shared/components/interaction/useFadeAnimation";
+import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
@@ -794,9 +796,26 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   //    phone against the skip the user just chose. A fling is guarded implicitly
   //    by the Sun's isCompletionStarted; the tap path sets no such flag, so the
   //    moon stays live through the fade without this.
+  //  - Quiet the settle for the rest of the night. A triple-tap is the user
+  //    consciously letting the day go, so re-serving the identical wordless moon
+  //    on the next interrupt would nag - exactly what the settle must never do.
+  //    Record tonight's night id (fire-and-forget) so the engine stops serving
+  //    the settle this night; the ordinary cascade (and a genuinely strong pull,
+  //    still wordless) can still reach the user. This writes the guard ONLY on an
+  //    explicit skip - a passive auto-dismiss and the drag-settle leave it unset,
+  //    so those still return on the next interrupt as designed.
+  const armBedtimeSettledForNight = async () => {
+    const syncData = await getSyncData();
+    const bedtimeCfg = syncData.cfg.sleepWindDown;
+    const nightId = bedtimeCfg ? resolveNightId(bedtimeCfg, new Date()) : null;
+    if (nightId) await markBedtimeSettled(nightId);
+  };
   const skipBedtimeSettle = () => {
     if (hasBedtimeSettled) return;
     hasBedtimeSettled = true;
+    void armBedtimeSettledForNight().catch((error: unknown) =>
+      console.error("Failed to record bedtime settle", error),
+    );
     const close = () => {
       if (!isDisposed) props.onSkip();
     };

@@ -20,12 +20,23 @@ Two behavioural calls from use supersede the v3 text below:
   `closeCurrentApp()` + `lockScreen()`), the same as the drag-down. The
   discoverable **triple-tap is the one escape that stays in the current app**
   (`props.onSkip` - the companion little sun returns; no lock, no app switch).
-- **No once-per-night guard - the settle is offered on every bedtime interrupt.**
-  v3 served it at most once per night (guard armed on first appearance). That is
-  gone: inside the bedtime window every blocked-app interrupt is the wordless
-  settle, and a triple-tap skip simply leaves it to return on the next interrupt.
-  The `sleepWindDownDismissedNightId` field is no longer written or read by the
-  settle path (it stays only as a dead field pending the native cleanup below).
+- **The settle returns on every interrupt - until an explicit skip quiets it for
+  the night.** Inside the bedtime window every blocked-app interrupt is the
+  wordless settle; a *passive* dismissal (ignoring it until it auto-dismisses, or
+  the drag/fling settle that locks the phone) simply leaves it to return on the
+  next interrupt. But re-serving the identical wordless moon *after the user has
+  triple-tapped it away* read as nagging - the one thing the settle must never
+  do. So the **explicit triple-tap skip records tonight's night id** (via
+  `markBedtimeSettled` → `sleepWindDownDismissedNightId`), and the engine then
+  stops serving the *normal-tier* settle for the rest of that night; a later
+  reopen gets the ordinary cascade. This is a narrower guard than v3's
+  once-per-night-on-show: it arms only on a conscious skip, never on show, and
+  never on the passive/settle paths. **Quiet-the-night stays scoped** - a
+  genuinely strong late-night pull still reaches the wordless settle via the
+  strong branch (which keys on `isBedtimeIntervention`, not the guard). The
+  `sleepWindDownDismissedNightId` field is therefore live again (written by the
+  skip, read by `canServeBedtimeSettle`); it stays out of the native cleanup
+  below.
 
 Where the sections below say *fling = skip*, *once per night / full stop*, or
 *guard set on first appearance*, read them through this amendment.

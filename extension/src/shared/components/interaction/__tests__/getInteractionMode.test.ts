@@ -802,21 +802,64 @@ describe("getInteractionMode", () => {
       );
     });
 
-    it("is offered on every bedtime interrupt - no once-per-night guard", () => {
-      // A prior settle this night (a stale dismissed-night id) must not suppress
-      // it: the settle is always the bedtime thing; a skip just leaves it to
-      // return on the next interrupt.
+    it("returns on every interrupt until the night is explicitly settled", () => {
+      // No dismissed-night id: the settle is the bedtime thing on every
+      // blocked-app interrupt. A passive dismissal (ignore / auto-dismiss) never
+      // records the night, so it keeps returning.
+      expect(atBedtime(baseSyncData({ cfg: bedtimeCfg() }))).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle",
+        frictionLevel: "normal",
+      });
+    });
+
+    it("quiets the settle for the rest of the night after an explicit skip", () => {
+      // The triple-tap skip records tonight's night id; the settle then stops
+      // returning this night (it read as nagging). It falls through to the
+      // ordinary cascade instead of the identical wordless moon.
       expect(
         atBedtime(
           baseSyncData({
             cfg: bedtimeCfg(),
             sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
           }),
+        ).mode,
+      ).not.toBe("WIND_DOWN_SETTLE");
+    });
+
+    it("ignores a stale dismissed-night id from a previous night", () => {
+      // A settle skipped on an earlier night must never suppress tonight's - the
+      // guard compares against the current night id.
+      expect(
+        atBedtime(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            sleepWindDownDismissedNightId: "2026-05-10",
+          }),
         ),
       ).toEqual({
         mode: "WIND_DOWN_SETTLE",
         reason: "bedtime_settle",
         frictionLevel: "normal",
+      });
+    });
+
+    it("still gives a strong pull the wordless settle after the night is settled", () => {
+      // Quiet-the-night is scoped to the normal tier: a genuinely strong
+      // late-night pull still reaches the wordless settle, never a verbal prompt,
+      // even once tonight's settle has been explicitly skipped.
+      expect(
+        atBedtime(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
+            ...strongFrictionViaAttempts(),
+          }),
+        ),
+      ).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle_strong",
+        frictionLevel: "strong",
       });
     });
 
@@ -918,6 +961,18 @@ describe("getInteractionMode", () => {
       // At 02:00 the window still resolves inside the bedtime night, so the
       // settle is served just as it is earlier in the window.
       expect(
+        decide(baseSyncData({ cfg: bedtimeCfg() }), {
+          clock: () => new Date("2026-05-12T02:00:00").getTime(),
+          isMainView: false,
+        }).mode,
+      ).toBe("WIND_DOWN_SETTLE");
+    });
+
+    it("keeps a post-midnight skip quiet for the rest of that night", () => {
+      // The night id for 02:00 within a 22:00–07:00 window that opened the prior
+      // evening is still that evening's date, so a skip recorded earlier in the
+      // night keeps suppressing the settle across midnight.
+      expect(
         decide(
           baseSyncData({
             cfg: bedtimeCfg(),
@@ -928,7 +983,7 @@ describe("getInteractionMode", () => {
             isMainView: false,
           },
         ).mode,
-      ).toBe("WIND_DOWN_SETTLE");
+      ).not.toBe("WIND_DOWN_SETTLE");
     });
 
     it("is exempt from anti-repeat - repeats the settle within the same night", () => {
