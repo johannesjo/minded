@@ -211,7 +211,7 @@ data class OverlayState(
     /** Whether any overlay is currently showing */
     val isAnyOverlayShowing: Boolean = false,
 
-    /** Whether the sleep wind-down overlay is currently showing */
+    /** Legacy input retained for native cleanup; ignored by decision routing. */
     val isSleepWindDownOverlayShowing: Boolean = false,
 
     /** Session end time for current app (if any) */
@@ -232,10 +232,10 @@ data class OverlayState(
     /** Foreground duration of the current app session, in seconds */
     val currentSessionDurationS: Int = 0,
 
-    /** Whether sleep wind-down should currently take over blocked apps */
+    /** Legacy input retained for native cleanup; ignored by decision routing. */
     val isWindDownActive: Boolean = false,
 
-    /** Whether sleep wind-down is snoozed and should show a timer instead */
+    /** Legacy input retained for native cleanup; ignored by decision routing. */
     val isWindDownSnoozed: Boolean = false,
 
     /**

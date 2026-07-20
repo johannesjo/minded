@@ -84,32 +84,73 @@ class OverlayDecisionEngineTest {
     }
 
     @Test
-    fun `wind down uses the standard intervention when no session is active`() {
-        val state = createState(
-            blockedApps = blockedApps,
-            isWindDownActive = true,
-            appSessionEndTime = null,
-            activeTimerEndTime = null
+    fun `legacy wind down state does not change standard routing`() {
+        val currentTime = 1_000_000L
+        val baseState = createState(blockedApps = blockedApps, currentTime = currentTime)
+        val baselines: List<Triple<String, OverlayState, OverlayDecision>> = listOf(
+            Triple(
+                "no session",
+                baseState,
+                OverlayDecision.ShowIntervention
+            ),
+            Triple(
+                "app session",
+                baseState.copy(appSessionEndTime = currentTime + 60_000),
+                OverlayDecision.ShowLittleSun
+            ),
+            Triple(
+                "active timer",
+                baseState.copy(activeTimerEndTime = currentTime + 60_000),
+                OverlayDecision.ShowLittleSun
+            ),
+            Triple(
+                "session grace",
+                baseState.copy(
+                    sessionGraceEnabled = true,
+                    sessionGraceMinutes = 5,
+                    currentSessionDurationS = 60
+                ),
+                OverlayDecision.ShowLittleSun
+            ),
+            Triple(
+                "rest of day",
+                baseState.copy(
+                    activeTimerEndTime = currentTime + 60_000,
+                    activeTimerDurationS = -1
+                ),
+                OverlayDecision.HideAll
+            ),
+            Triple(
+                "existing overlay",
+                baseState.copy(isAnyOverlayShowing = true),
+                OverlayDecision.Skip(SkipReason.OVERLAY_ALREADY_SHOWING)
+            ),
+            Triple(
+                "recent app switch",
+                baseState.copy(lastGoToAppTimestamp = currentTime - 100),
+                OverlayDecision.Skip(SkipReason.RECENT_APP_SWITCH)
+            )
+        )
+        val legacyStates = listOf<Pair<String, (OverlayState) -> OverlayState>>(
+            "active" to { it.copy(isWindDownActive = true) },
+            "snoozed" to { it.copy(isWindDownSnoozed = true) },
+            "old overlay visible" to {
+                it.copy(
+                    isWindDownActive = true,
+                    isSleepWindDownOverlayShowing = true
+                )
+            }
         )
 
-        val decision = engine.decide(youtubePackage, state)
-
-        assertEquals(OverlayDecision.ShowIntervention, decision)
-    }
-
-    @Test
-    fun `wind down keeps the little sun when a session is active`() {
-        val currentTime = System.currentTimeMillis()
-        val state = createState(
-            blockedApps = blockedApps,
-            currentTime = currentTime,
-            isWindDownActive = true,
-            appSessionEndTime = currentTime + 60000
-        )
-
-        val decision = engine.decide(youtubePackage, state)
-
-        assertEquals(OverlayDecision.ShowLittleSun, decision)
+        baselines.forEach { (baselineLabel, baseline, expected) ->
+            legacyStates.forEach { (legacyLabel, applyLegacyState) ->
+                assertEquals(
+                    expected,
+                    engine.decide(youtubePackage, applyLegacyState(baseline)),
+                    "$baselineLabel / $legacyLabel"
+                )
+            }
+        }
     }
 
     @Test
