@@ -222,7 +222,7 @@ export const OnboardingWeb: (props: {
                   >
                     <p class="pageTransitionIn">
                       On the sites you choose, it can offer this same quiet
-                      pause—an invitation, never a wall.
+                      pause: an invitation, never a wall.
                     </p>
                   </Show>
                 </div>

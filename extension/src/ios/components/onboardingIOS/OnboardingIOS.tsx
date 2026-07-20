@@ -224,9 +224,8 @@ export const OnboardingIOS = (props: {
                     fallback={<p>Tap the {companionWord()}.</p>}
                   >
                     <p class="pageTransitionIn">
-                      This is the pause the Home Screen {companionWord()}{" "}
-                      opens—a quiet companion at the glance where scrolling
-                      begins.
+                      This is the pause the Home Screen {companionWord()} opens:
+                      a quiet companion at the glance where scrolling begins.
                     </p>
                   </Show>
                 </div>

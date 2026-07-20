@@ -275,7 +275,7 @@ export const OnboardingAndroid = (props: {
                   >
                     <p class="pageTransitionIn">
                       Over the apps you choose, it can offer this same quiet
-                      pause—an invitation, never a wall.
+                      pause: an invitation, never a wall.
                     </p>
                   </Show>
                 </div>
