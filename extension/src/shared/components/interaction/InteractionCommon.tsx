@@ -2,7 +2,6 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import {
   getSyncData,
   IS_ANDROID,
-  markBedtimeSettled,
   markInteractionModeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
 import {
@@ -71,7 +70,6 @@ import {
   calculateFadeProgress,
   calculateOpacity,
 } from "@src/shared/components/interaction/useFadeAnimation";
-import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
@@ -522,11 +520,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     close();
   };
 
-  // The bedtime settle's deliberate drag-down (never a fling): rest a wordless
-  // "Sleep well" beat on screen, then run the real close - on Android that
-  // closes the app and locks the screen, so the phone eases into the dark
-  // rather than snapping to the OS lock. A fling still takes the plain skip
-  // path (runTerminalOutcome → onFlingAway) with no goodnight and no lock.
+  // The bedtime settle - a deliberate drag OR fling in any direction (both ease
+  // the phone into the dark; only the triple-tap skips): rest a wordless "Sleep
+  // well" beat on screen, then run the real close - on Android that closes the
+  // app and locks the screen, so the phone eases into the dark rather than
+  // snapping to the OS lock. The settle is offered on every bedtime interrupt -
+  // there is no once-per-night guard; a skip simply leaves it to return.
   //
   // Fired from handleStartBackgroundAnimation at the drag's *release* (not from
   // the terminal onDragComplete, which lands only after the sun's ~3s off-screen
@@ -553,12 +552,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }, GOODNIGHT_MS);
   };
 
-  // A fling is the plain skip - but never once a settle has begun. A brisk
-  // downward drag classifies as a *fling* (velocity), yet direction is still
-  // "down" so it routes through the settle at release
-  // (handleStartBackgroundAnimation). The fling's own terminal callback then
-  // lands ~3s later; without this guard it would fire a second close on top of
-  // the settle's (double closeCurrentApp, after the screen already locked).
+  // The daytime fling skip - hands off to the app-switch escape (onFlingAway).
+  // At bedtime this never runs: handleStartBackgroundAnimation has already routed
+  // the fling through settleForBedtime at release (settling + locking, like the
+  // drag-down), which sets `hasBedtimeSettled` and so suppresses this terminal -
+  // both to keep the fling from bouncing the user to the app and to stop it
+  // firing a second close on top of the settle's (double closeCurrentApp).
   const runFlingSkip = () => {
     if (hasBedtimeSettled) return;
     runTerminalOutcome(props.onFlingAway);
@@ -778,15 +777,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }, QUESTION_FADE_OUT_MS);
   };
 
-  // Tap-skip for the wordless bedtime settle: the discoverable slip-out. It must
-  // land on the same outcome as a fling - close the interrupt without the
-  // goodnight lock, dropping the user back where they were - but a bare tap has
-  // none of the fling's built-in softness or safety, so we add both here:
+  // Tap-skip for the wordless bedtime settle: the discoverable slip-out. A tap
+  // is the plain skip (props.onSkip - the same quiet dismiss as the "go back"
+  // button: the companion little sun returns and the user is left where they
+  // were), NOT the fling. The fling (onFlingAway) leaves the app entirely -
+  // goToApp on Android - so routing the tap through it made a triple-tap yank
+  // the user into the minded app instead of just letting the settle go. A bare
+  // tap also lacks the fling's built-in softness and safety, so we add both here:
   //  - Soft, never a hard cut: fade the whole surface (moon and words) out
-  //    before the close, mirroring handleSkip, rather than snapping straight to
-  //    closeCurrentApp. A fling gets this for free - the disc flies off-screen
-  //    over the fling animation's fixed duration before onFlingAway fires - but
-  //    a tap resolves instantly, so the fade is on us.
+  //    before the skip, mirroring handleSkip, rather than snapping straight to
+  //    the dismiss. A fling gets this for free - the disc flies off-screen over
+  //    the fling animation's fixed duration before onFlingAway fires - but a tap
+  //    resolves instantly, so the fade is on us.
   //  - Commit the terminal outcome up front (hasBedtimeSettled) so a stray
   //    drag-down during the fade can't still reach settleForBedtime and lock the
   //    phone against the skip the user just chose. A fling is guarded implicitly
@@ -796,7 +798,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (hasBedtimeSettled) return;
     hasBedtimeSettled = true;
     const close = () => {
-      if (!isDisposed) props.onFlingAway();
+      if (!isDisposed) props.onSkip();
     };
     if (props.wrapperEl) {
       fadeOut(props.wrapperEl, ANIMATION_TIMING.fadeOut.standard).promise.then(
@@ -810,10 +812,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // A tap on the disc is the app-wide, learned slip-out ("tap the sun to get
   // past this"). At bedtime it must NOT open the daytime intent/time
   // session-grant (handleSunContinue) - that flow is absurd at night. So a tap
-  // on the wordless settle skips via skipBedtimeSettle (close, no lock, a calm
-  // fade). This is the discoverable escape the settle otherwise lacked - only
-  // the drag-down settles + locks, and the fling was invisible. Everywhere else
-  // a tap still continues into the session, unchanged.
+  // on the wordless settle skips via skipBedtimeSettle (a quiet dismiss - the
+  // little sun returns, no lock, no app switch, a calm fade). This is the
+  // discoverable escape the settle otherwise lacked - only the drag-down settles
+  // + locks, and the fling was invisible. Everywhere else a tap still continues
+  // into the session, unchanged.
   const handleSunTap = () =>
     getMode() === "WIND_DOWN_SETTLE"
       ? skipBedtimeSettle()
@@ -1046,15 +1049,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       return;
     }
 
-    // Bedtime settle: the deliberate drag-down is a goodnight, not a let-go.
-    // Don't fade the content out and don't wait on the ~3s off-screen glide -
-    // show the wordless "Sleep well" beat now and close+lock after it. (The
-    // moon still drifts down for the fraction of a second before the close.)
-    if (
-      !props.isFromDashboard &&
-      direction === "down" &&
-      getMode() === "WIND_DOWN_SETTLE"
-    ) {
+    // Bedtime settle: a deliberate drag or fling in any direction is a goodnight,
+    // not a let-go and not an escape - ease the phone into the dark rather than
+    // hand off to the minded app (the daytime fling) or open the let-go question
+    // (the dashboard). The only way out that stays in the current app is the
+    // triple-tap skip. Don't fade the content out and don't wait on the ~3s
+    // off-screen glide - show the wordless "Sleep well" beat now and close+lock
+    // after it. (The moon still drifts for a fraction of a second before close.)
+    if (!props.isFromDashboard && getMode() === "WIND_DOWN_SETTLE") {
       settleForBedtime(props.onDragComplete);
       return;
     }
@@ -1393,21 +1395,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             (error: unknown) =>
               console.error("Failed to record interaction mode", error),
           );
-          // Arm the once-per-night guard the moment the settle is shown, so a
-          // fast re-open the same night falls through to the ordinary cascade
-          // instead of a second settle. Uses the same night id the engine
-          // compared against; fire-and-forget so it never delays the pause.
-          if (modeDecision.mode === "WIND_DOWN_SETTLE") {
-            const bedtimeCfg = syncData.cfg.sleepWindDown;
-            const nightId = bedtimeCfg
-              ? resolveNightId(bedtimeCfg, new Date())
-              : null;
-            if (nightId) {
-              void markBedtimeSettled(nightId).catch((error: unknown) =>
-                console.error("Failed to record bedtime settle", error),
-              );
-            }
-          }
         }
 
         contentReadyTimeout = window.setTimeout(() => {
