@@ -35,7 +35,7 @@ describe("collapsed dashboard presentation", () => {
 
   it("offers one calm primary daily action and an easy secondary exit", () => {
     expect(normalizedComponent).toMatch(
-      /<Btn onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*stay a moment\s*<\/Btn>/,
+      /<Btn voice onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*stay a moment\s*<\/Btn>/,
     );
     expect(normalizedComponent).toMatch(
       /<Btn soft onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,

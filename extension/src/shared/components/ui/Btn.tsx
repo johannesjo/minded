@@ -32,13 +32,15 @@ interface CommonBtnProps {
 /**
  * Text button (the default). Modifiers: `outline` (ghost), `soft` (quiet
  * translucent - for a secondary exit that stays easy but shouldn't be the
- * loudest pixel), `plain` (unboxed tertiary action) and `big` (CTA).
+ * loudest pixel), `plain` (unboxed tertiary action), `voice` (mindful copy)
+ * and `big` (CTA).
  */
 type TextBtnProps = CommonBtnProps & {
   variant?: "text";
   outline?: boolean;
   soft?: boolean;
   plain?: boolean;
+  voice?: boolean;
   big?: boolean;
 };
 
@@ -69,6 +71,7 @@ type InternalBtnProps = CommonBtnProps & {
   big?: boolean;
   small?: boolean;
   plain?: boolean;
+  voice?: boolean;
   selected?: boolean;
 };
 
@@ -93,6 +96,7 @@ const Btn = (props: BtnProps): JSX.Element => {
     "big",
     "small",
     "plain",
+    "voice",
     "selected",
     "class",
     "children",
@@ -116,6 +120,7 @@ const Btn = (props: BtnProps): JSX.Element => {
       if (local.outline) classes.push("isOutline");
       if (local.soft) classes.push("isSoft");
       if (local.plain) classes.push("isPlain");
+      if (local.voice) classes.push("isVoice");
       if (local.big) classes.push("isBig");
     } else if (variant === "icon") {
       if (local.small) classes.push("isSmall");

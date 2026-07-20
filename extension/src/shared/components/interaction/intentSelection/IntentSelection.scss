@@ -31,11 +31,15 @@
 }
 
 .intent-options-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-left: -8px;
-  margin-right: -8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 320px;
+}
+
+.intent-option {
+  width: 100%;
 }
 
 .intent-selection-cancel {

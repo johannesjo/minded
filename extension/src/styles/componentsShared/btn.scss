@@ -1,9 +1,9 @@
 @import "@src/styles/mixins/mixins";
 
 // Three button bases - text, icon, toggle - plus a small set of shared
-// modifiers (.isOutline, .isSoft, .isPlain, .isBig, .isSmall, .isSelected). Prefer
-// composing a base with a modifier over adding a new variant; fewer variants
-// keep screens consistent.
+// modifiers (.isOutline, .isSoft, .isPlain, .isVoice, .isBig, .isSmall,
+// .isSelected). Prefer composing a base with a modifier over adding a new
+// variant; fewer variants keep screens consistent.
 //
 // The `#minded-6622 &` selectors raise specificity so the buttons survive
 // inside the content-script root; modifiers repeat the pattern so they still
@@ -28,6 +28,11 @@
   &.isPlain,
   #minded-6622 &.isPlain {
     @include btnTxtPlainModifier();
+  }
+
+  &.isVoice,
+  #minded-6622 &.isVoice {
+    @include btnTxtVoiceModifier();
   }
 
   &.isBig,

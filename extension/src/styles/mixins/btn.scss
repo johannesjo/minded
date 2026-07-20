@@ -9,11 +9,8 @@
   text-align: center;
   line-height: $height;
   font-size: var(--btn-fz);
-  // Buttons speak the display serif everywhere (issue #167) - one voice for
-  // the whole app, whether the button is an invitation ("Stay a while?") or a
-  // control (settings). A first pass scoped this to intervention hosts via a
-  // --btn-font hook; global is simpler and the settings screens read fine.
-  font-family: var(--font-display);
+  // Functional controls inherit Inter from the app root. Mindful invitations
+  // opt into Newsreader through the typed `voice` modifier.
   background: var(--btn-bg);
   text-transform: lowercase;
   box-sizing: border-box;
@@ -23,7 +20,6 @@
   user-select: none;
   transition:
     transform var(--dur-quick) var(--ease-out),
-    box-shadow var(--dur-quick) var(--ease-out),
     background var(--dur-quick) var(--ease-out),
     border-color var(--dur-quick) var(--ease-out);
   font-weight: normal;
@@ -45,16 +41,16 @@
   }
 
   @media (hover: hover) {
-    &:hover {
-      box-shadow: var(--btn-box-shadow);
+    // :where keeps the disabled guard specificity-neutral, so a selected
+    // toggle's later fill still wins while it is hovered.
+    &:where(:not(:disabled)):hover {
+      background: var(--btn-bg-selectable-hover);
     }
   }
 
   &:active {
     transform: scale(0.96);
-    transition:
-      transform var(--dur-instant) var(--ease-out),
-      box-shadow var(--dur-instant) var(--ease-out);
+    transition: transform var(--dur-instant) var(--ease-out);
   }
 
   &:after {
@@ -97,8 +93,8 @@
   }
 
   > .minded-6622-ico {
-    margin: 10px;
-    flex: 1;
+    margin: 0;
+    flex: 0 0 auto;
 
     @include inDarkMode() {
       filter: invert(1);
@@ -161,6 +157,14 @@
   }
 }
 
+// Modifier (.btnTxt.isVoice): Newsreader is reserved for a small number of
+// genuinely mindful invitations. Preserve authored casing instead of forcing
+// functional-control lowercase onto the app's spoken voice.
+@mixin btnTxtVoiceModifier() {
+  @include displayVoice;
+  text-transform: none;
+}
+
 // Modifier (.btnTxt.isOutline): outlined / ghost text button - no resting
 // background, just a border that fills in on hover. Replaces .btnTxtOutline.
 @mixin btnTxtOutlineModifier() {
@@ -204,7 +208,6 @@
   @media (hover: hover) {
     &:hover {
       background: var(--btn-bg-not-selected);
-      box-shadow: none;
     }
   }
 }
@@ -239,7 +242,6 @@
     text-transform: lowercase;
     min-width: 92px;
     transition:
-      transform var(--dur-quick) var(--ease-out),
       background var(--dur-quick) var(--ease-out),
       border-radius var(--dur-quick) var(--ease-out);
     background: var(--btn-bg-not-selected);
@@ -259,15 +261,13 @@
   &.isSelected {
     background: var(--btn-bg-selected);
     opacity: 1;
-    //font-weight: 500;
     border-radius: var(--radius-lg);
-    transform: scale(var(--btn-selected-scale));
   }
 }
 
 // Modifier (.btnToggleSelect.isSmall): compact toggle for dense rows. Only the
-// size-related deltas from the base toggle - colors, hover and the selected
-// scale are inherited. Replaces the old .btnToggleSelectSmall variant.
+// size-related deltas from the base toggle - colors and hover are inherited.
+// Replaces the old .btnToggleSelectSmall variant.
 @mixin btnToggleSelectSmallModifier() {
   height: 34px;
   line-height: 34px;
@@ -283,9 +283,7 @@
   }
 
   &.isSelected {
-    // Off the radius scale on purpose: the scaled-down analog of the regular
-    // toggle's 8px → 16px selected morph (16px here would read pill-like at
-    // this height).
+    // Off the radius scale on purpose: 16px would read pill-like at this height.
     border-radius: 12px;
   }
 }
