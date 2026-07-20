@@ -34,7 +34,7 @@ const compileBackgroundTransition = (): string =>
   );
 
 describe("full-screen gradient dithering", () => {
-  // The dither works by compositing a HIGH-CONTRAST grey-noise tile with plain
+  // The dither works by compositing a HIGH-CONTRAST RGB-noise tile with plain
   // `mix-blend-mode: normal`. Every earlier attempt leaned on a blend mode
   // (screen/overlay over a black tile, then soft-light over a low-contrast grey
   // tile) to amplify a faint tile into dither - but blend-mode amplification
@@ -48,21 +48,30 @@ describe("full-screen gradient dithering", () => {
     "utf8",
   );
 
-  it("uses a mid-grey noise tile, not a pure-black one", () => {
-    // Grey form copies the noise into R/G/B and forces alpha to 1
-    // (feColorMatrix rows "0 0 0 1 0" ... alpha "0 0 0 0 1").
-    expect(variablesScss).toContain("0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1");
-    // The old black form zeroed RGB and only varied alpha - must be gone.
-    expect(variablesScss).not.toContain("0 0 0 0 0.55 0");
+  it("dithers RGB channels independently instead of cancelling out of chroma", () => {
+    const matrixMatch = variablesScss.match(
+      /<feColorMatrix values='([^']+)'\/?>/,
+    );
+    expect(matrixMatch).not.toBeNull();
+
+    const matrix = matrixMatch![1].split(/\s+/).map(Number);
+
+    // feTurbulence supplies independent R/G/B noise. Preserve those channels
+    // and only force alpha opaque: copying one channel into all three creates
+    // grey grain whose perturbation cancels out of R-G / G-B, leaving coherent
+    // colour bands even when each individual channel appears noisy.
+    expect(matrix).toEqual([
+      1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,
+    ]);
   });
 
   it("ships the dither contrast in the tile, in sRGB", () => {
     // A steep linear component transfer is what lets a low opacity still cross a
     // full code-level under a non-amplifying `normal` blend. Without it the tile
-    // is near-flat grey and dithers nothing.
+    // is too low-contrast to dither the output.
     expect(variablesScss).toContain("feComponentTransfer");
     expect(variablesScss).toMatch(/slope='2\.6'\s+intercept='-0\.8'/);
-    // sRGB keeps the noise mean centred (linearRGB milked the sky off-grey).
+    // sRGB keeps the channel means centred (linearRGB milked the sky).
     expect(variablesScss).toContain("color-interpolation-filters='sRGB'");
   });
 
