@@ -7,6 +7,7 @@ import {
   on,
   onCleanup,
   onMount,
+  Show,
   Switch,
 } from "solid-js";
 // @ts-ignore
@@ -59,6 +60,7 @@ export const OnboardingIOS = (props: {
   const [getShownStep, setShownStep] = createSignal<number>(
     props.initialStep ?? 0,
   );
+  const [getHasExperiencedPause, setHasExperiencedPause] = createSignal(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
 
   const isReEntry = (props.initialStep ?? 0) > 0;
@@ -217,19 +219,21 @@ export const OnboardingIOS = (props: {
                   Meet <em>minded</em>
                 </div>
                 <div class="txtSlightlyBigger">
-                  <p>
-                    This little {companionWord()} is your anchor. Tap it - a
-                    calm pause opens, a moment to arrive before you carry on.
-                  </p>
-                  <p>
-                    On iPhone it lives on your Home Screen: a quiet companion at
-                    the glance where scrolling begins.
-                  </p>
+                  <Show
+                    when={getHasExperiencedPause()}
+                    fallback={<p>Tap the {companionWord()}.</p>}
+                  >
+                    <p class="pageTransitionIn">
+                      This is the pause the Home Screen {companionWord()}{" "}
+                      opens—a quiet companion at the glance where scrolling
+                      begins.
+                    </p>
+                  </Show>
                 </div>
 
-                <ButtonWrapper isVisible={true}>
+                <ButtonWrapper isVisible={getHasExperiencedPause()}>
                   <Btn big onClick={() => changeStep(1)}>
-                    begin
+                    continue
                   </Btn>
                 </ButtonWrapper>
               </div>
@@ -285,6 +289,7 @@ export const OnboardingIOS = (props: {
         getIsLeaving={getIsLeaving}
         getBaseSettle={getOnboardingSettle}
         advanceFromWelcome={() => changeStep(1)}
+        onPauseExperienced={() => setHasExperiencedPause(true)}
       />
 
       <div class={styles.companionProbe} ref={companionProbeEl} />

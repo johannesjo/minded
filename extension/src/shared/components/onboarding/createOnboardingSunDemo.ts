@@ -30,6 +30,8 @@ export const createOnboardingSunDemo = (opts: {
   getBaseSettle: () => SunSettle | null;
   /** Advance off the welcome (the fling/drag/"begin" gesture target). */
   advanceFromWelcome: () => void;
+  /** Let the flow reveal its explanation once the real pause has closed. */
+  onPauseExperienced?: () => void;
 }) => {
   const [getIsShowPause, setIsShowPause] = createSignal(false);
   const [getIsPauseClosing, setIsPauseClosing] = createSignal(false);
@@ -114,6 +116,7 @@ export const createOnboardingSunDemo = (opts: {
     setIsPauseClosing(false);
     setHasPauseTakenOver(false);
     setSunRole("companion");
+    opts.onPauseExperienced?.();
   };
 
   return {

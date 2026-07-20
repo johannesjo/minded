@@ -73,6 +73,29 @@ describe("web onboarding sun continuity", () => {
     expect(sun).toMatch(/tabIndex=/);
   });
 
+  it("lets the pause be felt before explaining it on every platform", () => {
+    const layer = source(
+      "src/shared/components/onboarding/OnboardingSunLayer.tsx",
+    );
+    const demo = source(
+      "src/shared/components/onboarding/createOnboardingSunDemo.ts",
+    );
+    const onboardings = [
+      source("src/pages/newtab/components/onboardingWeb/OnboardingWeb.tsx"),
+      source("src/android/components/onboardingAndroid/OnboardingAndroid.tsx"),
+      source("src/ios/components/onboardingIOS/OnboardingIOS.tsx"),
+    ];
+
+    expect(layer).toContain("onPauseExperienced?: () => void;");
+    expect(demo).toContain("opts.onPauseExperienced?.()");
+    for (const onboarding of onboardings) {
+      expect(onboarding).toContain("getHasExperiencedPause");
+      expect(onboarding).toContain("setHasExperiencedPause(true)");
+      expect(onboarding).toContain("Tap the {companionWord()}.");
+      expect(onboarding).toContain("isVisible={getHasExperiencedPause()}");
+    }
+  });
+
   it("rests on the hero, setup sky, final hero, then dashboard companion", () => {
     expect(getWebOnboardingSunSettle(0, false, anchors())).toEqual({
       anchorYPxFromBottom: 400,

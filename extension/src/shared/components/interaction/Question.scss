@@ -188,7 +188,7 @@
     padding: var(--space-md);
     padding-bottom: 40px; // Make room for the button
     font-family: inherit;
-    height: auto !important;
+    height: auto;
   }
 
   // Rendered as <Btn variant="icon">, so the .btnIco base comes from the
@@ -211,6 +211,48 @@
     // (0.8 alpha) with opacity rather than colour.
     > .minded-6622-ico {
       opacity: 0.8;
+    }
+  }
+
+  // A response is personal writing, not a settings form. The field rests
+  // directly on the sky with one quiet baseline; the user's words inherit the
+  // same editorial voice they later carry in look-back.
+  &.reflective {
+    textarea {
+      background: transparent;
+      border-radius: 0;
+      border-bottom: 1px solid var(--btn-outline-color);
+      font-family: var(--font-display);
+      font-size: var(--fz-l) !important;
+      line-height: 1.45;
+      min-height: calc(4.5em + var(--space-lg));
+      max-height: min(42vh, 280px);
+      overflow-y: hidden;
+      padding: var(--space-sm) calc(var(--btn-height) + var(--space-xs))
+        var(--space-md) 0;
+      transition: border-color var(--dur-quick) var(--ease-out);
+
+      &:focus {
+        border-bottom-color: var(--c-fg-full-emphasis);
+      }
+    }
+
+    .send-button {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(4px) scale(0.96);
+      transition:
+        opacity var(--dur-quick) var(--ease-out),
+        transform var(--dur-quick) var(--ease-out),
+        visibility var(--dur-quick);
+    }
+
+    .send-button.is-ready {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
     }
   }
 }
@@ -236,6 +278,10 @@
   }
 
   #minded-6622-question-wrapper .question-prompt-slot {
+    transition: none;
+  }
+
+  #minded-6622-inp.reflective .send-button {
     transition: none;
   }
 }

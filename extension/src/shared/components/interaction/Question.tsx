@@ -48,7 +48,7 @@ export const Question: (props: {
   const normalizeAnswerText = (txt: string): string =>
     (txt || "").replace(/\s+/g, " ").trim();
 
-  const submitAnswer = async (answerTxt: string) => {
+  const isAnswerReady = (answerTxt: string): boolean => {
     const normalizedVal = normalizeAnswerText(answerTxt);
     const normalizedPrompt = question.prompt
       ? normalizeAnswerText(question.prompt)
@@ -57,6 +57,14 @@ export const Question: (props: {
       normalizedPrompt && normalizedVal.startsWith(normalizedPrompt)
         ? normalizedVal.slice(normalizedPrompt.length).trim()
         : normalizedVal;
+
+    if (!normalizedVal || normalizedVal.length < 2) return false;
+    return !normalizedPrompt || remainderWhenPrefilled.length >= 2;
+  };
+
+  const submitAnswer = async (answerTxt: string) => {
+    if (!isAnswerReady(answerTxt)) return;
+
     const answer = {
       questionCategoryId: question.categoryId,
       qid: question.id,
@@ -64,9 +72,6 @@ export const Question: (props: {
       ts: Date.now(),
       id: nanoid(),
     };
-
-    if (!normalizedVal || normalizedVal.length < 2) return;
-    if (normalizedPrompt && remainderWhenPrefilled.length < 2) return;
     if (!question.isDontSaveAnswer) {
       try {
         await saveAnswer(answer);
@@ -195,6 +200,10 @@ export const Question: (props: {
         >
           <InputWithSend
             aria-labelledby="minded-6622-question"
+            reflective
+            autoGrow
+            placeholder="write here…"
+            isSubmitReady={isAnswerReady}
             onCancelCountdown={props.onCancelCountdown}
             value={initialInputValue}
             maxLength={props.maxLength ?? 500}

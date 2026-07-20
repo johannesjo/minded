@@ -30,4 +30,25 @@ describe("free-text question composition", () => {
       'aria-labelledby={props["aria-labelledby"]}',
     );
   });
+
+  it("turns the response into a content-growing reflective writing surface", () => {
+    expect(component).toContain("reflective");
+    expect(component).toContain("autoGrow");
+    expect(component).toContain('placeholder="write here…"');
+    expect(component).toContain("isSubmitReady={isAnswerReady}");
+    expect(inputWithSend).toContain("reflective?: boolean;");
+    expect(inputWithSend).toContain("autoGrow?: boolean;");
+    expect(inputWithSend).toContain("resizeToContent");
+    expect(inputWithSend).toContain("scrollHeight");
+    expect(inputWithSend).toContain("offsetHeight");
+    expect(styles).toMatch(
+      /&\.reflective\s*\{[\s\S]*font-family:\s*var\(--font-display\);/,
+    );
+    expect(styles).toMatch(
+      /&\.reflective\s*\{[\s\S]*background:\s*transparent;/,
+    );
+    expect(styles).toMatch(
+      /\.send-button\.is-ready\s*\{[\s\S]*visibility:\s*visible;/,
+    );
+  });
 });

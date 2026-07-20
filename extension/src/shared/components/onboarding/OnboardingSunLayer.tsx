@@ -28,6 +28,7 @@ export const OnboardingSunLayer = (props: {
   getIsLeaving: () => boolean;
   getBaseSettle: () => SunSettle | null;
   advanceFromWelcome: () => void;
+  onPauseExperienced?: () => void;
 }): JSX.Element => {
   const d = createOnboardingSunDemo(props);
   return (

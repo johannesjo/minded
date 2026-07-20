@@ -61,6 +61,7 @@ export const OnboardingAndroid = (props: {
   const [getShownStep, setShownStep] = createSignal<number>(
     props.initialStep ?? 0,
   );
+  const [getHasExperiencedPause, setHasExperiencedPause] = createSignal(false);
   const [getPermissionNotGiven, setPermissionNotGiven] =
     createSignal<boolean>(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
@@ -268,17 +269,20 @@ export const OnboardingAndroid = (props: {
                   Meet <em>minded</em>
                 </div>
                 <div class="txtSlightlyBigger">
-                  <p>
-                    This little {companionWord()} is your anchor. When you open
-                    an app on autopilot, it appears - a calm moment to pause,
-                    right there over the app.
-                  </p>
-                  <p>Tap it to feel what that's like.</p>
+                  <Show
+                    when={getHasExperiencedPause()}
+                    fallback={<p>Tap the {companionWord()}.</p>}
+                  >
+                    <p class="pageTransitionIn">
+                      Over the apps you choose, it can offer this same quiet
+                      pause—an invitation, never a wall.
+                    </p>
+                  </Show>
                 </div>
 
-                <ButtonWrapper isVisible={true}>
+                <ButtonWrapper isVisible={getHasExperiencedPause()}>
                   <Btn big onClick={() => changeStep(1)}>
-                    begin
+                    continue
                   </Btn>
                 </ButtonWrapper>
 
@@ -440,6 +444,7 @@ export const OnboardingAndroid = (props: {
         getIsLeaving={getIsLeaving}
         getBaseSettle={getSunSettle}
         advanceFromWelcome={() => changeStep(1)}
+        onPauseExperienced={() => setHasExperiencedPause(true)}
       />
 
       <div class={styles.skyProbe} ref={skyProbeEl} />
