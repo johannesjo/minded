@@ -35,7 +35,8 @@
   // rather than climbing over it. Styled like the sun-instructions lines - a
   // quiet, full-emphasis whisper (not a bold banner) so the closing beat stays
   // calm and reads as the same soft voice the interaction uses.
-  .success-text {
+  :global(.success-text) {
+    @include displayVoice;
     font-size: var(--fz-m);
     color: var(--c-fg-full-emphasis);
     opacity: 0.9;
