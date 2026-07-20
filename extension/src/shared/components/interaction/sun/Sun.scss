@@ -12,7 +12,7 @@
   // so the idle disc already wears the bold hover glow rather than a dimmer one -
   // and Sun.tsx floors the value there, so the 0..1 drag ramp (always dimmer)
   // can't dim it mid-drag. It stays static at rest; only an explicit guided pause
-  // may breathe. The glow is white throughout.
+  // may breathe. The shell gives only the resting day companion an amber tint.
   box-shadow:
     var(--sun-shadow),
     0 0 calc(15px * var(--glow-intensity))

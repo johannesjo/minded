@@ -69,6 +69,14 @@
     :global {
       animation-name: minded6622fadeIn;
     }
+
+    // Keep the full button hit area while reducing the visual weight of the
+    // utility glyphs beside the companion on phones.
+    @include onSmallScreens {
+      > :global(.minded-6622-ico) {
+        transform: scale(0.82);
+      }
+    }
   }
 }
 

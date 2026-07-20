@@ -9,6 +9,7 @@ export const InputWithSend = (props: {
   value?: string;
   setRef?: (el: HTMLTextAreaElement) => void;
   maxLength?: number;
+  "aria-labelledby"?: string;
   onSubmit: (val: string) => Promise<void>;
   onInput?: (val: string) => void;
   onCancelCountdown?: () => void;
@@ -85,6 +86,7 @@ export const InputWithSend = (props: {
     <div id="minded-6622-inp" class="textarea-container">
       <textarea
         name={props.type === "url" ? "url" : "response"}
+        aria-labelledby={props["aria-labelledby"]}
         spellcheck={false}
         ref={inpEl!}
         disabled={getIsInputDisabled()}

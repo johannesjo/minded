@@ -25,6 +25,44 @@
   gap: 16px;
   align-content: start;
 
+  // A handful of reflections belongs in the calm field, not pinned to its top
+  // edge. `safe` falls back to start whenever a short viewport needs scrolling.
+  &.shortCollection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: safe center;
+
+    .box {
+      flex: 1 1 100%;
+      max-width: 360px;
+    }
+
+    @media (min-width: $bpDashboardPhone2Col) {
+      .box {
+        flex-basis: calc(50% - 8px);
+      }
+    }
+
+    @media (min-width: $bpMobile) {
+      .box {
+        flex-basis: calc(50% - 12px);
+      }
+    }
+
+    @media (min-width: $bpDashboardMoreThan2Col) {
+      .box {
+        flex-basis: calc(33.333% - 16px);
+      }
+
+      // Four reflections keep the existing balanced 2×2 composition.
+      &.balancedFourCardGrid .box {
+        flex-basis: calc(50% - 12px);
+        max-width: calc(50% - 12px);
+      }
+    }
+  }
+
   // Fade content into the sun's zone as it scrolls past the bottom edge. The
   // mask is anchored to the scroll viewport, so it stays pinned at the bottom
   // while content scrolls into it.

@@ -385,6 +385,7 @@ export const DashboardGroups: (props: {
       <div
         classList={{
           [styles.DashboardGroups]: true,
+          [styles.shortCollection]: getDashboardGroups().length <= 4,
           [styles.balancedFourCardGrid]: getDashboardGroups().length === 4,
         }}
       >

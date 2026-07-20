@@ -17,6 +17,7 @@ describe("calm motion policy", () => {
     const questionStyles = readSource(
       "src/shared/components/interaction/Question.scss",
     );
+    const routeStyles = readSource("src/shared/RouteCmp.module.scss");
     const routeComponent = readSource("src/shared/RouteCmp.tsx");
     const onboardingSunLayer = readSource(
       "src/shared/components/onboarding/OnboardingSunLayer.tsx",
@@ -29,6 +30,12 @@ describe("calm motion policy", () => {
     expect(sunStyles).not.toContain("mindedSunIdleBreath");
     expect(littleSunStyles).not.toContain("minded6622littleSunBreath");
     expect(questionStyles).not.toContain("tapHintBreathe");
+    expect(routeStyles).toMatch(
+      /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*--sun-bg:\s*radial-gradient/,
+    );
+    expect(routeStyles).toMatch(
+      /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*rgba\(255, 214, 115,/,
+    );
     expect(routeComponent).not.toContain("styles.isIntervention");
     expect(onboardingSunLayer).not.toContain("styles.isLeaving");
     expect(onboardingSunLayer).not.toContain("styles.isIntervention");

@@ -58,4 +58,22 @@ describe("collapsed dashboard presentation", () => {
     expect(component).not.toContain("revealChevron");
     expect(styles).not.toContain(".revealChevron");
   });
+
+  it("centres short look-back collections while long histories keep scrolling from the top", () => {
+    expect(component).toContain(
+      "[styles.shortCollection]: getDashboardGroups().length <= 4",
+    );
+    expect(styles).toMatch(
+      /&\.shortCollection\s*\{[\s\S]*align-content:\s*safe center;/,
+    );
+    expect(styles).toMatch(
+      /&\.shortCollection\s*\{[\s\S]*display:\s*flex;[\s\S]*justify-content:\s*center;/,
+    );
+    expect(styles).toMatch(
+      /@media \(min-width: \$bpDashboardPhone2Col\)[\s\S]*flex-basis:\s*calc\(50% - 8px\);/,
+    );
+    expect(styles).toMatch(
+      /@media \(min-width: \$bpDashboardMoreThan2Col\)[\s\S]*flex-basis:\s*calc\(33\.333% - 16px\);/,
+    );
+  });
 });

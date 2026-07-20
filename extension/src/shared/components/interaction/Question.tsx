@@ -110,30 +110,35 @@ export const Question: (props: {
   };
 
   return (
-    <div id="minded-6622-question-wrapper">
-      <div
-        id="minded-6622-question"
-        class="txtBig"
-        classList={{ "show-input": getShowInput() }}
-        // With chips the question is plain text - the chips (and "Something
-        // else…") drive input - so it isn't a button. Without chips it stays
-        // the tap-to-type reveal target it has always been.
-        role={hasChips ? undefined : "button"}
-        tabindex={hasChips ? undefined : getShowInput() ? -1 : 0}
-        aria-expanded={hasChips ? undefined : getShowInput()}
-        onClick={hasChips ? undefined : revealInput}
-        onKeyDown={
-          hasChips
-            ? undefined
-            : (ev) => {
-                if (ev.key === "Enter" || ev.key === " ") {
-                  ev.preventDefault();
-                  revealInput();
+    <div
+      id="minded-6622-question-wrapper"
+      classList={{ ["input-shown"]: getShowInput() }}
+    >
+      <div class="question-prompt-slot">
+        <div
+          id="minded-6622-question"
+          class="txtBig"
+          classList={{ "show-input": getShowInput() }}
+          // With chips the question is plain text - the chips (and "Something
+          // else…") drive input - so it isn't a button. Without chips it stays
+          // the tap-to-type reveal target it has always been.
+          role={hasChips || getShowInput() ? undefined : "button"}
+          tabindex={hasChips || getShowInput() ? undefined : 0}
+          aria-expanded={hasChips || getShowInput() ? undefined : false}
+          onClick={hasChips ? undefined : revealInput}
+          onKeyDown={
+            hasChips
+              ? undefined
+              : (ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault();
+                    revealInput();
+                  }
                 }
-              }
-        }
-      >
-        <span>{formatQuestionText(displayText)}</span>
+          }
+        >
+          <span>{formatQuestionText(displayText)}</span>
+        </div>
       </div>
 
       <Show when={hasChips && !getShowInput()}>
@@ -189,6 +194,7 @@ export const Question: (props: {
           onClick={props.onCancelCountdown}
         >
           <InputWithSend
+            aria-labelledby="minded-6622-question"
             onCancelCountdown={props.onCancelCountdown}
             value={initialInputValue}
             maxLength={props.maxLength ?? 500}

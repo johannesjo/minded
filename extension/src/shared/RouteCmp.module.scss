@@ -77,12 +77,15 @@
   // class, change), so the interaction sun is unaffected and regains the broad
   // bloom as it rises.
   &.isCompanion :global(.minded-sun:not(.moon)) {
+    // The resting day companion carries the same restrained amber light as the
+    // native widget. Intervention motion drops this class and returns to white.
+    --sun-bg: radial-gradient(circle, #fff 0%, #fff 82%, #fff5dc 100%);
     box-shadow:
       var(--sun-shadow),
       0 0 calc(14px * var(--glow-intensity))
-        rgba(var(--glow-color), calc(0.5 * var(--glow-intensity))),
+        rgba(255, 214, 115, calc(0.5 * var(--glow-intensity))),
       0 0 calc(30px * var(--glow-intensity))
-        rgba(var(--glow-color), calc(0.25 * var(--glow-intensity)));
+        rgba(255, 214, 115, calc(0.25 * var(--glow-intensity)));
   }
 
   // Horizon reflection under the resting moon (GitHub #125): a faint, wide,
