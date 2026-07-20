@@ -5,9 +5,32 @@
 // Doubled with .pageWrapper for specificity over its shorthand padding.
 .SettingsAndroidRoute:global(.pageWrapper) {
   padding-bottom: max(var(--space-2xl), var(--safe-area-inset-bottom));
+
+  :global(.h3) {
+    font-weight: 600;
+  }
+}
+
+.sections {
+  animation: settingsSectionsIn 320ms var(--ease-out) both;
 }
 
 .divider {
   opacity: 0.2;
   margin: var(--space-xl) var(--space-md);
+}
+
+@keyframes settingsSectionsIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sections {
+    animation: none;
+  }
 }

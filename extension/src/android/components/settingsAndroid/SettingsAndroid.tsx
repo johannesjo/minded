@@ -35,6 +35,7 @@ export const SettingsAndroid = (props: {
    * this off so the bottom button can act as "save & continue".
    */
   autoSave?: boolean;
+  initialBlockedApps?: string[];
 }) => {
   let t0: NodeJS.Timeout | undefined;
   const [getAvailableApps, setAvailableApps] = createSignal<
@@ -42,7 +43,9 @@ export const SettingsAndroid = (props: {
   >([]);
 
   const navigate = props.isRouting ? useNavigate() : () => undefined;
-  const [getSelectedApps, setSelectedApps] = createSignal<string[]>([]);
+  const [getSelectedApps, setSelectedApps] = createSignal<string[]>(
+    props.initialBlockedApps ?? [],
+  );
 
   // "Your home screen" is one more PLACE the sun can meet you - a peer of the
   // apps below, under the same heading. It is select-by-doing: the row fires
@@ -74,9 +77,11 @@ export const SettingsAndroid = (props: {
       setAvailableApps(apps);
     });
 
-    getSyncData().then((syncData) => {
-      setSelectedApps(syncData.cfg.blockedApps || []);
-    });
+    if (props.initialBlockedApps === undefined) {
+      getSyncData().then((syncData) => {
+        setSelectedApps(syncData.cfg.blockedApps || []);
+      });
+    }
   });
 
   onCleanup(() => {

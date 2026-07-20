@@ -15,13 +15,18 @@ import styles from "./FocusSchedule.module.scss";
 
 const DEFAULT_RANGE = { start: "09:00", end: "17:00" };
 
-export const FocusSchedule = (): JSX.Element => {
+export const FocusSchedule = (
+  props: { initialSchedule?: FocusScheduleType } = {},
+): JSX.Element => {
+  const hasInitialValue = "initialSchedule" in props;
   const [schedule, setSchedule] = createSignal<FocusScheduleType>(
-    DEFAULT_FOCUS_SCHEDULE,
+    props.initialSchedule ?? DEFAULT_FOCUS_SCHEDULE,
   );
-  const [loaded, setLoaded] = createSignal(false);
+  const [loaded, setLoaded] = createSignal(hasInitialValue);
 
   onMount(() => {
+    if (hasInitialValue) return;
+
     getSyncData().then((syncData) => {
       if (syncData.cfg.focusSchedule) {
         setSchedule(syncData.cfg.focusSchedule);
@@ -54,7 +59,7 @@ export const FocusSchedule = (): JSX.Element => {
     <div class={styles.FocusSchedule}>
       <div class={styles.header}>
         <h3 class="h3" style={{ margin: 0 }}>
-          Active Hours
+          Active hours
         </h3>
         <Toggle
           checked={schedule().enabled}

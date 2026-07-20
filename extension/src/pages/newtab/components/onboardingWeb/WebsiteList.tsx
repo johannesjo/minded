@@ -74,8 +74,9 @@ const normalizeHostInput = (
 export const WebsiteList: (props: {
   onAfterSave?: () => void;
   showSaveButton?: boolean;
+  initialItems?: string[];
 }) => JSX.Element = (props) => {
-  const [items, setItems] = createSignal<string[]>([]);
+  const [items, setItems] = createSignal<string[]>(props.initialItems ?? []);
   const [errors, setErrors] = createSignal<Record<number, string>>({});
   const [saveState, setSaveState] = createSignal<SaveState>({ type: "idle" });
   const [removedItem, setRemovedItem] = createSignal<RemovedItem | null>(null);
@@ -83,6 +84,8 @@ export const WebsiteList: (props: {
   let savedStatusTimeout: NodeJS.Timeout | undefined;
 
   onMount(() => {
+    if (props.initialItems !== undefined) return;
+
     getSyncData().then((syncData) => {
       if (syncData.cfg.blockedHosts?.length) {
         setItems(syncData.cfg.blockedHosts);

@@ -1,7 +1,7 @@
 .Options {
   max-width: 980px;
   margin: 0 auto;
-  padding: 24px 16px 96px;
+  padding: var(--space-lg) var(--space-md) 96px;
 }
 
 .header {
@@ -22,25 +22,45 @@
 .sections {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: var(--space-lg);
+  animation: settingsSectionsIn 320ms var(--ease-out) both;
 }
 
 .section {
   border-top: 1px solid var(--btn-outline-color);
-  padding-top: 28px;
+  padding-top: var(--space-lg);
+
+  :global(.h3) {
+    font-weight: 600;
+  }
 }
 
 .sectionIntro {
-  margin: 0 auto 20px;
+  margin: 0 auto var(--space-md);
   max-width: 640px;
   text-align: center;
 
   h3 {
-    margin: 0 0 6px;
+    margin: 0 0 var(--space-sm);
   }
 
   p {
     margin: 0;
     opacity: 0.72;
+  }
+}
+
+@keyframes settingsSectionsIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sections {
+    animation: none;
   }
 }

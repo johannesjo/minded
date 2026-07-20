@@ -34,7 +34,10 @@
   border-radius: var(--border-radius);
 
   &.isDisabled {
-    opacity: 0.5;
+    .dayName,
+    .timeSeparator {
+      opacity: 0.65;
+    }
   }
 
   // On narrow phones the time inputs don't fit on the same row as the

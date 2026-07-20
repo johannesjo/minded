@@ -1,0 +1,21 @@
+.SoundSettings {
+  padding-bottom: var(--space-sm);
+  text-align: center;
+}
+
+.header {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-md);
+
+  :global(.h3) {
+    margin: 0;
+  }
+}
+
+.description {
+  font-size: var(--fz-s);
+  margin: var(--space-sm) auto 0;
+  max-width: 400px;
+  opacity: 0.7;
+}

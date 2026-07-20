@@ -17,11 +17,17 @@ import styles from "./FocusSchedule.module.scss";
 export const SleepWindDownSettings = (props: {
   /** If true, persist each edit immediately. */
   autoSave?: boolean;
+  initialCfg?: SleepWindDownCfg;
 }): JSX.Element => {
-  const [cfg, setCfg] = createSignal<SleepWindDownCfg>(DEFAULT_SLEEP_WIND_DOWN);
-  const [loaded, setLoaded] = createSignal(false);
+  const hasInitialValue = "initialCfg" in props;
+  const [cfg, setCfg] = createSignal<SleepWindDownCfg>(
+    props.initialCfg ?? DEFAULT_SLEEP_WIND_DOWN,
+  );
+  const [loaded, setLoaded] = createSignal(hasInitialValue);
 
   onMount(() => {
+    if (hasInitialValue) return;
+
     getSyncData().then((sd) => {
       if (sd.cfg.sleepWindDown) setCfg(sd.cfg.sleepWindDown);
       setLoaded(true);
@@ -56,7 +62,7 @@ export const SleepWindDownSettings = (props: {
     <div class={styles.FocusSchedule}>
       <div class={styles.header}>
         <h3 class="h3" style={{ margin: 0 }}>
-          Sleep Wind-Down
+          Sleep wind-down
         </h3>
         <Toggle
           checked={cfg().enabled}

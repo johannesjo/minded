@@ -17,12 +17,17 @@ const GRACE_OPTIONS = [
 
 const DEFAULT_GRACE_MINUTES = 5;
 
-export const SessionGraceSettings = (): JSX.Element => {
+export const SessionGraceSettings = (
+  props: { initialGrace?: SessionGraceCfg } = {},
+): JSX.Element => {
+  const hasInitialValue = "initialGrace" in props;
   const [getGrace, setGrace] = createSignal<SessionGraceCfg | undefined>(
-    undefined,
+    props.initialGrace,
   );
 
   onMount(async () => {
+    if (hasInitialValue) return;
+
     const syncData = await getSyncData();
     setGrace(syncData.cfg.sessionGrace);
   });
@@ -48,7 +53,7 @@ export const SessionGraceSettings = (): JSX.Element => {
     <div class={styles.SessionGraceSettings}>
       <div class={styles.header}>
         <h3 class="h3" style={{ margin: 0 }}>
-          Grace Period
+          Grace period
         </h3>
         <Toggle
           checked={isEnabled()}

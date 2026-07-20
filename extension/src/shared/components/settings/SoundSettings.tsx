@@ -4,11 +4,19 @@ import {
   updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { Toggle } from "@src/shared/components/ui/Toggle";
+import styles from "./SoundSettings.module.scss";
 
-export const SoundSettings = (): JSX.Element => {
-  const [soundEnabled, setSoundEnabled] = createSignal(true);
+export const SoundSettings = (
+  props: { initialSoundEnabled?: boolean } = {},
+): JSX.Element => {
+  const hasInitialValue = "initialSoundEnabled" in props;
+  const [soundEnabled, setSoundEnabled] = createSignal(
+    props.initialSoundEnabled ?? true,
+  );
 
   onMount(() => {
+    if (hasInitialValue) return;
+
     getSyncData().then((syncData) => {
       setSoundEnabled(syncData.cfg.soundEnabled ?? true);
     });
@@ -21,19 +29,18 @@ export const SoundSettings = (): JSX.Element => {
   };
 
   return (
-    <div style={{ "padding-bottom": "8px", "text-align": "center" }}>
-      <div
-        style={{ display: "inline-flex", "align-items": "center", gap: "16px" }}
-      >
-        <h3 class="h3" style={{ margin: 0 }}>
-          Completion Sound
-        </h3>
+    <div class={styles.SoundSettings}>
+      <div class={styles.header}>
+        <h3 class="h3">Completion sound</h3>
         <Toggle
           checked={soundEnabled()}
           onChange={toggleSound}
           label={soundEnabled() ? "On" : "Off"}
         />
       </div>
+      <p class={styles.description}>
+        A soft bell marks the end of a guided pause.
+      </p>
     </div>
   );
 };
