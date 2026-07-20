@@ -288,16 +288,16 @@ const Styleguide = (): JSX.Element => {
       <Section id="typography" title="Typography">
         <p class={styles.muted}>
           Two voices. Newsreader (serif) is the <em>mindful voice</em> - used
-          only when the app speaks gently to you (intervention prompts, breath
-          &amp; pause copy, the "be proud" success message) or when you read
-          your own words (dashboard reflections, the reflection detail page).
-          Inter (sans) is the functional default for everything else: structural
-          headings, settings, labels, metadata. Serif is always opt-in via{" "}
-          <code>.txtBig</code>, <code>.h2Mindful</code>, or the{" "}
-          <code>displayVoice()</code> mixin; Inter is inherited, never declared.
-          One deliberate exception carries serif outside that rule: every{" "}
-          <code>&lt;Btn&gt;</code> app-wide (buttons are invitations - issue
-          #167).
+          only when the app speaks gently to you (intervention prompts, the
+          sun-drag hints, breath &amp; pause copy, the "be proud" success
+          message) or when you read your own words (dashboard reflections, the
+          reflection detail page). Inter (sans) is the functional default for
+          everything else: structural headings, settings, labels, metadata.
+          Serif is always opt-in via <code>.txtBig</code>,{" "}
+          <code>.h2Mindful</code>, or the <code>displayVoice()</code> mixin;
+          Inter is inherited, never declared. One deliberate exception carries
+          serif outside that rule: every <code>&lt;Btn&gt;</code> app-wide
+          (buttons are invitations - issue #167).
         </p>
         <h2 class="h2">.h2 - functional heading (Inter)</h2>
         <h2 class="h2 h2Mindful">
@@ -305,6 +305,10 @@ const Styleguide = (): JSX.Element => {
         </h2>
         <h3 class="h3">.h3 - subsection heading (Inter)</h3>
         <p class="txtBig">.txtBig - display body (display serif)</p>
+        <p class={`txtSmaller ${styles.hintVoice}`}>
+          .txtSmaller + displayVoice - hint-size mindful voice (the sun-drag
+          hints): Drag the sun down to stay a while.
+        </p>
         <p>plain paragraph text using --c-fg (Inter)</p>
         <div class={styles.fontList}>
           <For each={fontEntries()}>

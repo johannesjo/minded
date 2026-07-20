@@ -1,4 +1,8 @@
 @import "../../../styles/variablesSCSS";
+// Mixin-only import (defines displayVoice, emits no CSS) so the Typography
+// section can show the serif voice at hint size the same way real code
+// composes it: a size class + displayVoice, never a hand-set font-family.
+@import "../../../styles/mixins/allTypo";
 
 .styleguide {
   padding: 24px;
@@ -236,6 +240,13 @@
 .muted {
   opacity: 0.6;
   font-size: var(--fz-s);
+}
+
+// The mindful voice at hint size: pair with a size class (e.g. .txtSmaller),
+// mirroring how .sun-instructions-line composes displayVoice onto .txtSmaller
+// for the intervention sun-drag hints. Voice only - size stays with the class.
+.hintVoice {
+  @include displayVoice;
 }
 
 .dashboardCardPreviews {
