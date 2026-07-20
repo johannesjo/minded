@@ -5,7 +5,7 @@ const readSource = (relativePath: string): string =>
   readFileSync(resolve(process.cwd(), relativePath), "utf8");
 
 describe("the live Android wind-down keeps one continuous sun", () => {
-  it("routes bedtime through the standard interaction instead of the legacy mini-app", () => {
+  it("keeps the WebView entry on the standard interaction instead of the legacy mini-app", () => {
     const routes = readSource("src/shared/RouteCmp.tsx");
     const androidInteraction = readSource(
       "src/android/interaction/InteractionAndroid.tsx",
@@ -27,19 +27,21 @@ describe("the live Android wind-down keeps one continuous sun", () => {
       "src/shared/components/interaction/InteractionModeSwitch.tsx",
     );
 
-    // Count rendered JSX nodes, not explanatory comments that mention `<Sun>`.
-    expect(interaction.match(/^\s*<Sun\s*$/gm)).toHaveLength(1);
+    const executableInteraction = interaction
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(executableInteraction.match(/<Sun\b/g)).toHaveLength(1);
     expect(interaction).toMatch(
       /getIsSunInFlow\(\)\s*&&\s*!props\.useShellSun[\s\S]*?<Sun\b/,
     );
     expect(interaction).toMatch(
       /getMode\(\)\s*===\s*"WIND_DOWN_SETTLE"[\s\S]*?settleForBedtime\(props\.onDragComplete\)/,
     );
-    expect(modeSwitch).toMatch(
-      /props\.mode\s*===\s*"WIND_DOWN_SETTLE"[\s\S]*?props\.isBedtimeGoodnight/,
+    const settleBranch = modeSwitch.match(
+      /<Match when=\{props\.mode === "WIND_DOWN_SETTLE"\}>([\s\S]*?)<\/Match>/,
     );
-    expect(modeSwitch).not.toMatch(
-      /props\.mode\s*===\s*"WIND_DOWN_SETTLE"[\s\S]*?<Sun\b/,
-    );
+    expect(settleBranch).not.toBeNull();
+    expect(settleBranch![1]).toContain("props.isBedtimeGoodnight");
+    expect(settleBranch![1]).not.toMatch(/<Sun\b/);
   });
 });

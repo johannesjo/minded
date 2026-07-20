@@ -28,8 +28,8 @@ val DarkGradColor2 = Color(0xFF0A2860)
 val DarkGradColor3 = Color(0xFF49313B)
 
 // Sky-family accents for native surfaces: the pause dim leans into the
-// deep-night sky instead of flat black, and the toast glow is the warm amber
-// of the dark-mode --btn-box-shadow, rgba(255, 178, 79, 0.45).
+// deep-night sky instead of flat black, and the toast glow echoes the sun's
+// warm amber accent.
 val NightSkyDim = DarkGradColor1
 val WarmAmberGlow = Color(0x73FFB24F)
 

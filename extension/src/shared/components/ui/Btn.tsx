@@ -62,8 +62,8 @@ export type BtnProps = TextBtnProps | IconBtnProps | ToggleBtnProps;
 
 // Relaxed view used only inside this file so we can read every modifier without
 // fighting the discriminated union. The public `BtnProps` is what keeps call
-// sites honest - e.g. `plain` is accepted only on `variant="icon"`, and there
-// is no way to stack arbitrary one-off looks.
+// sites honest - e.g. `voice` is accepted only on the text variant, and there is
+// no way to stack arbitrary one-off looks.
 type InternalBtnProps = CommonBtnProps & {
   variant?: Variant;
   outline?: boolean;

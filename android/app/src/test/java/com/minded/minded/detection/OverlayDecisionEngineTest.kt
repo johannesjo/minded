@@ -84,6 +84,35 @@ class OverlayDecisionEngineTest {
     }
 
     @Test
+    fun `wind down uses the standard intervention when no session is active`() {
+        val state = createState(
+            blockedApps = blockedApps,
+            isWindDownActive = true,
+            appSessionEndTime = null,
+            activeTimerEndTime = null
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowIntervention, decision)
+    }
+
+    @Test
+    fun `wind down keeps the little sun when a session is active`() {
+        val currentTime = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = currentTime,
+            isWindDownActive = true,
+            appSessionEndTime = currentTime + 60000
+        )
+
+        val decision = engine.decide(youtubePackage, state)
+
+        assertEquals(OverlayDecision.ShowLittleSun, decision)
+    }
+
+    @Test
     fun `should show little sun for blocked app with active session`() {
         val currentTime = System.currentTimeMillis()
         val state = createState(
