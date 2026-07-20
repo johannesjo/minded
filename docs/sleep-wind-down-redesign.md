@@ -28,12 +28,18 @@ Two behavioural calls from use supersede the v3 text below:
   triple-tapped it away* read as nagging - the one thing the settle must never
   do. So the **explicit triple-tap skip records tonight's night id** (via
   `markBedtimeSettled` → `sleepWindDownDismissedNightId`), and the engine then
-  stops serving the *normal-tier* settle for the rest of that night; a later
-  reopen gets the ordinary cascade. This is a narrower guard than v3's
-  once-per-night-on-show: it arms only on a conscious skip, never on show, and
-  never on the passive/settle paths. **Quiet-the-night stays scoped** - a
-  genuinely strong late-night pull still reaches the wordless settle via the
-  strong branch (which keys on `isBedtimeIntervention`, not the guard). The
+  stops serving the *normal-tier* settle for the rest of that night. A later
+  reopen stays **wordless**: the dismissed moon steps aside for the calm
+  no-typing `NOTICE` anchor (`bedtime_settled_notice`), never the same moon
+  again and never the verbal reason/alternative/question cascade below - a
+  survey at the moment of least capacity fails the 90% bar. (The whole
+  normal-tier bedtime branch now returns settle-or-NOTICE, so *every* everyday
+  bedtime interrupt is wordless whichever way it resolves.) This is a narrower
+  guard than v3's once-per-night-on-show: it arms only on a conscious skip,
+  never on show, and never on the passive/settle paths. **Quiet-the-night stays
+  scoped** - a genuinely strong late-night pull still reaches the wordless
+  settle via the strong branch (which keys on `isBedtimeIntervention`, not the
+  guard). The
   `sleepWindDownDismissedNightId` field is therefore live again (written by the
   skip, read by `canServeBedtimeSettle`); it stays out of the native cleanup
   below.

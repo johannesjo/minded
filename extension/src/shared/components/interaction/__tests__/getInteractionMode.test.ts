@@ -815,16 +815,53 @@ describe("getInteractionMode", () => {
 
     it("quiets the settle for the rest of the night after an explicit skip", () => {
       // The triple-tap skip records tonight's night id; the settle then stops
-      // returning this night (it read as nagging). It falls through to the
-      // ordinary cascade instead of the identical wordless moon.
+      // returning this night (it read as nagging). It steps aside for the calm
+      // wordless NOTICE anchor - never the dismissed moon, and never a verbal
+      // prompt at bedtime (the whole point of staying above the cascade).
       expect(
         atBedtime(
           baseSyncData({
             cfg: bedtimeCfg(),
             sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
           }),
-        ).mode,
-      ).not.toBe("WIND_DOWN_SETTLE");
+        ),
+      ).toEqual({
+        mode: "NOTICE",
+        reason: "bedtime_settled_notice",
+        frictionLevel: "normal",
+      });
+    });
+
+    it("keeps the post-skip bedtime interrupt wordless even with data that would go verbal", () => {
+      // Answers + a saved reason + an expired intent would drive the daytime
+      // cascade to a verbal SHOW_REASON/QUESTION; at bedtime, post-skip, it must
+      // still land on the wordless NOTICE, never a survey at least capacity.
+      expect(
+        atBedtime(
+          baseSyncData({
+            cfg: bedtimeCfg(),
+            sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
+            answers: [
+              answer("1"),
+              answer("2"),
+              answer("r", QuestionCategoryId.WhyReduceBrowsing),
+            ],
+            activeTimer: {
+              endTS: BEDTIME - 1000,
+              durationS: 300,
+              startedTS: BEDTIME - 301000,
+              target: { kind: "host", id: "youtube.com" },
+              platform: "web",
+              intent: { id: "check_one_thing" },
+            },
+          }),
+          { target: { kind: "host", id: "youtube.com" }, platform: "web" },
+        ),
+      ).toEqual({
+        mode: "NOTICE",
+        reason: "bedtime_settled_notice",
+        frictionLevel: "normal",
+      });
     });
 
     it("ignores a stale dismissed-night id from a previous night", () => {
@@ -947,13 +984,10 @@ describe("getInteractionMode", () => {
           ),
         },
       };
-      const decision = decide(
-        baseSyncData({ cfg: earlyCfg, energyLvlTS: 1 }),
-        {
-          clock: () => new Date("2026-05-11T18:30:00").getTime(),
-          isMainView: false,
-        },
-      );
+      const decision = decide(baseSyncData({ cfg: earlyCfg, energyLvlTS: 1 }), {
+        clock: () => new Date("2026-05-11T18:30:00").getTime(),
+        isMainView: false,
+      });
       expect(decision.mode).toBe("WIND_DOWN_SETTLE");
     });
 
@@ -971,7 +1005,7 @@ describe("getInteractionMode", () => {
     it("keeps a post-midnight skip quiet for the rest of that night", () => {
       // The night id for 02:00 within a 22:00–07:00 window that opened the prior
       // evening is still that evening's date, so a skip recorded earlier in the
-      // night keeps suppressing the settle across midnight.
+      // night keeps the settle quieted across midnight - still wordless (NOTICE).
       expect(
         decide(
           baseSyncData({
@@ -982,8 +1016,12 @@ describe("getInteractionMode", () => {
             clock: () => new Date("2026-05-12T02:00:00").getTime(),
             isMainView: false,
           },
-        ).mode,
-      ).not.toBe("WIND_DOWN_SETTLE");
+        ),
+      ).toEqual({
+        mode: "NOTICE",
+        reason: "bedtime_settled_notice",
+        frictionLevel: "normal",
+      });
     });
 
     it("is exempt from anti-repeat - repeats the settle within the same night", () => {
