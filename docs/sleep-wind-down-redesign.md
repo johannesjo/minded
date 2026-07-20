@@ -9,6 +9,26 @@ reviews across two rounds (philosophy-fit, interaction-mechanics ×2,
 sleep/behavioral, and a minimalism critic) and the product decisions they
 surfaced.
 
+## Amendment (v4, 2026-07-20): gestures + guard
+
+Two behavioural calls from use supersede the v3 text below:
+
+- **Every drag/fling settles + locks; only the triple-tap skips.** v3 made the
+  fling a skip (hand off to the minded app, no lock). In practice that "goes to
+  the app" felt wrong at bedtime. Now *any* deliberate drag or fling - any
+  direction - eases the phone into the dark (the "Sleep well" beat →
+  `closeCurrentApp()` + `lockScreen()`), the same as the drag-down. The
+  discoverable **triple-tap is the one escape that stays in the current app**
+  (`props.onSkip` - the companion little sun returns; no lock, no app switch).
+- **The once-per-night guard is armed on the settle, not on show.** v3 set it on
+  first appearance, so any showing consumed the night. Now it is set only when
+  the user actually settles (drag/fling → lock); a **triple-tap skip leaves the
+  settle available again later the same night.** So "once per night" means "once
+  you've settled," not "once seen."
+
+Where the sections below say *fling = skip* or *guard set on first appearance*,
+read them through this amendment.
+
 ## Implementation status
 
 **Done (built + tested):**

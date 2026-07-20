@@ -522,11 +522,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     close();
   };
 
-  // The bedtime settle's deliberate drag-down (never a fling): rest a wordless
-  // "Sleep well" beat on screen, then run the real close - on Android that
-  // closes the app and locks the screen, so the phone eases into the dark
-  // rather than snapping to the OS lock. A fling still takes the plain skip
-  // path (runTerminalOutcome → onFlingAway) with no goodnight and no lock.
+  // Mark tonight settled so the engine won't serve a second routine settle this
+  // night. Armed only from a real settle (a drag or fling that eases the phone
+  // into the dark) - never on show, and never on a triple-tap skip - so a skip
+  // leaves the settle available again later the same night. Same night id the
+  // engine compares against; fire-and-forget so it never delays the goodnight.
+  const armBedtimeSettledGuard = () => {
+    const syncData = getSyncDataI();
+    const bedtimeCfg = syncData?.cfg.sleepWindDown;
+    const nightId = bedtimeCfg ? resolveNightId(bedtimeCfg, new Date()) : null;
+    if (nightId) {
+      void markBedtimeSettled(nightId).catch((error: unknown) =>
+        console.error("Failed to record bedtime settle", error),
+      );
+    }
+  };
+
+  // The bedtime settle - a deliberate drag OR fling in any direction (both ease
+  // the phone into the dark; only the triple-tap skips): rest a wordless "Sleep
+  // well" beat on screen, then run the real close - on Android that closes the
+  // app and locks the screen, so the phone eases into the dark rather than
+  // snapping to the OS lock. Arms the once-per-night guard here, on the actual
+  // settle, so a skip doesn't consume the night (see armBedtimeSettledGuard).
   //
   // Fired from handleStartBackgroundAnimation at the drag's *release* (not from
   // the terminal onDragComplete, which lands only after the sun's ~3s off-screen
@@ -544,6 +561,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const settleForBedtime = (close: () => void) => {
     if (hasBedtimeSettled) return;
     hasBedtimeSettled = true;
+    armBedtimeSettledGuard();
     setIsBedtimeGoodnight(true);
     setInteractionOpacity(1);
     bedtimeSettleTimeout = window.setTimeout(() => {
@@ -553,12 +571,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }, GOODNIGHT_MS);
   };
 
-  // A fling is the plain skip - but never once a settle has begun. A brisk
-  // downward drag classifies as a *fling* (velocity), yet direction is still
-  // "down" so it routes through the settle at release
-  // (handleStartBackgroundAnimation). The fling's own terminal callback then
-  // lands ~3s later; without this guard it would fire a second close on top of
-  // the settle's (double closeCurrentApp, after the screen already locked).
+  // The daytime fling skip - hands off to the app-switch escape (onFlingAway).
+  // At bedtime this never runs: handleStartBackgroundAnimation has already routed
+  // the fling through settleForBedtime at release (settling + locking, like the
+  // drag-down), which sets `hasBedtimeSettled` and so suppresses this terminal -
+  // both to keep the fling from bouncing the user to the app and to stop it
+  // firing a second close on top of the settle's (double closeCurrentApp).
   const runFlingSkip = () => {
     if (hasBedtimeSettled) return;
     runTerminalOutcome(props.onFlingAway);
@@ -1050,15 +1068,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       return;
     }
 
-    // Bedtime settle: the deliberate drag-down is a goodnight, not a let-go.
-    // Don't fade the content out and don't wait on the ~3s off-screen glide -
-    // show the wordless "Sleep well" beat now and close+lock after it. (The
-    // moon still drifts down for the fraction of a second before the close.)
-    if (
-      !props.isFromDashboard &&
-      direction === "down" &&
-      getMode() === "WIND_DOWN_SETTLE"
-    ) {
+    // Bedtime settle: a deliberate drag or fling in any direction is a goodnight,
+    // not a let-go and not an escape - ease the phone into the dark rather than
+    // hand off to the minded app (the daytime fling) or open the let-go question
+    // (the dashboard). The only way out that stays in the current app is the
+    // triple-tap skip. Don't fade the content out and don't wait on the ~3s
+    // off-screen glide - show the wordless "Sleep well" beat now and close+lock
+    // after it. (The moon still drifts for a fraction of a second before close.)
+    if (!props.isFromDashboard && getMode() === "WIND_DOWN_SETTLE") {
       settleForBedtime(props.onDragComplete);
       return;
     }
@@ -1397,21 +1414,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             (error: unknown) =>
               console.error("Failed to record interaction mode", error),
           );
-          // Arm the once-per-night guard the moment the settle is shown, so a
-          // fast re-open the same night falls through to the ordinary cascade
-          // instead of a second settle. Uses the same night id the engine
-          // compared against; fire-and-forget so it never delays the pause.
-          if (modeDecision.mode === "WIND_DOWN_SETTLE") {
-            const bedtimeCfg = syncData.cfg.sleepWindDown;
-            const nightId = bedtimeCfg
-              ? resolveNightId(bedtimeCfg, new Date())
-              : null;
-            if (nightId) {
-              void markBedtimeSettled(nightId).catch((error: unknown) =>
-                console.error("Failed to record bedtime settle", error),
-              );
-            }
-          }
+          // The once-per-night guard is armed on the actual settle (drag/fling →
+          // lock), not here on show - so a triple-tap skip leaves the settle
+          // available again later the same night. See armBedtimeSettledGuard.
         }
 
         contentReadyTimeout = window.setTimeout(() => {
