@@ -1,17 +1,24 @@
 .stepper {
-  --spacing-medium: 16px;
-  --step-size: 52px;
+  // Five onboarding dots must still fit a 320px viewport. Let the circles,
+  // connectors and edge breathing room contract together, then settle at the
+  // existing desktop dimensions once space is available.
+  --spacing-medium: clamp(8px, 3vw, 16px);
+  --step-size: clamp(44px, 13vw, 52px);
   // Same base color as active/done; the inactive look comes from the
   // step's reduced opacity, not a different fill.
   --color-inactive: var(--btn-bg-selected);
   --color-active: var(--btn-bg-selected);
   --line-height: 3px;
-  --line-width: 32px;
+  --line-width: clamp(8px, 4vw, 32px);
   --color-line: var(--btn-bg);
 
   display: flex;
+  justify-content: center;
+  align-self: center;
+  width: fit-content;
+  max-width: 100%;
   padding: var(--spacing-medium);
-  margin-top: auto;
+  margin: auto auto 0;
 
   &.isNoGoBack .step {
     cursor: default;
@@ -24,6 +31,7 @@
   color: var(--c-fg);
   width: var(--step-size);
   height: var(--step-size);
+  flex: 0 0 var(--step-size);
   background-color: var(--color-inactive);
   border-radius: 50%;
   display: flex;

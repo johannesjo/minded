@@ -25,7 +25,11 @@ import {
   getSunSize,
   hasVerticalCompletionIntent,
   getSunReleaseAction,
+  isCompanionReanchorSettle,
+  isSunActivationKey,
   shouldAcceptSunPointerStart,
+  shouldResetTerminalStateForSettle,
+  shouldSnapCompanionReanchor,
   calculateDragColorTemperature,
   type VelocitySample,
   type PhysicsState,
@@ -87,6 +91,8 @@ interface SunProps {
   isHovered?: boolean;
   variant?: "sun" | "moon";
   completionDirection?: "any" | "down";
+  /** Makes an otherwise gesture-driven disc operable with Enter or Space. */
+  "aria-label"?: string;
   /**
    * Post-interaction resting state. When set, the sun glides to a viewport
    * anchor and holds there (optionally breathing) instead of being hidden -
@@ -126,6 +132,8 @@ export interface SunSettle {
    * (--companion-bar-center-y) without drifting on tall viewports.
    */
   anchorYPxFromBottom?: number;
+  /** Identifies the app-shell companion rest; onboarding hero rests stay false. */
+  isCompanion?: boolean;
   /**
    * Fixed vertical resting point in px from the top edge. Overrides anchorYRatio
    * (but not anchorYPxFromBottom). Provided as the mirror of anchorYPxFromBottom
@@ -213,6 +221,38 @@ export const Sun: Component<SunProps> = (props) => {
   };
 
   let tapTimer: number | null = null;
+
+  const handleTap = () => {
+    if (
+      !isTapEnabled() ||
+      !shouldAcceptSunPointerStart({
+        isCompletionStarted: getIsCompletionStarted(),
+        isSettlingIntoRole: getIsSettlingIntoRole(),
+      })
+    ) {
+      return;
+    }
+
+    const currentTapCount = getTapCount() + 1;
+    setTapCount(currentTapCount);
+
+    if (tapTimer) {
+      clearTimeout(tapTimer);
+      tapTimer = null;
+    }
+
+    const threshold = props.tapThreshold || 5;
+
+    if (currentTapCount >= threshold) {
+      props.onSkip();
+      setTapCount(0);
+    } else {
+      tapTimer = window.setTimeout(() => {
+        setTapCount(0);
+      }, 1500);
+    }
+  };
+
   let startPos = { x: 0, y: 0 };
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
@@ -339,8 +379,6 @@ export const Sun: Component<SunProps> = (props) => {
   // The companion is the only settle anchored by a fixed bottom px with no fixed
   // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
   // departing, top-px interactive). Used to give its glides the slower duration.
-  const isCompanionSettle = (settle?: SunSettle | null): boolean =>
-    settle?.anchorYPxFromBottom != null && settle.anchorXPx == null;
   const BREATH_PEAK_BONUS = 0.22; // inhale grows the rest scale by this much
   const DEFAULT_ANCHOR_Y_RATIO = 0.4;
   const DEFAULT_REST_SCALE = 0.82;
@@ -630,9 +668,22 @@ export const Sun: Component<SunProps> = (props) => {
     // the normal glide, which re-targets its landing live rather than being cut
     // short by a snap.
     if (
-      isCompanionSettle(settle) &&
-      isCompanionSettle(fromSettle) &&
-      isCompanionSettle(restingSettle)
+      fromSettle &&
+      restingSettle &&
+      shouldSnapCompanionReanchor(
+        {
+          isCompanion: isCompanionReanchorSettle(settle),
+          restScale: restScaleForSettle(settle),
+        },
+        {
+          isCompanion: isCompanionReanchorSettle(fromSettle),
+          restScale: restScaleForSettle(fromSettle),
+        },
+        {
+          isCompanion: isCompanionReanchorSettle(restingSettle),
+          restScale: restScaleForSettle(restingSettle),
+        },
+      )
     ) {
       cancelSettleFrame();
       const reanchorTarget = getAnchorOffset(settle);
@@ -668,17 +719,19 @@ export const Sun: Component<SunProps> = (props) => {
     // a glide to the bottom is the cleaner morph and avoids a hard cut. Capture
     // this BEFORE resetTerminalStateForReuse clears the completion flag.
     const wasFlungOffScreen =
-      isCompanionSettle(settle) &&
+      shouldResetTerminalStateForSettle(settle) &&
       getIsCompletionStarted() &&
       !isDiscCenterOnScreen();
-    if (isCompanionSettle(settle)) resetTerminalStateForReuse();
+    if (shouldResetTerminalStateForSettle(settle)) {
+      resetTerminalStateForReuse();
+    }
     const restScale = restScaleForSettle(settle);
     const target = getAnchorOffset(settle);
     // This anchor is now the disc's rest, so a drag release snaps back here
     // (the interactive shell sun rests on its placeholder, not the base).
     setRestOffset(target);
     // The rise out of the companion (dashboard → intervention) glides slower.
-    const duration = isCompanionSettle(fromSettle)
+    const duration = shouldResetTerminalStateForSettle(fromSettle)
       ? COMPANION_GLIDE_MS
       : GLIDE_DURATION_MS;
 
@@ -750,7 +803,7 @@ export const Sun: Component<SunProps> = (props) => {
     setIsSettlingIntoRole(true);
     // Returns the disc to its untransformed base (e.g. the plain interactive sun
     // with no placeholder). A return from the companion keeps the slower glide.
-    const duration = isCompanionSettle(fromSettle)
+    const duration = shouldResetTerminalStateForSettle(fromSettle)
       ? COMPANION_GLIDE_MS
       : EXIT_GLIDE_MS;
     // The base becomes the rest again.
@@ -827,8 +880,7 @@ export const Sun: Component<SunProps> = (props) => {
       const prevBase = lastBase;
       lastBase = base;
       const isBaseStable =
-        !!prevBase &&
-        Math.hypot(base.x - prevBase.x, base.y - prevBase.y) < 1;
+        !!prevBase && Math.hypot(base.x - prevBase.x, base.y - prevBase.y) < 1;
       const target = getAnchorOffset(settle);
       const current = getDragOffset();
       const drift = Math.hypot(target.x - current.x, target.y - current.y);
@@ -1128,31 +1180,6 @@ export const Sun: Component<SunProps> = (props) => {
         // off-screen completion would fight and override it. Skip it then.
         if (!getIsSettlingIntoRole())
           animateToCompletion(releaseAction.direction);
-      }
-    };
-
-    const handleTap = () => {
-      // Prevent interactions once completion animation has started
-      if (getIsCompletionStarted()) return;
-      if (!isTapEnabled()) return;
-
-      const currentTapCount = getTapCount() + 1;
-      setTapCount(currentTapCount);
-
-      if (tapTimer) {
-        clearTimeout(tapTimer);
-        tapTimer = null;
-      }
-
-      const threshold = props.tapThreshold || 5;
-
-      if (currentTapCount >= threshold) {
-        props.onSkip();
-        setTapCount(0);
-      } else {
-        tapTimer = window.setTimeout(() => {
-          setTapCount(0);
-        }, 1500);
       }
     };
 
@@ -1506,6 +1533,14 @@ export const Sun: Component<SunProps> = (props) => {
     <div
       ref={sunEl!}
       class="minded-sun"
+      role={props["aria-label"] ? "button" : undefined}
+      aria-label={props["aria-label"]}
+      tabIndex={props["aria-label"] ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (!props["aria-label"] || !isSunActivationKey(event.key)) return;
+        event.preventDefault();
+        handleTap();
+      }}
       classList={{
         dragging: getIsDragging(),
         moon: props.variant === "moon",
@@ -1556,19 +1591,21 @@ export const Sun: Component<SunProps> = (props) => {
     >
       {isTapEnabled() && (
         <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
-          {Array.from({ length: props.tapThreshold || 5 }).map((_, i) => (
-            <div
-              class="tap-dot"
-              classList={{ filled: i + 1 <= getTapCount() }}
-            />
-          ))}
+          <Index each={Array.from({ length: props.tapThreshold || 5 })}>
+            {(_, i) => (
+              <div
+                class="tap-dot"
+                classList={{ filled: i + 1 <= getTapCount() }}
+              />
+            )}
+          </Index>
         </div>
       )}
       <Show when={orbitToRender()}>
         {(orbit) => (
           // A faint crown of dots spread across the top arc (avoiding the bottom,
           // where the disc rests on the bar). Children of the disc, so they ride
-          // its scale/float and the ring stays just outside the edge at any size.
+          // its scale and the ring stays just outside the edge at any size.
           <div
             class="sun-orbit"
             classList={{ "is-leaving": getOrbitLeaving() }}

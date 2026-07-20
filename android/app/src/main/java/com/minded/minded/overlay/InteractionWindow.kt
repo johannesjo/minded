@@ -11,8 +11,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
@@ -21,16 +27,141 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.minded.minded.R
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.SunDisc
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
+import com.minded.minded.util.isDarkModeNow
 import kotlinx.coroutines.delay
+import org.json.JSONObject
+import org.json.JSONTokener
+import kotlin.math.abs
 
+internal data class ArrivalSunTarget(
+    val centerXFraction: Float,
+    val centerYFraction: Float,
+    val widthFraction: Float,
+)
+
+private const val ARRIVAL_SUN_TARGET_STABILITY_TOLERANCE = 0.005f
+private const val ARRIVAL_SUN_TARGET_REQUIRED_MEASUREMENTS = 2
+
+internal data class ArrivalSunTargetStability(
+    val target: ArrivalSunTarget? = null,
+    val consecutiveMeasurements: Int = 0,
+) {
+    val isStable: Boolean
+        get() = target != null &&
+            consecutiveMeasurements >= ARRIVAL_SUN_TARGET_REQUIRED_MEASUREMENTS
+}
+
+/**
+ * Advance the target only when DOM measurements settle near one another. A
+ * rotation, relayout, or invalid sample starts a fresh sequence instead of
+ * committing a coordinate captured mid-motion.
+ */
+internal fun advanceArrivalSunTargetStability(
+    previous: ArrivalSunTargetStability,
+    measurement: ArrivalSunTarget?,
+): ArrivalSunTargetStability {
+    if (measurement == null) return ArrivalSunTargetStability()
+
+    val previousTarget = previous.target
+    val isNearPrevious = previousTarget != null &&
+        abs(previousTarget.centerXFraction - measurement.centerXFraction) <=
+        ARRIVAL_SUN_TARGET_STABILITY_TOLERANCE &&
+        abs(previousTarget.centerYFraction - measurement.centerYFraction) <=
+        ARRIVAL_SUN_TARGET_STABILITY_TOLERANCE &&
+        abs(previousTarget.widthFraction - measurement.widthFraction) <=
+        ARRIVAL_SUN_TARGET_STABILITY_TOLERANCE
+
+    return ArrivalSunTargetStability(
+        target = measurement,
+        consecutiveMeasurements = if (isNearPrevious) {
+            previous.consecutiveMeasurements + 1
+        } else {
+            1
+        },
+    )
+}
+
+/** Parse either shape Android's evaluateJavascript callback can return. */
+internal fun parseArrivalSunTarget(rawValue: String): ArrivalSunTarget? {
+    val value = runCatching { JSONTokener(rawValue).nextValue() }.getOrNull()
+    val targetJson = when (value) {
+        is JSONObject -> value
+        is String -> runCatching { JSONObject(value) }.getOrNull()
+        else -> null
+    } ?: return null
+
+    val centerX = targetJson.optDouble("centerXFraction", Double.NaN)
+    val centerY = targetJson.optDouble("centerYFraction", Double.NaN)
+    val width = targetJson.optDouble("widthFraction", Double.NaN)
+    if (!centerX.isFinite() || !centerY.isFinite() || !width.isFinite()) return null
+    if (centerX !in 0.0..1.0 || centerY !in 0.0..1.0 || width !in 0.0..1.0) return null
+    if (width == 0.0) return null
+
+    return ArrivalSunTarget(
+        centerXFraction = centerX.toFloat(),
+        centerYFraction = centerY.toFloat(),
+        widthFraction = width.toFloat(),
+    )
+}
+
+internal fun shouldDismissFreshArrivalAfterTimeout(target: ArrivalSunTarget?): Boolean =
+    target == null
+
+internal enum class FreshArrivalEscapeStep {
+    NONE,
+    MORPH_TO_LITTLE_SUN,
+    SHOW_LITTLE_SUN,
+}
+
+internal fun resolveFreshArrivalEscapeStep(
+    escapeRequested: Boolean,
+    hasReachedLittleSunTarget: Boolean,
+): FreshArrivalEscapeStep = when {
+    !escapeRequested -> FreshArrivalEscapeStep.NONE
+    hasReachedLittleSunTarget -> FreshArrivalEscapeStep.SHOW_LITTLE_SUN
+    else -> FreshArrivalEscapeStep.MORPH_TO_LITTLE_SUN
+}
+
+internal fun shouldPostSkipInteractionToMainThread(isMainThread: Boolean): Boolean =
+    !isMainThread
+
+internal fun shouldCompleteFreshEscapeHandoff(
+    step: FreshArrivalEscapeStep,
+    placeholderVisible: Boolean,
+    animationRunning: Boolean,
+    windowAvailable: Boolean,
+): Boolean =
+    step == FreshArrivalEscapeStep.MORPH_TO_LITTLE_SUN &&
+        placeholderVisible &&
+        !animationRunning &&
+        windowAvailable
+
+internal fun shouldEnableFreshArrivalSunEscape(
+    isCornerArrival: Boolean,
+    isFreshPlaceholderVisible: Boolean,
+    escapeStep: FreshArrivalEscapeStep = FreshArrivalEscapeStep.NONE,
+): Boolean =
+    !isCornerArrival &&
+        isFreshPlaceholderVisible &&
+        escapeStep == FreshArrivalEscapeStep.NONE
 
 class InteractionWindow(
     private val ctrlSvc: OverlayControllerService,
@@ -54,6 +185,29 @@ class InteractionWindow(
         // skipped), fade the native disc out anyway so it can't strand on screen.
         // Comfortably longer than a normal WebView first paint.
         private const val CORNER_PLACEHOLDER_FALLBACK_MS = 1500L
+
+        // A fresh intervention starts with the native sun centred in the native
+        // sky. Once the WebView has painted, glide that disc to the exact DOM sun
+        // bounds, then cross-fade the two surfaces at the shared position.
+        private const val FRESH_SUN_MORPH_MS = 320
+        private const val FRESH_SUN_CROSSFADE_MS = 220L
+        private const val FRESH_ARRIVAL_READY_TIMEOUT_MS = 2500L
+        private const val FRESH_TARGET_RETRY_MS = 80L
+        private const val FRESH_TARGET_MAX_ATTEMPTS = 8
+
+        private val MEASURE_WEB_SUN_JAVASCRIPT = """
+            (function() {
+              const sun = document.querySelector('.minded-sun');
+              if (!sun || !window.innerWidth || !window.innerHeight) return null;
+              const rect = sun.getBoundingClientRect();
+              if (!rect.width) return null;
+              return {
+                centerXFraction: (rect.left + rect.width / 2) / window.innerWidth,
+                centerYFraction: (rect.top + rect.height / 2) / window.innerHeight,
+                widthFraction: rect.width / window.innerWidth
+              };
+            })();
+        """.trimIndent()
     }
 
     override val logTag = javaClass.simpleName
@@ -61,8 +215,8 @@ class InteractionWindow(
     // Appear as an instantly-opaque shield: the interaction overlay covers the
     // blocked app the user just opened, so it must never be semi-transparent
     // while fading in (which would let a tempting post show through). The smooth
-    // appearance happens in the web content (#minded-6622 / .interaction-content
-    // fades) that plays on top of this already-solid dark shield.
+    // appearance happens in the native sky + sun and then the web content
+    // (#minded-6622 / .interaction-content) that fades over that opaque shield.
     override val fadeInDurationMs: Long = 0L
 
     private var webViewRef: WebView? = null
@@ -76,26 +230,50 @@ class InteractionWindow(
     // plain fresh intervention), so it never goes stale between shows.
     var morphInFromCorner: Boolean = false
 
+    // Snapshot the requested mode only after this window has accepted a show.
+    // The controller can update morphInFromCorner before a duplicate show call;
+    // that rejected request must not change callbacks belonging to the live view.
+    private var activeMorphInFromCorner: Boolean = false
+
     // Reverse-morph hand-off: while a freshly-shown morph interaction loads its
-    // WebView (an opaque dark shield until the web paints), a native sun disc
+    // WebView over the opaque native sky, a native sun disc
     // holds the Little Sun's resting corner so that spot is never empty before the
     // web sun appears there. Set true for a morph show (in showWindow), cross-faded
     // out when the web signals its sun has painted (onArrivingSunReady) or by the
     // fallback above - so it can never strand on screen.
     private val showCornerPlaceholder = mutableStateOf(false)
 
+    // Fresh-intervention hand-off. Unlike the corner case there is no prior
+    // Little Sun to continue from, so a full-size native disc appears centred
+    // immediately, then moves to the measured WebView sun before cross-fading.
+    private val showFreshPlaceholder = mutableStateOf(false)
+    private val freshSunTarget = mutableStateOf<ArrivalSunTarget?>(null)
+    private val freshEscapeStep = mutableStateOf(FreshArrivalEscapeStep.NONE)
+    private var freshTargetMeasurementAttempts = 0
+    private var freshTargetStability = ArrivalSunTargetStability()
 
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
     override fun Cmp() {
         val win = this;
+        val isCornerArrival = activeMorphInFromCorner
         val questionId = sharedOverlayViewModel.sharedData.value.lastQuestionForPrompt?.id;
         Log.v(logTag, "questionId: $questionId")
 
         val webViewState = remember { mutableStateOf<WebView?>(null) }
         ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .paint(
+                    painterResource(
+                        if (isDarkModeNow()) R.drawable.loading_sky_dark
+                        else R.drawable.loading_sky_light
+                    ),
+                    contentScale = ContentScale.FillBounds,
+                )
+        ) {
         AndroidView(
             modifier = Modifier.fillMaxSize().imePadding(),
             factory = { context ->
@@ -118,16 +296,23 @@ class InteractionWindow(
                 settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
                 this.focusable = focusable
                 
-                // Initially set a dark background to prevent white flash
-                this.setBackgroundColor(0xFF1a1a1a.toInt())
+                // Stay transparent over the native loading sky. That sky is the
+                // instantly-opaque shield, so loading never exposes either the
+                // blocked app or the WebView's default white surface.
+                this.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                // A fresh arrival remains behind the native disc until its first
+                // painted sun has been measured and the native morph reaches it.
+                // Corner arrivals already have their own continuous web morph.
+                alpha = if (isCornerArrival) 1f else 0f
+                isEnabled = isCornerArrival
 
                 // Deliberately do NOT force LAYER_TYPE_HARDWARE here: a WebView is
                 // already hardware-accelerated at the window level, and forcing it
                 // onto its own hardware layer inside a TYPE_APPLICATION_OVERLAY +
                 // translucent window makes a freshly-created overlay WebView often
-                // never composite its first frame - leaving the user on the opaque
-                // dark shield (the "black screen on first open, clears on reopen"
-                // reports). Let the WebView use the default layer so the first frame
+                // never composite its first frame - leaving the user on the native
+                // backstop (historically the "black screen on first open, clears on
+                // reopen" reports). Let the WebView use the default layer so the first frame
                 // paints. We also pump invalidate()s after load (see pumpFirstFrame /
                 // onPageFinished) to force that first composite without a tap; only
                 // reach for a hardware layer if first-paint flakiness still remains.
@@ -136,10 +321,7 @@ class InteractionWindow(
                 this.webViewClient = object : android.webkit.WebViewClient() {
                     override fun onPageStarted(view: android.webkit.WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                         super.onPageStarted(view, url, favicon)
-                        // Delay setting transparent background to ensure CSS is loaded
-                        view?.postDelayed({
-                            view.setBackgroundColor(0x00000000)
-                        }, 100)
+                        view?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
                     }
 
                     // Guarantee the first frame composites without needing a tap.
@@ -156,14 +338,25 @@ class InteractionWindow(
                     override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
                         super.onPageFinished(view, url)
                         nudgeWindowAlpha()
-                        view?.let { pumpFirstFrame(it) }
+                        view?.let { webView ->
+                            pumpFirstFrame(webView)
+                            if (!isCornerArrival) {
+                                webView.postVisualStateCallback(
+                                    SystemClock.uptimeMillis(),
+                                    object : WebView.VisualStateCallback() {
+                                        override fun onComplete(requestId: Long) {
+                                            webView.post { measureFreshWebSun(webView) }
+                                        }
+                                    },
+                                )
+                            }
+                        }
                     }
 
-                    // Diagnostics for the "stuck on a black screen" reports: the web
-                    // layer goes transparent ~100ms after load, so if it never paints
-                    // the dark native shield is what the user sees. A main-frame load
-                    // error means the interaction app never booted at all - log it so a
-                    // logcat from a repro tells us this is the failure mode.
+                    // Diagnostics for first-paint failures: if the web layer never
+                    // paints, the native sky remains visible. A main-frame load error
+                    // means the interaction app never booted at all - log it so a
+                    // logcat from a repro identifies that failure mode.
                     override fun onReceivedError(
                         view: android.webkit.WebView?,
                         request: android.webkit.WebResourceRequest?,
@@ -175,6 +368,7 @@ class InteractionWindow(
                                 logTag,
                                 "onReceivedError main-frame: code=${error?.errorCode} desc=${error?.description} url=${request.url}",
                             )
+                            hideFailedWebViewOnMainThread(view)
                         }
                     }
 
@@ -182,8 +376,8 @@ class InteractionWindow(
                     // a fresh instance - which matches the "clears on reopen" symptom.
                     // Without this override the whole host app process is killed when it
                     // happens; survive it, log whether it crashed vs was reclaimed, and
-                    // tear the window down so the user isn't left staring at a dead black
-                    // overlay (reopening the app yields a fresh interaction).
+                    // tear the window down so the user isn't left on a dead overlay
+                    // (reopening the app yields a fresh interaction).
                     // shortcut: log-and-teardown - auto re-show the intervention here
                     // once a repro confirms this is the cause.
                     override fun onRenderProcessGone(
@@ -194,7 +388,7 @@ class InteractionWindow(
                             logTag,
                             "onRenderProcessGone didCrash=${detail?.didCrash()} priorityAtExit=${detail?.rendererPriorityAtExit()}",
                         )
-                        win.hideWindow()
+                        hideFailedWebViewOnMainThread(view)
                         return true
                     }
                 }
@@ -209,17 +403,21 @@ class InteractionWindow(
                 addJavascriptInterface(jsInterface, "androidMinded")
                 // Query goes before the hash so the existing `#questionId` parsing
                 // on the web side is untouched; the flag drives the reverse morph.
-                val morphQuery = if (win.morphInFromCorner) "?morphInFromCorner=1" else ""
+                val morphQuery = if (isCornerArrival) "?morphInFromCorner=1" else ""
                 loadUrl("file:///android_asset/web/src/android/interaction/index.html$morphQuery#${questionId}")
             }
         })
 
+        if (!isCornerArrival) {
+            FreshArrivalSun()
+        }
+
         // Reverse-morph hand-off: hold a sun disc at the Little Sun's resting
-        // corner over the loading WebView (an opaque shield until the web paints)
+        // corner over the loading WebView and native sky
         // so the corner is never empty before the web sun arrives there. It
         // cross-fades out the moment the web signals (onArrivingSunReady), or by
         // the fallback so it can't strand.
-        if (morphInFromCorner) {
+        if (isCornerArrival) {
             val placeholderAlpha by animateFloatAsState(
                 targetValue = if (showCornerPlaceholder.value) 1f else 0f,
                 label = "cornerPlaceholderAlpha",
@@ -251,6 +449,250 @@ class InteractionWindow(
         }
     }
 
+    @Composable
+    private fun FreshArrivalSun() {
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopStart,
+        ) {
+            val target = freshSunTarget.value
+            val sunTransition = updateTransition(
+                targetState = target,
+                label = "freshArrivalSunTransition",
+            )
+            val centerX by sunTransition.animateDp(
+                transitionSpec = {
+                    tween(FRESH_SUN_MORPH_MS, easing = FastOutSlowInEasing)
+                },
+                label = "freshArrivalSunX",
+            ) { state ->
+                state?.let { maxWidth * it.centerXFraction } ?: maxWidth / 2
+            }
+            val centerY by sunTransition.animateDp(
+                transitionSpec = {
+                    tween(FRESH_SUN_MORPH_MS, easing = FastOutSlowInEasing)
+                },
+                label = "freshArrivalSunY",
+            ) { state ->
+                state?.let { maxHeight * it.centerYFraction } ?: maxHeight / 2
+            }
+            val discSize by sunTransition.animateDp(
+                transitionSpec = {
+                    tween(FRESH_SUN_MORPH_MS, easing = FastOutSlowInEasing)
+                },
+                label = "freshArrivalSunSize",
+            ) { state ->
+                state?.let { maxWidth * it.widthFraction } ?: 80.dp
+            }
+            val placeholderAlpha by animateFloatAsState(
+                targetValue = if (showFreshPlaceholder.value) 1f else 0f,
+                animationSpec = tween(FRESH_SUN_CROSSFADE_MS.toInt()),
+                label = "freshArrivalSunAlpha",
+            )
+
+            val escapeStep = freshEscapeStep.value
+            val animationRunning = sunTransition.isRunning
+            val hasReachedTarget =
+                target != null && sunTransition.currentState == sunTransition.targetState
+            LaunchedEffect(escapeStep, animationRunning, hasReachedTarget) {
+                when {
+                    !hasReachedTarget || animationRunning -> Unit
+                    escapeStep == FreshArrivalEscapeStep.MORPH_TO_LITTLE_SUN ->
+                        finishFreshEscapeHandoff(animationRunning)
+                    escapeStep == FreshArrivalEscapeStep.NONE ->
+                        finishFreshArrivalHandoff()
+                }
+            }
+            LaunchedEffect(Unit) {
+                delay(FRESH_ARRIVAL_READY_TIMEOUT_MS)
+                if (shouldDismissFreshArrivalAfterTimeout(freshSunTarget.value)) {
+                    // A loaded document is not proof that Solid mounted. Never
+                    // reveal the disabled, control-free loading sky as though it
+                    // were a ready interaction; dismiss so the user cannot be
+                    // trapped behind a full-screen overlay.
+                    Log.e(
+                        logTag,
+                        "Fresh interaction sun never became ready; dismissing overlay",
+                    )
+                    hideFailedWebViewOnMainThread(webViewRef)
+                }
+            }
+
+            if (placeholderAlpha > 0f) {
+                val glowSize = discSize * 2f
+                val isEscapeEnabled = shouldEnableFreshArrivalSunEscape(
+                    isCornerArrival = activeMorphInFromCorner,
+                    isFreshPlaceholderVisible = showFreshPlaceholder.value,
+                    escapeStep = freshEscapeStep.value,
+                )
+                val escapeModifier = if (isEscapeEnabled) {
+                    Modifier
+                        .clickable(
+                            role = Role.Button,
+                            onClickLabel = "Continue to the app",
+                            onClick = ::escapeFreshArrival,
+                        )
+                        .semantics {
+                            contentDescription = "Sun"
+                        }
+                } else {
+                    Modifier.clearAndSetSemantics { }
+                }
+                Box(
+                    modifier = Modifier
+                        .offset(x = centerX - glowSize / 2, y = centerY - glowSize / 2)
+                        .alpha(placeholderAlpha)
+                        .then(escapeModifier),
+                ) {
+                    SunDisc(glowSize = glowSize, discSize = discSize)
+                }
+            }
+        }
+    }
+
+    private fun measureFreshWebSun(view: WebView) {
+        if (
+            webViewRef !== view ||
+            activeMorphInFromCorner ||
+            !showFreshPlaceholder.value ||
+            freshEscapeStep.value != FreshArrivalEscapeStep.NONE
+        ) return
+        freshTargetMeasurementAttempts += 1
+        view.evaluateJavascript(MEASURE_WEB_SUN_JAVASCRIPT) { rawValue ->
+            if (
+                webViewRef !== view ||
+                activeMorphInFromCorner ||
+                !showFreshPlaceholder.value ||
+                freshEscapeStep.value != FreshArrivalEscapeStep.NONE
+            ) return@evaluateJavascript
+
+            freshTargetStability = advanceArrivalSunTargetStability(
+                freshTargetStability,
+                parseArrivalSunTarget(rawValue),
+            )
+            val stableTarget = freshTargetStability.target
+                ?.takeIf { freshTargetStability.isStable }
+            if (stableTarget != null) {
+                freshSunTarget.value = stableTarget
+            } else if (freshTargetMeasurementAttempts < FRESH_TARGET_MAX_ATTEMPTS) {
+                view.postDelayed({ measureFreshWebSun(view) }, FRESH_TARGET_RETRY_MS)
+            }
+        }
+    }
+
+    private fun finishFreshArrivalHandoff() {
+        if (
+            activeMorphInFromCorner ||
+            !showFreshPlaceholder.value ||
+            freshEscapeStep.value != FreshArrivalEscapeStep.NONE
+        ) return
+        val webView = webViewRef ?: return
+        withWindowUnlessHiding {
+            if (
+                activeMorphInFromCorner ||
+                !showFreshPlaceholder.value ||
+                freshEscapeStep.value != FreshArrivalEscapeStep.NONE
+            ) return@withWindowUnlessHiding
+            showFreshPlaceholder.value = false
+            webView.isEnabled = true
+            webView.animate()
+                .alpha(1f)
+                .setDuration(FRESH_SUN_CROSSFADE_MS)
+                .start()
+        }
+    }
+
+    private fun escapeFreshArrival() {
+        if (
+            !shouldEnableFreshArrivalSunEscape(
+                isCornerArrival = activeMorphInFromCorner,
+                isFreshPlaceholderVisible = showFreshPlaceholder.value,
+                escapeStep = freshEscapeStep.value,
+            )
+        ) return
+
+        freshEscapeStep.value = resolveFreshArrivalEscapeStep(
+            escapeRequested = true,
+            hasReachedLittleSunTarget = false,
+        )
+        freshSunTarget.value = littleSunArrivalTarget()
+    }
+
+    private fun littleSunArrivalTarget(): ArrivalSunTarget {
+        val savedPosition = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
+        val (centerXFraction, centerYFraction) = LittleSunPosition.restingCenterFractions(
+            ctrlSvc,
+            windowManager,
+            savedPosition,
+        )
+        val density = ctrlSvc.resources.displayMetrics.density
+        val discWidthPx = LittleSunPosition.bubbleSizePx(density) / 2f
+        return ArrivalSunTarget(
+            centerXFraction = centerXFraction,
+            centerYFraction = centerYFraction,
+            widthFraction = discWidthPx /
+                LittleSunPosition.displayWidthPx(ctrlSvc, windowManager),
+        )
+    }
+
+    private fun finishFreshEscapeHandoff(animationRunning: Boolean) {
+        withWindowUnlessHiding {
+            if (
+                !shouldCompleteFreshEscapeHandoff(
+                    step = freshEscapeStep.value,
+                    placeholderVisible = showFreshPlaceholder.value,
+                    animationRunning = animationRunning,
+                    windowAvailable = true,
+                )
+            ) return@withWindowUnlessHiding
+
+            // The native disc has reached the real saved Little Sun rest at its
+            // exact size. Cross-fade the two co-located renderers only now.
+            freshEscapeStep.value = resolveFreshArrivalEscapeStep(
+                escapeRequested = true,
+                hasReachedLittleSunTarget = true,
+            )
+            showFreshPlaceholder.value = false
+            skipInteractionToLittleSun()
+        }
+    }
+
+    internal fun skipInteractionToLittleSun() {
+        if (
+            shouldPostSkipInteractionToMainThread(
+                isMainThread = Looper.myLooper() == Looper.getMainLooper(),
+            )
+        ) {
+            Handler(Looper.getMainLooper()).post { skipInteractionToLittleSun() }
+            return
+        }
+
+        OverlayControllerService.showOverlay(
+            ctrlSvc,
+            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY,
+        )
+        hideWindow()
+    }
+
+    private fun hideFailedWebViewOnMainThread(failedView: WebView?) {
+        val expectedView = failedView ?: webViewRef ?: return
+        Handler(Looper.getMainLooper()).post {
+            // A delayed callback from a disposed WebView must not tear down a
+            // newer interaction that has already replaced it.
+            if (webViewRef === expectedView) {
+                hideWindow()
+            }
+        }
+    }
+
+    private fun resetArrivalState() {
+        showCornerPlaceholder.value = false
+        showFreshPlaceholder.value = false
+        freshSunTarget.value = null
+        freshEscapeStep.value = FreshArrivalEscapeStep.NONE
+        freshTargetMeasurementAttempts = 0
+        freshTargetStability = ArrivalSunTargetStability()
+    }
 
     // Run a near-opaque alpha animation on the overlay window root after load.
     // Animating the window's alpha forces the WindowManager to recomposite the
@@ -350,17 +792,37 @@ class InteractionWindow(
     }
 
     override fun showWindow() {
-        // Arm the corner placeholder for a morph show BEFORE super.showWindow()
-        // composes Cmp(), so the disc is in the very first composition (the web
-        // sun won't have loaded yet). Always reassigned, so a non-morph show clears
-        // any leftover from a prior morph.
-        showCornerPlaceholder.value = morphInFromCorner
-        super.showWindow()
-        // Apply system UI visibility flags to the view after it's created
-        @Suppress("DEPRECATION")
-        window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        synchronized(this) {
+            // Do not let a duplicate or in-flight hide rewrite the placeholder /
+            // target state used by the currently visible composition.
+            if (isWindowShown()) return
+
+            activeMorphInFromCorner = morphInFromCorner
+            resetArrivalState()
+            showCornerPlaceholder.value = activeMorphInFromCorner
+            showFreshPlaceholder.value = !activeMorphInFromCorner
+
+            super.showWindow()
+            // CommonWindow may still reject a show while its hide state is being
+            // finalized. Leave no armed placeholder behind when it does.
+            if (!isWindowShown()) {
+                resetArrivalState()
+                return
+            }
+
+            // Match the Compose loading sky before its first draw; this call happens
+            // in the same turn as addView, so even the window root's first frame is
+            // an opaque sky rather than the generic dark CommonWindow backstop.
+            window?.setBackgroundResource(
+                if (isDarkModeNow()) R.drawable.loading_gradient_dark
+                else R.drawable.loading_gradient_light
+            )
+            // Apply system UI visibility flags to the view after it's created
+            @Suppress("DEPRECATION")
+            window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        }
     }
 
     /**
@@ -372,7 +834,9 @@ class InteractionWindow(
      */
     fun onArrivingSunReady() {
         Handler(Looper.getMainLooper()).post {
-            showCornerPlaceholder.value = false
+            if (activeMorphInFromCorner) {
+                showCornerPlaceholder.value = false
+            }
         }
     }
 
@@ -382,8 +846,10 @@ class InteractionWindow(
     }
 
     override fun onWindowRemoved() {
+        webViewRef?.animate()?.cancel()
         webViewRef?.destroy()
         webViewRef = null
+        activeMorphInFromCorner = false
+        resetArrivalState()
     }
 }
-

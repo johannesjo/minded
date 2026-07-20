@@ -39,10 +39,6 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 // @ts-ignore
 import styles from "./OnboardingAndroid.module.scss";
 
-// The entrance animation (standardPageTransitionIn, 1000ms) carries a slight
-// scale, so a spacer measured mid-entrance sits a few px off its resting spot.
-// Re-measure just after it lands; the settle memo tolerates the gap meanwhile.
-const ENTRANCE_ANIMATION_MS = 1100;
 // Two measurements of the same rest can differ by a few px while the entrance
 // is still landing; within this band they're the same target, so the disc
 // never chases sub-visible corrections with full settle glides.
@@ -127,10 +123,18 @@ export const OnboardingAndroid = (props: {
     on(getShownStep, () => {
       measureAnchors(); // the new step's spacer (or its absence) applies at once
       const raf = requestAnimationFrame(measureAnchors);
-      const t = window.setTimeout(measureAnchors, ENTRANCE_ANIMATION_MS);
+      const arrivingStep = contentEl.firstElementChild;
+      // The entrance carries a slight scale, so measure again when the shared
+      // animation actually lands instead of duplicating its duration in JS.
+      const onEntranceEnd = (event: Event) => {
+        if (event.target !== arrivingStep) return;
+        measureAnchors();
+        arrivingStep?.removeEventListener("animationend", onEntranceEnd);
+      };
+      arrivingStep?.addEventListener("animationend", onEntranceEnd);
       onCleanup(() => {
         cancelAnimationFrame(raf);
-        clearTimeout(t);
+        arrivingStep?.removeEventListener("animationend", onEntranceEnd);
       });
     }),
   );

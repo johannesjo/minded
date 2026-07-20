@@ -1,34 +1,112 @@
+$sky-strip: 88px;
+
 .welcomeWrapper {
-  // Fill the viewport and center the active step via auto margins rather than
-  // 50%/translate: when a step is taller than the viewport (long copy, a
-  // growing website list) the content stays scrollable instead of being
-  // clipped off-screen with no way to reach it.
   position: absolute;
   inset: 0;
   display: flex;
-  overflow-y: auto;
-  padding: 32px 16px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+// Content + stepper fade as one surface on the final hand-off; the sun lives
+// in its own fixed layer and remains fully visible while it glides home.
+.chrome {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.isLeaving {
+  pointer-events: none;
+}
+
+.contentWrapper {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  overflow: auto;
 
   > * {
-    margin: auto;
-    min-width: 320px;
     width: 900px;
     max-width: 100%;
+    min-width: 0;
+    margin: auto;
   }
+}
+
+// When the picker scrolls, its copy dissolves before reaching the fixed sky sun
+// instead of sliding visibly underneath the disc.
+.withSkyRest {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent #{$sky-strip * 0.55},
+    #000 $sky-strip,
+    #000 100%
+  );
+}
+
+.step {
+  width: 100%;
+  min-width: 0;
+  padding: 32px 16px 16px;
 
   p {
     text-align: center;
   }
 }
 
-
-.welcome {
-  margin-bottom: 16px;
+// Keep the scrolling website picker clear of the small sun resting in the sky.
+.stepUnderSky {
+  padding-top: $sky-strip;
 }
 
-// Cap the measure so centered body copy doesn't wrap into long, hard-to-track
-// lines at the full 900px width.
+// The fixed-layer sun settles onto the centre of this in-flow gap. Both hero
+// beats reserve the same footprint, so the one disc returns without a jump.
+.sunSpacer {
+  min-height: 200px;
+  margin-bottom: 8px;
+}
+
 .infoText {
   max-width: 58ch;
   margin-inline: auto;
+}
+
+.completionError {
+  margin-top: 12px;
+  color: var(--c-fg-full-emphasis);
+  text-align: center;
+}
+
+// CSS owns both fixed rests; JS only reads their resolved viewport positions.
+.skyProbe,
+.companionProbe {
+  position: fixed;
+  left: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.skyProbe {
+  top: $sky-strip * 0.5;
+}
+
+.companionProbe {
+  bottom: var(--companion-bar-center-y);
+}
+
+@media (max-width: 360px) {
+  .step {
+    padding-inline: 12px;
+  }
+
+  .sunSpacer {
+    min-height: 176px;
+  }
 }

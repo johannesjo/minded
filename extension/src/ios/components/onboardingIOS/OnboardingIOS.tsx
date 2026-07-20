@@ -32,9 +32,6 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 // @ts-ignore
 import styles from "./OnboardingIOS.module.scss";
 
-// Mirrors the Android onboarding's measurement timing: the entrance animation
-// carries a slight scale, so re-measure once it has landed.
-const ENTRANCE_ANIMATION_MS = 1100;
 const ANCHOR_TOLERANCE_PX = 6;
 
 /**
@@ -106,10 +103,18 @@ export const OnboardingIOS = (props: {
     on(getShownStep, () => {
       measureAnchors();
       const raf = requestAnimationFrame(measureAnchors);
-      const t = window.setTimeout(measureAnchors, ENTRANCE_ANIMATION_MS);
+      const arrivingStep = contentEl.firstElementChild;
+      // The entrance carries a slight scale, so measure again when the shared
+      // animation actually lands instead of duplicating its duration in JS.
+      const onEntranceEnd = (event: Event) => {
+        if (event.target !== arrivingStep) return;
+        measureAnchors();
+        arrivingStep?.removeEventListener("animationend", onEntranceEnd);
+      };
+      arrivingStep?.addEventListener("animationend", onEntranceEnd);
       onCleanup(() => {
         cancelAnimationFrame(raf);
-        clearTimeout(t);
+        arrivingStep?.removeEventListener("animationend", onEntranceEnd);
       });
     }),
   );

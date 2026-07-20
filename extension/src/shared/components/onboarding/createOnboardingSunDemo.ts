@@ -11,7 +11,7 @@ import {
 import { shouldPauseDriveSun } from "./pauseTakeover";
 
 /**
- * The welcome step's tap-to-pause demo, shared by both platforms' onboarding.
+ * The welcome step's tap-to-pause demo, shared by every platform's onboarding.
  * The flow owns a single disc (its `getBaseSettle` rests); tapping it opens the
  * real InteractionOverlay, and while the pause is up the shared sunStore drives
  * that same disc through the live interaction - exactly like the dashboard

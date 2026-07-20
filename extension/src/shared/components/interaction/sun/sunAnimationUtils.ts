@@ -31,6 +31,19 @@ export type SunReleaseAction =
   | { type: "fling"; direction: SunCompletionDirection }
   | { type: "dragComplete"; direction: SunCompletionDirection };
 
+type CompanionRestState = {
+  isCompanion: boolean;
+  restScale: number;
+};
+
+type CompanionReanchorSettle = {
+  isCompanion?: boolean;
+  anchorXPx?: number;
+  anchorYPxFromBottom?: number;
+  scale?: number;
+  breathe?: boolean;
+};
+
 // Constants
 export const DRAG_THRESHOLD_PX = 100;
 export const FLING_VELOCITY_THRESHOLD = 200;
@@ -115,6 +128,45 @@ export function shouldAcceptSunPointerStart(state: {
 }): boolean {
   return !state.isCompletionStarted && !state.isSettlingIntoRole;
 }
+
+export function isCompanionReanchorSettle(
+  settle?: CompanionReanchorSettle | null,
+): boolean {
+  return settle?.isCompanion === true;
+}
+
+/**
+ * Bottom-pinned flow rests can reuse a terminally moved disc. Onboarding hero
+ * and sky targets intentionally rely on this without becoming true companion
+ * rests, because only the latter may hard-snap during anchor remeasurement.
+ */
+export function shouldResetTerminalStateForSettle(
+  settle?: CompanionReanchorSettle | null,
+): boolean {
+  return settle?.anchorYPxFromBottom != null && settle.anchorXPx == null;
+}
+
+/**
+ * A bottom-bar remeasurement may snap only when the disc is already resting at
+ * the same companion size. Bottom-pinned onboarding rests use the same anchor
+ * shape, but their scale changes are real role morphs and must still glide.
+ */
+export function shouldSnapCompanionReanchor(
+  target: CompanionRestState,
+  from: CompanionRestState,
+  resting: CompanionRestState,
+): boolean {
+  return (
+    target.isCompanion &&
+    from.isCompanion &&
+    resting.isCompanion &&
+    target.restScale === from.restScale &&
+    target.restScale === resting.restScale
+  );
+}
+
+export const isSunActivationKey = (key: string): boolean =>
+  key === "Enter" || key === " ";
 
 const getVerticalDirection = (y: number): SunCompletionDirection =>
   y > 0 ? "down" : "up";

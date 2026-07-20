@@ -2,8 +2,13 @@ import {
   calculateDragColorTemperature,
   getSunReleaseAction,
   hasVerticalCompletionIntent,
+  isCompanionReanchorSettle,
+  isSunActivationKey,
   shouldAcceptSunPointerStart,
+  shouldResetTerminalStateForSettle,
+  shouldSnapCompanionReanchor,
 } from "./sunAnimationUtils";
+import { sunCompanionSettle } from "./sunSettle";
 
 describe("sun animation utils", () => {
   describe("hasVerticalCompletionIntent", () => {
@@ -146,6 +151,69 @@ describe("sun animation utils", () => {
           isSettlingIntoRole: true,
         }),
       ).toBe(false);
+    });
+  });
+
+  describe("shouldSnapCompanionReanchor", () => {
+    const companionRest = (restScale: number) => ({
+      isCompanion: true,
+      restScale,
+    });
+
+    it("snaps an anchor-only companion correction", () => {
+      expect(
+        shouldSnapCompanionReanchor(
+          companionRest(0.52),
+          companionRest(0.52),
+          companionRest(0.52),
+        ),
+      ).toBe(true);
+    });
+
+    it("glides when a centred bottom-pinned rest also changes scale", () => {
+      expect(
+        shouldSnapCompanionReanchor(
+          companionRest(0.38),
+          companionRest(1),
+          companionRest(1),
+        ),
+      ).toBe(false);
+    });
+
+    it("does not classify a same-size onboarding hero as the companion", () => {
+      expect(
+        isCompanionReanchorSettle({
+          anchorYPxFromBottom: 240,
+          scale: 1,
+          breathe: false,
+        }),
+      ).toBe(false);
+    });
+
+    it("recognises only an explicitly identified companion settle", () => {
+      expect(isCompanionReanchorSettle(sunCompanionSettle(44))).toBe(true);
+    });
+
+    it("keeps terminal reset semantics for an onboarding rest without treating it as a reanchorable companion", () => {
+      const onboardingRest = {
+        anchorYPxFromBottom: 240,
+        scale: 1,
+        breathe: false,
+      };
+
+      expect(shouldResetTerminalStateForSettle(onboardingRest)).toBe(true);
+      expect(isCompanionReanchorSettle(onboardingRest)).toBe(false);
+    });
+  });
+
+  describe("isSunActivationKey", () => {
+    it("accepts the native button activation keys", () => {
+      expect(isSunActivationKey("Enter")).toBe(true);
+      expect(isSunActivationKey(" ")).toBe(true);
+    });
+
+    it("ignores unrelated keys", () => {
+      expect(isSunActivationKey("ArrowDown")).toBe(false);
     });
   });
 });

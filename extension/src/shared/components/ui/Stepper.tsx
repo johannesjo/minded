@@ -30,6 +30,7 @@ export const Stepper = (props: {
         {(step) => (
           <button
             type="button"
+            aria-current={step === getStep() ? "step" : undefined}
             disabled={props.isNoGoBack || step >= getStep()}
             onClick={() => {
               if (props.isNoGoBack) {

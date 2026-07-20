@@ -159,7 +159,7 @@ export const LITTLE_SUN_DISC_PX_WEB = 40;
 export const LITTLE_SUN_DISC_PX_ANDROID = 30;
 
 /**
- * Both Little Suns wear a warm amber breath halo (web: `rgba(233,132,58,…)` in
+ * Both Little Suns wear a warm amber halo (web: `rgba(233,132,58,…)` in
  * LittleSun.scss; Android: `#E99A3A` ≈ 233,154,58 in LittleSun.kt). The departing
  * sun warms its normally-white glow to this amber as it settles, so the halo
  * *colour* matches at hand-off too - not just the position and size. One shared
@@ -237,8 +237,8 @@ export const sunDepartSettleAt = (
 /**
  * Companion rest: the idle home in the app shell, centred over the bottom bar.
  * Anchored in fixed px from the bottom (the measured `--companion-bar-center-y`)
- * so it lands on the bottom-bar anchor. No JS breath - the CSS idle-breath glow
- * on `.minded-sun` resumes on its own once the sun settles.
+ * so it lands on the bottom-bar anchor. It stays still once settled; the quiet
+ * presence and snug resting glow carry the companion state without a breath.
  */
 /** Placeholder bottom-bar anchor used until MainWrapper measures the real px. */
 export const DEFAULT_COMPANION_BOTTOM_Y_PX = 44;
@@ -267,6 +267,7 @@ export const sunCompanionSettle = (
   barCenterYPxFromBottom: number,
 ): SunSettle => ({
   anchorYPxFromBottom: barCenterYPxFromBottom,
+  isCompanion: true,
   // ~0.52 of the interaction sun's base gives the companion a touch more presence
   // on the bottom-bar band while still sitting comfortably below the 0.66 that
   // would nearly fill the band and crowd the icons either side.

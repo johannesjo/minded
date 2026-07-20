@@ -3,7 +3,6 @@ import Sun, { SunSettle } from "@src/shared/components/interaction/sun/Sun";
 import {
   getIsShellSunHidden,
   getSunHandlers,
-  getSunRole,
   setBreathStartedAt,
 } from "@src/shared/components/interaction/sun/sunStore";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
@@ -11,8 +10,8 @@ import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
 import styles from "./onboardingSunLayer.module.scss";
 
 /**
- * The ONE onboarding sun and its tap-to-pause demo overlay - shared by both
- * platforms' onboarding. It owns the shared takeover state machine
+ * The ONE onboarding sun and its tap-to-pause demo overlay - shared by every
+ * platform's onboarding. It owns the shared takeover state machine
  * (createOnboardingSunDemo), so the whole thing lives in one place; each flow
  * supplies only its step/leaving signals, its base settle rests, and how to
  * advance off the welcome.
@@ -37,14 +36,6 @@ export const OnboardingSunLayer = (props: {
         class={styles.sunLayer}
         classList={{
           [styles.isInteractive]: d.isSunInputEnabled(),
-          [styles.isLeaving]: props.getIsLeaving(),
-          // Mirror RouteCmp's float-pinning during a live interaction / a
-          // store-driven companion rest, so the disc stays exactly on the point
-          // the interaction's glow (or the grounding bar anchor) expects.
-          [styles.isIntervention]:
-            d.isPauseDrivingSun() && getSunRole() !== "companion",
-          [styles.isCompanion]:
-            d.isPauseDrivingSun() && getSunRole() === "companion",
           // A pause surface that replaces the sun (the let-go question, a
           // screen-free grounding sit) hides the layer, exactly as on the shell.
           [styles.isHidden]: getIsShellSunHidden() === true,
@@ -55,6 +46,7 @@ export const OnboardingSunLayer = (props: {
           <Sun
             variant={d.sunVariant}
             settle={d.getActiveSunSettle()}
+            aria-label={d.isSunGrabbable() ? "Open a mindful pause" : undefined}
             minimizeWillChange={true}
             isTapEnabled={
               d.isPauseDrivingSun()

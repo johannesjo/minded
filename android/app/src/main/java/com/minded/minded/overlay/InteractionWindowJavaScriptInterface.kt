@@ -122,11 +122,7 @@ class InteractionWindowJavaScriptInterface(
     @JavascriptInterface
     fun onSkip() {
         Log.v(logTag, "onSkip()")
-        OverlayControllerService.showOverlay(
-            ctrlSvc,
-            OverlayControllerService.Companion.OverlayName.LITTLE_SUN_OVERLAY
-        )
-        win.hideWindow()
+        win.skipInteractionToLittleSun()
     }
 
 
