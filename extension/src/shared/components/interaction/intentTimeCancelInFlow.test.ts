@@ -1,4 +1,5 @@
 import { compileString } from "sass";
+import { readFileSync } from "fs";
 import { resolve } from "path";
 
 // Regression guard for the choice buttons being silently un-tappable.
@@ -13,8 +14,8 @@ import { resolve } from "path";
 //
 // The fix keeps the cancel in the flow at the bottom of the choices column so
 // the click-through resting-sun spacer always sits between the options and the
-// cancel. This test fails if anyone re-pins the cancel as an absolute full-width
-// band inside the overlay.
+// cancel. Compact-height spacing also keeps that whole column on-screen without
+// adding a scroll surface that would desynchronise the fixed sun from its slot.
 
 const SRC_DIR = resolve(__dirname, "../../../");
 
@@ -23,6 +24,8 @@ const compileInteractionCss = (): string =>
     [
       "@import 'styles/mixins/allTypo';",
       "@import 'shared/components/interaction/InteractionCommon';",
+      "@import 'shared/components/interaction/timeSelection/TimeSelection';",
+      "@import 'shared/components/interaction/intentSelection/IntentSelection';",
     ].join("\n"),
     {
       loadPaths: [SRC_DIR],
@@ -31,9 +34,13 @@ const compileInteractionCss = (): string =>
     },
   ).css;
 
-describe("intent/time cancel stays in the flow (not a full-width band)", () => {
+describe("intent/time choice layout", () => {
   const css = compileInteractionCss();
   const norm = css.replace(/\s+/g, " ");
+  const interactionSource = readFileSync(
+    resolve(SRC_DIR, "shared/components/interaction/InteractionCommon.tsx"),
+    "utf8",
+  );
 
   // Every rule block whose selector targets the cancel inside the overlay.
   const cancelRules = [
@@ -48,5 +55,37 @@ describe("intent/time cancel stays in the flow (not a full-width band)", () => {
     for (const m of cancelRules) {
       expect(m[2]).not.toMatch(/position:\s*(absolute|fixed)/);
     }
+  });
+
+  it("compacts the full choice flow on short viewports", () => {
+    const compactStart = norm.indexOf("@media (max-height: 760px)");
+    expect(compactStart).toBeGreaterThan(-1);
+
+    const compactCss = norm.slice(compactStart);
+    expect(compactCss).toMatch(
+      /\.time-selection-overlay \.intent-selection-wrapper,[^{]*\.time-selection-overlay \.time-selection-wrapper \{[^}]*--btn-height: 44px;[^}]*--btn-fz: 18px;[^}]*--fz-xl: 22px;[^}]*padding: max\(var\(--space-sm\), var\(--safe-area-inset-top\)\) 0 max\(var\(--space-sm\), var\(--safe-area-inset-bottom\)\);/,
+    );
+    expect(compactCss).toMatch(
+      /\.time-selection-overlay \.intent-selection-container,[^{]*\.time-selection-overlay \.time-selection-container \{[^}]*min-height: 0;[^}]*padding: var\(--space-md\) var\(--space-xl\);/,
+    );
+    expect(compactCss).toMatch(
+      /\.time-selection-overlay \.intent-selection-container \.intent-options-grid,[^{]*\.time-selection-overlay \.time-selection-container \.time-options-grid \{[^}]*gap: var\(--space-sm\);/,
+    );
+    expect(compactCss).toMatch(
+      /\.time-selection-overlay \.resting-sun-spacer \{[^}]*flex: 0 1 132px;[^}]*min-height: 0;/,
+    );
+  });
+
+  it("remeasures the resting sun after native safe-area changes", () => {
+    const handler = interactionSource.match(
+      /const (\w+) = \(\) => measureRestingSunAnchor\(\);/,
+    )?.[1];
+    expect(handler).toBeDefined();
+    expect(interactionSource).toContain(
+      `window.addEventListener("androidSafeAreaChanged", ${handler});`,
+    );
+    expect(interactionSource).toContain(
+      `window.removeEventListener("androidSafeAreaChanged", ${handler});`,
+    );
   });
 });

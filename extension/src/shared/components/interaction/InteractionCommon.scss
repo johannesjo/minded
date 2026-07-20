@@ -209,6 +209,45 @@
   }
 }
 
+// On short viewports, keep the quiet one-column hierarchy and fixed tap targets;
+// only the measured sun spacer may shrink. A scrolling column would let the
+// fixed sun drift away from the slot that anchors it.
+@media (max-height: 760px) {
+  .time-selection-overlay {
+    .intent-selection-wrapper,
+    .time-selection-wrapper {
+      // Width switches to the larger desktop tokens at 650px; pin only these
+      // compact choice screens to the mobile sizes so that boundary cannot clip.
+      --btn-height: 44px;
+      --btn-fz: 18px;
+      --fz-xl: 22px;
+      padding: max(var(--space-sm), var(--safe-area-inset-top)) 0
+        max(var(--space-sm), var(--safe-area-inset-bottom));
+    }
+
+    .intent-selection-container,
+    .time-selection-container {
+      min-height: 0;
+      padding: var(--space-md) var(--space-xl);
+
+      .txtBig {
+        margin-bottom: var(--space-sm);
+      }
+    }
+
+    .intent-selection-container .intent-options-grid,
+    .time-selection-container .time-options-grid {
+      gap: var(--space-sm);
+    }
+
+    .resting-sun-spacer {
+      flex: 0 1 132px;
+      min-height: 0;
+      margin-top: var(--space-sm);
+    }
+  }
+}
+
 // Outside the intervention overlay (e.g. the marketing screenshots) the spacer
 // adds no height - the sun only appears in the real flow.
 .resting-sun-spacer {

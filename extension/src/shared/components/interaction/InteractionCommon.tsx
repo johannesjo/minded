@@ -1314,10 +1314,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   onMount(() => {
-    const onResize = () => measureRestingSunAnchor();
-    window.addEventListener("resize", onResize);
+    const remeasureRestingSun = () => measureRestingSunAnchor();
+    window.addEventListener("resize", remeasureRestingSun);
+    window.addEventListener("androidSafeAreaChanged", remeasureRestingSun);
     onCleanup(() => {
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", remeasureRestingSun);
+      window.removeEventListener("androidSafeAreaChanged", remeasureRestingSun);
       restingSunObserver?.disconnect();
       setRestingSunAnchor(null);
     });
