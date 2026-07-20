@@ -1,4 +1,4 @@
-import { createSignal, For, JSX } from "solid-js";
+import { createSignal, For, JSX, Show } from "solid-js";
 // @ts-ignore
 import styles from "./AnswerListEditable.module.scss";
 import { Answer } from "@src/dataInterface/syncData";
@@ -18,11 +18,21 @@ export const AnswerListEditable: (props: {
   onRemove: (id: string) => void;
   onAdd: (newAnswer: Answer) => void;
 }) => JSX.Element = (props) => {
+  let addActionEl: HTMLDivElement = undefined!;
   const [getIsAddMode, setIsAddMode] = createSignal(false);
+
+  const cancelAdd = () => {
+    setIsAddMode(false);
+    setTimeout(() => addActionEl?.querySelector("button")?.focus());
+  };
 
   return (
     <div class={styles.AnswerListEditable}>
       <div class={styles.answerList}>
+        <Show when={props.answers.length === 0 && !getIsAddMode()}>
+          <p class={styles.emptyState}>Your reflections will gather here.</p>
+        </Show>
+
         <For each={props.answers}>
           {(answer) => (
             <AnswerEntry
@@ -40,6 +50,7 @@ export const AnswerListEditable: (props: {
             <AnswerEntry
               isInitialEditMode={true}
               onBlur={() => setIsAddMode(false)}
+              onCancel={cancelAdd}
               answer={{
                 id: nanoid(),
                 ts: Date.now(),
@@ -56,7 +67,12 @@ export const AnswerListEditable: (props: {
               onRemove={() => setIsAddMode(false)}
             />
           ) : (
-            <div style="text-align:center;">
+            <div
+              class={styles.addAction}
+              ref={(el) => {
+                addActionEl = el;
+              }}
+            >
               <Btn onClick={() => setIsAddMode(true)}>
                 <Ico name="add" /> Add
               </Btn>

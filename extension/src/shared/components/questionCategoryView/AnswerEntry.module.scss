@@ -4,10 +4,12 @@
   position: relative;
   overflow: hidden;
   text-align: left;
-  margin-top: 16px;
+  margin-top: var(--space-md);
 
-  @media (min-width: $bpMobile) {
-    margin: 16px;
+  &:focus-visible {
+    border-radius: var(--dashboard-card-border-radius);
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
   }
 
   input {
@@ -62,13 +64,25 @@
   z-index: 1;
   visibility: hidden;
   opacity: 0;
+  transform: translateY(var(--space-xs));
   transition:
     opacity var(--dur-quick) var(--ease-out),
+    transform var(--dur-quick) var(--ease-out),
     visibility var(--dur-quick) var(--ease-out);
 
-  .AnswerEntry:hover & {
+  .AnswerEntry.isEditBarVisible &,
+  .AnswerEntry:focus-within & {
     visibility: visible;
     opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (hover: hover) {
+    .AnswerEntry:hover & {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   > * {

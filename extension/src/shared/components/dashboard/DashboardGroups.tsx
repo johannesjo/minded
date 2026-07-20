@@ -44,11 +44,21 @@ import {
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+import { createDashboardCardInteractivity } from "@src/shared/components/dashboard/dashboardCardInteractivity";
+
+// These greetings simply reflect the moment back to the user. In the collapsed
+// arrival they can rest directly on the sky; the full look-back view still uses
+// cards so every historical entry remains part of one consistent grid.
+const PASSIVE_HERO_TYPES: ReadonlySet<DashboardGroupType> = new Set([
+  DashboardGroupType.Quote,
+  DashboardGroupType.EnergyLvl,
+  DashboardGroupType.EmotionLabeling,
+]);
 
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
   // When true (the /lookBack route) the full grid renders directly, skipping the
-  // calm greeting. "show all" routes here so the view is a real, back-able page.
+  // calm greeting. "look back" routes here so the view is a real, back-able page.
   forceRevealed?: boolean;
 }) => JSX.Element = (props) => {
   let t0: NodeJS.Timeout | undefined;
@@ -74,7 +84,7 @@ export const DashboardGroups: (props: {
     setIsDailyQuestionsBannerBeingRemoved,
   ] = createSignal<boolean>(false);
 
-  // Arrival is calm: a single greeting card (the centre pick - a random
+  // Arrival is calm: a single greeting (the centre pick - a random
   // reflection, or the quote when there's little to show) instead of the full
   // wall of cards. The rest stay tucked away until you choose to "look back",
   // which routes to the full grid (the /lookBack page) rather than toggling an
@@ -84,7 +94,7 @@ export const DashboardGroups: (props: {
   >([]);
   const navigate = useNavigate();
 
-  // The greeting card: the centre pick sits at CENTER_INDEX once there are
+  // The greeting: the centre pick sits at CENTER_INDEX once there are
   // enough cards, and the fallback quote (spliced in last) when there are fewer.
   const heroOf = (groups: DashboardGroup[]): DashboardGroup | undefined => {
     const len = groups.length;
@@ -95,9 +105,9 @@ export const DashboardGroups: (props: {
   // rather than a memo over getDashboardGroups (the live data): the displayed
   // greeting is only ever (re)set when the screen opens or on a deliberate
   // re-greet - which only ever fires while the dashboard is hidden. A routine
-  // in-view refresh updates the underlying data (and the "show all" count) but
-  // leaves this hero untouched, so the card - and its random quote - is never
-  // seen to change under the user (calm is the product; a card only ever
+  // in-view refresh updates the underlying data (and the "look back" count) but
+  // leaves this hero untouched, so the greeting - and its random quote - is
+  // never seen to change under the user (calm is the product; a greeting only
   // changes offscreen). Without this, a visible REFRESH_DASHBOARD_EV that
   // altered the group count, re-ran guardHeroSlot, or diffed the hero's data
   // would hand the keyed <Show> a fresh object, remounting the card (a new
@@ -158,7 +168,7 @@ export const DashboardGroups: (props: {
       // hero on screen yet) or on a deliberate re-greet - which only ever fires
       // while the dashboard is hidden. A routine in-view refresh (reselect
       // false, hero already shown) deliberately leaves the displayed hero as it
-      // is, so the card never changes in front of the user; it always just
+      // is, so the greeting never changes in front of the user; it always just
       // eases in on open and then holds still.
       if (reselect || getHeroGroup() === undefined) {
         setHeroGroup(heroOf(groups));
@@ -265,41 +275,49 @@ export const DashboardGroups: (props: {
           : "Would you like to reflect on your day?"}
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        <Btn outline onClick={() => navigate("/dailyQuestions")}>
-          let's go
-        </Btn>
-        <Btn outline onClick={() => removeDailyQuestionsBanner()}>
-          no
+        <Btn onClick={() => navigate("/dailyQuestions")}>stay a moment</Btn>
+        <Btn soft onClick={() => removeDailyQuestionsBanner()}>
+          not now
         </Btn>
       </div>
     </div>
   );
 
   const renderCard = (dg: DashboardGroup, isSingleCard = false) => {
-    const isInteractive = "id" in dg;
+    const isSkyGreeting = isSingleCard && PASSIVE_HERO_TYPES.has(dg.type);
+    // Energy/emotion can stay visually quiet on the sky, but when either is the
+    // only dashboard group there is no "look back" route beneath it. Keep that
+    // sole route clickable and keyboard-accessible. A quote has no id, so it
+    // remains a genuinely passive greeting; with multiple groups, look-back
+    // remains the one calm navigation affordance.
+    const isInteractive = createDashboardCardInteractivity({
+      hasId: "id" in dg,
+      isSingleCard,
+      isSkyGreeting,
+      getGroupCount: () => getDashboardGroups().length,
+    });
     const activate = () => {
-      if ("id" in dg) props.onQuestionCategorySelect?.(dg.id);
+      if (isInteractive() && "id" in dg) {
+        props.onQuestionCategorySelect?.(dg.id);
+      }
     };
     return (
       <div
         onClick={activate}
-        role={isInteractive ? "button" : undefined}
-        tabindex={isInteractive ? 0 : undefined}
-        onKeyDown={
-          isInteractive
-            ? (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  activate();
-                }
-              }
-            : undefined
-        }
+        role={isInteractive() ? "button" : undefined}
+        tabindex={isInteractive() ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (isInteractive() && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            activate();
+          }
+        }}
         classList={{
-          ["cardDashboard"]: true,
+          ["cardDashboard"]: !isSkyGreeting,
           [styles.box]: true,
           [styles.singleCard]: isSingleCard,
-          [styles.interactive]: isInteractive,
+          [styles.skyGreeting]: isSkyGreeting,
+          [styles.interactive]: isInteractive(),
           [styles.centerItem]: dg.type !== DashboardGroupType.TxtQuestion,
         }}
       >
@@ -358,8 +376,7 @@ export const DashboardGroups: (props: {
 
           <Show when={getDashboardGroups().length > 1}>
             <Btn plain class={styles.revealBtn} onClick={revealAll}>
-              show all
-              <span class={styles.revealChevron} aria-hidden="true" />
+              look back
             </Btn>
           </Show>
         </div>

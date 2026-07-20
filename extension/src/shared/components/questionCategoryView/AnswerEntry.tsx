@@ -11,10 +11,11 @@ export const AnswerEntry: (props: {
   isInitialEditMode?: boolean;
   onEdit: (upd: Answer) => void;
   onBlur?: () => void;
+  onCancel?: () => void;
   onRemove: () => void;
 }) => JSX.Element = (props) => {
+  let entryEl: HTMLDivElement = undefined!;
   let inpEl: HTMLInputElement = undefined!;
-  let cardEl: HTMLDivElement = undefined!;
 
   const [getTitle, setTitle] = createSignal<string>(props.answer.val as string);
   const [getIsEditMode, setIsEditMode] = createSignal<boolean>(
@@ -22,6 +23,7 @@ export const AnswerEntry: (props: {
     // true,
   );
   const [getIsShowEditBar, setIsShowEditBar] = createSignal<boolean>(false);
+  const entryDomId = `answer-entry-${props.answer.id}`;
   const question = props.answer.qid
     ? QUESTIONS.find((q) => q.id === props.answer.qid)
     : null;
@@ -31,9 +33,24 @@ export const AnswerEntry: (props: {
     setTimeout(() => inpEl?.focus());
   }
 
+  // Editing replaces the card contents with an input. Once that input is
+  // removed, put keyboard users back on the same card instead of dropping focus
+  // to the document body. Look it up by its stable answer id because an edit
+  // replaces the answer object and can remount this component before the focus
+  // callback runs. Defer one turn so the non-edit tabindex is mounted.
+  const restoreEntryFocus = () => {
+    setTimeout(() => {
+      entryEl.ownerDocument.getElementById(entryDomId)?.focus();
+    });
+  };
+
   const abortEdit = () => {
+    const isCanceledByParent = props.onCancel !== undefined;
+    props.onCancel?.();
+    if (isCanceledByParent) return;
     setIsEditMode(false);
     setTitle(props.answer.val.toString());
+    restoreEntryFocus();
   };
 
   const triggerEdit = () => {
@@ -44,10 +61,29 @@ export const AnswerEntry: (props: {
 
   return (
     <div
-      class={styles.AnswerEntry + " card"}
-      ref={cardEl}
+      id={entryDomId}
+      ref={(el) => {
+        entryEl = el;
+      }}
+      classList={{
+        [styles.AnswerEntry]: true,
+        ["card"]: true,
+        [styles.isEditBarVisible]: getIsShowEditBar(),
+      }}
+      role="group"
+      aria-label={`Reflection from ${new Date(
+        props.answer.ts,
+      ).toLocaleDateString()}`}
+      tabindex={getIsEditMode() ? undefined : 0}
       onClick={() => {
-        setIsShowEditBar(!getIsShowEditBar());
+        setIsShowEditBar(true);
+      }}
+      onFocusIn={() => setIsShowEditBar(true)}
+      onFocusOut={(ev) => {
+        const nextTarget = ev.relatedTarget as Node | null;
+        if (!nextTarget || !ev.currentTarget.contains(nextTarget)) {
+          setIsShowEditBar(false);
+        }
       }}
     >
       {question && (
@@ -96,7 +132,9 @@ export const AnswerEntry: (props: {
       {!!getIsEditMode() && (
         <div class={styles.editModeWrapper}>
           <input
-            ref={inpEl}
+            ref={(el) => {
+              inpEl = el;
+            }}
             value={getTitle()}
             type="text"
             onKeyDown={(ev) => {
@@ -111,8 +149,14 @@ export const AnswerEntry: (props: {
             onInput={(ev) => {
               setTitle(ev.currentTarget.value);
             }}
-            onblur={() => {
+            onBlur={(ev) => {
               if (getIsEditMode()) {
+                // Keep an intentional move outside the card intact. Enter and
+                // the in-card confirm control otherwise leave focus on a node
+                // that is about to unmount, so return those paths to the card.
+                const nextTarget = ev.relatedTarget as Node | null;
+                const shouldRestoreFocus =
+                  !nextTarget || entryEl.contains(nextTarget);
                 props.onBlur?.();
                 if (getTitle().trim().length > 0) {
                   props.onEdit({
@@ -121,6 +165,7 @@ export const AnswerEntry: (props: {
                   });
                 }
                 setIsEditMode(false);
+                if (shouldRestoreFocus) restoreEntryFocus();
               }
             }}
             maxlength={500}

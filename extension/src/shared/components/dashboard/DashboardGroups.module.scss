@@ -176,6 +176,15 @@
   }
 }
 
+// Passive arrival greetings need no frosted container: they are part of the
+// sky, not another surface to act on. Padding preserves the same calm reading
+// measure as the card-backed personal reflection without adding any chrome.
+.skyGreeting {
+  padding: var(--space-md);
+  text-align: center;
+  user-select: none;
+}
+
 .energyLvl {
   margin: auto;
 
@@ -213,10 +222,24 @@
     margin: 0 var(--space-xs);
     white-space: nowrap;
   }
+
+  // On the narrowest phones two full labels plus their breathing room no longer
+  // fit comfortably. Stack them before they can clip, while keeping the shared
+  // mobile button height as a full touch target.
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+
+    button {
+      min-height: 44px;
+      margin: 0;
+      width: 100%;
+    }
+  }
 }
 
-// Calm arrival: a single greeting card centred in the space above the resting
-// sun, with a quiet chevron to bring in the rest. Kept separate from the grid
+// Calm arrival: a single greeting centred in the space above the resting sun,
+// with a quiet invitation to bring in the rest. Kept separate from the grid
 // (.DashboardGroups) so it never inherits the grid's positioning.
 .collapsed {
   position: absolute;
@@ -225,8 +248,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  // Roomy breathing space between the greeting card and the reveal affordance,
-  // so the invitation sits clearly apart from the card rather than crowding it.
+  // Roomy breathing space between the greeting and the reveal affordance, so
+  // the invitation sits clearly apart rather than crowding the content.
   gap: var(--space-xl);
   box-sizing: border-box;
   overflow-y: auto;
@@ -259,8 +282,8 @@
   }
 }
 
-// The reveal button eases in a beat *after* the greeting card has settled, so
-// the eye lands on the card first and the invitation arrives second. `both`
+// The reveal button eases in a beat *after* the greeting has settled, so the
+// eye lands on the greeting first and the invitation arrives second. `both`
 // holds the hidden start through the delay and the visible end after - and fails
 // safe: if the animation never runs, the button still defaults to visible.
 .revealBtn {
@@ -272,10 +295,10 @@
     animation: none;
   }
 
-  // A subordinate affordance: quieter than the greeting card it sits beneath,
-  // so the card stays the focus and the invitation reads as secondary. The
+  // A subordinate affordance: quieter than the greeting it sits beneath, so
+  // the content stays the focus and the invitation reads as secondary. The
   // hierarchy is carried by the *font* - --fz-s, well below the enlarged hero
-  // card in the collapsed view (see `.collapsed .box` below) - so the small,
+  // greeting in the collapsed view (see `.collapsed .box`) - so the small,
   // quiet serif never looms over the greeting. The tap height stays a
   // comfortable 44px (a shorter 36px cramped the one navigation control on the
   // arrival screen below a comfortable thumb target); the generous vertical
@@ -296,14 +319,4 @@
     line-height: 44px;
     font-size: var(--fz-s);
   }
-}
-
-.revealChevron {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-left: var(--space-sm);
-  border-right: 1px solid currentColor;
-  border-bottom: 1px solid currentColor;
-  transform: translateY(-2px) rotate(45deg);
 }

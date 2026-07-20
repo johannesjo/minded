@@ -1,27 +1,29 @@
 @import "../../../styles/mixins/mixins";
 
 .AnswerListEditable {
-}
-
-.answer {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 42rem;
+  width: 100%;
 }
 
 .addItem {
-  margin-top: 24px;
+  margin-top: var(--space-lg);
 }
 
+.addAction {
+  text-align: center;
+}
 
 .answerList {
-  @media (min-width: $bpMobile) {
-    display: grid;
-    grid-template-rows: repeat(2, fit-content(100%));
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-flow: row;
-    box-sizing: border-box;
-    margin-left: -16px;
-    margin-right: -16px;
-  }
+  display: flex;
+  flex-direction: column;
+}
 
-  @media (min-width: $bpMobile) {
-  }
+.emptyState {
+  color: var(--h4-c);
+  font-size: var(--fz-m);
+  font-weight: 300;
+  margin: var(--space-2xl) var(--space-md) var(--space-xl);
+  text-align: center;
 }
