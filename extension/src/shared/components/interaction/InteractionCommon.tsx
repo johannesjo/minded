@@ -2,7 +2,6 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import {
   getSyncData,
   IS_ANDROID,
-  markBedtimeSettled,
   markInteractionModeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
 import {
@@ -71,7 +70,6 @@ import {
   calculateFadeProgress,
   calculateOpacity,
 } from "@src/shared/components/interaction/useFadeAnimation";
-import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
@@ -522,28 +520,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     close();
   };
 
-  // Mark tonight settled so the engine won't serve a second routine settle this
-  // night. Armed only from a real settle (a drag or fling that eases the phone
-  // into the dark) - never on show, and never on a triple-tap skip - so a skip
-  // leaves the settle available again later the same night. Same night id the
-  // engine compares against; fire-and-forget so it never delays the goodnight.
-  const armBedtimeSettledGuard = () => {
-    const syncData = getSyncDataI();
-    const bedtimeCfg = syncData?.cfg.sleepWindDown;
-    const nightId = bedtimeCfg ? resolveNightId(bedtimeCfg, new Date()) : null;
-    if (nightId) {
-      void markBedtimeSettled(nightId).catch((error: unknown) =>
-        console.error("Failed to record bedtime settle", error),
-      );
-    }
-  };
-
   // The bedtime settle - a deliberate drag OR fling in any direction (both ease
   // the phone into the dark; only the triple-tap skips): rest a wordless "Sleep
   // well" beat on screen, then run the real close - on Android that closes the
   // app and locks the screen, so the phone eases into the dark rather than
-  // snapping to the OS lock. Arms the once-per-night guard here, on the actual
-  // settle, so a skip doesn't consume the night (see armBedtimeSettledGuard).
+  // snapping to the OS lock. The settle is offered on every bedtime interrupt -
+  // there is no once-per-night guard; a skip simply leaves it to return.
   //
   // Fired from handleStartBackgroundAnimation at the drag's *release* (not from
   // the terminal onDragComplete, which lands only after the sun's ~3s off-screen
@@ -561,7 +543,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const settleForBedtime = (close: () => void) => {
     if (hasBedtimeSettled) return;
     hasBedtimeSettled = true;
-    armBedtimeSettledGuard();
     setIsBedtimeGoodnight(true);
     setInteractionOpacity(1);
     bedtimeSettleTimeout = window.setTimeout(() => {
@@ -1414,9 +1395,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             (error: unknown) =>
               console.error("Failed to record interaction mode", error),
           );
-          // The once-per-night guard is armed on the actual settle (drag/fling →
-          // lock), not here on show - so a triple-tap skip leaves the settle
-          // available again later the same night. See armBedtimeSettledGuard.
         }
 
         contentReadyTimeout = window.setTimeout(() => {

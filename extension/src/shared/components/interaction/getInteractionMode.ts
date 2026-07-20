@@ -205,19 +205,15 @@ export const getInteractionModeDecision = (
   const isTouchPrimary = options.isTouchPrimary ?? false;
   const canApplyInterventionFriction = !isMainView;
   // Sleep wind-down as a register of the standard flow: inside the user's
-  // configured bedtime window a blocked-app interrupt serves one wordless
-  // settle, at most once per night. `settledTonight` is the once-per-night
-  // guard (the settle's night id, once shown, is written to
-  // `sleepWindDownDismissedNightId`); a matching value means "already settled
-  // tonight - don't serve it again." Gated to real interventions
-  // (`canApplyInterventionFriction`) so the settle never pops up on the
-  // dashboard (and never triggers the native lock-screen close there).
+  // configured bedtime window every blocked-app interrupt serves the wordless
+  // settle - there is no once-per-night guard, so it is always the bedtime
+  // thing (a skip just leaves it to return on the next interrupt). Gated to
+  // real interventions (`canApplyInterventionFriction`) so the settle never
+  // pops up on the dashboard (and never triggers the native lock-screen close
+  // there).
   const isBedtimeIntervention =
     context.isBedtimeWindow && canApplyInterventionFriction;
-  const settledTonight =
-    isBedtimeIntervention &&
-    syncData.sleepWindDownDismissedNightId === context.bedtimeNightId;
-  const canServeBedtimeSettle = isBedtimeIntervention && !settledTonight;
+  const canServeBedtimeSettle = isBedtimeIntervention;
   const hasReasonAnswers = getReasonAnswerCount(syncData, isAppMode) > 0;
   const canShowAlternative = !isMainView && context.hasAlternatives;
   const canAskForAlternative = !isMainView && !context.hasAlternatives;
@@ -277,10 +273,9 @@ export const getInteractionModeDecision = (
     // meet the wordless settle, never a verbal "you keep coming back" insight or
     // a question at the moment of least capacity. After 22:00 the practices are
     // hour-gated off anyway, so this is what a strong bedtime pull normally
-    // gets. Unlike the routine settle this is NOT once-per-night: a repeated
-    // strong pull keeps getting the wordless settle rather than escalating to a
-    // verbal prompt (decision 5 - "wordless at bedtime"). The settle already
-    // bypasses the anti-repeat, so repeating it here is fine.
+    // gets. A repeated strong pull keeps getting the wordless settle rather than
+    // escalating to a verbal prompt (decision 5 - "wordless at bedtime"); the
+    // settle bypasses the anti-repeat, so repeating it here is fine.
     if (isBedtimeIntervention) {
       return decision(
         "WIND_DOWN_SETTLE",
@@ -325,11 +320,11 @@ export const getInteractionModeDecision = (
 
   // Bedtime settle (non-strong): the everyday bedtime interrupt. One wordless
   // moon - "let the day go" - served in place of the ordinary evening options,
-  // at most once per night. Placed above the expired-intent branch (and the
+  // on every bedtime interrupt. Placed above the expired-intent branch (and the
   // whole cascade below) so a bedtime interrupt is never opened by a verbal
   // reason/alternative prompt at the moment of least capacity. Deliberately
-  // exempt from the anti-repeat below: it is a once-per-night repeat by design,
-  // like the hard gates, so it must not be swapped out for variety.
+  // exempt from the anti-repeat below: it is a deliberate repeat, like the hard
+  // gates, so it must not be swapped out for variety.
   if (canServeBedtimeSettle) {
     return decision("WIND_DOWN_SETTLE", "bedtime_settle", frictionLevel);
   }

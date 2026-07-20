@@ -802,15 +802,22 @@ describe("getInteractionMode", () => {
       );
     });
 
-    it("settles at most once per night (guarded by the dismissed night id)", () => {
+    it("is offered on every bedtime interrupt - no once-per-night guard", () => {
+      // A prior settle this night (a stale dismissed-night id) must not suppress
+      // it: the settle is always the bedtime thing; a skip just leaves it to
+      // return on the next interrupt.
       expect(
         atBedtime(
           baseSyncData({
             cfg: bedtimeCfg(),
             sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
           }),
-        ).mode,
-      ).not.toBe("WIND_DOWN_SETTLE");
+        ),
+      ).toEqual({
+        mode: "WIND_DOWN_SETTLE",
+        reason: "bedtime_settle",
+        frictionLevel: "normal",
+      });
     });
 
     it("suppresses the onboarding survey at bedtime - settles instead", () => {
@@ -838,14 +845,12 @@ describe("getInteractionMode", () => {
     });
 
     it("keeps a repeat strong pull wordless - never escalates to a verbal prompt", () => {
-      // Even after the routine settle has fired tonight (guard set), a *strong*
-      // late-night pull still gets the wordless settle rather than a verbal
-      // "you keep coming back" / question (decision 5).
+      // A repeated *strong* late-night pull still gets the wordless settle rather
+      // than a verbal "you keep coming back" / question (decision 5).
       expect(
         atBedtime(
           baseSyncData({
             cfg: bedtimeCfg(),
-            sleepWindDownDismissedNightId: BEDTIME_NIGHT_ID,
             ...strongFrictionViaAttempts(),
           }),
         ),
@@ -909,9 +914,9 @@ describe("getInteractionMode", () => {
       expect(decision.mode).toBe("WIND_DOWN_SETTLE");
     });
 
-    it("stays guarded after midnight (same night id blocks a re-settle)", () => {
-      // The settle armed the guard at 23:00 (night id 2026-05-11). At 02:00 the
-      // window still resolves to that same night id, so no second settle.
+    it("still settles after midnight, within the same window", () => {
+      // At 02:00 the window still resolves inside the bedtime night, so the
+      // settle is served just as it is earlier in the window.
       expect(
         decide(
           baseSyncData({
@@ -923,7 +928,7 @@ describe("getInteractionMode", () => {
             isMainView: false,
           },
         ).mode,
-      ).not.toBe("WIND_DOWN_SETTLE");
+      ).toBe("WIND_DOWN_SETTLE");
     });
 
     it("is exempt from anti-repeat - repeats the settle within the same night", () => {

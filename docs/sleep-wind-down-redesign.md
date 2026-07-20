@@ -20,14 +20,15 @@ Two behavioural calls from use supersede the v3 text below:
   `closeCurrentApp()` + `lockScreen()`), the same as the drag-down. The
   discoverable **triple-tap is the one escape that stays in the current app**
   (`props.onSkip` - the companion little sun returns; no lock, no app switch).
-- **The once-per-night guard is armed on the settle, not on show.** v3 set it on
-  first appearance, so any showing consumed the night. Now it is set only when
-  the user actually settles (drag/fling → lock); a **triple-tap skip leaves the
-  settle available again later the same night.** So "once per night" means "once
-  you've settled," not "once seen."
+- **No once-per-night guard - the settle is offered on every bedtime interrupt.**
+  v3 served it at most once per night (guard armed on first appearance). That is
+  gone: inside the bedtime window every blocked-app interrupt is the wordless
+  settle, and a triple-tap skip simply leaves it to return on the next interrupt.
+  The `sleepWindDownDismissedNightId` field is no longer written or read by the
+  settle path (it stays only as a dead field pending the native cleanup below).
 
-Where the sections below say *fling = skip* or *guard set on first appearance*,
-read them through this amendment.
+Where the sections below say *fling = skip*, *once per night / full stop*, or
+*guard set on first appearance*, read them through this amendment.
 
 ## Implementation status
 
