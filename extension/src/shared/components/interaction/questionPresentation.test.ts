@@ -51,4 +51,31 @@ describe("free-text question composition", () => {
       /\.send-button\.is-ready\s*\{[\s\S]*visibility:\s*visible;/,
     );
   });
+
+  it("cuts the stable baseline only while the completion control is shown", () => {
+    expect(inputWithSend).toContain('["submit-ready"]');
+    expect(styles).toMatch(
+      /&\.reflective\s*\{[\s\S]*display:\s*grid;[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) var\(--btn-height\);/,
+    );
+    expect(styles).toMatch(
+      /&\.reflective\s*\{[\s\S]*&::after\s*\{[\s\S]*left:\s*var\(--space-sm\);[\s\S]*right:\s*var\(--space-sm\);/,
+    );
+    expect(styles).toMatch(
+      /&\.submit-ready::after\s*\{[\s\S]*right:\s*calc\(var\(--space-sm\) \+ var\(--btn-height\)\);/,
+    );
+    expect(styles).toMatch(
+      /&\.reflective\s*\{[\s\S]*\.send-button\s*\{[\s\S]*grid-column:\s*2;[\s\S]*position:\s*relative;/,
+    );
+    expect(styles).toMatch(
+      /\.send-button\.is-ready\s*\{[\s\S]*transform:\s*translateY\(50%\) scale\(1\);/,
+    );
+    expect(styles).toMatch(
+      /&\.reflective\s*\{[\s\S]*\.send-button\s*\{[\s\S]*background:\s*var\(--btn-bg-not-selected\);/,
+    );
+    expect(styles).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*#minded-6622-inp\.reflective::after,[\s\S]*transition:\s*none;/,
+    );
+    expect(styles).not.toContain("width: calc(100% - var(--btn-height))");
+    expect(inputWithSend).not.toMatch(/variant="icon"[\s\S]{0,80}\ssmall/);
+  });
 });

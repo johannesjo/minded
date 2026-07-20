@@ -111,7 +111,10 @@ export const InputWithSend = (props: {
     <div
       id="minded-6622-inp"
       class="textarea-container"
-      classList={{ reflective: props.reflective }}
+      classList={{
+        reflective: props.reflective,
+        ["submit-ready"]: props.reflective && getIsSubmitReady(),
+      }}
     >
       <textarea
         name={props.type === "url" ? "url" : "response"}

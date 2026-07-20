@@ -218,41 +218,86 @@
   // directly on the sky with one quiet baseline; the user's words inherit the
   // same editorial voice they later carry in look-back.
   &.reflective {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--btn-height);
+
+    &::after {
+      border-bottom: 1px solid var(--btn-outline-color);
+      bottom: 0;
+      content: "";
+      left: var(--space-sm);
+      pointer-events: none;
+      position: absolute;
+      right: var(--space-sm);
+      transition:
+        right var(--dur-quick) var(--ease-out),
+        border-color var(--dur-quick) var(--ease-out);
+    }
+
+    &:focus-within::after {
+      border-bottom-color: var(--c-fg-full-emphasis);
+    }
+
+    &.submit-ready::after {
+      right: calc(var(--space-sm) + var(--btn-height));
+    }
+
     textarea {
       background: transparent;
       border-radius: 0;
-      border-bottom: 1px solid var(--btn-outline-color);
       font-family: var(--font-display);
       font-size: var(--fz-l) !important;
+      grid-column: 1;
+      grid-row: 1;
       line-height: 1.45;
+      min-width: 0;
       min-height: calc(4.5em + var(--space-lg));
       max-height: min(42vh, 280px);
       overflow-y: hidden;
-      padding: var(--space-sm) calc(var(--btn-height) + var(--space-xs))
-        var(--space-md) 0;
-      transition: border-color var(--dur-quick) var(--ease-out);
-
-      &:focus {
-        border-bottom-color: var(--c-fg-full-emphasis);
-      }
+      padding: var(--space-sm) 0 var(--space-md);
     }
 
     .send-button {
+      align-self: end;
+      background: var(--btn-bg-not-selected);
+      bottom: auto;
+      border-radius: 50%;
+      grid-column: 2;
+      grid-row: 1;
+      left: auto;
       opacity: 0;
+      position: relative;
+      right: auto;
       visibility: hidden;
       pointer-events: none;
-      transform: translateY(4px) scale(0.96);
+      transform: translateY(calc(50% + 4px)) scale(0.96);
       transition:
         opacity var(--dur-quick) var(--ease-out),
         transform var(--dur-quick) var(--ease-out),
+        background var(--dur-quick) var(--ease-out),
         visibility var(--dur-quick);
+
+      > .minded-6622-ico {
+        opacity: 0.7;
+      }
+
+      @media (hover: hover) {
+        &:hover {
+          background: var(--btn-bg);
+          box-shadow: none;
+        }
+      }
     }
 
     .send-button.is-ready {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
-      transform: translateY(0) scale(1);
+      transform: translateY(50%) scale(1);
+
+      &:active {
+        transform: translateY(50%) scale(0.96);
+      }
     }
   }
 }
@@ -281,6 +326,7 @@
     transition: none;
   }
 
+  #minded-6622-inp.reflective::after,
   #minded-6622-inp.reflective .send-button {
     transition: none;
   }
