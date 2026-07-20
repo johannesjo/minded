@@ -232,6 +232,14 @@
   pointer-events: none;
 
   .sun-instructions-line {
+    // Serif voice: these hints share the intervention surface with the serif
+    // prompt above them and are already written in the soft, mindful register
+    // ("to let go", "to stay a while") - they're words the app speaks gently,
+    // not chrome. displayVoice() unifies them with the prompt so there's no
+    // sans/serif seam on the app's most central surface. Only the voice is
+    // added; .txtSmaller keeps owning size (--fz-m) and wrap. Weight 400, so no
+    // Android subpixel hairline risk at this size.
+    @include displayVoice;
     margin: 0.5em 0;
     color: var(--c-fg-full-emphasis);
     visibility: hidden;

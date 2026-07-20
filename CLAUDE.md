@@ -197,6 +197,23 @@ Path aliases change based on build mode to load platform-specific code.
   patterns (e.g. `InteractionOverlay`'s `handleHideWithFade`) rather than
   unmounting straight to the next surface.
 
+**Typography - serif is the voice we speak in, sans is chrome:**
+- Two typefaces, one rule: **Inter (sans)** is the app's chrome - buttons,
+  toggles, dashboard labels, data, anything functional. **Newsreader (serif),
+  via the `displayVoice()` mixin** (`src/styles/mixins/allTypo.scss`), is
+  reserved for *the words the app speaks to you gently* - intervention prompts,
+  breath labels, the success overlay, mindful opt-in headings, and the sun-drag
+  hints on the intervention surface. The split isn't "functional vs. mindful"
+  by screen; it's chrome vs. mindful copy. Soft, second-person, invitational
+  lines ("to let go", "to stay a while") are the voice - render them serif even
+  when they sit at hint size - so no sans/serif seam appears next to a serif
+  prompt on the app's most central surface.
+- Add the voice with `@include displayVoice;`, don't hand-set `font-family`;
+  layer it onto the existing size/wrap class (e.g. keep `.txtSmaller` for size,
+  add the mixin for voice) rather than swapping the class. `displayVoice()` is
+  weight 400 - safe against Android subpixel hairline thinning even at small
+  sizes.
+
 **Minimalism - remove before you add:**
 - Default to the simplest UI that works: less visual chrome, fewer controls,
   fewer words. Every element must earn its place; when in doubt, leave it out.
