@@ -105,6 +105,7 @@ export type InteractionModeReason =
   | "finger_rest_sample"
   | "bedtime_settle"
   | "bedtime_settle_strong"
+  | "bedtime_settled_notice"
   | "fallback_question"
   | "fallback_anti_repeat_notice";
 
@@ -205,15 +206,27 @@ export const getInteractionModeDecision = (
   const isTouchPrimary = options.isTouchPrimary ?? false;
   const canApplyInterventionFriction = !isMainView;
   // Sleep wind-down as a register of the standard flow: inside the user's
-  // configured bedtime window every blocked-app interrupt serves the wordless
-  // settle - there is no once-per-night guard, so it is always the bedtime
-  // thing (a skip just leaves it to return on the next interrupt). Gated to
-  // real interventions (`canApplyInterventionFriction`) so the settle never
-  // pops up on the dashboard (and never triggers the native lock-screen close
-  // there).
+  // configured bedtime window a blocked-app interrupt serves the wordless
+  // settle. Gated to real interventions (`canApplyInterventionFriction`) so the
+  // settle never pops up on the dashboard (and never triggers the native
+  // lock-screen close there).
   const isBedtimeIntervention =
     context.isBedtimeWindow && canApplyInterventionFriction;
-  const canServeBedtimeSettle = isBedtimeIntervention;
+  // One escape quiets it: an *explicit* triple-tap skip records tonight's night
+  // id, and from then on the settle stops returning this night - repeating the
+  // identical wordless moon on every interrupt after the user has consciously
+  // let it go read as nagging (the very thing the settle must not do). Passive
+  // dismissal (ignore / auto-dismiss) and the drag-settle do NOT write it, so
+  // the settle still returns on the next interrupt in those cases. The
+  // comparison is against the night id, so a stale value from a previous night
+  // can never suppress tonight. This gate is intentionally normal-tier only: a
+  // genuinely strong late-night pull still reaches the wordless settle via the
+  // strong branch below (quiet-the-night is scoped, not absolute).
+  const isBedtimeSettleSettledTonight =
+    context.bedtimeNightId !== null &&
+    syncData.sleepWindDownDismissedNightId === context.bedtimeNightId;
+  const canServeBedtimeSettle =
+    isBedtimeIntervention && !isBedtimeSettleSettledTonight;
   const hasReasonAnswers = getReasonAnswerCount(syncData, isAppMode) > 0;
   const canShowAlternative = !isMainView && context.hasAlternatives;
   const canAskForAlternative = !isMainView && !context.hasAlternatives;
@@ -318,15 +331,22 @@ export const getInteractionModeDecision = (
     return decision("QUESTION", "strong_friction_question", frictionLevel);
   }
 
-  // Bedtime settle (non-strong): the everyday bedtime interrupt. One wordless
-  // moon - "let the day go" - served in place of the ordinary evening options,
-  // on every bedtime interrupt. Placed above the expired-intent branch (and the
-  // whole cascade below) so a bedtime interrupt is never opened by a verbal
-  // reason/alternative prompt at the moment of least capacity. Deliberately
-  // exempt from the anti-repeat below: it is a deliberate repeat, like the hard
-  // gates, so it must not be swapped out for variety.
-  if (canServeBedtimeSettle) {
-    return decision("WIND_DOWN_SETTLE", "bedtime_settle", frictionLevel);
+  // Bedtime settle (non-strong): the everyday bedtime interrupt is always
+  // wordless. Normally the wordless moon - "let the day go" - served in place of
+  // the ordinary evening options. Once the user has explicitly skipped it
+  // tonight (see `canServeBedtimeSettle`), the moon they dismissed steps aside
+  // for the calm no-typing NOTICE anchor - never the same moon again (that
+  // nags), and never the verbal reason/alternative/question cascade below (a
+  // survey at the moment of least capacity fails the 90% bar). Returning here
+  // for the whole bedtime window keeps every normal-tier bedtime interrupt
+  // wordless, whichever way it resolves. Placed above the expired-intent branch
+  // and the whole cascade below. Deliberately exempt from the anti-repeat: both
+  // outcomes are deliberate bedtime repeats, like the hard gates, so they must
+  // not be swapped out for variety.
+  if (isBedtimeIntervention) {
+    return canServeBedtimeSettle
+      ? decision("WIND_DOWN_SETTLE", "bedtime_settle", frictionLevel)
+      : decision("NOTICE", "bedtime_settled_notice", frictionLevel);
   }
 
   if (
