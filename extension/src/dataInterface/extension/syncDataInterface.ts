@@ -17,8 +17,9 @@ const MAX_PRUNE_ROUNDS = 3;
 
 /**
  * Storage rejections that pruning old answers can actually cure.
- * - Chrome marks its data quotas as `QUOTA_BYTES` (also matches
- *   `QUOTA_BYTES_PER_ITEM`) and `MAX_ITEMS`.
+ * - Chromium reports its data quotas using either API-style names such as
+ *   `QUOTA_BYTES_PER_ITEM` or C++-style names such as
+ *   `Resource::kQuotaBytesPerItem`.
  * - Firefox throws one message for all three of its storage.sync quotas:
  *   "QuotaExceededError: storage.sync API call exceeded its quota
  *   limitations." (ExtensionStorageSync.sys.mjs) - matched by its distinctive
@@ -28,10 +29,12 @@ const MAX_PRUNE_ROUNDS = 3;
  *   surface instead (as must transient failures).
  */
 const isPruneRecoverableError = (e: unknown): boolean => {
-  const msg = String(e);
+  const msg = String(e).toLowerCase();
   return (
-    msg.includes("QUOTA_BYTES") ||
-    msg.includes("MAX_ITEMS") ||
+    msg.includes("quota_bytes") ||
+    msg.includes("quotabytes") ||
+    msg.includes("max_items") ||
+    msg.includes("maxitems") ||
     msg.includes("exceeded its quota limitations")
   );
 };

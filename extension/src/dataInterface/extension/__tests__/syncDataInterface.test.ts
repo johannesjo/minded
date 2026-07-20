@@ -91,6 +91,21 @@ describe("saveAnswerN", () => {
     expect(retried.some((a) => a.id === "a-1")).toBe(false);
   });
 
+  it("recovers from Chromium's Resource::kQuotaBytesPerItem error", async () => {
+    const oldAnswers = Array.from({ length: 40 }, (_, i) => answerAt(i + 1));
+    mockGet.mockResolvedValue({ answers: oldAnswers });
+    mockSet
+      .mockRejectedValueOnce(
+        new Error("Resource::kQuotaBytesPerItem quota exceeded"),
+      )
+      .mockResolvedValueOnce(undefined);
+
+    await expect(saveAnswerN(NEW_ANSWER)).resolves.toBeUndefined();
+    const retried = mockSet.mock.calls[1][0].answers as Answer[];
+    expect(retried.some((a) => a.id === "the-new-answer")).toBe(true);
+    expect(retried.some((a) => a.id === "a-1")).toBe(false);
+  });
+
   it("recovers from total-quota (QUOTA_BYTES) errors too", async () => {
     const oldAnswers = Array.from({ length: 40 }, (_, i) => answerAt(i + 1));
     mockGet.mockResolvedValue({ answers: oldAnswers });
