@@ -9,18 +9,15 @@ const inputWithSend = readFileSync(
 );
 
 describe("free-text question composition", () => {
-  it("softly yields the prompt's space to the response editor", () => {
-    expect(component).toContain('["input-shown"]: getShowInput()');
-    expect(component).toContain('class="question-prompt-slot"');
-    expect(styles).toMatch(
-      /\.question-prompt-slot\s*\{[\s\S]*grid-template-rows:\s*1fr;/,
-    );
-    expect(styles).toMatch(
-      /&\.input-shown \.question-prompt-slot\s*\{[\s\S]*grid-template-rows:\s*0fr;/,
-    );
+  it("keeps the prompt visible while the response editor is open", () => {
+    // The intervention question stays in view the whole time you write - it
+    // must never collapse away once the input opens.
+    expect(component).not.toContain('["input-shown"]: getShowInput()');
+    expect(component).not.toContain('class="question-prompt-slot"');
+    expect(styles).not.toMatch(/grid-template-rows:\s*0fr/);
   });
 
-  it("keeps the collapsed prompt as the editor's accessible label", () => {
+  it("keeps the prompt as the editor's accessible label", () => {
     expect(component).toContain(
       'role={hasChips || getShowInput() ? undefined : "button"}',
     );

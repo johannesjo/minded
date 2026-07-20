@@ -115,35 +115,33 @@ export const Question: (props: {
   };
 
   return (
-    <div
-      id="minded-6622-question-wrapper"
-      classList={{ ["input-shown"]: getShowInput() }}
-    >
-      <div class="question-prompt-slot">
-        <div
-          id="minded-6622-question"
-          class="txtBig"
-          classList={{ "show-input": getShowInput() }}
-          // With chips the question is plain text - the chips (and "Something
-          // else…") drive input - so it isn't a button. Without chips it stays
-          // the tap-to-type reveal target it has always been.
-          role={hasChips || getShowInput() ? undefined : "button"}
-          tabindex={hasChips || getShowInput() ? undefined : 0}
-          aria-expanded={hasChips || getShowInput() ? undefined : false}
-          onClick={hasChips ? undefined : revealInput}
-          onKeyDown={
-            hasChips
-              ? undefined
-              : (ev) => {
-                  if (ev.key === "Enter" || ev.key === " ") {
-                    ev.preventDefault();
-                    revealInput();
-                  }
+    <div id="minded-6622-question-wrapper">
+      {/* The prompt stays in view the whole time you write - it never collapses
+          away once the editor opens, so the question you're answering (and the
+          textarea's accessible label) is always visible. */}
+      <div
+        id="minded-6622-question"
+        class="txtBig"
+        classList={{ "show-input": getShowInput() }}
+        // With chips the question is plain text - the chips (and "Something
+        // else…") drive input - so it isn't a button. Without chips it stays
+        // the tap-to-type reveal target it has always been.
+        role={hasChips || getShowInput() ? undefined : "button"}
+        tabindex={hasChips || getShowInput() ? undefined : 0}
+        aria-expanded={hasChips || getShowInput() ? undefined : false}
+        onClick={hasChips ? undefined : revealInput}
+        onKeyDown={
+          hasChips
+            ? undefined
+            : (ev) => {
+                if (ev.key === "Enter" || ev.key === " ") {
+                  ev.preventDefault();
+                  revealInput();
                 }
-          }
-        >
-          <span>{formatQuestionText(displayText)}</span>
-        </div>
+              }
+        }
+      >
+        <span>{formatQuestionText(displayText)}</span>
       </div>
 
       <Show when={hasChips && !getShowInput()}>
