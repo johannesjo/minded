@@ -1167,7 +1167,15 @@ export const Sun: Component<SunProps> = (props) => {
         // off-screen fling here would run concurrently and override it, dragging
         // the disc off the bottom edge - no sun on the offer. When a settle has
         // taken over, skip the fling and let the glide bring the disc home.
-        if (!getIsSettlingIntoRole()) animateFling(velocity);
+        if (!getIsSettlingIntoRole()) {
+          // The moon's "let the day go" exit must stay calm - a velocity-driven
+          // fling launches it off-screen far too fast for a wind-down. Regardless
+          // of release speed, let the moon sink on the eased completion glide
+          // (dimming as it goes) instead of flinging.
+          if (props.variant === "moon")
+            animateToCompletion(releaseAction.direction);
+          else animateFling(velocity);
+        }
       } else if (releaseAction.type === "dragComplete") {
         // Slow drag behavior (non-fling) - triggers onDragComplete
         triggerHapticPattern("completion"); // Satisfying heavy + light pattern
@@ -1264,6 +1272,7 @@ export const Sun: Component<SunProps> = (props) => {
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
+      const startGlow = getGlowIntensity();
 
       const config = COMPLETION_ANIMATION_CONFIG;
       const easing =
@@ -1290,6 +1299,13 @@ export const Sun: Component<SunProps> = (props) => {
         const currentOpacity =
           startOpacity + (easing.targetOpacity - startOpacity) * easedProgress;
         setOpacity(currentOpacity);
+
+        // Dim the halo as the disc leaves, so the glow fades out with the motion
+        // rather than holding full and hard-cutting on unmount. For the sun the
+        // render floors its rest glow, so this reads only on the moon - whose
+        // floor is lifted during completion (see --glow-intensity below) - giving
+        // the "let the day go" descent a moon that gently sets and dims.
+        setGlowIntensity(startGlow * (1 - easedProgress));
 
         notifyIfFlungOffscreen();
 
@@ -1575,10 +1591,17 @@ export const Sun: Component<SunProps> = (props) => {
             : getGlowColor(),
         "--glow-intensity":
           props.variant === "moon"
-            ? Math.max(
-                getGlowIntensity(),
-                props.isHovered ? MOON_HOVER_GLOW : MOON_REST_GLOW,
-              )
+            ? // Once the moon starts its "let the day go" descent, drop the
+              // resting-glow floor so its halo can dim all the way to nothing as
+              // it sinks (animateToCompletion ramps getGlowIntensity to 0). At
+              // rest/hover it still wears the floored glow so the photo disc reads
+              // as a glowing moon rather than a dim rock.
+              getIsCompletionStarted()
+              ? getGlowIntensity()
+              : Math.max(
+                  getGlowIntensity(),
+                  props.isHovered ? MOON_HOVER_GLOW : MOON_REST_GLOW,
+                )
             : props.settle?.glowIntensity != null
               ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
               : Math.max(
