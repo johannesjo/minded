@@ -5,30 +5,8 @@
 #minded-6622-question-wrapper {
   user-select: none;
 
-  // The prompt owns a real row until writing begins, then yields that row to
-  // the editor instead of being browser-scrolled into a clipped fragment.
-  .question-prompt-slot {
-    display: grid;
-    grid-template-rows: 1fr;
-    opacity: 1;
-    transform: translateY(0);
-    transition:
-      grid-template-rows var(--dur-soft) var(--ease-out),
-      opacity var(--dur-quick) var(--ease-out),
-      transform var(--dur-soft) var(--ease-out);
-
-    > #minded-6622-question {
-      min-height: 0;
-      overflow: hidden;
-    }
-  }
-
-  &.input-shown .question-prompt-slot {
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transform: translateY(-8px);
-    pointer-events: none;
-  }
+  // The prompt stays in view the whole time you write - it never collapses away
+  // once the editor opens, so the question you're answering is always visible.
 
   #minded-6622-question {
     color: var(--c-fg-full-emphasis);
@@ -319,10 +297,6 @@
   }
 
   .question-input-container {
-    transition: none;
-  }
-
-  #minded-6622-question-wrapper .question-prompt-slot {
     transition: none;
   }
 
