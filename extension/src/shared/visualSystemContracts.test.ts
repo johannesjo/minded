@@ -46,7 +46,7 @@ describe("visual system contracts", () => {
     expect(rgbaAlpha(heading![1])).toBeLessThan(rgbaAlpha(full![1]));
   });
 
-  it("keeps small and non-mobile breakpoints contiguous", () => {
+  it("keeps small and non-mobile breakpoints adjacent at integer pixels", () => {
     const css = compile(
       [
         '@import "styles/mixins/mixins";',

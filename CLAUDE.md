@@ -177,7 +177,7 @@ Path aliases change based on build mode to load platform-specific code.
 
 **Always use existing global styles for consistency:**
 - Buttons: use the `<Btn>` component (`src/shared/components/ui/Btn.tsx`) - never write raw `<button class="btn…">`. It has three typed bases and a curated, type-checked set of modifiers, so screens can't sprout one-off button looks:
-  - `<Btn>` (text, default) with `outline` / `big`
+  - `<Btn>` (text, default) with `outline` / `soft` / `plain` / `big`; add `voice` only for genuinely mindful invitations
   - `<Btn variant="icon">` with `small` / `plain`
   - `<Btn variant="toggle">` with `small` / `selected`
   - `href` renders a link (router `<A>` for internal routes, plain `<a>` for external/mailto)

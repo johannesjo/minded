@@ -124,7 +124,7 @@
   }
 
   @media (hover: hover) {
-    &:hover {
+    &:where(:not(:disabled)):hover {
       background: var(--btn-bg);
 
       > .minded-6622-ico {
@@ -172,9 +172,8 @@
   border: 1px solid var(--btn-outline-color);
 
   @media (hover: hover) {
-    &:hover {
+    &:where(:not(:disabled)):hover {
       background: var(--btn-bg);
-      //box-shadow: none;
       border-color: var(--btn-bg);
     }
   }
@@ -191,7 +190,7 @@
   background: var(--btn-bg-not-selected);
 
   @media (hover: hover) {
-    &:hover {
+    &:where(:not(:disabled)):hover {
       background: var(--btn-bg-selectable-hover);
     }
   }
@@ -206,7 +205,7 @@
   border: 0;
 
   @media (hover: hover) {
-    &:hover {
+    &:where(:not(:disabled)):hover {
       background: var(--btn-bg-not-selected);
     }
   }
@@ -242,6 +241,7 @@
     text-transform: lowercase;
     min-width: 92px;
     transition:
+      transform var(--dur-quick) var(--ease-out),
       background var(--dur-quick) var(--ease-out),
       border-radius var(--dur-quick) var(--ease-out);
     background: var(--btn-bg-not-selected);
@@ -252,15 +252,8 @@
     --extraClickArea: -16px;
   }
 
-  @media (hover: hover) {
-    &:hover {
-      background: var(--btn-bg-selectable-hover);
-    }
-  }
-
   &.isSelected {
     background: var(--btn-bg-selected);
-    opacity: 1;
     border-radius: var(--radius-lg);
   }
 }
