@@ -40,7 +40,8 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
           <For each={options}>
             {(option) => (
               <Btn
-                variant="toggle"
+                plain
+                class="time-option"
                 disabled={!props.isArmed}
                 onClick={() => handleSelect(option.value)}
               >

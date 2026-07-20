@@ -275,7 +275,9 @@ export const DashboardGroups: (props: {
           : "Would you like to reflect on your day?"}
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        <Btn onClick={() => navigate("/dailyQuestions")}>stay a moment</Btn>
+        <Btn voice onClick={() => navigate("/dailyQuestions")}>
+          stay a moment
+        </Btn>
         <Btn soft onClick={() => removeDailyQuestionsBanner()}>
           not now
         </Btn>

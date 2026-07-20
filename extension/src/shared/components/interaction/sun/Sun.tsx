@@ -1441,12 +1441,11 @@ export const Sun: Component<SunProps> = (props) => {
     const ct = getColorTemp();
     return ct < -0.1 ? "200, 220, 255" : "255, 255, 255";
   };
-  // Hover lift + halo for the resting companion, echoing the bottom-bar buttons'
-  // hover feedback. The lift is slight; the glow reuses the drag box-shadow (see
+  // Hover lift + halo for the resting companion. The lift is slight; the glow
+  // reuses the drag box-shadow (see
   // the inline --glow-intensity), pushed past its 0..1 drag range to a bold,
-  // unmistakable halo. Deliberately brighter than a button's hover bloom
-  // (--btn-box-shadow sits at a calmer 0.55 alpha): the sun is the one hero
-  // object, so its response leads.
+  // unmistakable halo. The sun is the one hero object, so luminosity belongs
+  // here rather than on routine controls.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
   // The sun carries a warm halo at all times - the disc's box-shadow glow - so the

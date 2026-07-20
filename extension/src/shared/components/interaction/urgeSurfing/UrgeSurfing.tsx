@@ -202,7 +202,9 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           {/* No "skip" here: triple-tapping (or flinging) the persistent sun is
               the universal way out of any interaction, so a second button would
               be redundant. */}
-          <Btn onClick={() => goToPhase("rateBefore")}>Surf it</Btn>
+          <Btn voice onClick={() => goToPhase("rateBefore")}>
+            Surf it
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>

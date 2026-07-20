@@ -105,7 +105,9 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
         <Match when={getPhase() === "invite"}>
           <div class="txtBig interaction-heading">One bell.</div>
           <p class="bell-sub">Listen until the sound has completely gone.</p>
-          <Btn onClick={ring}>Ring it</Btn>
+          <Btn voice onClick={ring}>
+            Ring it
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "listen"}>

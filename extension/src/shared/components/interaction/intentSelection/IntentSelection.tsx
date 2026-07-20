@@ -40,7 +40,8 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
           <For each={SESSION_INTENT_OPTIONS}>
             {(intent) => (
               <Btn
-                variant="toggle"
+                plain
+                class="intent-option"
                 disabled={!props.isArmed}
                 onClick={() => handleSelect(intent)}
               >
@@ -48,15 +49,15 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
               </Btn>
             )}
           </For>
+          <Btn
+            plain
+            class="intent-option"
+            disabled={!props.isArmed}
+            onClick={() => handleSelect(undefined)}
+          >
+            other
+          </Btn>
         </div>
-
-        <Btn
-          variant="toggle"
-          disabled={!props.isArmed}
-          onClick={() => handleSelect(undefined)}
-        >
-          other
-        </Btn>
 
         {/* Reserves the resting sun's footprint beneath the options so the disc
             sits inside the centred choices group (see measureRestingSunAnchor).

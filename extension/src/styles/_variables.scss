@@ -83,8 +83,7 @@
   // copy, the "be proud" success) or when you read your own words (dashboard +
   // detail-page reflections). --font-body (Inter) is the functional default for
   // everything else. Serif is always opt-in via .txtBig / .h2Mindful /
-  // displayVoice(); Inter is inherited, never declared. One exception carries
-  // serif outside the rule: every <Btn> (buttons are invitations, issue #167).
+  // displayVoice() / <Btn voice>; Inter is inherited, never declared.
   // Full write-up: Styleguide's Typography section.
   --font-display:
     "Newsreader Variable", "Newsreader", "Iowan Old Style", "Charter", Georgia,
@@ -114,16 +113,12 @@
   // through so choice surfaces stay in the same world as the gradient stage
   // (issue #167). One alpha ladder - not-selected .25 < default .65 <
   // hover .7 < selected .85 - so selected stays the brightest step without
-  // reverting to an opaque slab (it also signals via scale + radius).
+  // reverting to an opaque slab.
   --btn-bg: rgba(255, 255, 255, 0.65);
   --btn-bg-not-selected: rgba(255, 255, 255, 0.25);
   --btn-bg-selected: rgba(255, 255, 255, 0.85);
   --btn-outline-color: rgba(0, 0, 0, 0.14);
   --btn-bg-selectable-hover: rgba(255, 255, 255, 0.7);
-  --btn-selected-scale: 1.1;
-  // Hover bloom: a warm halo, not a flashbulb - alpha kept well below the
-  // button fills above so the hover glow never outshines the choice itself.
-  --btn-box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.55);
   // components
   --interaction-txt-size: var(--fz-xl);
 
@@ -369,18 +364,16 @@
     --dashboard-card-bg-hover: rgba(255, 255, 255, 0.12);
 
     --c-bg: #444a5b;
-    --h4-c: rgba(255, 255, 255, 0.95);
+    --h4-c: rgba(255, 255, 255, 0.65);
     --c-bg-btns: rgba(255, 255, 255, 0.12);
     --form-inputs-bg: rgba(255, 255, 255, 0.08);
     --btn-bg: rgba(255, 255, 255, 0.12);
     // Stays a tint, not solid white: text is white (--c-fg), and the selected
-    // toggle already signals via scale-up + rounder corners.
+    // toggle also signals with its rounder corners.
     --btn-bg-selected: rgba(255, 255, 255, 0.26);
     --btn-bg-selectable-hover: rgba(255, 255, 255, 0.18);
     --btn-bg-not-selected: rgba(255, 255, 255, 0.06);
     --btn-outline-color: rgba(255, 255, 255, 0.3);
-    // Warm amber glow that echoes the sun - calmer than a saturated pink.
-    --btn-box-shadow: 0 0 10px 1px rgba(255, 178, 79, 0.45);
 
     // At night the companion is the moon, not a warm sun: a cool silver disc lit
     // from the top-left, with a cool blue halo instead of the daytime amber glow.

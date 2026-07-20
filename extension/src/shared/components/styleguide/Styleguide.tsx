@@ -294,10 +294,9 @@ const Styleguide = (): JSX.Element => {
           reflection detail page). Inter (sans) is the functional default for
           everything else: structural headings, settings, labels, metadata.
           Serif is always opt-in via <code>.txtBig</code>,{" "}
-          <code>.h2Mindful</code>, or the <code>displayVoice()</code> mixin;
-          Inter is inherited, never declared. One deliberate exception carries
-          serif outside that rule: every <code>&lt;Btn&gt;</code> app-wide
-          (buttons are invitations - issue #167).
+          <code>.h2Mindful</code>, the <code>displayVoice()</code> mixin, or
+          <code>&lt;Btn voice&gt;</code> for a genuinely mindful invitation.
+          Inter is inherited by functional controls.
         </p>
         <h2 class="h2">.h2 - functional heading (Inter)</h2>
         <h2 class="h2 h2Mindful">
@@ -345,6 +344,10 @@ const Styleguide = (): JSX.Element => {
         <Subsection label="<Btn>">
           <Btn>default</Btn>
           <Btn disabled>disabled</Btn>
+        </Subsection>
+
+        <Subsection label="<Btn voice> (mindful invitation)">
+          <Btn voice>Stay a moment</Btn>
         </Subsection>
 
         <Subsection label="<Btn outline>">
