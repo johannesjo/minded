@@ -11,10 +11,8 @@
   // The resting sun holds it at the hover intensity (Sun.tsx COMPANION_REST_GLOW),
   // so the idle disc already wears the bold hover glow rather than a dimmer one -
   // and Sun.tsx floors the value there, so the 0..1 drag ramp (always dimmer)
-  // can't dim it mid-drag. It's a static shadow at rest (constant intensity →
-  // rasterised once, not per frame); the gentle breath is carried separately by
-  // the ::after opacity pulse below (a compositor-only property). The glow is
-  // white throughout.
+  // can't dim it mid-drag. It stays static at rest; only an explicit guided pause
+  // may breathe. The glow is white throughout.
   box-shadow:
     var(--sun-shadow),
     0 0 calc(15px * var(--glow-intensity))
@@ -29,13 +27,10 @@
   transform-origin: center;
   will-change: transform, box-shadow;
 
-  // A slow idle float - a gentle 4px rise and fall, in step with the ::after
-  // breath halo (same 9s) so the resting disc subtly inhales rather than sitting
-  // dead still. Driven on the independent `translate` property, not `transform`,
-  // which the drag/settle physics own via the inline style - the two compose,
-  // so the float never fights the JS-driven motion. Paused while dragging and
-  // under reduced motion (below).
-  animation: mindedSunIdleFloat 9s ease-in-out infinite;
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 6px;
+  }
 
   /* Ensure box-shadow transitions smoothly even when JS updates the variables */
   transition: box-shadow 0.1s linear;
@@ -65,10 +60,8 @@
   // The sun's resting glow is the box-shadow above (held at the hover intensity),
   // so the sun face needs no halo of its own here - a second ring layered on the
   // box-shadow bloom just reads as an unwanted double halo. This ::after is kept
-  // purely as the carrier for the *moon's* cool resting halo (.moon override
-  // below): the moon doesn't take the box-shadow rest glow, so it breathes its
-  // halo through this pseudo-element's opacity (compositor-only). For the sun it
-  // has no box-shadow and stays invisible.
+  // purely as the carrier for the moon's cool, static resting halo (.moon override
+  // below). For the sun it has no box-shadow and stays invisible.
   &::after {
     content: "";
     position: absolute;
@@ -76,23 +69,15 @@
     z-index: -1;
     border-radius: inherit;
     pointer-events: none;
-    opacity: 0.2;
-    animation: mindedSunIdleBreath 9s ease-in-out infinite;
-    will-change: opacity;
+    opacity: 0.4;
   }
 
   &.dragging {
     cursor: grabbing;
     transition: none; /* Instant update during drag */
 
-    // Hold the float still while the finger owns the disc, so the idle bob can't
-    // add a stray wobble to the drag.
-    animation: none;
-    translate: none;
-
     // The drag glow on box-shadow owns the halo; hide the resting one.
     &::after {
-      animation: none;
       opacity: 0;
     }
   }
@@ -142,8 +127,7 @@
     // The moon's resting glow is the cool/white box-shadow bloom above, floored at
     // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's - the near-white disc
     // would otherwise wash out a halo this faint. This cool ::after ring sits under
-    // that bloom and carries the gentle breath via its opacity pulse; the scene
-    // stays cool, so there is no warm bloom.
+    // that bloom as a still pool of light; the scene stays cool, with no warm bloom.
     &::after {
       box-shadow:
         0 0 12px 1px rgba(216, 229, 255, 0.26),
@@ -221,37 +205,5 @@
     &.filled {
       background: rgba(255, 255, 255, 0.85);
     }
-  }
-}
-
-@keyframes mindedSunIdleBreath {
-  0%,
-  100% {
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-@keyframes mindedSunIdleFloat {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -4px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .minded-sun {
-    animation: none;
-    translate: none;
-  }
-
-  .minded-sun::after {
-    animation: none;
-    opacity: 0.4;
   }
 }

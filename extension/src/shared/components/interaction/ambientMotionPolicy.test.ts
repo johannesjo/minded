@@ -1,0 +1,69 @@
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
+import { PAGE_FADE_MS } from "@src/util/animation";
+
+const readSource = (relativePath: string): string =>
+  readFileSync(resolve(process.cwd(), relativePath), "utf8");
+
+describe("calm motion policy", () => {
+  it("keeps ambient companion surfaces still outside guided pauses", () => {
+    const sunStyles = readSource(
+      "src/shared/components/interaction/sun/Sun.scss",
+    );
+    const littleSunStyles = readSource(
+      "src/shared/components/interaction/LittleSun.scss",
+    );
+    const questionStyles = readSource(
+      "src/shared/components/interaction/Question.scss",
+    );
+    const routeComponent = readSource("src/shared/RouteCmp.tsx");
+    const onboardingSunLayer = readSource(
+      "src/shared/components/onboarding/OnboardingSunLayer.tsx",
+    );
+    const onboardingSunStyles = readSource(
+      "src/shared/components/onboarding/onboardingSunLayer.module.scss",
+    );
+
+    expect(sunStyles).not.toContain("mindedSunIdleFloat");
+    expect(sunStyles).not.toContain("mindedSunIdleBreath");
+    expect(littleSunStyles).not.toContain("minded6622littleSunBreath");
+    expect(questionStyles).not.toContain("tapHintBreathe");
+    expect(routeComponent).not.toContain("styles.isIntervention");
+    expect(onboardingSunLayer).not.toContain("styles.isLeaving");
+    expect(onboardingSunLayer).not.toContain("styles.isIntervention");
+    expect(onboardingSunLayer).not.toContain("styles.isCompanion");
+    expect(onboardingSunStyles).not.toMatch(
+      /&\.isLeaving|&\.isIntervention|&\.isCompanion/,
+    );
+    expect(littleSunStyles).toMatch(
+      /prefers-reduced-motion[\s\S]*#minded-6622-little-sun\s*\{[\s\S]*transition:\s*none/,
+    );
+    expect(questionStyles).toMatch(
+      /prefers-reduced-motion[\s\S]*\.question-tap-hint\s*\{/,
+    );
+    expect(onboardingSunStyles).toMatch(
+      /prefers-reduced-motion[\s\S]*\.sunLayer\s*\{[\s\S]*animation:\s*none/,
+    );
+  });
+
+  it("reserves long motion for the sun instead of routine navigation", () => {
+    const pageAnimationStyles = readSource("src/styles/mixins/_ani.scss");
+    const androidOnboarding = readSource(
+      "src/android/components/onboardingAndroid/OnboardingAndroid.tsx",
+    );
+    const iosOnboarding = readSource(
+      "src/ios/components/onboardingIOS/OnboardingIOS.tsx",
+    );
+
+    expect(PAGE_FADE_MS).toBe(240);
+    expect(pageAnimationStyles).toContain(
+      "animation: minded6622fadeInScale var(--ease-out) 320ms",
+    );
+    expect(pageAnimationStyles).not.toContain("1000ms");
+    expect(androidOnboarding).not.toContain("ENTRANCE_ANIMATION_MS");
+    expect(iosOnboarding).not.toContain("ENTRANCE_ANIMATION_MS");
+    expect(androidOnboarding).toContain('addEventListener("animationend"');
+    expect(iosOnboarding).toContain('addEventListener("animationend"');
+  });
+});

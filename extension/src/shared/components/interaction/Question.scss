@@ -54,7 +54,7 @@
 // fills the whole reserved input area so the entire quiet space below the
 // question is a generous tap target - the pen is just the visible cue, pinned
 // near the top where the textarea's first line lands. Fades out as the field
-// fades in. An invitation, never a CTA: softly faded in, gently breathing, muted.
+// fades in. An invitation, never a CTA: it appears once, then rests.
 .question-tap-hint {
   position: absolute;
   // cover the full reserved area → large, forgiving tap target
@@ -66,12 +66,9 @@
   padding-top: var(--space-xl);
   cursor: pointer;
   opacity: 0;
-  // Fade softly in, then hand off into the breathing loop at the same opacity
-  // (0.5) so there is no hard cut. The cue stays quiet, but no longer becomes
-  // ambiguous against the pale middle of the daytime sky.
-  animation:
-    tapHintFadeIn 0.6s var(--ease-out) 0.6s forwards,
-    tapHintBreathe 4s ease-in-out 1.2s infinite;
+  // Fade softly in once. Repeating motion belongs to guided breathing, not this
+  // secondary answer affordance.
+  animation: tapHintFadeIn 0.6s var(--ease-out) 0.6s forwards;
   transition:
     opacity 0.4s var(--ease-out),
     visibility 0.4s;
@@ -90,16 +87,6 @@
   }
   100% {
     opacity: 0.5;
-  }
-}
-
-@keyframes tapHintBreathe {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.7;
   }
 }
 
@@ -200,5 +187,26 @@
     > .minded-6622-ico {
       opacity: 0.8;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #minded-6622-question-wrapper #minded-6622-question > span,
+  .question-tap-hint,
+  .question-chips {
+    animation: none;
+  }
+
+  #minded-6622-question-wrapper #minded-6622-question > span {
+    opacity: 1;
+    transform: none;
+  }
+
+  .question-tap-hint {
+    opacity: 0.5;
+  }
+
+  .question-input-container {
+    transition: none;
   }
 }

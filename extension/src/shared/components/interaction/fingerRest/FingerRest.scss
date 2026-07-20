@@ -46,9 +46,9 @@
     position: absolute;
     inset: 0;
     // The quiet response to a resting finger: a soft pool of the companion's
-    // own light (amber by day, the moon's cool blue at night - same variable
-    // the little sun's halo breathes with). Opacity and its slow ease are
-    // driven inline from the component.
+    // own light (amber by day, the moon's cool blue at night - the same palette
+    // as the little sun's halo). Opacity and its slow ease are driven inline
+    // from the component.
     background: radial-gradient(
       closest-side,
       rgba(var(--little-sun-breath-rgb), 0.22) 0%,

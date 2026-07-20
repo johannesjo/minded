@@ -15,7 +15,7 @@ export function fadeOut(
   frameNr: number;
 } {
   el.style.opacity = "1";
-  el.style.transition = `opacity ${duration}ms ease-in`;
+  el.style.transition = `opacity ${duration}ms var(--ease-out)`;
   if (initialDelay) {
     el.style.transitionDelay = `${initialDelay}ms`;
   }
@@ -28,10 +28,10 @@ export function fadeOut(
   };
 }
 
-// Page-level fade duration: matches --dur-soft so every page-to-page move eases
-// out at the same pace it eases back in (standardPageTransitionIn) - never a
-// hard cut (see the "transitions - always soft" styling rule).
-export const PAGE_FADE_MS = 480;
+// Routine navigation should feel responsive while still easing between surfaces.
+// The longer ~900ms motion tier is reserved for the signature sun morphs and calm
+// arrival beats, not every page change.
+export const PAGE_FADE_MS = 240;
 
 // Fade `el` fully out over the page-fade beat, then run `done` - the shared
 // core of every "leaving surface eases out before the next eases in" swap

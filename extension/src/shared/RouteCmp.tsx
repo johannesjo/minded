@@ -303,20 +303,9 @@ const MainWrapper = (props: RouteSectionProps) => {
         class={styles.shellSunLayer}
         classList={{
           [styles.isInteractive]: isSunInteractive(),
-          // A live intervention pins the idle float still so the disc's centre
-          // stays exactly on the point the background glow tracks (see the SCSS
-          // note). The daily-questions phases have no such glow to track, so they
-          // keep their gentle idle float.
-          [styles.isIntervention]:
-            getSunRole() !== "companion" &&
-            getSunRole() !== "dailyQuestions" &&
-            getSunRole() !== "dailyQuestionsSuccess",
-          // The companion rest must sit perfectly still on the bottom-bar anchor.
-          // The idle float is upward-only (0 → -4px), so it would ride the disc up
-          // to 4px above the settings / feedback icons' centre line for most of
-          // its cycle, reading as "sitting too high / not vertically centred". A
-          // still companion also matches the no-ambient-breath rule for the soft
-          // sun (it morphs into place, then rests; it doesn't inhale).
+          // This role scopes the companion's compact halo and night horizon
+          // reflection. The ambient disc itself is still: it morphs into place,
+          // then rests until the user moves it.
           [styles.isCompanion]: getSunRole() === "companion",
           // A dashboard offer that owns the screen has taken over (the flung-up
           // let-go question, or grounding's screen-free / Android-lock sit); hide
