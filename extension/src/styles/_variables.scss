@@ -63,19 +63,20 @@
   //
   // THE FIX is to stop amplifying and instead ship the contrast in the tile, then
   // composite it with `mix-blend-mode: normal` (see _grain.scss). Plain source-over
-  // adds the SAME per-pixel perturbation regardless of backdrop, so the dither is
-  // uniform across the whole gradient and survives HiDPI upscaling (measured: <=6px
-  // flat runs in both themes at 1x/2x/3x). The tradeoff of `normal` is a flat,
-  // uniform tint toward the tile's mean - which is imperceptible (no edge, no band)
-  // as long as the mean is grey and the opacity is low.
+  // adds the SAME per-channel perturbation regardless of backdrop, so the dither
+  // is uniform across the whole gradient and survives HiDPI upscaling. Keeping
+  // the turbulence's R/G/B channels independent matters: the former grey tile
+  // cancelled out of R-G / G-B and could hide luminance steps while leaving
+  // coherent colour bands. The tradeoff of `normal` is a flat, uniform tint
+  // toward the tile's neutral mean, imperceptible at this low opacity.
   //
-  // TILE ANATOMY: fractalNoise -> feColorMatrix copies the noise into R/G/B and
-  // forces alpha = 1 (a grey, mean ~0.5 tile). `color-interpolation-filters=sRGB`
-  // keeps the mean exactly grey (the default linearRGB pushed it off-centre and
-  // milked the sky). feComponentTransfer (slope 2.6, intercept -0.8: maps 0.5->0.5)
-  // is the crucial part - it stretches the contrast so a *low* opacity still crosses
-  // a full code-level, which is what lets `normal` dither without visible milking.
-  --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1'/><feComponentTransfer><feFuncR type='linear' slope='2.6' intercept='-0.8'/><feFuncG type='linear' slope='2.6' intercept='-0.8'/><feFuncB type='linear' slope='2.6' intercept='-0.8'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  // TILE ANATOMY: fractalNoise -> feColorMatrix preserves its independent RGB
+  // channels and forces alpha = 1. `color-interpolation-filters=sRGB` keeps each
+  // channel's mean centred (the default linearRGB milked the sky).
+  // feComponentTransfer (slope 2.6, intercept -0.8: maps 0.5->0.5) stretches the
+  // contrast so a *low* opacity still crosses a full code-level, which is what
+  // lets `normal` dither without visible milking.
+  --grain-tile: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 1'/><feComponentTransfer><feFuncR type='linear' slope='2.6' intercept='-0.8'/><feFuncG type='linear' slope='2.6' intercept='-0.8'/><feFuncB type='linear' slope='2.6' intercept='-0.8'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 
   // Two voices. --font-display (Newsreader serif) is the *mindful voice*: used
   // only when the app speaks gently to you (intervention prompts, breath/pause
