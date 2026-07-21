@@ -52,7 +52,10 @@ const findBtns = (src: string): BtnNode[] => {
     const openTag = src.slice(start, i + 1);
     // `voice` is a bare boolean prop; match it only on prop boundaries so an
     // aria-label or class value that happens to contain the word can't count.
-    const voice = /(?:^|\s)voice(?=[\s/>=])/.test(openTag);
+    // Blank out quoted prop *values* first (title="…voice…", class="…") so a
+    // value carrying the word can never be mistaken for the modifier.
+    const propsOnly = openTag.replace(/"[^"]*"|'[^']*'|`[^`]*`/g, '""');
+    const voice = /(?:^|\s)voice(?=[\s/>=])/.test(propsOnly);
     const closeIdx = selfClosing ? i + 1 : src.indexOf("</Btn>", i + 1);
     const end = selfClosing
       ? i + 1
@@ -66,11 +69,22 @@ const findBtns = (src: string): BtnNode[] => {
 };
 
 // Two buttons are sibling controls in the same row/stack when nothing but
-// whitespace (and JSX comments) sits between them - no closing container, no
-// conditional wrapper. That is exactly the arrangement where a serif button
-// beside a sans one reads as a font seam.
+// whitespace sits between them - no closing container to separate them. JSX
+// comments ({/* */}) and whitespace-only string spacers ({" "}) count as
+// whitespace here, since they don't break the row. That is exactly the
+// arrangement where a serif button beside a sans one reads as a font seam.
+//
+// Known limitation (text scan, not AST): a pair whose two buttons live on
+// opposite sides of a conditional - `{cond ? <Btn voice/> : <Btn/>}` or two
+// buttons split by a <Show> wrapper - is not treated as adjacent, so such a
+// seam would slip through. No call site does this today; the check backstops
+// the common flat-sibling row, which is where the daily-questions seam was.
 const isSiblingGap = (gap: string): boolean =>
-  /^\s*$/.test(gap.replace(/\{\/\*[\s\S]*?\*\/\}/g, ""));
+  /^\s*$/.test(
+    gap
+      .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+      .replace(/\{\s*(['"`])\s*\1\s*\}/g, ""),
+  );
 
 const lineOf = (src: string, index: number): number =>
   src.slice(0, index).split("\n").length;
