@@ -148,7 +148,10 @@
       rgba(255, 255, 255, 0) 42%
     ),
     radial-gradient(circle at 50% 56%, #ffe487 0%, #ffb24f 55%, #f2823c 100%);
-  --little-sun-shadow: 0 0 6px 1px #e9843a;
+  // The one canonical sun amber (#ffd673 == 255,214,115), shared with the in-app
+  // resting companion halo and the departing hand-off (glowColorForTemp warmth
+  // 1), so the sun glows a single amber everywhere it appears.
+  --little-sun-shadow: 0 0 6px 1px #ffd673;
   // The little sun's halo/accent colour. Kept as bare rgb components because
   // grounding and setup surfaces reuse it at several opacities; dark mode
   // overrides it with the moon's cool blue below.

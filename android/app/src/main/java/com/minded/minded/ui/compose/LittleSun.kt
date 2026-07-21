@@ -33,9 +33,10 @@ import com.minded.minded.util.isDarkModeNow
 // amber glow around it.
 private val SUN_COLOR = Color.White
 private val SUN_TEXT_COLOR = Color(0xFF956969)
-// Warm amber-gold, leaning a touch more toward yellow than the web little
-// sun's #e9843a (a more golden glow reads softer and sunnier).
-internal val GLOW_COLOR = Color(0xFFE99A3A)
+// The one canonical sun amber (#ffd673 == 255,214,115), shared with the web
+// little sun's --little-sun-shadow and the in-app sun's resting/departing glow,
+// so the sun glows a single amber everywhere it appears.
+internal val GLOW_COLOR = Color(0xFFFFD673)
 
 // At night the companion is the moon, not a warm sun - so the little sun
 // mirrors the in-app moon (web Sun.scss .moon): a cool silver disc with a cool

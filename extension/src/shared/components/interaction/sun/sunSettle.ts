@@ -158,24 +158,35 @@ export const LITTLE_SUN_CORNER_PX_ANDROID = 30;
 export const LITTLE_SUN_DISC_PX_WEB = 40;
 export const LITTLE_SUN_DISC_PX_ANDROID = 30;
 
-/**
- * Both Little Suns wear a warm amber halo (web: `rgba(233,132,58,…)` in
- * LittleSun.scss; Android: `#E99A3A` ≈ 233,154,58 in LittleSun.kt). The departing
- * sun warms its normally-white glow to this amber as it settles, so the halo
- * *colour* matches at hand-off too - not just the position and size. One shared
- * value: the two ambers differ by an imperceptible amount in a soft glow.
- */
-export const LITTLE_SUN_GLOW_RGB = "233, 140, 58";
+// Both Little Suns wear the app's one canonical amber halo (web:
+// `--little-sun-shadow` in _variables.scss; Android: `GLOW_COLOR` in
+// LittleSun.kt - both `#ffd673` ≈ 255,214,115). The departing sun warms its
+// normally-white glow to that same amber via `warmth: 1` (the positive end of
+// the shared glow axis maps to it - see glowColorForTemp), so the halo *colour*
+// matches at hand-off too, not just the position and size. One amber everywhere.
 
 /**
  * Departing halo intensity, dialled down from the bold companion rest glow
  * (Sun.tsx COMPANION_REST_GLOW ≈ 1.8). The Little Sun's amber halo is a snug ring
  * roughly the disc's own width, not the broad bloom the resting companion wears,
- * so the morph tightens the glow to read as that same close halo when it hands
- * off. Tuned by eye in the styleguide SunMorphHarness; nudge here if it reads too
- * faint or too broad.
+ * so the morph both dims (this intensity) AND tightens the *shape*
+ * (SNUG_GLOW_REACH on the glow axis - collapsing the far plume) to read as that
+ * same close halo when it hands off. Tuned by eye in the styleguide
+ * SunMorphHarness; nudge here if it reads too faint or too broad.
  */
 export const DEPART_GLOW_INTENSITY = 1.0;
+
+/**
+ * The snug halo spread on the glow axis (0 = snug, 1 = broad), shared by the two
+ * states that must sit close to the disc rather than bloom: the resting day
+ * companion (its far plume would be clipped low on the bar) and the departing
+ * hand-off (its shape lands on the Little Sun widget's close ring, not the
+ * interaction sun's broad bloom). One constant so the two "snug" states can't
+ * silently drift apart. Only the outermost box-shadow layer is gated by reach
+ * (Sun.scss), so this collapses the far plume while keeping the near 15/40px
+ * halo - a snug two-layer presence, not a pinched single ring.
+ */
+export const SNUG_GLOW_REACH = 0.2;
 
 /**
  * Time chosen → the sun glides to the bottom-left corner, shrinks to the Little
@@ -196,7 +207,8 @@ export const sunDepartSettle = (
   anchorXPx: cornerPx,
   anchorYPxFromBottom: cornerPx,
   discPx,
-  glowColor: LITTLE_SUN_GLOW_RGB,
+  warmth: 1,
+  reach: SNUG_GLOW_REACH,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });
@@ -229,7 +241,8 @@ export const sunDepartSettleAt = (
   anchorXRatio: frac.x,
   anchorYRatio: frac.y,
   discPx,
-  glowColor: LITTLE_SUN_GLOW_RGB,
+  warmth: 1,
+  reach: SNUG_GLOW_REACH,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });
@@ -272,6 +285,14 @@ export const sunCompanionSettle = (
   // on the bottom-bar band while still sitting comfortably below the 0.66 that
   // would nearly fill the band and crowd the icons either side.
   scale: 0.52,
+  // The resting day companion glows the one canonical amber (warmth 1) in the
+  // shared *snug* halo (SNUG_GLOW_REACH): a low reach collapses the broad
+  // interaction bloom's far plume (which, this low on the bar, would be clipped
+  // below and pull the disc's visible mass upward off the icon line - #106).
+  // Both ride the single glow axis, so lifting into an intervention morphs
+  // warmth→0 and reach→broad continuously rather than swapping halos.
+  warmth: 1,
+  reach: SNUG_GLOW_REACH,
   breathe: false,
 });
 

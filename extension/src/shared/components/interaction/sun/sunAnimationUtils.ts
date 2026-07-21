@@ -310,6 +310,35 @@ export function calculateDragColorTemperature(
   return -Math.min(dragDistance / threshold, 1);
 }
 
+// The single glow axis: one signed colour temperature in [-1, +1] maps the
+// whole sun's halo cool ↔ white ↔ amber, so every state (up-drag cooling,
+// resting day companion, departing hand-off) reads off one scale instead of
+// swapping between separate box-shadow declarations. White is the neutral
+// midpoint; the negative half cools toward night, the positive half warms to
+// the one canonical amber shared with the resting companion and the Little Sun
+// widget hand-off.
+export const GLOW_WHITE_RGB: readonly [number, number, number] = [
+  255, 255, 255,
+];
+export const GLOW_COOL_RGB: readonly [number, number, number] = [200, 220, 255];
+export const GLOW_AMBER_RGB: readonly [number, number, number] = [
+  255, 214, 115,
+];
+
+/**
+ * Map a signed colour temperature in [-1, +1] to the halo's `"r, g, b"` triple,
+ * ramping continuously cool → white → amber. Pure and threshold-free (no
+ * discrete cool/warm step), so any glow change eases rather than snaps.
+ */
+export function glowColorForTemp(temp: number): string {
+  const t = Math.max(-1, Math.min(1, temp));
+  const end = t >= 0 ? GLOW_AMBER_RGB : GLOW_COOL_RGB;
+  const a = Math.abs(t);
+  const mix = (from: number, to: number): number =>
+    Math.round(from + (to - from) * a);
+  return `${mix(GLOW_WHITE_RGB[0], end[0])}, ${mix(GLOW_WHITE_RGB[1], end[1])}, ${mix(GLOW_WHITE_RGB[2], end[2])}`;
+}
+
 export function easeInOut(progress: number): number {
   return progress < 0.5
     ? 2 * progress * progress
