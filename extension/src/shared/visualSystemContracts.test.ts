@@ -1,7 +1,79 @@
-import { resolve } from "path";
+import { readdirSync, readFileSync } from "fs";
+import { join, relative, resolve } from "path";
 import { compileString } from "sass";
 
 const SRC_DIR = resolve(__dirname, "..");
+
+const listTsxFiles = (dir: string): string[] => {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === "node_modules") continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listTsxFiles(full));
+    else if (entry.name.endsWith(".tsx")) out.push(full);
+  }
+  return out;
+};
+
+interface BtnNode {
+  voice: boolean;
+  start: number;
+  end: number;
+}
+
+// Locate every <Btn …> element in a source string, recording whether it carries
+// the `voice` (serif) modifier and where the whole element begins and ends. The
+// opening tag is walked char-by-char so `{}` expressions and quoted props that
+// contain `>` don't fool a naive regex.
+const findBtns = (src: string): BtnNode[] => {
+  const nodes: BtnNode[] = [];
+  const openRe = /<Btn(?=[\s/>])/g;
+  let m: RegExpExecArray | null;
+  while ((m = openRe.exec(src))) {
+    const start = m.index;
+    let i = start + 4;
+    let brace = 0;
+    let quote: string | null = null;
+    let selfClosing = false;
+    for (; i < src.length; i++) {
+      const c = src[i];
+      if (quote) {
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === "`") quote = c;
+      else if (c === "{") brace++;
+      else if (c === "}") brace--;
+      else if (c === ">" && brace === 0) {
+        selfClosing = src[i - 1] === "/";
+        break;
+      }
+    }
+    const openTag = src.slice(start, i + 1);
+    // `voice` is a bare boolean prop; match it only on prop boundaries so an
+    // aria-label or class value that happens to contain the word can't count.
+    const voice = /(?:^|\s)voice(?=[\s/>=])/.test(openTag);
+    const closeIdx = selfClosing ? i + 1 : src.indexOf("</Btn>", i + 1);
+    const end = selfClosing
+      ? i + 1
+      : closeIdx === -1
+        ? i + 1
+        : closeIdx + "</Btn>".length;
+    nodes.push({ voice, start, end });
+    openRe.lastIndex = i + 1;
+  }
+  return nodes;
+};
+
+// Two buttons are sibling controls in the same row/stack when nothing but
+// whitespace (and JSX comments) sits between them - no closing container, no
+// conditional wrapper. That is exactly the arrangement where a serif button
+// beside a sans one reads as a font seam.
+const isSiblingGap = (gap: string): boolean =>
+  /^\s*$/.test(gap.replace(/\{\/\*[\s\S]*?\*\/\}/g, ""));
+
+const lineOf = (src: string, index: number): number =>
+  src.slice(0, index).split("\n").length;
 
 const compile = (scss: string): string =>
   compileString(scss, {
@@ -44,6 +116,35 @@ describe("visual system contracts", () => {
     expect(full).not.toBeNull();
     expect(heading).not.toBeNull();
     expect(rgbaAlpha(heading![1])).toBeLessThan(rgbaAlpha(full![1]));
+  });
+
+  it("never sits a serif (voice) button beside a sans one in the same row", () => {
+    // The chrome-vs-voice split is per *element*, but adjacent buttons read as
+    // one control group: a serif `<Btn voice>` next to a plain sans `<Btn>`
+    // shows a font seam (the daily-questions card once did this). The voice
+    // belongs on the words the app speaks - the prompt above the buttons - so a
+    // button group must be all-voice or all-sans, never mixed. Standalone voice
+    // buttons (the app's usual pattern) and homogeneous groups stay fine.
+    const violations: string[] = [];
+    for (const file of listTsxFiles(SRC_DIR)) {
+      const src = readFileSync(file, "utf8");
+      const btns = findBtns(src);
+      for (let k = 0; k + 1 < btns.length; k++) {
+        const a = btns[k];
+        const b = btns[k + 1];
+        if (a.voice !== b.voice && isSiblingGap(src.slice(a.end, b.start))) {
+          violations.push(
+            `${relative(SRC_DIR, file)}:${lineOf(src, a.start)} - a <Btn${
+              a.voice ? " voice" : ""
+            }> sits next to a <Btn${b.voice ? " voice" : ""}> (line ${lineOf(
+              src,
+              b.start,
+            )})`,
+          );
+        }
+      }
+    }
+    expect(violations).toEqual([]);
   });
 
   it("keeps small and non-mobile breakpoints adjacent at integer pixels", () => {
