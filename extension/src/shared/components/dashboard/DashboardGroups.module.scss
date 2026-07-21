@@ -251,6 +251,16 @@
   }
 }
 
+// The card's prompt is the app speaking gently - a soft, second-person
+// invitation - so it carries the Newsreader voice, layered onto the existing
+// size class (.txtSlightlyBigger) rather than swapping it. This puts the serif
+// on the spoken line, matching the "Stay a while?" grounding card; the two
+// buttons below then stay plain sans chrome, so no lone serif button sits
+// wedged between sans elements.
+.cardDailyQuestionsPrompt {
+  @include displayVoice;
+}
+
 .cardDailyQuestionsBtns {
   margin-top: 24px;
   display: grid;

@@ -34,11 +34,26 @@ describe("collapsed dashboard presentation", () => {
   });
 
   it("offers one calm primary daily action and an easy secondary exit", () => {
+    // Both buttons are plain sans chrome - no `voice` on the primary. The
+    // card's serif voice lives on the prompt line instead (asserted below), so
+    // no lone serif button sits wedged beside the sans "not now" exit.
     expect(normalizedComponent).toMatch(
-      /<Btn voice onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*stay a moment\s*<\/Btn>/,
+      /<Btn onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*stay a moment\s*<\/Btn>/,
     );
+    expect(normalizedComponent).not.toContain("<Btn voice");
     expect(normalizedComponent).toMatch(
       /<Btn soft onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
+    );
+  });
+
+  it("speaks the card's invitation in the serif voice on the prompt, not a button", () => {
+    // The prompt is the app speaking gently, so it carries the Newsreader voice
+    // (layered onto the size class), matching the "Stay a while?" grounding card.
+    expect(normalizedComponent).toMatch(
+      /<div class=\{`txtSlightlyBigger \$\{styles\.cardDailyQuestionsPrompt\}`\}>/,
+    );
+    expect(styles).toMatch(
+      /\.cardDailyQuestionsPrompt\s*\{[\s\S]*@include displayVoice;/,
     );
   });
 
