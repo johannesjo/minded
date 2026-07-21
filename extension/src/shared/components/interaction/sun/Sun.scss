@@ -97,7 +97,10 @@
     // layers stay (a tight, present halo) while the 32px far plume shrinks to
     // nothing, so the moon's glow tightens for the corner morph and eases back
     // broad as it glides home - the reveal opens softly instead of arriving at
-    // full spread. Every other state rides the broad default reach unchanged.
+    // full spread. The night companion moon rides the same snug reach (it rests
+    // on the bottom bar, where the far plume would be clipped - #106), so its
+    // halo tightens too, matching the sun companion; every other moon state
+    // (interactive, breath, surf, rest) keeps the broad default reach.
     box-shadow:
       0 0 1px 0 rgba(255, 255, 255, 0.9),
       0 0 18px 2px rgba(255, 255, 255, 0.12),
