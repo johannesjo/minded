@@ -169,11 +169,20 @@ export const LITTLE_SUN_DISC_PX_ANDROID = 30;
  * Departing halo intensity, dialled down from the bold companion rest glow
  * (Sun.tsx COMPANION_REST_GLOW ≈ 1.8). The Little Sun's amber halo is a snug ring
  * roughly the disc's own width, not the broad bloom the resting companion wears,
- * so the morph tightens the glow to read as that same close halo when it hands
- * off. Tuned by eye in the styleguide SunMorphHarness; nudge here if it reads too
- * faint or too broad.
+ * so the morph both dims (this intensity) AND tightens the *shape* (DEPART_REACH
+ * on the glow axis - collapsing the far plume) to read as that same close halo
+ * when it hands off. Tuned by eye in the styleguide SunMorphHarness; nudge here
+ * if it reads too faint or too broad.
  */
 export const DEPART_GLOW_INTENSITY = 1.0;
+
+/**
+ * Departing halo spread on the glow axis (0 = snug, 1 = broad). Tightened toward
+ * the Little Sun's close ring so the hand-off's *shape*, not just its colour and
+ * size, lands on the widget's snug halo rather than the interaction sun's broad
+ * bloom. Matches the resting companion's tightness (both snug on the same axis).
+ */
+export const DEPART_GLOW_REACH = 0.2;
 
 /**
  * Time chosen → the sun glides to the bottom-left corner, shrinks to the Little
@@ -195,6 +204,7 @@ export const sunDepartSettle = (
   anchorYPxFromBottom: cornerPx,
   discPx,
   warmth: 1,
+  reach: DEPART_GLOW_REACH,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });
@@ -228,6 +238,7 @@ export const sunDepartSettleAt = (
   anchorYRatio: frac.y,
   discPx,
   warmth: 1,
+  reach: DEPART_GLOW_REACH,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });

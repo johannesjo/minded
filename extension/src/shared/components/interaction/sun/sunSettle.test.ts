@@ -1,5 +1,6 @@
 import {
   DEPART_GLOW_INTENSITY,
+  DEPART_GLOW_REACH,
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
@@ -62,6 +63,7 @@ describe("getSunSettleForPhase", () => {
     // Little Sun, and warm the halo to the one amber so the glow colour matches.
     expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_WEB);
     expect(settle.warmth).toBe(1);
+    expect(settle.reach).toBe(DEPART_GLOW_REACH);
     expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
     expect(settle.breathe).toBe(false);
   });
@@ -100,6 +102,7 @@ describe("sunDepartSettleAt", () => {
     const settle = sunDepartSettleAt({ x: 0.5, y: 0.5 });
     expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_ANDROID);
     expect(settle.warmth).toBe(1);
+    expect(settle.reach).toBe(DEPART_GLOW_REACH);
     expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
   });
 });
