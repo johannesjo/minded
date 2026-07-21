@@ -378,6 +378,15 @@ export const Sun: Component<SunProps> = (props) => {
   // replaced by a separate sun. ---
   const GLIDE_DURATION_MS = 650;
   const EXIT_GLIDE_MS = 500;
+  // The reverse of the departing hand-off: the intervention sun mounts snapped at
+  // the Little Sun's corner (tiny + amber) and glides home, growing to full size.
+  // At the normal EXIT_GLIDE_MS this reveal reads as the sun "growing strong and
+  // moving fast" - a ~3x scale jump plus a diagonal corner→centre traverse in half
+  // a second, too abrupt for the calm premise. Give the arrival its own, much
+  // slower duration (on the gentle side of the companion rise it echoes) so the
+  // disc eases up and grows softly into place. Scoped to the corner arrival only
+  // (see exitSettle): every other exit-to-base transition keeps its snappier feel.
+  const ARRIVE_FROM_CORNER_MS = 1100;
   // Glides to/from the dashboard companion (the bottom-bar rest rising into the
   // interaction, and the return home) get a gentler, slower duration than other
   // transitions (e.g. cancelling the intent/time choices), which keep the
@@ -813,9 +822,17 @@ export const Sun: Component<SunProps> = (props) => {
     setIsSettlingIntoRole(true);
     // Returns the disc to its untransformed base (e.g. the plain interactive sun
     // with no placeholder). A return from the companion keeps the slower glide.
-    const duration = shouldResetTerminalStateForSettle(fromSettle)
-      ? COMPANION_GLIDE_MS
-      : EXIT_GLIDE_MS;
+    // Leaving a settle that pins a disc size (discPx) is the arrive-from-corner
+    // reveal - the sun gliding out of the Little Sun's corner as an intervention
+    // begins; only that settle shape carries discPx (the departing/corner
+    // targets), so it uniquely identifies the arrival. Give it the gentle,
+    // much-slower duration so the reveal eases in softly instead of growing fast.
+    const duration =
+      fromSettle?.discPx != null
+        ? ARRIVE_FROM_CORNER_MS
+        : shouldResetTerminalStateForSettle(fromSettle)
+          ? COMPANION_GLIDE_MS
+          : EXIT_GLIDE_MS;
     // The base becomes the rest again.
     setRestOffset({ x: 0, y: 0 });
     if (prefersReducedMotion()) {
