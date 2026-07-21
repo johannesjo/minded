@@ -92,13 +92,19 @@
   // cool night halo make it clearly distinct from the warm, stylised sun.
   &.moon {
     background: center / cover no-repeat url("@src/assets/img/moon.webp");
+    // Like the sun's halo, only the outermost (far) bloom collapses with
+    // --glow-reach: at the snug hand-off reach the crisp edge + near 18/13px
+    // layers stay (a tight, present halo) while the 32px far plume shrinks to
+    // nothing, so the moon's glow tightens for the corner morph and eases back
+    // broad as it glides home - the reveal opens softly instead of arriving at
+    // full spread. Every other state rides the broad default reach unchanged.
     box-shadow:
       0 0 1px 0 rgba(255, 255, 255, 0.9),
       0 0 18px 2px rgba(255, 255, 255, 0.12),
       0 0 calc(13px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
-      0 0 calc(32px * var(--glow-intensity))
-        rgba(190, 210, 255, calc(0.3 * var(--glow-intensity)));
+      0 0 calc(32px * var(--glow-reach) * var(--glow-intensity))
+        rgba(190, 210, 255, calc(0.3 * var(--glow-reach) * var(--glow-intensity)));
 
     // A soft luminous sheen over the photo: a faint overall lift plus a brighter
     // top-left highlight, screen-blended so it lights the disc - reading as a
@@ -128,11 +134,17 @@
     // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's - the near-white disc
     // would otherwise wash out a halo this faint. This cool ::after ring sits under
     // that bloom as a still pool of light; the scene stays cool, with no warm bloom.
+    // The static cool pool is the moon's biggest halo. Collapse its two far
+    // rings with --glow-reach (keeping the near 12px as the snug ring) so the
+    // pool tightens with the box-shadow above during the snug corner hand-off
+    // and pools back out as the moon settles home - without this the reveal
+    // still arrives wearing the full broad pool, the "strong glow" that read as
+    // a fast, heavy arrival.
     &::after {
       box-shadow:
         0 0 12px 1px rgba(216, 229, 255, 0.26),
-        0 0 30px 5px rgba(178, 202, 255, 0.13),
-        0 0 52px 9px rgba(150, 182, 246, 0.07);
+        0 0 calc(30px * var(--glow-reach)) 5px rgba(178, 202, 255, 0.13),
+        0 0 calc(52px * var(--glow-reach)) 9px rgba(150, 182, 246, 0.07);
     }
   }
 

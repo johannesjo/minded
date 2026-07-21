@@ -1635,10 +1635,19 @@ export const Sun: Component<SunProps> = (props) => {
               // as a glowing moon rather than a dim rock.
               getIsCompletionStarted()
               ? getGlowIntensity()
-              : Math.max(
-                  getGlowIntensity(),
-                  props.isHovered ? MOON_HOVER_GLOW : MOON_REST_GLOW,
-                )
+              : // A settle that dials its own glow is the corner hand-off (the
+                // departing/arriving morph, DEPART_GLOW_INTENSITY). Let the moon
+                // dim to it exactly as the sun does, so its halo eases *open* into
+                // the reveal instead of blooming full-strength from the first
+                // frame - the "strong glow" that made the corner arrival read as
+                // fast. Away from the hand-off it keeps the resting/hover floor so
+                // the photo disc still reads as a glowing moon, not a dim rock.
+                props.settle?.glowIntensity != null
+                ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
+                : Math.max(
+                    getGlowIntensity(),
+                    props.isHovered ? MOON_HOVER_GLOW : MOON_REST_GLOW,
+                  )
             : props.settle?.glowIntensity != null
               ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
               : Math.max(
