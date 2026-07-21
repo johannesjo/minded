@@ -269,15 +269,13 @@ export const DashboardGroups: (props: {
         [styles.isBeingRemoved]: getIsDailyQuestionsBannerBeingRemoved(),
       }}
     >
-      <div class="txtSlightlyBigger">
+      <div class={`txtSlightlyBigger ${styles.cardDailyQuestionsPrompt}`}>
         {getDailyQuestionsBannerMode() === "Morning"
           ? "Would you like some inspiration for your day?"
           : "Would you like to reflect on your day?"}
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        <Btn voice onClick={() => navigate("/dailyQuestions")}>
-          stay a moment
-        </Btn>
+        <Btn onClick={() => navigate("/dailyQuestions")}>stay a moment</Btn>
         <Btn soft onClick={() => removeDailyQuestionsBanner()}>
           not now
         </Btn>
