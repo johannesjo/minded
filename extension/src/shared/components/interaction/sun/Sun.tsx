@@ -31,6 +31,7 @@ import {
   shouldResetTerminalStateForSettle,
   shouldSnapCompanionReanchor,
   calculateDragColorTemperature,
+  glowColorForTemp,
   type VelocitySample,
   type PhysicsState,
   type SunDragDirection,
@@ -151,12 +152,21 @@ export interface SunSettle {
    */
   discPx?: number;
   /**
-   * Halo colour as an `"r, g, b"` string for the settled disc's box-shadow,
-   * overriding the default white (sun) glow. The departing sun warms to the
-   * Little Sun's amber here so the glow colour matches at hand-off. Ignored for
-   * the moon, which keeps its own cool halo.
+   * Halo warmth on the single glow axis (0 = white, 1 = the canonical amber).
+   * The resting day companion and the departing hand-off both settle at 1 so
+   * the sun glows the one amber it shares with the Little Sun widget. Omitted =
+   * white. Ignored for the moon, which never warms (it reads the cool half of
+   * the axis instead).
    */
-  glowColor?: string;
+  warmth?: number;
+  /**
+   * Halo spread (0 = snug two-layer halo, 1 = the broad interaction bloom). The
+   * resting companion tightens this so its far plume can't be clipped by the
+   * screen edge below; the interaction sun rides at the default broad reach.
+   * One box-shadow declaration reads this, so companion ↔ interaction morphs the
+   * spread continuously instead of swapping declarations.
+   */
+  reach?: number;
   /**
    * Halo intensity for the settled disc, overriding the bold companion rest
    * glow. The departing hand-off dials it down to the Little Sun's tighter halo.
@@ -1452,11 +1462,19 @@ export const Sun: Component<SunProps> = (props) => {
     sunEl.addEventListener("mousedown", mouseDownHandler);
   };
 
-  // Reactive glow color based on upward drag color temperature
-  const getGlowColor = () => {
-    const ct = getColorTemp();
-    return ct < -0.1 ? "200, 220, 255" : "255, 255, 255";
-  };
+  // Reactive glow color on the single cool↔white↔amber temperature axis. An
+  // upward drag cools it (negative temp); a settle's warmth warms it (positive).
+  // The two never overlap - a drag has no settle warmth, a warm settle isn't
+  // being dragged - so combine them as one signed temp. The moon never warms:
+  // it only ever reads the cool half (clamped at 0).
+  const getSunGlowColor = () =>
+    glowColorForTemp(
+      props.variant === "moon"
+        ? Math.min(0, getColorTemp())
+        : getColorTemp() < 0
+          ? getColorTemp()
+          : (props.settle?.warmth ?? 0),
+    );
   // Hover lift + halo for the resting companion. The lift is slight; the glow
   // reuses the drag box-shadow (see
   // the inline --glow-intensity), pushed past its 0..1 drag range to a bold,
@@ -1583,12 +1601,14 @@ export const Sun: Component<SunProps> = (props) => {
             .join(", ") || "none",
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
-        // A settle may warm the halo to the Little Sun's amber and tighten it for
-        // the departing hand-off (sun only - the moon keeps its own cool glow).
-        "--glow-color":
-          props.variant !== "moon" && props.settle?.glowColor
-            ? props.settle.glowColor
-            : getGlowColor(),
+        // One glow axis drives the colour: cool ↔ white ↔ amber (see
+        // getSunGlowColor). A settle's warmth (companion rest / departing
+        // hand-off) warms it; an up-drag cools it. The moon stays cool.
+        "--glow-color": getSunGlowColor(),
+        // Halo spread: the resting companion tightens it (reach < 1) so its far
+        // plume can't be clipped low on the bar; every other state rides the
+        // broad default. One declaration reads this, so the spread morphs.
+        "--glow-reach": `${props.settle?.reach ?? 1}`,
         "--glow-intensity":
           props.variant === "moon"
             ? // Once the moon starts its "let the day go" descent, drop the
@@ -1608,7 +1628,6 @@ export const Sun: Component<SunProps> = (props) => {
                   getGlowIntensity(),
                   props.isHovered ? COMPANION_HOVER_GLOW : COMPANION_REST_GLOW,
                 ),
-        "--sun-warmth": Math.max(0, getColorTemp()),
       }}
     >
       {isTapEnabled() && (

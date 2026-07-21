@@ -5,7 +5,6 @@ import {
   LITTLE_SUN_CORNER_PX_WEB,
   LITTLE_SUN_DISC_PX_ANDROID,
   LITTLE_SUN_DISC_PX_WEB,
-  LITTLE_SUN_GLOW_RGB,
   restingSunAnchorFromRect,
   SUN_REST_SETTLE,
   sunBreatheSettle,
@@ -60,9 +59,9 @@ describe("getSunSettleForPhase", () => {
     expect(settle.anchorXPx).toBe(LITTLE_SUN_CORNER_PX_WEB);
     expect(settle.anchorYPxFromBottom).toBe(LITTLE_SUN_CORNER_PX_WEB);
     // Pin the exact disc size (not a constant scale) so it matches the 40px web
-    // Little Sun, and warm the halo to amber so the glow colour matches too.
+    // Little Sun, and warm the halo to the one amber so the glow colour matches.
     expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_WEB);
-    expect(settle.glowColor).toBe(LITTLE_SUN_GLOW_RGB);
+    expect(settle.warmth).toBe(1);
     expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
     expect(settle.breathe).toBe(false);
   });
@@ -100,7 +99,7 @@ describe("sunDepartSettleAt", () => {
     // so the whole hand-off (position, size, halo) is seamless.
     const settle = sunDepartSettleAt({ x: 0.5, y: 0.5 });
     expect(settle.discPx).toBe(LITTLE_SUN_DISC_PX_ANDROID);
-    expect(settle.glowColor).toBe(LITTLE_SUN_GLOW_RGB);
+    expect(settle.warmth).toBe(1);
     expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
   });
 });

@@ -1,5 +1,8 @@
 import {
   calculateDragColorTemperature,
+  glowColorForTemp,
+  GLOW_AMBER_RGB,
+  GLOW_COOL_RGB,
   getSunReleaseAction,
   hasVerticalCompletionIntent,
   isCompanionReanchorSettle,
@@ -110,6 +113,37 @@ describe("sun animation utils", () => {
 
     it("keeps color neutral without a vertical drag direction", () => {
       expect(calculateDragColorTemperature("none", 80)).toBe(0);
+    });
+  });
+
+  describe("glowColorForTemp", () => {
+    it("is white at the neutral midpoint", () => {
+      expect(glowColorForTemp(0)).toBe("255, 255, 255");
+    });
+
+    it("warms to the one canonical amber at full positive temp", () => {
+      expect(glowColorForTemp(1)).toBe(GLOW_AMBER_RGB.join(", "));
+    });
+
+    it("cools to blue at full negative temp", () => {
+      expect(glowColorForTemp(-1)).toBe(GLOW_COOL_RGB.join(", "));
+    });
+
+    it("ramps continuously with no threshold step near neutral", () => {
+      // A tiny cool temp must be only a hair off white (the old code hard-cut to
+      // full cool at -0.1); the unified axis has no such jump.
+      const [r, g, b] = glowColorForTemp(-0.05)
+        .split(", ")
+        .map((n) => Number(n));
+      expect(r).toBeLessThan(255);
+      expect(r).toBeGreaterThan(250);
+      expect(b).toBe(255);
+      expect(g).toBeGreaterThan(250);
+    });
+
+    it("clamps out-of-range temps to the endpoints", () => {
+      expect(glowColorForTemp(5)).toBe(GLOW_AMBER_RGB.join(", "));
+      expect(glowColorForTemp(-5)).toBe(GLOW_COOL_RGB.join(", "));
     });
   });
 

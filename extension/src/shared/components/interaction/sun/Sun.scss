@@ -5,22 +5,29 @@
 
   --glow-intensity: 0;
   --glow-color: 255, 255, 255;
-  --sun-warmth: 0;
+  // Halo spread (0 = snug, 1 = broad). Defaults broad; the resting companion
+  // settle tightens it (Sun.tsx --glow-reach from settle.reach) so the far plume
+  // shrinks to nothing rather than being clipped by the screen edge below.
+  --glow-reach: 1;
 
-  // The white halo lives on box-shadow, scaled by --glow-intensity (JS-driven).
-  // The resting sun holds it at the hover intensity (Sun.tsx COMPANION_REST_GLOW),
-  // so the idle disc already wears the bold hover glow rather than a dimmer one -
-  // and Sun.tsx floors the value there, so the 0..1 drag ramp (always dimmer)
-  // can't dim it mid-drag. It stays static at rest; only an explicit guided pause
-  // may breathe. The shell gives only the resting day companion an amber tint.
+  // The halo lives on box-shadow, scaled by --glow-intensity (JS-driven). Colour
+  // (--glow-color) and spread (--glow-reach) are JS-driven too, from the single
+  // cool↔white↔amber glow axis, so every state - companion rest, interaction,
+  // departing hand-off - is this ONE declaration with different variable values,
+  // and the morph between them interpolates instead of swapping declarations.
+  // The two outer layers fade out with --glow-reach, so a low reach collapses
+  // the broad bloom to the snug two-layer halo the low-sitting companion needs.
+  // The resting sun holds --glow-intensity at the hover level (Sun.tsx
+  // COMPANION_REST_GLOW), floored there so the 0..1 drag ramp can't dim it
+  // mid-drag; it stays static at rest, only a guided pause breathes.
   box-shadow:
     var(--sun-shadow),
     0 0 calc(15px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.5 * var(--glow-intensity))),
-    0 0 calc(40px * var(--glow-intensity))
-      rgba(var(--glow-color), calc(0.25 * var(--glow-intensity))),
-    0 0 calc(80px * var(--glow-intensity))
-      rgba(var(--glow-color), calc(0.1 * var(--glow-intensity)));
+    0 0 calc(40px * var(--glow-reach) * var(--glow-intensity))
+      rgba(var(--glow-color), calc(0.25 * var(--glow-reach) * var(--glow-intensity))),
+    0 0 calc(80px * var(--glow-reach) * var(--glow-intensity))
+      rgba(var(--glow-color), calc(0.1 * var(--glow-reach) * var(--glow-intensity)));
 
   z-index: 30;
   cursor: grab;
@@ -35,26 +42,17 @@
   /* Ensure box-shadow transitions smoothly even when JS updates the variables */
   transition: box-shadow 0.1s linear;
 
+  // A blank pseudo-element the moon repurposes for its luminous sheen
+  // (.moon::before below). The sun's warmth now lives entirely in the halo (the
+  // single cool↔white↔amber glow axis), so there is no warm disc-face overlay
+  // here - the disc itself stays unwarmed and the amber reads only in the glow.
   &::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background:
-      radial-gradient(
-        circle at 32% 26%,
-        rgba(255, 255, 255, 0.82) 0 18%,
-        transparent 36%
-      ),
-      radial-gradient(
-        circle at 50% 58%,
-        rgba(255, 226, 129, 0.92) 0%,
-        rgba(255, 174, 82, 0.82) 52%,
-        rgba(239, 111, 82, 0.74) 100%
-      );
-    opacity: var(--sun-warmth);
+    opacity: 0;
     pointer-events: none;
-    transition: opacity 120ms linear;
   }
 
   // The sun's resting glow is the box-shadow above (held at the hover intensity),
@@ -103,9 +101,8 @@
     // top-left highlight, screen-blended so it lights the disc - reading as a
     // glowing orb the way the old gradient moon did - without flattening the real
     // craters, which stay clearly visible underneath. This repurposes the shared
-    // ::before (which for the sun carries the warm down-drag overlay): a fixed white
-    // sheen at full opacity, so a downward drag's --sun-warmth can no longer bleed
-    // amber across the moon - the warm overlay is replaced here, not just hidden.
+    // ::before (blank for the sun) as a fixed white sheen at full opacity; the
+    // moon never warms, so no amber can bleed across it - its light stays cool.
     &::before {
       display: block;
       opacity: 1;

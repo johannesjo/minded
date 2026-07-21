@@ -158,14 +158,12 @@ export const LITTLE_SUN_CORNER_PX_ANDROID = 30;
 export const LITTLE_SUN_DISC_PX_WEB = 40;
 export const LITTLE_SUN_DISC_PX_ANDROID = 30;
 
-/**
- * Both Little Suns wear a warm amber halo (web: `rgba(233,132,58,…)` in
- * LittleSun.scss; Android: `#E99A3A` ≈ 233,154,58 in LittleSun.kt). The departing
- * sun warms its normally-white glow to this amber as it settles, so the halo
- * *colour* matches at hand-off too - not just the position and size. One shared
- * value: the two ambers differ by an imperceptible amount in a soft glow.
- */
-export const LITTLE_SUN_GLOW_RGB = "233, 140, 58";
+// Both Little Suns wear the app's one canonical amber halo (web:
+// `--little-sun-shadow` in _variables.scss; Android: `GLOW_COLOR` in
+// LittleSun.kt - both `#ffd673` ≈ 255,214,115). The departing sun warms its
+// normally-white glow to that same amber via `warmth: 1` (the positive end of
+// the shared glow axis maps to it - see glowColorForTemp), so the halo *colour*
+// matches at hand-off too, not just the position and size. One amber everywhere.
 
 /**
  * Departing halo intensity, dialled down from the bold companion rest glow
@@ -196,7 +194,7 @@ export const sunDepartSettle = (
   anchorXPx: cornerPx,
   anchorYPxFromBottom: cornerPx,
   discPx,
-  glowColor: LITTLE_SUN_GLOW_RGB,
+  warmth: 1,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });
@@ -229,7 +227,7 @@ export const sunDepartSettleAt = (
   anchorXRatio: frac.x,
   anchorYRatio: frac.y,
   discPx,
-  glowColor: LITTLE_SUN_GLOW_RGB,
+  warmth: 1,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
 });
@@ -272,6 +270,14 @@ export const sunCompanionSettle = (
   // on the bottom-bar band while still sitting comfortably below the 0.66 that
   // would nearly fill the band and crowd the icons either side.
   scale: 0.52,
+  // The resting day companion glows the one canonical amber (warmth 1) in a
+  // *snug* halo: a low reach collapses the broad interaction bloom's far plume
+  // (which, this low on the bar, would be clipped below and pull the disc's
+  // visible mass upward off the icon line - #106). Both ride the single glow
+  // axis, so lifting into an intervention morphs warmth→0 and reach→broad
+  // continuously rather than swapping halos.
+  warmth: 1,
+  reach: 0.2,
   breathe: false,
 });
 

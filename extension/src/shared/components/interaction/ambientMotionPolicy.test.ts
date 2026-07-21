@@ -19,6 +19,12 @@ describe("calm motion policy", () => {
     );
     const routeStyles = readSource("src/shared/RouteCmp.module.scss");
     const routeComponent = readSource("src/shared/RouteCmp.tsx");
+    const sunSettle = readSource(
+      "src/shared/components/interaction/sun/sunSettle.ts",
+    );
+    const sunGlow = readSource(
+      "src/shared/components/interaction/sun/sunAnimationUtils.ts",
+    );
     const onboardingSunLayer = readSource(
       "src/shared/components/onboarding/OnboardingSunLayer.tsx",
     );
@@ -30,12 +36,16 @@ describe("calm motion policy", () => {
     expect(sunStyles).not.toContain("mindedSunIdleBreath");
     expect(littleSunStyles).not.toContain("minded6622littleSunBreath");
     expect(questionStyles).not.toContain("tapHintBreathe");
+    // The resting companion keeps its warm disc fill in CSS...
     expect(routeStyles).toMatch(
       /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*--sun-bg:\s*radial-gradient/,
     );
-    expect(routeStyles).toMatch(
-      /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*rgba\(255, 214, 115,/,
-    );
+    // ...but its amber glow now rides the one unified glow axis: the companion
+    // settle opts into warmth 1 (statically - no breath), and warmth 1 maps to
+    // the single canonical amber. No separate amber box-shadow declaration.
+    expect(routeStyles).not.toMatch(/rgba\(255, 214, 115,/);
+    expect(sunSettle).toMatch(/isCompanion:\s*true[\s\S]*warmth:\s*1/);
+    expect(sunGlow).toMatch(/GLOW_AMBER_RGB[\s\S]*255,\s*214,\s*115/);
     expect(routeComponent).not.toContain("styles.isIntervention");
     expect(onboardingSunLayer).not.toContain("styles.isLeaving");
     expect(onboardingSunLayer).not.toContain("styles.isIntervention");

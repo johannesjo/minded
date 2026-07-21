@@ -53,39 +53,19 @@
     pointer-events: auto;
   }
 
-  // The resting daytime companion wears a *tight* halo, not the broad bloom the
-  // interaction sun carries. Its disc is centred exactly on the bottom-bar icon
-  // line (the JS anchor + the bar's min-height math), and the solid disc reads
-  // dead level there - but the shared glow (Sun.scss: 15/40/80px blur layers)
-  // blooms ~80px past the disc, and the companion rests so low that this bloom is
-  // clipped by the screen edge *below* while spreading freely *above*. That
-  // one-sided, upward-only plume pulls the sun's visible mass up, so the disc
-  // reads as floating above the icons - an effect that grew when the companion
-  // was enlarged and sat closer to the edge. #106 tried to tame it by lowering
-  // the rest intensity (COMPANION_REST_GLOW), but intensity scales the *whole*
-  // profile, so even at 1.25 the 80px layer still plumes ~100px up - far broader
-  // than the moon's halo, which at the very same spot never showed the bias
-  // because its glow is genuinely tight (Sun.scss .moon: max ~32px blur).
-  //
-  // So tighten the *shape* the way the moon already proves works: a snug 2-layer
-  // halo with no far plume, so the clip below removes almost nothing and the
-  // visible glow stays symmetric around the centred disc. It still scales with
-  // --glow-intensity, so the hover lift (COMPANION_HOVER_GLOW) keeps blooming and
-  // any drag/tap glow still reads - only the blur reach is reined in. Daytime sun
-  // only: the moon (.moon) keeps its own already-tight glow. Lifted off the
-  // companion the moment it morphs into an intervention (the role, and this
-  // class, change), so the interaction sun is unaffected and regains the broad
-  // bloom as it rises.
+  // The resting daytime companion wears a warm, off-white disc fill so its face
+  // reads as sunlit even before the halo. The companion also wears a *tight*
+  // halo (not the broad interaction bloom) so its far plume can't be clipped by
+  // the screen edge below and drag the disc's visible mass upward off the
+  // bottom-bar icon line (#106) - but that tightening now lives on the unified
+  // glow axis (the companion settle sets a low `reach`; Sun.scss collapses the
+  // outer layers with it), not in a separate box-shadow declaration here. That
+  // way companion ↔ interaction morphs the spread continuously instead of
+  // swapping declarations. So this rule carries only the warm disc fill; the
+  // amber glow itself comes from the companion settle's `warmth`. Daytime sun
+  // only - the moon keeps its own cool disc and halo.
   &.isCompanion :global(.minded-sun:not(.moon)) {
-    // The resting day companion carries the same restrained amber light as the
-    // native widget. Intervention motion drops this class and returns to white.
     --sun-bg: radial-gradient(circle, #fff 0%, #fff 82%, #fff5dc 100%);
-    box-shadow:
-      var(--sun-shadow),
-      0 0 calc(14px * var(--glow-intensity))
-        rgba(255, 214, 115, calc(0.5 * var(--glow-intensity))),
-      0 0 calc(30px * var(--glow-intensity))
-        rgba(255, 214, 115, calc(0.25 * var(--glow-intensity)));
   }
 
   // Horizon reflection under the resting moon (GitHub #125): a faint, wide,
