@@ -47,6 +47,21 @@ import {
   shouldHonorSunFocusRequest,
   type SunAccessibleActivation,
 } from "./sunAccessibility";
+import moonImageUrl from "@assets/img/moon.webp";
+
+// Warm the moon disc's texture the moment this module loads, before any moon
+// ever mounts. The `.moon` face is a `background-image` (Sun.scss); the webp
+// resolves to the same emitted asset as this import, so fetching+decoding it
+// here means the first moon intervention paints the real lunar photo. Without
+// it, the disc's very first frame is drawn before the background is ready and
+// reads as a blank white disk (just the white `::before` sheen + near-white
+// halo) until the image pops in - the wrong object on the app's most central
+// surface. The file is tiny (~20KB) and one preload covers every moon surface
+// (intervention, breath, grounding). Guarded for non-DOM contexts (tests/SSR).
+if (typeof Image !== "undefined") {
+  const moonPreload = new Image();
+  moonPreload.src = moonImageUrl;
+}
 
 type SunPosition = {
   x: number;
