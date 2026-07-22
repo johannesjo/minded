@@ -222,6 +222,11 @@ export const Sun: Component<SunProps> = (props) => {
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getRotation, setRotation] = createSignal(0);
   const [getGlowIntensity, setGlowIntensity] = createSignal(0);
+  // During the moon's corner-arrival reveal, --glow-reach is eased open (snug →
+  // broad) across the whole glide, so the halo grows softly into place with the
+  // disc instead of snapping to full spread the instant the glide starts. Null
+  // when no reveal ramp is running - the reach then follows the settle as usual.
+  const [getRevealReach, setRevealReach] = createSignal<number | null>(null);
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 0 = neutral (down/none)
   const isTapEnabled = () => props.isTapEnabled ?? true;
   const isDragEnabled = () => props.isDragEnabled ?? true;
@@ -321,6 +326,7 @@ export const Sun: Component<SunProps> = (props) => {
   onCleanup(() => {
     cancelCompletionFrame();
     cancelSettleFrame();
+    cancelRevealReach();
     if (tapTimer) {
       clearTimeout(tapTimer);
     }
@@ -425,6 +431,39 @@ export const Sun: Component<SunProps> = (props) => {
       cancelAnimationFrame(settleFrame);
       settleFrame = undefined;
     }
+  };
+
+  // The moon's corner-arrival glow ramp runs on its own frame (parallel to the
+  // offset/scale glide on settleFrame) so it can ease --glow-reach open across
+  // the reveal independently.
+  let revealReachFrame: number | undefined;
+  const cancelRevealReach = () => {
+    if (revealReachFrame) {
+      cancelAnimationFrame(revealReachFrame);
+      revealReachFrame = undefined;
+    }
+    setRevealReach(null);
+  };
+  // Ease --glow-reach from the settle's snug hand-off spread out to the broad
+  // default over the reveal, so the moon's far bloom + cool pool grow open with
+  // the disc rather than snapping to full spread when the glide begins - the
+  // "strong glow" that made the arrival read as fast. Moon-only; the sun's
+  // reveal glow is already gentle, so it keeps snapping to its rest floor.
+  const rampRevealReach = (fromReach: number, duration: number) => {
+    const startTime = Date.now();
+    setRevealReach(fromReach);
+    const step = () => {
+      const progress = Math.min((Date.now() - startTime) / duration, 1);
+      setRevealReach(fromReach + (1 - fromReach) * easeInOut(progress));
+      if (progress < 1) {
+        revealReachFrame = requestAnimationFrame(step);
+      } else {
+        revealReachFrame = undefined;
+        setRevealReach(null);
+      }
+    };
+    if (revealReachFrame) cancelAnimationFrame(revealReachFrame);
+    revealReachFrame = requestAnimationFrame(step);
   };
 
   // Stop an in-flight terminal animation (fling / drag-complete / snap-back),
@@ -666,6 +705,9 @@ export const Sun: Component<SunProps> = (props) => {
 
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
     setIsDragging(false);
+    // A fresh settle target interrupts any in-flight reveal ramp; the new
+    // target's reach takes over.
+    cancelRevealReach();
 
     // Pure companion re-anchor: the disc is already home on the bottom bar and
     // only the *measured* anchor moved - a resize/rotation, or Android's
@@ -809,6 +851,7 @@ export const Sun: Component<SunProps> = (props) => {
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
     cancelSettleFrame();
+    cancelRevealReach();
     // Same staleness heal as enterSettle: take off from the rested settle's
     // live-resolved anchor (the arriving hand-off leaves the corner exactly as
     // the question content mounts and reflows the base - without this the
@@ -827,12 +870,12 @@ export const Sun: Component<SunProps> = (props) => {
     // begins; only that settle shape carries discPx (the departing/corner
     // targets), so it uniquely identifies the arrival. Give it the gentle,
     // much-slower duration so the reveal eases in softly instead of growing fast.
-    const duration =
-      fromSettle?.discPx != null
-        ? ARRIVE_FROM_CORNER_MS
-        : shouldResetTerminalStateForSettle(fromSettle)
-          ? COMPANION_GLIDE_MS
-          : EXIT_GLIDE_MS;
+    const isCornerReveal = fromSettle?.discPx != null;
+    const duration = isCornerReveal
+      ? ARRIVE_FROM_CORNER_MS
+      : shouldResetTerminalStateForSettle(fromSettle)
+        ? COMPANION_GLIDE_MS
+        : EXIT_GLIDE_MS;
     // The base becomes the rest again.
     setRestOffset({ x: 0, y: 0 });
     if (prefersReducedMotion()) {
@@ -841,6 +884,13 @@ export const Sun: Component<SunProps> = (props) => {
       setIsAnimating(false);
       setIsSettlingIntoRole(false);
       return;
+    }
+    // Moon-only: ease the halo open across the corner reveal, starting from the
+    // hand-off's snug reach (the departing settle carries it) so the far bloom +
+    // cool pool grow into place with the disc instead of snapping broad at the
+    // first frame. The sun's reveal glow is already gentle, so leave it be.
+    if (isCornerReveal && props.variant === "moon") {
+      rampRevealReach(fromSettle?.reach ?? 1, duration);
     }
     animateOffsetScaleTo(
       () => ({ x: 0, y: 0 }),
@@ -1625,7 +1675,7 @@ export const Sun: Component<SunProps> = (props) => {
         // Halo spread: the resting companion tightens it (reach < 1) so its far
         // plume can't be clipped low on the bar; every other state rides the
         // broad default. One declaration reads this, so the spread morphs.
-        "--glow-reach": `${props.settle?.reach ?? 1}`,
+        "--glow-reach": `${getRevealReach() ?? props.settle?.reach ?? 1}`,
         "--glow-intensity":
           props.variant === "moon"
             ? // Once the moon starts its "let the day go" descent, drop the

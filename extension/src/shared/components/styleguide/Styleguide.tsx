@@ -859,6 +859,9 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
 const SunMorphHarness = (): JSX.Element => {
   const [isOpen, setIsOpen] = createSignal(false);
   const [phase, setPhase] = createSignal<SunPhase>("interactive");
+  // Toggle the sun/moon variant so the dark-mode moon's morphs (esp. the
+  // departing → interactive corner-arrival reveal) can be felt and tuned.
+  const [variant, setVariant] = createSignal<"sun" | "moon">("sun");
   // Mirror the real flow: the resting disc tucks just beneath the measured
   // choices block rather than sitting at a fixed ratio.
   const [restingAnchor, setRestingAnchor] = createSignal<{
@@ -959,6 +962,7 @@ const SunMorphHarness = (): JSX.Element => {
             style={{ "pointer-events": isInteractive() ? "auto" : "none" }}
           >
             <Sun
+              variant={variant()}
               settle={settle()}
               onSkip={() => undefined}
               onFlingAway={() => undefined}
@@ -981,6 +985,14 @@ const SunMorphHarness = (): JSX.Element => {
                 </Btn>
               )}
             </For>
+            <Btn
+              variant="toggle"
+              small
+              selected={variant() === "moon"}
+              onClick={() => setVariant((v) => (v === "moon" ? "sun" : "moon"))}
+            >
+              {variant()}
+            </Btn>
             <Btn outline onClick={() => setIsOpen(false)}>
               close
             </Btn>
