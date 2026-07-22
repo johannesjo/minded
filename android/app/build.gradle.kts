@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.minded.minded"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.minded.minded"
         minSdk = 29
-        targetSdk = 35
+        targetSdk = 36
         // In CI both pipelines set ANDROID_VERSION_CODE to a time-based value
         // (seconds since 2020-01-01) so production always builds at or above the
         // latest internal-test build and Play's cross-track shadowing rule is
