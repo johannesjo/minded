@@ -189,8 +189,16 @@ class InteractionWindow(
         // A fresh intervention starts with the native sun centred in the native
         // sky. Once the WebView has painted, glide that disc to the exact DOM sun
         // bounds, then cross-fade the two surfaces at the shared position.
-        private const val FRESH_SUN_MORPH_MS = 320
-        private const val FRESH_SUN_CROSSFADE_MS = 220L
+        //
+        // On a fresh open there is no Little Sun to continue from, so this glide +
+        // cross-fade must NOT read as a morph (it's a load-gap cover, not a hand-off
+        // from a prior disc). The old timings made the disc "move quickly up a bit
+        // and then the glow vanish abruptly": a 320ms glide is brisk, and a 220ms
+        // cross-fade snaps the native disc's strong halo out faster than the calmer
+        // web moon fades in. Slow and gentle both so the placeholder eases to the
+        // web sun and dissolves into it rather than snapping away.
+        private const val FRESH_SUN_MORPH_MS = 540
+        private const val FRESH_SUN_CROSSFADE_MS = 460L
         private const val FRESH_ARRIVAL_READY_TIMEOUT_MS = 2500L
         private const val FRESH_TARGET_RETRY_MS = 80L
         private const val FRESH_TARGET_MAX_ATTEMPTS = 8
@@ -519,7 +527,12 @@ class InteractionWindow(
             }
 
             if (placeholderAlpha > 0f) {
-                val glowSize = discSize * 2f
+                // A snugger halo than the Little Sun's (discSize * 2f) so the fresh
+                // placeholder doesn't "glow strongly" and, crucially, so its halo is
+                // close to the calmer web moon it cross-fades into - the smaller the
+                // glow delta across the hand-off, the less the glow reads as
+                // vanishing when the native disc dissolves out.
+                val glowSize = discSize * 1.5f
                 val isEscapeEnabled = shouldEnableFreshArrivalSunEscape(
                     isCornerArrival = activeMorphInFromCorner,
                     isFreshPlaceholderVisible = showFreshPlaceholder.value,
