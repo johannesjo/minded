@@ -6,6 +6,7 @@ import {
   type PatternInsightAction,
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import Btn from "@src/shared/components/ui/Btn";
+import styles from "./PatternInsightInteraction.module.scss";
 
 export const PatternInsightInteraction: (props: {
   insight: PatternInsight;
@@ -55,16 +56,18 @@ export const PatternInsightInteraction: (props: {
     <div onmouseenter={props.onCancelCountdown}>
       <div class="txtBig interaction-heading">{props.insight.message}</div>
 
-      <For each={props.insight.actions}>
-        {(action) => (
-          <Btn
-            disabled={getIsActionSubmitted()}
-            onClick={() => void handleAction(action)}
-          >
-            {getPatternInsightActionLabel(action)}
-          </Btn>
-        )}
-      </For>
+      <div class={styles.actions}>
+        <For each={props.insight.actions}>
+          {(action) => (
+            <Btn
+              disabled={getIsActionSubmitted()}
+              onClick={() => void handleAction(action)}
+            >
+              {getPatternInsightActionLabel(action)}
+            </Btn>
+          )}
+        </For>
+      </div>
     </div>
   );
 };

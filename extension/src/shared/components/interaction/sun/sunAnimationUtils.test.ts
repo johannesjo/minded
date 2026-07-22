@@ -6,7 +6,6 @@ import {
   getSunReleaseAction,
   hasVerticalCompletionIntent,
   isCompanionReanchorSettle,
-  isSunActivationKey,
   shouldAcceptSunPointerStart,
   shouldResetTerminalStateForSettle,
   shouldSnapCompanionReanchor,
@@ -237,17 +236,6 @@ describe("sun animation utils", () => {
 
       expect(shouldResetTerminalStateForSettle(onboardingRest)).toBe(true);
       expect(isCompanionReanchorSettle(onboardingRest)).toBe(false);
-    });
-  });
-
-  describe("isSunActivationKey", () => {
-    it("accepts the native button activation keys", () => {
-      expect(isSunActivationKey("Enter")).toBe(true);
-      expect(isSunActivationKey(" ")).toBe(true);
-    });
-
-    it("ignores unrelated keys", () => {
-      expect(isSunActivationKey("ArrowDown")).toBe(false);
     });
   });
 });

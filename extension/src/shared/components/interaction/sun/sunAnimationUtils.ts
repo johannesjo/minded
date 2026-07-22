@@ -165,9 +165,6 @@ export function shouldSnapCompanionReanchor(
   );
 }
 
-export const isSunActivationKey = (key: string): boolean =>
-  key === "Enter" || key === " ";
-
 const getVerticalDirection = (y: number): SunCompletionDirection =>
   y > 0 ? "down" : "up";
 

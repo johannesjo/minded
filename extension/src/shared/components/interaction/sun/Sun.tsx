@@ -26,7 +26,6 @@ import {
   hasVerticalCompletionIntent,
   getSunReleaseAction,
   isCompanionReanchorSettle,
-  isSunActivationKey,
   shouldAcceptSunPointerStart,
   shouldResetTerminalStateForSettle,
   shouldSnapCompanionReanchor,
@@ -43,6 +42,11 @@ import {
   BREATH_PAUSE_PATTERN,
   type BreathPattern,
 } from "@src/shared/components/interaction/breathTimeline";
+import {
+  getSunKeyboardActivation,
+  shouldHonorSunFocusRequest,
+  type SunAccessibleActivation,
+} from "./sunAccessibility";
 
 type SunPosition = {
   x: number;
@@ -94,6 +98,18 @@ interface SunProps {
   completionDirection?: "any" | "down";
   /** Makes an otherwise gesture-driven disc operable with Enter or Space. */
   "aria-label"?: string;
+  "aria-description"?: string;
+  "aria-keyshortcuts"?: string;
+  /** Focus this action once a new request arrives and its entrance glide lands. */
+  focusRequest?: number;
+  /** Publish the same live/settling guard used by this sun's primary action. */
+  onAccessibleActionEnabledChange?: (enabled: boolean) => void;
+  /**
+   * One-press keyboard equivalent supplied by the active interaction. Pointer
+   * taps keep their deliberate multi-tap threshold; a keyboard button follows
+   * the native Enter/Space convention and activates once.
+   */
+  onKeyboardActivate?: (activation: SunAccessibleActivation) => void;
   /**
    * Post-interaction resting state. When set, the sun glides to a viewport
    * anchor and holds there (optionally breathing) instead of being hidden -
@@ -191,7 +207,7 @@ export interface SunSettle {
 export const COMPANION_GLIDE_MS = 900;
 
 export const Sun: Component<SunProps> = (props) => {
-  let sunEl: HTMLDivElement;
+  let sunEl!: HTMLDivElement;
   const [getDragOffset, setDragOffset] = createSignal({ x: 0, y: 0 });
   // The offset the disc rests at when not being dragged. {0,0} (the base) for the
   // plain interactive sun, but the shell sun's interactive rest is the measured
@@ -265,6 +281,73 @@ export const Sun: Component<SunProps> = (props) => {
       tapTimer = window.setTimeout(() => {
         setTapCount(0);
       }, 1500);
+    }
+  };
+
+  const getIsAccessibleActionEnabled = () =>
+    shouldAcceptSunPointerStart({
+      isCompletionStarted: getIsCompletionStarted(),
+      isSettlingIntoRole: getIsSettlingIntoRole(),
+    });
+
+  createEffect(() => {
+    props.onAccessibleActionEnabledChange?.(
+      Boolean(props["aria-label"]) && getIsAccessibleActionEnabled(),
+    );
+  });
+
+  const getFocusRequestActiveElement = (): Element | null => {
+    const activeElement = props.eventRoot
+      ? props.eventRoot.activeElement
+      : document.activeElement;
+    return activeElement === document.body ||
+      activeElement === document.documentElement
+      ? null
+      : activeElement;
+  };
+
+  // A keyboard/assistive-tech action first focuses the surrounding dialog while
+  // this persistent sun glides into place. Transfer focus only after the glide
+  // lands and a NEW request is pending, so remounting a sun never steals focus.
+  let handledFocusRequest = props.focusRequest ?? 0;
+  let scheduledFocusRequest: number | undefined;
+  createEffect(() => {
+    const focusRequest = props.focusRequest ?? 0;
+    if (
+      focusRequest === handledFocusRequest ||
+      focusRequest === scheduledFocusRequest ||
+      !props["aria-label"] ||
+      !getIsAccessibleActionEnabled()
+    )
+      return;
+
+    scheduledFocusRequest = focusRequest;
+    queueMicrotask(() => {
+      if (
+        props.focusRequest === focusRequest &&
+        props["aria-label"] &&
+        getIsAccessibleActionEnabled()
+      ) {
+        handledFocusRequest = focusRequest;
+        if (shouldHonorSunFocusRequest(getFocusRequestActiveElement(), sunEl)) {
+          sunEl.focus({ preventScroll: true });
+        }
+      }
+      scheduledFocusRequest = undefined;
+    });
+  });
+
+  const handleAccessibleActivation = (
+    activation: SunAccessibleActivation = "primary",
+  ) => {
+    if (!getIsAccessibleActionEnabled()) {
+      return;
+    }
+
+    if (props.onKeyboardActivate) {
+      props.onKeyboardActivate(activation);
+    } else {
+      handleTap();
     }
   };
 
@@ -1635,11 +1718,38 @@ export const Sun: Component<SunProps> = (props) => {
       class="minded-sun"
       role={props["aria-label"] ? "button" : undefined}
       aria-label={props["aria-label"]}
-      tabIndex={props["aria-label"] ? 0 : undefined}
+      aria-description={props["aria-description"]}
+      aria-keyshortcuts={props["aria-keyshortcuts"]}
+      aria-disabled={
+        props["aria-label"] && !getIsAccessibleActionEnabled()
+          ? "true"
+          : undefined
+      }
+      tabIndex={
+        props["aria-label"]
+          ? getIsAccessibleActionEnabled()
+            ? 0
+            : -1
+          : undefined
+      }
       onKeyDown={(event) => {
-        if (!props["aria-label"] || !isSunActivationKey(event.key)) return;
+        const activation = getSunKeyboardActivation(
+          event.key,
+          props["aria-keyshortcuts"]?.includes("ArrowUp") ?? false,
+        );
+        if (!props["aria-label"] || !activation) return;
         event.preventDefault();
-        handleTap();
+        if (event.repeat) return;
+        handleAccessibleActivation(activation);
+      }}
+      onClick={(event) => {
+        // Pointer taps are already handled by the drag/tap listeners. A click
+        // with detail 0 is the platform accessibility action (or a programmatic
+        // activation), which TalkBack and VoiceOver need for this custom button.
+        if (!props["aria-label"] || event.detail !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        handleAccessibleActivation();
       }}
       classList={{
         dragging: getIsDragging(),

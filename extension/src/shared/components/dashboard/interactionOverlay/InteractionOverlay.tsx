@@ -38,6 +38,10 @@ export const InteractionOverlay: (props: {
 
   onMount(() => {
     window.dispatchEvent(new Event(ON_SHOW_INTERACTION_OVERLAY_EV));
+    // Every invocation replaces or covers its trigger. Move focus into the
+    // pause regardless of input modality so pointer and widget opens are
+    // announced too; keyboard/AT opens may transfer to the sun after its glide.
+    wrapperEl.focus({ preventScroll: true });
   });
 
   const handleHideWithFade = () => {
@@ -66,6 +70,9 @@ export const InteractionOverlay: (props: {
       class={styles.interactionOverlay}
       classList={{ [styles.instant]: props.instant }}
       id="minded-6622-coloured-wrapper"
+      role="dialog"
+      aria-label="Mindful pause"
+      tabIndex={-1}
       ref={wrapperEl}
     >
       <div class={styles.interactionWrapper}>

@@ -1,8 +1,10 @@
-import { JSX, Show } from "solid-js";
+import { createEffect, JSX, Show } from "solid-js";
 import Sun, { SunSettle } from "@src/shared/components/interaction/sun/Sun";
 import {
   getIsShellSunHidden,
+  getSunFocusRequest,
   getSunHandlers,
+  requestSunFocus,
   setBreathStartedAt,
 } from "@src/shared/components/interaction/sun/sunStore";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
@@ -29,8 +31,16 @@ export const OnboardingSunLayer = (props: {
   getBaseSettle: () => SunSettle | null;
   advanceFromWelcome: () => void;
   onPauseExperienced?: () => void;
+  onPauseVisibilityChange: (isOpen: boolean) => void;
 }): JSX.Element => {
   const d = createOnboardingSunDemo(props);
+  createEffect(() => props.onPauseVisibilityChange(d.getIsShowPause()));
+
+  const openPauseWithFocus = () => {
+    d.openPause();
+    requestSunFocus();
+  };
+
   return (
     <>
       <div
@@ -47,7 +57,33 @@ export const OnboardingSunLayer = (props: {
           <Sun
             variant={d.sunVariant}
             settle={d.getActiveSunSettle()}
-            aria-label={d.isSunGrabbable() ? "Open a mindful pause" : undefined}
+            aria-label={
+              d.isSunGrabbable()
+                ? "Open a mindful pause"
+                : d.isSunInputEnabled()
+                  ? getSunHandlers()?.getAccessibleLabel?.()
+                  : undefined
+            }
+            aria-description={
+              d.isPauseDrivingSun() && d.isSunInputEnabled()
+                ? getSunHandlers()?.getAccessibleDescription?.()
+                : undefined
+            }
+            aria-keyshortcuts={
+              d.isPauseDrivingSun() && d.isSunInputEnabled()
+                ? getSunHandlers()?.getAccessibleKeyShortcuts?.()
+                : undefined
+            }
+            onKeyboardActivate={
+              d.isPauseDrivingSun()
+                ? (activation) =>
+                    getSunHandlers()?.onKeyboardActivate?.(activation)
+                : openPauseWithFocus
+            }
+            onAccessibleActionEnabledChange={(enabled) =>
+              getSunHandlers()?.onAccessibleActionEnabledChange?.(enabled)
+            }
+            focusRequest={getSunFocusRequest()}
             minimizeWillChange={true}
             isTapEnabled={
               d.isPauseDrivingSun()
@@ -104,7 +140,10 @@ export const OnboardingSunLayer = (props: {
       {d.getIsShowPause() && (
         <InteractionOverlay
           onClosingStarted={d.onPauseClosing}
-          onHideInteraction={d.onPauseClosed}
+          onHideInteraction={() => {
+            d.onPauseClosed();
+            requestSunFocus();
+          }}
         />
       )}
     </>

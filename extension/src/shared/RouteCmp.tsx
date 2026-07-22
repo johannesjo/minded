@@ -27,10 +27,12 @@ import {
   getIsShellSunHidden,
   getIsSunHandoffInFlight,
   getSunHandlers,
+  getSunFocusRequest,
   getSunOrbit,
   getSunRole,
   getSunSettleForCurrentRole,
   isShellSunInteractive,
+  requestSunFocus,
   setBreathStartedAt,
   setCompanionBottomYPx,
   setSunRole,
@@ -95,6 +97,8 @@ const MainWrapper = (props: RouteSectionProps) => {
   // the disc itself is pointer-transparent) - lifts + glows the sun.
   const [getIsCompanionHovered, setIsCompanionHovered] =
     createSignal<boolean>(false);
+  let shouldRestoreCompanionFocus = false;
+  let companionTapTargetEl: HTMLButtonElement = undefined!;
 
   const location = useLocation();
   const isDashboard = () => location.pathname === "/";
@@ -286,6 +290,7 @@ const MainWrapper = (props: RouteSectionProps) => {
       <main
         class={styles.contentWrapper}
         classList={{ [styles.withCompanionBar]: !isDashboard() }}
+        inert={getIsShowQuestionOverlay() ? true : undefined}
       >
         {props.children}
       </main>
@@ -330,6 +335,28 @@ const MainWrapper = (props: RouteSectionProps) => {
             variant={getSunVariant()}
             settle={getSunSettleForCurrentRole()}
             orbit={getSunOrbit()}
+            aria-label={
+              isSunInteractive()
+                ? getSunHandlers()?.getAccessibleLabel?.()
+                : undefined
+            }
+            aria-description={
+              isSunInteractive()
+                ? getSunHandlers()?.getAccessibleDescription?.()
+                : undefined
+            }
+            aria-keyshortcuts={
+              isSunInteractive()
+                ? getSunHandlers()?.getAccessibleKeyShortcuts?.()
+                : undefined
+            }
+            onKeyboardActivate={(activation) =>
+              getSunHandlers()?.onKeyboardActivate?.(activation)
+            }
+            onAccessibleActionEnabledChange={(enabled) =>
+              getSunHandlers()?.onAccessibleActionEnabledChange?.(enabled)
+            }
+            focusRequest={getSunFocusRequest()}
             onBreathStart={setBreathStartedAt}
             minimizeWillChange={true}
             isDragEnabled={isSunInteractive()}
@@ -362,13 +389,22 @@ const MainWrapper = (props: RouteSectionProps) => {
           <button
             type="button"
             class={styles.companionTapTarget}
+            ref={companionTapTargetEl}
             aria-label="Get asked a question"
             onMouseEnter={() => setIsCompanionHovered(true)}
             onMouseLeave={() => setIsCompanionHovered(false)}
-            onClick={() => {
+            onClick={(event) => {
               // Open the overlay; the interaction measures its sun placeholder
               // and *then* flips the role, so the disc rises from the bottom bar
               // straight onto its slot in one slow glide (no base detour).
+              // A native button reports detail 0 for keyboard and accessibility
+              // activation. The dialog receives focus immediately, then the sun
+              // receives it once its glide lands and its action is enabled.
+              if (event.detail === 0) requestSunFocus();
+              // Any in-page invocation has a real control to restore to. Widget
+              // launches deliberately leave this false because there is no
+              // in-document invoker.
+              shouldRestoreCompanionFocus = true;
               setIsCompanionHovered(false);
               setIsOverlayInstant(false); // in-app tap keeps the gentle fade
               // A plain in-app tap is a fresh random pick - never reuse a line
@@ -380,7 +416,7 @@ const MainWrapper = (props: RouteSectionProps) => {
         </Show>
       </div>
 
-      <BottomBar />
+      <BottomBar inert={getIsShowQuestionOverlay()} />
 
       {getIsShowQuestionOverlay() && (
         <InteractionOverlay
@@ -400,6 +436,12 @@ const MainWrapper = (props: RouteSectionProps) => {
             // Drop the widget line so a later in-app companion tap can't reopen
             // on it.
             setWidgetLine(undefined);
+            if (shouldRestoreCompanionFocus) {
+              shouldRestoreCompanionFocus = false;
+              requestAnimationFrame(() => {
+                companionTapTargetEl?.focus({ preventScroll: true });
+              });
+            }
             // The greeting was already re-rolled when the overlay *started*
             // fading (RE_GREET_DASHBOARD_HIDDEN_EV, dispatched from the overlay),
             // so the fresh tile is in place behind it - nothing to swap here, or

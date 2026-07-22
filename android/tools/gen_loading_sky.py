@@ -58,20 +58,11 @@ IOS_OUT_DIR = os.path.join(
 IOS_CARD_WIDTH = 728
 IOS_CARD_HEIGHT = 340
 
-# (position 0..1, "#rrggbb"). Keep in sync with _variables.scss / Color.kt.
-LIGHT_STOPS = [
-    (0.00, "#cfe4f5"),
-    (0.18, "#cfe4f5"),
-    (0.36, "#d8ecd6"),
-    (0.54, "#f5efc8"),
-    (1.00, "#f6dcd2"),
-]
-
 # The widget card's sky steps through the app's ambient time-of-day timeline:
 # one render per keyframe, colours verbatim from AMBIENT_SKY_KEYFRAMES in
 # extension/src/shared/skyTimeline.ts (keep in sync; WidgetSky.kt picks the
-# render for the hour). The 9:00 "morning" keyframe is the classic static sky,
-# i.e. LIGHT_STOPS above. Stop positions mirror ambientSkyGradient().
+# render for the hour). The 9:00 "morning" keyframe is the classic static sky.
+# Stop positions mirror ambientSkyGradient().
 AMBIENT_KEYFRAME_COLORS = {
     "dawn": ["#c9d3ea", "#dde5e4", "#f3e6cf", "#f5cfc3"],
     "morning": ["#cfe4f5", "#d8ecd6", "#f5efc8", "#f6dcd2"],
@@ -85,6 +76,19 @@ def ambient_stops(colors):
     """skyTimeline.ts ambientSkyGradient(): c0 held to 18%, horizon at 100%."""
     c0, c1, c2, c3 = colors
     return [(0.00, c0), (0.18, c0), (0.36, c1), (0.54, c2), (1.00, c3)]
+
+
+# Full-screen loading surfaces use the same five keyframes. Compose blends two
+# adjacent pre-dithered renders so the native hand-off follows the WebView's
+# per-minute interpolation without bringing back runtime-gradient banding.
+# Keep the long-standing loading_sky_light name for the morning asset.
+FULL_SCREEN_DAY_FACES = [
+    (
+        "loading_sky_light" if name == "morning" else "loading_sky_" + name,
+        ambient_stops(colors),
+    )
+    for name, colors in AMBIENT_KEYFRAME_COLORS.items()
+]
 
 
 DARK_STOPS = [
@@ -156,9 +160,8 @@ def write_imageset(name, arr):
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
-    outputs = [
-        ("loading_sky_light", LIGHT_STOPS, WIDTH, HEIGHT),
-        ("loading_sky_dark", DARK_STOPS, WIDTH, HEIGHT),
+    outputs = [("loading_sky_dark", DARK_STOPS, WIDTH, HEIGHT)] + [
+        (name, stops, WIDTH, HEIGHT) for name, stops in FULL_SCREEN_DAY_FACES
     ] + [(name, stops, CARD_WIDTH, CARD_HEIGHT) for name, stops in CARD_FACES]
     for name, stops, width, height in outputs:
         path = os.path.join(OUT_DIR, name + ".png")

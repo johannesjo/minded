@@ -6,7 +6,7 @@
 
 .interaction-content {
   opacity: 0;
-  transition: opacity 1s var(--ease-out);
+  transition: opacity var(--dur-gentle) var(--ease-out);
 
   // Once we've handed off to the post-sun overlay (breath / choices), the faded
   // question must not intercept taps or hovers meant for the choices above it:
@@ -35,9 +35,9 @@
     transition: opacity 0.3s var(--ease-out);
   }
 
-  // 1s transition during drag as requested
+  // Keep drag-driven content changes on the shared gentle rhythm.
   &.dragging {
-    transition: opacity 1s var(--ease-out);
+    transition: opacity var(--dur-gentle) var(--ease-out);
   }
 }
 
@@ -164,7 +164,7 @@
   padding-bottom: 64px;
 
   &.fade-in {
-    transition: opacity 1s var(--ease-out);
+    transition: opacity var(--dur-gentle) var(--ease-out);
   }
 }
 
@@ -177,7 +177,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: auto;
-  animation: fadeIn var(--screen-transition-ms, 1000ms) var(--ease-out) forwards;
+  animation: fadeIn var(--dur-gentle) var(--ease-out) forwards;
 }
 
 // During the intent/time choices the resting sun rests in a reserved spacer
@@ -256,7 +256,7 @@
 
 .post-sun-screen {
   opacity: 1;
-  transition: opacity var(--screen-transition-ms, 1000ms) var(--ease-out);
+  transition: opacity var(--dur-gentle) var(--ease-out);
   width: 100%;
   height: 100%;
 
@@ -285,7 +285,7 @@
     color: var(--c-fg-full-emphasis);
     visibility: hidden;
     opacity: 0;
-    transition: opacity 900ms var(--ease-out);
+    transition: opacity var(--dur-gentle) var(--ease-out);
     will-change: opacity;
 
     &.is-visible {
@@ -319,8 +319,4 @@
   opacity: 0.7;
   font-size: 0.8em;
   margin-bottom: 0.5em;
-}
-
-.interaction-quote {
-  font-style: italic;
 }

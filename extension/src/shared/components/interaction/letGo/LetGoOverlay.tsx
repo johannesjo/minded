@@ -1,4 +1,4 @@
-import { Component, createSignal, onCleanup } from "solid-js";
+import { Component, createSignal, onCleanup, onMount } from "solid-js";
 import styles from "./LetGoOverlay.module.scss";
 import { Question } from "@src/shared/components/interaction/Question";
 import { Answer } from "@src/dataInterface/syncData";
@@ -14,6 +14,8 @@ interface LetGoOverlayProps {
   answers: Answer[];
   /** Called once the flow is finished (answered, declined, or ignored). */
   onClose: () => void;
+  /** Move keyboard focus into the offer when a keyboard gesture opened it. */
+  focusOnMount?: boolean;
 }
 
 /**
@@ -29,6 +31,8 @@ export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
 
   let closeTimeout: number | undefined;
   let dismissTimeout: number | undefined;
+  let focusFrame: number | undefined;
+  let rootEl: HTMLDivElement | undefined;
   let hasEngaged = false;
   let isDisposed = false;
 
@@ -57,15 +61,30 @@ export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
     }
   };
 
+  onMount(() => {
+    if (!props.focusOnMount) return;
+    focusFrame = requestAnimationFrame(() => {
+      focusFrame = undefined;
+      if (!isDisposed) rootEl?.focus();
+    });
+  });
+
   onCleanup(() => {
     isDisposed = true;
     if (closeTimeout) window.clearTimeout(closeTimeout);
     if (dismissTimeout) window.clearTimeout(dismissTimeout);
+    if (focusFrame) cancelAnimationFrame(focusFrame);
   });
 
   return (
     <div
+      ref={rootEl}
       class={styles.letGo}
+      role="group"
+      aria-label="Let go"
+      tabIndex={-1}
+      onPointerDown={onEngage}
+      onFocusIn={onEngage}
       classList={{
         [styles.isClosing]: getIsClosing(),
       }}

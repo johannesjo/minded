@@ -366,6 +366,16 @@ export const SleepWindDownView = (
     goToView("goodnight");
   };
 
+  const getGoodnightMoonLabel = () =>
+    view() === "snoozeGoodnight"
+      ? `Snooze for ${snoozeMinutes()} minutes`
+      : "Let the day go";
+
+  const handleGoodnightMoonAction = () => {
+    if (view() === "snoozeGoodnight") void snooze();
+    else void completeGoodnight();
+  };
+
   const activityActions = (activityKey: ActivityKey): JSX.Element => {
     const action = getSleepWindDownActivityAction(activityKey);
 
@@ -606,17 +616,25 @@ export const SleepWindDownView = (
                     : "Drag the moon down to let the day go."}
                 </p>
                 <div class={styles.moonContainer}>
+                  <Show when={view() === "snoozeGoodnight"}>
+                    <Btn
+                      plain
+                      voice
+                      class="a11yAlternateAction"
+                      onClick={() => void completeGoodnight()}
+                    >
+                      sleep now
+                    </Btn>
+                  </Show>
                   <Sun
                     variant="moon"
+                    aria-label={getGoodnightMoonLabel()}
+                    onKeyboardActivate={handleGoodnightMoonAction}
                     completionDirection="down"
                     isTapEnabled={view() === "snoozeGoodnight"}
                     tapThreshold={3}
                     isDragEnabled={IS_ANDROID || view() === "goodnight"}
-                    onSkip={() =>
-                      view() === "snoozeGoodnight"
-                        ? snooze()
-                        : completeGoodnight()
-                    }
+                    onSkip={handleGoodnightMoonAction}
                     onFlingAway={completeGoodnight}
                     onDragComplete={completeGoodnight}
                     onStartBackgroundAnimation={(direction) => {

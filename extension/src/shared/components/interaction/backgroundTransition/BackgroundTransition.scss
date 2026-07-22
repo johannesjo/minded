@@ -118,7 +118,7 @@
 #minded-6622-coloured-wrapper-dynamic.is-departing .background-transition-grain,
 #minded-6622-coloured-wrapper.is-departing .background-transition-grain {
   opacity: 0;
-  transition: opacity 1000ms var(--ease-out);
+  transition: opacity var(--dur-gentle) var(--ease-out);
 }
 
 .minded-6622-dark

@@ -62,6 +62,7 @@ export const OnboardingAndroid = (props: {
     props.initialStep ?? 0,
   );
   const [getHasExperiencedPause, setHasExperiencedPause] = createSignal(false);
+  const [getIsPauseOpen, setIsPauseOpen] = createSignal(false);
   const [getPermissionNotGiven, setPermissionNotGiven] =
     createSignal<boolean>(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
@@ -259,7 +260,12 @@ export const OnboardingAndroid = (props: {
 
   return (
     <div class={`${styles.wrapper}`}>
-      <div class={styles.chrome} ref={chromeEl}>
+      <div
+        class={styles.chrome}
+        ref={chromeEl}
+        aria-hidden={getIsPauseOpen() ? "true" : undefined}
+        inert={getIsPauseOpen() ? true : undefined}
+      >
         <div class={styles.contentWrapper} ref={contentEl}>
           <Switch>
             <Match when={getShownStep() === 0}>
@@ -445,6 +451,7 @@ export const OnboardingAndroid = (props: {
         getBaseSettle={getSunSettle}
         advanceFromWelcome={() => changeStep(1)}
         onPauseExperienced={() => setHasExperiencedPause(true)}
+        onPauseVisibilityChange={setIsPauseOpen}
       />
 
       <div class={styles.skyProbe} ref={skyProbeEl} />

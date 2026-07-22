@@ -65,3 +65,32 @@
     @include btnToggleSelectSmallModifier();
   }
 }
+
+// A second semantic route for gesture choices that still have only one visual
+// sun. It stays out of the composition until reached by keyboard or assistive
+// technology, then appears as the standard shared button near the top edge.
+.a11yAlternateAction {
+  &,
+  #minded-6622 & {
+    position: fixed;
+    top: max(var(--space-lg), var(--safe-area-inset-top));
+    left: 50%;
+    z-index: 1300;
+    opacity: 0;
+    pointer-events: none;
+    clip-path: inset(50%);
+    transform: translateX(-50%);
+    transition:
+      opacity var(--dur-quick) var(--ease-out),
+      transform var(--dur-quick) var(--ease-out),
+      background var(--dur-quick) var(--ease-out),
+      border-color var(--dur-quick) var(--ease-out);
+  }
+
+  &:focus,
+  #minded-6622 &:focus {
+    opacity: 1;
+    pointer-events: auto;
+    clip-path: none;
+  }
+}

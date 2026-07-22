@@ -61,6 +61,7 @@ export const OnboardingIOS = (props: {
     props.initialStep ?? 0,
   );
   const [getHasExperiencedPause, setHasExperiencedPause] = createSignal(false);
+  const [getIsPauseOpen, setIsPauseOpen] = createSignal(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
 
   const isReEntry = (props.initialStep ?? 0) > 0;
@@ -209,7 +210,12 @@ export const OnboardingIOS = (props: {
 
   return (
     <div class={styles.wrapper}>
-      <div class={styles.chrome} ref={chromeEl}>
+      <div
+        class={styles.chrome}
+        ref={chromeEl}
+        aria-hidden={getIsPauseOpen() ? "true" : undefined}
+        inert={getIsPauseOpen() ? true : undefined}
+      >
         <div class={styles.contentWrapper} ref={contentEl}>
           <Switch>
             <Match when={getShownStep() === 0}>
@@ -289,6 +295,7 @@ export const OnboardingIOS = (props: {
         getBaseSettle={getOnboardingSettle}
         advanceFromWelcome={() => changeStep(1)}
         onPauseExperienced={() => setHasExperiencedPause(true)}
+        onPauseVisibilityChange={setIsPauseOpen}
       />
 
       <div class={styles.companionProbe} ref={companionProbeEl} />

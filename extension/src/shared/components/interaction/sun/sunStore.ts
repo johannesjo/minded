@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
 import type { SunSettle } from "./Sun";
+import type { SunAccessibleActivation } from "./sunAccessibility";
 import {
   DEFAULT_COMPANION_BOTTOM_Y_PX,
   getSunSettleForPhase,
@@ -47,6 +48,16 @@ export interface SunOutcomeHandlers {
    * instead).
    */
   isTapEnabled?: boolean;
+  /** Live accessible name while the interaction owns the shell sun. */
+  getAccessibleLabel?: () => string | undefined;
+  /** Extra instructions for directional dashboard rituals. */
+  getAccessibleDescription?: () => string | undefined;
+  /** Shortcuts announced for directional dashboard rituals. */
+  getAccessibleKeyShortcuts?: () => string | undefined;
+  /** One-press Enter/Space equivalent for the current interaction. */
+  onKeyboardActivate?: (activation: SunAccessibleActivation) => void;
+  /** Mirrors the sun's internal completion/settling input guard. */
+  onAccessibleActionEnabledChange?: (enabled: boolean) => void;
 }
 
 /** Current role. "companion" is the idle home; the rest are intervention phases. */
@@ -156,6 +167,12 @@ const [getSunOrbit, setSunOrbit] = createSignal<SunOrbit | null>(null, {
   equals: (a, b) => a?.total === b?.total && a?.filled === b?.filled,
 });
 
+// Monotonic focus requests let a persistent sun receive focus after a role
+// transition without toggling a boolean back and forth. A request stays pending
+// until Sun has both an accessible name and live input again.
+const [getSunFocusRequest, setSunFocusRequest] = createSignal(0);
+const requestSunFocus = () => setSunFocusRequest((request) => request + 1);
+
 /**
  * The shell disc accepts pointer input (drag/tap, `pointer-events: auto`) only
  * while its role is the live "interactive" phase AND no hand-off to the post-sun
@@ -186,6 +203,8 @@ export {
   setBreathStartedAt,
   getSunOrbit,
   setSunOrbit,
+  getSunFocusRequest,
+  requestSunFocus,
 };
 
 /**

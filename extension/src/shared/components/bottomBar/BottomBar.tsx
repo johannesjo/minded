@@ -7,7 +7,7 @@ import Btn from "@src/shared/components/ui/Btn";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
 
-const BottomBar = () => {
+const BottomBar = (props: { inert?: boolean }) => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,6 +35,7 @@ const BottomBar = () => {
 
   return (
     <div
+      inert={props.inert ? true : undefined}
       onClick={goBack}
       style={!getIsOnDashboard() ? { cursor: "pointer" } : {}}
       class={`${styles.bottomBarWrapper}  ${getIsOnDashboard() && styles.isOnDashboard} `}

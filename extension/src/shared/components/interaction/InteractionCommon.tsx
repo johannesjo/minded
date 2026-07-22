@@ -44,6 +44,10 @@ import {
   setSoundEnabled,
 } from "@src/shared/components/interaction/sun/sunAudio";
 import {
+  getInteractiveSunAccessibility,
+  type SunAccessibleActivation,
+} from "@src/shared/components/interaction/sun/sunAccessibility";
+import {
   getSunSettleForPhase,
   LITTLE_SUN_CORNER_PX_ANDROID,
   LITTLE_SUN_CORNER_PX_WEB,
@@ -57,6 +61,7 @@ import {
 import {
   getRestingSunAnchor,
   getSunRole,
+  requestSunFocus,
   registerSunInteraction,
   setBreathStartedAt,
   setInteractiveSunAnchor,
@@ -186,11 +191,14 @@ const matchWidgetLine = (line: string): ForcedWidgetContent | undefined => {
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
-  const SCREEN_TRANSITION_MS = ANIMATION_TIMING.fadeOut.standard;
+  const reduceMotion = prefersReducedMotion();
+  const SCREEN_TRANSITION_MS = reduceMotion
+    ? 0
+    : ANIMATION_TIMING.fadeOut.standard;
   // The question fades out quickly once the user advances past it (triple tap),
   // so it's gone before the choices arrive - no slow lingering, no overlap. The
   // post-tap hand-off waits this long so the choices fade in only after it.
-  const QUESTION_FADE_OUT_MS = 400;
+  const QUESTION_FADE_OUT_MS = reduceMotion ? 0 : 400;
   const ARM_WINDOW_MS = ANIMATION_TIMING.delay.armWindow;
   // How long the wordless "Sleep well" beat rests on screen after the bedtime
   // settle's drag-down, before the phone actually closes/locks - long enough to
@@ -257,6 +265,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const [getShowLetGoOffer, setShowLetGoOffer] = createSignal(false);
   const [getIsCompletionStarted, setIsCompletionStarted] = createSignal(false);
   const [getShowBreathPause, setShowBreathPause] = createSignal(false);
+  const [getShouldFocusPostSunOverlay, setShouldFocusPostSunOverlay] =
+    createSignal(false);
+  const [getKeyboardOfferFocus, setKeyboardOfferFocus] = createSignal<
+    "grounding" | "letGo" | undefined
+  >();
   // The sun's lifecycle phase. "interactive" = draggable; "breathing" and
   // "resting" keep it on screen and transform it through the post-sun flow
   // (breath pause → intent/time) instead of hiding and replacing it. The
@@ -264,6 +277,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // styleguide harness so the two can't drift.
   const [getLocalSunPhase, setLocalSunPhase] =
     createSignal<SunPhase>("interactive");
+  const [getLocalSunFocusRequest, setLocalSunFocusRequest] = createSignal(0);
+  const [getIsSunAccessibleActionEnabled, setIsSunAccessibleActionEnabled] =
+    createSignal(false);
   // With the shell sun (new-tab app shell) the phase IS the shared store role,
   // so the single persistent disc morphs through the flow; otherwise it's this
   // component's own signal driving its own <Sun>. Every call site uses these two
@@ -282,7 +298,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // hidden - rAF is paused there, so the disc would otherwise sit frozen in
       // the corner until the tab is foregrounded (a cross-tab timer-clear can
       // swap a backgrounded tab straight to the intervention).
-      !prefersReducedMotion() &&
+      !reduceMotion &&
       (typeof document === "undefined" || !document.hidden),
   );
   const getSunPhase = (): SunPhase =>
@@ -293,6 +309,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     } else {
       setLocalSunPhase(phase);
     }
+  };
+  const requestInteractiveSunFocus = () => {
+    if (props.useShellSun) requestSunFocus();
+    else setLocalSunFocusRequest((request) => request + 1);
   };
 
   // Centre (viewport fractions) where the native Android Little Sun bubble will
@@ -473,6 +493,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // beneath the choices block inside it (see measureRestingSunAnchor).
   let restingOverlayEl: HTMLDivElement | undefined;
   let restingSunObserver: ResizeObserver | undefined;
+  let postSunOverlayEl: HTMLDivElement | undefined;
+  let postSunFocusFrame: number | undefined;
   let isDisposed = false;
   // The direction of the just-completed sun gesture. The terminal outcome
   // callbacks (onFlingAway/onDragComplete) carry no direction, so we stash it
@@ -629,6 +651,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
   });
 
+  const focusPostSunOverlay = () => {
+    if (postSunFocusFrame) window.cancelAnimationFrame(postSunFocusFrame);
+    postSunFocusFrame = window.requestAnimationFrame(() => {
+      postSunFocusFrame = undefined;
+      if (isDisposed) return;
+      postSunOverlayEl?.focus();
+      setShouldFocusPostSunOverlay(false);
+    });
+  };
+
+  createEffect(() => {
+    if (getShouldFocusPostSunOverlay() && getShowTimeSelectionOverlay()) {
+      focusPostSunOverlay();
+    }
+  });
+
   // Tell the shell sun to go inert the moment we begin handing off to the choices
   // (isExitingInteraction flips true at the top of handleSunContinue, ~400ms
   // before the buttons mount). Without this the disc stays interactive - and so
@@ -647,6 +685,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     onComplete: () => void,
     startOpacity = getInteractionOpacity(),
   ) => {
+    if (reduceMotion || duration <= 0) {
+      setInteractionOpacity(0);
+      onComplete();
+      return;
+    }
+
     const startTime = Date.now();
 
     const animate = () => {
@@ -841,6 +885,45 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       ? skipBedtimeSettle()
       : handleSunContinue();
 
+  const getSunAccessibility = () =>
+    getInteractiveSunAccessibility({
+      phase: getSunPhase(),
+      variant: getDragObjectName(),
+      isFromDashboard: !!props.isFromDashboard,
+      isWindDown: getMode() === "WIND_DOWN_SETTLE",
+      isInputEnabled:
+        !getIsExitingInteraction() &&
+        !getIsCompletionStarted() &&
+        !getIsFinalAnimation(),
+    });
+  const getSunAlternativeAction = () =>
+    getSunAccessibility()?.alternativeAction;
+
+  const handleSunKeyboardActivate = (
+    activation: SunAccessibleActivation = "primary",
+  ) => {
+    const accessibility = getSunAccessibility();
+    if (!accessibility) return;
+
+    if (accessibility.action === "stay") {
+      // Keyboard equivalent of the dashboard's gentle down-drag. The phase
+      // change starts the same shell-sun glide into the grounding offer; the
+      // terminal callback then correctly no-ops while that offer owns the flow.
+      const direction = activation === "up" ? "up" : "down";
+      setKeyboardOfferFocus(direction === "up" ? "letGo" : "grounding");
+      setIsCompletionStarted(true);
+      props.onCompletionStarted?.(true);
+      handleStartBackgroundAnimation(direction);
+      runTerminalOutcome(props.onDragComplete);
+      return;
+    }
+
+    if (getMode() !== "WIND_DOWN_SETTLE") {
+      setShouldFocusPostSunOverlay(true);
+    }
+    handleSunTap();
+  };
+
   // The choices (and their reserved sun slot) are mounting now. Measure the slot
   // on the next frame, then flip to resting, so the disc glides straight to its
   // spot in one motion rather than detouring via the static fallback (down, then
@@ -876,6 +959,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setShowBreathPause(false);
     setSunPhase("interactive");
     setIsIntentSelectionArmed(false);
+    requestInteractiveSunFocus();
   };
 
   const clearIntentSelectionArmTimeout = () => {
@@ -1137,6 +1221,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         if (isDisposed) return;
 
         setShowSunInstructions(true);
+        requestInteractiveSunFocus();
         // Use a small delay to ensure the DOM has updated with opacity 0 before starting the fade in
         fadeInAnimationFrame = requestAnimationFrame(() => {
           if (isDisposed) return;
@@ -1247,6 +1332,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // Shown from inside the app (not a real intervention): the triple-tap
       // continue makes no sense here - a back button is shown instead.
       isTapEnabled: !props.isFromDashboard,
+      getAccessibleLabel: () => getSunAccessibility()?.label,
+      getAccessibleDescription: () => getSunAccessibility()?.description,
+      getAccessibleKeyShortcuts: () => getSunAccessibility()?.keyShortcuts,
+      onKeyboardActivate: handleSunKeyboardActivate,
+      onAccessibleActionEnabledChange: setIsSunAccessibleActionEnabled,
     });
     onCleanup(unregister);
   });
@@ -1471,6 +1561,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (modeTransitionFadeInFrame) {
       cancelAnimationFrame(modeTransitionFadeInFrame);
     }
+    if (postSunFocusFrame) {
+      cancelAnimationFrame(postSunFocusFrame);
+    }
     if (modeTransitionTimeout) {
       clearTimeout(modeTransitionTimeout);
     }
@@ -1535,6 +1628,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         <GroundingOverlay
           variant={getDragObjectName()}
           onClose={finishGrounding}
+          focusOnMount={getKeyboardOfferFocus() === "grounding"}
           onSunMode={
             // The one shell sun carries the whole grounding stage rather than a
             // second disc being drawn (only wired when the shell sun exists; the
@@ -1565,14 +1659,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       )}
 
       {getShowLetGoOffer() && (
-        <LetGoOverlay answers={getAnswers()} onClose={finishLetGo} />
+        <LetGoOverlay
+          answers={getAnswers()}
+          onClose={finishLetGo}
+          focusOnMount={getKeyboardOfferFocus() === "letGo"}
+        />
       )}
 
       {getShowTimeSelectionOverlay() && (
         <div
           class="time-selection-overlay"
+          role="group"
+          aria-label="Mindful pause"
+          tabIndex={-1}
           classList={{ "has-resting-sun": getSunPhase() === "resting" }}
           ref={(el) => {
+            postSunOverlayEl = el;
             restingOverlayEl = el;
             restingSunObserver?.disconnect();
             if (el) {
@@ -1596,7 +1698,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             "align-items": "center",
             "justify-content": "center",
             "pointer-events": "auto",
-            "--screen-transition-ms": `${SCREEN_TRANSITION_MS}ms`,
           }}
         >
           <div
@@ -1621,6 +1722,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                     setPendingIntent,
                     setShowIntentSelection,
                   );
+                  requestInteractiveSunFocus();
                 }}
                 onCancelCountdown={cancelCountdown}
               />
@@ -1634,6 +1736,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                   clearTimeSelectionArmTimeout();
                   setSunPhase("interactive");
                   cancelTimeSelection(setPendingIntent, setShowTimeSelection);
+                  requestInteractiveSunFocus();
                 }}
               />
             )}
@@ -1643,6 +1746,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
       <div
         id="minded-6622-interaction-wrapper-box"
+        inert={
+          getIsExitingInteraction() ||
+          getShowPostSunOverlay() ||
+          getShowGroundingOffer() ||
+          getShowLetGoOffer() ||
+          getIsFinalAnimation() ||
+          getIsCompletionStarted()
+            ? true
+            : undefined
+        }
         style={{
           "pointer-events":
             getIsExitingInteraction() ||
@@ -1660,8 +1773,25 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           "z-index": getSunPhase() !== "interactive" ? 1101 : undefined,
         }}
       >
+        {getSunAlternativeAction() && (
+          <Btn
+            plain
+            voice
+            class="a11yAlternateAction"
+            disabled={!getIsSunAccessibleActionEnabled()}
+            onClick={() => {
+              const alternativeAction = getSunAlternativeAction();
+              if (alternativeAction) {
+                handleSunKeyboardActivate(alternativeAction.activation);
+              }
+            }}
+          >
+            {getSunAlternativeAction()?.label}
+          </Btn>
+        )}
         <div
           class="interaction-content"
+          inert={getShowSunInstructions() ? true : undefined}
           classList={{
             "fade-in":
               getIsContentReady() &&
@@ -1824,7 +1954,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             class="sun-container"
             style={{
               opacity: getIsInteractionSunShown() ? 1 : 0,
-              transition: `opacity ${SCREEN_TRANSITION_MS}ms ease-out`,
+              transition: "opacity var(--dur-gentle) var(--ease-out)",
               // Draggable only during the live interaction - not once the gesture
               // is done and we're advancing/exiting (the disc is just gliding).
               "pointer-events":
@@ -1837,6 +1967,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           >
             <Sun
               variant={getDragObjectName()}
+              aria-label={getSunAccessibility()?.label}
+              aria-description={getSunAccessibility()?.description}
+              aria-keyshortcuts={getSunAccessibility()?.keyShortcuts}
+              onKeyboardActivate={handleSunKeyboardActivate}
+              onAccessibleActionEnabledChange={setIsSunAccessibleActionEnabled}
+              focusRequest={getLocalSunFocusRequest()}
               onSkip={handleSunTap}
               onFlingAway={runFlingSkip}
               onDragComplete={() =>

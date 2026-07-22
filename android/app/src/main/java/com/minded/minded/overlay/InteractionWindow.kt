@@ -16,6 +16,7 @@ import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -30,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -40,15 +40,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.minded.minded.R
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.SunDisc
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
-import com.minded.minded.util.isDarkModeNow
 import kotlinx.coroutines.delay
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.util.Calendar
 import kotlin.math.abs
 
 internal data class ArrivalSunTarget(
@@ -259,6 +258,7 @@ class InteractionWindow(
     private val freshEscapeStep = mutableStateOf(FreshArrivalEscapeStep.NONE)
     private var freshTargetMeasurementAttempts = 0
     private var freshTargetStability = ArrivalSunTargetStability()
+    private var activeLoadingSkyBlend = LoadingSkyBlend.dark()
 
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
@@ -271,17 +271,8 @@ class InteractionWindow(
         val webViewState = remember { mutableStateOf<WebView?>(null) }
         ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .paint(
-                    painterResource(
-                        if (isDarkModeNow()) R.drawable.loading_sky_dark
-                        else R.drawable.loading_sky_light
-                    ),
-                    contentScale = ContentScale.FillBounds,
-                )
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            LoadingSkyBackdrop(activeLoadingSkyBlend)
         AndroidView(
             modifier = Modifier.fillMaxSize().imePadding(),
             factory = { context ->
@@ -454,6 +445,25 @@ class InteractionWindow(
                 }
             }
         }
+        }
+    }
+
+    @Composable
+    private fun LoadingSkyBackdrop(blend: LoadingSkyBlend) {
+        Image(
+            painter = painterResource(blend.from.drawableResource()),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (blend.from != blend.to && blend.progress > 0f) {
+            Image(
+                painter = painterResource(blend.to.drawableResource()),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                alpha = blend.progress,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 
@@ -814,6 +824,7 @@ class InteractionWindow(
             resetArrivalState()
             showCornerPlaceholder.value = activeMorphInFromCorner
             showFreshPlaceholder.value = !activeMorphInFromCorner
+            activeLoadingSkyBlend = loadingSkyBlendAt(currentLocalHour())
 
             super.showWindow()
             // CommonWindow may still reject a show while its hide state is being
@@ -823,12 +834,11 @@ class InteractionWindow(
                 return
             }
 
-            // Match the Compose loading sky before its first draw; this call happens
-            // in the same turn as addView, so even the window root's first frame is
-            // an opaque sky rather than the generic dark CommonWindow backstop.
+            // Match the nearest Compose loading-sky frame before its first draw;
+            // this happens in the same turn as addView, so the window is opaque
+            // immediately and never exposes the blocked app beneath it.
             window?.setBackgroundResource(
-                if (isDarkModeNow()) R.drawable.loading_gradient_dark
-                else R.drawable.loading_gradient_light
+                activeLoadingSkyBlend.closestFrame.drawableResource()
             )
             // Apply system UI visibility flags to the view after it's created
             @Suppress("DEPRECATION")
@@ -836,6 +846,11 @@ class InteractionWindow(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }
+    }
+
+    private fun currentLocalHour(): Double {
+        val now = Calendar.getInstance()
+        return now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
     }
 
     /**

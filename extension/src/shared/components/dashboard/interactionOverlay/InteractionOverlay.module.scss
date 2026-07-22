@@ -13,18 +13,13 @@
 
   @include standardPageTransitionIn();
 
-  animation: minded6622fadeIn var(--ease-out) 0.5s !important;
-  :global {
-    animation-name: minded6622fadeIn !important;
-  }
-
   // Launched from the home-screen sun widget: skip the entrance fade entirely so
   // the interaction is opaque from the first frame and the dashboard never shows
   // through behind it.
   &.instant {
-    animation: none !important;
+    animation: none;
     :global {
-      animation-name: none !important;
+      animation-name: none;
     }
   }
 }

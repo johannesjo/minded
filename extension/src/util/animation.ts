@@ -14,6 +14,13 @@ export function fadeOut(
   promise: Promise<void>;
   frameNr: number;
 } {
+  if (prefersReducedMotion()) {
+    el.style.opacity = "0";
+    el.style.transition = "none";
+    el.style.transitionDelay = "";
+    return { frameNr: 0, promise: Promise.resolve() };
+  }
+
   el.style.opacity = "1";
   el.style.transition = `opacity ${duration}ms var(--ease-out)`;
   if (initialDelay) {

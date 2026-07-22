@@ -3,6 +3,7 @@ import {
   createEffect,
   createSignal,
   onCleanup,
+  onMount,
   Show,
 } from "solid-js";
 import styles from "./GroundingOverlay.module.scss";
@@ -32,6 +33,8 @@ interface GroundingOverlayProps {
   variant: "sun" | "moon";
   /** Called once the flow is finished (completed, declined, or ignored). */
   onClose: () => void;
+  /** Move keyboard focus into the offer when a keyboard gesture opened it. */
+  focusOnMount?: boolean;
   /**
    * How the dashboard's single shell sun should behave through this stage - the
    * one disc carries the whole flow rather than a second one being drawn:
@@ -78,6 +81,8 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
   let settleTimeout: number | undefined;
   let lockTimeout: number | undefined;
   let settleRaf: number | undefined;
+  let focusRaf: number | undefined;
+  let rootEl: HTMLDivElement | undefined;
   let isDisposed = false;
   // Set the instant a sit ends so the "End" tap and the end timer (which can
   // both land) only ring the gong and advance once. (The old guard read the
@@ -134,6 +139,14 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     settleRaf = requestAnimationFrame(() => {
       settleRaf = undefined;
       if (!isDisposed) setSkySettled(true);
+    });
+  });
+
+  onMount(() => {
+    if (!props.focusOnMount) return;
+    focusRaf = requestAnimationFrame(() => {
+      focusRaf = undefined;
+      if (!isDisposed) rootEl?.focus();
     });
   });
 
@@ -238,6 +251,7 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
     if (settleTimeout) window.clearTimeout(settleTimeout);
     if (lockTimeout) window.clearTimeout(lockTimeout);
     if (settleRaf) cancelAnimationFrame(settleRaf);
+    if (focusRaf) cancelAnimationFrame(focusRaf);
   });
 
   // The screen-free sit (and its Android lock send-off) dims almost to black so
@@ -255,7 +269,11 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
 
   return (
     <div
+      ref={rootEl}
       class={styles.grounding}
+      role="group"
+      aria-label="Stay a while"
+      tabIndex={-1}
       classList={{
         [styles.isQuiet]: isQuietPhase(),
         [styles.isClosing]: getIsClosing(),

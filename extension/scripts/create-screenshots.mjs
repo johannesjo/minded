@@ -41,6 +41,30 @@ const desktopShots = [
     theme: "dark",
     copyAs: [path.join(readmeScreenshotsDir, "dashboard-dark.png")],
   },
+  {
+    file: "dashboard-empty.png",
+    target: "dashboard-empty",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "dashboard-empty.png")],
+  },
+  {
+    file: "dashboard-look-back.png",
+    target: "dashboard-look-back",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "dashboard-look-back.png")],
+  },
+  {
+    file: "settings.png",
+    target: "settings",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "settings.png")],
+  },
+  {
+    file: "pattern-insight.png",
+    target: "pattern-insight",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "pattern-insight.png")],
+  },
   { file: "energy-lvl.png", target: "energy-lvl", theme: "light" },
   {
     file: "q-something-i-am-looking-forward-to.png",
@@ -104,6 +128,17 @@ const desktopShots = [
 
 const googlePlayPhoneShots = [
   { file: "dashboard.png", target: "dashboard", theme: "light" },
+  {
+    file: "dashboard-empty.png",
+    target: "dashboard-empty",
+    theme: "light",
+  },
+  {
+    file: "pattern-insight.png",
+    target: "pattern-insight",
+    theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "pattern-insight.png")],
+  },
   {
     file: "question-looking-forward.png",
     target: "q-something-i-am-looking-forward-to",
@@ -213,7 +248,16 @@ const freezeMotion = async (page) => {
 const prepareShot = async (page, shot) => {
   switch (shot.target) {
     case "dashboard":
+      await page.waitForSelector(".minded-sun");
+      break;
+    case "dashboard-look-back":
       await page.waitForSelector(".cardDashboard");
+      break;
+    case "dashboard-empty":
+      await page.waitForSelector(".minded-sun");
+      break;
+    case "settings":
+      await page.getByRole("heading", { name: "Settings" }).waitFor();
       break;
     case "energy-lvl":
       await page.getByRole("button", { name: "Set rating to 3" }).click();
@@ -226,6 +270,9 @@ const prepareShot = async (page, shot) => {
       break;
     case "duration-selection":
       await page.waitForSelector(".time-selection-wrapper");
+      break;
+    case "pattern-insight":
+      await page.getByRole("button", { name: "Show alternative" }).waitFor();
       break;
     case "q-something-i-am-looking-forward-to":
     case "q-this-week-i-will-do-my-best-to":

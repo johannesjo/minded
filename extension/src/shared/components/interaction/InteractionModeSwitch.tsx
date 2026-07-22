@@ -208,7 +208,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           return reason ? (
             <div class="txtBig interaction-static-text">
               <div class="interaction-caption">Remember why you're here</div>
-              <div class="interaction-quote">"{reason.val}"</div>
+              <div>"{reason.val}"</div>
             </div>
           ) : null;
         })()}

@@ -132,6 +132,35 @@ describe("visual system contracts", () => {
     expect(rgbaAlpha(heading![1])).toBeLessThan(rgbaAlpha(full![1]));
   });
 
+  it("gives elevated cards a quiet inset edge instead of a heavy shadow", () => {
+    const css = compile(
+      [
+        '@import "styles/mixins/mixins";',
+        '@import "styles/variables";',
+        '@import "styles/componentsMainOnly/card";',
+      ].join("\n"),
+    );
+
+    expect(css).toContain("--dashboard-card-highlight:");
+    expect(css).toMatch(
+      /\.cardDashboard,[^{]*\.card\s*\{[^}]*box-shadow:\s*inset 0 1px 0 var\(--dashboard-card-highlight\)/,
+    );
+    expect(css).not.toMatch(/\.cardDashboard,[^{]*\.card\s*\{[^}]*drop-shadow/);
+  });
+
+  it("defines one reduced-motion-aware gentle transition tier", () => {
+    const css = compile('@import "styles/variables";');
+    const rootBlock = css.match(/#minded-6622\s*\{([^}]*)\}/);
+    const reducedMotionBlock = css.match(
+      /@media \(prefers-reduced-motion: reduce\)\s*\{\s*#minded-6622\s*\{([^}]*)\}/,
+    );
+
+    expect(rootBlock).not.toBeNull();
+    expect(rootBlock![1]).toMatch(/--dur-gentle:\s*700ms;/);
+    expect(reducedMotionBlock).not.toBeNull();
+    expect(reducedMotionBlock![1]).toMatch(/--dur-gentle:\s*0ms;/);
+  });
+
   it("never sits a serif (voice) button beside a sans one in the same row", () => {
     // The chrome-vs-voice split is per *element*, but adjacent buttons read as
     // one control group: a serif `<Btn voice>` next to a plain sans `<Btn>`

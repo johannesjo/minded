@@ -98,6 +98,7 @@ const COLOR_TOKENS = [
   "--bottom-bar-bg",
   "--dashboard-card-bg",
   "--dashboard-card-bg-hover",
+  "--dashboard-card-highlight",
   "--c-graph-fg-full",
   "--c-graph-fg-less",
   "--c-gradient-1",
@@ -112,6 +113,13 @@ const FONT_TOKENS = [
   "--fz-l",
   "--fz-m",
   "--fz-s",
+] as const;
+
+const MOTION_TOKENS = [
+  "--dur-instant",
+  "--dur-quick",
+  "--dur-soft",
+  "--dur-gentle",
 ] as const;
 
 const ICO_NAMES: IcoName[] = [
@@ -136,6 +144,7 @@ const TOC = [
   { id: "colors", label: "Colors" },
   { id: "sky", label: "Sky" },
   { id: "typography", label: "Typography" },
+  { id: "motion", label: "Motion" },
   { id: "dashboard-cards", label: "Dashboard cards" },
   { id: "buttons", label: "Buttons" },
   { id: "inputs", label: "Inputs" },
@@ -180,6 +189,10 @@ const Styleguide = (): JSX.Element => {
   const fontEntries = createMemo(() => {
     tokenSnapshot();
     return FONT_TOKENS.map((name) => ({ name, value: readVar(name) }));
+  });
+  const motionEntries = createMemo(() => {
+    tokenSnapshot();
+    return MOTION_TOKENS.map((name) => ({ name, value: readVar(name) }));
   });
 
   const wrapperClasses = createMemo(() => {
@@ -315,6 +328,24 @@ const Styleguide = (): JSX.Element => {
               <div class={styles.fontRow} style={{ "font-size": entry.value }}>
                 <code>{entry.name}</code> <span>{entry.value || "-"}</span> the
                 quick brown fox
+              </div>
+            )}
+          </For>
+        </div>
+      </Section>
+
+      <Section id="motion" title="Motion">
+        <p class={styles.muted}>
+          Four deliberate beats: instant acknowledges a tap, quick handles
+          control feedback, soft fades ordinary pages, and gentle is reserved
+          for signature surface transitions near the sun. These shared tokens
+          resolve to zero in reduced-motion mode.
+        </p>
+        <div class={styles.fontList}>
+          <For each={motionEntries()}>
+            {(entry) => (
+              <div class={styles.fontRow}>
+                <code>{entry.name}</code> <span>{entry.value || "-"}</span>
               </div>
             )}
           </For>

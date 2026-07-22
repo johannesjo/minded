@@ -45,6 +45,7 @@ export const OnboardingWeb: (props: {
   const [getStep, setStep] = createSignal(0);
   const [getShownStep, setShownStep] = createSignal(0);
   const [getHasExperiencedPause, setHasExperiencedPause] = createSignal(false);
+  const [getIsPauseOpen, setIsPauseOpen] = createSignal(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
   const [getIsSavingCompletion, setIsSavingCompletion] = createSignal(false);
   const [getCompletionError, setCompletionError] = createSignal("");
@@ -200,8 +201,8 @@ export const OnboardingWeb: (props: {
         class={styles.chrome}
         classList={{ [styles.isLeaving]: getIsLeaving() }}
         ref={chromeEl}
-        aria-hidden={getIsLeaving() ? "true" : undefined}
-        inert={getIsLeaving() ? true : undefined}
+        aria-hidden={getIsLeaving() || getIsPauseOpen() ? "true" : undefined}
+        inert={getIsLeaving() || getIsPauseOpen() ? true : undefined}
       >
         <div
           class={styles.contentWrapper}
@@ -294,6 +295,7 @@ export const OnboardingWeb: (props: {
         getBaseSettle={getSunSettle}
         advanceFromWelcome={() => changeStep(1)}
         onPauseExperienced={() => setHasExperiencedPause(true)}
+        onPauseVisibilityChange={setIsPauseOpen}
       />
 
       <div class={styles.skyProbe} ref={skyProbeEl} aria-hidden="true" />

@@ -44,6 +44,7 @@
   --dur-instant: 40ms; // tap acknowledgement - snap, no perceptible ramp
   --dur-quick: 180ms; // small UI state shifts (background, transform)
   --dur-soft: 480ms; // page-level fades
+  --dur-gentle: 700ms; // signature surface transitions and sun-adjacent settling
 
   // Dither/grain tile - breaks the 8-bit quantisation of the full-screen sky
   // gradients into noise so they can't band into visible horizontal stripes,
@@ -127,6 +128,7 @@
 
   --dashboard-card-bg: rgba(255, 255, 255, 0.43);
   --dashboard-card-bg-hover: rgba(255, 255, 255, 0.7);
+  --dashboard-card-highlight: rgba(255, 255, 255, 0.34);
   --dashboard-card-border-radius: var(--radius-xl);
 
   --sun-bg: #fff;
@@ -365,6 +367,7 @@
     // tint here would sink the cards into the near-black top of the gradient.
     --dashboard-card-bg: rgba(255, 255, 255, 0.07);
     --dashboard-card-bg-hover: rgba(255, 255, 255, 0.12);
+    --dashboard-card-highlight: rgba(255, 255, 255, 0.1);
 
     --c-bg: #444a5b;
     --h4-c: rgba(255, 255, 255, 0.65);
@@ -438,5 +441,6 @@
     --dur-instant: 0ms;
     --dur-quick: 0ms;
     --dur-soft: 0ms;
+    --dur-gentle: 0ms;
   }
 }

@@ -15,18 +15,24 @@ import { TimeSelection } from "@src/shared/components/interaction/timeSelection/
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import BackgroundTransition from "@src/shared/components/interaction/backgroundTransition/BackgroundTransition";
+import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
+import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 
 // @ts-ignore
 import styles from "./screenshots.module.scss";
 
 type ScreenshotTarget =
   | "dashboard"
+  | "dashboard-empty"
+  | "dashboard-look-back"
+  | "settings"
   | "browser-social"
   | "browser-intervention"
   | "energy-lvl"
   | "draggable-sun"
   | "intent-selection"
   | "duration-selection"
+  | "pattern-insight"
   | "q-something-i-am-looking-forward-to"
   | "q-this-week-i-will-do-my-best-to";
 
@@ -36,12 +42,16 @@ type BrowserSite = "youtube" | "reddit" | "x" | "tiktok" | "instagram";
 
 const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "dashboard",
+  "dashboard-empty",
+  "dashboard-look-back",
+  "settings",
   "browser-social",
   "browser-intervention",
   "energy-lvl",
   "draggable-sun",
   "intent-selection",
   "duration-selection",
+  "pattern-insight",
   "q-something-i-am-looking-forward-to",
   "q-this-week-i-will-do-my-best-to",
 ];
@@ -55,6 +65,21 @@ const BROWSER_SITES: BrowserSite[] = [
 ];
 
 const SCREENSHOT_SESSION_INTENT = { id: "check_one_thing" } as const;
+
+const SCREENSHOT_PATTERN_INSIGHT: PatternInsight = {
+  id: "screenshot-return-loop",
+  dateISO: "2026-07-22",
+  message:
+    "You've come back a few times in a short while. That's okay - see if you can just notice the pull, without having to act on it.",
+  actions: ["still_on_purpose", "show_alternative", "leave_now"],
+};
+
+const DASHBOARD_TARGETS: ReadonlySet<ScreenshotTarget> = new Set([
+  "dashboard",
+  "dashboard-empty",
+  "dashboard-look-back",
+  "settings",
+]);
 
 const getScreenshotTarget = (): ScreenshotTarget => {
   const target = new URLSearchParams(window.location.search).get("target");
@@ -106,9 +131,10 @@ const createDashboardAnswer = (
   ts,
 });
 
-const createScreenshotSyncData = (): SyncData => {
+const createScreenshotSyncData = (target: ScreenshotTarget): SyncData => {
   const now = Date.now();
   const hour = 60 * 60 * 1000;
+  const isEmptyDashboard = target === "dashboard-empty";
 
   return {
     cfg: {
@@ -127,7 +153,7 @@ const createScreenshotSyncData = (): SyncData => {
     appUsageRating: {},
     lastAppUsageRatingTS: 99,
     usageStats: {},
-    energyLvlTS: now,
+    energyLvlTS: isEmptyDashboard ? 99 : now,
     energyLvlVal: 3,
     sunTaps: {},
     sunTapTimestamps: [],
@@ -150,58 +176,73 @@ const createScreenshotSyncData = (): SyncData => {
     sleepWindDownBrainDumpDraft: "",
     sleepWindDownGratitudeDraft: "",
     sleepWindDownTomorrowDraft: "",
-    answers: [
-      createDashboardAnswer(
-        "screenshot-good-plans-today",
-        QID.GPT4,
-        QuestionCategoryId.GoodPlansToday,
-        "Today I will enjoy a coffee on the balcony.",
-        now,
-      ),
-      createDashboardAnswer(
-        "screenshot-gratitude",
-        QID.GR1,
-        QuestionCategoryId.Gratitude,
-        "I'm grateful for the quiet before everyone else wakes up.",
-        now,
-      ),
-      createDashboardAnswer(
-        "screenshot-goal-week",
-        QID.GW1,
-        QuestionCategoryId.GoalForTheWeek,
-        "This week I want to release minded on Android.",
-        now,
-      ),
-      createDashboardAnswer(
-        "screenshot-browsing-habits",
-        QID.HBH3,
-        QuestionCategoryId.HealthierBrowsingHabits,
-        "I could use a fresh clean separate browser without my bookmarks when working.",
-        now,
-      ),
-      createDashboardAnswer(
-        "screenshot-personal-resources-1",
-        QID.PR1,
-        QuestionCategoryId.PersonalResources,
-        "I am good at deep work.",
-        now - hour,
-      ),
-      createDashboardAnswer(
-        "screenshot-personal-resources-2",
-        QID.PR2,
-        QuestionCategoryId.PersonalResources,
-        "I am a good listener.",
-        now,
-      ),
-      createDashboardAnswer(
-        "screenshot-calming",
-        QID.CT1,
-        QuestionCategoryId.CalmingThoughts,
-        "I feel at ease when I find time to breathe.",
-        now,
-      ),
-    ],
+    answers: isEmptyDashboard
+      ? []
+      : [
+          createDashboardAnswer(
+            "screenshot-good-plans-today",
+            QID.GPT4,
+            QuestionCategoryId.GoodPlansToday,
+            "Today I will enjoy a coffee on the balcony.",
+            now,
+          ),
+          createDashboardAnswer(
+            "screenshot-gratitude",
+            QID.GR1,
+            QuestionCategoryId.Gratitude,
+            "I'm grateful for the quiet before everyone else wakes up.",
+            now,
+          ),
+          createDashboardAnswer(
+            "screenshot-goal-week",
+            QID.GW1,
+            QuestionCategoryId.GoalForTheWeek,
+            "This week I want to release minded on Android.",
+            now,
+          ),
+          createDashboardAnswer(
+            "screenshot-browsing-habits",
+            QID.HBH3,
+            QuestionCategoryId.HealthierBrowsingHabits,
+            "I could use a fresh clean separate browser without my bookmarks when working.",
+            now,
+          ),
+          createDashboardAnswer(
+            "screenshot-personal-resources-1",
+            QID.PR1,
+            QuestionCategoryId.PersonalResources,
+            "I am good at deep work.",
+            now - hour,
+          ),
+          createDashboardAnswer(
+            "screenshot-personal-resources-2",
+            QID.PR2,
+            QuestionCategoryId.PersonalResources,
+            "I am a good listener.",
+            now,
+          ),
+          createDashboardAnswer(
+            "screenshot-calming",
+            QID.CT1,
+            QuestionCategoryId.CalmingThoughts,
+            "I feel at ease when I find time to breathe.",
+            now,
+          ),
+        ],
   };
+};
+
+const setDashboardRoute = (target: ScreenshotTarget): void => {
+  switch (target) {
+    case "dashboard-look-back":
+      window.location.hash = "#/lookBack";
+      return;
+    case "settings":
+      window.location.hash = "#/settings";
+      return;
+    default:
+      window.location.hash = "#/";
+  }
 };
 
 const setDashboardRandomSequence = () => {
@@ -782,7 +823,8 @@ const Screenshots = (): JSX.Element => {
   const isMobileVideo = getIsMobileVideo();
 
   (window as any).IS_MAIN_MINDED_6622 = true;
-  (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ = createScreenshotSyncData();
+  (window as any).__MINDED_SCREENSHOT_SYNC_DATA__ =
+    createScreenshotSyncData(initialTarget);
   (window as any).__MINDED_SCREENSHOT_LOCAL_DATA__ = {
     hostsData: {},
     littleSunHintSeen: true,
@@ -790,7 +832,8 @@ const Screenshots = (): JSX.Element => {
   (window as any).__MINDED_SCREENSHOT_READY__ = false;
   sessionStorage.setItem("dashboardGroupShown", "true");
 
-  if (initialTarget === "dashboard") {
+  if (DASHBOARD_TARGETS.has(initialTarget)) {
+    setDashboardRoute(initialTarget);
     setDashboardRandomSequence();
   }
 
@@ -821,7 +864,7 @@ const Screenshots = (): JSX.Element => {
     markReadyAfterPaint(theme, platform);
   });
 
-  if (initialTarget === "dashboard") {
+  if (DASHBOARD_TARGETS.has(initialTarget)) {
     return <RoutesCmp />;
   }
 
@@ -863,6 +906,16 @@ const Screenshots = (): JSX.Element => {
                 onSelectTime={() => undefined}
               />
             </PostSunFlowFrame>
+          )}
+
+          {target() === "pattern-insight" && (
+            <PatternInsightInteraction
+              insight={SCREENSHOT_PATTERN_INSIGHT}
+              onStillOnPurpose={() => undefined}
+              onShowAlternative={() => undefined}
+              onLeaveNow={() => undefined}
+              onCancelCountdown={() => undefined}
+            />
           )}
 
           {target() === "q-something-i-am-looking-forward-to" && (
