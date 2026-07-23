@@ -74,6 +74,9 @@ describe("settings composition", () => {
 
   it("uses a quiet single-column composition for Web settings", () => {
     const pageStyles = readSource("src/pages/options/Options.module.scss");
+    const websiteComponent = readSource(
+      "src/pages/newtab/components/onboardingWeb/WebsiteList.tsx",
+    );
     const websiteStyles = readSource(
       "src/pages/newtab/components/onboardingWeb/WebsiteList.module.scss",
     );
@@ -93,12 +96,17 @@ describe("settings composition", () => {
     expect(pageStyles).toMatch(/\.sections\s*\{[\s\S]*gap:\s*0/);
     expect(pageStyles).toMatch(/:global\(\.h3\)\s*\{[\s\S]*font-weight:\s*500/);
 
-    expect(websiteStyles).toMatch(
-      /\.WebsiteListItems\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column/,
+    expect(websiteComponent).toContain(
+      "[styles.settingsLayout]: props.showSaveButton === false",
     );
-    expect(websiteStyles).not.toMatch(/grid-template-columns/);
     expect(websiteStyles).toMatch(
-      /\.WebsiteListItems\s*\{[\s\S]*>\s*div\s*\{[\s\S]*border-bottom:\s*1px solid/,
+      /\.WebsiteListItems\s*\{[\s\S]*display:\s*grid[\s\S]*grid-template-columns/,
+    );
+    expect(websiteStyles).toMatch(
+      /\.settingsLayout\s*\{[\s\S]*\.WebsiteListItems\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column/,
+    );
+    expect(websiteStyles).toMatch(
+      /\.settingsLayout\s*\{[\s\S]*>\s*div\s*\{[\s\S]*border-bottom:\s*1px solid/,
     );
 
     for (const styles of sharedSettingStyles) {

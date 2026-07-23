@@ -4,36 +4,70 @@
 }
 
 .WebsiteListItems {
-  border-top: 1px solid var(--btn-outline-color);
-  display: flex;
-  flex-direction: column;
-  margin: var(--space-md) 0 var(--space-lg);
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  margin: 32px;
   min-height: 0;
   min-width: 0;
 
+  //@media (min-width: var(--bp-l)) {
+  grid-template-columns: repeat(1, 1fr);
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 800px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   > div {
-    border-bottom: 1px solid var(--btn-outline-color);
-    padding: var(--space-sm) 0;
   }
 }
 
 .controls {
+  gap: 16px;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: var(--space-md);
-  justify-content: flex-start;
 }
 
 .status {
   align-items: center;
   display: flex;
-  gap: var(--space-md);
-  justify-content: flex-start;
+  gap: 12px;
+  justify-content: center;
   min-height: 24px;
-  margin: calc(-1 * var(--space-sm)) 0 var(--space-md);
+  margin: -12px 32px 24px;
   opacity: 0.75;
-  text-align: left;
+  text-align: center;
   font-size: var(--fz-s);
+}
+
+.settingsLayout {
+  .WebsiteListItems {
+    border-top: 1px solid var(--btn-outline-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: var(--space-md) 0 var(--space-lg);
+
+    > div {
+      border-bottom: 1px solid var(--btn-outline-color);
+      padding: var(--space-sm) 0;
+    }
+  }
+
+  .controls {
+    justify-content: flex-start;
+  }
+
+  .status {
+    gap: var(--space-md);
+    justify-content: flex-start;
+    margin: calc(-1 * var(--space-sm)) 0 var(--space-md);
+    text-align: left;
+  }
 }
 
 .isError {

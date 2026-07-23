@@ -257,7 +257,12 @@ export const WebsiteList: (props: {
   };
 
   return (
-    <div class={styles.WebsiteList}>
+    <div
+      classList={{
+        [styles.WebsiteList]: true,
+        [styles.settingsLayout]: props.showSaveButton === false,
+      }}
+    >
       <div class={styles.WebsiteListItems}>
         <For each={items()}>
           {(item, index) => (
