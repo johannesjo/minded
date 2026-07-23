@@ -24,11 +24,18 @@ import com.minded.minded.R
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.glance.appwidget.updateAll
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
+import com.minded.minded.widget.MyAppWidget
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import com.minded.minded.detection.OverlayDecision
 import com.minded.minded.detection.OverlayDecisionEngine
 import com.minded.minded.detection.OverlayState
@@ -69,6 +76,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val screenStateHandler = Handler(Looper.getMainLooper())
     private val SCREEN_ON_CHECK_DELAY_MS = 500L
 
+    // Off the main thread for Glance's suspending updateAll; cancelled in onDestroy.
+    private val widgetRefreshScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     private val _lifecycleRegistry = LifecycleRegistry(this)
     private val _savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.create(this)
@@ -100,10 +110,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                     appBeforeScreenOff = sharedOverlayViewModel.sharedData.value.currentApp
                     Log.d(logTag, "Saved state: overlay=$overlayStateBeforeScreenOff, app=$appBeforeScreenOff")
+                    // Settle the companion widget while the screen is dark (see
+                    // refreshCompanionWidget) - covers no-keyguard devices that wake
+                    // straight to the home screen, so even they never see it flip.
+                    refreshCompanionWidget()
                 }
                 Intent.ACTION_SCREEN_ON -> {
                     Log.d(logTag, "Screen turned ON - will wait for USER_PRESENT to restore overlay")
-                    // Don't restore here - wait for USER_PRESENT which fires after unlock
+                    // Don't restore here - wait for USER_PRESENT which fires after unlock.
+                    // But do settle the companion widget now: SCREEN_ON fires at the
+                    // keyguard/AOD, before the launcher (and the widget) is revealed,
+                    // so recomputing its line here lands the freshest value for this
+                    // pickup and the user never witnesses the change (see
+                    // refreshCompanionWidget).
+                    refreshCompanionWidget()
                 }
                 Intent.ACTION_USER_PRESENT -> {
                     Log.d(logTag, "User unlocked device - restoring overlay if needed")
@@ -112,6 +132,30 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                         restoreOverlayAfterUnlock()
                     }, SCREEN_ON_CHECK_DELAY_MS)
                 }
+            }
+        }
+    }
+
+    /**
+     * Refresh the home-screen companion sun so its line/sky/phase only ever
+     * *changes* while the user isn't looking at it. Unlike every in-app surface,
+     * the widget can't cross-fade a RemoteViews swap (Glance has no content
+     * animation), so a value change is an unavoidable hard cut - and the app never
+     * hard-cuts. Instead of letting MyAppWidgetReceiver's while-awake alarm swap it
+     * under the gaze, we settle it here at the screen transition: dark on
+     * SCREEN_OFF, and during the keyguard on SCREEN_ON before the launcher is
+     * revealed. A return glance then finds an already-current line it never saw
+     * flip - fresh at pickup, never witnessed. The alarm stays as the coarse,
+     * permissionless backstop for users running no service; once wake-refresh is in
+     * place it almost never has a new value left to show. updateAll is a no-op when
+     * no widget is placed.
+     */
+    private fun refreshCompanionWidget() {
+        widgetRefreshScope.launch {
+            try {
+                MyAppWidget().updateAll(applicationContext)
+            } catch (e: Exception) {
+                Log.e(logTag, "Failed to refresh companion widget", e)
             }
         }
     }
@@ -735,6 +779,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         // Cancel any pending screen state checks
         screenStateHandler.removeCallbacksAndMessages(null)
+
+        // Stop any in-flight companion-widget refresh
+        widgetRefreshScope.cancel()
 
         // Unregister screen state receiver
         try {

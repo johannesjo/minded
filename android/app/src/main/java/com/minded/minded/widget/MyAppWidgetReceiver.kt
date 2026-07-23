@@ -23,10 +23,19 @@ import java.util.Calendar
  * night. So rather than polling, we arm a single inexact, *non-wake* alarm for
  * the next 15-minute step and re-arm each time it fires - one alarm spans the
  * whole night. Non-wake (RTC) means it only fires while the device is already
- * awake, i.e. right when someone is looking: a busy day is ~60-odd cheap
- * piggybacked repaints, a sleeping phone schedules nothing until it wakes. What
- * to show is decided in MyAppWidget.provideGlance from the local time. See
- * docs/sun-companion-widget.md.
+ * awake: a busy day is ~60-odd cheap piggybacked repaints, a sleeping phone
+ * schedules nothing until it wakes. What to show is decided in
+ * MyAppWidget.provideGlance from the local time. See docs/sun-companion-widget.md.
+ *
+ * The alarm is the *backstop*, not the primary refresh. A RemoteViews swap can't
+ * cross-fade the way every in-app transition softens, so we don't want the value
+ * to change while someone is looking at it. When protection is active,
+ * OverlayControllerService refreshes the widget at the screen transition instead
+ * (dark on SCREEN_OFF, at the keyguard on SCREEN_ON before the launcher shows) -
+ * so the line only ever changes offscreen and a return glance never witnesses the
+ * flip (see OverlayControllerService.refreshCompanionWidget). This alarm remains
+ * the permissionless path for widget-only users running no service; with
+ * wake-refresh in place it usually re-renders the same slot and shows nothing new.
  */
 class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = MyAppWidget()
