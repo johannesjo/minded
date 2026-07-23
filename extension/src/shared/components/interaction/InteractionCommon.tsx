@@ -543,11 +543,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   // The bedtime settle - a deliberate drag OR fling in any direction (both ease
-  // the phone into the dark; only the triple-tap skips): rest a wordless "Sleep
-  // well" beat on screen, then run the real close - on Android that closes the
-  // app and locks the screen, so the phone eases into the dark rather than
-  // snapping to the OS lock. The settle is offered on every bedtime interrupt -
-  // there is no once-per-night guard; a skip simply leaves it to return.
+  // the phone into the dark; a tap instead continues into the intent/time grant):
+  // rest a wordless "Sleep well" beat on screen, then run the real close - on
+  // Android that closes the app and locks the screen, so the phone eases into the
+  // dark rather than snapping to the OS lock. The settle is offered on every
+  // bedtime interrupt - there is no once-per-night guard here; the guided
+  // wind-down flow is what quiets it for the night (sleepWindDownDismissedNightId).
   //
   // Fired from handleStartBackgroundAnimation at the drag's *release* (not from
   // the terminal onDragComplete, which lands only after the sun's ~3s off-screen
@@ -1104,10 +1105,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Bedtime settle: a deliberate drag or fling in any direction is a goodnight,
     // not a let-go and not an escape - ease the phone into the dark rather than
     // hand off to the minded app (the daytime fling) or open the let-go question
-    // (the dashboard). The only way out that stays in the current app is the
-    // triple-tap skip. Don't fade the content out and don't wait on the ~3s
-    // off-screen glide - show the wordless "Sleep well" beat now and close+lock
-    // after it. (The moon still drifts for a fraction of a second before close.)
+    // (the dashboard). The way to stay in the current app is the tap, which
+    // continues into the intent/time grant like any intervention. Don't fade the
+    // content out and don't wait on the ~3s off-screen glide - show the wordless
+    // "Sleep well" beat now and close+lock after it. (The moon still drifts for a
+    // fraction of a second before close.)
     if (!props.isFromDashboard && getMode() === "WIND_DOWN_SETTLE") {
       settleForBedtime(props.onDragComplete);
       return;

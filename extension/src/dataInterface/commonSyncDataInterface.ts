@@ -227,17 +227,6 @@ export const markInteractionModeShown = (
   mode: InteractionMode,
 ): Promise<void> => patchSyncData({ lastInteractionMode: mode });
 
-/**
- * Record that the user explicitly skipped tonight's wind-down settle, so the
- * engine stops re-serving it this night (getInteractionMode's
- * `isBedtimeSettleSettledTonight` guard, compared against `context.bedtimeNightId`).
- * The caller passes the night id it is settling - `resolveNightId(cfg, new Date())`,
- * the same night the engine's clock resolves to - so the two agree. A plain key
- * patch; the value doesn't depend on current state.
- */
-export const markBedtimeSettled = (nightId: string): Promise<void> =>
-  patchSyncData({ sleepWindDownDismissedNightId: nightId });
-
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
     answers: syncData.answers.map((aI) =>
