@@ -9,6 +9,25 @@ reviews across two rounds (philosophy-fit, interaction-mechanics ×2,
 sleep/behavioral, and a minimalism critic) and the product decisions they
 surfaced.
 
+## Amendment (v5, 2026-07-23): the tap continues, it no longer skips
+
+One call from use supersedes the v4 tap-skip below:
+
+- **A tap on the settle moon now continues into the intent/time grant, exactly
+  like any other intervention** - it is no longer a bespoke skip. The old skip
+  faded the moon out with no morph and then let a second, normal interrupt
+  surface; routing the tap through the standard continue keeps the single sun
+  gliding straight into the session's intent/time selection (drag/fling still
+  ease the phone into the dark). The "quiet it for the night" state is therefore
+  no longer written by the moon at all: only the **guided wind-down flow**
+  (completing or skipping "Wind down for sleep?") records
+  `sleepWindDownDismissedNightId`, which `canServeBedtimeSettle` still reads to
+  serve the `NOTICE` anchor instead of the settle. The `markBedtimeSettled`
+  helper is gone (the guided flow writes the field directly). One further
+  bedtime trim: **"rest of day" is dropped from the time options between 0:00 and
+  6:00** (`getTimeOptions`), since granting screen time until the next midnight
+  in the small hours is the opposite of letting the day go.
+
 ## Amendment (v4, 2026-07-20): gestures + guard
 
 Two behavioural calls from use supersede the v3 text below:

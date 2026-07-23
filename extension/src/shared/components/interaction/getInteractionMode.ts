@@ -212,16 +212,18 @@ export const getInteractionModeDecision = (
   // lock-screen close there).
   const isBedtimeIntervention =
     context.isBedtimeWindow && canApplyInterventionFriction;
-  // One escape quiets it: an *explicit* triple-tap skip records tonight's night
-  // id, and from then on the settle stops returning this night - repeating the
-  // identical wordless moon on every interrupt after the user has consciously
-  // let it go read as nagging (the very thing the settle must not do). Passive
-  // dismissal (ignore / auto-dismiss) and the drag-settle do NOT write it, so
-  // the settle still returns on the next interrupt in those cases. The
-  // comparison is against the night id, so a stale value from a previous night
-  // can never suppress tonight. This gate is intentionally normal-tier only: a
-  // genuinely strong late-night pull still reaches the wordless settle via the
-  // strong branch below (quiet-the-night is scoped, not absolute).
+  // One thing quiets it: once the user has already dealt with sleep tonight
+  // through the guided wind-down flow (completing or skipping it records
+  // tonight's night id, `sleepWindDownDismissedNightId`), the interrupt stops
+  // re-serving the identical wordless moon this night - repeating it after the
+  // user consciously wound down read as nagging (the very thing the settle must
+  // not do). The blocked-app moon itself never writes this now (a tap continues,
+  // a drag settles to sleep), so absent the guided flow the settle simply returns
+  // on the next interrupt. The comparison is against the night id, so a stale
+  // value from a previous night can never suppress tonight. This gate is
+  // intentionally normal-tier only: a genuinely strong late-night pull still
+  // reaches the wordless settle via the strong branch below (quiet-the-night is
+  // scoped, not absolute).
   const isBedtimeSettleSettledTonight =
     context.bedtimeNightId !== null &&
     syncData.sleepWindDownDismissedNightId === context.bedtimeNightId;
@@ -333,8 +335,8 @@ export const getInteractionModeDecision = (
 
   // Bedtime settle (non-strong): the everyday bedtime interrupt is always
   // wordless. Normally the wordless moon - "let the day go" - served in place of
-  // the ordinary evening options. Once the user has explicitly skipped it
-  // tonight (see `canServeBedtimeSettle`), the moon they dismissed steps aside
+  // the ordinary evening options. Once the user has already wound down tonight
+  // via the guided flow (see `canServeBedtimeSettle`), the settle steps aside
   // for the calm no-typing NOTICE anchor - never the same moon again (that
   // nags), and never the verbal reason/alternative/question cascade below (a
   // survey at the moment of least capacity fails the 90% bar). Returning here
