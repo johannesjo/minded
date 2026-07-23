@@ -1,6 +1,7 @@
 import { Component, For } from "solid-js";
 import { SessionIntent } from "@src/dataInterface/syncData";
 import { getSessionIntentTimeQuestion } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
+import { getTimeOptions } from "@src/shared/components/interaction/timeSelection/timeSelectionOptions";
 import Btn from "@src/shared/components/ui/Btn";
 
 interface TimeSelectionProps {
@@ -11,14 +12,10 @@ interface TimeSelectionProps {
 }
 
 export const TimeSelection: Component<TimeSelectionProps> = (props) => {
-  const options = [
-    { label: "1 min", value: 60 },
-    { label: "5 min", value: 300 },
-    { label: "15 min", value: 900 },
-    { label: "30 min", value: 1800 },
-    { label: "1 hour", value: 3600 },
-    { label: "rest of day", value: -1 },
-  ];
+  // Read the hour when the choices mount (the moment the user reaches this
+  // step): in the deep-night window "rest of day" is dropped, since granting
+  // screen time until midnight contradicts letting the day go.
+  const options = getTimeOptions(new Date().getHours());
 
   const handleSelect = (seconds: number) => {
     if (!props.isArmed) {
