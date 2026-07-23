@@ -2,6 +2,7 @@ package com.minded.minded.overlay
 
 import com.minded.minded.data.SharedPreferenceService
 import android.app.AlarmManager
+import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -31,6 +32,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.widget.MyAppWidget
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -118,12 +120,19 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 Intent.ACTION_SCREEN_ON -> {
                     Log.d(logTag, "Screen turned ON - will wait for USER_PRESENT to restore overlay")
                     // Don't restore here - wait for USER_PRESENT which fires after unlock.
-                    // But do settle the companion widget now: SCREEN_ON fires at the
-                    // keyguard/AOD, before the launcher (and the widget) is revealed,
-                    // so recomputing its line here lands the freshest value for this
-                    // pickup and the user never witnesses the change (see
-                    // refreshCompanionWidget).
-                    refreshCompanionWidget()
+                    // But do settle the companion widget now - *only* behind a locked
+                    // keyguard. There, SCREEN_ON fires before the launcher (and the
+                    // widget) is revealed, so recomputing the line lands the freshest
+                    // value for this pickup and the user never witnesses the change. On
+                    // a device with no lock screen (Swipe/None) the home screen appears
+                    // essentially immediately, so a refresh here would be the very
+                    // under-the-gaze flip we're avoiding; those devices rely on the
+                    // SCREEN_OFF settle above instead. (Same keyguard gate as
+                    // MyAccessibilityService's unlock burst.)
+                    val keyguard = getSystemService(KeyguardManager::class.java)
+                    if (keyguard?.isKeyguardLocked == true) {
+                        refreshCompanionWidget()
+                    }
                 }
                 Intent.ACTION_USER_PRESENT -> {
                     Log.d(logTag, "User unlocked device - restoring overlay if needed")
@@ -154,6 +163,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         widgetRefreshScope.launch {
             try {
                 MyAppWidget().updateAll(applicationContext)
+            } catch (e: CancellationException) {
+                throw e // cooperative cancellation (onDestroy) - not a failure
             } catch (e: Exception) {
                 Log.e(logTag, "Failed to refresh companion widget", e)
             }
