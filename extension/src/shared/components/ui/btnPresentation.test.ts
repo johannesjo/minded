@@ -113,4 +113,18 @@ describe("button presentation", () => {
       /display:\s*grid[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
     );
   });
+
+  it("keeps duration choice labels on one line", () => {
+    const timeStyles = readSource(
+      "src/shared/components/interaction/timeSelection/TimeSelection.scss",
+    );
+    const container = ruleBody(timeStyles, ".time-selection-container");
+
+    expect(ruleBody(timeStyles, ".time-option")).toMatch(
+      /white-space:\s*nowrap/,
+    );
+    expect(container).toMatch(
+      /@include onSmallScreens\(\)[\s\S]*padding-inline:\s*0[\s\S]*\.time-options-grid[\s\S]*gap:\s*var\(--space-sm\)/,
+    );
+  });
 });
