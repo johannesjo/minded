@@ -91,4 +91,19 @@ describe("collapsed dashboard presentation", () => {
       /@media \(min-width: \$bpDashboardMoreThan2Col\)[\s\S]*flex-basis:\s*calc\(33\.333% - 16px\);/,
     );
   });
+
+  it("centres incomplete rows in longer look-back collections", () => {
+    expect(styles).toMatch(
+      /\.box:last-child:nth-child\(odd\)\s*\{[\s\S]*grid-column:\s*2\s*\/\s*span 2;/,
+    );
+    expect(styles).toMatch(
+      /\.box:nth-last-child\(1\):nth-child\(3n \+ 1\)\s*\{[\s\S]*grid-column:\s*3\s*\/\s*span 2;/,
+    );
+    expect(styles).toMatch(
+      /\.box:nth-last-child\(2\):nth-child\(3n \+ 1\)\s*\{[\s\S]*grid-column:\s*2\s*\/\s*span 2;/,
+    );
+    expect(styles).toMatch(
+      /\.box:nth-last-child\(1\):nth-child\(3n \+ 2\)\s*\{[\s\S]*grid-column:\s*4\s*\/\s*span 2;/,
+    );
+  });
 });
