@@ -4,43 +4,35 @@
 }
 
 .WebsiteListItems {
-  display: grid;
-  gap: 16px;
-  margin-top: 32px;
-  margin-bottom: 32px;
-  margin: 32px;
+  border-top: 1px solid var(--btn-outline-color);
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-md) 0 var(--space-lg);
   min-height: 0;
   min-width: 0;
 
-  //@media (min-width: var(--bp-l)) {
-  grid-template-columns: repeat(1, 1fr);
-  @media (min-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (min-width: 800px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   > div {
+    border-bottom: 1px solid var(--btn-outline-color);
+    padding: var(--space-sm) 0;
   }
 }
 
 .controls {
-  gap: 16px;
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: flex-start;
 }
 
 .status {
   align-items: center;
   display: flex;
-  gap: 12px;
-  justify-content: center;
+  gap: var(--space-md);
+  justify-content: flex-start;
   min-height: 24px;
-  margin: -12px 32px 24px;
+  margin: calc(-1 * var(--space-sm)) 0 var(--space-md);
   opacity: 0.75;
-  text-align: center;
+  text-align: left;
   font-size: var(--fz-s);
 }
 

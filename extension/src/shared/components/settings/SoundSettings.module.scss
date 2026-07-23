@@ -1,12 +1,14 @@
 .SoundSettings {
-  padding-bottom: var(--space-sm);
-  text-align: center;
+  padding: var(--settings-block-padding, 0 0 var(--space-sm));
+  text-align: var(--settings-text-align, center);
 }
 
 .header {
   align-items: center;
   display: inline-flex;
   gap: var(--space-md);
+  justify-content: var(--settings-header-justify, center);
+  width: var(--settings-header-width, auto);
 
   :global(.h3) {
     margin: 0;
@@ -15,7 +17,8 @@
 
 .description {
   font-size: var(--fz-s);
-  margin: var(--space-sm) auto 0;
-  max-width: 400px;
+  margin: var(--space-sm) var(--settings-description-margin-inline, auto) 0;
+  max-width: var(--settings-description-max-width, 400px);
   opacity: 0.7;
+  text-align: var(--settings-text-align, center);
 }

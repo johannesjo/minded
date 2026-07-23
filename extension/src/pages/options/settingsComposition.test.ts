@@ -71,4 +71,39 @@ describe("settings composition", () => {
     expect(focusSettings).toContain("Active hours");
     expect(windDownSettings).toContain("Sleep wind-down");
   });
+
+  it("uses a quiet single-column composition for Web settings", () => {
+    const pageStyles = readSource("src/pages/options/Options.module.scss");
+    const websiteStyles = readSource(
+      "src/pages/newtab/components/onboardingWeb/WebsiteList.module.scss",
+    );
+    const sharedSettingStyles = [
+      readSource("src/shared/components/settings/SoundSettings.module.scss"),
+      readSource(
+        "src/shared/components/settings/SessionGraceSettings.module.scss",
+      ),
+      readSource("src/shared/components/settings/FocusSchedule.module.scss"),
+    ];
+
+    expect(pageStyles).toMatch(/\.Options\s*\{[\s\S]*max-width:\s*680px/);
+    expect(pageStyles).toMatch(
+      /\.Options\s*\{[\s\S]*--settings-header-justify:\s*space-between/,
+    );
+    expect(pageStyles).toMatch(/\.header\s*\{[\s\S]*text-align:\s*left/);
+    expect(pageStyles).toMatch(/\.sections\s*\{[\s\S]*gap:\s*0/);
+    expect(pageStyles).toMatch(/:global\(\.h3\)\s*\{[\s\S]*font-weight:\s*500/);
+
+    expect(websiteStyles).toMatch(
+      /\.WebsiteListItems\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column/,
+    );
+    expect(websiteStyles).not.toMatch(/grid-template-columns/);
+    expect(websiteStyles).toMatch(
+      /\.WebsiteListItems\s*\{[\s\S]*>\s*div\s*\{[\s\S]*border-bottom:\s*1px solid/,
+    );
+
+    for (const styles of sharedSettingStyles) {
+      expect(styles).toContain("var(--settings-header-justify");
+      expect(styles).toContain("var(--settings-text-align");
+    }
+  });
 });

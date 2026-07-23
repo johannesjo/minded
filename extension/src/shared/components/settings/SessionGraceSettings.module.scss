@@ -1,36 +1,38 @@
 .SessionGraceSettings {
-  padding: 16px 0;
-  text-align: center;
+  padding: var(--settings-block-padding, var(--space-md) 0);
+  text-align: var(--settings-text-align, center);
 }
 
 .header {
-  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
+  display: inline-flex;
+  gap: var(--space-md);
+  justify-content: var(--settings-header-justify, center);
+  margin-bottom: var(--space-sm);
+  width: var(--settings-header-width, auto);
 }
 
 .description {
-  opacity: 0.7;
   font-size: var(--fz-s);
-  margin: 0 0 16px 0;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 var(--settings-description-margin-inline, auto) var(--space-md);
+  max-width: var(--settings-description-max-width, 400px);
+  opacity: 0.7;
+  text-align: var(--settings-text-align, center);
 }
 
 .options {
-  margin-top: 16px;
+  margin-top: var(--space-md);
+  text-align: var(--settings-text-align, center);
 }
 
 .optionsLabel {
   font-size: var(--fz-s);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
   opacity: 0.8;
 }
 
 .optionsGrid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: var(--settings-options-justify, center);
 }

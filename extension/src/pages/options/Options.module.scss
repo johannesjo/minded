@@ -1,16 +1,26 @@
 .Options {
-  max-width: 980px;
+  // Shared settings stay centered on Android; this page opts them into the
+  // quieter split-label composition used below.
+  --settings-block-padding: 0;
+  --settings-content-max-width: none;
+  --settings-description-margin-inline: 0;
+  --settings-description-max-width: none;
+  --settings-header-justify: space-between;
+  --settings-header-width: 100%;
+  --settings-options-justify: flex-start;
+  --settings-text-align: left;
+
+  max-width: 680px;
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-md) 96px;
+  padding: var(--space-xl) var(--space-md) 96px;
 }
 
 .header {
-  margin: 0 auto 32px;
-  max-width: 680px;
-  text-align: center;
+  margin: 0 0 var(--space-xl);
+  text-align: left;
 
   h2 {
-    margin-bottom: 8px;
+    margin: 0 0 var(--space-sm);
   }
 
   p {
@@ -22,23 +32,22 @@
 .sections {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: 0;
   animation: settingsSectionsIn 320ms var(--ease-out) both;
 }
 
 .section {
   border-top: 1px solid var(--btn-outline-color);
-  padding-top: var(--space-lg);
+  padding: var(--space-xl) 0;
 
   :global(.h3) {
-    font-weight: 600;
+    font-weight: 500;
   }
 }
 
 .sectionIntro {
-  margin: 0 auto var(--space-md);
-  max-width: 640px;
-  text-align: center;
+  margin: 0 0 var(--space-md);
+  text-align: left;
 
   h3 {
     margin: 0 0 var(--space-sm);
