@@ -1667,7 +1667,7 @@ export const Sun: Component<SunProps> = (props) => {
   // plumes ~100px up); instead the resting daytime companion gets a snug 2-layer
   // halo with no far plume - see `.isCompanion .minded-sun:not(.moon)` in
   // RouteCmp.module.scss. With that tight shape the clip below removes almost
-  // nothing, so 1.25 keeps a warm, symmetric rest halo that stays level.
+  // nothing, so 1.25 keeps a soft, symmetric rest halo that stays level.
   const COMPANION_REST_GLOW = 1.25;
   // The moon carries a resting glow too, the same way the sun does. Its disc is a
   // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
@@ -1795,8 +1795,8 @@ export const Sun: Component<SunProps> = (props) => {
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         // One glow axis drives the colour: cool ↔ white ↔ amber (see
-        // getSunGlowColor). A settle's warmth (companion rest / departing
-        // hand-off) warms it; an up-drag cools it. The moon stays cool.
+        // getSunGlowColor). Every in-app state sits at white; only the departing
+        // hand-off's warmth warms it, and an up-drag cools it. The moon stays cool.
         "--glow-color": getSunGlowColor(),
         // Halo spread: the resting companion tightens it (reach < 1) so its far
         // plume can't be clipped low on the bar; every other state rides the

@@ -4,11 +4,13 @@
 //
 //  The home-screen / lock-screen companion sun, rendered in SwiftUI.
 //
-//  This is the WidgetKit twin of the Android `ic_sun_widget` assets. The two
-//  phases match the app's resting sun:
+//  This is the WidgetKit twin of the Android `ic_sun_widget` assets:
 //    - Day (06–19): a near-white disc warming to the faintest gold at the rim,
-//      wrapped in a soft warm bloom. Drawn here with SwiftUI gradients, ported
-//      one-to-one from the Android day vector (`res/drawable/ic_sun_widget_day.xml`).
+//      wrapped in a soft bloom - white when it stands on the app's own sky (the
+//      prompt card, matching the in-app resting sun), amber when it floats on the
+//      user's wallpaper (the small widget). See `onOwnSky` below and THE HALO
+//      RULE. Drawn here with SwiftUI gradients, ported one-to-one from the two
+//      Android day vectors (`res/drawable/ic_sun_widget_day{,_on_sky}.xml`).
 //    - Night: the moon. This is the *same* lunar photo the Android widget and the
 //      in-app `.moon` use (`res/drawable-nodpi/ic_sun_widget_night.webp`, re-encoded
 //      as the `MoonWidget` image set) - the real near-side disc with its cool sheen

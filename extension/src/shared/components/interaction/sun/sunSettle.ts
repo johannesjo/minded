@@ -201,13 +201,15 @@ export const LITTLE_SUN_DISC_PX_ANDROID = 30;
 // matches at hand-off too, not just the position and size. One amber everywhere.
 
 /**
- * Departing halo intensity, dialled down from the bold companion rest glow
- * (Sun.tsx COMPANION_REST_GLOW ≈ 1.8). The Little Sun's amber halo is a snug ring
- * roughly the disc's own width, not the broad bloom the resting companion wears,
- * so the morph both dims (this intensity) AND tightens the *shape*
- * (SNUG_GLOW_REACH on the glow axis - collapsing the far plume) to read as that
- * same close halo when it hands off. Tuned by eye in the styleguide
- * SunMorphHarness; nudge here if it reads too faint or too broad.
+ * Departing halo intensity, dialled down from the resting floor every other
+ * state sits at (Sun.tsx COMPANION_REST_GLOW = 1.25; 1.8 is the *hover* glow).
+ * The Little Sun's amber halo is a snug ring roughly the disc's own width, not
+ * the broad bloom the sun wears mid-interaction - which is where this morph
+ * takes off from - so the hand-off both dims (this intensity) AND tightens the
+ * *shape* (SNUG_GLOW_REACH on the glow axis, collapsing the far plume) to read
+ * as that same close halo when it lands. The resting companion already rides
+ * that same snug reach, for its own reason (see SNUG_GLOW_REACH). Tuned by eye
+ * in the styleguide SunMorphHarness; nudge here if it reads too faint or broad.
  */
 export const DEPART_GLOW_INTENSITY = 1.0;
 

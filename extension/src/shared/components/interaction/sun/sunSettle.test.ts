@@ -119,22 +119,29 @@ describe("sunDepartSettleAt", () => {
 // that Little Sun, may warm. These guard the rule against an amber halo quietly
 // creeping back onto an in-app state.
 describe("halo warmth", () => {
-  const IN_APP_PHASES: SunPhase[] = [
-    "companion",
-    "interactive",
-    "breathing",
-    "surfing",
-    "resting",
-    "dailyQuestions",
-    "dailyQuestionsSuccess",
-  ];
+  // Exhaustive by construction: this Record must name every SunPhase except
+  // "departing", so adding a phase fails to *compile* until it is classified as
+  // in-app (and therefore white) or deliberately excluded. A plain array would
+  // let a new amber phase slip in silently - the failure mode this guards.
+  const IN_APP: Record<Exclude<SunPhase, "departing">, true> = {
+    companion: true,
+    interactive: true,
+    breathing: true,
+    surfing: true,
+    resting: true,
+    dailyQuestions: true,
+    dailyQuestionsSuccess: true,
+  };
 
-  it.each(IN_APP_PHASES)("keeps the %s sun's halo white", (phase) => {
-    // `interactive` and `dailyQuestions` resolve to null / the companion via the
-    // live flow rather than this pure map; the ones that do return a settle here
-    // must carry no warmth at all.
-    expect(getSunSettleForPhase(phase)?.warmth ?? 0).toBe(0);
-  });
+  it.each(Object.keys(IN_APP) as SunPhase[])(
+    "keeps the %s sun's halo white",
+    (phase) => {
+      // `interactive` and `dailyQuestions` resolve to null / the companion via
+      // the live flow rather than this pure map, so they assert nothing here -
+      // the directly-built settles below are what actually cover them.
+      expect(getSunSettleForPhase(phase)?.warmth ?? 0).toBe(0);
+    },
+  );
 
   it("keeps every directly-built in-app settle white too", () => {
     // The measured/anchored variants the live flow builds bypass the phase map.

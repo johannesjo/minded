@@ -86,10 +86,17 @@ The departing moon dims to 1.0 + snug like the sun, but stays cool.
 
 | Where | Look |
 |---|---|
-| Little Sun, web extension | white disc `#fff`, amber halo `0 0 6px 1px #ffd673` |
-| Little Sun, Android overlay | amber gradient face (`#ffe487→#ffb24f→#f2823c`) + amber radial glow, 30dp. Night: `#eef2ff` disc, `#bed2ff` glow |
+| Little Sun, Android native overlay (`LittleSun.kt`) | **white** disc (`SUN_COLOR = Color.White`) + amber radial glow `#ffd673`, 30dp. Night: `#eef2ff` disc, `#bed2ff` glow |
+| Little Sun, in the WebView (`--little-sun-bg`) | amber gradient face `#ffe487→#ffb24f→#f2823c` + `--little-sun-shadow` amber halo, 40px |
+| Little Sun, web extension | the same CSS one, but the face is pinned to `#fff` — it reads fine as a pale disc on a web page, where the Android overlay over arbitrary app content did not |
 | Small widget, Android | `ic_sun_widget_day.xml` — white disc, faint gold rim, amber bloom `@ .28`; transparent on the wallpaper |
 | Small widget, iOS | `CompanionSun` with `onOwnSky: false` — same disc, amber bloom `255,214,115 @ .28`; clear container background |
+
+Note there are *two* Little Suns on Android: the native Compose overlay
+(`LittleSun.kt`, 30dp, white disc) and the CSS one the WebView draws
+(`--little-sun-bg`, 40px, amber face). They have different disc sizes and
+different faces — `sunSettle.ts` keeps a departing target for each
+(`LITTLE_SUN_DISC_PX_ANDROID` / `_WEB`). Both wear the same amber halo.
 
 A white sun on someone else's app or wallpaper is a white blob. That is the
 entire reason amber exists, and why the departing hand-off has to arrive already

@@ -142,7 +142,9 @@ verify.
   lunar photo as Android and the in-app `.moon`**
   (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG image set)
   rather than a gradient twin. `systemMedium` is the prompt card (sky + quiet
-  line + the same sun or moon - see `docs/widget-prompts-concept.md`). Day/night
+  line + the same sun or moon, but passed `onOwnSky: true` so its bloom is white
+  - the card paints the app's own sky, so the in-app halo rule applies; see
+  `docs/sun-halo.md` and `docs/widget-prompts-concept.md`). Day/night
   follows the **local clock** (`SunWidgetPhase.swift`, the Swift twin of the
   Android phase logic), with the timeline pre-placing every face change so the
   card steps and the sun or moon flips on time - not the system colour scheme.

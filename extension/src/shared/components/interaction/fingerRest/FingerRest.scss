@@ -30,7 +30,7 @@
     position: absolute;
     inset: 0;
     // A soft, unmistakable target so the finger knows where to land: a rounded
-    // outline in the companion's own light (same variable the warmth and the
+    // outline in the little sun's own light (same variable the warmth and the
     // little sun's halo use), with a barely-there fill that reads as a place to
     // set the finger down rather than a button to press. Opacity/fade are
     // driven inline from the component so it dissolves as stillness begins.
@@ -45,9 +45,11 @@
   .finger-rest-warmth {
     position: absolute;
     inset: 0;
-    // The quiet response to a resting finger: a soft pool of the companion's
-    // own light (amber by day, the moon's cool blue at night - the same palette
-    // as the little sun's halo). Opacity and its slow ease are driven inline
+    // The quiet response to a resting finger: a soft pool of the little sun's
+    // own light (its amber by day, the moon's cool blue at night - the same
+    // palette as the little sun's halo, NOT the in-app sun's, whose halo is
+    // white; see THE HALO RULE in sun/sunSettle.ts). Opacity and its slow ease
+    // are driven inline
     // from the component.
     background: radial-gradient(
       closest-side,
@@ -60,7 +62,7 @@
   .finger-rest-bloom {
     position: absolute;
     inset: 0;
-    // The "received": one soft outward swell of the companion's own light when
+    // The "received": one soft outward swell of the little sun's own light when
     // a rest completes, in place of the words snapping back. Same light as the
     // warmth and the little sun's halo, a touch brighter at its peak so the
     // acknowledgment reads, then dissolved to nothing. One-shot (forwards, no
