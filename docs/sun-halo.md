@@ -8,11 +8,18 @@ a reason: its colour.
 
 **The sun's body may be warm; the light it casts is white.**
 
-Amber is *not* a day/night signal and *not* a role badge. On every one of
-minded's own surfaces the sun's halo is white. Amber belongs to the sun as it
-lives **outside** the app — the Little Sun overlay (over arbitrary app content)
-and the home-screen widgets (on the user's wallpaper) — where it has to announce
-itself against a background we don't control.
+Amber is *not* a day/night signal and *not* a role badge. On every surface we
+control the sun's halo is white.
+
+The test is **what the sun stands on**, not which process draws it. Amber is for
+the sun on a background we *don't* control, where it has to announce itself or
+read as a pale blob:
+
+- the Little Sun overlay, over arbitrary app content;
+- the small home-screen widget, transparent on the user's wallpaper.
+
+A widget that paints the app's **own sky** behind the sun — the prompt card, on
+both platforms — is our surface like any other. The sun glows white there.
 
 The departing hand-off is the one in-app state that warms, because it is
 mid-morph into the Little Sun: the warming *is* the hand-off, not a state the
@@ -73,18 +80,37 @@ hover 1.7; snug reach on the bar, broad everywhere else. In dark mode a wide coo
 "horizon reflection" pools under the bottom bar (`RouteCmp.module.scss`, #125).
 The departing moon dims to 1.0 + snug like the sun, but stays cool.
 
-## Outside the app — where the amber lives
+## Outside the app
+
+### On a background we don't control — amber
 
 | Where | Look |
 |---|---|
 | Little Sun, web extension | white disc `#fff`, amber halo `0 0 6px 1px #ffd673` |
 | Little Sun, Android overlay | amber gradient face (`#ffe487→#ffb24f→#f2823c`) + amber radial glow, 30dp. Night: `#eef2ff` disc, `#bed2ff` glow |
-| Android home-screen widget | amber (`ic_sun_widget_day.xml`); moon at night |
-| iOS home-screen widget | white disc with faint gold rim + amber bloom `255,214,115 @ .28`; moon at night |
+| Small widget, Android | `ic_sun_widget_day.xml` — white disc, faint gold rim, amber bloom `@ .28`; transparent on the wallpaper |
+| Small widget, iOS | `CompanionSun` with `onOwnSky: false` — same disc, amber bloom `255,214,115 @ .28`; clear container background |
 
-These four sit on backgrounds we don't own — someone else's app, someone's
-wallpaper. A white sun there is a white blob. That is the entire reason amber
-exists, and why the departing hand-off has to arrive already wearing it.
+A white sun on someone else's app or wallpaper is a white blob. That is the
+entire reason amber exists, and why the departing hand-off has to arrive already
+wearing it.
+
+### On the app's own sky — white
+
+| Where | Look |
+|---|---|
+| Prompt card, Android | `ic_sun_widget_day_on_sky.xml` — same disc and rim, **white** bloom at the same `@ .28`; over `widget_sky_*` |
+| Prompt card, iOS | `CompanionSun(onOwnSky: true)` — same, over the matching sky image |
+| Widget-picker still, Android | `widget_preview_card.xml` — mirrors the card, so it uses the white-bloom drawable too |
+
+The card paints the same sky the app does, so the sun on it is on our surface and
+follows the in-app rule. Only the bloom's colour differs between each pair of
+twins — same stops, same alpha, same disc — so keep them in step.
+
+The moon needs no twin on either platform: it never warms on any surface.
+
+Note `app_widget_info.xml`'s `previewImage` stays the amber drawable — the
+pre-API-31 gallery renders it on the launcher's own surface, not on our sky.
 
 ## Where this is written down
 

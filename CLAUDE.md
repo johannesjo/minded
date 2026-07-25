@@ -221,11 +221,13 @@ Path aliases change based on build mode to load platform-specific code.
   sun's halo is white (`warmth` omitted on the settle). The warm, sunlit read
   comes from the disc *itself*: the `--minded-sun-face-edge` rim and the thin
   `--sun-shadow` edge ring.
-- The one exception is the sun **outside** the app: the Little Sun overlay
-  (which sits over arbitrary app content) and the home-screen widgets (which sit
-  on the user's wallpaper). There it must announce itself against a background
-  we don't control, so it wears the one canonical amber `#ffd673` - and the
-  departing hand-off warms to that amber *as it becomes* the Little Sun. The
+- The test is **what the sun stands on**, not which process draws it. Amber is
+  for the sun on a background we *don't* control - the Little Sun overlay (over
+  arbitrary app content) and the small home-screen widget (transparent on the
+  user's wallpaper) - where it must announce itself or read as a pale blob. A
+  widget that paints the app's **own sky** behind the sun (the prompt card, both
+  platforms) is our surface like any other, so the sun glows white there too.
+- The departing hand-off warms to that amber *as it becomes* the Little Sun. The
   warming is the hand-off, not a state the in-app sun ever holds.
 - Why: colour that changes with role turns the one continuous sun into a set of
   differently-coloured suns, and it made the everyday companion→intervention

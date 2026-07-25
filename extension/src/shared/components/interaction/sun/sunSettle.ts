@@ -14,19 +14,25 @@ import {
  * THE HALO RULE - when the sun's glow is amber, and when it isn't.
  *
  * **The sun's body may be warm; the light it casts is white.** Amber is *not* a
- * day/night signal and *not* a role badge. Inside minded's own surfaces the sun
+ * day/night signal and *not* a role badge. On every surface we control the sun
  * always glows white - companion rest, interaction, breath, urge-surfing, the
  * intent/time choices, the daily-questions carry and its closing bloom. The
  * warm read comes from the disc itself (the `--minded-sun-face-edge` rim the
  * resting companion warms to `#fff5dc`, and the thin `--sun-shadow` edge ring),
  * never from an orange halo around it.
  *
- * The one exception is the sun *outside* minded: the Little Sun overlay, which
- * sits over arbitrary app content (and the home-screen widgets, which sit on the
- * user's wallpaper). There it has to announce itself as a sun against a
- * background we don't control, so it wears the one canonical amber - and the
- * departing hand-off warms to that amber as it *becomes* the Little Sun. The
- * warming is the hand-off, not a state the in-app sun ever holds.
+ * The test is *what the sun stands on*, not which process draws it. Amber is for
+ * the sun on a background we DON'T control, where it has to announce itself as a
+ * sun or read as a pale blob:
+ *   - the Little Sun overlay, over arbitrary app content;
+ *   - the small home-screen widget, transparent on the user's wallpaper.
+ * A widget that paints the app's OWN sky behind the sun (the prompt card, both
+ * platforms) is our surface like any other, so the sun there glows white - see
+ * `ic_sun_widget_day_on_sky.xml` and `CompanionSun.onOwnSky`.
+ *
+ * The departing hand-off is the one in-app state that warms, because it is
+ * mid-morph into the Little Sun. The warming is the hand-off, not a state the
+ * in-app sun ever holds.
  *
  * Why: colour that changes with role turns the one continuous sun into a set of
  * differently-coloured suns, and it makes the everyday companion↔intervention

@@ -31,6 +31,16 @@ private func rgb(_ r: Double, _ g: Double, _ b: Double, _ a: Double = 1) -> Colo
 
 struct CompanionSun: View {
     let isNight: Bool
+    /// True when this sun stands on the app's own sky (the prompt card), false
+    /// when it floats on the user's wallpaper (the small, transparent widget).
+    ///
+    /// THE HALO RULE (see sunSettle.ts in the web sources): the sun's body may be
+    /// warm, but the light it casts is white on every surface we control. The
+    /// amber bloom exists only for a background we DON'T control - the wallpaper
+    /// here, arbitrary app content for the Little Sun - where the sun has to
+    /// announce itself. Behind the card is our own sky, so there it glows white,
+    /// exactly as it does in app. The moon ignores this: it never warms.
+    var onOwnSky: Bool = false
 
     var body: some View {
         GeometryReader { geo in
@@ -62,14 +72,23 @@ struct CompanionSun: View {
 
     // The day sun's soft bloom / halo: gentle, low-alpha, fading to nothing at the
     // rim. Spans the full tile (Android gradientRadius 53 over a 108 viewport ≈ the
-    // whole circle).
+    // whole circle). Amber on the wallpaper, white on our own sky - same stops and
+    // same alpha either way, so only the colour changes (see `onOwnSky` above and
+    // the Android twins ic_sun_widget_day{,_on_sky}.xml).
     private func glow(side: CGFloat) -> some View {
-        let stops: [Gradient.Stop] = [
-            .init(color: rgb(255, 216, 119, 0), location: 0.00),
-            .init(color: rgb(255, 216, 119, 0), location: 0.56),
-            .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
-            .init(color: rgb(255, 203, 90, 0), location: 1.00),
-        ]
+        let stops: [Gradient.Stop] = onOwnSky
+            ? [
+                .init(color: rgb(255, 255, 255, 0), location: 0.00),
+                .init(color: rgb(255, 255, 255, 0), location: 0.56),
+                .init(color: rgb(255, 255, 255, 0.28), location: 0.74),
+                .init(color: rgb(255, 255, 255, 0), location: 1.00),
+            ]
+            : [
+                .init(color: rgb(255, 216, 119, 0), location: 0.00),
+                .init(color: rgb(255, 216, 119, 0), location: 0.56),
+                .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
+                .init(color: rgb(255, 203, 90, 0), location: 1.00),
+            ]
         return Circle()
             .fill(
                 RadialGradient(
