@@ -19,6 +19,11 @@
   // inset (Android nav bar, iOS home indicator); on desktop the inset is 0 so
   // nothing changes.
   min-height: calc(var(--companion-bar-height) + var(--safe-area-inset-bottom));
+  // Explicit height (not just min-height): the keyboard collapse below zeroes
+  // both, and only fixed lengths interpolate - with height left `auto`, the
+  // reveal on keyboard close snapped the first ~44px (the icons' content
+  // height) back in one frame and eased only the remainder.
+  height: calc(var(--companion-bar-height) + var(--safe-area-inset-bottom));
   padding-left: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-left));
   padding-right: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-right));
   // Transparent on every platform now (mobile included): the bottom fade on the
@@ -26,9 +31,26 @@
   // icons float free over the background.
   background: transparent;
   padding-bottom: var(--safe-area-inset-bottom);
+  // Both directions of the keyboard hide/reveal below ease; declared here so
+  // the reveal (class removed) is as soft as the hide.
+  transition:
+    opacity var(--dur-quick) var(--ease-out),
+    height var(--dur-quick) var(--ease-out),
+    min-height var(--dur-quick) var(--ease-out),
+    padding-bottom var(--dur-quick) var(--ease-out);
 
+  // Collapse (not display: none) under the Android keyboard: the band the
+  // companion visually rests on used to vanish in one frame while the sun -
+  // its own fixed layer - stayed. min-height interpolates where display can't,
+  // so the bar folds away softly and still ends at zero height, invisible and
+  // inert.
   :global(.androidKeyboardOpen) & {
-    display: none !important;
+    min-height: 0;
+    height: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
 
   //@include onNonMobileScreens {
@@ -51,6 +73,9 @@
     position: relative;
     z-index: 1;
     animation: minded6622fadeIn var(--ease-out) var(--dur-quick);
+    // `both` so children don't paint at full opacity for the frame before the
+    // animation's first keyframe applies.
+    animation-fill-mode: both;
     border-radius: 50% !important;
 
     :global {
@@ -80,19 +105,3 @@
   }
 }
 
-//.bottomBarWrapper::after {
-//  pointer-events: none;
-//  content: "";
-//  position: absolute;
-//  left: 50%;
-//  bottom: -50%;
-//  transform: translate(-50%, 50%) ;
-//  background-color: var(--little-sun-bg);
-//  border-radius: 50%;
-//  width: 320px;
-//  height: 320px;
-//  opacity: 0.1;
-//  box-shadow: 0 0 30px 5px var(--c-pastel-red),
-//  0 0 60px 5px var(--c-pastel-yellow);
-//  transition: 2s;
-//}

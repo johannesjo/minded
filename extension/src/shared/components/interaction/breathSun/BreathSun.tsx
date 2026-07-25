@@ -27,7 +27,13 @@ export const BreathSun: Component<BreathSunProps> = (props) => {
           wind-down reads as the same sun the user always sees. The caller drives
           `fill` continuously (rAF), so the disc tracks the breath clock exactly
           rather than lagging behind it. */}
-      <span class="minded-sun" classList={{ moon: props.variant === "moon" }} />
+      <span class="minded-sun" classList={{ moon: props.variant === "moon" }}>
+        {/* The disc face layers (Sun.scss) - the same crossfading pair the
+            interactive Sun renders, so the breath disc keeps its face when the
+            element background stopped carrying it. */}
+        <span class="sun-face" />
+        <span class="moon-face" />
+      </span>
     </div>
   );
 };

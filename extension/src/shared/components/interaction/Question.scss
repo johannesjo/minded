@@ -223,6 +223,14 @@
     textarea {
       background: transparent;
       border-radius: 0;
+      // The quiet baseline (::after above, emphasized on :focus-within) is
+      // this field's focus indicator - opt out of the mixin's ring, which
+      // would frame the app's most central mindful surface in hard chrome
+      // for the whole time the user writes.
+      &:focus-visible {
+        outline: none;
+      }
+
       font-family: var(--font-display);
       font-size: var(--fz-l) !important;
       grid-column: 1;

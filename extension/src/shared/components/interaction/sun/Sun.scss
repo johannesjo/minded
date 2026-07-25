@@ -1,6 +1,24 @@
+// The face's warm rim colour, registered so it *interpolates* between roles
+// (interaction white ↔ the companion's warm off-white, set in
+// RouteCmp.module.scss) instead of hard-cutting between swapped gradient
+// declarations - the disc-face counterpart of the unified glow axis below.
+// Top-level by necessity: @property cannot be nested. Prefixed (unlike the
+// other sun vars) because the content script injects this sheet into host
+// pages and registrations are document-scoped. Engines without @property
+// simply skip the interpolation and swap discretely - today's behaviour,
+// never worse.
+@property --minded-sun-face-edge {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fff;
+}
+
 .minded-sun {
   position: relative;
-  background: var(--sun-bg);
+  // The disc's face lives on the .sun-face/.moon-face child layers below (so
+  // the sun↔moon variant flip can crossfade); the element itself paints only
+  // the halo.
+  background: transparent;
   border-radius: 50%;
 
   --glow-intensity: 0;
@@ -45,17 +63,36 @@
   /* Ensure box-shadow transitions smoothly even when JS updates the variables */
   transition: box-shadow 0.1s linear;
 
-  // A blank pseudo-element the moon repurposes for its luminous sheen
-  // (.moon::before below). The sun's warmth now lives entirely in the halo (the
-  // single cool↔white↔amber glow axis), so there is no warm disc-face overlay
-  // here - the disc itself stays unwarmed and the amber reads only in the glow.
-  &::before {
-    content: "";
+  // The two disc faces. Both are always-mounted children (Sun.tsx and the
+  // display-only BreathSun span render them) crossfading on the variant class,
+  // so a theme flip mid-flight - the dusk handover, a system dark-mode change -
+  // morphs sun face into moon face instead of swapping the disc in one frame.
+  // There is only ever one sun; a background swap read as two.
+  .sun-face,
+  .moon-face {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    opacity: 0;
     pointer-events: none;
+  }
+
+  // The sun's face: a single always-on gradient whose rim rides the registered
+  // --minded-sun-face-edge colour axis (flat white by default; the resting
+  // companion warms it - see RouteCmp.module.scss). One declaration for every
+  // role, so companion ↔ interaction interpolates the rim instead of swapping
+  // a warm gradient for a solid - the same continuity idiom as the glow axis.
+  // The transition lives here on the child (not the element), out of reach of
+  // the JS-driven inline transition list on .minded-sun itself.
+  .sun-face {
+    background: radial-gradient(
+      circle,
+      #fff 0%,
+      #fff 82%,
+      var(--minded-sun-face-edge, #fff) 100%
+    );
+    transition:
+      opacity var(--dur-gentle) var(--ease-out),
+      --minded-sun-face-edge var(--dur-gentle) var(--ease-out);
   }
 
   // The sun's resting glow is the box-shadow above (held at the hover intensity),
@@ -71,6 +108,19 @@
     border-radius: inherit;
     pointer-events: none;
     opacity: 0.4;
+    // The moon's resting light-pool lives on this layer: ease it out/in (a
+    // drag hides it in favour of the drag glow; a variant flip grows it from
+    // nothing) - untransitioned, the moon's biggest halo vanished in a single
+    // frame at touch-down. The parent's `.dragging { transition: none }` only
+    // covers the element itself, so this stays soft mid-drag too.
+    // box-shadow stays on the QUICK beat, matching the disc's own inline
+    // 160ms bloom ease (Sun.tsx): the pool's spread rides the rAF-driven
+    // --glow-reach ramp during the corner hand-off, and a long transition
+    // here retargets every frame - the pool would lag the disc throughout
+    // the glide and keep easing after it lands.
+    transition:
+      opacity var(--dur-quick) var(--ease-out),
+      box-shadow var(--dur-quick) var(--ease-out);
   }
 
   &.dragging {
@@ -90,8 +140,52 @@
   // limb shading and a soft transparent edge (see src/assets/img/moon.webp and
   // the render notes in git history). The genuine maria + cratered relief and the
   // cool night halo make it clearly distinct from the warm, stylised sun.
-  &.moon {
+  // The moon's face: the lunar photo plus its sheen on one layer, fading in as
+  // a unit when the variant flips (and out again at dawn) - see .moon-face's
+  // sibling comment above. Kept at opacity 0 (not display: none) so the flip
+  // is a crossfade, never a pop.
+  .moon-face {
     background: center / cover no-repeat url("@src/assets/img/moon.webp");
+    opacity: 0;
+    transition: opacity var(--dur-gentle) var(--ease-out);
+
+    // A soft luminous sheen over the photo: a faint overall lift plus a brighter
+    // top-left highlight, screen-blended so it lights the disc - reading as a
+    // glowing orb the way the old gradient moon did - without flattening the real
+    // craters, which stay clearly visible underneath. Inside the face layer so
+    // it fades with the photo; the moon never warms, so no amber can bleed
+    // across it - its light stays cool.
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      background:
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(255, 255, 255, 0.3) 0%,
+          rgba(255, 255, 255, 0.12) 55%,
+          transparent 84%
+        ),
+        radial-gradient(
+          circle at 36% 31%,
+          rgba(255, 255, 255, 0.42) 0%,
+          transparent 42%
+        );
+    }
+  }
+
+  &.moon .sun-face {
+    opacity: 0;
+  }
+
+  &.moon .moon-face {
+    opacity: 1;
+  }
+
+  &.moon {
     // Like the sun's halo, only the outermost (far) bloom collapses with
     // --glow-reach: at the snug hand-off reach the crisp edge + near 18/13px
     // layers stay (a tight, present halo) while the 32px far plume shrinks to
@@ -108,30 +202,6 @@
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(32px * var(--glow-reach) * var(--glow-intensity))
         rgba(190, 210, 255, calc(0.3 * var(--glow-reach) * var(--glow-intensity)));
-
-    // A soft luminous sheen over the photo: a faint overall lift plus a brighter
-    // top-left highlight, screen-blended so it lights the disc - reading as a
-    // glowing orb the way the old gradient moon did - without flattening the real
-    // craters, which stay clearly visible underneath. This repurposes the shared
-    // ::before (blank for the sun) as a fixed white sheen at full opacity; the
-    // moon never warms, so no amber can bleed across it - its light stays cool.
-    &::before {
-      display: block;
-      opacity: 1;
-      mix-blend-mode: screen;
-      background:
-        radial-gradient(
-          circle at 50% 50%,
-          rgba(255, 255, 255, 0.3) 0%,
-          rgba(255, 255, 255, 0.12) 55%,
-          transparent 84%
-        ),
-        radial-gradient(
-          circle at 36% 31%,
-          rgba(255, 255, 255, 0.42) 0%,
-          transparent 42%
-        );
-    }
 
     // The moon's resting glow is the cool/white box-shadow bloom above, floored at
     // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's - the near-white disc

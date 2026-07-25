@@ -6,8 +6,10 @@
 .SettingsAndroidRoute:global(.pageWrapper) {
   padding-bottom: max(var(--space-2xl), var(--safe-area-inset-bottom));
 
+  // 500, matching the web options page, so the same shared settings
+  // children wear one heading weight on both platforms.
   :global(.h3) {
-    font-weight: 600;
+    font-weight: 500;
   }
 }
 

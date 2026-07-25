@@ -16,7 +16,7 @@
   font-size: var(--fz-s);
   margin: 0 var(--settings-description-margin-inline, auto) var(--space-md);
   max-width: var(--settings-description-max-width, 400px);
-  opacity: 0.7;
+  color: var(--h4-c);
   text-align: var(--settings-text-align, center);
 }
 
@@ -28,7 +28,7 @@
 .optionsLabel {
   font-size: var(--fz-s);
   margin-bottom: var(--space-sm);
-  opacity: 0.8;
+  color: var(--h4-c);
 }
 
 .optionsGrid {

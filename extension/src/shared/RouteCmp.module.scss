@@ -61,11 +61,15 @@
   // glow axis (the companion settle sets a low `reach`; Sun.scss collapses the
   // outer layers with it), not in a separate box-shadow declaration here. That
   // way companion ↔ interaction morphs the spread continuously instead of
-  // swapping declarations. So this rule carries only the warm disc fill; the
-  // amber glow itself comes from the companion settle's `warmth`. Daytime sun
-  // only - the moon keeps its own cool disc and halo.
+  // swapping declarations. So this rule carries only the warm disc fill - and
+  // that fill now rides the registered --minded-sun-face-edge colour axis
+  // (Sun.scss .sun-face), so the rim *interpolates* between this warm rest and
+  // the interaction's flat white instead of swapping gradient declarations,
+  // exactly like the glow. The amber glow itself comes from the companion
+  // settle's `warmth`. Daytime sun only - the moon keeps its own cool disc and
+  // halo.
   &.isCompanion :global(.minded-sun:not(.moon)) {
-    --sun-bg: radial-gradient(circle, #fff 0%, #fff 82%, #fff5dc 100%);
+    --minded-sun-face-edge: #fff5dc;
   }
 
   // Horizon reflection under the resting moon (GitHub #125): a faint, wide,

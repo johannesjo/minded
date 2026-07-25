@@ -13,6 +13,13 @@
 
 .addAction {
   text-align: center;
+  // Swapped back in when add-mode closes (the add-mode entry carries its own
+  // fade) - ease in on mount rather than popping.
+  animation: var(--dur-quick) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }
 
 .answerList {
@@ -26,4 +33,11 @@
   font-weight: 300;
   margin: var(--space-2xl) var(--space-md) var(--space-xl);
   text-align: center;
+  // Mounts when the last reflection is removed - fade in beside a list that
+  // stagger-fades, never pop.
+  animation: var(--dur-soft) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }

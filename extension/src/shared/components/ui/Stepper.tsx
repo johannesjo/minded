@@ -48,11 +48,13 @@ export const Stepper = (props: {
             class={`${styles.step} ${step === getStep() ? styles.active : ""} ${step < getStep() ? styles.done : ""}`}
           >
             {props.labelFn && props.labelFn(step) !== undefined ? (
-              props.labelFn(step)
+              <span class={styles.stepContent}>{props.labelFn(step)}</span>
             ) : step < getStep() ? (
-              <Ico name="check" size={20} alt={`step ${step + 1}, done`} />
+              <span class={styles.stepContent}>
+                <Ico name="check" size={20} alt={`step ${step + 1}, done`} />
+              </span>
             ) : (
-              step + 1
+              <span class={styles.stepContent}>{step + 1}</span>
             )}
           </button>
         )}

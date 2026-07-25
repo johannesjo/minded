@@ -48,6 +48,10 @@
   }
 
   .urge-surfing-sub {
+    // The app speaking gently ("Instead of feeding it, let's watch it…") - the
+    // voice, not chrome, so it carries the serif; sitting in Inter directly
+    // under the serif heading was a sans/serif seam.
+    @include displayVoice;
     margin: 0 0 4px;
     opacity: 0.76;
     // Wide enough to keep the sub to ~2 lines, so intro stays under min-height.
@@ -55,6 +59,10 @@
   }
 
   .urge-surfing-cue {
+    // The meditation guidance is the most intimate copy in the interaction -
+    // unmistakably the voice, so it renders in the serif like every other
+    // guided-pause line.
+    @include displayVoice;
     margin: 0;
     min-height: 48px;
     // Give the guidance plenty of horizontal room where the viewport allows,

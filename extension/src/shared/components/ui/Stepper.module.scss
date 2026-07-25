@@ -37,7 +37,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color var(--dur-quick) var(--ease-out);
+  // opacity, not background-color: --color-inactive and --color-active are
+  // deliberately the same value (see above), so opacity is the only property
+  // that actually changes between states - transitioning anything else made
+  // every step advance a hard cut.
+  transition: opacity var(--dur-quick) var(--ease-out);
   position: relative;
   opacity: 0.5;
   cursor: default;
@@ -78,5 +82,25 @@
     background-color: var(--color-line);
     position: absolute;
     left: 100%;
+    transition: opacity var(--dur-quick) var(--ease-out);
+  }
+}
+
+// The number ↔ check glyph is swapped in the DOM on advance (Solid re-creates
+// the node), so the incoming glyph eases in on mount instead of popping - the
+// step dot's own opacity ease carries the rest of the softness.
+.stepContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: stepContentIn var(--dur-quick) var(--ease-out);
+}
+
+@keyframes stepContentIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

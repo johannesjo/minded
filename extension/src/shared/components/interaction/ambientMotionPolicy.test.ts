@@ -36,10 +36,13 @@ describe("calm motion policy", () => {
     expect(sunStyles).not.toContain("mindedSunIdleBreath");
     expect(littleSunStyles).not.toContain("minded6622littleSunBreath");
     expect(questionStyles).not.toContain("tapHintBreathe");
-    // The resting companion keeps its warm disc fill in CSS...
+    // The resting companion keeps its warm disc fill in CSS - as a value on the
+    // registered face-edge colour axis, so the rim interpolates across the
+    // companion↔interaction morph instead of swapping gradient declarations...
     expect(routeStyles).toMatch(
-      /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*--sun-bg:\s*radial-gradient/,
+      /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*--minded-sun-face-edge:/,
     );
+    expect(sunStyles).toMatch(/@property --minded-sun-face-edge/);
     // ...but its amber glow now rides the one unified glow axis: the companion
     // settle opts into warmth 1 (statically - no breath), and warmth 1 maps to
     // the single canonical amber. No separate amber box-shadow declaration.

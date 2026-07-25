@@ -151,6 +151,14 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+// The shadow is a light-sky legibility lift only: at night the text is
+// near-white on a near-black sky, where a dark shadow adds no separation and
+// just softens the glyph edges.
+.minded-6622-dark #minded-6622-interaction-wrapper-box,
+.minded-6622-dark .sun-container {
+  text-shadow: none;
+}
+
 .sun-instructions-overlay {
   position: absolute;
   top: 0;
@@ -177,7 +185,11 @@
   align-items: center;
   justify-content: center;
   pointer-events: auto;
-  animation: fadeIn var(--dur-gentle) var(--ease-out) forwards;
+  // No `forwards`: a forwards-filled entrance outranks normal declarations, so
+  // any future closing class setting `opacity: 0` would be silently swallowed
+  // and the overlay would hard-cut (the exact footgun LetGoOverlay and
+  // GroundingOverlay document avoiding). The keyframe already ends at 1.
+  animation: fadeIn var(--dur-gentle) var(--ease-out);
 }
 
 // During the intent/time choices the resting sun rests in a reserved spacer

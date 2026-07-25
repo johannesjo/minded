@@ -45,6 +45,11 @@
   --dur-quick: 180ms; // small UI state shifts (background, transform)
   --dur-soft: 480ms; // page-level fades
   --dur-gentle: 700ms; // signature surface transitions and sun-adjacent settling
+  // Full-sky hand-off fades (the is-departing/is-arriving sky) AND their
+  // anti-banding grain layer - one shared beat so the dither can never dissolve
+  // ahead of the sky it protects (it did, by 300ms, and the tail of every
+  // departure played on an undithered gradient).
+  --dur-sky: 1000ms;
 
   // Dither/grain tile - breaks the 8-bit quantisation of the full-screen sky
   // gradients into noise so they can't band into visible horizontal stripes,
@@ -131,7 +136,9 @@
   --dashboard-card-highlight: rgba(255, 255, 255, 0.34);
   --dashboard-card-border-radius: var(--radius-xl);
 
-  --sun-bg: #fff;
+  // The disc face itself lives in Sun.scss (.sun-face, on the registered
+  // --minded-sun-face-edge colour axis); only the thin warm edge ring remains
+  // a token here.
   --sun-shadow: 0 0 1px 0 rgba(233, 132, 58, 0.5);
 
   --c-graph-fg-full: rgba(0, 0, 0, 0.5);
@@ -442,5 +449,6 @@
     --dur-quick: 0ms;
     --dur-soft: 0ms;
     --dur-gentle: 0ms;
+    --dur-sky: 0ms;
   }
 }

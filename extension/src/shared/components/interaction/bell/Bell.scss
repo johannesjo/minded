@@ -29,6 +29,10 @@
   }
 
   .bell-sub {
+    // "Listen until the sound has completely gone." is the app speaking gently
+    // - serif voice, matching the heading above it rather than seaming against
+    // it in Inter.
+    @include displayVoice;
     margin: 0 0 4px;
     opacity: 0.76;
     max-width: 42ch;
