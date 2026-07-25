@@ -668,11 +668,10 @@ const Styleguide = (): JSX.Element => {
         <p class={styles.muted}>
           The home-screen companion sun. The floating disc is the warm sun by
           day, the cool moon by night - the day sun is the real vector drawable,
-          the night moon the actual lunar photo with a baked glow (
-          <code>ic_sun_widget_night.webp</code>). Phase is chosen by the local
-          clock, not the system theme - toggle dark mode above to preview the
-          discs on a dark wallpaper. Indicative, not a pixel-exact device
-          render.
+          the night moon the real vector drawable too, its maria drawn as
+          squashed radial gradients. Phase is chosen by the local clock, not the
+          system theme - toggle dark mode above to preview the discs on a dark
+          wallpaper. Indicative, not a pixel-exact device render.
         </p>
         <SunWidgetGallery />
         <p class={styles.muted}>

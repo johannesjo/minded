@@ -74,7 +74,8 @@ visible mass upward off the icon line (#106).
 
 ## Night (dark theme → moon)
 
-Never warm, at any point. The disc is the NASA near-side lunar photo; the halo is
+Never warm, at any point. The disc is drawn (a shaded body under soft maria
+fields - see `.moon-face` in Sun.scss); the halo is
 a white/cool box-shadow plus a static cool light-pool (`::after`). Rest 1.1,
 hover 1.7; snug reach on the bar, broad everywhere else. In dark mode a wide cool
 "horizon reflection" pools under the bottom bar (`RouteCmp.module.scss`, #125).

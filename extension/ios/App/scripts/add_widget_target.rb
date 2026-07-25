@@ -33,9 +33,10 @@ SOURCE_FILES = %w[
   WidgetPrompts.swift
 ].freeze
 # Bundled resources compiled into the .appex (asset catalogs go in the resources
-# phase, not the sources phase): the generated prompt-card skies and the night moon
-# image shared 1:1 with the Android widget.
-RESOURCE_FILES = %w[Assets.xcassets Media.xcassets].freeze
+# phase, not the sources phase): the generated prompt-card skies. The sun and moon
+# are drawn in SwiftUI, so no disc images ship - Media.xcassets went with the moon
+# photograph it existed to hold.
+RESOURCE_FILES = %w[Assets.xcassets].freeze
 
 project_path = File.expand_path(File.join(__dir__, '..', 'App.xcodeproj'))
 project = Xcodeproj::Project.open(project_path)

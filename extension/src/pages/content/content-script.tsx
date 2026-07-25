@@ -23,24 +23,6 @@ import { startUsageTimeTracking } from "@src/pages/content/usageTimeTracker";
 
 const CURRENT_URL = window.location.href;
 
-// The content-script stylesheet is injected into a shadow DOM that lives on the
-// *host* page, so any root-relative `url(/assets/…)` in it resolves against the
-// host origin (https://host/assets/…) → 404. The night moon is a CSS background
-// image (Sun.scss `.moon-face`), and its `background` shorthand leaves the disc's
-// background-color transparent, so that 404 renders the moon as a see-through
-// hole rather than the lunar photo (the "dark-mode sun is semi-transparent"
-// bug). Repoint image URLs at the extension origin instead - the same trick
-// sunAudio.getAudioUrl uses for the completion sounds. The moon is already in
-// web_accessible_resources (CRXJS auto-exposes content-script-referenced
-// assets), so the host page is allowed to fetch it once the URL is correct.
-// Fonts (assets/woff2) are deliberately left alone: they already fall back
-// cleanly to the system stack, so keep this scoped to the visible image bug.
-const withExtensionAssetUrls = (css: string): string => {
-  if (typeof chrome === "undefined" || !chrome.runtime?.getURL) return css;
-  const base = chrome.runtime.getURL("/assets/webp/");
-  return css.replace(/url\((['"]?)\/assets\/webp\//g, `url($1${base}`);
-};
-
 (function init() {
   getSyncData().then(async (initialSyncData) => {
     // console.log('isOnBlocked', isOnBlockedUrl(CURRENT_URL, syncData), syncData);
@@ -145,7 +127,7 @@ const withExtensionAssetUrls = (css: string): string => {
 
         // Inject styles into shadow DOM (completely isolated from host page)
         const styleTag = document.createElement("style");
-        styleTag.textContent = withExtensionAssetUrls(styleAsString);
+        styleTag.textContent = styleAsString;
         shadow.appendChild(styleTag);
 
         // Create wrapper inside shadow DOM
