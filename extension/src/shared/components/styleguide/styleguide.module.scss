@@ -372,57 +372,6 @@
   backdrop-filter: blur(8px);
 }
 
-// Moon-face comparison (MoonFaceGallery): the shipped lunar photo beside the
-// abstract gradient face, at the pixel sizes the disc actually renders. The
-// backdrop is a fixed night sky in *either* theme - a moon can only be judged
-// against a dark sky, and its halo is white - so this one gallery deliberately
-// doesn't follow the dark-mode toggle the way .widgetCard does.
-.moonFaceGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-}
-
-.moonFaceCard {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  padding: 32px 32px 18px;
-  border-radius: var(--border-radius);
-  background: linear-gradient(to bottom, #101830, #1c2542);
-
-  figcaption {
-    font-size: var(--fz-s);
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.8);
-  }
-}
-
-// Bottom-aligned so the three sizes sit on one line and read as the same object
-// at three distances, rather than three centred discs of unrelated scale.
-.moonFaceRow {
-  display: flex;
-  align-items: flex-end;
-  gap: 32px;
-}
-
-.moonFaceSlot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  font-size: var(--fz-s);
-  color: rgba(255, 255, 255, 0.7);
-  text-align: center;
-
-  // The discs here are stills, not the draggable sun.
-  :global(.minded-sun) {
-    cursor: default;
-  }
-}
-
 // Android sun-widget phase gallery. The card backdrop is the theme card colour,
 // so toggling dark mode previews the discs on a dark wallpaper.
 .widgetGrid {

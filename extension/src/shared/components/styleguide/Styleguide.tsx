@@ -64,7 +64,6 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
-import MoonFaceGallery from "./MoonFaceGallery";
 import SunWidgetGallery from "./SunWidgetGallery";
 import SunWidgetSkyGallery from "./SunWidgetSkyGallery";
 
@@ -654,27 +653,6 @@ const Styleguide = (): JSX.Element => {
           )}
         </Subsection>
 
-        <Subsection label="Moon face - photo vs. abstract">
-          <p class={styles.muted}>
-            The night disc, at the sizes it actually renders. Left is the
-            shipped lunar photo (<code>assets/img/moon.webp</code>); right is an
-            abstract face built from gradients alone - the lopsided maria
-            shading that makes a moon recognisable at a glance, with no crater
-            detail, over a body whose light pools up-left and cools into the
-            limb. Note the trade runs opposite ways by size: at 120px the photo
-            is plainly richer, but at the companion&apos;s 42px its craters
-            collapse into grey noise while the abstract disc still reads as a
-            lit moon. The abstract face is opt-in behind a{" "}
-            <code>.minded-moon-abstract</code> ancestor, so nothing in the app
-            has changed yet - and the widgets still ship the photo as a bitmap
-            either way (<code>ic_sun_widget_night.webp</code>), though gradients
-            are the one shape language the Android vector and SwiftUI widget
-            could actually share with the web. Feel it through a morph with the
-            sun stage below (toggle <code>face</code>).
-          </p>
-          <MoonFaceGallery />
-        </Subsection>
-
         <Subsection label="Persistent sun - post-interaction morph">
           <p class={styles.muted}>
             The same sun is never hidden: it glides down + breathes for the
@@ -915,12 +893,6 @@ const SunMorphHarness = (): JSX.Element => {
   // Toggle the sun/moon variant so the dark-mode moon's morphs (esp. the
   // departing → interactive corner-arrival reveal) can be felt and tuned.
   const [variant, setVariant] = createSignal<"sun" | "moon">("sun");
-  // Swap the moon's face between the shipped photo and the abstract gradient
-  // one (Sun.scss `.minded-moon-abstract`). The static gallery above compares
-  // them at rest; what actually decides it is how each one holds up *through*
-  // the morphs - the corner arrival, the breath, the sun↔moon crossfade - which
-  // is what this stage exists for.
-  const [isAbstractMoon, setIsAbstractMoon] = createSignal(false);
   // Mirror the real flow: the resting disc tucks just beneath the measured
   // choices block rather than sitting at a fixed ratio.
   const [restingAnchor, setRestingAnchor] = createSignal<{
@@ -985,10 +957,7 @@ const SunMorphHarness = (): JSX.Element => {
       </Btn>
 
       <Show when={isOpen()}>
-        <div
-          class={styles.sunStage}
-          classList={{ "minded-moon-abstract": isAbstractMoon() }}
-        >
+        <div class={styles.sunStage}>
           <BackgroundTransition isSunGradientAttached={true} />
 
           <Show when={phase() === "breathing"}>
@@ -1054,14 +1023,6 @@ const SunMorphHarness = (): JSX.Element => {
               onClick={() => setVariant((v) => (v === "moon" ? "sun" : "moon"))}
             >
               {variant()}
-            </Btn>
-            <Btn
-              variant="toggle"
-              small
-              selected={isAbstractMoon()}
-              onClick={() => setIsAbstractMoon((v) => !v)}
-            >
-              face: {isAbstractMoon() ? "abstract" : "photo"}
             </Btn>
             <Btn outline onClick={() => setIsOpen(false)}>
               close
