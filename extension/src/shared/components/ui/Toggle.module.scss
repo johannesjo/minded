@@ -5,11 +5,15 @@
   color: inherit;
   display: flex;
   align-items: center;
-  gap: 12px;
+  // --space-sm, matching Checkbox: the two sit in the same settings rows, and
+  // two different label gaps read as misalignment.
+  gap: var(--space-sm);
   cursor: pointer;
   font: inherit;
   padding: 0;
   user-select: none;
+  // Disabling eases rather than snaps (the always-soft rule).
+  transition: opacity var(--dur-quick) var(--ease-out);
 
   &.isDisabled {
     opacity: 0.5;
@@ -50,7 +54,10 @@
     background: var(--c-fg-full-emphasis);
     border-radius: 50%;
     transition: transform var(--dur-quick) var(--ease-out);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    // No drop shadow: the near-black knob already separates cleanly from the
+    // frosted pill, the surface system deliberately uses no elevation cues -
+    // and in dark mode the knob flips near-white, where a black shadow on the
+    // night sky read as grime.
   }
 
   &.isChecked {

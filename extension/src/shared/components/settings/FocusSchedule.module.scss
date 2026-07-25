@@ -18,7 +18,10 @@
 .description {
   margin: 0 var(--settings-description-margin-inline, 0) var(--space-lg);
   max-width: var(--settings-description-max-width, none);
-  opacity: 0.8;
+  // --h4-c, not a one-off opacity: every settings description shares the
+  // dashboard headings' muted tone so the stack reads as one grey, not a
+  // ladder of slightly different ones.
+  color: var(--h4-c);
   text-align: var(--settings-text-align, inherit);
 }
 
@@ -31,10 +34,18 @@
 .dayRow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
   padding: var(--space-md);
   background: var(--dashboard-card-bg);
   border-radius: var(--border-radius);
+
+  // Ease the whole row's dim on disable (the inputs/checkbox carry their own
+  // transitions) - untransitioned, toggling a day off snapped the row's text
+  // in one frame.
+  .dayName,
+  .timeSeparator {
+    transition: opacity var(--dur-quick) var(--ease-out);
+  }
 
   &.isDisabled {
     .dayName,
@@ -71,7 +82,7 @@
 .timeInputs {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   flex: 1;
   justify-content: flex-end;
   min-width: 0;
@@ -87,7 +98,7 @@
 }
 
 .expandToggle {
-  margin-top: 16px;
+  margin-top: var(--space-md);
   display: flex;
   justify-content: center;
 }

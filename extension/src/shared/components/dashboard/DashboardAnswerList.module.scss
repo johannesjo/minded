@@ -13,10 +13,10 @@
     // avoid an orphan word on the last line.
     text-wrap: pretty;
 
-    margin-top: 10px;
+    margin-top: var(--space-sm);
 
     @include onNonMobileScreens {
-      margin-top: 16px;
+      margin-top: var(--space-md);
     }
 
     // Entries settle in one after another instead of all at once - a small
@@ -46,7 +46,7 @@
 
 .categoryTitle {
   margin-top: 0;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
   user-select: none;
   position: relative;
   display: inline-block;

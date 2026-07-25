@@ -11,6 +11,9 @@
 }
 
 .author {
-  margin-top: 16px;
-  font-weight: 200;
+  margin-top: var(--space-md);
+  // 300, matching the app-wide floor (allTypo.scss): weight 200 hairlines get
+  // brittle on some Android subpixel rendering - this was the one surface
+  // still below it.
+  font-weight: 300;
 }

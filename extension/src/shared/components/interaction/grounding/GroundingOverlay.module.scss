@@ -174,6 +174,9 @@
 }
 
 .subtitle {
+  // "Take a moment to ground yourself." - the app speaking gently, so it
+  // shares the title's serif voice instead of seaming against it in Inter.
+  @include displayVoice;
   margin: 0;
   opacity: 0.72;
   font-size: var(--fz-m);
@@ -252,6 +255,9 @@
 }
 
 .quietSub {
+  // "The bell will call you back." - voice, not chrome; serif like the cue
+  // above it.
+  @include displayVoice;
   margin: 0;
   opacity: 0.6;
   font-size: var(--fz-m);

@@ -18,4 +18,36 @@
   max-width: 100%;
   margin: auto;
   pointer-events: all;
+
+  // Text fields were the one control family without a keyboard focus
+  // indicator (GitHub #193) - same ring as links/buttons, and :focus-visible
+  // (not :focus) so pointer/touch entry stays ring-free.
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+  }
+}
+
+// The compact settings variant (grace-period minutes, schedule times): the
+// same frosted surface as the full-size input - the translucent
+// --form-inputs-bg is what seats a field in the sky like every other choice
+// surface, so don't override it away - in a tighter box, with the shared
+// focus-lift and a *transitioned* disabled dim (an untransitioned disable
+// snapped whole schedule rows in one frame).
+@mixin formInputSmall() {
+  @include formInput(var(--form-inputs-height-smaller));
+  padding: var(--space-xs) var(--space-sm);
+  transition:
+    transform var(--dur-quick) var(--ease-out),
+    opacity var(--dur-quick) var(--ease-out);
+
+  &:focus {
+    transform: scale(1.02);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
 }

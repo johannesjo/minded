@@ -123,6 +123,9 @@
 }
 
 .calmRead {
+  // Bedtime reading is the app speaking gently - the serif voice, like every
+  // other mindful reading surface (it was the one left in Inter).
+  @include displayVoice;
   white-space: pre-line;
   // Airier than the usual 1.4-1.5 reading rhythm on purpose: slow bedtime
   // reading, one thought per line.
@@ -154,6 +157,11 @@
 }
 
 .goodnightGesture {
+  // Deliberately night in BOTH themes: the goodnight moment is always a
+  // nocturne, so this surface pins its own deep-blue sky and light-on-dark
+  // text rather than following the ambient theme. The raw hexes are a
+  // one-off scene palette, not drift from --c-gradient-* (see #258 for the
+  // open question of aliasing them).
   --background-gradient: linear-gradient(175deg, #101b3f, #1a2455, #25305d);
   --bg-transition-sunset-top: #050b1d;
   --bg-transition-sunset-mid: #08152f;

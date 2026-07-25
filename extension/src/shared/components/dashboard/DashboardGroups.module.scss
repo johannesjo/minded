@@ -15,14 +15,14 @@
 
   // Reserve the resting sun's footprint at the bottom so cards clear the disc
   // (see RouteCmp.module.scss / .withCompanionBar for --companion-bar-height).
-  --hero-reserve: calc(var(--companion-bar-height) - 48px);
-  padding: 16px 16px calc(var(--hero-reserve) + 16px);
+  --hero-reserve: calc(var(--companion-bar-height) - var(--space-2xl));
+  padding: var(--space-md) var(--space-md) calc(var(--hero-reserve) + var(--space-md));
 
   // One column on phones, two once there's room, three on wide screens -
   // matching the old dashboard's column feel, but scrollable and uncapped.
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: var(--space-md);
   align-content: start;
 
   // A handful of reflections belongs in the calm field, not pinned to its top
@@ -96,12 +96,12 @@
   }
 
   @media (min-width: $bpMobile) {
-    gap: 24px;
-    padding: 24px 24px calc(var(--hero-reserve) + 24px);
+    gap: var(--space-lg);
+    padding: var(--space-lg) var(--space-lg) calc(var(--hero-reserve) + var(--space-lg));
   }
 
   @media (min-width: $bpDashboardMoreThan2Col) {
-    padding: 32px 32px calc(var(--hero-reserve) + 32px);
+    padding: var(--space-xl) var(--space-xl) calc(var(--hero-reserve) + var(--space-xl));
 
     // Six tracks preserve three equal card columns while letting one or two
     // trailing cards occupy centred positions. A slightly tighter measure also
@@ -175,10 +175,6 @@
   box-sizing: border-box;
   @include standardPageTransitionIn();
   min-width: 0;
-
-  &:global(.card) {
-    padding: var(--space-sm) var(--space-xs);
-  }
 
   // center logic - widget cards (mood, energy, quote…) centre their
   // content; lists, charts and tables keep their natural left alignment.
@@ -266,17 +262,12 @@
   margin: auto;
 
   div:first-child {
-    margin-bottom: 16px !important;
+    margin-bottom: var(--space-md) !important;
     margin-top: 0;
   }
 }
 
 .cardDailyQuestions {
-  // Roomier horizontal padding than a standard card so the prompt and its two
-  // buttons breathe.
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-
   // Soft fade-out on dismiss instead of an instant snap-to-tiny. The entrance
   // animation is disabled while removing so it doesn't fight the transition.
   transition:
@@ -343,8 +334,8 @@
 
   // Reserve the resting sun's footprint at the bottom so the centred content
   // sits in the gap above it, not under the disc (mirrors .DashboardGroups).
-  --hero-reserve: calc(var(--companion-bar-height) - 48px);
-  padding: 24px 16px calc(var(--hero-reserve) + 24px);
+  --hero-reserve: calc(var(--companion-bar-height) - var(--space-2xl));
+  padding: var(--space-lg) var(--space-md) calc(var(--hero-reserve) + var(--space-lg));
 
   // The greeting sits on a calm, readable width, and eases in slower than a
   // normal page transition (overriding just the duration of the shared entrance
@@ -376,7 +367,7 @@
 .revealBtn {
   // Arrives after the greeting has landed, but quickly enough to remain
   // discoverable. `both` keeps it hidden through the short delay.
-  animation: revealFadeIn 700ms var(--ease-out) 250ms both;
+  animation: revealFadeIn var(--dur-gentle) var(--ease-out) 250ms both;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;

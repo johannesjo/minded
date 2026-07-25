@@ -25,7 +25,7 @@
 
   p {
     margin: 0;
-    opacity: 0.72;
+    color: var(--h4-c);
   }
 }
 
@@ -55,7 +55,7 @@
 
   p {
     margin: 0;
-    opacity: 0.72;
+    color: var(--h4-c);
   }
 }
 
@@ -65,6 +65,14 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+// Parity with the Android settings route: the raw 320ms can't be zeroed via
+// the duration tokens, so opt out explicitly.
+@media (prefers-reduced-motion: reduce) {
+  .sections {
+    animation: none;
   }
 }
 

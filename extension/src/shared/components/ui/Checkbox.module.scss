@@ -1,9 +1,13 @@
 .Checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   cursor: pointer;
   user-select: none;
+
+  // Disabling eases rather than snaps - a state change is a transition like
+  // any other (the always-soft rule).
+  transition: opacity var(--dur-quick) var(--ease-out);
 
   &.isDisabled {
     opacity: 0.5;
@@ -28,24 +32,32 @@
   transition: background var(--dur-quick) var(--ease-out);
   flex-shrink: 0;
 
+  // The tick eases in on opacity/scale (display is un-animatable by
+  // construction, and the box's fill already fades - a snapping glyph on a
+  // soft fill was the one hard cut left on the most-used control).
   &::after {
     content: "";
     position: absolute;
-    display: none;
     left: 8px;
     top: 4px;
     width: 5px;
     height: 10px;
     border: solid var(--c-fg-full-emphasis);
     border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    transform: rotate(45deg) scale(0.6);
+    transform-origin: center;
+    opacity: 0;
+    transition:
+      opacity var(--dur-quick) var(--ease-out),
+      transform var(--dur-quick) var(--ease-out);
   }
 
   input:checked ~ & {
     background: var(--btn-bg-selected);
 
     &::after {
-      display: block;
+      opacity: 1;
+      transform: rotate(45deg) scale(1);
     }
   }
 

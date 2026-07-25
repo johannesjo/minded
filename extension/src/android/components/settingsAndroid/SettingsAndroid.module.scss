@@ -50,7 +50,7 @@
 .appEntrySub {
   display: block;
   font-size: var(--fz-s);
-  opacity: 0.75;
+  color: var(--h4-c);
 }
 
 // Placed: the row stays as the quiet record of the choice, but it's no longer
@@ -67,7 +67,7 @@
 .manualPinHint {
   margin: 0;
   font-size: var(--fz-s);
-  opacity: 0.75;
+  color: var(--h4-c);
 }
 
 // Display-only: the row handles the tap, so the checkbox must not swallow it.
