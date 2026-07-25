@@ -113,9 +113,14 @@
     // nothing) - untransitioned, the moon's biggest halo vanished in a single
     // frame at touch-down. The parent's `.dragging { transition: none }` only
     // covers the element itself, so this stays soft mid-drag too.
+    // box-shadow stays on the QUICK beat, matching the disc's own inline
+    // 160ms bloom ease (Sun.tsx): the pool's spread rides the rAF-driven
+    // --glow-reach ramp during the corner hand-off, and a long transition
+    // here retargets every frame - the pool would lag the disc throughout
+    // the glide and keep easing after it lands.
     transition:
       opacity var(--dur-quick) var(--ease-out),
-      box-shadow var(--dur-gentle) var(--ease-out);
+      box-shadow var(--dur-quick) var(--ease-out);
   }
 
   &.dragging {

@@ -68,14 +68,8 @@
   }
 }
 
-// Parity with the Android settings route: the raw 320ms can't be zeroed via
-// the duration tokens, so opt out explicitly.
-@media (prefers-reduced-motion: reduce) {
-  .sections {
-    animation: none;
-  }
-}
-
+// The raw 320ms can't be zeroed via the duration tokens, so opt out
+// explicitly (same as the Android settings route).
 @media (prefers-reduced-motion: reduce) {
   .sections {
     animation: none;

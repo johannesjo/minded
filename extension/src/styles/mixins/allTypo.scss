@@ -7,9 +7,9 @@
   letter-spacing: -0.005em;
   // Display surfaces are short, mostly centered prompts; balance the rag so
   // no lone word ("here?") dangles on the last line - a quiet jolt on the
-  // app's most central text. The one multi-line *reading* consumer (dashboard
-  // reflections) overrides this with `pretty`. Progressive: unsupported
-  // engines just keep normal wrapping.
+  // app's most central text. Multi-line *reading* consumers (dashboard
+  // reflections, the bedtime calmRead) override this with `pretty`.
+  // Progressive: unsupported engines just keep normal wrapping.
   text-wrap: balance;
   // Newsreader's bundled subset carries the `opsz` axis (see _fonts.scss); let
   // the browser track it to font-size so display sizes keep their warmth.

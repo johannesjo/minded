@@ -20,8 +20,12 @@
   pointer-events: all;
 
   // Text fields were the one control family without a keyboard focus
-  // indicator (GitHub #193) - same ring as links/buttons, and :focus-visible
-  // (not :focus) so pointer/touch entry stays ring-free.
+  // indicator (GitHub #193) - same ring as links/buttons. Note that engines
+  // match :focus-visible on ANY focus of editable elements (tap included),
+  // so text fields wear the ring while focused - standard behaviour for
+  // inputs, and the honest signal of where typing goes. Surfaces with their
+  // own quieter focus treatment (the reflective check-in textarea's baseline
+  // emphasis, Question.scss) opt out where they apply this mixin.
   &:focus-visible {
     outline: 2px solid var(--c-link-color);
     outline-offset: 3px;

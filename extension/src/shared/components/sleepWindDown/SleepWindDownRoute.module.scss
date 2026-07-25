@@ -126,6 +126,10 @@
   // Bedtime reading is the app speaking gently - the serif voice, like every
   // other mindful reading surface (it was the one left in Inter).
   @include displayVoice;
+  // A multi-line *reading* block: keep the authored one-thought-per-line
+  // rhythm instead of displayVoice's `balance` re-wrapping it (same override
+  // as the look-back reflections).
+  text-wrap: pretty;
   white-space: pre-line;
   // Airier than the usual 1.4-1.5 reading rhythm on purpose: slow bedtime
   // reading, one thought per line.

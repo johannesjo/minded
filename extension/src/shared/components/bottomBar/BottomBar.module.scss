@@ -19,6 +19,11 @@
   // inset (Android nav bar, iOS home indicator); on desktop the inset is 0 so
   // nothing changes.
   min-height: calc(var(--companion-bar-height) + var(--safe-area-inset-bottom));
+  // Explicit height (not just min-height): the keyboard collapse below zeroes
+  // both, and only fixed lengths interpolate - with height left `auto`, the
+  // reveal on keyboard close snapped the first ~44px (the icons' content
+  // height) back in one frame and eased only the remainder.
+  height: calc(var(--companion-bar-height) + var(--safe-area-inset-bottom));
   padding-left: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-left));
   padding-right: max(clamp(16px, 6vw, 56px), var(--safe-area-inset-right));
   // Transparent on every platform now (mobile included): the bottom fade on the
@@ -30,6 +35,7 @@
   // the reveal (class removed) is as soft as the hide.
   transition:
     opacity var(--dur-quick) var(--ease-out),
+    height var(--dur-quick) var(--ease-out),
     min-height var(--dur-quick) var(--ease-out),
     padding-bottom var(--dur-quick) var(--ease-out);
 
