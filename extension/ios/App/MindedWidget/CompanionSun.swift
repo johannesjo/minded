@@ -11,11 +11,14 @@
 //      user's wallpaper (the small widget). See `onOwnSky` below and THE HALO
 //      RULE. Drawn here with SwiftUI gradients, ported one-to-one from the two
 //      Android day vectors (`res/drawable/ic_sun_widget_day{,_on_sky}.xml`).
-//    - Night: the moon. This is the *same* lunar photo the Android widget and the
-//      in-app `.moon` use (`res/drawable-nodpi/ic_sun_widget_night.webp`, re-encoded
-//      as the `MoonWidget` image set) - the real near-side disc with its cool sheen
-//      and halo already baked in, rather than a gradient twin the app deliberately
-//      avoids (see docs/sun-companion-widget.md).
+//    - Night: the moon - a cool disc whose light pools up-left and cools into the
+//      lower-right limb, under wide soft maria fields, in a cool halo. Ported the
+//      same one-to-one way from `res/drawable/ic_sun_widget_night.xml`, which is
+//      itself the widget port of the in-app `.moon-face` (web Sun.scss). All three
+//      are gradients over the same numbers, so they stay in step by construction.
+//      This replaced a lunar photograph, at the same time the app's moon did:
+//      there is only ever one moon, and a photo on the home screen against a drawn
+//      one in the app would read as two different objects.
 //
 //  It just renders whichever it's told via `isNight`; the day/night *decision* is
 //  the clock (`SunWidgetPhase`, picked by the timeline in MindedWidget.swift), the
@@ -61,15 +64,110 @@ struct CompanionSun: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
-    // The night moon: one image, disc + cool sheen + halo baked in, filling the
-    // tile exactly as the Android night drawable fills its sun slot.
+    // The night moon. Mirrors the day's glow + disc split at the same radii, so
+    // sun and moon occupy the same slot; only the face beneath differs.
     private func moon(side: CGFloat) -> some View {
-        // The source PNG is square, so a square frame fills it without distortion -
-        // no need for scaledToFit. Matches the .frame idiom of glow()/disc() below.
-        Image("MoonWidget")
-            .resizable()
-            .interpolation(.high)
+        ZStack {
+            moonGlow(side: side)
+            moonDisc(side: side)
+        }
+    }
+
+    // The moon's halo. THE HALO RULE's documented exception: the moon never warms,
+    // on any surface, so this stays cool even out here on the wallpaper where the
+    // day sun goes amber. Same stop positions and radius as glow() below.
+    private func moonGlow(side: CGFloat) -> some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: rgb(216, 229, 255, 0), location: 0.00),
+                        .init(color: rgb(216, 229, 255, 0), location: 0.56),
+                        .init(color: rgb(216, 229, 255, 0.32), location: 0.74),
+                        .init(color: rgb(178, 202, 255, 0), location: 1.00),
+                    ]),
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: side / 2
+                )
+            )
             .frame(width: side, height: side)
+    }
+
+    /// One mare, in fractions of the disc's diameter - the same numbers Sun.scss
+    /// uses as percentages of the disc's box, and ic_sun_widget_night.xml as
+    /// viewport units. They must stay big, overlapping and asymmetric: the tidy
+    /// layout (a pair up top, one below) reads as a smiley face at companion size.
+    private struct Mare {
+        let cx: CGFloat, cy: CGFloat
+        let rx: CGFloat, ry: CGFloat
+        let alpha: Double, fade: CGFloat
+    }
+
+    // Top to bottom: Procellarum down the left limb, Imbrium running into it,
+    // Serenitatis, Tranquillitatis, the Nubium/Humorum band, Fecunditatis, Crisium.
+    private static let maria: [Mare] = [
+        Mare(cx: 0.21, cy: 0.45, rx: 0.25, ry: 0.38, alpha: 0.30, fade: 0.78),
+        Mare(cx: 0.37, cy: 0.27, rx: 0.24, ry: 0.21, alpha: 0.34, fade: 0.76),
+        Mare(cx: 0.59, cy: 0.30, rx: 0.15, ry: 0.14, alpha: 0.30, fade: 0.78),
+        Mare(cx: 0.67, cy: 0.43, rx: 0.17, ry: 0.16, alpha: 0.28, fade: 0.78),
+        Mare(cx: 0.39, cy: 0.65, rx: 0.27, ry: 0.13, alpha: 0.24, fade: 0.80),
+        Mare(cx: 0.75, cy: 0.57, rx: 0.11, ry: 0.13, alpha: 0.22, fade: 0.78),
+        Mare(cx: 0.80, cy: 0.24, rx: 0.07, ry: 0.06, alpha: 0.26, fade: 0.74),
+    ]
+
+    private static let mareColor = rgb(168, 180, 203)
+
+    // The moon's disc: the shaded body, then the maria over it. Same 72/108 ≈ 0.667
+    // diameter as the day disc.
+    private func moonDisc(side: CGFloat) -> some View {
+        let diameter = side * 0.667
+
+        return ZStack {
+            // Light pooling up-left, cooling and dimming into the limb. The end
+            // radius is CSS's farthest-corner for `circle at 38% 32%` in a square
+            // box (≈0.92 of the diameter), so the falloff matches the web exactly.
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: rgb(247, 249, 253), location: 0.00),
+                            .init(color: rgb(230, 235, 244), location: 0.40),
+                            .init(color: rgb(206, 214, 230), location: 0.76),
+                            .init(color: rgb(182, 191, 212), location: 1.00),
+                        ]),
+                        center: UnitPoint(x: 0.38, y: 0.32),
+                        startRadius: 0,
+                        endRadius: diameter * 0.92
+                    )
+                )
+
+            // Each mare is a circular gradient squashed to an ellipse, the same
+            // trick the Android vector needs (a VectorDrawable radial gradient is
+            // always circular) - kept here too so the two ports stay one shape.
+            ForEach(Array(Self.maria.enumerated()), id: \.offset) { _, m in
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(stops: [
+                                .init(color: Self.mareColor.opacity(m.alpha), location: 0),
+                                .init(color: Self.mareColor.opacity(0), location: m.fade),
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: m.ry * diameter
+                        )
+                    )
+                    .frame(width: 2 * m.ry * diameter, height: 2 * m.ry * diameter)
+                    .scaleEffect(x: m.rx / m.ry, y: 1)
+                    .position(x: m.cx * diameter, y: m.cy * diameter)
+            }
+        }
+        .frame(width: diameter, height: diameter)
+        // The maria fall to zero inside the rim by construction, but clip anyway:
+        // .position on a scaled child is the one place a rounding slip would paint
+        // outside the disc, and on a transparent widget that would be visible.
+        .clipShape(Circle())
     }
 
     // The day sun's soft bloom / halo: gentle, low-alpha, fading to nothing at the

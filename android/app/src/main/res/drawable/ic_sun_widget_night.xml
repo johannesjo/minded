@@ -1,0 +1,191 @@
+<!-- NIGHT phase of the living companion sun: the moon (19-06), matched to the
+     app's in-app moon (web Sun.scss `.moon-face`) - a cool disc whose light pools
+     up-left and cools into the lower-right limb, under wide soft maria fields,
+     wrapped in a cool halo. Picked by the local hour in MyAppWidget, not by the
+     dark-mode qualifier.
+
+     This replaced a lunar photograph (ic_sun_widget_night.webp). The app's moon
+     is drawn in CSS now, and there is only ever one moon - a photo on the home
+     screen against a drawn one in the app would read as two different objects.
+     Gradients are the one shape language the web, this vector and the SwiftUI
+     widget can all share, so the three stay in step by construction.
+
+     THE HALO RULE (sunSettle.ts): the day sun wears amber out here because it
+     floats on the user's wallpaper and has to announce itself. The moon is the
+     documented exception - it never warms, on any surface - so its halo is cool
+     everywhere, and one drawable serves both the wallpaper widget and the prompt
+     card (MyAppWidget.drawableFor ignores onOwnSky at night).
+
+     Geometry: the disc is r=36 about (54,54), matching the day vector's 72/108
+     diameter, so sun and moon occupy the same slot. The maria are ported from
+     Sun.scss by mapping its percentages onto that disc's bounding box
+     (18..90) - x = 18 + pct * 72. Each is a circle of radius ry carrying a
+     radial gradient, squashed to the right ellipse by its group's scaleX about
+     the mare's own centre, because a VectorDrawable radial gradient is always
+     circular. Note the mare *paths* deliberately overhang the disc - Procellarum's
+     reaches x=15.12 against a rim at 18 - and are hidden only by their gradients
+     reaching zero alpha first (tileMode clamps past the last stop, so there is
+     nothing to paint out there).
+
+     No clip-path, and the honest version of why: six of the seven fade out
+     comfortably inside the rim, but Procellarum's zero-alpha ellipse (centre
+     33.12,50.4, semi-axes 14.04 x 21.34) actually reaches 36.065 from the disc
+     centre at about 220 degrees - 0.065 units PAST the r=36 rim. That sliver is
+     at alpha 0 by construction, i.e. under 0.001 opacity over 0.06% of the tile,
+     so it cannot show up at any render size. A clip-path would cost a saveLayer
+     on every frame to remove nothing visible. Worth knowing that iOS does clip
+     (CompanionSun.swift) - .position on a scaled child is easier to slip there -
+     so the two ports differ here on purpose, not by accident. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:aapt="http://schemas.android.com/aapt"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+
+    <!-- Cool halo, mirroring the day vector's bloom stops at the same radius -->
+    <path android:pathData="M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="53">
+                <item android:offset="0.0" android:color="#00D8E5FF" />
+                <item android:offset="0.56" android:color="#00D8E5FF" />
+                <item android:offset="0.74" android:color="#52D8E5FF" />
+                <item android:offset="1.0" android:color="#00B2CAFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The body: light pooling up-left, cooling and dimming into the limb.
+         Centre and radius are Sun.scss's `circle at 38% 32%` resolved against the
+         disc box (farthest-corner, hence a radius larger than the disc itself). -->
+    <path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="45.36"
+                    android:centerY="41.04"
+                    android:gradientRadius="66.26">
+                <item android:offset="0.0" android:color="#FFF7F9FD" />
+                <item android:offset="0.4" android:color="#FFE6EBF4" />
+                <item android:offset="0.76" android:color="#FFCED6E6" />
+                <item android:offset="1.0" android:color="#FFB6BFD4" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Oceanus Procellarum - the tall field down the left limb -->
+    <group android:pivotX="33.12" android:pivotY="50.4" android:scaleX="0.6579">
+        <path android:pathData="M33.12,50.4 m-27.36,0 a27.36,27.36 0 1,0 54.72,0 a27.36,27.36 0 1,0 -54.72,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="33.12"
+                        android:centerY="50.4"
+                        android:gradientRadius="27.36">
+                    <item android:offset="0.0" android:color="#4DA8B4CB" />
+                    <item android:offset="0.78" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- Imbrium - upper left, running into Procellarum -->
+    <group android:pivotX="44.64" android:pivotY="37.44" android:scaleX="1.1429">
+        <path android:pathData="M44.64,37.44 m-15.12,0 a15.12,15.12 0 1,0 30.24,0 a15.12,15.12 0 1,0 -30.24,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="44.64"
+                        android:centerY="37.44"
+                        android:gradientRadius="15.12">
+                    <item android:offset="0.0" android:color="#57A8B4CB" />
+                    <item android:offset="0.76" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- Serenitatis - right of centre -->
+    <group android:pivotX="60.48" android:pivotY="39.6" android:scaleX="1.0714">
+        <path android:pathData="M60.48,39.6 m-10.08,0 a10.08,10.08 0 1,0 20.16,0 a10.08,10.08 0 1,0 -20.16,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="60.48"
+                        android:centerY="39.6"
+                        android:gradientRadius="10.08">
+                    <item android:offset="0.0" android:color="#4DA8B4CB" />
+                    <item android:offset="0.78" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- Tranquillitatis - below Serenitatis, trailing down-right -->
+    <group android:pivotX="66.24" android:pivotY="48.96" android:scaleX="1.0625">
+        <path android:pathData="M66.24,48.96 m-11.52,0 a11.52,11.52 0 1,0 23.04,0 a11.52,11.52 0 1,0 -23.04,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="66.24"
+                        android:centerY="48.96"
+                        android:gradientRadius="11.52">
+                    <item android:offset="0.0" android:color="#47A8B4CB" />
+                    <item android:offset="0.78" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- Nubium / Humorum - the band across the lower middle -->
+    <group android:pivotX="46.08" android:pivotY="64.8" android:scaleX="2.0769">
+        <path android:pathData="M46.08,64.8 m-9.36,0 a9.36,9.36 0 1,0 18.72,0 a9.36,9.36 0 1,0 -18.72,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="46.08"
+                        android:centerY="64.8"
+                        android:gradientRadius="9.36">
+                    <item android:offset="0.0" android:color="#3DA8B4CB" />
+                    <item android:offset="0.8" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- Fecunditatis - lower right -->
+    <group android:pivotX="72" android:pivotY="59.04" android:scaleX="0.8462">
+        <path android:pathData="M72,59.04 m-9.36,0 a9.36,9.36 0 1,0 18.72,0 a9.36,9.36 0 1,0 -18.72,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="72"
+                        android:centerY="59.04"
+                        android:gradientRadius="9.36">
+                    <item android:offset="0.0" android:color="#38A8B4CB" />
+                    <item android:offset="0.78" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- Crisium - the small isolated oval on the right limb -->
+    <group android:pivotX="75.6" android:pivotY="35.28" android:scaleX="1.1667">
+        <path android:pathData="M75.6,35.28 m-4.32,0 a4.32,4.32 0 1,0 8.64,0 a4.32,4.32 0 1,0 -8.64,0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                        android:type="radial"
+                        android:centerX="75.6"
+                        android:centerY="35.28"
+                        android:gradientRadius="4.32">
+                    <item android:offset="0.0" android:color="#42A8B4CB" />
+                    <item android:offset="0.74" android:color="#00A8B4CB" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+</vector>

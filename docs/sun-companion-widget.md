@@ -105,9 +105,12 @@ for you. That is exactly why it fits the product's soft approach where the iOS
   wallpaper, and `ic_sun_widget_day_on_sky.xml` (white) for the prompt card,
   which paints the app's own sky and so follows the in-app halo rule. See
   `docs/sun-halo.md`. The night
-  moon is the real lunar photo with a cool glow baked in
-  (`res/drawable-nodpi/ic_sun_widget_night.webp`), matching the in-app `.moon`
-  (the same NASA near-side disc + sheen + cool halo) rather than a gradient twin.
+  moon is a vector too (`res/drawable/ic_sun_widget_night.xml`) - the same
+  shaded body + soft maria + cool halo as the in-app `.moon`, ported by mapping
+  Sun.scss's percentages onto the disc box. Each mare is a circular gradient
+  squashed by its group's `scaleX`, because a VectorDrawable radial gradient is
+  always circular. Both were a lunar photograph until the in-app moon stopped
+  being one; there is only ever one moon, so the widget followed the same day.
   We deliberately stop at two:
   the old dawn/dusk discs wore saturated amber/coral that read as a *signal*
   ("caution") on a surface that must never grade the user, whereas sun-vs-moon is
@@ -139,9 +142,10 @@ verify.
 - **WidgetKit widget** (SwiftUI), Home Screen. `systemSmall` is the pure sun,
   whose day face is drawn with SwiftUI radial gradients (`CompanionSun.swift`),
   colours ported 1:1 from the Android day vector; its night face is the **same
-  lunar photo as Android and the in-app `.moon`**
-  (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG image set)
-  rather than a gradient twin. `systemMedium` is the prompt card (sky + quiet
+  drawn moon as Android and the in-app `.moon`**
+  (`CompanionSun.swift`, the same numbers as `ic_sun_widget_night.xml`), so the
+  three moons are one object rather than three lookalikes. `systemMedium` is the
+  prompt card (sky + quiet
   line + the same sun or moon, but passed `onOwnSky: true` so its bloom is white
   - the card paints the app's own sky, so the in-app halo rule applies; see
   `docs/sun-halo.md` and `docs/widget-prompts-concept.md`). Day/night

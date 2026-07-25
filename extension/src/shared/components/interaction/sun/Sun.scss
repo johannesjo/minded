@@ -49,7 +49,10 @@
     0 0 calc(40px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.25 * var(--glow-intensity))),
     0 0 calc(80px * var(--glow-reach) * var(--glow-intensity))
-      rgba(var(--glow-color), calc(0.1 * var(--glow-reach) * var(--glow-intensity)));
+      rgba(
+        var(--glow-color),
+        calc(0.1 * var(--glow-reach) * var(--glow-intensity))
+      );
 
   z-index: 30;
   cursor: grab;
@@ -135,47 +138,85 @@
   }
 
   // The moon must read unmistakably as the moon - not a dimmer sun - or the
-  // morning/evening cue it carries says nothing. So it's the real near-side full
-  // moon: NASA's public-domain lunar albedo map orthographically projected into a
-  // front-facing disc (the recognizable "man in the moon" maria), with gentle
-  // limb shading and a soft transparent edge (see src/assets/img/moon.webp and
-  // the render notes in git history). The genuine maria + cratered relief and the
-  // cool night halo make it clearly distinct from the warm, stylised sun.
-  // The moon's face: the lunar photo plus its sheen on one layer, fading in as
-  // a unit when the variant flips (and out again at dawn) - see .moon-face's
-  // sibling comment above. Kept at opacity 0 (not display: none) so the flip
-  // is a crossfade, never a pop.
+  // morning/evening cue it carries says nothing. What makes it recognisable at a
+  // glance is the maria silhouette - the lopsided "man in the moon" - not the
+  // craters, so the face is drawn: a body whose light pools up-left and cools
+  // into the lower-right limb, under wide, soft, overlapping tonal fields where
+  // the real near-side's maria sit.
+  //
+  // This replaced a photographic lunar disc (NASA's albedo map projected into a
+  // front-facing disc; see git history for the render notes and moon.webp). The
+  // photo was richer at 120px, but it was also the app's only photograph in a UI
+  // that is otherwise gradients and line icons - a style seam on the one object
+  // meant to read as continuous across every surface - and its crater detail
+  // gave the eye something to *examine* on a surface whose whole job is somewhere
+  // to rest. It also needed a module-load preload (the first paint was a blank
+  // white disc without it) and had no vector equivalent for the widgets.
+  //
+  // Two things this must not lose, both learned the hard way:
+  // - The maria have to be big, overlapping and ASYMMETRIC. Three tidy dots - a
+  //   pair up top and one below - is the obvious layout and it is a trap: at the
+  //   companion's ~42px it stops being a moon and becomes a smiley face. The
+  //   pre-#92 gradient moon had exactly that, and it read as polka dots.
+  // - The contrast floor is real. Fainter than roughly 7% luminance and the disc
+  //   stops reading as a moon at all and just looks like a smudged pearl.
+  //
+  // Layer order below (topmost first): Oceanus Procellarum (the tall field down
+  // the left limb), Imbrium (upper left, running into it), Serenitatis (right of
+  // centre), Tranquillitatis (below it, trailing down-right), the Nubium/Humorum
+  // band across the lower middle, Fecunditatis (lower right), Crisium (the small
+  // isolated oval on the right limb), then the shaded body underneath. Every
+  // falloff is wide and soft on purpose: a crisp edge anywhere here immediately
+  // starts reading as a crater again.
+  //
+  // Kept at opacity 0 (not display: none) so the sun↔moon flip is a crossfade,
+  // never a pop.
   .moon-face {
-    background: center / cover no-repeat url("@src/assets/img/moon.webp");
+    background:
+      radial-gradient(
+        ellipse 25% 38% at 21% 45%,
+        rgba(168, 180, 203, 0.3) 0%,
+        rgba(168, 180, 203, 0) 78%
+      ),
+      radial-gradient(
+        ellipse 24% 21% at 37% 27%,
+        rgba(168, 180, 203, 0.34) 0%,
+        rgba(168, 180, 203, 0) 76%
+      ),
+      radial-gradient(
+        ellipse 15% 14% at 59% 30%,
+        rgba(168, 180, 203, 0.3) 0%,
+        rgba(168, 180, 203, 0) 78%
+      ),
+      radial-gradient(
+        ellipse 17% 16% at 67% 43%,
+        rgba(168, 180, 203, 0.28) 0%,
+        rgba(168, 180, 203, 0) 78%
+      ),
+      radial-gradient(
+        ellipse 27% 13% at 39% 65%,
+        rgba(168, 180, 203, 0.24) 0%,
+        rgba(168, 180, 203, 0) 80%
+      ),
+      radial-gradient(
+        ellipse 11% 13% at 75% 57%,
+        rgba(168, 180, 203, 0.22) 0%,
+        rgba(168, 180, 203, 0) 78%
+      ),
+      radial-gradient(
+        ellipse 7% 6% at 80% 24%,
+        rgba(168, 180, 203, 0.26) 0%,
+        rgba(168, 180, 203, 0) 74%
+      ),
+      radial-gradient(
+        circle at 38% 32%,
+        #f7f9fd 0%,
+        #e6ebf4 40%,
+        #ced6e6 76%,
+        #b6bfd4 100%
+      );
     opacity: 0;
     transition: opacity var(--dur-gentle) var(--ease-out);
-
-    // A soft luminous sheen over the photo: a faint overall lift plus a brighter
-    // top-left highlight, screen-blended so it lights the disc - reading as a
-    // glowing orb the way the old gradient moon did - without flattening the real
-    // craters, which stay clearly visible underneath. Inside the face layer so
-    // it fades with the photo; the moon never warms, so no amber can bleed
-    // across it - its light stays cool.
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      background:
-        radial-gradient(
-          circle at 50% 50%,
-          rgba(255, 255, 255, 0.3) 0%,
-          rgba(255, 255, 255, 0.12) 55%,
-          transparent 84%
-        ),
-        radial-gradient(
-          circle at 36% 31%,
-          rgba(255, 255, 255, 0.42) 0%,
-          transparent 42%
-        );
-    }
   }
 
   &.moon .sun-face {
@@ -202,7 +243,12 @@
       0 0 calc(13px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(32px * var(--glow-reach) * var(--glow-intensity))
-        rgba(190, 210, 255, calc(0.3 * var(--glow-reach) * var(--glow-intensity)));
+        rgba(
+          190,
+          210,
+          255,
+          calc(0.3 * var(--glow-reach) * var(--glow-intensity))
+        );
 
     // The moon's resting glow is the cool/white box-shadow bloom above, floored at
     // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's - the near-white disc

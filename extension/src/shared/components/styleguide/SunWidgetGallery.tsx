@@ -9,8 +9,7 @@ import { SUN_WIDGET_PREVIEWS } from "./generated/sunWidgetPreviews";
  * the warm sun by day, the cool moon by night - built from the real widget
  * assets by scripts/generate-widget-previews.mjs (single source of truth,
  * regenerated on every styleguide build): the day sun is the vector drawable
- * converted to SVG; the night moon is the actual lunar photo + baked glow
- * (drawable-nodpi/ic_sun_widget_night.webp) embedded as-is. Toggle the
+ * converted to SVG; the night moon is the night vector the same way. Toggle the
  * styleguide's dark mode to preview the discs on a dark wallpaper. Indicative of
  * palette and proportion, not a pixel-exact device render.
  */

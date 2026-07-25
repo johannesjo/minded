@@ -392,12 +392,15 @@
 
     // At night the companion is the moon, not a warm sun: a cool silver disc lit
     // from the top-left, with a cool blue halo instead of the daytime amber glow.
-    // The in-app moon (Sun.scss .moon) is a real lunar photo, but the Little Sun
-    // deliberately stays this clean gradient rather than reusing that photo - it
-    // carries a timer number, and the photo's cratered surface would hurt the
-    // number's legibility at this 40px size, where craters read as noise anyway.
-    // Shrunk to the corner, the gradient is barely distinguishable from the photo
-    // at the hand-off.
+    // This used to be justified by the in-app moon being a lunar photograph: the
+    // Little Sun carries a timer number, and crater detail would have hurt the
+    // number's legibility at 40px. That reason is gone - the in-app moon
+    // (Sun.scss .moon-face) is drawn now too - so what is left is two gradients
+    // that are merely similar, on an object the app insists is one continuous
+    // thing across the corner hand-off. Reconciling them is a real open question,
+    // deliberately not answered here: this disc also needs a flat, quiet field
+    // behind a number, which the in-app face's maria are not. Whoever picks it up
+    // should decide it on the hand-off, not on either disc alone.
     --little-sun-bg:
       radial-gradient(
         circle at 34% 28%,

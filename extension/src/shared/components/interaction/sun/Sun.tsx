@@ -47,21 +47,8 @@ import {
   shouldHonorSunFocusRequest,
   type SunAccessibleActivation,
 } from "./sunAccessibility";
-import moonImageUrl from "@assets/img/moon.webp";
-
-// Warm the moon disc's texture the moment this module loads, before any moon
-// ever mounts. The `.moon-face` layer is a `background-image` (Sun.scss); the
-// webp resolves to the same emitted asset as this import, so fetching+decoding it
-// here means the first moon intervention paints the real lunar photo. Without
-// it, the disc's very first frame is drawn before the background is ready and
-// reads as a blank white disk (just the white `::before` sheen + near-white
-// halo) until the image pops in - the wrong object on the app's most central
-// surface. The file is tiny (~20KB) and one preload covers every moon surface
-// (intervention, breath, grounding). Guarded for non-DOM contexts (tests/SSR).
-if (typeof Image !== "undefined") {
-  const moonPreload = new Image();
-  moonPreload.src = moonImageUrl;
-}
+// (The moon used to preload a texture here - #246. Its face is drawn in CSS
+// now, so there is nothing to fetch and no first-paint gap to cover.)
 
 type SunPosition = {
   x: number;
@@ -1669,14 +1656,16 @@ export const Sun: Component<SunProps> = (props) => {
   // RouteCmp.module.scss. With that tight shape the clip below removes almost
   // nothing, so 1.25 keeps a soft, symmetric rest halo that stays level.
   const COMPANION_REST_GLOW = 1.25;
-  // The moon carries a resting glow too, the same way the sun does. Its disc is a
-  // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
-  // "a rock with a ring" rather than a glowing moon - it needs a genuinely bright
-  // bloom to glow like the gradient moon did. Floored a touch above the sun's rest
-  // (the photo disc isn't self-luminous like the gradient was) so the white/cool
-  // bloom layers (Sun.scss .moon box-shadow) light softly at rest - a gentle moon
-  // halo, not the loud first pass; hover lifts it further, echoing the bottom-bar
-  // hover. Paired with the disc sheen in Sun.scss, which carries most of the
+  // The moon carries a resting glow too, the same way the sun does. Its face is
+  // pale and near-white, which washes out a faint halo, so it needs a genuinely
+  // bright bloom to read as glowing rather than as a flat disc with a ring. This
+  // floor was set when the face was a lunar photograph and kept when it became a
+  // drawn one: the drawn face is brighter, so if anything it wants less, but the
+  // value still reads as a gentle moon halo rather than the loud first pass - and
+  // dropping it is a look change to make deliberately, not a side effect of
+  // swapping the face. The white/cool bloom layers are Sun.scss's .moon
+  // box-shadow; hover lifts it further, echoing the bottom-bar
+  // hover. The face's own up-left light pool (Sun.scss) carries much of the
   // "glowing orb" read, so the halo itself can stay restrained.
   const MOON_REST_GLOW = 1.1;
   const MOON_HOVER_GLOW = 1.7;
@@ -1807,8 +1796,8 @@ export const Sun: Component<SunProps> = (props) => {
             ? // Once the moon starts its "let the day go" descent, drop the
               // resting-glow floor so its halo can dim all the way to nothing as
               // it sinks (animateToCompletion ramps getGlowIntensity to 0). At
-              // rest/hover it still wears the floored glow so the photo disc reads
-              // as a glowing moon rather than a dim rock.
+              // rest/hover it still wears the floored glow so the disc reads as a
+              // glowing moon rather than a flat one.
               getIsCompletionStarted()
               ? getGlowIntensity()
               : // A settle that dials its own glow is the corner hand-off (the
@@ -1817,7 +1806,7 @@ export const Sun: Component<SunProps> = (props) => {
                 // the reveal instead of blooming full-strength from the first
                 // frame - the "strong glow" that made the corner arrival read as
                 // fast. Away from the hand-off it keeps the resting/hover floor so
-                // the photo disc still reads as a glowing moon, not a dim rock.
+                // the disc still reads as a glowing moon, not a flat one.
                 props.settle?.glowIntensity != null
                 ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
                 : Math.max(
