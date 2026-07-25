@@ -1796,8 +1796,8 @@ export const Sun: Component<SunProps> = (props) => {
             ? // Once the moon starts its "let the day go" descent, drop the
               // resting-glow floor so its halo can dim all the way to nothing as
               // it sinks (animateToCompletion ramps getGlowIntensity to 0). At
-              // rest/hover it still wears the floored glow so the photo disc reads
-              // as a glowing moon rather than a dim rock.
+              // rest/hover it still wears the floored glow so the disc reads as a
+              // glowing moon rather than a flat one.
               getIsCompletionStarted()
               ? getGlowIntensity()
               : // A settle that dials its own glow is the corner hand-off (the
@@ -1806,7 +1806,7 @@ export const Sun: Component<SunProps> = (props) => {
                 // the reveal instead of blooming full-strength from the first
                 // frame - the "strong glow" that made the corner arrival read as
                 // fast. Away from the hand-off it keeps the resting/hover floor so
-                // the photo disc still reads as a glowing moon, not a dim rock.
+                // the disc still reads as a glowing moon, not a flat one.
                 props.settle?.glowIntensity != null
                 ? Math.max(getGlowIntensity(), props.settle.glowIntensity)
                 : Math.max(

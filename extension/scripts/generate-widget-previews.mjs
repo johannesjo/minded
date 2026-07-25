@@ -43,10 +43,15 @@ function parseColor(hex) {
 }
 
 /**
- * A `<group>`'s scale/pivot as an SVG transform. The night moon's maria are
- * ellipses, but a VectorDrawable radial gradient is always circular, so each one
- * ships as a circle squashed by its group - which means this converter has to
- * honour groups or the preview would show round maria the device never draws.
+ * A `<group>`'s transform as an SVG one. The night moon's maria are ellipses, but
+ * a VectorDrawable radial gradient is always circular, so each ships as a circle
+ * squashed by its group - which means this converter has to honour groups or the
+ * preview would show round maria the device never draws.
+ *
+ * Android composes a group as T(pivot) * R * S * T(-pivot), so that is what we
+ * emit. rotation/translate aren't used by the sun or moon today, but they are
+ * handled rather than ignored: dropping one silently would show a preview that
+ * disagrees with the device, which is the one thing this script exists to stop.
  */
 function groupTransform(attrs) {
   const num = (name, fallback) => {
@@ -57,36 +62,64 @@ function groupTransform(attrs) {
   const sy = num("scaleY", 1);
   const px = num("pivotX", 0);
   const py = num("pivotY", 0);
-  if (sx === 1 && sy === 1) return null;
-  return `translate(${px} ${py}) scale(${sx} ${sy}) translate(${-px} ${-py})`;
+  const tx = num("translateX", 0);
+  const ty = num("translateY", 0);
+  const rot = num("rotation", 0);
+
+  const parts = [];
+  if (tx !== 0 || ty !== 0) parts.push(`translate(${tx} ${ty})`);
+  if (rot !== 0 || sx !== 1 || sy !== 1) {
+    parts.push(`translate(${px} ${py})`);
+    if (rot !== 0) parts.push(`rotate(${rot})`);
+    if (sx !== 1 || sy !== 1) parts.push(`scale(${sx} ${sy})`);
+    parts.push(`translate(${-px} ${-py})`);
+  }
+  return parts.length ? parts.join(" ") : null;
 }
 
 /** One Android `<vector>` drawable -> one standalone SVG string (for an <img>). */
 function vectorToSvg(xml, key) {
-  // Walk the drawable in order, tracking the enclosing <group> so a path inherits
-  // its transform. Each <path> carries android:pathData (already SVG path syntax)
-  // and one nested radial <gradient> with <item> stops.
-  const token = /<group\b([^>]*)>|<\/group>|<path\b[\s\S]*?<\/path>/g;
+  // Walk the drawable in order, keeping a stack of enclosing <group>s so a path
+  // inherits the composed transform. Each <path> carries android:pathData (already
+  // SVG path syntax) and one nested radial <gradient> with <item> stops.
+  //
+  // Self-closing forms are matched explicitly. Without that, a `<path ... />`
+  // would make the paired-tag pattern run on to the NEXT `</path>`, swallowing
+  // any groups in between and mixing one path's geometry with another's gradient -
+  // a plausible-looking, silently wrong SVG. No converted drawable has one today,
+  // but other drawables in this repo do (ic_timer_24.xml, the launcher icons), so
+  // it is one copy-paste away.
+  const token =
+    /<group\b([^>]*?)\/>|<group\b([^>]*)>|<\/group>|<path\b[^>]*?\/>|<path\b[\s\S]*?<\/path>/g;
   let defs = "";
   let shapes = "";
-  let transform = null;
+  const groups = [];
   let i = 0;
   let match;
 
   while ((match = token.exec(xml)) !== null) {
-    const [raw, groupAttrs] = match;
+    const [raw, selfClosingGroupAttrs, groupAttrs] = match;
+
     if (raw.startsWith("</group")) {
-      transform = null;
+      groups.pop();
       continue;
     }
     if (raw.startsWith("<group")) {
-      transform = groupTransform(groupAttrs);
+      // A self-closing group encloses nothing, so it must not push a scope.
+      if (selfClosingGroupAttrs === undefined)
+        groups.push(groupTransform(groupAttrs));
       continue;
     }
 
     const block = raw;
     const pathData = block.match(/android:pathData="([^"]+)"/)[1];
-    const cx = block.match(/android:centerX="([^"]+)"/)[1];
+    const gradient = block.match(/android:centerX="([^"]+)"/);
+    if (!gradient) {
+      // A path with a plain fillColor rather than a nested gradient. Nothing in
+      // the sun/moon drawables hits this; skip rather than crash on a stray one.
+      continue;
+    }
+    const cx = gradient[1];
     const cy = block.match(/android:centerY="([^"]+)"/)[1];
     const r = block.match(/android:gradientRadius="([^"]+)"/)[1];
     const stops = [
@@ -99,6 +132,7 @@ function vectorToSvg(xml, key) {
       .join("");
     const gid = `sw-${key}-${i++}`;
     defs += `<radialGradient id="${gid}" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy}" r="${r}">${stops}</radialGradient>`;
+    const transform = groups.filter(Boolean).join(" ");
     const t = transform ? ` transform="${transform}"` : "";
     shapes += `<path d="${pathData}" fill="url(#${gid})"${t}/>`;
   }

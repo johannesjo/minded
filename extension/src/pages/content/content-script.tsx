@@ -126,6 +126,19 @@ const CURRENT_URL = window.location.href;
         const shadow = hostEl.attachShadow({ mode: "closed" });
 
         // Inject styles into shadow DOM (completely isolated from host page)
+        //
+        // KNOWN BUG, recorded here so it isn't lost: this sheet is injected into
+        // a shadow root on the *host* page, so any root-relative `url(/assets/…)`
+        // in it resolves against the host origin and 404s. Nothing here rewrites
+        // them any more - a helper used to, for the moon's `background-image`,
+        // and it went when the moon stopped being an image. The remaining
+        // offenders are the two `url(/assets/woff2/…)` font faces, so inside an
+        // intervention overlay on a blocked site both Inter and Newsreader fall
+        // back to the system stack. That is not cosmetic: Newsreader is the voice
+        // the app speaks in (see CLAUDE.md), and this is its most central
+        // surface. Fixing it means rewriting those URLs through
+        // chrome.runtime.getURL and adding the fonts to web_accessible_resources
+        // (CRXJS only auto-exposes content-script-*referenced* assets).
         const styleTag = document.createElement("style");
         styleTag.textContent = styleAsString;
         shadow.appendChild(styleTag);
