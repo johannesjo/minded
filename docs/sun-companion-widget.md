@@ -99,8 +99,12 @@ for you. That is exactly why it fits the product's soft approach where the iOS
 - **Phase logic** (`widget/SunWidgetPhase.kt`): pure, R-free, JVM-unit-tested
   (`SunWidgetPhaseTest`). Maps the local hour to a phase and computes the minutes
   to the next boundary.
-- **Assets**: the day sun is a vector disc (`res/drawable/ic_sun_widget_day.xml`
-  - a white disc warming to a faint gold rim, on the app's warm glow). The night
+- **Assets**: the day sun is a vector disc - a white disc warming to a faint gold
+  rim - in two twins that differ only in the bloom's colour:
+  `res/drawable/ic_sun_widget_day.xml` (amber) for the bare sun on the user's
+  wallpaper, and `ic_sun_widget_day_on_sky.xml` (white) for the prompt card,
+  which paints the app's own sky and so follows the in-app halo rule. See
+  `docs/sun-halo.md`. The night
   moon is the real lunar photo with a cool glow baked in
   (`res/drawable-nodpi/ic_sun_widget_night.webp`), matching the in-app `.moon`
   (the same NASA near-side disc + sheen + cool halo) rather than a gradient twin.
@@ -138,7 +142,9 @@ verify.
   lunar photo as Android and the in-app `.moon`**
   (`ic_sun_widget_night.webp`, re-encoded to the `MoonWidget` PNG image set)
   rather than a gradient twin. `systemMedium` is the prompt card (sky + quiet
-  line + the same sun or moon - see `docs/widget-prompts-concept.md`). Day/night
+  line + the same sun or moon, but passed `onOwnSky: true` so its bloom is white
+  - the card paints the app's own sky, so the in-app halo rule applies; see
+  `docs/sun-halo.md` and `docs/widget-prompts-concept.md`). Day/night
   follows the **local clock** (`SunWidgetPhase.swift`, the Swift twin of the
   Android phase logic), with the timeline pre-placing every face change so the
   card steps and the sun or moon flips on time - not the system colour scheme.

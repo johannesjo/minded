@@ -157,9 +157,11 @@
       rgba(255, 255, 255, 0) 42%
     ),
     radial-gradient(circle at 50% 56%, #ffe487 0%, #ffb24f 55%, #f2823c 100%);
-  // The one canonical sun amber (#ffd673 == 255,214,115), shared with the in-app
-  // resting companion halo and the departing hand-off (glowColorForTemp warmth
-  // 1), so the sun glows a single amber everywhere it appears.
+  // The one canonical sun amber (#ffd673 == 255,214,115). This is the sun's
+  // colour *outside* the app, where it sits over content we don't control; in
+  // app the halo is white (THE HALO RULE in sunSettle.ts). The only in-app state
+  // that wears it is the departing hand-off (glowColorForTemp warmth 1), which
+  // is mid-morph into this very disc - so the two match at the swap.
   --little-sun-shadow: 0 0 6px 1px #ffd673;
   // The little sun's halo/accent colour. Kept as bare rgb components because
   // grounding and setup surfaces reuse it at several opacities; dark mode

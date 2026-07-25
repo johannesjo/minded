@@ -163,7 +163,10 @@ class MyAppWidget : GlanceAppWidget() {
                 Spacer(GlanceModifier.height(8.dp))
             }
             Image(
-                provider = ImageProvider(drawableFor(phase)),
+                // On the card the sun stands on the app's own sky, so its halo is
+                // white (THE HALO RULE) - the amber twin is for the bare sun on
+                // the wallpaper.
+                provider = ImageProvider(drawableFor(phase, onOwnSky = true)),
                 contentDescription = context.getString(descriptionFor(phase)),
                 // Both faces of the card scale with the tile so the sun/moon fills
                 // a large card instead of floating lost in it. Beneath a line the
@@ -191,10 +194,23 @@ class MyAppWidget : GlanceAppWidget() {
         WidgetSky.NIGHT -> R.drawable.widget_sky_dark
     }
 
-    private fun drawableFor(phase: SunWidgetPhase): Int = when (phase) {
-        SunWidgetPhase.DAY -> R.drawable.ic_sun_widget_day
-        SunWidgetPhase.NIGHT -> R.drawable.ic_sun_widget_night
-    }
+    /**
+     * The sun/moon face, picked by phase *and* by what it stands on.
+     *
+     * THE HALO RULE (see sunSettle.ts in the web sources): the sun's amber bloom
+     * is only for a background we don't control. `onOwnSky` is true on the
+     * PromptCard, whose sky is the app's own - there the sun glows white, exactly
+     * as it does in app. The bare sun sits on the user's wallpaper, so it keeps
+     * the amber and stays legible on anything. The moon is the same drawable
+     * either way: it never warms, on any surface.
+     */
+    private fun drawableFor(phase: SunWidgetPhase, onOwnSky: Boolean = false): Int =
+        when (phase) {
+            SunWidgetPhase.DAY ->
+                if (onOwnSky) R.drawable.ic_sun_widget_day_on_sky
+                else R.drawable.ic_sun_widget_day
+            SunWidgetPhase.NIGHT -> R.drawable.ic_sun_widget_night
+        }
 
     private fun descriptionFor(phase: SunWidgetPhase): Int = when (phase) {
         SunWidgetPhase.DAY -> R.string.widget_sun_description_day

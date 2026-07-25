@@ -1,7 +1,17 @@
-<!-- DAY phase of the living companion sun: the warm sun by day (06–19), matched to
-     the app's resting sun - a white disc (warming to the faintest gold only at the
-     rim) wrapped in a soft warm glow. Picked by the local hour in MyAppWidget,
-     not by the dark-mode qualifier. See docs/sun-companion-widget.md. -->
+<!-- DAY phase of the living companion sun (06–19), for the sun standing on a
+     background we DON'T control: the bare widget over the user's wallpaper. A
+     white disc (warming to the faintest gold only at the rim) wrapped in a soft
+     AMBER glow, so it announces itself as a sun on any wallpaper rather than
+     reading as a pale blob.
+
+     Its twin ic_sun_widget_day_on_sky.xml is identical but for the bloom's four
+     gradient stops, which are white - that one is used wherever the app paints
+     its own sky behind the sun (the prompt card), where the in-app halo rule
+     applies. Keep the two in step; sunHaloMirror.test.ts asserts they only
+     differ in those four stops.
+
+     Picked by the local hour in MyAppWidget, not by the dark-mode qualifier.
+     See docs/sun-halo.md and docs/sun-companion-widget.md. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:aapt="http://schemas.android.com/aapt"
         android:width="108dp"

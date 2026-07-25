@@ -50,9 +50,12 @@ an unknown line falls through to the normal open.
   prompt steps by day, one wordless entry spanning the night), the two faces
   (`SunOnly`, `PromptCard`), and the `minded://sun` `widgetURL`.
 - `CompanionSun.swift` - the SwiftUI sun/moon. The day sun is drawn with radial
-  gradients ported 1:1 from the Android day vector (`ic_sun_widget_day.xml`); the
-  night moon is the `MoonWidget` image (below). It renders whichever it's told via
-  `isNight`.
+  gradients ported 1:1 from the two Android day vectors
+  (`ic_sun_widget_day{,_on_sky}.xml`); the night moon is the `MoonWidget` image
+  (below). It renders whichever it's told via `isNight`, and `onOwnSky` picks the
+  bloom's colour: white on the prompt card (the app paints its own sky there, so
+  the in-app halo rule applies) and amber on the small widget, which floats on the
+  user's wallpaper. See `docs/sun-halo.md`.
 - `SunWidgetPhase.swift` - the pure, clock-driven day/night decision (the Swift twin
   of the Android `SunWidgetPhase.kt`): the sun by day, the moon by night, by the real
   local hour - **not** the system colour scheme.
