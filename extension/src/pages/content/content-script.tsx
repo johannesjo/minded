@@ -26,7 +26,7 @@ const CURRENT_URL = window.location.href;
 // The content-script stylesheet is injected into a shadow DOM that lives on the
 // *host* page, so any root-relative `url(/assets/…)` in it resolves against the
 // host origin (https://host/assets/…) → 404. The night moon is a CSS background
-// image (Sun.scss `.moon`), and its `background` shorthand leaves the disc's
+// image (Sun.scss `.moon-face`), and its `background` shorthand leaves the disc's
 // background-color transparent, so that 404 renders the moon as a see-through
 // hole rather than the lunar photo (the "dark-mode sun is semi-transparent"
 // bug). Repoint image URLs at the extension origin instead - the same trick

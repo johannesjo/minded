@@ -115,10 +115,14 @@
   opacity: 0.03;
 }
 
+// --dur-sky, NOT --dur-gentle: the grain must dissolve on the exact beat of the
+// departing sky it dithers (coloured-wrapper.scss .is-departing). At the old
+// faster fade the grain vanished 300ms early and the tail of every departure
+// played on an undithered gradient - the banding the grain exists to prevent.
 #minded-6622-coloured-wrapper-dynamic.is-departing .background-transition-grain,
 #minded-6622-coloured-wrapper.is-departing .background-transition-grain {
   opacity: 0;
-  transition: opacity var(--dur-gentle) var(--ease-out);
+  transition: opacity var(--dur-sky) var(--ease-out);
 }
 
 .minded-6622-dark

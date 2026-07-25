@@ -35,15 +35,19 @@
   &.is-departing {
     background: transparent;
 
+    // --dur-sky is shared with the grain layer's departing fade
+    // (BackgroundTransition.scss) so the dither and the sky it protects always
+    // dissolve on the same beat - a faster grain fade left the departure's tail
+    // banding on an undithered gradient.
     &::before,
     &::after {
       opacity: 0;
-      transition: opacity 1000ms var(--ease-out);
+      transition: opacity var(--dur-sky) var(--ease-out);
     }
 
     .background-transition.background-default {
       opacity: 0;
-      transition: opacity 1000ms var(--ease-out);
+      transition: opacity var(--dur-sky) var(--ease-out);
     }
   }
 
@@ -58,7 +62,7 @@
     background: transparent;
 
     .background-transition.background-default {
-      animation: minded6622fadeIn 1000ms var(--ease-out);
+      animation: minded6622fadeIn var(--dur-sky) var(--ease-out);
     }
   }
 

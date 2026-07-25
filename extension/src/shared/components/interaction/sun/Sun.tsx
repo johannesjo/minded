@@ -50,8 +50,8 @@ import {
 import moonImageUrl from "@assets/img/moon.webp";
 
 // Warm the moon disc's texture the moment this module loads, before any moon
-// ever mounts. The `.moon` face is a `background-image` (Sun.scss); the webp
-// resolves to the same emitted asset as this import, so fetching+decoding it
+// ever mounts. The `.moon-face` layer is a `background-image` (Sun.scss); the
+// webp resolves to the same emitted asset as this import, so fetching+decoding it
 // here means the first moon intervention paints the real lunar photo. Without
 // it, the disc's very first frame is drawn before the background is ready and
 // reads as a blank white disk (just the white `::before` sheen + near-white
@@ -1831,6 +1831,12 @@ export const Sun: Component<SunProps> = (props) => {
                 ),
       }}
     >
+      {/* The two disc faces, both always mounted and crossfaded on the variant
+          class (Sun.scss) so a mid-flight theme flip morphs sun → moon instead
+          of swapping the disc in one frame. First children, so the tap dots and
+          orbit crown paint above them. */}
+      <div class="sun-face" />
+      <div class="moon-face" />
       {isTapEnabled() && (
         <div class="tap-indicator" classList={{ active: getTapCount() > 0 }}>
           <Index each={Array.from({ length: props.tapThreshold || 5 })}>
