@@ -49,7 +49,10 @@
     0 0 calc(40px * var(--glow-intensity))
       rgba(var(--glow-color), calc(0.25 * var(--glow-intensity))),
     0 0 calc(80px * var(--glow-reach) * var(--glow-intensity))
-      rgba(var(--glow-color), calc(0.1 * var(--glow-reach) * var(--glow-intensity)));
+      rgba(
+        var(--glow-color),
+        calc(0.1 * var(--glow-reach) * var(--glow-intensity))
+      );
 
   z-index: 30;
   cursor: grab;
@@ -141,23 +144,6 @@
   // limb shading and a soft transparent edge (see src/assets/img/moon.webp and
   // the render notes in git history). The genuine maria + cratered relief and the
   // cool night halo make it clearly distinct from the warm, stylised sun.
-  //
-  // Don't "simplify" this back to a CSS-gradient moon. It looks like the obvious
-  // win - the photo is the app's only photograph, it costs ~20KB and the preload
-  // below, and a pale disc with soft grey shading seems like it would say the
-  // same thing more quietly. It doesn't, and this has now been round-tripped
-  // three times: the gradient moon was the original (pre-#92); #92 replaced it
-  // with a photo and was reverted by #93; #95 landed the photo again with a
-  // *better* image precisely because the first one "read as a generic gray
-  // cratered sphere rather than the recognizable full moon", i.e. it missed the
-  // bar in the paragraph above. Rebuilt once more from gradients in b6e892a
-  // (reverted) with bigger, asymmetric maria to dodge the old version's
-  // polka-dot look: still a pale blob with smudges next to the photo, and no
-  // better at the ~42px companion size, which was the whole argument for it.
-  // The real structure is doing work that soft shading cannot fake. If it must
-  // be revisited, render the three side by side at 120/80/42px on a night
-  // backdrop first - the gap is obvious and settles it in seconds.
-  //
   // The moon's face: the lunar photo plus its sheen on one layer, fading in as
   // a unit when the variant flips (and out again at dawn) - see .moon-face's
   // sibling comment above. Kept at opacity 0 (not display: none) so the flip
@@ -219,7 +205,12 @@
       0 0 calc(13px * var(--glow-intensity))
         rgba(var(--glow-color), calc(0.55 * var(--glow-intensity))),
       0 0 calc(32px * var(--glow-reach) * var(--glow-intensity))
-        rgba(190, 210, 255, calc(0.3 * var(--glow-reach) * var(--glow-intensity)));
+        rgba(
+          190,
+          210,
+          255,
+          calc(0.3 * var(--glow-reach) * var(--glow-intensity))
+        );
 
     // The moon's resting glow is the cool/white box-shadow bloom above, floored at
     // rest by MOON_REST_GLOW (Sun.tsx) just like the sun's - the near-white disc
@@ -308,5 +299,164 @@
     &.filled {
       background: rgba(255, 255, 255, 0.85);
     }
+  }
+}
+
+// An abstract moon face - the same disc drawn in the app's own visual language,
+// with no photograph. Opt-in only: a `.minded-moon-abstract` ancestor turns it
+// on, so the shipped moon is untouched. Today only the styleguide sets it (the
+// "Moon face" comparison gallery and the sun-morph stage's toggle); nothing in
+// the app does. Either this replaces `.moon-face`'s photo above, or this block
+// goes - it is not meant to live on as a second permanent moon.
+//
+// The case for it: `moon.webp` is the app's only photograph, in a UI that is
+// otherwise gradients and line icons - a style seam on the one object that is
+// supposed to read as continuous across every surface. Its crater detail also
+// gives the eye something to *examine* on a surface whose whole job is somewhere
+// to rest. And at the sizes the disc actually renders - 80px for a phone
+// intervention (getSunSize), ~42px for the resting companion - that detail falls
+// below the pixel grid and reads as grey noise, i.e. a *duller* disc rather than
+// a richer one. It also costs the module-load preload in Sun.tsx (#246) and
+// ~20KB. (The widgets keep shipping the photo as a bitmap either way -
+// ic_sun_widget_night.webp - but gradients are the one shape language the
+// Android vector and the SwiftUI widget could actually share with the web, the
+// way ic_sun_widget_day.xml already shares the sun's.)
+//
+// What it must not lose (see `.moon-face` above): the moon has to read
+// unmistakably as the moon, never a dimmer sun, or the evening cue it carries
+// says nothing. What makes it recognisable at a glance is the maria silhouette -
+// the "man in the moon" - not the craters. So the classic dark fields stay, as
+// low-contrast tonal pools (~7% luminance, no high-frequency detail), and the
+// light pools up-left while the limb cools and dims toward the lower-right rim -
+// the same shading the photo carries. Anything fainter than this stopped reading
+// as a moon at all and just looked like a smudged pearl.
+//
+// The maria have to be big, overlapping and ASYMMETRIC. Three tidy dots - a
+// pair up top and one below - is the first thing you reach for and it is a trap:
+// at 42px it stops being a moon and becomes a smiley face. What the eye actually
+// recognises is the real near-side's lopsided shading, the left limb and upper
+// left broadly darker (Procellarum running into Imbrium) against a second,
+// smaller group right of centre. So these are wide fields that bleed into each
+// other, not features, and none of them is placed to mirror another.
+//
+// Layer order below (topmost first): Oceanus Procellarum (the tall field down
+// the left limb), Imbrium (upper left, running into it), Serenitatis (right of
+// centre), Tranquillitatis (below it, trailing down-right), the Nubium/Humorum
+// band across the lower middle, Fecunditatis (lower right), Crisium (the small
+// isolated oval on the right limb), then the shaded body underneath. Every
+// falloff is wide and soft on purpose: a crisp edge anywhere here immediately
+// starts reading as a crater again.
+.minded-moon-abstract .minded-sun .moon-face {
+  background:
+    radial-gradient(
+      ellipse 25% 38% at 21% 45%,
+      rgba(168, 180, 203, 0.3) 0%,
+      rgba(168, 180, 203, 0) 78%
+    ),
+    radial-gradient(
+      ellipse 24% 21% at 37% 27%,
+      rgba(168, 180, 203, 0.34) 0%,
+      rgba(168, 180, 203, 0) 76%
+    ),
+    radial-gradient(
+      ellipse 15% 14% at 59% 30%,
+      rgba(168, 180, 203, 0.3) 0%,
+      rgba(168, 180, 203, 0) 78%
+    ),
+    radial-gradient(
+      ellipse 17% 16% at 67% 43%,
+      rgba(168, 180, 203, 0.28) 0%,
+      rgba(168, 180, 203, 0) 78%
+    ),
+    radial-gradient(
+      ellipse 27% 13% at 39% 65%,
+      rgba(168, 180, 203, 0.24) 0%,
+      rgba(168, 180, 203, 0) 80%
+    ),
+    radial-gradient(
+      ellipse 11% 13% at 75% 57%,
+      rgba(168, 180, 203, 0.22) 0%,
+      rgba(168, 180, 203, 0) 78%
+    ),
+    radial-gradient(
+      ellipse 7% 6% at 80% 24%,
+      rgba(168, 180, 203, 0.26) 0%,
+      rgba(168, 180, 203, 0) 74%
+    ),
+    radial-gradient(
+      circle at 38% 32%,
+      #f7f9fd 0%,
+      #e6ebf4 40%,
+      #ced6e6 76%,
+      #b6bfd4 100%
+    );
+
+  // The photo's sheen exists to stop a flat photograph reading as a rock; here
+  // the body gradient already pools the light, and screening over it would only
+  // wash the maria back out.
+  &::before {
+    content: none;
+  }
+}
+
+// The moon we had BEFORE the photo, lifted verbatim from 660d89a6^ so the
+// comparison has a control. Same opt-in shape as the abstract face above
+// (`.legacy-moon` ancestor, styleguide only) - it is history on display, not a
+// variant anything may use.
+//
+// It belongs in the gallery because this decision has already been made twice
+// and the archaeology is the most useful thing on the page: the gradient moon
+// was the original; #92 replaced it with a photo and was reverted by #93; #95
+// landed a photo again with a *better* image, explicitly because the first one
+// "read as a generic gray cratered sphere rather than the recognizable full
+// moon" - the bar the `.moon-face` comment sets. So anyone proposing a
+// gradient moon (this session included) is re-opening a closed question, and
+// should have to look at the thing that lost, at real size, first.
+.legacy-moon .minded-sun .moon-face {
+  background:
+    // A shaded lower-right limb, so the disc reads as a lit sphere.
+    radial-gradient(
+        circle at 74% 78%,
+        rgba(90, 104, 140, 0.55) 0%,
+        rgba(120, 135, 172, 0.22) 36%,
+        transparent 62%
+      ),
+    // The body: a bright top-left sheen easing out to a cool silver rim.
+    radial-gradient(
+        circle at 33% 28%,
+        #ffffff 0 12%,
+        #eef2ff 40%,
+        #c5cfe6 74%,
+        #9aa8cc 100%
+      );
+
+  // The old maria: four small hard-edged circles. This is the tell - at
+  // companion size they stop reading as surface and start reading as polka
+  // dots, which is what the abstract face above tries to fix with big
+  // overlapping asymmetric fields instead.
+  &::before {
+    content: "";
+    mix-blend-mode: normal;
+    background:
+      radial-gradient(
+          circle at 60% 42%,
+          rgba(120, 134, 170, 0.28) 0 7%,
+          transparent 11%
+        ),
+      radial-gradient(
+          circle at 44% 63%,
+          rgba(120, 134, 170, 0.22) 0 9%,
+          transparent 13%
+        ),
+      radial-gradient(
+          circle at 67% 67%,
+          rgba(120, 134, 170, 0.16) 0 5%,
+          transparent 8%
+        ),
+      radial-gradient(
+          circle at 38% 40%,
+          rgba(120, 134, 170, 0.14) 0 4%,
+          transparent 7%
+        );
   }
 }
