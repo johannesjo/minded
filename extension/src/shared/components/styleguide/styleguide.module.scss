@@ -372,65 +372,6 @@
   backdrop-filter: blur(8px);
 }
 
-// Moon-face comparison (MoonFaceGallery): the three faces across, the sizes the
-// disc really renders down. A matrix rather than three cards because the
-// styleguide caps at 1100px - three cards wrap, and a comparison you have to
-// scroll between is not a comparison. The backdrop is a fixed night sky in
-// *either* theme (a moon only reads against a dark sky), so this one gallery
-// deliberately doesn't follow the dark-mode toggle the way .widgetCard does.
-.moonFaceMatrix {
-  display: grid;
-  // Size-label column + one column per face, each wide enough for the 120px disc.
-  grid-template-columns: auto repeat(3, 136px);
-  align-items: center;
-  justify-items: center;
-  gap: 12px 8px;
-  width: fit-content;
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 20px 24px 24px;
-  border-radius: var(--border-radius);
-  background: linear-gradient(to bottom, #101830, #1c2542);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: var(--fz-s);
-  text-align: center;
-}
-
-.moonFaceHead {
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.04em;
-  padding-bottom: 4px;
-}
-
-.moonFaceSizeLabel {
-  justify-self: end;
-  text-align: right;
-  padding-right: 10px;
-  white-space: nowrap;
-}
-
-// Fixed to the tallest disc so every row keeps its height and the columns stay
-// aligned as the discs shrink down the matrix.
-.moonFaceCell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 136px;
-
-  // The discs here are stills, not the draggable sun.
-  :global(.minded-sun) {
-    cursor: default;
-  }
-}
-
-.moonFaceNote {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  letter-spacing: 0;
-  color: rgba(255, 255, 255, 0.45);
-}
-
 // Android sun-widget phase gallery. The card backdrop is the theme card colour,
 // so toggling dark mode previews the discs on a dark wallpaper.
 .widgetGrid {

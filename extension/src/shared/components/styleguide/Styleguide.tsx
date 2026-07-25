@@ -64,7 +64,6 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 
 // @ts-ignore
 import styles from "./styleguide.module.scss";
-import MoonFaceGallery from "./MoonFaceGallery";
 import SunWidgetGallery from "./SunWidgetGallery";
 import SunWidgetSkyGallery from "./SunWidgetSkyGallery";
 
@@ -153,7 +152,6 @@ const TOC = [
   { id: "indicators", label: "Indicators" },
   { id: "icons", label: "Icons" },
   { id: "interactions", label: "Interactions" },
-  { id: "moon-face", label: "Moon face" },
   { id: "sun-widget", label: "Sun widget" },
 ];
 
@@ -666,38 +664,6 @@ const Styleguide = (): JSX.Element => {
         </Subsection>
       </Section>
 
-      <Section id="moon-face" title="Moon face">
-        <p class={styles.muted}>
-          The night disc at the three sizes it actually renders, on a night
-          backdrop (a moon can only be judged against a dark sky). Left to
-          right: the gradient moon this app started with, the lunar photo that
-          replaced it and ships today (<code>assets/img/moon.webp</code>), and
-          an abstract face built from gradients alone - the lopsided maria
-          shading that makes a moon recognisable at a glance, with no crater
-          detail.
-        </p>
-        <p class={styles.muted}>
-          Worth knowing before judging: this question is already closed twice
-          over. The gradient moon was the original; #92 replaced it with a photo
-          and was reverted by #93; #95 landed a photo again with a{" "}
-          <em>better</em> image, explicitly because the first one &ldquo;read as
-          a generic gray cratered sphere rather than the recognizable full
-          moon&rdquo; - the bar <code>Sun.scss</code> sets for the moon. The
-          abstract face is a third attempt that tries to fix the old
-          version&apos;s polka-dot maria with big overlapping asymmetric fields.
-          The interesting column is 42px, the resting companion, which is where
-          the disc spends most of its life.
-        </p>
-        <MoonFaceGallery />
-        <p class={styles.muted}>
-          Both alternatives are opt-in behind an ancestor class (
-          <code>.legacy-moon</code>, <code>.minded-moon-abstract</code>) that
-          only this page sets, so the app itself is unchanged. To feel the
-          abstract face through the morphs rather than at rest, open the sun
-          stage in Interactions above and toggle <code>face</code>.
-        </p>
-      </Section>
-
       <Section id="sun-widget" title="Sun widget (Android)">
         <p class={styles.muted}>
           The home-screen companion sun. The floating disc is the warm sun by
@@ -927,12 +893,6 @@ const SunMorphHarness = (): JSX.Element => {
   // Toggle the sun/moon variant so the dark-mode moon's morphs (esp. the
   // departing → interactive corner-arrival reveal) can be felt and tuned.
   const [variant, setVariant] = createSignal<"sun" | "moon">("sun");
-  // Swap the moon's face between the shipped photo and the abstract gradient
-  // one (Sun.scss `.minded-moon-abstract`). The static gallery above compares
-  // them at rest; what actually decides it is how each one holds up *through*
-  // the morphs - the corner arrival, the breath, the sun↔moon crossfade - which
-  // is what this stage exists for.
-  const [isAbstractMoon, setIsAbstractMoon] = createSignal(false);
   // Mirror the real flow: the resting disc tucks just beneath the measured
   // choices block rather than sitting at a fixed ratio.
   const [restingAnchor, setRestingAnchor] = createSignal<{
@@ -997,10 +957,7 @@ const SunMorphHarness = (): JSX.Element => {
       </Btn>
 
       <Show when={isOpen()}>
-        <div
-          class={styles.sunStage}
-          classList={{ "minded-moon-abstract": isAbstractMoon() }}
-        >
+        <div class={styles.sunStage}>
           <BackgroundTransition isSunGradientAttached={true} />
 
           <Show when={phase() === "breathing"}>
@@ -1066,14 +1023,6 @@ const SunMorphHarness = (): JSX.Element => {
               onClick={() => setVariant((v) => (v === "moon" ? "sun" : "moon"))}
             >
               {variant()}
-            </Btn>
-            <Btn
-              variant="toggle"
-              small
-              selected={isAbstractMoon()}
-              onClick={() => setIsAbstractMoon((v) => !v)}
-            >
-              face: {isAbstractMoon() ? "abstract" : "photo"}
             </Btn>
             <Btn outline onClick={() => setIsOpen(false)}>
               close
