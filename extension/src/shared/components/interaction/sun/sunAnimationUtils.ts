@@ -308,12 +308,14 @@ export function calculateDragColorTemperature(
 }
 
 // The single glow axis: one signed colour temperature in [-1, +1] maps the
-// whole sun's halo cool ↔ white ↔ amber, so every state (up-drag cooling,
-// resting day companion, departing hand-off) reads off one scale instead of
+// whole sun's halo cool ↔ white ↔ amber, so every state (up-drag cooling, the
+// white in-app rest, the departing hand-off) reads off one scale instead of
 // swapping between separate box-shadow declarations. White is the neutral
-// midpoint; the negative half cools toward night, the positive half warms to
-// the one canonical amber shared with the resting companion and the Little Sun
-// widget hand-off.
+// midpoint - and where every in-app state sits, since the sun's body may be warm
+// but the light it casts is white (THE HALO RULE in sunSettle.ts). The negative
+// half cools toward night (an up-drag pulls it there); the positive half warms
+// to the one canonical amber, used *only* by the departing hand-off as the sun
+// becomes the Little Sun.
 export const GLOW_WHITE_RGB: readonly [number, number, number] = [
   255, 255, 255,
 ];

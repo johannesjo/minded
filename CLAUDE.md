@@ -233,7 +233,9 @@ Path aliases change based on build mode to load platform-specific code.
   size and position. The cool half of the glow axis is untouched - that still
   carries the up-drag/let-go read, and the moon never warms at all.
 - Full reasoning and the guard tests: the `THE HALO RULE` block at the top of
-  `src/shared/components/interaction/sun/sunSettle.ts`.
+  `src/shared/components/interaction/sun/sunSettle.ts`. `docs/sun-halo.md` maps
+  what the sun looks like on *every* surface (day, night, and the Little
+  Sun/widgets outside the app) - read it before changing any sun's appearance.
 
 **Minimalism - remove before you add:**
 - Default to the simplest UI that works: less visual chrome, fewer controls,

@@ -34,8 +34,12 @@ import com.minded.minded.util.isDarkModeNow
 private val SUN_COLOR = Color.White
 private val SUN_TEXT_COLOR = Color(0xFF956969)
 // The one canonical sun amber (#ffd673 == 255,214,115), shared with the web
-// little sun's --little-sun-shadow and the in-app sun's resting/departing glow,
-// so the sun glows a single amber everywhere it appears.
+// little sun's --little-sun-shadow. This amber is the sun's colour *outside* the
+// app - here, over arbitrary app content, and on the home-screen widgets - where
+// it has to announce itself against a background we don't control. In app the
+// halo is white; the only state that wears this amber is the departing hand-off,
+// which is mid-morph into this disc, so the two match at the swap. See THE HALO
+// RULE in extension/src/shared/components/interaction/sun/sunSettle.ts.
 internal val GLOW_COLOR = Color(0xFFFFD673)
 
 // At night the companion is the moon, not a warm sun - so the little sun

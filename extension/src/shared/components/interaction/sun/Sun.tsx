@@ -1648,12 +1648,12 @@ export const Sun: Component<SunProps> = (props) => {
   // here rather than on routine controls.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
-  // The sun carries a warm halo at all times - the disc's box-shadow glow - so the
-  // idle sun glows gently and, crucially, the glow never drops out while it's being
-  // dragged or tapped (both reset getGlowIntensity toward 0). We floor at this
-  // baseline rather than gate on drag: the drag ramp (0..1) is dimmer than the rest
-  // glow anyway, so letting it take over would only make the sun fade the moment
-  // you touch it.
+  // The sun carries a halo at all times - the disc's box-shadow glow, white in
+  // app (THE HALO RULE in sunSettle.ts) - so the idle sun glows gently and,
+  // crucially, the glow never drops out while it's being dragged or tapped (both
+  // reset getGlowIntensity toward 0). We floor at this baseline rather than gate
+  // on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so letting
+  // it take over would only make the sun fade the moment you touch it.
   //
   // Held a notch below the hover glow (which still blooms to COMPANION_HOVER_GLOW
   // on hover, so hover stays a visible lift). This is just the rest *brightness*;
