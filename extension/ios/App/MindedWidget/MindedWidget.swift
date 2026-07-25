@@ -142,7 +142,10 @@ private struct PromptCard: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
             }
-            CompanionSun(isNight: entry.phase.isNight)
+            // On our own sky the sun's halo is white, not amber (THE HALO RULE -
+            // see CompanionSun's `onOwnSky`); the amber is for the small widget,
+            // which floats on the user's wallpaper.
+            CompanionSun(isNight: entry.phase.isNight, onOwnSky: true)
                 .frame(width: 54, height: 54)
         }
         .padding(8)

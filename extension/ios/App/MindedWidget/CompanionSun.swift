@@ -4,11 +4,13 @@
 //
 //  The home-screen / lock-screen companion sun, rendered in SwiftUI.
 //
-//  This is the WidgetKit twin of the Android `ic_sun_widget` assets. The two
-//  phases match the app's resting sun:
+//  This is the WidgetKit twin of the Android `ic_sun_widget` assets:
 //    - Day (06–19): a near-white disc warming to the faintest gold at the rim,
-//      wrapped in a soft warm bloom. Drawn here with SwiftUI gradients, ported
-//      one-to-one from the Android day vector (`res/drawable/ic_sun_widget_day.xml`).
+//      wrapped in a soft bloom - white when it stands on the app's own sky (the
+//      prompt card, matching the in-app resting sun), amber when it floats on the
+//      user's wallpaper (the small widget). See `onOwnSky` below and THE HALO
+//      RULE. Drawn here with SwiftUI gradients, ported one-to-one from the two
+//      Android day vectors (`res/drawable/ic_sun_widget_day{,_on_sky}.xml`).
 //    - Night: the moon. This is the *same* lunar photo the Android widget and the
 //      in-app `.moon` use (`res/drawable-nodpi/ic_sun_widget_night.webp`, re-encoded
 //      as the `MoonWidget` image set) - the real near-side disc with its cool sheen
@@ -31,6 +33,16 @@ private func rgb(_ r: Double, _ g: Double, _ b: Double, _ a: Double = 1) -> Colo
 
 struct CompanionSun: View {
     let isNight: Bool
+    /// True when this sun stands on the app's own sky (the prompt card), false
+    /// when it floats on the user's wallpaper (the small, transparent widget).
+    ///
+    /// THE HALO RULE (see sunSettle.ts in the web sources): the sun's body may be
+    /// warm, but the light it casts is white on every surface we control. The
+    /// amber bloom exists only for a background we DON'T control - the wallpaper
+    /// here, arbitrary app content for the Little Sun - where the sun has to
+    /// announce itself. Behind the card is our own sky, so there it glows white,
+    /// exactly as it does in app. The moon ignores this: it never warms.
+    var onOwnSky: Bool = false
 
     var body: some View {
         GeometryReader { geo in
@@ -62,14 +74,23 @@ struct CompanionSun: View {
 
     // The day sun's soft bloom / halo: gentle, low-alpha, fading to nothing at the
     // rim. Spans the full tile (Android gradientRadius 53 over a 108 viewport ≈ the
-    // whole circle).
+    // whole circle). Amber on the wallpaper, white on our own sky - same stops and
+    // same alpha either way, so only the colour changes (see `onOwnSky` above and
+    // the Android twins ic_sun_widget_day{,_on_sky}.xml).
     private func glow(side: CGFloat) -> some View {
-        let stops: [Gradient.Stop] = [
-            .init(color: rgb(255, 216, 119, 0), location: 0.00),
-            .init(color: rgb(255, 216, 119, 0), location: 0.56),
-            .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
-            .init(color: rgb(255, 203, 90, 0), location: 1.00),
-        ]
+        let stops: [Gradient.Stop] = onOwnSky
+            ? [
+                .init(color: rgb(255, 255, 255, 0), location: 0.00),
+                .init(color: rgb(255, 255, 255, 0), location: 0.56),
+                .init(color: rgb(255, 255, 255, 0.28), location: 0.74),
+                .init(color: rgb(255, 255, 255, 0), location: 1.00),
+            ]
+            : [
+                .init(color: rgb(255, 216, 119, 0), location: 0.00),
+                .init(color: rgb(255, 216, 119, 0), location: 0.56),
+                .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
+                .init(color: rgb(255, 203, 90, 0), location: 1.00),
+            ]
         return Circle()
             .fill(
                 RadialGradient(

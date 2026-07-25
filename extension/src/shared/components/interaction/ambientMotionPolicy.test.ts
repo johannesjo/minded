@@ -19,9 +19,6 @@ describe("calm motion policy", () => {
     );
     const routeStyles = readSource("src/shared/RouteCmp.module.scss");
     const routeComponent = readSource("src/shared/RouteCmp.tsx");
-    const sunSettle = readSource(
-      "src/shared/components/interaction/sun/sunSettle.ts",
-    );
     const sunGlow = readSource(
       "src/shared/components/interaction/sun/sunAnimationUtils.ts",
     );
@@ -43,11 +40,11 @@ describe("calm motion policy", () => {
       /&\.isCompanion :global\(\.minded-sun:not\(\.moon\)\)\s*\{[\s\S]*--minded-sun-face-edge:/,
     );
     expect(sunStyles).toMatch(/@property --minded-sun-face-edge/);
-    // ...but its amber glow now rides the one unified glow axis: the companion
-    // settle opts into warmth 1 (statically - no breath), and warmth 1 maps to
-    // the single canonical amber. No separate amber box-shadow declaration.
+    // ...and no amber halo anywhere in the shell: the companion's warmth is the
+    // disc rim above, never the light it casts (THE HALO RULE in sunSettle.ts;
+    // the settle-level guard lives in sunSettle.test.ts). Amber survives only on
+    // the glow axis itself, for the departing hand-off to the Little Sun.
     expect(routeStyles).not.toMatch(/rgba\(255, 214, 115,/);
-    expect(sunSettle).toMatch(/isCompanion:\s*true[\s\S]*warmth:\s*1/);
     expect(sunGlow).toMatch(/GLOW_AMBER_RGB[\s\S]*255,\s*214,\s*115/);
     expect(routeComponent).not.toContain("styles.isIntervention");
     expect(onboardingSunLayer).not.toContain("styles.isLeaving");

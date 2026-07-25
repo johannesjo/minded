@@ -65,9 +65,10 @@
   // that fill now rides the registered --minded-sun-face-edge colour axis
   // (Sun.scss .sun-face), so the rim *interpolates* between this warm rest and
   // the interaction's flat white instead of swapping gradient declarations,
-  // exactly like the glow. The amber glow itself comes from the companion
-  // settle's `warmth`. Daytime sun only - the moon keeps its own cool disc and
-  // halo.
+  // exactly like the glow. This rim is the ONLY warmth the resting companion
+  // carries: its halo is white like every other in-app state, because the sun's
+  // body may be warm while the light it casts is not (see THE HALO RULE in
+  // sunSettle.ts). Daytime sun only - the moon keeps its own cool disc and halo.
   &.isCompanion :global(.minded-sun:not(.moon)) {
     --minded-sun-face-edge: #fff5dc;
   }

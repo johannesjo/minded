@@ -1,0 +1,57 @@
+<!-- DAY phase of the companion sun, drawn ON THE APP'S OWN SKY (the PromptCard
+     face, and the widget-picker still that mirrors it). Identical to
+     ic_sun_widget_day except the bloom is WHITE rather than amber.
+
+     THE HALO RULE (extension/src/shared/components/interaction/sun/sunSettle.ts):
+     the sun's body may be warm, but the light it casts is white on every surface
+     we control. The amber bloom exists only for the sun standing on a background
+     we DON'T control - the bare sun on the user's wallpaper (ic_sun_widget_day)
+     and the Little Sun over arbitrary app content - where it must announce itself
+     as a sun. Behind this card is our own sky, the same one the app paints, so
+     the sun here glows exactly as it does in app: white.
+
+     The disc keeps its faint gold rim - that is the body, not the halo, and the
+     in-app companion carries the same #fff5dc rim (its face-edge colour axis).
+
+     Keep the two files in step: only the bloom's four gradient stops differ.
+     The night moon needs no twin - it never warms on any surface. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:aapt="http://schemas.android.com/aapt"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+
+    <!-- Soft white glow - the in-app halo, at the same gentle alpha (0x47 ≈ 0.28)
+         and the same stops as the amber twin, so only the colour changes -->
+    <path android:pathData="M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="53">
+                <item android:offset="0.0" android:color="#00FFFFFF" />
+                <item android:offset="0.56" android:color="#00FFFFFF" />
+                <item android:offset="0.74" android:color="#47FFFFFF" />
+                <item android:offset="1.0" android:color="#00FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The white disc, warming to the faintest gold only at the very rim -
+         identical to the amber twin; the body may be warm, the light is not -->
+    <path android:pathData="M54,54 m-36,0 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                    android:type="radial"
+                    android:centerX="54"
+                    android:centerY="54"
+                    android:gradientRadius="36">
+                <item android:offset="0.0" android:color="#FFFFFFFF" />
+                <item android:offset="0.84" android:color="#FFFFFFFF" />
+                <item android:offset="1.0" android:color="#FFFFF5DC" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

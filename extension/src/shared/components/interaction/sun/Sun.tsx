@@ -184,10 +184,11 @@ export interface SunSettle {
   discPx?: number;
   /**
    * Halo warmth on the single glow axis (0 = white, 1 = the canonical amber).
-   * The resting day companion and the departing hand-off both settle at 1 so
-   * the sun glows the one amber it shares with the Little Sun widget. Omitted =
-   * white. Ignored for the moon, which never warms (it reads the cool half of
-   * the axis instead).
+   * Omitted = white, which is what every in-app state uses: the sun's body may
+   * be warm, but the light it casts is white (see THE HALO RULE in sunSettle.ts).
+   * Only the departing hand-off sets 1, warming to the one amber it shares with
+   * the Little Sun as it becomes it. Ignored for the moon, which never warms (it
+   * reads the cool half of the axis instead).
    */
   warmth?: number;
   /**
@@ -1647,12 +1648,12 @@ export const Sun: Component<SunProps> = (props) => {
   // here rather than on routine controls.
   const COMPANION_HOVER_SCALE = 1.06;
   const COMPANION_HOVER_GLOW = 1.8;
-  // The sun carries a warm halo at all times - the disc's box-shadow glow - so the
-  // idle sun glows gently and, crucially, the glow never drops out while it's being
-  // dragged or tapped (both reset getGlowIntensity toward 0). We floor at this
-  // baseline rather than gate on drag: the drag ramp (0..1) is dimmer than the rest
-  // glow anyway, so letting it take over would only make the sun fade the moment
-  // you touch it.
+  // The sun carries a halo at all times - the disc's box-shadow glow, white in
+  // app (THE HALO RULE in sunSettle.ts) - so the idle sun glows gently and,
+  // crucially, the glow never drops out while it's being dragged or tapped (both
+  // reset getGlowIntensity toward 0). We floor at this baseline rather than gate
+  // on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so letting
+  // it take over would only make the sun fade the moment you touch it.
   //
   // Held a notch below the hover glow (which still blooms to COMPANION_HOVER_GLOW
   // on hover, so hover stays a visible lift). This is just the rest *brightness*;
@@ -1666,7 +1667,7 @@ export const Sun: Component<SunProps> = (props) => {
   // plumes ~100px up); instead the resting daytime companion gets a snug 2-layer
   // halo with no far plume - see `.isCompanion .minded-sun:not(.moon)` in
   // RouteCmp.module.scss. With that tight shape the clip below removes almost
-  // nothing, so 1.25 keeps a warm, symmetric rest halo that stays level.
+  // nothing, so 1.25 keeps a soft, symmetric rest halo that stays level.
   const COMPANION_REST_GLOW = 1.25;
   // The moon carries a resting glow too, the same way the sun does. Its disc is a
   // textured lunar photo (not the old bright gradient orb), so a faint halo reads as
@@ -1794,8 +1795,8 @@ export const Sun: Component<SunProps> = (props) => {
         width: `${sunSize.size}px`,
         height: `${sunSize.size}px`,
         // One glow axis drives the colour: cool ↔ white ↔ amber (see
-        // getSunGlowColor). A settle's warmth (companion rest / departing
-        // hand-off) warms it; an up-drag cools it. The moon stays cool.
+        // getSunGlowColor). Every in-app state sits at white; only the departing
+        // hand-off's warmth warms it, and an up-drag cools it. The moon stays cool.
         "--glow-color": getSunGlowColor(),
         // Halo spread: the resting companion tightens it (reach < 1) so its far
         // plume can't be clipped low on the bar; every other state rides the
