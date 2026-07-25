@@ -9,8 +9,14 @@ import {
   restingSunAnchorFromRect,
   SUN_REST_SETTLE,
   sunBreatheSettle,
+  sunCompanionSettle,
+  sunDailyQuestionsSuccessSettle,
+  sunDepartSettle,
   sunDepartSettleAt,
+  sunInteractiveSettle,
   sunRestingSettle,
+  sunSurfSettle,
+  type SunPhase,
 } from "./sunSettle";
 
 describe("getSunSettleForPhase", () => {
@@ -104,6 +110,61 @@ describe("sunDepartSettleAt", () => {
     expect(settle.warmth).toBe(1);
     expect(settle.reach).toBe(SNUG_GLOW_REACH);
     expect(settle.glowIntensity).toBe(DEPART_GLOW_INTENSITY);
+  });
+});
+
+// THE HALO RULE (see the block comment atop sunSettle.ts): inside minded the sun
+// always glows white. Amber belongs to the Little Sun - the sun as it lives
+// outside our own surfaces - so only the departing hand-off, which *becomes*
+// that Little Sun, may warm. These guard the rule against an amber halo quietly
+// creeping back onto an in-app state.
+describe("halo warmth", () => {
+  const IN_APP_PHASES: SunPhase[] = [
+    "companion",
+    "interactive",
+    "breathing",
+    "surfing",
+    "resting",
+    "dailyQuestions",
+    "dailyQuestionsSuccess",
+  ];
+
+  it.each(IN_APP_PHASES)("keeps the %s sun's halo white", (phase) => {
+    // `interactive` and `dailyQuestions` resolve to null / the companion via the
+    // live flow rather than this pure map; the ones that do return a settle here
+    // must carry no warmth at all.
+    expect(getSunSettleForPhase(phase)?.warmth ?? 0).toBe(0);
+  });
+
+  it("keeps every directly-built in-app settle white too", () => {
+    // The measured/anchored variants the live flow builds bypass the phase map.
+    const inAppSettles = [
+      sunCompanionSettle(44),
+      sunInteractiveSettle({ x: 200, y: 300 }),
+      sunBreatheSettle(),
+      sunSurfSettle(),
+      sunRestingSettle({ x: 200, y: 700 }),
+      sunDailyQuestionsSuccessSettle(),
+    ];
+    for (const settle of inAppSettles) {
+      expect(settle.warmth ?? 0).toBe(0);
+    }
+  });
+
+  it("warms only the hand-off that becomes the Little Sun", () => {
+    // Both departing shapes (fixed web corner, measured Android bubble) match the
+    // Little Sun's amber, because there the sun sits over content we don't own.
+    expect(sunDepartSettle().warmth).toBe(1);
+    expect(sunDepartSettleAt({ x: 0.1, y: 0.9 }).warmth).toBe(1);
+  });
+
+  it("leaves the companion→interaction morph a pure size and position change", () => {
+    // The everyday lift off the bottom bar must not double as a colour change:
+    // one sun, one light. (Reach still eases snug→broad - that is clipping, not
+    // colour; see the companion settle's comment.)
+    const companion = sunCompanionSettle(44);
+    const interactive = sunInteractiveSettle({ x: 200, y: 300 });
+    expect(companion.warmth ?? 0).toBe(interactive.warmth ?? 0);
   });
 });
 

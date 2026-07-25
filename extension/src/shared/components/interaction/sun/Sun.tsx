@@ -184,10 +184,11 @@ export interface SunSettle {
   discPx?: number;
   /**
    * Halo warmth on the single glow axis (0 = white, 1 = the canonical amber).
-   * The resting day companion and the departing hand-off both settle at 1 so
-   * the sun glows the one amber it shares with the Little Sun widget. Omitted =
-   * white. Ignored for the moon, which never warms (it reads the cool half of
-   * the axis instead).
+   * Omitted = white, which is what every in-app state uses: the sun's body may
+   * be warm, but the light it casts is white (see THE HALO RULE in sunSettle.ts).
+   * Only the departing hand-off sets 1, warming to the one amber it shares with
+   * the Little Sun as it becomes it. Ignored for the moon, which never warms (it
+   * reads the cool half of the axis instead).
    */
   warmth?: number;
   /**

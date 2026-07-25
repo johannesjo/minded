@@ -214,6 +214,27 @@ Path aliases change based on build mode to load platform-specific code.
   weight 400 - safe against Android subpixel hairline thinning even at small
   sizes.
 
+**The sun's halo - the body may be warm, the light it casts is white:**
+- Amber is **not** a day/night signal and **not** a role badge. On every one of
+  minded's own surfaces - companion rest, intervention, breath, urge-surfing,
+  the intent/time choices, the daily questions and their closing bloom - the
+  sun's halo is white (`warmth` omitted on the settle). The warm, sunlit read
+  comes from the disc *itself*: the `--minded-sun-face-edge` rim and the thin
+  `--sun-shadow` edge ring.
+- The one exception is the sun **outside** the app: the Little Sun overlay
+  (which sits over arbitrary app content) and the home-screen widgets (which sit
+  on the user's wallpaper). There it must announce itself against a background
+  we don't control, so it wears the one canonical amber `#ffd673` - and the
+  departing hand-off warms to that amber *as it becomes* the Little Sun. The
+  warming is the hand-off, not a state the in-app sun ever holds.
+- Why: colour that changes with role turns the one continuous sun into a set of
+  differently-coloured suns, and it made the everyday companion→intervention
+  lift a colour change nobody asked for. White both ways keeps that morph pure
+  size and position. The cool half of the glow axis is untouched - that still
+  carries the up-drag/let-go read, and the moon never warms at all.
+- Full reasoning and the guard tests: the `THE HALO RULE` block at the top of
+  `src/shared/components/interaction/sun/sunSettle.ts`.
+
 **Minimalism - remove before you add:**
 - Default to the simplest UI that works: less visual chrome, fewer controls,
   fewer words. Every element must earn its place; when in doubt, leave it out.

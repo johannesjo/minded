@@ -10,6 +10,35 @@ import {
  * Tune the morph here.
  */
 
+/**
+ * THE HALO RULE - when the sun's glow is amber, and when it isn't.
+ *
+ * **The sun's body may be warm; the light it casts is white.** Amber is *not* a
+ * day/night signal and *not* a role badge. Inside minded's own surfaces the sun
+ * always glows white - companion rest, interaction, breath, urge-surfing, the
+ * intent/time choices, the daily-questions carry and its closing bloom. The
+ * warm read comes from the disc itself (the `--minded-sun-face-edge` rim the
+ * resting companion warms to `#fff5dc`, and the thin `--sun-shadow` edge ring),
+ * never from an orange halo around it.
+ *
+ * The one exception is the sun *outside* minded: the Little Sun overlay, which
+ * sits over arbitrary app content (and the home-screen widgets, which sit on the
+ * user's wallpaper). There it has to announce itself as a sun against a
+ * background we don't control, so it wears the one canonical amber - and the
+ * departing hand-off warms to that amber as it *becomes* the Little Sun. The
+ * warming is the hand-off, not a state the in-app sun ever holds.
+ *
+ * Why: colour that changes with role turns the one continuous sun into a set of
+ * differently-coloured suns, and it makes the everyday companion↔intervention
+ * morph a colour change the user never asked for. Keeping the in-app halo white
+ * means that morph is pure size and position - one object, one light. It also
+ * keeps the halo's *only* remaining colour meaning intact: the cool half of the
+ * axis, which an upward drag pulls the glow toward as the sun is let go.
+ *
+ * (The cool end is untouched by this rule - see `glowColorForTemp`. The moon
+ * never warms at all.)
+ */
+
 // "companion" is the idle home in the app shell (top-bar rest); the rest are the
 // in-intervention phases. The shell sun and the interaction drive this same union
 // through the sunStore, so one disc covers every state.
@@ -285,13 +314,20 @@ export const sunCompanionSettle = (
   // on the bottom-bar band while still sitting comfortably below the 0.66 that
   // would nearly fill the band and crowd the icons either side.
   scale: 0.52,
-  // The resting day companion glows the one canonical amber (warmth 1) in the
-  // shared *snug* halo (SNUG_GLOW_REACH): a low reach collapses the broad
-  // interaction bloom's far plume (which, this low on the bar, would be clipped
-  // below and pull the disc's visible mass upward off the icon line - #106).
-  // Both ride the single glow axis, so lifting into an intervention morphs
-  // warmth→0 and reach→broad continuously rather than swapping halos.
-  warmth: 1,
+  // No `warmth` - the resting companion glows white like every other in-app
+  // state (see THE HALO RULE at the top of this file). It used to settle at
+  // warmth 1, which made the everyday lift into an intervention a colour change
+  // as well as a morph; white both ways keeps that morph pure size + position.
+  // The companion still reads sunlit through its warm disc rim
+  // (`--minded-sun-face-edge`, RouteCmp.module.scss) - the body is warm, the
+  // light it casts is not.
+  //
+  // It does keep the shared *snug* halo (SNUG_GLOW_REACH), for a reason that has
+  // nothing to do with colour: a low reach collapses the broad interaction
+  // bloom's far plume, which this low on the bar would be clipped below and pull
+  // the disc's visible mass upward off the icon line (#106). Reach rides the same
+  // glow axis, so lifting into an intervention still eases it back broad rather
+  // than swapping halos.
   reach: SNUG_GLOW_REACH,
   breathe: false,
 });
