@@ -22,9 +22,20 @@
      (18..90) - x = 18 + pct * 72. Each is a circle of radius ry carrying a
      radial gradient, squashed to the right ellipse by its group's scaleX about
      the mare's own centre, because a VectorDrawable radial gradient is always
-     circular. No clip-path: every gradient fades to zero well inside the disc
-     (the widest, Procellarum, dies at x=19 against the disc edge at 18), so a
-     clip would cost work on every frame and never actually cut anything. -->
+     circular. Note the mare *paths* deliberately overhang the disc - Procellarum's
+     reaches x=15.12 against a rim at 18 - and are hidden only by their gradients
+     reaching zero alpha first (tileMode clamps past the last stop, so there is
+     nothing to paint out there).
+
+     No clip-path, and the honest version of why: six of the seven fade out
+     comfortably inside the rim, but Procellarum's zero-alpha ellipse (centre
+     33.12,50.4, semi-axes 14.04 x 21.34) actually reaches 36.065 from the disc
+     centre at about 220 degrees - 0.065 units PAST the r=36 rim. That sliver is
+     at alpha 0 by construction, i.e. under 0.001 opacity over 0.06% of the tile,
+     so it cannot show up at any render size. A clip-path would cost a saveLayer
+     on every frame to remove nothing visible. Worth knowing that iOS does clip
+     (CompanionSun.swift) - .position on a scaled child is easier to slip there -
+     so the two ports differ here on purpose, not by accident. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:aapt="http://schemas.android.com/aapt"
         android:width="108dp"
