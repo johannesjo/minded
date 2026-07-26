@@ -110,10 +110,25 @@ wearing it.
 | Prompt card, Android | `ic_sun_widget_day_on_sky.xml` — same disc and rim, **white** bloom at the same `@ .28`; over `widget_sky_*` |
 | Prompt card, iOS | `CompanionSun(onOwnSky: true)` — same, over the matching sky image |
 | Widget-picker still, Android | `widget_preview_card.xml` — mirrors the card, so it uses the white-bloom drawable too |
+| Fresh-arrival sun, Android overlay | `SunDisc(onOwnSky = true)` in `InteractionWindow.FreshArrivalSun` — white disc, **white** glow, over the native loading sky |
 
 The card paints the same sky the app does, so the sun on it is on our surface and
 follows the in-app rule. Only the bloom's colour differs between each pair of
 twins — same stops, same alpha, same disc — so keep them in step.
+
+The fresh-arrival sun is the same test applied to a *native* disc. When an
+intervention fires on Android the WebView needs a beat to boot, so the overlay
+paints its own loading sky (`LoadingSky.kt`, mirroring the WebView's ambient sky)
+and greets the user with a native Compose disc that glides to the measured web
+sun and cross-fades into it. That disc is the **first sun of every
+intervention** — on our sky, handing off to a white-haloed web sun — so it glows
+white. It wore the Little Sun's amber until #262, which meant every intervention
+opened on an orange halo that turned white at the hand-off.
+
+The corner hand-off in the same file is the exception: that placeholder *is* the
+Little Sun that just left the blocked app, and the arriving web sun mounts at
+`warmth: 1` (`sunDepartSettleAt`) and warms back to white as it glides home. Both
+sides are amber at the swap, so it keeps `SunDisc()`'s default.
 
 The moon needs no twin on either platform: it never warms on any surface.
 
@@ -126,6 +141,8 @@ pre-API-31 gallery renders it on the launcher's own surface, not on our sky.
   block comment, at the point the settles are defined
 - `CLAUDE.md` — the short form, under Styling Guidelines
 - `sunSettle.test.ts` — the guard tests
+- `sunHaloMirror.test.ts` — the same rule enforced across the language boundary
+  (the widget's Android/iOS twins, and the overlay's native Compose suns)
 - This file — the full state map
 
 To see the states side by side, use the styleguide's sun morph harness

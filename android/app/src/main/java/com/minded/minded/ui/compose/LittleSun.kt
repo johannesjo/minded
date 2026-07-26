@@ -45,6 +45,15 @@ private val SUN_TEXT_COLOR = Color(0xFF956969)
 // extension/src/shared/components/interaction/sun/sunSettle.ts.
 internal val GLOW_COLOR = Color(0xFFFFD673)
 
+// The same disc standing on a sky we paint ourselves - today the interaction
+// overlay's native loading sky, under the fresh-arrival sun that greets an
+// intervention before the WebView has painted. That is our surface like any
+// other, so the light it casts is white: it is the same sun the web layer is
+// about to draw, and the web sun glows white (settle warmth 0). Amber here made
+// every intervention open on an orange halo that turned white at the hand-off -
+// a colour change nobody asked for, on the app's most central surface.
+internal val GLOW_COLOR_OWN_SKY = Color.White
+
 // At night the companion is the moon, not a warm sun - so the little sun
 // mirrors the in-app moon (web Sun.scss .moon): a cool silver disc with a cool
 // blue halo instead of the daytime amber glow, so it belongs in the night sky
@@ -134,12 +143,26 @@ internal fun SunDisc(
     glowSize: Dp = 60.dp,
     discSize: Dp = 30.dp,
     scale: Float = 1f,
+    // True when this disc stands on a sky WE paint (the interaction overlay's
+    // native loading sky) rather than on arbitrary app content. THE HALO RULE:
+    // the test is what the sun stands on, not which process draws it - on our
+    // own sky the halo is white, exactly like the web sun this disc cross-fades
+    // into. Amber is only for backgrounds we don't control, where a white halo
+    // would read as a pale blob. Mirrors the widget's `onOwnSky` split
+    // (MyAppWidget.drawableFor / CompanionSun).
+    onOwnSky: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     // At night the companion becomes the moon - cool silver body, cool halo -
-    // matching the in-app sun, which is also a moon after dark.
+    // matching the in-app sun, which is also a moon after dark. The moon never
+    // warms on any surface, so `onOwnSky` changes nothing after dark: its cool
+    // halo is already what the web moon wears on our own sky.
     val night = isDarkModeNow()
-    val glowColor = if (night) GLOW_COLOR_NIGHT else GLOW_COLOR
+    val glowColor = when {
+        night -> GLOW_COLOR_NIGHT
+        onOwnSky -> GLOW_COLOR_OWN_SKY
+        else -> GLOW_COLOR
+    }
     val bodyColor = if (night) SUN_COLOR_NIGHT else SUN_COLOR
     val textColor = if (night) SUN_TEXT_COLOR_NIGHT else SUN_TEXT_COLOR
 

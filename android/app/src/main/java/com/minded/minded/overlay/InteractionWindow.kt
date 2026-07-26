@@ -441,6 +441,13 @@ class InteractionWindow(
                         .offset { IntOffset(rest.first, rest.second) }
                         .alpha(placeholderAlpha),
                 ) {
+                    // Amber (no `onOwnSky`) on purpose: this disc IS the Little
+                    // Sun that just left the blocked app, held in place for the
+                    // blink before the web sun takes over - and the arriving web
+                    // sun mounts at warmth 1 (sunDepartSettleAt) and warms back
+                    // to white as it glides home. Both sides of the hand-off wear
+                    // the same amber at the swap; whitening this one would put a
+                    // hard colour cut in the middle of the morph.
                     SunDisc()
                 }
             }
@@ -567,7 +574,17 @@ class InteractionWindow(
                         .alpha(placeholderAlpha)
                         .then(escapeModifier),
                 ) {
-                    SunDisc(glowSize = glowSize, discSize = discSize)
+                    // Stands on our own native loading sky and cross-fades into
+                    // the web sun, which glows white - so this one glows white
+                    // too (THE HALO RULE). Amber belongs to the Little Sun, over
+                    // content we don't control; wearing it here opened every
+                    // fresh intervention on an orange halo that then turned
+                    // white at the hand-off.
+                    SunDisc(
+                        glowSize = glowSize,
+                        discSize = discSize,
+                        onOwnSky = true,
+                    )
                 }
             }
         }
