@@ -110,7 +110,7 @@ wearing it.
 | Prompt card, Android | `ic_sun_widget_day_on_sky.xml` — same disc and rim, **white** bloom at the same `@ .28`; over `widget_sky_*` |
 | Prompt card, iOS | `CompanionSun(onOwnSky: true)` — same, over the matching sky image |
 | Widget-picker still, Android | `widget_preview_card.xml` — mirrors the card, so it uses the white-bloom drawable too |
-| Fresh-arrival sun, Android overlay | `SunDisc(onOwnSky = true)` in `InteractionWindow.FreshArrivalSun` — white disc, **white** glow, over the native loading sky |
+| Fresh-arrival sun, Android overlay | `SunDisc` in `InteractionWindow.FreshArrivalSun` with `onOwnSky` true while it waits — white disc, **white** glow, over the native loading sky. Night: `#eef2ff` disc, `#bed2ff` glow, like every other native disc |
 
 The card paints the same sky the app does, so the sun on it is on our surface and
 follows the in-app rule. Only the bloom's colour differs between each pair of
@@ -120,15 +120,29 @@ The fresh-arrival sun is the same test applied to a *native* disc. When an
 intervention fires on Android the WebView needs a beat to boot, so the overlay
 paints its own loading sky (`LoadingSky.kt`, mirroring the WebView's ambient sky)
 and greets the user with a native Compose disc that glides to the measured web
-sun and cross-fades into it. That disc is the **first sun of every
-intervention** — on our sky, handing off to a white-haloed web sun — so it glows
-white. It wore the Little Sun's amber until #262, which meant every intervention
-opened on an orange halo that turned white at the hand-off.
+sun and cross-fades into it. It is the first sun of every **fresh** intervention
+(`!isCornerArrival`, Android only) — on our sky, handing off to a white-haloed
+web sun — so it glows white. It wore the Little Sun's amber until #262, which
+meant a fresh intervention opened on an orange halo that turned white at the
+hand-off.
 
-The corner hand-off in the same file is the exception: that placeholder *is* the
-Little Sun that just left the blocked app, and the arriving web sun mounts at
-`warmth: 1` (`sunDepartSettleAt`) and warms back to white as it glides home. Both
-sides are amber at the swap, so it keeps `SunDisc()`'s default.
+Two suns in that file answer differently, and neither is a fixed property of its
+call site:
+
+- The **corner hand-off** placeholder *is* the Little Sun that just left the
+  blocked app. It waits on our loading sky too — for up to
+  `CORNER_PLACEHOLDER_FALLBACK_MS` (1.5 s), not a blink — but the arriving web sun
+  mounts at `warmth: 1` (`sunDepartSettleAt`) and warms back to white as it glides
+  home, so both sides are amber at the swap. It keeps `SunDisc()`'s default.
+- The **fresh-arrival** disc is also the escape hatch: tapping it retargets the
+  same disc to the saved Little Sun rest, glides it there, and cross-fades into
+  the real (amber) Little Sun. So `onOwnSky` is a *state* — true while it waits,
+  false once it is morphing away — and `SunDisc` eases between the two colours
+  over `glowMorphMs`, passed as the glide's own duration. The warming lands with
+  the position.
+
+The shared principle: on our sky the halo is white; the warming is always a
+hand-off in progress, and it is always an ease, never a cut.
 
 The moon needs no twin on either platform: it never warms on any surface.
 

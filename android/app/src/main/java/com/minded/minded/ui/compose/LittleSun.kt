@@ -1,5 +1,6 @@
 package com.minded.minded.ui.compose
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -52,6 +53,11 @@ internal val GLOW_COLOR = Color(0xFFFFD673)
 // about to draw, and the web sun glows white (settle warmth 0). Amber here made
 // every intervention open on an orange halo that turned white at the hand-off -
 // a colour change nobody asked for, on the app's most central surface.
+//
+// White is the disc's colour only while it *stays* on that sky. The same disc is
+// also the escape hatch: tapping it morphs it into the Little Sun, and there it
+// warms back to GLOW_COLOR across the glide, because by then it is mid-morph
+// onto someone else's app. The warming is the hand-off, exactly as on the web.
 internal val GLOW_COLOR_OWN_SKY = Color.White
 
 // At night the companion is the moon, not a warm sun - so the little sun
@@ -150,7 +156,16 @@ internal fun SunDisc(
     // into. Amber is only for backgrounds we don't control, where a white halo
     // would read as a pale blob. Mirrors the widget's `onOwnSky` split
     // (MyAppWidget.drawableFor / CompanionSun).
+    //
+    // It is a *state*, not a fixed property of a call site: one disc can start on
+    // our sky and then morph into the Little Sun, and flipping this mid-life
+    // warms it across that morph - the way the web's departing settle does.
     onOwnSky: Boolean = false,
+    // How long a change of `onOwnSky` (or of day/night) takes to ease from one
+    // halo colour to the next. Never a hard cut: the warming IS the hand-off, so
+    // a caller morphing into the Little Sun passes its glide duration and the
+    // colour arrives exactly as the disc lands.
+    glowMorphMs: Int = DISC_HANDOFF_FADE_MS,
     modifier: Modifier = Modifier,
 ) {
     // At night the companion becomes the moon - cool silver body, cool halo -
@@ -158,11 +173,16 @@ internal fun SunDisc(
     // warms on any surface, so `onOwnSky` changes nothing after dark: its cool
     // halo is already what the web moon wears on our own sky.
     val night = isDarkModeNow()
-    val glowColor = when {
+    val targetGlowColor = when {
         night -> GLOW_COLOR_NIGHT
         onOwnSky -> GLOW_COLOR_OWN_SKY
         else -> GLOW_COLOR
     }
+    val glowColor by animateColorAsState(
+        targetValue = targetGlowColor,
+        animationSpec = tween(durationMillis = glowMorphMs),
+        label = "sunDiscGlowColor",
+    )
     val bodyColor = if (night) SUN_COLOR_NIGHT else SUN_COLOR
     val textColor = if (night) SUN_TEXT_COLOR_NIGHT else SUN_TEXT_COLOR
 

@@ -441,13 +441,11 @@ class InteractionWindow(
                         .offset { IntOffset(rest.first, rest.second) }
                         .alpha(placeholderAlpha),
                 ) {
-                    // Amber (no `onOwnSky`) on purpose: this disc IS the Little
-                    // Sun that just left the blocked app, held in place for the
-                    // blink before the web sun takes over - and the arriving web
-                    // sun mounts at warmth 1 (sunDepartSettleAt) and warms back
-                    // to white as it glides home. Both sides of the hand-off wear
-                    // the same amber at the swap; whitening this one would put a
-                    // hard colour cut in the middle of the morph.
+                    // Amber (no `onOwnSky`) on purpose: this disc IS the Little Sun
+                    // that just left the blocked app, and the arriving web sun
+                    // mounts at warmth 1 (sunDepartSettleAt) and warms back to
+                    // white as it glides home - so both sides wear the same amber
+                    // at the swap. Whitening it would cut colour mid-morph.
                     SunDisc()
                 }
             }
@@ -574,16 +572,19 @@ class InteractionWindow(
                         .alpha(placeholderAlpha)
                         .then(escapeModifier),
                 ) {
-                    // Stands on our own native loading sky and cross-fades into
-                    // the web sun, which glows white - so this one glows white
-                    // too (THE HALO RULE). Amber belongs to the Little Sun, over
-                    // content we don't control; wearing it here opened every
-                    // fresh intervention on an orange halo that then turned
-                    // white at the hand-off.
+                    // The sky under this disc changes, so its halo follows (THE
+                    // HALO RULE). Waiting, it stands on our own loading sky and
+                    // cross-fades into the white-haloed web sun, so it glows white
+                    // - amber here opened every fresh intervention on an orange
+                    // halo that turned white at the hand-off. Escaping, the same
+                    // disc morphs into the Little Sun over someone else's app, so
+                    // it warms back over exactly the glide that carries it there:
+                    // the colour lands with the position, no cut at the swap.
                     SunDisc(
                         glowSize = glowSize,
                         discSize = discSize,
-                        onOwnSky = true,
+                        onOwnSky = escapeStep == FreshArrivalEscapeStep.NONE,
+                        glowMorphMs = FRESH_SUN_MORPH_MS,
                     )
                 }
             }
