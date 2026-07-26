@@ -2,6 +2,7 @@ import { createSignal, onMount, Show } from "solid-js";
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { UserCfg } from "@src/dataInterface/syncData";
+import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
@@ -34,6 +35,10 @@ const Options = () => {
                 showSaveButton={false}
                 initialItems={initialCfg.blockedHosts}
               />
+            </section>
+
+            <section class={styles.section}>
+              <AlternativesSettings />
             </section>
 
             {/* No section intros here: these components carry their own heading

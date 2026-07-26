@@ -2,6 +2,7 @@ import { createSignal, onMount, Show } from "solid-js";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { UserCfg } from "@src/dataInterface/syncData";
 import { SettingsAndroid } from "./SettingsAndroid";
+import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
@@ -27,6 +28,10 @@ export const SettingsAndroidRoute = () => {
               autoSave={true}
               initialBlockedApps={initialCfg.blockedApps}
             />
+
+            <hr class={styles.divider} />
+
+            <AlternativesSettings />
 
             <hr class={styles.divider} />
 

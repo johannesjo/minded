@@ -109,6 +109,35 @@ export const createUserAppAlternative = (
   };
 };
 
+/**
+ * The corrected form of an alternative after the user edits its text (the way
+ * out of a typo, or of a line typed by accident during an intervention).
+ *
+ * A website/app alternative's id is derived from its text, so a correction is
+ * really a *new* entry - the caller drops the old one outright rather than
+ * disabling it, so a mistake doesn't linger in storage forever. Only
+ * `createdTS` carries over, which keeps the entry in place in the list instead
+ * of jumping to the end mid-edit; the counters start fresh, because "how often
+ * did this suggestion land" says nothing about a different suggestion.
+ */
+export const createRenamedAlternative = (
+  alternative: Alternative,
+  value: string,
+): Alternative => {
+  const trimmed = value.trim();
+
+  switch (alternative.kind) {
+    case "website":
+      return createUserWebsiteAlternative(trimmed, alternative.createdTS);
+    case "app":
+      return createUserAppAlternative(trimmed, alternative.createdTS);
+    default:
+      // activity / custom carry no text-derived id, so the entry itself
+      // survives the edit - counters and all.
+      return { ...alternative, label: trimmed };
+  }
+};
+
 const isAlternativeInScope = (
   alternative: Alternative,
   isWebsiteScope: boolean,

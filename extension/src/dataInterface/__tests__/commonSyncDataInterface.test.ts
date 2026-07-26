@@ -17,6 +17,8 @@ import {
   countSunTap,
   markAlternativeOpenedAndCountSunTap,
   markPatternInsightShown,
+  removeAlternative,
+  renameAlternative,
   saveReplacementStructuredAlternativeApp,
   saveReplacementStructuredAlternativeWebsite,
   saveStructuredAlternativeApp,
@@ -414,6 +416,153 @@ describe("commonSyncDataInterface", () => {
               kind: "app",
               label: "Notes",
               createdTS: now,
+              shownCount: 0,
+              dismissedCount: 0,
+              openedCount: 0,
+            },
+          ],
+        }),
+      );
+    });
+  });
+
+  describe("removeAlternative", () => {
+    it("takes the entry out of the structured list for good", async () => {
+      const kept = {
+        id: "legacy-app:Notes",
+        kind: "app" as const,
+        label: "Notes",
+        createdTS: 1,
+        shownCount: 0,
+        dismissedCount: 0,
+        openedCount: 0,
+      };
+      const mistake = {
+        id: "legacy-app:asdfgh",
+        kind: "app" as const,
+        label: "asdfgh",
+        createdTS: 2,
+        shownCount: 3,
+        dismissedCount: 1,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({ alternatives: [kept, mistake] }),
+      );
+      mockedPatchSyncData.mockResolvedValue();
+
+      await removeAlternative(mistake);
+
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({ alternatives: [kept] }),
+      );
+    });
+
+    it("also drops the legacy string, so the entry can't come back on the next read", async () => {
+      const legacyMistake = {
+        id: "legacy-web:htttps://exampel",
+        kind: "website" as const,
+        label: "htttps://exampel",
+        url: "htttps://exampel",
+        createdTS: 0,
+        shownCount: 0,
+        dismissedCount: 0,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({
+          alternativeWebsites: ["htttps://exampel", "https://example.com"],
+          alternativeApps: ["Books"],
+        }),
+      );
+      mockedPatchSyncData.mockResolvedValue();
+
+      await removeAlternative(legacyMistake);
+
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [],
+          alternativeWebsites: ["https://example.com"],
+          alternativeApps: ["Books"],
+        }),
+      );
+    });
+  });
+
+  describe("renameAlternative", () => {
+    it("replaces the entry outright, keeping its place and resetting its counters", async () => {
+      const mistake = {
+        id: "legacy-app:Bokks",
+        kind: "app" as const,
+        label: "Bokks",
+        createdTS: 111,
+        shownCount: 4,
+        dismissedCount: 2,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({
+          alternatives: [mistake],
+          alternativeApps: ["Bokks"],
+        }),
+      );
+      mockedPatchSyncData.mockResolvedValue();
+
+      await renameAlternative(mistake, " Books ");
+
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              id: "legacy-app:Books",
+              kind: "app",
+              label: "Books",
+              createdTS: 111,
+              shownCount: 0,
+              dismissedCount: 0,
+              openedCount: 0,
+            },
+          ],
+          alternativeApps: [],
+        }),
+      );
+    });
+
+    it("revives a retired entry when renaming onto it, rather than leaving it disabled", async () => {
+      const retired = {
+        id: "legacy-app:Books",
+        kind: "app" as const,
+        label: "Books",
+        createdTS: 10,
+        shownCount: 3,
+        dismissedCount: 3,
+        openedCount: 0,
+        disabledTS: 20,
+      };
+      const mistake = {
+        id: "legacy-app:Bokks",
+        kind: "app" as const,
+        label: "Bokks",
+        createdTS: 30,
+        shownCount: 0,
+        dismissedCount: 0,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({ alternatives: [retired, mistake] }),
+      );
+      mockedPatchSyncData.mockResolvedValue();
+
+      await renameAlternative(mistake, "Books");
+
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          alternatives: [
+            {
+              id: "legacy-app:Books",
+              kind: "app",
+              label: "Books",
+              createdTS: 30,
               shownCount: 0,
               dismissedCount: 0,
               openedCount: 0,
