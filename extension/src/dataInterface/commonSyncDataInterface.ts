@@ -33,8 +33,11 @@ import {
 } from "@src/shared/components/interaction/alternatives/alternativeStats";
 import type { AlternativeStatEvent } from "@src/shared/components/interaction/alternatives/alternativeStats";
 import {
+  createRenamedAlternative,
   createUserAppAlternative,
   createUserWebsiteAlternative,
+  legacyAppToAlternative,
+  legacyWebsiteToAlternative,
 } from "@src/shared/components/interaction/alternatives/getAlternatives";
 import {
   markPatternInsightShownInState,
@@ -152,6 +155,66 @@ export const saveReplacementStructuredAlternativeWebsite = (
     currentAlternative,
     createUserWebsiteAlternative(replacement),
   );
+
+/**
+ * Drop an alternative wherever it is stored. The structured list is only half
+ * the story: older installs keep bare strings in `alternativeApps` /
+ * `alternativeWebsites`, which `getAlternativesForTarget` materialises on every
+ * read - remove the structured copy alone and the entry simply comes back.
+ */
+const withoutAlternative = (
+  syncData: SyncData,
+  alternativeId: string,
+): {
+  alternatives: Alternative[];
+  alternativeApps: string[];
+  alternativeWebsites: string[];
+} => ({
+  alternatives: (syncData.alternatives ?? []).filter(
+    (existingAlternative) => existingAlternative.id !== alternativeId,
+  ),
+  alternativeApps: syncData.alternativeApps.filter(
+    (app) => legacyAppToAlternative(app).id !== alternativeId,
+  ),
+  alternativeWebsites: syncData.alternativeWebsites.filter(
+    (url) => legacyWebsiteToAlternative(url).id !== alternativeId,
+  ),
+});
+
+/**
+ * Take an alternative back for good - the undo for a line the user didn't mean
+ * to keep. A real delete, not the `disabledTS` retirement that dismissals do:
+ * the user asked for it gone, so nothing of it should linger.
+ */
+export const removeAlternative = (alternative: Alternative): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
+    withoutAlternative(syncData, alternative.id),
+  );
+
+/** Correct an alternative's text in place (see createRenamedAlternative). */
+export const renameAlternative = (
+  alternative: Alternative,
+  value: string,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
+    const cleared = withoutAlternative(syncData, alternative.id);
+    const renamed = createRenamedAlternative(alternative, value);
+    // Editing one entry onto another's text merges the two. The entry that was
+    // already there is the one being merged *into*, so it keeps its own record
+    // - overwriting a real suggestion's history to fix a typo elsewhere would
+    // quietly discard something the user never asked to lose. (`upsertAlternative`
+    // still clears its `disabledTS`, so renaming onto a retired entry revives it.)
+    const mergeTarget = cleared.alternatives.find(
+      (existingAlternative) => existingAlternative.id === renamed.id,
+    );
+    return {
+      ...cleared,
+      alternatives: upsertAlternative(
+        cleared.alternatives,
+        mergeTarget ?? renamed,
+      ),
+    };
+  });
 
 const markAlternative = (
   alternative: Alternative,

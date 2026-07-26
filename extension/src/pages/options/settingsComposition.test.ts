@@ -8,17 +8,19 @@ const readSource = (relativePath: string): string =>
 
 describe("settings composition", () => {
   it("renders both settings pages with defaults when hydration rejects", async () => {
-    const { resolveSettingsCfg } = jest.requireActual<{
-      resolveSettingsCfg: (
+    const { resolveSettingsSnapshot } = jest.requireActual<{
+      resolveSettingsSnapshot: (
         readSyncData: () => Promise<SyncData>,
-      ) => Promise<UserCfg>;
+        platform: "web" | "android" | "ios",
+      ) => Promise<{ cfg: UserCfg; alternatives: unknown[] }>;
     }>("@src/shared/components/settings/settingsHydration");
 
     await expect(
-      resolveSettingsCfg(() =>
-        Promise.reject(new Error("storage unavailable")),
+      resolveSettingsSnapshot(
+        () => Promise.reject(new Error("storage unavailable")),
+        "web",
       ),
-    ).resolves.toEqual(DEFAULT_SYNC_DATA.cfg);
+    ).resolves.toEqual({ cfg: DEFAULT_SYNC_DATA.cfg, alternatives: [] });
 
     const settingsPages = [
       readSource("src/pages/options/Options.tsx"),
@@ -29,7 +31,7 @@ describe("settings composition", () => {
 
     for (const page of settingsPages) {
       expect(page).toMatch(
-        /setCfg\(\s*await resolveSettingsCfg\(getSyncData\)\s*\)/,
+        /setSettings\(\s*await resolveSettingsSnapshot\(\s*getSyncData,\s*"(?:web|android)",?\s*\)\s*\)/,
       );
     }
   });
@@ -44,12 +46,20 @@ describe("settings composition", () => {
     expect(webSettings).toContain("initialSoundEnabled");
     expect(webSettings).toContain("initialGrace");
     expect(webSettings).toContain("initialSchedule");
+    expect(webSettings).toContain("initialAlternatives");
 
     expect(androidSettings).toContain("getSyncData");
     expect(androidSettings).toContain("initialSoundEnabled");
     expect(androidSettings).toContain("initialGrace");
     expect(androidSettings).toContain("initialSchedule");
-    expect(androidSettings).toContain("initialCfg");
+    expect(androidSettings).toContain("initialAlternatives");
+    expect(androidSettings).toContain("initial.cfg");
+
+    // One read per page: every section is fed from the same snapshot, so no
+    // section may reach for storage again on its own.
+    for (const page of [webSettings, androidSettings]) {
+      expect(page.match(/getSyncData/g)).toHaveLength(2);
+    }
   });
 
   it("uses sentence-case section headings", () => {
@@ -65,11 +75,18 @@ describe("settings composition", () => {
     const windDownSettings = readSource(
       "src/shared/components/settings/SleepWindDownSettings.tsx",
     );
+    const alternativesSettings = readSource(
+      "src/shared/components/settings/AlternativesSettings.tsx",
+    );
 
     expect(soundSettings).toContain("Completion sound");
     expect(graceSettings).toContain("Grace period");
     expect(focusSettings).toContain("Active hours");
     expect(windDownSettings).toContain("Sleep wind-down");
+    // Both platform wordings - the heading echoes the question the user was
+    // actually asked, rather than the code's word ("alternatives").
+    expect(alternativesSettings).toContain("What to open instead");
+    expect(alternativesSettings).toContain("Where to go instead");
   });
 
   it("uses a quiet single-column composition for Web settings", () => {
@@ -86,6 +103,9 @@ describe("settings composition", () => {
         "src/shared/components/settings/SessionGraceSettings.module.scss",
       ),
       readSource("src/shared/components/settings/FocusSchedule.module.scss"),
+      readSource(
+        "src/shared/components/settings/AlternativesSettings.module.scss",
+      ),
     ];
 
     expect(pageStyles).toMatch(/\.Options\s*\{[\s\S]*max-width:\s*680px/);

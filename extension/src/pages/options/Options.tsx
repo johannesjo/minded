@@ -1,18 +1,21 @@
 import { createSignal, onMount, Show } from "solid-js";
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import { UserCfg } from "@src/dataInterface/syncData";
+import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
-import { resolveSettingsCfg } from "@src/shared/components/settings/settingsHydration";
+import {
+  resolveSettingsSnapshot,
+  type SettingsSnapshot,
+} from "@src/shared/components/settings/settingsHydration";
 import styles from "./Options.module.scss";
 
 const Options = () => {
-  const [cfg, setCfg] = createSignal<UserCfg>();
+  const [settings, setSettings] = createSignal<SettingsSnapshot>();
 
   onMount(async () => {
-    setCfg(await resolveSettingsCfg(getSyncData));
+    setSettings(await resolveSettingsSnapshot(getSyncData, "web"));
   });
 
   return (
@@ -22,8 +25,8 @@ const Options = () => {
         <p>Choose where and when minded appears. Changes save automatically.</p>
       </header>
 
-      <Show when={cfg()} keyed>
-        {(initialCfg) => (
+      <Show when={settings()} keyed>
+        {(initial) => (
           <div class={styles.sections}>
             <section class={styles.section}>
               <div class={styles.sectionIntro}>
@@ -32,7 +35,13 @@ const Options = () => {
               </div>
               <WebsiteList
                 showSaveButton={false}
-                initialItems={initialCfg.blockedHosts}
+                initialItems={initial.cfg.blockedHosts}
+              />
+            </section>
+
+            <section class={styles.section}>
+              <AlternativesSettings
+                initialAlternatives={initial.alternatives}
               />
             </section>
 
@@ -42,16 +51,16 @@ const Options = () => {
                 to speak for it. */}
             <section class={styles.section}>
               <SoundSettings
-                initialSoundEnabled={initialCfg.soundEnabled ?? true}
+                initialSoundEnabled={initial.cfg.soundEnabled ?? true}
               />
             </section>
 
             <section class={styles.section}>
-              <SessionGraceSettings initialGrace={initialCfg.sessionGrace} />
+              <SessionGraceSettings initialGrace={initial.cfg.sessionGrace} />
             </section>
 
             <section class={styles.section}>
-              <FocusSchedule initialSchedule={initialCfg.focusSchedule} />
+              <FocusSchedule initialSchedule={initial.cfg.focusSchedule} />
             </section>
           </div>
         )}

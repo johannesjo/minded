@@ -1,0 +1,100 @@
+.AlternativesSettings {
+  padding: var(--settings-block-padding, 0 0 var(--space-sm));
+  text-align: var(--settings-text-align, center);
+}
+
+.header {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-md);
+  justify-content: var(--settings-header-justify, center);
+  width: var(--settings-header-width, auto);
+
+  :global(.h3) {
+    margin: 0;
+  }
+}
+
+.description {
+  font-size: var(--fz-s);
+  margin: var(--space-sm) var(--settings-description-margin-inline, auto) 0;
+  max-width: var(--settings-description-max-width, 400px);
+  color: var(--h4-c);
+  text-align: var(--settings-text-align, center);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-md) 0;
+  text-align: left;
+}
+
+.row {
+  align-items: center;
+  border-bottom: 1px solid var(--btn-outline-color);
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+
+  &:first-child {
+    border-top: 1px solid var(--btn-outline-color);
+  }
+}
+
+.emptyState {
+  color: var(--h4-c);
+  font-size: var(--fz-s);
+  margin: 0;
+  text-align: var(--settings-text-align, center);
+  // Mounts when the last entry is removed - fade in rather than pop, the same
+  // as the answer list's empty state.
+  animation: var(--dur-soft) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
+}
+
+.status {
+  align-items: center;
+  display: flex;
+  font-size: var(--fz-s);
+  gap: var(--space-md);
+  justify-content: var(--settings-options-justify, center);
+  margin: 0 0 var(--space-md);
+  min-height: 24px;
+  opacity: 0.75;
+  text-align: var(--settings-text-align, center);
+  // Ease in on mount - a line appearing in one frame beneath the list read as a
+  // jolt (same treatment as the answer list's removal status).
+  animation: var(--dur-quick) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
+}
+
+.undoButton {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--c-fg-full-emphasis);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 2px 4px;
+  text-decoration: underline;
+
+  // Keyboard focus ring - same treatment as links (_sharedAll.scss).
+  &:focus-visible {
+    outline: 2px solid var(--c-link-color);
+    outline-offset: 3px;
+    border-radius: var(--radius-xs);
+  }
+}
+
+.controls {
+  display: flex;
+  justify-content: var(--settings-options-justify, center);
+}
