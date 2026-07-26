@@ -247,15 +247,15 @@ describe("the widget sun's halo mirrors the rule (Android ↔ iOS)", () => {
  * amber until #262, which opened every fresh intervention on an orange halo that
  * turned white at the hand-off.
  *
- * `onOwnSky` is a *state*, not a property of the call site, and the same file
- * holds both answers:
- *   - the corner placeholder is the Little Sun itself, held for the blink before
- *     the web sun (which mounts at `warmth: 1`) takes over - amber throughout;
- *   - the fresh-arrival disc starts on our sky, but tapping it morphs it into the
- *     Little Sun over someone else's app, so it warms back to amber across that
- *     glide. Pinning it white put a hard colour cut at that swap.
- * The warming is always the hand-off - never a state a sun on our sky holds, and
- * never a cut.
+ * Both of this file's discs are *arriving*, and arriving is white: the corner
+ * placeholder waits on the same loading sky for the web sun that now mounts white
+ * too (`sunArriveSettleAt`), and the fresh disc waits there for its own.
+ *
+ * But `onOwnSky` is a *state*, not a property of a call site. Tapping the fresh
+ * disc turns it into the escape hatch: it morphs into the Little Sun over someone
+ * else's app, and warms back to amber across that glide. So one call site holds
+ * both answers over its life. The warming is always a hand-off *outward* - never
+ * a state a sun on our sky holds, and never a cut.
  */
 describe("the overlay's native suns follow the rule too", () => {
   const littleSun = read(ANDROID_LITTLE_SUN);
@@ -307,13 +307,14 @@ describe("the overlay's native suns follow the rule too", () => {
     );
   });
 
-  it("keeps the corner hand-off amber and lets the fresh sun warm on escape", () => {
+  it("keeps both arriving discs white, and lets only the escape warm", () => {
     const [cornerHandoff, freshArrival] = sunDiscCalls(interactionWindow);
     expect(sunDiscCalls(interactionWindow)).toHaveLength(2);
 
-    // The Little Sun held in place: no override, so it wears the amber the
-    // arriving web sun mounts with (sunDepartSettleAt, warmth 1).
-    expect(cornerHandoff.replace(/\s/g, "")).toBe("SunDisc()");
+    // The corner placeholder waits on our loading sky for a web sun that now
+    // arrives white too (sunArriveSettleAt) - so it is white, not the amber it
+    // wore while it was still the Little Sun over the blocked app.
+    expect(cornerHandoff.replace(/\s/g, "")).toBe("SunDisc(onOwnSky=true)");
 
     // The fresh disc tracks which sky is under it: white while it waits on ours,
     // warming back to amber once tapping it turns the disc into the Little Sun.

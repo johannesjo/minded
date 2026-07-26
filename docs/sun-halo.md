@@ -67,10 +67,21 @@ every state. The moon replaces it with a white one.
 | Daily questions (+ orbit dots) | companion look | white | 1.25 | snug |
 | Daily-questions success bloom (.62) | white | white | 1.25 | broad |
 | **Departing → Little Sun** | white, shrinking to 40px (web) / 30px (Android) | **amber** | 1.0 | snug |
+| **Arriving ← Little Sun** | same corner + disc size, growing back to full | white | 1.0 | snug → broad |
 
 The snug reach on the companion is *not* about colour: this low on the bar the
 broad bloom's far plume gets clipped by the screen edge below, pulling the disc's
 visible mass upward off the icon line (#106).
+
+The last two rows are the same morph in opposite directions, and only one of them
+warms. The halo answers to the surface the sun is *moving onto*: departing, that
+is arbitrary app content, so it warms on the way out; arriving, it is our own sky,
+so it comes home white and the morph is pure size and position. Position, disc
+size and reach mirror exactly — `sunArriveSettle` / `sunArriveSettleAt` are the
+departing targets with the warmth taken back out, and `sunSettle.test.ts` asserts
+warmth is the only field that differs. Arriving reused the departing target until
+#262, which put an orange flash at the top of every intervention re-shown after a
+session timer.
 
 ## Night (dark theme → moon)
 

@@ -229,6 +229,11 @@ Path aliases change based on build mode to load platform-specific code.
   platforms) is our surface like any other, so the sun glows white there too.
 - The departing hand-off warms to that amber *as it becomes* the Little Sun. The
   warming is the hand-off, not a state the in-app sun ever holds.
+- The **arriving** hand-off - the same morph run the other way, when an
+  intervention is re-shown after a session timer - does **not** warm. The halo
+  answers to the surface the sun is moving *onto*: out to someone else's app it
+  warms, home onto our own sky it stays white the whole glide. So an intervention
+  never opens on amber, on any platform.
 - Why: colour that changes with role turns the one continuous sun into a set of
   differently-coloured suns, and it made the everyday companion→intervention
   lift a colour change nobody asked for. White both ways keeps that morph pure

@@ -8,6 +8,8 @@ import {
   LITTLE_SUN_DISC_PX_WEB,
   restingSunAnchorFromRect,
   SUN_REST_SETTLE,
+  sunArriveSettle,
+  sunArriveSettleAt,
   sunBreatheSettle,
   sunCompanionSettle,
   sunDailyQuestionsSuccessSettle,
@@ -18,6 +20,7 @@ import {
   sunSurfSettle,
   type SunPhase,
 } from "./sunSettle";
+import type { SunSettle } from "./Sun";
 
 describe("getSunSettleForPhase", () => {
   it("returns null for the interactive phase (the sun is draggable, not settled)", () => {
@@ -163,6 +166,35 @@ describe("halo warmth", () => {
     // Little Sun's amber, because there the sun sits over content we don't own.
     expect(sunDepartSettle().warmth).toBe(1);
     expect(sunDepartSettleAt({ x: 0.1, y: 0.9 }).warmth).toBe(1);
+  });
+
+  it("does not warm the arriving mirror of that hand-off", () => {
+    // Arriving runs the same morph the other way, but the halo does not mirror:
+    // the sun is coming home onto OUR sky, so it is white the whole glide. It
+    // reused the departing target once, which opened every intervention re-shown
+    // after a session timer on an orange flash (#262).
+    expect(sunArriveSettle().warmth).toBe(0);
+    expect(sunArriveSettleAt({ x: 0.1, y: 0.9 }).warmth).toBe(0);
+  });
+
+  it("keeps arriving and departing identical apart from that halo", () => {
+    // The two morphs must line up on the same spot at the same size, or the
+    // hand-off reads as two different suns swapping places. Warmth is the ONLY
+    // field allowed to differ - including glowIntensity and reach, which are
+    // about the Little Sun's snug halo *shape* and apply in both directions.
+    const pairs: [SunSettle, SunSettle][] = [
+      [sunArriveSettle(), sunDepartSettle()],
+      [
+        sunArriveSettleAt({ x: 0.1, y: 0.9 }),
+        sunDepartSettleAt({ x: 0.1, y: 0.9 }),
+      ],
+    ];
+    for (const [arrive, depart] of pairs) {
+      expect({ ...arrive, warmth: undefined }).toEqual({
+        ...depart,
+        warmth: undefined,
+      });
+    }
   });
 
   it("leaves the companion→interaction morph a pure size and position change", () => {

@@ -53,6 +53,8 @@ import {
   LITTLE_SUN_DISC_PX_ANDROID,
   LITTLE_SUN_DISC_PX_WEB,
   restingSunAnchorFromRect,
+  sunArriveSettle,
+  sunArriveSettleAt,
   sunDepartSettleAt,
   sunRestingSettle,
   type SunPhase,
@@ -344,40 +346,59 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   }
 
   // The Little Sun's resting spot, expressed as a sun settle (corner, exact disc
-  // size, amber halo). The departing hand-off glides *to* it; the arriving morph
-  // mounts the disc *at* it and glides home - both must target the same point so
-  // the two morphs are perfect mirrors. On Android the native Little Sun is a
+  // size). The departing hand-off glides *to* it; the arriving morph mounts the
+  // disc *at* it and glides home - both must target the same point so the two
+  // morphs line up on the same spot. On Android the native Little Sun is a
   // free-floating bubble the user can park anywhere (the persisted spot is read on
   // mount), so glide to its real centre; fall back to the fixed corner when the
   // position is unknown (older app, read failed). Disc size + corner differ per
   // platform (native overlay is smaller), so match the right ones.
-  // Memoized so it returns a STABLE object identity (it only re-derives when the
-  // Android bubble position signal changes). getSunSettle is read reactively, and
-  // the <Sun> settle effect keys off object identity - a fresh object each call
-  // would risk a spurious corner→corner glide on the Android branch, which reads
-  // getLittleSunRestCenter(). Pure constants on web, so it's computed once there.
-  const getCornerSettle = createMemo(() => {
+  //
+  // Position and size mirror; the halo does not. Only the *departing* target is
+  // amber - it is on its way onto arbitrary app content - while the arriving one
+  // is white all the way home, because it is on its way onto our own sky (THE
+  // HALO RULE in sunSettle.ts). Hence two targets rather than one.
+  //
+  // Memoized so each returns a STABLE object identity (they only re-derive when
+  // the Android bubble position signal changes). getSunSettle is read reactively,
+  // and the <Sun> settle effect keys off object identity - a fresh object each
+  // call would risk a spurious corner→corner glide on the Android branch, which
+  // reads getLittleSunRestCenter(). Pure constants on web, computed once there.
+  const cornerSettle = (isArriving: boolean) => {
     const isAndroid = props.interactionPlatform === "android";
+    const cornerPx = isAndroid
+      ? LITTLE_SUN_CORNER_PX_ANDROID
+      : LITTLE_SUN_CORNER_PX_WEB;
+    const discPx = isAndroid
+      ? LITTLE_SUN_DISC_PX_ANDROID
+      : LITTLE_SUN_DISC_PX_WEB;
     if (isAndroid) {
       const restCenter = getLittleSunRestCenter();
-      if (restCenter) return sunDepartSettleAt(restCenter);
+      if (restCenter) {
+        return isArriving
+          ? sunArriveSettleAt(restCenter)
+          : sunDepartSettleAt(restCenter);
+      }
     }
+    if (isArriving) return sunArriveSettle(cornerPx, discPx);
     return getSunSettleForPhase(
       "departing",
       // companionBottomYPx is only read for the "companion" phase, which the
       // local (non-shell) sun never enters - keep the default.
       undefined,
-      isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
-      isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
+      cornerPx,
+      discPx,
     );
-  });
+  };
+  const getArriveCornerSettle = createMemo(() => cornerSettle(true));
+  const getDepartCornerSettle = createMemo(() => cornerSettle(false));
 
   const getSunSettle = () => {
     // Arriving: hold the disc at the Little Sun's corner so it mounts exactly
     // where the timer rested; clearing the flag (post-mount) drops the settle to
     // the interactive rest and the sun glides home - the reverse of departing.
     if (getIsArrivingFromCorner()) {
-      return getCornerSettle();
+      return getArriveCornerSettle();
     }
     // Resting: tuck under the measured choices block (mirrors the shell sun's
     // getSunSettleForCurrentRole), falling back to the static rest target until
@@ -389,7 +410,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Departing: glide to the Little Sun's corner so the persistent timer reads as
     // the same sun settling in rather than a new element popping up.
     if (getSunPhase() === "departing") {
-      return getCornerSettle();
+      return getDepartCornerSettle();
     }
     const isAndroid = props.interactionPlatform === "android";
     return getSunSettleForPhase(
@@ -403,10 +424,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   // Launch the arrive-from-corner glide: the disc has mounted snapped to the
-  // Little Sun's corner (settle = getCornerSettle while arriving), so clearing the
-  // flag drops the settle to the interactive rest and the <Sun>'s settle effect
-  // glides it home, growing back to full size and warming amber → white - the
-  // mirror of the departing morph. Deferred two frames so the corner snap has
+  // Little Sun's corner (settle = getArriveCornerSettle while arriving), so
+  // clearing the flag drops the settle to the interactive rest and the <Sun>'s
+  // settle effect glides it home, growing back to full size. It glides white the
+  // whole way - it is arriving onto our own sky, so unlike the departing morph
+  // there is no colour in it at all. Deferred two frames so the corner snap has
   // committed first; a same-tick clear would never paint the corner and the disc
   // would just fade in centred (no morph).
   if (getIsArrivingFromCorner()) {
