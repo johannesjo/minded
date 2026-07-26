@@ -165,10 +165,11 @@ export const saveReplacementStructuredAlternativeWebsite = (
 const withoutAlternative = (
   syncData: SyncData,
   alternativeId: string,
-): Pick<
-  SyncData,
-  "alternatives" | "alternativeApps" | "alternativeWebsites"
-> => ({
+): {
+  alternatives: Alternative[];
+  alternativeApps: string[];
+  alternativeWebsites: string[];
+} => ({
   alternatives: (syncData.alternatives ?? []).filter(
     (existingAlternative) => existingAlternative.id !== alternativeId,
   ),
@@ -197,11 +198,20 @@ export const renameAlternative = (
 ): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
     const cleared = withoutAlternative(syncData, alternative.id);
+    const renamed = createRenamedAlternative(alternative, value);
+    // Editing one entry onto another's text merges the two. The entry that was
+    // already there is the one being merged *into*, so it keeps its own record
+    // - overwriting a real suggestion's history to fix a typo elsewhere would
+    // quietly discard something the user never asked to lose. (`upsertAlternative`
+    // still clears its `disabledTS`, so renaming onto a retired entry revives it.)
+    const mergeTarget = cleared.alternatives.find(
+      (existingAlternative) => existingAlternative.id === renamed.id,
+    );
     return {
       ...cleared,
       alternatives: upsertAlternative(
         cleared.alternatives,
-        createRenamedAlternative(alternative, value),
+        mergeTarget ?? renamed,
       ),
     };
   });

@@ -12,7 +12,7 @@ import {
   createRenamedAlternative,
   createUserAppAlternative,
   createUserWebsiteAlternative,
-  getAlternativesForTarget,
+  getEditableAlternatives,
 } from "@src/shared/components/interaction/alternatives/getAlternatives";
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
@@ -28,6 +28,11 @@ const getAlternativeValue = (alternative: Alternative): string =>
   alternative.kind === "website"
     ? (alternative.url ?? alternative.label)
     : alternative.label;
+
+const createAlternativeFor = (value: string): Alternative =>
+  isAppScope()
+    ? createUserAppAlternative(value)
+    : createUserWebsiteAlternative(value);
 
 const byCreated = (a: Alternative, b: Alternative): number =>
   a.createdTS - b.createdTS;
@@ -46,9 +51,36 @@ const AlternativeRow = (props: {
   const [getDraft, setDraft] = createSignal(
     getAlternativeValue(props.alternative),
   );
+  // Reaching for ✕ blurs the field first, and again on the way out after the
+  // click. Committing on either would re-add what the user just discarded, so
+  // the button flags its intent on the way in and keeps it set on the way out.
+  // (preventDefault on the press can't help: Solid delegates to `document`, by
+  // which point Chrome has already moved focus.)
+  let isRemoveIntent = false;
 
   return (
-    <div class={styles.row}>
+    <div
+      class={styles.row}
+      onFocusIn={(event) => {
+        // Coming back to the field abandons a half-finished reach for ✕. Focus
+        // landing on the button itself must not clear it - that *is* the reach.
+        if ((event.target as HTMLElement).tagName !== "BUTTON") {
+          isRemoveIntent = false;
+        }
+      }}
+      onFocusOut={(event) => {
+        const nextTarget = event.relatedTarget as Node | null;
+        // Focus moving onto this row's own ✕ - by pointer or by Tab - means
+        // remove, so let the button's click speak rather than committing here.
+        if (
+          isRemoveIntent ||
+          (nextTarget && event.currentTarget.contains(nextTarget))
+        ) {
+          return;
+        }
+        props.onCommit(getDraft());
+      }}
+    >
       <TextInput
         value={getDraft()}
         placeholder={isAppScope() ? "Books" : "example.com"}
@@ -58,14 +90,21 @@ const AlternativeRow = (props: {
         }}
         onInput={(value) => setDraft(value)}
         onEnter={(value) => props.onCommit(value)}
-        onBlur={(value) => props.onCommit(value)}
       />
       <Btn
         variant="icon"
         small
         title="Remove"
         aria-label={`Remove ${getAlternativeValue(props.alternative) || "alternative"}`}
-        onClick={props.onRemove}
+        onPointerDown={() => {
+          isRemoveIntent = true;
+        }}
+        onClick={() => {
+          // Stays set: this row is going away, and its parting focusout must
+          // not commit the draft that was just discarded.
+          isRemoveIntent = true;
+          props.onRemove();
+        }}
       >
         <Ico name="close" />
       </Btn>
@@ -90,31 +129,46 @@ export const AlternativesSettings = (props: {
   // The just-removed entry, so an accidental delete can be undone in place -
   // the same quiet safety net the website list and the answer list carry.
   const [getRemoved, setRemoved] = createSignal<Alternative | null>(null);
+  const [getIsSaveFailed, setIsSaveFailed] = createSignal(false);
   // The blank row waiting for a first keystroke. Kept out of the stored list so
   // an abandoned row simply disappears.
   const [getDraftAlternative, setDraftAlternative] =
     createSignal<Alternative | null>(null);
 
+  const readFromStorage = () =>
+    getSyncData().then(
+      (syncData) =>
+        setAlternatives(getEditableAlternatives(syncData, getPlatform())),
+      (error: unknown) => {
+        console.error("Could not read the alternatives", error);
+      },
+    );
+
   onMount(() => {
     if (props.initialAlternatives !== undefined) return;
-
-    getSyncData().then((syncData) => {
-      setAlternatives(
-        getAlternativesForTarget(syncData, undefined, getPlatform())
-          .filter((alternative) => alternative.disabledTS === undefined)
-          .sort(byCreated),
-      );
-    });
+    void readFromStorage();
   });
 
-  // The in-flight delete, so undo can sequence behind it: unsequenced, the
-  // re-add could land first and the delete would swallow it again.
-  let pendingRemove: Promise<boolean> = Promise.resolve(true);
+  // Every write goes through one chain. `updateSyncDataField` reads a snapshot
+  // before it patches, and the extension patches by writing the whole object -
+  // so two writes started in the same tick both rebase on the pre-change data
+  // and the later one silently undoes the earlier. A fast double-tap on ✕ is
+  // enough to trigger it; serialising keeps a burst honest.
+  let pendingWrite: Promise<unknown> = Promise.resolve();
 
-  const createEmptyAlternative = (): Alternative =>
-    isAppScope()
-      ? createUserAppAlternative("")
-      : createUserWebsiteAlternative("");
+  /**
+   * Run a write behind the ones before it. On failure the list is re-read from
+   * storage rather than patched back by hand, so what is on screen is always
+   * what was actually stored - this page's patch rejects silently otherwise.
+   */
+  const write = (run: () => Promise<void>): void => {
+    pendingWrite = pendingWrite.then(run).then(undefined, (error: unknown) => {
+      console.error("Could not save the alternatives", error);
+      setRemoved(null);
+      setIsSaveFailed(true);
+      return readFromStorage();
+    });
+  };
 
   const commit = (alternative: Alternative, value: string) => {
     const trimmed = value.trim();
@@ -123,16 +177,24 @@ export const AlternativesSettings = (props: {
     if (!trimmed || trimmed === getAlternativeValue(alternative)) return;
 
     const renamed = createRenamedAlternative(alternative, trimmed);
+    // Editing one entry onto another's text merges the two. The entry that was
+    // already there is the one being merged *into*, so it stays as it is - the
+    // data layer keeps its record for the same reason.
+    const merged = getAlternatives().find(
+      (existing) =>
+        existing.id === renamed.id && existing.id !== alternative.id,
+    );
+    setIsSaveFailed(false);
     setAlternatives(
       getAlternatives()
         .filter(
           (existing) =>
             existing.id !== alternative.id && existing.id !== renamed.id,
         )
-        .concat(renamed)
+        .concat(merged ?? renamed)
         .sort(byCreated),
     );
-    void renameAlternative(alternative, trimmed);
+    write(() => renameAlternative(alternative, trimmed));
   };
 
   const add = (value: string) => {
@@ -140,34 +202,21 @@ export const AlternativesSettings = (props: {
     setDraftAlternative(null);
     if (!trimmed) return;
 
-    const added = isAppScope()
-      ? createUserAppAlternative(trimmed)
-      : createUserWebsiteAlternative(trimmed);
+    const added = createAlternativeFor(trimmed);
     if (getAlternatives().some((existing) => existing.id === added.id)) return;
 
+    setIsSaveFailed(false);
     setAlternatives([...getAlternatives(), added]);
-    saveAlternative(added).catch((error: unknown) => {
-      // Never show a row that isn't actually stored (the data layer has already
-      // told the user what went wrong).
-      console.error(
-        "Alternative save failed - removing it from the list",
-        error,
-      );
-      setAlternatives(
-        getAlternatives().filter((existing) => existing.id !== added.id),
-      );
-    });
+    write(() => saveAlternative(added));
   };
 
   const remove = (alternative: Alternative) => {
+    setIsSaveFailed(false);
     setAlternatives(
       getAlternatives().filter((existing) => existing.id !== alternative.id),
     );
     setRemoved(alternative);
-    pendingRemove = removeAlternative(alternative).then(
-      () => true,
-      () => false,
-    );
+    write(() => removeAlternative(alternative));
   };
 
   const undoRemove = () => {
@@ -175,30 +224,29 @@ export const AlternativesSettings = (props: {
     if (!removed) return;
 
     setRemoved(null);
+    // The same text may have come back in the meantime (retyped, or another row
+    // renamed onto it) - one id, one row.
+    if (getAlternatives().some((existing) => existing.id === removed.id))
+      return;
+
     setAlternatives([...getAlternatives(), removed].sort(byCreated));
-    // If the delete itself failed the entry never left storage, so re-adding
-    // would be a no-op at best - only restore what really went.
-    pendingRemove.then((didRemove) => {
-      if (didRemove) void saveAlternative(removed);
-    });
+    write(() => saveAlternative(removed));
   };
 
   return (
     <div class={styles.AlternativesSettings}>
       <div class={styles.header}>
-        <h3 class="h3">Alternatives</h3>
+        <h3 class="h3">
+          {isAppScope() ? "What to open instead" : "Where to go instead"}
+        </h3>
       </div>
       <p class={styles.description}>
-        {isAppScope()
-          ? "The apps you said you'd rather turn to. The sun offers one back to you now and then."
-          : "The places you said you'd rather go. The sun offers one back to you now and then."}
+        The sun offers one of these back to you now and then.
       </p>
 
       <div class={styles.list}>
         <Show when={!getAlternatives().length && !getDraftAlternative()}>
-          <p class={styles.emptyState}>
-            Nothing here yet. The sun will ask you sometime.
-          </p>
+          <p class={styles.emptyState}>Nothing here yet.</p>
         </Show>
 
         <For each={getAlternatives()}>
@@ -223,19 +271,32 @@ export const AlternativesSettings = (props: {
         </Show>
       </div>
 
-      <Show when={getRemoved()}>
+      <Show when={getIsSaveFailed() || getRemoved()}>
         <div class={styles.status} aria-live="polite">
-          <span>Removed.</span>
-          <button type="button" class={styles.undoButton} onClick={undoRemove}>
-            Undo
-          </button>
+          <Show
+            when={getIsSaveFailed()}
+            fallback={
+              <>
+                <span>Removed.</span>
+                <button
+                  type="button"
+                  class={styles.undoButton}
+                  onClick={undoRemove}
+                >
+                  Undo
+                </button>
+              </>
+            }
+          >
+            <span>Could not save. Please try again.</span>
+          </Show>
         </div>
       </Show>
 
       <div class={styles.controls}>
         <Btn
           disabled={!!getDraftAlternative()}
-          onClick={() => setDraftAlternative(createEmptyAlternative())}
+          onClick={() => setDraftAlternative(createAlternativeFor(""))}
         >
           <Ico name="add" /> Add
         </Btn>

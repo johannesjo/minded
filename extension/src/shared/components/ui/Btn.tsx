@@ -12,6 +12,13 @@ interface CommonBtnProps {
    */
   class?: string;
   onClick?: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>;
+  /**
+   * Rarely needed. The one real use: a button beside a text input that commits
+   * on blur. The press lands here before the blur, so this is where the button
+   * can announce its intent - by the time its own click fires, a commit may
+   * already have re-rendered it out of the DOM.
+   */
+  onPointerDown?: JSX.EventHandlerUnion<HTMLButtonElement, PointerEvent>;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   title?: string;

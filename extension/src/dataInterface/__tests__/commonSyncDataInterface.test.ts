@@ -528,6 +528,38 @@ describe("commonSyncDataInterface", () => {
       );
     });
 
+    it("merges into an entry that already has that text, keeping its record", async () => {
+      const established = {
+        id: "legacy-app:Books",
+        kind: "app" as const,
+        label: "Books",
+        createdTS: 10,
+        shownCount: 9,
+        dismissedCount: 0,
+        openedCount: 7,
+      };
+      const mistake = {
+        id: "legacy-app:Bokks",
+        kind: "app" as const,
+        label: "Bokks",
+        createdTS: 30,
+        shownCount: 0,
+        dismissedCount: 0,
+        openedCount: 0,
+      };
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({ alternatives: [established, mistake] }),
+      );
+      mockedPatchSyncData.mockResolvedValue();
+
+      await renameAlternative(mistake, "Books");
+
+      // Fixing the typo must not cost the entry it merges into its history.
+      expect(mockedPatchSyncData).toHaveBeenCalledWith(
+        expect.objectContaining({ alternatives: [established] }),
+      );
+    });
+
     it("revives a retired entry when renaming onto it, rather than leaving it disabled", async () => {
       const retired = {
         id: "legacy-app:Books",
@@ -562,9 +594,9 @@ describe("commonSyncDataInterface", () => {
               id: "legacy-app:Books",
               kind: "app",
               label: "Books",
-              createdTS: 30,
-              shownCount: 0,
-              dismissedCount: 0,
+              createdTS: 10,
+              shownCount: 3,
+              dismissedCount: 3,
               openedCount: 0,
             },
           ],

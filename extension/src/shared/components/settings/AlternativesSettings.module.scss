@@ -47,6 +47,13 @@
   font-size: var(--fz-s);
   margin: 0;
   text-align: var(--settings-text-align, center);
+  // Mounts when the last entry is removed - fade in rather than pop, the same
+  // as the answer list's empty state.
+  animation: var(--dur-soft) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }
 
 .status {
@@ -59,6 +66,13 @@
   min-height: 24px;
   opacity: 0.75;
   text-align: var(--settings-text-align, center);
+  // Ease in on mount - a line appearing in one frame beneath the list read as a
+  // jolt (same treatment as the answer list's removal status).
+  animation: var(--dur-quick) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }
 
 .undoButton {

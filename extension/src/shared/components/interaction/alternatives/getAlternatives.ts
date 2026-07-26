@@ -174,3 +174,16 @@ export const getAlternativesForTarget = (
     ),
   ];
 };
+
+/**
+ * What the settings list shows: this platform's alternatives, still active,
+ * oldest first. Retired ones are left out so the list is exactly the set the
+ * sun can actually offer.
+ */
+export const getEditableAlternatives = (
+  syncData: SyncData,
+  platform: SessionPlatform,
+): Alternative[] =>
+  getAlternativesForTarget(syncData, undefined, platform)
+    .filter((alternative) => alternative.disabledTS === undefined)
+    .sort((a, b) => a.createdTS - b.createdTS);

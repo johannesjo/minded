@@ -1,12 +1,34 @@
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
-import type { SyncData, UserCfg } from "@src/dataInterface/syncData";
+import type {
+  Alternative,
+  SessionPlatform,
+  SyncData,
+  UserCfg,
+} from "@src/dataInterface/syncData";
+import { getEditableAlternatives } from "@src/shared/components/interaction/alternatives/getAlternatives";
 
-export const resolveSettingsCfg = async (
+/** Everything the settings pages hand down to their sections, from one read. */
+export interface SettingsSnapshot {
+  cfg: UserCfg;
+  alternatives: Alternative[];
+}
+
+/**
+ * The single storage read behind a settings page. `platform` comes from the
+ * page rather than the build flags, so this stays a plain data module - each
+ * settings route is already platform-specific.
+ */
+export const resolveSettingsSnapshot = async (
   readSyncData: () => Promise<SyncData>,
-): Promise<UserCfg> => {
+  platform: SessionPlatform,
+): Promise<SettingsSnapshot> => {
   try {
-    return (await readSyncData()).cfg;
+    const syncData = await readSyncData();
+    return {
+      cfg: syncData.cfg,
+      alternatives: getEditableAlternatives(syncData, platform),
+    };
   } catch {
-    return DEFAULT_SYNC_DATA.cfg;
+    return { cfg: DEFAULT_SYNC_DATA.cfg, alternatives: [] };
   }
 };
