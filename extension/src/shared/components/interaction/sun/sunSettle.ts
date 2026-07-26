@@ -34,6 +34,14 @@ import {
  * mid-morph into the Little Sun. The warming is the hand-off, not a state the
  * in-app sun ever holds.
  *
+ * Note that this makes the two hand-offs deliberately ASYMMETRIC, and the test
+ * above is why: the halo answers to the surface the sun is moving onto, not to
+ * the animation it happens to be running. Departing, that surface is someone
+ * else's app, so the sun warms on the way out. Arriving, it is our own sky, so
+ * the sun is white the whole way home (`sunArriveSettle`) - the mirror morph is
+ * pure size and position. Warming on arrival too would only mean an orange
+ * flash at the top of every intervention re-shown after a session timer.
+ *
  * Why: colour that changes with role turns the one continuous sun into a set of
  * differently-coloured suns, and it makes the everyday companion↔intervention
  * morph a colour change the user never asked for. Keeping the in-app halo white
@@ -282,6 +290,41 @@ export const sunDepartSettleAt = (
   reach: SNUG_GLOW_REACH,
   glowIntensity: DEPART_GLOW_INTENSITY,
   breathe: false,
+});
+
+/**
+ * ARRIVING is not departing run backwards - the halo does not mirror.
+ *
+ * The corner point, the disc size and the snug reach are the same (the two
+ * morphs must line up on the same spot, or they read as two different suns), so
+ * these are the depart targets with the warmth taken back out.
+ *
+ * Why the asymmetry: the halo follows *what the sun stands on*, and the two
+ * hand-offs are moving in opposite directions. Departing, the sun is on its way
+ * onto arbitrary app content, where a white halo would read as a pale blob - so
+ * it warms as it goes. Arriving, it is on its way onto our own sky, where the
+ * whole rest of the flow glows white - so it never warms at all, and the morph
+ * home is pure size and position, exactly like the companion→intervention lift.
+ *
+ * It used to reuse the departing target, so an intervention re-shown after a
+ * session timer opened on an amber halo that faded to white over the glide -
+ * an orange flash at the top of every post-session intervention (#262).
+ */
+export const sunArriveSettle = (
+  cornerPx: number = LITTLE_SUN_CORNER_PX_WEB,
+  discPx: number = LITTLE_SUN_DISC_PX_WEB,
+): SunSettle => ({
+  ...sunDepartSettle(cornerPx, discPx),
+  warmth: 0,
+});
+
+/** Arriving from a measured point (Android's parkable bubble) - see above. */
+export const sunArriveSettleAt = (
+  frac: { x: number; y: number },
+  discPx: number = LITTLE_SUN_DISC_PX_ANDROID,
+): SunSettle => ({
+  ...sunDepartSettleAt(frac, discPx),
+  warmth: 0,
 });
 
 /**

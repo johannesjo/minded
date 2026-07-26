@@ -31,6 +31,10 @@ const ANDROID_WIDGET =
   "../android/app/src/main/java/com/minded/minded/widget/MyAppWidget.kt";
 const IOS_SUN = "ios/App/MindedWidget/CompanionSun.swift";
 const IOS_WIDGET = "ios/App/MindedWidget/MindedWidget.swift";
+const ANDROID_LITTLE_SUN =
+  "../android/app/src/main/java/com/minded/minded/ui/compose/LittleSun.kt";
+const ANDROID_INTERACTION_WINDOW =
+  "../android/app/src/main/java/com/minded/minded/overlay/InteractionWindow.kt";
 
 const read = (relPath: string): string =>
   readFileSync(resolve(process.cwd(), relPath), "utf8");
@@ -91,6 +95,13 @@ const significantXmlLines = (xml: string): string[] =>
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
+
+/** Kotlin/Swift source with `//` comment lines removed. */
+const withoutLineComments = (source: string): string =>
+  source
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("//"))
+    .join("\n");
 
 /** Body of a Kotlin/Swift declaration, sliced between two source markers. */
 const sliceBetween = (source: string, start: string, end: string): string => {
@@ -224,5 +235,97 @@ describe("the widget sun's halo mirrors the rule (Android ↔ iOS)", () => {
     const iosCard = swift.slice(swift.indexOf("private struct PromptCard:"));
     expect(iosCard).toMatch(/CompanionSun\([^)]*onOwnSky:\s*true/);
     expect(iosBare).not.toMatch(/onOwnSky/);
+  });
+});
+
+/**
+ * The widget is not the only native sun that stands on a sky we paint. When an
+ * intervention fires fresh on Android, the WebView needs a beat to boot, so the
+ * overlay greets the user with a NATIVE disc (`FreshArrivalSun`) over its own
+ * loading sky, then cross-fades it into the web sun. On our own surface, handing
+ * off to a white-haloed web sun - so it glows white. It wore the Little Sun's
+ * amber until #262, which opened every fresh intervention on an orange halo that
+ * turned white at the hand-off.
+ *
+ * Both of this file's discs are *arriving*, and arriving is white: the corner
+ * placeholder waits on the same loading sky for the web sun that now mounts white
+ * too (`sunArriveSettleAt`), and the fresh disc waits there for its own.
+ *
+ * But `onOwnSky` is a *state*, not a property of a call site. Tapping the fresh
+ * disc turns it into the escape hatch: it morphs into the Little Sun over someone
+ * else's app, and warms back to amber across that glide. So one call site holds
+ * both answers over its life. The warming is always a hand-off *outward* - never
+ * a state a sun on our sky holds, and never a cut.
+ */
+describe("the overlay's native suns follow the rule too", () => {
+  const littleSun = read(ANDROID_LITTLE_SUN);
+  const interactionWindow = read(ANDROID_INTERACTION_WINDOW);
+
+  /**
+   * Every `SunDisc(...)` invocation in a source file, argument list included.
+   * Scanning for calls (rather than slicing the file between two declarations)
+   * keeps the guard indifferent to how the file is ordered, and to prose that
+   * merely mentions an argument name.
+   */
+  const sunDiscCalls = (kotlin: string): string[] => {
+    const calls: string[] = [];
+    const source = withoutLineComments(kotlin);
+    for (const match of source.matchAll(/\bSunDisc\(/g)) {
+      let depth = 0;
+      for (let i = match.index! + match[0].length - 1; i < source.length; i++) {
+        if (source[i] === "(") depth++;
+        else if (source[i] === ")" && --depth === 0) {
+          calls.push(source.slice(match.index!, i + 1));
+          break;
+        }
+      }
+    }
+    return calls;
+  };
+
+  it("glows white on our own sky, amber on someone else's", () => {
+    // The amber is the one canonical #ffd673, shared with every other Little Sun.
+    expect(littleSun).toMatch(/GLOW_COLOR\s*=\s*Color\(0xFFFFD673\)/);
+    expect(littleSun).toMatch(/GLOW_COLOR_OWN_SKY\s*=\s*Color\.White/);
+    // One `when`, three arms: night wins over everything (the moon never warms),
+    // then our own sky, then the wallpaper/foreign-app default.
+    expect(
+      sliceBetween(littleSun, "val targetGlowColor = when {", "val glowColor"),
+    ).toMatch(
+      /night\s*->\s*GLOW_COLOR_NIGHT[\s\S]*onOwnSky\s*->\s*GLOW_COLOR_OWN_SKY[\s\S]*else\s*->\s*GLOW_COLOR/,
+    );
+  });
+
+  it("eases between halo colours instead of cutting", () => {
+    // A sun that changes which sky it stands on must *warm* into the new colour.
+    // Every transition is soft (see the styling rules); a swap mid-morph is the
+    // jolt the whole hand-off machinery exists to avoid.
+    expect(
+      sliceBetween(littleSun, "val glowColor by", "val bodyColor"),
+    ).toMatch(
+      /animateColorAsState\([\s\S]*targetValue\s*=\s*targetGlowColor[\s\S]*tween\(\s*durationMillis\s*=\s*glowMorphMs/,
+    );
+  });
+
+  it("keeps both arriving discs white, and lets only the escape warm", () => {
+    const [cornerHandoff, freshArrival] = sunDiscCalls(interactionWindow);
+    expect(sunDiscCalls(interactionWindow)).toHaveLength(2);
+
+    // The corner placeholder waits on our loading sky for a web sun that now
+    // arrives white too (sunArriveSettleAt) - so it is white, not the amber it
+    // wore while it was still the Little Sun over the blocked app.
+    expect(cornerHandoff.replace(/\s/g, "")).toBe("SunDisc(onOwnSky=true)");
+
+    // The fresh disc tracks which sky is under it: white while it waits on ours,
+    // warming back to amber once tapping it turns the disc into the Little Sun.
+    // A literal `true` here is the #262 regression - it pinned the escape morph
+    // white all the way into an amber Little Sun.
+    expect(freshArrival).toMatch(
+      /onOwnSky\s*=\s*escapeStep\s*==\s*FreshArrivalEscapeStep\.NONE/,
+    );
+    expect(freshArrival).not.toMatch(/onOwnSky\s*=\s*true/);
+    // ...and it warms over exactly the glide that carries it there, so the colour
+    // lands with the position.
+    expect(freshArrival).toMatch(/glowMorphMs\s*=\s*FRESH_SUN_MORPH_MS/);
   });
 });

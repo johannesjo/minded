@@ -67,10 +67,21 @@ every state. The moon replaces it with a white one.
 | Daily questions (+ orbit dots) | companion look | white | 1.25 | snug |
 | Daily-questions success bloom (.62) | white | white | 1.25 | broad |
 | **Departing → Little Sun** | white, shrinking to 40px (web) / 30px (Android) | **amber** | 1.0 | snug |
+| **Arriving ← Little Sun** | same corner + disc size, growing back to full | white | 1.0 | snug → broad |
 
 The snug reach on the companion is *not* about colour: this low on the bar the
 broad bloom's far plume gets clipped by the screen edge below, pulling the disc's
 visible mass upward off the icon line (#106).
+
+The last two rows are the same morph in opposite directions, and only one of them
+warms. The halo answers to the surface the sun is *moving onto*: departing, that
+is arbitrary app content, so it warms on the way out; arriving, it is our own sky,
+so it comes home white and the morph is pure size and position. Position, disc
+size and reach mirror exactly — `sunArriveSettle` / `sunArriveSettleAt` are the
+departing targets with the warmth taken back out, and `sunSettle.test.ts` asserts
+warmth is the only field that differs. Arriving reused the departing target until
+#262, which put an orange flash at the top of every intervention re-shown after a
+session timer.
 
 ## Night (dark theme → moon)
 
@@ -110,10 +121,39 @@ wearing it.
 | Prompt card, Android | `ic_sun_widget_day_on_sky.xml` — same disc and rim, **white** bloom at the same `@ .28`; over `widget_sky_*` |
 | Prompt card, iOS | `CompanionSun(onOwnSky: true)` — same, over the matching sky image |
 | Widget-picker still, Android | `widget_preview_card.xml` — mirrors the card, so it uses the white-bloom drawable too |
+| Fresh-arrival sun, Android overlay | `SunDisc` in `InteractionWindow.FreshArrivalSun` with `onOwnSky` true while it waits — white disc, **white** glow, over the native loading sky. Night: `#eef2ff` disc, `#bed2ff` glow, like every other native disc |
 
 The card paints the same sky the app does, so the sun on it is on our surface and
 follows the in-app rule. Only the bloom's colour differs between each pair of
 twins — same stops, same alpha, same disc — so keep them in step.
+
+The fresh-arrival sun is the same test applied to a *native* disc. When an
+intervention fires on Android the WebView needs a beat to boot, so the overlay
+paints its own loading sky (`LoadingSky.kt`, mirroring the WebView's ambient sky)
+and greets the user with a native Compose disc that glides to the measured web
+sun and cross-fades into it. It is the first sun of every **fresh** intervention
+(`!isCornerArrival`, Android only) — on our sky, handing off to a white-haloed
+web sun — so it glows white. It wore the Little Sun's amber until #262, which
+meant a fresh intervention opened on an orange halo that turned white at the
+hand-off.
+
+Two suns in that file answer differently, and neither is a fixed property of its
+call site:
+
+- The **corner hand-off** placeholder *is* the Little Sun that just left the
+  blocked app. It waits on our loading sky too — for up to
+  `CORNER_PLACEHOLDER_FALLBACK_MS` (1.5 s), not a blink — but the arriving web sun
+  mounts at `warmth: 1` (`sunDepartSettleAt`) and warms back to white as it glides
+  home, so both sides are amber at the swap. It keeps `SunDisc()`'s default.
+- The **fresh-arrival** disc is also the escape hatch: tapping it retargets the
+  same disc to the saved Little Sun rest, glides it there, and cross-fades into
+  the real (amber) Little Sun. So `onOwnSky` is a *state* — true while it waits,
+  false once it is morphing away — and `SunDisc` eases between the two colours
+  over `glowMorphMs`, passed as the glide's own duration. The warming lands with
+  the position.
+
+The shared principle: on our sky the halo is white; the warming is always a
+hand-off in progress, and it is always an ease, never a cut.
 
 The moon needs no twin on either platform: it never warms on any surface.
 
@@ -126,6 +166,8 @@ pre-API-31 gallery renders it on the launcher's own surface, not on our sky.
   block comment, at the point the settles are defined
 - `CLAUDE.md` — the short form, under Styling Guidelines
 - `sunSettle.test.ts` — the guard tests
+- `sunHaloMirror.test.ts` — the same rule enforced across the language boundary
+  (the widget's Android/iOS twins, and the overlay's native Compose suns)
 - This file — the full state map
 
 To see the states side by side, use the styleguide's sun morph harness
