@@ -1,4 +1,5 @@
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
+import { customQuestionsToPrompts } from "@src/shared/data/customQuestions";
 import {
   filterSpecialWidgets,
   isCategoryEnabled,
@@ -77,19 +78,32 @@ What do I want to achieve?
 * categories with more questions should appear more often
  */
 
-export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
+export const getQuestionSmart = (
+  answers: Answer[],
+  customQuestions?: CustomQuestion[],
+): QuestionForPrompt => {
   const now = new Date();
   const isWorkDayToday = isWorkDay(now);
   const nowHours = now.getHours();
 
+  // The user's own questions join the pool as regular members of the
+  // MyQuestions category; their count feeds the same scoring the static
+  // categories get. With none written, the category simply never scores.
+  const customPrompts = customQuestionsToPrompts(customQuestions);
+  const questionPool = [...QUESTIONS_FOR_DEVICE, ...customPrompts];
+  const questionCountFor = (categoryId: QuestionCategoryId): number =>
+    categoryId === QuestionCategoryId.MyQuestions
+      ? customPrompts.length
+      : (QUESTION_CATEGORIES[categoryId]?.questions?.length ?? 0);
+
   if (!answers.length) {
-    return getRndQuestionConsideringMain(QUESTIONS_FOR_DEVICE);
+    return getRndQuestionConsideringMain(questionPool);
   }
 
   const nrOfAnswersMap: { [key in QuestionCategoryId]?: number } = {};
   answers.forEach((answer) => {
     const categoryForAnswer = QUESTION_CATEGORIES[answer.questionCategoryId];
-    if (!categoryForAnswer?.questions?.length) {
+    if (!categoryForAnswer || !questionCountFor(answer.questionCategoryId)) {
       return;
     }
     if (categoryForAnswer.isTodayOnlyCategory && !isToday(answer.ts)) {
@@ -111,13 +125,16 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     .filter(isCategoryEnabled)
     .forEach((categoryId) => {
       const questionCategory = QUESTION_CATEGORIES[categoryId];
+      const questionCount = questionCountFor(categoryId);
 
-      if (
-        questionCategory?.questions &&
-        questionCategory.questions.length > 0
-      ) {
-        pointsMap[categoryId] = 0;
+      // No questions to ask (static or user-written) - the category must not
+      // score at all, or an empty category could win and force the random
+      // fallback.
+      if (questionCount === 0) {
+        return;
       }
+
+      pointsMap[categoryId] = 0;
 
       if (typeof questionCategory?.frequencyModifier === "number") {
         pointsMap[categoryId] = questionCategory.frequencyModifier * -1;
@@ -164,14 +181,12 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
       }
 
       const nrOfAnswersForCategory = nrOfAnswersMap[categoryId] || 0;
-      if (nrOfAnswersForCategory >= 3 && questionCategory?.questions?.length) {
+      if (nrOfAnswersForCategory >= 3) {
         const currentPoints = pointsMap[categoryId] || 0;
         pointsMap[categoryId] =
           currentPoints +
           1 +
-          Math.round(
-            (nrOfAnswersForCategory / questionCategory.questions.length) * 10,
-          );
+          Math.round((nrOfAnswersForCategory / questionCount) * 10);
       } else if (nrOfAnswersForCategory >= 1) {
         const currentPoints = pointsMap[categoryId] || 0;
         pointsMap[categoryId] = currentPoints + nrOfAnswersForCategory;
@@ -203,7 +218,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
     }
   }
   const categoryToUse = getRndEntry(categoriesLowestScore).catId;
-  const questionsForCategory = QUESTIONS_FOR_DEVICE.filter(
+  const questionsForCategory = questionPool.filter(
     (q) => q.categoryId === categoryToUse,
   );
 
@@ -219,7 +234,7 @@ export const getQuestionSmart = (answers: Answer[]): QuestionForPrompt => {
   // });
 
   if (questionsForCategory.length === 0) {
-    return getRndQuestionConsideringMain(QUESTIONS_FOR_DEVICE);
+    return getRndQuestionConsideringMain(questionPool);
   }
   return getRndQuestionConsideringMain(questionsForCategory);
 };

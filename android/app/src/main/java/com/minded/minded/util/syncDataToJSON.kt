@@ -100,6 +100,16 @@ fun syncDataToJson(syncData: SyncData): String {
     }
     jsonObject.put("alternatives", alternativesArray)
 
+    val customQuestionsArray = JSONArray()
+    syncData.customQuestions.forEach { customQuestion ->
+        val questionObj = JSONObject()
+        questionObj.put("id", customQuestion.id)
+        questionObj.put("t", customQuestion.t)
+        questionObj.put("createdTS", customQuestion.createdTS)
+        customQuestionsArray.put(questionObj)
+    }
+    jsonObject.put("customQuestions", customQuestionsArray)
+
     val patternInsightStateObj = JSONObject()
     val shownInsightIdsByDateObj = JSONObject()
     syncData.patternInsightState.shownInsightIdsByDate.forEach { (dateKey, insightIds) ->

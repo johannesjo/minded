@@ -2,6 +2,7 @@ import { createSignal, onMount, Show } from "solid-js";
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
+import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
@@ -42,6 +43,12 @@ const Options = () => {
             <section class={styles.section}>
               <AlternativesSettings
                 initialAlternatives={initial.alternatives}
+              />
+            </section>
+
+            <section class={styles.section}>
+              <CustomQuestionsSettings
+                initialCustomQuestions={initial.customQuestions}
               />
             </section>
 

@@ -1,7 +1,7 @@
 import { createSignal, For, JSX, Show } from "solid-js";
 // @ts-ignore
 import styles from "./AnswerListEditable.module.scss";
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
 
 import { AnswerEntry } from "@src/shared/components/questionCategoryView/AnswerEntry";
 import { nanoid } from "nanoid";
@@ -14,6 +14,8 @@ export const AnswerListEditable: (props: {
   isShowAdd: boolean;
   questionCategoryId: QuestionCategoryId;
   answers: Answer[];
+  /** The user's own questions, for answers whose qid isn't in the static pool. */
+  customQuestions?: CustomQuestion[];
   onEdit: (upd: Answer) => void;
   onRemove: (id: string) => void;
   onAdd: (newAnswer: Answer) => void;
@@ -37,6 +39,7 @@ export const AnswerListEditable: (props: {
           {(answer) => (
             <AnswerEntry
               answer={answer}
+              customQuestions={props.customQuestions}
               onEdit={(upd) => props.onEdit(upd)}
               onRemove={() => props.onRemove(answer.id)}
             />

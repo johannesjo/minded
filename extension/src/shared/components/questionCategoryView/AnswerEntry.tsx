@@ -1,4 +1,4 @@
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
 import { createSignal, JSX } from "solid-js";
 import styles from "@src/shared/components/questionCategoryView/AnswerEntry.module.scss";
 import { Ico } from "@src/shared/components/ui/Ico";
@@ -8,6 +8,8 @@ import { formatQuestionText } from "@src/util/formatQuestionText";
 
 export const AnswerEntry: (props: {
   answer: Answer;
+  /** The user's own questions, for answers whose qid isn't in the static pool. */
+  customQuestions?: CustomQuestion[];
   isInitialEditMode?: boolean;
   onEdit: (upd: Answer) => void;
   onBlur?: () => void;
@@ -25,7 +27,8 @@ export const AnswerEntry: (props: {
   const [getIsShowEditBar, setIsShowEditBar] = createSignal<boolean>(false);
   const entryDomId = `answer-entry-${props.answer.id}`;
   const question = props.answer.qid
-    ? QUESTIONS.find((q) => q.id === props.answer.qid)
+    ? (QUESTIONS.find((q) => q.id === props.answer.qid) ??
+      props.customQuestions?.find((cq) => cq.id === props.answer.qid))
     : null;
 
   if (props.isInitialEditMode) {

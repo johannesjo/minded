@@ -17,6 +17,7 @@ import {
   getSyncData,
   setDailyQuestionsDoneForToday,
 } from "@src/dataInterface/commonSyncDataInterface";
+import { CustomQuestion } from "@src/dataInterface/syncData";
 import {
   CENTER_INDEX,
   getDashboardEntriesFromQuestions,
@@ -92,6 +93,11 @@ export const DashboardGroups: (props: {
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
+  // The user's own questions, so an answer card can show its question text in
+  // the hover title (custom qids aren't in the static pool the list looks in).
+  const [getCustomQuestions, setCustomQuestions] = createSignal<
+    CustomQuestion[]
+  >([]);
   const navigate = useNavigate();
 
   // The greeting: the centre pick sits at CENTER_INDEX once there are
@@ -142,6 +148,7 @@ export const DashboardGroups: (props: {
         window.clearTimeout(bannerExpiry);
       }
       setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
+      setCustomQuestions(syncData.customQuestions ?? []);
 
       // Steer this arrival's greeting away from the tile shown last time we
       // landed, so each return surfaces a fresh one (see greetingMemory).
@@ -347,7 +354,12 @@ export const DashboardGroups: (props: {
               );
 
             default:
-              return <DashboardAnswerList dashboardGroup={dg} />;
+              return (
+                <DashboardAnswerList
+                  dashboardGroup={dg}
+                  customQuestions={getCustomQuestions()}
+                />
+              );
           }
         })()}
       </div>

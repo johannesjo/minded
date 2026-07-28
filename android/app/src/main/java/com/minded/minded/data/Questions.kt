@@ -14,9 +14,16 @@ data class Answer(
     var modifiedAt: Long
 )
 
+// Must cover every category the TS side can hand to setQuestion
+// (extension/src/shared/data/questions.ts QuestionCategoryId):
+// parseJSONQuestion resolves it with valueOf(), and an unknown name throws -
+// the native side then never records lastQuestionForPrompt, so the
+// session-timer re-show and the small message window lose the question.
 enum class QuestionCategoryId {
     HealthierBrowsingHabits,
     HealthierAppUsage,
+    WhyReduceBrowsing,
+    WhyReduceAppUsage,
     Motivation,
     PersonalResources,
     RefocusHelperToday,
@@ -32,9 +39,15 @@ enum class QuestionCategoryId {
     Insomnia,
     UnderstandingProcrastination,
     SelfDiscovery,
+    SleepWindDown,
     SelfImprovement,
     Relationships,
     MindfulEating,
+    NoticingNow,
+    SelfCompassion,
+    LettingGo,
+    // Questions the user wrote themselves (SyncData.customQuestions).
+    MyQuestions,
 
     // NOTE: we filter out all questions from categories starting with X
     XEnergyLevelToday,

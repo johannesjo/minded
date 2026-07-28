@@ -210,3 +210,16 @@ export enum QID {
   // that gesture. See interaction/letGo/letGo.const.ts.
   LETGO1 = "LETGO1",
 }
+
+/**
+ * The id of a question the user wrote themselves (see
+ * shared/data/customQuestions.ts). Minted at creation ("CQ_" + nanoid), so it
+ * can never collide with the static QID enum above - and the prefix keeps a
+ * stored answer's origin recognisable in the sync JSON.
+ */
+export const CUSTOM_QUESTION_ID_PREFIX = "CQ_";
+export type CustomQuestionId = `CQ_${string}`;
+export const isCustomQuestionId = (
+  id: string | null | undefined,
+): id is CustomQuestionId =>
+  typeof id === "string" && id.startsWith(CUSTOM_QUESTION_ID_PREFIX);

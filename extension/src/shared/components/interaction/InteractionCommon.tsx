@@ -80,6 +80,7 @@ import {
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
+import { customQuestionsToPrompts } from "@src/shared/data/customQuestions";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
 import { formatQuestionText } from "@src/util/formatQuestionText";
 import { fadeOut } from "@src/util/animation";
@@ -102,6 +103,14 @@ import {
 
 interface InteractionCommonProps {
   questionForPrompt?: QuestionForPrompt;
+  /**
+   * A pinned question id the caller could not resolve against the static pool
+   * (a user-written "CQ_…" id from the Android re-show hash). Resolved here
+   * against syncData.customQuestions once storage is in hand, so a re-shown
+   * intervention lands on the same user-written question instead of falling
+   * back to a fresh random pick. Ignored when questionForPrompt is set.
+   */
+  pinnedQuestionId?: string;
   /**
    * The exact line the home-screen widget was showing, when the interaction was
    * opened by tapping that widget. If it matches a NOTICE cue or an ACTION_ADVICE
@@ -1439,8 +1448,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           ? matchWidgetLine(props.widgetLine)
           : undefined;
 
-        if (props.questionForPrompt) {
-          setInitialQuestion(props.questionForPrompt);
+        // A pinned id the caller's static lookup missed - a user-written
+        // question being re-shown. Its text lives in syncData, which is only
+        // now in hand.
+        const pinnedCustomQuestion = props.pinnedQuestionId
+          ? customQuestionsToPrompts(syncData.customQuestions).find(
+              (q) => q.id === props.pinnedQuestionId,
+            )
+          : undefined;
+
+        const pinnedQuestion = props.questionForPrompt ?? pinnedCustomQuestion;
+        if (pinnedQuestion) {
+          setInitialQuestion(pinnedQuestion);
           setFrictionLevel("normal");
           setModeWithoutReplacement("QUESTION");
         } else if (forcedFromWidget) {
@@ -1458,7 +1477,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setFrictionLevel("normal");
           setModeWithoutReplacement(forcedFromWidget.mode);
         } else {
-          const question = getQuestionSmart(syncData.answers);
+          const question = getQuestionSmart(
+            syncData.answers,
+            syncData.customQuestions,
+          );
           const modeDecision = getInteractionModeDecision(syncData, {
             target: props.interactionTarget,
             platform: props.interactionPlatform,
