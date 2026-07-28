@@ -6,10 +6,11 @@ import {
   ANDROID_EV_STOP,
   androidInterface,
 } from "@src/dataInterface/android/androidInterface";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import {
-  REFRESH_DASHBOARD_EV,
-  RE_GREET_DASHBOARD_HIDDEN_EV,
-} from "@src/ev.const";
+  markAppForegrounded,
+  reGreetAfterRealLook,
+} from "@src/shared/components/dashboard/greetingMemory";
 import {
   addWrapperClasses,
   companionWord,
@@ -31,14 +32,6 @@ import { fadeOutThen } from "@src/util/animation";
 // Kept in sync with the `.setupInvitationMsg` opacity transition in
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
 const INVITE_FADE_MS = 300;
-
-// How long the app must have been visible (onStart → onStop) before being hidden
-// re-greets the dashboard, staging a fresh tile for the next return. The swap
-// happens on *stop* - when the app is genuinely hidden, not merely unfocused - so
-// the card is never changed in front of the user; the fresh tile is simply
-// already there when they come back. Below this, a quick open-and-leave keeps the
-// current tile, so a barely-glanced-at greeting isn't churned. Tune here.
-const MIN_FOREGROUND_FOR_REGREET_MS = 90_000;
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
@@ -117,12 +110,6 @@ const MainAndroid = () => {
     });
   };
 
-  // When the app last became visible (onStart). Seeded with "now" for the cold
-  // launch (whose onStart may fire before this listener attaches) so a quick
-  // open-and-leave right after launch keeps the tile the dashboard just mounted
-  // with.
-  let foregroundedAtTs = Date.now();
-
   onMount(() => {
     refresh();
 
@@ -130,21 +117,14 @@ const MainAndroid = () => {
       // The app is visible again - start (or restart) timing this visible
       // session. onStart, not onResume, so a transient focus flicker (a dialog
       // over the app) doesn't reset the clock mid-session.
-      foregroundedAtTs = Date.now();
+      markAppForegrounded();
     };
 
     const stopHandler = () => {
-      // The app is now genuinely hidden (onStop, not onPause). Re-roll the
-      // greeting *here*, offscreen, so a fresh tile is already in place when the
-      // user returns and the card never changes in front of them (calm is the
-      // product; a card only ever changes offscreen). Only if the app was
-      // actually in use for a while: a quick open-and-leave keeps the current
-      // tile, so a barely-glanced-at greeting isn't churned (see
-      // MIN_FOREGROUND_FOR_REGREET_MS). The WebView isn't reloaded on return, so
-      // the dashboard never remounts to re-greet on its own.
-      if (Date.now() - foregroundedAtTs >= MIN_FOREGROUND_FOR_REGREET_MS) {
-        window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
-      }
+      // The app is now genuinely hidden (onStop, not onPause) - the moment to
+      // re-greet, offscreen. Shared with the iOS shell so the rule can't drift
+      // between them (see reGreetAfterRealLook).
+      reGreetAfterRealLook();
     };
 
     const resumeHandler = () => {

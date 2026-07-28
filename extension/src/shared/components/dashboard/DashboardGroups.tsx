@@ -27,7 +27,9 @@ import {
 import {
   getLastGreetingKey,
   setLastGreetingKey,
+  takeReGreetRequest,
 } from "@src/shared/components/dashboard/greetingMemory";
+import { decideGreeting } from "@src/shared/components/dashboard/greetingDecision";
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
@@ -132,14 +134,15 @@ export const DashboardGroups: (props: {
 
   // The greeting the user is actually looking at. Deliberately its *own* signal
   // rather than a memo over getDashboardGroups (the live data): the displayed
-  // greeting is only ever (re)set when the screen opens or on a deliberate
-  // re-greet - which only ever fires while the dashboard is hidden. A routine
-  // in-view refresh updates the underlying data (and the "look back" count) but
-  // leaves this hero untouched, so the greeting is never seen to change under
-  // the user (calm is the product; a greeting only changes offscreen). Without
-  // this, a visible REFRESH_DASHBOARD_EV that altered the group count, re-ran
-  // guardHeroSlot, or diffed the hero's data would hand the keyed <Show> a fresh
-  // object, remounting the card (a replayed entrance) right in front of the user.
+  // greeting is only ever set when the screen opens - holding whatever greeted
+  // last, unless a re-greet freed it - or on a deliberate re-greet, which only
+  // ever fires while the dashboard is hidden. A routine in-view refresh updates
+  // the underlying data (and the "look back" count) but leaves this hero
+  // untouched, so the greeting is never seen to change under the user (calm is
+  // the product; a greeting only changes offscreen). Without this, a visible
+  // REFRESH_DASHBOARD_EV that altered the group count, re-ran guardHeroSlot, or
+  // diffed the hero's data would hand the keyed <Show> a fresh object,
+  // remounting the card (a replayed entrance) right in front of the user.
   const [getHeroGroup, setHeroGroup] = createSignal<
     DashboardGroup | undefined
   >();
@@ -178,9 +181,10 @@ export const DashboardGroups: (props: {
     getDashboardGroups().length -
     (getHeroGroup() || getPendingGreeting()?.hero ? 1 : 0);
 
-  // Remember the tile we actually greeted with, so the next arrival can pick a
-  // different one. Tracking the rendered hero (rather than the raw pick) keeps
-  // the memory honest when a refresh preserves the existing greeting.
+  // Remember the tile we actually greeted with, so a return can hold it and a
+  // re-greet can steer away from it. Tracking the rendered hero (rather than the
+  // raw pick) keeps the memory honest when a refresh preserves the existing
+  // greeting.
   createEffect(() => {
     const hero = getHeroGroup();
     if (hero) setLastGreetingKey(getGreetingKey(hero));
@@ -206,9 +210,16 @@ export const DashboardGroups: (props: {
       setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
       setCustomQuestions(syncData.customQuestions ?? []);
 
-      // Steer this arrival's greeting away from the tile shown last time we
-      // landed, so each return surfaces a fresh one (see greetingMemory).
-      const avoidGreetingKey = getLastGreetingKey();
+      // Whether this landing decides the greeting at all - held or freshly
+      // rolled - and which way the rebuilt list should be steered.
+      const { isChoosingGreeting, steer } = decideGreeting({
+        isGridView: !!props.forceRevealed,
+        isReGreet: reselect,
+        isGreetingOnScreen: getHeroGroup() !== undefined,
+        lastGreetingKey: getLastGreetingKey(),
+        takeReGreetRequest,
+      });
+
       const existingDashboardGroups = getDashboardGroups();
       let groups: DashboardGroup[];
       if (!reselect && existingDashboardGroups.length) {
@@ -216,31 +227,35 @@ export const DashboardGroups: (props: {
           syncData,
           existingDashboardGroups,
           undefined,
-          avoidGreetingKey,
+          steer,
         );
       } else {
-        groups = getDashboardEntriesFromQuestions(
-          syncData,
-          undefined,
-          avoidGreetingKey,
-        );
+        groups = getDashboardEntriesFromQuestions(syncData, undefined, steer);
       }
       setDashboardGroups(groups);
 
-      // Reveal the greeting the user sees only when the screen is opening (no
-      // hero on screen yet) or on a deliberate re-greet - which only ever fires
-      // while the dashboard is hidden. A routine in-view refresh (reselect
-      // false, hero already shown) deliberately leaves the displayed hero as it
-      // is, so the greeting never changes in front of the user; it always just
-      // eases in on open and then holds still.
+      // The greeting slot takes whatever the build put in it - the held tile,
+      // or a fresh pick - and only when this landing decides the greeting at
+      // all: the screen opening, or a deliberate re-greet. A routine in-view
+      // refresh leaves the displayed hero exactly as it is, so the greeting is
+      // never seen to change under the user.
       //
-      // "No hero yet" is no longer only the first refresh: with nothing of the
-      // user's to reflect back there is no greeting at all, so this branch stays
-      // reachable for as long as the dashboard is empty - and an in-view refresh
-      // *does* reach it (Android/iOS dispatch one on resume). That is the right
-      // moment to bring the first card in; it just has to arrive softly, which
-      // is what showGreeting handles.
-      if (reselect || getHeroGroup() === undefined) {
+      // "No greeting yet" is no longer only the first refresh: with nothing of
+      // the user's to reflect back there is no greeting at all, so that branch
+      // stays reachable for as long as the dashboard is empty - and an in-view
+      // refresh *does* reach it (Android/iOS dispatch one on resume). That is
+      // the right moment to bring the first card in; it just has to arrive
+      // softly, which is what showGreeting handles.
+      //
+      // The grid has no greeting of its own, but it shows the same words when
+      // it holds no cards - so it settles the slot with no hero, rather than
+      // sitting this out and leaving those words unset. Passing no hero is also
+      // what keeps it from recording a greeting it never showed: the memory
+      // would otherwise remember the grid's centre card, and the dashboard
+      // would come back greeting with a tile the user was never greeted with.
+      if (props.forceRevealed) {
+        showGreeting(undefined, groups);
+      } else if (isChoosingGreeting) {
         showGreeting(heroOf(groups), groups);
       }
     });

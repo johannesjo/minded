@@ -2,6 +2,7 @@ import { SyncData } from "@src/dataInterface/syncData";
 import { DashboardGroup } from "@src/shared/components/dashboard/dashboard.model";
 import {
   getDashboardEntriesFromQuestions,
+  GreetingSteer,
   guardHeroSlot,
 } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 
@@ -9,12 +10,17 @@ export const updateDashboardEntriesFromQuestions = (
   syncData: SyncData,
   existingDashboardGroups: DashboardGroup[],
   now = new Date(),
-  avoidGreetingKey?: string,
+  // Steer the fresh build the same way the existing one was steered (see
+  // GreetingSteer). The greeting is only re-chosen when the whole list is
+  // rebuilt, so on this path that's always `hold` - and it has to be, or the
+  // fresh build would place a different greeting, the lengths would disagree,
+  // and the merge below would fall back to replacing the arrangement wholesale.
+  greetingSteer?: GreetingSteer,
 ): DashboardGroup[] => {
   const newDashboardGroups = getDashboardEntriesFromQuestions(
     syncData,
     now,
-    avoidGreetingKey,
+    greetingSteer,
   );
 
   if (existingDashboardGroups.length !== newDashboardGroups.length) {

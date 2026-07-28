@@ -158,7 +158,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
-    it("avoids repeating the greeting shown last time, so each landing surfaces a new tile", () => {
+    it("avoids repeating the greeting when it is re-rolled, so the new tile is actually new", () => {
       const syncData = createMockSyncData({
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
@@ -174,11 +174,11 @@ describe("getDashboardEntriesFromQuestions", () => {
       const first = greetingOf(getDashboardEntriesFromQuestions(syncData, now));
       const firstKey = first.id;
 
-      // Next landing with the SAME random draw would normally repeat the same
+      // A re-roll with the SAME random draw would normally repeat the same
       // tile - but passing the last key as avoidGreetingKey must steer it away.
       mockRandom(0.1);
       const second = greetingOf(
-        getDashboardEntriesFromQuestions(syncData, now, firstKey),
+        getDashboardEntriesFromQuestions(syncData, now, { avoid: firstKey }),
       );
       const secondKey = second.id;
 
@@ -193,11 +193,9 @@ describe("getDashboardEntriesFromQuestions", () => {
       });
 
       mockRandom(0.999);
-      const entries = getDashboardEntriesFromQuestions(
-        syncData,
-        now,
-        QuestionCategoryId.GoodPlans,
-      );
+      const entries = getDashboardEntriesFromQuestions(syncData, now, {
+        avoid: QuestionCategoryId.GoodPlans,
+      });
 
       expect(greetingOf(entries)).toBeDefined();
       expect(isGreetingEligible(greetingOf(entries), now)).toBe(true);
@@ -422,5 +420,113 @@ describe("isGreetingEligible", () => {
         monNight,
       ),
     ).toBe(true);
+  });
+});
+
+// The greeting changes only offscreen, so a build that isn't re-rolling is told
+// to hold the tile the user already has. Holding steers the pick rather than
+// overriding it afterwards - which is what keeps the list identical to one that
+// landed there by chance, with no stranded card beside the greeting.
+describe("holding the greeting", () => {
+  const now = new Date("2024-01-15T12:00:00");
+  const night = new Date("2024-01-15T03:00:00");
+  const answer = (categoryId: QuestionCategoryId, id: string) => ({
+    id,
+    qid: null,
+    questionCategoryId: categoryId,
+    val: `answer ${id}`,
+    ts: Date.now(),
+  });
+  const greetingOf = (entries: DashboardGroup[]) =>
+    entries[entries.length > CENTER_INDEX ? CENTER_INDEX : entries.length - 1];
+  const keyOf = (entries: DashboardGroup[]) => greetingOf(entries).id;
+
+  beforeEach(() => (isToday as jest.Mock).mockReturnValue(true));
+  afterEach(() => {
+    // Restore first: a leaked Math.random spy would steer a later arrival.
+    jest.restoreAllMocks();
+    (isToday as jest.Mock).mockReturnValue(false);
+    (isThisWeek as jest.Mock).mockReturnValue(false);
+  });
+
+  const syncDataWithThreeCards = () =>
+    createMockSyncData({
+      answers: [
+        answer(QuestionCategoryId.GoodPlans, "a1"),
+        answer(QuestionCategoryId.Motivation, "a2"),
+        answer(QuestionCategoryId.Gratitude, "a3"),
+      ],
+    });
+
+  it("greets with the held tile whatever the draw would have picked", () => {
+    const syncData = syncDataWithThreeCards();
+    for (let r = 0; r < 1; r += 0.05) {
+      mockRandom(r);
+      const entries = getDashboardEntriesFromQuestions(syncData, now, {
+        hold: QuestionCategoryId.Gratitude,
+      });
+      expect(keyOf(entries)).toBe(QuestionCategoryId.Gratitude);
+    }
+  });
+
+  // The bug this shape prevents: steering the pick *away* from the tile and
+  // then moving that tile back left the discarded pick (often an extra quote)
+  // in the list. On a lone sky greeting that flipped the group count from 1 to
+  // 2, which grew a "look back" button and silently killed the card's own tap
+  // target (see createDashboardCardInteractivity).
+  it("leaves the list exactly as a fresh pick would have", () => {
+    // Holding steers the pick instead of overriding it afterwards, so the list
+    // is only ever reordered - never grown. When the greeting slot could still
+    // gain a card (the quote, since removed), overriding afterwards left the
+    // discarded pick stranded beside the held tile: on a lone sky greeting that
+    // turned one group into two, which grew a "look back" button and silently
+    // killed the card's own tap target (see createDashboardCardInteractivity).
+    const syncData = createMockSyncData({
+      answers: [],
+      energyLvlTS: Date.now(),
+      energyLvlVal: 3,
+    });
+    // The one card a lone energy-level user has, greeting them on arrival.
+    mockRandom(0);
+    const arrival = getDashboardEntriesFromQuestions(syncData, now);
+    expect(arrival).toHaveLength(1);
+    expect(keyOf(arrival)).toBe(QuestionCategoryId.XEnergyLevelToday);
+
+    for (let r = 0; r < 1; r += 0.05) {
+      mockRandom(r);
+      const back = getDashboardEntriesFromQuestions(syncData, now, {
+        hold: QuestionCategoryId.XEnergyLevelToday,
+      });
+      expect(back).toHaveLength(1);
+      expect(keyOf(back)).toBe(QuestionCategoryId.XEnergyLevelToday);
+    }
+  });
+
+  it("falls back to a fresh pick when the held tile is gone", () => {
+    // e.g. its last answer was deleted on the page just visited
+    const syncData = syncDataWithThreeCards();
+    const entries = getDashboardEntriesFromQuestions(syncData, now, {
+      hold: QuestionCategoryId.HelpfulTools,
+    });
+    expect(greetingOf(entries)).toBeDefined();
+    expect(keyOf(entries)).not.toBe(QuestionCategoryId.HelpfulTools);
+  });
+
+  it("won't hold a recap whose window closed while the user was away", () => {
+    // Holding overrides the randomness, never the rules: a morning/work-day
+    // card must no more greet at 3am on the way back than on a fresh pick.
+    const syncData = createMockSyncData({
+      answers: [
+        answer(QuestionCategoryId.RefocusHelperToday, "f1"),
+        answer(QuestionCategoryId.Gratitude, "a3"),
+      ],
+    });
+    for (let r = 0; r < 1; r += 0.05) {
+      mockRandom(r);
+      const entries = getDashboardEntriesFromQuestions(syncData, night, {
+        hold: QuestionCategoryId.RefocusHelperToday,
+      });
+      expect(keyOf(entries)).not.toBe(QuestionCategoryId.RefocusHelperToday);
+    }
   });
 });

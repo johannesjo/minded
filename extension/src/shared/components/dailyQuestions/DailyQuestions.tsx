@@ -16,6 +16,7 @@ import {
   QuestionForPrompt,
 } from "@src/shared/data/questions";
 import { getRndEntry } from "@src/util/getRndEntry";
+import { RE_GREET_DASHBOARD_HIDDEN_EV } from "@src/ev.const";
 import { Question } from "@src/shared/components/interaction/Question";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Answer } from "@src/dataInterface/syncData";
@@ -126,6 +127,14 @@ const DailyQuestions = () => {
   const afterAni = () => {
     window.clearTimeout(t0);
     t0 = setTimeout(() => {
+      // Free the dashboard greeting on the way back. The greeting normally
+      // holds across a return (calm is the product; a card only ever changes
+      // offscreen) - but the user has just spent a whole flow answering, so
+      // greeting them with the tile from before it would be the one surface
+      // that reflects the present moment ignoring what just happened. This
+      // fires while the dashboard is still out of sight, so the fresh tile is
+      // in place before they land.
+      window.dispatchEvent(new Event(RE_GREET_DASHBOARD_HIDDEN_EV));
       navigate("/");
     }, AFTER_ANI_WAIT_DURATION);
   };

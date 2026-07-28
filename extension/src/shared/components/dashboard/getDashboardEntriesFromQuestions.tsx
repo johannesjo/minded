@@ -87,19 +87,40 @@ export const guardHeroSlot = (
   return entries;
 };
 
-// A stable identity for a greeting candidate, used to remember which tile we
-// last greeted with so the next arrival can surface a different one. Every card
-// left on the dashboard is one of the user's own, so each carries a category id
-// (the id-less quote card was the one exception, and it's gone).
+// A stable identity for a greeting candidate, used to remember which tile is
+// greeting the user - so a return can hold it and a re-greet can steer away from
+// it. Every card left on the dashboard is one of the user's own, so each carries
+// a category id (the id-less quote card was the one exception, and it's gone).
 export const getGreetingKey = (dg: DashboardGroup): string => dg.id;
+
+/**
+ * How this build should choose the greeting, given the tile the user currently
+ * has (`getLastGreetingKey`). The two are exclusive, and between them they are
+ * the whole rule that the greeting changes only offscreen:
+ *
+ * - `hold`: keep greeting with that tile. Landing on the dashboard again - back
+ *   from a card's page, from settings, from anywhere - is a return, not a new
+ *   arrival, so the greeting must be where the user left it.
+ * - `avoid`: roll a new one, but not the same tile twice in a row. Only on a
+ *   deliberate re-greet (RE_GREET_DASHBOARD_HIDDEN_EV), which always fires
+ *   while the dashboard is out of sight.
+ *
+ * Holding steers the pick rather than overriding it afterwards, so a held
+ * greeting is placed by the very same code that places a fresh one and the list
+ * is exactly what it would be had the pick landed there by chance. It overrides
+ * the randomness, though, never the rules: a held tile that has since gone (its
+ * last answer deleted) or fallen out of its time window is simply not there to
+ * hold, and the fresh pick stands - or, with nothing left that may greet, the
+ * empty sky does.
+ */
+export type GreetingSteer =
+  | { hold: string | undefined; avoid?: undefined }
+  | { avoid: string | undefined; hold?: undefined };
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
-  // The greeting shown on the previous arrival, if any. We avoid repeating it so
-  // each landing surfaces a fresh tile - but only when an alternative exists, so
-  // we never end up with nothing to greet with.
-  avoidGreetingKey?: string,
+  greetingSteer: GreetingSteer = { avoid: undefined },
 ): DashboardGroup[] => {
   const dashboardGroups: DashboardGroup[] = [];
   const groupsToCheck = [
@@ -157,11 +178,11 @@ export const getDashboardEntriesFromQuestions = (
 
   // Move the greeting (the centre pick the dashboard opens on) to CENTER_INDEX.
   // The pick is drawn only from the reflective/self-report cards
-  // (GREETING_ELIGIBLE_TYPES). Runs on every platform: each arrival re-rolls the
-  // greeting (see avoidGreetingKey + the RE_GREET trigger) so the dashboard
-  // never greets you with the same tile twice in a row. Out-of-window question
-  // recaps are kept out of the pool (isGreetingEligible) so a morning card never
-  // greets you at night - it stays in "look back" only.
+  // (GREETING_ELIGIBLE_TYPES). Runs on every platform. Which tile ends up in the
+  // slot is `greetingSteer`'s call - held from the last look, or freshly rolled
+  // away from it - but the placement below is the same either way. Out-of-window
+  // question recaps are kept out of the pool (isGreetingEligible) so a morning
+  // card never greets you at night - it stays in "look back" only.
   const options = sortedEntries.reduce<{ index: number; key: string }[]>(
     (acc, entry, index) => {
       if (isGreetingEligible(entry, now))
@@ -177,16 +198,24 @@ export const getDashboardEntriesFromQuestions = (
   // that slot with a borrowed quote - the empty sky says the same thing more
   // honestly, without a card that isn't about you.
   if (options.length) {
-    // Prefer a tile different from the one shown last time we landed, so each
-    // arrival feels fresh rather than possibly repeating. Only narrow the pool
-    // when an alternative remains - never leave nothing to greet with. With a
-    // single card there is no alternative at all any more (the quote used to be
-    // a permanent second option), so that one card greets every arrival: honest,
-    // and better than reaching for something that isn't the user's.
-    const pickable = options.filter((o) => o.key !== avoidGreetingKey);
+    // Hold the tile the user already has, when it's still one of the options -
+    // gone, or out of its window since they left, it simply isn't there to hold
+    // and the pick below stands.
+    const held =
+      greetingSteer.hold === undefined
+        ? undefined
+        : options.find((o) => o.key === greetingSteer.hold);
+
+    // Rolling a new one: steer away from the tile being replaced, so a re-greet
+    // doesn't land on it again. Only while an alternative remains - never leave
+    // nothing to greet with. With a single card there is no alternative at all
+    // any more (the quote used to be a permanent second option), so that one
+    // card greets every arrival: honest, and better than reaching for something
+    // that isn't the user's.
+    const pickable = options.filter((o) => o.key !== greetingSteer.avoid);
     const pool = pickable.length > 0 ? pickable : options;
 
-    const chosen = pool[getRndInt(0, pool.length - 1)];
+    const chosen = held ?? pool[getRndInt(0, pool.length - 1)];
     const [greeting] = sortedEntries.splice(chosen.index, 1);
     sortedEntries.splice(CENTER_INDEX, 0, greeting);
   }

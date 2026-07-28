@@ -98,7 +98,7 @@ const MainWrapper = (props: RouteSectionProps) => {
   const [getIsCompanionHovered, setIsCompanionHovered] =
     createSignal<boolean>(false);
   let shouldRestoreCompanionFocus = false;
-  let companionTapTargetEl: HTMLButtonElement = undefined!;
+  const companionTapTargetEl: HTMLButtonElement = undefined!;
 
   const location = useLocation();
   const isDashboard = () => location.pathname === "/";
@@ -259,6 +259,7 @@ const MainWrapper = (props: RouteSectionProps) => {
     const rafId = requestAnimationFrame(reanchorCompanion);
     window.addEventListener("resize", reanchorCompanion);
     window.addEventListener("androidSafeAreaChanged", reanchorCompanion);
+
     onCleanup(() => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", reanchorCompanion);
