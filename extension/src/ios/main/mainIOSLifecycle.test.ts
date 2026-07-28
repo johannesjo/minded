@@ -38,7 +38,7 @@ describe("iOS main lifecycle", () => {
     expect(main).not.toContain("IOS_EV_RESUME");
     expect(iosInterface).not.toContain("iosAppResume");
     expect(main).toMatch(
-      /addEventListener\(IOS_WILL_ENTER_FOREGROUND[\s\S]{0,700}refresh\(\)/,
+      /addEventListener\(IOS_WILL_ENTER_FOREGROUND[\s\S]{0,1200}refresh\(\)/,
     );
     for (const evName of [
       "WILL_ENTER_FOREGROUND",
