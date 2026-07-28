@@ -19,6 +19,7 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import {
   CENTER_INDEX,
+  findReturnGreeting,
   getDashboardEntriesFromQuestions,
   getGreetingKey,
 } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
@@ -26,7 +27,7 @@ import {
   getLastGreetingKey,
   setLastGreetingKey,
   setOpenedGreetingKey,
-  takeReturnGreeting,
+  takeOpenedGreetingKey,
 } from "@src/shared/components/dashboard/greetingMemory";
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
@@ -146,7 +147,9 @@ export const DashboardGroups: (props: {
       setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
 
       // Steer this arrival's greeting away from the tile shown last time we
-      // landed, so each return surfaces a fresh one (see greetingMemory).
+      // landed, so a fresh arrival doesn't repeat it (see greetingMemory). A
+      // *return* from a card the user opened is pinned to that card instead -
+      // see the hero pick below.
       const avoidGreetingKey = getLastGreetingKey();
       const existingDashboardGroups = getDashboardGroups();
       let groups: DashboardGroup[];
@@ -174,12 +177,17 @@ export const DashboardGroups: (props: {
       // eases in on open and then holds still.
       if (reselect || getHeroGroup() === undefined) {
         // Coming back from the card the user just opened is a return, not an
-        // arrival: greet with that same card again, so walking in and back out
-        // lands you where you were. Always consumed (never left pinned for a
-        // later arrival), but a deliberate re-greet is an explicit fresh pick
-        // and still wins.
-        const returnGreeting = takeReturnGreeting(groups, getGreetingKey);
-        setHeroGroup((reselect ? undefined : returnGreeting) ?? heroOf(groups));
+        // arrival: greet with that same card again (see greetingMemory). The
+        // pin is consumed here either way - a deliberate re-greet is the
+        // explicit fresh pick (it also drops the pin app-wide, in RouteCmp,
+        // for the far more common case where this dashboard isn't even
+        // mounted), and the grid has no greeting to hold still.
+        const openedKey = takeOpenedGreetingKey();
+        const returnGreeting =
+          reselect || props.forceRevealed
+            ? undefined
+            : findReturnGreeting(groups, openedKey);
+        setHeroGroup(returnGreeting ?? heroOf(groups));
       }
     });
   };
@@ -308,8 +316,8 @@ export const DashboardGroups: (props: {
       if (isInteractive() && "id" in dg) {
         // Remember the greeting we're walking into, so returning from it lands
         // on this same card instead of a freshly rolled one (greetingMemory).
-        // Only from the greeting itself - in the "look back" grid you return to
-        // the grid, which has no single card to hold still.
+        // Only from the greeting itself - the "look back" grid you return to
+        // has no greeting to hold still.
         if (isSingleCard) setOpenedGreetingKey(getGreetingKey(dg));
         props.onQuestionCategorySelect?.(dg.id);
       }

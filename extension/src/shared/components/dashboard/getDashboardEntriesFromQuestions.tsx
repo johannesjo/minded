@@ -78,12 +78,33 @@ export const guardHeroSlot = (
 export const getGreetingKey = (dg: DashboardGroup): string =>
   "id" in dg ? dg.id : dg.type;
 
+// The card to greet a *return* with: the one the user opened from the greeting,
+// if it's still there and still allowed to greet right now. It bypasses the
+// random pick (that's the point - the return holds still), but not the rules:
+// a morning recap whose window closed while the user was away must not come
+// back as the greeting, exactly as isGreetingEligible keeps it out of a fresh
+// pick. Nothing to return to (the card's last answer deleted on the page just
+// visited, or its window since passed) simply yields undefined, and the arrival
+// falls back to the fresh pick.
+export const findReturnGreeting = (
+  entries: DashboardGroup[],
+  key: string | undefined,
+  now = new Date(),
+): DashboardGroup | undefined =>
+  key === undefined
+    ? undefined
+    : entries.find(
+        (entry) =>
+          getGreetingKey(entry) === key && isGreetingEligible(entry, now),
+      );
+
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
   // The greeting shown on the previous arrival, if any. We avoid repeating it so
   // each landing surfaces a fresh tile - but only when an alternative exists, so
-  // we never end up with nothing to greet with.
+  // we never end up with nothing to greet with. (A *return* from a card the user
+  // opened is pinned to that card instead - see findReturnGreeting.)
   avoidGreetingKey?: string,
 ): DashboardGroup[] => {
   const dashboardGroups: DashboardGroup[] = [];
@@ -147,9 +168,11 @@ export const getDashboardEntriesFromQuestions = (
   // natural fallback when nothing reflective qualifies yet (an empty eligible
   // pool always lands on the quote). Runs on every platform: each arrival
   // re-rolls the greeting (see avoidGreetingKey + the RE_GREET trigger) so the
-  // dashboard never greets you with the same tile twice in a row. Out-of-window
-  // question recaps are kept out of the pool (isGreetingEligible) so a morning
-  // card never greets you at night - it stays in "look back" only.
+  // dashboard never greets you with the same tile twice in a row - the one
+  // exception being a return from a card the user themselves opened, which
+  // deliberately greets with that same tile again (findReturnGreeting).
+  // Out-of-window question recaps are kept out of the pool (isGreetingEligible)
+  // so a morning card never greets you at night - it stays in "look back" only.
   const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
     if (isGreetingEligible(entry, now)) acc.push(i);
     return acc;

@@ -1,8 +1,11 @@
-// Remembers which tile last greeted the user on the dashboard so the next
-// arrival can surface a different one. Module-level state (not persisted): it
-// survives route navigations within a session - which is exactly when "landing
-// on the dashboard" repeats - and harmlessly resets on a full reload, where a
-// fresh random greeting is fine anyway.
+// What greeted the user on the dashboard, and what they walked into from it.
+// Module-level state (not persisted): it survives route navigations within a
+// session - which is exactly when "landing on the dashboard" repeats - and
+// harmlessly resets on a full reload, where a fresh random greeting is fine
+// anyway.
+
+// The tile that last greeted the user, so the next arrival can surface a
+// different one.
 let lastGreetingKey: string | undefined;
 
 export const getLastGreetingKey = (): string | undefined => lastGreetingKey;
@@ -15,27 +18,18 @@ export const setLastGreetingKey = (key: string | undefined): void => {
 // greeting card and opened its page. Coming back from there is a return, not a
 // fresh arrival: the card you just looked at should still be the card that
 // greets you. Swapping it for another one in that moment reads as "wasn't there
-// something else here?" - the one thing the calm greeting shouldn't do. Kept
-// apart from lastGreetingKey (which steers arrivals *away* from a repeat) and
-// consumed by the very next greeting pick, so the arrival after the return
-// re-greets as usual.
+// something else here?", which is not how a calm greeting should behave. Kept
+// apart from lastGreetingKey (which steers arrivals *away* from a repeat).
 let openedGreetingKey: string | undefined;
 
 export const setOpenedGreetingKey = (key: string | undefined): void => {
   openedGreetingKey = key;
 };
 
-// The card to return to, if it's still on the dashboard - read *and* cleared,
-// so the pin only ever holds for the one return it was set for. A card that
-// vanished in the meantime (its last answer deleted in the page just visited)
-// simply yields undefined and the caller falls back to a fresh pick.
-export const takeReturnGreeting = <T>(
-  groups: T[],
-  getKey: (group: T) => string,
-): T | undefined => {
+// Read *and* cleared: the pin only ever holds for the one return it was set
+// for, so the arrival after that re-greets as usual.
+export const takeOpenedGreetingKey = (): string | undefined => {
   const key = openedGreetingKey;
   openedGreetingKey = undefined;
-  return key === undefined
-    ? undefined
-    : groups.find((group) => getKey(group) === key);
+  return key;
 };

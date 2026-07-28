@@ -66,6 +66,22 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
+  // The pin that makes a return greet with the card the user opened is only
+  // meaningful if it's read *where the hero is chosen*. Hoisted out of that
+  // branch, a routine in-view REFRESH_DASHBOARD_EV would eat it, the return
+  // would silently go back to a re-rolled tile, and every unit test around
+  // greetingMemory would stay green. This asserts the wiring itself.
+  it("consumes the opened-greeting pin only where the greeting is (re)chosen", () => {
+    expect(normalizedComponent).toContain(
+      "if (reselect || getHeroGroup() === undefined) {",
+    );
+    expect(normalizedComponent).toMatch(
+      /if \(reselect \|\| getHeroGroup\(\) === undefined\) \{[^}]*const openedKey = takeOpenedGreetingKey\(\);/,
+    );
+    // Exactly one consumer, so no other path can quietly drain it.
+    expect(component.match(/takeOpenedGreetingKey\(\)/g)).toHaveLength(1);
+  });
+
   it("names the history route 'look back' without an expansion chevron", () => {
     expect(normalizedComponent).toMatch(
       /<Btn plain class=\{styles\.revealBtn\} onClick=\{revealAll\}>\s*look back\s*<\/Btn>/,

@@ -1,5 +1,6 @@
 import {
   CENTER_INDEX,
+  findReturnGreeting,
   getDashboardEntriesFromQuestions,
   guardHeroSlot,
   isGreetingEligible,
@@ -376,5 +377,43 @@ describe("isGreetingEligible", () => {
     expect(
       isGreetingEligible({ type: DashboardGroupType.Quote }, monMorning),
     ).toBe(false);
+  });
+});
+
+// Tapping the single greeting card opens its page; coming back is a return, not
+// a fresh arrival, so the same card greets you again instead of a re-rolled one.
+describe("findReturnGreeting", () => {
+  const txt = (id: QuestionCategoryId): DashboardGroupTxtQuestion => ({
+    id,
+    type: DashboardGroupType.TxtQuestion,
+    dashboardTxt: "x",
+    answers: [],
+  });
+  const monMorning = new Date("2024-01-15T09:00:00"); // Monday, work-day morning
+  const monNight = new Date("2024-01-15T03:00:00"); // Monday, middle of the night
+  const opened = txt(QuestionCategoryId.RefocusHelperToday);
+  const other = txt(QuestionCategoryId.GoodToday);
+
+  it("greets with the card the user opened", () => {
+    expect(findReturnGreeting([other, opened], opened.id, monMorning)).toBe(
+      opened,
+    );
+  });
+
+  it("has nothing to return to when no card was opened", () => {
+    expect(
+      findReturnGreeting([other, opened], undefined, monMorning),
+    ).toBeUndefined();
+  });
+
+  it("has nothing to return to once the card is gone", () => {
+    // e.g. its last answer was deleted on the page just visited
+    expect(findReturnGreeting([other], opened.id, monMorning)).toBeUndefined();
+  });
+
+  it("won't bring back a recap whose window closed while the user was away", () => {
+    // The pin skips the random pick, but not the rules: a morning/work-day card
+    // must no more greet you at 3am on the way back than on a fresh arrival.
+    expect(findReturnGreeting([opened], opened.id, monNight)).toBeUndefined();
   });
 });
