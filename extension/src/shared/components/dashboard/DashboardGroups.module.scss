@@ -220,17 +220,20 @@
 // greeting and the styleguide comparison both opt into this class, keeping the
 // preview tied to the exact typography that ships.
 .box.singleCard {
-  // The reflection steps up two tokens above the grid sizing. Keep its heading
-  // one token smaller: Inter reads visually larger than the Newsreader
-  // reflection at the same nominal size, so equal CSS sizes make the label
-  // compete with the user's words. Global classes, so `:global()`; specificity
-  // (0,3,0) clears the base typography rules (including dashboardHeading's
-  // non-mobile --fz-m bump at (0,1,0)).
+  // The reflection steps up *one* token above the grid sizing - enough to read
+  // as the greeting rather than a tile, without shouting. Two tokens (--fz-xl)
+  // was too loud for a calm arrival: a few lines of the user's own words filled
+  // the screen and read as a headline rather than a quiet reflection.
+  // Keep the heading one token below the reflection: Inter reads visually
+  // larger than the Newsreader reflection at the same nominal size, so equal
+  // CSS sizes make the label compete with the user's words. Global classes, so
+  // `:global()`; specificity (0,3,0) clears the base typography rules
+  // (including dashboardHeading's non-mobile --fz-m bump at (0,1,0)).
   :global(.dashboardContent) {
-    font-size: var(--fz-xl);
+    font-size: var(--fz-l);
   }
   :global(.dashboardHeading) {
-    font-size: var(--fz-l);
+    font-size: var(--fz-m);
   }
 
   // …except the category label above a reflection: it's a *category*, not a
@@ -239,7 +242,7 @@
   // makes the label compete with the words it's labelling. `.dashboardCategory`
   // is a stable global hook (the .categoryTitle module class is hashed); the
   // combined selector outranks the rule above, so restate the base responsive
-  // sizes rather than inheriting the --fz-l.
+  // sizes rather than inheriting the enlarged heading size.
   :global(.dashboardHeading.dashboardCategory) {
     font-size: var(--fz-s);
 
@@ -275,11 +278,10 @@
   text-align: center;
   user-select: none;
 
-  // ...and it leaves the same way the banner does, never as a cut: when the
-  // user's first card finally arrives, these words fade before it takes the
-  // slot (DashboardGroups.handOverEmptySky holds the node mounted for the
-  // whole fade). The entrance is disabled while removing so it can't fight the
-  // transition.
+  // ...and it leaves the same way the banner does, never as a cut: whatever
+  // takes the slot next waits for these words to fade first
+  // (DashboardGroups.showGreeting holds the node mounted for the whole fade).
+  // The entrance is disabled while removing so it can't fight the transition.
   transition: opacity var(--dur-soft) var(--ease-out);
 
   &.isBeingRemoved {

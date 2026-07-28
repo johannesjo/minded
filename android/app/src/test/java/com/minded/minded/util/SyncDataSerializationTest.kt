@@ -214,6 +214,93 @@ class SyncDataSerializationTest {
     }
 
     @Test
+    fun `round trips custom questions`() {
+        // The native side rewrites the whole sync blob on e.g. every
+        // user-driven intervention close (SharedPreferenceService.updateSyncData),
+        // so a field this model doesn't carry would be silently erased - for
+        // customQuestions that would delete the user's own questions.
+        val syncData = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {},
+              "customQuestions": [
+                {
+                  "id": "CQ_abc123",
+                  "t": "What would my future self thank me for?",
+                  "createdTS": 1234
+                }
+              ]
+            }
+            """.trimIndent()
+        )
+
+        assertEquals(1, syncData.customQuestions.size)
+        assertEquals("CQ_abc123", syncData.customQuestions[0].id)
+        assertEquals(
+            "What would my future self thank me for?",
+            syncData.customQuestions[0].t
+        )
+        assertEquals(1234L, syncData.customQuestions[0].createdTS)
+
+        val serialized = JSONObject(syncDataToJson(syncData))
+        val questions = serialized.getJSONArray("customQuestions")
+        assertEquals(1, questions.length())
+        assertEquals("CQ_abc123", questions.getJSONObject(0).getString("id"))
+        assertEquals(
+            "What would my future self thank me for?",
+            questions.getJSONObject(0).getString("t")
+        )
+        assertEquals(1234L, questions.getJSONObject(0).getLong("createdTS"))
+    }
+
+    @Test
+    fun `parses missing custom questions as empty and skips malformed entries`() {
+        val syncData = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {}
+            }
+            """.trimIndent()
+        )
+        assertEquals(emptyList(), syncData.customQuestions)
+
+        val withMalformed = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {},
+              "customQuestions": [
+                { "t": "Missing id", "createdTS": 1 },
+                { "id": "CQ_ok", "t": "Valid", "createdTS": 2 }
+              ]
+            }
+            """.trimIndent()
+        )
+        assertEquals(1, withMalformed.customQuestions.size)
+        assertEquals("CQ_ok", withMalformed.customQuestions[0].id)
+    }
+
+    @Test
     fun `skips malformed structured alternatives`() {
         val syncData = parseSyncData(
             """

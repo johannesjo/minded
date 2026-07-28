@@ -1,7 +1,7 @@
 // @ts-ignore - path alias resolved at build time based on platform
 import { IS_APP, IS_WEB_EXT } from "@dataInterface/system";
 
-import { QID } from "@src/shared/data/questionId";
+import { CustomQuestionId, QID } from "@src/shared/data/questionId";
 
 export enum QuestionCategoryId {
   HealthierBrowsingHabits = "HealthierBrowsingHabits",
@@ -30,6 +30,11 @@ export enum QuestionCategoryId {
   NoticingNow = "NoticingNow",
   SelfCompassion = "SelfCompassion",
   LettingGo = "LettingGo",
+  // Questions the user wrote themselves. The category entry below is static,
+  // but its questions live in SyncData.customQuestions (see
+  // shared/data/customQuestions.ts) and are merged into the pool at selection
+  // time (getQuestionSmart).
+  MyQuestions = "MyQuestions",
   // NOTE: we filter out all questions from categories starting with X
 
   XEnergyLevelToday = "XEnergyLevelToday",
@@ -70,7 +75,7 @@ export const isCategoryEnabled = (categoryId: QuestionCategoryId): boolean =>
 
 export interface Question {
   t: string;
-  id: QID;
+  id: QID | CustomQuestionId;
   prompt?: string;
   /**
    * Optional tappable quick answers - a no-typing path that submits the moment
@@ -1036,6 +1041,15 @@ export const QUESTION_CATEGORIES: {
       },
     ],
   },
+  [QuestionCategoryId.MyQuestions]: {
+    dashboardTxt: "Your Own Questions",
+    // You wrote these yourself, so they carry the same gentle boost as e.g.
+    // Gratitude. The questions are NOT here: they live in
+    // SyncData.customQuestions and are merged in at selection time
+    // (getQuestionSmart) - so with none written, the category simply never
+    // enters the pool.
+    frequencyModifier: 1,
+  },
   [QuestionCategoryId.XEnergyLevelToday]: {
     dashboardTxt: "Energy Level",
     isTodayOnlyCategory: true,
@@ -1087,6 +1101,7 @@ export const RANDOM_QUESTION_CATEGORIES_ON_DASHBOARD: QuestionCategoryId[] = [
   QuestionCategoryId.NoticingNow,
   QuestionCategoryId.SelfCompassion,
   QuestionCategoryId.LettingGo,
+  QuestionCategoryId.MyQuestions,
 ];
 
 const qids: Record<string, Question> = {};

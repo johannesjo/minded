@@ -69,6 +69,38 @@ describe("getDashboardEntriesFromQuestions", () => {
     });
   });
 
+  describe("user-written questions (MyQuestions)", () => {
+    it("shows answers to the user's own questions as their own dashboard category", () => {
+      const syncData = createMockSyncData({
+        answers: [
+          {
+            id: "custom-1",
+            qid: "CQ_test1",
+            questionCategoryId: QuestionCategoryId.MyQuestions,
+            val: "A slow morning walk.",
+            ts: Date.now(),
+          },
+        ],
+      });
+
+      const result = getDashboardEntriesFromQuestions(
+        syncData,
+        new Date("2024-01-15T12:00:00"),
+      );
+
+      const myQuestionsCard = result.find(
+        (g) =>
+          g.type === DashboardGroupType.TxtQuestion &&
+          "id" in g &&
+          g.id === QuestionCategoryId.MyQuestions,
+      ) as DashboardGroupTxtQuestion | undefined;
+
+      expect(myQuestionsCard).toBeDefined();
+      expect(myQuestionsCard?.dashboardTxt).toBe("Your Own Questions");
+      expect(myQuestionsCard?.answers[0].val).toBe("A slow morning walk.");
+    });
+  });
+
   // The greeting "reflects, never measures": only reflective/self-report cards -
   // the user's own answers, mood, energy - may be the centre pick the dashboard
   // opens on. There is no filler card to fall back on (the quote was removed),

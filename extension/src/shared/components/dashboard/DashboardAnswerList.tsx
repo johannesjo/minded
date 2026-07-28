@@ -5,11 +5,14 @@ import { DashboardGroupTxtQuestion } from "@src/shared/components/dashboard/dash
 import { truncate } from "@src/util/truncate";
 import { QUESTIONS } from "@src/shared/data/questions";
 import { formatQuestionText } from "@src/util/formatQuestionText";
+import { CustomQuestion } from "@src/dataInterface/syncData";
 
 const MAX_ANSWER_LENGTH = 200;
 
 export const DashboardAnswerList: (props: {
   dashboardGroup: DashboardGroupTxtQuestion;
+  /** The user's own questions, for answers whose qid isn't in the static pool. */
+  customQuestions?: CustomQuestion[];
 }) => JSX.Element = (props) => {
   return (
     <div class={styles.AnswerList}>
@@ -29,14 +32,16 @@ export const DashboardAnswerList: (props: {
 
       <For each={props.dashboardGroup.answers}>
         {(answer) => {
-          const question = QUESTIONS.find((q) => q.id === answer.qid);
-          const questionTxt =
-            answer.qid && question
-              ? `Question: ${formatQuestionText(question.t)}`
-              : "";
+          const question = answer.qid
+            ? (QUESTIONS.find((q) => q.id === answer.qid) ??
+              props.customQuestions?.find((cq) => cq.id === answer.qid))
+            : undefined;
+          const questionTxt = question
+            ? `Question: ${formatQuestionText(question.t)}`
+            : "";
           const titleTxt =
             answer.val.toString().length > MAX_ANSWER_LENGTH
-              ? answer.qid
+              ? questionTxt
                 ? `${answer.val.toString()} – ${questionTxt}`
                 : answer.val.toString()
               : questionTxt;

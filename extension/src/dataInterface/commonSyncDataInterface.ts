@@ -1,6 +1,7 @@
 import type {
   Alternative,
   Answer,
+  CustomQuestion,
   SyncData,
   UserCfg,
 } from "@src/dataInterface/syncData";
@@ -289,6 +290,36 @@ export const markPatternInsightShown = (
 export const markInteractionModeShown = (
   mode: InteractionMode,
 ): Promise<void> => patchSyncData({ lastInteractionMode: mode });
+
+/**
+ * Add or reword one of the user's own questions (upsert by id). Rewording
+ * keeps the id, so answers already given to it stay attached.
+ */
+export const saveCustomQuestion = (
+  customQuestion: CustomQuestion,
+): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) => {
+    const existing = syncData.customQuestions ?? [];
+    const isUpdate = existing.some((q) => q.id === customQuestion.id);
+    return {
+      customQuestions: isUpdate
+        ? existing.map((q) =>
+            q.id === customQuestion.id ? { ...q, t: customQuestion.t } : q,
+          )
+        : [...existing, customQuestion],
+    };
+  });
+
+/**
+ * Take one of the user's own questions back. Answers already given to it are
+ * deliberately kept - they are the user's reflections, not the question's.
+ */
+export const removeCustomQuestion = (customQuestionId: string): Promise<void> =>
+  updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+    customQuestions: (syncData.customQuestions ?? []).filter(
+      (q) => q.id !== customQuestionId,
+    ),
+  }));
 
 export const updateAnswer = (answerToUpdate: Answer): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({

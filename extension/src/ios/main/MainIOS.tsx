@@ -9,7 +9,6 @@ import {
 import {
   IOS_DID_BECOME_ACTIVE,
   IOS_DID_ENTER_BACKGROUND,
-  IOS_EV_RESUME,
   IOS_WILL_ENTER_FOREGROUND,
 } from "@src/dataInterface/ios/iosInterface";
 import { MindedIOSPlugin } from "@src/ios/plugin/MindedIOSPlugin";
@@ -92,23 +91,21 @@ const MainIOS = () => {
   onMount(() => {
     refresh();
 
-    window.addEventListener(IOS_EV_RESUME, () => {
-      // A fresh return re-offers the (dismissible) widget invitation and
-      // re-reads the observed Home Screen state.
-      setIsInviteDismissed(false);
-      setIsInviteDismissing(false);
-      window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
-      refresh();
-    });
-
     window.addEventListener(IOS_DID_BECOME_ACTIVE, () => {
       setIsHide(false);
     });
     window.addEventListener(IOS_WILL_ENTER_FOREGROUND, () => {
       setIsHide(false);
-      // Returning from the Home Screen is exactly when a just-added widget
-      // becomes observable.
-      refreshWidgetInstalled();
+      // A fresh return from the background: re-offer the (dismissible) widget
+      // invitation, sync data changed while away, and re-read the observed
+      // Home Screen state - returning from the Home Screen is exactly when a
+      // just-added widget becomes observable. This must live on
+      // WILL_ENTER_FOREGROUND: it is the only "came back" beat the native
+      // shell actually dispatches (see MainViewController.swift).
+      setIsInviteDismissed(false);
+      setIsInviteDismissing(false);
+      window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
+      refresh();
     });
     window.addEventListener(IOS_DID_ENTER_BACKGROUND, () => {
       setIsHide(true);
@@ -117,9 +114,14 @@ const MainIOS = () => {
 
   return (
     <>
-      {getIsHide() ? (
-        <div id="minded-6622-coloured-wrapper" />
-      ) : getIsShowOnboarding() || getIsShowWidgetSetup() ? (
+      {/* Onboarding outranks the background hide: step 1's own instructions
+          send the user to the Home Screen to add the widget, so every first
+          run backgrounds the app mid-flow. The hide swap unmounts whatever it
+          covers - tearing the flow down here restarted it at the welcome on
+          each return, making onboarding uncompletable for anyone who actually
+          followed it. The flow keeps its own state; it simply isn't seen
+          while the app is away. */}
+      {getIsShowOnboarding() || getIsShowWidgetSetup() ? (
         <div id="minded-6622-coloured-wrapper" class="pageWrapper">
           <OnboardingIOS
             initialStep={getIsShowWidgetSetup() ? 1 : 0}
@@ -134,6 +136,8 @@ const MainIOS = () => {
             }}
           />
         </div>
+      ) : getIsHide() ? (
+        <div id="minded-6622-coloured-wrapper" />
       ) : (
         <RoutesCmp>
           {!getIsWidgetInstalled() && !getIsInviteDismissed() && (
@@ -147,7 +151,9 @@ const MainIOS = () => {
                 class="setupInvitationMsgText"
                 role="button"
                 tabindex="0"
-                onClick={() => fadeTopLevelThen(() => setIsShowWidgetSetup(true))}
+                onClick={() =>
+                  fadeTopLevelThen(() => setIsShowWidgetSetup(true))
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
