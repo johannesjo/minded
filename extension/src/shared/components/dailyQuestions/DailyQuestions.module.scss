@@ -12,7 +12,11 @@
 // sun resting at the bottom bar, not in a stepper beneath this block, so the
 // question sits in the calm middle of the screen.
 .interactionWrapper {
-  max-width: 100%;
+  // A definite width: as a centred column item this box would otherwise size
+  // itself to its content, and the question block inside it made that 540px -
+  // leaving `max-width` the only thing holding it to the screen. That clamp
+  // did not hold on iOS, where the question and its field ran off both edges.
+  width: 100%;
 
   > * {
     animation: 1s;

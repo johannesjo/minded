@@ -13,7 +13,12 @@
   box-sizing: border-box;
   font-size: var(--fz-m);
   padding: var(--space-md);
-  width: 540px;
+  // Fill the field's container rather than carrying a fixed width - a fixed one
+  // becomes the field's min-content size and pushes any ancestor sizing itself
+  // to its content out with it (see #minded-6622-inp in Question.scss). No
+  // reading width is capped here: `max-width` stays the container, and the
+  // surfaces that want a measure of their own set it on their wrapper.
+  width: 100%;
   min-width: 90px;
   max-width: 100%;
   margin: auto;
