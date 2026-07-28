@@ -30,10 +30,11 @@ describe("collapsed dashboard presentation", () => {
 
   it("still offers 'look back' when nothing greets but cards exist", () => {
     expect(normalizedComponent).toContain("when={getHeldBackCount() > 0}");
-    // The empty-sky words count as occupying the greeting slot, so the button
-    // can't flash in and out during their hand-off to the first card.
+    // A card already on its way into the greeting slot counts as being in it,
+    // so the button can't flash in and out during a hand-off. The words hold no
+    // card, so when they stand in for a greeting every card is held back.
     expect(normalizedComponent).toContain(
-      "(getHeroGroup() || getIsEmptySkyShown() ? 1 : 0)",
+      "(getHeroGroup() || getPendingGreeting()?.hero ? 1 : 0)",
     );
   });
 
@@ -62,8 +63,9 @@ describe("collapsed dashboard presentation", () => {
       // The voice sits on the lines themselves, not the wrapper: the size
       // classes' inherited `text-wrap: pretty` would otherwise beat
       // displayVoice's `balance` on the elements actually holding the text.
+      // Nested so it wins on specificity rather than on stylesheet order.
       expect(styles).toMatch(
-        /\.emptySkyLine\s*\{[\s\S]*@include displayVoice;/,
+        /\.emptySky \.emptySkyLine\s*\{[\s\S]*@include displayVoice;/,
       );
       expect(normalizedComponent).toContain(
         "class={`txtSlightlyBigger ${styles.emptySkyLine}`}",
@@ -81,10 +83,10 @@ describe("collapsed dashboard presentation", () => {
 
     // The greeting slot's one in-view change: the user answers their first
     // question through a native intervention and comes back, so the words have
-    // to give way to a real card while being looked at. They fade first - an
-    // unmount the instant the hero is set would cut them dead beside a card
-    // playing its own 900ms entrance.
-    it("fades out before handing the slot to the first real card - never a cut", () => {
+    // to give way while being looked at. They fade first - an unmount the
+    // instant the next state is set would cut them dead beside a card playing
+    // its own 900ms entrance.
+    it("fades out before handing the slot over - never a cut, on any path", () => {
       expect(styles).toMatch(
         /\.emptySky\s*\{[\s\S]*transition:\s*opacity var\(--dur-soft\)/,
       );
@@ -94,12 +96,49 @@ describe("collapsed dashboard presentation", () => {
       expect(normalizedComponent).toContain(
         "[styles.isBeingRemoved]: getIsEmptySkyBeingRemoved(),",
       );
-      // The hero is only set once that fade has run its course.
+      // One decision path for every destination (a card, other words, or
+      // nothing), so no branch can settle without the fade the others get.
       expect(normalizedComponent).toContain(
-        "handOverEmptySky(() => { setIsEmptySkyShown(false); setHeroGroup(hero); });",
+        "if (!areWordsVisible || next.mode === getEmptySkyMode()) { cancelHandOff(); settleGreeting(next); return; }",
       );
       expect(normalizedComponent).toMatch(
-        /emptySkyHandOff = setTimeout\([\s\S]*EMPTY_SKY_FADE_MS\)/,
+        /emptySkyHandOff = setTimeout\([\s\S]*emptySkyFadeMs\(\)\)/,
+      );
+    });
+
+    // Regression: a hand-off left armed lands 480ms late and installs a
+    // greeting built from data that has since changed - and because a shown
+    // hero stops refresh from reconsidering, that phantom card stays for good
+    // while the real cards sit behind a "look back" it has just hidden.
+    it("drops a hand-off still waiting behind a fade when a newer decision arrives", () => {
+      expect(normalizedComponent).toContain(
+        "const cancelHandOff = () => { window.clearTimeout(emptySkyHandOff); setPendingGreeting(undefined); setIsEmptySkyBeingRemoved(false); };",
+      );
+      // ...but a fade already heading for this same state keeps its clock,
+      // instead of being restarted by every refresh that arrives mid-fade.
+      expect(normalizedComponent).toContain(
+        "if (getPendingGreeting()?.mode === next.mode) { setPendingGreeting(next); return; }",
+      );
+    });
+
+    it("swaps instantly under reduced motion instead of waiting out a fade nobody sees", () => {
+      expect(normalizedComponent).toMatch(
+        /emptySkyFadeMs = \(\): number => window\.matchMedia\?\.\("\(prefers-reduced-motion: reduce\)"\)\.matches \? 0 : EMPTY_SKY_FADE_MS/,
+      );
+    });
+
+    it("says only the way in when cards exist but none of them may greet", () => {
+      // Claiming the room is empty to someone who has entries would be untrue,
+      // so the first line is gated on the genuinely-empty mode.
+      expect(normalizedComponent).toContain(
+        '{ mode: groups.length ? "wayIn" : "full", hero: undefined }',
+      );
+      expect(normalizedComponent).toContain(
+        '<Show when={getEmptySkyMode() === "full"}>',
+      );
+      // Standing alone it is no longer a quieter second line.
+      expect(styles).toMatch(
+        /\.emptySkyWayIn\s*\{[\s\S]*&:only-child\s*\{[\s\S]*opacity: 1;/,
       );
     });
 
@@ -107,10 +146,19 @@ describe("collapsed dashboard presentation", () => {
       // A controlled signal, not a live derivation: an empty group list before
       // the first read means "not loaded yet", not "nothing to show".
       expect(normalizedComponent).toContain(
-        "<Show when={getIsEmptySkyShown()}>{renderEmptySky()}</Show>",
+        '<Show when={getEmptySkyMode() !== "none"}>',
       );
       expect(normalizedComponent).toContain(
-        "const [getIsEmptySkyShown, setIsEmptySkyShown] = createSignal(false);",
+        'const [getEmptySkyMode, setEmptySkyMode] = createSignal<EmptySkyMode>("none");',
+      );
+    });
+
+    it("gives the /lookBack grid the same words rather than a blank page", () => {
+      expect(normalizedComponent).toContain(
+        'when={getDashboardGroups().length || getEmptySkyMode() === "none"}',
+      );
+      expect(normalizedComponent).toContain(
+        "fallback={<div class={styles.collapsed}>{renderEmptySky()}</div>}",
       );
     });
   });

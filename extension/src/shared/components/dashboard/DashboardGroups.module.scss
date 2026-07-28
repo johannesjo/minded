@@ -293,7 +293,11 @@
 // win over displayVoice's `balance` on the very elements holding the text.
 // Balance is what these want - the same reasoning as `.sun-instructions-line`,
 // which is the same shape of short, spoken 1-2 line hint.
-.emptySkyLine {
+//
+// Nested under `.emptySky` purely for specificity: a bare `.emptySkyLine`
+// (0,1,0) only ties with the size classes it has to beat, leaving the outcome
+// to stylesheet order.
+.emptySky .emptySkyLine {
   @include displayVoice;
 }
 
@@ -302,6 +306,14 @@
 .emptySkyWayIn {
   margin-top: var(--space-lg);
   opacity: 0.7;
+
+  // ...unless it stands alone (cards exist, but none may greet right now).
+  // Then it isn't the quieter second line of anything - it's the only thing
+  // said, so it speaks at full strength.
+  &:only-child {
+    margin-top: 0;
+    opacity: 1;
+  }
 }
 
 .energyLvl {

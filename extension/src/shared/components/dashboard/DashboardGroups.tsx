@@ -59,6 +59,17 @@ const PASSIVE_HERO_TYPES: ReadonlySet<DashboardGroupType> = new Set([
 // stay mounted for the whole fade (same pairing as the banner's 480ms above).
 const EMPTY_SKY_FADE_MS = 480;
 
+// What the greeting slot says when no card may greet: "full" is the genuinely
+// empty dashboard (what this space is for, plus the way in), "wayIn" is the
+// way in alone - cards exist, none of them may greet right now. "none" is a
+// card (or nothing at all, before the first read).
+type EmptySkyMode = "none" | "full" | "wayIn";
+
+interface GreetingState {
+  mode: EmptySkyMode;
+  hero: DashboardGroup | undefined;
+}
+
 export const DashboardGroups: (props: {
   onQuestionCategorySelect?: (categoryId: QuestionCategoryId) => void;
   // When true (the /lookBack route) the full grid renders directly, skipping the
@@ -70,8 +81,7 @@ export const DashboardGroups: (props: {
   // revealed inside its window can't linger past that boundary on a long-open
   // dashboard (see scheduleDailyQuestionsBannerExpiry).
   let bannerExpiry: NodeJS.Timeout | undefined;
-  // Holds the empty sky's fade-out while it hands the greeting slot to the first
-  // real card (see handOverEmptySky).
+  // Holds the empty sky's fade-out while it hands the greeting slot over.
   let emptySkyHandOff: NodeJS.Timeout | undefined;
 
   const [getIsShowDailyQuestionsBanner, setIsShowDailyQuestionsBanner] =
@@ -128,30 +138,39 @@ export const DashboardGroups: (props: {
     DashboardGroup | undefined
   >();
 
-  // Whether the empty-sky words are the thing occupying the greeting slot. A
-  // controlled signal for the same reason the hero above is one - and it starts
-  // false so nothing shows before the first read of the stored data comes back:
-  // an empty group list means "not loaded yet" then, not "nothing to show", and
-  // deriving this live would flash the words for a frame on every arrival.
-  const [getIsEmptySkyShown, setIsEmptySkyShown] = createSignal(false);
+  // Which words, if any, are occupying the greeting slot. A controlled signal
+  // for the same reason the hero above is one - and it starts at "none" so
+  // nothing shows before the first read of the stored data comes back: an empty
+  // group list means "not loaded yet" then, not "nothing to show", and deriving
+  // this live would flash the words for a frame on every arrival.
+  const [getEmptySkyMode, setEmptySkyMode] = createSignal<EmptySkyMode>("none");
 
-  // Set while those words are fading out to make room for a first greeting (see
-  // handOverEmptySky). They are a surface like any other: they must never be
-  // pulled out from under the user mid-transition.
+  // Set while those words are fading out to make room for whatever takes the
+  // slot next (see showGreeting). They are a surface like any other: they must
+  // never be pulled out from under the user mid-transition.
   const [getIsEmptySkyBeingRemoved, setIsEmptySkyBeingRemoved] =
     createSignal(false);
+
+  // The state waiting to land at the end of that fade, if any. A signal, not a
+  // plain variable, because the "look back" count below has to know that a card
+  // is already on its way into the slot.
+  const [getPendingGreeting, setPendingGreeting] = createSignal<
+    GreetingState | undefined
+  >();
 
   // "sun" or "moon", following the disc resting in the bottom bar rather than a
   // clock read taken once when these words mounted.
   const getCompanionWord = createCompanionWord();
 
   // Every card the collapsed view is holding back: all of them bar the one in
-  // the greeting slot. The empty-sky words occupy that slot too - during their
-  // fade-out hand-off the first card is already in the list, and without
-  // counting them "look back" would flash in and straight back out.
+  // the greeting slot. A card already on its way into that slot counts as being
+  // in it - during a hand-off the card is in the list a fade before it is on
+  // screen, and without this "look back" would flash in and straight back out.
+  // The words themselves hold no card, so when they stand in for a greeting
+  // ("wayIn": cards exist, none may greet) every card is genuinely held back.
   const getHeldBackCount = () =>
     getDashboardGroups().length -
-    (getHeroGroup() || getIsEmptySkyShown() ? 1 : 0);
+    (getHeroGroup() || getPendingGreeting()?.hero ? 1 : 0);
 
   // Remember the tile we actually greeted with, so the next arrival can pick a
   // different one. Tracking the rendered hero (rather than the raw pick) keeps
@@ -220,47 +239,84 @@ export const DashboardGroups: (props: {
     });
   };
 
-  // Put the greeting slot into its new state. Everything here is about the
-  // hand-off *out of* the empty sky: when the user's first card arrives while
-  // those words are on screen (they answered through a native intervention and
-  // came back, so this runs in view), the words fade before the card mounts.
-  // Unmounting them the instant the hero is set would cut them dead while the
-  // card played its own 900ms entrance next to the hole they left.
+  // What the greeting slot should hold, given what there is to show. One place
+  // decides it, so the three states can't drift: a card, the words, or nothing.
+  const greetingStateFor = (
+    hero: DashboardGroup | undefined,
+    groups: DashboardGroup[],
+  ): GreetingState =>
+    hero
+      ? { mode: "none", hero }
+      : // Nothing may greet. Either there is genuinely nothing of the user's
+        // yet (say what this space is, and where the way in is), or cards exist
+        // but none of them may greet *right now* - an evening whose only entries
+        // are morning recaps. That second state used to be filled by the quote;
+        // without it the sky would hold nothing but a lone "look back" link, so
+        // keep the way in - just not the line about an empty room.
+        { mode: groups.length ? "wayIn" : "full", hero: undefined };
+
+  // Move the greeting slot to its new state, softly. Words the user can
+  // actually see always fade before they give the slot up or change what they
+  // say; everything else settles at once (arriving words play their own
+  // entrance, and words hidden behind the daily-questions banner have nothing
+  // to fade). Unmounting them the instant the hero is set would cut them dead
+  // while the card played its own 900ms entrance next to the hole they left.
   const showGreeting = (
     hero: DashboardGroup | undefined,
     groups: DashboardGroup[],
   ) => {
-    if (!hero) {
-      // Still nothing to greet with: the words hold the slot when there is
-      // genuinely nothing at all, and step aside for the bare sky when cards
-      // exist but none of them may greet right now ("look back" is the way in).
-      setIsEmptySkyShown(!groups.length);
-      setHeroGroup(undefined);
+    const next = greetingStateFor(hero, groups);
+    const areWordsVisible =
+      getEmptySkyMode() !== "none" && !getIsShowDailyQuestionsBanner();
+
+    if (!areWordsVisible || next.mode === getEmptySkyMode()) {
+      cancelHandOff();
+      settleGreeting(next);
       return;
     }
-    if (!getIsEmptySkyShown()) {
-      setHeroGroup(hero);
+
+    // A fade toward this same state is already running: update what lands at
+    // the end of it rather than restarting the clock. Refreshes arriving faster
+    // than the fade would otherwise hold the slot empty indefinitely.
+    if (getPendingGreeting()?.mode === next.mode) {
+      setPendingGreeting(next);
       return;
     }
-    handOverEmptySky(() => {
-      setIsEmptySkyShown(false);
-      setHeroGroup(hero);
-    });
+
+    cancelHandOff();
+    setPendingGreeting(next);
+    setIsEmptySkyBeingRemoved(true);
+    emptySkyHandOff = setTimeout(() => {
+      const landing = getPendingGreeting();
+      setIsEmptySkyBeingRemoved(false);
+      setPendingGreeting(undefined);
+      if (landing) settleGreeting(landing);
+    }, emptySkyFadeMs());
   };
 
-  // Fade the empty-sky words out, then hand the slot over. Mirrors the daily
-  // questions banner's dismissal (fadeOutDailyQuestionsBanner): the node stays
-  // mounted for the full --dur-soft fade rather than being pulled mid-transition.
-  const handOverEmptySky = (takeOver: () => void) => {
-    setIsEmptySkyBeingRemoved(true);
-    window.clearTimeout(emptySkyHandOff);
-    emptySkyHandOff = setTimeout(() => {
-      takeOver();
-      // Reset so a later empty state (everything deleted from settings) starts
-      // fully visible rather than mid-fade.
-      setIsEmptySkyBeingRemoved(false);
-    }, EMPTY_SKY_FADE_MS);
+  const settleGreeting = (state: GreetingState) => {
+    setEmptySkyMode(state.mode);
+    setHeroGroup(state.hero);
   };
+
+  // Drop a hand-off that is still waiting behind a fade. Every decision
+  // supersedes the one before it: without this, an older hand-off lands 480ms
+  // late and installs a greeting built from data that has since changed - and
+  // because a shown hero stops `refresh` from ever reconsidering, that phantom
+  // card would sit there for good, with the real cards stranded behind a
+  // "look back" link the restored hero has just hidden.
+  const cancelHandOff = () => {
+    window.clearTimeout(emptySkyHandOff);
+    setPendingGreeting(undefined);
+    setIsEmptySkyBeingRemoved(false);
+  };
+
+  // Reduced motion asks for instant, not a slow fade: --dur-soft is 0ms there,
+  // so waiting the full 480ms would leave the slot visibly empty in between.
+  const emptySkyFadeMs = (): number =>
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : EMPTY_SKY_FADE_MS;
 
   // Re-roll the greeting *while the dashboard is hidden from the user* - behind a
   // fading-out interaction overlay, or while the app is backgrounded (Android
@@ -383,11 +439,15 @@ export const DashboardGroups: (props: {
         [styles.isBeingRemoved]: getIsEmptySkyBeingRemoved(),
       }}
     >
-      {/* Present tense, like every other line the app speaks: it describes the
+      {/* Only when the dashboard is genuinely empty - saying it to someone who
+          has entries, just none that may greet right now, would be untrue.
+          Present tense, like every other line the app speaks: it describes the
           room as it is rather than predicting what the user will do in it. */}
-      <div class={`txtSlightlyBigger ${styles.emptySkyLine}`}>
-        This is where your reflections gather.
-      </div>
+      <Show when={getEmptySkyMode() === "full"}>
+        <div class={`txtSlightlyBigger ${styles.emptySkyLine}`}>
+          This is where your reflections gather.
+        </div>
+      </Show>
       <div class={`txtSmaller ${styles.emptySkyLine} ${styles.emptySkyWayIn}`}>
         {/* The disc below is the moon after dark, so name it the way the rest
             of the app's copy does - and reactively (createCompanionWord), since
@@ -407,15 +467,12 @@ export const DashboardGroups: (props: {
     // sole route clickable and keyboard-accessible; with multiple groups,
     // look-back remains the one calm navigation affordance.
     const isInteractive = createDashboardCardInteractivity({
-      hasId: "id" in dg,
       isSingleCard,
       isSkyGreeting,
       getGroupCount: () => getDashboardGroups().length,
     });
     const activate = () => {
-      if (isInteractive() && "id" in dg) {
-        props.onQuestionCategorySelect?.(dg.id);
-      }
+      if (isInteractive()) props.onQuestionCategorySelect?.(dg.id);
     };
     return (
       <div
@@ -483,11 +540,12 @@ export const DashboardGroups: (props: {
                 when={getHeroGroup()}
                 keyed
                 fallback={
-                  // Only for a genuinely empty dashboard, and only once the
-                  // first read has come back (see getIsEmptySkyShown). With
-                  // cards present but none able to greet, "look back" below is
-                  // the way in and the sky stays wordless.
-                  <Show when={getIsEmptySkyShown()}>{renderEmptySky()}</Show>
+                  // No card may greet - see greetingStateFor for which words
+                  // that means. Stays silent until the first read has come back
+                  // (the mode starts at "none").
+                  <Show when={getEmptySkyMode() !== "none"}>
+                    {renderEmptySky()}
+                  </Show>
                 }
               >
                 {(g) => renderCard(g, true)}
@@ -508,15 +566,24 @@ export const DashboardGroups: (props: {
         </div>
       }
     >
-      <div
-        classList={{
-          [styles.DashboardGroups]: true,
-          [styles.shortCollection]: getDashboardGroups().length <= 4,
-          [styles.balancedFourCardGrid]: getDashboardGroups().length === 4,
-        }}
+      {/* "look back" only routes here with cards to show, but the page is a
+          real, linkable route: opened directly, or still open when the last
+          card ages out, it would otherwise be a blank scroll area. The same
+          words the collapsed view uses say what the empty grid is. */}
+      <Show
+        when={getDashboardGroups().length || getEmptySkyMode() === "none"}
+        fallback={<div class={styles.collapsed}>{renderEmptySky()}</div>}
       >
-        <For each={getDashboardGroups()}>{(dg) => renderCard(dg)}</For>
-      </div>
+        <div
+          classList={{
+            [styles.DashboardGroups]: true,
+            [styles.shortCollection]: getDashboardGroups().length <= 4,
+            [styles.balancedFourCardGrid]: getDashboardGroups().length === 4,
+          }}
+        >
+          <For each={getDashboardGroups()}>{(dg) => renderCard(dg)}</For>
+        </div>
+      </Show>
     </Show>
   );
 };

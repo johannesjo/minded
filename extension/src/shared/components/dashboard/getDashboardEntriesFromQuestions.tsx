@@ -44,7 +44,6 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
 // only ever reflect today's own entries, so they have no such window.
 const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
   entry.type === DashboardGroupType.TxtQuestion &&
-  "id" in entry &&
   !isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
 
 // Whether a card may *greet* you right now: a reflective/self-report card that

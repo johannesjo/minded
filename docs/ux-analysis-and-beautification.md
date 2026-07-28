@@ -131,6 +131,12 @@ quote card used to sit. No dismissal state to persist: the lines are the empty
 state itself, so they disappear on their own - fading, never cut - the moment
 there is anything of yours to show (`DashboardGroups.renderEmptySky`).
 
+The way-in line alone also covers the state the quote used to fill from the
+other side: cards exist but none of them may greet *right now* (an evening
+whose only entries are morning recaps). Claiming the room is empty would be
+untrue there, but without the line the sky held nothing but a lone "look back"
+link. The same words stand in for an empty `/lookBack` grid.
+
 One nuance worth knowing: on a fresh profile inside the daily-questions windows
 (05:00-12:00, 20:00-24:00) the invitation banner owns that same slot, so the
 words wait behind it. That is the right order - the banner is a *better* first

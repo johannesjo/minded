@@ -7,7 +7,6 @@ describe("collapsed dashboard card interactivity", () => {
     createRoot((dispose) => {
       const [getGroupCount, setGroupCount] = createSignal(2);
       const getIsInteractive = createDashboardCardInteractivity({
-        hasId: true,
         isSingleCard: true,
         isSkyGreeting: true,
         getGroupCount,
