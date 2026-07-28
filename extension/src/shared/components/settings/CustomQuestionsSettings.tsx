@@ -5,14 +5,14 @@ import {
   saveCustomQuestion,
 } from "@src/dataInterface/commonSyncDataInterface";
 import type { CustomQuestion } from "@src/dataInterface/syncData";
-import { createCustomQuestion } from "@src/shared/data/customQuestions";
+import {
+  createCustomQuestion,
+  sortCustomQuestions,
+} from "@src/shared/data/customQuestions";
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { TextInput } from "@src/shared/components/ui/TextInput";
 import styles from "./CustomQuestionsSettings.module.scss";
-
-const byCreated = (a: CustomQuestion, b: CustomQuestion): number =>
-  a.createdTS - b.createdTS;
 
 /**
  * One row: the question in the user's words, editable in place, plus a way to
@@ -103,7 +103,7 @@ export const CustomQuestionsSettings = (props: {
 
   const readFromStorage = () =>
     getSyncData().then(
-      (syncData) => setQuestions(syncData.customQuestions ?? []),
+      (syncData) => setQuestions(sortCustomQuestions(syncData.customQuestions)),
       (error: unknown) => {
         console.error("Could not read the custom questions", error);
       },
@@ -169,9 +169,9 @@ export const CustomQuestionsSettings = (props: {
     if (!removed) return;
 
     setRemoved(null);
-    if (getQuestions().some((existing) => existing.id === removed.id)) return;
-
-    setQuestions([...getQuestions(), removed].sort(byCreated));
+    // No duplicate-id guard (unlike the alternatives list): these ids are
+    // nanoid-minted, so a removed one can never come back another way.
+    setQuestions(sortCustomQuestions([...getQuestions(), removed]));
     write(() => saveCustomQuestion(removed));
   };
 

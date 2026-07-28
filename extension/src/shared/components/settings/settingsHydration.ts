@@ -7,6 +7,7 @@ import type {
   UserCfg,
 } from "@src/dataInterface/syncData";
 import { getEditableAlternatives } from "@src/shared/components/interaction/alternatives/getAlternatives";
+import { sortCustomQuestions } from "@src/shared/data/customQuestions";
 
 /** Everything the settings pages hand down to their sections, from one read. */
 export interface SettingsSnapshot {
@@ -29,7 +30,7 @@ export const resolveSettingsSnapshot = async (
     return {
       cfg: syncData.cfg,
       alternatives: getEditableAlternatives(syncData, platform),
-      customQuestions: syncData.customQuestions ?? [],
+      customQuestions: sortCustomQuestions(syncData.customQuestions),
     };
   } catch {
     return {

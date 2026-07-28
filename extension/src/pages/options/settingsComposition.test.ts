@@ -88,6 +88,9 @@ describe("settings composition", () => {
     const alternativesSettings = readSource(
       "src/shared/components/settings/AlternativesSettings.tsx",
     );
+    const customQuestionsSettings = readSource(
+      "src/shared/components/settings/CustomQuestionsSettings.tsx",
+    );
 
     expect(soundSettings).toContain("Completion sound");
     expect(graceSettings).toContain("Grace period");
@@ -97,6 +100,7 @@ describe("settings composition", () => {
     // actually asked, rather than the code's word ("alternatives").
     expect(alternativesSettings).toContain("What to open instead");
     expect(alternativesSettings).toContain("Where to go instead");
+    expect(customQuestionsSettings).toContain("Your own questions");
   });
 
   it("uses a quiet single-column composition for Web settings", () => {
@@ -115,6 +119,9 @@ describe("settings composition", () => {
       readSource("src/shared/components/settings/FocusSchedule.module.scss"),
       readSource(
         "src/shared/components/settings/AlternativesSettings.module.scss",
+      ),
+      readSource(
+        "src/shared/components/settings/CustomQuestionsSettings.module.scss",
       ),
     ];
 

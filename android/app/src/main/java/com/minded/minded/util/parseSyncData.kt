@@ -100,6 +100,18 @@ data class PatternInsightState(
     val shownInsightIdsByDate: Map<String, List<String>>
 )
 
+/**
+ * A question the user wrote themselves (SyncData.customQuestions on the TS
+ * side). The native layer never asks these itself - it only round-trips them:
+ * every field here must survive parse -> syncDataToJson unchanged, or a native
+ * write (e.g. countUserDrivenClose) silently erases the user's questions.
+ */
+data class CustomQuestion(
+    val id: String,
+    val t: String,
+    val createdTS: Long
+)
+
 data class SyncData(
     val cfg: UserCfg,
     val answers: List<Answer>,
@@ -134,7 +146,8 @@ data class SyncData(
     val sleepWindDownGratitudeDraft: String = "",
     val sleepWindDownTomorrowDraft: String = "",
     val alternatives: List<Alternative> = emptyList(),
-    val patternInsightState: PatternInsightState = PatternInsightState(emptyMap())
+    val patternInsightState: PatternInsightState = PatternInsightState(emptyMap()),
+    val customQuestions: List<CustomQuestion> = emptyList()
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -283,6 +296,26 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         mapOf<String, Any>("ts" to ts, "emotions" to emotions, "bodyLocations" to bodyLocations)
     }
 
+    val customQuestions = jsonObject.optJSONArray("customQuestions")?.let { arr ->
+        val result = mutableListOf<CustomQuestion>()
+        for (i in 0 until arr.length()) {
+            val questionObj = arr.optJSONObject(i) ?: continue
+            val id = questionObj.optString("id", "")
+            val t = questionObj.optString("t", "")
+            if (id.isBlank() || t.isBlank()) {
+                continue
+            }
+            result.add(
+                CustomQuestion(
+                    id = id,
+                    t = t,
+                    createdTS = questionObj.optLong("createdTS", 0L)
+                )
+            )
+        }
+        result
+    } ?: emptyList()
+
     val patternInsightState = jsonObject.optJSONObject("patternInsightState")?.let { stateObj ->
         val shownObj = stateObj.optJSONObject("shownInsightIdsByDate")
         val shownByDate = shownObj?.let { obj ->
@@ -389,6 +422,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         sleepWindDownGratitudeDraft,
         sleepWindDownTomorrowDraft,
         alternatives,
-        patternInsightState
+        patternInsightState,
+        customQuestions
     )
 }
