@@ -11,7 +11,7 @@ import {
   saveAnswer,
   updateAnswer,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
 import { Navigate } from "@solidjs/router";
 import { Location, Params } from "@solidjs/router/dist/types";
 import { QUESTION_CATEGORY_ADDITIONAL_INFO } from "@src/shared/data/questionCategoryAdditional.const";
@@ -26,6 +26,11 @@ export const QuestionCategoryView: (props: {
   const [getAnswersForCategory, setAnswersForCategory] = createSignal<Answer[]>(
     [],
   );
+  // The user's own questions, so an answer to one can show its question text
+  // (they aren't in the static QUESTIONS pool the entries look in).
+  const [getCustomQuestions, setCustomQuestions] = createSignal<
+    CustomQuestion[]
+  >([]);
   // The just-removed answer, kept so an accidental delete can be undone in
   // place (same quiet safety net as the website list's "Undo").
   const [getRemovedAnswer, setRemovedAnswer] = createSignal<Answer | null>(
@@ -44,7 +49,8 @@ export const QuestionCategoryView: (props: {
   const QUESTION_CATEGORY = QUESTION_CATEGORIES[questionCategoryId];
   const isAnswerListCategory = () =>
     !!QUESTION_CATEGORY.questions?.length ||
-    questionCategoryId === QuestionCategoryId.SleepWindDown;
+    questionCategoryId === QuestionCategoryId.SleepWindDown ||
+    questionCategoryId === QuestionCategoryId.MyQuestions;
 
   onMount(() => {
     getSyncData().then((syncData) => {
@@ -57,6 +63,7 @@ export const QuestionCategoryView: (props: {
             .sort((a, b) => b.ts - a.ts),
         );
       }
+      setCustomQuestions(syncData.customQuestions ?? []);
     });
   });
 
@@ -144,6 +151,7 @@ export const QuestionCategoryView: (props: {
             isShowAdd={true}
             questionCategoryId={questionCategoryId}
             answers={getAnswersForCategory()}
+            customQuestions={getCustomQuestions()}
             onEdit={editAnswer}
             onRemove={removeAnswerI}
             onAdd={addAnswerI}

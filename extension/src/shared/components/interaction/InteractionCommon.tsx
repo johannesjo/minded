@@ -1458,7 +1458,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setFrictionLevel("normal");
           setModeWithoutReplacement(forcedFromWidget.mode);
         } else {
-          const question = getQuestionSmart(syncData.answers);
+          const question = getQuestionSmart(
+            syncData.answers,
+            syncData.customQuestions,
+          );
           const modeDecision = getInteractionModeDecision(syncData, {
             target: props.interactionTarget,
             platform: props.interactionPlatform,

@@ -1,6 +1,7 @@
 import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import type {
   Alternative,
+  CustomQuestion,
   SessionPlatform,
   SyncData,
   UserCfg,
@@ -11,6 +12,7 @@ import { getEditableAlternatives } from "@src/shared/components/interaction/alte
 export interface SettingsSnapshot {
   cfg: UserCfg;
   alternatives: Alternative[];
+  customQuestions: CustomQuestion[];
 }
 
 /**
@@ -27,8 +29,13 @@ export const resolveSettingsSnapshot = async (
     return {
       cfg: syncData.cfg,
       alternatives: getEditableAlternatives(syncData, platform),
+      customQuestions: syncData.customQuestions ?? [],
     };
   } catch {
-    return { cfg: DEFAULT_SYNC_DATA.cfg, alternatives: [] };
+    return {
+      cfg: DEFAULT_SYNC_DATA.cfg,
+      alternatives: [],
+      customQuestions: [],
+    };
   }
 };

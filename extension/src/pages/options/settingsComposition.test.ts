@@ -12,7 +12,11 @@ describe("settings composition", () => {
       resolveSettingsSnapshot: (
         readSyncData: () => Promise<SyncData>,
         platform: "web" | "android" | "ios",
-      ) => Promise<{ cfg: UserCfg; alternatives: unknown[] }>;
+      ) => Promise<{
+        cfg: UserCfg;
+        alternatives: unknown[];
+        customQuestions: unknown[];
+      }>;
     }>("@src/shared/components/settings/settingsHydration");
 
     await expect(
@@ -20,7 +24,11 @@ describe("settings composition", () => {
         () => Promise.reject(new Error("storage unavailable")),
         "web",
       ),
-    ).resolves.toEqual({ cfg: DEFAULT_SYNC_DATA.cfg, alternatives: [] });
+    ).resolves.toEqual({
+      cfg: DEFAULT_SYNC_DATA.cfg,
+      alternatives: [],
+      customQuestions: [],
+    });
 
     const settingsPages = [
       readSource("src/pages/options/Options.tsx"),
@@ -47,12 +55,14 @@ describe("settings composition", () => {
     expect(webSettings).toContain("initialGrace");
     expect(webSettings).toContain("initialSchedule");
     expect(webSettings).toContain("initialAlternatives");
+    expect(webSettings).toContain("initialCustomQuestions");
 
     expect(androidSettings).toContain("getSyncData");
     expect(androidSettings).toContain("initialSoundEnabled");
     expect(androidSettings).toContain("initialGrace");
     expect(androidSettings).toContain("initialSchedule");
     expect(androidSettings).toContain("initialAlternatives");
+    expect(androidSettings).toContain("initialCustomQuestions");
     expect(androidSettings).toContain("initial.cfg");
 
     // One read per page: every section is fed from the same snapshot, so no

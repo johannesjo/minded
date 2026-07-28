@@ -63,11 +63,13 @@ export const AppUsageOrBrowsingBehavior: (props: {
   };
 
   const rndQuestion = getRndEntry(
+    // The static pool only carries QID ids (user-written questions never enter
+    // QUESTIONS), so narrowing q.id for the lookup is safe.
     QUESTIONS.filter((q) =>
       (IS_ANDROID
         ? [QID.HAU1, QID.HAU2, QID.HAU3, QID.HAU4, QID.HAU5]
         : [QID.HBH1, QID.HBH2, QID.HBH3, QID.HBH4, QID.HBH5]
-      ).includes(q.id),
+      ).includes(q.id as QID),
     ),
   );
 
