@@ -25,6 +25,8 @@ import {
 import {
   getLastGreetingKey,
   setLastGreetingKey,
+  setOpenedGreetingKey,
+  takeReturnGreeting,
 } from "@src/shared/components/dashboard/greetingMemory";
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
 import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
@@ -171,7 +173,13 @@ export const DashboardGroups: (props: {
       // is, so the greeting never changes in front of the user; it always just
       // eases in on open and then holds still.
       if (reselect || getHeroGroup() === undefined) {
-        setHeroGroup(heroOf(groups));
+        // Coming back from the card the user just opened is a return, not an
+        // arrival: greet with that same card again, so walking in and back out
+        // lands you where you were. Always consumed (never left pinned for a
+        // later arrival), but a deliberate re-greet is an explicit fresh pick
+        // and still wins.
+        const returnGreeting = takeReturnGreeting(groups, getGreetingKey);
+        setHeroGroup((reselect ? undefined : returnGreeting) ?? heroOf(groups));
       }
     });
   };
@@ -298,6 +306,11 @@ export const DashboardGroups: (props: {
     });
     const activate = () => {
       if (isInteractive() && "id" in dg) {
+        // Remember the greeting we're walking into, so returning from it lands
+        // on this same card instead of a freshly rolled one (greetingMemory).
+        // Only from the greeting itself - in the "look back" grid you return to
+        // the grid, which has no single card to hold still.
+        if (isSingleCard) setOpenedGreetingKey(getGreetingKey(dg));
         props.onQuestionCategorySelect?.(dg.id);
       }
     };
