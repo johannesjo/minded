@@ -98,7 +98,14 @@ const MainWrapper = (props: RouteSectionProps) => {
   const [getIsCompanionHovered, setIsCompanionHovered] =
     createSignal<boolean>(false);
   let shouldRestoreCompanionFocus = false;
-  const companionTapTargetEl: HTMLButtonElement = undefined!;
+  // `let`, not `const`: SolidJS's JSX transform only compiles `ref={x}` into a
+  // plain assignment when `x` is a mutable binding. With a `const` it can't
+  // assign, so it falls back to treating the ref as a callback and emits
+  // `use(companionTapTargetEl, el)` - which calls `undefined` and throws while
+  // rendering the companion tap target, taking the whole shell down with it.
+  // (prefer-const can't see the compiler's assignment; don't let it "fix" this.)
+  // eslint-disable-next-line prefer-const
+  let companionTapTargetEl: HTMLButtonElement = undefined!;
 
   const location = useLocation();
   const isDashboard = () => location.pathname === "/";
