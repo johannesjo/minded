@@ -132,7 +132,7 @@ All platform-agnostic UI lives in `src/shared/`:
 - `components/ui/` - Reusable UI elements
 - `components/interaction/` - Mindfulness interactions
 - `components/dashboard/` - Main dashboard
-- `data/` - Static data (questions, quotes, advice)
+- `data/` - Static data (questions, advice, sleep content)
 
 ### State Management
 

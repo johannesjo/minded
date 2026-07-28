@@ -62,12 +62,19 @@ export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
 // arrangement alone: the view checks eligibility before greeting, so the
 // dashboard simply shows no greeting rather than a stale one or a filler card.
 // Mutates and returns `entries`.
+//
+// Note it asks the same question the view asks (isGreetingEligible), not the
+// narrower "is this a stale recap". The two are equivalent while every card type
+// may greet, but the moment a non-greeting type is added back - the shape the
+// quote card had - a narrower guard here would leave it sitting in the hero slot
+// for the view to reject, and the dashboard would greet with nothing despite
+// having cards that could.
 export const guardHeroSlot = (
   entries: DashboardGroup[],
   now = new Date(),
 ): DashboardGroup[] => {
   const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
-  if (heroIndex < 0 || !isOutOfWindowRecap(entries[heroIndex], now)) {
+  if (heroIndex < 0 || isGreetingEligible(entries[heroIndex], now)) {
     return entries;
   }
   const freshIndex = entries.findIndex(
@@ -173,7 +180,10 @@ export const getDashboardEntriesFromQuestions = (
   if (options.length) {
     // Prefer a tile different from the one shown last time we landed, so each
     // arrival feels fresh rather than possibly repeating. Only narrow the pool
-    // when an alternative remains - never leave nothing to greet with.
+    // when an alternative remains - never leave nothing to greet with. With a
+    // single card there is no alternative at all any more (the quote used to be
+    // a permanent second option), so that one card greets every arrival: honest,
+    // and better than reaching for something that isn't the user's.
     const pickable = options.filter((o) => o.key !== avoidGreetingKey);
     const pool = pickable.length > 0 ? pickable : options;
 

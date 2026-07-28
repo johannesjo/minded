@@ -125,11 +125,17 @@ intervention). One sentence, once, then gone; consistent with the
 pool is empty and a random quote is doing all the work.
 
 **Fixed** (and the quote is gone): the empty dashboard now *is* those words -
-"Your reflections will gather here." plus "Tap the sun below whenever you'd
-like a pause." - serif, on the bare sky, where the quote card used to sit. No
-dismissal state to persist: the lines are the empty state itself, so they
-disappear on their own the moment there is anything of yours to show
-(`DashboardGroups.renderEmptySky`).
+"This is where your reflections gather." plus "Tap the sun below whenever
+you'd like a pause." (the moon after dark) - serif, on the bare sky, where the
+quote card used to sit. No dismissal state to persist: the lines are the empty
+state itself, so they disappear on their own - fading, never cut - the moment
+there is anything of yours to show (`DashboardGroups.renderEmptySky`).
+
+One nuance worth knowing: on a fresh profile inside the daily-questions windows
+(05:00-12:00, 20:00-24:00) the invitation banner owns that same slot, so the
+words wait behind it. That is the right order - the banner is a *better* first
+thing to meet, with two clear actions - and dismissing it with "not now" eases
+the words in behind it. The hint is never simply absent.
 
 ---
 
@@ -226,7 +232,8 @@ doesn't know the user - same logic as the 90% copy bar.
   quiet text link. That quietness is on-philosophy; consider only a slightly
   larger hit area and a chevron that hints downward motion (it currently
   opens a route, not an expansion - the icon over-promises an accordion).
-- `TxtQuestion` cards are tappable, quote/energy/emotion cards are not, with
+- `TxtQuestion` cards are tappable, energy/emotion cards are not (the quote
+  card has since been removed entirely - see §2.3), with
   no visual differentiation. Give interactive cards the existing hover/press
   treatment (`--dashboard-card-bg-hover` exists already) and *no* affordance
   on static ones - differentiation by behavior, not new chrome.

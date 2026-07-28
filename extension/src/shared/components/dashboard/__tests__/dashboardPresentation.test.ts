@@ -29,8 +29,11 @@ describe("collapsed dashboard presentation", () => {
   });
 
   it("still offers 'look back' when nothing greets but cards exist", () => {
+    expect(normalizedComponent).toContain("when={getHeldBackCount() > 0}");
+    // The empty-sky words count as occupying the greeting slot, so the button
+    // can't flash in and out during their hand-off to the first card.
     expect(normalizedComponent).toContain(
-      "when={getDashboardGroups().length > (getHeroGroup() ? 1 : 0)}",
+      "(getHeroGroup() || getIsEmptySkyShown() ? 1 : 0)",
     );
   });
 
@@ -38,22 +41,36 @@ describe("collapsed dashboard presentation", () => {
     // What replaced the borrowed quote card: the space says what it is for and
     // where the way in is, rather than being filled with someone else's words.
     it("says what the space is for and names the sun as the way in", () => {
+      // Present tense - it describes the room, it doesn't predict the user.
       expect(normalizedComponent).toContain(
-        "Your reflections will gather here.",
+        "This is where your reflections gather.",
       );
-      // `companionWord()`, not a hardcoded "sun": the disc below is the moon
-      // after dark, and copy that names it must follow.
+      // The companion word, not a hardcoded "sun": the disc below is the moon
+      // after dark, and copy that names it must follow - reactively, since
+      // these words can outlive the day/night threshold on screen.
       expect(normalizedComponent).toContain(
-        "Tap the {companionWord()} below whenever you’d like a pause.",
+        "Tap the {getCompanionWord()} below whenever you’d like a pause.",
       );
+      expect(component).toContain("createCompanionWord()");
     });
 
     it("speaks those words in the serif voice, directly on the sky - no card chrome", () => {
-      expect(normalizedComponent).toContain("<div class={styles.emptySky}>");
+      expect(normalizedComponent).toContain("[styles.emptySky]: true,");
       expect(normalizedComponent).not.toMatch(
         /cardDashboard[^}]*emptySky|emptySky[^}]*cardDashboard/,
       );
-      expect(styles).toMatch(/\.emptySky\s*\{[\s\S]*@include displayVoice;/);
+      // The voice sits on the lines themselves, not the wrapper: the size
+      // classes' inherited `text-wrap: pretty` would otherwise beat
+      // displayVoice's `balance` on the elements actually holding the text.
+      expect(styles).toMatch(
+        /\.emptySkyLine\s*\{[\s\S]*@include displayVoice;/,
+      );
+      expect(normalizedComponent).toContain(
+        "class={`txtSlightlyBigger ${styles.emptySkyLine}`}",
+      );
+      expect(normalizedComponent).toContain(
+        "class={`txtSmaller ${styles.emptySkyLine} ${styles.emptySkyWayIn}`}",
+      );
     });
 
     it("eases in like the greeting it stands in for, never appearing outright", () => {
@@ -62,9 +79,38 @@ describe("collapsed dashboard presentation", () => {
       );
     });
 
-    it("waits for the first data read, so it can't flash before a greeting", () => {
+    // The greeting slot's one in-view change: the user answers their first
+    // question through a native intervention and comes back, so the words have
+    // to give way to a real card while being looked at. They fade first - an
+    // unmount the instant the hero is set would cut them dead beside a card
+    // playing its own 900ms entrance.
+    it("fades out before handing the slot to the first real card - never a cut", () => {
+      expect(styles).toMatch(
+        /\.emptySky\s*\{[\s\S]*transition:\s*opacity var\(--dur-soft\)/,
+      );
+      expect(styles).toMatch(
+        /&\.isBeingRemoved\s*\{[\s\S]*animation: none !important;[\s\S]*opacity: 0 !important;/,
+      );
       expect(normalizedComponent).toContain(
-        "when={getIsLoaded() && !getDashboardGroups().length}",
+        "[styles.isBeingRemoved]: getIsEmptySkyBeingRemoved(),",
+      );
+      // The hero is only set once that fade has run its course.
+      expect(normalizedComponent).toContain(
+        "handOverEmptySky(() => { setIsEmptySkyShown(false); setHeroGroup(hero); });",
+      );
+      expect(normalizedComponent).toMatch(
+        /emptySkyHandOff = setTimeout\([\s\S]*EMPTY_SKY_FADE_MS\)/,
+      );
+    });
+
+    it("holds the words back until the first data read, so they can't flash", () => {
+      // A controlled signal, not a live derivation: an empty group list before
+      // the first read means "not loaded yet", not "nothing to show".
+      expect(normalizedComponent).toContain(
+        "<Show when={getIsEmptySkyShown()}>{renderEmptySky()}</Show>",
+      );
+      expect(normalizedComponent).toContain(
+        "const [getIsEmptySkyShown, setIsEmptySkyShown] = createSignal(false);",
       );
     });
   });

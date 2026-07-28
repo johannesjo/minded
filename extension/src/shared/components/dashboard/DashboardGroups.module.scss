@@ -176,8 +176,8 @@
   @include standardPageTransitionIn();
   min-width: 0;
 
-  // center logic - widget cards (mood, energy, quote…) centre their
-  // content; lists, charts and tables keep their natural left alignment.
+  // center logic - widget cards (mood, energy…) centre their content; lists,
+  // charts and tables keep their natural left alignment.
   @mixin centerItem() {
     display: flex;
     flex-direction: column;
@@ -262,7 +262,9 @@
 // space is for, and the one way in (the resting sun). It stands where the
 // borrowed quote card used to sit, so like the passive greetings above it takes
 // no card chrome, and it eases in on the same slow entrance as the greeting it
-// replaces (see `.collapsed .box`) rather than appearing.
+// replaces rather than appearing. Deliberately not `.box`: that class also
+// carries the card/interactive affordances these words must not have, so the
+// two sizing values are restated instead of inherited.
 .emptySky {
   @include standardPageTransitionIn();
   animation-duration: 900ms;
@@ -272,7 +274,26 @@
   box-sizing: border-box;
   text-align: center;
   user-select: none;
-  // The app speaking gently to you - the serif voice, not chrome.
+
+  // ...and it leaves the same way the banner does, never as a cut: when the
+  // user's first card finally arrives, these words fade before it takes the
+  // slot (DashboardGroups.handOverEmptySky holds the node mounted for the
+  // whole fade). The entrance is disabled while removing so it can't fight the
+  // transition.
+  transition: opacity var(--dur-soft) var(--ease-out);
+
+  &.isBeingRemoved {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+// The voice goes on the lines themselves, not the wrapper: `text-wrap` is
+// inherited, so `.txtSlightlyBigger`/`.txtSmaller`'s `pretty` would otherwise
+// win over displayVoice's `balance` on the very elements holding the text.
+// Balance is what these want - the same reasoning as `.sun-instructions-line`,
+// which is the same shape of short, spoken 1-2 line hint.
+.emptySkyLine {
   @include displayVoice;
 }
 
