@@ -1,5 +1,5 @@
 import { QuestionCategoryId } from "@src/shared/data/questions";
-import { QID } from "@src/shared/data/questionId";
+import { CustomQuestionId, QID } from "@src/shared/data/questionId";
 import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import { UsageStatsByDate } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/usageStats";
 
@@ -53,10 +53,21 @@ export interface SessionGraceCfg {
 
 export interface Answer {
   id: string;
-  qid: QID | null;
+  qid: QID | CustomQuestionId | null;
   questionCategoryId: QuestionCategoryId;
   val: string | number;
   ts: number;
+}
+
+/**
+ * A question in the user's own words (the MyQuestions category). Only the text
+ * lives here; answers reference it by id, so rewording a question keeps the
+ * answers already given to it.
+ */
+export interface CustomQuestion {
+  id: CustomQuestionId;
+  t: string;
+  createdTS: number;
 }
 
 /**
@@ -179,6 +190,12 @@ export interface SyncData {
   alternativeApps: string[];
   alternativeWebsites: string[];
   alternatives?: Alternative[];
+  /**
+   * Questions the user wrote themselves, asked alongside the built-in pool
+   * (the MyQuestions category). Optional like `alternatives`: absent until
+   * first use, so older stored data round-trips unchanged.
+   */
+  customQuestions?: CustomQuestion[];
   patternInsightState: PatternInsightState;
 
   activeTimer: ActiveTimer | null;

@@ -7,6 +7,13 @@ const inputWithSend = readFileSync(
   resolve(__dirname, "../ui/InputWithSend.tsx"),
   "utf8",
 );
+const formMixin = readFileSync(
+  resolve(__dirname, "../../../styles/mixins/form.scss"),
+  "utf8",
+);
+
+const stripComments = (scss: string): string =>
+  scss.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
 
 describe("free-text question composition", () => {
   it("keeps the prompt visible while the response editor is open", () => {
@@ -74,5 +81,26 @@ describe("free-text question composition", () => {
     );
     expect(styles).not.toContain("width: calc(100% - var(--btn-height))");
     expect(inputWithSend).not.toMatch(/variant="icon"[\s\S]{0,80}\ssmall/);
+  });
+
+  it("keeps the question's measure a cap, never a fixed width", () => {
+    // A fixed `width: 540px` renders the same as this, but it also becomes the
+    // block's min-content size - which drags every ancestor that sizes itself
+    // to its content out to 540px, leaving a percentage `max-width` as the only
+    // thing holding the surface on screen. That clamp did not hold on iOS: the
+    // question and its field ran off both edges of the daily-questions column.
+    // Chromium renders both forms identically, so nothing but this catches a
+    // regression here. Declarations only (the note above the rule quotes the
+    // old form), and a lookbehind so the cap itself doesn't match.
+    expect(stripComments(styles)).not.toMatch(/(?<!-)width:\s*540px/);
+    expect(styles).toMatch(
+      /#minded-6622-inp\s*\{[\s\S]*width:\s*100%;[\s\S]*max-width:\s*540px;/,
+    );
+    expect(styles).toMatch(
+      /\.question-chips\s*\{[\s\S]*width:\s*100%;[\s\S]*max-width:\s*540px;/,
+    );
+    // The shared field mixin must not carry a measure of its own either - its
+    // other consumers are flex rows that fill the width they are given.
+    expect(stripComments(formMixin)).not.toMatch(/width:\s*540px/);
   });
 });

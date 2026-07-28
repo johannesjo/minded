@@ -1,6 +1,7 @@
 /* @refresh reload */
 import { onMount } from "solid-js";
 import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
+import { isCustomQuestionId } from "@src/shared/data/questionId";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
@@ -22,6 +23,14 @@ const InteractionAndroid = () => {
   const question: QuestionForPrompt | null = questionId?.length
     ? QUESTIONS.find((q) => q.id === questionId) || null
     : null;
+  // A pinned id the static pool doesn't know is a user-written question
+  // ("CQ_…"). Hand the raw id down: InteractionCommon resolves it against
+  // syncData.customQuestions (not loaded yet here), so the re-show still lands
+  // on the same question.
+  const pinnedQuestionId =
+    questionId?.length && !question && isCustomQuestionId(questionId)
+      ? questionId
+      : undefined;
   let wrapperEl: HTMLDivElement = undefined!;
   // The wind-down settle closes into the dark: dragging the moon down closes the
   // blocked app AND locks the screen. A plain fling (skip) just closes it.
@@ -85,6 +94,7 @@ const InteractionAndroid = () => {
           isBedtimeSettle = mode === "WIND_DOWN_SETTLE";
         }}
         questionForPrompt={question || undefined}
+        pinnedQuestionId={pinnedQuestionId}
         morphInFromCorner={morphInFromCorner}
         onSetAnswer={(txt) => androidInterface.setAnswerTxt(txt)}
         onAfterInteractionFadeout={() => showLittleSunAfter()}

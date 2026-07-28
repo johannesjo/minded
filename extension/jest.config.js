@@ -5,6 +5,9 @@ export default {
     "^.+\\.tsx?$": "ts-jest",
   },
   moduleNameMapper: {
+    // nanoid ships ESM-only; map it to a tiny CJS-compatible stub so modules
+    // that mint ids (e.g. shared/data/customQuestions.ts) stay testable.
+    "^nanoid$": "<rootDir>/src/test-utils/nanoidMock.ts",
     "^@src/(.*)$": "<rootDir>/src/$1",
     "^@assets/(.*)$": "<rootDir>/src/assets/$1",
     "^@pages/(.*)$": "<rootDir>/src/pages/$1",

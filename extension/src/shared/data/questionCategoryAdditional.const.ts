@@ -55,6 +55,8 @@ export const QUESTION_CATEGORY_ADDITIONAL_INFO: {
     "Meeting yourself with kindness, especially when things are hard, can ease self-criticism and help you respond to difficult moments with more warmth.",
   [QuestionCategoryId.LettingGo]:
     "Noticing what you can set down, and what lies outside your control, can loosen the grip of worry and make room for a little more ease.",
+  [QuestionCategoryId.MyQuestions]:
+    "A question in your own words often knows you best. You can add or change these anytime in settings.",
   [QuestionCategoryId.XEnergyLevelToday]:
     "Noticing your energy as it is right now, without needing to change it, can help you meet yourself with a little more kindness today.",
   [QuestionCategoryId.XBrowsingBehaviorHappiness]:

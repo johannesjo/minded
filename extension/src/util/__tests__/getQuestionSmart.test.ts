@@ -4,7 +4,7 @@ import {
   isCategoryWithinTimeConstraints,
 } from "../getQuestionSmart";
 import { mockDate } from "@src/test-utils/mockHelpers";
-import { Answer } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
 import {
   QUESTION_CATEGORIES,
   QuestionCategoryId,
@@ -149,6 +149,83 @@ describe("getQuestionSmart", () => {
       mockedIsWorkDay.mockReturnValue(true);
       const result = getQuestionSmart([]);
       expect(result).toBeDefined();
+    });
+  });
+
+  describe("user-written questions (MyQuestions)", () => {
+    const createAnswer = (
+      categoryId: QuestionCategoryId,
+      ts = Date.now(),
+    ): Answer => ({
+      id: `${categoryId}-${ts}`,
+      qid: null,
+      questionCategoryId: categoryId,
+      val: "test answer",
+      ts,
+    });
+
+    const customQuestions: CustomQuestion[] = [
+      {
+        id: "CQ_test1",
+        t: "What would my future self thank me for?",
+        createdTS: 1,
+      },
+    ];
+
+    // Steer both random picks toward MyQuestions whenever it is eligible: the
+    // first getRndEntry call receives {catId, val} entries, the second the
+    // category's questions.
+    const preferMyQuestions = () => {
+      mockedGetRndEntry.mockImplementation((arr: unknown[]) => {
+        const myQuestionsEntry = arr.find((e) => {
+          const entry = e as { catId?: string; categoryId?: string };
+          return (
+            entry?.catId === QuestionCategoryId.MyQuestions ||
+            entry?.categoryId === QuestionCategoryId.MyQuestions
+          );
+        });
+        return myQuestionsEntry ?? arr[0];
+      });
+    };
+
+    it("adds the user's questions to the pool when no answers exist", () => {
+      getQuestionSmart([], customQuestions);
+      const pool = mockedGetRndEntry.mock.calls[0][0] as {
+        id: string;
+        categoryId: QuestionCategoryId;
+      }[];
+      expect(pool).toContainEqual({
+        id: "CQ_test1",
+        t: "What would my future self thank me for?",
+        categoryId: QuestionCategoryId.MyQuestions,
+      });
+    });
+
+    it("returns the user's own question when its category is picked", () => {
+      preferMyQuestions();
+      // Answers to the strongest-boosted categories level the field so
+      // MyQuestions (frequencyModifier 1) reaches the lowest-score set.
+      const answers = [
+        createAnswer(QuestionCategoryId.HealthierBrowsingHabits),
+        createAnswer(QuestionCategoryId.WhyReduceBrowsing),
+        createAnswer(QuestionCategoryId.HelpfulTools),
+      ];
+      const result = getQuestionSmart(answers, customQuestions);
+      expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
+      expect(result.id).toBe("CQ_test1");
+      expect(result.t).toBe("What would my future self thank me for?");
+    });
+
+    it("never surfaces the MyQuestions category while none are written", () => {
+      preferMyQuestions();
+      const answers = [
+        createAnswer(QuestionCategoryId.HealthierBrowsingHabits),
+        createAnswer(QuestionCategoryId.WhyReduceBrowsing),
+        createAnswer(QuestionCategoryId.HelpfulTools),
+      ];
+      const result = getQuestionSmart(answers);
+      expect(result).toBeDefined();
+      expect(result.categoryId).not.toBe(QuestionCategoryId.MyQuestions);
     });
   });
 

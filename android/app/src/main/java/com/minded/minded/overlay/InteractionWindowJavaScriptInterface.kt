@@ -133,7 +133,17 @@ class InteractionWindowJavaScriptInterface(
             return
         }
         if (BuildConfig.DEBUG) Log.v(logTag, "setQuestion() $jsonString")
-        val questionForPrompt = parseJSONQuestion(jsonString)
+        // parseJSONQuestion resolves the category with valueOf(), which throws
+        // for a name this enum doesn't know - and an exception here runs on the
+        // WebView bridge thread, crashing the app. The enum has drifted behind
+        // the TS side before; if it ever does again, drop the recording (the
+        // pre-drift outcome) instead of crashing.
+        val questionForPrompt = try {
+            parseJSONQuestion(jsonString)
+        } catch (e: IllegalArgumentException) {
+            Log.e(logTag, "setQuestion() unknown question category - not recorded", e)
+            return
+        }
         if (BuildConfig.DEBUG) Log.v(logTag, "setQuestion() $questionForPrompt")
         sharedOverlayViewModel.updateSharedData(
             questionForPrompt = questionForPrompt,

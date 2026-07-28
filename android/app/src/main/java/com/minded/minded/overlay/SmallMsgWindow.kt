@@ -29,8 +29,13 @@ class SmallMsgWindow(
         val sharedData by sharedOverlayViewModel.sharedData.collectAsState()
         val context = LocalContext.current
         val isQuestion: Boolean = sharedData.answerTxt == null
+        // Built-in question texts carry no trailing "?", but user-written ones
+        // (MyQuestions) may - don't double it.
+        val questionTxt = (sharedData.lastQuestionForPrompt?.t ?: "").let {
+            if (it.endsWith("?")) it else "$it?"
+        }
         val reminderTxt =
-            if (isQuestion) ((sharedData.lastQuestionForPrompt?.t ?: "") + "?") else sharedData.answerTxt
+            if (isQuestion) questionTxt else sharedData.answerTxt
                 ?: ""
         Log.v(logTag, "Cmp() isQuestion ${isQuestion} reminderTxt:${sharedData.answerTxt}")
 

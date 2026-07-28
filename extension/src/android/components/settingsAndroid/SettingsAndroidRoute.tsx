@@ -2,6 +2,7 @@ import { createSignal, onMount, Show } from "solid-js";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { SettingsAndroid } from "./SettingsAndroid";
 import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
+import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
@@ -34,6 +35,12 @@ export const SettingsAndroidRoute = () => {
             <hr class={styles.divider} />
 
             <AlternativesSettings initialAlternatives={initial.alternatives} />
+
+            <hr class={styles.divider} />
+
+            <CustomQuestionsSettings
+              initialCustomQuestions={initial.customQuestions}
+            />
 
             <hr class={styles.divider} />
 
