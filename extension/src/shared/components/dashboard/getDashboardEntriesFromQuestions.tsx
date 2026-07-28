@@ -72,55 +72,40 @@ export const guardHeroSlot = (
   return entries;
 };
 
-// A stable identity for a greeting candidate, used to remember which tile we
-// last greeted with so the next arrival can surface a different one. The
-// reflective cards carry a category id; the quote has only its type.
+// A stable identity for a greeting candidate, used to remember which tile is
+// greeting the user - so a return can hold it and a re-greet can steer away
+// from it. The reflective cards carry a category id; the quote has only its type.
 export const getGreetingKey = (dg: DashboardGroup): string =>
   "id" in dg ? dg.id : dg.type;
 
-// Put the greeting the user already had back in the hero slot, so coming back
-// to the dashboard - from a card's page, from settings, from anywhere - lands
-// on the tile they left rather than a re-rolled one. The greeting changes only
-// offscreen (see RE_GREET_DASHBOARD_HIDDEN_EV); this is what makes the rest of
-// a session hold still. Mutates `entries` exactly as the random pick does, so
-// the hero stays plain `heroOf`, and returns whether the greeting was held.
-//
-// Holding overrides the random pick but not the rules: a recap whose window
-// closed while the user was away can't come back as the greeting, any more than
-// it could be picked fresh (isGreetingEligible). A card that's gone entirely
-// (its last answer deleted on the page just visited) can't either - both leave
-// the freshly picked greeting standing.
-export const holdGreeting = (
-  entries: DashboardGroup[],
-  key: string | undefined,
-  now = new Date(),
-): boolean => {
-  if (key === undefined) return false;
-  const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
-  // Already greeting with it (the pick had no alternative to steer to).
-  if (heroIndex >= 0 && getGreetingKey(entries[heroIndex]) === key) return true;
-  // The quote isn't one of the built entries - it's spliced in by whoever picks
-  // it - so a held quote is put back the same way rather than looked up.
-  if (key === DashboardGroupType.Quote) {
-    entries.splice(CENTER_INDEX, 0, { type: DashboardGroupType.Quote });
-    return true;
-  }
-  const heldIndex = entries.findIndex((entry) => getGreetingKey(entry) === key);
-  if (heldIndex === -1 || !isGreetingEligible(entries[heldIndex], now))
-    return false;
-  const [held] = entries.splice(heldIndex, 1);
-  entries.splice(CENTER_INDEX, 0, held);
-  return true;
-};
+/**
+ * How this build should choose the greeting, given the tile the user currently
+ * has (`getLastGreetingKey`). The two are exclusive, and between them they are
+ * the whole rule that the greeting changes only offscreen:
+ *
+ * - `hold`: keep greeting with that tile. Landing on the dashboard again - back
+ *   from a card's page, from settings, from anywhere - is a return, not a new
+ *   arrival, so the greeting must be where the user left it.
+ * - `avoid`: roll a new one, but not the same tile twice in a row. Only on a
+ *   deliberate re-greet (RE_GREET_DASHBOARD_HIDDEN_EV), which always fires
+ *   while the dashboard is out of sight.
+ *
+ * Holding steers the pick rather than overriding it afterwards, so a held
+ * greeting is placed by the very same code that places a fresh one - no card
+ * the pick chose is left stranded beside it, and the list is exactly what it
+ * would be had the pick landed there by chance. It overrides the randomness,
+ * though, never the rules: a held tile that has since gone (its last answer
+ * deleted) or fallen out of its time window is simply not there to hold, and
+ * the fresh pick stands.
+ */
+export type GreetingSteer =
+  | { hold: string | undefined; avoid?: undefined }
+  | { avoid: string | undefined; hold?: undefined };
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
-  // The greeting the user currently has, if any. When the greeting is genuinely
-  // re-rolled we avoid repeating it, so the new one is actually new - but only
-  // when an alternative exists, so we never end up with nothing to greet with.
-  // (A *return* to the dashboard doesn't re-roll at all - see holdGreeting.)
-  avoidGreetingKey?: string,
+  greetingSteer: GreetingSteer = { avoid: undefined },
 ): DashboardGroup[] => {
   const dashboardGroups: DashboardGroup[] = [];
   const groupsToCheck = [
@@ -181,13 +166,11 @@ export const getDashboardEntriesFromQuestions = (
   // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
   // option - so a calm quote can greet you even on a full day, and is the
   // natural fallback when nothing reflective qualifies yet (an empty eligible
-  // pool always lands on the quote). Runs on every platform, but only when the
-  // greeting is actually being re-rolled - offscreen, on the RE_GREET trigger,
-  // or on a fresh load; a return to the dashboard holds the tile it left
-  // (holdGreeting). When it does re-roll, avoidGreetingKey keeps it from
-  // landing on the same tile again. Out-of-window question recaps are kept out
-  // of the pool (isGreetingEligible) so a morning card never greets you at
-  // night - it stays in "look back" only.
+  // pool always lands on the quote). Runs on every platform. Which tile ends up
+  // there is `greetingSteer`'s call - held from the last look, or freshly rolled
+  // away from it - but the placement below is the same either way. Out-of-window
+  // question recaps are kept out of the pool (isGreetingEligible) so a morning
+  // card never greets you at night - it stays in "look back" only.
   const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
     if (isGreetingEligible(entry, now)) acc.push(i);
     return acc;
@@ -203,13 +186,19 @@ export const getDashboardEntriesFromQuestions = (
     { index: -1, key: DashboardGroupType.Quote as string },
   ];
 
-  // Prefer a tile different from the one shown last time we landed, so each
-  // arrival feels fresh rather than possibly repeating. Only narrow the pool
-  // when an alternative remains - never leave nothing to greet with.
-  const pickable = options.filter((o) => o.key !== avoidGreetingKey);
+  // Hold the tile the user already has, when it's still one of the options -
+  // gone or out of its window, it simply isn't there to hold and the pick below
+  // stands. Otherwise draw a new one, steering away from the tile being
+  // replaced so a re-greet doesn't land on it again - but only while an
+  // alternative remains, so we never leave nothing to greet with.
+  const held =
+    greetingSteer.hold === undefined
+      ? undefined
+      : options.find((o) => o.key === greetingSteer.hold);
+  const pickable = options.filter((o) => o.key !== greetingSteer.avoid);
   const pool = pickable.length > 0 ? pickable : options;
 
-  const chosen = pool[getRndInt(0, pool.length - 1)];
+  const chosen = held ?? pool[getRndInt(0, pool.length - 1)];
   if (chosen.index === -1) {
     sortedEntries.splice(CENTER_INDEX, 0, {
       type: DashboardGroupType.Quote,

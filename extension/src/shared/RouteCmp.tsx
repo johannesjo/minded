@@ -49,11 +49,7 @@ import {
 import Feedback from "@src/shared/components/feedback/Feedback";
 import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
-import {
-  REFRESH_DASHBOARD_EV,
-  RE_GREET_DASHBOARD_HIDDEN_EV,
-} from "@src/ev.const";
-import { requestReGreet } from "@src/shared/components/dashboard/greetingMemory";
+import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
@@ -264,20 +260,10 @@ const MainWrapper = (props: RouteSectionProps) => {
     window.addEventListener("resize", reanchorCompanion);
     window.addEventListener("androidSafeAreaChanged", reanchorCompanion);
 
-    // The dashboard holds its greeting for as long as the user is in the app,
-    // so a re-greet is the only thing that frees it - and it has to be recorded
-    // *here*, in the always-mounted shell, because most re-greets fire while
-    // the dashboard isn't mounted at all: an interaction closing over another
-    // page, or Android backgrounding the app from settings or a card's page.
-    // Without this the re-roll would land in a void and the user would come
-    // back hours later to the greeting they left.
-    window.addEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, requestReGreet);
-
     onCleanup(() => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", reanchorCompanion);
       window.removeEventListener("androidSafeAreaChanged", reanchorCompanion);
-      window.removeEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, requestReGreet);
     });
 
     // iOS widget cold-launch only: tell the native launch overlay the sun has

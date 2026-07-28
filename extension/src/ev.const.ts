@@ -14,9 +14,7 @@ export const ON_SHOW_INTERACTION_OVERLAY_EV = "showInterActionOverlay";
 // is on screen to jar: you never land on the old tile and then watch it change;
 // there is only ever the one fresh card. Changing a card in front of the user is
 // deliberately avoided (calm is the product); a card only ever changes offscreen.
-// This is also the *only* thing that changes it: a plain return to the dashboard
-// holds the tile the user left (greetingMemory). So the event has two listeners -
-// the dashboard re-rolls on the spot when it's mounted, and the always-mounted
-// shell records the request for when it isn't (an interaction closing over
-// another page, or the app backgrounded from one), which is the common case.
+// Within a session it is also the only thing that changes it: a plain return to
+// the dashboard holds the tile the user left (see greetingMemory, which owns
+// both the memory and the freeing).
 export const RE_GREET_DASHBOARD_HIDDEN_EV = "reGreetDashboardHidden";

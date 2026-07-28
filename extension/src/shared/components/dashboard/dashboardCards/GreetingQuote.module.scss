@@ -1,6 +1,6 @@
 @import "../../../../styles/mixins/mixins";
 
-.RndQuote {
+.GreetingQuote {
   :global .dashboardContent {
     // No italics: we bundle no Inter italic master, so the browser would
     // synthesize a slanted fake - and the quotation marks already frame the

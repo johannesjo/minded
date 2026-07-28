@@ -66,29 +66,6 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  // holdGreeting is what keeps the greeting still across a return, and the
-  // conditions around it are the whole feature - each one silently undoes it.
-  // Unit tests on holdGreeting itself would stay green through all three.
-  it("holds the greeting across returns, and re-rolls it only offscreen", () => {
-    // Only where the greeting is actually being (re)chosen: a routine in-view
-    // refresh must not reshuffle the visible cards, and the "look back" grid
-    // must not touch the greeting memory at all (it would hold the *grid's*
-    // centre card, and the dashboard would come back with a stranger).
-    expect(normalizedComponent).toContain(
-      "const isChoosingGreeting = !props.forceRevealed && (reselect || getHeroGroup() === undefined);",
-    );
-    expect(normalizedComponent).toMatch(
-      /if \(isChoosingGreeting\) \{[^}]*const wasReGreetedWhileAway = takeReGreetRequest\(\);/,
-    );
-    // Taken unconditionally - short-circuited behind `reselect`, a handled
-    // re-greet would leave the request standing and re-roll the return after
-    // it too.
-    expect(normalizedComponent).toContain(
-      "const wasReGreetedWhileAway = takeReGreetRequest(); if (!reselect && !wasReGreetedWhileAway) holdGreeting(groups, lastGreetingKey);",
-    );
-    expect(component.match(/takeReGreetRequest\(\)/g)).toHaveLength(1);
-  });
-
   it("names the history route 'look back' without an expansion chevron", () => {
     expect(normalizedComponent).toMatch(
       /<Btn plain class=\{styles\.revealBtn\} onClick=\{revealAll\}>\s*look back\s*<\/Btn>/,

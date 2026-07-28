@@ -2,6 +2,10 @@ import RoutesCmp from "@src/shared/RouteCmp";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import {
+  markAppForegrounded,
+  reGreetAfterRealLook,
+} from "@src/shared/components/dashboard/greetingMemory";
+import {
   addWrapperClasses,
   companionWord,
   setIsDarkModeIfApplies,
@@ -109,9 +113,16 @@ const MainIOS = () => {
       // Returning from the Home Screen is exactly when a just-added widget
       // becomes observable.
       refreshWidgetInstalled();
+      markAppForegrounded();
     });
     window.addEventListener(IOS_DID_ENTER_BACKGROUND, () => {
       setIsHide(true);
+      // Genuinely offscreen - the moment to re-greet the dashboard, so a fresh
+      // tile is already there next time rather than the card changing in front
+      // of the user. The WebView isn't reloaded between visits here either, so
+      // without this the greeting would hold for the life of the app (see
+      // reGreetAfterRealLook, shared with the Android shell).
+      reGreetAfterRealLook();
     });
   });
 
@@ -147,7 +158,9 @@ const MainIOS = () => {
                 class="setupInvitationMsgText"
                 role="button"
                 tabindex="0"
-                onClick={() => fadeTopLevelThen(() => setIsShowWidgetSetup(true))}
+                onClick={() =>
+                  fadeTopLevelThen(() => setIsShowWidgetSetup(true))
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();

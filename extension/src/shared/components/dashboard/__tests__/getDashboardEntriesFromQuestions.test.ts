@@ -1,6 +1,5 @@
 import {
   CENTER_INDEX,
-  holdGreeting,
   getDashboardEntriesFromQuestions,
   guardHeroSlot,
   isGreetingEligible,
@@ -144,7 +143,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       // tile - but passing the last key as avoidGreetingKey must steer it away.
       mockRandom(0.1);
       const second = greetingOf(
-        getDashboardEntriesFromQuestions(syncData, now, firstKey),
+        getDashboardEntriesFromQuestions(syncData, now, { avoid: firstKey }),
       );
       const secondKey = "id" in second ? second.id : second.type;
 
@@ -160,11 +159,9 @@ describe("getDashboardEntriesFromQuestions", () => {
       // Avoid the quote AND draw toward the quote slot - it must still produce a
       // valid greeting rather than nothing.
       mockRandom(0.999);
-      const entries = getDashboardEntriesFromQuestions(
-        syncData,
-        now,
-        DashboardGroupType.Quote,
-      );
+      const entries = getDashboardEntriesFromQuestions(syncData, now, {
+        avoid: DashboardGroupType.Quote,
+      });
 
       expect(greetingOf(entries)).toBeDefined();
     });
@@ -380,68 +377,123 @@ describe("isGreetingEligible", () => {
   });
 });
 
-// The greeting changes only offscreen: coming back to the dashboard holds the
-// tile the user left instead of rolling a new one under them.
-describe("holdGreeting", () => {
-  const txt = (id: QuestionCategoryId): DashboardGroupTxtQuestion => ({
+// The greeting changes only offscreen, so a build that isn't re-rolling is told
+// to hold the tile the user already has. Holding steers the pick rather than
+// overriding it afterwards - which is what keeps the list identical to one that
+// landed there by chance, with no stranded card beside the greeting.
+describe("holding the greeting", () => {
+  const now = new Date("2024-01-15T12:00:00");
+  const night = new Date("2024-01-15T03:00:00");
+  const answer = (categoryId: QuestionCategoryId, id: string) => ({
     id,
-    type: DashboardGroupType.TxtQuestion,
-    dashboardTxt: "x",
-    answers: [],
+    qid: null,
+    questionCategoryId: categoryId,
+    val: `answer ${id}`,
+    ts: Date.now(),
   });
-  const monMorning = new Date("2024-01-15T09:00:00"); // Monday, work-day morning
-  const monNight = new Date("2024-01-15T03:00:00"); // Monday, middle of the night
-  const held = txt(QuestionCategoryId.RefocusHelperToday);
-  const other = txt(QuestionCategoryId.Gratitude);
-  // Mirror the view's hero-index logic (DashboardGroups.heroOf).
   const greetingOf = (entries: DashboardGroup[]) =>
     entries[entries.length > CENTER_INDEX ? CENTER_INDEX : entries.length - 1];
+  const keyOf = (entries: DashboardGroup[]) => {
+    const greeting = greetingOf(entries);
+    return "id" in greeting ? greeting.id : greeting.type;
+  };
 
-  it("moves the held tile back into the greeting slot", () => {
-    const entries = [held, other];
-    expect(holdGreeting(entries, held.id, monMorning)).toBe(true);
-    expect(greetingOf(entries)).toBe(held);
-    // Nothing is lost from the list, just reordered.
-    expect(entries).toHaveLength(2);
+  beforeEach(() => (isToday as jest.Mock).mockReturnValue(true));
+  afterEach(() => {
+    // Restore first: a leaked Math.random spy would steer a later arrival.
+    jest.restoreAllMocks();
+    (isToday as jest.Mock).mockReturnValue(false);
+    (isThisWeek as jest.Mock).mockReturnValue(false);
   });
 
-  it("leaves the fresh pick standing when nothing was held yet", () => {
-    const entries = [held, other];
-    expect(holdGreeting(entries, undefined, monMorning)).toBe(false);
-    expect(entries).toEqual([held, other]);
+  const syncDataWithThreeCards = () =>
+    createMockSyncData({
+      answers: [
+        answer(QuestionCategoryId.GoodPlans, "a1"),
+        answer(QuestionCategoryId.Motivation, "a2"),
+        answer(QuestionCategoryId.Gratitude, "a3"),
+      ],
+    });
+
+  it("greets with the held tile whatever the draw would have picked", () => {
+    const syncData = syncDataWithThreeCards();
+    for (let r = 0; r < 1; r += 0.05) {
+      mockRandom(r);
+      const entries = getDashboardEntriesFromQuestions(syncData, now, {
+        hold: QuestionCategoryId.Gratitude,
+      });
+      expect(keyOf(entries)).toBe(QuestionCategoryId.Gratitude);
+    }
   });
 
-  it("leaves the fresh pick standing once the held card is gone", () => {
+  // The bug this shape prevents: steering the pick *away* from the tile and
+  // then moving that tile back left the discarded pick (often an extra quote)
+  // in the list. On a lone sky greeting that flipped the group count from 1 to
+  // 2, which grew a "look back" button and silently killed the card's own tap
+  // target (see createDashboardCardInteractivity).
+  it("leaves no stranded card beside the held greeting", () => {
+    // The bug this shape prevents: steering the pick *away* from the tile and
+    // then moving that tile back left the discarded pick (often an extra quote)
+    // in the list. On a lone sky greeting that flipped the group count from 1
+    // to 2, which grew a "look back" button and silently killed the card's own
+    // tap target (see createDashboardCardInteractivity).
+    const syncData = createMockSyncData({
+      answers: [],
+      energyLvlTS: Date.now(),
+      energyLvlVal: 3,
+    });
+    // The one card a lone energy-level user has, greeting them on arrival.
+    mockRandom(0);
+    const arrival = getDashboardEntriesFromQuestions(syncData, now);
+    expect(arrival).toHaveLength(1);
+    expect(keyOf(arrival)).toBe(QuestionCategoryId.XEnergyLevelToday);
+
+    for (let r = 0; r < 1; r += 0.05) {
+      mockRandom(r);
+      const back = getDashboardEntriesFromQuestions(syncData, now, {
+        hold: QuestionCategoryId.XEnergyLevelToday,
+      });
+      expect(back).toHaveLength(1);
+      expect(keyOf(back)).toBe(QuestionCategoryId.XEnergyLevelToday);
+    }
+  });
+
+  it("holds a quote greeting as the quote card, once", () => {
+    const syncData = syncDataWithThreeCards();
+    const entries = getDashboardEntriesFromQuestions(syncData, now, {
+      hold: DashboardGroupType.Quote,
+    });
+    expect(keyOf(entries)).toBe(DashboardGroupType.Quote);
+    expect(
+      entries.filter((e) => e.type === DashboardGroupType.Quote),
+    ).toHaveLength(1);
+  });
+
+  it("falls back to a fresh pick when the held tile is gone", () => {
     // e.g. its last answer was deleted on the page just visited
-    const entries = [other];
-    expect(holdGreeting(entries, held.id, monMorning)).toBe(false);
-    expect(entries).toEqual([other]);
+    const syncData = syncDataWithThreeCards();
+    const entries = getDashboardEntriesFromQuestions(syncData, now, {
+      hold: QuestionCategoryId.HelpfulTools,
+    });
+    expect(greetingOf(entries)).toBeDefined();
+    expect(keyOf(entries)).not.toBe(QuestionCategoryId.HelpfulTools);
   });
 
   it("won't hold a recap whose window closed while the user was away", () => {
-    // Holding overrides the random pick, not the rules: a morning/work-day card
-    // must no more greet at 3am on the way back than on a fresh pick.
-    const entries = [held, other];
-    expect(holdGreeting(entries, held.id, monNight)).toBe(false);
-    expect(greetingOf(entries)).toBe(other);
-  });
-
-  it("puts a held quote back, since it is never one of the built entries", () => {
-    const entries: DashboardGroup[] = [other];
-    expect(holdGreeting(entries, DashboardGroupType.Quote, monMorning)).toBe(
-      true,
-    );
-    expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
-  });
-
-  it("is a no-op when that tile is already the greeting (never a second quote)", () => {
-    const entries: DashboardGroup[] = [
-      other,
-      { type: DashboardGroupType.Quote },
-    ];
-    expect(holdGreeting(entries, DashboardGroupType.Quote, monMorning)).toBe(
-      true,
-    );
-    expect(entries).toHaveLength(2);
+    // Holding overrides the randomness, never the rules: a morning/work-day
+    // card must no more greet at 3am on the way back than on a fresh pick.
+    const syncData = createMockSyncData({
+      answers: [
+        answer(QuestionCategoryId.RefocusHelperToday, "f1"),
+        answer(QuestionCategoryId.Gratitude, "a3"),
+      ],
+    });
+    for (let r = 0; r < 1; r += 0.05) {
+      mockRandom(r);
+      const entries = getDashboardEntriesFromQuestions(syncData, night, {
+        hold: QuestionCategoryId.RefocusHelperToday,
+      });
+      expect(keyOf(entries)).not.toBe(QuestionCategoryId.RefocusHelperToday);
+    }
   });
 });

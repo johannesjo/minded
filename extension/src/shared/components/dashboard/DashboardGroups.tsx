@@ -21,15 +21,15 @@ import {
   CENTER_INDEX,
   getDashboardEntriesFromQuestions,
   getGreetingKey,
-  holdGreeting,
 } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 import {
   getLastGreetingKey,
   setLastGreetingKey,
   takeReGreetRequest,
 } from "@src/shared/components/dashboard/greetingMemory";
+import { decideGreeting } from "@src/shared/components/dashboard/greetingDecision";
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
-import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
+import { GreetingQuote } from "@src/shared/components/dashboard/dashboardCards/GreetingQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import Btn from "@src/shared/components/ui/Btn";
@@ -105,16 +105,15 @@ export const DashboardGroups: (props: {
 
   // The greeting the user is actually looking at. Deliberately its *own* signal
   // rather than a memo over getDashboardGroups (the live data): the displayed
-  // greeting is only ever set when the screen opens (holding whatever last
-  // greeted, unless a re-greet freed it) or on a deliberate re-greet - which
-  // only ever fires while the dashboard is hidden. A routine
-  // in-view refresh updates the underlying data (and the "look back" count) but
-  // leaves this hero untouched, so the greeting - and its random quote - is
-  // never seen to change under the user (calm is the product; a greeting only
-  // changes offscreen). Without this, a visible REFRESH_DASHBOARD_EV that
-  // altered the group count, re-ran guardHeroSlot, or diffed the hero's data
-  // would hand the keyed <Show> a fresh object, remounting the card (a new
-  // random quote, a replayed entrance) right in front of the user.
+  // greeting is only ever set when the screen opens - holding whatever greeted
+  // last, unless a re-greet freed it - or on a deliberate re-greet, which only
+  // ever fires while the dashboard is hidden. A routine in-view refresh updates
+  // the underlying data (and the "look back" count) but leaves this hero
+  // untouched, so the greeting is never seen to change under the user (calm is
+  // the product; a greeting only changes offscreen). Without this, a visible
+  // REFRESH_DASHBOARD_EV that altered the group count, re-ran guardHeroSlot, or
+  // diffed the hero's data would hand the keyed <Show> a fresh object,
+  // remounting the card and replaying its entrance right in front of the user.
   const [getHeroGroup, setHeroGroup] = createSignal<
     DashboardGroup | undefined
   >();
@@ -147,18 +146,16 @@ export const DashboardGroups: (props: {
       }
       setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
 
-      // Whether this landing gets a *new* greeting at all. Only when the
-      // greeting is genuinely being (re)chosen: the screen opening with nothing
-      // on it yet, or a deliberate re-greet - never a routine in-view refresh,
-      // which leaves the displayed hero exactly as it is so the greeting is
-      // never seen to change under the user. The grid ("look back") has no
-      // greeting, so it sits this out entirely and leaves the memory alone.
-      const isChoosingGreeting =
-        !props.forceRevealed && (reselect || getHeroGroup() === undefined);
+      // Whether this landing decides the greeting at all - held or freshly
+      // rolled - and which way the rebuilt list should be steered.
+      const { isChoosingGreeting, steer } = decideGreeting({
+        isGridView: !!props.forceRevealed,
+        isReGreet: reselect,
+        isGreetingOnScreen: getHeroGroup() !== undefined,
+        lastGreetingKey: getLastGreetingKey(),
+        takeReGreetRequest,
+      });
 
-      // The tile the user was last greeted with - held on a return, and the one
-      // to steer away from when the greeting is genuinely re-rolled.
-      const lastGreetingKey = getLastGreetingKey();
       const existingDashboardGroups = getDashboardGroups();
       let groups: DashboardGroup[];
       if (!reselect && existingDashboardGroups.length) {
@@ -166,32 +163,15 @@ export const DashboardGroups: (props: {
           syncData,
           existingDashboardGroups,
           undefined,
-          lastGreetingKey,
+          steer,
         );
       } else {
-        groups = getDashboardEntriesFromQuestions(
-          syncData,
-          undefined,
-          lastGreetingKey,
-        );
-      }
-
-      if (isChoosingGreeting) {
-        // Landing on the dashboard again - back from a card's page, from
-        // settings, from anywhere - is a return, not a new arrival: hold the
-        // greeting the user left rather than rolling a new one under them. It
-        // changes only offscreen, on a deliberate re-greet: either one this
-        // dashboard is here to handle (reselect), or - far more often - one
-        // that fired while it wasn't even mounted. Take the request either way,
-        // so a single re-greet frees exactly one greeting.
-        const wasReGreetedWhileAway = takeReGreetRequest();
-        if (!reselect && !wasReGreetedWhileAway)
-          holdGreeting(groups, lastGreetingKey);
+        groups = getDashboardEntriesFromQuestions(syncData, undefined, steer);
       }
       setDashboardGroups(groups);
 
-      // The hero is simply whatever now sits in the greeting slot - the fresh
-      // pick, or the held greeting that holdGreeting just moved back into it.
+      // The hero is simply whatever the build put in the greeting slot - the
+      // held tile, or a fresh pick.
       if (isChoosingGreeting) setHeroGroup(heroOf(groups));
     });
   };
@@ -344,7 +324,7 @@ export const DashboardGroups: (props: {
         {(() => {
           switch (dg.type) {
             case DashboardGroupType.Quote:
-              return <RndQuote />;
+              return <GreetingQuote />;
 
             case DashboardGroupType.EnergyLvl:
               // eslint-disable-next-line no-case-declarations

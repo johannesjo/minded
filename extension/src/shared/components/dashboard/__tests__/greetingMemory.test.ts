@@ -6,7 +6,12 @@ import {
 import { mockRandom } from "@src/test-utils/mockHelpers";
 
 describe("the greeting the user currently has", () => {
-  beforeEach(() => takeReGreetRequest());
+  beforeEach(() => {
+    // Clear both the flag and the held quote (requestReGreet frees the quote,
+    // takeReGreetRequest clears the flag it just set).
+    requestReGreet();
+    takeReGreetRequest();
+  });
   afterEach(() => jest.restoreAllMocks());
 
   it("is held until a re-greet frees it", () => {
