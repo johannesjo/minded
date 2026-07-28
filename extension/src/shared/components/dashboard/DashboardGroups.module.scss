@@ -258,6 +258,31 @@
   user-select: none;
 }
 
+// The empty dashboard: no cards at all, so the sky itself speaks - what this
+// space is for, and the one way in (the resting sun). It stands where the
+// borrowed quote card used to sit, so like the passive greetings above it takes
+// no card chrome, and it eases in on the same slow entrance as the greeting it
+// replaces (see `.collapsed .box`) rather than appearing.
+.emptySky {
+  @include standardPageTransitionIn();
+  animation-duration: 900ms;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-md);
+  box-sizing: border-box;
+  text-align: center;
+  user-select: none;
+  // The app speaking gently to you - the serif voice, not chrome.
+  @include displayVoice;
+}
+
+// The way in sits a beat below the first line and quieter than it: the sun is
+// the offer, not an instruction to follow.
+.emptySkyWayIn {
+  margin-top: var(--space-lg);
+  opacity: 0.7;
+}
+
 .energyLvl {
   margin: auto;
 

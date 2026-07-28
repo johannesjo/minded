@@ -204,9 +204,10 @@ sits at the strict end of a line the whole app lives on.
 - ❌ mood/energy echoes ("earlier you felt…") - already cut app-wide
 - ❌ the user's own words (answers, intents) - semi-public surface
 - ❌ time-sensitive greetings ("good morning") - staleness trap for no gain
-- ❌ quotes-as-content-strategy - `QUOTES` is a deliberately small, curated
-  dashboard pool; don't build a quote-of-the-day machine, that's a different
-  (and more ornamental) product
+- ❌ quotes - borrowed wisdom is ornament, not presence. The dashboard's own
+  curated `QUOTES` pool has since been removed for the same reason (a card that
+  isn't about you, filling space where you had nothing yet); don't reintroduce
+  it here as a quote-of-the-day machine, that's a different product
 
 ## The biggest risk, named: a changing widget trains checking
 

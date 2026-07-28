@@ -224,7 +224,10 @@ empty-state fallback - so the "random calming quote" is always the same
 Thich Nhat Hanh line. Everywhere else the app invests heavily in
 non-repetition on calm surfaces; here the fallback card is permanently
 frozen. **Fixed:** the pool grew to a small curated set (still deliberately
-not a quote-of-the-day machine).
+not a quote-of-the-day machine). **Superseded:** the quote card was then
+removed outright - it was the one dashboard card that wasn't the user's own,
+and growing the pool only made better filler. An empty dashboard now says
+what the space is for and points to the sun instead.
 
 **P2 - Doc/comment drift.** A stale dashboard comment promised a
 "minded-decisions counter" and usage charts "in the full grid" that don't

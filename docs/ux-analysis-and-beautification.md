@@ -124,6 +124,13 @@ intervention). One sentence, once, then gone; consistent with the
 "rare and dismissible" bar. This also softens the cold start where the hero
 pool is empty and a random quote is doing all the work.
 
+**Fixed** (and the quote is gone): the empty dashboard now *is* those words -
+"Your reflections will gather here." plus "Tap the sun below whenever you'd
+like a pause." - serif, on the bare sky, where the quote card used to sit. No
+dismissal state to persist: the lines are the empty state itself, so they
+disappear on their own the moment there is anything of yours to show
+(`DashboardGroups.renderEmptySky`).
+
 ---
 
 ## 3. P1 - trust, consistency, and broken affordances
@@ -367,6 +374,10 @@ moment of an otherwise gorgeous surface - a gray box floating in a void.
 Render the *quote* greeting without card chrome: serif text directly on the
 sky (the intervention screens already prove this reads beautifully), card
 chrome only for cards with user content. Removes an element; adds nothing.
+
+**Fixed, by removing more than the chrome:** the quote card is gone
+altogether. Card chrome now belongs only to cards with user content, and the
+first run shows the two serif empty-sky lines (§2.3) directly on the sky.
 
 ---
 

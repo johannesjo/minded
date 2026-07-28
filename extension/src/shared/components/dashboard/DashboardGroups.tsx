@@ -21,13 +21,13 @@ import {
   CENTER_INDEX,
   getDashboardEntriesFromQuestions,
   getGreetingKey,
+  isGreetingEligible,
 } from "@src/shared/components/dashboard/getDashboardEntriesFromQuestions";
 import {
   getLastGreetingKey,
   setLastGreetingKey,
 } from "@src/shared/components/dashboard/greetingMemory";
 import styles from "@src/shared/components/dashboard/DashboardGroups.module.scss";
-import { RndQuote } from "@src/shared/components/dashboard/dashboardCards/RndQuote";
 import { QuestionCategoryId } from "@src/shared/data/questions";
 import Rating from "@src/shared/components/ui/Rating";
 import Btn from "@src/shared/components/ui/Btn";
@@ -45,12 +45,12 @@ import {
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { createDashboardCardInteractivity } from "@src/shared/components/dashboard/dashboardCardInteractivity";
+import { companionWord } from "@src/shared/addWrapperClasses";
 
 // These greetings simply reflect the moment back to the user. In the collapsed
 // arrival they can rest directly on the sky; the full look-back view still uses
 // cards so every historical entry remains part of one consistent grid.
 const PASSIVE_HERO_TYPES: ReadonlySet<DashboardGroupType> = new Set([
-  DashboardGroupType.Quote,
   DashboardGroupType.EnergyLvl,
   DashboardGroupType.EmotionLabeling,
 ]);
@@ -84,21 +84,27 @@ export const DashboardGroups: (props: {
     setIsDailyQuestionsBannerBeingRemoved,
   ] = createSignal<boolean>(false);
 
-  // Arrival is calm: a single greeting (the centre pick - a random
-  // reflection, or the quote when there's little to show) instead of the full
-  // wall of cards. The rest stay tucked away until you choose to "look back",
-  // which routes to the full grid (the /lookBack page) rather than toggling an
-  // internal flag - so the grid is a real, back-able view.
+  // Arrival is calm: a single greeting (the centre pick - one of your own
+  // reflections) instead of the full wall of cards, and nothing at all when
+  // there is nothing of yours to reflect back. The rest stay tucked away until
+  // you choose to "look back", which routes to the full grid (the /lookBack
+  // page) rather than toggling an internal flag - so the grid is a real,
+  // back-able view.
   const [getDashboardGroups, setDashboardGroups] = createSignal<
     DashboardGroup[]
   >([]);
   const navigate = useNavigate();
 
-  // The greeting: the centre pick sits at CENTER_INDEX once there are
-  // enough cards, and the fallback quote (spliced in last) when there are fewer.
+  // The greeting: the centre pick sits at CENTER_INDEX once there are enough
+  // cards, and last when there are fewer. There is no filler card any more, so
+  // that slot can legitimately hold something that must not greet (an
+  // out-of-window recap, or just the tail of a list nothing was picked from) -
+  // greet only when the card there is actually eligible, otherwise let the sky
+  // stay empty.
   const heroOf = (groups: DashboardGroup[]): DashboardGroup | undefined => {
     const len = groups.length;
-    return groups[len > CENTER_INDEX ? CENTER_INDEX : len - 1];
+    const hero = groups[len > CENTER_INDEX ? CENTER_INDEX : len - 1];
+    return hero && isGreetingEligible(hero, new Date()) ? hero : undefined;
   };
 
   // The greeting the user is actually looking at. Deliberately its *own* signal
@@ -106,15 +112,20 @@ export const DashboardGroups: (props: {
   // greeting is only ever (re)set when the screen opens or on a deliberate
   // re-greet - which only ever fires while the dashboard is hidden. A routine
   // in-view refresh updates the underlying data (and the "look back" count) but
-  // leaves this hero untouched, so the greeting - and its random quote - is
-  // never seen to change under the user (calm is the product; a greeting only
-  // changes offscreen). Without this, a visible REFRESH_DASHBOARD_EV that
-  // altered the group count, re-ran guardHeroSlot, or diffed the hero's data
-  // would hand the keyed <Show> a fresh object, remounting the card (a new
-  // random quote, a replayed entrance) right in front of the user.
+  // leaves this hero untouched, so the greeting is never seen to change under
+  // the user (calm is the product; a greeting only changes offscreen). Without
+  // this, a visible REFRESH_DASHBOARD_EV that altered the group count, re-ran
+  // guardHeroSlot, or diffed the hero's data would hand the keyed <Show> a fresh
+  // object, remounting the card (a replayed entrance) right in front of the user.
   const [getHeroGroup, setHeroGroup] = createSignal<
     DashboardGroup | undefined
   >();
+
+  // Whether the first read of the stored data has come back. Until it has, an
+  // empty group list means "not loaded yet", not "nothing to show" - rendering
+  // the empty-sky words on that assumption would flash them for a frame on every
+  // arrival and then cut to the greeting.
+  const [getIsLoaded, setIsLoaded] = createSignal(false);
 
   // Remember the tile we actually greeted with, so the next arrival can pick a
   // different one. Tracking the rendered hero (rather than the raw pick) keeps
@@ -173,6 +184,7 @@ export const DashboardGroups: (props: {
       if (reselect || getHeroGroup() === undefined) {
         setHeroGroup(heroOf(groups));
       }
+      setIsLoaded(true);
     });
   };
 
@@ -283,13 +295,31 @@ export const DashboardGroups: (props: {
     </div>
   );
 
+  // There is nothing of the user's to reflect back yet (a fresh profile, before
+  // the first answer). The dashboard used to fill that moment with a borrowed
+  // quote; instead, say plainly what this space is and where the way in is. Two
+  // quiet lines, in the app's own voice, on the bare sky - no card chrome, so
+  // this reads as the room speaking rather than another surface to act on. It
+  // disappears for good the moment there is anything of yours to show.
+  const renderEmptySky = () => (
+    <div class={styles.emptySky}>
+      <div class="txtSlightlyBigger">Your reflections will gather here.</div>
+      <div class={`txtSmaller ${styles.emptySkyWayIn}`}>
+        {/* The disc below is the moon after dark, so name it the way the rest
+            of the app's copy does. The apostrophe is typographic, not a
+            straight tick: this line is set in Newsreader, where a typewriter
+            quote reads as a blemish. */}
+        Tap the {companionWord()} below whenever you’d like a pause.
+      </div>
+    </div>
+  );
+
   const renderCard = (dg: DashboardGroup, isSingleCard = false) => {
     const isSkyGreeting = isSingleCard && PASSIVE_HERO_TYPES.has(dg.type);
     // Energy/emotion can stay visually quiet on the sky, but when either is the
     // only dashboard group there is no "look back" route beneath it. Keep that
-    // sole route clickable and keyboard-accessible. A quote has no id, so it
-    // remains a genuinely passive greeting; with multiple groups, look-back
-    // remains the one calm navigation affordance.
+    // sole route clickable and keyboard-accessible; with multiple groups,
+    // look-back remains the one calm navigation affordance.
     const isInteractive = createDashboardCardInteractivity({
       hasId: "id" in dg,
       isSingleCard,
@@ -323,9 +353,6 @@ export const DashboardGroups: (props: {
       >
         {(() => {
           switch (dg.type) {
-            case DashboardGroupType.Quote:
-              return <RndQuote />;
-
             case DashboardGroupType.EnergyLvl:
               // eslint-disable-next-line no-case-declarations
               const dge = dg as DashboardGroupEnergyLvl;
@@ -366,7 +393,18 @@ export const DashboardGroups: (props: {
               // entrance fade-in (see .collapsed .box). Re-greets only ever happen
               // while hidden, so the fresh tile is already easing in when revealed
               // - no in-view swap wrapper needed.
-              <Show when={getHeroGroup()} keyed>
+              <Show
+                when={getHeroGroup()}
+                keyed
+                fallback={
+                  // Only for a genuinely empty dashboard. With cards present but
+                  // none able to greet, "look back" below is the way in and the
+                  // sky stays wordless.
+                  <Show when={getIsLoaded() && !getDashboardGroups().length}>
+                    {renderEmptySky()}
+                  </Show>
+                }
+              >
                 {(g) => renderCard(g, true)}
               </Show>
             }
@@ -374,7 +412,10 @@ export const DashboardGroups: (props: {
             {renderDailyQuestionsBanner()}
           </Show>
 
-          <Show when={getDashboardGroups().length > 1}>
+          {/* Offer "look back" whenever the collapsed view is holding something
+              back - including the case where nothing greets you but cards exist
+              (only out-of-window recaps), which would otherwise strand them. */}
+          <Show when={getDashboardGroups().length > (getHeroGroup() ? 1 : 0)}>
             <Btn plain class={styles.revealBtn} onClick={revealAll}>
               look back
             </Btn>

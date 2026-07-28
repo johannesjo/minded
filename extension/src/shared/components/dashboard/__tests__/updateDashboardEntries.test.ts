@@ -103,7 +103,7 @@ describe("updateDashboardEntriesFromQuestions", () => {
   });
 
   // The flip side: while the greeting is still in-window, a merge refresh must
-  // leave it alone (no needless reshuffle to a quote mid-window).
+  // leave it alone (no needless reshuffle mid-window).
   it("keeps an in-window greeting across a merge refresh", () => {
     const morning = new Date("2024-01-15T09:00:00");
     const syncData = createMockSyncData({

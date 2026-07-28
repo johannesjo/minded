@@ -69,8 +69,11 @@ describe("getDashboardEntriesFromQuestions", () => {
     });
   });
 
-  // The greeting "reflects, never measures": only reflective/self-report cards
-  // (or a calm quote) may be the centre pick the dashboard opens on.
+  // The greeting "reflects, never measures": only reflective/self-report cards -
+  // the user's own answers, mood, energy - may be the centre pick the dashboard
+  // opens on. There is no filler card to fall back on (the quote was removed),
+  // so "nothing qualifies" means "no greeting", never "greet with something
+  // borrowed".
   describe("greeting (centre pick) selection", () => {
     const now = new Date("2024-01-15T12:00:00");
 
@@ -137,7 +140,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       // same way the view does.
       mockRandom(0.1);
       const first = greetingOf(getDashboardEntriesFromQuestions(syncData, now));
-      const firstKey = "id" in first ? first.id : first.type;
+      const firstKey = first.id;
 
       // Next landing with the SAME random draw would normally repeat the same
       // tile - but passing the last key as avoidGreetingKey must steer it away.
@@ -145,27 +148,27 @@ describe("getDashboardEntriesFromQuestions", () => {
       const second = greetingOf(
         getDashboardEntriesFromQuestions(syncData, now, firstKey),
       );
-      const secondKey = "id" in second ? second.id : second.type;
+      const secondKey = second.id;
 
       expect(secondKey).not.toBe(firstKey);
     });
 
     it("still greets even when the avoided tile is the only option (never leaves nothing)", () => {
-      // Only one reflective card present; the pool is just it + the quote.
+      // Only one reflective card present, and it's the one we'd rather not
+      // repeat - narrowing the pool must not leave nothing to greet with.
       const syncData = createMockSyncData({
         answers: [reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1")],
       });
 
-      // Avoid the quote AND draw toward the quote slot - it must still produce a
-      // valid greeting rather than nothing.
       mockRandom(0.999);
       const entries = getDashboardEntriesFromQuestions(
         syncData,
         now,
-        DashboardGroupType.Quote,
+        QuestionCategoryId.GoodPlans,
       );
 
       expect(greetingOf(entries)).toBeDefined();
+      expect(isGreetingEligible(greetingOf(entries), now)).toBe(true);
     });
 
     // The greeting is a present-moment surface, so a question recap may only
@@ -224,8 +227,9 @@ describe("getDashboardEntriesFromQuestions", () => {
     // (isGreetingEligible), but the incremental merge (updateDashboardEntries)
     // can leave a once-fresh recap sitting in the hero slot as the hours pass.
     // guardHeroSlot is the safety net for that path: if the hero is a stale
-    // recap, move it out (it stays in "look back") and greet with a quote.
-    it("guardHeroSlot evicts a stale recap from the hero slot and greets with a quote", () => {
+    // recap, swap in a card that can greet now (the stale one stays in
+    // "look back").
+    it("guardHeroSlot swaps a stale recap out of the hero slot for one that can greet now", () => {
       // Monday 03:00 - past the morning window RefocusHelperToday is gated to.
       const night = new Date("2024-01-15T03:00:00");
       const recap = (id: QuestionCategoryId): DashboardGroup => ({
@@ -245,9 +249,10 @@ describe("getDashboardEntriesFromQuestions", () => {
 
       const guarded = guardHeroSlot(entries, night);
 
-      // The greeting must not be the stale morning recap - it falls back to a
-      // quote - but the recap is still present for the "look back" grid.
-      expect(greetingOf(guarded).type).toBe(DashboardGroupType.Quote);
+      // The greeting must not be the stale morning recap - another in-window
+      // card takes the slot - and the recap is still present for the
+      // "look back" grid.
+      expect(isGreetingEligible(greetingOf(guarded), night)).toBe(true);
       expect(
         guarded.some(
           (e) =>
@@ -258,22 +263,37 @@ describe("getDashboardEntriesFromQuestions", () => {
       ).toBe(true);
     });
 
-    it("can greet with a quote even on a full day (quote is a regular pool option, not just a <5-card fallback)", () => {
-      const syncData = createMockSyncData({
-        answers: [
-          reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
-          reflectiveAnswer(QuestionCategoryId.Motivation, "a2"),
-          reflectiveAnswer(QuestionCategoryId.Gratitude, "a3"),
-          reflectiveAnswer(QuestionCategoryId.HelpfulTools, "a4"),
-        ],
-      });
+    // The counterpart: with no card able to greet, guardHeroSlot leaves the
+    // arrangement alone rather than inventing a filler. The view then shows no
+    // greeting at all (DashboardGroups.heroOf re-checks eligibility), which is
+    // the whole point of removing the quote card.
+    it("guardHeroSlot leaves a stale hero in place when nothing else can greet - no filler card is invented", () => {
+      const night = new Date("2024-01-15T03:00:00");
+      const entries: DashboardGroup[] = [
+        {
+          id: QuestionCategoryId.RefocusHelperToday,
+          type: DashboardGroupType.TxtQuestion,
+          dashboardTxt: "x",
+          answers: [],
+        },
+      ];
 
-      // r→1 selects the last pool slot, which is always the quote.
-      mockRandom(0.999);
-      const entries = getDashboardEntriesFromQuestions(syncData, now);
+      const guarded = guardHeroSlot(entries, night);
 
-      expect(entries.length).toBeGreaterThanOrEqual(5);
-      expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
+      expect(guarded).toHaveLength(1);
+      expect(isGreetingEligible(guarded[0], night)).toBe(false);
+    });
+
+    it("greets with nothing at all on an empty profile (no borrowed filler card)", () => {
+      // Nothing answered, and no self-report from today either.
+      (isToday as jest.Mock).mockReturnValue(false);
+
+      const entries = getDashboardEntriesFromQuestions(
+        createMockSyncData({ answers: [] }),
+        now,
+      );
+
+      expect(entries).toHaveLength(0);
     });
 
     // Symmetry with the night/focus case: an evening recap shouldn't greet in
@@ -370,11 +390,5 @@ describe("isGreetingEligible", () => {
         monNight,
       ),
     ).toBe(true);
-  });
-
-  it("never treats a quote card as a greeting candidate", () => {
-    expect(
-      isGreetingEligible({ type: DashboardGroupType.Quote }, monMorning),
-    ).toBe(false);
   });
 });

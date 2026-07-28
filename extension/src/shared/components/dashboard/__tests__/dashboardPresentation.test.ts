@@ -12,15 +12,64 @@ const styles = readFileSync(
 const normalizedComponent = component.replace(/\s+/g, " ");
 
 describe("collapsed dashboard presentation", () => {
-  it("places passive quote, energy, and emotion greetings directly on the sky", () => {
+  it("places passive energy and emotion greetings directly on the sky", () => {
     expect(component).toMatch(
-      /PASSIVE_HERO_TYPES[\s\S]*DashboardGroupType\.Quote[\s\S]*DashboardGroupType\.EnergyLvl[\s\S]*DashboardGroupType\.EmotionLabeling/,
+      /PASSIVE_HERO_TYPES[\s\S]*DashboardGroupType\.EnergyLvl[\s\S]*DashboardGroupType\.EmotionLabeling/,
     );
     expect(component).toContain('["cardDashboard"]: !isSkyGreeting');
     expect(component).toContain("[styles.skyGreeting]: isSkyGreeting");
   });
 
-  it("keeps a sole energy or emotion greeting navigable without making quotes interactive", () => {
+  it("greets with a card only when that card may greet right now - otherwise an empty sky", () => {
+    // No filler card exists any more, so the hero slot can hold something that
+    // must not greet (a stale recap). The view checks before showing it.
+    expect(normalizedComponent).toContain(
+      "return hero && isGreetingEligible(hero, new Date()) ? hero : undefined;",
+    );
+  });
+
+  it("still offers 'look back' when nothing greets but cards exist", () => {
+    expect(normalizedComponent).toContain(
+      "when={getDashboardGroups().length > (getHeroGroup() ? 1 : 0)}",
+    );
+  });
+
+  describe("the empty sky (nothing of the user's to show yet)", () => {
+    // What replaced the borrowed quote card: the space says what it is for and
+    // where the way in is, rather than being filled with someone else's words.
+    it("says what the space is for and names the sun as the way in", () => {
+      expect(normalizedComponent).toContain(
+        "Your reflections will gather here.",
+      );
+      // `companionWord()`, not a hardcoded "sun": the disc below is the moon
+      // after dark, and copy that names it must follow.
+      expect(normalizedComponent).toContain(
+        "Tap the {companionWord()} below whenever you’d like a pause.",
+      );
+    });
+
+    it("speaks those words in the serif voice, directly on the sky - no card chrome", () => {
+      expect(normalizedComponent).toContain("<div class={styles.emptySky}>");
+      expect(normalizedComponent).not.toMatch(
+        /cardDashboard[^}]*emptySky|emptySky[^}]*cardDashboard/,
+      );
+      expect(styles).toMatch(/\.emptySky\s*\{[\s\S]*@include displayVoice;/);
+    });
+
+    it("eases in like the greeting it stands in for, never appearing outright", () => {
+      expect(styles).toMatch(
+        /\.emptySky\s*\{[\s\S]*@include standardPageTransitionIn\(\);/,
+      );
+    });
+
+    it("waits for the first data read, so it can't flash before a greeting", () => {
+      expect(normalizedComponent).toContain(
+        "when={getIsLoaded() && !getDashboardGroups().length}",
+      );
+    });
+  });
+
+  it("keeps a sole energy or emotion greeting navigable", () => {
     expect(normalizedComponent).toContain(
       "const isInteractive = createDashboardCardInteractivity({",
     );
