@@ -124,6 +124,25 @@ intervention). One sentence, once, then gone; consistent with the
 "rare and dismissible" bar. This also softens the cold start where the hero
 pool is empty and a random quote is doing all the work.
 
+**Fixed** (and the quote is gone): the empty dashboard now *is* those words -
+"This is where your reflections gather." plus "Tap the sun below whenever
+you'd like a pause." (the moon after dark) - serif, on the bare sky, where the
+quote card used to sit. No dismissal state to persist: the lines are the empty
+state itself, so they disappear on their own - fading, never cut - the moment
+there is anything of yours to show (`DashboardGroups.renderEmptySky`).
+
+The way-in line alone also covers the state the quote used to fill from the
+other side: cards exist but none of them may greet *right now* (an evening
+whose only entries are morning recaps). Claiming the room is empty would be
+untrue there, but without the line the sky held nothing but a lone "look back"
+link. The same words stand in for an empty `/lookBack` grid.
+
+One nuance worth knowing: on a fresh profile inside the daily-questions windows
+(05:00-12:00, 20:00-24:00) the invitation banner owns that same slot, so the
+words wait behind it. That is the right order - the banner is a *better* first
+thing to meet, with two clear actions - and dismissing it with "not now" eases
+the words in behind it. The hint is never simply absent.
+
 ---
 
 ## 3. P1 - trust, consistency, and broken affordances
@@ -219,7 +238,8 @@ doesn't know the user - same logic as the 90% copy bar.
   quiet text link. That quietness is on-philosophy; consider only a slightly
   larger hit area and a chevron that hints downward motion (it currently
   opens a route, not an expansion - the icon over-promises an accordion).
-- `TxtQuestion` cards are tappable, quote/energy/emotion cards are not, with
+- `TxtQuestion` cards are tappable, energy/emotion cards are not (the quote
+  card has since been removed entirely - see §2.3), with
   no visual differentiation. Give interactive cards the existing hover/press
   treatment (`--dashboard-card-bg-hover` exists already) and *no* affordance
   on static ones - differentiation by behavior, not new chrome.
@@ -367,6 +387,10 @@ moment of an otherwise gorgeous surface - a gray box floating in a void.
 Render the *quote* greeting without card chrome: serif text directly on the
 sky (the intervention screens already prove this reads beautifully), card
 chrome only for cards with user content. Removes an element; adds nothing.
+
+**Fixed, by removing more than the chrome:** the quote card is gone
+altogether. Card chrome now belongs only to cards with user content, and the
+first run shows the two serif empty-sky lines (§2.3) directly on the sky.
 
 ---
 

@@ -17,18 +17,19 @@ import { isThisWeek, isToday } from "@src/util/isToday";
 import { getRndInt } from "@src/util/getRndInt";
 
 const MAX_ANSWERS = 4;
-// The slot the centre pick (or the fallback quote) is moved to - also the card
-// the dashboard greets you with before you reveal the rest. Exported so the view
-// can identify the greeting without re-deriving the placement logic.
+// The slot the centre pick is moved to - also the card the dashboard greets you
+// with before you reveal the rest. Exported so the view can identify the
+// greeting without re-deriving the placement logic.
 export const CENTER_INDEX = 4;
 
 // The card types that may *greet* you on arrival (the centre pick). The greeting
-// reflects - your own answers, mood, energy, emotions - or offers a calm quote;
-// it never *measures*, and it is never a call to action (the wind-down CTA is
+// only ever reflects *you* back - your own answers, mood, energy, emotions; it
+// never *measures*, and it is never a call to action (the wind-down CTA is
 // excluded). No counter/chart card types exist anywhere on the dashboard - by
-// design, not omission; don't add them. (The quote is handled separately as an
-// always-present extra option, so it can greet on full days and is the natural
-// empty fallback.)
+// design, not omission; don't add them. There is deliberately no filler card
+// either (the borrowed-wisdom quote was removed): when nothing of yours
+// qualifies, the dashboard greets you with an empty sky and the resting sun -
+// see the empty-pool branch below.
 const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
   DashboardGroupType.TxtQuestion,
   DashboardGroupType.EnergyLvl,
@@ -43,7 +44,6 @@ const GREETING_ELIGIBLE_TYPES: ReadonlySet<DashboardGroupType> = new Set([
 // only ever reflect today's own entries, so they have no such window.
 const isOutOfWindowRecap = (entry: DashboardGroup, now: Date): boolean =>
   entry.type === DashboardGroupType.TxtQuestion &&
-  "id" in entry &&
   !isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[entry.id], now);
 
 // Whether a card may *greet* you right now: a reflective/self-report card that
@@ -52,31 +52,46 @@ export const isGreetingEligible = (entry: DashboardGroup, now: Date): boolean =>
   GREETING_ELIGIBLE_TYPES.has(entry.type) && !isOutOfWindowRecap(entry, now);
 
 // Guard the card that actually greets you (the hero slot the view reads - see
-// DashboardGroups.heroOf). If it holds an out-of-window recap, move it out
-// (it stays available in "look back") and greet with a calm quote instead -
-// matching the fallback when nothing reflective qualifies. The random pick
-// already keeps the hero in-window (isGreetingEligible), but the incremental
-// merge (updateDashboardEntries) preserves the existing order, so a greeting
-// that was in-window when first built can go stale as the hours pass - this is
-// that path's safety net. Mutates and returns `entries`.
+// DashboardGroups.heroOf). If it holds an out-of-window recap, swap in a card
+// that *can* greet right now (the stale one stays available in "look back").
+// The random pick already keeps the hero in-window (isGreetingEligible), but the
+// incremental merge (updateDashboardEntries) preserves the existing order, so a
+// greeting that was in-window when first built can go stale as the hours pass -
+// this is that path's safety net. When nothing else qualifies we leave the
+// arrangement alone: the view checks eligibility before greeting, so the
+// dashboard simply shows no greeting rather than a stale one or a filler card.
+// Mutates and returns `entries`.
+//
+// Note it asks the same question the view asks (isGreetingEligible), not the
+// narrower "is this a stale recap". The two are equivalent while every card type
+// may greet, but the moment a non-greeting type is added back - the shape the
+// quote card had - a narrower guard here would leave it sitting in the hero slot
+// for the view to reject, and the dashboard would greet with nothing despite
+// having cards that could.
 export const guardHeroSlot = (
   entries: DashboardGroup[],
   now = new Date(),
 ): DashboardGroup[] => {
   const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
-  if (heroIndex >= 0 && isOutOfWindowRecap(entries[heroIndex], now)) {
-    const [stale] = entries.splice(heroIndex, 1);
-    entries.push(stale);
-    entries.splice(CENTER_INDEX, 0, { type: DashboardGroupType.Quote });
+  if (heroIndex < 0 || isGreetingEligible(entries[heroIndex], now)) {
+    return entries;
   }
+  const freshIndex = entries.findIndex(
+    (entry, i) => i !== heroIndex && isGreetingEligible(entry, now),
+  );
+  if (freshIndex === -1) return entries;
+  [entries[heroIndex], entries[freshIndex]] = [
+    entries[freshIndex],
+    entries[heroIndex],
+  ];
   return entries;
 };
 
 // A stable identity for a greeting candidate, used to remember which tile is
-// greeting the user - so a return can hold it and a re-greet can steer away
-// from it. The reflective cards carry a category id; the quote has only its type.
-export const getGreetingKey = (dg: DashboardGroup): string =>
-  "id" in dg ? dg.id : dg.type;
+// greeting the user - so a return can hold it and a re-greet can steer away from
+// it. Every card left on the dashboard is one of the user's own, so each carries
+// a category id (the id-less quote card was the one exception, and it's gone).
+export const getGreetingKey = (dg: DashboardGroup): string => dg.id;
 
 /**
  * How this build should choose the greeting, given the tile the user currently
@@ -91,12 +106,12 @@ export const getGreetingKey = (dg: DashboardGroup): string =>
  *   while the dashboard is out of sight.
  *
  * Holding steers the pick rather than overriding it afterwards, so a held
- * greeting is placed by the very same code that places a fresh one - no card
- * the pick chose is left stranded beside it, and the list is exactly what it
- * would be had the pick landed there by chance. It overrides the randomness,
- * though, never the rules: a held tile that has since gone (its last answer
- * deleted) or fallen out of its time window is simply not there to hold, and
- * the fresh pick stands.
+ * greeting is placed by the very same code that places a fresh one and the list
+ * is exactly what it would be had the pick landed there by chance. It overrides
+ * the randomness, though, never the rules: a held tile that has since gone (its
+ * last answer deleted) or fallen out of its time window is simply not there to
+ * hold, and the fresh pick stands - or, with nothing left that may greet, the
+ * empty sky does.
  */
 export type GreetingSteer =
   | { hold: string | undefined; avoid?: undefined }
@@ -163,47 +178,44 @@ export const getDashboardEntriesFromQuestions = (
 
   // Move the greeting (the centre pick the dashboard opens on) to CENTER_INDEX.
   // The pick is drawn only from the reflective/self-report cards
-  // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
-  // option - so a calm quote can greet you even on a full day, and is the
-  // natural fallback when nothing reflective qualifies yet (an empty eligible
-  // pool always lands on the quote). Runs on every platform. Which tile ends up
-  // there is `greetingSteer`'s call - held from the last look, or freshly rolled
+  // (GREETING_ELIGIBLE_TYPES). Runs on every platform. Which tile ends up in the
+  // slot is `greetingSteer`'s call - held from the last look, or freshly rolled
   // away from it - but the placement below is the same either way. Out-of-window
   // question recaps are kept out of the pool (isGreetingEligible) so a morning
   // card never greets you at night - it stays in "look back" only.
-  const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
-    if (isGreetingEligible(entry, now)) acc.push(i);
-    return acc;
-  }, []);
+  const options = sortedEntries.reduce<{ index: number; key: string }[]>(
+    (acc, entry, index) => {
+      if (isGreetingEligible(entry, now))
+        acc.push({ index, key: getGreetingKey(entry) });
+      return acc;
+    },
+    [],
+  );
 
-  // The pool of greetings to draw from: every eligible reflective card, plus
-  // the quote as one always-present extra option (the last slot).
-  const options = [
-    ...eligibleIndexes.map((index) => ({
-      index,
-      key: getGreetingKey(sortedEntries[index]),
-    })),
-    { index: -1, key: DashboardGroupType.Quote as string },
-  ];
+  // An empty pool means nothing of yours qualifies right now (a fresh profile,
+  // or a day whose only cards are out-of-window recaps). Then there is simply no
+  // greeting: the dashboard rests on an empty sky with the sun. We used to fill
+  // that slot with a borrowed quote - the empty sky says the same thing more
+  // honestly, without a card that isn't about you.
+  if (options.length) {
+    // Hold the tile the user already has, when it's still one of the options -
+    // gone, or out of its window since they left, it simply isn't there to hold
+    // and the pick below stands.
+    const held =
+      greetingSteer.hold === undefined
+        ? undefined
+        : options.find((o) => o.key === greetingSteer.hold);
 
-  // Hold the tile the user already has, when it's still one of the options -
-  // gone or out of its window, it simply isn't there to hold and the pick below
-  // stands. Otherwise draw a new one, steering away from the tile being
-  // replaced so a re-greet doesn't land on it again - but only while an
-  // alternative remains, so we never leave nothing to greet with.
-  const held =
-    greetingSteer.hold === undefined
-      ? undefined
-      : options.find((o) => o.key === greetingSteer.hold);
-  const pickable = options.filter((o) => o.key !== greetingSteer.avoid);
-  const pool = pickable.length > 0 ? pickable : options;
+    // Rolling a new one: steer away from the tile being replaced, so a re-greet
+    // doesn't land on it again. Only while an alternative remains - never leave
+    // nothing to greet with. With a single card there is no alternative at all
+    // any more (the quote used to be a permanent second option), so that one
+    // card greets every arrival: honest, and better than reaching for something
+    // that isn't the user's.
+    const pickable = options.filter((o) => o.key !== greetingSteer.avoid);
+    const pool = pickable.length > 0 ? pickable : options;
 
-  const chosen = held ?? pool[getRndInt(0, pool.length - 1)];
-  if (chosen.index === -1) {
-    sortedEntries.splice(CENTER_INDEX, 0, {
-      type: DashboardGroupType.Quote,
-    });
-  } else {
+    const chosen = held ?? pool[getRndInt(0, pool.length - 1)];
     const [greeting] = sortedEntries.splice(chosen.index, 1);
     sortedEntries.splice(CENTER_INDEX, 0, greeting);
   }

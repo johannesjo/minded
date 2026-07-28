@@ -1,5 +1,3 @@
-import { getRndEntry } from "@src/util/getRndEntry";
-import { Quote, QUOTES } from "@src/shared/data/quotes";
 import { RE_GREET_DASHBOARD_HIDDEN_EV } from "@src/ev.const";
 
 // What is greeting the user on the dashboard, and when it is allowed to change.
@@ -19,17 +17,6 @@ export const setLastGreetingKey = (key: string | undefined): void => {
   lastGreetingKey = key;
 };
 
-// The quote currently greeting the user, drawn once and then held. Without it
-// the quote card would draw again on every mount, and a held greeting would
-// still change its words on the way back: the card holds still but the greeting
-// doesn't, which is the jolt being removed.
-let greetingQuote: Quote | undefined;
-
-export const getGreetingQuote = (): Quote => {
-  if (!greetingQuote) greetingQuote = getRndEntry(QUOTES);
-  return greetingQuote;
-};
-
 // A deliberate re-greet fired (RE_GREET_DASHBOARD_HIDDEN_EV) and no dashboard
 // was mounted to act on it - so the next one to open picks a fresh greeting
 // instead of holding. Recorded rather than acted on because the dashboard is
@@ -41,7 +28,6 @@ let isReGreetRequested = false;
 
 export const requestReGreet = (): void => {
   isReGreetRequested = true;
-  greetingQuote = undefined;
 };
 
 // Read *and* cleared, so one re-greet frees exactly one greeting.

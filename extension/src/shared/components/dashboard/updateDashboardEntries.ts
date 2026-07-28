@@ -31,10 +31,8 @@ export const updateDashboardEntriesFromQuestions = (
   // Update existing groups with new data
   for (let i = 0; i < dashboardGroupsCopy.length; i++) {
     const oldGroup = dashboardGroupsCopy[i];
-    const newGroupEntry = newDashboardGroups.find((newGroup) =>
-      "id" in newGroup && "id" in oldGroup
-        ? newGroup.id === oldGroup.id
-        : newGroup.type === oldGroup.type,
+    const newGroupEntry = newDashboardGroups.find(
+      (newGroup) => newGroup.id === oldGroup.id,
     );
 
     if (newGroupEntry) {

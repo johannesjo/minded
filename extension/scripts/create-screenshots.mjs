@@ -254,7 +254,11 @@ const prepareShot = async (page, shot) => {
       await page.waitForSelector(".cardDashboard");
       break;
     case "dashboard-empty":
-      await page.waitForSelector(".minded-sun");
+      // Wait for the words themselves, not just the sun: they are the whole
+      // point of this shot and they mount only once the first (async) read of
+      // the stored data comes back, so waiting on the disc alone could capture
+      // a bare sky.
+      await page.getByText("This is where your reflections gather.").waitFor();
       break;
     case "settings":
       await page.getByRole("heading", { name: "Settings" }).waitFor();
