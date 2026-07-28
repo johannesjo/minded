@@ -30,6 +30,20 @@ const QuestionRow = (props: {
   // click. Committing on either would re-add what the user just discarded, so
   // the button flags its intent on the way in and keeps it set on the way out.
   let isRemoveIntent = false;
+  // What was last handed over, so the same text is never committed twice.
+  // Enter commits, and committing a new entry takes this row off screen -
+  // Chrome dispatches the parting focusout while the input is still attached,
+  // so the row would commit again on its way out and the question would be
+  // added a second time, under a fresh id nothing downstream can dedupe.
+  // Nothing new typed, nothing new to say. `null` until the first commit, so
+  // blurring an untouched blank row still speaks and lets it disappear.
+  let committedValue: string | null = null;
+
+  const commit = (value: string) => {
+    if (value === committedValue) return;
+    committedValue = value;
+    props.onCommit(value);
+  };
 
   return (
     <div
@@ -47,7 +61,7 @@ const QuestionRow = (props: {
         ) {
           return;
         }
-        props.onCommit(getDraft());
+        commit(getDraft());
       }}
     >
       <TextInput
@@ -58,7 +72,7 @@ const QuestionRow = (props: {
           if (props.isAutoFocus) setTimeout(() => el.focus());
         }}
         onInput={(value) => setDraft(value)}
-        onEnter={(value) => props.onCommit(value)}
+        onEnter={(value) => commit(value)}
       />
       <Btn
         variant="icon"
