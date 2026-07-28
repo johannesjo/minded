@@ -95,8 +95,9 @@
 
 .question-chips {
   pointer-events: all;
-  width: 540px;
-  max-width: 100%;
+  // Capped percentage width, not a fixed width - see #minded-6622-inp below.
+  width: 100%;
+  max-width: 540px;
   margin: var(--space-xl) auto 0;
   text-align: center;
   // Soft entrance - same gentle rise the question text uses, never a hard cut.
@@ -144,8 +145,16 @@
 
 #minded-6622-inp {
   position: relative;
-  width: 540px;
-  max-width: 100%;
+  // A capped percentage width, NOT `width: 540px` + `max-width: 100%`. Both
+  // render at min(540px, available), but a fixed width also becomes this
+  // block's min-content size, and a percentage max-width cannot shrink that.
+  // Every ancestor sizing itself to its content is then pushed to 540px, and
+  // only its own `max-width: 100%` keeps it on screen - a clamp that did not
+  // hold on iOS, where this field and its question hung off both edges of the
+  // daily-questions column. A percentage width contributes nothing rigid, so
+  // nothing upstream has to be clamped back down in the first place.
+  width: 100%;
+  max-width: 540px;
   margin: auto;
   pointer-events: all;
   padding: 0 var(--space-sm);
