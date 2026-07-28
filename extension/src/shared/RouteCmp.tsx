@@ -53,7 +53,7 @@ import {
   REFRESH_DASHBOARD_EV,
   RE_GREET_DASHBOARD_HIDDEN_EV,
 } from "@src/ev.const";
-import { setOpenedGreetingKey } from "@src/shared/components/dashboard/greetingMemory";
+import { requestReGreet } from "@src/shared/components/dashboard/greetingMemory";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
@@ -264,24 +264,20 @@ const MainWrapper = (props: RouteSectionProps) => {
     window.addEventListener("resize", reanchorCompanion);
     window.addEventListener("androidSafeAreaChanged", reanchorCompanion);
 
-    // A deliberate re-greet always beats the "return to the card you opened"
-    // pin - and it has to be dropped *here*, in the always-mounted shell,
-    // because the pin is only ever set by navigating into a card's page, which
-    // unmounts the dashboard and takes its own listener with it. Without this,
-    // backgrounding the app from that page (Android's offscreen re-roll) or
-    // closing an interaction opened from it would leave the pin standing, and
-    // a much later return would greet with a card from the session before.
-    const dropOpenedGreeting = () => setOpenedGreetingKey(undefined);
-    window.addEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, dropOpenedGreeting);
+    // The dashboard holds its greeting for as long as the user is in the app,
+    // so a re-greet is the only thing that frees it - and it has to be recorded
+    // *here*, in the always-mounted shell, because most re-greets fire while
+    // the dashboard isn't mounted at all: an interaction closing over another
+    // page, or Android backgrounding the app from settings or a card's page.
+    // Without this the re-roll would land in a void and the user would come
+    // back hours later to the greeting they left.
+    window.addEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, requestReGreet);
 
     onCleanup(() => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", reanchorCompanion);
       window.removeEventListener("androidSafeAreaChanged", reanchorCompanion);
-      window.removeEventListener(
-        RE_GREET_DASHBOARD_HIDDEN_EV,
-        dropOpenedGreeting,
-      );
+      window.removeEventListener(RE_GREET_DASHBOARD_HIDDEN_EV, requestReGreet);
     });
 
     // iOS widget cold-launch only: tell the native launch overlay the sun has

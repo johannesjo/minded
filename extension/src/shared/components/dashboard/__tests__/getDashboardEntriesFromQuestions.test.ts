@@ -1,6 +1,6 @@
 import {
   CENTER_INDEX,
-  findReturnGreeting,
+  holdGreeting,
   getDashboardEntriesFromQuestions,
   guardHeroSlot,
   isGreetingEligible,
@@ -124,7 +124,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       expect(greetingTypes).toContain(DashboardGroupType.EnergyLvl);
     });
 
-    it("avoids repeating the greeting shown last time, so each landing surfaces a new tile", () => {
+    it("avoids repeating the greeting when it is re-rolled, so the new tile is actually new", () => {
       const syncData = createMockSyncData({
         answers: [
           reflectiveAnswer(QuestionCategoryId.GoodPlans, "a1"),
@@ -140,7 +140,7 @@ describe("getDashboardEntriesFromQuestions", () => {
       const first = greetingOf(getDashboardEntriesFromQuestions(syncData, now));
       const firstKey = "id" in first ? first.id : first.type;
 
-      // Next landing with the SAME random draw would normally repeat the same
+      // A re-roll with the SAME random draw would normally repeat the same
       // tile - but passing the last key as avoidGreetingKey must steer it away.
       mockRandom(0.1);
       const second = greetingOf(
@@ -380,9 +380,9 @@ describe("isGreetingEligible", () => {
   });
 });
 
-// Tapping the single greeting card opens its page; coming back is a return, not
-// a fresh arrival, so the same card greets you again instead of a re-rolled one.
-describe("findReturnGreeting", () => {
+// The greeting changes only offscreen: coming back to the dashboard holds the
+// tile the user left instead of rolling a new one under them.
+describe("holdGreeting", () => {
   const txt = (id: QuestionCategoryId): DashboardGroupTxtQuestion => ({
     id,
     type: DashboardGroupType.TxtQuestion,
@@ -391,29 +391,57 @@ describe("findReturnGreeting", () => {
   });
   const monMorning = new Date("2024-01-15T09:00:00"); // Monday, work-day morning
   const monNight = new Date("2024-01-15T03:00:00"); // Monday, middle of the night
-  const opened = txt(QuestionCategoryId.RefocusHelperToday);
-  const other = txt(QuestionCategoryId.GoodToday);
+  const held = txt(QuestionCategoryId.RefocusHelperToday);
+  const other = txt(QuestionCategoryId.Gratitude);
+  // Mirror the view's hero-index logic (DashboardGroups.heroOf).
+  const greetingOf = (entries: DashboardGroup[]) =>
+    entries[entries.length > CENTER_INDEX ? CENTER_INDEX : entries.length - 1];
 
-  it("greets with the card the user opened", () => {
-    expect(findReturnGreeting([other, opened], opened.id, monMorning)).toBe(
-      opened,
-    );
+  it("moves the held tile back into the greeting slot", () => {
+    const entries = [held, other];
+    expect(holdGreeting(entries, held.id, monMorning)).toBe(true);
+    expect(greetingOf(entries)).toBe(held);
+    // Nothing is lost from the list, just reordered.
+    expect(entries).toHaveLength(2);
   });
 
-  it("has nothing to return to when no card was opened", () => {
-    expect(
-      findReturnGreeting([other, opened], undefined, monMorning),
-    ).toBeUndefined();
+  it("leaves the fresh pick standing when nothing was held yet", () => {
+    const entries = [held, other];
+    expect(holdGreeting(entries, undefined, monMorning)).toBe(false);
+    expect(entries).toEqual([held, other]);
   });
 
-  it("has nothing to return to once the card is gone", () => {
+  it("leaves the fresh pick standing once the held card is gone", () => {
     // e.g. its last answer was deleted on the page just visited
-    expect(findReturnGreeting([other], opened.id, monMorning)).toBeUndefined();
+    const entries = [other];
+    expect(holdGreeting(entries, held.id, monMorning)).toBe(false);
+    expect(entries).toEqual([other]);
   });
 
-  it("won't bring back a recap whose window closed while the user was away", () => {
-    // The pin skips the random pick, but not the rules: a morning/work-day card
-    // must no more greet you at 3am on the way back than on a fresh arrival.
-    expect(findReturnGreeting([opened], opened.id, monNight)).toBeUndefined();
+  it("won't hold a recap whose window closed while the user was away", () => {
+    // Holding overrides the random pick, not the rules: a morning/work-day card
+    // must no more greet at 3am on the way back than on a fresh pick.
+    const entries = [held, other];
+    expect(holdGreeting(entries, held.id, monNight)).toBe(false);
+    expect(greetingOf(entries)).toBe(other);
+  });
+
+  it("puts a held quote back, since it is never one of the built entries", () => {
+    const entries: DashboardGroup[] = [other];
+    expect(holdGreeting(entries, DashboardGroupType.Quote, monMorning)).toBe(
+      true,
+    );
+    expect(greetingOf(entries).type).toBe(DashboardGroupType.Quote);
+  });
+
+  it("is a no-op when that tile is already the greeting (never a second quote)", () => {
+    const entries: DashboardGroup[] = [
+      other,
+      { type: DashboardGroupType.Quote },
+    ];
+    expect(holdGreeting(entries, DashboardGroupType.Quote, monMorning)).toBe(
+      true,
+    );
+    expect(entries).toHaveLength(2);
   });
 });

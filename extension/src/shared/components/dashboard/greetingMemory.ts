@@ -1,11 +1,15 @@
-// What greeted the user on the dashboard, and what they walked into from it.
-// Module-level state (not persisted): it survives route navigations within a
-// session - which is exactly when "landing on the dashboard" repeats - and
-// harmlessly resets on a full reload, where a fresh random greeting is fine
-// anyway.
+import { getRndEntry } from "@src/util/getRndEntry";
+import { Quote, QUOTES } from "@src/shared/data/quotes";
 
-// The tile that last greeted the user, so the next arrival can surface a
-// different one.
+// What is greeting the user on the dashboard, so it can hold still while they
+// are in the app and only ever change offscreen. Module-level state (not
+// persisted): it survives route navigations within a session - which is exactly
+// what "coming back to the dashboard" is - and harmlessly resets on a full
+// reload (a new tab), where a fresh greeting is right anyway.
+
+// The tile currently greeting the user. Two jobs, both about the same card:
+// a return to the dashboard keeps it (see holdGreeting), and when the greeting
+// *is* deliberately re-rolled, it's the tile the new pick steers away from.
 let lastGreetingKey: string | undefined;
 
 export const getLastGreetingKey = (): string | undefined => lastGreetingKey;
@@ -14,22 +18,33 @@ export const setLastGreetingKey = (key: string | undefined): void => {
   lastGreetingKey = key;
 };
 
-// The greeting the user deliberately *walked into* - they tapped the single
-// greeting card and opened its page. Coming back from there is a return, not a
-// fresh arrival: the card you just looked at should still be the card that
-// greets you. Swapping it for another one in that moment reads as "wasn't there
-// something else here?", which is not how a calm greeting should behave. Kept
-// apart from lastGreetingKey (which steers arrivals *away* from a repeat).
-let openedGreetingKey: string | undefined;
+// The quote currently greeting the user, drawn once and then held. RndQuote
+// draws at random on every mount, so without this a held quote greeting would
+// still change its words on the way back: the card holds still but the greeting
+// doesn't, which is the jolt we're removing.
+let greetingQuote: Quote | undefined;
 
-export const setOpenedGreetingKey = (key: string | undefined): void => {
-  openedGreetingKey = key;
+export const getGreetingQuote = (): Quote => {
+  if (!greetingQuote) greetingQuote = getRndEntry(QUOTES);
+  return greetingQuote;
 };
 
-// Read *and* cleared: the pin only ever holds for the one return it was set
-// for, so the arrival after that re-greets as usual.
-export const takeOpenedGreetingKey = (): string | undefined => {
-  const key = openedGreetingKey;
-  openedGreetingKey = undefined;
-  return key;
+// A deliberate re-greet fired (RE_GREET_DASHBOARD_HIDDEN_EV) - the next greeting
+// is a fresh pick rather than the held one. Recorded as a flag because the
+// dashboard is usually *not mounted* when it fires: an interaction closing over
+// another page, or Android backgrounding the app while the user is somewhere
+// else entirely. Without it, the re-roll would land in a void and the user
+// would come back hours later to the greeting they left.
+let isReGreetRequested = false;
+
+export const requestReGreet = (): void => {
+  isReGreetRequested = true;
+  greetingQuote = undefined;
+};
+
+// Read *and* cleared, so one re-greet frees exactly one greeting.
+export const takeReGreetRequest = (): boolean => {
+  const wasRequested = isReGreetRequested;
+  isReGreetRequested = false;
+  return wasRequested;
 };

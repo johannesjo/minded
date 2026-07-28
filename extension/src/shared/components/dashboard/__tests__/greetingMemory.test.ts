@@ -1,20 +1,36 @@
-import { setOpenedGreetingKey, takeOpenedGreetingKey } from "../greetingMemory";
+import {
+  getGreetingQuote,
+  requestReGreet,
+  takeReGreetRequest,
+} from "../greetingMemory";
+import { mockRandom } from "@src/test-utils/mockHelpers";
 
-describe("the greeting the user walked into", () => {
-  beforeEach(() => setOpenedGreetingKey(undefined));
+describe("the greeting the user currently has", () => {
+  beforeEach(() => takeReGreetRequest());
+  afterEach(() => jest.restoreAllMocks());
 
-  it("is handed to the return that follows", () => {
-    setOpenedGreetingKey("b");
-    expect(takeOpenedGreetingKey()).toBe("b");
+  it("is held until a re-greet frees it", () => {
+    expect(takeReGreetRequest()).toBe(false);
+    requestReGreet();
+    expect(takeReGreetRequest()).toBe(true);
   });
 
-  it("holds for that one return only - the next arrival greets freshly", () => {
-    setOpenedGreetingKey("b");
-    takeOpenedGreetingKey();
-    expect(takeOpenedGreetingKey()).toBeUndefined();
+  it("frees exactly one greeting per re-greet", () => {
+    requestReGreet();
+    takeReGreetRequest();
+    expect(takeReGreetRequest()).toBe(false);
   });
 
-  it("leaves an arrival that opened nothing to its own fresh pick", () => {
-    expect(takeOpenedGreetingKey()).toBeUndefined();
+  it("keeps the same quote across returns, and only re-draws on a re-greet", () => {
+    // The card holding still isn't enough - a quote that re-randomised on every
+    // mount would still change the greeting's words on the way back.
+    mockRandom(0);
+    const quote = getGreetingQuote();
+    mockRandom(0.99);
+    expect(getGreetingQuote()).toBe(quote);
+
+    // Freed by a re-greet, it draws again (offscreen, like the tile itself).
+    requestReGreet();
+    expect(getGreetingQuote()).not.toBe(quote);
   });
 });

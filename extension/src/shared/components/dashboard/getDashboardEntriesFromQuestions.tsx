@@ -78,33 +78,48 @@ export const guardHeroSlot = (
 export const getGreetingKey = (dg: DashboardGroup): string =>
   "id" in dg ? dg.id : dg.type;
 
-// The card to greet a *return* with: the one the user opened from the greeting,
-// if it's still there and still allowed to greet right now. It bypasses the
-// random pick (that's the point - the return holds still), but not the rules:
-// a morning recap whose window closed while the user was away must not come
-// back as the greeting, exactly as isGreetingEligible keeps it out of a fresh
-// pick. Nothing to return to (the card's last answer deleted on the page just
-// visited, or its window since passed) simply yields undefined, and the arrival
-// falls back to the fresh pick.
-export const findReturnGreeting = (
+// Put the greeting the user already had back in the hero slot, so coming back
+// to the dashboard - from a card's page, from settings, from anywhere - lands
+// on the tile they left rather than a re-rolled one. The greeting changes only
+// offscreen (see RE_GREET_DASHBOARD_HIDDEN_EV); this is what makes the rest of
+// a session hold still. Mutates `entries` exactly as the random pick does, so
+// the hero stays plain `heroOf`, and returns whether the greeting was held.
+//
+// Holding overrides the random pick but not the rules: a recap whose window
+// closed while the user was away can't come back as the greeting, any more than
+// it could be picked fresh (isGreetingEligible). A card that's gone entirely
+// (its last answer deleted on the page just visited) can't either - both leave
+// the freshly picked greeting standing.
+export const holdGreeting = (
   entries: DashboardGroup[],
   key: string | undefined,
   now = new Date(),
-): DashboardGroup | undefined =>
-  key === undefined
-    ? undefined
-    : entries.find(
-        (entry) =>
-          getGreetingKey(entry) === key && isGreetingEligible(entry, now),
-      );
+): boolean => {
+  if (key === undefined) return false;
+  const heroIndex = Math.min(CENTER_INDEX, entries.length - 1);
+  // Already greeting with it (the pick had no alternative to steer to).
+  if (heroIndex >= 0 && getGreetingKey(entries[heroIndex]) === key) return true;
+  // The quote isn't one of the built entries - it's spliced in by whoever picks
+  // it - so a held quote is put back the same way rather than looked up.
+  if (key === DashboardGroupType.Quote) {
+    entries.splice(CENTER_INDEX, 0, { type: DashboardGroupType.Quote });
+    return true;
+  }
+  const heldIndex = entries.findIndex((entry) => getGreetingKey(entry) === key);
+  if (heldIndex === -1 || !isGreetingEligible(entries[heldIndex], now))
+    return false;
+  const [held] = entries.splice(heldIndex, 1);
+  entries.splice(CENTER_INDEX, 0, held);
+  return true;
+};
 
 export const getDashboardEntriesFromQuestions = (
   syncData: SyncData,
   now = new Date(),
-  // The greeting shown on the previous arrival, if any. We avoid repeating it so
-  // each landing surfaces a fresh tile - but only when an alternative exists, so
-  // we never end up with nothing to greet with. (A *return* from a card the user
-  // opened is pinned to that card instead - see findReturnGreeting.)
+  // The greeting the user currently has, if any. When the greeting is genuinely
+  // re-rolled we avoid repeating it, so the new one is actually new - but only
+  // when an alternative exists, so we never end up with nothing to greet with.
+  // (A *return* to the dashboard doesn't re-roll at all - see holdGreeting.)
   avoidGreetingKey?: string,
 ): DashboardGroup[] => {
   const dashboardGroups: DashboardGroup[] = [];
@@ -166,13 +181,13 @@ export const getDashboardEntriesFromQuestions = (
   // (GREETING_ELIGIBLE_TYPES), plus the quote as one always-present extra
   // option - so a calm quote can greet you even on a full day, and is the
   // natural fallback when nothing reflective qualifies yet (an empty eligible
-  // pool always lands on the quote). Runs on every platform: each arrival
-  // re-rolls the greeting (see avoidGreetingKey + the RE_GREET trigger) so the
-  // dashboard never greets you with the same tile twice in a row - the one
-  // exception being a return from a card the user themselves opened, which
-  // deliberately greets with that same tile again (findReturnGreeting).
-  // Out-of-window question recaps are kept out of the pool (isGreetingEligible)
-  // so a morning card never greets you at night - it stays in "look back" only.
+  // pool always lands on the quote). Runs on every platform, but only when the
+  // greeting is actually being re-rolled - offscreen, on the RE_GREET trigger,
+  // or on a fresh load; a return to the dashboard holds the tile it left
+  // (holdGreeting). When it does re-roll, avoidGreetingKey keeps it from
+  // landing on the same tile again. Out-of-window question recaps are kept out
+  // of the pool (isGreetingEligible) so a morning card never greets you at
+  // night - it stays in "look back" only.
   const eligibleIndexes = sortedEntries.reduce<number[]>((acc, entry, i) => {
     if (isGreetingEligible(entry, now)) acc.push(i);
     return acc;

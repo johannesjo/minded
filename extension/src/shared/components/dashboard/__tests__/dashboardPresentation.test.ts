@@ -66,20 +66,27 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  // The pin that makes a return greet with the card the user opened is only
-  // meaningful if it's read *where the hero is chosen*. Hoisted out of that
-  // branch, a routine in-view REFRESH_DASHBOARD_EV would eat it, the return
-  // would silently go back to a re-rolled tile, and every unit test around
-  // greetingMemory would stay green. This asserts the wiring itself.
-  it("consumes the opened-greeting pin only where the greeting is (re)chosen", () => {
+  // holdGreeting is what keeps the greeting still across a return, and the
+  // conditions around it are the whole feature - each one silently undoes it.
+  // Unit tests on holdGreeting itself would stay green through all three.
+  it("holds the greeting across returns, and re-rolls it only offscreen", () => {
+    // Only where the greeting is actually being (re)chosen: a routine in-view
+    // refresh must not reshuffle the visible cards, and the "look back" grid
+    // must not touch the greeting memory at all (it would hold the *grid's*
+    // centre card, and the dashboard would come back with a stranger).
     expect(normalizedComponent).toContain(
-      "if (reselect || getHeroGroup() === undefined) {",
+      "const isChoosingGreeting = !props.forceRevealed && (reselect || getHeroGroup() === undefined);",
     );
     expect(normalizedComponent).toMatch(
-      /if \(reselect \|\| getHeroGroup\(\) === undefined\) \{[^}]*const openedKey = takeOpenedGreetingKey\(\);/,
+      /if \(isChoosingGreeting\) \{[^}]*const wasReGreetedWhileAway = takeReGreetRequest\(\);/,
     );
-    // Exactly one consumer, so no other path can quietly drain it.
-    expect(component.match(/takeOpenedGreetingKey\(\)/g)).toHaveLength(1);
+    // Taken unconditionally - short-circuited behind `reselect`, a handled
+    // re-greet would leave the request standing and re-roll the return after
+    // it too.
+    expect(normalizedComponent).toContain(
+      "const wasReGreetedWhileAway = takeReGreetRequest(); if (!reselect && !wasReGreetedWhileAway) holdGreeting(groups, lastGreetingKey);",
+    );
+    expect(component.match(/takeReGreetRequest\(\)/g)).toHaveLength(1);
   });
 
   it("names the history route 'look back' without an expansion chevron", () => {
