@@ -1,3 +1,4 @@
+import { Accessor, createSignal, onCleanup, onMount } from "solid-js";
 import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
 import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/commonSyncDataInterface";
 import {
@@ -84,6 +85,38 @@ export const getEffectiveHourNow = (): number => {
  */
 export const companionWord = (): "sun" | "moon" =>
   isDarkModeNow() ? "moon" : "sun";
+
+/**
+ * `companionWord()` for copy that stays on screen long enough to go stale.
+ *
+ * A one-shot read is fine for a surface the user passes through (onboarding
+ * steps, an intervention). It is not fine for a line that can sit mounted for
+ * hours - the dashboard's empty sky - because the `.minded-6622-dark` class
+ * *can* flip without a reload: an Android/iOS background→resume across the
+ * day/night threshold re-runs `setIsDarkModeIfApplies`, and the companion disc
+ * follows it (RouteCmp mirrors the same class onto the sun↔moon variant). Copy
+ * naming the disc has to follow too, or the text says "sun" under a moon.
+ *
+ * So mirror the class itself - the single source of truth - rather than
+ * re-reading the clock: seeded for the first paint, then kept in step by a
+ * MutationObserver, exactly as RouteCmp does for the disc.
+ */
+export const createCompanionWord = (): Accessor<"sun" | "moon"> => {
+  const [getWord, setWord] = createSignal<"sun" | "moon">(companionWord());
+
+  onMount(() => {
+    const el = getWrapperEl();
+    if (!el) return;
+    const sync = () =>
+      setWord(el.classList.contains("minded-6622-dark") ? "moon" : "sun");
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+    onCleanup(() => observer.disconnect());
+  });
+
+  return getWord;
+};
 
 export const setIsDarkModeIfApplies = (
   el: HTMLElement | null = document.getElementById("minded-6622"),

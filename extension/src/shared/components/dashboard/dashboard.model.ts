@@ -3,7 +3,6 @@ import { Answer } from "@src/dataInterface/syncData";
 
 export enum DashboardGroupType {
   TxtQuestion = "TxtQuestion",
-  Quote = "Quote",
   EnergyLvl = "EnergyLvl",
   EmotionLabeling = "EmotionLabeling",
 }
@@ -13,10 +12,6 @@ export interface DashboardGroupTxtQuestion {
   dashboardTxt: string;
   answers: Answer[];
   type: DashboardGroupType;
-}
-
-export interface DashboardGroupQuote {
-  type: DashboardGroupType.Quote;
 }
 
 export interface DashboardGroupEnergyLvl {
@@ -33,6 +28,5 @@ export interface DashboardGroupEmotionLabeling {
 
 export type DashboardGroup =
   | DashboardGroupTxtQuestion
-  | DashboardGroupQuote
   | DashboardGroupEnergyLvl
   | DashboardGroupEmotionLabeling;
