@@ -465,6 +465,54 @@ describe("getInteractionMode", () => {
     });
   });
 
+  describe("the guided breath (sun-led everyday sample)", () => {
+    it("samples one slow breath off the dashboard", () => {
+      // Set-alternative, action advice, the bell and the notice anchor all
+      // fail their rolls (the finger rest consumes none on mouse-primary);
+      // the breath roll - deliberately the last of the everyday cascade -
+      // then passes.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: false,
+          random: sequenceRandom([0.99, 0.99, 0.99, 0.99, 0.01]),
+        }),
+      ).toEqual({
+        mode: "BREATH",
+        reason: "breath_sample",
+        frictionLevel: "soft",
+      });
+    });
+
+    it("has no wrong hour: available in the small hours like the finger rest", () => {
+      // At 3am action advice and the bell are outside their hour window and
+      // consume no roll; set-alternative and the notice fail theirs, and the
+      // breath roll passes.
+      const lateNight = new Date("2026-05-11T03:00:00").getTime();
+      expect(
+        decide(baseSyncData(), {
+          isMainView: false,
+          clock: () => lateNight,
+          random: sequenceRandom([0.99, 0.99, 0.01]),
+        }),
+      ).toMatchObject({
+        mode: "BREATH",
+        reason: "breath_sample",
+      });
+    });
+
+    it("stays out of dashboard-started interactions", () => {
+      // The dashboard's sun already offers its own breathing sit (the
+      // grounding drag-down), so the breath consumes no roll there: after the
+      // advice and notice misses the cascade falls through to the question.
+      expect(
+        decide(baseSyncData(), {
+          isMainView: true,
+          random: sequenceRandom([0.99, 0.99, 0.01]),
+        }).mode,
+      ).toBe("QUESTION");
+    });
+  });
+
   it("asks for missing energy data during daytime", () => {
     expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
       mode: "ENERGY_LVL",

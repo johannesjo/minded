@@ -60,6 +60,13 @@ const BELL_SAMPLE_PROBABILITY = 1 / 25;
 // bell and NOTICE; unlike them it needs no sound and no waking-hours gate, so
 // it is also the softest thing the small hours can serve.
 const FINGER_REST_PROBABILITY = 1 / 20;
+// One slow guided breath, led by the sun. The same everyday "nothing more
+// specific is due" register as the bell, the finger rest and NOTICE - but its
+// roll comes *after* NOTICE's, at the tail of the cascade, so adding it left
+// every decision path above it untouched (it is deliberately an experiment
+// bolted onto the end, cheap to reason about and cheap to revert). Needs no
+// sound and no waking-hours gate: a breath has no wrong hour.
+const BREATH_PROBABILITY = 1 / 20;
 
 export type InteractionMode =
   | "ENERGY_LVL"
@@ -76,6 +83,7 @@ export type InteractionMode =
   | "URGE_SURFING"
   | "BELL"
   | "FINGER_REST"
+  | "BREATH"
   | "WIND_DOWN_SETTLE";
 
 export type InteractionModeReason =
@@ -103,6 +111,7 @@ export type InteractionModeReason =
   | "bell_strong"
   | "bell_sample"
   | "finger_rest_sample"
+  | "breath_sample"
   | "bedtime_settle"
   | "bedtime_settle_strong"
   | "bedtime_settled_notice"
@@ -473,6 +482,15 @@ export const getInteractionModeDecision = (
 
   if (chance(NOTICE_PROBABILITY, random)) {
     return decision("NOTICE", "notice_sample", frictionLevel);
+  }
+
+  // The guided breath: the one practice the sun can actually lead rather than
+  // merely name (which is why no NOTICE cue may ask for one - see
+  // notice.const.ts). Kept to real interventions like the bell and the finger
+  // rest: the dashboard's sun already offers its own breathing sit via the
+  // grounding drag-down.
+  if (!isMainView && chance(BREATH_PROBABILITY, random)) {
+    return decision("BREATH", "breath_sample", frictionLevel);
   }
 
   // Anti-repeat: this fallback is QUESTION, and because every richer mode above

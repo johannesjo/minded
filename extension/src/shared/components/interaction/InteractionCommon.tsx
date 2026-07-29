@@ -461,6 +461,21 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setSunPhase("interactive");
   };
 
+  // The BREATH mode's once-through guided breath on the same real sun: the
+  // breathing settle glides the disc to its anchor and swells it through
+  // inhale → hold → exhale, publishing the breath origin the cue copy reads
+  // (exactly the machinery the post-tap strong-friction pause uses). Clear any
+  // stale origin first so the copy never opens mid-exhale on an old clock.
+  const startSunBreath = () => {
+    setBreathStartedAt(undefined);
+    setSunPhase("breathing");
+  };
+  const endSunBreath = () => {
+    setBreathStartedAt(undefined);
+    setSunPhase("interactive");
+    requestInteractiveSunFocus();
+  };
+
   const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
@@ -1840,6 +1855,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onLeaveNow={props.onFlingAway}
             onSunWaveStart={startSunWave}
             onSunWaveEnd={endSunWave}
+            onSunBreathStart={startSunBreath}
+            onSunBreathEnd={endSunBreath}
             alternativeToReplace={getAlternativeToReplace()}
             onAddBetterAlternative={(alternative) => {
               transitionToMode("SET_ALTERNATIVE", () => {

@@ -1,0 +1,9 @@
+.breath-interaction {
+  // Interactive surface - the invitation's tap needs to land (mirrors NOTICE).
+  pointer-events: all;
+
+  .breath-invite-cue {
+    max-width: 18em;
+    margin: 0 auto;
+  }
+}
