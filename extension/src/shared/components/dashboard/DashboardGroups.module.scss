@@ -351,8 +351,21 @@
   @include displayVoice;
 }
 
+// The quick pause's confirming tap - the card's one loud action, on its own row
+// directly under the line it answers, so the pairing reads as cue → tap before
+// the eye ever reaches the two quiet alternatives below.
+.cardDailyQuestionsDone {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+
+  button {
+    white-space: nowrap;
+  }
+}
+
 .cardDailyQuestionsBtns {
-  margin-top: 24px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 

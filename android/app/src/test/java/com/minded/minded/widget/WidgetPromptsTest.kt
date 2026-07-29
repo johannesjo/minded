@@ -67,16 +67,28 @@ class WidgetPromptsTest {
     }
 
     @Test
-    fun `the line steps one per slot and walks the whole pool`() {
-        // One step per 15-minute slot, no adjacent repeats: WAKING_PROMPTS.size
-        // consecutive slots (from 06:00, ~3¾ h, all inside the day window) show
-        // every line exactly once. This replaced a per-day char-sum seed that
-        // skipped entries and repeated across X9→X0 date rollovers.
-        val n = WidgetPrompts.WAKING_PROMPTS.size
+    fun `the line steps one per slot, never repeating inside a waking day`() {
+        // One step per 15-minute slot, no repeats at all within a day. This
+        // replaced a per-day char-sum seed that skipped entries and repeated
+        // across X9→X0 date rollovers.
+        //
+        // It used to walk WAKING_PROMPTS.size slots from 06:00 and assert the
+        // whole pool appeared, which held only while the pool was smaller than
+        // one waking window. The window is 13 h = 52 slots and the pool has long
+        // since outgrown it, so that walk ran past 19:00 and collected nulls.
+        // The invariant that actually matters is the one a user can experience:
+        // inside a single day the line never comes back round. Full coverage is
+        // the next test's job (across days, at a fixed time).
+        val slotsPerWakingDay =
+            (SunWidgetPhase.NIGHT_START - SunWidgetPhase.DAY_START) * 60 / WidgetPrompts.SLOT_MINUTES
+        // A pool smaller than a day's slots would wrap before dusk; if that ever
+        // happens the walk shortens rather than silently asserting a repeat.
+        val n = minOf(slotsPerWakingDay, WidgetPrompts.WAKING_PROMPTS.size)
         val lines = (0 until n).map { i ->
             val min = SunWidgetPhase.DAY_START * 60 + i * WidgetPrompts.SLOT_MINUTES
             WidgetPrompts.promptForMoment(day, min / 60, min % 60)
         }
+        assertFalse(lines.contains(null), "walked past the waking window")
         assertEquals(n, lines.distinct().size)
         lines.zipWithNext { a, b -> assertNotEquals(a, b, "adjacent slots repeat") }
     }

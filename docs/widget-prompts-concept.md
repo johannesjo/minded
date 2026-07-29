@@ -44,6 +44,21 @@ launcher/device.
 > Fixed by advancing one extra step per day (a prime `DAILY_STRIDE`); see *The
 > biggest risk* below.
 
+> **Update - the NOTICE pool grew into short practices, and now feeds the
+> dashboard too.** `NOTICE_CUES` gained eight lines that are a little more than a
+> single sensory noticing - a counted breath, naming what is here, letting one
+> thought pass, half a minute of open attention. They ride the widget on the same
+> terms as everything else (≤70 ASCII chars, timeless, self-exposing to nobody),
+> so the card's pool is 81 lines. Two consequences worth recording. (1) The old
+> "deliberately no breath-counting cue" rule in `notice.const.ts` was too broad
+> and is now narrower: the sun breathes only in *guided* pauses, never on the
+> NOTICE screen, so a counted breath there steps on nothing - what survives is
+> that NOTICE never *animates* a breath. (2) The same pool is now what the
+> dashboard's daily-questions card offers as its **quick pause**
+> (`getQuickPause.ts`), the one-tap door for a day with no minute to type. One
+> pool, three surfaces (intervention, widget, card) - a second near-identical
+> list would only have split the content in two.
+
 ## The idea in one line
 
 The home-screen widget becomes **a miniature still of the in-app intervention

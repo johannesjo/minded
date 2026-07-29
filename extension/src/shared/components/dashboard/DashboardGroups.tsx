@@ -47,6 +47,7 @@ import {
   getDailyQuestionsMode,
   isShowDailyQuestionsBanner,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+import { getQuickPause } from "@src/shared/components/dailyQuestions/getQuickPause";
 import { createDashboardCardInteractivity } from "@src/shared/components/dashboard/dashboardCardInteractivity";
 import { createCompanionWord } from "@src/shared/addWrapperClasses";
 
@@ -98,6 +99,13 @@ export const DashboardGroups: (props: {
   // the evening trigger revealed that stale morning wording late at night.
   const [getDailyQuestionsBannerMode, setDailyQuestionsBannerMode] =
     createSignal<DailyQuestionsMode>("Morning");
+
+  // The card's quick pause - the ten-second door beside the questions. Captured
+  // from the same clock read as the mode above, for the same reason: the line
+  // and the wording must describe one moment, not two.
+  const [getQuickPauseOffer, setQuickPauseOffer] = createSignal(
+    getQuickPause(new Date(), "Morning"),
+  );
 
   const [
     getIsDailyQuestionsBannerBeingRemoved,
@@ -202,7 +210,13 @@ export const DashboardGroups: (props: {
       // mode is irrelevant, and skipping it avoids swapping wording under a user
       // who is already looking at the banner.
       if (showDailyQuestionsBanner) {
-        setDailyQuestionsBannerMode(getDailyQuestionsMode());
+        const now = new Date();
+        const mode = getDailyQuestionsMode();
+        setDailyQuestionsBannerMode(mode);
+        // Deterministic per local day and mode, so re-running refresh() while
+        // the card is on screen re-derives the same line rather than swapping
+        // the invitation out from under whoever is reading it.
+        setQuickPauseOffer(getQuickPause(now, mode));
         scheduleDailyQuestionsBannerExpiry();
       } else {
         window.clearTimeout(bannerExpiry);
@@ -399,6 +413,16 @@ export const DashboardGroups: (props: {
     fadeOutDailyQuestionsBanner();
   };
 
+  // The quick pause was taken. Outwardly identical to a dismissal - the card
+  // fades and the day's invitation is spent - and deliberately so: nothing is
+  // stored, nothing is counted, and the app never learns which door you took.
+  // Kept as its own named path anyway, because "I did the thing" and "not now"
+  // are different acts even when they leave the same trace (none).
+  const completeQuickPause = () => {
+    setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
+    fadeOutDailyQuestionsBanner();
+  };
+
   // Fade the banner out when its time window closes, so a card revealed
   // legitimately inside its window - the morning "inspiration" card before noon,
   // the evening card before the day rolls over - can't linger past that boundary
@@ -434,13 +458,25 @@ export const DashboardGroups: (props: {
         [styles.isBeingRemoved]: getIsDailyQuestionsBannerBeingRemoved(),
       }}
     >
+      {/* The card leads with the quick pause rather than with "would you like
+          some inspiration?", because the quick door is the one most days can
+          actually afford - and a card that opens with a practice you can do
+          where you stand needs no preamble asking permission first. The
+          questions did not move; they are the second button. */}
       <div class={`txtSlightlyBigger ${styles.cardDailyQuestionsPrompt}`}>
-        {getDailyQuestionsBannerMode() === "Morning"
-          ? "Would you like some inspiration for your day?"
-          : "Would you like to reflect on your day?"}
+        {getQuickPauseOffer().cue}
+      </div>
+      <div class={styles.cardDailyQuestionsDone}>
+        <Btn onClick={() => completeQuickPause()}>
+          {getQuickPauseOffer().done}
+        </Btn>
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        <Btn onClick={() => navigate("/dailyQuestions")}>stay a moment</Btn>
+        {/* Both quiet: neither the longer path nor the exit should out-shout
+            the practice the card just offered. */}
+        <Btn soft onClick={() => navigate("/dailyQuestions")}>
+          a few questions
+        </Btn>
         <Btn soft onClick={() => removeDailyQuestionsBanner()}>
           not now
         </Btn>
