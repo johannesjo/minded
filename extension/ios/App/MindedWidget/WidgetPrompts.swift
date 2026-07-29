@@ -80,12 +80,12 @@ enum WidgetPrompts {
         "Feel the weight of your body, wherever you are.",
         "Notice the temperature of the air on your skin.",
         "Find three colors around you.",
-        // NOTICE cues, second wave - short complete practices (a counted breath,
-        // naming what is here, letting one thought pass) rather than a single
-        // sensory noticing. Same one-tap shape, so the card's tap still lands on
-        // that exact NOTICE screen.
-        "Take three slow breaths.",
-        "Count ten out-breaths, then stop.",
+        // NOTICE cues, second wave - short complete practices (naming what is
+        // here, letting one thought pass) rather than a single sensory noticing.
+        // Same one-tap shape, so the card's tap still lands on that exact NOTICE
+        // screen. No breath line: a breath printed as text is the weak version
+        // of one the sun can lead (QuickBreath.tsx), and the widget has no sun
+        // to lead it with.
         "Notice your next thought, and let it pass.",
         "Name what you feel, without judging it.",
         "Name one thing you are grateful for right now.",

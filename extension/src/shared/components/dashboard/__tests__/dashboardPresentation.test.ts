@@ -182,7 +182,7 @@ describe("collapsed dashboard presentation", () => {
     // one present-moment practice, confirmed where you stand.
     expect(normalizedComponent).toContain("{getQuickPauseOffer().cue}");
     expect(normalizedComponent).toMatch(
-      /<Btn onClick=\{\(\) => completeQuickPause\(\)\}>\s*\{getQuickPauseOffer\(\)\.done\}\s*<\/Btn>/,
+      /<Btn onClick=\{\(\) => takeQuickPause\(\)\}>\s*\{getQuickPauseOffer\(\)\.action\}\s*<\/Btn>/,
     );
   });
 
@@ -206,7 +206,15 @@ describe("collapsed dashboard presentation", () => {
     // single call "not now" makes. A tally of which door you took would be
     // exactly the striving the app exists to avoid.
     expect(normalizedComponent).toMatch(
-      /const completeQuickPause = \(\) => \{ setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
+      /setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
+    );
+  });
+
+  it("sends the guided breath to its own surface instead of finishing on the card", () => {
+    // A breath is the one offer the sun has to lead; a printed cue completes
+    // where it stands, so only this kind leaves the dashboard.
+    expect(normalizedComponent).toMatch(
+      /if \(getQuickPauseOffer\(\)\.kind === "breath"\) \{ navigate\("\/quickBreath"\); return; \}/,
     );
   });
 

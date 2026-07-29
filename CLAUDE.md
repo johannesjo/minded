@@ -76,6 +76,18 @@ feature decision - read them before proposing changes to interventions.
   a quiet, uncluttered surface lowers cognitive load, and added complexity is a
   cost paid by the user. Remove before you add.
 
+- **Anything we ask the user to *do* must be quick and easy - short enough that
+  "I don't have time for this" is never available.** This is the direction for
+  interventions and prompts generally, not a rule about one screen. The
+  dismissal doesn't wait for a stopwatch: it fires the moment an offer *looks*
+  like it needs planning around, and once it fires the offer is gone for the
+  day. So prefer one breath to three, one noticing to a sequence, a tap to a
+  typed answer - and treat length itself as a defect worth cutting for ("Count
+  ten out-breaths, then stop." was cut for exactly this). The longer, deeper
+  paths still exist; they just stop being the thing standing in the doorway.
+  Corollary: an offer that can only be *done* rather than skimmed (a guided
+  breath) earns its seconds more cheaply than one that asks for effort up front.
+
 ## Essential Commands
 
 All npm scripts live in `extension/package.json` - run them from the `extension/` directory.

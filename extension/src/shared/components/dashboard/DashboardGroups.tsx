@@ -413,12 +413,20 @@ export const DashboardGroups: (props: {
     fadeOutDailyQuestionsBanner();
   };
 
-  // The quick pause was taken. Outwardly identical to a dismissal - the card
-  // fades and the day's invitation is spent - and deliberately so: nothing is
-  // stored, nothing is counted, and the app never learns which door you took.
-  // Kept as its own named path anyway, because "I did the thing" and "not now"
-  // are different acts even when they leave the same trace (none).
-  const completeQuickPause = () => {
+  // The quick pause was taken. A printed cue completes on the card itself;
+  // the breath is the one practice the sun has to lead, so it opens its own
+  // surface and marks the day there instead (see QuickBreath).
+  //
+  // Completing outwardly matches a dismissal - the card fades, the day's
+  // invitation is spent - and deliberately so: nothing is stored, nothing is
+  // counted, and the app never learns which door you took. Kept as its own
+  // named path anyway, because "I did the thing" and "not now" are different
+  // acts even when they leave the same trace (none).
+  const takeQuickPause = () => {
+    if (getQuickPauseOffer().kind === "breath") {
+      navigate("/quickBreath");
+      return;
+    }
     setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
     fadeOutDailyQuestionsBanner();
   };
@@ -467,8 +475,8 @@ export const DashboardGroups: (props: {
         {getQuickPauseOffer().cue}
       </div>
       <div class={styles.cardDailyQuestionsDone}>
-        <Btn onClick={() => completeQuickPause()}>
-          {getQuickPauseOffer().done}
+        <Btn onClick={() => takeQuickPause()}>
+          {getQuickPauseOffer().action}
         </Btn>
       </div>
       <div class={styles.cardDailyQuestionsBtns}>

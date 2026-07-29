@@ -1,0 +1,8 @@
+// The pause itself is already a centred full-height column (see
+// StrongFrictionBreathPause.scss, which also reserves the shell sun's
+// footprint), so this only has to give it the room.
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
