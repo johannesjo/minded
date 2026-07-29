@@ -81,15 +81,20 @@ class WidgetPromptsTest {
         // the next test's job (across days, at a fixed time).
         val slotsPerWakingDay =
             (SunWidgetPhase.NIGHT_START - SunWidgetPhase.DAY_START) * 60 / WidgetPrompts.SLOT_MINUTES
-        // A pool smaller than a day's slots would wrap before dusk; if that ever
-        // happens the walk shortens rather than silently asserting a repeat.
-        val n = minOf(slotsPerWakingDay, WidgetPrompts.WAKING_PROMPTS.size)
-        val lines = (0 until n).map { i ->
+        // The claim in this test's name only holds while the pool is at least a
+        // day's worth of slots; below that the index wraps before dusk and lines
+        // genuinely do repeat. Assert the precondition rather than quietly
+        // shortening the walk to fit - a `minOf` here would let the pool shrink
+        // to half a day and still show green.
+        assertTrue(
+            WidgetPrompts.WAKING_PROMPTS.size >= slotsPerWakingDay,
+            "pool (${WidgetPrompts.WAKING_PROMPTS.size}) is smaller than a waking day ($slotsPerWakingDay slots), so lines repeat before dusk",
+        )
+        val lines = (0 until slotsPerWakingDay).map { i ->
             val min = SunWidgetPhase.DAY_START * 60 + i * WidgetPrompts.SLOT_MINUTES
             WidgetPrompts.promptForMoment(day, min / 60, min % 60)
         }
-        assertFalse(lines.contains(null), "walked past the waking window")
-        assertEquals(n, lines.distinct().size)
+        assertEquals(slotsPerWakingDay, lines.distinct().size)
         lines.zipWithNext { a, b -> assertNotEquals(a, b, "adjacent slots repeat") }
     }
 

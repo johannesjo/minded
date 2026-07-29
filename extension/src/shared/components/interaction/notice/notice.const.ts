@@ -65,15 +65,11 @@ export const NOTICE_CUES: {
   { cue: "Name what you feel, without judging it.", done: "There it is" },
   { cue: "Name one thing you are grateful for right now.", done: "Named it" },
   {
-    cue: "For half a minute, notice whatever comes: sounds, thoughts, feelings.",
+    // No stated duration. A cue that names a minute is the one thing here that
+    // looks like it needs planning around - and the widget already carries the
+    // stretch and window suggestions as ACTION_ADVICE, so cues repeating them
+    // only put two of each in the same rotation.
+    cue: "Notice whatever is here: sounds, thoughts, feelings.",
     done: "I noticed",
-  },
-  {
-    cue: "Stretch slowly, and feel the movement as it happens.",
-    done: "Stretched",
-  },
-  {
-    cue: "Look out of a window for a minute, without looking for anything.",
-    done: "I looked",
   },
 ] as const;

@@ -8,6 +8,7 @@ import { StrongFrictionBreathPause } from "@src/shared/components/interaction/br
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
 import { setDailyQuestionsDoneForToday } from "@src/dataInterface/commonSyncDataInterface";
 import { getDailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
+// @ts-ignore
 import styles from "./QuickBreath.module.scss";
 
 // Let the final exhale land before the page changes under it. The route
@@ -34,6 +35,18 @@ const AFTER_BREATH_WAIT_MS = 900;
 const QuickBreath = () => {
   const navigate = useNavigate();
   let t0: NodeJS.Timeout | undefined;
+  // Which half of the day this breath belongs to, read once on arrival. Read at
+  // *completion* instead and a breath begun at 23:59:50 finishes under the next
+  // day's clock: `getDailyQuestionsMode` flips back to "Morning" past midnight,
+  // so the evening it was taken for is never marked and the coming morning's
+  // card is spent before it appears. The sibling flows snapshot the mode for
+  // exactly this reason (DailyQuestions, and the banner's own capture).
+  const mode = getDailyQuestionsMode();
+  // Leaving is not finishing. `navigate` is intercepted by the global page-fade
+  // guard, so the route (and this component, and the breath clock inside it)
+  // stays mounted for the fade - long enough for a breath cancelled in its last
+  // moments to fire `onComplete` on the way out and spend the day anyway.
+  let hasLeft = false;
 
   onMount(() => {
     // Clear first: a stale origin from an earlier pause would have the copy
@@ -43,6 +56,7 @@ const QuickBreath = () => {
   });
 
   onCleanup(() => {
+    hasLeft = true;
     window.clearTimeout(t0);
     // Hand the disc back to its companion rest; from here it glides down to the
     // bottom bar of whatever we navigate to.
@@ -50,10 +64,16 @@ const QuickBreath = () => {
     setBreathStartedAt(undefined);
   });
 
+  const leave = () => {
+    hasLeft = true;
+    navigate("/");
+  };
+
   const finish = () => {
+    if (hasLeft) return;
     // Only now is the day's invitation spent - and, as everywhere else here,
     // nothing records that this was the door taken.
-    setDailyQuestionsDoneForToday(getDailyQuestionsMode());
+    setDailyQuestionsDoneForToday(mode);
     window.clearTimeout(t0);
     t0 = setTimeout(() => navigate("/"), AFTER_BREATH_WAIT_MS);
   };
@@ -71,7 +91,7 @@ const QuickBreath = () => {
       <StrongFrictionBreathPause
         seconds={STRONG_FRICTION_BREATH_PAUSE_SECONDS}
         onComplete={finish}
-        onCancel={() => navigate("/")}
+        onCancel={leave}
       />
     </div>
   );

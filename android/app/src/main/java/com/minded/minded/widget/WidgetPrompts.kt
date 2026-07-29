@@ -89,15 +89,15 @@ object WidgetPrompts {
         // NOTICE cues, second wave - short complete practices (naming what is
         // here, letting one thought pass) rather than a single sensory noticing.
         // Same one-tap shape, so the card's tap still lands on that exact NOTICE
-        // screen. No breath line: a breath printed as text is the weak version
-        // of one the sun can lead (QuickBreath.tsx), and the widget has no sun
-        // to lead it with.
+        // screen. No breath *cue* among them: a breath printed as an instruction
+        // is the weak version of one the sun can lead (QuickBreath.tsx), and no
+        // widget has a sun to lead it. Note the ACTION_ADVICE "How about a deep
+        // breath?" below still rides here - that is a suggestion you take away
+        // with you, not a practice this card claims to guide.
         "Notice your next thought, and let it pass.",
         "Name what you feel, without judging it.",
         "Name one thing you are grateful for right now.",
-        "For half a minute, notice whatever comes: sounds, thoughts, feelings.",
-        "Stretch slowly, and feel the movement as it happens.",
-        "Look out of a window for a minute, without looking for anything.",
+        "Notice whatever is here: sounds, thoughts, feelings.",
         // ACTION_ADVICE lines (actionAdvices.ts) - the "How about…" suggestions.
         "How about looking out the window for a minute?",
         "How about a little stretch?",

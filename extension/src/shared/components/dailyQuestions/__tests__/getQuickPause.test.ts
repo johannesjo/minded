@@ -1,11 +1,8 @@
 import {
   getQuickPause,
   QUICK_PAUSES,
-  QUICK_PAUSE_DAILY_STRIDE,
 } from "@src/shared/components/dailyQuestions/getQuickPause";
 import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
-
-const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
 describe("the daily-questions card's quick pause", () => {
   it("holds still across a day, so a re-render never reshuffles the card", () => {
@@ -33,24 +30,21 @@ describe("the daily-questions card's quick pause", () => {
   });
 
   it("turns over at local midnight, not UTC's", () => {
-    // Late-evening and just-past-midnight local times sit in different UTC days
-    // for a good part of the world; the card must follow the user's day.
-    const lateEvening = getQuickPause(new Date(2026, 6, 29, 23, 30), "Evening");
-    const sameEveningEarlier = getQuickPause(
-      new Date(2026, 6, 29, 20, 5),
-      "Evening",
-    );
-    expect(lateEvening).toEqual(sameEveningEarlier);
+    // 09:00 and 15:00 on one local day straddle the UTC date line at UTC+12,
+    // so this pair is what actually discriminates: a `now.getTime() / 86400000`
+    // implementation returns different days for them and fails here. Comparing
+    // two evening times instead would agree under either implementation at
+    // every ordinary offset, and quietly test nothing.
+    const morning = getQuickPause(new Date(2026, 5, 29, 9, 0), "Morning");
+    const afternoon = getQuickPause(new Date(2026, 5, 29, 15, 0), "Morning");
+    expect(afternoon).toEqual(morning);
   });
 
   it("walks the whole pool from a fixed slot, never a fraction of it", () => {
-    // A fixed slot (every morning, say) steps by the daily stride, so it only
-    // covers the pool when the two are coprime. Checked against the live pool
-    // size rather than trusting the arithmetic to stay true as cues come and go
-    // - a stranded half would mean the morning card shows the same handful
-    // forever.
-    expect(gcd(QUICK_PAUSE_DAILY_STRIDE, QUICK_PAUSES.length)).toBe(1);
-
+    // Guards the property, not the constant: whatever the stride is, a morning
+    // glance must eventually see every entry. A stride sharing a factor with
+    // the pool size strands the rest - which is exactly what cutting two cues
+    // would have done at the stride this started with.
     const seen = new Set<string>();
     for (let i = 0; i < QUICK_PAUSES.length; i++) {
       seen.add(getQuickPause(new Date(2026, 6, 1 + i, 7, 0), "Morning").cue);

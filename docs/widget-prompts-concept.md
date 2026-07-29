@@ -45,16 +45,17 @@ launcher/device.
 > biggest risk* below.
 
 > **Update - the NOTICE pool grew into short practices, and now feeds the
-> dashboard too.** `NOTICE_CUES` gained six lines that are a little more than a
+> dashboard too.** `NOTICE_CUES` gained four lines that are a little more than a
 > single sensory noticing - naming what is here, letting one thought pass, half a
 > minute of open attention. They ride the widget on the same terms as everything
 > else (≤70 ASCII chars, timeless, self-exposing to nobody), so the card's pool is
-> 79 lines. Two things worth recording. (1) The same pool is now what the
+> 77 lines. Two things worth recording. (1) The same pool is now what the
 > dashboard's daily-questions card offers as its **quick pause**
 > (`getQuickPause.ts`), the one-tap door for a day with no minute to type. One
 > pool, three surfaces (intervention, widget, card) - a second near-identical
 > list would only have split the content in two. (2) The pool still carries **no
-> breath line**, and the reason sharpened. The old wording ("the sun already *is*
+> breath *cue*** (the ACTION_ADVICE "How about a deep breath?" is unaffected - a
+> suggestion, not a guided practice), and the reason sharpened. The old wording ("the sun already *is*
 > the breath") described a collision that doesn't exist on the NOTICE screen,
 > where nothing breathes. The real objection is that a breath printed as text is
 > the weak version of one the app can *lead*: "Take one slow breath." over a

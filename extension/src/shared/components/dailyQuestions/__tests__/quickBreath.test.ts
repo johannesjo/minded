@@ -36,6 +36,10 @@ describe("the guided quick breath", () => {
     expect(code).toMatch(
       /<StrongFrictionBreathPause seconds=\{STRONG_FRICTION_BREATH_PAUSE_SECONDS\}/,
     );
+    // Without this the whole surface is inert: a finished breath would spend
+    // nothing and never return home, and every other assertion here still
+    // passes. The wiring is the behaviour.
+    expect(code).toContain("onComplete={finish}");
   });
 
   it("starts from a fresh origin and hands the disc back on the way out", () => {
@@ -52,10 +56,34 @@ describe("the guided quick breath", () => {
     // Leaving early marks nothing - the card comes back, which is the honest
     // behaviour for a practice that was not taken.
     expect(code).toMatch(
-      /const finish = \(\) => \{ setDailyQuestionsDoneForToday\(getDailyQuestionsMode\(\)\);/,
+      /const finish = \(\) => \{ if \(hasLeft\) return; setDailyQuestionsDoneForToday\(mode\);/,
     );
-    expect(code).toContain('onCancel={() => navigate("/")}');
     expect(code).not.toMatch(/onCancel=\{[^}]*setDailyQuestionsDoneForToday/);
+  });
+
+  it("cannot be completed by a breath that finishes while the page is leaving", () => {
+    // navigate() is intercepted by the global page-fade guard, so this component
+    // and its breath clock stay mounted through the fade. Without the flag, a
+    // cancel in the breath's last moments still fires onComplete on the way out
+    // and spends the day - the one thing leaving is supposed not to do.
+    expect(code).toMatch(
+      /const leave = \(\) => \{ hasLeft = true; navigate\("\/"\); \};/,
+    );
+    expect(code).toContain("onCancel={leave}");
+    // The back arrow unmounts rather than routing through `leave`, so cleanup
+    // has to close the same hole.
+    expect(code).toMatch(/onCleanup\(\(\) => \{ hasLeft = true;/);
+  });
+
+  it("marks the half of the day the breath was begun in, not the one it ended in", () => {
+    // A breath begun at 23:59:50 finishes under the next day's clock, where
+    // getDailyQuestionsMode() reads "Morning" again - marking an evening as a
+    // morning and spending the coming morning's card before it appears.
+    expect(code).toMatch(/const mode = getDailyQuestionsMode\(\);/);
+    expect(code).toContain("setDailyQuestionsDoneForToday(mode)");
+    expect(code).not.toContain(
+      "setDailyQuestionsDoneForToday(getDailyQuestionsMode())",
+    );
   });
 
   it("lets the last exhale land before the page changes", () => {
@@ -65,7 +93,9 @@ describe("the guided quick breath", () => {
     );
     // The timer is cleared on the way out, so leaving mid-breath can't later
     // yank whatever page the user moved on to back to the dashboard.
-    expect(code).toMatch(/onCleanup\(\(\) => \{ window\.clearTimeout\(t0\);/);
+    expect(code).toMatch(
+      /onCleanup\(\(\) => \{[^}]*window\.clearTimeout\(t0\);/,
+    );
   });
 
   it("is a real page, so the global bottom bar offers its back arrow", () => {

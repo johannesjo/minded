@@ -88,6 +88,23 @@ The sun *is* the pause. `InteractionCommon.tsx` already glides the sun to a
 friction via `getPostSunPauseSeconds()`. Adding a separate "take a breath" button
 would duplicate the app's central interaction. **Nothing to build here.**
 
+> **Revised - one narrow exception, and why it is not the button this warned
+> about.** The daily-questions card can now offer a guided breath
+> (`QuickBreath.tsx`, reached from the card's quick pause). What this entry got
+> right stands: the mechanic is not rebuilt. `/quickBreath` runs the *same*
+> `StrongFrictionBreathPause` on the *same* shell sun in the *same* `breathing`
+> role - it adds a doorway, not a second breath.
+>
+> What the entry assumed, and shouldn't have, is that the existing doorway was
+> reachable. It isn't: `getPostSunPauseSeconds` returns 0 at anything below
+> **strong** friction, so the sun's breath only appears when the app has decided
+> to make leaving hard. It is a *friction* mechanic. There was no way for someone
+> sitting calmly on the dashboard to ask for a breath - the very thing this doc
+> assumed already existed. So the duplication this warned against is real and
+> still forbidden (do not add a second breath implementation, a second breathing
+> disc, or an ambient breath on the companion sun); offering the existing one
+> from a calm surface is not that.
+
 ### Attunement - the routing is already largely context-driven
 
 `getInteractionMode.ts` is **not** "rolling dice." It branches on friction level,

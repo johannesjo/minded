@@ -50,7 +50,7 @@ export const QUICK_PAUSES: ReadonlyArray<QuickPause> = [
  * Why it exists: the daily questions ask you to type, and a morning with no
  * spare minute simply skips them - so the card meant to open the day gently
  * becomes the card you dismiss. The quick pause gives that card a door you can
- * walk through in ten seconds. Nothing is stored and nothing is scored (there is
+ * walk through in seconds. Nothing is stored and nothing is scored (there is
  * no "you did the quick one" anywhere) - the doing is the whole point.
  *
  * Not morning-only: the evening card gets one too, and never the same one as
@@ -65,14 +65,13 @@ export const QUICK_PAUSES: ReadonlyArray<QuickPause> = [
  */
 
 /**
- * How far the offer advances from one day to the next. Morning and evening sit
- * one apart, so a fixed slot (say, every morning) steps by exactly this much per
- * day - and only covers the whole pool when the two are coprime. 7 is prime, so
- * that holds for any pool size that isn't a multiple of it; the guard test
- * checks the live size rather than trusting the arithmetic to stay true as cues
- * come and go.
+ * A fixed slot (every morning, say) walks the pool one entry per day. Stride 1
+ * is the only stride coprime with *every* pool size, so the "a morning glance
+ * eventually sees all of it" property cannot be broken by adding or cutting a
+ * cue - which a larger stride can, silently: at stride 7 a pool of 14 would
+ * have shown seven of them and never the rest.
  */
-export const QUICK_PAUSE_DAILY_STRIDE = 7;
+const DAILY_STRIDE = 1;
 
 export const getQuickPause = (
   now: Date,
@@ -86,10 +85,12 @@ export const getQuickPause = (
     now.getDate(),
   ).getTime();
   const dayIndex = Math.floor(startOfDay / 86_400_000);
+  const size = QUICK_PAUSES.length;
+  // Evening sits half a pool away from that morning rather than next to it, so
+  // the two ends of a day are never the same practice and never adjacent ones.
   const index =
-    dayIndex * QUICK_PAUSE_DAILY_STRIDE + (mode === "Evening" ? 1 : 0);
+    dayIndex * DAILY_STRIDE + (mode === "Evening" ? Math.floor(size / 2) : 0);
   // `%` keeps the sign of the dividend in JS, and dayIndex is negative before
   // 1970 (reachable with a skewed device clock), so normalise into range.
-  const size = QUICK_PAUSES.length;
   return QUICK_PAUSES[((index % size) + size) % size];
 };

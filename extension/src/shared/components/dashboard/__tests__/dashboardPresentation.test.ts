@@ -206,7 +206,7 @@ describe("collapsed dashboard presentation", () => {
     // single call "not now" makes. A tally of which door you took would be
     // exactly the striving the app exists to avoid.
     expect(normalizedComponent).toMatch(
-      /setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
+      /const takeQuickPause = \(\) => \{[^}]*\} setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
     );
   });
 
@@ -239,13 +239,13 @@ describe("collapsed dashboard presentation", () => {
 
   it("sets the confirming tap on its own row, right under the line it answers", () => {
     expect(styles).toMatch(
-      /\.cardDailyQuestionsDone\s*\{[\s\S]*justify-content: center;/,
+      /\.cardDailyQuestionsDone\s*\{[^}]*justify-content: center;/,
     );
   });
 
   it("stacks daily invitation actions on narrow phones while preserving tap height", () => {
     expect(styles).toMatch(
-      /\.cardDailyQuestionsBtns\s*\{[\s\S]*@media \(max-width: 360px\)\s*\{[\s\S]*grid-template-columns: 1fr;/,
+      /\.cardDailyQuestionsBtns\s*\{[^@]*@media \(max-width: 360px\)\s*\{[^}]*grid-template-columns: 1fr;/,
     );
     expect(styles).toMatch(
       /@media \(max-width: 360px\)[\s\S]*button\s*\{[\s\S]*min-height: 44px;[\s\S]*margin: 0;/,

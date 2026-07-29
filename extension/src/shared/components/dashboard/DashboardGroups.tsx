@@ -100,7 +100,7 @@ export const DashboardGroups: (props: {
   const [getDailyQuestionsBannerMode, setDailyQuestionsBannerMode] =
     createSignal<DailyQuestionsMode>("Morning");
 
-  // The card's quick pause - the ten-second door beside the questions. Captured
+  // The card's quick pause - the short door beside the questions. Captured
   // from the same clock read as the mode above, for the same reason: the line
   // and the wording must describe one moment, not two.
   const [getQuickPauseOffer, setQuickPauseOffer] = createSignal(
