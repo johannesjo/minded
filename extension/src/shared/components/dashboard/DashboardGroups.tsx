@@ -413,9 +413,9 @@ export const DashboardGroups: (props: {
     fadeOutDailyQuestionsBanner();
   };
 
-  // The quick pause was taken. A printed cue completes on the card itself;
-  // the breath is the one practice the sun has to lead, so it opens its own
-  // surface and marks the day there instead (see QuickBreath).
+  // The quick pause was taken: every offer completes on the card itself, where
+  // you stand (the pool holds only printed one-tap practices - see
+  // getQuickPause for why the guided breath no longer stands in this doorway).
   //
   // Completing outwardly matches a dismissal - the card fades, the day's
   // invitation is spent - and deliberately so: nothing is stored, nothing is
@@ -423,19 +423,6 @@ export const DashboardGroups: (props: {
   // named path anyway, because "I did the thing" and "not now" are different
   // acts even when they leave the same trace (none).
   const takeQuickPause = () => {
-    if (getQuickPauseOffer().kind === "breath") {
-      // Hand over the mode and the moment this card was revealed rather than
-      // letting the breath surface read its own clock: the two readings can
-      // straddle a boundary (revealed at 19:59, breath mounting at 20:00), and
-      // a breath finishing after midnight must still mark the day it began in.
-      navigate("/quickBreath", {
-        state: {
-          mode: getDailyQuestionsBannerMode(),
-          startedAtTS: Date.now(),
-        },
-      });
-      return;
-    }
     setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
     fadeOutDailyQuestionsBanner();
   };

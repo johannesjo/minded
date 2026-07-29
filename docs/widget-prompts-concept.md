@@ -60,7 +60,8 @@ launcher/device.
 > where nothing breathes. The real objection is that a breath printed as text is
 > the weak version of one the app can *lead*: "Take one slow breath." over a
 > swelling disc is a practice, the same words on a card are an instruction. So
-> the breath became the guided quick pause (`QuickBreath.tsx`) instead - which
+> the breath stays with the sun that leads it (the strong-friction intervention
+> pause; its brief `/quickBreath` doorway off the daily card was cut) - which
 > also means it can never ride the widget, a surface with no sun to lead it.
 
 ## The idea in one line

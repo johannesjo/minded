@@ -55,7 +55,6 @@ import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
-import QuickBreath from "@src/shared/components/dailyQuestions/QuickBreath";
 import InteractionIOS from "@src/ios/interaction/InteractionIOS";
 import Styleguide from "@src/shared/components/styleguide/Styleguide";
 
@@ -487,7 +486,6 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         {IS_WEB_EXT && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
         <Route path="/dailyQuestions" component={DailyQuestions} />
-        <Route path="/quickBreath" component={QuickBreath} />
         {IS_DEV && <Route path="/styleguide" component={Styleguide} />}
       </HashRouter>
     </div>

@@ -88,25 +88,22 @@ The sun *is* the pause. `InteractionCommon.tsx` already glides the sun to a
 friction via `getPostSunPauseSeconds()`. Adding a separate "take a breath" button
 would duplicate the app's central interaction. **Nothing to build here.**
 
-> **Revised - one narrow exception, and why it is not the button this warned
-> about.** The daily-questions card can now offer a guided breath
-> (`QuickBreath.tsx`, reached from the card's quick pause). What this entry got
-> right stands: the mechanic is not rebuilt. `/quickBreath` runs the *same*
-> `StrongFrictionBreathPause` on the *same* shell sun in the *same* `breathing`
-> role - it adds a doorway, not a second breath.
->
-> What the entry assumed, and shouldn't have, is that the existing doorway was
-> reachable. It isn't: `getPostSunPauseSeconds` returns 0 at anything below
-> **strong** friction, so the sun's breath only appears when the app has decided
-> to make leaving hard. It is a *friction* mechanic. There was no way for someone
-> sitting calmly on the dashboard to ask for a breath - the very thing this doc
-> assumed already existed. So the duplication this warned against is real and
-> still forbidden - do not add a second breath implementation, another breathing
-> disc, or an ambient breath on the companion sun. (One already exists and is not
-> a precedent: the sleep wind-down's looping 4-7-8 exercise draws its own
-> `BreathSun` on its own pattern. It predates this and stays where it is; it is
-> the thing not to do again.) Offering the existing pause from a calm surface is
-> not that.
+> **Revised, then reverted - the exception was tried and cut.** The
+> daily-questions card briefly offered a guided breath (`/quickBreath`, reached
+> from the card's quick pause). It honoured this entry's warning - it ran the
+> *same* `StrongFrictionBreathPause` on the *same* shell sun in the *same*
+> `breathing` role, a doorway rather than a second breath - but it was removed
+> anyway: it was the one quick-pause offer whose button navigated away instead
+> of completing on the card, which broke the card's promise of a practice done
+> where you stand. So this entry's original conclusion stands again: **nothing
+> to build here.** The sun's breath remains a *friction* mechanic
+> (`getPostSunPauseSeconds` returns 0 below **strong** friction); there is
+> deliberately no way to ask for it from the calm dashboard. Do not add a second
+> breath implementation, another breathing disc, or an ambient breath on the
+> companion sun. (One already exists and is not a precedent: the sleep
+> wind-down's looping 4-7-8 exercise draws its own `BreathSun` on its own
+> pattern. It predates this and stays where it is; it is the thing not to do
+> again.)
 
 ### Attunement - the routing is already largely context-driven
 

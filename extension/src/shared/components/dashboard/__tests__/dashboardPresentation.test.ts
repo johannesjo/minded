@@ -230,12 +230,12 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  it("sends the guided breath to its own surface instead of finishing on the card", () => {
-    // A breath is the one offer the sun has to lead; a printed cue completes
-    // where it stands, so only this kind leaves the dashboard.
-    expect(normalizedComponent).toMatch(
-      /if \(getQuickPauseOffer\(\)\.kind === "breath"\) \{[^}]*navigate\("\/quickBreath", \{ state: \{ mode: getDailyQuestionsBannerMode\(\), startedAtTS: Date\.now\(\), \}, \}\); return; \}/,
-    );
+  it("finishes every quick pause on the card - no offer navigates away", () => {
+    // The pool holds only printed one-tap practices; the guided breath's
+    // doorway (/quickBreath) was cut because it broke the card's promise of
+    // completing where you stand. If an off-card offer returns, it needs a
+    // deliberate decision, not a leftover branch.
+    expect(normalizedComponent).not.toContain("/quickBreath");
   });
 
   it("derives the quick pause from the same clock read as the card's mode", () => {

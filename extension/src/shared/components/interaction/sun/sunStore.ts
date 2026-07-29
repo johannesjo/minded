@@ -23,7 +23,7 @@ import {
  * This module is a per-document singleton, owned by the shell (MainWrapper) -
  * which is the dashboard on *every* platform: the extension's new tab, and the
  * Android and iOS WebViews alike all mount RouteCmp and render one shell sun.
- * Route-level surfaces drive it directly (DailyQuestions, QuickBreath,
+ * Route-level surfaces drive it directly (DailyQuestions,
  * SleepWindDown, both onboardings); InteractionCommon does so behind its
  * `useShellSun` flag. What keeps its *own* sun is the separate *intervention*
  * runtimes - the content script, and the Android interaction/sleep entries -

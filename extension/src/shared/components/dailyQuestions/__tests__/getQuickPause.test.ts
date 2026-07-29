@@ -58,21 +58,22 @@ describe("the daily-questions card's quick pause", () => {
     expect(seen.size).toBe(QUICK_PAUSES.length);
   });
 
-  it("offers the NOTICE cues plus exactly one guided breath", () => {
-    // The pool is the app's own interaction content, not card-only copy - the
-    // one exception being the breath, which has no printed form by design.
+  it("offers exactly the NOTICE cues - nothing that leaves the card", () => {
+    // The pool is the app's own interaction content, not card-only copy - and
+    // every offer completes where you stand. The guided breath used to be the
+    // one entry whose button navigated away (/quickBreath); it was cut, so a
+    // reappearing off-card offer is a regression, not an addition.
     const known = new Set(NOTICE_CUES.map((c) => c.cue));
-    const breaths = QUICK_PAUSES.filter((p) => p.kind === "breath");
-    expect(breaths).toHaveLength(1);
-    expect(QUICK_PAUSES.length).toBe(NOTICE_CUES.length + 1);
+    expect(QUICK_PAUSES.length).toBe(NOTICE_CUES.length);
     for (const pause of QUICK_PAUSES) {
-      if (pause.kind === "notice") expect(known.has(pause.cue)).toBe(true);
+      expect(known.has(pause.cue)).toBe(true);
     }
   });
 
   it("keeps the breath out of the printed cues, where it would be a weak copy", () => {
     // A breath the app can lead beats a breath it merely names, so no NOTICE
-    // cue may ask for one - that content lives on the guided surface instead.
+    // cue may ask for one - that practice belongs to the sun-led guided pauses
+    // (the strong-friction intervention), not to printed text.
     for (const cue of NOTICE_CUES) {
       expect(cue.cue.toLowerCase()).not.toMatch(/breath|out-breath|inhale/);
     }
@@ -110,9 +111,7 @@ describe("the daily-questions card's quick pause", () => {
     // mornings arrive in - and cues are authored in batches. Without the
     // interleave the batch added together surfaces on consecutive mornings.
     const authored = NOTICE_CUES.map((c) => c.cue);
-    const rotated = QUICK_PAUSES.filter((p) => p.kind === "notice").map(
-      (p) => p.cue,
-    );
+    const rotated = QUICK_PAUSES.map((p) => p.cue);
     expect(new Set(rotated)).toEqual(new Set(authored));
     const authoredNeighbours = authored.filter(
       (cue, i) =>
