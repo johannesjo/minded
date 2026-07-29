@@ -341,6 +341,16 @@
   }
 }
 
+// The line naming the moment the card belongs to ("to begin your day"). It is
+// spoken copy - soft, second-person, invitational - so it carries the serif
+// voice even at hint size, and it sits quieter than the cue it introduces:
+// the moment frames, the practice speaks.
+.cardDailyQuestionsMoment {
+  @include displayVoice;
+  opacity: 0.7;
+  margin-bottom: var(--space-sm);
+}
+
 // The card's prompt is the app speaking gently - a soft, second-person
 // invitation - so it carries the Newsreader voice, layered onto the existing
 // size class (.txtSlightlyBigger) rather than swapping it. This puts the serif
@@ -366,26 +376,24 @@
 
 .cardDailyQuestionsBtns {
   margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm);
 
   button {
-    margin: 0 var(--space-xs);
     white-space: nowrap;
   }
 
-  // On the narrowest phones two full labels plus their breathing room no longer
-  // fit comfortably. Stack them before they can clip, while keeping the shared
-  // mobile button height as a full touch target.
-  @media (max-width: 360px) {
-    grid-template-columns: 1fr;
-    gap: var(--space-sm);
-
-    button {
-      min-height: 44px;
-      margin: 0;
-      width: 100%;
-    }
+  // The two quiet paths step down a size as well as losing their boxes, so the
+  // demotion is carried by the type too - the same hierarchy-by-font approach
+  // as .revealBtn below, and the same specificity dance: the base button size
+  // arrives via `#minded-6622 .btnTxt` (an ID selector), so a bare module
+  // class loses the cascade and the buttons keep the full --btn-fz size.
+  button:global(.btnTxt),
+  :global(#minded-6622) & button:global(.btnTxt),
+  #minded-6622 & button:global(.btnTxt) {
+    font-size: var(--fz-s);
   }
 }
 
