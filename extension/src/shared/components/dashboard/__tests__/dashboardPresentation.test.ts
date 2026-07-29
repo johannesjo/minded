@@ -176,16 +176,57 @@ describe("collapsed dashboard presentation", () => {
     expect(styles).toContain(".skyGreeting");
   });
 
-  it("offers one calm primary daily action and an easy secondary exit", () => {
-    // Both buttons are plain sans chrome - no `voice` on the primary. The
-    // card's serif voice lives on the prompt line instead (asserted below), so
-    // no lone serif button sits wedged beside the sans "not now" exit.
+  it("leads the daily card with a quick pause that completes in one tap", () => {
+    // The questions ask you to type, and a day with no spare minute just
+    // dismisses them. The card's first offer is therefore the ten-second door:
+    // one present-moment practice, confirmed where you stand.
+    expect(normalizedComponent).toContain("{getQuickPauseOffer().cue}");
+    // `voice`: these labels are the app's own copy, and every other button
+    // base forces lowercase - without it the card says "i can feel them".
     expect(normalizedComponent).toMatch(
-      /<Btn onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*stay a moment\s*<\/Btn>/,
+      /<Btn voice onClick=\{\(\) => takeQuickPause\(\)\}>\s*\{getQuickPauseOffer\(\)\.action\}\s*<\/Btn>/,
     );
-    expect(normalizedComponent).not.toContain("<Btn voice");
+  });
+
+  it("keeps the questions one quiet tap away, beside an equally quiet exit", () => {
+    // The longer path did not move, it just stopped being the loudest pixel -
+    // both alternatives are `soft` so neither out-shouts the practice above.
+    expect(normalizedComponent).toMatch(
+      /<Btn soft onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*a few questions\s*<\/Btn>/,
+    );
     expect(normalizedComponent).toMatch(
       /<Btn soft onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
+    );
+    // The two alternatives stay sans chrome; only the confirm above carries the
+    // voice, so the serif block is prompt + confirm and the chrome row is sans.
+    expect(normalizedComponent).not.toMatch(/<Btn voice soft|<Btn soft voice/);
+  });
+
+  it("takes the quick pause without recording or counting anything", () => {
+    // Nothing is stored beyond "this day's invitation is spent" - the same
+    // single call "not now" makes. A tally of which door you took would be
+    // exactly the striving the app exists to avoid.
+    // Anchored to takeQuickPause and non-greedy, so it stops at that handler's
+    // own marking call rather than being satisfied by the identical body in
+    // removeDailyQuestionsBanner further up the file.
+    expect(normalizedComponent).toMatch(
+      /const takeQuickPause = \(\) => \{[\s\S]*?setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
+    );
+  });
+
+  it("sends the guided breath to its own surface instead of finishing on the card", () => {
+    // A breath is the one offer the sun has to lead; a printed cue completes
+    // where it stands, so only this kind leaves the dashboard.
+    expect(normalizedComponent).toMatch(
+      /if \(getQuickPauseOffer\(\)\.kind === "breath"\) \{[^}]*navigate\("\/quickBreath", \{ state: \{ mode: getDailyQuestionsBannerMode\(\), startedAtTS: Date\.now\(\), \}, \}\); return; \}/,
+    );
+  });
+
+  it("derives the quick pause from the same clock read as the card's mode", () => {
+    // Reading the clock a second time at render is how the card once showed
+    // morning wording at night; the line must describe the same moment.
+    expect(normalizedComponent).toContain(
+      "setQuickPauseOffer(getQuickPause(now, mode));",
     );
   });
 
@@ -200,9 +241,15 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
+  it("sets the confirming tap on its own row, right under the line it answers", () => {
+    expect(styles).toMatch(
+      /\.cardDailyQuestionsDone\s*\{[^}]*justify-content: center;/,
+    );
+  });
+
   it("stacks daily invitation actions on narrow phones while preserving tap height", () => {
     expect(styles).toMatch(
-      /\.cardDailyQuestionsBtns\s*\{[\s\S]*@media \(max-width: 360px\)\s*\{[\s\S]*grid-template-columns: 1fr;/,
+      /\.cardDailyQuestionsBtns\s*\{[^@]*@media \(max-width: 360px\)\s*\{[^}]*grid-template-columns: 1fr;/,
     );
     expect(styles).toMatch(
       /@media \(max-width: 360px\)[\s\S]*button\s*\{[\s\S]*min-height: 44px;[\s\S]*margin: 0;/,

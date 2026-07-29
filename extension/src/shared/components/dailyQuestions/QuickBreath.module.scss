@@ -1,0 +1,25 @@
+// The breathing disc is the shell sun, and `sunBreatheSettle` anchors it to a
+// ratio of the *viewport* (0.4). The cue copy beneath it is reserved by
+// StrongFrictionBreathPause's sun-spacer, so the two only line up when the
+// copy is centred in that same frame.
+//
+// In the intervention they are: the pause sits inside a `position: fixed;
+// inset: 0` overlay. On this route the page would instead be centred inside
+// `<main>`, which the safe-area inset shortens at the top and the in-flow bottom
+// bar shortens again at the bottom - putting the reserved gap's centre ~40px
+// above the disc on a phone, so the disc sits low in its own space and its halo
+// crowds the "Breathe in" line. Take the viewport frame, exactly as the
+// intervention does, rather than re-tuning the shared anchor for one surface.
+//
+// Below the bottom bar's stacking (it sets z-index: 1 on its own row) so the
+// back arrow stays tappable, and pointer-events stay on the pause itself, which
+// sets `pointer-events: auto`.
+.wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  pointer-events: none;
+}

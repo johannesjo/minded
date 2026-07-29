@@ -67,17 +67,34 @@ class WidgetPromptsTest {
     }
 
     @Test
-    fun `the line steps one per slot and walks the whole pool`() {
-        // One step per 15-minute slot, no adjacent repeats: WAKING_PROMPTS.size
-        // consecutive slots (from 06:00, ~3¾ h, all inside the day window) show
-        // every line exactly once. This replaced a per-day char-sum seed that
-        // skipped entries and repeated across X9→X0 date rollovers.
-        val n = WidgetPrompts.WAKING_PROMPTS.size
-        val lines = (0 until n).map { i ->
+    fun `the line steps one per slot, never repeating inside a waking day`() {
+        // One step per 15-minute slot, no repeats at all within a day. This
+        // replaced a per-day char-sum seed that skipped entries and repeated
+        // across X9→X0 date rollovers.
+        //
+        // It used to walk WAKING_PROMPTS.size slots from 06:00 and assert the
+        // whole pool appeared, which held only while the pool was smaller than
+        // one waking window. The window is 13 h = 52 slots and the pool has long
+        // since outgrown it, so that walk ran past 19:00 and collected nulls.
+        // The invariant that actually matters is the one a user can experience:
+        // inside a single day the line never comes back round. Full coverage is
+        // the next test's job (across days, at a fixed time).
+        val slotsPerWakingDay =
+            (SunWidgetPhase.NIGHT_START - SunWidgetPhase.DAY_START) * 60 / WidgetPrompts.SLOT_MINUTES
+        // The claim in this test's name only holds while the pool is at least a
+        // day's worth of slots; below that the index wraps before dusk and lines
+        // genuinely do repeat. Assert the precondition rather than quietly
+        // shortening the walk to fit - a `minOf` here would let the pool shrink
+        // to half a day and still show green.
+        assertTrue(
+            WidgetPrompts.WAKING_PROMPTS.size >= slotsPerWakingDay,
+            "pool (${WidgetPrompts.WAKING_PROMPTS.size}) is smaller than a waking day ($slotsPerWakingDay slots), so lines repeat before dusk",
+        )
+        val lines = (0 until slotsPerWakingDay).map { i ->
             val min = SunWidgetPhase.DAY_START * 60 + i * WidgetPrompts.SLOT_MINUTES
             WidgetPrompts.promptForMoment(day, min / 60, min % 60)
         }
-        assertEquals(n, lines.distinct().size)
+        assertEquals(slotsPerWakingDay, lines.distinct().size)
         lines.zipWithNext { a, b -> assertNotEquals(a, b, "adjacent slots repeat") }
     }
 

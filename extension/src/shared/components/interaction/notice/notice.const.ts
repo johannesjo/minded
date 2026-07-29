@@ -7,9 +7,21 @@
  * observed action, never an inferred feeling; the here-and-now, never a stale
  * timestamp; and there is nothing to score, type, or get "right".
  *
- * Deliberately no breath-counting cue: the sun already *is* the breath (see
- * `InteractionCommon` / `StrongFrictionBreathPause`), so a second breathing
- * prompt would step on it.
+ * This is also the pool the daily-questions card offers as its *quick pause* -
+ * the one-tap alternative for a morning (or evening) with no time to type (see
+ * `getQuickPause.ts`). That is why the pool grew past pure sensory anchors into
+ * short complete practices: naming what is here, letting one thought pass,
+ * open attention. Same shape, same bar, same tap; a second pool of
+ * near-identical lines would only have split the content in two.
+ *
+ * Still deliberately no breath cue, and now for a sharper reason than before.
+ * The old wording ("the sun already *is* the breath") described a collision that
+ * does not exist on this screen - the sun breathes only in guided pauses, never
+ * behind a NOTICE cue. The real objection is that a breath printed as text is a
+ * *worse* version of something the app can actually do: "Take one slow breath."
+ * with nothing moving is an instruction, while the same words over a swelling
+ * disc are a practice you can follow. So the breath is not a cue here - it is
+ * the guided quick pause (`QuickBreath.tsx`), where the sun leads it.
  *
  * No decorative glyph, by design: platform emoji are the loudest, most chat-app
  * mark available - they render differently on every OS, sit at full saturation,
@@ -42,4 +54,24 @@ export const NOTICE_CUES: {
     done: "Noticed",
   },
   { cue: "Find three colors around you.", done: "Found them" },
+  // Short complete practices - a little more than a single noticing, still done
+  // in well under a minute and confirmed by the same one tap. Kept ASCII and
+  // ≤70 chars like every other cue, so any of them can also ride the widget.
+  // Everything here must stay doable in a breath or two: the moment a cue takes
+  // long enough to plan around, it earns the "I don't have time for this"
+  // dismissal that these exist to slip under.
+  { cue: "Notice your next thought, and let it pass.", done: "It passed" },
+  // Naming, not judging: the user supplies the word, the app never guesses it.
+  // No gratitude cue here on purpose - the widget rotation already carries the
+  // Gratitude questions verbatim, and an imperative restatement of one only put
+  // the same invitation in the pool twice.
+  { cue: "Name what you feel, without judging it.", done: "There it is" },
+  {
+    // No stated duration. A cue that names a minute is the one thing here that
+    // looks like it needs planning around - and the widget already carries the
+    // stretch and window suggestions as ACTION_ADVICE, so cues repeating them
+    // only put two of each in the same rotation.
+    cue: "Notice whatever is here: sounds, thoughts, feelings.",
+    done: "I noticed",
+  },
 ] as const;

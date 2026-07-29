@@ -44,6 +44,25 @@ launcher/device.
 > Fixed by advancing one extra step per day (a prime `DAILY_STRIDE`); see *The
 > biggest risk* below.
 
+> **Update - the NOTICE pool grew into short practices, and now feeds the
+> dashboard too.** `NOTICE_CUES` gained three lines that are a little more than a
+> single sensory noticing - naming what is here, letting one thought pass, open
+> attention. They ride the widget on the same terms as everything
+> else (≤70 ASCII chars, timeless, self-exposing to nobody), so the card's pool is
+> 76 lines. Two things worth recording. (1) The same pool is now what the
+> dashboard's daily-questions card offers as its **quick pause**
+> (`getQuickPause.ts`), the one-tap door for a day with no minute to type. One
+> pool, three surfaces (intervention, widget, card) - a second near-identical
+> list would only have split the content in two. (2) The pool still carries **no
+> breath *cue*** (the ACTION_ADVICE "How about a deep breath?" is unaffected - a
+> suggestion, not a guided practice), and the reason sharpened. The old wording ("the sun already *is*
+> the breath") described a collision that doesn't exist on the NOTICE screen,
+> where nothing breathes. The real objection is that a breath printed as text is
+> the weak version of one the app can *lead*: "Take one slow breath." over a
+> swelling disc is a practice, the same words on a card are an instruction. So
+> the breath became the guided quick pause (`QuickBreath.tsx`) instead - which
+> also means it can never ride the widget, a surface with no sun to lead it.
+
 ## The idea in one line
 
 The home-screen widget becomes **a miniature still of the in-app intervention
@@ -446,7 +465,7 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 73 lines (9 NOTICE + 11 ACTION_ADVICE + 53 QUESTION) after the
+The pool is now 76 lines (12 NOTICE + 11 ACTION_ADVICE + 53 QUESTION) after the
 "second wave", "third wave", and "fourth wave" batches below were pulled in - the NOTICE and
 ACTION_ADVICE sources are now fully drained except the two `daytimeOnly`
 task/productivity advices (striving) and the one social-obligation advice
