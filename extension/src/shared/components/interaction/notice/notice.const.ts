@@ -10,8 +10,8 @@
  * This is also the pool the daily-questions card offers as its *quick pause* -
  * the one-tap alternative for a morning (or evening) with no time to type (see
  * `getQuickPause.ts`). That is why the pool grew past pure sensory anchors into
- * short complete practices: naming what is here, letting one thought pass, half
- * a minute of open attention. Same shape, same bar, same tap; a second pool of
+ * short complete practices: naming what is here, letting one thought pass,
+ * open attention. Same shape, same bar, same tap; a second pool of
  * near-identical lines would only have split the content in two.
  *
  * Still deliberately no breath cue, and now for a sharper reason than before.
@@ -62,8 +62,10 @@ export const NOTICE_CUES: {
   // dismissal that these exist to slip under.
   { cue: "Notice your next thought, and let it pass.", done: "It passed" },
   // Naming, not judging: the user supplies the word, the app never guesses it.
+  // No gratitude cue here on purpose - the widget rotation already carries the
+  // Gratitude questions verbatim, and an imperative restatement of one only put
+  // the same invitation in the pool twice.
   { cue: "Name what you feel, without judging it.", done: "There it is" },
-  { cue: "Name one thing you are grateful for right now.", done: "Named it" },
   {
     // No stated duration. A cue that names a minute is the one thing here that
     // looks like it needs planning around - and the widget already carries the

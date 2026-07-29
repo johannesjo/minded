@@ -181,8 +181,10 @@ describe("collapsed dashboard presentation", () => {
     // dismisses them. The card's first offer is therefore the ten-second door:
     // one present-moment practice, confirmed where you stand.
     expect(normalizedComponent).toContain("{getQuickPauseOffer().cue}");
+    // `voice`: these labels are the app's own copy, and every other button
+    // base forces lowercase - without it the card says "i can feel them".
     expect(normalizedComponent).toMatch(
-      /<Btn onClick=\{\(\) => takeQuickPause\(\)\}>\s*\{getQuickPauseOffer\(\)\.action\}\s*<\/Btn>/,
+      /<Btn voice onClick=\{\(\) => takeQuickPause\(\)\}>\s*\{getQuickPauseOffer\(\)\.action\}\s*<\/Btn>/,
     );
   });
 
@@ -195,18 +197,20 @@ describe("collapsed dashboard presentation", () => {
     expect(normalizedComponent).toMatch(
       /<Btn soft onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
     );
-    // Still plain sans chrome throughout - no `voice` on any card button. The
-    // card's serif voice lives on the prompt line (asserted below), so no lone
-    // serif button sits wedged between sans elements.
-    expect(normalizedComponent).not.toContain("<Btn voice");
+    // The two alternatives stay sans chrome; only the confirm above carries the
+    // voice, so the serif block is prompt + confirm and the chrome row is sans.
+    expect(normalizedComponent).not.toMatch(/<Btn voice soft|<Btn soft voice/);
   });
 
   it("takes the quick pause without recording or counting anything", () => {
     // Nothing is stored beyond "this day's invitation is spent" - the same
     // single call "not now" makes. A tally of which door you took would be
     // exactly the striving the app exists to avoid.
+    // Anchored to takeQuickPause and non-greedy, so it stops at that handler's
+    // own marking call rather than being satisfied by the identical body in
+    // removeDailyQuestionsBanner further up the file.
     expect(normalizedComponent).toMatch(
-      /const takeQuickPause = \(\) => \{[^}]*\} setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
+      /const takeQuickPause = \(\) => \{[\s\S]*?setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
     );
   });
 
@@ -214,7 +218,7 @@ describe("collapsed dashboard presentation", () => {
     // A breath is the one offer the sun has to lead; a printed cue completes
     // where it stands, so only this kind leaves the dashboard.
     expect(normalizedComponent).toMatch(
-      /if \(getQuickPauseOffer\(\)\.kind === "breath"\) \{ navigate\("\/quickBreath"\); return; \}/,
+      /if \(getQuickPauseOffer\(\)\.kind === "breath"\) \{[^}]*navigate\("\/quickBreath", \{ state: \{ mode: getDailyQuestionsBannerMode\(\), startedAtTS: Date\.now\(\), \}, \}\); return; \}/,
     );
   });
 

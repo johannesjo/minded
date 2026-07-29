@@ -101,9 +101,12 @@ would duplicate the app's central interaction. **Nothing to build here.**
 > to make leaving hard. It is a *friction* mechanic. There was no way for someone
 > sitting calmly on the dashboard to ask for a breath - the very thing this doc
 > assumed already existed. So the duplication this warned against is real and
-> still forbidden (do not add a second breath implementation, a second breathing
-> disc, or an ambient breath on the companion sun); offering the existing one
-> from a calm surface is not that.
+> still forbidden - do not add a second breath implementation, another breathing
+> disc, or an ambient breath on the companion sun. (One already exists and is not
+> a precedent: the sleep wind-down's looping 4-7-8 exercise draws its own
+> `BreathSun` on its own pattern. It predates this and stays where it is; it is
+> the thing not to do again.) Offering the existing pause from a calm surface is
+> not that.
 
 ### Attunement - the routing is already largely context-driven
 

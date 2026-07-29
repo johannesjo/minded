@@ -20,9 +20,14 @@ import {
  * active interaction via the handler registry below. All drag physics stay
  * inside Sun.tsx.
  *
- * This module is a per-document singleton. It is consumed ONLY by the shell
- * (MainWrapper) and by InteractionCommon behind its `useShellSun` flag; the
- * content-script / Android / iOS runtimes keep their own self-owned sun.
+ * This module is a per-document singleton, owned by the shell (MainWrapper) -
+ * which is the dashboard on *every* platform: the extension's new tab, and the
+ * Android and iOS WebViews alike all mount RouteCmp and render one shell sun.
+ * Route-level surfaces drive it directly (DailyQuestions, QuickBreath,
+ * SleepWindDown, both onboardings); InteractionCommon does so behind its
+ * `useShellSun` flag. What keeps its *own* sun is the separate *intervention*
+ * runtimes - the content script, and the Android interaction/sleep entries -
+ * which are different bundles that never mount the shell.
  * (One sanctioned outside write: the Android onboarding seeds
  * setCompanionBottomYPx with its measured anchor right before handing off to
  * the dashboard, so the shell disc mounts on the exact px the onboarding disc

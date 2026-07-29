@@ -96,7 +96,6 @@ object WidgetPrompts {
         // with you, not a practice this card claims to guide.
         "Notice your next thought, and let it pass.",
         "Name what you feel, without judging it.",
-        "Name one thing you are grateful for right now.",
         "Notice whatever is here: sounds, thoughts, feelings.",
         // ACTION_ADVICE lines (actionAdvices.ts) - the "How about…" suggestions.
         "How about looking out the window for a minute?",

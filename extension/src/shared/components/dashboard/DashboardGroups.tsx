@@ -424,7 +424,16 @@ export const DashboardGroups: (props: {
   // acts even when they leave the same trace (none).
   const takeQuickPause = () => {
     if (getQuickPauseOffer().kind === "breath") {
-      navigate("/quickBreath");
+      // Hand over the mode and the moment this card was revealed rather than
+      // letting the breath surface read its own clock: the two readings can
+      // straddle a boundary (revealed at 19:59, breath mounting at 20:00), and
+      // a breath finishing after midnight must still mark the day it began in.
+      navigate("/quickBreath", {
+        state: {
+          mode: getDailyQuestionsBannerMode(),
+          startedAtTS: Date.now(),
+        },
+      });
       return;
     }
     setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
@@ -475,7 +484,12 @@ export const DashboardGroups: (props: {
         {getQuickPauseOffer().cue}
       </div>
       <div class={styles.cardDailyQuestionsDone}>
-        <Btn onClick={() => takeQuickPause()}>
+        {/* `voice`, unlike the two chrome buttons below it. These labels are the
+            app's own soft copy ("I can feel them", "breathe") - and `btnBase`
+            forces lowercase on every other button, so without this the card
+            renders "i can feel them" in Inter directly under a Newsreader
+            prompt: both a sans/serif seam and a broken capital. */}
+        <Btn voice onClick={() => takeQuickPause()}>
           {getQuickPauseOffer().action}
         </Btn>
       </div>

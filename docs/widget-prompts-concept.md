@@ -45,11 +45,11 @@ launcher/device.
 > biggest risk* below.
 
 > **Update - the NOTICE pool grew into short practices, and now feeds the
-> dashboard too.** `NOTICE_CUES` gained four lines that are a little more than a
-> single sensory noticing - naming what is here, letting one thought pass, half a
-> minute of open attention. They ride the widget on the same terms as everything
+> dashboard too.** `NOTICE_CUES` gained three lines that are a little more than a
+> single sensory noticing - naming what is here, letting one thought pass, open
+> attention. They ride the widget on the same terms as everything
 > else (≤70 ASCII chars, timeless, self-exposing to nobody), so the card's pool is
-> 77 lines. Two things worth recording. (1) The same pool is now what the
+> 76 lines. Two things worth recording. (1) The same pool is now what the
 > dashboard's daily-questions card offers as its **quick pause**
 > (`getQuickPause.ts`), the one-tap door for a day with no minute to type. One
 > pool, three surfaces (intervention, widget, card) - a second near-identical
@@ -465,7 +465,7 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
 
 ## Extending the pool (working notes)
 
-The pool is now 73 lines (9 NOTICE + 11 ACTION_ADVICE + 53 QUESTION) after the
+The pool is now 76 lines (12 NOTICE + 11 ACTION_ADVICE + 53 QUESTION) after the
 "second wave", "third wave", and "fourth wave" batches below were pulled in - the NOTICE and
 ACTION_ADVICE sources are now fully drained except the two `daytimeOnly`
 task/productivity advices (striving) and the one social-obligation advice

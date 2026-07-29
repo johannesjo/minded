@@ -80,6 +80,38 @@ describe("widget prompt mirrors stay in sync with the interaction pools", () => 
     expect(swiftLines).toEqual(kotlinLines);
   });
 
+  it("the two platforms step the rotation with identical arithmetic", () => {
+    // Same order is only half of "the same line at the same moment" - the other
+    // half is the slot arithmetic, and nothing checked it. iOS has no Swift
+    // test target, so mutating `slotMinutes`, dropping the `+1` from
+    // `dailyStride` (reinstating the very same-time-of-day lock that constant
+    // exists to fix), or flipping the slot term's sign were all invisible to
+    // the whole repo while this file reported the mirror intact.
+    const swiftSource = readSource("ios/App/MindedWidget/WidgetPrompts.swift");
+    const num = (source: string, pattern: RegExp): number =>
+      Number(source.match(pattern)?.[1]);
+
+    expect(num(kotlinSource, /SLOT_MINUTES\s*=\s*(\d+)/)).toBe(
+      num(swiftSource, /slotMinutes\s*=\s*(\d+)/),
+    );
+    // Both derive slots-per-day the same way and add exactly one.
+    expect(kotlinSource).toMatch(
+      /SLOTS_PER_DAY\s*=\s*24\s*\*\s*60\s*\/\s*SLOT_MINUTES/,
+    );
+    expect(swiftSource).toMatch(
+      /slotsPerDay\s*=\s*24\s*\*\s*60\s*\/\s*slotMinutes/,
+    );
+    expect(kotlinSource).toMatch(/DAILY_STRIDE\s*=\s*SLOTS_PER_DAY\s*\+\s*1/);
+    expect(swiftSource).toMatch(/dailyStride\s*=\s*slotsPerDay\s*\+\s*1/);
+    // And index the pool identically - same terms, same signs.
+    expect(kotlinSource).toMatch(
+      /epochDay\s*\*\s*DAILY_STRIDE\s*\+\s*slotOfDay/,
+    );
+    expect(swiftSource).toMatch(
+      /epochDay\s*\*\s*Int64\(dailyStride\)\s*\+\s*Int64\(slotOfDay\)|epochDay\s*\*\s*dailyStride\s*\+\s*slotOfDay/,
+    );
+  });
+
   it("the length cap agrees everywhere and every line fits it as ASCII", () => {
     // Kotlin's MAX_PROMPT_LENGTH is JVM-tested against the pool; iOS has no
     // Swift test target, and its forwarding cap (AppDelegate.encodedWidgetLine)
