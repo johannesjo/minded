@@ -8,10 +8,11 @@
  * timestamp; and there is nothing to score, type, or get "right".
  *
  * This is also the pool the daily-questions card offers as its *quick pause* -
- * the one-tap alternative for a morning (or evening) with no time to type (see
- * `getQuickPause.ts`). That is why the pool grew past pure sensory anchors into
- * short complete practices: naming what is here, letting one thought pass,
- * open attention. Same shape, same bar, same tap; a second pool of
+ * the read-and-do alternative for a morning (or evening) with no time to type
+ * (see `getQuickPause.ts`; the card takes only the lines - the `done` tap
+ * belongs to this NOTICE screen alone). That is why the pool grew past pure
+ * sensory anchors into short complete practices: naming what is here, letting
+ * one thought pass, open attention. Same shape, same bar; a second pool of
  * near-identical lines would only have split the content in two.
  *
  * Still deliberately no breath cue, and now for a sharper reason than before.

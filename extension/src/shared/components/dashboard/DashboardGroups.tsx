@@ -413,20 +413,6 @@ export const DashboardGroups: (props: {
     fadeOutDailyQuestionsBanner();
   };
 
-  // The quick pause was taken: every offer completes on the card itself, where
-  // you stand (the pool holds only printed one-tap practices - see
-  // getQuickPause for why the guided breath no longer stands in this doorway).
-  //
-  // Completing outwardly matches a dismissal - the card fades, the day's
-  // invitation is spent - and deliberately so: nothing is stored, nothing is
-  // counted, and the app never learns which door you took. Kept as its own
-  // named path anyway, because "I did the thing" and "not now" are different
-  // acts even when they leave the same trace (none).
-  const takeQuickPause = () => {
-    setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
-    fadeOutDailyQuestionsBanner();
-  };
-
   // Fade the banner out when its time window closes, so a card revealed
   // legitimately inside its window - the morning "inspiration" card before noon,
   // the evening card before the day rolls over - can't linger past that boundary
@@ -476,27 +462,21 @@ export const DashboardGroups: (props: {
       {/* The card leads with the quick pause rather than with "would you like
           some inspiration?", because the quick door is the one most days can
           actually afford - and a card that opens with a practice you can do
-          where you stand needs no preamble asking permission first. The
-          questions did not move; they are the second button. */}
+          where you stand needs no preamble asking permission first.
+
+          The message is the whole practice: there is deliberately no confirming
+          tap. Nothing is stored or counted either way, so a "done" button only
+          added chrome and asked the user to report to the app - reading the
+          line and doing it needs no receipt. The card stays for its window
+          (or until "not now"), a quiet standing invitation rather than a task
+          to clear. */}
       <div class={`txtSlightlyBigger ${styles.cardDailyQuestionsPrompt}`}>
         {getQuickPauseOffer().cue}
       </div>
-      <div class={styles.cardDailyQuestionsDone}>
-        {/* `voice`, unlike the two chrome buttons below it. These labels are the
-            app's own soft copy ("I can feel them", "breathe") - and `btnBase`
-            forces lowercase on every other button, so without this the card
-            renders "i can feel them" in Inter directly under a Newsreader
-            prompt: both a sans/serif seam and a broken capital. */}
-        <Btn voice onClick={() => takeQuickPause()}>
-          {getQuickPauseOffer().action}
-        </Btn>
-      </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        {/* Both `plain` (unboxed): the confirm above is the card's only boxed
-            action, so the hierarchy is carried by the chrome itself - one
-            practice to take, two quiet ways past it. Three boxes in a stack
-            read as a survey dialog, and on narrow phones the boxed pair grew
-            louder than the practice it was meant to sit beneath. */}
+        {/* Both `plain` (unboxed) and a size smaller: the card carries no boxed
+            button at all, so the spoken practice above stays the loudest thing
+            on it - the longer path and the exit are quiet footnotes beneath. */}
         <Btn plain onClick={() => navigate("/dailyQuestions")}>
           a few questions
         </Btn>

@@ -176,16 +176,18 @@ describe("collapsed dashboard presentation", () => {
     expect(styles).toContain(".skyGreeting");
   });
 
-  it("leads the daily card with a quick pause that completes in one tap", () => {
+  it("leads the daily card with a practice the message alone carries - no confirm button", () => {
     // The questions ask you to type, and a day with no spare minute just
     // dismisses them. The card's first offer is therefore the ten-second door:
-    // one present-moment practice, confirmed where you stand.
+    // one present-moment practice, done where you stand. The message IS the
+    // whole practice - nothing is stored or counted either way, so a "done"
+    // button only added chrome and asked the user to report to the app.
     expect(normalizedComponent).toContain("{getQuickPauseOffer().cue}");
-    // `voice`: these labels are the app's own copy, and every other button
-    // base forces lowercase - without it the card says "i can feel them".
-    expect(normalizedComponent).toMatch(
-      /<Btn voice onClick=\{\(\) => takeQuickPause\(\)\}>\s*\{getQuickPauseOffer\(\)\.action\}\s*<\/Btn>/,
-    );
+    expect(normalizedComponent).not.toContain("takeQuickPause");
+    expect(normalizedComponent).not.toContain("cardDailyQuestionsDone");
+    // No boxed button anywhere on the card: the two remaining actions are both
+    // `plain`, so the spoken line stays the loudest thing on the card.
+    expect(normalizedComponent).not.toMatch(/<Btn voice/);
   });
 
   it("names the moment the card belongs to, in the serif voice", () => {
@@ -202,31 +204,14 @@ describe("collapsed dashboard presentation", () => {
   });
 
   it("keeps the questions one quiet tap away, beside an equally quiet exit", () => {
-    // The longer path did not move, it just stopped being a box: both
-    // alternatives are `plain`, so the confirm above is the card's only boxed
-    // action and the hierarchy is carried by the chrome itself.
+    // Both alternatives are `plain` (unboxed) - the card carries no boxed
+    // button at all, so the practice above stays the focus and these read as
+    // footnotes beneath it.
     expect(normalizedComponent).toMatch(
       /<Btn plain onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*a few questions\s*<\/Btn>/,
     );
     expect(normalizedComponent).toMatch(
       /<Btn plain onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
-    );
-    // The two alternatives stay sans chrome; only the confirm above carries the
-    // voice, so the serif block is prompt + confirm and the chrome row is sans.
-    expect(normalizedComponent).not.toMatch(
-      /<Btn voice plain|<Btn plain voice/,
-    );
-  });
-
-  it("takes the quick pause without recording or counting anything", () => {
-    // Nothing is stored beyond "this day's invitation is spent" - the same
-    // single call "not now" makes. A tally of which door you took would be
-    // exactly the striving the app exists to avoid.
-    // Anchored to takeQuickPause and non-greedy, so it stops at that handler's
-    // own marking call rather than being satisfied by the identical body in
-    // removeDailyQuestionsBanner further up the file.
-    expect(normalizedComponent).toMatch(
-      /const takeQuickPause = \(\) => \{[\s\S]*?setDailyQuestionsDoneForToday\(getDailyQuestionsBannerMode\(\)\); fadeOutDailyQuestionsBanner\(\); \};/,
     );
   });
 
@@ -254,12 +239,6 @@ describe("collapsed dashboard presentation", () => {
     );
     expect(styles).toMatch(
       /\.cardDailyQuestionsPrompt\s*\{[\s\S]*@include displayVoice;/,
-    );
-  });
-
-  it("sets the confirming tap on its own row, right under the line it answers", () => {
-    expect(styles).toMatch(
-      /\.cardDailyQuestionsDone\s*\{[^}]*justify-content: center;/,
     );
   });
 
