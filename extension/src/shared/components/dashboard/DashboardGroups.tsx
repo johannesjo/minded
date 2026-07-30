@@ -413,9 +413,9 @@ export const DashboardGroups: (props: {
     fadeOutDailyQuestionsBanner();
   };
 
-  // The quick pause was taken. A printed cue completes on the card itself;
-  // the breath is the one practice the sun has to lead, so it opens its own
-  // surface and marks the day there instead (see QuickBreath).
+  // The quick pause was taken: every offer completes on the card itself, where
+  // you stand (the pool holds only printed one-tap practices - see
+  // getQuickPause for why the guided breath no longer stands in this doorway).
   //
   // Completing outwardly matches a dismissal - the card fades, the day's
   // invitation is spent - and deliberately so: nothing is stored, nothing is
@@ -423,19 +423,6 @@ export const DashboardGroups: (props: {
   // named path anyway, because "I did the thing" and "not now" are different
   // acts even when they leave the same trace (none).
   const takeQuickPause = () => {
-    if (getQuickPauseOffer().kind === "breath") {
-      // Hand over the mode and the moment this card was revealed rather than
-      // letting the breath surface read its own clock: the two readings can
-      // straddle a boundary (revealed at 19:59, breath mounting at 20:00), and
-      // a breath finishing after midnight must still mark the day it began in.
-      navigate("/quickBreath", {
-        state: {
-          mode: getDailyQuestionsBannerMode(),
-          startedAtTS: Date.now(),
-        },
-      });
-      return;
-    }
     setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
     fadeOutDailyQuestionsBanner();
   };
@@ -475,6 +462,17 @@ export const DashboardGroups: (props: {
         [styles.isBeingRemoved]: getIsDailyQuestionsBannerBeingRemoved(),
       }}
     >
+      {/* One small line names the moment this card belongs to. Without it the
+          card is a random cue with an unexplained "a few questions" floating
+          beneath - two offers with nothing joining them. With it, both read as
+          doors into the same moment: the quick practice, or the questions.
+          Locked to the reveal's clock read (the mode signal), so it can never
+          disagree with the offer below it. */}
+      <div class={`txtSmaller ${styles.cardDailyQuestionsMoment}`}>
+        {getDailyQuestionsBannerMode() === "Morning"
+          ? "to begin your day"
+          : "to close your day"}
+      </div>
       {/* The card leads with the quick pause rather than with "would you like
           some inspiration?", because the quick door is the one most days can
           actually afford - and a card that opens with a practice you can do
@@ -494,12 +492,15 @@ export const DashboardGroups: (props: {
         </Btn>
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        {/* Both quiet: neither the longer path nor the exit should out-shout
-            the practice the card just offered. */}
-        <Btn soft onClick={() => navigate("/dailyQuestions")}>
+        {/* Both `plain` (unboxed): the confirm above is the card's only boxed
+            action, so the hierarchy is carried by the chrome itself - one
+            practice to take, two quiet ways past it. Three boxes in a stack
+            read as a survey dialog, and on narrow phones the boxed pair grew
+            louder than the practice it was meant to sit beneath. */}
+        <Btn plain onClick={() => navigate("/dailyQuestions")}>
           a few questions
         </Btn>
-        <Btn soft onClick={() => removeDailyQuestionsBanner()}>
+        <Btn plain onClick={() => removeDailyQuestionsBanner()}>
           not now
         </Btn>
       </div>

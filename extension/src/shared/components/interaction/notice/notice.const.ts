@@ -20,8 +20,10 @@
  * behind a NOTICE cue. The real objection is that a breath printed as text is a
  * *worse* version of something the app can actually do: "Take one slow breath."
  * with nothing moving is an instruction, while the same words over a swelling
- * disc are a practice you can follow. So the breath is not a cue here - it is
- * the guided quick pause (`QuickBreath.tsx`), where the sun leads it.
+ * disc are a practice you can follow. So the breath is not a cue here - it
+ * stays where the sun already leads it, in the strong-friction intervention
+ * pause (`StrongFrictionBreathPause`). It briefly had its own doorway off the
+ * daily-questions card (`/quickBreath`); that was cut - see getQuickPause.ts.
  *
  * No decorative glyph, by design: platform emoji are the loudest, most chat-app
  * mark available - they render differently on every OS, sit at full saturation,

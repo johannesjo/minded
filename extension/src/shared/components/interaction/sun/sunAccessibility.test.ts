@@ -210,8 +210,11 @@ describe("interactive sun accessibility", () => {
     expect(interaction).toMatch(
       /setShowSunInstructions\(true\);[\s\S]*?requestInteractiveSunFocus\(\)/,
     );
+    // The sites that hand keyboard focus back to the interactive sun: the
+    // success beat's instructions, the intent/time cancels, the post-tap
+    // breath-pause cancel, and the BREATH mode's hand-back (endSunBreath).
     expect(interaction.match(/requestInteractiveSunFocus\(\)/g)).toHaveLength(
-      4,
+      5,
     );
     expect(grounding).toContain("props.focusOnMount");
     expect(letGo).toContain("props.focusOnMount");

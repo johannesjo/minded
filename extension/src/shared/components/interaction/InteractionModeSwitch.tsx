@@ -24,6 +24,7 @@ import { UrgeSurfing } from "@src/shared/components/interaction/urgeSurfing/Urge
 import { BellInteraction } from "@src/shared/components/interaction/bell/BellInteraction";
 import { FingerRestInteraction } from "@src/shared/components/interaction/fingerRest/FingerRestInteraction";
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
+import { BreathInteraction } from "@src/shared/components/interaction/breathPause/BreathInteraction";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 
@@ -64,6 +65,10 @@ export interface InteractionModeSwitchProps {
   onSunWaveStart: (seconds: number) => void;
   /** Return the real sun from its wave breath to the interactive disc. */
   onSunWaveEnd: () => void;
+  /** Glide the real sun to its breath anchor for one guided breath (BREATH mode). */
+  onSunBreathStart: () => void;
+  /** Return the real sun from that breath to the interactive disc. */
+  onSunBreathEnd: () => void;
   alternativeToReplace?: Alternative;
   onAddBetterAlternative?: (alternative: Alternative) => void;
   onShowAlternativeFromPatternInsight?: () => void;
@@ -161,6 +166,14 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
         <FingerRestInteraction
           onCancelCountdown={props.onCancelCountdown}
           onSuccess={() => props.onSuccess()}
+        />
+      </Match>
+      <Match when={props.mode === "BREATH"}>
+        <BreathInteraction
+          onCancelCountdown={props.onCancelCountdown}
+          onSuccess={() => props.onSuccess()}
+          onSunBreathStart={props.onSunBreathStart}
+          onSunBreathEnd={props.onSunBreathEnd}
         />
       </Match>
       <Match when={props.mode === "ENERGY_LVL"}>

@@ -188,18 +188,34 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  it("keeps the questions one quiet tap away, beside an equally quiet exit", () => {
-    // The longer path did not move, it just stopped being the loudest pixel -
-    // both alternatives are `soft` so neither out-shouts the practice above.
+  it("names the moment the card belongs to, in the serif voice", () => {
+    // Without this line the card is a random cue with an unexplained "a few
+    // questions" beneath it; with it both read as doors into the same moment.
+    // It must follow the same locked mode signal as everything else on the
+    // card, never a fresh clock read.
     expect(normalizedComponent).toMatch(
-      /<Btn soft onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*a few questions\s*<\/Btn>/,
+      /<div class=\{`txtSmaller \$\{styles\.cardDailyQuestionsMoment\}`\}>\s*\{getDailyQuestionsBannerMode\(\) === "Morning"\s*\?\s*"to begin your day"\s*:\s*"to close your day"\}/,
+    );
+    expect(styles).toMatch(
+      /\.cardDailyQuestionsMoment\s*\{[^}]*@include displayVoice;/,
+    );
+  });
+
+  it("keeps the questions one quiet tap away, beside an equally quiet exit", () => {
+    // The longer path did not move, it just stopped being a box: both
+    // alternatives are `plain`, so the confirm above is the card's only boxed
+    // action and the hierarchy is carried by the chrome itself.
+    expect(normalizedComponent).toMatch(
+      /<Btn plain onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*a few questions\s*<\/Btn>/,
     );
     expect(normalizedComponent).toMatch(
-      /<Btn soft onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
+      /<Btn plain onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
     );
     // The two alternatives stay sans chrome; only the confirm above carries the
     // voice, so the serif block is prompt + confirm and the chrome row is sans.
-    expect(normalizedComponent).not.toMatch(/<Btn voice soft|<Btn soft voice/);
+    expect(normalizedComponent).not.toMatch(
+      /<Btn voice plain|<Btn plain voice/,
+    );
   });
 
   it("takes the quick pause without recording or counting anything", () => {
@@ -214,12 +230,12 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  it("sends the guided breath to its own surface instead of finishing on the card", () => {
-    // A breath is the one offer the sun has to lead; a printed cue completes
-    // where it stands, so only this kind leaves the dashboard.
-    expect(normalizedComponent).toMatch(
-      /if \(getQuickPauseOffer\(\)\.kind === "breath"\) \{[^}]*navigate\("\/quickBreath", \{ state: \{ mode: getDailyQuestionsBannerMode\(\), startedAtTS: Date\.now\(\), \}, \}\); return; \}/,
-    );
+  it("finishes every quick pause on the card - no offer navigates away", () => {
+    // The pool holds only printed one-tap practices; the guided breath's
+    // doorway (/quickBreath) was cut because it broke the card's promise of
+    // completing where you stand. If an off-card offer returns, it needs a
+    // deliberate decision, not a leftover branch.
+    expect(normalizedComponent).not.toContain("/quickBreath");
   });
 
   it("derives the quick pause from the same clock read as the card's mode", () => {
@@ -247,12 +263,15 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  it("stacks daily invitation actions on narrow phones while preserving tap height", () => {
+  it("keeps the quiet paths on one wrappable row instead of a stack of boxes", () => {
+    // Unboxed and a size smaller, the pair fits side by side on even the
+    // narrowest phones; `wrap` is the safety net if a translation ever grows
+    // past that, so nothing can clip.
     expect(styles).toMatch(
-      /\.cardDailyQuestionsBtns\s*\{[^@]*@media \(max-width: 360px\)\s*\{[^}]*grid-template-columns: 1fr;/,
+      /\.cardDailyQuestionsBtns\s*\{[^}]*display: flex;[^}]*flex-wrap: wrap;[^}]*justify-content: center;/,
     );
     expect(styles).toMatch(
-      /@media \(max-width: 360px\)[\s\S]*button\s*\{[\s\S]*min-height: 44px;[\s\S]*margin: 0;/,
+      /\.cardDailyQuestionsBtns\s*\{[\s\S]*?font-size: var\(--fz-s\);/,
     );
   });
 

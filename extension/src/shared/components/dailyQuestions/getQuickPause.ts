@@ -2,34 +2,23 @@ import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.co
 import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 
 /**
- * One offer the daily-questions card can make. `notice` completes on the card
- * itself - the cue is the practice and `action` is the confirming tap. `breath`
- * is the one the sun has to lead, so its `action` opens `/quickBreath` instead
- * of finishing in place.
+ * One offer the daily-questions card can make: a printed present-moment
+ * practice that completes on the card itself - the cue is the practice and
+ * `action` is the confirming tap.
+ *
+ * Every offer completes where you stand, by design. The pool briefly carried a
+ * guided-breath entry whose button opened its own surface (`/quickBreath`);
+ * it was the one door that navigated instead of finishing in place, so one
+ * morning in thirteen the card's ten-second promise quietly became a page
+ * change. Cut. The sun-led breath itself is untouched - it lives where the
+ * sun already leads it, in the strong-friction intervention pause - it just
+ * no longer stands in this doorway.
  */
 export type QuickPause = {
-  kind: "notice" | "breath";
   /** The line the card speaks, in the serif voice. */
   cue: string;
-  /** The button beneath it - a confirmation for `notice`, an invitation for `breath`. */
+  /** The confirming tap beneath it - a quiet acknowledgement of the doing. */
   action: string;
-};
-
-/**
- * The guided breath: one slow inhale → hold → exhale, led by the shell sun.
- *
- * One breath, not three. The whole point of these is to slip under "I don't
- * have time for this", and that dismissal doesn't wait for a stopwatch - it
- * fires the moment something *looks* like it needs planning around. Twelve
- * seconds cannot look like that. Three breaths (thirty-six) can.
- *
- * It is also the only offer here that is not printed text, because a breath is
- * the one practice the app can genuinely lead rather than merely name.
- */
-const GUIDED_BREATH: QuickPause = {
-  kind: "breath",
-  cue: "Take one slow breath.",
-  action: "breathe",
 };
 
 /**
@@ -55,14 +44,11 @@ const interleaved = <T>(items: ReadonlyArray<T>): T[] => {
 
 /**
  * Everything the card can offer: the NOTICE cues, which are already exactly this
- * shape (a line plus a one-tap acknowledgement), plus the guided breath.
+ * shape - a line plus a one-tap acknowledgement.
  */
-export const QUICK_PAUSES: ReadonlyArray<QuickPause> = interleaved([
-  ...NOTICE_CUES.map(
-    (c): QuickPause => ({ kind: "notice", cue: c.cue, action: c.done }),
-  ),
-  GUIDED_BREATH,
-]);
+export const QUICK_PAUSES: ReadonlyArray<QuickPause> = interleaved(
+  NOTICE_CUES.map((c): QuickPause => ({ cue: c.cue, action: c.done })),
+);
 
 /**
  * The *quick pause*: the offer the daily-questions card leads with, beside the

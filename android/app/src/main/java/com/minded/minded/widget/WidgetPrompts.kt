@@ -90,7 +90,7 @@ object WidgetPrompts {
         // here, letting one thought pass) rather than a single sensory noticing.
         // Same one-tap shape, so the card's tap still lands on that exact NOTICE
         // screen. No breath *cue* among them: a breath printed as an instruction
-        // is the weak version of one the sun can lead (QuickBreath.tsx), and no
+        // is the weak version of one the sun can lead (StrongFrictionBreathPause), and no
         // widget has a sun to lead it. Note the ACTION_ADVICE "How about a deep
         // breath?" below still rides here - that is a suggestion you take away
         // with you, not a practice this card claims to guide.
