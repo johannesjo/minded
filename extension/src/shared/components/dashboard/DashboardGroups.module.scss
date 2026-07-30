@@ -361,21 +361,11 @@
   @include displayVoice;
 }
 
-// The quick pause's confirming tap - the card's one loud action, on its own row
-// directly under the line it answers, so the pairing reads as cue → tap before
-// the eye ever reaches the two quiet alternatives below.
-.cardDailyQuestionsDone {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-
-  button {
-    white-space: nowrap;
-  }
-}
-
 .cardDailyQuestionsBtns {
-  margin-top: 12px;
+  // A clear beat below the spoken line it follows - the message is the whole
+  // practice (no confirming tap between them any more), so the quiet paths
+  // must not crowd it.
+  margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

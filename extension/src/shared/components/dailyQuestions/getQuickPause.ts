@@ -3,8 +3,10 @@ import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDai
 
 /**
  * One offer the daily-questions card can make: a printed present-moment
- * practice that completes on the card itself - the cue is the practice and
- * `action` is the confirming tap.
+ * practice. The cue *is* the whole offer - reading the line and doing it
+ * completes where you stand, with nothing to tap and nothing recorded (the
+ * card once carried a confirming "done" button; it was cut, because with
+ * nothing stored either way it only asked the user to report to the app).
  *
  * Every offer completes where you stand, by design. The pool briefly carried a
  * guided-breath entry whose button opened its own surface (`/quickBreath`);
@@ -17,8 +19,6 @@ import { DailyQuestionsMode } from "@src/shared/components/dailyQuestions/getDai
 export type QuickPause = {
   /** The line the card speaks, in the serif voice. */
   cue: string;
-  /** The confirming tap beneath it - a quiet acknowledgement of the doing. */
-  action: string;
 };
 
 /**
@@ -43,11 +43,11 @@ const interleaved = <T>(items: ReadonlyArray<T>): T[] => {
 };
 
 /**
- * Everything the card can offer: the NOTICE cues, which are already exactly this
- * shape - a line plus a one-tap acknowledgement.
+ * Everything the card can offer: the NOTICE cues. (Their one-tap `done` labels
+ * belong to the NOTICE intervention screen; the card takes only the lines.)
  */
 export const QUICK_PAUSES: ReadonlyArray<QuickPause> = interleaved(
-  NOTICE_CUES.map((c): QuickPause => ({ cue: c.cue, action: c.done })),
+  NOTICE_CUES.map((c): QuickPause => ({ cue: c.cue })),
 );
 
 /**
