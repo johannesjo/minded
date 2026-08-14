@@ -178,11 +178,24 @@ Workflow: `.github/workflows/ios-testflight.yml`. It runs on four triggers, but 
 | Trigger | What it does |
 |---|---|
 | **push to `main`** | Build + signed archive **only - no upload.** A verification gate: iOS is the can't-test-locally variant, so this catches silent compile/signing breakage on every commit (it's free on this public repo). |
-| **nightly cron** (04:00 UTC) | Full build **+ TestFlight upload** - one fresh beta per day. `main` changes daily, so it isn't a redundant rebuild. |
+| **nightly cron** (04:00 UTC) | Full build **+ TestFlight upload**, but **only if `main` moved** since the last upload - see [Quiet days don't upload](#quiet-days-dont-upload). Batches a busy day's commits into one beta; skips entirely on a quiet one. |
 | **`vX.Y.Z` tag** | Full build **+ upload**, alongside the store releases. |
 | **manual dispatch** (Actions → *iOS TestFlight* → *Run workflow*) | Full build **+ upload**, on demand. |
 
 The upload is gated by `if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')` on the *Upload to TestFlight* step - i.e. plain `main` pushes verify but don't distribute.
+
+### Quiet days don't upload
+
+The nightly cron used to build and upload unconditionally, on the assumption that `main` changes daily. When it doesn't, that assumption ships the *same commit* to TestFlight again every 24 hours under a fresh build number - testers get an "update" that is byte-for-byte the code they're already running, the build-number history stops meaning anything, and each no-op costs ~30 minutes of macOS runner time (billed at 10x).
+
+So a small `freshness` job runs first on `ubuntu-latest`: it asks the Actions API for the head SHA of the most recent **successful run that would have uploaded** (everything except verify-only pushes to `main`) and compares it with `main`'s current HEAD. Same SHA → the macOS job is skipped and the run ends green with a note in the step summary. Notes on the behaviour:
+
+- **Only the cron is gated.** A tag, a manual dispatch, or a push always proceeds - if you deliberately ask for a build, you get one, unchanged commit or not. So a re-upload is always one *Run workflow* click away.
+- **A failed nightly retries.** The comparison only considers *successful* runs, so a night that broke in `archive` doesn't count as uploaded; the next cron builds that commit again.
+- **A skipped nightly is stable.** It records the same SHA it skipped on, so the following night skips too, until something lands.
+- **No prior upload in the run-retention window** (90 days) → it builds. Better one redundant beta than a silently stalled pipeline.
+
+One consequence worth knowing: iOS no longer gets a *time-based* health check, only a *commit-based* one. If `main` sits idle for weeks while the distribution certificate or a provisioning profile expires, CI won't notice until the next push or dispatch. If you'd rather keep the daily canary, move the gate off the job and onto the *Upload to TestFlight* step instead - it still builds and signs every night, and only the distribution stops.
 
 ### Why "no Mac" still isn't "no Apple"
 

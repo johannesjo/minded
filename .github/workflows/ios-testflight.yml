@@ -15,8 +15,8 @@ name: iOS TestFlight
 #   - push to main    → build + signed archive ONLY, no upload. iOS is the
 #                       can't-test-locally variant, so this is the early-warning
 #                       signal that catches silent compile/signing breakage.
-#   - nightly cron    → full build + TestFlight upload (one fresh beta per day;
-#                       main changes daily, so it isn't a redundant rebuild).
+#   - nightly cron    → full build + TestFlight upload, but ONLY when main has
+#                       moved since the last upload (see the `freshness` job).
 #   - vX.Y.Z tag      → full build + upload, alongside the store releases.
 #   - manual dispatch → full build + upload, on demand.
 # TestFlight is *not* a public release: builds go to your testers only.
@@ -27,8 +27,8 @@ name: iOS TestFlight
 on:
   workflow_dispatch:
   schedule:
-    # Nightly TestFlight upload at 04:00 UTC. Keeps testers on a fresh build
-    # without uploading one per commit (main sees ~15 commits/day).
+    # Nightly TestFlight upload at 04:00 UTC. Batches the day's commits into one
+    # beta instead of uploading per push; quiet days upload nothing at all.
     - cron: '0 4 * * *'
   push:
     branches: [main] # verify-only - the upload step is skipped for these
@@ -54,7 +54,56 @@ env:
   IOS_WIDGET_PROFILE_NAME: 'minded profile widget'
 
 jobs:
+  # Cheap ubuntu gate in front of the (10x-billed, ~30min) macOS job: don't
+  # rebuild a commit TestFlight already has. Without this the nightly cron
+  # shipped a new build number for byte-identical code on every quiet day -
+  # testers get an "update" that is the code they're already running, and the
+  # build-number history stops meaning anything.
+  #
+  # "Already has" = the head SHA of the most recent *successful* run that would
+  # have uploaded. Plain pushes to main are verify-only, so they're excluded;
+  # everything else (cron, dispatch, tag) uploads. A previously skipped nightly
+  # carries the same SHA it skipped on, so the comparison stays stable; a
+  # *failed* nightly isn't successful, so a fixed build still gets retried.
+  freshness:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      fresh: ${{ steps.check.outputs.fresh }}
+    steps:
+      - name: Has main moved since the last upload?
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Deliberately strict: if the API call below fails, fail the run rather
+          # than defaulting to "build". A silent fallback would quietly restore
+          # the every-night-same-build behaviour this job exists to stop.
+          set -euo pipefail
+          # Only the cron fires on its own schedule; a human (or a tag) asking
+          # for a build always gets one, even if the commit is unchanged.
+          if [ "$GITHUB_EVENT_NAME" != schedule ]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          LAST=$(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ios-testflight.yml/runs?status=success&per_page=100" \
+            --jq '[.workflow_runs[] | select(.event != "push" or .head_branch != "main")][0].head_sha // ""')
+          # No prior upload in the run-retention window -> build; better one
+          # redundant beta than a silently stalled pipeline.
+          if [ -n "$LAST" ] && [ "$LAST" = "$GITHUB_SHA" ]; then
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+            echo "main is still at \`$GITHUB_SHA\`, already on TestFlight - skipping tonight's build." \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+            echo "New commits since \`${LAST:-none}\` - building \`$GITHUB_SHA\`." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   testflight:
+    needs: freshness
+    if: needs.freshness.outputs.fresh == 'true'
     runs-on: macos-26
     environment: production
     timeout-minutes: 40
