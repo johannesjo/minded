@@ -328,8 +328,9 @@
 }
 
 .cardDailyQuestions {
-  // Soft fade-out on dismiss instead of an instant snap-to-tiny. The entrance
-  // animation is disabled while removing so it doesn't fight the transition.
+  // Soft fade-out when the window closes instead of an instant snap-to-tiny.
+  // The entrance animation is disabled while removing so it doesn't fight the
+  // transition.
   transition:
     opacity var(--dur-soft) var(--ease-out),
     transform var(--dur-soft) var(--ease-out);
@@ -354,16 +355,16 @@
 // The card's prompt is the app speaking gently - a soft, second-person
 // invitation - so it carries the Newsreader voice, layered onto the existing
 // size class (.txtSlightlyBigger) rather than swapping it. This puts the serif
-// on the spoken line, matching the "Stay a while?" grounding card; the two
-// buttons below then stay plain sans chrome, so no lone serif button sits
-// wedged between sans elements.
+// on the spoken line, matching the "Stay a while?" grounding card; the button
+// below then stays plain sans chrome, so no lone serif button sits wedged
+// between sans elements.
 .cardDailyQuestionsPrompt {
   @include displayVoice;
 }
 
 .cardDailyQuestionsBtns {
   // A clear beat below the spoken line it follows - the message is the whole
-  // practice (no confirming tap between them any more), so the quiet paths
+  // practice (no confirming tap, no exit any more), so the one quiet path left
   // must not crowd it.
   margin-top: 16px;
   display: flex;
@@ -375,7 +376,7 @@
     white-space: nowrap;
   }
 
-  // The two quiet paths step down a size as well as losing their boxes, so the
+  // The quiet path steps down a size as well as losing its box, so the
   // demotion is carried by the type too - the same hierarchy-by-font approach
   // as .revealBtn below, and the same specificity dance: the base button size
   // arrives via `#minded-6622 .btnTxt` (an ID selector), so a bare module

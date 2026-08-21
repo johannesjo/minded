@@ -185,7 +185,7 @@ describe("collapsed dashboard presentation", () => {
     expect(normalizedComponent).toContain("{getQuickPauseOffer().cue}");
     expect(normalizedComponent).not.toContain("takeQuickPause");
     expect(normalizedComponent).not.toContain("cardDailyQuestionsDone");
-    // No boxed button anywhere on the card: the two remaining actions are both
+    // No boxed button anywhere on the card: the one remaining action is
     // `plain`, so the spoken line stays the loudest thing on the card.
     expect(normalizedComponent).not.toMatch(/<Btn voice/);
   });
@@ -203,16 +203,26 @@ describe("collapsed dashboard presentation", () => {
     );
   });
 
-  it("keeps the questions one quiet tap away, beside an equally quiet exit", () => {
-    // Both alternatives are `plain` (unboxed) - the card carries no boxed
-    // button at all, so the practice above stays the focus and these read as
-    // footnotes beneath it.
+  it("keeps the questions one quiet tap away, with nothing to decline", () => {
+    // The one alternative is `plain` (unboxed) - the card carries no boxed
+    // button at all, so the practice above stays the focus and this reads as a
+    // footnote beneath it.
     expect(normalizedComponent).toMatch(
       /<Btn plain onClick=\{\(\) => navigate\("\/dailyQuestions"\)\}>\s*a few questions\s*<\/Btn>/,
     );
-    expect(normalizedComponent).toMatch(
-      /<Btn plain onClick=\{\(\) => removeDailyQuestionsBanner\(\)\}>\s*not now\s*<\/Btn>/,
+    // Exactly one door off this card: the card asks for nothing, so there is
+    // nothing to decline, and an exit made a standing invitation read as a task
+    // to clear. It goes quiet on its own at the window boundary instead.
+    // Counted rather than matched on a label, so re-adding an exit under any
+    // wording ("later", "skip") still fails.
+    const banner = normalizedComponent.slice(
+      normalizedComponent.indexOf("const renderDailyQuestionsBanner"),
+      normalizedComponent.indexOf("const renderEmptySky"),
     );
+    expect(banner.match(/<Btn/g)).toHaveLength(1);
+    // And nothing on the card may quietly spend the window's invitation - the
+    // guard that survives any relabelling or renaming of a re-added exit.
+    expect(normalizedComponent).not.toContain("setDailyQuestionsDoneForToday");
   });
 
   it("finishes every quick pause on the card - no offer navigates away", () => {

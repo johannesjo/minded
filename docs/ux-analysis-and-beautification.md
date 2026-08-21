@@ -140,8 +140,16 @@ link. The same words stand in for an empty `/lookBack` grid.
 One nuance worth knowing: on a fresh profile inside the daily-questions windows
 (05:00-12:00, 20:00-24:00) the invitation banner owns that same slot, so the
 words wait behind it. That is the right order - the banner is a *better* first
-thing to meet, with two clear actions - and dismissing it with "not now" eases
-the words in behind it. The hint is never simply absent.
+thing to meet - and when its window closes it fades out, easing the words in
+behind it.
+
+Worth recording, though: since the card lost its "not now", nothing brings the
+words forward any more. They wait for the window boundary - noon, or the day
+rolling over - so a first visit at 08:00 doesn't meet this hint until midday.
+That is the one case where the cold start it was written for goes uncovered.
+Suppressing the banner entirely on an empty profile would close it (a "to close
+your day" card means little to someone who has never opened the app), but that
+is a product decision, not a fix waiting to be made.
 
 ---
 

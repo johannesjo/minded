@@ -80,9 +80,10 @@ feature decision - read them before proposing changes to interventions.
   "I don't have time for this" is never available.** This is the direction for
   interventions and prompts generally, not a rule about one screen. The
   dismissal doesn't wait for a stopwatch: it fires the moment an offer *looks*
-  like it needs planning around - and on the daily-questions card it is final
-  for that window, since "not now" spends the morning's (or evening's)
-  invitation outright. So prefer one breath to three, one noticing to a sequence, a tap to a
+  like it needs planning around - and the daily-questions card answers that with
+  a practice you can do where you stand. It carries no "not now" either: an
+  offer with an exit on it is an offer that wants a decision. It stands for its
+  window and goes quiet on its own. So prefer one breath to three, one noticing to a sequence, a tap to a
   typed answer - and treat length itself as a defect worth cutting for ("Count
   ten out-breaths, then stop." was cut for exactly this). The longer, deeper
   paths still exist; they just stop being the thing standing in the doorway.

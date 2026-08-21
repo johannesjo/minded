@@ -13,10 +13,7 @@ import {
   DashboardGroupEnergyLvl,
   DashboardGroupType,
 } from "@src/shared/components/dashboard/dashboard.model";
-import {
-  getSyncData,
-  setDailyQuestionsDoneForToday,
-} from "@src/dataInterface/commonSyncDataInterface";
+import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
 import { CustomQuestion } from "@src/dataInterface/syncData";
 import {
   CENTER_INDEX,
@@ -393,8 +390,8 @@ export const DashboardGroups: (props: {
   const revealAll = () => navigate("/lookBack");
 
   // Fade the banner out (soft, never a snap) and unmount it once the fade
-  // finishes. Shared by the user's explicit "no" dismissal and the automatic
-  // window-boundary expiry below.
+  // finishes. The card has no dismissal of its own any more, so this is driven
+  // by the automatic window-boundary expiry below.
   const fadeOutDailyQuestionsBanner = () => {
     setIsDailyQuestionsBannerBeingRemoved(true);
     window.clearTimeout(t0);
@@ -406,11 +403,6 @@ export const DashboardGroups: (props: {
       // rather than mid-fade.
       setIsDailyQuestionsBannerBeingRemoved(false);
     }, 480);
-  };
-
-  const removeDailyQuestionsBanner = () => {
-    setDailyQuestionsDoneForToday(getDailyQuestionsBannerMode());
-    fadeOutDailyQuestionsBanner();
   };
 
   // Fade the banner out when its time window closes, so a card revealed
@@ -467,21 +459,19 @@ export const DashboardGroups: (props: {
           The message is the whole practice: there is deliberately no confirming
           tap. Nothing is stored or counted either way, so a "done" button only
           added chrome and asked the user to report to the app - reading the
-          line and doing it needs no receipt. The card stays for its window
-          (or until "not now"), a quiet standing invitation rather than a task
-          to clear. */}
+          line and doing it needs no receipt. There is no "not now" either: the
+          card asks for nothing, so there is nothing to decline, and offering an
+          exit made a standing invitation look like a task to clear. It simply
+          stays for its window and goes quiet on its own. */}
       <div class={`txtSlightlyBigger ${styles.cardDailyQuestionsPrompt}`}>
         {getQuickPauseOffer().cue}
       </div>
       <div class={styles.cardDailyQuestionsBtns}>
-        {/* Both `plain` (unboxed) and a size smaller: the card carries no boxed
+        {/* `plain` (unboxed) and a size smaller: the card carries no boxed
             button at all, so the spoken practice above stays the loudest thing
-            on it - the longer path and the exit are quiet footnotes beneath. */}
+            on it - the longer path is a quiet footnote beneath. */}
         <Btn plain onClick={() => navigate("/dailyQuestions")}>
           a few questions
-        </Btn>
-        <Btn plain onClick={() => removeDailyQuestionsBanner()}>
-          not now
         </Btn>
       </div>
     </div>
