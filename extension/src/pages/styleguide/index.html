@@ -98,20 +98,13 @@
         background-position: center;
         background-repeat: no-repeat;
       }
-      /* Dark theme reinstates the drifting two-orb ambient background;
-         light theme is the static vertical morning-sky wash. */
-      #minded-6622.minded-6622-dark::before {
-        background-size: 240% 220%, 240% 220%, 100% 100%;
-        background-position: 5% 10%, 95% 90%, 0% 0%;
-        animation: minded-sg-bg-drift 40s ease-in-out infinite alternate;
-      }
-      @keyframes minded-sg-bg-drift {
-        0%   { background-position: 5% 10%, 95% 90%, 0% 0%; }
-        100% { background-position: 95% 90%, 5% 10%, 0% 0%; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        #minded-6622.minded-6622-dark::before { animation: none; }
-      }
+      /* No dark-specific sizing: both themes take the `cover` above, exactly
+         as the real app's coloured-wrapper does. There used to be a per-layer
+         size/position list here drifting the dark sky, left from the old
+         two-orb background - but the night sky is glow + stars + gradient and
+         is static by design (see --night-stars), so the drift made the preview
+         lie about what ships, and its hardcoded three-layer list silently
+         mis-assigned itself the moment the composite grew a fourth layer. */
       /* Mirrors the grainOverlay mixin (styles/mixins/_grain.scss): a
          normal-blend dither over the high-contrast --grain-tile so the preview
          sky doesn't band, matching what the real app's coloured-wrapper ships. */

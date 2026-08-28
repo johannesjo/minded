@@ -135,12 +135,15 @@ export const setIsDarkModeIfApplies = (
   // el.classList.add("minded-6622-dark");
 };
 
-// Everything the living sky overrides inline (see skyTimeline.ts). The
-// ambient stops recompose --background-gradient via _variables.scss; the
-// composed sunset gradient keeps the drag reveal and the grounding stage
-// pixel-identical (both read the same var); the bluesky pair feeds the
-// up-drag layer at its use site, so route-local overrides (SleepWindDown)
-// still win over this wrapper-level value.
+// Everything the living *day* sky overrides inline (see skyTimeline.ts), and
+// so everything cleared again when the theme flips to dark. The ambient stops
+// recompose --background-gradient via _variables.scss; the composed sunset
+// gradient keeps the drag reveal and the grounding stage pixel-identical (both
+// read the same var); the bluesky pair feeds the up-drag layer at its use
+// site, so route-local overrides (SleepWindDown) still win over this
+// wrapper-level value. Night's one live value, --night-afterglow, is
+// deliberately not in this list: it is set in the dark branch and cleared in
+// the light one, the mirror image of these.
 const SKY_VAR_NAMES = [
   "--c-gradient-1",
   "--c-gradient-2",

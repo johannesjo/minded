@@ -25,7 +25,10 @@ val LightGradColor4 = Color(0xFFF6DCD2)
 
 val DarkGradColor1 = Color(0xFF02091F)
 val DarkGradColor2 = Color(0xFF0A2860)
-val DarkGradColor3 = Color(0xFF49313B)
+// The horizon stop is cool: the sunset's warm horizon is a separate layer the
+// web sky fades out over the first hours of night (--night-afterglow), and
+// native surfaces don't carry it - same as the baked loading/widget skies.
+val DarkGradColor3 = Color(0xFF2B3A63)
 
 // Sky-family accents for native surfaces: the pause dim leans into the
 // deep-night sky instead of flat black, and the toast glow echoes the sun's

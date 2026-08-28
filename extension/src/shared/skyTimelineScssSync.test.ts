@@ -31,6 +31,9 @@ const compiledVariables = (): string =>
 const normalize = (css: string): string =>
   css.replace(/\s+/g, " ").replace(/\(\s+/g, "(").replace(/\s+\)/g, ")").trim();
 
+// Values are read up to the first `;`, which is fine for every var these
+// tests ask for but would truncate one holding a data: URI (--night-stars,
+// --day-veil): the gradients only ever reference those through var().
 const varValues = (css: string, name: string): string[] => {
   const found = [...css.matchAll(new RegExp(`${name}:\\s*([^;]+);`, "g"))].map(
     (m) => m[1].trim(),
@@ -114,8 +117,20 @@ describe("the night sky's warmth is a fading layer, not a fixed colour", () => {
     expect(faded.length).toBe(tinted.length);
   });
 
-  it("keeps the horizon stop of the base night gradient cool", () => {
-    const [r, , b] = channels(darkVarValue(css, "--c-gradient-3"));
-    expect(b).toBeGreaterThan(r);
+  it("keeps every stop of the base night gradient cool", () => {
+    // The horizon stop is the one that held the old warmth, but the guard
+    // covers the whole base gradient: re-warming any stop would put the smudge
+    // back just as effectively, and past the rgba() check above.
+    const stops = [
+      darkVarValue(css, "--c-gradient-3"),
+      ...(darkVarValue(css, "--background-gradient").match(/#[0-9a-f]{6}/gi) ??
+        []),
+    ];
+
+    expect(stops.length).toBeGreaterThan(1);
+    for (const stop of stops) {
+      const [r, , b] = channels(stop);
+      expect({ stop, isCool: b > r }).toEqual({ stop, isCool: true });
+    }
   });
 });

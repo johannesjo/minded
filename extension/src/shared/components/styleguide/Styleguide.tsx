@@ -835,10 +835,11 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
         when={!isNight()}
         fallback={
           <p class={styles.muted}>
-            {formatHour(hour())} is night - the dark theme's two-orb sky and
-            deep-night reveal apply (toggle dark mode above to see them); inline
-            sky overrides are cleared. The strips below show the clamped
-            light-window edge.
+            {formatHour(hour())} is night - the dark theme's layered sky and
+            deep-night reveal apply (toggle dark mode above to see them); the
+            day's inline sky overrides are cleared, leaving only the sunset's
+            fading afterglow. The strips below show the clamped light-window
+            edge.
           </p>
         }
       >
