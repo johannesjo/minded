@@ -31,11 +31,26 @@ const compiledVariables = (): string =>
 const normalize = (css: string): string =>
   css.replace(/\s+/g, " ").replace(/\(\s+/g, "(").replace(/\s+\)/g, ")").trim();
 
-const firstVarValue = (css: string, name: string): string => {
-  const match = css.match(new RegExp(`${name}:\\s*([^;]+);`));
-  if (!match) throw new Error(`could not find ${name} in compiled CSS`);
-  return match[1].trim();
+const varValues = (css: string, name: string): string[] => {
+  const found = [...css.matchAll(new RegExp(`${name}:\\s*([^;]+);`, "g"))].map(
+    (m) => m[1].trim(),
+  );
+  if (!found.length) throw new Error(`could not find ${name} in compiled CSS`);
+  return found;
 };
+
+const firstVarValue = (css: string, name: string): string =>
+  varValues(css, name)[0];
+
+// The dark block redeclares after the light one, so its value is the second.
+const darkVarValue = (css: string, name: string): string => {
+  const values = varValues(css, name);
+  if (values.length < 2) throw new Error(`${name} is not overridden in dark`);
+  return values[1];
+};
+
+const channels = (hex: string): number[] =>
+  [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
 describe("the SCSS day sky mirrors skyTimeline (compiled _variables.scss ↔ TS)", () => {
   const css = compiledVariables();
@@ -72,5 +87,35 @@ describe("the SCSS day sky mirrors skyTimeline (compiled _variables.scss ↔ TS)
     expect(normalize(scssComposite)).toBe(
       normalize(ambientSkyLayeredBackground(morningColors, morningAccents)),
     );
+  });
+});
+
+/**
+ * The night sky's warm horizon is the sunset's afterglow, and it belongs to
+ * the first hours of night only (nightAfterglowAt). Held all night it reads as
+ * a permanent brown smudge under a cool sky. These pin the structure that
+ * makes that true, so the warmth can't creep back into the resting sky.
+ */
+describe("the night sky's warmth is a fading layer, not a fixed colour", () => {
+  const css = compiledVariables();
+
+  it("defaults --night-afterglow to 0, so a sky with no JS behind it is deep night", () => {
+    // The loading <style> blocks and the baked PNGs copy this gradient without
+    // anything to set the var; deep night is the honest fallback for them.
+    expect(firstVarValue(css, "--night-afterglow")).toBe("0");
+  });
+
+  it("scales every warm layer of the dark sky by --night-afterglow", () => {
+    const gradient = darkVarValue(css, "--background-gradient");
+    const tinted = gradient.match(/rgba\(/g) ?? [];
+    const faded = gradient.match(/var\(--night-afterglow\)/g) ?? [];
+
+    expect(tinted.length).toBeGreaterThan(0);
+    expect(faded.length).toBe(tinted.length);
+  });
+
+  it("keeps the horizon stop of the base night gradient cool", () => {
+    const [r, , b] = channels(darkVarValue(css, "--c-gradient-3"));
+    expect(b).toBeGreaterThan(r);
   });
 });

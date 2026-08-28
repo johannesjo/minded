@@ -7,6 +7,7 @@ import {
   duskTargetGradientAt,
   hexToRgbChannels,
   NIGHT_END_HOUR,
+  nightAfterglowAt,
   NIGHT_START_HOUR,
   parseSkyHourParam,
   zenithTargetColorsAt,
@@ -156,9 +157,10 @@ const SKY_VAR_NAMES = [
  * Point-in-time application of the living sky for a given hour: sets the
  * ambient gradient stops and the drag-target skies as inline var overrides
  * on the wrapper. Keyed off the wrapper's *class*, not the clock: in dark
- * mode the overrides are cleared so the dark theme's own sky (two-orb
- * background, deep-night reveal) applies untouched - an inline value would
- * beat the .minded-6622-dark stylesheet overrides.
+ * mode the day overrides are cleared so the dark theme's own sky (deep-night
+ * gradient, deep-night reveal) applies untouched - an inline value would beat
+ * the .minded-6622-dark stylesheet overrides. Night gets exactly one live
+ * value of its own, the fading sunset afterglow.
  */
 export const applySkyAtHour = (
   hour: number,
@@ -169,8 +171,10 @@ export const applySkyAtHour = (
     for (const name of SKY_VAR_NAMES) {
       el.style.removeProperty(name);
     }
+    el.style.setProperty("--night-afterglow", String(nightAfterglowAt(hour)));
     return;
   }
+  el.style.removeProperty("--night-afterglow");
   const ambient = ambientSkyColorsAt(hour);
   ambient.forEach((color, i) => {
     el.style.setProperty(`--c-gradient-${i + 1}`, color);

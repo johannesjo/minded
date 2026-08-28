@@ -45,6 +45,7 @@ import {
   ambientSkyColorsAt,
   ambientSkyLayeredBackground,
   duskTargetGradientAt,
+  NIGHT_AFTERGLOW_END_HOUR,
   NIGHT_END_HOUR,
   NIGHT_START_HOUR,
   zenithTargetGradientAt,
@@ -774,10 +775,11 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
       <p class="txtBig">
         The ambient sky interpolates through pastel keyframes across the light
         window ({formatHour(NIGHT_END_HOUR)}–{formatHour(NIGHT_START_HOUR)}); at
-        night the dark theme owns the sky. The sun-drag reveals are targets on
-        the same timeline: from 17:00 the down-drag sunset deepens toward night
-        and the up-drag blue dims, so the gesture always leans away from
-        <em> now</em>.
+        night the dark theme owns the sky, apart from the sunset's warm horizon
+        fading out of it by {formatHour(NIGHT_AFTERGLOW_END_HOUR)}. The sun-drag
+        reveals are targets on the same timeline: from 17:00 the down-drag
+        sunset deepens toward night and the up-drag blue dims, so the gesture
+        always leans away from<em> now</em>.
       </p>
 
       <Subsection label="ambient keyframes">

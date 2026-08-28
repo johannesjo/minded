@@ -8,10 +8,11 @@
  * the zenith, and releasing springs back to the present, instead of jumping
  * to a fixed postcard sky that may contradict the actual time of day.
  *
- * Night (19:00–06:00) stays owned by the dark theme's two-orb background in
- * _variables.scss; this module only shapes the light window. Guardrail from
- * the issue: this is slow ambient *state*, not animation - values step per
- * minute (see applySkyForNow), nothing drifts visibly.
+ * Night (19:00–06:00) stays owned by the dark theme's background in
+ * _variables.scss; the only thing this module shapes there is the sunset's
+ * fading afterglow (nightAfterglowAt) - otherwise it shapes the light window.
+ * Guardrail from the issue: this is slow ambient *state*, not animation -
+ * values step per minute (see applySkyForNow), nothing drifts visibly.
  *
  * All values are pure data/functions; DOM application lives in
  * addWrapperClasses.ts.
@@ -36,6 +37,33 @@ export type SkyAccents = { zenith: string; horizonGlow: string };
 // during the day.
 export const NIGHT_START_HOUR = 19;
 export const NIGHT_END_HOUR = 6;
+
+/**
+ * When the sunset's warm horizon has fully left the night sky.
+ *
+ * The dark sky's bottom band used to hold a reddish afterglow all night, which
+ * reads as "just after sunset" - honest at 19:30, wrong at 3am, where it sat
+ * as a permanent brown smudge under an otherwise cool sky. So the warmth is
+ * early-night only: full at NIGHT_START_HOUR, gone from here on, and the rest
+ * of the night is the cool deep-night gradient.
+ */
+export const NIGHT_AFTERGLOW_END_HOUR = 21;
+
+/**
+ * How much of the sunset is left in the night sky at this hour (1 → 0).
+ *
+ * Drives `--night-afterglow`, which scales the warm layers of the dark
+ * `--background-gradient` (_variables.scss); addWrapperClasses.ts sets it
+ * inline per minute. Zero outside the early-night window - including the small
+ * hours before dawn, which are night but nowhere near a sunset. The static
+ * skies (loading gradients, widget cards) have no JS to set it, so they fall
+ * back to the deep-night sky, the same way they omit the stars.
+ */
+export const nightAfterglowAt = (hour: number): number =>
+  hour < NIGHT_START_HOUR || hour >= NIGHT_AFTERGLOW_END_HOUR
+    ? 0
+    : 1 -
+      (hour - NIGHT_START_HOUR) / (NIGHT_AFTERGLOW_END_HOUR - NIGHT_START_HOUR);
 
 /**
  * Ambient pastel keyframes across the light window. These are the *resting*

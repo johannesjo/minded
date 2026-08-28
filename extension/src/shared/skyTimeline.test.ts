@@ -7,6 +7,9 @@ import {
   duskTargetColorsAt,
   duskTargetGradientAt,
   hexToRgbChannels,
+  NIGHT_AFTERGLOW_END_HOUR,
+  nightAfterglowAt,
+  NIGHT_START_HOUR,
   parseSkyHourParam,
   zenithTargetColorsAt,
 } from "./skyTimeline";
@@ -135,6 +138,31 @@ describe("skyTimeline", () => {
           "linear-gradient(to bottom, #111111 0%, #111111 18%, #222222 36%, #333333 54%, #444444 100%)",
         ].join(", "),
       );
+    });
+  });
+
+  describe("nightAfterglowAt", () => {
+    it("holds the full sunset warmth at the day/night boundary", () => {
+      expect(nightAfterglowAt(NIGHT_START_HOUR)).toBe(1);
+    });
+
+    it("fades out linearly across the early-night window", () => {
+      expect(nightAfterglowAt(19.5)).toBeCloseTo(0.75);
+      expect(nightAfterglowAt(20)).toBeCloseTo(0.5);
+      expect(nightAfterglowAt(20.5)).toBeCloseTo(0.25);
+    });
+
+    it("leaves the deep night, and the small hours, cool", () => {
+      expect(nightAfterglowAt(NIGHT_AFTERGLOW_END_HOUR)).toBe(0);
+      expect(nightAfterglowAt(23)).toBe(0);
+      expect(nightAfterglowAt(0)).toBe(0);
+      expect(nightAfterglowAt(3)).toBe(0);
+      expect(nightAfterglowAt(5.99)).toBe(0);
+    });
+
+    it("is zero by day, so a forced dark theme never opens on a sunset", () => {
+      expect(nightAfterglowAt(9)).toBe(0);
+      expect(nightAfterglowAt(18.99)).toBe(0);
     });
   });
 

@@ -91,13 +91,17 @@ FULL_SCREEN_DAY_FACES = [
 ]
 
 
+# The night sky's base gradient, cool all the way down. The warm horizon the
+# live sky carries in the first hours of night (--night-afterglow in
+# _variables.scss) is deliberately not baked in: these are one static face
+# each, and like the stars the afterglow is a layer only the live sky has.
 DARK_STOPS = [
     (0.00, "#02091f"),
     (0.28, "#041238"),
     (0.68, "#0a2860"),
     (0.82, "#123262"),
     (0.92, "#233053"),
-    (1.00, "#49313b"),
+    (1.00, "#2b3a63"),
 ]
 
 # The six widget-card faces, shared by the Android drawables and the iOS

@@ -21,7 +21,10 @@
       black on <body> below stays as a harmless fallback. Light/dark is chosen by
       clock (not OS theme) to match how the app itself decides - keep the rule in
       sync with isDarkModeNow() (src/shared/addWrapperClasses.ts) and the
-      gradients with --background-gradient (src/styles/_variables.scss).
+      gradients with --background-gradient (src/styles/_variables.scss). Both
+      stay the plain base gradient: like the stars, and like the day sky's
+      bloom/veil/dome, the night's fading sunset afterglow (--night-afterglow)
+      is a layer only the live sky has.
     -->
     <style>
       html {
@@ -35,22 +38,15 @@
         );
       }
       html.minded-loading-dark {
-        background:
-          radial-gradient(
-            ellipse 116vmin 32vmin at 50% 112%,
-            rgba(117, 54, 44, 0.34) 0%,
-            rgba(76, 43, 58, 0.2) 46%,
-            transparent 78%
-          ),
-          linear-gradient(
-            to bottom,
-            #02091f 0%,
-            #041238 28%,
-            #0a2860 68%,
-            #123262 82%,
-            #233053 92%,
-            #49313b 100%
-          );
+        background: linear-gradient(
+          to bottom,
+          #02091f 0%,
+          #041238 28%,
+          #0a2860 68%,
+          #123262 82%,
+          #233053 92%,
+          #2b3a63 100%
+        );
       }
     </style>
     <script>

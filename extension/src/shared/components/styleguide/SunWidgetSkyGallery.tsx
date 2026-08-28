@@ -34,9 +34,11 @@ const WIDGET_SKY_HOURS: Record<string, string> = {
 
 // The card's night sky, mirroring gen_loading_sky.py's DARK_STOPS (baked to
 // widget_sky_dark). It has no JS twin, so this preview-only copy carries a sync
-// note rather than a shared constant.
+// note rather than a shared constant. Like the baked PNG it is the plain base
+// gradient - the live sky's early-night afterglow (--night-afterglow) is not
+// part of the card.
 const WIDGET_NIGHT_SKY =
-  "linear-gradient(to bottom, #02091f 0%, #041238 28%, #0a2860 68%, #123262 82%, #233053 92%, #49313b 100%)";
+  "linear-gradient(to bottom, #02091f 0%, #041238 28%, #0a2860 68%, #123262 82%, #233053 92%, #2b3a63 100%)";
 
 // One real WAKING_PROMPTS line (WidgetPrompts), shown on every day card so the
 // sky is the only thing that varies across them.
