@@ -103,6 +103,20 @@ describe("settings composition", () => {
     expect(customQuestionsSettings).toContain("Your own questions");
   });
 
+  it("mounts the standalone page inside its own scroll host", () => {
+    const page = readSource("src/pages/options/OptionsPage.tsx");
+    const pageStyles = readSource("src/pages/options/Options.module.scss");
+
+    // The coloured wrapper is fixed + overflow:hidden, and unlike the newtab
+    // shell this page has no RouteCmp contentWrapper to scroll for it. Without
+    // a scrollable host here, sections below the fold are clipped and
+    // unreachable.
+    expect(page).toContain("<main class={styles.scrollHost}>");
+    expect(pageStyles).toMatch(
+      /\.scrollHost\s*\{[\s\S]*height:\s*100%[\s\S]*overflow-y:\s*auto/,
+    );
+  });
+
   it("uses a quiet single-column composition for Web settings", () => {
     const pageStyles = readSource("src/pages/options/Options.module.scss");
     const websiteComponent = readSource(
