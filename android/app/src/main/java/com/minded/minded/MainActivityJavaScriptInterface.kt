@@ -26,6 +26,8 @@ open class MainActivityJavaScriptInterface(
     protected val getDetectionHealthI: () -> DetectionHealth = {
         DetectionHealth(accessibilityEnabled = false, serviceConnected = false)
     },
+    /** Opens the system "save as" sheet for a text file (see [saveTextFile]). */
+    protected val onSaveTextFileI: (filename: String, content: String) -> Unit = { _, _ -> },
     /**
      * Latest system-bar + display-cutout insets, written by
      * [com.minded.minded.util.ForwardSafeAreaInsetsToWebView] and read by
@@ -151,6 +153,19 @@ open class MainActivityJavaScriptInterface(
         val jsonArray = JSONArray()
         getMissingCapabilitiesI().map { it.name }.forEach { jsonArray.put(it) }
         return jsonArray.toString()
+    }
+
+    /**
+     * The answer-journal backup: the web layer hands over a file name and its
+     * text, the activity opens ACTION_CREATE_DOCUMENT so the user picks where it
+     * goes. The name is reduced to a safe character set here - it names a
+     * document, never a path.
+     */
+    @JavascriptInterface
+    fun saveTextFile(filename: String, content: String) {
+        Log.v(logTag, "saveTextFile() $filename (${content.length} chars)")
+        val safeName = filename.replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "minded.json" }
+        onSaveTextFileI(safeName, content)
     }
 
     /** See [DetectionHealth]: lets the dashboard say when minded can't see apps. */

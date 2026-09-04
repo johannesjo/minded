@@ -62,6 +62,13 @@ interface InteractionWindowJavaScriptInterface {
    * Optional: older native builds won't have it - guard with `?.()`.
    */
   getDetectionHealth?: () => string;
+  /**
+   * Open the system "save as" sheet with `content` as a text file named
+   * `filename` (the answer-journal backup; see util/fileTransfer.ts). A
+   * WebView can't download a blob: URL, so this is the Android path.
+   * Optional: older native builds won't have it - guard with `?.()`.
+   */
+  saveTextFile?: (filename: string, content: string) => void;
   test: () => void;
 }
 

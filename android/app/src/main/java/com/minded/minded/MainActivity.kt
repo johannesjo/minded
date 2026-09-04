@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -19,6 +20,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,6 +61,45 @@ class MainActivity : AppCompatActivity() {
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
     private val baseUrl = "file:///android_asset/web/src/android/main/index.html"
+
+    // Answer-journal backup, native half (see extension util/fileTransfer.ts).
+    // "Save a copy": the web layer's text waits here while the system "save as"
+    // sheet is open, then is written to whatever document the user chose.
+    private var pendingSaveTextFileContent: String? = null
+    private val createDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        val content = pendingSaveTextFileContent
+        pendingSaveTextFileContent = null
+        if (uri == null || content == null) return@registerForActivityResult
+        try {
+            contentResolver.openOutputStream(uri, "wt")?.use { stream ->
+                stream.write(content.toByteArray(Charsets.UTF_8))
+            }
+        } catch (e: Exception) {
+            Log.e(logTag, "saveTextFile: writing the document failed", e)
+        }
+    }
+
+    // "Bring a copy back": a plain <input type="file"> in the WebView lands in
+    // WebChromeClient.onShowFileChooser, which opens the system document picker
+    // and hands the chosen URI back to the WebView - so the web side reads it
+    // like on any browser.
+    private var pendingFileChooser: ValueCallback<Array<Uri>>? = null
+    private val openDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        pendingFileChooser?.onReceiveValue(if (uri == null) null else arrayOf(uri))
+        pendingFileChooser = null
+    }
+
+    private fun saveTextFile(filename: String, content: String) {
+        // JS-bridge calls arrive off the main thread; launchers want it.
+        runOnUiThread {
+            pendingSaveTextFileContent = content
+            createDocumentLauncher.launch(filename)
+        }
+    }
 
     companion object {
         /** Intent extra naming a hash route to open on launch (allow-listed below). */
@@ -231,9 +272,29 @@ class MainActivity : AppCompatActivity() {
                                     ::onMissingCapabilityTap,
                                     ::getMissingCapabilities,
                                     getDetectionHealthI = ::getDetectionHealth,
+                                    onSaveTextFileI = ::saveTextFile,
                                     safeAreaInsets = safeAreaInsetsHolder,
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
+                                webChromeClient = object : WebChromeClient() {
+                                    override fun onShowFileChooser(
+                                        webView: WebView?,
+                                        filePathCallback: ValueCallback<Array<Uri>>?,
+                                        fileChooserParams: FileChooserParams?,
+                                    ): Boolean {
+                                        if (filePathCallback == null) return false
+                                        // A chooser that never returned must be
+                                        // released before a new one is armed.
+                                        pendingFileChooser?.onReceiveValue(null)
+                                        pendingFileChooser = filePathCallback
+                                        // Any type: the web side validates the
+                                        // file's content, and a narrow MIME filter
+                                        // hides json files some providers label
+                                        // as octet-stream.
+                                        openDocumentLauncher.launch(arrayOf("*/*"))
+                                        return true
+                                    }
+                                }
                                 // Stay invisible until the first real frame commits; the
                                 // half-initialised transparent surface would otherwise
                                 // show as the cold-start teal/orange compositing stripes.

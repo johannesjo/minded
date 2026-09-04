@@ -6,6 +6,7 @@ import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQ
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
+import { JournalBackupSettings } from "@src/shared/components/settings/JournalBackupSettings";
 import {
   resolveSettingsSnapshot,
   type SettingsSnapshot,
@@ -68,6 +69,10 @@ const Options = () => {
 
             <section class={styles.section}>
               <FocusSchedule initialSchedule={initial.cfg.focusSchedule} />
+            </section>
+
+            <section class={styles.section}>
+              <JournalBackupSettings />
             </section>
           </div>
         )}

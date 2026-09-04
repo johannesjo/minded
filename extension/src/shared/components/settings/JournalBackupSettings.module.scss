@@ -1,0 +1,41 @@
+.JournalBackupSettings {
+  padding: var(--settings-block-padding, 0 0 var(--space-sm));
+  text-align: var(--settings-text-align, center);
+}
+
+.header {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-md);
+  justify-content: var(--settings-header-justify, center);
+  width: var(--settings-header-width, auto);
+
+  :global(.h3) {
+    margin: 0;
+  }
+}
+
+.description {
+  font-size: var(--fz-s);
+  margin: var(--space-sm) var(--settings-description-margin-inline, auto) 0;
+  max-width: var(--settings-description-max-width, 400px);
+  color: var(--h4-c);
+  text-align: var(--settings-text-align, center);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: var(--settings-options-justify, center);
+  margin-top: var(--space-md);
+}
+
+// Reserves its line even while empty so the block doesn't jump when a
+// result lands.
+.status {
+  color: var(--h4-c);
+  font-size: var(--fz-s);
+  margin: var(--space-sm) var(--settings-description-margin-inline, auto) 0;
+  min-height: 1.4em;
+}

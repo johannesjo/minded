@@ -7,6 +7,7 @@ import { SessionGraceSettings } from "@src/shared/components/settings/SessionGra
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
+import { JournalBackupSettings } from "@src/shared/components/settings/JournalBackupSettings";
 import {
   resolveSettingsSnapshot,
   type SettingsSnapshot,
@@ -62,6 +63,10 @@ export const SettingsAndroidRoute = () => {
               autoSave={true}
               initialCfg={initial.cfg.sleepWindDown}
             />
+
+            <hr class={styles.divider} />
+
+            <JournalBackupSettings />
           </div>
         )}
       </Show>
