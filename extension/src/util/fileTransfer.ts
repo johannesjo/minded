@@ -67,6 +67,9 @@ export const pickTextFile = (
       }
       file.text().then(finish, () => finish(null));
     });
+    // `cancel` on a file input needs Chromium 113+; on an older WebView a
+    // dismissed picker leaves this promise pending, which is harmless - the
+    // caller sets no busy state until a file has actually been chosen.
     input.addEventListener("cancel", () => finish(null));
     document.body.appendChild(input);
     input.click();

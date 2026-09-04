@@ -3,16 +3,15 @@ import {
   getSyncData,
   patchSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { updateSyncDataField } from "@src/dataInterface/updateSyncDataHelpers";
 import Btn from "@src/shared/components/ui/Btn";
 import { pickTextFile, saveTextFile } from "@src/util/fileTransfer";
 import {
   buildJournalFile,
   journalFileName,
-  mergeJournal,
   parseJournalFile,
   serializeJournalFile,
 } from "@src/util/journalBackup";
+import { importJournalFile } from "@src/util/journalImport";
 import { describeImport } from "./describeImport";
 import styles from "./JournalBackupSettings.module.scss";
 
@@ -24,6 +23,10 @@ import styles from "./JournalBackupSettings.module.scss";
  * answers" - which is a fact about the copy, not a read-back of the user's
  * behaviour, so it stays clear of the no-tallies rule.
  */
+// A real journal is tens of kilobytes; anything past this is not one, and
+// parsing it on the UI thread would only freeze the page.
+const MAX_IMPORT_CHARS = 5_000_000;
+
 export const JournalBackupSettings = (): JSX.Element => {
   const [status, setStatus] = createSignal<string | null>(null);
   const [isBusy, setIsBusy] = createSignal(false);
@@ -44,32 +47,23 @@ export const JournalBackupSettings = (): JSX.Element => {
     setStatus(null);
     const text = await pickTextFile();
     if (text === null) return;
+    if (text.length > MAX_IMPORT_CHARS) {
+      setStatus("That file is too large to be a copy of your answers.");
+      return;
+    }
     const file = parseJournalFile(text);
     if (!file) {
       setStatus("That doesn't look like a copy of your answers.");
       return;
     }
     setIsBusy(true);
-    try {
-      let added = { answers: 0, questions: 0 };
-      await updateSyncDataField(getSyncData, patchSyncData, (current) => {
-        const merged = mergeJournal(current, file);
-        added = {
-          answers: merged.addedAnswers,
-          questions: merged.addedQuestions,
-        };
-        return {
-          answers: merged.answers,
-          customQuestions: merged.customQuestions,
-        };
-      });
-      setStatus(describeImport(added.answers, added.questions));
-    } catch (e) {
-      console.error("Bringing a copy back failed", e);
-      setStatus("Couldn't bring it back - there wasn't room to save it here.");
-    } finally {
-      setIsBusy(false);
-    }
+    const outcome = await importJournalFile(file, getSyncData, patchSyncData);
+    setIsBusy(false);
+    setStatus(
+      outcome.kind === "added"
+        ? describeImport(outcome.answers, outcome.questions, outcome.truncated)
+        : "Couldn't bring it back.",
+    );
   };
 
   return (
@@ -78,8 +72,7 @@ export const JournalBackupSettings = (): JSX.Element => {
         <h3 class="h3">Your answers</h3>
       </div>
       <p class={styles.description}>
-        Everything you write stays on this device. Keep a copy somewhere safe,
-        or bring one back.
+        Keep a copy of your answers somewhere safe, or bring one back.
       </p>
       <div class={styles.actions}>
         <Btn outline onClick={saveCopy} disabled={isBusy()}>

@@ -49,7 +49,10 @@ export const journalFileName = (now: number = Date.now()): string => {
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
-const isAnswer = (v: unknown): v is Answer =>
+// Entries are rebuilt from their known fields only, so a hand-edited or
+// foreign file can't smuggle extra properties into storage (which on the
+// extension also eats into a small per-item quota).
+const toAnswer = (v: unknown): Answer | null =>
   isRecord(v) &&
   typeof v.id === "string" &&
   v.id.length > 0 &&
@@ -57,14 +60,27 @@ const isAnswer = (v: unknown): v is Answer =>
   Number.isFinite(v.ts) &&
   typeof v.questionCategoryId === "string" &&
   (typeof v.val === "string" || typeof v.val === "number") &&
-  (v.qid === null || v.qid === undefined || typeof v.qid === "string");
+  (v.qid === null || v.qid === undefined || typeof v.qid === "string")
+    ? ({
+        id: v.id,
+        qid: v.qid ?? null,
+        questionCategoryId: v.questionCategoryId,
+        val: v.val,
+        ts: v.ts,
+      } as Answer)
+    : null;
 
-const isCustomQuestion = (v: unknown): v is CustomQuestion =>
+const toCustomQuestion = (v: unknown): CustomQuestion | null =>
   isRecord(v) &&
   typeof v.id === "string" &&
   v.id.length > 0 &&
   typeof v.t === "string" &&
-  typeof v.createdTS === "number";
+  typeof v.createdTS === "number"
+    ? ({ id: v.id, t: v.t, createdTS: v.createdTS } as CustomQuestion)
+    : null;
+
+const compact = <T>(items: (T | null)[]): T[] =>
+  items.filter((item): item is T => item !== null);
 
 /**
  * Reads a journal file back. Returns null for anything that isn't one (other
@@ -82,13 +98,13 @@ export const parseJournalFile = (text: string): JournalFile | null => {
   if (!isRecord(raw) || raw.kind !== JOURNAL_FILE_KIND) return null;
   if (!Array.isArray(raw.answers)) return null;
   const customQuestions = Array.isArray(raw.customQuestions)
-    ? raw.customQuestions.filter(isCustomQuestion)
+    ? compact(raw.customQuestions.map(toCustomQuestion))
     : [];
   return {
     kind: JOURNAL_FILE_KIND,
     version: typeof raw.version === "number" ? raw.version : 0,
     exportedTS: typeof raw.exportedTS === "number" ? raw.exportedTS : 0,
-    answers: raw.answers.filter(isAnswer),
+    answers: compact(raw.answers.map(toAnswer)),
     customQuestions,
   };
 };

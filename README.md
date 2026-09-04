@@ -102,8 +102,10 @@ npm run buildDroid # production android assets
 
 ```bash
 cd extension
-npm test           # jest
-npm run lint       # eslint --fix
+npm test              # jest
+npm run typecheck     # tsc --noEmit (CI runs this too)
+npm run lint          # eslint --fix
+npm run test:android  # the Android host's JVM unit tests (needs the Android SDK)
 ```
 
 Run a single test: `npx jest path/to/test.spec.ts`.
@@ -113,10 +115,11 @@ Run a single test: `npx jest path/to/test.spec.ts`.
 ```
 extension/      Browser-extension build (Vite + CRXJS) and shared SolidJS UI
 android/        Native Android host (Kotlin) wrapping the shared web UI
-landing-page/   Marketing site (Astro) at minded.today
 common/         Shared assets (logos, icons)
 docs/           Architecture and design notes
 ```
+
+The marketing site lives in its own repository.
 
 The web UI under `extension/src/shared/` is reused across all platforms. Platform-specific data access goes through the **dataInterface pattern** documented in [`CLAUDE.md`](./CLAUDE.md) - that file is the best entry point for understanding the architecture.
 

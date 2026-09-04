@@ -244,7 +244,7 @@ class InteractionWindow(
     private val freshEscapeStep = mutableStateOf(FreshArrivalEscapeStep.NONE)
     private var freshTargetMeasurementAttempts = 0
     private var freshTargetStability = ArrivalSunTargetStability()
-    private var activeLoadingSkyBlend = LoadingSkyBlend.dark()
+    override val opensOnLoadingSky: Boolean = true
 
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
@@ -763,8 +763,6 @@ class InteractionWindow(
             resetArrivalState()
             showCornerPlaceholder.value = activeMorphInFromCorner
             showFreshPlaceholder.value = !activeMorphInFromCorner
-            activeLoadingSkyBlend = loadingSkyBlendAt(currentLocalHour())
-
             super.showWindow()
             // CommonWindow may still reject a show while its hide state is being
             // finalized. Leave no armed placeholder behind when it does.
@@ -781,13 +779,6 @@ class InteractionWindow(
         }
     }
 
-    // The nearest loading-sky frame is the window's own background from before
-    // addView, so the very first frame is already the sky the web content fades
-    // into - never a dark flash - and the blocked app beneath is never exposed.
-    // (activeLoadingSkyBlend is set in showWindow before super.showWindow().)
-    override fun paintInitialShield(root: View) {
-        root.setBackgroundResource(activeLoadingSkyBlend.closestFrame.drawableResource())
-    }
 
     /**
      * The web layer has painted its arriving sun at the Little Sun's corner (it

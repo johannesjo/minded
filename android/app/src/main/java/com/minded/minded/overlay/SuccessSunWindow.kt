@@ -63,8 +63,8 @@ open class SuccessSunWindow(
             y = 0
             // Draw under the system bars - including the bottom gesture /
             // navigation bar - so the success gradient covers the full screen
-            // with no uncovered strip. Same opt-out the intervention and Little
-            // Sun windows use: on API 30+ the window keeps clear of the
+            // with no uncovered strip. Same opt-out the intervention and
+            // wind-down windows use: on API 30+ the window keeps clear of the
             // system-bar insets unless told otherwise, and FLAG_FULLSCREEN alone
             // is inert on modern Android.
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {

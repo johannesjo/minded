@@ -87,6 +87,9 @@ jobs:
           # Timestamp codes are opaque; record code -> commit so a versionCode
           # seen in the Play Console can be traced back to a SHA.
           echo "internal versionCode \`$ANDROID_VERSION_CODE\` ← \`$GITHUB_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          # The JVM unit suite gates the artifact: a red decision-engine or
+          # widget-copy test must never ship (#151).
+          ./gradlew :app:testDebugUnitTest --console=plain
           ./gradlew bundleRelease
       - name: Upload AAB as workflow artifact
         if: always()

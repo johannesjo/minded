@@ -40,7 +40,7 @@ class SleepWindDownOverlayWindow(
     override val logTag = javaClass.simpleName
     private var webViewRef: WebView? = null
     private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
-    private var activeLoadingSkyBlend = LoadingSkyBlend.dark()
+    override val opensOnLoadingSky: Boolean = true
 
     // Instantly opaque: the blocked app must never show through a fading-in
     // window. The soft appearance is the web content fading over the native sky.
@@ -78,8 +78,10 @@ class SleepWindDownOverlayWindow(
                         // Transparent over the native loading sky from the start:
                         // that sky is the opaque shield, so loading exposes neither
                         // the blocked app nor the WebView's default white surface.
-                        // The web page picks the same night/day sky by the same
-                        // clock rule (its index.html), so the two surfaces agree.
+                        // The web page flips to its night sky at 19:00 by the same
+                        // clock rule this shield uses for its dark frame (its
+                        // index.html), so in the evening window - where wind-down
+                        // lives - the two surfaces agree.
                         this.setBackgroundColor(android.graphics.Color.TRANSPARENT)
 
                         // Deliberately NO LAYER_TYPE_HARDWARE: forcing an overlay
@@ -190,16 +192,9 @@ class SleepWindDownOverlayWindow(
         }
     }
 
-    // The nearest loading-sky frame is the window's own background from before
-    // addView: the first frame is already the sky, never a dark flash.
-    override fun paintInitialShield(root: View) {
-        root.setBackgroundResource(activeLoadingSkyBlend.closestFrame.drawableResource())
-    }
-
     override fun showWindow() {
         synchronized(this) {
             if (isWindowShown()) return
-            activeLoadingSkyBlend = loadingSkyBlendAt(currentLocalHour())
             super.showWindow()
             @Suppress("DEPRECATION")
             window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or

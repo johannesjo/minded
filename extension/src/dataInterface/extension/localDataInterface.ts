@@ -26,6 +26,8 @@ export const updateHostsEntry = async (
 
 export const saveLocalData = (localData: LocalData): Promise<void> => {
   if (bro.runtime?.id) {
+    // Spread, not a pointless copy: an interface has no implicit index
+    // signature, an object literal does, and the API wants Record<string, unknown>.
     return bro.storage.local.set({ ...localData });
   } else {
     throw new Error(

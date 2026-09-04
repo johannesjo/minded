@@ -36,6 +36,17 @@ open class CommonWindow(
     private var isHiding = false
 
     /**
+     * Full-screen overlays that cover a blocked app set this: the window then
+     * opens on the clock-matched loading sky (the same sky the web content
+     * fades into) instead of the flat dark ground, so the entry beat is "the
+     * sky arrives", never "dark flash, then sky" (#118). The blend is read at
+     * showWindow() and exposed for the Compose backdrop.
+     */
+    protected open val opensOnLoadingSky: Boolean = false
+    internal var activeLoadingSkyBlend: LoadingSkyBlend = LoadingSkyBlend.dark()
+        private set
+
+    /**
      * Run [block] on the live window root, but only while no hideWindow()
      * fade-out is in flight - holding the same lock hideWindow() takes, so the
      * "is a hide running?" check and [block] are atomic against it. A subclass
@@ -80,6 +91,9 @@ open class CommonWindow(
             if (window != null || isHiding) {
                 Log.v(logTag, "overlay already shown or hiding - aborting (window=${window != null}, isHiding=$isHiding)")
                 return
+            }
+            if (opensOnLoadingSky) {
+                activeLoadingSkyBlend = loadingSkyBlendAt(currentLocalHour())
             }
             window = ComposeView(ctrlSvc).apply {
                 setViewTreeLifecycleOwner(ctrlSvc)
@@ -146,13 +160,16 @@ open class CommonWindow(
 
     /**
      * Paint the window root's own background before it is added to the window
-     * manager, so its very first frame is already the right surface. The default
-     * is a flat dark ground (prevents white flashes). Full-screen overlays that
-     * cover a blocked app override this with the clock-matched loading sky, so
-     * the entry beat is "the sky arrives" - never "dark flash, then sky" (#118).
+     * manager, so its very first frame is already the right surface: the
+     * nearest loading-sky frame for a window that [opensOnLoadingSky], else a
+     * flat dark ground (prevents white flashes).
      */
     protected open fun paintInitialShield(root: View) {
-        root.setBackgroundColor(0xFF1a1a1a.toInt())
+        if (opensOnLoadingSky) {
+            root.setBackgroundResource(activeLoadingSkyBlend.closestFrame.drawableResource())
+        } else {
+            root.setBackgroundColor(0xFF1a1a1a.toInt())
+        }
     }
 
     /**
