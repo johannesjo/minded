@@ -49,6 +49,9 @@ export interface AndroidMindedBridge {
   requestFocusAndShowKeyboard: () => void;
   getAllApps: () => string;
   getMissingCapabilities: () => string;
+  /** JSON of the native DetectionHealth - see android/util/detectionHealth.ts. */
+  getDetectionHealth?: () => string;
+  saveTextFile?: (filename: string, content: string) => void;
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: "light" | "medium" | "heavy") => void;
   setSessionLimit: (payloadJson: string) => void;

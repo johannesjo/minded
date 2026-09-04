@@ -10,7 +10,10 @@ const [major, minor, patch, label = "0"] = packageJson.version
 
 const manifest = defineManifest(async () => ({
   manifest_version: 3,
-  name: packageJson.displayName ?? packageJson.name,
+  // package.json carries no displayName today; keep the override hook typed
+  // rather than reading an untyped property off the JSON import.
+  name:
+    (packageJson as { displayName?: string }).displayName ?? packageJson.name,
   version: `${major}.${minor}.${patch}.${label}`,
   description: packageJson.description,
   icons: {

@@ -1,6 +1,13 @@
 package com.minded.minded.overlay
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import com.minded.minded.R
+import java.util.Calendar
 
 /** Pre-dithered native frames mirroring the WebView ambient-sky keyframes. */
 internal enum class LoadingSkyFrame {
@@ -84,4 +91,36 @@ internal fun LoadingSkyFrame.drawableResource(): Int = when (this) {
     LoadingSkyFrame.MIDDAY -> R.drawable.loading_sky_midday
     LoadingSkyFrame.AFTERNOON -> R.drawable.loading_sky_afternoon
     LoadingSkyFrame.DUSK -> R.drawable.loading_sky_dusk
+}
+
+/**
+ * The native sky an overlay WebView loads over: the clock-matched frame, and
+ * the next one blended in at the WebView's own interpolation weight. Shared by
+ * every full-screen overlay that covers a blocked app (the intervention and the
+ * sleep wind-down), so their first frame is the same sky the web content then
+ * fades into.
+ */
+@Composable
+internal fun LoadingSkyBackdrop(blend: LoadingSkyBlend) {
+    Image(
+        painter = painterResource(blend.from.drawableResource()),
+        contentDescription = null,
+        contentScale = ContentScale.FillBounds,
+        modifier = Modifier.fillMaxSize(),
+    )
+    if (blend.from != blend.to && blend.progress > 0f) {
+        Image(
+            painter = painterResource(blend.to.drawableResource()),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            alpha = blend.progress,
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+/** The local wall-clock hour with minutes as a fraction, e.g. 18.5 for 18:30. */
+internal fun currentLocalHour(): Double {
+    val now = Calendar.getInstance()
+    return now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
 }

@@ -1,9 +1,13 @@
 package com.minded.minded.overlay
 
 import android.graphics.PixelFormat
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
@@ -15,9 +19,32 @@ open class CommonWindow(
     private val sharedOverlayViewModel: SharedOverlayViewModel,
     private val windowManager: WindowManager
 ) {
+    companion object {
+        // How long to keep nudging a freshly-loaded overlay WebView to paint its
+        // first frame. Long enough to bridge the gap until the web content's own
+        // fade-in animation starts driving frames, short enough to add no
+        // meaningful battery/CPU cost.
+        private const val FIRST_FRAME_PUMP_MS = 800L
+
+        // Duration of the near-opaque window alpha nudge that forces the overlay
+        // window to recomposite its first frame after load.
+        private const val FIRST_FRAME_ALPHA_NUDGE_MS = 200L
+    }
+
     open val logTag = javaClass.simpleName
     var window: View? = null
     private var isHiding = false
+
+    /**
+     * Full-screen overlays that cover a blocked app set this: the window then
+     * opens on the clock-matched loading sky (the same sky the web content
+     * fades into) instead of the flat dark ground, so the entry beat is "the
+     * sky arrives", never "dark flash, then sky" (#118). The blend is read at
+     * showWindow() and exposed for the Compose backdrop.
+     */
+    protected open val opensOnLoadingSky: Boolean = false
+    internal var activeLoadingSkyBlend: LoadingSkyBlend = LoadingSkyBlend.dark()
+        private set
 
     /**
      * Run [block] on the live window root, but only while no hideWindow()
@@ -65,11 +92,15 @@ open class CommonWindow(
                 Log.v(logTag, "overlay already shown or hiding - aborting (window=${window != null}, isHiding=$isHiding)")
                 return
             }
+            if (opensOnLoadingSky) {
+                activeLoadingSkyBlend = loadingSkyBlendAt(currentLocalHour())
+            }
             window = ComposeView(ctrlSvc).apply {
                 setViewTreeLifecycleOwner(ctrlSvc)
                 setViewTreeSavedStateRegistryOwner(ctrlSvc)
-                // Set dark background to prevent white flashes
-                setBackgroundColor(0xFF1a1a1a.toInt())
+                // Painted before addView, so the very first frame is already
+                // the right surface (see paintInitialShield).
+                paintInitialShield(this)
                 setContent {
                     // NOTE: theme wont work since it's not an activity
                     //                MindedTheme {
@@ -126,6 +157,95 @@ open class CommonWindow(
 
     /** Called after the window view has been removed from the window manager. */
     protected open fun onWindowRemoved() {}
+
+    /**
+     * Paint the window root's own background before it is added to the window
+     * manager, so its very first frame is already the right surface: the
+     * nearest loading-sky frame for a window that [opensOnLoadingSky], else a
+     * flat dark ground (prevents white flashes).
+     */
+    protected open fun paintInitialShield(root: View) {
+        if (opensOnLoadingSky) {
+            root.setBackgroundResource(activeLoadingSkyBlend.closestFrame.drawableResource())
+        } else {
+            root.setBackgroundColor(0xFF1a1a1a.toInt())
+        }
+    }
+
+    /**
+     * First-frame hardening for an overlay WebView shown with
+     * [fadeInDurationMs] = 0. Run a near-opaque alpha animation on the overlay
+     * window root after load: animating the window's alpha forces the
+     * WindowManager to recomposite the overlay across several frames - the same
+     * mechanism the fading overlays' fade-in relies on, and the strongest nudge
+     * for a stuck first composite (the "black screen until I tap it" report).
+     * The range is 0.996 -> 1.0, not 0 -> 1: visually imperceptible, so the
+     * opaque-shield guarantee is preserved and the blocked app never shows
+     * through.
+     */
+    protected fun nudgeWindowAlpha() {
+        // Go through withWindowUnlessHiding so the "is a hide in flight?" check
+        // and the animation start are atomic under hideWindow()'s lock: both
+        // animate the same window view, so racing ours in would cancel the
+        // fade-out's withEndAction and wedge the window open. hideWindow() can
+        // fire off the main thread (a fast JS-bridge dismiss, or
+        // onRenderProcessGone), so the guard must hold the lock - not merely
+        // assume same-thread ordering.
+        withWindowUnlessHiding { root ->
+            root.alpha = 0.996f
+            root.animate()
+                .alpha(1f)
+                .setDuration(FIRST_FRAME_ALPHA_NUDGE_MS)
+                .start()
+        }
+    }
+
+    /**
+     * The other half of the first-frame hardening: re-post an invalidate on each
+     * animation frame for a short window after the page loads, so the overlay
+     * WebView is forced to schedule and present its first composite even though
+     * no native fade animation is driving frames. The web content's own fade-in
+     * (driven by JS a beat after load) takes over once it starts animating, so a
+     * brief pump is enough to cover the gap. [isLive] stops the pump once the
+     * window has moved on from [view] (a destroyed or replaced WebView).
+     *
+     * shortcut: this is the redundant half of the belt-and-suspenders
+     * (nudgeWindowAlpha is the primary, window-level nudge). If a field repro
+     * shows the alpha nudge alone fixes the black screen, delete this; if instead
+     * the blind 800ms proves wasteful, gate it on WebView.postVisualStateCallback
+     * so it stops at first paint instead of running a fixed duration.
+     */
+    protected fun pumpFirstFrame(view: WebView, isLive: () -> Boolean) {
+        // Monotonic clock: a wall-clock jump (NTP / manual change) mid-pump must
+        // not cut the burst short or stretch it out.
+        val deadline = SystemClock.uptimeMillis() + FIRST_FRAME_PUMP_MS
+        val pump = object : Runnable {
+            override fun run() {
+                if (!isLive()) return
+                view.invalidate()
+                if (SystemClock.uptimeMillis() < deadline) {
+                    view.postOnAnimation(this)
+                }
+            }
+        }
+        view.postOnAnimation(pump)
+    }
+
+    /**
+     * Tear the window down from the main thread after its WebView failed (a
+     * main-frame load error, or a gone render process) - but only while that
+     * WebView is still the live one per [liveView]: a delayed callback from a
+     * disposed WebView must not tear down a newer window that already replaced
+     * it. Without a teardown the user would be left on a dead overlay.
+     */
+    protected fun hideWindowForFailedWebView(failedView: WebView?, liveView: () -> WebView?) {
+        val expectedView = failedView ?: liveView() ?: return
+        Handler(Looper.getMainLooper()).post {
+            if (liveView() === expectedView) {
+                hideWindow()
+            }
+        }
+    }
 
     /**
      * Remove the window NOW, with no fade-out, still firing [onWindowRemoved].

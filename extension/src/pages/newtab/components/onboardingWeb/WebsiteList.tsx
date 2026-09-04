@@ -81,7 +81,7 @@ export const WebsiteList: (props: {
   const [saveState, setSaveState] = createSignal<SaveState>({ type: "idle" });
   const [removedItem, setRemovedItem] = createSignal<RemovedItem | null>(null);
   let saveRequestId = 0;
-  let savedStatusTimeout: NodeJS.Timeout | undefined;
+  let savedStatusTimeout: number | undefined;
 
   onMount(() => {
     if (props.initialItems !== undefined) return;

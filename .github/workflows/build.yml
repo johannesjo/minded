@@ -42,6 +42,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Test Unit
         run: npm test
 
@@ -54,3 +57,33 @@ jobs:
         with:
           name: minded-download
           path: extension/minded.zip
+
+  android-unit-tests:
+    # The Android host has its own JVM test suite (decision engine, detection
+    # confidence, widget copy rules, sync-data serialization). It never ran in
+    # CI before, so a regression there only surfaced on a device. Pure JVM
+    # tests, so no emulator and no web bundle are needed (assets/ only holds
+    # a .gitkeep; the WebView bundle is a build-time artifact).
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ./android
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - name: Android unit tests
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-unit-test-reports
+          path: android/app/build/reports/tests/

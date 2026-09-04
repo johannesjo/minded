@@ -1,5 +1,6 @@
 package com.minded.minded
 
+import com.minded.minded.detection.DetectionHealth
 import com.minded.minded.data.SharedPreferenceService
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -10,6 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -18,6 +20,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +44,7 @@ import com.minded.minded.util.isAccessibilityServiceEnabled
 import com.minded.minded.util.isDarkModeNow
 import com.minded.minded.widget.WidgetPrompts
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 enum class MissingCapability {
@@ -58,6 +62,63 @@ class MainActivity : AppCompatActivity() {
     private val jsInterfaceNameProp = "androidMinded"
     private val logTag = "MainActivity"
     private val baseUrl = "file:///android_asset/web/src/android/main/index.html"
+
+    // Answer-journal backup, native half (see extension util/fileTransfer.ts).
+    // "Save a copy": the web layer's text is parked in a cache file while the
+    // system "save as" sheet (another process) is in front, then copied to the
+    // document the user chose. A *file*, not a field: if this process is
+    // reclaimed behind the picker the activity is recreated and the result still
+    // arrives - a field would be null by then and the picker-created document
+    // would be left empty, the worst outcome for a backup. Writes go through
+    // "wt" so a re-chosen existing document is truncated, never appended to.
+    private val pendingSaveTextFile: File
+        get() = File(cacheDir, "journal-export.json")
+    private val createDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        isSaveTextFilePending = false
+        val source = pendingSaveTextFile
+        try {
+            if (uri == null || !source.exists()) return@registerForActivityResult
+            contentResolver.openOutputStream(uri, "wt")?.use { out ->
+                source.inputStream().use { it.copyTo(out) }
+            } ?: Log.e(logTag, "saveTextFile: provider gave no stream for $uri")
+        } catch (e: Exception) {
+            Log.e(logTag, "saveTextFile: writing the document failed", e)
+        } finally {
+            source.delete()
+        }
+    }
+    private var isSaveTextFilePending = false
+
+    // "Bring a copy back": a plain <input type="file"> in the WebView lands in
+    // WebChromeClient.onShowFileChooser, which opens the system document picker
+    // and hands the chosen URI back to the WebView - so the web side reads it
+    // like on any browser.
+    private var pendingFileChooser: ValueCallback<Array<Uri>>? = null
+    private val openDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        pendingFileChooser?.onReceiveValue(if (uri == null) null else arrayOf(uri))
+        pendingFileChooser = null
+    }
+
+    private fun saveTextFile(filename: String, content: String) {
+        // JS-bridge calls arrive off the main thread; launchers want it.
+        runOnUiThread {
+            // A second tap while the sheet is up would stack a second picker
+            // whose cancel wipes the first one's payload; ignore it instead.
+            if (isSaveTextFilePending) return@runOnUiThread
+            try {
+                pendingSaveTextFile.writeText(content, Charsets.UTF_8)
+            } catch (e: Exception) {
+                Log.e(logTag, "saveTextFile: staging the export failed", e)
+                return@runOnUiThread
+            }
+            isSaveTextFilePending = true
+            createDocumentLauncher.launch(filename)
+        }
+    }
 
     companion object {
         /** Intent extra naming a hash route to open on launch (allow-listed below). */
@@ -229,9 +290,37 @@ class MainActivity : AppCompatActivity() {
                                     this,
                                     ::onMissingCapabilityTap,
                                     ::getMissingCapabilities,
+                                    getDetectionHealthI = ::getDetectionHealth,
+                                    onSaveTextFileI = ::saveTextFile,
                                     safeAreaInsets = safeAreaInsetsHolder,
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
+                                // Note: installing any WebChromeClient also
+                                // makes the WebView show JS alert()/confirm()
+                                // as native dialogs (without one Chromium
+                                // drops them silently). The only alert the web
+                                // layer raises here is the honest save-failure
+                                // notice (handleDataError, alertUser) - which
+                                // should be seen, so this is accepted.
+                                webChromeClient = object : WebChromeClient() {
+                                    override fun onShowFileChooser(
+                                        webView: WebView?,
+                                        filePathCallback: ValueCallback<Array<Uri>>?,
+                                        fileChooserParams: FileChooserParams?,
+                                    ): Boolean {
+                                        if (filePathCallback == null) return false
+                                        // A chooser that never returned must be
+                                        // released before a new one is armed.
+                                        pendingFileChooser?.onReceiveValue(null)
+                                        pendingFileChooser = filePathCallback
+                                        // Any type: the web side validates the
+                                        // file's content, and a narrow MIME filter
+                                        // hides json files some providers label
+                                        // as octet-stream.
+                                        openDocumentLauncher.launch(arrayOf("*/*"))
+                                        return true
+                                    }
+                                }
                                 // Stay invisible until the first real frame commits; the
                                 // half-initialised transparent surface would otherwise
                                 // show as the cold-start teal/orange compositing stripes.
@@ -450,6 +539,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         }
     }
+
+    private fun getDetectionHealth(): DetectionHealth = DetectionHealth(
+        accessibilityEnabled = isAccessibilityServiceEnabled(this),
+        serviceConnected = MyAccessibilityService.isConnected,
+    )
 
     private fun getMissingCapabilities(): List<MissingCapability> {
         Log.v(

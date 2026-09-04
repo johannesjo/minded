@@ -25,6 +25,11 @@ import {
   REQUIRED_CAPABILITIES,
 } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { readIsWidgetPlaced } from "@src/android/util/widgetPlacement";
+import {
+  DetectionHealth,
+  isDetectionSilent,
+  parseDetectionHealth,
+} from "@src/android/util/detectionHealth";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { fadeOutThen } from "@src/util/animation";
@@ -32,11 +37,26 @@ import { fadeOutThen } from "@src/util/animation";
 // Kept in sync with the `.setupInvitationMsg` opacity transition in
 // indexMainAndroid.scss so the element finishes fading before it unmounts.
 const INVITE_FADE_MS = 300;
+// Second detection-health read after mount (see refresh).
+const DETECTION_RECHECK_MS = 2500;
 
 const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
+  // Whether the accessibility service is actually bound - not merely enabled.
+  // Starts as "watching" so the quiet line can never flash before the first
+  // native read (see detectionHealth.ts).
+  const [getDetectionHealth, setDetectionHealth] =
+    createSignal<DetectionHealth>({
+      accessibilityEnabled: true,
+      serviceConnected: true,
+    });
+  const readDetectionHealth = () =>
+    setDetectionHealth(
+      parseDetectionHealth(androidInterface.getDetectionHealth?.()),
+    );
+  let detectionRecheckT: NodeJS.Timeout | undefined;
   const [getIsShowOnboarding, setIsShowOnboarding] = createSignal(false);
   const [getIsShowMissingCapabilities, setIsShowMissingCapabilities] =
     createSignal(false);
@@ -107,7 +127,14 @@ const MainAndroid = () => {
       setMissingCapabilities(
         safeJsonParse<string[]>(androidInterface.getMissingCapabilities(), []),
       );
+      readDetectionHealth();
     });
+    // A cold start can race the system re-binding the accessibility service:
+    // the first read would say "unbound" for a beat and the line would sit
+    // there, stale, until the next resume. Read again shortly after, so a
+    // transient state clears itself and the line only stands on a settled fact.
+    clearTimeout(detectionRecheckT);
+    detectionRecheckT = setTimeout(readDetectionHealth, DETECTION_RECHECK_MS);
   };
 
   onMount(() => {
@@ -142,6 +169,7 @@ const MainAndroid = () => {
     window.addEventListener(ANDROID_EV_RESUME, resumeHandler);
 
     onCleanup(() => {
+    clearTimeout(detectionRecheckT);
       window.removeEventListener(ANDROID_EV_START, startHandler);
       window.removeEventListener(ANDROID_EV_STOP, stopHandler);
       window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
@@ -230,30 +258,46 @@ const MainAndroid = () => {
                 intervene on), so the missing-permissions banner is intentionally
                 suppressed until at least one app is chosen - the invitation above
                 is the single, calm entry point into setup. */
-          getMissingCapabilities().length > 0 ? (
+          hasMissingRequired() ? (
             <div
               onClick={() =>
                 fadeTopLevelThen(() => setIsShowMissingCapabilities(true))
               }
-              classList={{
-                missingCapabilitiesMsg: true,
-                // Only the advisory extras are missing → quiet outline, not an
-                // alarm: minded already works, so the banner invites rather
-                // than warns.
-                missingCapabilitiesMsgSoft: !hasMissingRequired(),
-              }}
+              class="missingCapabilitiesMsg"
             >
-              {hasMissingRequired() ? (
-                <>
-                  <em>minded</em> needs a few permissions before it can meet
-                  you. Tap to finish setting up.
-                </>
-              ) : (
-                <>
-                  Optional permissions can help the {companionWord()} appear
-                  more reliably. Tap to add them.
-                </>
-              )}
+              <em>minded</em> needs a few permissions before it can meet you.
+              Tap to finish setting up.
+            </div>
+          ) : isDetectionSilent(getDetectionHealth()) ? (
+            /* Accessibility is switched on, so no permission is "missing" - but
+               the service isn't bound, so the sun can't meet the user in any app
+               and nothing else would ever say so. Observed fact, present tense,
+               and the tap goes to the one place that fixes it (switching the
+               service off and on again re-binds it). Re-read on every resume
+               (and once more shortly after mount), so it leaves on its own once
+               the service is back. Sits above the optional-permissions invite:
+               "minded already works" is exactly what isn't true here. */
+            <div
+              onClick={() =>
+                androidInterface.onMissingCapabilityClick("Accessibility")
+              }
+              class="missingCapabilitiesMsg"
+            >
+              <em>minded</em> can't see your apps right now. Tap to switch its
+              accessibility service off and on again.
+            </div>
+          ) : getMissingCapabilities().length > 0 ? (
+            // Only the advisory extras are missing → quiet outline, not an
+            // alarm: minded already works, so the banner invites rather than
+            // warns.
+            <div
+              onClick={() =>
+                fadeTopLevelThen(() => setIsShowMissingCapabilities(true))
+              }
+              class="missingCapabilitiesMsg missingCapabilitiesMsgSoft"
+            >
+              Optional permissions can help the {companionWord()} appear more
+              reliably. Tap to add them.
             </div>
           ) : null}
         </RoutesCmp>

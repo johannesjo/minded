@@ -23,7 +23,10 @@ const dataInterfaceIOS = resolve(root, "dataInterface", "ios");
 export default defineConfig(({ mode }): UserConfig => {
   const sassOptions = {
     quietDeps: true,
-    silenceDeprecations: ["import", "mixed-decls"],
+    silenceDeprecations: ["import", "mixed-decls"] as (
+      | "import"
+      | "mixed-decls"
+    )[],
   };
   return mode === "screenshots"
     ? {

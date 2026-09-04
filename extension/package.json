@@ -27,6 +27,7 @@
     "pack": "rm minded.zip; cd dist && zip -r ../minded.zip .",
     "clean": "rimraf dist",
     "test": "jest",
+    "typecheck": "tsc --noEmit",
     "test:android": "cd ../android && ./gradlew testDebugUnitTest --console=plain",
     "dev:nodemon": "nodemon",
     "preversion": "node scripts/preversion.mjs",

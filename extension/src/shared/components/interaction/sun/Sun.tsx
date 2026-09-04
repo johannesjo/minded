@@ -35,6 +35,19 @@ import {
   type PhysicsState,
   type SunDragDirection,
 } from "./sunAnimationUtils";
+import {
+  anchorPointForSettle,
+  parseRenderedTranslate,
+  restScaleForSettle as restScaleFor,
+} from "./sunGeometry";
+import {
+  COMPANION_HOVER_GLOW,
+  COMPANION_REST_GLOW,
+  interactionScaleFor,
+  MOON_HOVER_GLOW,
+  MOON_REST_GLOW,
+  sunGlowTemp,
+} from "./sunGlow";
 import { playCompletionSound } from "./sunAudio";
 import {
   breathCycleMs,
@@ -442,14 +455,8 @@ export const Sun: Component<SunProps> = (props) => {
   // the disc's base from rect − styleTranslate therefore never mixes a fresh
   // offset with a stale rect, which would double-count the offset and place a
   // settle target hundreds of px off.
-  const getRenderedTranslate = (): SunPosition => {
-    const match = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/.exec(
-      sunEl?.style.transform ?? "",
-    );
-    return match
-      ? { x: parseFloat(match[1]), y: parseFloat(match[2]) }
-      : getDragOffset();
-  };
+  const getRenderedTranslate = (): SunPosition =>
+    parseRenderedTranslate(sunEl?.style.transform ?? "") ?? getDragOffset();
 
   const getSunCenterForOffset = (
     offset = getDragOffset(),
@@ -491,21 +498,13 @@ export const Sun: Component<SunProps> = (props) => {
   // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
   // departing, top-px interactive). Used to give its glides the slower duration.
   const BREATH_PEAK_BONUS = 0.22; // inhale grows the rest scale by this much
-  const DEFAULT_ANCHOR_Y_RATIO = 0.4;
-  const DEFAULT_REST_SCALE = 0.82;
 
   // Base disc size for this screen (px + baseScale); fixed for the component's
   // life. Used both to render the disc and to convert a settle's pinned disc
-  // diameter (discPx) into a scale.
+  // diameter (discPx) into a scale (see restScaleForSettle in sunGeometry).
   const sunSize = getSunSize(window.innerWidth);
-  // A settle may pin an exact disc diameter (discPx) instead of a scale - the
-  // departing hand-off does, so the disc lands at the Little Sun's real px size
-  // on any viewport. Convert that to a scale of the base disc; otherwise use the
-  // settle's explicit scale (or the default).
   const restScaleForSettle = (settle: SunSettle): number =>
-    settle.discPx != null
-      ? settle.discPx / sunSize.size
-      : (settle.scale ?? DEFAULT_REST_SCALE);
+    restScaleFor(settle, sunSize.size);
 
   const prefersReducedMotion = () =>
     typeof window !== "undefined" &&
@@ -581,25 +580,13 @@ export const Sun: Component<SunProps> = (props) => {
     };
   };
 
-  // Offset that places the sun's center on a resting anchor. The anchor is a
-  // fraction of viewport width/height (x defaults to centered), unless a fixed
-  // px anchor is given - px wins so the sun can land exactly on a fixed-px
-  // element (the Little Sun corner) without drifting on wide viewports.
+  // Offset that places the sun's center on a resting anchor (the anchor rules
+  // live in anchorPointForSettle, sunGeometry.ts).
   const getAnchorOffset = (settle: SunSettle): SunPosition => {
     const rest = getSunCenterForOffset({ x: 0, y: 0 });
     if (!rest) return getDragOffset();
-    const viewport = getViewportSize();
-    const anchorX =
-      settle.anchorXRatio != null
-        ? viewport.width * settle.anchorXRatio
-        : (settle.anchorXPx ?? viewport.width * 0.5);
-    const anchorY =
-      settle.anchorYPxFromBottom != null
-        ? viewport.height - settle.anchorYPxFromBottom
-        : settle.anchorYPxFromTop != null
-          ? settle.anchorYPxFromTop
-          : viewport.height * (settle.anchorYRatio ?? DEFAULT_ANCHOR_Y_RATIO);
-    return { x: anchorX - rest.x, y: anchorY - rest.y };
+    const anchor = anchorPointForSettle(settle, getViewportSize());
+    return { x: anchor.x - rest.x, y: anchor.y - rest.y };
   };
 
   // Ease the offset and scale toward a target. The disc's glow is its own
@@ -1622,53 +1609,8 @@ export const Sun: Component<SunProps> = (props) => {
   // it only ever reads the cool half (clamped at 0).
   const getSunGlowColor = () =>
     glowColorForTemp(
-      props.variant === "moon"
-        ? Math.min(0, getColorTemp())
-        : getColorTemp() < 0
-          ? getColorTemp()
-          : (props.settle?.warmth ?? 0),
+      sunGlowTemp(props.variant, getColorTemp(), props.settle?.warmth),
     );
-  // Hover lift + halo for the resting companion. The lift is slight; the glow
-  // reuses the drag box-shadow (see
-  // the inline --glow-intensity), pushed past its 0..1 drag range to a bold,
-  // unmistakable halo. The sun is the one hero object, so luminosity belongs
-  // here rather than on routine controls.
-  const COMPANION_HOVER_SCALE = 1.06;
-  const COMPANION_HOVER_GLOW = 1.8;
-  // The sun carries a halo at all times - the disc's box-shadow glow, white in
-  // app (THE HALO RULE in sunSettle.ts) - so the idle sun glows gently and,
-  // crucially, the glow never drops out while it's being dragged or tapped (both
-  // reset getGlowIntensity toward 0). We floor at this baseline rather than gate
-  // on drag: the drag ramp (0..1) is dimmer than the rest glow anyway, so letting
-  // it take over would only make the sun fade the moment you touch it.
-  //
-  // Held a notch below the hover glow (which still blooms to COMPANION_HOVER_GLOW
-  // on hover, so hover stays a visible lift). This is just the rest *brightness*;
-  // the companion's halo *shape* is tightened separately in CSS so it reads level
-  // with the bottom-bar icons. The disc sits low in the band, where the shared
-  // broad glow (Sun.scss: 15/40/80px) would be clipped by the screen edge below
-  // while pluming freely above - a one-sided, upward-only bloom that pulls the
-  // sun's visible mass up so it reads as sitting high, even though its body is
-  // centred on the icon line (worse the larger the disc). Lowering this intensity
-  // alone can't fix it (it scales the *whole* profile, so the 80px layer still
-  // plumes ~100px up); instead the resting daytime companion gets a snug 2-layer
-  // halo with no far plume - see `.isCompanion .minded-sun:not(.moon)` in
-  // RouteCmp.module.scss. With that tight shape the clip below removes almost
-  // nothing, so 1.25 keeps a soft, symmetric rest halo that stays level.
-  const COMPANION_REST_GLOW = 1.25;
-  // The moon carries a resting glow too, the same way the sun does. Its face is
-  // pale and near-white, which washes out a faint halo, so it needs a genuinely
-  // bright bloom to read as glowing rather than as a flat disc with a ring. This
-  // floor was set when the face was a lunar photograph and kept when it became a
-  // drawn one: the drawn face is brighter, so if anything it wants less, but the
-  // value still reads as a gentle moon halo rather than the loud first pass - and
-  // dropping it is a look change to make deliberately, not a side effect of
-  // swapping the face. The white/cool bloom layers are Sun.scss's .moon
-  // box-shadow; hover lifts it further, echoing the bottom-bar
-  // hover. The face's own up-left light pool (Sun.scss) carries much of the
-  // "glowing orb" read, so the halo itself can stay restrained.
-  const MOON_REST_GLOW = 1.1;
-  const MOON_HOVER_GLOW = 1.7;
   // Keep the progress crown mounted through one soft fade when the flow clears
   // it (the success bloom), so the dots dissolve rather than snapping out - a
   // hard cut reads as a jolt (see the styling rules). We hold the last orbit
@@ -1701,21 +1643,13 @@ export const Sun: Component<SunProps> = (props) => {
         ? lastOrbit
         : null;
 
-  const getInteractionScale = () => {
-    if (getIsCompletionStarted()) {
-      return 1;
-    }
-
-    if (getIsDragging()) {
-      return 1.06;
-    }
-
-    if (props.isHovered) {
-      return COMPANION_HOVER_SCALE;
-    }
-
-    return getIsPointerOver() ? 1.04 : 1;
-  };
+  const getInteractionScale = () =>
+    interactionScaleFor({
+      isCompletionStarted: getIsCompletionStarted(),
+      isDragging: getIsDragging(),
+      isHovered: !!props.isHovered,
+      isPointerOver: getIsPointerOver(),
+    });
 
   return (
     <div

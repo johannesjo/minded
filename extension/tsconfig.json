@@ -12,6 +12,8 @@
     "module": "commonjs",
     "target": "es6",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "sourceMap": false,
     "rootDir": "./",
     "outDir": "dist/js",
@@ -25,5 +27,6 @@
       "@pages/*": ["src/pages/*"],
       "@dataInterface/*": ["src/dataInterface/extension/*"]
     }
-  }
+  },
+  "include": ["src", "vite.config.ts", "capacitor.config.ts"]
 }

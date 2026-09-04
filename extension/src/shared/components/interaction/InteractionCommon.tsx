@@ -28,6 +28,15 @@ import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/int
 import { LetGoOverlay } from "@src/shared/components/interaction/letGo/LetGoOverlay";
 import { LET_GO_REVEAL_MAX_MS } from "@src/shared/components/interaction/letGo/letGo.const";
 import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
+import {
+  getInteractionRoot,
+  isActivelyEditing,
+  matchWidgetLine,
+} from "@src/shared/components/interaction/interactionCommonHelpers";
+import {
+  getInteractionCornerSettle,
+  getLocalSunSettleForPhase,
+} from "@src/shared/components/interaction/interactionCornerSettle";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
 import {
@@ -47,15 +56,7 @@ import {
   type SunAccessibleActivation,
 } from "@src/shared/components/interaction/sun/sunAccessibility";
 import {
-  getSunSettleForPhase,
-  LITTLE_SUN_CORNER_PX_ANDROID,
-  LITTLE_SUN_CORNER_PX_WEB,
-  LITTLE_SUN_DISC_PX_ANDROID,
-  LITTLE_SUN_DISC_PX_WEB,
   restingSunAnchorFromRect,
-  sunArriveSettle,
-  sunArriveSettleAt,
-  sunDepartSettleAt,
   sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
@@ -81,8 +82,7 @@ import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { customQuestionsToPrompts } from "@src/shared/data/customQuestions";
-import { QuestionForPrompt, QUESTIONS } from "@src/shared/data/questions";
-import { formatQuestionText } from "@src/util/formatQuestionText";
+import { QuestionForPrompt } from "@src/shared/data/questions";
 import { fadeOut } from "@src/util/animation";
 import { displayTargetName } from "@src/util/displayTargetName";
 import {
@@ -154,49 +154,6 @@ interface InteractionCommonProps {
    */
   morphInFromCorner?: boolean;
 }
-
-/** Check if there's a focused input/textarea with modified content */
-const isActivelyEditing = (shadowRoot?: ShadowRoot | null): boolean => {
-  const activeEl = shadowRoot?.activeElement ?? document.activeElement;
-  if (
-    activeEl instanceof HTMLTextAreaElement ||
-    activeEl instanceof HTMLInputElement
-  ) {
-    const value = activeEl.value.trim();
-    const placeholder = activeEl.placeholder || "";
-    // Has content beyond just whitespace and not just the placeholder
-    return value.length > 0 && value !== placeholder;
-  }
-  return false;
-};
-
-const getInteractionRoot = (shadowRoot?: ShadowRoot) =>
-  shadowRoot?.getElementById("minded-6622") ??
-  document.getElementById("minded-6622");
-
-type ForcedWidgetContent =
-  | { mode: "NOTICE"; cue: (typeof NOTICE_CUES)[number] }
-  | { mode: "ACTION_ADVICE"; advice: (typeof ACTION_ADVICES)[number] }
-  | { mode: "QUESTION"; question: QuestionForPrompt };
-
-/**
- * Resolve the widget's displayed line back to the interaction mode + exact
- * content item it came from. `NOTICE`, `ACTION_ADVICE`, and the ambient-safe
- * slice of `QUESTION` are the widget-safe modes, and the widget shows those
- * pools' lines verbatim (questions in their `formatQuestionText` display form,
- * "?" included), so an exact string match recovers the item. Returns undefined
- * for anything unrecognised - other content, a copy drift, or a crafted intent -
- * so the caller falls back to the normal random pick instead of breaking.
- */
-const matchWidgetLine = (line: string): ForcedWidgetContent | undefined => {
-  const cue = NOTICE_CUES.find((c) => c.cue === line);
-  if (cue) return { mode: "NOTICE", cue };
-  const advice = ACTION_ADVICES.find((a) => a.txt === line);
-  if (advice) return { mode: "ACTION_ADVICE", advice };
-  const question = QUESTIONS.find((q) => formatQuestionText(q.t) === line);
-  if (question) return { mode: "QUESTION", question };
-  return undefined;
-};
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   const SUN_TAP_THRESHOLD = 3;
@@ -373,32 +330,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // and the <Sun> settle effect keys off object identity - a fresh object each
   // call would risk a spurious corner→corner glide on the Android branch, which
   // reads getLittleSunRestCenter(). Pure constants on web, computed once there.
-  const cornerSettle = (isArriving: boolean) => {
-    const isAndroid = props.interactionPlatform === "android";
-    const cornerPx = isAndroid
-      ? LITTLE_SUN_CORNER_PX_ANDROID
-      : LITTLE_SUN_CORNER_PX_WEB;
-    const discPx = isAndroid
-      ? LITTLE_SUN_DISC_PX_ANDROID
-      : LITTLE_SUN_DISC_PX_WEB;
-    if (isAndroid) {
-      const restCenter = getLittleSunRestCenter();
-      if (restCenter) {
-        return isArriving
-          ? sunArriveSettleAt(restCenter)
-          : sunDepartSettleAt(restCenter);
-      }
-    }
-    if (isArriving) return sunArriveSettle(cornerPx, discPx);
-    return getSunSettleForPhase(
-      "departing",
-      // companionBottomYPx is only read for the "companion" phase, which the
-      // local (non-shell) sun never enters - keep the default.
-      undefined,
-      cornerPx,
-      discPx,
-    );
-  };
+  const cornerSettle = (isArriving: boolean) =>
+    getInteractionCornerSettle({
+      platform: props.interactionPlatform,
+      isArriving,
+      restCenter:
+        props.interactionPlatform === "android"
+          ? getLittleSunRestCenter()
+          : null,
+    });
   const getArriveCornerSettle = createMemo(() => cornerSettle(true));
   const getDepartCornerSettle = createMemo(() => cornerSettle(false));
 
@@ -421,15 +361,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (getSunPhase() === "departing") {
       return getDepartCornerSettle();
     }
-    const isAndroid = props.interactionPlatform === "android";
-    return getSunSettleForPhase(
-      getSunPhase(),
-      // companionBottomYPx is only read for the "companion" phase, which the
-      // local (non-shell) sun never enters - keep the default.
-      undefined,
-      isAndroid ? LITTLE_SUN_CORNER_PX_ANDROID : LITTLE_SUN_CORNER_PX_WEB,
-      isAndroid ? LITTLE_SUN_DISC_PX_ANDROID : LITTLE_SUN_DISC_PX_WEB,
-    );
+    return getLocalSunSettleForPhase(getSunPhase(), props.interactionPlatform);
   };
 
   // Launch the arrive-from-corner glide: the disc has mounted snapped to the
@@ -1562,50 +1494,28 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     );
 
     // Clean up any pending animation frames and timeouts
-    if (fadeAnimationFrame) {
-      cancelAnimationFrame(fadeAnimationFrame);
+    for (const frame of [
+      fadeAnimationFrame,
+      fadeInAnimationFrame,
+      modeTransitionFadeInFrame,
+      postSunFocusFrame,
+    ]) {
+      if (frame) cancelAnimationFrame(frame);
     }
-    if (fadeInAnimationFrame) {
-      cancelAnimationFrame(fadeInAnimationFrame);
-    }
-    if (modeTransitionFadeInFrame) {
-      cancelAnimationFrame(modeTransitionFadeInFrame);
-    }
-    if (postSunFocusFrame) {
-      cancelAnimationFrame(postSunFocusFrame);
-    }
-    if (modeTransitionTimeout) {
-      clearTimeout(modeTransitionTimeout);
-    }
-    if (timeSelectionTimeout) {
-      clearTimeout(timeSelectionTimeout);
-    }
-    if (postSunScreenTransitionTimeout) {
-      clearTimeout(postSunScreenTransitionTimeout);
-    }
-    if (intentSelectionArmTimeout) {
-      clearTimeout(intentSelectionArmTimeout);
-    }
-    if (timeSelectionArmTimeout) {
-      clearTimeout(timeSelectionArmTimeout);
-    }
-    if (successTimeout) {
-      clearTimeout(successTimeout);
-    }
-    if (initFadeOutTimeout) {
-      clearTimeout(initFadeOutTimeout);
-    }
-    if (contentReadyTimeout) {
-      clearTimeout(contentReadyTimeout);
-    }
-    if (bedtimeSettleTimeout) {
-      clearTimeout(bedtimeSettleTimeout);
-    }
-    if (groundingBgResetTimeout) {
-      clearTimeout(groundingBgResetTimeout);
-    }
-    if (letGoRevealTimeout) {
-      clearTimeout(letGoRevealTimeout);
+    for (const timeout of [
+      modeTransitionTimeout,
+      timeSelectionTimeout,
+      postSunScreenTransitionTimeout,
+      intentSelectionArmTimeout,
+      timeSelectionArmTimeout,
+      successTimeout,
+      initFadeOutTimeout,
+      contentReadyTimeout,
+      bedtimeSettleTimeout,
+      groundingBgResetTimeout,
+      letGoRevealTimeout,
+    ]) {
+      if (timeout) clearTimeout(timeout);
     }
     rootThemeObserver?.disconnect();
     wrapperThemeObserver?.disconnect();
