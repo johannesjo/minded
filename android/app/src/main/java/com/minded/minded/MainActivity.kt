@@ -120,6 +120,65 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    companion object {
+        /** Intent extra naming a hash route to open on launch (allow-listed below). */
+        const val EXTRA_LAUNCH_ROUTE = "launch_route"
+        /**
+         * The home-screen sun widget opens the dashboard with this hash, which the
+         * web shell reads to fire the same interaction overlay as tapping the
+         * in-app companion sun (see RouteCmp's `?sun=open` effect).
+         */
+        const val OPEN_SUN_HASH = "/?sun=open"
+        /**
+         * Intent extra: the exact prompt line the widget's card was showing. When
+         * present (and allow-listed, see [widgetLineFromIntent]) it rides along in
+         * the hash as `&widgetLine=…` so the interaction opens on that same
+         * NOTICE/ACTION_ADVICE line instead of a random pick (see RouteCmp).
+         */
+        const val EXTRA_WIDGET_LINE = "widget_line"
+
+        /** Fade-in duration when the WebView first paints over the loading sky. */
+        private const val WEBVIEW_FADE_IN_MS = 300L
+
+        /**
+         * Safety net: reveal the WebView even if onPageCommitVisible never arrives
+         * (e.g. a stalled bundle), so a load hiccup can't strand the app on the
+         * loading sky forever.
+         */
+        private const val WEBVIEW_REVEAL_TIMEOUT_MS = 2500L
+    }
+
+    /**
+     * The hash requested by the launching intent, if any - currently only the
+     * widget's sun hash. Allow-listed (not passed through verbatim) so a crafted
+     * intent can't drive the WebView to an arbitrary location.
+     */
+    private fun routeFromIntent(intent: Intent?): String? =
+        when (intent?.getStringExtra(EXTRA_LAUNCH_ROUTE)) {
+            OPEN_SUN_HASH -> OPEN_SUN_HASH
+            else -> null
+        }
+
+    /**
+     * The widget line to open on, if the launching intent carried one - but only
+     * if it's a line the widget actually shows ([WidgetPrompts.isWidgetSafeLine]).
+     * Same allow-list posture as [routeFromIntent]: a crafted intent can't inject
+     * arbitrary text into the WebView location; only one of the known widget lines
+     * (each a benign, quote-free constant) ever passes, so URL-encoding it into
+     * the hash is safe.
+     */
+    private fun widgetLineFromIntent(intent: Intent?): String? =
+        intent?.getStringExtra(EXTRA_WIDGET_LINE)
+            ?.takeIf { WidgetPrompts.isWidgetSafeLine(it) }
+
+    /** The launch route with the allow-listed widget line appended, if any. */
+    private fun launchHash(intent: Intent?): String? {
+        val route = routeFromIntent(intent) ?: return null
+        val line = widgetLineFromIntent(intent)
+        return if (line != null) "$route&widgetLine=${Uri.encode(line)}" else route
+    }
+
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         // Go edge-to-edge on every supported API (minSdk 29) with fully
