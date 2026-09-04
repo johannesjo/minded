@@ -25,6 +25,11 @@ import {
   REQUIRED_CAPABILITIES,
 } from "@src/android/components/missingCapabilities/MissingCapabilities";
 import { readIsWidgetPlaced } from "@src/android/util/widgetPlacement";
+import {
+  DetectionHealth,
+  isDetectionSilent,
+  parseDetectionHealth,
+} from "@src/android/util/detectionHealth";
 import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { fadeOutThen } from "@src/util/animation";
@@ -37,6 +42,14 @@ const MainAndroid = () => {
   const [getMissingCapabilities, setMissingCapabilities] = createSignal<
     string[]
   >([]);
+  // Whether the accessibility service is actually bound - not merely enabled.
+  // Starts as "watching" so the quiet line can never flash before the first
+  // native read (see detectionHealth.ts).
+  const [getDetectionHealth, setDetectionHealth] =
+    createSignal<DetectionHealth>({
+      accessibilityEnabled: true,
+      serviceConnected: true,
+    });
   const [getIsShowOnboarding, setIsShowOnboarding] = createSignal(false);
   const [getIsShowMissingCapabilities, setIsShowMissingCapabilities] =
     createSignal(false);
@@ -106,6 +119,9 @@ const MainAndroid = () => {
     setTimeout(() => {
       setMissingCapabilities(
         safeJsonParse<string[]>(androidInterface.getMissingCapabilities(), []),
+      );
+      setDetectionHealth(
+        parseDetectionHealth(androidInterface.getDetectionHealth?.()),
       );
     });
   };
@@ -254,6 +270,22 @@ const MainAndroid = () => {
                   more reliably. Tap to add them.
                 </>
               )}
+            </div>
+          ) : isDetectionSilent(getDetectionHealth()) ? (
+            /* Accessibility is switched on, so no permission is "missing" - but
+               the service isn't bound, so the sun can't meet the user in any app
+               and nothing else would ever say so. Observed fact, present tense,
+               and the tap goes to the one place that fixes it (switching the
+               service off and on again re-binds it). Re-read on every resume,
+               so it leaves on its own once the service is back. */
+            <div
+              onClick={() =>
+                androidInterface.onMissingCapabilityClick("Accessibility")
+              }
+              class="missingCapabilitiesMsg"
+            >
+              <em>minded</em> can't see your apps right now. Tap to switch its
+              accessibility service off and on again.
             </div>
           ) : null}
         </RoutesCmp>

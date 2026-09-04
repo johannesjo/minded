@@ -104,6 +104,17 @@ class MyAccessibilityService : AccessibilityService() {
     private var detectionCollectionJob: kotlinx.coroutines.Job? = null
 
     companion object {
+        /**
+         * True between onServiceConnected() and onUnbind()/onDestroy(): the
+         * system currently holds a live binding to this service, so detection
+         * is running. Read by the main activity for the dashboard's detection-
+         * health line (see detection/DetectionHealth.kt) - the one signal that
+         * tells "enabled in settings" apart from "actually running".
+         */
+        @Volatile
+        var isConnected: Boolean = false
+            private set
+
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         const val INTENT_EXTRA_DETECTION_TIMESTAMP = "INTENT_EXTRA_DETECTION_TIMESTAMP"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
@@ -313,11 +324,13 @@ class MyAccessibilityService : AccessibilityService() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "onUnbind()")
+        isConnected = false
         return super.onUnbind(intent)
     }
     
     override fun onDestroy() {
         super.onDestroy()
+        isConnected = false
 
         // Stop detection collection job first
         detectionCollectionJob?.cancel()
@@ -358,6 +371,7 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         Log.d(TAG, "onServiceConnected()")
         super.onServiceConnected()
+        isConnected = true
 
         // Configure the service programmatically to ensure it works reliably
         val config = AccessibilityServiceInfo().apply {

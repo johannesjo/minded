@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.minded.minded.MissingCapability
+import com.minded.minded.detection.DetectionHealth
 import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.getAppUsageObservation
 import com.minded.minded.widget.MyAppWidgetReceiver
@@ -22,6 +23,9 @@ open class MainActivityJavaScriptInterface(
     protected open val webView: WebView,
     protected val onMissingCapabilityClickI: (MissingCapability) -> Unit = {},
     protected val getMissingCapabilitiesI: () -> List<MissingCapability> = { emptyList<MissingCapability>() },
+    protected val getDetectionHealthI: () -> DetectionHealth = {
+        DetectionHealth(accessibilityEnabled = false, serviceConnected = false)
+    },
     /**
      * Latest system-bar + display-cutout insets, written by
      * [com.minded.minded.util.ForwardSafeAreaInsetsToWebView] and read by
@@ -147,6 +151,13 @@ open class MainActivityJavaScriptInterface(
         val jsonArray = JSONArray()
         getMissingCapabilitiesI().map { it.name }.forEach { jsonArray.put(it) }
         return jsonArray.toString()
+    }
+
+    /** See [DetectionHealth]: lets the dashboard say when minded can't see apps. */
+    @JavascriptInterface
+    fun getDetectionHealth(): String {
+        Log.v(logTag, "getDetectionHealth()")
+        return getDetectionHealthI().toJson()
     }
 
     @JavascriptInterface

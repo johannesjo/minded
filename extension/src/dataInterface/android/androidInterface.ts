@@ -56,6 +56,12 @@ interface InteractionWindowJavaScriptInterface {
    * instruction. Optional: older native builds won't have it - guard with `?.()`.
    */
   requestPinWidget?: () => boolean;
+  /**
+   * Whether the accessibility service is actually bound, not merely enabled -
+   * JSON of the native DetectionHealth (see android/util/detectionHealth.ts).
+   * Optional: older native builds won't have it - guard with `?.()`.
+   */
+  getDetectionHealth?: () => string;
   test: () => void;
 }
 

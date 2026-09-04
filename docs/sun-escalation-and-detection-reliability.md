@@ -185,6 +185,14 @@ poll, no detection, no sun. To make accessibility genuinely optional it must be
 already owns overlay rendering and runs independently). Until that lands, "works
 without accessibility" is not real.
 
+What *is* real already: the dead-service state is visible. The service keeps a
+connected flag (`MyAccessibilityService.isConnected`), the main bridge exposes it
+with the settings state as `DetectionHealth`, and the Android shell shows one calm
+line on the dashboard when the service is enabled in settings but not bound
+("minded can't see your apps right now") - the one failure the permission checks
+can't see. It is a fact about the binding, never an inference from event
+silence, so it can't fire on a phone that is merely idle.
+
 ## Cross-platform (web)
 
 - Web already shows the intervention on every blocked page; the four polish

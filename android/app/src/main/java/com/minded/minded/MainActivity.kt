@@ -1,5 +1,6 @@
 package com.minded.minded
 
+import com.minded.minded.detection.DetectionHealth
 import com.minded.minded.data.SharedPreferenceService
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -229,6 +230,7 @@ class MainActivity : AppCompatActivity() {
                                     this,
                                     ::onMissingCapabilityTap,
                                     ::getMissingCapabilities,
+                                    getDetectionHealthI = ::getDetectionHealth,
                                     safeAreaInsets = safeAreaInsetsHolder,
                                 )
                                 addJavascriptInterface(jsInterface, jsInterfaceNameProp)
@@ -450,6 +452,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         }
     }
+
+    private fun getDetectionHealth(): DetectionHealth = DetectionHealth(
+        accessibilityEnabled = isAccessibilityServiceEnabled(this),
+        serviceConnected = MyAccessibilityService.isConnected,
+    )
 
     private fun getMissingCapabilities(): List<MissingCapability> {
         Log.v(
