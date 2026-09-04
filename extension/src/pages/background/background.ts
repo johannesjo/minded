@@ -1,4 +1,5 @@
 import { bro } from "@src/util/browser";
+import type { Runtime } from "webextension-polyfill";
 import {
   getSyncData,
   patchSyncData,
@@ -86,28 +87,35 @@ bro.runtime.onInstalled.addListener(() => {
   });
 });
 
-bro.runtime.onMessage.addListener((request, sender) => {
-  if (request.closeTab && sender.tab?.id) {
-    // Deliberately NO countSunTap here: closeTab is the LEAVE path (fling,
-    // drag-down, Little-Sun tap). Sun taps feed friction escalation and the
-    // return-loop insight - counting leaves would punish exactly the choice
-    // the sun invites, and Android's leave path counts nothing either. Taps
-    // are counted on completed interactions only (onInteractionSubmitted).
-    bro.tabs.remove(sender.tab.id);
+const isCloseTabMessage = (message: unknown): boolean =>
+  typeof message === "object" &&
+  message !== null &&
+  (message as { closeTab?: unknown }).closeTab === true;
+
+bro.runtime.onMessage.addListener(
+  (request: unknown, sender: Runtime.MessageSender) => {
+    if (isCloseTabMessage(request) && sender.tab?.id) {
+      // Deliberately NO countSunTap here: closeTab is the LEAVE path (fling,
+      // drag-down, Little-Sun tap). Sun taps feed friction escalation and the
+      // return-loop insight - counting leaves would punish exactly the choice
+      // the sun invites, and Android's leave path counts nothing either. Taps
+      // are counted on completed interactions only (onInteractionSubmitted).
+      bro.tabs.remove(sender.tab.id);
+      return undefined;
+    }
+
+    if (isAddUsageTimeMessage(request)) {
+      return enqueueSyncUpdate(() =>
+        updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+          usageStats: addUsageTime(
+            syncData.usageStats,
+            request.host,
+            request.seconds,
+          ),
+        })),
+      );
+    }
+
     return undefined;
-  }
-
-  if (isAddUsageTimeMessage(request)) {
-    return enqueueSyncUpdate(() =>
-      updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-        usageStats: addUsageTime(
-          syncData.usageStats,
-          request.host,
-          request.seconds,
-        ),
-      })),
-    );
-  }
-
-  return undefined;
-});
+  },
+);

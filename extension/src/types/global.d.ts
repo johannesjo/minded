@@ -36,8 +36,7 @@ declare module "*.svg" {
 }
 
 declare module "*.svg?react" {
-  import type { Component } from "solid-js";
-  const SvgComponent: Component<Record<string, unknown>>;
+  const SvgComponent: import("solid-js").Component<Record<string, unknown>>;
   export default SvgComponent;
 }
 
@@ -110,16 +109,13 @@ declare module "*.json" {
   export default content;
 }
 
-// Native bridge interfaces for Android/iOS
-import type {
-  AndroidMindedBridge,
-  IOSMindedBridge,
-} from "@src/dataInterface/dataInterface.types";
-
-declare global {
-  interface Window {
-    androidMinded?: AndroidMindedBridge;
-    iosMinded?: IOSMindedBridge;
-    IS_MAIN_MINDED_6622?: boolean;
-  }
+// Native bridge interfaces for Android/iOS.
+// This file must stay a *script* (no top-level import/export): a top-level
+// import would turn it into a module, and the `declare module "*.scss"`-style
+// wildcard declarations above only apply globally from a script file. Types
+// from other modules are referenced with `import()` types for that reason.
+interface Window {
+  androidMinded?: import("@src/dataInterface/dataInterface.types").AndroidMindedBridge;
+  iosMinded?: import("@src/dataInterface/dataInterface.types").IOSMindedBridge;
+  IS_MAIN_MINDED_6622?: boolean;
 }
