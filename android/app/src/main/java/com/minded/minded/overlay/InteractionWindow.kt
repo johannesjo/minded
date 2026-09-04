@@ -16,7 +16,6 @@ import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,8 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -47,7 +44,6 @@ import com.minded.minded.util.SafeAreaInsetsHolder
 import kotlinx.coroutines.delay
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.util.Calendar
 import kotlin.math.abs
 
 internal data class ArrivalSunTarget(
@@ -169,16 +165,6 @@ class InteractionWindow(
 //    private val dashboardViewModel: DashboardViewModel,
 ) : CommonWindow(ctrlSvc, sharedOverlayViewModel, windowManager) {
     companion object {
-        // How long to keep nudging the freshly-loaded overlay WebView to paint
-        // its first frame. Long enough to bridge the gap until the web content's
-        // own fade-in animation starts driving frames, short enough to add no
-        // meaningful battery/CPU cost.
-        private const val FIRST_FRAME_PUMP_MS = 800L
-
-        // Duration of the near-opaque window alpha nudge that forces the overlay
-        // window to recomposite its first frame after load.
-        private const val FIRST_FRAME_ALPHA_NUDGE_MS = 200L
-
         // Safety net for the reverse-morph corner placeholder: if the web never
         // signals its sun has arrived (a load error, reduced-motion, the morph
         // skipped), fade the native disc out anyway so it can't strand on screen.
@@ -338,7 +324,7 @@ class InteractionWindow(
                         super.onPageFinished(view, url)
                         nudgeWindowAlpha()
                         view?.let { webView ->
-                            pumpFirstFrame(webView)
+                            pumpFirstFrame(webView) { webViewRef === webView }
                             if (!isCornerArrival) {
                                 webView.postVisualStateCallback(
                                     SystemClock.uptimeMillis(),
@@ -462,25 +448,6 @@ class InteractionWindow(
                 }
             }
         }
-        }
-    }
-
-    @Composable
-    private fun LoadingSkyBackdrop(blend: LoadingSkyBlend) {
-        Image(
-            painter = painterResource(blend.from.drawableResource()),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize(),
-        )
-        if (blend.from != blend.to && blend.progress > 0f) {
-            Image(
-                painter = painterResource(blend.to.drawableResource()),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                alpha = blend.progress,
-                modifier = Modifier.fillMaxSize(),
-            )
         }
     }
 
@@ -727,16 +694,8 @@ class InteractionWindow(
         hideWindow()
     }
 
-    private fun hideFailedWebViewOnMainThread(failedView: WebView?) {
-        val expectedView = failedView ?: webViewRef ?: return
-        Handler(Looper.getMainLooper()).post {
-            // A delayed callback from a disposed WebView must not tear down a
-            // newer interaction that has already replaced it.
-            if (webViewRef === expectedView) {
-                hideWindow()
-            }
-        }
-    }
+    private fun hideFailedWebViewOnMainThread(failedView: WebView?) =
+        hideWindowForFailedWebView(failedView) { webViewRef }
 
     private fun resetArrivalState() {
         showCornerPlaceholder.value = false
@@ -745,56 +704,6 @@ class InteractionWindow(
         freshEscapeStep.value = FreshArrivalEscapeStep.NONE
         freshTargetMeasurementAttempts = 0
         freshTargetStability = ArrivalSunTargetStability()
-    }
-
-    // Run a near-opaque alpha animation on the overlay window root after load.
-    // Animating the window's alpha forces the WindowManager to recomposite the
-    // overlay across several frames - the same mechanism the other overlays' fade-in
-    // relies on, and the strongest nudge for a stuck first composite. The range is
-    // 0.996 -> 1.0 (not 0 -> 1): visually imperceptible, so the opaque-shield
-    // guarantee that fadeInDurationMs = 0L exists to provide is preserved and the
-    // blocked app never shows through.
-    private fun nudgeWindowAlpha() {
-        // Go through withWindowUnlessHiding so the "is a hide in flight?" check and
-        // the animation start are atomic under hideWindow()'s lock: both animate the
-        // same window view, so racing ours in would cancel the fade-out's
-        // withEndAction and wedge the window open. hideWindow() can fire off the main
-        // thread (a fast JS-bridge dismiss, or onRenderProcessGone), so the guard
-        // must hold the lock - not merely assume same-thread ordering.
-        withWindowUnlessHiding { root ->
-            root.alpha = 0.996f
-            root.animate()
-                .alpha(1f)
-                .setDuration(FIRST_FRAME_ALPHA_NUDGE_MS)
-                .start()
-        }
-    }
-
-    // Re-post an invalidate on each animation frame for a short window after the
-    // page loads, so the overlay WebView is forced to schedule and present its
-    // first composite even though no native fade animation is driving frames.
-    // The web content's own fade-in (driven by JS a beat after load) takes over
-    // once it starts animating, so a brief pump is enough to cover the gap.
-    //
-    // shortcut: this is the redundant half of the belt-and-suspenders
-    // (nudgeWindowAlpha is the primary, window-level nudge). If a field repro
-    // shows the alpha nudge alone fixes the black screen, delete this; if instead
-    // the blind 800ms proves wasteful, gate it on WebView.postVisualStateCallback
-    // so it stops at first paint instead of running a fixed duration.
-    private fun pumpFirstFrame(view: WebView) {
-        // Monotonic clock: a wall-clock jump (NTP / manual change) mid-pump must
-        // not cut the burst short or stretch it out.
-        val deadline = SystemClock.uptimeMillis() + FIRST_FRAME_PUMP_MS
-        val pump = object : Runnable {
-            override fun run() {
-                if (webViewRef !== view) return
-                view.invalidate()
-                if (SystemClock.uptimeMillis() < deadline) {
-                    view.postOnAnimation(this)
-                }
-            }
-        }
-        view.postOnAnimation(pump)
     }
 
     private fun isPhone(): Boolean {
@@ -864,12 +773,6 @@ class InteractionWindow(
                 return
             }
 
-            // Match the nearest Compose loading-sky frame before its first draw;
-            // this happens in the same turn as addView, so the window is opaque
-            // immediately and never exposes the blocked app beneath it.
-            window?.setBackgroundResource(
-                activeLoadingSkyBlend.closestFrame.drawableResource()
-            )
             // Apply system UI visibility flags to the view after it's created
             @Suppress("DEPRECATION")
             window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -878,9 +781,12 @@ class InteractionWindow(
         }
     }
 
-    private fun currentLocalHour(): Double {
-        val now = Calendar.getInstance()
-        return now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
+    // The nearest loading-sky frame is the window's own background from before
+    // addView, so the very first frame is already the sky the web content fades
+    // into - never a dark flash - and the blocked app beneath is never exposed.
+    // (activeLoadingSkyBlend is set in showWindow before super.showWindow().)
+    override fun paintInitialShield(root: View) {
+        root.setBackgroundResource(activeLoadingSkyBlend.closestFrame.drawableResource())
     }
 
     /**

@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
@@ -24,6 +25,12 @@ import com.minded.minded.util.SafeAreaInsetsHolder
  * a blocked app inside the configured wind-down window. Mirrors the structure
  * of [InteractionWindow] - it loads its own webview entry point that renders
  * `SleepWindDownView` and uses the standard JS bridge for closing the app.
+ *
+ * Like the intervention, it covers a tempting app the user just opened, so it
+ * carries the same shield + first-frame hardening (#196): an instantly-opaque
+ * window painted with the clock-matched loading sky, a transparent WebView
+ * loading over that sky, and the post-load nudges that make an overlay WebView
+ * composite its first frame without a tap.
  */
 class SleepWindDownOverlayWindow(
     private val ctrlSvc: OverlayControllerService,
@@ -33,6 +40,11 @@ class SleepWindDownOverlayWindow(
     override val logTag = javaClass.simpleName
     private var webViewRef: WebView? = null
     private val safeAreaInsetsHolder = SafeAreaInsetsHolder()
+    private var activeLoadingSkyBlend = LoadingSkyBlend.dark()
+
+    // Instantly opaque: the blocked app must never show through a fading-in
+    // window. The soft appearance is the web content fading over the native sky.
+    override val fadeInDurationMs: Long = 0L
 
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
@@ -40,54 +52,105 @@ class SleepWindDownOverlayWindow(
         val win = this
         val webViewState = remember { mutableStateOf<WebView?>(null) }
         ForwardSafeAreaInsetsToWebView(webViewState.value, safeAreaInsetsHolder)
-        AndroidView(
-            modifier = Modifier.fillMaxSize().imePadding(),
-            factory = { context ->
-            WebView(context).also {
-                webViewRef = it
-                webViewState.value = it
-            }.apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                settings.javaScriptEnabled = true
-                settings.allowFileAccess = true
-                settings.allowFileAccessFromFileURLs = true
-                settings.allowUniversalAccessFromFileURLs = true
-                settings.allowContentAccess = true
-                settings.setNeedInitialFocus(true)
-                settings.mediaPlaybackRequiresUserGesture = false
-                settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
-                this.focusable = focusable
+        Box(modifier = Modifier.fillMaxSize()) {
+            LoadingSkyBackdrop(activeLoadingSkyBlend)
+            AndroidView(
+                modifier = Modifier.fillMaxSize().imePadding(),
+                factory = { context ->
+                    WebView(context).also {
+                        webViewRef = it
+                        webViewState.value = it
+                    }.apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        settings.javaScriptEnabled = true
+                        settings.allowFileAccess = true
+                        settings.allowFileAccessFromFileURLs = true
+                        settings.allowUniversalAccessFromFileURLs = true
+                        settings.allowContentAccess = true
+                        settings.setNeedInitialFocus(true)
+                        settings.mediaPlaybackRequiresUserGesture = false
+                        settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
+                        this.focusable = focusable
 
-                this.setBackgroundColor(0xFF1a1a1a.toInt())
-                this.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                        // Transparent over the native loading sky from the start:
+                        // that sky is the opaque shield, so loading exposes neither
+                        // the blocked app nor the WebView's default white surface.
+                        // The web page picks the same night/day sky by the same
+                        // clock rule (its index.html), so the two surfaces agree.
+                        this.setBackgroundColor(android.graphics.Color.TRANSPARENT)
 
-                this.webViewClient = object : android.webkit.WebViewClient() {
-                    override fun onPageStarted(
-                        view: android.webkit.WebView?,
-                        url: String?,
-                        favicon: android.graphics.Bitmap?
-                    ) {
-                        super.onPageStarted(view, url, favicon)
-                        view?.postDelayed({
-                            view.setBackgroundColor(0x00000000)
-                        }, 100)
+                        // Deliberately NO LAYER_TYPE_HARDWARE: forcing an overlay
+                        // WebView onto its own hardware layer inside a translucent
+                        // TYPE_APPLICATION_OVERLAY window often leaves it never
+                        // compositing its first frame (see InteractionWindow).
+
+                        this.webViewClient = object : android.webkit.WebViewClient() {
+                            override fun onPageStarted(
+                                view: android.webkit.WebView?,
+                                url: String?,
+                                favicon: android.graphics.Bitmap?
+                            ) {
+                                super.onPageStarted(view, url, favicon)
+                                view?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                            }
+
+                            // Same first-frame hardening as the intervention: with
+                            // fadeInDurationMs = 0 no native animation drives a
+                            // frame after addView, so force the first composite.
+                            override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
+                                super.onPageFinished(view, url)
+                                nudgeWindowAlpha()
+                                view?.let { webView ->
+                                    pumpFirstFrame(webView) { webViewRef === webView }
+                                }
+                            }
+
+                            override fun onReceivedError(
+                                view: android.webkit.WebView?,
+                                request: android.webkit.WebResourceRequest?,
+                                error: android.webkit.WebResourceError?,
+                            ) {
+                                super.onReceivedError(view, request, error)
+                                if (request?.isForMainFrame == true) {
+                                    Log.e(
+                                        logTag,
+                                        "onReceivedError main-frame: code=${error?.errorCode} desc=${error?.description} url=${request.url}",
+                                    )
+                                    hideWindowForFailedWebView(view) { webViewRef }
+                                }
+                            }
+
+                            // Survive a gone render process (the host process would
+                            // otherwise be killed) and tear the window down so the
+                            // user isn't left on a dead overlay.
+                            override fun onRenderProcessGone(
+                                view: android.webkit.WebView?,
+                                detail: android.webkit.RenderProcessGoneDetail?,
+                            ): Boolean {
+                                Log.e(
+                                    logTag,
+                                    "onRenderProcessGone didCrash=${detail?.didCrash()} priorityAtExit=${detail?.rendererPriorityAtExit()}",
+                                )
+                                hideWindowForFailedWebView(view) { webViewRef }
+                                return true
+                            }
+                        }
+
+                        val jsInterface = SleepWindDownWindowJavaScriptInterface(
+                            this,
+                            sharedOverlayViewModel,
+                            win,
+                            ctrlSvc,
+                            safeAreaInsets = safeAreaInsetsHolder,
+                        )
+                        addJavascriptInterface(jsInterface, "androidMinded")
+                        loadUrl("file:///android_asset/web/src/android/sleepWindDown/index.html")
                     }
-                }
-
-                val jsInterface = SleepWindDownWindowJavaScriptInterface(
-                    this,
-                    sharedOverlayViewModel,
-                    win,
-                    ctrlSvc,
-                    safeAreaInsets = safeAreaInsetsHolder,
-                )
-                addJavascriptInterface(jsInterface, "androidMinded")
-                loadUrl("file:///android_asset/web/src/android/sleepWindDown/index.html")
-            }
-        })
+                })
+        }
     }
 
     private fun isPhone(): Boolean {
@@ -109,6 +172,12 @@ class SleepWindDownOverlayWindow(
         ).apply {
             x = 0
             y = 0
+            // Draw under the system bars, including the bottom gesture /
+            // navigation bar, so the sky covers the full screen with no
+            // uncovered strip (see InteractionWindow.getLayoutParams).
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                fitInsetsTypes = 0
+            }
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
@@ -121,12 +190,22 @@ class SleepWindDownOverlayWindow(
         }
     }
 
+    // The nearest loading-sky frame is the window's own background from before
+    // addView: the first frame is already the sky, never a dark flash.
+    override fun paintInitialShield(root: View) {
+        root.setBackgroundResource(activeLoadingSkyBlend.closestFrame.drawableResource())
+    }
+
     override fun showWindow() {
-        super.showWindow()
-        @Suppress("DEPRECATION")
-        window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        synchronized(this) {
+            if (isWindowShown()) return
+            activeLoadingSkyBlend = loadingSkyBlendAt(currentLocalHour())
+            super.showWindow()
+            @Suppress("DEPRECATION")
+            window?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        }
     }
 
     override fun hideWindow() {
