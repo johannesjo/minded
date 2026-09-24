@@ -141,6 +141,24 @@ export interface PatternInsightState {
   };
 }
 
+/**
+ * The week the user chose from the skip check-in (see skipCheckIn.ts).
+ * - "later": the sun still appears on every open, but the full pause waits
+ *   until the user has stayed a while in the session.
+ * - "off": minded stays out of the way entirely.
+ */
+export type InterventionPauseKind = "later" | "off";
+
+/**
+ * A skip check-in answer and the week it stands for. "as_now" changes nothing
+ * about how the sun meets the user; it only keeps the check-in from asking
+ * again that week.
+ */
+export interface InterventionPause {
+  kind: InterventionPauseKind | "as_now";
+  untilTS: number;
+}
+
 export interface SyncData {
   cfg: UserCfg;
   answers: Answer[];
@@ -209,6 +227,19 @@ export interface SyncData {
    * router runs on extension + Android. Optional; absent until first use.
    */
   lastInteractionMode?: InteractionMode;
+
+  /**
+   * How many interventions in a row the user tapped past into the app or
+   * site without doing the prompt. Doing a prompt, or leaving, resets it.
+   * Reaching the threshold brings the skip check-in (skipCheckIn.ts). Never
+   * shown, and never fed into friction or any copy - it only decides when to
+   * ask. Optional; absent until first use.
+   */
+  skipStreak?: number;
+  /** When the last pass counted toward `skipStreak` happened (recency bound). */
+  lastSkipTS?: number;
+  /** The standing skip check-in answer; null/absent when none is set. */
+  interventionPause?: InterventionPause | null;
 
   // Daily budget feature - REMOVED (#38). Retained dormant: no writer or reader
   // remains; kept only so the Android <-> extension sync JSON contract stays

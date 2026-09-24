@@ -4,6 +4,7 @@ import { SettingsAndroid } from "./SettingsAndroid";
 import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
 import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
+import { InterventionPauseSettings } from "@src/shared/components/settings/InterventionPauseSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
@@ -28,6 +29,17 @@ export const SettingsAndroidRoute = () => {
       <Show when={settings()} keyed>
         {(initial) => (
           <div class={styles.sections}>
+            {/* Only while a week chosen from the skip check-in stands - the
+                one place to see it and to end it early. */}
+            <Show when={initial.interventionPause} keyed>
+              {(pause) => (
+                <>
+                  <InterventionPauseSettings initialPause={pause} />
+                  <hr class={styles.divider} />
+                </>
+              )}
+            </Show>
+
             <SettingsAndroid
               autoSave={true}
               initialBlockedApps={initial.cfg.blockedApps}

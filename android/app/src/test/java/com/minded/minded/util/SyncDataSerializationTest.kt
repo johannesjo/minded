@@ -339,4 +339,60 @@ class SyncDataSerializationTest {
         assertEquals(1, syncData.alternatives.size)
         assertEquals("valid", syncData.alternatives[0].id)
     }
+
+    @Test
+    fun `round trips the skip check-in streak and chosen week`() {
+        val syncData = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {},
+              "skipStreak": 7,
+              "lastSkipTS": 1200000,
+              "interventionPause": { "kind": "later", "untilTS": 1234567 }
+            }
+            """.trimIndent()
+        )
+
+        assertEquals(7, syncData.skipStreak)
+        assertEquals(1200000L, syncData.lastSkipTS)
+        assertEquals(InterventionPause("later", 1234567L), syncData.interventionPause)
+
+        // Every native write re-serializes the whole blob (e.g. setSessionLimit),
+        // so the fields must survive a parse -> serialize -> parse round trip.
+        val reparsed = parseSyncData(syncDataToJson(syncData))
+        assertEquals(7, reparsed.skipStreak)
+        assertEquals(1200000L, reparsed.lastSkipTS)
+        assertEquals(InterventionPause("later", 1234567L), reparsed.interventionPause)
+    }
+
+    @Test
+    fun `reads a missing or cleared skip check-in state as none`() {
+        val syncData = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {},
+              "interventionPause": null
+            }
+            """.trimIndent()
+        )
+
+        assertEquals(0, syncData.skipStreak)
+        assertEquals(0L, syncData.lastSkipTS)
+        assertNull(syncData.interventionPause)
+        assertNull(JSONObject(syncDataToJson(syncData)).optJSONObject("interventionPause"))
+    }
 }

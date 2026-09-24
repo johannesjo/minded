@@ -46,6 +46,11 @@ import {
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import {
+  getSkipCheckInUpdate,
+  getSkipUpdateAfterSkip,
+  type SkipCheckInChoice,
+} from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
+import {
   computeUsageObservation,
   type UsageObservation,
   type UsageTarget,
@@ -267,6 +272,8 @@ export const markAlternativeOpenedAndCountSunTap = (
         now,
       ),
       ...bumpSunTap(syncData, now),
+      // Opening an alternative is taking the pause up, not passing it.
+      skipStreak: 0,
     };
   });
 
@@ -289,7 +296,14 @@ export const markPatternInsightShown = (
  */
 export const markInteractionModeShown = (
   mode: InteractionMode,
-): Promise<void> => patchSyncData({ lastInteractionMode: mode });
+): Promise<void> =>
+  patchSyncData({
+    lastInteractionMode: mode,
+    // Showing the skip check-in uses the ask up: if it is simply left (home
+    // button, closed tab) it does not come back on every open - only after a
+    // fresh run of passes, like any other time.
+    ...(mode === "SKIP_CHECK_IN" ? { skipStreak: 0 } : {}),
+  });
 
 /**
  * Add or reword one of the user's own questions (upsert by id). Rewording
@@ -345,6 +359,32 @@ export const countSunTap = (): Promise<void> =>
   updateSyncDataField(getSyncData, patchSyncData, (syncData) =>
     bumpSunTap(syncData, Date.now()),
   );
+
+/** The user tapped past the sun into the app/site without doing the prompt. */
+export const countInterventionSkip = async (): Promise<void> => {
+  const update = getSkipUpdateAfterSkip(await getSyncData(), Date.now());
+  // Nothing to write when the pass doesn't count (an answer stands, bedtime).
+  if (update) await patchSyncData(update);
+};
+
+/**
+ * The user did the prompt, or left - either way the pause wasn't passed by.
+ * No read before the write: on a leave the tab or app is closing, and on the
+ * web a read first could lose the reset to that race. (Android's patch reads
+ * and writes back through the bridge in one go.)
+ */
+export const resetInterventionSkips = async (): Promise<void> =>
+  patchSyncData({ skipStreak: 0 });
+
+// Async (not a bare patch) so a synchronous storage throw arrives as a
+// rejection the caller can handle.
+export const saveSkipCheckInChoice = async (
+  choice: SkipCheckInChoice,
+): Promise<void> => patchSyncData(getSkipCheckInUpdate(choice, Date.now()));
+
+/** Ends a pause chosen from the skip check-in early (the settings "Resume"). */
+export const clearInterventionPause = async (): Promise<void> =>
+  patchSyncData({ interventionPause: null, skipStreak: 0 });
 
 /**
  * Present-moment, judgment-free read of actual usage - the replacement for the

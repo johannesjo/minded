@@ -9,6 +9,8 @@ import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
 import com.minded.minded.util.getIsoDate
 import com.minded.minded.util.parseSyncData
+import com.minded.minded.sleepwinddown.SleepWindDownWindow
+import com.minded.minded.util.skipStreakAfterSkip
 import com.minded.minded.util.syncDataToJson
 
 class SharedPreferenceService(context: Context) {
@@ -114,6 +116,24 @@ class SharedPreferenceService(context: Context) {
             }
             copy(sunTaps = updatedSunTaps)
         }
+    }
+
+    /**
+     * The user went straight past an intervention natively (the tap on the
+     * loading sun), so the WebView never saw it. Counts toward the skip
+     * check-in exactly like the web-side countInterventionSkip.
+     */
+    fun countInterventionSkip() {
+        val now = System.currentTimeMillis()
+        val syncData = getSyncData()
+        val next = skipStreakAfterSkip(
+            syncData.skipStreak,
+            syncData.lastSkipTS,
+            syncData.interventionPause,
+            now,
+            isBedtime = SleepWindDownWindow.resolveNightId(syncData.cfg, now) != null,
+        ) ?: return
+        updateSyncData { copy(skipStreak = next, lastSkipTS = now) }
     }
 
     fun countAppUsageAttempt() {

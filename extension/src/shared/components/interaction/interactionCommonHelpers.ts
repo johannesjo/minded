@@ -18,6 +18,20 @@ export const isActivelyEditing = (shadowRoot?: ShadowRoot | null): boolean => {
   return false;
 };
 
+/**
+ * Call `onChange` whenever `el`'s class list changes (e.g. the dark-theme
+ * flag). Undefined when there is nothing to observe or no MutationObserver.
+ */
+export const observeClassChanges = (
+  el: HTMLElement | undefined | null,
+  onChange: () => void,
+): MutationObserver | undefined => {
+  if (!el || typeof MutationObserver === "undefined") return undefined;
+  const observer = new MutationObserver(onChange);
+  observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+  return observer;
+};
+
 export const getInteractionRoot = (shadowRoot?: ShadowRoot) =>
   shadowRoot?.getElementById("minded-6622") ??
   document.getElementById("minded-6622");

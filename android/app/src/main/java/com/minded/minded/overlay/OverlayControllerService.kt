@@ -50,6 +50,11 @@ import com.minded.minded.util.SyncData
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.ForegroundStateHolder
 import com.minded.minded.util.getForegroundAppReliable
+import com.minded.minded.util.INTERVENTION_PAUSE_KIND_LATER
+import com.minded.minded.util.INTERVENTION_PAUSE_KIND_OFF
+import com.minded.minded.util.activeInterventionPauseKind
+import com.minded.minded.util.isSkipCheckInDue
+import com.minded.minded.util.laterPauseAtSessionS
 import java.time.Instant
 
 
@@ -393,7 +398,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         // gliding the sun out of the Little Sun's corner (set when a session timer
         // ran out). Always assigned to the window below - false for a plain show -
         // so a stale value can't leak from a prior timer expiry into a later show.
-        morphInFromCorner: Boolean = false
+        morphInFromCorner: Boolean = false,
+        // Only meaningful for LITTLE_SUN_OVERLAY: hand back to the full pause once
+        // the session reaches this many seconds (a "later" week from the skip
+        // check-in). Always assigned, like morphInFromCorner - null for a plain
+        // show - so it can't leak into a later, unrelated bubble.
+        littleSunPauseAtSessionS: Int? = null
     ) {
         Log.v(logTag, "showOverlay() ${overlayName} ${overlayMode} ${appName}")
         wasNoOverlaysBefore = false
@@ -446,6 +456,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 }
 
                 OverlayName.LITTLE_SUN_OVERLAY -> {
+                    littleSunOverlayWindow.pauseAtSessionS = littleSunPauseAtSessionS
                     littleSunOverlayWindow.showWindow()
                 }
 
@@ -469,7 +480,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         } catch (e: Exception) {
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
-            scheduleOverlayRetry(overlayName, overlayMode, appName, morphInFromCorner)
+            scheduleOverlayRetry(
+                overlayName,
+                overlayMode,
+                appName,
+                morphInFromCorner,
+                littleSunPauseAtSessionS
+            )
         }
     }
 
@@ -488,7 +505,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         // Carry the reverse-morph intent across a retry so a timer-expiry
         // intervention that failed its first addView still glides in from the
         // corner once it succeeds (rather than silently dropping the morph).
-        morphInFromCorner: Boolean = false
+        morphInFromCorner: Boolean = false,
+        // Likewise keep a "later" week's hand-back across a retried Little Sun.
+        littleSunPauseAtSessionS: Int? = null
     ) {
         val retryKey = "${overlayName}_${appName ?: ""}"
         val currentRetries = pendingOverlayRetries[retryKey] ?: 0
@@ -498,7 +517,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
             overlayRetryHandler.postDelayed({
                 Log.d(logTag, "Retrying overlay display: $overlayName (attempt ${currentRetries + 1})")
-                showOverlay(overlayName, overlayMode, appName, morphInFromCorner)
+                showOverlay(
+                    overlayName,
+                    overlayMode,
+                    appName,
+                    morphInFromCorner,
+                    littleSunPauseAtSessionS
+                )
             }, OVERLAY_RETRY_DELAY_MS * (currentRetries + 1))
         } else {
             Log.e(logTag, "Max retry attempts reached for overlay: $overlayName")
@@ -676,6 +701,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             isSessionStale -> 0
             else -> entryForCurrentApp.sessionDurationInS.coerceAtLeast(0)
         }
+        val currentUnlockedSessionS = when {
+            entryForCurrentApp == null -> 0
+            isSessionStale -> 0
+            else -> entryForCurrentApp.unlockedSessionS.coerceAtLeast(0)
+        }
 
         val decision = overlayDecisionEngine.decide(
             currentPackageName,
@@ -699,6 +729,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 sessionGraceEnabled = sessionGraceEnabled,
                 sessionGraceMinutes = sessionGraceMinutes,
                 currentSessionDurationS = currentSessionDurationS,
+                currentUnlockedSessionS = currentUnlockedSessionS,
+                interventionPauseKind = activeInterventionPauseKind(
+                    syncData.interventionPause,
+                    currentTimeMs,
+                ),
                 isWindDownActive = isWindDownActive(syncData),
                 isWindDownSnoozed = isWindDownSnoozed(syncData),
                 detectionTimestamp = detectionTimestampMs,
@@ -744,6 +779,16 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
                 }
                 showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
+            }
+
+            is OverlayDecision.ShowLittleSunUntilPause -> {
+                resetStaleSessionDurationIfNeeded()
+                showOverlay(
+                    OverlayName.LITTLE_SUN_OVERLAY,
+                    null,
+                    currentPackageName,
+                    littleSunPauseAtSessionS = decision.pauseAtSessionS
+                )
             }
 
             OverlayDecision.ShowIntervention -> {
@@ -907,6 +952,65 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentApp)
             }
         }
+    }
+
+    /**
+     * Whether the next intervention will be the skip check-in, so the loading
+     * sun's native "Continue to the app" tap must not slip past it (the
+     * WebView's own router makes the same call from the same data - including
+     * leaving the bedtime window to the wordless settle, never the check-in).
+     */
+    internal fun isSkipCheckInDueNow(): Boolean {
+        val syncData = sharedPreferenceService.getSyncData()
+        if (SleepWindDownWindow.resolveNightId(syncData.cfg) != null) return false
+        return isSkipCheckInDue(
+            syncData.skipStreak,
+            syncData.lastSkipTS,
+            syncData.interventionPause,
+            System.currentTimeMillis(),
+        )
+    }
+
+    /**
+     * The user chose a week on the skip check-in; the WebView has already
+     * saved it. Continue into the app the way that week asks: nothing at all
+     * for "off", or the Little Sun holding the pause back for "later" - with
+     * the session clock started over, like a chosen session, so the choice
+     * never lands the user straight back in a pause.
+     */
+    fun continueAfterInterventionPause() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            Handler(Looper.getMainLooper()).post { continueAfterInterventionPause() }
+            return
+        }
+
+        val syncData = sharedPreferenceService.getSyncData()
+        val pauseKind = activeInterventionPauseKind(
+            syncData.interventionPause,
+            System.currentTimeMillis(),
+        )
+        val currentApp = sharedOverlayViewModel.sharedData.value.currentApp
+        Log.d(logTag, "continueAfterInterventionPause() kind=$pauseKind app=$currentApp")
+
+        if (currentApp == null || pauseKind == INTERVENTION_PAUSE_KIND_OFF) {
+            hideAllBut()
+            return
+        }
+
+        val grace = syncData.cfg.sessionGrace
+        sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
+        showOverlay(
+            OverlayName.LITTLE_SUN_OVERLAY,
+            null,
+            currentApp,
+            littleSunPauseAtSessionS = if (pauseKind == INTERVENTION_PAUSE_KIND_LATER) {
+                laterPauseAtSessionS(grace?.enabled == true, grace?.minutes ?: 0)
+            } else {
+                // The choice didn't stick (write failed): continue like a skip.
+                null
+            }
+        )
+        interactionOverlayWindow.hideWindow()
     }
 
     fun clearSession() {

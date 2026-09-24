@@ -19,7 +19,10 @@ enum class InteractionMode {
 data class AppEntry(
     val lastUsed: Instant = Instant.now(),
     var sessionDurationInS: Int = -1,
-    val sessionEndTime: Instant? = null
+    val sessionEndTime: Instant? = null,
+    // The part of the session spent with the screen on and unlocked - what a
+    // "later" week from the skip check-in counts (see unlockedSessionAfterTick).
+    val unlockedSessionS: Int = 0
 )
 
 typealias AppMap = Map<String, AppEntry>
@@ -95,7 +98,13 @@ class SharedOverlayViewModel(
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
 
-    fun updateCurrentAppSessionDuration(durationInS: Int) {
+    fun getCurrentAppUnlockedSession(): Int {
+        val appName = sharedData.value.currentApp ?: return 0
+        return (sharedData.value.appMap[appName]?.unlockedSessionS ?: 0).coerceAtLeast(0)
+    }
+
+    // A duration of 0 is a session reset, so the unlocked part starts over too.
+    fun updateCurrentAppSessionDuration(durationInS: Int, unlockedSessionS: Int? = null) {
         val appName =
             sharedData.value.currentApp ?: throw IllegalStateException("currentApp is null")
         val currentData = sharedData.value
@@ -103,7 +112,12 @@ class SharedOverlayViewModel(
         val appEntry = newAppMap[appName] ?: AppEntry()
         newAppMap[appName] = appEntry.copy(
             lastUsed = Instant.now(),
-            sessionDurationInS = durationInS
+            sessionDurationInS = durationInS,
+            unlockedSessionS = when {
+                durationInS == 0 -> 0
+                unlockedSessionS != null -> unlockedSessionS
+                else -> appEntry.unlockedSessionS
+            }
         )
         Log.v(lt, "updateCurrentAppSessionDuration() ${appName} ${appEntry}")
         _sharedData.update { currentData.copy(appMap = newAppMap) }

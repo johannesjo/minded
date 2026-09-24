@@ -13,6 +13,8 @@ import {
   countSunTap,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { ActiveTimer, SessionIntent } from "@src/dataInterface/syncData";
+import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
+import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
@@ -75,6 +77,9 @@ export const InteractionWeb: (props: {
 
   let wrapperEl: HTMLDivElement = undefined!;
   let isDismissing = false;
+  // The skip check-in's choices are the way in, so Escape must not slip past
+  // it (the same reason the sun's triple-tap is off there).
+  let currentMode: InteractionMode | undefined;
   const stopVideoTimeouts: number[] = [];
 
   // Seed the sky fade for the very first showing (it came straight from a Little
@@ -105,7 +110,12 @@ export const InteractionWeb: (props: {
     if (keyboardEvent.key === "Escape") {
       ev.stopPropagation();
       ev.preventDefault();
-      if (isDismissing) return;
+      if (
+        isDismissing ||
+        (currentMode === "SKIP_CHECK_IN" && !getIsShowLittleSun())
+      ) {
+        return;
+      }
 
       isDismissing = true;
       if (wrapperEl) {
@@ -163,6 +173,34 @@ export const InteractionWeb: (props: {
       teardown();
     } else {
       // Timed session: show little sun countdown
+      setIsShowLittleSun(true);
+    }
+  };
+
+  // A choice on the skip check-in (already saved). "off" steps out of the way
+  // entirely; otherwise continue with the Little Sun. A "later" week starts its
+  // session clock over, the way a chosen session does, so the pause it holds
+  // back arrives ten minutes from now - never straight away because the
+  // session was already long.
+  const handleSkipCheckInChoice = async (choice: SkipCheckInChoice) => {
+    setQuestion(undefined);
+    stopAllVideos();
+    if (choice === "off") {
+      teardown();
+      return;
+    }
+    try {
+      if (choice === "later") {
+        await updateHostsEntry(props.host, {
+          lastUsedTS: Date.now(),
+          sessionDurationInS: 0,
+        });
+      }
+    } catch (error) {
+      // e.g. the extension was just updated: still continue, never strand
+      // the user behind the faded check-in.
+      console.error("Failed to start the session over", error);
+    } finally {
       setIsShowLittleSun(true);
     }
   };
@@ -233,7 +271,9 @@ export const InteractionWeb: (props: {
                 interactionPlatform="web"
                 morphInFromCorner={getMorphInFromCorner()}
                 onSetAnswer={() => {}}
-                onModeSet={() => {}}
+                onModeSet={(mode) => {
+                  currentMode = mode;
+                }}
                 onAfterInteractionFadeout={() => {
                   setIsShowLittleSun(true);
                 }}
@@ -249,6 +289,9 @@ export const InteractionWeb: (props: {
                 onFlingAway={() => closeTab()}
                 onDragComplete={() => closeTab()}
                 onSetSessionLimit={setSessionLimit}
+                onSkipCheckInChoice={(choice) =>
+                  void handleSkipCheckInChoice(choice)
+                }
               />
             </div>
           </div>

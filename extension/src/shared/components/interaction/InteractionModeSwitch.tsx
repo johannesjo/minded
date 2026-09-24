@@ -27,6 +27,8 @@ import { NoticeInteraction } from "@src/shared/components/interaction/notice/Not
 import { BreathInteraction } from "@src/shared/components/interaction/breathPause/BreathInteraction";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
+import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckIn";
+import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 
 export interface InteractionModeSwitchProps {
   mode: InteractionMode | undefined;
@@ -73,6 +75,8 @@ export interface InteractionModeSwitchProps {
   onAddBetterAlternative?: (alternative: Alternative) => void;
   onShowAlternativeFromPatternInsight?: () => void;
   onUpdateQuestion: (question: QuestionForPrompt) => void;
+  /** A choice was made on the skip check-in (SKIP_CHECK_IN mode). */
+  onSkipCheckInChoice: (choice: SkipCheckInChoice) => void;
 }
 
 /**
@@ -84,6 +88,12 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
 ) => {
   return (
     <Switch>
+      <Match when={props.mode === "SKIP_CHECK_IN"}>
+        <SkipCheckIn
+          onChoose={props.onSkipCheckInChoice}
+          onCancelCountdown={props.onCancelCountdown}
+        />
+      </Match>
       <Match when={props.mode === "EMOTION_LABELING"}>
         <EmotionLabeling
           onCancelCountdown={props.onCancelCountdown}

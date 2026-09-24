@@ -69,6 +69,13 @@ interface InteractionWindowJavaScriptInterface {
    * Optional: older native builds won't have it - guard with `?.()`.
    */
   saveTextFile?: (filename: string, content: string) => void;
+  /**
+   * The user chose a week from the skip check-in (already saved to sync
+   * data). Native reads the choice and continues into the app accordingly:
+   * the Little Sun with the pause held back until the user has stayed a while,
+   * or no overlay at all. Optional: guard with `?.` like the others.
+   */
+  continueAfterInterventionPause?: () => void;
   test: () => void;
 }
 

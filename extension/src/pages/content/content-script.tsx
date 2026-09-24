@@ -20,6 +20,7 @@ import {
 } from "@src/util/activeTimerScope";
 import { getEffectiveSessionDurationS } from "@src/util/sessionDuration";
 import { startUsageTimeTracking } from "@src/pages/content/usageTimeTracker";
+import { isInterventionPauseActive } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 
 const CURRENT_URL = window.location.href;
 
@@ -35,8 +36,12 @@ const CURRENT_URL = window.location.href;
       // overlay shows (so rest-of-day visits are counted too).
       startUsageTimeTracking(currentHost);
 
-      // Rest-of-day mode: hide everything for the current host.
-      if (isRestOfDayActive(initialSyncData, currentTarget, "web")) {
+      // Rest-of-day mode, or a week off chosen from the skip check-in: hide
+      // everything for the current host.
+      if (
+        isRestOfDayActive(initialSyncData, currentTarget, "web") ||
+        isInterventionPauseActive(initialSyncData, "off", Date.now())
+      ) {
         return;
       }
 
@@ -55,7 +60,10 @@ const CURRENT_URL = window.location.href;
         Date.now(),
       );
 
-      if (isRestOfDayActive(syncData, currentTarget, "web")) {
+      if (
+        isRestOfDayActive(syncData, currentTarget, "web") ||
+        isInterventionPauseActive(syncData, "off", Date.now())
+      ) {
         return;
       }
 

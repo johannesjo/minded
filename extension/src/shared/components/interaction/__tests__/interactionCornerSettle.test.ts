@@ -1,6 +1,7 @@
 import {
   getInteractionCornerSettle,
   getLocalSunSettleForPhase,
+  readLittleSunRestCenter,
 } from "@src/shared/components/interaction/interactionCornerSettle";
 import {
   getSunSettleForPhase,
@@ -88,5 +89,32 @@ describe("getLocalSunSettleForPhase", () => {
         LITTLE_SUN_DISC_PX_WEB,
       ),
     );
+  });
+});
+
+describe("readLittleSunRestCenter", () => {
+  it("reads the bubble's rest centre from the bridge", () => {
+    expect(
+      readLittleSunRestCenter(() => '{"fracX":0.07,"fracY":0.86}'),
+    ).toEqual({ x: 0.07, y: 0.86 });
+  });
+
+  it("clamps an off-screen centre back onto the viewport", () => {
+    expect(readLittleSunRestCenter(() => '{"fracX":-2,"fracY":3}')).toEqual({
+      x: 0,
+      y: 1,
+    });
+  });
+
+  it("falls back to the corner (null) on anything unusable", () => {
+    expect(readLittleSunRestCenter(() => null)).toBeNull();
+    expect(readLittleSunRestCenter(() => "")).toBeNull();
+    expect(readLittleSunRestCenter(() => "not json")).toBeNull();
+    expect(readLittleSunRestCenter(() => '{"fracX":"a","fracY":1}')).toBeNull();
+    expect(
+      readLittleSunRestCenter(() => {
+        throw new Error("bridge gone");
+      }),
+    ).toBeNull();
   });
 });

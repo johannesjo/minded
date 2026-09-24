@@ -125,6 +125,13 @@ class InteractionWindowJavaScriptInterface(
         win.skipInteractionToLittleSun()
     }
 
+    // A week was chosen on the skip check-in (already saved by the WebView).
+    @JavascriptInterface
+    fun continueAfterInterventionPause() {
+        Log.v(logTag, "continueAfterInterventionPause()")
+        ctrlSvc.continueAfterInterventionPause()
+    }
+
 
     @JavascriptInterface
     fun setQuestion(jsonString: String?) {

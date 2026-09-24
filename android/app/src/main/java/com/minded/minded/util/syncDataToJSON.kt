@@ -182,5 +182,14 @@ fun syncDataToJson(syncData: SyncData): String {
     jsonObject.put("sleepWindDownGratitudeDraft", syncData.sleepWindDownGratitudeDraft)
     jsonObject.put("sleepWindDownTomorrowDraft", syncData.sleepWindDownTomorrowDraft)
 
+    jsonObject.put("skipStreak", syncData.skipStreak)
+    jsonObject.put("lastSkipTS", syncData.lastSkipTS)
+    if (syncData.interventionPause != null) {
+        val pauseObj = JSONObject()
+        pauseObj.put("kind", syncData.interventionPause.kind)
+        pauseObj.put("untilTS", syncData.interventionPause.untilTS)
+        jsonObject.put("interventionPause", pauseObj)
+    }
+
     return jsonObject.toString()
 }

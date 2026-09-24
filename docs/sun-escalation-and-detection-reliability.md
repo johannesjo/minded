@@ -129,6 +129,84 @@ exact fear-move we're rejecting. The right counter is **variety and lightness**,
 not intensity: keep the content fresh (the existing routing already varies it), and
 let many opens be just the sun + a word rather than a full prompt.
 
+## The skip check-in: when the pause is passed on autopilot (2026-09)
+
+Owner feedback: most interventions were being tapped straight through - partly
+because the owner was genuinely fine with how they used the configured apps,
+partly out of plain muscle memory. A pass that is pure muscle memory is worth
+nothing, and until now minded never noticed passes at all (only a completed
+prompt feeds `sunTaps`), so someone who always taps past got the same full
+doorway pause forever. That is the habituation risk above, arrived.
+
+**What it does.** After `SKIP_CHECK_IN_THRESHOLD` (10) interventions in a row
+tapped past into the app, the next intervention - instead of its usual
+prompt - asks once:
+
+> *You've been tapping past the sun lately.*
+> *How should the sun meet you?*
+> **As it does now** · **Only after a while** · **Not this week**
+
+- **As it does now** - carry on; the count starts over, and the check-in won't
+  ask again for a week.
+- **Only after a while** - for a week the Little Sun still meets every open,
+  but the full pause waits until the session has run ~10 minutes
+  (`LATER_PAUSE_AFTER_S`; on Android only minutes with the screen on and
+  unlocked count - a per-app unlocked-session count that both the hand-back and
+  the next open's decision read - so nobody unlocks straight into a pause),
+  then arrives by the usual corner morph. It moves the
+  pause from the doorway, where the thumb has learned to skip, to mid-session,
+  where it hasn't - and where drifting actually happens.
+- **Not this week** - minded stays out of the way entirely for a week.
+
+**Why asking, not inferring.** A pass can't tell "I'm fine" from "I'm on
+autopilot" - the most hooked user passes the most. Guessing either way fails the
+~90% bar; asking doesn't. Whatever the user picks, they picked it awake, which is
+the point of the app. A week off they chose beats the realistic alternative
+(disabling accessibility or uninstalling), because minded comes back.
+
+**Guardrails (do not regress):**
+- **The copy states what happened, never how often or what it means.** No count,
+  no "you don't seem to need minded", no "you skipped", and never "go in" for
+  continuing into the app. Guarded by `skipCheckIn.test.ts`.
+- **A fork, not a wall.** The triple-tap (and its keyboard / native loading-sun
+  equivalents, and Escape on the web) is off on this one screen, because the
+  choices are the way in; the fling still leaves. No countdown, no delay.
+- **The thumb that's already tapping.** The check-in lands mid-triple-tap, so the
+  choices only respond once faded in (`SKIP_CHECK_IN_ARM_MS`) - a reflexive tap
+  must never pick a week off for the user.
+- **Rare: at most once a week.** Every answer - "As it does now" included -
+  stands for a week, and the streak is frozen while it does. Showing the
+  check-in uses the ask up: one simply left (home button, closed tab) comes back
+  only after a fresh run of passes, never on every open.
+- **"Lately" must be true.** A gap of more than `SKIP_STREAK_MAX_GAP_MS` (3 days)
+  between passes starts the count over, and a streak whose last pass is older
+  than that can't bring the check-in.
+- **The streak is never shown and never feeds friction or copy.** It only decides
+  when to ask, and never counts where the router can't ask (the dashboard, a
+  pause opened on purpose; iOS; the bedtime window, so the check-in is never
+  about moon taps).
+- **A pass** is continuing into the app without having done the prompt: the
+  triple-tap continue, a mode's own skip button, the native loading-sun tap -
+  the taps the copy names. (Escape on the web isn't a tap, so it isn't counted.)
+  A read-only prompt tapped past still counts - it can be passed on autopilot. **Doing the prompt, sitting through the strong-friction
+  breath (which can't be passed on autopilot), or leaving starts the count
+  over.**
+- **Never at bedtime** - the wordless settle keeps that window.
+- **Visible and undoable.** While a week stands, Settings shows one line and
+  "Resume now". When it ends it simply ends: no "welcome back", no re-ask.
+
+This revises one line of the locked baseline: "the soft intervention always shows"
+becomes "the sun always shows; the full pause meets the user at the door or, for
+a chosen week, mid-session". Presence stays constant, which is what this doc's
+"rare applies to content, not presence" was protecting.
+
+Where it lives: `interaction/skipCheckIn/` (rules, copy, UI, and the flow that
+counts passes), the `SKIP_CHECK_IN` gate at the top of `getInteractionMode`, the
+"later" week as a widened grace on the web (`util/sessionGrace.ts`), and on
+Android `util/InterventionPause.kt` (mirrored constants, guarded by
+`interventionPauseMirror.test.ts`), the `ShowLittleSunUntilPause` decision, and
+the Little Sun's mid-session hand-back.
+
 ## iOS as the zero-friction arm
 
 iOS's constraints force the pure-presence extreme (home-screen companion sun, no

@@ -1,5 +1,6 @@
 package com.minded.minded.overlay
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Handler
@@ -23,6 +24,8 @@ import com.minded.minded.ui.compose.LittleSunLeaveZone
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
+import com.minded.minded.util.shouldHandBackToPause
+import com.minded.minded.util.unlockedSessionAfterTick
 import java.time.Instant
 import kotlin.math.hypot
 import kotlin.math.roundToInt
@@ -46,8 +49,25 @@ class LittleSunWindow(
     private var windowShownAt = 0L
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
+
+    /**
+     * Set by the controller for every show: hand back to the full pause once
+     * the session reaches this many seconds (a "later" week from the skip
+     * check-in), or null for a plain bubble. Snapshotted when the bubble
+     * actually appears, so a duplicate show request can't rewrite a live one.
+     */
+    var pauseAtSessionS: Int? = null
+    private var activePauseAtSessionS: Int? = null
+
+    // Session seconds toward that hand-back, counted only while the screen is
+    // on and unlocked: a locked phone never "stays a while", so nobody unlocks
+    // straight into a pause. Seeded from, and written back to, the app's entry
+    // so the next open's decision counts the same unlocked time.
+    private var unlockedSessionS = 0
     private val powerManager: PowerManager =
         ctrlSvc.getSystemService(Context.POWER_SERVICE) as PowerManager
+    private val keyguardManager: KeyguardManager? =
+        ctrlSvc.getSystemService(KeyguardManager::class.java)
 
     // Current resting position of the bubble (top-left gravity, pixels). Drag
     // mutates these; on release the bubble simply rests wherever it was dropped
@@ -144,7 +164,28 @@ class LittleSunWindow(
             } else {
                 // Regular elapsed time mode (fallback)
                 elapsedSeconds++
-                sharedOverlayViewModel.updateCurrentAppSessionDuration(elapsedSeconds)
+                val isUnlocked = powerManager.isInteractive &&
+                    keyguardManager?.isKeyguardLocked != true
+                unlockedSessionS = unlockedSessionAfterTick(unlockedSessionS, isUnlocked)
+                sharedOverlayViewModel.updateCurrentAppSessionDuration(
+                    elapsedSeconds,
+                    unlockedSessionS,
+                )
+
+                if (
+                    shouldHandBackToPause(activePauseAtSessionS, unlockedSessionS, isUnlocked) &&
+                    currentApp != null
+                ) {
+                    // A "later" week: the user has now stayed a while, so the
+                    // bubble hands back to the full pause exactly like a session
+                    // timer running out - the sun glides back out of this corner.
+                    activePauseAtSessionS = null
+                    pendingExpiredApp = currentApp
+                    pendingExpiredWasWindDownSnooze = false
+                    hideWindowImmediate()
+                    stopTimer()
+                    return
+                }
             }
 
             // Always continue the timer - OverlayControllerService handles screen state changes
@@ -186,6 +227,7 @@ class LittleSunWindow(
         if (!isWindowShown()) {
             // Restore the bubble's parked position.
             initPosition()
+            activePauseAtSessionS = pauseAtSessionS
         }
         // A fresh appearance starts at rest - no capture, no committed leave.
         isDiscInZone = false
@@ -480,6 +522,7 @@ class LittleSunWindow(
         initialTime = if (initialTimeI > 0) initialTimeI else 0
         stopTimer()
         elapsedSeconds = initialTime
+        unlockedSessionS = sharedOverlayViewModel.getCurrentAppUnlockedSession()
         handler.post(runnable)
     }
 

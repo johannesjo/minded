@@ -12,6 +12,32 @@ import {
 import type { SunSettle } from "./sun/Sun";
 import type { SessionPlatform } from "@src/dataInterface/syncData";
 
+/**
+ * Where the native Android Little Sun bubble will rest, as viewport fractions,
+ * from the bridge's `{"fracX":..,"fracY":..}`. Null (→ the fixed corner) when
+ * unavailable, unreadable, or the bridge throws. Number.isFinite (not typeof)
+ * so a NaN can't slip through to NaN offsets; clamped to the viewport so a bad
+ * value can't fling the disc off-screen.
+ */
+export type LittleSunRestCenter = { x: number; y: number };
+
+export const readLittleSunRestCenter = (
+  read: () => string | null | undefined,
+): LittleSunRestCenter | null => {
+  try {
+    const raw = read();
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { fracX?: number; fracY?: number };
+    if (!Number.isFinite(parsed.fracX) || !Number.isFinite(parsed.fracY)) {
+      return null;
+    }
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+    return { x: clamp01(parsed.fracX!), y: clamp01(parsed.fracY!) };
+  } catch {
+    return null;
+  }
+};
+
 /** The Little Sun's corner and disc size for the platform the interaction runs on. */
 const littleSunPx = (platform: SessionPlatform | undefined) =>
   platform === "android"

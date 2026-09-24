@@ -1,11 +1,28 @@
 import { SessionGraceCfg, SyncData } from "@src/dataInterface/syncData";
+import {
+  isInterventionPauseActive,
+  LATER_PAUSE_AFTER_S,
+} from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 
+/**
+ * The grace in effect right now. A "later" week chosen from the skip check-in
+ * is, on the web, exactly a longer grace: the Little Sun rides along from the
+ * first second, and the full pause arrives once the session has run that long
+ * (the grace-exhausted hand-back). So it widens the grace rather than adding a
+ * second mechanism; a longer grace the user set themselves still wins.
+ */
 export const getSessionGraceCfg = (
   syncData: SyncData,
+  now: number = Date.now(),
 ): SessionGraceCfg | undefined => {
   const cfg = syncData.cfg.sessionGrace;
-  if (!cfg || !cfg.enabled || cfg.minutes <= 0) return undefined;
-  return cfg;
+  const userGrace = cfg && cfg.enabled && cfg.minutes > 0 ? cfg : undefined;
+  if (!isInterventionPauseActive(syncData, "later", now)) return userGrace;
+
+  const laterMinutes = LATER_PAUSE_AFTER_S / 60;
+  return userGrace && userGrace.minutes >= laterMinutes
+    ? userGrace
+    : { enabled: true, minutes: laterMinutes };
 };
 
 /**
@@ -17,8 +34,9 @@ export const getSessionGraceCfg = (
 export const getSessionGraceRemainingS = (
   syncData: SyncData,
   sessionDurationS: number,
+  now: number = Date.now(),
 ): number => {
-  const cfg = getSessionGraceCfg(syncData);
+  const cfg = getSessionGraceCfg(syncData, now);
   if (!cfg) return 0;
   return Math.max(0, cfg.minutes * 60 - Math.max(0, sessionDurationS));
 };

@@ -1,0 +1,12 @@
+.SkipCheckIn {
+  text-align: center;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
