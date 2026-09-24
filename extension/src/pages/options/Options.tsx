@@ -5,6 +5,7 @@ import { AlternativesSettings } from "@src/shared/components/settings/Alternativ
 import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
+import { InterventionPauseSettings } from "@src/shared/components/settings/InterventionPauseSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { JournalBackupSettings } from "@src/shared/components/settings/JournalBackupSettings";
 import {
@@ -30,6 +31,16 @@ const Options = () => {
       <Show when={settings()} keyed>
         {(initial) => (
           <div class={styles.sections}>
+            {/* Only while a week chosen from the skip check-in stands - the
+                one place to see it and to end it early. */}
+            <Show when={initial.interventionPause} keyed>
+              {(pause) => (
+                <section class={styles.section}>
+                  <InterventionPauseSettings initialPause={pause} />
+                </section>
+              )}
+            </Show>
+
             <section class={styles.section}>
               <div class={styles.sectionIntro}>
                 <h3 class="h3">Websites</h3>

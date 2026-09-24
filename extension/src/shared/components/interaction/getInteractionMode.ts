@@ -25,6 +25,7 @@ import {
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import { getIsMediaAudible } from "@src/shared/components/interaction/bell/isMediaAudible";
 import { getIsoDate } from "@src/util/getIsoDate";
+import { isSkipCheckInDue } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 
 const TODAY_START_HOUR = 5;
 const ENERGY_LVL_MAX_HOURS = 19;
@@ -84,7 +85,8 @@ export type InteractionMode =
   | "BELL"
   | "FINGER_REST"
   | "BREATH"
-  | "WIND_DOWN_SETTLE";
+  | "WIND_DOWN_SETTLE"
+  | "SKIP_CHECK_IN";
 
 export type InteractionModeReason =
   | "few_answers_question"
@@ -116,7 +118,8 @@ export type InteractionModeReason =
   | "bedtime_settle_strong"
   | "bedtime_settled_notice"
   | "fallback_question"
-  | "fallback_anti_repeat_notice";
+  | "fallback_anti_repeat_notice"
+  | "skip_check_in";
 
 export interface InteractionModeDecision {
   mode: InteractionMode;
@@ -261,6 +264,21 @@ export const getInteractionModeDecision = (
     isActionAdviceEligible &&
     (syncData.cfg.soundEnabled ?? true) &&
     (options.isAudioAudible ?? getIsMediaAudible());
+
+  // The skip check-in outranks every other gate: after enough passes straight
+  // into the app, the most useful thing this pause can do is stop being passed
+  // on autopilot and ask, once, how the sun should meet the user (see
+  // skipCheckIn.ts). Real interventions only, and never at bedtime - a choice
+  // about the coming week is the wrong thing to hand someone on their way to
+  // sleep; the wordless settle keeps that window, and the check-in simply
+  // waits for the next daytime pass.
+  if (
+    canApplyInterventionFriction &&
+    !isBedtimeIntervention &&
+    isSkipCheckInDue(syncData, nowTS)
+  ) {
+    return decision("SKIP_CHECK_IN", "skip_check_in", frictionLevel);
+  }
 
   // Never open a bedtime interrupt with a verbal survey. A first-night
   // onboarding QUESTION or a pre-19:00 ENERGY_LVL prompt at bedtime is a

@@ -707,6 +707,115 @@ class OverlayDecisionEngineTest {
 
     // ==================== Helper Functions ====================
 
+    // ==================== Skip check-in week (interventionPauseKind) ====================
+
+    @Test
+    fun `a week off hides everything for a blocked app`() {
+        val state = createState(blockedApps = blockedApps)
+            .copy(interventionPauseKind = "off")
+
+        assertEquals(OverlayDecision.HideAll, engine.decide(youtubePackage, state))
+    }
+
+    @Test
+    fun `a later week meets a fresh open with the little sun that hands back after ten minutes`() {
+        val state = createState(blockedApps = blockedApps)
+            .copy(interventionPauseKind = "later", currentUnlockedSessionS = 0)
+
+        assertEquals(
+            OverlayDecision.ShowLittleSunUntilPause(600),
+            engine.decide(youtubePackage, state)
+        )
+    }
+
+    @Test
+    fun `a later week shows the full pause once the session has run a while`() {
+        val state = createState(blockedApps = blockedApps)
+            .copy(interventionPauseKind = "later", currentUnlockedSessionS = 600)
+
+        assertEquals(OverlayDecision.ShowIntervention, engine.decide(youtubePackage, state))
+    }
+
+    @Test
+    fun `a later week counts only unlocked time, never time behind the lock screen`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            interventionPauseKind = "later",
+            currentSessionDurationS = 1800,
+            currentUnlockedSessionS = 120,
+        )
+
+        assertEquals(
+            OverlayDecision.ShowLittleSunUntilPause(600),
+            engine.decide(youtubePackage, state)
+        )
+    }
+
+    @Test
+    fun `a later week keeps a longer grace the user set`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            interventionPauseKind = "later",
+            sessionGraceEnabled = true,
+            sessionGraceMinutes = 30,
+            currentUnlockedSessionS = 900,
+        )
+
+        assertEquals(
+            OverlayDecision.ShowLittleSunUntilPause(1800),
+            engine.decide(youtubePackage, state)
+        )
+    }
+
+    @Test
+    fun `a later week hands back even inside a shorter grace`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            interventionPauseKind = "later",
+            sessionGraceEnabled = true,
+            sessionGraceMinutes = 5,
+            currentUnlockedSessionS = 60,
+        )
+
+        assertEquals(
+            OverlayDecision.ShowLittleSunUntilPause(600),
+            engine.decide(youtubePackage, state)
+        )
+    }
+
+    @Test
+    fun `a running session timer still wins over a later week`() {
+        val now = System.currentTimeMillis()
+        val state = createState(
+            blockedApps = blockedApps,
+            currentTime = now,
+            activeTimerEndTime = now + 60_000,
+            activeTimerDurationS = 300,
+        ).copy(interventionPauseKind = "later")
+
+        assertEquals(OverlayDecision.ShowLittleSun, engine.decide(youtubePackage, state))
+    }
+
+    @Test
+    fun `a week off never reaches past an unblocked app`() {
+        val state = createState(blockedApps = blockedApps)
+            .copy(interventionPauseKind = "off")
+
+        assertEquals(OverlayDecision.HideAll, engine.decide(whatsappPackage, state))
+    }
+
+    @Test
+    fun `a standing as-it-does-now answer changes nothing`() {
+        val state = createState(blockedApps = blockedApps)
+            .copy(interventionPauseKind = "as_now")
+
+        assertEquals(OverlayDecision.ShowIntervention, engine.decide(youtubePackage, state))
+    }
+
+    @Test
+    fun `without a chosen week nothing changes`() {
+        val state = createState(blockedApps = blockedApps)
+
+        assertEquals(OverlayDecision.ShowIntervention, engine.decide(youtubePackage, state))
+    }
+
     private fun createState(
         blockedApps: Set<String>,
         currentTime: Long = System.currentTimeMillis(),

@@ -7,6 +7,7 @@ import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
 import { SessionIntent } from "@src/dataInterface/syncData";
+import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import { createAndroidSessionLimitPayload } from "@src/shared/components/interaction/sessionLimit";
 
 const questionId = window.location.hash.replace("#", "");
@@ -75,6 +76,22 @@ const InteractionAndroid = () => {
     }, 100);
   };
 
+  // A choice on the skip check-in, already saved. "As it does now" continues
+  // like any skip. A chosen week is read back natively, which continues
+  // accordingly (the Little Sun holding the pause back, or nothing at all);
+  // the fallbacks keep the user moving on an older native build.
+  const onSkipCheckInChoice = (choice: SkipCheckInChoice) => {
+    if (choice === "as_now") {
+      androidInterface.onSkip();
+    } else if (androidInterface.continueAfterInterventionPause) {
+      androidInterface.continueAfterInterventionPause();
+    } else if (choice === "off") {
+      androidInterface.hideWindow();
+    } else {
+      androidInterface.onSkip();
+    }
+  };
+
   const onSetSessionLimit = (seconds: number, intent?: SessionIntent) => {
     androidInterface.setSessionLimit(
       createAndroidSessionLimitPayload(seconds, intent),
@@ -114,6 +131,7 @@ const InteractionAndroid = () => {
           }
         }}
         onSetSessionLimit={onSetSessionLimit}
+        onSkipCheckInChoice={onSkipCheckInChoice}
       />
     </div>
   );

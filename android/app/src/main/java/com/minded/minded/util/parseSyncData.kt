@@ -112,6 +112,16 @@ data class CustomQuestion(
     val createdTS: Long
 )
 
+/**
+ * The week chosen from the skip check-in (SyncData.interventionPause on the TS
+ * side): "later" keeps the sun on every open but lets the full pause wait until
+ * the user has stayed a while; "off" keeps minded out of the way entirely.
+ */
+data class InterventionPause(
+    val kind: String,
+    val untilTS: Long
+)
+
 data class SyncData(
     val cfg: UserCfg,
     val answers: List<Answer>,
@@ -147,7 +157,13 @@ data class SyncData(
     val sleepWindDownTomorrowDraft: String = "",
     val alternatives: List<Alternative> = emptyList(),
     val patternInsightState: PatternInsightState = PatternInsightState(emptyMap()),
-    val customQuestions: List<CustomQuestion> = emptyList()
+    val customQuestions: List<CustomQuestion> = emptyList(),
+    // Skip check-in state (skipCheckIn.ts). Modelled here - not just passed
+    // through - because every native write re-serializes this class, so an
+    // unmodelled field would be silently erased by e.g. setSessionLimit.
+    val skipStreak: Int = 0,
+    val lastSkipTS: Long = 0L,
+    val interventionPause: InterventionPause? = null
 )
 
 fun parseSyncData(jsonString: String): SyncData {
@@ -388,6 +404,14 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val sleepWindDownGratitudeDraft = jsonObject.optString("sleepWindDownGratitudeDraft", "")
     val sleepWindDownTomorrowDraft = jsonObject.optString("sleepWindDownTomorrowDraft", "")
 
+    val skipStreak = jsonObject.optInt("skipStreak", 0)
+    val lastSkipTS = jsonObject.optLong("lastSkipTS", 0L)
+    val interventionPause = jsonObject.optJSONObject("interventionPause")?.let { pauseObj ->
+        val kind = pauseObj.optString("kind", "")
+        val untilTS = pauseObj.optLong("untilTS", 0L)
+        if (kind.isNotBlank() && untilTS > 0L) InterventionPause(kind, untilTS) else null
+    }
+
     return SyncData(
         userCfg,
         answers,
@@ -423,6 +447,9 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
         sleepWindDownTomorrowDraft,
         alternatives,
         patternInsightState,
-        customQuestions
+        customQuestions,
+        skipStreak,
+        lastSkipTS,
+        interventionPause
     )
 }

@@ -46,6 +46,24 @@ describe("getLittleSunTimerSource", () => {
     });
   });
 
+  it("keeps counting up instead when this sun never counted the grace down", () => {
+    mockDate(NOW);
+
+    const syncData = createMockSyncData({
+      cfg: { sessionGrace: { enabled: true, minutes: 5 } },
+    });
+
+    // e.g. the Little Sun after an intervention the user just passed, or one
+    // already counting up when a "later" week starts in another tab.
+    expect(
+      getLittleSunTimerSource(syncData, "reddit.com", 20 * 60, NOW, false),
+    ).toEqual({
+      type: "elapsed",
+      initialSeconds: 20 * 60,
+      shouldClearExpiredTimer: false,
+    });
+  });
+
   it("returns grace-exhausted when a configured grace window has run out", () => {
     mockDate(NOW);
 

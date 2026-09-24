@@ -1,0 +1,27 @@
+.InterventionPauseSettings {
+  padding: var(--settings-block-padding, var(--space-md) 0);
+  text-align: var(--settings-text-align, center);
+}
+
+.description {
+  margin: 0 var(--settings-description-margin-inline, auto) var(--space-md);
+  max-width: var(--settings-description-max-width, 400px);
+  text-align: var(--settings-text-align, center);
+}
+
+// Each state eases in, so resuming swaps the line softly rather than cutting.
+// `backwards`, not `both`: a held end state would override the inline fade-out
+// the old line runs on resume. Local keyframes: a module would rename a
+// reference to the global ones.
+.state {
+  animation: stateIn var(--dur-soft) var(--ease-out) backwards;
+}
+
+@keyframes stateIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

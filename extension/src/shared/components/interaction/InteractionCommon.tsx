@@ -32,10 +32,13 @@ import {
   getInteractionRoot,
   isActivelyEditing,
   matchWidgetLine,
+  observeClassChanges,
 } from "@src/shared/components/interaction/interactionCommonHelpers";
 import {
   getInteractionCornerSettle,
   getLocalSunSettleForPhase,
+  readLittleSunRestCenter,
+  type LittleSunRestCenter,
 } from "@src/shared/components/interaction/interactionCornerSettle";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
@@ -73,6 +76,8 @@ import {
   setSunRole,
 } from "@src/shared/components/interaction/sun/sunStore";
 import { shouldShowSunInstructionsOverlay } from "@src/shared/components/interaction/sunInstructionsVisibility";
+import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
+import { createSkipCheckInFlow } from "@src/shared/components/interaction/skipCheckIn/skipCheckInFlow";
 import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
 import {
   calculateFadeProgress,
@@ -84,6 +89,7 @@ import { ACTION_ADVICES } from "@src/shared/data/actionAdvices";
 import { customQuestionsToPrompts } from "@src/shared/data/customQuestions";
 import { QuestionForPrompt } from "@src/shared/data/questions";
 import { fadeOut } from "@src/util/animation";
+import { isMain } from "@src/shared/isMain.const";
 import { displayTargetName } from "@src/util/displayTargetName";
 import {
   getQuestionSemiSmart,
@@ -133,6 +139,8 @@ interface InteractionCommonProps {
   onDragComplete: () => void;
   onCompletionStarted?: (started: boolean) => void;
   onSetSessionLimit?: (seconds: number, intent?: SessionIntent) => void;
+  /** A skip check-in choice, already saved (skipCheckInFlow.ts); else onSkip. */
+  onSkipCheckInChoice?: (choice: SkipCheckInChoice) => void;
   interactionTarget?: SessionTarget;
   interactionPlatform?: SessionPlatform;
   isFromDashboard?: boolean;
@@ -286,29 +294,16 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // (it isn't shown then), so a single read is stable for this interaction; the
   // departing morph targets it instead of the fixed corner. null off Android or
   // when the native side can't report it.
-  const [getLittleSunRestCenter, setLittleSunRestCenter] = createSignal<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const [getLittleSunRestCenter, setLittleSunRestCenter] =
+    createSignal<LittleSunRestCenter | null>(null);
   if (IS_ANDROID && props.interactionPlatform === "android") {
-    onMount(() => {
-      try {
-        const raw = androidInterface.getLittleSunRestCenter?.();
-        if (!raw) return;
-        const parsed = JSON.parse(raw) as { fracX?: number; fracY?: number };
-        // Number.isFinite (not typeof) so a NaN slips through to NaN offsets;
-        // clamp to the viewport so a bad value can't fling the disc off-screen.
-        if (Number.isFinite(parsed.fracX) && Number.isFinite(parsed.fracY)) {
-          const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-          setLittleSunRestCenter({
-            x: clamp01(parsed.fracX!),
-            y: clamp01(parsed.fracY!),
-          });
-        }
-      } catch {
-        // Leave null → the morph falls back to the fixed corner.
-      }
-    });
+    onMount(() =>
+      setLittleSunRestCenter(
+        readLittleSunRestCenter(() =>
+          androidInterface.getLittleSunRestCenter?.(),
+        ),
+      ),
+    );
   }
 
   // The Little Sun's resting spot, expressed as a sun settle (corner, exact disc
@@ -472,6 +467,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let postSunOverlayEl: HTMLDivElement | undefined;
   let postSunFocusFrame: number | undefined;
   let isDisposed = false;
+  let hasBreathed = false; // a guided breath can't be tapped past on autopilot
   // The direction of the just-completed sun gesture. The terminal outcome
   // callbacks (onFlingAway/onDragComplete) carry no direction, so we stash it
   // here from handleStartBackgroundAnimation, which fires first.
@@ -499,6 +495,23 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setShowLetGoOffer(true);
   };
 
+  // Skip check-in (skipCheckInFlow.ts): its choices, not the tap, are the way in.
+  const isCheckIn = () => getMode() === "SKIP_CHECK_IN";
+  const skipFlow = createSkipCheckInFlow({
+    isCounted: () => !(props.isFromDashboard ?? isMain()), // as the router reads it
+    hasEngaged: () =>
+      hasBreathed || getHasAnswered() || getShowSunInstructions(),
+    isCheckIn,
+    depart: (choice) => {
+      setIsExitingInteraction(true);
+      if (choice === "off") fadeOut(props.wrapperEl, SCREEN_TRANSITION_MS);
+      else departToLittleSun();
+      return SCREEN_TRANSITION_MS;
+    },
+    continueWith: (choice) =>
+      (props.onSkipCheckInChoice ?? props.onSkip)(choice),
+  });
+
   // Dashboard down-drag opens the grounding offer (and up/away the let-go offer)
   // while keeping the interaction mounted, so the sun's terminal close (fade +
   // unmount) must not fire. Every other case closes as before.
@@ -517,7 +530,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       openLetGoOffer();
       return;
     }
-    close();
+    skipFlow.leave(close);
   };
 
   // The bedtime settle - a deliberate drag OR fling in any direction (both ease
@@ -550,7 +563,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     bedtimeSettleTimeout = window.setTimeout(() => {
       bedtimeSettleTimeout = undefined;
       if (isDisposed) return;
-      close();
+      skipFlow.leave(close);
     }, GOODNIGHT_MS);
   };
 
@@ -596,15 +609,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     setDragObjectName(isDark ? "moon" : "sun");
   };
 
-  const observeThemeClass = (
-    el: HTMLElement | undefined | null,
-  ): MutationObserver | undefined => {
-    if (!el || typeof MutationObserver === "undefined") return undefined;
-
-    const observer = new MutationObserver(syncDragObjectNameWithTheme);
-    observer.observe(el, { attributes: true, attributeFilter: ["class"] });
-    return observer;
-  };
+  const observeThemeClass = (el: HTMLElement | undefined | null) =>
+    observeClassChanges(el, syncDragObjectNameWithTheme);
 
   createEffect(() => {
     if (!getShowSunInstructions()) {
@@ -732,6 +738,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Don't skip if user is actively editing an input
     if (isActivelyEditing(props.shadowRoot)) return;
     setIsSkipping(true);
+    skipFlow.recordPass();
 
     if (getShowSunInstructions()) {
       props.onInteractionSubmitted?.();
@@ -810,7 +817,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // goodnight on the drag-down (settleForBedtime eases the phone into sleep); the
   // tap is the "I'm staying up a little longer" path, so it grants a session like
   // everywhere else rather than nagging with another prompt.
-  const handleSunTap = () => handleSunContinue();
+  const handleSunTap = () => !isCheckIn() && handleSunContinue();
 
   const getSunAccessibility = () =>
     getInteractiveSunAccessibility({
@@ -821,7 +828,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       isInputEnabled:
         !getIsExitingInteraction() &&
         !getIsCompletionStarted() &&
-        !getIsFinalAnimation(),
+        !getIsFinalAnimation() &&
+        !isCheckIn(),
     });
   const getSunAlternativeAction = () =>
     getSunAccessibility()?.alternativeAction;
@@ -868,6 +876,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleBreathPauseComplete = () => {
     if (isDisposed) return;
+    hasBreathed = true;
+    skipFlow.recordEngagedOrLeft();
     clearIntentSelectionArmTimeout();
     // Drop the breath origin now the pause is over, so a re-opened pause glides
     // in and re-publishes a fresh clock rather than reading this stale one.
@@ -942,24 +952,22 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     armTimeSelectionAfterOverlayTransition();
   };
 
+  // Glide the sun to the Little Sun's home as the overlay fades, so it reads as
+  // the same sun settling in, not a new element popping up. `is-departing`
+  // fades only the sky and choices - never the sun (fading the whole wrapper
+  // once dissolved it before it reached the corner).
+  const departToLittleSun = () => {
+    setSunPhase("departing");
+    props.wrapperEl?.classList.add("is-departing");
+  };
+
   const handleTimeSelection = (seconds: number) => {
+    skipFlow.recordPass();
     const intent = getPendingIntent();
     clearTimeSelectionArmTimeout();
     setIsTimeSelectionArmed(false);
     setIsPostSunScreenFading(true);
-    // Send the sun gliding to the bottom-left corner (the Little Sun's home) as
-    // the overlay fades, so the persistent timer reads as the same sun settling
-    // in rather than a new element popping up.
-    setSunPhase("departing");
-    // Reveal the page beneath by fading the sky and the choices - but NOT the
-    // sun. Fading the whole wrapper's opacity (the old approach) faded the sun
-    // along with it, so by the time it reached the corner it had all but
-    // dissolved. `is-departing` fades only the background layers, leaving the
-    // sun fully opaque so it reads as a companion gliding into the corner to
-    // settle in as the Little Sun.
-    if (props.wrapperEl) {
-      props.wrapperEl.classList.add("is-departing");
-    }
+    departToLittleSun();
 
     // After fade out completes, call native side
     timeSelectionTimeout = window.setTimeout(() => {
@@ -1124,6 +1132,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     setHasAnswered(true);
+    skipFlow.recordEngagedOrLeft();
     setPendingIntent(undefined);
     setIsIntentSelectionArmed(false);
     setIsTimeSelectionArmed(false);
@@ -1519,6 +1528,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
     rootThemeObserver?.disconnect();
     wrapperThemeObserver?.disconnect();
+    skipFlow.dispose();
   });
 
   createEffect(() => {
@@ -1762,7 +1772,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}
-            onLeaveNow={props.onFlingAway}
+            onLeaveNow={() => skipFlow.leave(props.onFlingAway)}
+            onSkipCheckInChoice={(choice) => void skipFlow.choose(choice)}
             onSunWaveStart={startSunWave}
             onSunWaveEnd={endSunWave}
             onSunBreathStart={startSunBreath}
@@ -1919,7 +1930,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               // handleSunContinue), and lights the tap-progress dots as a
               // wordless hint that the moon responds. Only the dashboard
               // (grounding) disables tap, where a back arrow is the way out.
-              isTapEnabled={!props.isFromDashboard}
+              isTapEnabled={!props.isFromDashboard && !isCheckIn()}
               settle={getSunSettle()}
               onBreathStart={setBreathStartedAt}
             />

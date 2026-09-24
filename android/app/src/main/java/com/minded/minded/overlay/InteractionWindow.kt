@@ -153,8 +153,12 @@ internal fun shouldEnableFreshArrivalSunEscape(
     isCornerArrival: Boolean,
     isFreshPlaceholderVisible: Boolean,
     escapeStep: FreshArrivalEscapeStep = FreshArrivalEscapeStep.NONE,
+    // The next intervention is the skip check-in, whose choices are the way
+    // in - the loading sun must not offer a shortcut past it.
+    isSkipCheckInDue: Boolean = false,
 ): Boolean =
     !isCornerArrival &&
+        !isSkipCheckInDue &&
         isFreshPlaceholderVisible &&
         escapeStep == FreshArrivalEscapeStep.NONE
 
@@ -227,6 +231,10 @@ class InteractionWindow(
     // The controller can update morphInFromCorner before a duplicate show call;
     // that rejected request must not change callbacks belonging to the live view.
     private var activeMorphInFromCorner: Boolean = false
+
+    // Read once per show (like activeMorphInFromCorner): whether this
+    // intervention will open on the skip check-in.
+    private val isSkipCheckInDue = mutableStateOf(false)
 
     // Reverse-morph hand-off: while a freshly-shown morph interaction loads its
     // WebView over the opaque native sky, a native sun disc
@@ -531,6 +539,7 @@ class InteractionWindow(
                     isCornerArrival = activeMorphInFromCorner,
                     isFreshPlaceholderVisible = showFreshPlaceholder.value,
                     escapeStep = freshEscapeStep.value,
+                    isSkipCheckInDue = isSkipCheckInDue.value,
                 )
                 val escapeModifier = if (isEscapeEnabled) {
                     Modifier
@@ -628,8 +637,13 @@ class InteractionWindow(
                 isCornerArrival = activeMorphInFromCorner,
                 isFreshPlaceholderVisible = showFreshPlaceholder.value,
                 escapeStep = freshEscapeStep.value,
+                isSkipCheckInDue = isSkipCheckInDue.value,
             )
         ) return
+
+        // Straight past the pause before it even loaded - a pass, counted
+        // toward the skip check-in like any other.
+        ctrlSvc.getSharedPreferenceService().countInterventionSkip()
 
         freshEscapeStep.value = resolveFreshArrivalEscapeStep(
             escapeRequested = true,
@@ -760,6 +774,7 @@ class InteractionWindow(
             if (isWindowShown()) return
 
             activeMorphInFromCorner = morphInFromCorner
+            isSkipCheckInDue.value = ctrlSvc.isSkipCheckInDueNow()
             resetArrivalState()
             showCornerPlaceholder.value = activeMorphInFromCorner
             showFreshPlaceholder.value = !activeMorphInFromCorner

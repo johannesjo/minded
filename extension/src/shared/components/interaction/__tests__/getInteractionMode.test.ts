@@ -1089,4 +1089,112 @@ describe("getInteractionMode", () => {
       });
     });
   });
+
+  describe("skip check-in", () => {
+    const WEEK = 7 * 24 * ONE_HOUR;
+    const intervention = (
+      syncData: SyncData,
+      options: InteractionModeDecisionOptions = {},
+    ) => decide(syncData, { isMainView: false, ...options });
+
+    it("asks once the pause has been passed straight by ten times in a row", () => {
+      expect(
+        intervention(baseSyncData({ skipStreak: 10, lastSkipTS: NOW })),
+      ).toMatchObject({
+        mode: "SKIP_CHECK_IN",
+        reason: "skip_check_in",
+      });
+    });
+
+    it("does not ask one pass earlier", () => {
+      expect(
+        intervention(baseSyncData({ skipStreak: 9, lastSkipTS: NOW })).mode,
+      ).not.toBe("SKIP_CHECK_IN");
+    });
+
+    it("outranks the other hard gates (onboarding question, energy)", () => {
+      expect(
+        intervention(
+          baseSyncData({
+            skipStreak: 12,
+            lastSkipTS: NOW,
+            answers: [],
+            energyLvlTS: 0,
+          }),
+        ).mode,
+      ).toBe("SKIP_CHECK_IN");
+    });
+
+    it("outranks strong friction, which would otherwise demand a breath", () => {
+      expect(
+        intervention(
+          baseSyncData({
+            skipStreak: 10,
+            lastSkipTS: NOW,
+            ...strongFrictionViaAttempts(),
+          }),
+        ).mode,
+      ).toBe("SKIP_CHECK_IN");
+    });
+
+    it("never asks on the dashboard, where the pause was opened on purpose", () => {
+      expect(
+        decide(baseSyncData({ skipStreak: 10, lastSkipTS: NOW }), {
+          isMainView: true,
+        }).mode,
+      ).not.toBe("SKIP_CHECK_IN");
+    });
+
+    it("does not ask again while any answer still stands", () => {
+      for (const kind of ["as_now", "later", "off"] as const) {
+        expect(
+          intervention(
+            baseSyncData({
+              skipStreak: 10,
+              lastSkipTS: NOW,
+              interventionPause: { kind, untilTS: NOW + WEEK },
+            }),
+          ).mode,
+        ).not.toBe("SKIP_CHECK_IN");
+      }
+    });
+
+    it("can ask again once that week is over", () => {
+      expect(
+        intervention(
+          baseSyncData({
+            skipStreak: 10,
+            lastSkipTS: NOW,
+            interventionPause: { kind: "later", untilTS: NOW - 1 },
+          }),
+        ).mode,
+      ).toBe("SKIP_CHECK_IN");
+    });
+
+    it("leaves bedtime to the wordless settle", () => {
+      const BEDTIME = new Date("2026-05-11T23:00:00").getTime();
+      const NIGHT = { start: "22:00", end: "07:00" };
+      const syncData = baseSyncData({
+        skipStreak: 10,
+        lastSkipTS: NOW,
+        cfg: {
+          sleepWindDown: {
+            enabled: true,
+            days: {
+              0: NIGHT,
+              1: NIGHT,
+              2: NIGHT,
+              3: NIGHT,
+              4: NIGHT,
+              5: NIGHT,
+              6: NIGHT,
+            },
+          },
+        },
+      });
+      expect(intervention(syncData, { clock: () => BEDTIME }).mode).toBe(
+        "WIND_DOWN_SETTLE",
+      );
+    });
+  });
 });

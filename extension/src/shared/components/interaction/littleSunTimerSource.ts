@@ -32,6 +32,14 @@ export const getLittleSunTimerSource = (
   host: string,
   initialElapsedSeconds: number,
   now: number = Date.now(),
+  /**
+   * Whether an exhausted grace may hand back to the intervention. Only a
+   * Little Sun that has itself been counting a grace down should: one that
+   * follows an intervention the user just passed, or one already counting up
+   * when a "later" week starts in another tab, must not be sent straight back
+   * into a pause - it keeps counting up instead.
+   */
+  canHandBackExhaustedGrace = true,
 ): LittleSunTimerSource => {
   const target = getWebHostSessionTarget(host);
   const activeTimer = getActiveTimerInScope(syncData, target, "web", now);
@@ -43,10 +51,11 @@ export const getLittleSunTimerSource = (
     };
   }
 
-  const graceCfg = getSessionGraceCfg(syncData);
+  const graceCfg = getSessionGraceCfg(syncData, now);
   const graceRemaining = getSessionGraceRemainingS(
     syncData,
     initialElapsedSeconds,
+    now,
   );
   if (graceRemaining > 0) {
     return {
@@ -57,7 +66,7 @@ export const getLittleSunTimerSource = (
 
   // Grace was configured and is now exhausted - signal intervention rather than
   // silently dropping into elapsed mode.
-  if (graceCfg) {
+  if (graceCfg && canHandBackExhaustedGrace) {
     return { type: "grace-exhausted" };
   }
 

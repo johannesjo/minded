@@ -134,6 +134,17 @@ class InteractionArrivalTargetTest {
     }
 
     @Test
+    fun `native fresh-arrival sun is no shortcut past a due skip check-in`() {
+        assertFalse(
+            shouldEnableFreshArrivalSunEscape(
+                isCornerArrival = false,
+                isFreshPlaceholderVisible = true,
+                isSkipCheckInDue = true,
+            )
+        )
+    }
+
+    @Test
     fun `fresh escape morphs to the Little Sun target before revealing the Little Sun`() {
         assertEquals(
             FreshArrivalEscapeStep.NONE,

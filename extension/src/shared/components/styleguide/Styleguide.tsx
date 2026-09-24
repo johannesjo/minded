@@ -24,6 +24,7 @@ import Btn from "@src/shared/components/ui/Btn";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
+import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckIn";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
@@ -599,6 +600,15 @@ const Styleguide = (): JSX.Element => {
             <NoticeInteraction
               onSuccess={() => console.log("NoticeInteraction: success")}
               onSkip={() => console.log("NoticeInteraction: skip")}
+              onCancelCountdown={() => undefined}
+            />
+          </div>
+        </Subsection>
+
+        <Subsection label="<SkipCheckIn> - after ten taps past the sun">
+          <div class={styles.interactionFrame}>
+            <SkipCheckIn
+              onChoose={(choice) => console.log("skip check-in:", choice)}
               onCancelCountdown={() => undefined}
             />
           </div>

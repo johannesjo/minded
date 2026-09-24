@@ -1,5 +1,8 @@
 package com.minded.minded.detection
 
+import com.minded.minded.util.INTERVENTION_PAUSE_KIND_LATER
+import com.minded.minded.util.INTERVENTION_PAUSE_KIND_OFF
+import com.minded.minded.util.laterPauseAtSessionS
 import java.time.Instant
 
 /**
@@ -137,6 +140,12 @@ class OverlayDecisionEngine {
             return OverlayDecision.HideAll
         }
 
+        // A week off chosen from the skip check-in: stay out of the way
+        // entirely, like rest-of-day, until the week is up.
+        if (state.interventionPauseKind == INTERVENTION_PAUSE_KIND_OFF) {
+            return OverlayDecision.HideAll
+        }
+
         // Check if any overlay is already showing
         if (state.isAnyOverlayShowing) {
             return OverlayDecision.Skip(SkipReason.OVERLAY_ALREADY_SHOWING)
@@ -146,9 +155,22 @@ class OverlayDecisionEngine {
         val sessionEndTime = state.appSessionEndTime ?: state.activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > state.currentTime } ?: false
 
+        val laterPauseAtS = laterPauseAtSessionS(
+            state.sessionGraceEnabled,
+            state.sessionGraceMinutes,
+        )
+
         return if (isWithinSessionLimit) {
             // Active session exists - show little sun
             OverlayDecision.ShowLittleSun
+        } else if (
+            state.interventionPauseKind == INTERVENTION_PAUSE_KIND_LATER &&
+            state.currentUnlockedSessionS < laterPauseAtS
+        ) {
+            // A "later" week from the skip check-in: the sun still meets every
+            // open, but the full pause waits until the user has stayed a while.
+            // Checked before grace because, unlike grace here, it hands back.
+            OverlayDecision.ShowLittleSunUntilPause(laterPauseAtS)
         } else if (isWithinSessionGrace(state)) {
             // Per-session grace period still has time - show little sun
             OverlayDecision.ShowLittleSun
@@ -232,6 +254,19 @@ data class OverlayState(
     /** Foreground duration of the current app session, in seconds */
     val currentSessionDurationS: Int = 0,
 
+    /**
+     * The part of [currentSessionDurationS] spent with the screen on and
+     * unlocked - what a "later" week counts, so locked time never brings the
+     * pause.
+     */
+    val currentUnlockedSessionS: Int = 0,
+
+    /**
+     * The kind of the week chosen from the skip check-in while it still
+     * stands ("later" / "off"), else null. See util/InterventionPause.kt.
+     */
+    val interventionPauseKind: String? = null,
+
     /** Legacy input retained for native cleanup; ignored by decision routing. */
     val isWindDownActive: Boolean = false,
 
@@ -265,6 +300,12 @@ sealed class OverlayDecision {
 
     /** Show the little sun overlay */
     object ShowLittleSun : OverlayDecision()
+
+    /**
+     * Show the little sun, and hand back to the full pause once the session
+     * reaches [pauseAtSessionS] seconds (a "later" week from the skip check-in).
+     */
+    data class ShowLittleSunUntilPause(val pauseAtSessionS: Int) : OverlayDecision()
 
     /** Show the sleep wind-down overlay */
     object ShowSleepWindDown : OverlayDecision()

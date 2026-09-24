@@ -16,6 +16,7 @@ describe("settings composition", () => {
         cfg: UserCfg;
         alternatives: unknown[];
         customQuestions: unknown[];
+        interventionPause: unknown;
       }>;
     }>("@src/shared/components/settings/settingsHydration");
 
@@ -28,6 +29,7 @@ describe("settings composition", () => {
       cfg: DEFAULT_SYNC_DATA.cfg,
       alternatives: [],
       customQuestions: [],
+      interventionPause: null,
     });
 
     const settingsPages = [
@@ -56,6 +58,7 @@ describe("settings composition", () => {
     expect(webSettings).toContain("initialSchedule");
     expect(webSettings).toContain("initialAlternatives");
     expect(webSettings).toContain("initialCustomQuestions");
+    expect(webSettings).toContain("initialPause");
 
     expect(androidSettings).toContain("getSyncData");
     expect(androidSettings).toContain("initialSoundEnabled");
@@ -63,6 +66,7 @@ describe("settings composition", () => {
     expect(androidSettings).toContain("initialSchedule");
     expect(androidSettings).toContain("initialAlternatives");
     expect(androidSettings).toContain("initialCustomQuestions");
+    expect(androidSettings).toContain("initialPause");
     expect(androidSettings).toContain("initial.cfg");
 
     // One read per page: every section is fed from the same snapshot, so no

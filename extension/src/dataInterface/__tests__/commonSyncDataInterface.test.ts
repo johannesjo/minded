@@ -14,8 +14,12 @@ jest.mock("@dataInterface/system", () => ({
 }));
 
 import {
+  countInterventionSkip,
   countSunTap,
   markAlternativeOpenedAndCountSunTap,
+  markInteractionModeShown,
+  resetInterventionSkips,
+  saveSkipCheckInChoice,
   markPatternInsightShown,
   removeAlternative,
   renameAlternative,
@@ -627,6 +631,64 @@ describe("commonSyncDataInterface", () => {
           },
         }),
       );
+    });
+  });
+  describe("skip check-in bookkeeping", () => {
+    const now = new Date("2026-05-11T10:00:00").getTime();
+
+    it("counts a pass and remembers when", async () => {
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({ skipStreak: 4, lastSkipTS: now - 1000 }),
+      );
+      await countInterventionSkip();
+      expect(mockedPatchSyncData).toHaveBeenCalledWith({
+        skipStreak: 5,
+        lastSkipTS: now,
+      });
+    });
+
+    it("writes nothing for a pass that doesn't count (an answer stands)", async () => {
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      mockedGetSyncData.mockResolvedValue(
+        createMockSyncData({
+          skipStreak: 0,
+          interventionPause: { kind: "later", untilTS: now + 1000 },
+        }),
+      );
+      await countInterventionSkip();
+      expect(mockedPatchSyncData).not.toHaveBeenCalled();
+    });
+
+    it("resets with a blind write - no read a closing tab could outrun", async () => {
+      await resetInterventionSkips();
+      expect(mockedGetSyncData).not.toHaveBeenCalled();
+      expect(mockedPatchSyncData).toHaveBeenCalledWith({ skipStreak: 0 });
+    });
+
+    it("uses the ask up when the check-in is shown, so ignoring it doesn't repeat it", async () => {
+      await markInteractionModeShown("SKIP_CHECK_IN");
+      expect(mockedPatchSyncData).toHaveBeenCalledWith({
+        lastInteractionMode: "SKIP_CHECK_IN",
+        skipStreak: 0,
+      });
+
+      mockedPatchSyncData.mockClear();
+      await markInteractionModeShown("QUESTION");
+      expect(mockedPatchSyncData).toHaveBeenCalledWith({
+        lastInteractionMode: "QUESTION",
+      });
+    });
+
+    it("turns a synchronous storage throw into a rejection", async () => {
+      mockedPatchSyncData.mockImplementation(() => {
+        throw new Error("Extension was reloaded");
+      });
+      let result: Promise<void> | undefined;
+      expect(() => {
+        result = saveSkipCheckInChoice("later");
+      }).not.toThrow();
+      await expect(result).rejects.toThrow("Extension was reloaded");
     });
   });
 });

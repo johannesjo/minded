@@ -9,6 +9,8 @@ import {
   updateSyncData,
 } from "@src/dataInterface/commonSyncDataInterface";
 import { isRestOfDayActive } from "@src/util/isRestOfDayActive";
+import { isInterventionPauseActive } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
+import { getEffectiveSessionDurationS } from "@src/util/sessionDuration";
 import { formatSessionTime } from "@src/util/formatTime";
 import { SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
@@ -59,6 +61,9 @@ export const LittleSunComponent: (props: {
   let hintTimeout: NodeJS.Timeout | undefined;
   let isDisposed = false;
   let refreshSeq = 0;
+  // Set once this sun counts a grace down; only then may an exhausted grace
+  // hand back to the intervention (see getLittleSunTimerSource).
+  let hasCountedGrace = false;
 
   const maybeShowHint = async () => {
     const data = await bro.storage.local.get(LITTLE_SUN_HINT_SEEN_KEY);
@@ -90,7 +95,10 @@ export const LittleSunComponent: (props: {
   ): boolean => {
     const target = getWebHostSessionTarget(props.host);
 
-    if (isRestOfDayActive(syncData, target, "web")) {
+    if (
+      isRestOfDayActive(syncData, target, "web") ||
+      isInterventionPauseActive(syncData, "off", Date.now())
+    ) {
       props.teardown();
       return false;
     }
@@ -100,6 +108,7 @@ export const LittleSunComponent: (props: {
       props.host,
       initialSessionDurationInS,
       Date.now(),
+      hasCountedGrace,
     );
 
     if (source.type === "session") {
@@ -110,6 +119,7 @@ export const LittleSunComponent: (props: {
     }
 
     if (source.type === "grace") {
+      hasCountedGrace = true;
       setIsGraceMode(true);
       setRemainingSeconds(null);
       startGraceCountdown(source.remainingSeconds, initialSessionDurationInS);
@@ -142,7 +152,10 @@ export const LittleSunComponent: (props: {
     ]);
     if (isDisposed || seq !== refreshSeq) return;
 
-    applyTimerSource(syncData, d?.sessionDurationInS ?? getSessionTime());
+    applyTimerSource(
+      syncData,
+      d ? getEffectiveSessionDurationS(d, Date.now()) : getSessionTime(),
+    );
   };
 
   const handleStorageChange = (
@@ -163,7 +176,11 @@ export const LittleSunComponent: (props: {
       ) {
         return;
       }
-    } else if (!isSessionGraceCfgChanged(changes)) {
+    } else if (
+      !isSessionGraceCfgChanged(changes) &&
+      // A chosen week starting or ending changes the grace in effect.
+      !("interventionPause" in changes)
+    ) {
       return;
     }
 
@@ -177,7 +194,12 @@ export const LittleSunComponent: (props: {
     ]);
     if (isDisposed) return;
 
-    if (!applyTimerSource(syncData, d?.sessionDurationInS ?? 0)) {
+    // Effective, not raw: a session idle past the reset threshold starts from
+    // 0 here exactly as the content script counted it (its own reset write
+    // lands after this read), or a stale count would cut the grace short.
+    if (
+      !applyTimerSource(syncData, getEffectiveSessionDurationS(d, Date.now()))
+    ) {
       return;
     }
 
