@@ -24,7 +24,7 @@ import Btn from "@src/shared/components/ui/Btn";
 
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
-import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckIn";
+import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {

@@ -127,7 +127,9 @@ describe("skip check-in wiring", () => {
 
   describe("check-in and settings UI", () => {
     it("ignores choices until they've faded in", () => {
-      const checkIn = read(`${INTERACTION}skipCheckIn/SkipCheckIn.tsx`);
+      const checkIn = read(
+        `${INTERACTION}skipCheckIn/SkipCheckInInteraction.tsx`,
+      );
       expect(checkIn).toMatch(
         /setTimeout\(\s*\(\) => setIsArmed\(true\),\s*SKIP_CHECK_IN_ARM_MS,?\s*\)/,
       );

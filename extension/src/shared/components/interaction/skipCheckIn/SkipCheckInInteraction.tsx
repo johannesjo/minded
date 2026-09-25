@@ -7,7 +7,7 @@ import {
   SKIP_CHECK_IN_QUESTION,
   type SkipCheckInChoice,
 } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
-import styles from "./SkipCheckIn.module.scss";
+import styles from "./SkipCheckInInteraction.module.scss";
 
 /**
  * Shown in place of the usual prompt once the pause has been passed straight

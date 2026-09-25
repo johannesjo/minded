@@ -27,7 +27,7 @@ import { NoticeInteraction } from "@src/shared/components/interaction/notice/Not
 import { BreathInteraction } from "@src/shared/components/interaction/breathPause/BreathInteraction";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
-import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckIn";
+import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
 import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 
 export interface InteractionModeSwitchProps {
