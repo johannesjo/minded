@@ -6,9 +6,11 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,6 +79,12 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 glanceAppWidget.updateAll(context)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Uncaught, this would crash the whole process - including the
+                // accessibility service that shares it.
+                Log.e("MyAppWidgetReceiver", "Failed to refresh widget", e)
             } finally {
                 scheduleNextBoundary(context)
                 pendingResult.finish()
