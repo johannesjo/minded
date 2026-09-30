@@ -299,13 +299,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val notification = createNotification()
 
         // Never let this throw. On API 31+ startForeground() raises
-        // ForegroundServiceStartNotAllowedException when the system restarts this
-        // START_STICKY service while the app is in the background (e.g. before the
-        // accessibility service has rebound). Uncaught, that crashes the process,
-        // the sticky restart crashes it again, and Android gives up on the crash-
-        // looping process - taking MyAccessibilityService, which lives in the same
-        // process, down with it ("Not working" / switched off). Overlays don't need
-        // the foreground state to draw, so staying a plain service is fine.
+        // ForegroundServiceStartNotAllowedException when this service was started
+        // *without* startForegroundService() while the app is in the background: a
+        // START_STICKY restart, or scheduleServiceRestart()'s plain getService
+        // PendingIntent. Uncaught, that crashes the process, the restart crashes it
+        // again, and Android gives up on the crash-looping process - taking
+        // MyAccessibilityService, which lives in the same process, down with it
+        // ("Not working" / switched off). Overlays don't need the foreground state
+        // to draw, so staying a plain service is fine.
+        // On the startForegroundService() path the background check already ran
+        // (and threw) at the caller, so a throw here is unlikely; if one happens the
+        // unmet promise still ends in the system's start-foreground timeout crash.
+        // Don't try stopSelf() to dodge that: stopping before startForeground() is
+        // answered with the same crash. The real fix is not routing every command
+        // through startForegroundService() (see #21).
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(
