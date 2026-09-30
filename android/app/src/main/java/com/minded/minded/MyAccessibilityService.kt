@@ -100,7 +100,14 @@ class MyAccessibilityService : AccessibilityService() {
 
     // Hybrid detection system
     private var hybridDetector: HybridAppDetector? = null
-    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    // The handler keeps a failed detection coroutine from crashing the process:
+    // an uncaught throw here would kill this service, and Android then marks it
+    // as crashed ("Not working") or, on some OEMs, switches it off entirely.
+    private val serviceScope = CoroutineScope(
+        Dispatchers.Main + SupervisorJob() + CoroutineExceptionHandler { _, e ->
+            Log.e(TAG, "Uncaught error in accessibility service coroutine", e)
+        }
+    )
     private var detectionCollectionJob: kotlinx.coroutines.Job? = null
 
     companion object {

@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -343,6 +344,28 @@ class MainActivity : AppCompatActivity() {
                                     ): Boolean {
                                         val uri = request?.url ?: return false
                                         return openUriExternally(uri)
+                                    }
+
+                                    // A gone renderer (crashed, or reclaimed by the
+                                    // low-memory killer while we sat in the background)
+                                    // kills the whole app process unless handled here -
+                                    // and that process also hosts MyAccessibilityService,
+                                    // which Android then marks as crashed ("Not working")
+                                    // or, on some OEMs, switches off. Drop the dead
+                                    // WebView and close the activity instead; the next
+                                    // launch starts with a fresh one.
+                                    override fun onRenderProcessGone(
+                                        view: WebView?,
+                                        detail: RenderProcessGoneDetail?,
+                                    ): Boolean {
+                                        Log.e(
+                                            logTag,
+                                            "onRenderProcessGone didCrash=${detail?.didCrash()} priorityAtExit=${detail?.rendererPriorityAtExit()}",
+                                        )
+                                        (view?.parent as? ViewGroup)?.removeView(view)
+                                        view?.destroy()
+                                        if (!isFinishing) finish()
+                                        return true
                                     }
                                 }
                                 // Cold start: if launched from the widget, load the

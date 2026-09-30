@@ -22,7 +22,16 @@ import kotlinx.coroutines.flow.*
  */
 class HybridAppDetector(private val context: Context) {
 
-    private var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var scope = newScope()
+
+    // The handler keeps a failed polling/validation coroutine from crashing the
+    // process, which also hosts the accessibility service - Android marks a
+    // crashed accessibility service as "Not working" or, on some OEMs, turns it off.
+    private fun newScope() = CoroutineScope(
+        Dispatchers.Default + SupervisorJob() + CoroutineExceptionHandler { _, e ->
+            Log.e(TAG, "Uncaught error in hybrid detector coroutine", e)
+        }
+    )
 
     // Health monitoring
     val healthMonitor = ServiceHealthMonitor()
@@ -130,7 +139,7 @@ class HybridAppDetector(private val context: Context) {
         if (scope.isActive) {
             scope.cancel()
         }
-        scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        scope = newScope()
         healthMonitor.startMonitoring()
         startUsageStatsPolling()
     }

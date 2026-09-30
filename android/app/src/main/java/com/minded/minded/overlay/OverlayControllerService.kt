@@ -297,15 +297,27 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     // the FGS and its notification entirely. See johannesjo/minded#21.
     private fun startForegroundService() {
         val notification = createNotification()
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID, 
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+
+        // Never let this throw. On API 31+ startForeground() raises
+        // ForegroundServiceStartNotAllowedException when the system restarts this
+        // START_STICKY service while the app is in the background (e.g. before the
+        // accessibility service has rebound). Uncaught, that crashes the process,
+        // the sticky restart crashes it again, and Android gives up on the crash-
+        // looping process - taking MyAccessibilityService, which lives in the same
+        // process, down with it ("Not working" / switched off). Overlays don't need
+        // the foreground state to draw, so staying a plain service is fine.
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            Log.e(logTag, "startForeground() failed - continuing as a background service", e)
         }
     }
     
