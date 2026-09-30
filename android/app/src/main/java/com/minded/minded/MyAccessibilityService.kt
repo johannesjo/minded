@@ -100,7 +100,15 @@ class MyAccessibilityService : AccessibilityService() {
 
     // Hybrid detection system
     private var hybridDetector: HybridAppDetector? = null
-    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    // Last resort for one-shot launches: an uncaught throw would crash the
+    // process, and Android then marks this service as crashed ("Not working") or,
+    // on some OEMs, switches it off. Long-running loops catch per item instead,
+    // since an escaped throw would still end them for good.
+    private val serviceScope = CoroutineScope(
+        Dispatchers.Main + SupervisorJob() + CoroutineExceptionHandler { _, e ->
+            Log.e(TAG, "Uncaught error in accessibility service coroutine", e)
+        }
+    )
     private var detectionCollectionJob: kotlinx.coroutines.Job? = null
 
     companion object {
@@ -398,8 +406,16 @@ class MyAccessibilityService : AccessibilityService() {
         detectionCollectionJob?.cancel()
         detectionCollectionJob = serviceScope.launch {
             hybridDetector?.validatedDetections?.collect { detection ->
-                Log.d(TAG, "Received validated detection: ${detection.packageName} (confidence: ${detection.confidence.overall})")
-                triggerOverlay(detection.packageName, detection.timestamp)
+                // Catch per detection: a throw escaping collect would end the
+                // collector for good, silently stopping every future intervention.
+                try {
+                    Log.d(TAG, "Received validated detection: ${detection.packageName} (confidence: ${detection.confidence.overall})")
+                    triggerOverlay(detection.packageName, detection.timestamp)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to handle detection for ${detection.packageName}", e)
+                }
             }
         }
 

@@ -22,7 +22,17 @@ import kotlinx.coroutines.flow.*
  */
 class HybridAppDetector(private val context: Context) {
 
-    private var scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var scope = newScope()
+
+    // Last resort so a failed validation coroutine can't crash the process, which
+    // also hosts the accessibility service - Android marks a crashed accessibility
+    // service as "Not working" or, on some OEMs, turns it off. The polling loop
+    // catches per poll instead, since an escaped throw would still end it.
+    private fun newScope() = CoroutineScope(
+        Dispatchers.Default + SupervisorJob() + CoroutineExceptionHandler { _, e ->
+            Log.e(TAG, "Uncaught error in hybrid detector coroutine", e)
+        }
+    )
 
     // Health monitoring
     val healthMonitor = ServiceHealthMonitor()
@@ -130,7 +140,7 @@ class HybridAppDetector(private val context: Context) {
         if (scope.isActive) {
             scope.cancel()
         }
-        scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        scope = newScope()
         healthMonitor.startMonitoring()
         startUsageStatsPolling()
     }
@@ -341,48 +351,60 @@ class HybridAppDetector(private val context: Context) {
                 val isBurstActive = System.currentTimeMillis() < burstUntilTimestamp
                 delay(if (isBurstActive) BURST_POLL_INTERVAL_MS else USAGE_STATS_POLL_INTERVAL_MS)
 
-                val result = getForegroundAppReliable(context)
-                when (result) {
-                    is ForegroundAppResult.Success -> {
-                        val newApp = result.packageName
-                        val previousApp = _usageStatsDetectedApp.value
+                // Catch per poll: a throw escaping the loop would end polling for
+                // good, silently losing the fallback and validation source.
+                try {
+                    pollUsageStatsOnce()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "UsageStats poll failed", e)
+                }
+            }
+        }
+    }
 
-                        // Publish the freshest poll read for the overlay
-                        // controller's render-time liveness gate (guard 2b). Stamp
-                        // it with the read's *real* time (now - ageMs), not write
-                        // time: the poll is laggy (UsageStats 500-2000ms), so a read
-                        // of the app the user just left carries an older timestamp
-                        // and the reader's freshness window correctly discards it
-                        // instead of letting it wrongly suppress a legitimate draw.
-                        // This only narrows - not eliminates - the stale-show window
-                        // when accessibility's faster focused-window read is absent.
-                        ForegroundStateHolder.update(
-                            newApp,
-                            System.currentTimeMillis() - result.ageMs
-                        )
+    private suspend fun pollUsageStatsOnce() {
+        val result = getForegroundAppReliable(context)
+        when (result) {
+            is ForegroundAppResult.Success -> {
+                val newApp = result.packageName
+                val previousApp = _usageStatsDetectedApp.value
 
-                        if (newApp != previousApp) {
-                            _usageStatsDetectedApp.value = newApp
-                            Log.v(TAG, "UsageStats detected app change: $previousApp -> $newApp")
+                // Publish the freshest poll read for the overlay
+                // controller's render-time liveness gate (guard 2b). Stamp
+                // it with the read's *real* time (now - ageMs), not write
+                // time: the poll is laggy (UsageStats 500-2000ms), so a read
+                // of the app the user just left carries an older timestamp
+                // and the reader's freshness window correctly discards it
+                // instead of letting it wrongly suppress a legitimate draw.
+                // This only narrows - not eliminates - the stale-show window
+                // when accessibility's faster focused-window read is absent.
+                ForegroundStateHolder.update(
+                    newApp,
+                    System.currentTimeMillis() - result.ageMs
+                )
 
-                            // In fallback mode, emit detections directly
-                            if (_detectionMode.value == DetectionMode.USAGE_STATS_FALLBACK) {
-                                emitFallbackDetection(newApp)
-                            }
-                            // In hybrid mode, check if AccessibilityService missed this
-                            else {
-                                checkForMissedDetection(newApp)
-                            }
-                        }
+                if (newApp != previousApp) {
+                    _usageStatsDetectedApp.value = newApp
+                    Log.v(TAG, "UsageStats detected app change: $previousApp -> $newApp")
+
+                    // In fallback mode, emit detections directly
+                    if (_detectionMode.value == DetectionMode.USAGE_STATS_FALLBACK) {
+                        emitFallbackDetection(newApp)
                     }
-                    is ForegroundAppResult.Stale -> {
-                        // Data is stale, but record the package anyway for reference
-                        _usageStatsDetectedApp.value = result.packageName
-                    }
-                    else -> {
-                        // Error or no detection - leave as is
+                    // In hybrid mode, check if AccessibilityService missed this
+                    else {
+                        checkForMissedDetection(newApp)
                     }
                 }
+            }
+            is ForegroundAppResult.Stale -> {
+                // Data is stale, but record the package anyway for reference
+                _usageStatsDetectedApp.value = result.packageName
+            }
+            else -> {
+                // Error or no detection - leave as is
             }
         }
     }

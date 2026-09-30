@@ -7,9 +7,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -32,6 +34,7 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.minded.minded.overlay.OverlayControllerService
 import com.minded.minded.ui.theme.MindedTheme
@@ -91,6 +94,10 @@ class MainActivity : AppCompatActivity() {
     }
     private var isSaveTextFilePending = false
 
+    // Set when the WebView's renderer died while we were in the background; the
+    // rebuild then waits for onStart (see recoverFromRenderProcessGone).
+    private var isRecreatePendingForRenderGone = false
+
     // "Bring a copy back": a plain <input type="file"> in the WebView lands in
     // WebChromeClient.onShowFileChooser, which opens the system document picker
     // and hands the chosen URI back to the WebView - so the web side reads it
@@ -121,6 +128,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
+        // Process-wide, so it survives the recreate() it guards against looping.
+        private var lastRenderProcessGoneAt = 0L
+        private const val RENDER_GONE_LOOP_WINDOW_MS = 10_000L
+
         /** Intent extra naming a hash route to open on launch (allow-listed below). */
         const val EXTRA_LAUNCH_ROUTE = "launch_route"
         /**
@@ -344,6 +355,27 @@ class MainActivity : AppCompatActivity() {
                                         val uri = request?.url ?: return false
                                         return openUriExternally(uri)
                                     }
+
+                                    // A gone renderer (crashed, or reclaimed by the
+                                    // low-memory killer while we sat in the background)
+                                    // kills the whole app process unless handled here -
+                                    // and that process also hosts MyAccessibilityService,
+                                    // which Android then marks as crashed ("Not working")
+                                    // or, on some OEMs, switches off. Drop the dead
+                                    // WebView and rebuild the activity around a fresh one.
+                                    override fun onRenderProcessGone(
+                                        view: WebView?,
+                                        detail: RenderProcessGoneDetail?,
+                                    ): Boolean {
+                                        Log.e(
+                                            logTag,
+                                            "onRenderProcessGone didCrash=${detail?.didCrash()} priorityAtExit=${detail?.rendererPriorityAtExit()}",
+                                        )
+                                        (view?.parent as? ViewGroup)?.removeView(view)
+                                        view?.destroy()
+                                        recoverFromRenderProcessGone()
+                                        return true
+                                    }
                                 }
                                 // Cold start: if launched from the widget, load the
                                 // dashboard with the sun hash (plus the tapped line, if
@@ -411,6 +443,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Rebuild the dashboard after its WebView's renderer died. recreate(), not
+     * finish(): a pending "Save a copy" result survives recreation (the registry
+     * is saved with the instance state) but would be dropped by a finished
+     * activity, leaving the picker-created document empty. In the background -
+     * where reclaims happen - wait for onStart rather than spawning a fresh
+     * renderer under the same memory pressure that just killed one. A second
+     * death within [RENDER_GONE_LOOP_WINDOW_MS] means the page itself keeps
+     * killing its renderer, so close instead of looping open-and-crash.
+     */
+    private fun recoverFromRenderProcessGone() {
+        if (isFinishing || isDestroyed) return
+        val now = SystemClock.elapsedRealtime()
+        val previous = lastRenderProcessGoneAt
+        lastRenderProcessGoneAt = now
+        if (previous != 0L && now - previous < RENDER_GONE_LOOP_WINDOW_MS) {
+            Log.e(logTag, "Renderer died twice in a row - closing instead of recreating")
+            finish()
+        } else if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            recreate()
+        } else {
+            isRecreatePendingForRenderGone = true
+        }
+    }
+
     private fun goBackOrFinish() {
         if (this::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
@@ -437,6 +494,11 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.v(logTag, "onStart()")
+        if (isRecreatePendingForRenderGone) {
+            isRecreatePendingForRenderGone = false
+            recreate()
+            return
+        }
         // The activity has become *visible* again (paired with onStop). Unlike
         // onResume, it doesn't fire on a mere focus regain, so the web layer uses
         // it to bound the true visible session - e.g. how long the app was on

@@ -297,15 +297,34 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     // the FGS and its notification entirely. See johannesjo/minded#21.
     private fun startForegroundService() {
         val notification = createNotification()
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID, 
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+
+        // Never let this throw. On API 31+ startForeground() raises
+        // ForegroundServiceStartNotAllowedException when this service was started
+        // *without* startForegroundService() while the app is in the background: a
+        // START_STICKY restart, or scheduleServiceRestart()'s plain getService
+        // PendingIntent. Uncaught, that crashes the process, the restart crashes it
+        // again, and Android gives up on the crash-looping process - taking
+        // MyAccessibilityService, which lives in the same process, down with it
+        // ("Not working" / switched off). Overlays don't need the foreground state
+        // to draw, so staying a plain service is fine.
+        // On the startForegroundService() path the background check already ran
+        // (and threw) at the caller, so a throw here is unlikely; if one happens the
+        // unmet promise still ends in the system's start-foreground timeout crash.
+        // Don't try stopSelf() to dodge that: stopping before startForeground() is
+        // answered with the same crash. The real fix is not routing every command
+        // through startForegroundService() (see #21).
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            Log.e(logTag, "startForeground() failed - continuing as a background service", e)
         }
     }
     
