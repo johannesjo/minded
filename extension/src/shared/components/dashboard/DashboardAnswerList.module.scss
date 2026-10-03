@@ -12,6 +12,11 @@
     // `balance` would narrow every line of a multi-line reflection) and only
     // avoid an orphan word on the last line.
     text-wrap: pretty;
+    font-size: calc(var(--fz-m) + 2px);
+    line-height: 1.55;
+    max-width: 34ch;
+    margin-inline: auto;
+    overflow-wrap: anywhere;
 
     margin-top: var(--space-sm);
 

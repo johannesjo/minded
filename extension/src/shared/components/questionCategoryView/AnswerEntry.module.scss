@@ -29,26 +29,30 @@
   // A reading block, not a prompt: keep the natural rag (displayVoice's
   // `balance` would narrow every line) and only avoid a last-line orphan.
   text-wrap: pretty;
+  font-size: calc(var(--fz-m) + 2px);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 
   position: relative;
   width: 100%;
   min-height: 40px;
-  //display: flex;
-  //justify-content: center;
-  //align-items: center;
-  //flex-direction: column;
   text-align: left;
-  padding-bottom: 16px;
+  padding-bottom: var(--space-lg);
 }
 
 .createdAt {
-  opacity: 0.5;
+  color: var(--h4-c);
   font-size: var(--fz-s);
+  // Keep the date clear of the two edit controls when they appear.
+  padding-right: 88px;
+  min-height: var(--space-md);
 }
 
 .question {
-  font-weight: bold;
-  margin-bottom: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--h4-c);
+  margin-bottom: var(--space-md);
   text-align: left;
 }
 

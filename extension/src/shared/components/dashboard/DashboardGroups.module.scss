@@ -16,7 +16,8 @@
   // Reserve the resting sun's footprint at the bottom so cards clear the disc
   // (see RouteCmp.module.scss / .withCompanionBar for --companion-bar-height).
   --hero-reserve: calc(var(--companion-bar-height) - var(--space-2xl));
-  padding: var(--space-md) var(--space-md) calc(var(--hero-reserve) + var(--space-md));
+  padding: var(--space-md) var(--space-md)
+    calc(var(--hero-reserve) + var(--space-md));
 
   // One column on phones, two once there's room, three on wide screens -
   // matching the old dashboard's column feel, but scrollable and uncapped.
@@ -97,11 +98,13 @@
 
   @media (min-width: $bpMobile) {
     gap: var(--space-lg);
-    padding: var(--space-lg) var(--space-lg) calc(var(--hero-reserve) + var(--space-lg));
+    padding: var(--space-lg) var(--space-lg)
+      calc(var(--hero-reserve) + var(--space-lg));
   }
 
   @media (min-width: $bpDashboardMoreThan2Col) {
-    padding: var(--space-xl) var(--space-xl) calc(var(--hero-reserve) + var(--space-xl));
+    padding: var(--space-xl) var(--space-xl)
+      calc(var(--hero-reserve) + var(--space-xl));
 
     // Six tracks preserve three equal card columns while letting one or two
     // trailing cards occupy centred positions. A slightly tighter measure also
@@ -176,6 +179,22 @@
   @include standardPageTransitionIn();
   min-width: 0;
 
+  // Give reflections a comfortable inset even on narrow screens.
+  &:global(.cardDashboard) {
+    padding: var(--space-lg);
+
+    @include onNonMobileScreens {
+      padding: var(--space-xl);
+    }
+  }
+
+  :global(.dashboardHeading) {
+    font-size: var(--fz-s);
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+
   // center logic - widget cards (mood, energy…) centre their content; lists,
   // charts and tables keep their natural left alignment.
   @mixin centerItem() {
@@ -196,7 +215,7 @@
       background var(--dur-quick) var(--ease-out);
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.985);
     }
 
     // Keyboard focus gets the same calm teal ring used for links.
@@ -236,19 +255,9 @@
     font-size: var(--fz-m);
   }
 
-  // …except the category label above a reflection: it's a *category*, not a
-  // heading, so it stays at its resting size while the user's words grow. Only
-  // the reflection is meant to enlarge; letting the quiet category grow with it
-  // makes the label compete with the words it's labelling. `.dashboardCategory`
-  // is a stable global hook (the .categoryTitle module class is hashed); the
-  // combined selector outranks the rule above, so restate the base responsive
-  // sizes rather than inheriting the enlarged heading size.
+  // Category labels stay subordinate even when the greeting grows.
   :global(.dashboardHeading.dashboardCategory) {
     font-size: var(--fz-s);
-
-    @include onNonMobileScreens {
-      font-size: var(--fz-m);
-    }
   }
 }
 
@@ -407,7 +416,8 @@
   // Reserve the resting sun's footprint at the bottom so the centred content
   // sits in the gap above it, not under the disc (mirrors .DashboardGroups).
   --hero-reserve: calc(var(--companion-bar-height) - var(--space-2xl));
-  padding: var(--space-lg) var(--space-md) calc(var(--hero-reserve) + var(--space-lg));
+  padding: var(--space-lg) var(--space-md)
+    calc(var(--hero-reserve) + var(--space-lg));
 
   // The greeting sits on a calm, readable width, and eases in slower than a
   // normal page transition (overriding just the duration of the shared entrance
@@ -416,6 +426,10 @@
     width: 100%;
     max-width: 480px;
     animation-duration: 900ms;
+
+    &:global(.cardDashboard) {
+      padding-block: var(--space-xl);
+    }
   }
 }
 
