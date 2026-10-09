@@ -125,14 +125,27 @@
       // override (so forcing dark doesn't flash a light gradient before boot).
       var theme = new URLSearchParams(location.search).get("theme");
       var h = new Date().getHours();
-      var dark = theme === "dark" || (theme !== "light" && (h >= 19 || h < 6));
+      // The real sun's night windows, left by the app (src/shared/sky/skyNightCache.ts);
+      // the fixed 19:00/06:00 clock when they're missing or stale.
+      var t = Date.now();
+      var night = h >= 19 || h < 6;
+      try {
+        var c = JSON.parse(localStorage.getItem("minded-sky-night") || "null");
+        if (c && t >= c.from && t < c.to) {
+          night = false;
+          for (var i = 0; i < c.nights.length; i++) {
+            if (t >= c.nights[i][0] && t < c.nights[i][1]) night = true;
+          }
+        }
+      } catch (e) { /* no storage: keep the clock */ }
+      var dark = theme === "dark" || (theme !== "light" && night);
       if (dark) {
         document.documentElement.className += " minded-loading-dark";
       }
     </script>
-    <script type="module" crossorigin src="./assets/dashboard-BAo2Wu4k.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/Styleguide-DbmkXCfR.js">
-    <link rel="stylesheet" crossorigin href="./assets/Styleguide-CLRCjopv.css">
+    <script type="module" crossorigin src="./assets/dashboard-DpHbXpFw.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/Styleguide-BOZPS8N2.js">
+    <link rel="stylesheet" crossorigin href="./assets/Styleguide-BPbPkK81.css">
     <link rel="stylesheet" crossorigin href="./assets/dashboard-BG8vGVfN.css">
   </head>
 
