@@ -166,7 +166,12 @@
   // text rather than following the ambient theme. The raw hexes are a
   // one-off scene palette, not drift from --c-gradient-* (see #258 for the
   // open question of aliasing them).
-  --background-gradient: linear-gradient(175deg, #101b3f, #1a2455, #25305d);
+  --background-gradient: linear-gradient(
+    175deg var(--sky-interpolation,),
+    #101b3f,
+    #1a2455,
+    #25305d
+  );
   --bg-transition-sunset-top: #050b1d;
   --bg-transition-sunset-mid: #08152f;
   --bg-transition-sunset-horizon: #0d1a3b;

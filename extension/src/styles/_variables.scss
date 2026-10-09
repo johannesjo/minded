@@ -242,20 +242,20 @@
   // gradient - mirroring the night composite (glow above stars above sky).
   --background-gradient:
     radial-gradient(
-      ellipse 90% 32% at 50% 108%,
+      ellipse 90% 32% at 50% 108% var(--sky-interpolation,),
       rgba(var(--day-horizon-glow-rgb), 0.65) 0%,
       rgba(var(--day-horizon-glow-rgb), 0.3) 48%,
       transparent 78%
     ),
     var(--day-veil),
     radial-gradient(
-      ellipse 130% 52% at 50% -14%,
+      ellipse 130% 52% at 50% -14% var(--sky-interpolation,),
       rgba(var(--day-zenith-rgb), 0.55) 0%,
       rgba(var(--day-zenith-rgb), 0.22) 55%,
       transparent 80%
     ),
     linear-gradient(
-      to bottom,
+      to bottom var(--sky-interpolation,),
       var(--c-gradient-1) 0%,
       var(--c-gradient-1) 18%,
       var(--c-gradient-2) 36%,
@@ -278,7 +278,7 @@
   // night-leaning blend (skyTimeline.ts duskTargetGradientAt) so the reveal
   // keeps its payoff once the ambient sky is already golden.
   --background-sunset-gradient: linear-gradient(
-    to bottom,
+    to bottom var(--sky-interpolation,),
     var(--bg-transition-sunset-top) 0%,
     var(--bg-transition-sunset-top) 14%,
     var(--bg-transition-sunset-mid) 54%,
@@ -362,19 +362,19 @@
     --night-afterglow: 0;
     --background-gradient:
       radial-gradient(
-        ellipse 116vmin 32vmin at 50% 112%,
+        ellipse 116vmin 32vmin at 50% 112% var(--sky-interpolation,),
         rgba(117, 54, 44, calc(0.34 * var(--night-afterglow))) 0%,
         rgba(76, 43, 58, calc(0.2 * var(--night-afterglow))) 46%,
         transparent 78%
       ),
       linear-gradient(
-        to bottom,
+        to bottom var(--sky-interpolation,),
         transparent 88%,
         rgba(93, 43, 32, calc(0.6 * var(--night-afterglow))) 100%
       ),
       var(--night-stars),
       linear-gradient(
-        to bottom,
+        to bottom var(--sky-interpolation,),
         var(--c-gradient-1) 0%,
         #041238 28%,
         var(--c-gradient-2) 68%,
@@ -395,14 +395,14 @@
     // (matches BackgroundTransition's dark down-drag layer).
     --background-sunset-gradient:
       linear-gradient(
-        to bottom,
+        to bottom var(--sky-interpolation,),
         transparent 0%,
         transparent 80%,
         rgba(121, 45, 86, 0.12) 91%,
         rgba(196, 72, 58, 0.24) 100%
       ),
       linear-gradient(
-        to bottom,
+        to bottom var(--sky-interpolation,),
         var(--bg-transition-sunset-top) 0%,
         var(--bg-transition-sunset-mid) 52%,
         var(--bg-transition-sunset-horizon) 76%,
@@ -461,6 +461,29 @@
     --little-sun-shadow: 0 0 6px 1px rgba(190, 210, 255, 0.7);
     --little-sun-breath-rgb: 190, 210, 255;
     --little-sun-txt-c: #33405e;
+  }
+}
+
+// Sky gradients interpolate in OKLab where the engine can. Every full-screen
+// sky layer (the composites above, the drag reveals, the sleep wind-down
+// nocturne, the loading <style> skies) writes `var(--sky-interpolation,)` after
+// its direction/shape: here that is `in oklab`, which keeps the midtone between
+// two distant stops luminous instead of the greyed sRGB average (the drag-down
+// sunset's blue → orange stretch is where it shows). An engine without gradient
+// colour spaces (older Android WebView) fails this @supports, the var falls back
+// to nothing, and it renders today's sRGB gradient exactly - a duplicated
+// declaration can't do that inside a custom property, which never fails to
+// parse. Defined on the root itself so --background-gradient (substituted on
+// the root) and the inline per-minute overrides (also set on the root) see it.
+//
+// Deliberately CSS-only: skyTimeline.ts still lerps its keyframes in sRGB, and
+// the baked Android/iOS sky PNGs (gen_loading_sky.py) stay sRGB. Between
+// neighbouring keyframes the two spaces' midpoints sit under 0.5 OKLab ΔE×100
+// apart (a JND is ~2) - for the pastel stops mostly a single code value - which
+// neither the per-minute step nor the PNGs' ±1 LSB dither can show.
+@supports (background-image: linear-gradient(in oklab, red, blue)) {
+  #minded-6622 {
+    --sky-interpolation: in oklab;
   }
 }
 

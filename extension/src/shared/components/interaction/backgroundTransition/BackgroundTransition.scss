@@ -15,7 +15,7 @@
     background: var(
       --background-gradient,
       linear-gradient(
-        to bottom,
+        to bottom var(--sky-interpolation,),
         #cfe4f5 0%,
         #cfe4f5 18%,
         #d8ecd6 36%,
@@ -42,7 +42,7 @@
     background: var(
       --background-gradient,
       linear-gradient(
-        to bottom,
+        to bottom var(--sky-interpolation,),
         #cfe4f5 0%,
         #cfe4f5 18%,
         #d8ecd6 36%,
@@ -64,7 +64,7 @@
 
   &.background-blue {
     background: linear-gradient(
-      to bottom,
+      to bottom var(--sky-interpolation,),
       var(--bg-transition-bluesky-top, #0058c1),
       var(--bg-transition-bluesky-bottom, #0a75bc)
     );
