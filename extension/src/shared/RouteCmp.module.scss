@@ -89,13 +89,16 @@
   // Night only. The daytime sun rests over a warm coral horizon where a warm
   // bloom of any calm opacity is invisible (verified against the light sky), so
   // adding one there would be dead chrome - the day companion is already seated
-  // by the sky. Scoping the whole pseudo-element (not just its colour) under the
-  // dark theme means light mode paints no extra layer at all.
+  // by the sky. The layer is generated in both themes but only ever *shown*
+  // under the dark theme: scoping the pseudo-element itself to the dark class
+  // made a day↔night flip create/destroy it, and a freshly generated layer
+  // can't transition - the glow popped in (or vanished) under a moon that was
+  // still gently crossfading. An opacity-0 layer by day costs nothing visible.
   //
   // Hidden by default and revealed only while the moon actually rests as the
   // companion, so it fades in with that role and dissolves as the disc morphs up
-  // into an intervention - never a hard cut.
-  :global(.minded-6622-dark) &::before {
+  // into an intervention - or into the sun - never a hard cut.
+  &::before {
     content: "";
     position: fixed;
     left: 50vw;

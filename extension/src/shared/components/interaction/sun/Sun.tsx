@@ -60,6 +60,8 @@ import {
   shouldHonorSunFocusRequest,
   type SunAccessibleActivation,
 } from "./sunAccessibility";
+import { createVariantMorph, sunHaloTransition } from "./sunVariantMorph";
+
 // (The moon used to preload a texture here - #246. Its face is drawn in CSS
 // now, so there is nothing to fetch and no first-paint gap to cover.)
 
@@ -260,6 +262,9 @@ export const Sun: Component<SunProps> = (props) => {
   // when no reveal ramp is running - the reach then follows the settle as usual.
   const [getRevealReach, setRevealReach] = createSignal<number | null>(null);
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 0 = neutral (down/none)
+  // Holds for one gentle beat after a sun↔moon flip, so the halo turns with
+  // the face instead of ahead of it (see sunVariantMorph.ts).
+  const getIsVariantMorphing = createVariantMorph(() => props.variant);
   const isTapEnabled = () => props.isTapEnabled ?? true;
   const isDragEnabled = () => props.isDragEnabled ?? true;
   const dispatchInteractionEvent = (name: string, detail: unknown) => {
@@ -1693,6 +1698,7 @@ export const Sun: Component<SunProps> = (props) => {
       classList={{
         dragging: getIsDragging(),
         moon: props.variant === "moon",
+        "is-variant-morphing": getIsVariantMorphing(),
       }}
       onMouseEnter={() => setIsPointerOver(true)}
       onMouseLeave={() => setIsPointerOver(false)}
@@ -1711,7 +1717,7 @@ export const Sun: Component<SunProps> = (props) => {
             getIsDragging() || getIsAnimating()
               ? null
               : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-            getIsDragging() ? null : "box-shadow 160ms ease-out",
+            getIsDragging() ? null : sunHaloTransition(getIsVariantMorphing()),
           ]
             .filter(Boolean)
             .join(", ") || "none",
