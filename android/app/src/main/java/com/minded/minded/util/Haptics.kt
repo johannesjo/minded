@@ -4,9 +4,11 @@ import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.provider.Settings
 import android.util.Log
 
 /**
@@ -97,6 +99,52 @@ object Haptics {
             }
         }.start()
     }
+
+    /**
+     * The faintest haptic minded plays: one system tick ([VibrationEffect.EFFECT_TICK],
+     * the effect behind [android.view.HapticFeedbackConstants.CLOCK_TICK]) as the
+     * WebView sun is caught under the finger.
+     *
+     * It is touch feedback, so it follows the system touch-feedback switch: skipped
+     * outright when the user turned it off, and on API 33+ tagged
+     * [VibrationAttributes.USAGE_TOUCH] so the platform applies its own touch
+     * intensity setting too. Uses the existing VIBRATE permission - nothing new.
+     * (View.performHapticFeedback would need no permission at all, but it is
+     * unreliable on the overlay windows the intervention sun lives in - see the
+     * class comment.)
+     */
+    fun triggerTick(context: Context) {
+        val appContext = context.applicationContext
+        Thread {
+            try {
+                if (!isTouchFeedbackEnabled(appContext)) return@Thread
+                val vibrator = vibrator(appContext)
+                if (!vibrator.hasVibrator()) return@Thread
+                val tick = VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    vibrator.vibrate(
+                        tick,
+                        VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH),
+                    )
+                } else {
+                    vibrator.vibrate(tick)
+                }
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Failed to trigger soft tick", e)
+            }
+        }.start()
+    }
+
+    // The system-wide touch-feedback switch. (Deprecated on newer SDKs in favour
+    // of USAGE_TOUCH alone, which we also set there; still honoured, and the only
+    // signal on API 29-32.)
+    @Suppress("DEPRECATION")
+    private fun isTouchFeedbackEnabled(context: Context): Boolean =
+        Settings.System.getInt(
+            context.contentResolver,
+            Settings.System.HAPTIC_FEEDBACK_ENABLED,
+            1,
+        ) != 0
 
     /**
      * The satisfying completion pattern - a firm click, then a faint tail - that

@@ -397,6 +397,23 @@ export function triggerHaptic(type: "light" | "medium" | "heavy"): void {
   }
 }
 
+/**
+ * The faintest touch there is: one system "tick" as the finger catches the
+ * sun. Android only - there is deliberately no web/iOS fallback (a
+ * `navigator.vibrate` buzz is far coarser than a tick, which would turn a
+ * whisper into a nudge). Optional on the bridge, so an older native build
+ * without it simply stays silent. The native side honours the system
+ * touch-feedback setting.
+ */
+export function triggerSoftTick(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.androidMinded?.triggerSoftTick?.();
+  } catch (error) {
+    console.warn("Failed to trigger soft tick:", error);
+  }
+}
+
 export function getSunSize(screenWidth: number): {
   size: number;
   baseScale: number;

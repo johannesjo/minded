@@ -17,6 +17,11 @@ interface InteractionWindowJavaScriptInterface {
   getMissingCapabilities: () => string;
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: "light" | "medium" | "heavy") => void;
+  /**
+   * One faint system tick (EFFECT_TICK) as the sun is caught. Optional: older
+   * native builds don't ship it. Skipped natively when touch feedback is off.
+   */
+  triggerSoftTick?: () => void;
   setSessionLimit: (payloadJson: string) => void;
   snoozeWindDown: (seconds: number) => void;
   getSafeAreaInsets: () => string;
