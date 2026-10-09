@@ -17,6 +17,8 @@ import {
   getSurfDurationMs,
   URGE_INTENSITY_STEPS,
 } from "./urgeSurfing.const";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 /**
  * Urge surfing: rather than acting on the pull to open a distracting site, the
@@ -183,39 +185,55 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     clearCueFade();
   });
 
+  const heading = (): string => {
+    switch (getPhase()) {
+      case "intro":
+        return "There's an urge to open this.";
+      case "rateBefore":
+        return IS_APP
+          ? "How strong is the pull to open this app right now?"
+          : "How strong is the pull to open this website right now?";
+      case "rateAfter":
+        return "And now, how strong is it?";
+      case "done":
+        return reflection();
+      default:
+        return "";
+    }
+  };
+
   return (
     <div
-      class="urge-surfing"
+      class="urge-surfing voice-follow-scope"
       classList={{ "is-surf": getPhase() === "surf" }}
-      style={{ opacity: screenFade.opacity() }}
+      style={{
+        opacity: screenFade.opacity(),
+        ...voiceFollowStyle(heading()),
+      }}
       onMouseMove={() => props.onCancelCountdown()}
     >
       <Switch>
         <Match when={getPhase() === "intro"}>
-          <div class="txtBig interaction-heading">
-            There's an urge to open this.
-          </div>
-          <p class="urge-surfing-sub">
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <p class="urge-surfing-sub voice-follow">
             Instead of feeding it, let's watch it. Urges rise and pass on their
             own.
           </p>
           {/* No "skip" here: triple-tapping (or flinging) the persistent sun is
               the universal way out of any interaction, so a second button would
               be redundant. */}
-          <Btn voice onClick={() => goToPhase("rateBefore")}>
+          <Btn
+            voice
+            class="voice-follow"
+            onClick={() => goToPhase("rateBefore")}
+          >
             Surf it
           </Btn>
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
-          <div class="txtBig interaction-heading">
-            {getPhase() === "rateBefore"
-              ? IS_APP
-                ? "How strong is the pull to open this app right now?"
-                : "How strong is the pull to open this website right now?"
-              : "And now, how strong is it?"}
-          </div>
-          <div class="urge-surfing-scale">
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <div class="urge-surfing-scale voice-follow">
             <For each={[...URGE_INTENSITY_STEPS]}>
               {(step) => (
                 <Btn variant="toggle" small onClick={() => handleRate(step)}>
@@ -224,7 +242,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
               )}
             </For>
           </div>
-          <div class="urge-surfing-scale-labels">
+          <div class="urge-surfing-scale-labels voice-follow">
             <span>barely</span>
             <span>intense</span>
           </div>
@@ -248,8 +266,10 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
         </Match>
 
         <Match when={getPhase() === "done"}>
-          <div class="txtBig interaction-heading">{reflection()}</div>
-          <Btn onClick={() => props.onSuccess()}>Continue</Btn>
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <Btn class="voice-follow" onClick={() => props.onSuccess()}>
+            Continue
+          </Btn>
         </Match>
       </Switch>
     </div>

@@ -1,0 +1,35 @@
+// Small warm details: text selection, the typing caret and native controls
+// (checkbox/radio/range) take the sun's warm rim instead of browser-default
+// blue. Everything is scoped under the #minded-6622 root, so nothing reaches a
+// host page from the content script.
+//
+// Day: the amber of the sun's edge ring (--sun-shadow, rgb 233 132 58). The
+// selection is only a soft tint of it (text keeps its own colour); the caret
+// and accent use a deeper burnt amber so they hold >= 3:1 against the light
+// sky and form fields.
+// Night: a pale, muted warm light - legible on the dark sky without turning
+// into a glowing amber. These are text/controls, not the sun's halo, so the
+// halo rule (sunSettle.ts) is untouched: no surface around the sun warms.
+#minded-6622 {
+  --c-selection-bg: rgba(233, 132, 58, 0.24);
+  --c-caret: #b85a17;
+  --c-accent: #b85a17;
+
+  &.minded-6622-dark {
+    --c-selection-bg: rgba(255, 205, 160, 0.26);
+    --c-caret: #ffc993;
+    --c-accent: #ffc993;
+  }
+
+  ::selection {
+    background-color: var(--c-selection-bg);
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    caret-color: var(--c-caret);
+  }
+
+  accent-color: var(--c-accent);
+}

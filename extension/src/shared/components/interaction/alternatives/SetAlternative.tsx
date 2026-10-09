@@ -10,8 +10,14 @@ import {
 } from "@src/dataInterface/commonSyncDataInterface";
 import type { Alternative } from "@src/dataInterface/syncData";
 import { InputWithSend } from "@src/shared/components/ui/InputWithSend";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 // once on app load
+
+const SET_ALTERNATIVE_QUESTION = IS_APP
+  ? "What other app would be better to use instead of this one?"
+  : "What website might be better to visit instead of this one?";
 
 export const SetAlternativeInteraction: (props: {
   currentAlternative?: Alternative;
@@ -48,20 +54,22 @@ export const SetAlternativeInteraction: (props: {
   };
 
   return (
-    <div onmouseenter={props.onCancelCountdown}>
-      <div class="txtBig">
-        {IS_APP
-          ? "What other app would be better to use instead of this one?"
-          : "What website might be better to visit instead of this one?"}
-      </div>
+    <div
+      class="voice-follow-scope"
+      style={voiceFollowStyle(SET_ALTERNATIVE_QUESTION)}
+      onmouseenter={props.onCancelCountdown}
+    >
+      <VoiceReveal class="txtBig" text={SET_ALTERNATIVE_QUESTION} />
 
-      <InputWithSend
-        isAutoFocus={true}
-        type={IS_WEB_EXT ? "url" : "text"}
-        onCancelCountdown={props.onCancelCountdown}
-        maxLength={500}
-        onSubmit={onSave}
-      />
+      <div class="voice-follow">
+        <InputWithSend
+          isAutoFocus={true}
+          type={IS_WEB_EXT ? "url" : "text"}
+          onCancelCountdown={props.onCancelCountdown}
+          maxLength={500}
+          onSubmit={onSave}
+        />
+      </div>
     </div>
   );
 };

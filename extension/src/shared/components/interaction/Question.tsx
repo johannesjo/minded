@@ -12,6 +12,8 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { withTargetName } from "@src/util/displayTargetName";
 import { formatQuestionText } from "@src/util/formatQuestionText";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 // Chip fade-out before the text input takes over; keep in sync with the
 // `.question-chips.is-exiting` opacity transition in Question.scss.
@@ -115,7 +117,12 @@ export const Question: (props: {
   };
 
   return (
-    <div id="minded-6622-question-wrapper">
+    // The chips / tap hint follow the prompt's word-by-word arrival
+    // (--voice-follow-delay, see Question.scss).
+    <div
+      id="minded-6622-question-wrapper"
+      style={voiceFollowStyle(formatQuestionText(displayText))}
+    >
       {/* The prompt stays in view the whole time you write - it never collapses
           away once the editor opens, so the question you're answering (and the
           textarea's accessible label) is always visible. */}
@@ -141,7 +148,7 @@ export const Question: (props: {
               }
         }
       >
-        <span>{formatQuestionText(displayText)}</span>
+        <VoiceReveal as="span" text={formatQuestionText(displayText)} />
       </div>
 
       <Show when={hasChips && !getShowInput()}>

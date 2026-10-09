@@ -8,6 +8,8 @@ import {
   type SkipCheckInChoice,
 } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import styles from "./SkipCheckInInteraction.module.scss";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 /**
  * Shown in place of the usual prompt once the pause has been passed straight
@@ -39,15 +41,16 @@ export const SkipCheckIn: (props: {
 
   return (
     <div
-      class={styles.SkipCheckIn}
+      class={`${styles.SkipCheckIn} voice-follow-scope`}
+      style={voiceFollowStyle(SKIP_CHECK_IN_QUESTION)}
       onMouseEnter={() => props.onCancelCountdown()}
     >
       <div class="txtBig interaction-heading">
         <div class="interaction-caption">{SKIP_CHECK_IN_OBSERVATION}</div>
-        <div>{SKIP_CHECK_IN_QUESTION}</div>
+        <VoiceReveal text={SKIP_CHECK_IN_QUESTION} />
       </div>
 
-      <div class={styles.choices}>
+      <div class={`${styles.choices} voice-follow`}>
         <For each={SKIP_CHECK_IN_CHOICES}>
           {(option) => (
             <Btn disabled={getIsChosen()} onClick={() => choose(option.choice)}>

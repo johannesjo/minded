@@ -12,8 +12,12 @@ import {
   BELL_SCREEN_FADE_MS,
   BELL_SILENCE_BEFORE_CONFIRM_MS,
 } from "./bell.const";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 type BellPhase = "invite" | "listen";
+
+const BELL_INVITE = "One bell.";
 
 interface BellProps {
   onSuccess: () => void;
@@ -97,15 +101,20 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
 
   return (
     <div
-      class="bell-interaction"
-      style={{ opacity: screenFade.opacity() }}
+      class="bell-interaction voice-follow-scope"
+      style={{
+        opacity: screenFade.opacity(),
+        ...voiceFollowStyle(BELL_INVITE),
+      }}
       onMouseMove={() => props.onCancelCountdown()}
     >
       <Switch>
         <Match when={getPhase() === "invite"}>
-          <div class="txtBig interaction-heading">One bell.</div>
-          <p class="bell-sub">Listen until the sound has completely gone.</p>
-          <Btn voice onClick={ring}>
+          <VoiceReveal class="txtBig interaction-heading" text={BELL_INVITE} />
+          <p class="bell-sub voice-follow">
+            Listen until the sound has completely gone.
+          </p>
+          <Btn voice class="voice-follow" onClick={ring}>
             Ring it
           </Btn>
         </Match>

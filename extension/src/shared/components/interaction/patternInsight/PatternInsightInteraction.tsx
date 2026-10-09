@@ -7,6 +7,8 @@ import {
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import Btn from "@src/shared/components/ui/Btn";
 import styles from "./PatternInsightInteraction.module.scss";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 export const PatternInsightInteraction: (props: {
   insight: PatternInsight;
@@ -53,10 +55,17 @@ export const PatternInsightInteraction: (props: {
   };
 
   return (
-    <div onmouseenter={props.onCancelCountdown}>
-      <div class="txtBig interaction-heading">{props.insight.message}</div>
+    <div
+      class="voice-follow-scope"
+      style={voiceFollowStyle(props.insight.message)}
+      onmouseenter={props.onCancelCountdown}
+    >
+      <VoiceReveal
+        class="txtBig interaction-heading"
+        text={props.insight.message}
+      />
 
-      <div class={styles.actions}>
+      <div class={`${styles.actions} voice-follow`}>
         <For each={props.insight.actions}>
           {(action) => (
             <Btn

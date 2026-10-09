@@ -29,6 +29,7 @@ import type { PatternInsight } from "@src/shared/components/interaction/patternI
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
 import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 
 export interface InteractionModeSwitchProps {
   mode: InteractionMode | undefined;
@@ -123,9 +124,9 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           return (
             <div
               id="minded-6622-action-advice"
-              class="txtBig interaction-static-text"
+              class="txtBig interaction-static-text voice-follow-scope"
             >
-              <div>{advice.txt}</div>
+              <VoiceReveal text={advice.txt} />
             </div>
           );
         })()}

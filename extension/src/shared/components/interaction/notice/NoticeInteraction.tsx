@@ -2,6 +2,8 @@ import { createSignal, JSX } from "solid-js";
 import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
 import { getRndEntry } from "@src/util/getRndEntry";
 import Btn from "@src/shared/components/ui/Btn";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 interface NoticeProps {
   onSuccess: () => void;
@@ -33,11 +35,17 @@ export const NoticeInteraction = (props: NoticeProps): JSX.Element => {
   return (
     <div
       id="minded-6622-notice"
-      class="notice-interaction"
+      class="notice-interaction voice-follow-scope"
+      style={voiceFollowStyle(cue().cue)}
       onmousemove={props.onCancelCountdown}
     >
-      <div class="txtBig notice-cue">{cue().cue}</div>
-      <Btn voice style={{ "margin-top": "24px" }} onClick={props.onSuccess}>
+      <VoiceReveal class="txtBig notice-cue" text={cue().cue} />
+      <Btn
+        voice
+        class="voice-follow"
+        style={{ "margin-top": "24px" }}
+        onClick={props.onSuccess}
+      >
         {cue().done}
       </Btn>
     </div>
