@@ -1,5 +1,6 @@
 import { Accessor, createSignal, onCleanup, onMount } from "solid-js";
 import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/commonSyncDataInterface";
 import {
   ambientSkyAccentsAt,
@@ -119,6 +120,64 @@ export const createCompanionWord = (): Accessor<"sun" | "moon"> => {
   return getWord;
 };
 
+// Wrappers whose theme has been applied at least once. Only a *later* change
+// is a day↔night flip worth animating; the first application is the initial
+// paint and must land instantly.
+const themedWrappers = new WeakSet<HTMLElement>();
+
+// How long the day↔night sky crossfade takes - the same gentle beat
+// (--dur-gentle) as the sun↔moon face crossfade it carries (Sun.scss), so the
+// sky and the disc turn together.
+const THEME_FLIP_CROSSFADE_MS = 700;
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => void) => {
+    ready: Promise<void>;
+  };
+};
+
+/**
+ * Crossfade the whole page from its current look into the one `update`
+ * produces. The sky is a gradient, which CSS can't transition, so without this
+ * a day↔night flip cut the whole sky over in one frame while the sun was still
+ * gently turning into the moon on top of it. Falls back to a plain update where
+ * View Transitions aren't available (older WebViews, Firefox) or when the user
+ * asked for reduced motion.
+ */
+const crossfadeThemeFlip = (el: HTMLElement, update: () => void) => {
+  const doc = document as ViewTransitionDocument;
+  // A view transition snapshots the whole document - only use it when the
+  // wrapper *is* the page (the apps), never for the content script's shadow
+  // overlay, where it would crossfade the host page too.
+  if (
+    typeof doc.startViewTransition !== "function" ||
+    el.getRootNode() !== document ||
+    document.visibilityState !== "visible" ||
+    prefersReducedMotion()
+  ) {
+    update();
+    return;
+  }
+  const transition = doc.startViewTransition.call(doc, update);
+  transition.ready
+    .then(() => {
+      for (const animation of document.documentElement.getAnimations({
+        subtree: true,
+      })) {
+        const effect = animation.effect as KeyframeEffect | null;
+        if (effect?.pseudoElement?.startsWith("::view-transition")) {
+          effect.updateTiming({
+            duration: THEME_FLIP_CROSSFADE_MS,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)", // --ease-out
+          });
+        }
+      }
+    })
+    // A skipped transition (e.g. the page hid mid-flip) already applied the
+    // update; nothing left to soften.
+    .catch(() => undefined);
+};
+
 export const setIsDarkModeIfApplies = (
   el: HTMLElement | null = document.getElementById("minded-6622"),
 ) => {
@@ -127,12 +186,24 @@ export const setIsDarkModeIfApplies = (
     return;
   }
 
-  if (isDarkModeNow()) {
-    el.classList.add("minded-6622-dark");
+  const isDark = isDarkModeNow();
+  const apply = () => {
+    el.classList.toggle("minded-6622-dark", isDark);
+    // The living sky's inline vars are theme-keyed (applySkyAtHour): re-apply
+    // them with the class, or a flip keeps the old theme's overrides - the day
+    // reveal sky over the night, no afterglow - until the next minute's tick
+    // jumps the sky a second time, long after the flip was done.
+    applySkyAtHour(getEffectiveHourNow(), el);
+  };
+  const isFlip =
+    themedWrappers.has(el) &&
+    el.classList.contains("minded-6622-dark") !== isDark;
+  themedWrappers.add(el);
+  if (isFlip) {
+    crossfadeThemeFlip(el, apply);
   } else {
-    el.classList.remove("minded-6622-dark");
+    apply();
   }
-  // el.classList.add("minded-6622-dark");
 };
 
 // Everything the living *day* sky overrides inline (see skyTimeline.ts), and

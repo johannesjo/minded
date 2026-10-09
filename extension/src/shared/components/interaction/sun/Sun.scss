@@ -94,8 +94,11 @@
       #fff 82%,
       var(--minded-sun-face-edge, #fff) 100%
     );
+    // The opacity is NOT eased here (see the crossfade note on .moon below):
+    // the sun face sits underneath the moon face and swaps instantly while
+    // fully covered, so only the top layer ever fades.
     transition:
-      opacity var(--dur-gentle) var(--ease-out),
+      opacity 0s,
       --minded-sun-face-edge var(--dur-gentle) var(--ease-out);
   }
 
@@ -178,6 +181,15 @@
     transition:
       opacity var(--dur-quick) var(--ease-out),
       box-shadow var(--dur-quick) var(--ease-out);
+  }
+
+  // A sun↔moon flip (Sun.tsx getIsVariantMorphing): the moon's cool pool grows
+  // in / dissolves on the face's gentle beat rather than the quick one, so the
+  // light turns with the disc instead of ahead of it.
+  &.is-variant-morphing::after {
+    transition:
+      opacity var(--dur-gentle) var(--ease-out),
+      box-shadow var(--dur-gentle) var(--ease-out);
   }
 
   &.dragging {
@@ -272,8 +284,18 @@
     transition: opacity var(--dur-gentle) var(--ease-out);
   }
 
+  // The crossfade fades only the TOP layer (.moon-face, the later child) while
+  // the sun face underneath stays fully opaque, swapping only once it is
+  // covered: going to night the sun face holds until the moon face has fully
+  // faded in (the delay), going to day it is back at full opacity the instant
+  // the moon face starts fading out. Fading both layers at once dipped the
+  // disc's coverage to ~75% mid-flip - for a beat the sky showed through a
+  // translucent disc, reading as the sun briefly dissolving.
   &.moon .sun-face {
     opacity: 0;
+    transition:
+      opacity 0s var(--dur-gentle),
+      --minded-sun-face-edge var(--dur-gentle) var(--ease-out);
   }
 
   &.moon .moon-face {
