@@ -16,6 +16,8 @@ export interface IntentSelectionProps {
   onCancel: () => void;
   onCancelCountdown: () => void;
   isArmed: boolean;
+  /** The sun is still gliding down to rest beneath the choices as they mount. */
+  isSunGliding?: boolean;
 }
 
 const INTENT_QUESTION = "What do you want to do here?";
@@ -30,6 +32,9 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
     props.onSelectIntent(intent);
   };
 
+  const sunLead = (): number =>
+    props.isSunGliding ? VOICE_REVEAL.SUN_GLIDE_LEAD_MS : 0;
+
   const handleCancel = () => {
     props.onCancelCountdown();
     props.onCancel();
@@ -38,20 +43,16 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
   return (
     <div
       class="intent-selection-wrapper voice-follow-scope"
-      // The choices mount as the sun glides down to rest beneath them: let it
-      // land before the question is spoken. The scope is the wrapper so the
+      // When the choices mount as the sun glides down to rest beneath them, let
+      // it land before the question is spoken. The scope is the wrapper so the
       // cancel follows the sentence too - chrome never arrives before the voice.
-      style={voiceFollowStyle(INTENT_QUESTION, VOICE_REVEAL.SUN_GLIDE_LEAD_MS)}
+      style={voiceFollowStyle(INTENT_QUESTION, sunLead())}
     >
       <div
         class="intent-selection-container"
         classList={{ "is-arming": !props.isArmed }}
       >
-        <VoiceReveal
-          class="txtBig"
-          text={INTENT_QUESTION}
-          lead={VOICE_REVEAL.SUN_GLIDE_LEAD_MS}
-        />
+        <VoiceReveal class="txtBig" text={INTENT_QUESTION} lead={sunLead()} />
 
         <div class="intent-options-grid voice-follow">
           <For each={SESSION_INTENT_OPTIONS}>

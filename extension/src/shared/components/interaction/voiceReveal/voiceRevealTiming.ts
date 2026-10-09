@@ -6,11 +6,14 @@ import type { JSX } from "solid-js";
 //
 // The composition rule: one thing moves at a time. The surface (sky, content
 // fade, sun) arrives first, then the words, then the choices under them - each
-// beat starting only as the one before it is nearly settled, never all at once.
+// beat starting only as the one before it is mostly settled, never all at once.
+// The beats overlap their tails on purpose: --ease-voice starts so quietly
+// that a word beginning in the last stretch of a fade reads as after it, and a
+// strict gap would read as a dead pause.
 export const VOICE_REVEAL = {
-  // The words wait for the surface: by now the content fade (--dur-gentle) is
-  // mostly in and the sun has settled, so the voice arrives into a still scene
-  // instead of racing the surface's own fade.
+  // The words wait for the surface: by now a screen's own fade-in (480-700ms,
+  // on a front-loaded ease-out) is mostly in, so the voice arrives into a
+  // settling scene instead of racing it.
   START_DELAY_MS: 350,
   // Slow enough to read as speech, not a ripple.
   STAGGER_MS: 85,
@@ -28,9 +31,9 @@ export const VOICE_REVEAL = {
   // voiceReveal.scss.
   FOLLOW_MS: 800,
   // Extra lead for a prompt that mounts while the sun is still gliding into
-  // its slot (the intent/time choices, urge-surfing's settle back from the
-  // wave): the sun's ~650ms glide lands before the first word, so the eye
-  // follows one moving thing at a time.
+  // its slot (the intent/time choices straight from the sun tap, urge-surfing's
+  // settle back from the wave): the sun's glide (<= 650ms) lands before the
+  // first word, so the eye follows one moving thing at a time.
   SUN_GLIDE_LEAD_MS: 350,
 } as const;
 

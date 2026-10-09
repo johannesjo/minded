@@ -217,6 +217,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
       classList={{ "is-surf": getPhase() === "surf" }}
       style={{
         opacity: screenFade.opacity(),
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
         ...voiceFollowStyle(heading(), headingLead()),
       }}
       onMouseMove={() => props.onCancelCountdown()}

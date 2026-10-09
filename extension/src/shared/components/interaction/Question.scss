@@ -290,9 +290,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .question-tap-hint,
-  .question-chips {
+  .question-tap-hint {
     animation: none;
+  }
+
+  // The same plain, short fade every other prompt's choices get under reduced
+  // motion (voiceReveal.scss), not an instant pop.
+  .question-chips {
+    animation: voiceRevealFade 300ms ease-out both;
   }
 
   .question-tap-hint {

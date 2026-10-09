@@ -14,24 +14,32 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
  * motion). The swap itself is already instant under reduced motion, so the screen
  * changes with no fade. Cleans up its pending timer on unmount.
  *
+ * `isFading` is true while the outgoing screen fades out: bind it to
+ * `pointer-events: none` on the faded element so a second tap on a fading
+ * button can't act on a screen that's already leaving.
+ *
  * NOT for page/route changes - those fade fully out before navigating, handled
  * globally by the router-level page-fade interceptor in RouteCmp
  * (`useBeforeLeave` → `fadeOutCurrentPage` in ./animation).
  */
 export function createScreenFade(fadeMs: number): {
   opacity: Accessor<number>;
+  isFading: Accessor<boolean>;
   toScreen: (swap: () => void) => void;
 } {
   const [opacity, setOpacity] = createSignal(1);
+  const [isFading, setIsFading] = createSignal(false);
   let timer: number | undefined;
 
   const toScreen = (swap: () => void): void => {
     const ms = prefersReducedMotion() ? 0 : fadeMs;
     if (timer) window.clearTimeout(timer);
     setOpacity(0);
+    setIsFading(true);
     timer = window.setTimeout(() => {
       timer = undefined;
       swap();
+      setIsFading(false);
       setOpacity(1);
     }, ms);
   };
@@ -40,5 +48,5 @@ export function createScreenFade(fadeMs: number): {
     if (timer) window.clearTimeout(timer);
   });
 
-  return { opacity, toScreen };
+  return { opacity, isFading, toScreen };
 }

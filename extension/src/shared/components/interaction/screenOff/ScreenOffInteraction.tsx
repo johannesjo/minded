@@ -154,6 +154,9 @@ export const ScreenOffInteraction: (props: {
       style={{
         ...voiceFollowStyle(heading()),
         opacity: screenFade.opacity(),
+        // The outgoing screen's buttons go inert as it fades - e.g. "Just go
+        // in" must not fire once a successful unlock has already moved on.
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
         transition: prefersReducedMotion()
           ? "none"
           : `opacity ${SCREEN_FADE_MS}ms ease-in-out`,

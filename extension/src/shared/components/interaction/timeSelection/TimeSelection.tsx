@@ -14,6 +14,13 @@ interface TimeSelectionProps {
   onCancel: () => void;
   intent?: SessionIntent;
   isArmed: boolean;
+  /**
+   * The sun is still gliding down to rest beneath the choices as they mount
+   * (shown straight after the sun tap, when no intent is asked). False after
+   * the intent step, where the sun is already resting - no reason to hold the
+   * question back there.
+   */
+  isSunGliding?: boolean;
 }
 
 export const TimeSelection: Component<TimeSelectionProps> = (props) => {
@@ -21,6 +28,9 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   // step): in the deep-night window "rest of day" is dropped, since granting
   // screen time until midnight contradicts letting the day go.
   const options = getTimeOptions(new Date().getHours());
+
+  const sunLead = (): number =>
+    props.isSunGliding ? VOICE_REVEAL.SUN_GLIDE_LEAD_MS : 0;
 
   const handleSelect = (seconds: number) => {
     if (!props.isArmed) {
@@ -33,14 +43,12 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   return (
     <div
       class="time-selection-wrapper voice-follow-scope"
-      // Shown straight after the sun tap, the choices mount as the sun glides
-      // down to rest beneath them: let it land before the question is spoken.
-      // (After the intent step the sun is already resting; the same lead then
-      // just lets the screen's own cross-fade settle first.) The scope is the
-      // wrapper so the cancel follows the sentence too.
+      // When the choices mount as the sun glides down to rest beneath them, let
+      // it land before the question is spoken. The scope is the wrapper so the
+      // cancel follows the sentence too.
       style={voiceFollowStyle(
         getSessionIntentTimeQuestion(props.intent),
-        VOICE_REVEAL.SUN_GLIDE_LEAD_MS,
+        sunLead(),
       )}
     >
       <div
@@ -50,7 +58,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
         <VoiceReveal
           class="txtBig"
           text={getSessionIntentTimeQuestion(props.intent)}
-          lead={VOICE_REVEAL.SUN_GLIDE_LEAD_MS}
+          lead={sunLead()}
         />
 
         <div class="time-options-grid voice-follow">

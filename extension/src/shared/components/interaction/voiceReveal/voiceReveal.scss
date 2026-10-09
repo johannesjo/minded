@@ -57,8 +57,13 @@
     var(--voice-follow-delay, 0ms) backwards;
 }
 
+// `visibility: hidden` in `from`: with the backwards fill it holds the choices
+// out of the hit-test through the whole delay (opacity 0 alone leaves them
+// tappable while nobody can see them), and flips visible the moment they begin
+// to fade in - visibility interpolates discretely to the visible end.
 @keyframes voiceFollowIn {
   from {
+    visibility: hidden;
     opacity: 0;
     transform: translateY(6px);
   }

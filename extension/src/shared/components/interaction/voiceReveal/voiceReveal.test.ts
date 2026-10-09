@@ -68,7 +68,8 @@ describe("voice reveal timing", () => {
     expect(voiceFollowStyle("What do you want to do here?", lead)).toEqual({
       "--voice-follow-delay": `${getVoiceFollowDelayMs(7) + lead}ms`,
     });
-    // The sun's glide (~650ms) has landed before the first word starts.
+    // The sun's glide (<= 650ms, GLIDE_DURATION_MS) has landed before the
+    // first word starts.
     expect(VOICE_REVEAL.START_DELAY_MS + lead).toBeGreaterThanOrEqual(650);
   });
 
@@ -130,9 +131,14 @@ describe("voice reveal styles", () => {
       );
       expect(props.length).toBeGreaterThan(0);
       for (const prop of props) {
-        expect(["opacity", "transform", "filter"]).toContain(prop);
+        expect(["opacity", "transform", "filter", "visibility"]).toContain(
+          prop,
+        );
       }
     }
+    // Choices waiting on the sentence are hidden from hit-testing, not just
+    // transparent - nobody can tap an option they can't see yet.
+    expect(keyframes("voiceFollowIn")).toMatch(/visibility:\s*hidden/);
     // A single arrival - never a loop, never a rhythm.
     expect(stripComments(styles)).not.toMatch(/infinite|alternate/);
   });

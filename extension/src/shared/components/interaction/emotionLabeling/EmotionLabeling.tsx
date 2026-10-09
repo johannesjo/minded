@@ -75,6 +75,7 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
           getStep() === 0 ? EMOTION_QUESTION : BODY_LOCATION_QUESTION,
         ),
         opacity: screenFade.opacity(),
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
         transition: prefersReducedMotion()
           ? "none"
           : `opacity ${FADE_MS}ms ease-in-out`,

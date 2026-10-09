@@ -254,3 +254,31 @@ test("the intervention switches in place so the browser frame never blanks", asy
     ],
   ]);
 });
+
+test("the video waits for the question's chips to arrive before tapping one", async () => {
+  const timing = await readFile(
+    new URL(
+      "../src/shared/components/interaction/voiceReveal/voiceRevealTiming.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const value = (name) => {
+    const match = timing.match(new RegExp(`${name}:\\s*([\\d.]+)`));
+    assert.ok(match, `missing ${name}`);
+    return Number(match[1]);
+  };
+  // Worst case: a long prompt at the stagger cap, then the chips' follow-in.
+  const chipsFullyInMs =
+    value("START_DELAY_MS") +
+    value("MAX_SPREAD_MS") +
+    value("WORD_MS") * value("FOLLOW_AT_WORD_FRACTION") +
+    value("FOLLOW_MS");
+  const revealSceneMs = 600;
+  assert.ok(
+    revealSceneMs + VIDEO_TIMING.questionMs >= chipsFullyInMs,
+    `chips are fully in at ${chipsFullyInMs}ms, the video taps at ${
+      revealSceneMs + VIDEO_TIMING.questionMs
+    }ms`,
+  );
+});
