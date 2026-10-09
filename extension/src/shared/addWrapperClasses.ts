@@ -93,9 +93,10 @@ const getSearchParam = (name: string): string | null =>
 
 /**
  * The moment the sky is drawn for - normally now. Dev overrides for the
- * styleguide / dashboard simulation: `?skyAt=` any Date-parseable instant
- * ("2026-06-21T21:30" is local time), `?skyZone=` an IANA zone whose location
- * stands in for the runtime's own.
+ * styleguide / dashboard simulation: `?skyAt=` any Date-parseable instant,
+ * `?skyZone=` an IANA zone whose location stands in for the runtime's own.
+ * A zoneless `?skyAt=` ("2026-06-21T21:30") is read in the *runtime's* zone,
+ * not `?skyZone=`'s - pair them with an explicit offset ("...T21:30+02:00").
  */
 const getSkyDateNow = (): Date => {
   const at = getSearchParam("skyAt");

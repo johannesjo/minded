@@ -690,7 +690,7 @@ const Styleguide = (): JSX.Element => {
           skies stay light pastels <em>by design</em> so the line stays legible,
           so there is deliberately no saturated sunset - “evening” is the pale
           dusk pastel, then the clock hands the card to the dark night sky at
-          19:00, in step with the app.
+          19:00 - the widgets keep the fixed clock the app only falls back to.
         </p>
         <SunWidgetSkyGallery />
       </Section>
@@ -787,11 +787,11 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
     <>
       <p class="txtBig">
         The ambient sky interpolates through pastel keyframes across the light
-        window - timed to the real sun for this time zone (night from 4° below
-        the horizon), shown here on the palette's own clock (
-        {formatHour(NIGHT_END_HOUR)}–{formatHour(NIGHT_START_HOUR)}, the
-        fallback when the zone gives no location); at night the dark theme owns
-        the sky, apart from the sunset's warm horizon fading out of it (by{" "}
+        window, timed to the real sun for this time zone (night begins 4° below
+        the horizon). Below they sit on the palette's own clock (
+        {formatHour(NIGHT_END_HOUR)}–{formatHour(NIGHT_START_HOUR)}), which is
+        also the fallback when the zone gives no location. At night the dark
+        theme owns the sky, apart from the sunset's warm horizon fading out (by{" "}
         {formatHour(NIGHT_AFTERGLOW_END_HOUR)} on the clock) as the stars come
         out. The sun-drag reveals are targets on the same timeline: from 17:00
         the down-drag sunset deepens toward night and the up-drag blue dims, so

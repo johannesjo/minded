@@ -111,6 +111,13 @@ const circle = (s: FieldStar, opacity: string): string =>
   `<circle cx='${s.cx}' cy='${s.cy}' r='${s.r}' opacity='${opacity}'/>`;
 
 /**
+ * A star's visibility in twentieths: a step is at most ~0.03 of opacity
+ * (invisible), and minutes whose twilight barely moved produce the same layer,
+ * so the per-minute tick leaves the inline var - and the decoded image - alone.
+ */
+const VISIBILITY_STEPS = 20;
+
+/**
  * The `--night-stars` layer at a twilight depth (0 = none out yet, 1 = true
  * night): a CSS `url(...)` value, or `none` before the first star. At depth 1
  * this is byte-identical to the stylesheet's field.
@@ -120,7 +127,9 @@ export const nightStarsLayerAt = (depth: number): string => {
   const d = Math.min(1, depth);
   let body = "";
   for (const s of getField()) {
-    const v = starVisibilityAt(s.rank, d);
+    const v =
+      Math.round(starVisibilityAt(s.rank, d) * VISIBILITY_STEPS) /
+      VISIBILITY_STEPS;
     if (v <= 0) continue;
     body += circle(
       s,
