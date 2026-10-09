@@ -18,7 +18,10 @@ import {
   URGE_INTENSITY_STEPS,
 } from "./urgeSurfing.const";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
-import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
+import {
+  VOICE_REVEAL,
+  voiceFollowStyle,
+} from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 /**
  * Urge surfing: rather than acting on the pull to open a distracting site, the
@@ -50,7 +53,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   const [getBefore, setBefore] = createSignal(0);
   const [getAfter, setAfter] = createSignal(0);
 
-  const FADE_MS = 240;
+  const FADE_MS = 480;
   // Hold the first surf cue back this long so the pulsing sun reads on its own
   // for a beat before the guidance arrives.
   const FIRST_CUE_DELAY_MS = 1400;
@@ -202,13 +205,19 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     }
   };
 
+  // Coming back from the wave, the sun glides home from its surf anchor as the
+  // after-rating swaps in (onSunWaveEnd at the swap): let it land before the
+  // question is spoken, so the eye follows one moving thing at a time.
+  const headingLead = (): number =>
+    getPhase() === "rateAfter" ? VOICE_REVEAL.SUN_GLIDE_LEAD_MS : 0;
+
   return (
     <div
       class="urge-surfing voice-follow-scope"
       classList={{ "is-surf": getPhase() === "surf" }}
       style={{
         opacity: screenFade.opacity(),
-        ...voiceFollowStyle(heading()),
+        ...voiceFollowStyle(heading(), headingLead()),
       }}
       onMouseMove={() => props.onCancelCountdown()}
     >
@@ -232,7 +241,11 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
         </Match>
 
         <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
-          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <VoiceReveal
+            class="txtBig interaction-heading"
+            text={heading()}
+            lead={headingLead()}
+          />
           <div class="urge-surfing-scale voice-follow">
             <For each={[...URGE_INTENSITY_STEPS]}>
               {(step) => (

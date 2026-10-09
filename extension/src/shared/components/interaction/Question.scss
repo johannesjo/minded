@@ -27,17 +27,6 @@
   }
 }
 
-@keyframes slideUpFadeIn {
-  0% {
-    transform: translateY(15px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 // The input container keeps its layout box even while hidden (visibility:
 // hidden), so this region always reserves the space the textarea will fill.
 // The tap hint is absolutely positioned at the top of it, landing where the
@@ -67,10 +56,10 @@
   cursor: pointer;
   opacity: 0;
   // Fade softly in once, after the prompt's last word (--voice-follow-delay on
-  // the wrapper). Repeating motion belongs to guided breathing, not this
-  // secondary answer affordance.
-  animation: tapHintFadeIn 0.6s var(--ease-out) var(--voice-follow-delay, 0.6s)
-    forwards;
+  // the wrapper), on the same soft curve as the words. Repeating motion belongs
+  // to guided breathing, not this secondary answer affordance.
+  animation: tapHintFadeIn 0.8s var(--ease-voice)
+    var(--voice-follow-delay, 0.8s) forwards;
   transition:
     opacity 0.4s var(--ease-out),
     visibility 0.4s;
@@ -100,9 +89,11 @@
   margin: var(--space-xl) auto 0;
   text-align: center;
   // Soft entrance after the prompt's last word has arrived (--voice-follow-delay
-  // on the wrapper), never before it and never a hard cut.
-  animation: slideUpFadeIn 0.5s var(--ease-out) var(--voice-follow-delay, 0.3s)
-    both;
+  // on the wrapper), never before it and never a hard cut. The very same arrival
+  // every other prompt's choices get (voiceFollowIn, voiceReveal.scss) - a
+  // quicker, taller rise here read as a second beat stepping on the sentence.
+  animation: voiceFollowIn 0.8s var(--ease-voice)
+    var(--voice-follow-delay, 0.8s) both;
   transition: opacity 0.25s var(--ease-out);
 
   // Soft exit when "Something else…" swaps in the text input - never a snap-out.

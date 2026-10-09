@@ -4,7 +4,10 @@ import { getSessionIntentTimeQuestion } from "@src/shared/components/interaction
 import { getTimeOptions } from "@src/shared/components/interaction/timeSelection/timeSelectionOptions";
 import Btn from "@src/shared/components/ui/Btn";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
-import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
+import {
+  VOICE_REVEAL,
+  voiceFollowStyle,
+} from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;
@@ -28,15 +31,26 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   };
 
   return (
-    <div class="time-selection-wrapper">
+    <div
+      class="time-selection-wrapper voice-follow-scope"
+      // Shown straight after the sun tap, the choices mount as the sun glides
+      // down to rest beneath them: let it land before the question is spoken.
+      // (After the intent step the sun is already resting; the same lead then
+      // just lets the screen's own cross-fade settle first.) The scope is the
+      // wrapper so the cancel follows the sentence too.
+      style={voiceFollowStyle(
+        getSessionIntentTimeQuestion(props.intent),
+        VOICE_REVEAL.SUN_GLIDE_LEAD_MS,
+      )}
+    >
       <div
-        class="time-selection-container voice-follow-scope"
+        class="time-selection-container"
         classList={{ "is-arming": !props.isArmed }}
-        style={voiceFollowStyle(getSessionIntentTimeQuestion(props.intent))}
       >
         <VoiceReveal
           class="txtBig"
           text={getSessionIntentTimeQuestion(props.intent)}
+          lead={VOICE_REVEAL.SUN_GLIDE_LEAD_MS}
         />
 
         <div class="time-options-grid voice-follow">
@@ -60,7 +74,7 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
         <div class="resting-sun-spacer" aria-hidden="true" />
       </div>
 
-      <div class="time-selection-cancel">
+      <div class="time-selection-cancel voice-follow">
         <Btn soft onClick={props.onCancel}>
           cancel
         </Btn>

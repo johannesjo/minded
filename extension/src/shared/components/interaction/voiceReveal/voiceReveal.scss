@@ -10,7 +10,9 @@
   // sentence. Ligatures and kerning only ever span within a word.
   display: inline-block;
   // Duration in sync with VOICE_REVEAL.WORD_MS; the per-word delay is inline.
-  animation: voiceRevealWord 600ms var(--ease-out) backwards;
+  // --ease-voice, not --ease-out: the shared ease-out front-loads the fade so
+  // each word pops in; this one lets it come up quietly and land long.
+  animation: voiceRevealWord 900ms var(--ease-voice) backwards;
 }
 
 // No blur: a per-word `filter: blur()` was measured (Chromium, 4x CPU
@@ -47,16 +49,18 @@
 // The choices under a prompt opt in with `.voice-follow` and arrive after its
 // last word: a `.voice-follow-scope` ancestor carries --voice-follow-delay (see
 // voiceFollowStyle). Opt-in, not "every sibling", so children that run their
-// own opacity (a confirm that eases in later) are never overridden.
+// own opacity (a confirm that eases in later) are never overridden. Duration
+// in sync with VOICE_REVEAL.FOLLOW_MS; the same soft curve as the words, so the
+// choices read as the sentence's next breath, not a second, quicker beat.
 .voice-follow {
-  animation: voiceFollowIn 600ms var(--ease-out) var(--voice-follow-delay, 0ms)
-    backwards;
+  animation: voiceFollowIn 800ms var(--ease-voice)
+    var(--voice-follow-delay, 0ms) backwards;
 }
 
 @keyframes voiceFollowIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;

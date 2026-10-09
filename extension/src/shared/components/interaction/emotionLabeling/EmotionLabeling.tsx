@@ -29,7 +29,7 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
     new Set(),
   );
 
-  const FADE_MS = 240;
+  const FADE_MS = 480;
   // Cross-screen fade between the two steps (emotions → body location), via the
   // shared helper rather than hard-cutting the <Switch>: drop opacity to 0, swap
   // the step while hidden, then ease back in. Matches the FADE_MS transition on
