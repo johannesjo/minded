@@ -92,6 +92,17 @@ hover 1.7; snug reach on the bar, broad everywhere else. In dark mode a wide coo
 "horizon reflection" pools under the bottom bar (`RouteCmp.module.scss`, #125).
 The departing moon dims to 1.0 + snug like the sun, but stays cool.
 
+### The day↔night flip
+
+The theme can flip under a live sun (an Android resume across the threshold).
+It is one disc turning, never a swap: the moon face fades in *over* the sun face
+(the face underneath stays opaque, so the disc never goes translucent mid-flip),
+and for that same `--dur-gentle` beat the halo and the moon's cool pool ease on
+it too (`sunVariantMorph.ts`) instead of jumping ahead on the quick bloom ease.
+The horizon reflection fades with it, and in the apps the sky itself crossfades
+(a View Transition in `setIsDarkModeIfApplies`), since a gradient can't
+transition in CSS.
+
 ## Outside the app
 
 ### On a background we don't control — amber
