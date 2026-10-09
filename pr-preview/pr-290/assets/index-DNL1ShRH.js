@@ -1,0 +1,1 @@
+import{a0 as n,bk as o,ab as r,U as t}from"./Styleguide-OO7bHSW_.js";const e=document.getElementById("minded-6622");if(!e)throw new Error("Cannot find #minded-6622 root element");n();o(()=>r(t,{}),e);
