@@ -51,6 +51,10 @@ import {
  *
  * (The cool end is untouched by this rule - see `glowColorForTemp`. The moon
  * never warms at all.)
+ *
+ * The light the sun casts onto the sky (`sunLight.ts`) follows the same rule
+ * with no exception at all: it is white even on the departing hand-off, where
+ * it fades out with the sky rather than warming.
  */
 
 // "companion" is the idle home in the app shell (top-bar rest); the rest are the

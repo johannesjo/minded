@@ -253,6 +253,9 @@ Path aliases change based on build mode to load platform-specific code.
   lift a colour change nobody asked for. White both ways keeps that morph pure
   size and position. The cool half of the glow axis is untouched - that still
   carries the up-drag/let-go read, and the moon never warms at all.
+- The light the sun casts *onto the sky* (`sunLight.ts`, a child layer of the
+  disc so it travels with every move and hand-off) is white with no exception -
+  not even departing, where it fades out with the sky instead.
 - Full reasoning and the guard tests: the `THE HALO RULE` block at the top of
   `src/shared/components/interaction/sun/sunSettle.ts`. `docs/sun-halo.md` maps
   what the sun looks like on *every* surface (day, night, and the Little
