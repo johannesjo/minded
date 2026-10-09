@@ -5,6 +5,8 @@ import {
   SESSION_INTENT_OPTIONS,
 } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
 import Btn from "@src/shared/components/ui/Btn";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 export interface IntentSelectionProps {
   onSelectIntent: (intent: SessionIntent | undefined) => void;
@@ -12,6 +14,8 @@ export interface IntentSelectionProps {
   onCancelCountdown: () => void;
   isArmed: boolean;
 }
+
+const INTENT_QUESTION = "What do you want to do here?";
 
 export const IntentSelection: Component<IntentSelectionProps> = (props) => {
   const handleSelect = (intent: SessionIntent | undefined) => {
@@ -31,12 +35,13 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
   return (
     <div class="intent-selection-wrapper">
       <div
-        class="intent-selection-container"
+        class="intent-selection-container voice-follow-scope"
         classList={{ "is-arming": !props.isArmed }}
+        style={voiceFollowStyle(INTENT_QUESTION)}
       >
-        <div class="txtBig">What do you want to do here?</div>
+        <VoiceReveal class="txtBig" text={INTENT_QUESTION} />
 
-        <div class="intent-options-grid">
+        <div class="intent-options-grid voice-follow">
           <For each={SESSION_INTENT_OPTIONS}>
             {(intent) => (
               <Btn

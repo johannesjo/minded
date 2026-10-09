@@ -8,12 +8,17 @@ import { saveEmotionLabeling } from "@src/dataInterface/commonSyncDataInterface"
 import Btn from "@src/shared/components/ui/Btn";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { createScreenFade } from "@src/util/screenFade";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 interface EmotionLabelingProps {
   onSuccess: () => void;
   onSkip: () => void;
   onCancelCountdown: () => void;
 }
+
+const EMOTION_QUESTION = "What are you feeling?";
+const BODY_LOCATION_QUESTION = "Where do you feel it?";
 
 export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
   const [getStep, setStep] = createSignal(0);
@@ -64,7 +69,11 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
   return (
     <div
       id="minded-6622-emotion-labeling"
+      class="voice-follow-scope"
       style={{
+        ...voiceFollowStyle(
+          getStep() === 0 ? EMOTION_QUESTION : BODY_LOCATION_QUESTION,
+        ),
         opacity: screenFade.opacity(),
         transition: prefersReducedMotion()
           ? "none"
@@ -75,14 +84,14 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
       <Switch>
         {/* Step 0: Select Emotions */}
         <Match when={getStep() === 0}>
-          <div class="txtBig">What are you feeling?</div>
+          <VoiceReveal class="txtBig" text={EMOTION_QUESTION} />
           <div
-            class="txtSmaller"
+            class="txtSmaller voice-follow"
             style="margin-bottom: 16px; font-style: italic;"
           >
             Select all that apply
           </div>
-          <div>
+          <div class="voice-follow">
             <For each={[...PRIMARY_EMOTIONS]}>
               {(emotion) => (
                 <Btn
@@ -110,14 +119,14 @@ export const EmotionLabeling = (props: EmotionLabelingProps): JSX.Element => {
 
         {/* Step 1: Body Location */}
         <Match when={getStep() === 1}>
-          <div class="txtBig">Where do you feel it?</div>
+          <VoiceReveal class="txtBig" text={BODY_LOCATION_QUESTION} />
           <div
-            class="txtSmaller"
+            class="txtSmaller voice-follow"
             style="margin-bottom: 16px; font-style: italic;"
           >
             Select body areas
           </div>
-          <div>
+          <div class="voice-follow">
             <For each={[...BODY_LOCATIONS]}>
               {(location) => (
                 <Btn

@@ -26,6 +26,8 @@ import BreathingExercise from "@src/shared/components/interaction/breathingExerc
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
 import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   getSunSettleForPhase,
@@ -208,6 +210,8 @@ const Styleguide = (): JSX.Element => {
   const [timeVal, setTimeVal] = createSignal("09:00");
   const [wrapperVisible, setWrapperVisible] = createSignal(true);
   const [intentArmed, setIntentArmed] = createSignal(true);
+  // Bumped to remount the <VoiceReveal> demo, replaying its one arrival.
+  const [voiceRevealRun, setVoiceRevealRun] = createSignal(1);
   const [groundingOpen, setGroundingOpen] = createSignal(false);
   const [letGoOpen, setLetGoOpen] = createSignal(false);
 
@@ -608,6 +612,29 @@ const Styleguide = (): JSX.Element => {
               onChoose={(choice) => console.log("skip check-in:", choice)}
               onCancelCountdown={() => undefined}
             />
+          </div>
+        </Subsection>
+
+        <Subsection label="<VoiceReveal> - prompt arrives word by word">
+          <div class={styles.interactionFrame}>
+            <Btn outline onClick={() => setVoiceRevealRun((n) => n + 1)}>
+              replay
+            </Btn>
+            <Show when={voiceRevealRun()} keyed>
+              <div
+                id="sg-voice-reveal-demo"
+                class="voice-follow-scope"
+                style={voiceFollowStyle("What do you want to do here?")}
+              >
+                <VoiceReveal
+                  class="txtBig interaction-heading"
+                  text="What do you want to do here?"
+                />
+                <Btn plain class="voice-follow">
+                  follows after the last word
+                </Btn>
+              </div>
+            </Show>
           </div>
         </Subsection>
 

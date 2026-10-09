@@ -3,6 +3,8 @@ import { SessionIntent } from "@src/dataInterface/syncData";
 import { getSessionIntentTimeQuestion } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
 import { getTimeOptions } from "@src/shared/components/interaction/timeSelection/timeSelectionOptions";
 import Btn from "@src/shared/components/ui/Btn";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;
@@ -28,12 +30,16 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
   return (
     <div class="time-selection-wrapper">
       <div
-        class="time-selection-container"
+        class="time-selection-container voice-follow-scope"
         classList={{ "is-arming": !props.isArmed }}
+        style={voiceFollowStyle(getSessionIntentTimeQuestion(props.intent))}
       >
-        <div class="txtBig">{getSessionIntentTimeQuestion(props.intent)}</div>
+        <VoiceReveal
+          class="txtBig"
+          text={getSessionIntentTimeQuestion(props.intent)}
+        />
 
-        <div class="time-options-grid">
+        <div class="time-options-grid voice-follow">
           <For each={options}>
             {(option) => (
               <Btn

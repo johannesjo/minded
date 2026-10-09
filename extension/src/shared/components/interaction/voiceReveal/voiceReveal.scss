@@ -1,0 +1,87 @@
+// Word-by-word arrival of a serif intervention prompt (VoiceReveal.tsx).
+// Opacity/transform only, so each word stays on the compositor. Fill is
+// `backwards`, never `both`/`forwards`: the end state equals the resting
+// styles, and a forward fill would outrank any later opacity change (the
+// footgun .time-selection-overlay documents).
+
+.voice-reveal-word {
+  // Inline-block so the per-word transform applies; the real spaces between
+  // the words stay text, so line breaking and `text-wrap: balance` see one
+  // sentence. Ligatures and kerning only ever span within a word.
+  display: inline-block;
+  // Duration in sync with VOICE_REVEAL.WORD_MS; the per-word delay is inline.
+  animation: voiceRevealWord 600ms var(--ease-out) backwards;
+}
+
+// No blur: a per-word `filter: blur()` was measured (Chromium, 4x CPU
+// slowdown, 8-word prompt, 4 traced runs each) to drop ~5% of frames (36/704,
+// and a 2px blur was no better) against ~0.7% (5/536) for opacity + rise
+// alone - every blurred word re-rasters each frame. Android WebView is the
+// budget we design for, so the words come into focus by fade and rise only.
+@keyframes voiceRevealWord {
+  from {
+    opacity: 0;
+    transform: translateY(0.2em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Whole sentence, once, for screen readers - the animated words are
+// aria-hidden. Not selectable, so a copy never doubles the line.
+.voice-reveal-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  user-select: none;
+}
+
+// The choices under a prompt opt in with `.voice-follow` and arrive after its
+// last word: a `.voice-follow-scope` ancestor carries --voice-follow-delay (see
+// voiceFollowStyle). Opt-in, not "every sibling", so children that run their
+// own opacity (a confirm that eases in later) are never overridden.
+.voice-follow {
+  animation: voiceFollowIn 600ms var(--ease-out) var(--voice-follow-delay, 0ms)
+    backwards;
+}
+
+@keyframes voiceFollowIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Reduced motion: one plain, short fade of the whole line - no blur, offset or
+// stagger - and the choices simply fade in with it.
+@media (prefers-reduced-motion: reduce) {
+  .voice-reveal-word {
+    animation: none;
+  }
+
+  .voice-reveal-words,
+  .voice-follow {
+    animation: voiceRevealFade 300ms ease-out backwards;
+  }
+}
+
+@keyframes voiceRevealFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

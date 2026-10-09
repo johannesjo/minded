@@ -5,6 +5,8 @@ import {
   evaluateScreenOff,
   SCREEN_OFF_TARGET_MS,
 } from "@src/shared/components/interaction/screenOff/screenOffEval";
+import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 /**
  * "Screen-Off Minute" - an Android-only strong-friction intervention that
@@ -14,6 +16,13 @@ import {
  */
 
 type ScreenOffPhase = "intro" | "armed" | "tooEarly" | "done";
+
+const SCREEN_OFF_HEADINGS: Record<ScreenOffPhase, string> = {
+  intro: "Put your phone down for a minute?",
+  armed: "Lock your phone now - come back in a minute.",
+  tooEarly: "Almost - stay away a little longer.",
+  done: "Nice - enjoy the break.",
+};
 
 /** Delay between showing the success message and closing the app. */
 const DONE_EXIT_DELAY_MS = 1600;
@@ -99,36 +108,46 @@ export const ScreenOffInteraction: (props: {
     }
   });
 
+  const heading = (): string => SCREEN_OFF_HEADINGS[getPhase()];
+
   return (
-    <div onmouseenter={props.onCancelCountdown}>
+    <div
+      class="voice-follow-scope"
+      style={voiceFollowStyle(heading())}
+      onmouseenter={props.onCancelCountdown}
+    >
       <Switch>
         <Match when={getPhase() === "intro"}>
-          <div class="txtBig interaction-heading">
-            Put your phone down for a minute?
-          </div>
-          <Btn onClick={arm}>Lock my phone for a minute</Btn>
-          <Btn onClick={() => props.onSkip()}>Not now</Btn>
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <Btn class="voice-follow" onClick={arm}>
+            Lock my phone for a minute
+          </Btn>
+          <Btn class="voice-follow" onClick={() => props.onSkip()}>
+            Not now
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "armed"}>
-          <div class="txtBig interaction-heading">
-            Lock your phone now - come back in a minute.
-          </div>
-          <Btn onClick={() => props.onSkip()}>Just go in</Btn>
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <Btn class="voice-follow" onClick={() => props.onSkip()}>
+            Just go in
+          </Btn>
         </Match>
 
         {/* No seconds-remaining count here - a ticking target would gamify
             the break ("beat the clock"), the one register the app avoids. */}
         <Match when={getPhase() === "tooEarly"}>
-          <div class="txtBig interaction-heading">
-            Almost - stay away a little longer.
-          </div>
-          <Btn onClick={arm}>Try again</Btn>
-          <Btn onClick={() => props.onSkip()}>Just go in</Btn>
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <Btn class="voice-follow" onClick={arm}>
+            Try again
+          </Btn>
+          <Btn class="voice-follow" onClick={() => props.onSkip()}>
+            Just go in
+          </Btn>
         </Match>
 
         <Match when={getPhase() === "done"}>
-          <div class="txtBig interaction-heading">Nice - enjoy the break.</div>
+          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
         </Match>
       </Switch>
     </div>

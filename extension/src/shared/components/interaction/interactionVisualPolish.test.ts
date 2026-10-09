@@ -26,7 +26,7 @@ describe("interaction visual polish", () => {
       'import styles from "./PatternInsightInteraction.module.scss"',
     );
     expect(component).toMatch(
-      /<div class=\{styles\.actions\}>[\s\S]*?<For each=\{props\.insight\.actions\}>/,
+      /<div class=\{`\$\{styles\.actions\} voice-follow`\}>[\s\S]*?<For each=\{props\.insight\.actions\}>/,
     );
     expect(actions).toMatch(/display:\s*grid/);
     expect(actions).toMatch(/grid-template-columns:\s*1fr/);
