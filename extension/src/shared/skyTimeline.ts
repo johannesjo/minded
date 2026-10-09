@@ -8,9 +8,16 @@
  * the zenith, and releasing springs back to the present, instead of jumping
  * to a fixed postcard sky that may contradict the actual time of day.
  *
- * Night (19:00–06:00) stays owned by the dark theme's background in
- * _variables.scss; the only thing this module shapes there is the sunset's
- * fading afterglow (nightAfterglowAt) - otherwise it shapes the light window.
+ * The hours here are the *palette's* clock. What time it actually is on that
+ * clock comes from the real sun (sky/solarSky.ts): the keyframes are pinned to
+ * solar elevation, so dusk lands at the real dusk in June and December alike.
+ * The fixed 19:00/06:00 boundary below is the fallback when no location can
+ * be derived from the time zone - and what the native widgets still use.
+ *
+ * Night stays owned by the dark theme's background in _variables.scss; the
+ * only things shaped there live are the sunset's fading afterglow and the
+ * stars coming out (both by twilight depth in solarSky.ts; nightAfterglowAt is
+ * the clock fallback) - otherwise this module shapes the light window.
  * Guardrail from the issue: this is slow ambient *state*, not animation -
  * values step per minute (see applySkyForNow), nothing drifts visibly.
  *
@@ -32,9 +39,10 @@ export type SkyColors = [string, string, string, string];
  */
 export type SkyAccents = { zenith: string; horizonGlow: string };
 
-// Shared day/night boundary (also drives the dark-mode class in
-// addWrapperClasses.ts). Set NIGHT_START_HOUR low (e.g. 11) to preview night
-// during the day.
+// The fixed-clock day/night boundary: the fallback when the time zone gives no
+// location (sky/solarSky.ts clockSkyMoment), the `?skyHour=` preview pin, and
+// the boundary the native widgets mirror (widgetClockMirror.test.ts). With a
+// location, the real sun decides instead (NIGHT_ELEVATION).
 export const NIGHT_START_HOUR = 19;
 export const NIGHT_END_HOUR = 6;
 
@@ -239,9 +247,52 @@ export const ambientSkyLayeredBackground = (
   ].join(", ");
 };
 
-export const duskTargetGradientAt = (hour: number): string => {
-  const c = duskTargetColorsAt(hour);
-  return `linear-gradient(to bottom, ${c[0]} 0%, ${c[0]} 14%, ${c[1]} 54%, ${c[2]} 78%, ${c[3]} 100%)`;
+export const duskTargetGradient = (c: SkyColors): string =>
+  `linear-gradient(to bottom, ${c[0]} 0%, ${c[0]} 14%, ${c[1]} 54%, ${c[2]} 78%, ${c[3]} 100%)`;
+
+export const duskTargetGradientAt = (hour: number): string =>
+  duskTargetGradient(duskTargetColorsAt(hour));
+
+/** Every hour-keyed value of the light sky, resolved together. */
+export type DaySky = {
+  colors: SkyColors;
+  accents: SkyAccents;
+  dusk: SkyColors;
+  zenith: [string, string];
+};
+
+const daySkyAtHour = (hour: number): DaySky => ({
+  colors: ambientSkyColorsAt(hour),
+  accents: ambientSkyAccentsAt(hour),
+  dusk: duskTargetColorsAt(hour),
+  zenith: zenithTargetColorsAt(hour),
+});
+
+/**
+ * The light sky at a palette hour, optionally crossfaded toward a second one
+ * (`blend.weight` 0 → `hour`, 1 → `blend.hour`). The crossfade is only used
+ * by a sun that never sets (sky/solarSky.ts): around solar midnight its dusk
+ * side eases into its dawn side instead of jumping between them.
+ */
+export const daySkyAt = (
+  hour: number,
+  blend?: { hour: number; weight: number } | null,
+): DaySky => {
+  const a = daySkyAtHour(hour);
+  if (!blend || blend.weight <= 0) return a;
+  const b = daySkyAtHour(blend.hour);
+  const t = clamp(blend.weight, 0, 1);
+  const [zenith, horizonGlow] = lerpColors(
+    [a.accents.zenith, a.accents.horizonGlow],
+    [b.accents.zenith, b.accents.horizonGlow],
+    t,
+  );
+  return {
+    colors: lerpColors(a.colors, b.colors, t),
+    accents: { zenith, horizonGlow },
+    dusk: lerpColors(a.dusk, b.dusk, t),
+    zenith: lerpColors(a.zenith, b.zenith, t),
+  };
 };
 
 export const zenithTargetGradientAt = (hour: number): string => {

@@ -219,6 +219,23 @@
     transition: opacity var(--dur-gentle) var(--ease-out);
   }
 
+  // The moon's phase: its night side, veiled by earthshine rather than cut
+  // out, with a soft terminator. The layer is an SVG computed from today's
+  // date (src/shared/sky/moonShadow.ts) and set on the wrapper as
+  // --moon-shadow, so every moon disc - companion, breath, intervention -
+  // shows the same phase. Absent (full moon, no JS) it draws nothing. It lives
+  // on the face, under the maria's tone fields' own layer order and inside
+  // the face's opacity, so the sun↔moon crossfade carries it; the halo is not
+  // touched - the moon is as findable at new moon as at full.
+  .moon-face::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--moon-shadow, none) center / 100% 100% no-repeat;
+    pointer-events: none;
+  }
+
   &.moon .sun-face {
     opacity: 0;
   }
