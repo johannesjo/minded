@@ -52,6 +52,31 @@ Only these differ:
 Plus one constant: a 1px warm hairline (`--sun-shadow`) rings the sun disc in
 every state. The moon replaces it with a white one.
 
+## The light it casts on the sky
+
+The halo is the light *at* the sun. The sun also lights the sky *around* it: a
+broad, faint radial lift (`.sun-light` in Sun.tsx / Sun.scss, logic in
+`sunLight.ts`) - a near bloom just past the rim plus a very faint, wide lift.
+
+- **White, always.** It takes no warmth input at all; the departing hand-off
+  warms the halo, never this. The moon casts the cool end of the glow axis
+  (`200,220,255`) at half the level.
+- **It is a child of the disc**, so it rides the disc's own transform: every
+  drag, fling, settle glide, companion ↔ intervention lift and reflow re-pin
+  carries the light on the same frame, in every runtime. It moves only when
+  the disc moves - no drift, no pulse, no breath of its own.
+- **It leaves with the sky.** On both corner hand-offs (the settles that pin
+  `discPx`) its level eases to 0 on `--dur-sky`, alongside the sky's own
+  `is-departing` / `is-arriving` fade - a white pool over someone else's app
+  would only be a pale smudge. Under reduced motion it doesn't fade; it just
+  sits where the (snapped) disc rests.
+- **It paints over content**, because the disc's stacking context sits above
+  it. It is shaped so the nearest voice copy only catches ~5% white (~5.1:1
+  contrast against 5.4:1 without it). That faint lift is the only highlight
+  text gets.
+
+Guard tests: `sunLight.test.ts`.
+
 ## Day (light theme → sun)
 
 | Where | Disc | Halo | Intensity | Reach |
@@ -165,7 +190,7 @@ pre-API-31 gallery renders it on the launcher's own surface, not on our sky.
 - `extension/src/shared/components/interaction/sun/sunSettle.ts` — `THE HALO RULE`
   block comment, at the point the settles are defined
 - `CLAUDE.md` — the short form, under Styling Guidelines
-- `sunSettle.test.ts` — the guard tests
+- `sunSettle.test.ts` — the guard tests (and `sunLight.test.ts` for the cast light)
 - `sunHaloMirror.test.ts` — the same rule enforced across the language boundary
   (the widget's Android/iOS twins, and the overlay's native Compose suns)
 - This file — the full state map
