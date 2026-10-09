@@ -56,7 +56,6 @@ class MyAccessibilityServiceLogicTest {
             "com.android.launcher3",
             "com.google.android.apps.nexuslauncher",
             "com.google.android.launcher",
-            "com.google.android.googlequicksearchbox",
             "com.miui.home",
             "com.sec.android.app.launcher",
             "com.oneplus.launcher",

@@ -180,8 +180,8 @@ class MyAccessibilityService : AccessibilityService() {
             "com.google.android.apps.nexuslauncher",
             "com.google.android.launcher",
             // Not the Google app (googlequicksearchbox): users pick it to gate its
-            // feed, and a launcher match would skip it. Where it really is the home
-            // app, the CATEGORY_HOME query in getInstalledLaunchers() still finds it.
+            // feed, and a launcher match would skip it. If it declares a HOME activity,
+            // the CATEGORY_HOME query in getInstalledLaunchers() still adds it.
             "com.miui.home", // Xiaomi
             "com.sec.android.app.launcher", // Samsung
             "com.oneplus.launcher", // OnePlus
