@@ -51,11 +51,7 @@ import {
   NIGHT_START_HOUR,
   zenithTargetGradientAt,
 } from "@src/shared/skyTimeline";
-import {
-  applySkyAtHour,
-  applySkyForNow,
-  getEffectiveHourNow,
-} from "@src/shared/addWrapperClasses";
+import { applySkyAtHour, applySkyForNow } from "@src/shared/addWrapperClasses";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import {
   DashboardGroupTxtQuestion,
@@ -68,6 +64,7 @@ import { QuestionCategoryId } from "@src/shared/data/questions";
 import styles from "./styleguide.module.scss";
 import SunWidgetGallery from "./SunWidgetGallery";
 import SunWidgetSkyGallery from "./SunWidgetSkyGallery";
+import TrueSkyPreview from "./TrueSkyPreview";
 
 const ROOT_ID = "minded-6622";
 const DARK_CLASS = "minded-6622-dark";
@@ -693,7 +690,7 @@ const Styleguide = (): JSX.Element => {
           skies stay light pastels <em>by design</em> so the line stays legible,
           so there is deliberately no saturated sunset - “evening” is the pale
           dusk pastel, then the clock hands the card to the dark night sky at
-          19:00, in step with the app.
+          19:00 - the widgets keep the fixed clock the app only falls back to.
         </p>
         <SunWidgetSkyGallery />
       </Section>
@@ -758,7 +755,13 @@ const formatHour = (hour: number): string => {
 const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
   const [hour, setHour] = createSignal(
     // min: rounding 23:53+ would yield 24, past the slider's max
-    Math.min(23.75, Math.round(getEffectiveHourNow() * 4) / 4),
+    // Seeded from the wall clock: this scrubs the palette's own clock, and
+    // the live (solar) palette hour is pinned to its dawn/dusk edge all night.
+    Math.min(
+      23.75,
+      Math.round((new Date().getHours() + new Date().getMinutes() / 60) * 4) /
+        4,
+    ),
   );
   const [applyToPage, setApplyToPage] = createSignal(false);
   const isNight = () => hour() >= NIGHT_START_HOUR || hour() < NIGHT_END_HOUR;
@@ -784,12 +787,15 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
     <>
       <p class="txtBig">
         The ambient sky interpolates through pastel keyframes across the light
-        window ({formatHour(NIGHT_END_HOUR)}–{formatHour(NIGHT_START_HOUR)}); at
-        night the dark theme owns the sky, apart from the sunset's warm horizon
-        fading out of it by {formatHour(NIGHT_AFTERGLOW_END_HOUR)}. The sun-drag
-        reveals are targets on the same timeline: from 17:00 the down-drag
-        sunset deepens toward night and the up-drag blue dims, so the gesture
-        always leans away from<em> now</em>.
+        window, timed to the real sun for this time zone (night begins 4° below
+        the horizon). Below they sit on the palette's own clock (
+        {formatHour(NIGHT_END_HOUR)}–{formatHour(NIGHT_START_HOUR)}), which is
+        also the fallback when the zone gives no location. At night the dark
+        theme owns the sky, apart from the sunset's warm horizon fading out (by{" "}
+        {formatHour(NIGHT_AFTERGLOW_END_HOUR)} on the clock) as the stars come
+        out. The sun-drag reveals are targets on the same timeline: from 17:00
+        the down-drag sunset deepens toward night and the up-drag blue dims, so
+        the gesture always leans away from<em> now</em>.
       </p>
 
       <Subsection label="ambient keyframes">
@@ -891,6 +897,8 @@ const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
           <span>let-go reveal</span>
         </div>
       </Subsection>
+
+      <TrueSkyPreview />
     </>
   );
 };

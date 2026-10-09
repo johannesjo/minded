@@ -86,7 +86,10 @@ session timer.
 ## Night (dark theme → moon)
 
 Never warm, at any point. The disc is drawn (a shaded body under soft maria
-fields - see `.moon-face` in Sun.scss); the halo is
+fields - see `.moon-face` in Sun.scss) and shows tonight's real phase: its
+night side is veiled by a soft-edged earthshine wash (`--moon-shadow`,
+`src/shared/sky/moonShadow.ts`), never cut out, so even a new moon is a faint,
+findable disc. The phase changes the face only - the halo is
 a white/cool box-shadow plus a static cool light-pool (`::after`). Rest 1.1,
 hover 1.7; snug reach on the bar, broad everywhere else. In dark mode a wide cool
 "horizon reflection" pools under the bottom bar (`RouteCmp.module.scss`, #125).

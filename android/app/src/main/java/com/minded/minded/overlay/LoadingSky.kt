@@ -34,8 +34,12 @@ internal data class LoadingSkyBlend(
 }
 
 /**
- * Match extension/src/shared/skyTimeline.ts: night from 19:00–06:00, then
- * piecewise-linear interpolation through 06:00, 09:00, 13:00, 16:30, 19:00.
+ * Match extension/src/shared/skyTimeline.ts on its *fixed-clock fallback*:
+ * night from 19:00–06:00, then piecewise-linear interpolation through 06:00,
+ * 09:00, 13:00, 16:30, 19:00. The WebView now times the same keyframes to the
+ * real sun (extension/src/shared/sky/solarSky.ts); this native loading sky is
+ * not ported yet, so away from the equinox its frame can differ from the
+ * WebView sky it cross-fades into.
  */
 internal fun loadingSkyBlendAt(hour: Double): LoadingSkyBlend {
     if (hour < 6.0 || hour >= 19.0) return LoadingSkyBlend.dark()

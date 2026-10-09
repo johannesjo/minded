@@ -3,16 +3,23 @@ import { IS_MOUSE_PRIMARY, IS_TOUCH_PRIMARY } from "@src/util/touch";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { IS_APP, IS_WEB_EXT } from "@src/dataInterface/commonSyncDataInterface";
 import {
-  ambientSkyAccentsAt,
-  ambientSkyColorsAt,
-  duskTargetGradientAt,
+  daySkyAt,
+  duskTargetGradient,
   hexToRgbChannels,
-  NIGHT_END_HOUR,
-  nightAfterglowAt,
-  NIGHT_START_HOUR,
   parseSkyHourParam,
-  zenithTargetColorsAt,
 } from "@src/shared/skyTimeline";
+import {
+  clockSkyMoment,
+  skyMomentAt,
+  type SkyMoment,
+} from "@src/shared/sky/solarSky";
+import {
+  currentTimeZone,
+  locationForTimeZone,
+} from "@src/shared/sky/timeZoneLocation";
+import { nightStarsLayerAt } from "@src/shared/sky/nightStarField";
+import { moonShadowLayerFor } from "@src/shared/sky/moonShadow";
+import { writeSkyNightCache } from "@src/shared/sky/skyNightCache";
 
 const getWrapperEl = (shadowRoot?: ShadowRoot): HTMLElement | null =>
   shadowRoot
@@ -58,26 +65,61 @@ export const isDarkModeNow = (): boolean => {
     if (theme === "light") return false;
   }
 
-  const hour = getEffectiveHourNow();
-  return hour >= NIGHT_START_HOUR || hour < NIGHT_END_HOUR;
+  return getSkyMomentNow().isNight;
 };
 
 /**
- * The fractional local hour driving every time-of-day surface (dark-mode
- * class, ambient sky, drag-target skies). Honours the `?skyHour=` dev
- * override the same way isDarkModeNow honours `?theme=` - meant for the
- * styleguide / dashboard simulation. Like `?theme=`, a content script reads
- * the *host page's* URL here, so a page carrying the param could pin the
- * overlay's sky - accepted as vanishingly unlikely, same as the existing
- * pattern.
+ * The fractional *palette* hour pinned by the `?skyHour=` dev override
+ * (styleguide / dashboard simulation), else null. Like `?theme=`, a content
+ * script reads the *host page's* URL here, so a page carrying the param could
+ * pin the overlay's sky - accepted as vanishingly unlikely, same as the
+ * existing pattern.
  */
-export const getEffectiveHourNow = (): number => {
-  if (typeof window !== "undefined" && window.location?.search) {
-    const override = parseSkyHourParam(window.location.search);
-    if (override !== null) return override;
+const getSkyHourOverride = (): number | null =>
+  typeof window !== "undefined" && window.location?.search
+    ? parseSkyHourParam(window.location.search)
+    : null;
+
+/** Any dev sky override - a simulated sky must not leave real night windows. */
+const hasSkyOverride = (): boolean =>
+  ["skyHour", "skyAt", "skyZone", "theme"].some(
+    (name) => getSearchParam(name) !== null,
+  );
+
+const getSearchParam = (name: string): string | null =>
+  typeof window !== "undefined" && window.location?.search
+    ? new URLSearchParams(window.location.search).get(name)
+    : null;
+
+/**
+ * The moment the sky is drawn for - normally now. Dev overrides for the
+ * styleguide / dashboard simulation: `?skyAt=` any Date-parseable instant,
+ * `?skyZone=` an IANA zone whose location stands in for the runtime's own.
+ * A zoneless `?skyAt=` ("2026-06-21T21:30") is read in the *runtime's* zone,
+ * not `?skyZone=`'s - pair them with an explicit offset ("...T21:30+02:00").
+ */
+const getSkyDateNow = (): Date => {
+  const at = getSearchParam("skyAt");
+  if (at) {
+    const d = new Date(at);
+    if (!Number.isNaN(d.getTime())) return d;
   }
-  const now = new Date();
-  return now.getHours() + now.getMinutes() / 60;
+  return new Date();
+};
+
+const getSkyZoneNow = (): string | null =>
+  getSearchParam("skyZone") ?? currentTimeZone();
+
+/**
+ * The present sky: timed to the real sun for the zone's approximate location
+ * (sky/solarSky.ts), or the fixed clock when the zone gives none. `?skyHour=`
+ * pins the palette clock directly (the pre-solar preview behaviour).
+ */
+export const getSkyMomentNow = (): SkyMoment => {
+  const date = getSkyDateNow();
+  const pinnedHour = getSkyHourOverride();
+  if (pinnedHour !== null) return clockSkyMoment(pinnedHour, date);
+  return skyMomentAt(date, locationForTimeZone(getSkyZoneNow()));
 };
 
 /**
@@ -189,11 +231,11 @@ export const setIsDarkModeIfApplies = (
   const isDark = isDarkModeNow();
   const apply = () => {
     el.classList.toggle("minded-6622-dark", isDark);
-    // The living sky's inline vars are theme-keyed (applySkyAtHour): re-apply
-    // them with the class, or a flip keeps the old theme's overrides - the day
-    // reveal sky over the night, no afterglow - until the next minute's tick
-    // jumps the sky a second time, long after the flip was done.
-    applySkyAtHour(getEffectiveHourNow(), el);
+    // The living sky's inline vars are theme-keyed (applySkyMoment): re-apply
+    // them with the class, or a flip (or a resume across dusk) keeps the old
+    // theme's overrides - the day reveal over the night, every star, no
+    // afterglow - until the next minute's tick jumps the sky a second time.
+    applySkyMoment(getSkyMomentNow(), el);
   };
   const isFlip =
     themedWrappers.has(el) &&
@@ -212,9 +254,9 @@ export const setIsDarkModeIfApplies = (
 // gradient keeps the drag reveal and the grounding stage pixel-identical (both
 // read the same var); the bluesky pair feeds the up-drag layer at its use
 // site, so route-local overrides (SleepWindDown) still win over this
-// wrapper-level value. Night's one live value, --night-afterglow, is
-// deliberately not in this list: it is set in the dark branch and cleared in
-// the light one, the mirror image of these.
+// wrapper-level value. Night's live values (NIGHT_VAR_NAMES) are deliberately
+// not in this list: they are set in the dark branch and cleared in the light
+// one, the mirror image of these.
 const SKY_VAR_NAMES = [
   "--c-gradient-1",
   "--c-gradient-2",
@@ -227,49 +269,100 @@ const SKY_VAR_NAMES = [
   "--bg-transition-bluesky-bottom",
 ] as const;
 
+// Night's live values, set in the dark branch and cleared in the light one -
+// the mirror image of SKY_VAR_NAMES. Each falls back to the stylesheet's
+// static night when absent: no afterglow, the full star field.
+const NIGHT_VAR_NAMES = ["--night-afterglow", "--night-stars"] as const;
+
+/** Set an inline var only when it changes - the star/moon layers are SVGs. */
+const setVar = (el: HTMLElement, name: string, value: string | null) => {
+  if (value === null) {
+    el.style.removeProperty(name);
+  } else if (el.style.getPropertyValue(name) !== value) {
+    el.style.setProperty(name, value);
+  }
+};
+
 /**
- * Point-in-time application of the living sky for a given hour: sets the
- * ambient gradient stops and the drag-target skies as inline var overrides
- * on the wrapper. Keyed off the wrapper's *class*, not the clock: in dark
- * mode the day overrides are cleared so the dark theme's own sky (deep-night
- * gradient, deep-night reveal) applies untouched - an inline value would beat
- * the .minded-6622-dark stylesheet overrides. Night gets exactly one live
- * value of its own, the fading sunset afterglow.
+ * Point-in-time application of the living sky for a moment: sets the ambient
+ * gradient stops and the drag-target skies as inline var overrides on the
+ * wrapper. Keyed off the wrapper's *class*, not the clock: in dark mode the
+ * day overrides are cleared so the dark theme's own sky (deep-night gradient,
+ * deep-night reveal) applies untouched - an inline value would beat the
+ * .minded-6622-dark stylesheet overrides. Night gets its own live values: the
+ * fading sunset afterglow and the stars coming out with the twilight. The
+ * moon's phase (--moon-shadow) is set in both, so a mid-flight theme flip
+ * morphs into the right moon.
  */
-export const applySkyAtHour = (
-  hour: number,
+export const applySkyMoment = (
+  moment: SkyMoment,
   el: HTMLElement | null = getWrapperEl(),
 ) => {
   if (!el) return;
+  setVar(
+    el,
+    "--moon-shadow",
+    moonShadowLayerFor(moment.moon, moment.isSouthernHemisphere),
+  );
   if (el.classList.contains("minded-6622-dark")) {
     for (const name of SKY_VAR_NAMES) {
       el.style.removeProperty(name);
     }
-    el.style.setProperty("--night-afterglow", String(nightAfterglowAt(hour)));
+    setVar(
+      el,
+      "--night-afterglow",
+      String(Math.round(moment.afterglow * 1000) / 1000),
+    );
+    setVar(
+      el,
+      "--night-stars",
+      moment.starDepth >= 1 ? null : nightStarsLayerAt(moment.starDepth),
+    );
     return;
   }
-  el.style.removeProperty("--night-afterglow");
-  const ambient = ambientSkyColorsAt(hour);
-  ambient.forEach((color, i) => {
+  for (const name of NIGHT_VAR_NAMES) {
+    el.style.removeProperty(name);
+  }
+  const sky = daySkyAt(moment.hour, moment.blend);
+  sky.colors.forEach((color, i) => {
     el.style.setProperty(`--c-gradient-${i + 1}`, color);
   });
-  const accents = ambientSkyAccentsAt(hour);
-  el.style.setProperty("--day-zenith-rgb", hexToRgbChannels(accents.zenith));
+  el.style.setProperty(
+    "--day-zenith-rgb",
+    hexToRgbChannels(sky.accents.zenith),
+  );
   el.style.setProperty(
     "--day-horizon-glow-rgb",
-    hexToRgbChannels(accents.horizonGlow),
+    hexToRgbChannels(sky.accents.horizonGlow),
   );
   el.style.setProperty(
     "--background-sunset-gradient",
-    duskTargetGradientAt(hour),
+    duskTargetGradient(sky.dusk),
   );
-  const [zenithTop, zenithBottom] = zenithTargetColorsAt(hour);
-  el.style.setProperty("--bg-transition-bluesky-top", zenithTop);
-  el.style.setProperty("--bg-transition-bluesky-bottom", zenithBottom);
+  el.style.setProperty("--bg-transition-bluesky-top", sky.zenith[0]);
+  el.style.setProperty("--bg-transition-bluesky-bottom", sky.zenith[1]);
+};
+
+/**
+ * The sky at a fixed *palette* hour (the fixed-clock look) - the styleguide's
+ * scrubber previews the keyframes through this.
+ */
+export const applySkyAtHour = (
+  hour: number,
+  el: HTMLElement | null = getWrapperEl(),
+) => applySkyMoment(clockSkyMoment(hour, getSkyDateNow()), el);
+
+const applySkyNow = (el: HTMLElement | null, shadowRoot?: ShadowRoot) => {
+  applySkyMoment(getSkyMomentNow(), el);
+  // Only the app's own pages (never a content script - that would be the host
+  // page's storage) leave the loading pages their night windows.
+  if (!shadowRoot && el && !hasSkyOverride()) {
+    writeSkyNightCache(getSkyDateNow(), locationForTimeZone(getSkyZoneNow()));
+  }
 };
 
 export const applySkyForNow = (shadowRoot?: ShadowRoot) =>
-  applySkyAtHour(getEffectiveHourNow(), getWrapperEl(shadowRoot));
+  applySkyNow(getWrapperEl(shadowRoot), shadowRoot);
 
 // One interval per JS context, re-resolving the wrapper each tick.
 // Per-minute steps are sub-perceptual by design - the sky is ambient state,
@@ -288,6 +381,6 @@ const ensureSkyTicker = (shadowRoot?: ShadowRoot) => {
       isSkyTickerStarted = false;
       return;
     }
-    applySkyAtHour(getEffectiveHourNow(), el);
+    applySkyNow(el, shadowRoot);
   }, 60_000);
 };

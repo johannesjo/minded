@@ -580,7 +580,7 @@ export const SleepWindDownView = (
             <div class={styles.goodnightGesture}>
               {/* starsVariant pinned: this gesture's sky is always the deep
                   night wash (see the route's var overrides), even when the
-                  wind-down starts before the app's 19:00 dark boundary. */}
+                  wind-down starts before the sky turns to night. */}
               <BackgroundTransition
                 isSunGradientAttached={false}
                 starsVariant="night"

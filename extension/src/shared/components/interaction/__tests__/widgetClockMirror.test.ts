@@ -16,6 +16,13 @@ import {
  * the moon). This asserts all of them agree. The upgrade path, if the copies
  * multiply further, is a generated shared constant instead of this mirror.
  *
+ * Since the true-sky change (src/shared/sky/solarSky.ts) the app times night to
+ * the real sun and these hours are only its *fallback* clock (no location from
+ * the time zone). The native widgets are not ported yet and stay on that
+ * fallback, so this now pins them to the fallback - a known, documented gap
+ * (they can disagree with the app by a few hours away from the equinox), not
+ * a silent drift.
+ *
  * Sibling to widgetPromptsMirror.test.ts, which guards the prompt pool the same
  * way. jest runs with cwd = extension/, so android/ is one up and ios/ is here.
  */

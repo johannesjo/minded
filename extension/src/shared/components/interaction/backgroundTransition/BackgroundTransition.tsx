@@ -20,7 +20,7 @@ interface BackgroundTransitionProps {
   // Pin the field's variant instead of deriving it from the theme. The sleep
   // wind-down's goodnight gesture passes "night": its sky is always the deep
   // night wash (route-local var overrides), even when the app is still in the
-  // light theme (wind-down can start before the 19:00 dark boundary) - golden
+  // light theme (wind-down can start before the sky turns to night) - golden
   // day motes over that sky would be the wrong field on a night surface.
   starsVariant?: "night" | "day";
 }

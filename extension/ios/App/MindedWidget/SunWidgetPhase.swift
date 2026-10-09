@@ -29,12 +29,14 @@ enum SunWidgetPhase {
     // sun-vs-moon is the one shift everyone reads as "the world", not "a message to
     // me".
     //
-    // These are the app's own day/night boundary, not a widget-local one:
-    // skyTimeline.ts turns the background dark AND the companion sun into the moon at
-    // NIGHT_START_HOUR (19), back at NIGHT_END_HOUR (6). The widget must flip on the
-    // same hours, or the home-screen sun shows a different time of day than the app.
-    // widgetClockMirror.test.ts guards that both native copies (this and the Android
-    // SunWidgetPhase.kt) stay in lockstep with skyTimeline.
+    // These mirror the app's *fixed-clock* day/night boundary, not the live one:
+    // since the true-sky change the app times night to the real sun
+    // (extension/src/shared/sky/solarSky.ts - 4° below the horizon, from the time
+    // zone's approximate location) and only falls back to 19:00 / 06:00
+    // (skyTimeline NIGHT_START_HOUR / NIGHT_END_HOUR) when the zone gives no
+    // location. The widget has not been ported yet, so away from the equinox it
+    // can flip sun↔moon up to a few hours apart from the app.
+    // widgetClockMirror.test.ts keeps it (and the Android twin) on the fallback.
     static let dayStart = 6    // sun up = skyTimeline NIGHT_END_HOUR
     static let nightStart = 19 // moon = skyTimeline NIGHT_START_HOUR
 
