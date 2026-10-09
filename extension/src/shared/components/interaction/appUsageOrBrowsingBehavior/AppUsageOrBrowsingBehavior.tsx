@@ -29,7 +29,7 @@ export const AppUsageOrBrowsingBehavior: (props: {
   const [getObservation, setObservation] =
     createSignal<ObservationState>(undefined);
 
-  const FADE_MS = 240;
+  const FADE_MS = 480;
   // Cross-screen fade between the usage observation and the follow-up question,
   // via the shared helper rather than hard-cutting the <Switch>: drop opacity to
   // 0, swap the step while hidden, then ease back in. Matches the FADE_MS
@@ -78,6 +78,7 @@ export const AppUsageOrBrowsingBehavior: (props: {
       id="minded-6622-browsing-behavior-rating"
       style={{
         opacity: screenFade.opacity(),
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
         transition: prefersReducedMotion()
           ? "none"
           : `opacity ${FADE_MS}ms ease-in-out`,

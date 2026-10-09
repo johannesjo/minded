@@ -6,13 +6,18 @@ import {
 } from "@src/shared/components/interaction/intentSelection/sessionIntent.const";
 import Btn from "@src/shared/components/ui/Btn";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
-import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
+import {
+  VOICE_REVEAL,
+  voiceFollowStyle,
+} from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 
 export interface IntentSelectionProps {
   onSelectIntent: (intent: SessionIntent | undefined) => void;
   onCancel: () => void;
   onCancelCountdown: () => void;
   isArmed: boolean;
+  /** The sun is still gliding down to rest beneath the choices as they mount. */
+  isSunGliding?: boolean;
 }
 
 const INTENT_QUESTION = "What do you want to do here?";
@@ -27,19 +32,27 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
     props.onSelectIntent(intent);
   };
 
+  const sunLead = (): number =>
+    props.isSunGliding ? VOICE_REVEAL.SUN_GLIDE_LEAD_MS : 0;
+
   const handleCancel = () => {
     props.onCancelCountdown();
     props.onCancel();
   };
 
   return (
-    <div class="intent-selection-wrapper">
+    <div
+      class="intent-selection-wrapper voice-follow-scope"
+      // When the choices mount as the sun glides down to rest beneath them, let
+      // it land before the question is spoken. The scope is the wrapper so the
+      // cancel follows the sentence too - chrome never arrives before the voice.
+      style={voiceFollowStyle(INTENT_QUESTION, sunLead())}
+    >
       <div
-        class="intent-selection-container voice-follow-scope"
+        class="intent-selection-container"
         classList={{ "is-arming": !props.isArmed }}
-        style={voiceFollowStyle(INTENT_QUESTION)}
       >
-        <VoiceReveal class="txtBig" text={INTENT_QUESTION} />
+        <VoiceReveal class="txtBig" text={INTENT_QUESTION} lead={sunLead()} />
 
         <div class="intent-options-grid voice-follow">
           <For each={SESSION_INTENT_OPTIONS}>
@@ -70,7 +83,7 @@ export const IntentSelection: Component<IntentSelectionProps> = (props) => {
         <div class="resting-sun-spacer" aria-hidden="true" />
       </div>
 
-      <div class="intent-selection-cancel">
+      <div class="intent-selection-cancel voice-follow">
         <Btn soft onClick={handleCancel}>
           cancel
         </Btn>

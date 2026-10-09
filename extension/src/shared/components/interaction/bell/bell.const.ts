@@ -8,7 +8,7 @@
  * urge-surf meditation's screen fade (and the transition on `.bell-interaction`
  * in Bell.scss).
  */
-export const BELL_SCREEN_FADE_MS = 240;
+export const BELL_SCREEN_FADE_MS = 480;
 
 /**
  * Quiet held after the strike has fully decayed before the "It's gone"

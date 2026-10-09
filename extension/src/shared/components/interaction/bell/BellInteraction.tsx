@@ -61,6 +61,9 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
   };
 
   const ring = (): void => {
+    // One strike per invite: a second tap during the screen fade would ring
+    // twice and orphan the first keep-alive interval.
+    if (getPhase() !== "invite" || keepAliveInterval !== undefined) return;
     // Capture outside the async chain/interval so the reactive `props` access
     // does not trip the solid/reactivity lint rule (as UrgeSurfing does).
     const onCancelCountdown = props.onCancelCountdown;
@@ -104,6 +107,7 @@ export const BellInteraction = (props: BellProps): JSX.Element => {
       class="bell-interaction voice-follow-scope"
       style={{
         opacity: screenFade.opacity(),
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
         ...voiceFollowStyle(BELL_INVITE),
       }}
       onMouseMove={() => props.onCancelCountdown()}

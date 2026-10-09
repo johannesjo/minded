@@ -41,10 +41,36 @@ describe("voice reveal timing", () => {
     expect(getVoiceWordDelayMs(1, 7) - getVoiceWordDelayMs(0, 7)).toBe(
       VOICE_REVEAL.STAGGER_MS,
     );
-    expect(VOICE_REVEAL.STAGGER_MS).toBeGreaterThanOrEqual(40);
-    expect(VOICE_REVEAL.STAGGER_MS).toBeLessThanOrEqual(60);
-    expect(VOICE_REVEAL.WORD_MS).toBeGreaterThanOrEqual(500);
-    expect(VOICE_REVEAL.WORD_MS).toBeLessThanOrEqual(700);
+    // Slow enough to read as speech, not a ripple - but never a procession.
+    expect(VOICE_REVEAL.STAGGER_MS).toBeGreaterThanOrEqual(70);
+    expect(VOICE_REVEAL.STAGGER_MS).toBeLessThanOrEqual(110);
+    expect(VOICE_REVEAL.WORD_MS).toBeGreaterThanOrEqual(800);
+    expect(VOICE_REVEAL.WORD_MS).toBeLessThanOrEqual(1000);
+  });
+
+  it("waits for the surface to arrive before the first word", () => {
+    // The content fade and the sun land first; the voice arrives into a still
+    // scene rather than racing them.
+    expect(VOICE_REVEAL.START_DELAY_MS).toBeGreaterThanOrEqual(300);
+  });
+
+  it("holds the whole sentence back by a lead while the sun is gliding", () => {
+    const count = 7;
+    const lead = VOICE_REVEAL.SUN_GLIDE_LEAD_MS;
+    for (const i of [0, 3, count - 1]) {
+      expect(getVoiceWordDelayMs(i, count, lead)).toBe(
+        getVoiceWordDelayMs(i, count) + lead,
+      );
+    }
+    expect(getVoiceFollowDelayMs(count, lead)).toBe(
+      getVoiceFollowDelayMs(count) + lead,
+    );
+    expect(voiceFollowStyle("What do you want to do here?", lead)).toEqual({
+      "--voice-follow-delay": `${getVoiceFollowDelayMs(7) + lead}ms`,
+    });
+    // The sun's glide (<= 650ms, GLIDE_DURATION_MS) has landed before the
+    // first word starts.
+    expect(VOICE_REVEAL.START_DELAY_MS + lead).toBeGreaterThanOrEqual(650);
   });
 
   it("compresses the stagger so long prompts never become a procession", () => {
@@ -58,11 +84,13 @@ describe("voice reveal timing", () => {
     );
   });
 
-  it("lets the choices follow after the last word starts, never before", () => {
+  it("lets the choices follow once the last word is mostly in, never over it", () => {
     for (const count of [1, 3, 8, 25]) {
       const lastWordStart = getVoiceWordDelayMs(count - 1, count);
       const follow = getVoiceFollowDelayMs(count);
-      expect(follow).toBeGreaterThan(lastWordStart);
+      expect(follow).toBeGreaterThanOrEqual(
+        lastWordStart + VOICE_REVEAL.WORD_MS / 2,
+      );
       expect(follow).toBeLessThan(lastWordStart + VOICE_REVEAL.WORD_MS);
     }
     expect(voiceFollowStyle("What do you want to do here?")).toEqual({
@@ -103,21 +131,36 @@ describe("voice reveal styles", () => {
       );
       expect(props.length).toBeGreaterThan(0);
       for (const prop of props) {
-        expect(["opacity", "transform", "filter"]).toContain(prop);
+        expect(["opacity", "transform", "filter", "visibility"]).toContain(
+          prop,
+        );
       }
     }
+    // Choices waiting on the sentence are hidden from hit-testing, not just
+    // transparent - nobody can tap an option they can't see yet.
+    expect(keyframes("voiceFollowIn")).toMatch(/visibility:\s*hidden/);
     // A single arrival - never a loop, never a rhythm.
     expect(stripComments(styles)).not.toMatch(/infinite|alternate/);
   });
 
-  it("rises a touch with the shared ease-out - no blur (it dropped frames)", () => {
+  it("rises a touch on the soft voice curve - no blur (it dropped frames)", () => {
     expect(keyframes("voiceRevealWord")).toMatch(
       /transform:\s*translateY\(0\.2em\)/,
     );
     expect(keyframes("voiceRevealWord")).not.toMatch(/filter/);
+    // Never the snappy shared ease-out: it lands most of each fade in its
+    // first fifth, so every word pops.
     expect(stripComments(styles)).toMatch(
-      /\.voice-reveal-word\s*\{[^}]*animation:\s*voiceRevealWord 600ms var\(--ease-out\) backwards/,
+      new RegExp(
+        `\\.voice-reveal-word\\s*\\{[^}]*animation:\\s*voiceRevealWord ${VOICE_REVEAL.WORD_MS}ms var\\(--ease-voice\\) backwards`,
+      ),
     );
+    expect(stripComments(styles)).toMatch(
+      new RegExp(
+        `\\.voice-follow\\s*\\{[^}]*animation:\\s*voiceFollowIn ${VOICE_REVEAL.FOLLOW_MS}ms var\\(--ease-voice\\)`,
+      ),
+    );
+    expect(stripComments(styles)).not.toContain("--ease-out");
   });
 
   it("never forward-fills, so later opacity changes are not swallowed", () => {

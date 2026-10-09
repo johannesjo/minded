@@ -1643,6 +1643,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             ) : getShowIntentSelection() ? (
               <IntentSelection
                 isArmed={getIsIntentSelectionArmed()}
+                isSunGliding
                 onSelectIntent={showTimeSelectionAfterIntent}
                 onCancel={() => {
                   setIsIntentSelectionArmed(false);
@@ -1659,6 +1660,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             ) : (
               <TimeSelection
                 isArmed={getIsTimeSelectionArmed()}
+                isSunGliding={!shouldAskIntent(getFrictionLevel())}
                 intent={getPendingIntent()}
                 onSelectTime={handleTimeSelection}
                 onCancel={() => {

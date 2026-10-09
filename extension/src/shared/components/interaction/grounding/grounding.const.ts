@@ -21,10 +21,11 @@ export const GROUNDING_FADE_MS = 600;
 
 /**
  * Crossfade between the grounding stage's own screens (offer ↔ duration ↔ the
- * sit ↔ settle) - a quick, soft swap, much shorter than the GROUNDING_FADE_MS the
- * whole overlay fades in/out with. Mirrors the urge-surf meditation's screen fade.
+ * sit ↔ settle) - a soft swap, shorter than the GROUNDING_FADE_MS the whole
+ * overlay fades in/out with. The same --dur-soft beat every in-screen step swap
+ * uses (urge surfing, bell, emotion labeling, screen-off).
  */
-export const SCREEN_FADE_MS = 200;
+export const SCREEN_FADE_MS = 480;
 
 /**
  * How long the warm down-drag sky (sunset / night) takes to dissolve back to the

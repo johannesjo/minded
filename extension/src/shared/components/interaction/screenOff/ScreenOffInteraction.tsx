@@ -1,5 +1,13 @@
 /* @refresh reload */
-import { createSignal, JSX, Match, onCleanup, Switch } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  JSX,
+  Match,
+  on,
+  onCleanup,
+  Switch,
+} from "solid-js";
 import Btn from "@src/shared/components/ui/Btn";
 import {
   evaluateScreenOff,
@@ -7,6 +15,8 @@ import {
 } from "@src/shared/components/interaction/screenOff/screenOffEval";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
+import { createScreenFade } from "@src/util/screenFade";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 /**
  * "Screen-Off Minute" - an Android-only strong-friction intervention that
@@ -24,8 +34,15 @@ const SCREEN_OFF_HEADINGS: Record<ScreenOffPhase, string> = {
   done: "Nice - enjoy the break.",
 };
 
-/** Delay between showing the success message and closing the app. */
-const DONE_EXIT_DELAY_MS = 1600;
+/**
+ * Delay between showing the success message and closing the app: long enough
+ * for the screen fade and the line's word-by-word arrival to land and rest a
+ * moment - the goodbye is never cut off mid-sentence.
+ */
+const DONE_EXIT_DELAY_MS = 2600;
+
+/** Cross-screen fade between phases - the same soft swap urge surfing uses. */
+const SCREEN_FADE_MS = 480;
 
 export const ScreenOffInteraction: (props: {
   onSkip: () => void;
@@ -33,6 +50,27 @@ export const ScreenOffInteraction: (props: {
   onLeaveNow: () => void;
 }) => JSX.Element = (props) => {
   const [getPhase, setPhase] = createSignal<ScreenOffPhase>("intro");
+  // What's on screen trails the logical phase through a soft fade-out → swap →
+  // fade-in, instead of hard-cutting the old heading and buttons away. The
+  // logic (visibility handling) keeps reading getPhase, which changes at once -
+  // a phone locked within the fade must still count.
+  const [getShownPhase, setShownPhase] = createSignal<ScreenOffPhase>("intro");
+  const screenFade = createScreenFade(SCREEN_FADE_MS);
+  // The faded swap shows the phase current at its midpoint, so a change that
+  // lands mid-fade is never overwritten by the stale one.
+  let latestPhase: ScreenOffPhase = "intro";
+  createEffect(
+    on(
+      getPhase,
+      (phase) => {
+        latestPhase = phase;
+        // Hidden (screen off): nothing to see, so swap without a fade.
+        if (document.hidden) setShownPhase(phase);
+        else screenFade.toScreen(() => setShownPhase(latestPhase));
+      },
+      { defer: true },
+    ),
+  );
 
   // Plain refs - these never need to drive rendering.
   let hiddenAt: number | undefined;
@@ -108,16 +146,25 @@ export const ScreenOffInteraction: (props: {
     }
   });
 
-  const heading = (): string => SCREEN_OFF_HEADINGS[getPhase()];
+  const heading = (): string => SCREEN_OFF_HEADINGS[getShownPhase()];
 
   return (
     <div
       class="voice-follow-scope"
-      style={voiceFollowStyle(heading())}
+      style={{
+        ...voiceFollowStyle(heading()),
+        opacity: screenFade.opacity(),
+        // The outgoing screen's buttons go inert as it fades - e.g. "Just go
+        // in" must not fire once a successful unlock has already moved on.
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
+        transition: prefersReducedMotion()
+          ? "none"
+          : `opacity ${SCREEN_FADE_MS}ms ease-in-out`,
+      }}
       onmouseenter={props.onCancelCountdown}
     >
       <Switch>
-        <Match when={getPhase() === "intro"}>
+        <Match when={getShownPhase() === "intro"}>
           <VoiceReveal class="txtBig interaction-heading" text={heading()} />
           <Btn class="voice-follow" onClick={arm}>
             Lock my phone for a minute
@@ -127,7 +174,7 @@ export const ScreenOffInteraction: (props: {
           </Btn>
         </Match>
 
-        <Match when={getPhase() === "armed"}>
+        <Match when={getShownPhase() === "armed"}>
           <VoiceReveal class="txtBig interaction-heading" text={heading()} />
           <Btn class="voice-follow" onClick={() => props.onSkip()}>
             Just go in
@@ -136,7 +183,7 @@ export const ScreenOffInteraction: (props: {
 
         {/* No seconds-remaining count here - a ticking target would gamify
             the break ("beat the clock"), the one register the app avoids. */}
-        <Match when={getPhase() === "tooEarly"}>
+        <Match when={getShownPhase() === "tooEarly"}>
           <VoiceReveal class="txtBig interaction-heading" text={heading()} />
           <Btn class="voice-follow" onClick={arm}>
             Try again
@@ -146,7 +193,7 @@ export const ScreenOffInteraction: (props: {
           </Btn>
         </Match>
 
-        <Match when={getPhase() === "done"}>
+        <Match when={getShownPhase() === "done"}>
           <VoiceReveal class="txtBig interaction-heading" text={heading()} />
         </Match>
       </Switch>

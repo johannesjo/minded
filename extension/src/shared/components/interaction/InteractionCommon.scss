@@ -46,8 +46,8 @@
 // opacity fade is already carried by `.interaction-content` above (for every
 // mode), so this animates the *transform only* - that way it layers cleanly on
 // top of each mode's own opacity work (e.g. the emotion-labeling / urge-surfing
-// step cross-fades) without fighting it. Values mirror the question's own
-// chips' `slideUpFadeIn` (15px, 0.6s ease-out) so the feel is identical.
+// step cross-fades) without fighting it. A short, soft rise on the voice curve,
+// so a mode without a spoken prompt settles the same calm way one with it does.
 // Three exclusions keep their own, finer reveals: the question wrapper and any
 // `.voice-follow-scope` (the prompt arrives word by word and its choices follow
 // after it - see voiceReveal.scss; a block rise on top would double it), and
@@ -55,7 +55,7 @@
 // line-by-line reveal).
 .interaction-content:not(.sun-instructions-overlay)
   > *:not(#minded-6622-question-wrapper):not(.voice-follow-scope) {
-  animation: interactionRise 0.6s var(--ease-out) 0.2s both;
+  animation: interactionRise 0.9s var(--ease-voice) 0.2s both;
 
   // Reduced-motion asks for calm-without-motion: keep the opacity fade, drop
   // the rise.
@@ -66,7 +66,7 @@
 
 @keyframes interactionRise {
   from {
-    transform: translateY(15px);
+    transform: translateY(8px);
   }
   to {
     transform: translateY(0);

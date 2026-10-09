@@ -310,7 +310,13 @@ export const GroundingOverlay: Component<GroundingOverlayProps> = (props) => {
           duration → sit → settle (screenFade), so the swap is soft, never a hard
           cut. The sky (::before), the stars above, and the shell sun (its own
           layer) sit outside this and don't fade per screen. */}
-      <div class={styles.screen} style={{ opacity: screenFade.opacity() }}>
+      <div
+        class={styles.screen}
+        style={{
+          opacity: screenFade.opacity(),
+          "pointer-events": screenFade.isFading() ? "none" : undefined,
+        }}
+      >
         {/* Offer - "Stay a while?" with two ways to ground, and an easy decline. */}
         <Show when={getPhase() === "offer"}>
           <div class={styles.panel}>

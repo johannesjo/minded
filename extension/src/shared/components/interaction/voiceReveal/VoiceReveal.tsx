@@ -16,12 +16,16 @@ import {
  *   the animated words are aria-hidden.
  * - The words list is rebuilt only when `text` changes (a new prompt), so the
  *   arrival never re-triggers for the same line.
+ * - `lead` holds the first word back (e.g. VOICE_REVEAL.SUN_GLIDE_LEAD_MS while
+ *   the sun is still gliding into place); give the scope's voiceFollowStyle the
+ *   same lead so the choices still follow the last word.
  */
 export const VoiceReveal = (props: {
   text: string;
   class?: string;
   style?: JSX.CSSProperties;
   as?: "div" | "span";
+  lead?: number;
 }): JSX.Element => {
   // Fresh objects per text change: every word of a *new* prompt animates, and
   // <For> can't reuse a previous prompt's identical word mid-arrival.
@@ -44,7 +48,7 @@ export const VoiceReveal = (props: {
               <span
                 class="voice-reveal-word"
                 style={{
-                  "animation-delay": `${getVoiceWordDelayMs(i(), words().length)}ms`,
+                  "animation-delay": `${getVoiceWordDelayMs(i(), words().length, props.lead)}ms`,
                 }}
               >
                 {entry.word}

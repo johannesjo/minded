@@ -70,7 +70,10 @@ export const VIDEO_COPY = Object.freeze({
 export const VIDEO_TIMING = Object.freeze({
   socialSiteMs: 600,
   instagramMs: 1100,
-  questionMs: 1200,
+  // After the 600ms scene reveal, long enough for the question's word-by-word
+  // arrival and its chips to have fully faded in before the pointer taps one
+  // (worst case: a prompt at the stagger cap - see voiceRevealTiming.ts).
+  questionMs: 2400,
   instructionsMs: 2200,
   afterDragMs: 900,
   tabCloseMs: 1300,

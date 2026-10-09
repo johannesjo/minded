@@ -41,6 +41,10 @@
 
   // motion vocabulary - extend only when a second consumer needs it.
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  // The words the app speaks (VoiceReveal) and what follows them. --ease-out
+  // lands ~70% of a fade in its first fifth, so a word *pops*; this one starts
+  // quietly and lands long, so a line is breathed into place, never snapped.
+  --ease-voice: cubic-bezier(0.33, 0, 0.2, 1);
   --dur-instant: 40ms; // tap acknowledgement - snap, no perceptible ramp
   --dur-quick: 180ms; // small UI state shifts (background, transform)
   --dur-soft: 480ms; // page-level fades
