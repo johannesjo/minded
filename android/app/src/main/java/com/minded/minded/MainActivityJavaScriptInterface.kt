@@ -12,6 +12,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.minded.minded.MissingCapability
 import com.minded.minded.detection.DetectionHealth
+import com.minded.minded.detection.PreinstalledUserApps
 import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.getAppUsageObservation
 import com.minded.minded.widget.MyAppWidgetReceiver
@@ -192,10 +193,7 @@ open class MainActivityJavaScriptInterface(
         val packageManager = context.packageManager
         val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         return allApps.filter { app ->
-            ((app.flags and ApplicationInfo.FLAG_SYSTEM == 0) || app.packageName in listOf(
-                "com.android.chrome",
-                "com.google.android.youtube"
-            )) && app.packageName != context.packageName
+            ((app.flags and ApplicationInfo.FLAG_SYSTEM == 0) || app.packageName in PreinstalledUserApps.packages) && app.packageName != context.packageName
         }.sortedBy { app ->
             app.loadLabel(packageManager).toString()
         }

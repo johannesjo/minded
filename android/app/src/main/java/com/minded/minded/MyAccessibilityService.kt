@@ -23,6 +23,7 @@ import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
+import com.minded.minded.detection.PreinstalledUserApps
 import com.minded.minded.util.ForegroundStateHolder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -172,13 +173,15 @@ class MyAccessibilityService : AccessibilityService() {
         )
         
         // Known launcher packages as fallback
-        private val KNOWN_LAUNCHERS = setOf(
+        internal val KNOWN_LAUNCHERS = setOf(
             "com.android.launcher",
             "com.android.launcher2",
             "com.android.launcher3",
             "com.google.android.apps.nexuslauncher",
             "com.google.android.launcher",
-            "com.google.android.googlequicksearchbox", // Google app acts as launcher on some devices
+            // Not the Google app (googlequicksearchbox): users pick it to gate its
+            // feed, and a launcher match would skip it. If it declares a HOME activity,
+            // the CATEGORY_HOME query in getInstalledLaunchers() still adds it.
             "com.miui.home", // Xiaomi
             "com.sec.android.app.launcher", // Samsung
             "com.oneplus.launcher", // OnePlus
@@ -626,53 +629,7 @@ class MyAccessibilityService : AccessibilityService() {
         }
         
         // Apps that should NEVER be considered system packages (even if pre-installed)
-        val userAppsWhitelist = setOf(
-            // YouTube variants
-            "com.google.android.youtube",
-            "com.google.android.youtube.tv",
-            "com.google.android.youtube.tvkids",
-            "com.google.android.youtube.kids",
-            "com.google.android.apps.youtube.music",
-            "com.google.android.apps.youtube.creator",
-
-            // Chrome variants
-            "com.android.chrome",
-            "com.chrome.canary",
-            "com.chrome.dev",
-            "com.chrome.beta",
-
-            // Other Chromium-based browsers
-            "com.microsoft.emmx",           // Edge
-            "com.brave.browser",            // Brave
-            "com.opera.browser",            // Opera
-            "com.opera.mini.native",        // Opera Mini
-            "org.chromium.chrome",          // Chromium
-            "com.sec.android.app.sbrowser", // Samsung Internet
-            "com.UCMobile.intl",            // UC Browser
-            "com.vivaldi.browser",          // Vivaldi
-
-            // Social media
-            "com.facebook.katana",
-            "com.facebook.orca",            // Messenger
-            "com.facebook.lite",
-            "com.instagram.android",
-            "com.instagram.lite",
-            "com.whatsapp",
-            "com.whatsapp.w4b",             // WhatsApp Business
-            "com.twitter.android",
-            "com.twitter.android.lite",
-            "com.snapchat.android",
-            "com.zhiliaoapp.musically",     // TikTok
-            "com.ss.android.ugc.trill",     // TikTok
-            "com.ss.android.ugc.aweme",     // TikTok (China)
-            "com.reddit.frontpage",
-            "com.discord",
-            "com.linkedin.android",
-            "com.pinterest",
-            "com.tumblr"
-        )
-        
-        if (userAppsWhitelist.contains(packageName)) {
+        if (packageName in PreinstalledUserApps.packages) {
             systemAppCache[packageName] = false
             return false
         }
