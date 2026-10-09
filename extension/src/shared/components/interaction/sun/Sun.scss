@@ -99,6 +99,59 @@
       --minded-sun-face-edge var(--dur-gentle) var(--ease-out);
   }
 
+  // The light the sun casts onto the sky (see sunLight.ts for the why). A broad,
+  // faint lift centred on the disc - SUN_LIGHT_SPREAD disc diameters across,
+  // sized by the inline percentage inset - so the sky near the sun reads
+  // brighter than the sky far from it. White on every surface (THE HALO RULE);
+  // the moon swaps in the cool end of the glow axis and a much lower level.
+  //
+  // Two soft terms, both in disc radii (d) from the centre, with no visible
+  // edge or knee anywhere (a linear ramp reads as a ring):
+  //   0.30 * exp(-((d - 1) / 0.55)^2)  a near bloom just past the rim, and
+  //   0.05 * exp(-(d / 3)^2)           a very faint, broad lift of the sky.
+  // The split is what lets it sit over content: the voice copy nearest the
+  // sun sits ~1.9 radii out on desktop (2.3 on a phone), where this is ~5%
+  // white - measured, the nearest serif line keeps ~5.1:1 against 5.4:1 without
+  // it. That faint lift is the only "highlight" the text catches; there is no
+  // separate text effect. A single broad Gaussian strong enough to read as a
+  // lift dropped that line under 4.5:1. Inside the disc it is hidden by the
+  // opaque face. Stops sample the curve at d = 0, 1, 1.15 ... 5.
+  //
+  // Static paint on its own compositor layer: it is drawn once and only ever
+  // *moved* (by the parent's transform) or faded (opacity). The box-shadow the
+  // drag ramps every frame repaints the disc's layer, not this one.
+  //
+  // Banding: the pool paints above the sky's dither grain, not under it, but it
+  // composites onto that already-grained backdrop - so the final 8-bit result
+  // carries the grain's noise and its band edges break up just the same. Its
+  // own alpha steps (1/255) move the output well under one level each on these
+  // skies. Measured in Playwright: <=2px flat runs across the pool, both themes
+  // (the bar the grain history in _variables.scss holds is <=6px).
+  .sun-light {
+    position: absolute;
+    z-index: -1;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: opacity;
+    background: radial-gradient(
+      circle closest-side,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.35) 0%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.345) 20%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.322) 23%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.264) 26%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.193) 29%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.129) 32%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.071) 36%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.043) 40%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.029) 46%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.022) 54%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.016) 64%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.01) 76%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0.006) 88%,
+      rgba(var(--sun-light-rgb, 255, 255, 255), 0) 100%
+    );
+  }
+
   // The sun's resting glow is the box-shadow above (held at the hover intensity),
   // so the sun face needs no halo of its own here - a second ring layered on the
   // box-shadow bloom just reads as an unwanted double halo. This ::after is kept

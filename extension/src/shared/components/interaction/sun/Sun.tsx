@@ -49,6 +49,7 @@ import {
   sunGlowTemp,
 } from "./sunGlow";
 import { playCompletionSound } from "./sunAudio";
+import { sunLightStyle } from "./sunLight";
 import {
   breathCycleMs,
   getBreathStateAt,
@@ -1755,6 +1756,17 @@ export const Sun: Component<SunProps> = (props) => {
                 ),
       }}
     >
+      {/* The light the sun casts on the sky (sunLight.ts) - a child, so it
+          rides the disc's own transform and moves only when the disc does. */}
+      <div
+        class="sun-light"
+        aria-hidden="true"
+        style={sunLightStyle(
+          props.variant,
+          props.settle,
+          prefersReducedMotion(),
+        )}
+      />
       {/* The two disc faces, both always mounted and crossfaded on the variant
           class (Sun.scss) so a mid-flight theme flip morphs sun → moon instead
           of swapping the disc in one frame. First children, so the tap dots and
