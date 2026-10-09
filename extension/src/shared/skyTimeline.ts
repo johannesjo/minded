@@ -216,13 +216,21 @@ export const zenithTargetColorsAt = (hour: number): [string, string] =>
   lerpColors(CLASSIC_ZENITH, EVENING_ZENITH, duskBlendT(hour));
 
 /**
+ * Every sky gradient's interpolation slot: `in oklab` where the engine supports
+ * gradient colour spaces, nothing (plain sRGB) where it doesn't - see the
+ * --sky-interpolation @supports block in _variables.scss. Inline styles built
+ * from these must land inside the app root, which defines the var.
+ */
+export const SKY_INTERPOLATION = "var(--sky-interpolation,)";
+
+/**
  * Gradient builders. Stop positions mirror the composed gradients in
  * _variables.scss (--background-gradient / --background-sunset-gradient) and
  * BackgroundTransition.scss (.background-blue) - keep them in sync so an
  * inline override is pixel-compatible with the stylesheet default.
  */
 export const ambientSkyGradient = (c: SkyColors): string =>
-  `linear-gradient(to bottom, ${c[0]} 0%, ${c[0]} 18%, ${c[1]} 36%, ${c[2]} 54%, ${c[3]} 100%)`;
+  `linear-gradient(to bottom ${SKY_INTERPOLATION}, ${c[0]} 0%, ${c[0]} 18%, ${c[1]} 36%, ${c[2]} 54%, ${c[3]} 100%)`;
 
 /**
  * The full layered ambient day sky as a CSS background value - horizon bloom
@@ -240,15 +248,15 @@ export const ambientSkyLayeredBackground = (
   const glow = hexToRgbChannels(accents.horizonGlow);
   const zenith = hexToRgbChannels(accents.zenith);
   return [
-    `radial-gradient(ellipse 90% 32% at 50% 108%, rgba(${glow}, 0.65) 0%, rgba(${glow}, 0.3) 48%, transparent 78%)`,
+    `radial-gradient(ellipse 90% 32% at 50% 108% ${SKY_INTERPOLATION}, rgba(${glow}, 0.65) 0%, rgba(${glow}, 0.3) 48%, transparent 78%)`,
     "var(--day-veil)",
-    `radial-gradient(ellipse 130% 52% at 50% -14%, rgba(${zenith}, 0.55) 0%, rgba(${zenith}, 0.22) 55%, transparent 80%)`,
+    `radial-gradient(ellipse 130% 52% at 50% -14% ${SKY_INTERPOLATION}, rgba(${zenith}, 0.55) 0%, rgba(${zenith}, 0.22) 55%, transparent 80%)`,
     ambientSkyGradient(colors),
   ].join(", ");
 };
 
 export const duskTargetGradient = (c: SkyColors): string =>
-  `linear-gradient(to bottom, ${c[0]} 0%, ${c[0]} 14%, ${c[1]} 54%, ${c[2]} 78%, ${c[3]} 100%)`;
+  `linear-gradient(to bottom ${SKY_INTERPOLATION}, ${c[0]} 0%, ${c[0]} 14%, ${c[1]} 54%, ${c[2]} 78%, ${c[3]} 100%)`;
 
 export const duskTargetGradientAt = (hour: number): string =>
   duskTargetGradient(duskTargetColorsAt(hour));
@@ -297,7 +305,7 @@ export const daySkyAt = (
 
 export const zenithTargetGradientAt = (hour: number): string => {
   const [top, bottom] = zenithTargetColorsAt(hour);
-  return `linear-gradient(to bottom, ${top}, ${bottom})`;
+  return `linear-gradient(to bottom ${SKY_INTERPOLATION}, ${top}, ${bottom})`;
 };
 
 /**

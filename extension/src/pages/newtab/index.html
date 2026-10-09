@@ -19,9 +19,15 @@
       is a layer only the live sky has.
     -->
     <style>
+      /* OKLab where supported, today's sRGB elsewhere (_variables.scss). */
+      @supports (background-image: linear-gradient(in oklab, red, blue)) {
+        html {
+          --sky-interpolation: in oklab;
+        }
+      }
       html {
         background: linear-gradient(
-          to bottom,
+          to bottom var(--sky-interpolation,),
           #cfe4f5 0%,
           #cfe4f5 18%,
           #d8ecd6 36%,
@@ -31,7 +37,7 @@
       }
       html.minded-loading-dark {
         background: linear-gradient(
-          to bottom,
+          to bottom var(--sky-interpolation,),
           #02091f 0%,
           #041238 28%,
           #0a2860 68%,

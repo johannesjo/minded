@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { resolve } from "path";
 import { compileString } from "sass";
 
@@ -132,5 +133,58 @@ describe("the night sky's warmth is a fading layer, not a fixed colour", () => {
       const [r, , b] = channels(stop);
       expect({ stop, isCool: b > r }).toEqual({ stop, isCool: true });
     }
+  });
+});
+
+/**
+ * The skies interpolate in OKLab through one slot, `var(--sky-interpolation,)`,
+ * which only an engine that supports gradient colour spaces fills in. These pin
+ * both halves: every sky gradient goes through the slot (so none silently stays
+ * sRGB, or hard-codes `in oklab` and drops out entirely on an older WebView),
+ * and the slot is only ever filled behind the @supports guard.
+ */
+describe("the skies interpolate in OKLab, with an exact sRGB fallback", () => {
+  const css = compiledVariables();
+  const SLOT = "var(--sky-interpolation,)";
+  const GUARD =
+    "@supports (background-image: linear-gradient(in oklab, red, blue))";
+
+  const expectEveryGradientSlotted = (value: string) => {
+    const gradients = value.match(/-gradient\(/g) ?? [];
+    expect(gradients.length).toBeGreaterThan(0);
+    expect(value.split(SLOT).length - 1).toBe(gradients.length);
+    expect(value).not.toMatch(/in oklab/);
+  };
+
+  it("fills the slot only behind the gradient colour-space @supports guard", () => {
+    const declarations = css.match(/--sky-interpolation:/g) ?? [];
+    expect(declarations).toHaveLength(1);
+    expect(css).toContain(
+      `${GUARD} { #minded-6622 { --sky-interpolation: in oklab; } }`,
+    );
+  });
+
+  it.each([
+    ["light", firstVarValue],
+    ["dark", darkVarValue],
+  ] as const)("routes every %s sky gradient through the slot", (_, read) => {
+    expectEveryGradientSlotted(read(css, "--background-gradient"));
+    expectEveryGradientSlotted(read(css, "--background-sunset-gradient"));
+  });
+
+  it.each([
+    "pages/newtab/index.html",
+    "android/main/index.html",
+    "pages/styleguide/dashboard.html",
+  ])("gives the %s loading sky the same guarded slot", (page) => {
+    const style = readFileSync(resolve(SRC_DIR, page), "utf8").match(
+      /<style>([\s\S]*?)<\/style>/,
+    )![1];
+    expect(style.replace(/\s+/g, " ")).toContain(
+      `${GUARD} { html { --sky-interpolation: in oklab; } }`,
+    );
+    const backgrounds = style.match(/background:[^;]+;/g) ?? [];
+    expect(backgrounds).toHaveLength(2);
+    backgrounds.forEach(expectEveryGradientSlotted);
   });
 });

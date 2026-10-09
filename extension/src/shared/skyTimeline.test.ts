@@ -115,13 +115,13 @@ describe("skyTimeline", () => {
         "#444444",
       ]);
       expect(g).toBe(
-        "linear-gradient(to bottom, #111111 0%, #111111 18%, #222222 36%, #333333 54%, #444444 100%)",
+        "linear-gradient(to bottom var(--sky-interpolation,), #111111 0%, #111111 18%, #222222 36%, #333333 54%, #444444 100%)",
       );
     });
 
     it("builds the dusk gradient with the sunset stop positions", () => {
       expect(duskTargetGradientAt(12)).toBe(
-        "linear-gradient(to bottom, #4f78bb 0%, #4f78bb 14%, #f49f73 54%, #ffd36a 78%, #ef6f63 100%)",
+        "linear-gradient(to bottom var(--sky-interpolation,), #4f78bb 0%, #4f78bb 14%, #f49f73 54%, #ffd36a 78%, #ef6f63 100%)",
       );
     });
 
@@ -132,10 +132,10 @@ describe("skyTimeline", () => {
       );
       expect(bg).toBe(
         [
-          "radial-gradient(ellipse 90% 32% at 50% 108%, rgba(255, 240, 205, 0.65) 0%, rgba(255, 240, 205, 0.3) 48%, transparent 78%)",
+          "radial-gradient(ellipse 90% 32% at 50% 108% var(--sky-interpolation,), rgba(255, 240, 205, 0.65) 0%, rgba(255, 240, 205, 0.3) 48%, transparent 78%)",
           "var(--day-veil)",
-          "radial-gradient(ellipse 130% 52% at 50% -14%, rgba(176, 208, 236, 0.55) 0%, rgba(176, 208, 236, 0.22) 55%, transparent 80%)",
-          "linear-gradient(to bottom, #111111 0%, #111111 18%, #222222 36%, #333333 54%, #444444 100%)",
+          "radial-gradient(ellipse 130% 52% at 50% -14% var(--sky-interpolation,), rgba(176, 208, 236, 0.55) 0%, rgba(176, 208, 236, 0.22) 55%, transparent 80%)",
+          "linear-gradient(to bottom var(--sky-interpolation,), #111111 0%, #111111 18%, #222222 36%, #333333 54%, #444444 100%)",
         ].join(", "),
       );
     });
