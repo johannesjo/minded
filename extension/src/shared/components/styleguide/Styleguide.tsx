@@ -51,11 +51,7 @@ import {
   NIGHT_START_HOUR,
   zenithTargetGradientAt,
 } from "@src/shared/skyTimeline";
-import {
-  applySkyAtHour,
-  applySkyForNow,
-  getEffectiveHourNow,
-} from "@src/shared/addWrapperClasses";
+import { applySkyAtHour, applySkyForNow } from "@src/shared/addWrapperClasses";
 import { DashboardAnswerList } from "@src/shared/components/dashboard/DashboardAnswerList";
 import {
   DashboardGroupTxtQuestion,
@@ -759,7 +755,13 @@ const formatHour = (hour: number): string => {
 const SkySection = (props: { isDark: () => boolean }): JSX.Element => {
   const [hour, setHour] = createSignal(
     // min: rounding 23:53+ would yield 24, past the slider's max
-    Math.min(23.75, Math.round(getEffectiveHourNow() * 4) / 4),
+    // Seeded from the wall clock: this scrubs the palette's own clock, and
+    // the live (solar) palette hour is pinned to its dawn/dusk edge all night.
+    Math.min(
+      23.75,
+      Math.round((new Date().getHours() + new Date().getMinutes() / 60) * 4) /
+        4,
+    ),
   );
   const [applyToPage, setApplyToPage] = createSignal(false);
   const isNight = () => hour() >= NIGHT_START_HOUR || hour() < NIGHT_END_HOUR;

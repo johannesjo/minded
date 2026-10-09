@@ -140,6 +140,48 @@ describe("skyMomentAt - Berlin, June vs December", () => {
   });
 });
 
+describe("skyMomentAt - the afterglow", () => {
+  it("is the sunset's: never in the pre-dawn twilight", () => {
+    // Berlin, 21 Dec 06:30 UTC: deep in the morning twilight.
+    const m = skyMomentAt(at("2026-12-21T06:30:00Z"), BERLIN);
+    expect(m.isNight).toBe(true);
+    expect(m.starDepth).toBeLessThan(1);
+    expect(m.afterglow).toBe(0);
+  });
+
+  it("never jumps, through a whole night that never drains (Berlin June) or never ends (polar)", () => {
+    for (const [day, loc] of [
+      ["2026-06-21", BERLIN],
+      ["2026-12-21", BERLIN],
+      ["2026-12-21", SVALBARD],
+    ] as const) {
+      let prev: number | null = null;
+      for (const d of minutesOf(day)) {
+        const m = skyMomentAt(d, loc);
+        const g = m.isNight ? m.afterglow : null;
+        if (g !== null && prev !== null) {
+          expect(Math.abs(g - prev)).toBeLessThan(0.02);
+        }
+        prev = g;
+      }
+    }
+  });
+});
+
+describe("nightWindowsFrom", () => {
+  it("finds each edge to the minute", () => {
+    const [[start, end]] = nightWindowsFrom(
+      at("2026-12-21T12:00:00Z"),
+      BERLIN,
+      24,
+    );
+    expect(skyMomentAt(new Date(start), BERLIN).isNight).toBe(true);
+    expect(skyMomentAt(new Date(start - MIN), BERLIN).isNight).toBe(false);
+    expect(skyMomentAt(new Date(end), BERLIN).isNight).toBe(false);
+    expect(skyMomentAt(new Date(end - MIN), BERLIN).isNight).toBe(true);
+  });
+});
+
 describe("skyMomentAt - equatorial", () => {
   it("keeps the same ~11.5h night the whole year in Singapore", () => {
     const nightHours = ["2026-06-21", "2026-12-21"].map((day) => {

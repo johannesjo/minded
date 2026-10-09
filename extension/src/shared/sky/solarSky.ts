@@ -110,6 +110,20 @@ const alongAnchors = (
   return anchors[anchors.length - 1][1];
 };
 
+/**
+ * The afterglow is the *sunset's* warmth: evening only, never pre-dawn. It
+ * eases out over the two hours before solar midnight (so a Berlin June night,
+ * which never drains the twilight, doesn't drop it at the turn) and eases in
+ * over the two after solar noon (so a polar-night "afternoon" doesn't switch
+ * it on at noon). Mid-latitude dusk sits well inside, at full weight.
+ */
+const AFTERGLOW_EASE_DEG = 30;
+const eveningWeight = (hourAngle: number): number =>
+  hourAngle <= 0
+    ? 0
+    : clamp01(hourAngle / AFTERGLOW_EASE_DEG) *
+      clamp01((180 - hourAngle) / AFTERGLOW_EASE_DEG);
+
 /** Half-width (hour-angle degrees) of the solar-midnight dusk→dawn crossfade. */
 const MIDNIGHT_BLEND_DEG = 15;
 
@@ -169,7 +183,7 @@ export const skyMomentAt = (date: Date, location: LatLon | null): SkyMoment => {
     isNight,
     hour,
     blend,
-    afterglow: isNight ? 1 - starDepth : 0,
+    afterglow: isNight ? (1 - starDepth) * eveningWeight(hourAngle) : 0,
     starDepth,
     moon: moonPhaseAt(date),
     isSouthernHemisphere: lat < 0,
@@ -191,11 +205,26 @@ export const nightWindowsFrom = (
   const end = from.getTime() + hours * 3_600_000;
   const windows: Array<[number, number]> = [];
   let openAt: number | null = null;
+  const isNightAt = (t: number) => skyMomentAt(new Date(t), location).isNight;
+  // The first instant in (lo, hi] whose night-ness differs from lo's, to the
+  // minute - so the loading pages flip within a minute of the app, not ten.
+  const edge = (lo: number, hi: number): number => {
+    const before = isNightAt(lo);
+    while (hi - lo > 60_000) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (isNightAt(mid) === before) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  };
   for (let t = from.getTime(); t <= end; t += step) {
-    const night = skyMomentAt(new Date(t), location).isNight;
-    if (night && openAt === null) openAt = t;
+    const night = isNightAt(t);
+    const prev = t - step;
+    if (night && openAt === null) {
+      openAt = t === from.getTime() ? t : edge(prev, t);
+    }
     if (!night && openAt !== null) {
-      windows.push([openAt, t]);
+      windows.push([openAt, edge(prev, t)]);
       openAt = null;
     }
   }

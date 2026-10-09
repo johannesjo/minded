@@ -79,6 +79,12 @@ const getSkyHourOverride = (): number | null =>
     ? parseSkyHourParam(window.location.search)
     : null;
 
+/** Any dev sky override - a simulated sky must not leave real night windows. */
+const hasSkyOverride = (): boolean =>
+  ["skyHour", "skyAt", "skyZone", "theme"].some(
+    (name) => getSearchParam(name) !== null,
+  );
+
 const getSearchParam = (name: string): string | null =>
   typeof window !== "undefined" && window.location?.search
     ? new URLSearchParams(window.location.search).get(name)
@@ -113,12 +119,6 @@ export const getSkyMomentNow = (): SkyMoment => {
   if (pinnedHour !== null) return clockSkyMoment(pinnedHour, date);
   return skyMomentAt(date, locationForTimeZone(getSkyZoneNow()));
 };
-
-/**
- * The palette hour driving the light sky right now - the real sun's, see
- * getSkyMomentNow. (The styleguide seeds its scrubber from it.)
- */
-export const getEffectiveHourNow = (): number => getSkyMomentNow().hour;
 
 /**
  * What to call the companion in copy. The disc already morphs sun↔moon with the
@@ -173,6 +173,10 @@ export const setIsDarkModeIfApplies = (
   } else {
     el.classList.remove("minded-6622-dark");
   }
+  // Re-apply the live sky for the (possibly flipped) theme right away: a
+  // resume across dusk would otherwise show the stylesheet's static night -
+  // every star, no afterglow - until the next minute tick thinned it out.
+  applySkyMoment(getSkyMomentNow(), el);
   // el.classList.add("minded-6622-dark");
 };
 
@@ -284,7 +288,7 @@ const applySkyNow = (el: HTMLElement | null, shadowRoot?: ShadowRoot) => {
   applySkyMoment(getSkyMomentNow(), el);
   // Only the app's own pages (never a content script - that would be the host
   // page's storage) leave the loading pages their night windows.
-  if (!shadowRoot && el && getSkyHourOverride() === null) {
+  if (!shadowRoot && el && !hasSkyOverride()) {
     writeSkyNightCache(getSkyDateNow(), locationForTimeZone(getSkyZoneNow()));
   }
 };
