@@ -1,0 +1,1 @@
+import{a1 as n,bl as o,ac as r,U as t}from"./Styleguide-C5-oLsDJ.js";const e=document.getElementById("minded-6622");if(!e)throw new Error("Cannot find #minded-6622 root element");n();o(()=>r(t,{}),e);
