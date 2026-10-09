@@ -173,13 +173,15 @@ class MyAccessibilityService : AccessibilityService() {
         )
         
         // Known launcher packages as fallback
-        private val KNOWN_LAUNCHERS = setOf(
+        internal val KNOWN_LAUNCHERS = setOf(
             "com.android.launcher",
             "com.android.launcher2",
             "com.android.launcher3",
             "com.google.android.apps.nexuslauncher",
             "com.google.android.launcher",
-            "com.google.android.googlequicksearchbox", // Google app acts as launcher on some devices
+            // Not the Google app (googlequicksearchbox): users pick it to gate its
+            // feed, and a launcher match would skip it. Where it really is the home
+            // app, the CATEGORY_HOME query in getInstalledLaunchers() still finds it.
             "com.miui.home", // Xiaomi
             "com.sec.android.app.launcher", // Samsung
             "com.oneplus.launcher", // OnePlus

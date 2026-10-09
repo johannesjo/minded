@@ -1,5 +1,6 @@
 package com.minded.minded.detection
 
+import com.minded.minded.MyAccessibilityService
 import org.junit.Test
 import kotlin.test.assertTrue
 
@@ -17,5 +18,14 @@ class PreinstalledUserAppsTest {
     fun `Chrome and YouTube stay pickable`() {
         assertTrue("com.android.chrome" in PreinstalledUserApps.packages)
         assertTrue("com.google.android.youtube" in PreinstalledUserApps.packages)
+    }
+
+    // A launcher match short-circuits detection before this allowlist is read,
+    // so an app on both lists can be picked but never intervenes.
+    @Test
+    fun `no user app is also a known launcher`() {
+        assertTrue(
+            (PreinstalledUserApps.packages intersect MyAccessibilityService.KNOWN_LAUNCHERS).isEmpty()
+        )
     }
 }
