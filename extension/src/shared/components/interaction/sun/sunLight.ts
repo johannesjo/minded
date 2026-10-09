@@ -94,14 +94,19 @@ export const sunLightInsetPct = (spread: number = SUN_LIGHT_SPREAD): number =>
 export const sunLightTransition = (reducedMotion: boolean): string =>
   reducedMotion ? "none" : "opacity var(--dur-sky) var(--ease-out)";
 
+/** The two disc props the pool reads (Sun passes its props straight in). */
+export type SunLightSource = {
+  variant?: "sun" | "moon";
+  settle?: SunSettle | null;
+};
+
 /**
  * The pool's inline style, read reactively by Sun.tsx. Depends only on the
  * variant, the settle and the motion preference - all of which change on a
  * role or theme switch, never per frame - so a drag never touches it.
  */
 export const sunLightStyle = (
-  variant: "sun" | "moon" | undefined,
-  settle: SunSettle | null | undefined,
+  { variant, settle }: SunLightSource,
   reducedMotion: boolean,
 ): Record<string, string> => ({
   inset: `${sunLightInsetPct()}%`,

@@ -1762,16 +1762,11 @@ export const Sun: Component<SunProps> = (props) => {
                 ),
       }}
     >
-      {/* The light the sun casts on the sky (sunLight.ts) - a child, so it
-          rides the disc's own transform and moves only when the disc does. */}
+      {/* Light cast on the sky (sunLight.ts): rides the disc's own transform. */}
       <div
         class="sun-light"
         aria-hidden="true"
-        style={sunLightStyle(
-          props.variant,
-          props.settle,
-          prefersReducedMotion(),
-        )}
+        style={sunLightStyle(props, prefersReducedMotion())}
       />
       {/* The two disc faces, both always mounted and crossfaded on the variant
           class (Sun.scss) so a mid-flight theme flip morphs sun → moon instead

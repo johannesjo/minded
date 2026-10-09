@@ -156,7 +156,9 @@ describe("sunLightTransition", () => {
 
 describe("sunLightStyle", () => {
   it("assembles a white, full-level, softly-fading pool for the in-app sun", () => {
-    expect(sunLightStyle("sun", sunCompanionSettle(44), false)).toEqual({
+    expect(
+      sunLightStyle({ variant: "sun", settle: sunCompanionSettle(44) }, false),
+    ).toEqual({
       inset: `${sunLightInsetPct()}%`,
       "--sun-light-rgb": "255, 255, 255",
       opacity: "1",
@@ -165,17 +167,24 @@ describe("sunLightStyle", () => {
   });
 
   it("stays white while the departing halo warms, and fades out", () => {
-    const style = sunLightStyle("sun", sunDepartSettle(), false);
+    const style = sunLightStyle(
+      { variant: "sun", settle: sunDepartSettle() },
+      false,
+    );
     expect(style["--sun-light-rgb"]).toBe("255, 255, 255");
     expect(style.opacity).toBe("0");
   });
 
   it("never animates under reduced motion", () => {
-    expect(sunLightStyle("moon", null, true).transition).toBe("none");
+    expect(
+      sunLightStyle({ variant: "moon", settle: null }, true).transition,
+    ).toBe("none");
   });
 
   it("never sets a position, so it can only ever sit where the disc is", () => {
-    const keys = Object.keys(sunLightStyle("sun", null, false));
+    const keys = Object.keys(
+      sunLightStyle({ variant: "sun", settle: null }, false),
+    );
     expect(keys).not.toEqual(
       expect.arrayContaining([expect.stringMatching(/transform|top|left/)]),
     );
