@@ -19,7 +19,7 @@ import { join } from "path";
 // into the same change; real growth still trips it.
 const LIMITS: Record<string, number> = {
   "InteractionCommon.tsx": 1967,
-  "sun/Sun.tsx": 1834,
+  "sun/Sun.tsx": 1827,
 };
 
 // Counted like `wc -l` (newlines), so the numbers above match the shell.

@@ -6,7 +6,6 @@ import {
   on,
   onCleanup,
   onMount,
-  Show,
 } from "solid-js";
 import {
   DRAG_THRESHOLD_PX,
@@ -18,9 +17,9 @@ import {
   updatePhysics,
   calculateDragEffects,
   easeInOut,
-  easeOutBack,
   triggerHaptic,
   triggerHapticPattern,
+  triggerSoftTick,
   applyRubberBanding,
   getSunSize,
   hasVerticalCompletionIntent,
@@ -50,6 +49,18 @@ import {
 } from "./sunGlow";
 import { playCompletionSound } from "./sunAudio";
 import { sunLightStyle } from "./sunLight";
+import { SunOrbitCrown } from "./SunOrbitCrown";
+import {
+  completionYAt,
+  createSnapBack,
+  glideOffsetAt,
+  timedGlideHandoff,
+} from "./sunRelease";
+import {
+  estimateVelocity,
+  pushMotionSample,
+  type MotionSample,
+} from "./sunVelocity";
 import {
   breathCycleMs,
   getBreathStateAt,
@@ -376,6 +387,11 @@ export const Sun: Component<SunProps> = (props) => {
   let startPos = { x: 0, y: 0 };
   let animationFrame: number;
   let velocitySamples: VelocitySample[] = [];
+  // The disc's own drag path (sunVelocity.ts), and - only during a release's
+  // synchronous span - its velocity, for a settle that release starts (a role
+  // flip) to carry on with (see enterSettle).
+  let discSamples: MotionSample[] = [];
+  let releaseHandoffVelocity: SunPosition | null = null;
   let settleFrame: number | undefined;
   // The settle the disc currently RESTS on (mount snap applied, or a settle
   // glide landed) - null while gliding, dragging, or interactive. The resting
@@ -618,6 +634,9 @@ export const Sun: Component<SunProps> = (props) => {
     // enter/exitSettle). Written synchronously so even this commit's paint
     // shows the healed start, not the stale one.
     startOffsetOverride?: SunPosition,
+    // A release's velocity (px/s): the glide then leaves with that momentum on
+    // the timed spring and still lands exactly on `duration` (sunRelease.ts).
+    releaseVelocity?: SunPosition,
   ) => {
     setIsAnimating(true); // suppress the CSS transform-transition while JS drives it
     const startOffset = startOffsetOverride ?? getDragOffset();
@@ -625,10 +644,17 @@ export const Sun: Component<SunProps> = (props) => {
     const startScale = getScale();
     const startBase = getSunCenterForOffset({ x: 0, y: 0 });
     const startTime = Date.now();
+    const handoff = releaseVelocity
+      ? timedGlideHandoff(
+          startOffset,
+          resolveTargetOffset(),
+          releaseVelocity,
+          duration,
+        )
+      : null;
 
     const step = () => {
       const progress = Math.min((Date.now() - startTime) / duration, 1);
-      const eased = easeInOut(progress);
       const targetOffset = resolveTargetOffset();
       // Start offset re-expressed against the live base, so the take-off point
       // stays fixed in viewport space across reflows.
@@ -640,10 +666,14 @@ export const Sun: Component<SunProps> = (props) => {
           y: startOffset.y + startBase.y - liveBase.y,
         };
       }
-      const offset = {
-        x: fromOffset.x + (targetOffset.x - fromOffset.x) * eased,
-        y: fromOffset.y + (targetOffset.y - fromOffset.y) * eased,
-      };
+      const { offset, eased } = glideOffsetAt(
+        progress,
+        fromOffset,
+        targetOffset,
+        handoff,
+        duration,
+        easeInOut,
+      );
       setDragOffset(offset);
       setScale(startScale + (targetScale - startScale) * eased);
 
@@ -783,6 +813,8 @@ export const Sun: Component<SunProps> = (props) => {
   };
 
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
+    const releaseVelocity = releaseHandoffVelocity;
+    releaseHandoffVelocity = null;
     setIsDragging(false);
     // A fresh settle target interrupts any in-flight reveal ramp; the new
     // target's reach takes over.
@@ -925,6 +957,7 @@ export const Sun: Component<SunProps> = (props) => {
       duration,
       onSettled,
       startOffsetOverride,
+      releaseVelocity ?? undefined,
     );
   };
 
@@ -1123,10 +1156,14 @@ export const Sun: Component<SunProps> = (props) => {
           timestamp: Date.now(),
         },
       ];
+      const caughtAt = getDragOffset();
+      discSamples = [{ x: caughtAt.x, y: caughtAt.y, t: performance.now() }];
       // Immediately set dragging state to disable transitions
       setIsDragging(true);
       // Reset haptic threshold tracking
       lastHapticPointIndex = -1;
+      // One faint tick as the sun is caught (Android only).
+      triggerSoftTick();
     };
 
     const applyDragFrame = () => {
@@ -1203,7 +1240,12 @@ export const Sun: Component<SunProps> = (props) => {
       // (the placeholder anchor for the shell sun, else the base), so the disc
       // moves from where it actually sits rather than snapping to the base first.
       const rest = getRestOffset();
-      setDragOffset({ x: rest.x + deltaX, y: rest.y + deltaY });
+      const discOffset = { x: rest.x + deltaX, y: rest.y + deltaY };
+      setDragOffset(discOffset);
+      discSamples = pushMotionSample(discSamples, {
+        ...discOffset,
+        t: performance.now(),
+      });
       setScale(effects.scale);
       setOpacity(effects.opacity);
 
@@ -1268,7 +1310,11 @@ export const Sun: Component<SunProps> = (props) => {
       // shell sun rests at.
       const rest = getRestOffset();
       const dragDelta = { x: offset.x - rest.x, y: offset.y - rest.y };
+      // Finger velocity picks the release action (thresholds are tuned on it);
+      // the disc's own velocity is what the motion after it carries on with.
       const velocity = calculateVelocity(velocitySamples);
+      const discVelocity = estimateVelocity(discSamples, performance.now());
+      discSamples = [];
 
       // Always reset dragging state
       setIsDragging(false);
@@ -1302,6 +1348,7 @@ export const Sun: Component<SunProps> = (props) => {
         completionDirection: props.completionDirection,
       });
 
+      releaseHandoffVelocity = prefersReducedMotion() ? null : discVelocity;
       if (releaseAction.type === "snapBack") {
         dispatchInteractionEvent("dragProgress", {
           direction: "none",
@@ -1309,7 +1356,7 @@ export const Sun: Component<SunProps> = (props) => {
           isDragging: false,
           resetToInitial: true,
         });
-        animateSnapBack();
+        animateSnapBack(discVelocity);
       } else if (releaseAction.type === "fling") {
         // Vertical fling behavior triggers onFlingAway.
         triggerHaptic("medium");
@@ -1330,7 +1377,17 @@ export const Sun: Component<SunProps> = (props) => {
           // (dimming as it goes) instead of flinging.
           if (props.variant === "moon")
             animateToCompletion(releaseAction.direction);
-          else animateFling(velocity);
+          // Fly on at the disc's own release speed (the finger estimate
+          // under-reads a flick); never slower than before.
+          else
+            animateFling(
+              Math.abs(discVelocity.y) > Math.abs(velocity.y)
+                ? {
+                    ...discVelocity,
+                    magnitude: Math.hypot(discVelocity.x, discVelocity.y),
+                  }
+                : velocity,
+            );
         }
       } else if (releaseAction.type === "dragComplete") {
         // Slow drag behavior (non-fling) - triggers onDragComplete
@@ -1343,8 +1400,9 @@ export const Sun: Component<SunProps> = (props) => {
         // companion rest via a settle glide started synchronously above, so the
         // off-screen completion would fight and override it. Skip it then.
         if (!getIsSettlingIntoRole())
-          animateToCompletion(releaseAction.direction);
+          animateToCompletion(releaseAction.direction, discVelocity.y);
       }
+      releaseHandoffVelocity = null;
     };
 
     // Watch the live disc rect during a terminal animation and fire
@@ -1367,62 +1425,57 @@ export const Sun: Component<SunProps> = (props) => {
       }
     };
 
-    const animateSnapBack = () => {
-      // Keep transitions disabled while JS drives the snap-back animation
-      setIsAnimating(true);
-      setIsBeyondThreshold(false); // Reset glow when snapping back
-      setGlowIntensity(0); // Reset progressive glow
+    // A release short of any threshold: home on a critically damped spring
+    // that carries on with the release velocity (sunRelease.ts).
+    const animateSnapBack = (releaseVelocity: SunPosition) => {
+      setIsAnimating(true); // JS drives the transform; no CSS transition
+      setIsBeyondThreshold(false);
+      setGlowIntensity(0);
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
       const startRotation = getRotation();
       const startGlow = getGlowIntensity();
       const startColorTemp = getColorTemp();
+      // Displacement from the rest, re-read each frame (the shell sun's rest is
+      // a live placeholder anchor).
+      const rest0 = getRestOffset();
+      const step = createSnapBack(
+        { x: startOffset.x - rest0.x, y: startOffset.y - rest0.y },
+        releaseVelocity,
+        prefersReducedMotion(),
+      );
+      let lastTime = performance.now();
 
-      const duration = 600;
-      const startTime = Date.now();
-
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easedProgress = easeOutBack(progress); // Subtle overshoot bounce
-
-        // Ease back to the rest offset (the placeholder anchor for the shell sun,
-        // else the base), not a hard {0,0}.
+      const animate = (frameTime: number) => {
+        // rAF's frame time can predate the release by a few ms; never step back.
+        const dt = Math.max(0, (frameTime - lastTime) / 1000);
+        lastTime = Math.max(lastTime, frameTime);
+        const { offset, look, done } = step(dt);
         const rest = getRestOffset();
-        const currentX =
-          rest.x + (startOffset.x - rest.x) * (1 - easedProgress);
-        const currentY =
-          rest.y + (startOffset.y - rest.y) * (1 - easedProgress);
-        const currentOffset = { x: currentX, y: currentY };
-        setDragOffset(currentOffset);
-
-        const currentScale = startScale + (1 - startScale) * easedProgress;
-        setScale(currentScale);
-
-        const currentOpacity =
-          startOpacity + (1 - startOpacity) * easedProgress;
-        setOpacity(currentOpacity);
-
-        const currentRotation = startRotation * (1 - easedProgress);
-        setRotation(currentRotation);
-
-        // Fade out visual effects during snap-back
-        setGlowIntensity(startGlow * (1 - progress));
-        setColorTemp(startColorTemp * (1 - progress));
-
-        if (progress < 1) {
-          animationFrame = requestAnimationFrame(animate);
-        } else {
-          setIsAnimating(false);
-          setGlowIntensity(0);
-        }
+        const k = done ? 0 : look;
+        setDragOffset(
+          done ? rest : { x: rest.x + offset.x, y: rest.y + offset.y },
+        );
+        setScale(1 + (startScale - 1) * k);
+        setOpacity(1 + (startOpacity - 1) * k);
+        setRotation(startRotation * k);
+        setGlowIntensity(startGlow * k);
+        setColorTemp(startColorTemp * k);
+        if (done) setIsAnimating(false);
+        else animationFrame = requestAnimationFrame(animate);
       };
 
-      animate();
+      cancelCompletionFrame();
+      animationFrame = requestAnimationFrame(animate);
     };
 
-    const animateToCompletion = (direction: "up" | "down") => {
+    const animateToCompletion = (
+      direction: "up" | "down",
+      // Release velocity (px/s): the exit leaves at it rather than from a
+      // standstill, keeping its eased shape and length (sunRelease.ts).
+      releaseVelocityY = 0,
+    ) => {
       setIsAnimating(true);
       hasFlungOffscreen = false;
       const startOffset = getDragOffset();
@@ -1435,6 +1488,7 @@ export const Sun: Component<SunProps> = (props) => {
         direction === "down" ? config.easing.downward : config.easing.upward;
       const targetY =
         direction === "down" ? window.innerHeight : -window.innerHeight;
+      const handoffY = prefersReducedMotion() ? 0 : releaseVelocityY;
 
       const startTime = Date.now();
 
@@ -1443,8 +1497,14 @@ export const Sun: Component<SunProps> = (props) => {
         const progress = Math.min(elapsed / config.duration, 1);
         const easedProgress = easeInOut(progress);
 
-        const currentY =
-          startOffset.y + (targetY - startOffset.y) * easedProgress;
+        const currentY = completionYAt(
+          progress,
+          startOffset.y,
+          targetY,
+          handoffY,
+          config.duration,
+          easeInOut,
+        );
         const currentOffset = { x: startOffset.x, y: currentY };
         setDragOffset(currentOffset);
 
@@ -1617,38 +1677,6 @@ export const Sun: Component<SunProps> = (props) => {
     glowColorForTemp(
       sunGlowTemp(props.variant, getColorTemp(), props.settle?.warmth),
     );
-  // Keep the progress crown mounted through one soft fade when the flow clears
-  // it (the success bloom), so the dots dissolve rather than snapping out - a
-  // hard cut reads as a jolt (see the styling rules). We hold the last orbit
-  // value for the duration of the fade, then unmount.
-  const ORBIT_FADE_MS = 600;
-  const [getOrbitLeaving, setOrbitLeaving] = createSignal(false);
-  let lastOrbit: { total: number; filled: number } | null = null;
-  let orbitLeaveT: ReturnType<typeof setTimeout> | undefined;
-  createEffect(() => {
-    const o = props.orbit;
-    if (o && o.total > 0) {
-      lastOrbit = o;
-      clearTimeout(orbitLeaveT);
-      setOrbitLeaving(false);
-    } else if (lastOrbit) {
-      clearTimeout(orbitLeaveT);
-      setOrbitLeaving(true);
-      orbitLeaveT = setTimeout(() => {
-        setOrbitLeaving(false);
-        lastOrbit = null;
-      }, ORBIT_FADE_MS);
-    }
-  });
-  onCleanup(() => clearTimeout(orbitLeaveT));
-  // The crown to draw: the live orbit, or the held last value while it fades out.
-  const orbitToRender = (): { total: number; filled: number } | null =>
-    props.orbit && props.orbit.total > 0
-      ? props.orbit
-      : getOrbitLeaving()
-        ? lastOrbit
-        : null;
-
   const getInteractionScale = () =>
     interactionScaleFor({
       isCompletionStarted: getIsCompletionStarted(),
@@ -1786,45 +1814,7 @@ export const Sun: Component<SunProps> = (props) => {
           </Index>
         </div>
       )}
-      <Show when={orbitToRender()}>
-        {(orbit) => (
-          // A faint crown of dots spread across the top arc (avoiding the bottom,
-          // where the disc rests on the bar). Children of the disc, so they ride
-          // its scale and the ring stays just outside the edge at any size.
-          <div
-            class="sun-orbit"
-            classList={{ "is-leaving": getOrbitLeaving() }}
-            aria-hidden="true"
-          >
-            <Index each={Array.from({ length: orbit().total })}>
-              {(_, i) => {
-                const total = orbit().total;
-                // A fixed gap between adjacent dots, centred on straight-up, so the
-                // crown stays a tidy shallow arc over the top of the disc for any
-                // count. (A fixed *total* span splayed the few dots we ever show -
-                // 2 or 3 - out to the sides at ±60°, reading as scattered rather
-                // than a crown.) At 26° apart, 3 dots span just ±26° and sit high
-                // above the cap.
-                const gapDeg = 26;
-                const angle = (i - (total - 1) / 2) * gapDeg;
-                // +24 is pre-scale local px: the crown rides the disc's transform
-                // (companion scale ~0.52), so this lands ~10px of on-screen
-                // clearance beyond the disc edge at every breakpoint.
-                const radius = sunSize.size / 2 + 24;
-                return (
-                  <div
-                    class="sun-orbit-dot"
-                    classList={{ filled: i < orbit().filled }}
-                    style={{
-                      transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`,
-                    }}
-                  />
-                );
-              }}
-            </Index>
-          </div>
-        )}
-      </Show>
+      <SunOrbitCrown orbit={props.orbit} discSize={sunSize.size} />
     </div>
   );
 };

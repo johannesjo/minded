@@ -13,6 +13,7 @@ import android.webkit.WebView
 import com.minded.minded.MissingCapability
 import com.minded.minded.detection.DetectionHealth
 import com.minded.minded.detection.PreinstalledUserApps
+import com.minded.minded.util.Haptics
 import com.minded.minded.util.SafeAreaInsetsHolder
 import com.minded.minded.util.getAppUsageObservation
 import com.minded.minded.widget.MyAppWidgetReceiver
@@ -77,6 +78,16 @@ open class MainActivityJavaScriptInterface(
 
     @JavascriptInterface
     fun getSafeAreaInsets(): String = safeAreaInsets.toJsonString()
+
+    /**
+     * One faint tick as the WebView sun is caught (web `triggerSoftTick`).
+     * Declared here so the dashboard and every overlay WebView (they all extend
+     * this interface) share it.
+     */
+    @JavascriptInterface
+    fun triggerSoftTick() {
+        Haptics.triggerTick(context)
+    }
 
     /**
      * Current media-stream volume as a percentage (0–100), or -1 when it can't

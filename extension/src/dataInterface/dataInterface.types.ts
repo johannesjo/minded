@@ -54,6 +54,11 @@ export interface AndroidMindedBridge {
   saveTextFile?: (filename: string, content: string) => void;
   onMissingCapabilityClick: (capability: string) => void;
   triggerHaptic: (type: "light" | "medium" | "heavy") => void;
+  /**
+   * One faint system tick (EFFECT_TICK) as the sun is caught. Optional: older
+   * native builds don't ship it. Skipped natively when touch feedback is off.
+   */
+  triggerSoftTick?: () => void;
   setSessionLimit: (payloadJson: string) => void;
   /**
    * Media-stream volume in percent (0–100), -1 when unreadable. Optional:
