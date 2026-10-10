@@ -28,6 +28,15 @@ describe("moonShadowLayerFor", () => {
     expect(terminator(layer)).toEqual([50, 0]);
   });
 
+  it("closes the lit side's clear margin at new moon, so no step at the poles", () => {
+    const limb = (layer: string) =>
+      Number(layer.match(/A([\d.]+),50 0 0 1 50,100/)![1]);
+    // The limb arc and the terminator coincide: nothing past the rim is clear.
+    expect(limb(moonShadowLayerFor(phase(0)))).toBe(50);
+    expect(limb(moonShadowLayerFor(phase(0.1)))).toBeGreaterThan(50);
+    expect(limb(moonShadowLayerFor(phase(0.4)))).toBe(70);
+  });
+
   it("bulges the terminator into the light for a crescent, away for a gibbous", () => {
     expect(terminator(moonShadowLayerFor(phase(0.1)))[1]).toBe(0);
     expect(terminator(moonShadowLayerFor(phase(0.4)))[1]).toBe(1);
