@@ -135,6 +135,36 @@ object Haptics {
         }.start()
     }
 
+    /**
+     * The mindfulness bell's strike, felt instead of heard on a phone set to
+     * vibrate: one gentle click. Unlike every other haptic here it answers no
+     * touch - the bell arrives unprompted - so it is not touch feedback: on API
+     * 33+ it is tagged [VibrationAttributes.USAGE_NOTIFICATION], following the
+     * user's notification-vibration intensity, and the touch-feedback switch
+     * doesn't apply. The caller only fires it in vibrate mode with Do Not
+     * Disturb off.
+     */
+    fun triggerBell(context: Context) {
+        val appContext = context.applicationContext
+        Thread {
+            try {
+                val vibrator = vibrator(appContext)
+                if (!vibrator.hasVibrator()) return@Thread
+                val click = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    vibrator.vibrate(
+                        click,
+                        VibrationAttributes.createForUsage(VibrationAttributes.USAGE_NOTIFICATION),
+                    )
+                } else {
+                    vibrator.vibrate(click)
+                }
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Failed to trigger bell haptic", e)
+            }
+        }.start()
+    }
+
     // The system-wide touch-feedback switch. (Deprecated on newer SDKs in favour
     // of USAGE_TOUCH alone, which we also set there; still honoured, and the only
     // signal on API 29-32.)

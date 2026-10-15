@@ -21,6 +21,7 @@ fun syncDataToJson(syncData: SyncData): String {
         graceObj.put("minutes", grace.minutes)
         cfgObject.put("sessionGrace", graceObj)
     }
+    syncData.cfg.mindfulnessBell?.let { cfgObject.put("mindfulnessBell", it) }
     jsonObject.put("cfg", cfgObject)
 
     val answersArray = JSONArray()

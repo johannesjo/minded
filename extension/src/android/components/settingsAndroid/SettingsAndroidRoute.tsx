@@ -8,6 +8,7 @@ import { InterventionPauseSettings } from "@src/shared/components/settings/Inter
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SleepWindDownSettings } from "@src/shared/components/settings/SleepWindDownSettings";
+import { MindfulnessBellSettings } from "@src/shared/components/settings/MindfulnessBellSettings";
 import { JournalBackupSettings } from "@src/shared/components/settings/JournalBackupSettings";
 import {
   resolveSettingsSnapshot,
@@ -74,6 +75,12 @@ export const SettingsAndroidRoute = () => {
             <SleepWindDownSettings
               autoSave={true}
               initialCfg={initial.cfg.sleepWindDown}
+            />
+
+            <hr class={styles.divider} />
+
+            <MindfulnessBellSettings
+              initialEnabled={initial.cfg.mindfulnessBell ?? false}
             />
 
             <hr class={styles.divider} />

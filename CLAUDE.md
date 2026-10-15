@@ -17,6 +17,9 @@ The view itself is shared code (`src/shared/components/sleepWindDown/`); only
 the trigger, settings entry, and dashboard card are Android-gated, so widening
 later stays cheap. Don't port it to the extension or iOS without an explicit
 product decision.
+The opt-in **mindfulness bell** (#298) is Android-only for the same kind of
+reason: it rides an unlock and draws the sun over another app, which only the
+Android overlay can do; iOS has no way to ring it without notifications.
 
 ## Conceptual Fundamentals
 

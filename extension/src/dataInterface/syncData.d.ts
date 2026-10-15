@@ -38,6 +38,12 @@ export interface UserCfg {
   soundEnabled?: boolean; // Enable/disable completion sound (default: true)
   sleepWindDown?: SleepWindDownCfg;
   sessionGrace?: SessionGraceCfg;
+  /**
+   * Android only. Once or twice a day, at an unpredictable moment, the sun
+   * rings a bell over whatever the user is doing (see MindfulnessBell.kt).
+   * Off unless explicitly turned on.
+   */
+  mindfulnessBell?: boolean;
 }
 
 /**

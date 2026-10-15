@@ -101,7 +101,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private lateinit var smallMsgOverlayWindow: SmallMsgWindow
     private lateinit var successSunOverlayWindow: SuccessSunWindow
     private lateinit var sleepWindDownOverlayWindow: SleepWindDownOverlayWindow
+    private lateinit var bellSunOverlayWindow: BellSunWindow
     private lateinit var sharedPreferenceService: SharedPreferenceService
+    private lateinit var mindfulnessBell: MindfulnessBell
+
+    // After an unlock, give a pending intervention (restoreOverlayAfterUnlock,
+    // the accessibility detector) time to claim the screen first - the bell
+    // only rings into a moment nothing else wants.
+    private val BELL_AFTER_UNLOCK_DELAY_MS = 2500L
 
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -116,6 +123,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                         else -> null
                     }
                     appBeforeScreenOff = sharedOverlayViewModel.sharedData.value.currentApp
+                    // A bell is a moment, not a state: it never survives the
+                    // screen going dark, and is never restored after unlock.
+                    screenStateHandler.removeCallbacks(maybeRingBell)
+                    hideOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
+                    mindfulnessBell.release()
                     Log.d(logTag, "Saved state: overlay=$overlayStateBeforeScreenOff, app=$appBeforeScreenOff")
                     // Settle the companion widget while the screen is dark (see
                     // refreshCompanionWidget) - covers no-keyguard devices that wake
@@ -145,8 +157,26 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     screenStateHandler.postDelayed({
                         restoreOverlayAfterUnlock()
                     }, SCREEN_ON_CHECK_DELAY_MS)
+                    screenStateHandler.removeCallbacks(maybeRingBell)
+                    screenStateHandler.postDelayed(maybeRingBell, BELL_AFTER_UNLOCK_DELAY_MS)
                 }
             }
+        }
+    }
+
+    private val maybeRingBell = Runnable {
+        try {
+            mindfulnessBell.onUnlock(
+                isAnyOverlayShown = { isAnyWindowShown() },
+                isBlockedPackage = { isBlockedPackage(it) },
+                show = { decayMs, onStrike ->
+                    bellSunOverlayWindow.decayMs = decayMs
+                    bellSunOverlayWindow.onStrike = onStrike
+                    showOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
+                },
+            )
+        } catch (e: Exception) {
+            Log.e(logTag, "Mindfulness bell check failed", e)
         }
     }
 
@@ -254,6 +284,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         successSunOverlayWindow = SuccessSunWindow(this, sharedOverlayViewModel, windowManager)
         sleepWindDownOverlayWindow =
             SleepWindDownOverlayWindow(this, sharedOverlayViewModel, windowManager)
+        bellSunOverlayWindow = BellSunWindow(this, sharedOverlayViewModel, windowManager)
+        mindfulnessBell = MindfulnessBell(this, sharedPreferenceService)
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -402,11 +434,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
 
     private fun isAnyWindowShown(): Boolean {
-        return interactionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown() || sleepWindDownOverlayWindow.isWindowShown()
+        return interactionOverlayWindow.isWindowShown() || littleSunOverlayWindow.isWindowShown() || smallMsgOverlayWindow.isWindowShown() || successSunOverlayWindow.isWindowShown() || sleepWindDownOverlayWindow.isWindowShown() || bellSunOverlayWindow.isWindowShown()
     }
 
     private fun isNoWindowShown(): Boolean {
-        return !interactionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown() && !sleepWindDownOverlayWindow.isWindowShown()
+        return !interactionOverlayWindow.isWindowShown() && !littleSunOverlayWindow.isWindowShown() && !smallMsgOverlayWindow.isWindowShown() && !successSunOverlayWindow.isWindowShown() && !sleepWindDownOverlayWindow.isWindowShown() && !bellSunOverlayWindow.isWindowShown()
     }
 
     private fun showOverlay(
@@ -441,7 +473,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         try {
+            // Only ever one sun: any other surface takes over from a ringing bell.
+            if (overlayName != OverlayName.MINDFULNESS_BELL_OVERLAY) {
+                bellSunOverlayWindow.hideWindow()
+            }
             when (overlayName) {
+                OverlayName.MINDFULNESS_BELL_OVERLAY -> {
+                    bellSunOverlayWindow.showWindow()
+                }
+
                 OverlayName.INTERACTION_OVERLAY -> {
                     if (appName == null) {
                         throw RuntimeException("appName is null")
@@ -557,6 +597,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.LITTLE_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
             OverlayName.SLEEP_WIND_DOWN_OVERLAY -> sleepWindDownOverlayWindow.hideWindow()
+            OverlayName.MINDFULNESS_BELL_OVERLAY -> bellSunOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
@@ -838,6 +879,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);
         if (exclude != OverlayName.LITTLE_SUN_OVERLAY) hideOverlay(OverlayName.LITTLE_SUN_OVERLAY);
         if (exclude != OverlayName.SLEEP_WIND_DOWN_OVERLAY) hideOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY);
+        if (exclude != OverlayName.MINDFULNESS_BELL_OVERLAY) hideOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY);
     }
 
 
@@ -857,6 +899,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         // Stop any in-flight companion-widget refresh
         widgetRefreshScope.cancel()
+
+        mindfulnessBell.release()
 
         // Unregister screen state receiver
         try {
@@ -1122,7 +1166,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
 
         public enum class OverlayName {
-            INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY, SLEEP_WIND_DOWN_OVERLAY
+            INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY, SLEEP_WIND_DOWN_OVERLAY, MINDFULNESS_BELL_OVERLAY
         }
 
         public enum class OverlayMode {
