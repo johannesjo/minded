@@ -44,6 +44,12 @@ export interface UserCfg {
    * Off unless explicitly turned on.
    */
   mindfulnessBell?: boolean;
+  /**
+   * How many times a day the bell may ring (MindfulnessBellSchedule.kt).
+   * Absent = 2. Each is a chance, not a promise: a slot nobody unlocks the
+   * phone for is dropped.
+   */
+  mindfulnessBellPerDay?: MindfulnessBellPerDay;
 }
 
 /**
@@ -146,6 +152,8 @@ export interface PatternInsightState {
     [dateISO: string]: string[];
   };
 }
+
+export type MindfulnessBellPerDay = 1 | 2 | 3;
 
 /**
  * The week the user chose from the skip check-in (see skipCheckIn.ts).

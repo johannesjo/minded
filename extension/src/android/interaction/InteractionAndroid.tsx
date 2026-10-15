@@ -85,7 +85,7 @@ const InteractionAndroid = () => {
       androidInterface.onSkip();
     } else if (androidInterface.continueAfterInterventionPause) {
       androidInterface.continueAfterInterventionPause();
-    } else if (choice === "off") {
+    } else if (choice === "off" || choice === "bell") {
       androidInterface.hideWindow();
     } else {
       androidInterface.onSkip();

@@ -27,8 +27,9 @@ import com.minded.minded.widget.MyAppWidgetReceiver
 import java.time.LocalDateTime
 
 /**
- * The mindfulness bell (#298): once or twice a day, triggered by nothing the
- * user did, the sun rings over whatever they're doing. It is opt-in (off by
+ * The mindfulness bell (#298): a few times a day (the user picks one to
+ * three), triggered by nothing the user did, the sun rings over whatever
+ * they're doing. It is opt-in (off by
  * default) because it is the one surface that reaches for the user unprompted
  * - every other overlay answers an app they chose to guard. What keeps that
  * acceptable is that it is asked for, rare, wordless, and that it stays away
@@ -61,16 +62,27 @@ class MindfulnessBell(
         show: (decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
     ) {
         // The schedule first: it only reads a few small prefs, so the common
-        // unlock - nothing due - never parses the whole sync blob.
+        // unlock - nothing due - never parses the whole sync blob. The chosen
+        // count lives in that blob, so the cheap check asks whether a slot
+        // would be due under *any* count; only then is the real one read.
         val now = LocalDateTime.now()
         val epochDay = now.toLocalDate().toEpochDay()
         val minute = now.hour * 60 + now.minute
-        val slots = MindfulnessBellSchedule.slotsFor(epochDay, prefs.getMindfulnessBellSalt())
+        val salt = prefs.getMindfulnessBellSalt()
         val (rungMask, lastRung) = prefs.getMindfulnessBellDay(epochDay)
-        val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
+        fun dueFor(count: Int) = MindfulnessBellSchedule.dueSlot(
+            minute,
+            MindfulnessBellSchedule.slotsFor(epochDay, salt, count),
+            rungMask,
+            lastRung,
+        )
+        if (MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE.none { dueFor(it) != null }) return
 
         val syncData = prefs.getSyncData()
         if (syncData.cfg.mindfulnessBell != true) return
+        val slot = dueFor(
+            syncData.cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY
+        ) ?: return
 
         val skipReason = skipReason(syncData.cfg, isAnyOverlayShown, isBlockedPackage)
         if (skipReason != null) {

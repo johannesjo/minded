@@ -5,7 +5,7 @@ import com.minded.minded.util.MindfulnessBellSchedule.LATEST_RING_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.LATEST_SLOT_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_RING_GAP_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_SLOT_GAP_MINUTES
-import com.minded.minded.util.MindfulnessBellSchedule.SLOTS_PER_DAY
+import com.minded.minded.util.MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE
 import com.minded.minded.util.MindfulnessBellSchedule.SLOT_FIRE_WINDOW_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.dueSlot
 import com.minded.minded.util.MindfulnessBellSchedule.slotsFor
@@ -19,15 +19,21 @@ class MindfulnessBellScheduleTest {
 
     @Test
     fun `every day's slots stay in waking hours and keep their gap`() {
-        for (day in 0L until 2000L) {
-            val slots = slotsFor(day, salt = 42L)
-            assertEquals(SLOTS_PER_DAY, slots.size)
+        for (count in SLOTS_PER_DAY_RANGE) for (day in 0L until 2000L) {
+            val slots = slotsFor(day, salt = 42L, count = count)
+            assertEquals(count, slots.size)
             assertEquals(slots.sorted(), slots)
             slots.forEach { assertTrue(it in EARLIEST_SLOT_MINUTE..LATEST_SLOT_MINUTE, "day $day: $it") }
             slots.zipWithNext().forEach { (a, b) ->
                 assertTrue(b - a >= MIN_SLOT_GAP_MINUTES, "day $day: $slots")
             }
         }
+    }
+
+    @Test
+    fun `a count outside the choices is held to them`() {
+        assertEquals(1, slotsFor(19_000L, 7L, count = 0).size)
+        assertEquals(3, slotsFor(19_000L, 7L, count = 9).size)
     }
 
     @Test

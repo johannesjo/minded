@@ -380,7 +380,14 @@ export const resetInterventionSkips = async (): Promise<void> =>
 // rejection the caller can handle.
 export const saveSkipCheckInChoice = async (
   choice: SkipCheckInChoice,
-): Promise<void> => patchSyncData(getSkipCheckInUpdate(choice, Date.now()));
+): Promise<void> => {
+  const update = getSkipCheckInUpdate(choice, Date.now());
+  if (choice !== "bell") return patchSyncData(update);
+  return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+    ...update,
+    cfg: { ...syncData.cfg, mindfulnessBell: true },
+  }));
+};
 
 /** Ends a pause chosen from the skip check-in early (the settings "Resume"). */
 export const clearInterventionPause = async (): Promise<void> =>

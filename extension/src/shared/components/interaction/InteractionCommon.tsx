@@ -504,7 +504,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     isCheckIn,
     depart: (choice) => {
       setIsExitingInteraction(true);
-      if (choice === "off") fadeOut(props.wrapperEl, SCREEN_TRANSITION_MS);
+      // A week out of the way leaves no Little Sun behind.
+      const isStepAside = choice === "off" || choice === "bell";
+      if (isStepAside) fadeOut(props.wrapperEl, SCREEN_TRANSITION_MS);
       else departToLittleSun();
       return SCREEN_TRANSITION_MS;
     },

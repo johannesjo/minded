@@ -10,7 +10,8 @@ import kotlin.random.Random
  * the practice - a bell at fixed times becomes a clock and is anticipated
  * within a week - but it is random *within structure*, never dice all day:
  *
- * - Each day has [SLOTS_PER_DAY] slots, drawn at random within
+ * - Each day has the user's chosen number of slots ([SLOTS_PER_DAY_RANGE],
+ *   [DEFAULT_SLOTS_PER_DAY] unless set), drawn at random within
  *   [EARLIEST_SLOT_MINUTE]..[LATEST_SLOT_MINUTE] and at least
  *   [MIN_SLOT_GAP_MINUTES] apart. The draw is a pure function of the day and a
  *   per-install salt, so the same day always has the same slots (no re-roll on
@@ -30,7 +31,8 @@ import kotlin.random.Random
  * rung today is bookkeeping for "don't ring twice", forgotten the next day.
  */
 object MindfulnessBellSchedule {
-    const val SLOTS_PER_DAY = 2
+    const val DEFAULT_SLOTS_PER_DAY = 2
+    val SLOTS_PER_DAY_RANGE = 1..3
     const val EARLIEST_SLOT_MINUTE = 9 * 60
     const val LATEST_SLOT_MINUTE = 20 * 60
     const val MIN_SLOT_GAP_MINUTES = 3 * 60
@@ -39,15 +41,18 @@ object MindfulnessBellSchedule {
     const val LATEST_RING_MINUTE = 22 * 60
 
     /**
-     * The day's slots as minutes of the local day, ascending. Drawn uniformly
-     * over every pair that keeps the minimum gap (rejection sampling - with
-     * these bounds about half the draws are kept, so the bounded loop
-     * practically never reaches its evenly-spaced fallback).
+     * The day's [count] slots as minutes of the local day, ascending. Drawn
+     * uniformly over every set that keeps the minimum gap (rejection sampling -
+     * with these bounds roughly half the draws are kept for two slots and one
+     * in eleven for three, so the bounded loop practically never reaches its
+     * evenly-spread fallback). Changing [count] re-rolls the day; the ring gap
+     * in [dueSlot] still keeps a re-roll from ringing twice in a row.
      */
-    fun slotsFor(epochDay: Long, salt: Long): List<Int> {
+    fun slotsFor(epochDay: Long, salt: Long, count: Int = DEFAULT_SLOTS_PER_DAY): List<Int> {
+        val n = count.coerceIn(SLOTS_PER_DAY_RANGE)
         val random = Random(epochDay * 1_000_003L + salt)
-        repeat(64) {
-            val slots = List(SLOTS_PER_DAY) {
+        repeat(256) {
+            val slots = List(n) {
                 random.nextInt(EARLIEST_SLOT_MINUTE, LATEST_SLOT_MINUTE + 1)
             }.sorted()
             if (slots.zipWithNext().all { (a, b) -> b - a >= MIN_SLOT_GAP_MINUTES }) {
@@ -55,9 +60,8 @@ object MindfulnessBellSchedule {
             }
         }
         val span = LATEST_SLOT_MINUTE - EARLIEST_SLOT_MINUTE
-        return List(SLOTS_PER_DAY) { i ->
-            EARLIEST_SLOT_MINUTE + span * (i + 1) / (SLOTS_PER_DAY + 1)
-        }
+        if (n == 1) return listOf(EARLIEST_SLOT_MINUTE + span / 2)
+        return List(n) { i -> EARLIEST_SLOT_MINUTE + span * i / (n - 1) }
     }
 
     /**

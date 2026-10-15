@@ -680,6 +680,18 @@ describe("commonSyncDataInterface", () => {
       });
     });
 
+    it("turns the bell on as a setting, and steps the week aside", async () => {
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      const syncData = createMockSyncData();
+      mockedGetSyncData.mockResolvedValue(syncData);
+      await saveSkipCheckInChoice("bell");
+      expect(mockedPatchSyncData).toHaveBeenCalledWith({
+        skipStreak: 0,
+        interventionPause: { kind: "off", untilTS: expect.any(Number) },
+        cfg: { ...syncData.cfg, mindfulnessBell: true },
+      });
+    });
+
     it("turns a synchronous storage throw into a rejection", async () => {
       mockedPatchSyncData.mockImplementation(() => {
         throw new Error("Extension was reloaded");

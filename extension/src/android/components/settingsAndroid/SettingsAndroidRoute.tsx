@@ -81,6 +81,7 @@ export const SettingsAndroidRoute = () => {
 
             <MindfulnessBellSettings
               initialEnabled={initial.cfg.mindfulnessBell ?? false}
+              initialPerDay={initial.cfg.mindfulnessBellPerDay}
             />
 
             <hr class={styles.divider} />

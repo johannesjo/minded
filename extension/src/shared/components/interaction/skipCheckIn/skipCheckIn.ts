@@ -41,7 +41,13 @@ export const SKIP_STREAK_MAX_GAP_MS = 3 * 24 * 60 * 60 * 1000;
  */
 export const LATER_PAUSE_AFTER_S = 10 * 60;
 
-export type SkipCheckInChoice = "as_now" | InterventionPauseKind;
+/**
+ * "bell" is "off" plus the mindfulness bell (Android, MindfulnessBell.kt): the
+ * week steps out of the way, and the sun meets the user unprompted instead -
+ * rarely, wordlessly. The check-in is where someone tells us the pause no
+ * longer reaches them, so it is the one place the bell is worth offering.
+ */
+export type SkipCheckInChoice = "as_now" | InterventionPauseKind | "bell";
 
 /**
  * The check-in's words. The first line states only what happened - the
@@ -58,8 +64,20 @@ export const SKIP_CHECK_IN_CHOICES: ReadonlyArray<{
 }> = [
   { choice: "as_now", label: "As it does now" },
   { choice: "later", label: "Only after a while" },
+  { choice: "bell", label: "With a bell, now and then" },
   { choice: "off", label: "Not this week" },
 ];
+
+/**
+ * The bell is only offered where it can ring (Android) and to someone who
+ * hasn't turned it on already - for them "Not this week" already leaves it.
+ */
+export const getSkipCheckInChoices = (canOfferBell: boolean) =>
+  SKIP_CHECK_IN_CHOICES.filter((c) => canOfferBell || c.choice !== "bell");
+
+/** The pause a choice stands for: the bell's week steps out of the way. */
+const toPauseKind = (choice: SkipCheckInChoice): InterventionPause["kind"] =>
+  choice === "bell" ? "off" : choice;
 
 /**
  * The check-in lands while the thumb is often still mid-triple-tap. Choices
@@ -121,11 +139,18 @@ export const getSkipUpdateAfterSkip = (
   return { skipStreak: streak + 1, lastSkipTS: now };
 };
 
-/** Every answer starts the count over and stands for a week. */
+/**
+ * Every answer starts the count over and stands for a week. The bell is the
+ * exception that outlasts it: it is turned on as the setting it is, visible
+ * and switchable there, rather than vanishing with the week.
+ */
 export const getSkipCheckInUpdate = (
   choice: SkipCheckInChoice,
   now: number,
 ): Pick<SyncData, "skipStreak" | "interventionPause"> => ({
   skipStreak: 0,
-  interventionPause: { kind: choice, untilTS: now + INTERVENTION_PAUSE_MS },
+  interventionPause: {
+    kind: toPauseKind(choice),
+    untilTS: now + INTERVENTION_PAUSE_MS,
+  },
 });

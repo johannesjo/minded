@@ -185,7 +185,7 @@ export const InteractionWeb: (props: {
   const handleSkipCheckInChoice = async (choice: SkipCheckInChoice) => {
     setQuestion(undefined);
     stopAllVideos();
-    if (choice === "off") {
+    if (choice === "off" || choice === "bell") {
       teardown();
       return;
     }
