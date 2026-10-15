@@ -82,3 +82,26 @@ object MindfulnessBellSchedule {
         }
     }
 }
+
+/** How the bell's strike reaches the user - see [bellVoice]. */
+enum class BellVoice { SOUND, VIBRATION, SILENT }
+
+/**
+ * How the strike is voiced, given the phone's state. The light is always the
+ * bell; sound and touch only join it when the user's own settings say they
+ * may. The silent and vibrate switches don't mute the media stream minded
+ * plays on, so they are honoured explicitly here - a "silent" phone must never
+ * ring out loud - and Do Not Disturb (any filter but "all") silences both.
+ */
+fun bellVoice(
+    soundEnabled: Boolean,
+    ringerNormal: Boolean,
+    ringerVibrate: Boolean,
+    doNotDisturb: Boolean,
+    mediaVolume: Int,
+): BellVoice = when {
+    doNotDisturb -> BellVoice.SILENT
+    ringerNormal && soundEnabled && mediaVolume > 0 -> BellVoice.SOUND
+    ringerVibrate -> BellVoice.VIBRATION
+    else -> BellVoice.SILENT
+}

@@ -169,9 +169,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             mindfulnessBell.onUnlock(
                 isAnyOverlayShown = { isAnyWindowShown() },
                 isBlockedPackage = { isBlockedPackage(it) },
-                show = { decayMs, onStrike ->
+                show = { decayMs, onStrike, onGone ->
                     bellSunOverlayWindow.decayMs = decayMs
                     bellSunOverlayWindow.onStrike = onStrike
+                    bellSunOverlayWindow.onGone = onGone
                     showOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
                 },
             )

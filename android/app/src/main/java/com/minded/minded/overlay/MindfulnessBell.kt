@@ -15,9 +15,11 @@ import android.util.Log
 import com.minded.minded.R
 import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
+import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
+import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import com.minded.minded.widget.MyAppWidgetReceiver
 import java.time.LocalDateTime
@@ -53,7 +55,7 @@ class MindfulnessBell(
     fun onUnlock(
         isAnyOverlayShown: () -> Boolean,
         isBlockedPackage: (String) -> Boolean,
-        show: (decayMs: Int, onStrike: () -> Unit) -> Unit,
+        show: (decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
     ) {
         val syncData = prefs.getSyncData()
         if (syncData.cfg.mindfulnessBell != true) return
@@ -73,16 +75,25 @@ class MindfulnessBell(
         }
 
         prefs.markMindfulnessBellRung(epochDay, slot, minute)
-        val sound = prepareSound(syncData.cfg.soundEnabled != false)
+        val voice = currentVoice(syncData.cfg.soundEnabled != false)
+        val sound = if (voice == BellVoice.SOUND) prepareSound() else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
-        val vibrateInstead = sound == null && isVibrateOnly()
-        Log.d(logTag, "Ringing the bell (slot $slot, sound=${sound != null}, vibrate=$vibrateInstead)")
-        show(decayMs) {
-            when {
-                sound != null -> sound.start()
-                vibrateInstead -> Haptics.triggerBell(context)
-            }
-        }
+        Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice)")
+        show(
+            decayMs,
+            {
+                when {
+                    sound != null -> sound.start()
+                    voice == BellVoice.VIBRATION -> Haptics.triggerBell(context)
+                }
+            },
+            {
+                // Let a strike that already sounded ring out to its end (it
+                // releases itself on completion); free one that never played -
+                // the sun was taken over or tapped away before the strike.
+                if (sound != null && player === sound && !sound.isPlaying) release()
+            },
+        )
     }
 
     /** Stop and free a ringing bell, e.g. when the screen goes off mid-ring. */
@@ -131,17 +142,22 @@ class MindfulnessBell(
         return null
     }
 
-    /**
-     * A player for the strike, or null when it shouldn't be heard. The silent
-     * and vibrate switches don't mute the media stream minded plays on, so they
-     * are checked here explicitly - a "silent" phone must never ring out loud.
-     */
-    private fun prepareSound(soundEnabled: Boolean): MediaPlayer? {
-        if (!soundEnabled) return null
+    private fun currentVoice(soundEnabled: Boolean): BellVoice {
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (audio.ringerMode != AudioManager.RINGER_MODE_NORMAL) return null
-        if (!isInterruptionFilterAll()) return null
-        if (audio.getStreamVolume(AudioManager.STREAM_MUSIC) <= 0) return null
+        val nm = context.getSystemService(NotificationManager::class.java)
+        return bellVoice(
+            soundEnabled = soundEnabled,
+            ringerNormal = audio.ringerMode == AudioManager.RINGER_MODE_NORMAL,
+            ringerVibrate = audio.ringerMode == AudioManager.RINGER_MODE_VIBRATE,
+            doNotDisturb = nm != null &&
+                nm.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL,
+            mediaVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC),
+        )
+    }
+
+    /** A prepared player for the strike, or null if it can't be loaded. */
+    private fun prepareSound(): MediaPlayer? {
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         release()
         return try {
             MediaPlayer.create(
@@ -160,16 +176,6 @@ class MindfulnessBell(
             Log.e(logTag, "Failed to prepare bell sound", e)
             null
         }
-    }
-
-    private fun isVibrateOnly(): Boolean {
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        return audio.ringerMode == AudioManager.RINGER_MODE_VIBRATE && isInterruptionFilterAll()
-    }
-
-    private fun isInterruptionFilterAll(): Boolean {
-        val nm = context.getSystemService(NotificationManager::class.java) ?: return true
-        return nm.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_ALL
     }
 
     private fun homePackage(): String? = try {

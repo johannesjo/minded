@@ -29,8 +29,11 @@ import com.minded.minded.util.isDarkModeNow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** The bell window's side: the disc's 60dp glow box plus room for the swell. */
-val BELL_SUN_BOX = 132.dp
+/** The disc's window: exactly the Little Sun bubble (disc + its own glow). */
+val BELL_SUN_DISC_BOX = 60.dp
+
+/** The halo's window: room for the swell to spread around the disc. */
+val BELL_SUN_HALO_BOX = 132.dp
 
 // The sun eases in before the strike - a soft arrival, never a pop.
 private const val ARRIVE_MS = 1200
@@ -43,14 +46,31 @@ private const val LEAVE_MS = 1500
 private const val TAP_LEAVE_MS = 700
 
 /**
- * The mindfulness bell's sun (#298): it appears over whatever the user is
- * doing, rings once, and leaves on its own. No words, nothing to do.
+ * One ring of the mindfulness bell (#298), shared by its two windows: the
+ * touchable disc ([BellSunDisc]) and the untouchable halo around it
+ * ([BellSunHalo]). Two windows so the bell only ever takes a touch on the sun
+ * itself - the spreading light sits over the user's app but never catches a
+ * finger meant for it.
+ */
+class BellSunState {
+    /** 0 = absent, 1 = fully here: the sun's arrival and leaving. */
+    val presence = Animatable(0f)
+
+    /** The strike's light: 0 = the plain halo, 1 = the swell at its height. */
+    val swell = Animatable(0f)
+
+    var isLeaving by mutableStateOf(false)
+}
+
+/**
+ * The sun itself: it appears, rings once, and leaves on its own. No words,
+ * nothing to do.
  *
  * The bell must work fully without sound - many phones are muted most of the
- * day - so the visual *is* the bell: at the strike the sun's halo swells once
- * and then fades over the bell's decay ([decayMs]), the way a struck tone
- * fades into silence. The practice is to watch the light settle until it's
- * gone. One swell, never repeating: a repeating pulse would be the unguided
+ * day - so the visual *is* the bell: at the strike the halo swells once and
+ * then fades over the bell's decay ([decayMs]), the way a struck tone fades
+ * into silence. The practice is to watch the light settle until it's gone.
+ * One swell, never repeating: a repeating pulse would be the unguided
  * "breathing" the companion sun must never carry.
  *
  * Colour: the sun stands on someone else's app, a background we don't
@@ -62,7 +82,8 @@ private const val TAP_LEAVE_MS = 700
  * still, brighter halo for the decay and then is gone.
  */
 @Composable
-fun BellSun(
+fun BellSunDisc(
+    state: BellSunState,
     decayMs: Int,
     onStrike: () -> Unit,
     onGone: () -> Unit,
@@ -75,35 +96,32 @@ fun BellSun(
             1f,
         ) == 0f
     }
-    val presence = remember { Animatable(0f) }
-    val swell = remember { Animatable(0f) }
-    var isLeaving by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun leave(durationMs: Int) {
-        if (isLeaving) return
-        isLeaving = true
+        if (state.isLeaving) return
+        state.isLeaving = true
         scope.launch {
-            presence.animateTo(0f, tween(durationMs, easing = FastOutSlowInEasing))
+            state.presence.animateTo(0f, tween(durationMs, easing = FastOutSlowInEasing))
             onGone()
         }
     }
 
     LaunchedEffect(Unit) {
         if (reducedMotion) {
-            presence.snapTo(1f)
+            state.presence.snapTo(1f)
             onStrike()
-            swell.snapTo(0.6f)
+            state.swell.snapTo(0.6f)
             delay(decayMs.toLong())
-            swell.snapTo(0f)
+            state.swell.snapTo(0f)
         } else {
-            presence.animateTo(1f, tween(ARRIVE_MS, easing = FastOutSlowInEasing))
-            if (isLeaving) return@LaunchedEffect
+            state.presence.animateTo(1f, tween(ARRIVE_MS, easing = FastOutSlowInEasing))
+            if (state.isLeaving) return@LaunchedEffect
             onStrike()
-            swell.animateTo(1f, tween(SWELL_RISE_MS, easing = FastOutSlowInEasing))
+            state.swell.animateTo(1f, tween(SWELL_RISE_MS, easing = FastOutSlowInEasing))
             // The long tail of a struck bell: most of the light goes early, the
             // last of it lingers.
-            swell.animateTo(
+            state.swell.animateTo(
                 0f,
                 tween((decayMs - SWELL_RISE_MS).coerceAtLeast(0), easing = LinearOutSlowInEasing),
             )
@@ -112,34 +130,43 @@ fun BellSun(
         leave(if (reducedMotion) 0 else LEAVE_MS)
     }
 
-    val glowColor = if (isDarkModeNow()) GLOW_COLOR_NIGHT else GLOW_COLOR
     Box(
         modifier = Modifier
-            .size(BELL_SUN_BOX)
-            .alpha(presence.value)
+            .size(BELL_SUN_DISC_BOX)
+            .alpha(state.presence.value)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
             ) { leave(if (reducedMotion) 0 else TAP_LEAVE_MS) },
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.size(BELL_SUN_BOX)) {
-            val s = swell.value
-            if (s <= 0f) return@Canvas
-            // From the disc's own halo edge outward to the box edge, feathered
-            // to transparent so the window bounds never cut it.
-            drawCircle(
-                Brush.radialGradient(
-                    colorStops = arrayOf(
-                        0.2f to glowColor.copy(alpha = 0.75f * s),
-                        0.5f to glowColor.copy(alpha = 0.35f * s),
-                        1f to Color.Transparent,
-                    ),
-                    radius = size.minDimension / 2f * (0.55f + 0.45f * s),
+        SunDisc(modifier = Modifier.scale(0.85f + 0.15f * state.presence.value))
+    }
+}
+
+/** The strike's light, spreading from the disc's own halo outward. */
+@Composable
+fun BellSunHalo(state: BellSunState) {
+    val glowColor = if (isDarkModeNow()) GLOW_COLOR_NIGHT else GLOW_COLOR
+    Canvas(
+        modifier = Modifier
+            .size(BELL_SUN_HALO_BOX)
+            .alpha(state.presence.value),
+    ) {
+        val s = state.swell.value
+        if (s <= 0f) return@Canvas
+        // Feathered to transparent well inside the window, so its bounds
+        // never cut the light.
+        drawCircle(
+            Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.2f to glowColor.copy(alpha = 0.75f * s),
+                    0.5f to glowColor.copy(alpha = 0.35f * s),
+                    1f to Color.Transparent,
                 ),
-                radius = size.minDimension / 2f,
-            )
-        }
-        SunDisc(modifier = Modifier.scale(0.85f + 0.15f * presence.value))
+                radius = size.minDimension / 2f * (0.55f + 0.45f * s),
+            ),
+            radius = size.minDimension / 2f,
+        )
     }
 }
