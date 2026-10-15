@@ -92,7 +92,9 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
       <Match when={props.mode === "SKIP_CHECK_IN"}>
         <SkipCheckIn
           canOfferBell={
-            IS_ANDROID && props.syncData?.cfg.mindfulnessBell !== true
+            IS_ANDROID &&
+            !!props.syncData &&
+            props.syncData.cfg.mindfulnessBell !== true
           }
           onChoose={props.onSkipCheckInChoice}
           onCancelCountdown={props.onCancelCountdown}

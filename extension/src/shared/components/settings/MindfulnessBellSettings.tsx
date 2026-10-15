@@ -3,19 +3,12 @@ import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import type { MindfulnessBellPerDay } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
 import Btn from "@src/shared/components/ui/Btn";
-import styles from "./MindfulnessBellSettings.module.scss";
-
-/** Mirrors MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY. */
-export const DEFAULT_BELL_PER_DAY: MindfulnessBellPerDay = 2;
-
-const PER_DAY_OPTIONS: ReadonlyArray<{
-  value: MindfulnessBellPerDay;
-  label: string;
-}> = [
-  { value: 1, label: "Once a day" },
-  { value: 2, label: "Twice a day" },
-  { value: 3, label: "Three times a day" },
-];
+import {
+  BELL_PER_DAY_OPTIONS,
+  DEFAULT_BELL_PER_DAY,
+} from "./mindfulnessBell.const";
+import styles from "./SoundSettings.module.scss";
+import bellStyles from "./MindfulnessBellSettings.module.scss";
 
 /**
  * The mindfulness bell (Android): a few times a day, at an unpredictable
@@ -45,7 +38,7 @@ export const MindfulnessBellSettings = (props: {
   };
 
   return (
-    <div class={styles.MindfulnessBellSettings}>
+    <div class={styles.SoundSettings}>
       <div class={styles.header}>
         <h3 class="h3">Mindfulness bell</h3>
         <Toggle
@@ -59,12 +52,11 @@ export const MindfulnessBellSettings = (props: {
         watch the light fade, carry on.
       </p>
       <Show when={enabled()}>
-        <div class={styles.options}>
-          <For each={PER_DAY_OPTIONS}>
+        <div class={bellStyles.options}>
+          <For each={BELL_PER_DAY_OPTIONS}>
             {(option) => (
               <Btn
                 variant="toggle"
-                small
                 selected={perDay() === option.value}
                 onClick={() => void choosePerDay(option.value)}
               >

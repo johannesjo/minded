@@ -39,7 +39,7 @@ export interface UserCfg {
   sleepWindDown?: SleepWindDownCfg;
   sessionGrace?: SessionGraceCfg;
   /**
-   * Android only. Once or twice a day, at an unpredictable moment, the sun
+   * Android only. A few times a day, at an unpredictable moment, the sun
    * rings a bell over whatever the user is doing (see MindfulnessBell.kt).
    * Off unless explicitly turned on.
    */

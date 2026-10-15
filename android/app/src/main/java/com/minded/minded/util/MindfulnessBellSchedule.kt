@@ -21,7 +21,7 @@ import kotlin.random.Random
  *   [SLOT_FIRE_WINDOW_MINUTES]. Otherwise it is dropped, with no catch-up. The
  *   bell meets the moment the phone is picked up, never pulls anyone out of a
  *   pocket, and adapts by itself: a light phone user simply hears it less.
- *   That is how "once or twice a day" happens without a counter.
+ *   That is how "a few times a day" happens without a counter.
  * - Never two rings within [MIN_RING_GAP_MINUTES], even if a late first slot
  *   and an early second one would allow it, and never at or after
  *   [LATEST_RING_MINUTE] - the same waking-hours end the in-intervention bell
@@ -76,6 +76,9 @@ object MindfulnessBellSchedule {
         lastRungMinute: Int?,
     ): Int? {
         if (minuteOfDay >= LATEST_RING_MINUTE) return null
+        // The mask counts rings by slot index; a count changed mid-day re-rolls
+        // the slots under it, so cap by how many have rung, not which.
+        if (Integer.bitCount(rungMask) >= slots.size) return null
         if (lastRungMinute != null && minuteOfDay - lastRungMinute < MIN_RING_GAP_MINUTES) {
             return null
         }

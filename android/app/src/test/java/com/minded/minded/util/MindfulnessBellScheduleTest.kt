@@ -67,6 +67,12 @@ class MindfulnessBellScheduleTest {
     }
 
     @Test
+    fun `a count lowered mid-day never rings past the new count`() {
+        // Slot 1 rang under a count of two; the user then chose once a day.
+        assertNull(dueSlot(15 * 60, listOf(15 * 60), rungMask = 0b10, lastRungMinute = 9 * 60))
+    }
+
+    @Test
     fun `two rings are never close together`() {
         // A late first ring and an early second slot: the second waits.
         val slots = listOf(10 * 60, 13 * 60)
