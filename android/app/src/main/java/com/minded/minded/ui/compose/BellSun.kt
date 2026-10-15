@@ -156,12 +156,14 @@ fun BellSunHalo(state: BellSunState) {
         val s = state.swell.value
         if (s <= 0f) return@Canvas
         // Feathered to transparent well inside the window, so its bounds
-        // never cut the light.
+        // never cut the light. Its window is held at 0.8 alpha so touches pass
+        // through (BellSunWindow.HALO_WINDOW_ALPHA); these stops are set to
+        // read as 0.75 / 0.35 through it.
         drawCircle(
             Brush.radialGradient(
                 colorStops = arrayOf(
-                    0.2f to glowColor.copy(alpha = 0.75f * s),
-                    0.5f to glowColor.copy(alpha = 0.35f * s),
+                    0.2f to glowColor.copy(alpha = 0.94f * s),
+                    0.5f to glowColor.copy(alpha = 0.44f * s),
                     1f to Color.Transparent,
                 ),
                 radius = size.minDimension / 2f * (0.55f + 0.45f * s),

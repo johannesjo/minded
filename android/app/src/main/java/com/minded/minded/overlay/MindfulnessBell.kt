@@ -10,6 +10,8 @@ import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import com.minded.minded.R
@@ -17,6 +19,7 @@ import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.ForegroundStateHolder
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.bellVoice
@@ -44,6 +47,7 @@ class MindfulnessBell(
 ) {
     private val logTag = "MindfulnessBell"
     private var player: MediaPlayer? = null
+    private val handler = Handler(Looper.getMainLooper())
 
     /**
      * Decide at an unlock whether to ring. [isAnyOverlayShown] guards the
@@ -57,15 +61,17 @@ class MindfulnessBell(
         isBlockedPackage: (String) -> Boolean,
         show: (decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
     ) {
-        val syncData = prefs.getSyncData()
-        if (syncData.cfg.mindfulnessBell != true) return
-
+        // The schedule first: it only reads a few small prefs, so the common
+        // unlock - nothing due - never parses the whole sync blob.
         val now = LocalDateTime.now()
         val epochDay = now.toLocalDate().toEpochDay()
         val minute = now.hour * 60 + now.minute
         val slots = MindfulnessBellSchedule.slotsFor(epochDay, prefs.getMindfulnessBellSalt())
         val (rungMask, lastRung) = prefs.getMindfulnessBellDay(epochDay)
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
+
+        val syncData = prefs.getSyncData()
+        if (syncData.cfg.mindfulnessBell != true) return
 
         val skipReason = skipReason(syncData.cfg, isAnyOverlayShown, isBlockedPackage)
         if (skipReason != null) {
@@ -83,7 +89,8 @@ class MindfulnessBell(
             decayMs,
             {
                 when {
-                    sound != null -> sound.start()
+                    // Only the live player: a screen-off may have freed it.
+                    sound != null && player === sound -> startSafely(sound)
                     voice == BellVoice.VIBRATION -> Haptics.triggerBell(context)
                 }
             },
@@ -94,6 +101,40 @@ class MindfulnessBell(
                 if (sound != null && player === sound && !sound.isPlaying) release()
             },
         )
+    }
+
+    private fun startSafely(mp: MediaPlayer) {
+        try {
+            mp.start()
+        } catch (e: IllegalStateException) {
+            Log.e(logTag, "Bell strike failed", e)
+            release()
+        }
+    }
+
+    /**
+     * Another minded surface took over mid-ring: let the strike fade out over a
+     * moment rather than ringing on over a pause - or cutting off mid-tone.
+     */
+    fun fadeOutAndRelease() {
+        val mp = player ?: return
+        val steps = 10
+        var step = 0
+        val tick = object : Runnable {
+            override fun run() {
+                if (player !== mp) return
+                step++
+                val volume = 1f - step.toFloat() / steps
+                try {
+                    mp.setVolume(volume, volume)
+                } catch (e: IllegalStateException) {
+                    release()
+                    return
+                }
+                if (step < steps) handler.postDelayed(this, TAKEOVER_FADE_MS / steps) else release()
+            }
+        }
+        handler.post(tick)
     }
 
     /** Stop and free a ringing bell, e.g. when the screen goes off mid-ring. */
@@ -133,7 +174,10 @@ class MindfulnessBell(
         val foreground = when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
             is ForegroundAppResult.Success -> r.packageName
             is ForegroundAppResult.Stale -> r.packageName
-            else -> return "foreground app unknown"
+            // No usage-history read: fall back to the accessibility detector's
+            // freshest focus, if it has one.
+            else -> ForegroundStateHolder.current()?.packageName
+                ?: return "foreground app unknown"
         }
         if (foreground == context.packageName) return "minded is open"
         if (isBlockedPackage(foreground)) return "a guarded app is open"
@@ -200,5 +244,6 @@ class MindfulnessBell(
         // Whatever resumed last is still in front after an unlock, however long
         // ago it opened - so look back generously and accept an old read.
         private const val LOOKBACK_MS = 30 * 60 * 1000L
+        private const val TAKEOVER_FADE_MS = 400L
     }
 }

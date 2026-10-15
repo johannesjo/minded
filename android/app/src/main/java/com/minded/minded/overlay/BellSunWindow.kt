@@ -68,10 +68,19 @@ class BellSunWindow(
         initPosition()
         // The halo first, so the disc's window stacks above it.
         showHalo()
-        super.showWindow()
+        try {
+            super.showWindow()
+        } catch (e: Exception) {
+            // The disc never appeared, so onWindowRemoved won't fire for it.
+            removeHalo()
+            throw e
+        }
     }
 
     override fun hideWindow() {
+        // Leaving from outside (taken over, screen off): a strike still to come
+        // never comes - the bell doesn't ring over whatever replaced it.
+        state.isLeaving = true
         // The halo has no window fade of its own; ease it out with the disc.
         haloView?.animate()?.alpha(0f)?.setDuration(300)?.start()
         super.hideWindow()
@@ -119,6 +128,11 @@ class BellSunWindow(
             gravity = Gravity.TOP or Gravity.START
             x = discX + disc / 2 - halo / 2
             y = discY + disc / 2 - halo / 2
+            // Android 12+ blocks touches beneath another app's overlay - even a
+            // not-touchable one - whose window alpha is above the maximum
+            // obscuring opacity (0.8). At exactly that, taps on the app under
+            // the light still land. BellSunHalo compensates in its colours.
+            alpha = HALO_WINDOW_ALPHA
         }
         try {
             windowManager.addView(view, params)
@@ -161,5 +175,8 @@ class BellSunWindow(
          * (SINGLE_BELL_FALLBACK_DURATION_MS in sunAudio.ts).
          */
         const val DEFAULT_DECAY_MS = 5500
+
+        /** See showHalo(): the most a pass-through overlay may obscure. */
+        const val HALO_WINDOW_ALPHA = 0.8f
     }
 }

@@ -41,7 +41,7 @@ object MindfulnessBellSchedule {
     /**
      * The day's slots as minutes of the local day, ascending. Drawn uniformly
      * over every pair that keeps the minimum gap (rejection sampling - with
-     * these bounds roughly two draws in five are kept, so the bounded loop
+     * these bounds about half the draws are kept, so the bounded loop
      * practically never reaches its evenly-spaced fallback).
      */
     fun slotsFor(epochDay: Long, salt: Long): List<Int> {

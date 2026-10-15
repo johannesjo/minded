@@ -33,7 +33,7 @@ export const MindfulnessBellSettings = (props: {
       </div>
       <p class={styles.description}>
         Once or twice a day, the sun rings a bell over whatever you're doing.
-        Stop, watch the light fade, carry on.
+        Pause, watch the light fade, carry on.
       </p>
     </div>
   );

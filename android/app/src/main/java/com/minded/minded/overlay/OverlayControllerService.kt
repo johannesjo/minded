@@ -402,6 +402,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             intent.getStringExtra(MyAccessibilityService.INTENT_EXTRA_CURRENT_PACKAGE_NAME)
         Log.d(logTag, "onStartCommand() received intent for package: $currentPackage")
         if (currentPackage != null) {
+            // Opening minded itself ends a ringing bell: its own sun is there.
+            if (currentPackage == packageName) takeOverFromBell()
             val detectionTimestampMs = intent.getLongExtra(
                 MyAccessibilityService.INTENT_EXTRA_DETECTION_TIMESTAMP, 0L
             )
@@ -476,7 +478,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         try {
             // Only ever one sun: any other surface takes over from a ringing bell.
             if (overlayName != OverlayName.MINDFULNESS_BELL_OVERLAY) {
-                bellSunOverlayWindow.hideWindow()
+                takeOverFromBell()
             }
             when (overlayName) {
                 OverlayName.MINDFULNESS_BELL_OVERLAY -> {
@@ -540,6 +542,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         } catch (e: Exception) {
             Log.e(logTag, "Failed to show overlay ${overlayName}", e)
+            if (overlayName == OverlayName.MINDFULNESS_BELL_OVERLAY) {
+                // A bell is a moment: never re-rung seconds later without
+                // re-checking it is still a good one.
+                mindfulnessBell.release()
+                return
+            }
             scheduleOverlayRetry(
                 overlayName,
                 overlayMode,
@@ -548,6 +556,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 littleSunPauseAtSessionS
             )
         }
+    }
+
+    private fun takeOverFromBell() {
+        if (!bellSunOverlayWindow.isWindowShown()) return
+        bellSunOverlayWindow.hideWindow()
+        mindfulnessBell.fadeOutAndRelease()
     }
 
     private fun isInputOverlayShown(): Boolean {
