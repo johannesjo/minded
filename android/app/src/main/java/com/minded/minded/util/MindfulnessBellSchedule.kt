@@ -78,7 +78,7 @@ object MindfulnessBellSchedule {
         if (minuteOfDay >= LATEST_RING_MINUTE) return null
         // The mask counts rings by slot index; a count changed mid-day re-rolls
         // the slots under it, so cap by how many have rung, not which.
-        if (Integer.bitCount(rungMask) >= slots.size) return null
+        if (rungMask.countOneBits() >= slots.size) return null
         if (lastRungMinute != null && minuteOfDay - lastRungMinute < MIN_RING_GAP_MINUTES) {
             return null
         }
