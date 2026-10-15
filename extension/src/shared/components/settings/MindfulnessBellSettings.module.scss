@@ -1,0 +1,6 @@
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: var(--settings-options-justify, center);
+  margin-top: var(--space-md);
+}

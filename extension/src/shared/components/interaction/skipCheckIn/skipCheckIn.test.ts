@@ -6,6 +6,7 @@ import {
   isInterventionPauseActive,
   isSkipCheckInDue,
   SKIP_CHECK_IN_CHOICES,
+  getSkipCheckInChoices,
   SKIP_CHECK_IN_OBSERVATION,
   SKIP_CHECK_IN_QUESTION,
   SKIP_CHECK_IN_THRESHOLD,
@@ -135,6 +136,13 @@ describe("skipCheckIn", () => {
         });
       }
     });
+
+    it("steps the week out of the way when the bell is chosen", () => {
+      expect(getSkipCheckInUpdate("bell", NOW).interventionPause).toEqual({
+        kind: "off",
+        untilTS: NOW + INTERVENTION_PAUSE_MS,
+      });
+    });
   });
 
   describe("getActiveInterventionPause", () => {
@@ -186,10 +194,19 @@ describe("skipCheckIn", () => {
       }
     });
 
-    it("offers exactly the three choices, the everyday one first", () => {
-      expect(SKIP_CHECK_IN_CHOICES.map((c) => c.choice)).toEqual([
+    it("offers the three choices, the everyday one first", () => {
+      expect(getSkipCheckInChoices(false).map((c) => c.choice)).toEqual([
         "as_now",
         "later",
+        "off",
+      ]);
+    });
+
+    it("offers the bell only where it can ring and isn't on yet", () => {
+      expect(getSkipCheckInChoices(true).map((c) => c.choice)).toEqual([
+        "as_now",
+        "later",
+        "bell",
         "off",
       ]);
     });

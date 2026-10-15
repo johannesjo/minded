@@ -609,6 +609,7 @@ const Styleguide = (): JSX.Element => {
         <Subsection label="<SkipCheckIn> - after ten taps past the sun">
           <div class={styles.interactionFrame}>
             <SkipCheckIn
+              canOfferBell={true}
               onChoose={(choice) => console.log("skip check-in:", choice)}
               onCancelCountdown={() => undefined}
             />

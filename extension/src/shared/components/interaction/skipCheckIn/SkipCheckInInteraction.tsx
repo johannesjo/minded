@@ -2,9 +2,9 @@ import { createSignal, For, JSX, onCleanup } from "solid-js";
 import Btn from "@src/shared/components/ui/Btn";
 import {
   SKIP_CHECK_IN_ARM_MS,
-  SKIP_CHECK_IN_CHOICES,
   SKIP_CHECK_IN_OBSERVATION,
   SKIP_CHECK_IN_QUESTION,
+  getSkipCheckInChoices,
   type SkipCheckInChoice,
 } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import styles from "./SkipCheckInInteraction.module.scss";
@@ -18,6 +18,8 @@ import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal
  * leave, so this is a fork, never a wall.
  */
 export const SkipCheckIn: (props: {
+  /** Offer the mindfulness bell (Android, not already on). */
+  canOfferBell: boolean;
   onChoose: (choice: SkipCheckInChoice) => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
@@ -51,7 +53,7 @@ export const SkipCheckIn: (props: {
       </div>
 
       <div class={`${styles.choices} voice-follow`}>
-        <For each={SKIP_CHECK_IN_CHOICES}>
+        <For each={getSkipCheckInChoices(props.canOfferBell)}>
           {(option) => (
             <Btn disabled={getIsChosen()} onClick={() => choose(option.choice)}>
               {option.label}

@@ -39,11 +39,17 @@ export interface UserCfg {
   sleepWindDown?: SleepWindDownCfg;
   sessionGrace?: SessionGraceCfg;
   /**
-   * Android only. Once or twice a day, at an unpredictable moment, the sun
+   * Android only. A few times a day, at an unpredictable moment, the sun
    * rings a bell over whatever the user is doing (see MindfulnessBell.kt).
    * Off unless explicitly turned on.
    */
   mindfulnessBell?: boolean;
+  /**
+   * How many times a day the bell may ring (MindfulnessBellSchedule.kt).
+   * Absent = 2. Each is a chance, not a promise: a slot nobody unlocks the
+   * phone for is dropped.
+   */
+  mindfulnessBellPerDay?: MindfulnessBellPerDay;
 }
 
 /**
@@ -146,6 +152,8 @@ export interface PatternInsightState {
     [dateISO: string]: string[];
   };
 }
+
+export type MindfulnessBellPerDay = 1 | 2 | 3;
 
 /**
  * The week the user chose from the skip check-in (see skipCheckIn.ts).

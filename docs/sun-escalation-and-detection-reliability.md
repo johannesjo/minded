@@ -144,7 +144,7 @@ prompt - asks once:
 
 > *You've been tapping past the sun lately.*
 > *How should the sun meet you?*
-> **As it does now** · **Only after a while** · **Not this week**
+> **As it does now** · **Only after a while** · **With a bell, now and then** · **Not this week**
 
 - **As it does now** - carry on; the count starts over, and the check-in won't
   ask again for a week.
@@ -156,6 +156,10 @@ prompt - asks once:
   then arrives by the usual corner morph. It moves the
   pause from the doorway, where the thumb has learned to skip, to mid-session,
   where it hasn't - and where drifting actually happens.
+- **With a bell, now and then** (Android, only while the mindfulness bell is
+  off) - the same week out of the way as below, and the bell is switched on as
+  its regular setting, so it stays visible and switchable in settings after the
+  week.
 - **Not this week** - minded stays out of the way entirely for a week.
 
 **Why asking, not inferring.** A pass can't tell "I'm fine" from "I'm on

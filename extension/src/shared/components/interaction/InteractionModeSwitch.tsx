@@ -17,7 +17,7 @@ import {
 } from "@src/shared/data/actionAdvices";
 import { NOTICE_CUES } from "@src/shared/components/interaction/notice/notice.const";
 import { getRndEntry } from "@src/util/getRndEntry";
-import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
+import { IS_ANDROID, IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import { PatternInsightInteraction } from "@src/shared/components/interaction/patternInsight/PatternInsightInteraction";
 import { ScreenOffInteraction } from "@src/shared/components/interaction/screenOff/ScreenOffInteraction";
 import { UrgeSurfing } from "@src/shared/components/interaction/urgeSurfing/UrgeSurfing";
@@ -91,6 +91,11 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
     <Switch>
       <Match when={props.mode === "SKIP_CHECK_IN"}>
         <SkipCheckIn
+          canOfferBell={
+            IS_ANDROID &&
+            !!props.syncData &&
+            props.syncData.cfg.mindfulnessBell !== true
+          }
           onChoose={props.onSkipCheckInChoice}
           onCancelCountdown={props.onCancelCountdown}
         />

@@ -397,7 +397,7 @@ class SyncDataSerializationTest {
     }
 
     @Test
-    fun `round trips the mindfulness bell opt-in and reads it absent as off`() {
+    fun `round trips the mindfulness bell opt-in and count, and reads them absent as off and default`() {
         fun parse(cfgExtra: String) = parseSyncData(
             """
             {
@@ -422,5 +422,13 @@ class SyncDataSerializationTest {
         val absent = parse("")
         assertNull(absent.cfg.mindfulnessBell)
         assertEquals(false, JSONObject(syncDataToJson(absent)).getJSONObject("cfg").has("mindfulnessBell"))
+
+        // How often it rings round trips too; a value outside the choices is ignored.
+        val three = parse(",\n\"mindfulnessBellPerDay\": 3")
+        assertEquals(3, three.cfg.mindfulnessBellPerDay)
+        assertEquals(3, parseSyncData(syncDataToJson(three)).cfg.mindfulnessBellPerDay)
+
+        assertNull(parse(",\n\"mindfulnessBellPerDay\": 7").cfg.mindfulnessBellPerDay)
+        assertNull(parse("").cfg.mindfulnessBellPerDay)
     }
 }
