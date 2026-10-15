@@ -19,6 +19,10 @@ class SharedPreferenceService(context: Context) {
     private val DB_NAME = "mindedData"
     private val LITTLE_SUN_POS_X_KEY = "littleSunPosX"
     private val LITTLE_SUN_POS_Y_KEY = "littleSunPosY"
+    private val BELL_SALT_KEY = "mindfulnessBellSalt"
+    private val BELL_DAY_KEY = "mindfulnessBellDay"
+    private val BELL_RUNG_MASK_KEY = "mindfulnessBellRungMask"
+    private val BELL_LAST_RUNG_MINUTE_KEY = "mindfulnessBellLastRungMinute"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
 
@@ -97,6 +101,45 @@ class SharedPreferenceService(context: Context) {
         if (!sharedPreferences.contains(LITTLE_SUN_POS_X_KEY)) return null
         return sharedPreferences.getInt(LITTLE_SUN_POS_X_KEY, 0) to
             sharedPreferences.getInt(LITTLE_SUN_POS_Y_KEY, 0)
+    }
+
+    /**
+     * Per-install salt for the mindfulness bell's daily slot draw
+     * (MindfulnessBellSchedule.slotsFor), created once. Local only, like the
+     * bubble position: it is scheduling bookkeeping, not user data.
+     */
+    @Synchronized
+    fun getMindfulnessBellSalt(): Long {
+        if (sharedPreferences.contains(BELL_SALT_KEY)) {
+            return sharedPreferences.getLong(BELL_SALT_KEY, 0L)
+        }
+        val salt = kotlin.random.Random.nextLong()
+        sharedPreferences.edit().putLong(BELL_SALT_KEY, salt).apply()
+        return salt
+    }
+
+    /**
+     * Which of today's bell slots have rung (bit mask) and the minute of the
+     * last ring - only so a slot never rings twice. Read for another day it is
+     * empty: yesterday's bookkeeping is simply forgotten, never tallied.
+     */
+    @Synchronized
+    fun getMindfulnessBellDay(epochDay: Long): Pair<Int, Int?> {
+        if (sharedPreferences.getLong(BELL_DAY_KEY, -1L) != epochDay) return 0 to null
+        val mask = sharedPreferences.getInt(BELL_RUNG_MASK_KEY, 0)
+        val last = sharedPreferences.getInt(BELL_LAST_RUNG_MINUTE_KEY, -1)
+        return mask to last.takeIf { it >= 0 }
+    }
+
+    @Synchronized
+    fun markMindfulnessBellRung(epochDay: Long, slot: Int, minuteOfDay: Int) {
+        val (mask, _) = getMindfulnessBellDay(epochDay)
+        with(sharedPreferences.edit()) {
+            putLong(BELL_DAY_KEY, epochDay)
+            putInt(BELL_RUNG_MASK_KEY, mask or (1 shl slot))
+            putInt(BELL_LAST_RUNG_MINUTE_KEY, minuteOfDay)
+            apply()
+        }
     }
 
     fun getBlockedApps(): List<String> {

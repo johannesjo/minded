@@ -107,7 +107,13 @@ open class CommonWindow(
                     Cmp()
                 }
             }
-            windowManager.addView(window, getLayoutParams())
+            try {
+                windowManager.addView(window, getLayoutParams())
+            } catch (e: Exception) {
+                // Never added: don't leave isWindowShown() true forever.
+                window = null
+                throw e
+            }
             if (fadeInDurationMs > 0L) {
                 // Fade in animation
                 window?.alpha = 0f

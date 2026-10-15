@@ -395,4 +395,32 @@ class SyncDataSerializationTest {
         assertNull(syncData.interventionPause)
         assertNull(JSONObject(syncDataToJson(syncData)).optJSONObject("interventionPause"))
     }
+
+    @Test
+    fun `round trips the mindfulness bell opt-in and reads it absent as off`() {
+        fun parse(cfgExtra: String) = parseSyncData(
+            """
+            {
+              "cfg": {
+                "isOnboardingComplete": false,
+                "blockedHosts": [],
+                "blockedApps": []$cfgExtra
+              },
+              "answers": [],
+              "sunTaps": {},
+              "attempts": {}
+            }
+            """.trimIndent()
+        )
+
+        val on = parse(",\n\"mindfulnessBell\": true")
+        assertEquals(true, on.cfg.mindfulnessBell)
+        // Every native write re-serializes the whole blob, so the opt-in must
+        // survive it - or the setting would silently switch itself off.
+        assertEquals(true, parseSyncData(syncDataToJson(on)).cfg.mindfulnessBell)
+
+        val absent = parse("")
+        assertNull(absent.cfg.mindfulnessBell)
+        assertEquals(false, JSONObject(syncDataToJson(absent)).getJSONObject("cfg").has("mindfulnessBell"))
+    }
 }
