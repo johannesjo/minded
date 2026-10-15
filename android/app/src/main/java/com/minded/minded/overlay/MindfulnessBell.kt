@@ -19,7 +19,6 @@ import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
-import com.minded.minded.util.ForegroundStateHolder
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.bellVoice
@@ -54,7 +53,7 @@ class MindfulnessBell(
      * one-sun rule: never while the Little Sun, an intervention, or any other
      * minded surface is up. [isBlockedPackage] keeps the bell off guarded apps,
      * which belong to the interventions. [show] presents the window, given the
-     * strike's decay and the strike callback.
+     * strike's decay, the strike callback, and a callback for when it's gone.
      */
     fun onUnlock(
         isAnyOverlayShown: () -> Boolean,
@@ -163,6 +162,13 @@ class MindfulnessBell(
         // Bedtime belongs to the wind-down.
         if (SleepWindDownWindow.resolveNightId(cfg) != null) return "bedtime window"
 
+        // Do Not Disturb is an explicit "not now" - for the light as much as
+        // the sound.
+        val nm = context.getSystemService(NotificationManager::class.java)
+        if (nm != null && nm.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL) {
+            return "do not disturb"
+        }
+
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (audio.isMusicActive) return "media is playing"
         when (audio.mode) {
@@ -174,10 +180,9 @@ class MindfulnessBell(
         val foreground = when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
             is ForegroundAppResult.Success -> r.packageName
             is ForegroundAppResult.Stale -> r.packageName
-            // No usage-history read: fall back to the accessibility detector's
-            // freshest focus, if it has one.
-            else -> ForegroundStateHolder.current()?.packageName
-                ?: return "foreground app unknown"
+            // Unknown is a "no": a wrong guess here rings over minded itself
+            // or a guarded app.
+            else -> return "foreground app unknown"
         }
         if (foreground == context.packageName) return "minded is open"
         if (isBlockedPackage(foreground)) return "a guarded app is open"
@@ -188,13 +193,10 @@ class MindfulnessBell(
 
     private fun currentVoice(soundEnabled: Boolean): BellVoice {
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val nm = context.getSystemService(NotificationManager::class.java)
         return bellVoice(
             soundEnabled = soundEnabled,
             ringerNormal = audio.ringerMode == AudioManager.RINGER_MODE_NORMAL,
             ringerVibrate = audio.ringerMode == AudioManager.RINGER_MODE_VIBRATE,
-            doNotDisturb = nm != null &&
-                nm.currentInterruptionFilter != NotificationManager.INTERRUPTION_FILTER_ALL,
             mediaVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC),
         )
     }

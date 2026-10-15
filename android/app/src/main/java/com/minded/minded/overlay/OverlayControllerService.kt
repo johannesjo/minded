@@ -476,8 +476,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         try {
-            // Only ever one sun: any other surface takes over from a ringing bell.
-            if (overlayName != OverlayName.MINDFULNESS_BELL_OVERLAY) {
+            // Only ever one sun. The bell rests where the Little Sun rests, so
+            // an intervention takes it over exactly like a Little Sun hand-off:
+            // the bell drops at once under the opaque shield and the
+            // intervention's sun glides out of that same spot. Any other
+            // surface simply fades it.
+            val morphFromBell = overlayName == OverlayName.INTERACTION_OVERLAY &&
+                bellSunOverlayWindow.isWindowShown()
+            if (morphFromBell) {
+                bellSunOverlayWindow.hideWindowImmediate()
+                mindfulnessBell.fadeOutAndRelease()
+            } else if (overlayName != OverlayName.MINDFULNESS_BELL_OVERLAY) {
                 takeOverFromBell()
             }
             when (overlayName) {
@@ -497,7 +506,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                     // when whe show the question, we likely want to update the current app usage
                     sharedOverlayViewModel.updateLastAppUsage()
-                    interactionOverlayWindow.morphInFromCorner = morphInFromCorner
+                    interactionOverlayWindow.morphInFromCorner = morphInFromCorner || morphFromBell
                     interactionOverlayWindow.showWindow()
 
                     // we hide others only after to avoid lifecycle complications

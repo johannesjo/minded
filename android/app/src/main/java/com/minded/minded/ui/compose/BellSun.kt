@@ -108,6 +108,8 @@ fun BellSunDisc(
     }
 
     LaunchedEffect(Unit) {
+        // Taken over before it even began: no strike.
+        if (state.isLeaving) return@LaunchedEffect
         if (reducedMotion) {
             state.presence.snapTo(1f)
             onStrike()

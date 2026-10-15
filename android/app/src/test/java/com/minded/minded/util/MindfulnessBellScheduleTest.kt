@@ -82,9 +82,8 @@ class MindfulnessBellScheduleTest {
     private fun voice(
         soundEnabled: Boolean = true,
         ringer: String = "normal",
-        doNotDisturb: Boolean = false,
         mediaVolume: Int = 7,
-    ) = bellVoice(soundEnabled, ringer == "normal", ringer == "vibrate", doNotDisturb, mediaVolume)
+    ) = bellVoice(soundEnabled, ringer == "normal", ringer == "vibrate", mediaVolume)
 
     @Test
     fun `the strike is heard only when the phone may make a sound`() {
@@ -97,7 +96,6 @@ class MindfulnessBellScheduleTest {
     fun `a silenced phone never rings out loud`() {
         assertEquals(BellVoice.VIBRATION, voice(ringer = "vibrate"))
         assertEquals(BellVoice.SILENT, voice(ringer = "silent"))
-        assertEquals(BellVoice.SILENT, voice(doNotDisturb = true))
-        assertEquals(BellVoice.SILENT, voice(ringer = "vibrate", doNotDisturb = true))
+        assertEquals(BellVoice.SILENT, voice(ringer = "silent", soundEnabled = true, mediaVolume = 15))
     }
 }
