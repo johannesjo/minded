@@ -170,4 +170,18 @@ class MindfulnessBellScheduleTest {
         assertEquals(BellVoice.SILENT, voice(ringer = "silent"))
         assertEquals(BellVoice.SILENT, voice(ringer = "silent", soundEnabled = true, mediaVolume = 15))
     }
+
+    @Test
+    fun nextWindowMinute_findsTheNextUnrungWindow() {
+        val slots = listOf(100, 400, 800)
+        val w = MindfulnessBellSchedule.fireWindowFor(slots.size)
+        assertEquals(100, MindfulnessBellSchedule.nextWindowMinute(50, slots, 0))
+        // Inside an open window: now.
+        assertEquals(110, MindfulnessBellSchedule.nextWindowMinute(110, slots, 0))
+        // That window rang: the next one.
+        assertEquals(400, MindfulnessBellSchedule.nextWindowMinute(110, slots, 0b001))
+        // Past the last window, or all rung: none left.
+        assertEquals(null, MindfulnessBellSchedule.nextWindowMinute(800 + w, slots, 0))
+        assertEquals(null, MindfulnessBellSchedule.nextWindowMinute(50, slots, 0b111))
+    }
 }

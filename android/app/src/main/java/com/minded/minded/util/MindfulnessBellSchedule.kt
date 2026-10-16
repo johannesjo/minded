@@ -114,6 +114,20 @@ object MindfulnessBellSchedule {
                 minuteOfDay < slots[i] + fireWindowFor(slots.size)
         }
     }
+
+    /**
+     * The minute today's next bell window opens - or [minuteOfDay] itself if
+     * one is open now - or null if none is left today. Only for the settings'
+     * "next bell" hint; [dueSlot] alone decides a ring.
+     */
+    fun nextWindowMinute(minuteOfDay: Int, slots: List<Int>, rungMask: Int): Int? {
+        if (rungMask.countOneBits() >= slots.size) return null
+        return slots.indices
+            .firstOrNull { i ->
+                rungMask and (1 shl i) == 0 && minuteOfDay < slots[i] + fireWindowFor(slots.size)
+            }
+            ?.let { maxOf(slots[it], minuteOfDay) }
+    }
 }
 
 /** How the bell's strike reaches the user - see [bellVoice]. */

@@ -8,7 +8,10 @@ import {
   bellPerDayLabel,
   DEFAULT_BELL_PER_DAY,
 } from "./mindfulnessBell.const";
-import { bellLastCheckLabel } from "./mindfulnessBellLastCheck";
+import {
+  bellLastCheckLabel,
+  bellLastUnlockLabel,
+} from "./mindfulnessBellLastCheck";
 import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import styles from "./SoundSettings.module.scss";
@@ -32,6 +35,10 @@ export const MindfulnessBellSettings = (props: {
   // What the last due bell did, so a bell that's never heard can be understood.
   const lastCheck = IS_ANDROID
     ? bellLastCheckLabel(androidInterface.getMindfulnessBellLastCheck?.())
+    : undefined;
+  // And what it made of the last unlock, so "never reached" shows too.
+  const lastUnlock = IS_ANDROID
+    ? bellLastUnlockLabel(androidInterface.getMindfulnessBellLastUnlock?.())
     : undefined;
 
   const toggle = async () => {
@@ -75,6 +82,9 @@ export const MindfulnessBellSettings = (props: {
           <span>{bellPerDayLabel(perDay())}</span>
           <Show when={lastCheck}>
             <span class={bellStyles.lastCheck}>{lastCheck}</span>
+          </Show>
+          <Show when={lastUnlock}>
+            <span class={bellStyles.lastCheck}>{lastUnlock}</span>
           </Show>
         </div>
       </Show>
