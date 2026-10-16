@@ -124,6 +124,25 @@ class MyAccessibilityService : AccessibilityService() {
         var isConnected: Boolean = false
             private set
 
+        @Volatile
+        private var connected: MyAccessibilityService? = null
+
+        /**
+         * The package of the focused app window right now - launcher and minded
+         * included, unlike the detector's filtered getFocusedAppPackage() - or
+         * null when the service isn't running or no app window holds focus.
+         * The live read the mindfulness bell asks before ringing: usage access
+         * is optional, so it can't be the bell's only way to see what's in front.
+         */
+        fun focusedAppWindowPackage(): String? = try {
+            connected?.windows
+                ?.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused }
+                ?.root?.packageName?.toString()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read focused window for the bell", e)
+            null
+        }
+
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         const val INTENT_EXTRA_DETECTION_TIMESTAMP = "INTENT_EXTRA_DETECTION_TIMESTAMP"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
@@ -336,12 +355,14 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "onUnbind()")
         isConnected = false
+        connected = null
         return super.onUnbind(intent)
     }
     
     override fun onDestroy() {
         super.onDestroy()
         isConnected = false
+        connected = null
 
         // Stop detection collection job first
         detectionCollectionJob?.cancel()
@@ -383,6 +404,7 @@ class MyAccessibilityService : AccessibilityService() {
         Log.d(TAG, "onServiceConnected()")
         super.onServiceConnected()
         isConnected = true
+        connected = this
 
         // Configure the service programmatically to ensure it works reliably
         val config = AccessibilityServiceInfo().apply {

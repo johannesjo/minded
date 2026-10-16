@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
+import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
 import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
@@ -21,14 +22,15 @@ import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
+import com.minded.minded.util.UserCfg
 import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import com.minded.minded.widget.MyAppWidgetReceiver
 import java.time.LocalDateTime
 
 /**
- * The mindfulness bell (#298): a few times a day (the user picks one to
- * three), triggered by nothing the user did, the sun rings over whatever
+ * The mindfulness bell (#298): a few times a day (the user picks how
+ * many), triggered by nothing the user did, the sun rings over whatever
  * they're doing. It is opt-in (off by
  * default) because it is the one surface that reaches for the user unprompted
  * - every other overlay answers an app they chose to guard. What keeps that
@@ -61,30 +63,22 @@ class MindfulnessBell(
         isBlockedPackage: (String) -> Boolean,
         show: (decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
     ) {
-        // The schedule first: it only reads a few small prefs, so the common
-        // unlock - nothing due - never parses the whole sync blob. The chosen
-        // count lives in that blob, so the cheap check asks whether a slot
-        // would be due under *any* count; only then is the real one read.
+        // Most unlocks have nothing due: the cfg is cached (see currentCfg), so
+        // they never parse the sync blob, and a bell that's off stops here.
+        val cfg = currentCfg()
+        if (cfg.mindfulnessBell != true) return
         val now = LocalDateTime.now()
         val epochDay = now.toLocalDate().toEpochDay()
         val minute = now.hour * 60 + now.minute
-        val salt = prefs.getMindfulnessBellSalt()
         val (rungMask, lastRung) = prefs.getMindfulnessBellDay(epochDay)
-        fun dueFor(count: Int) = MindfulnessBellSchedule.dueSlot(
-            minute,
-            MindfulnessBellSchedule.slotsFor(epochDay, salt, count),
-            rungMask,
-            lastRung,
+        val slots = MindfulnessBellSchedule.slotsFor(
+            epochDay,
+            prefs.getMindfulnessBellSalt(),
+            cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY,
         )
-        if (MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE.none { dueFor(it) != null }) return
+        val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
 
-        val syncData = prefs.getSyncData()
-        if (syncData.cfg.mindfulnessBell != true) return
-        val slot = dueFor(
-            syncData.cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY
-        ) ?: return
-
-        val skipReason = skipReason(syncData.cfg, isAnyOverlayShown, isBlockedPackage)
+        val skipReason = skipReason(cfg, isAnyOverlayShown, isBlockedPackage)
         if (skipReason != null) {
             // The slot stays open - a later unlock inside its window may still ring.
             Log.d(logTag, "Bell due (slot $slot) but skipped: $skipReason")
@@ -92,7 +86,7 @@ class MindfulnessBell(
         }
 
         prefs.markMindfulnessBellRung(epochDay, slot, minute)
-        val voice = currentVoice(syncData.cfg.soundEnabled != false)
+        val voice = currentVoice(cfg.soundEnabled != false)
         val sound = if (voice == BellVoice.SOUND) prepareSound() else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
         Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice)")
@@ -112,6 +106,23 @@ class MindfulnessBell(
                 if (sound != null && player === sound && !sound.isPlaying) release()
             },
         )
+    }
+
+    private var cachedRaw: String? = null
+    private var cachedCfg: UserCfg? = null
+
+    /**
+     * The user's cfg, parsed only when the stored blob changed. SharedPreferences
+     * hands back the same String instance until the next save, so identity is
+     * a free "unchanged" check.
+     */
+    private fun currentCfg(): UserCfg {
+        val raw = prefs.retrieveDataString()
+        cachedCfg?.let { if (raw === cachedRaw) return it }
+        return prefs.getSyncData().cfg.also {
+            cachedRaw = raw
+            cachedCfg = it
+        }
     }
 
     private fun startSafely(mp: MediaPlayer) {
@@ -161,7 +172,7 @@ class MindfulnessBell(
     }
 
     private fun skipReason(
-        cfg: com.minded.minded.util.UserCfg,
+        cfg: UserCfg,
         isAnyOverlayShown: () -> Boolean,
         isBlockedPackage: (String) -> Boolean,
     ): String? {
@@ -189,13 +200,17 @@ class MindfulnessBell(
             AudioManager.MODE_RINGTONE -> return "in a call"
         }
 
-        val foreground = when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
-            is ForegroundAppResult.Success -> r.packageName
-            is ForegroundAppResult.Stale -> r.packageName
-            // Unknown is a "no": a wrong guess here rings over minded itself
-            // or a guarded app.
-            else -> return "foreground app unknown"
-        }
+        // The accessibility service's live focused window first: it is always
+        // there when minded runs, while usage access is optional - relying on
+        // it alone silenced the bell for everyone who skipped that permission.
+        val foreground = MyAccessibilityService.focusedAppWindowPackage()
+            ?: when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
+                is ForegroundAppResult.Success -> r.packageName
+                is ForegroundAppResult.Stale -> r.packageName
+                // Unknown is a "no": a wrong guess here rings over minded
+                // itself or a guarded app.
+                else -> return "foreground app unknown"
+            }
         if (foreground == context.packageName) return "minded is open"
         if (isBlockedPackage(foreground)) return "a guarded app is open"
         // The companion widget may be on the home screen - two suns.

@@ -1,10 +1,11 @@
-import { createSignal, For, JSX, Show } from "solid-js";
+import { createSignal, JSX, Show } from "solid-js";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import type { MindfulnessBellPerDay } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
-import Btn from "@src/shared/components/ui/Btn";
 import {
-  BELL_PER_DAY_OPTIONS,
+  BELL_PER_DAY_MAX,
+  BELL_PER_DAY_MIN,
+  bellPerDayLabel,
   DEFAULT_BELL_PER_DAY,
 } from "./mindfulnessBell.const";
 import styles from "./SoundSettings.module.scss";
@@ -53,17 +54,18 @@ export const MindfulnessBellSettings = (props: {
       </p>
       <Show when={enabled()}>
         <div class={bellStyles.options}>
-          <For each={BELL_PER_DAY_OPTIONS}>
-            {(option) => (
-              <Btn
-                variant="toggle"
-                selected={perDay() === option.value}
-                onClick={() => void choosePerDay(option.value)}
-              >
-                {option.label}
-              </Btn>
-            )}
-          </For>
+          <input
+            type="range"
+            class={bellStyles.slider}
+            min={BELL_PER_DAY_MIN}
+            max={BELL_PER_DAY_MAX}
+            step="1"
+            value={perDay()}
+            onInput={(e) => setPerDay(Number(e.currentTarget.value))}
+            onChange={(e) => void choosePerDay(Number(e.currentTarget.value))}
+            aria-label="How often the bell rings"
+          />
+          <span>{bellPerDayLabel(perDay())}</span>
         </div>
       </Show>
     </div>

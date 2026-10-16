@@ -1,7 +1,8 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import {
-  BELL_PER_DAY_OPTIONS,
+  BELL_PER_DAY_MAX,
+  BELL_PER_DAY_MIN,
   DEFAULT_BELL_PER_DAY,
 } from "@src/shared/components/settings/mindfulnessBell.const";
 
@@ -23,8 +24,11 @@ describe("the bell's count mirrors MindfulnessBellSchedule.kt (Kotlin ↔ TS)", 
     );
   });
 
-  it("accepts exactly the counts the setting offers (1 | 2 | 3)", () => {
-    expect(BELL_PER_DAY_OPTIONS.map((o) => o.value)).toEqual([1, 2, 3]);
-    expect(source).toMatch(/SLOTS_PER_DAY_RANGE = 1\.\.3\b/);
+  it("accepts exactly the counts the setting offers", () => {
+    expect(source).toMatch(
+      new RegExp(
+        `SLOTS_PER_DAY_RANGE = ${BELL_PER_DAY_MIN}\\.\\.${BELL_PER_DAY_MAX}\\b`,
+      ),
+    );
   });
 });

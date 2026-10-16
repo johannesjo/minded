@@ -5,6 +5,9 @@ import com.minded.minded.util.MindfulnessBellSchedule.LATEST_RING_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.LATEST_SLOT_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_RING_GAP_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_SLOT_GAP_MINUTES
+import com.minded.minded.util.MindfulnessBellSchedule.fireWindowFor
+import com.minded.minded.util.MindfulnessBellSchedule.minRingGapFor
+import com.minded.minded.util.MindfulnessBellSchedule.minSlotGapFor
 import com.minded.minded.util.MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE
 import com.minded.minded.util.MindfulnessBellSchedule.SLOT_FIRE_WINDOW_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.dueSlot
@@ -25,7 +28,7 @@ class MindfulnessBellScheduleTest {
             assertEquals(slots.sorted(), slots)
             slots.forEach { assertTrue(it in EARLIEST_SLOT_MINUTE..LATEST_SLOT_MINUTE, "day $day: $it") }
             slots.zipWithNext().forEach { (a, b) ->
-                assertTrue(b - a >= MIN_SLOT_GAP_MINUTES, "day $day: $slots")
+                assertTrue(b - a >= minSlotGapFor(count), "day $day: $slots")
             }
         }
     }
@@ -33,7 +36,34 @@ class MindfulnessBellScheduleTest {
     @Test
     fun `a count outside the choices is held to them`() {
         assertEquals(1, slotsFor(19_000L, 7L, count = 0).size)
-        assertEquals(3, slotsFor(19_000L, 7L, count = 9).size)
+        assertEquals(SLOTS_PER_DAY_RANGE.last, slotsFor(19_000L, 7L, count = 99).size)
+    }
+
+    @Test
+    fun `the everyday counts keep the full gaps, more slots shrink them`() {
+        for (count in 1..3) {
+            assertEquals(MIN_SLOT_GAP_MINUTES, minSlotGapFor(count))
+            assertEquals(MIN_RING_GAP_MINUTES, minRingGapFor(count))
+            assertEquals(SLOT_FIRE_WINDOW_MINUTES, fireWindowFor(count))
+        }
+        assertTrue(minSlotGapFor(SLOTS_PER_DAY_RANGE.last) in 1 until MIN_SLOT_GAP_MINUTES)
+        assertTrue(minRingGapFor(SLOTS_PER_DAY_RANGE.last) >= 1)
+    }
+
+    @Test
+    fun `with many slots an old slot never rings into the next one's turn`() {
+        val slots = slotsFor(19_000L, 7L, count = 20)
+        assertEquals(0, dueSlot(slots[0], slots, 0, null))
+        assertNotEquals(0, dueSlot(slots[0] + fireWindowFor(20), slots, 0, null))
+    }
+
+    @Test
+    fun `many slots ring closer together, never at once`() {
+        val slots = slotsFor(19_000L, 7L, count = 20)
+        val ring = slots[0]
+        val gap = minRingGapFor(20)
+        assertNull(dueSlot(slots[1], slots, 0b1, lastRungMinute = slots[1] - gap + 1))
+        assertEquals(1, dueSlot(maxOf(slots[1], ring + gap), slots, 0b1, lastRungMinute = ring))
     }
 
     @Test
