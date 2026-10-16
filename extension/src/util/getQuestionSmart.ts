@@ -1,4 +1,4 @@
-import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion, SyncData } from "@src/dataInterface/syncData";
 import { customQuestionsToPrompts } from "@src/shared/data/customQuestions";
 import {
   filterSpecialWidgets,
@@ -81,6 +81,7 @@ What do I want to achieve?
 export const getQuestionSmart = (
   answers: Answer[],
   customQuestions?: CustomQuestion[],
+  isOnlyOwnQuestions = false,
 ): QuestionForPrompt => {
   const now = new Date();
   const isWorkDayToday = isWorkDay(now);
@@ -90,6 +91,13 @@ export const getQuestionSmart = (
   // MyQuestions category; their count feeds the same scoring the static
   // categories get. With none written, the category simply never scores.
   const customPrompts = customQuestionsToPrompts(customQuestions);
+
+  // The user chose to hear only their own questions. With none written there
+  // is nothing to honour that with, so the built-in pool quietly stands in.
+  if (isOnlyOwnQuestions && customPrompts.length) {
+    return getQuestionAvoidingLastAnswered(customPrompts, answers);
+  }
+
   const questionPool = [...QUESTIONS_FOR_DEVICE, ...customPrompts];
   const questionCountFor = (categoryId: QuestionCategoryId): number =>
     categoryId === QuestionCategoryId.MyQuestions
@@ -239,11 +247,43 @@ export const getQuestionSmart = (
   return getRndQuestionConsideringMain(questionsForCategory);
 };
 
+/** The pick for an intervention, read straight off stored data and settings. */
+export const getQuestionForSyncData = (
+  syncData: Pick<SyncData, "answers" | "customQuestions" | "cfg">,
+): QuestionForPrompt =>
+  getQuestionSmart(
+    syncData.answers,
+    syncData.customQuestions,
+    syncData.cfg.isOnlyOwnQuestions,
+  );
+
 export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
   const questionsToUse = QUESTIONS_FOR_DEVICE.filter((q) =>
     isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[q.categoryId], now),
   );
   return getRndQuestionConsideringMain(questionsToUse);
+};
+
+/**
+ * A random one of the user's questions, minus the one they answered last - so
+ * a handful rotate without the same one coming straight back. Deliberately no
+ * counting: an all-time tally would park the sun on a question the user keeps
+ * skipping, or on one just written, for weeks.
+ */
+const getQuestionAvoidingLastAnswered = (
+  questions: QuestionForPrompt[],
+  answers: Answer[],
+): QuestionForPrompt => {
+  const ids = new Set(questions.map((question) => question.id));
+  const lastAnswered = answers
+    .filter((answer) => answer.qid !== null && ids.has(answer.qid))
+    .reduce<
+      Answer | undefined
+    >((latest, answer) => (!latest || answer.ts > latest.ts ? answer : latest), undefined);
+  const fresh = questions.filter(
+    (question) => question.id !== lastAnswered?.qid,
+  );
+  return getRndQuestionConsideringMain(fresh.length ? fresh : questions);
 };
 
 const getRndQuestionConsideringMain = (

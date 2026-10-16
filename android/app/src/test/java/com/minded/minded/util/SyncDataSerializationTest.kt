@@ -432,5 +432,11 @@ class SyncDataSerializationTest {
         val tooMany = MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE.last + 1
         assertNull(parse(",\n\"mindfulnessBellPerDay\": $tooMany").cfg.mindfulnessBellPerDay)
         assertNull(parse("").cfg.mindfulnessBellPerDay)
+
+        // "Only ask my questions" is a WebView setting, but native writes carry
+        // the whole cfg - it must survive them, and stay absent when unset.
+        val onlyOwn = parse(",\n\"isOnlyOwnQuestions\": true")
+        assertEquals(true, parseSyncData(syncDataToJson(onlyOwn)).cfg.isOnlyOwnQuestions)
+        assertEquals(false, JSONObject(syncDataToJson(absent)).getJSONObject("cfg").has("isOnlyOwnQuestions"))
     }
 }

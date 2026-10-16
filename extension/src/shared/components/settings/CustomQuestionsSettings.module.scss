@@ -98,3 +98,15 @@
   display: flex;
   justify-content: var(--settings-options-justify, center);
 }
+
+.onlyOwn {
+  display: flex;
+  justify-content: var(--settings-options-justify, center);
+  margin-top: var(--space-md);
+  // Mounts with the first question - ease in like the status line.
+  animation: var(--dur-quick) var(--ease-out) both;
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
+}

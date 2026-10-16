@@ -1,4 +1,6 @@
+import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import {
+  getQuestionForSyncData,
   getQuestionSmart,
   getQuestionSemiSmart,
   isCategoryWithinTimeConstraints,
@@ -226,6 +228,64 @@ describe("getQuestionSmart", () => {
       const result = getQuestionSmart(answers);
       expect(result).toBeDefined();
       expect(result.categoryId).not.toBe(QuestionCategoryId.MyQuestions);
+    });
+
+    describe("only own questions", () => {
+      const twoQuestions: CustomQuestion[] = [
+        ...customQuestions,
+        { id: "CQ_test2", t: "What am I avoiding?", createdTS: 2 },
+      ];
+      const answerTo = (qid: string): Answer => ({
+        ...createAnswer(QuestionCategoryId.MyQuestions),
+        id: `${qid}-answer`,
+        qid: qid as Answer["qid"],
+      });
+
+      it("asks only the user's questions, even with no answers yet", () => {
+        const result = getQuestionSmart([], twoQuestions, true);
+        expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
+        const pool = mockedGetRndEntry.mock.calls[0][0] as { id: string }[];
+        expect(pool.map((q) => q.id)).toEqual(["CQ_test1", "CQ_test2"]);
+      });
+
+      it("ignores the built-in categories whatever their score", () => {
+        const answers = [
+          createAnswer(QuestionCategoryId.HealthierBrowsingHabits),
+          createAnswer(QuestionCategoryId.WhyReduceBrowsing),
+        ];
+        const result = getQuestionSmart(answers, twoQuestions, true);
+        expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
+      });
+
+      it("leaves out the question answered last", () => {
+        const older = { ...answerTo("CQ_test2"), ts: 1 };
+        const latest = { ...answerTo("CQ_test1"), ts: 2 };
+        const result = getQuestionSmart([older, latest], twoQuestions, true);
+        expect(result.id).toBe("CQ_test2");
+      });
+
+      it("still asks the only question there is, answered or not", () => {
+        const result = getQuestionSmart(
+          [answerTo("CQ_test1")],
+          customQuestions,
+          true,
+        );
+        expect(result.id).toBe("CQ_test1");
+      });
+
+      it("reads the choice from the stored settings", () => {
+        const result = getQuestionForSyncData({
+          answers: [],
+          customQuestions: twoQuestions,
+          cfg: { ...DEFAULT_SYNC_DATA.cfg, isOnlyOwnQuestions: true },
+        });
+        expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
+      });
+
+      it("falls back to the built-in pool while none are written", () => {
+        const result = getQuestionSmart([], [], true);
+        expect(result.categoryId).not.toBe(QuestionCategoryId.MyQuestions);
+      });
     });
   });
 

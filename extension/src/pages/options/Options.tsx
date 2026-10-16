@@ -61,6 +61,7 @@ const Options = () => {
             <section class={styles.section}>
               <CustomQuestionsSettings
                 initialCustomQuestions={initial.customQuestions}
+                initialIsOnlyOwnQuestions={initial.cfg.isOnlyOwnQuestions}
               />
             </section>
 

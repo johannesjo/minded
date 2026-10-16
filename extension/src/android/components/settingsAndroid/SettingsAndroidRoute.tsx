@@ -54,6 +54,7 @@ export const SettingsAndroidRoute = () => {
 
             <CustomQuestionsSettings
               initialCustomQuestions={initial.customQuestions}
+              initialIsOnlyOwnQuestions={initial.cfg.isOnlyOwnQuestions}
             />
 
             <hr class={styles.divider} />

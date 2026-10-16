@@ -23,6 +23,7 @@ fun syncDataToJson(syncData: SyncData): String {
     }
     syncData.cfg.mindfulnessBell?.let { cfgObject.put("mindfulnessBell", it) }
     syncData.cfg.mindfulnessBellPerDay?.let { cfgObject.put("mindfulnessBellPerDay", it) }
+    syncData.cfg.isOnlyOwnQuestions?.let { cfgObject.put("isOnlyOwnQuestions", it) }
     jsonObject.put("cfg", cfgObject)
 
     val answersArray = JSONArray()

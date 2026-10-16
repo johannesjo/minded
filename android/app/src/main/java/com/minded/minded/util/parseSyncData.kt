@@ -42,7 +42,10 @@ data class UserCfg(
     // The opt-in mindfulness bell (MindfulnessBell.kt). Absent = off.
     val mindfulnessBell: Boolean? = null,
     // How many times a day it may ring (1..3). Absent = the default.
-    val mindfulnessBellPerDay: Int? = null
+    val mindfulnessBellPerDay: Int? = null,
+    // Ask only the user's own questions (getQuestionSmart.ts). Native code never
+    // reads it - it is only carried so a native write doesn't drop it. Absent = off.
+    val isOnlyOwnQuestions: Boolean? = null
 )
 
 data class SessionGraceCfg(
@@ -202,7 +205,9 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val mindfulnessBell = if (cfg.has("mindfulnessBell")) cfg.optBoolean("mindfulnessBell", false) else null
     val mindfulnessBellPerDay = cfg.optInt("mindfulnessBellPerDay", 0)
         .takeIf { it in MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE }
-    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown, sessionGrace, mindfulnessBell, mindfulnessBellPerDay)
+    val isOnlyOwnQuestions = if (cfg.has("isOnlyOwnQuestions")) cfg.optBoolean("isOnlyOwnQuestions", false) else null
+
+    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown, sessionGrace, mindfulnessBell, mindfulnessBellPerDay, isOnlyOwnQuestions)
 
     val answers = jsonObject.getJSONArray("answers").let { array ->
         List(array.length()) { i ->

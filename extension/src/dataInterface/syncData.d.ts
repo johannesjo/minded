@@ -36,6 +36,14 @@ export interface UserCfg {
   blockedApps: string[];
   focusSchedule?: FocusSchedule;
   soundEnabled?: boolean; // Enable/disable completion sound (default: true)
+  /**
+   * Ask only the user's own questions (SyncData.customQuestions), never the
+   * built-in pool. Only takes effect while at least one is written - with none,
+   * the sun falls back to its own questions. Absent = off. Scope is the
+   * written reflection question (getQuestionSmart); check-ins like the usage
+   * rating or emotion labeling are their own modes and are untouched.
+   */
+  isOnlyOwnQuestions?: boolean;
   sleepWindDown?: SleepWindDownCfg;
   sessionGrace?: SessionGraceCfg;
   /**
