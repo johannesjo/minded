@@ -11,6 +11,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -45,7 +46,9 @@ import com.minded.minded.util.checkIgnoringBatteryOptimizations
 import com.minded.minded.util.checkUsageStatsPermission
 import com.minded.minded.util.isAccessibilityServiceEnabled
 import com.minded.minded.util.isDarkModeNow
+import com.minded.minded.overlay.LittleSunPosition
 import com.minded.minded.widget.WidgetPrompts
+import com.minded.minded.widget.WidgetSunSpot
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -147,6 +150,14 @@ class MainActivity : AppCompatActivity() {
          * NOTICE/ACTION_ADVICE line instead of a random pick (see RouteCmp).
          */
         const val EXTRA_WIDGET_LINE = "widget_line"
+        /**
+         * Intent extra: where the widget's sun sat in its tile
+         * ([WidgetSunSpot.Spot] as a float array). Paired with the launcher's
+         * Intent.sourceBounds it becomes `&sunFrom=x,y,d`, so a cold start paints
+         * the app's sun on the widget's and the rise glides from the home screen
+         * (see widgetArrival.ts).
+         */
+        const val EXTRA_WIDGET_SUN_SPOT = "widget_sun_spot"
 
         /** Fade-in duration when the WebView first paints over the loading sky. */
         private const val WEBVIEW_FADE_IN_MS = 300L
@@ -182,11 +193,40 @@ class MainActivity : AppCompatActivity() {
         intent?.getStringExtra(EXTRA_WIDGET_LINE)
             ?.takeIf { WidgetPrompts.isWidgetSafeLine(it) }
 
-    /** The launch route with the allow-listed widget line appended, if any. */
-    private fun launchHash(intent: Intent?): String? {
+    /**
+     * The widget sun's on-screen spot for the hand-off, or null. Rebuilt from
+     * numbers only (WidgetSunSpot.toLaunchParam prints three plain decimals), so
+     * a crafted intent can't put anything else into the WebView location.
+     */
+    private fun widgetSunFromIntent(intent: Intent?): String? {
+        val bounds = intent?.sourceBounds ?: return null
+        val spot = WidgetSunSpot.Spot.fromArray(
+            intent.getFloatArrayExtra(EXTRA_WIDGET_SUN_SPOT),
+        ) ?: return null
+        val wm = getSystemService(WINDOW_SERVICE) as? WindowManager ?: return null
+        return WidgetSunSpot.toLaunchParam(
+            spot,
+            bounds.left,
+            bounds.top,
+            bounds.width(),
+            bounds.height(),
+            LittleSunPosition.displayWidthPx(this, wm),
+            LittleSunPosition.displayHeightPx(this, wm),
+            resources.displayMetrics.density,
+        )
+    }
+
+    /**
+     * The launch route with the allow-listed widget line appended, if any, and
+     * (cold start only - see widgetArrival.ts) where the widget's sun stood.
+     */
+    private fun launchHash(intent: Intent?, withSunFrom: Boolean = false): String? {
         val route = routeFromIntent(intent) ?: return null
         val line = widgetLineFromIntent(intent)
-        return if (line != null) "$route&widgetLine=${Uri.encode(line)}" else route
+        val sunFrom = if (withSunFrom) widgetSunFromIntent(intent) else null
+        return route +
+            (if (line != null) "&widgetLine=${Uri.encode(line)}" else "") +
+            (if (sunFrom != null) "&sunFrom=$sunFrom" else "")
     }
 
 
@@ -381,7 +421,7 @@ class MainActivity : AppCompatActivity() {
                                 // dashboard with the sun hash (plus the tapped line, if
                                 // any) so the shell opens the interaction overlay on the
                                 // exact line on first paint.
-                                val hash = launchHash(intent)
+                                val hash = launchHash(intent, withSunFrom = true)
                                 loadUrl(if (hash != null) "$baseUrl#$hash" else baseUrl)
                                 // Safety net: reveal even if onPageCommitVisible never
                                 // arrives (e.g. a stalled bundle), so a load hiccup can't

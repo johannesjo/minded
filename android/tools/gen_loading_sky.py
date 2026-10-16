@@ -39,14 +39,17 @@ HEIGHT = 1280
 
 # The home-screen widget card gets its own near-target-size renders: minifying
 # the full-screen sky ~3x would undersample the baked dither and re-band, so
-# the dither must be applied at (about) the size the launcher will draw.
-CARD_WIDTH = 360
-CARD_HEIGHT = 240
+# the dither must be applied at (about) the size the launcher will draw. A 3x2
+# card on an xxhdpi phone is ~750x540px; at 360x240 the ~2x upscale smeared the
+# noise into 2px blobs and let the dark sky's bands creep back. 540x360 keeps
+# the same mild ~1.4x upscale the iOS card accepts, for ~80 KB more per face.
+CARD_WIDTH = 540
+CARD_HEIGHT = 360
 
 # The iOS widget card (WidgetKit systemMedium) draws the same skies at its own
 # target size -- up to ~364x170pt (@3x ~1092x510px). Rendering at @2x of the
 # largest face keeps the mild-upscale ratio the Android card already accepts
-# (its 360-wide PNG draws at up to ~510px), at a quarter of the @3x byte cost.
+# (its 540-wide PNG draws at up to ~750px), at a quarter of the @3x byte cost.
 # shortcut: the six iOS PNGs still add ~1 MB to the app download -- the baked
 # dither noise defeats PNG filtering (a clean gradient would be ~2 KB). If
 # size ever matters: let the asset catalog store these lossy/HEIF (visually

@@ -7,7 +7,8 @@
 //  sky (extension/src/shared/skyTimeline.ts). The app interpolates its background
 //  through pastel keyframes per minute; a widget can't (it is baked PNGs repainted
 //  per timeline entry), so the card *steps* between card-sized renders of those
-//  same keyframes on whole hours. All day skies are light pastels by design (the
+//  same keyframes. Like the app, the steps ride the real sun (`WidgetSun`); the
+//  clock hours are only the no-location fallback. All day skies are light pastels by design (the
 //  saturated skies live in the app's drag reveals), so the near-black prompt text
 //  stays legible on every one of them, and the stepping stays "the world's
 //  light", never a signal graded at the user.
@@ -32,12 +33,24 @@ enum WidgetSky {
     /// all turn over together, in step with the app (and with Android).
     static func forHour(_ hour: Int) -> WidgetSky {
         let h = ((hour % 24) + 24) % 24
-        if h < SunWidgetPhase.dayStart { return .night }
-        if h < 9 { return .dawn }
-        if h < 13 { return .morning }
-        if h < 17 { return .midday }
-        if h < 18 { return .afternoon }
-        if h < SunWidgetPhase.nightStart { return .dusk }
-        return .night
+        return SunWidgetPhase.forHour(h).isNight ? .night : forSkyHour(Double(h))
+    }
+
+    /// The sky for a moment of light. By day `skyHour` is the palette clock's
+    /// hour - timed to the real sun, so a winter afternoon reaches the dusk face
+    /// early, just as the app's sky does - bucketed onto the same faces as
+    /// `forHour`. Night is the moment's own, so the dark sky, the moon and the
+    /// wordless card still turn over together.
+    static func forMoment(_ moment: WidgetSun.Moment) -> WidgetSky {
+        moment.isNight ? .night : forSkyHour(moment.skyHour)
+    }
+
+    /// The light-sky face for a palette-clock hour (the day buckets only).
+    static func forSkyHour(_ skyHour: Double) -> WidgetSky {
+        if skyHour < 9 { return .dawn }
+        if skyHour < 13 { return .morning }
+        if skyHour < 17 { return .midday }
+        if skyHour < 18 { return .afternoon }
+        return .dusk
     }
 }

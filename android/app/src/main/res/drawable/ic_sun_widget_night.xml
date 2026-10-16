@@ -1,8 +1,9 @@
 <!-- NIGHT phase of the living companion sun: the moon (19-06), matched to the
      app's in-app moon (web Sun.scss `.moon-face`) - a cool disc whose light pools
      up-left and cools into the lower-right limb, under wide soft maria fields,
-     wrapped in a cool halo. Picked by the local hour in MyAppWidget, not by the
-     dark-mode qualifier.
+     wrapped in a cool halo. Picked by the real sun in MyAppWidget (WidgetSun),
+     not by the dark-mode qualifier. This is the full moon; on any other night
+     WidgetMoonBitmap draws tonight's phase over it (WidgetMoon).
 
      This replaced a lunar photograph (ic_sun_widget_night.webp). The app's moon
      is drawn in CSS now, and there is only ever one moon - a photo on the home

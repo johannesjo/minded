@@ -14,11 +14,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import java.time.ZoneId
 
 /**
  * Receiver for the home-screen companion sun. The sun is a *living* anchor: it
- * tracks the day's light (the sun by day, the moon by night) and the card's sky
+ * tracks the day's light (the sun by day, the moon by night - timed to the real
+ * dusk and dawn, WidgetSun) and the card's sky
  * steps through the app's ambient keyframes (WidgetSky). The card's line is a
  * mini-intervention (WidgetPrompts): it steps every 15 minutes through the day so
  * a glance on return finds a fresh invitation, then rests wordless through the
@@ -103,22 +104,17 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
             alarmManager.cancel(refreshPendingIntent(context))
             return
         }
-        val now = Calendar.getInstance()
-        // The line's 15-minute day cadence is the finest of the three surfaces,
-        // and every sky/phase flip lands on a whole hour (so on a slot edge), so
-        // scheduling off the prompt alone also covers the sky step and the
-        // day/night repaint (containment guarded by WidgetPromptsTest).
-        val minutes = WidgetPrompts.minutesUntilNextChange(
-            now.get(Calendar.HOUR_OF_DAY),
-            now.get(Calendar.MINUTE),
-        )
-        val triggerAt = System.currentTimeMillis() + minutes * 60_000L
+        // The line's 15-minute day cadence is the finest of the three surfaces;
+        // the day/night flip rides the real sun (WidgetSun) and lands on any
+        // minute, so nextChangeMillis takes whichever comes first. The sky's
+        // face steps ride the day cadence.
+        val now = System.currentTimeMillis()
+        val triggerAt = WidgetPrompts.nextChangeMillis(now, ZoneId.systemDefault())
         // Inexact + allow-while-idle: no SCHEDULE_EXACT_ALARM permission, and a few
         // minutes of drift is invisible on a sun that changes warmth, not time.
-        // DST shifts broadcast neither TIME_SET nor TIMEZONE_CHANGED, so an alarm
-        // armed across a transition lands up to an hour off the wall-clock
-        // boundary twice a year - accepted for the same reason, and it
-        // self-corrects when that alarm re-arms.
+        // The trigger is computed in absolute time from the zone's rules, so a
+        // DST shift (which broadcasts neither TIME_SET nor TIMEZONE_CHANGED) no
+        // longer lands it an hour off.
         // RTC, not RTC_WAKEUP: never wake the device to repaint a widget nobody is
         // looking at - an overdue phase change is delivered the moment the device
         // next wakes, i.e. right when someone glances at the phone.

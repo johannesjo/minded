@@ -31,12 +31,17 @@ SOURCE_FILES = %w[
   SunWidgetPhase.swift
   WidgetSky.swift
   WidgetPrompts.swift
+  WidgetSun.swift
+  WidgetMoon.swift
+  WidgetTimeZones.swift
 ].freeze
 # Bundled resources compiled into the .appex (asset catalogs go in the resources
 # phase, not the sources phase): the generated prompt-card skies. The sun and moon
 # are drawn in SwiftUI, so no disc images ship - Media.xcassets went with the moon
-# photograph it existed to hold.
-RESOURCE_FILES = %w[Assets.xcassets].freeze
+# photograph it existed to hold. Newsreader-Regular.ttf is the app's own serif
+# voice for the card's line (registered via UIAppFonts in MindedWidget/Info.plist;
+# regenerate with scripts/gen_widget_font.py).
+RESOURCE_FILES = %w[Assets.xcassets Newsreader-Regular.ttf].freeze
 
 project_path = File.expand_path(File.join(__dir__, '..', 'App.xcodeproj'))
 project = Xcodeproj::Project.open(project_path)

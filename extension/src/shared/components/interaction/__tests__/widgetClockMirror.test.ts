@@ -18,10 +18,9 @@ import {
  *
  * Since the true-sky change (src/shared/sky/solarSky.ts) the app times night to
  * the real sun and these hours are only its *fallback* clock (no location from
- * the time zone). The native widgets are not ported yet and stay on that
- * fallback, so this now pins them to the fallback - a known, documented gap
- * (they can disagree with the app by a few hours away from the equinox), not
- * a silent drift.
+ * the time zone). The widgets follow the real sun too now (WidgetSun.kt /
+ * WidgetSun.swift, guarded by widgetSolarMirror.test.ts) and reach these hours
+ * only through that same fallback - which this pins.
  *
  * Sibling to widgetPromptsMirror.test.ts, which guards the prompt pool the same
  * way. jest runs with cwd = extension/, so android/ is one up and ios/ is here.
@@ -93,7 +92,7 @@ describe("the widget clock mirrors skyTimeline (native copies ↔ TS)", () => {
   // same hours.
   it("the iOS sky hour buckets match Android's", () => {
     const edges = (source: string): number[] =>
-      [...source.matchAll(/h < (\d+)/g)].map((m) => Number(m[1]));
+      [...source.matchAll(/skyHour < (\d+)/g)].map((m) => Number(m[1]));
     const androidEdges = edges(read(ANDROID_SKY));
     expect(androidEdges.length).toBeGreaterThan(0);
     expect(edges(read(IOS_SKY))).toEqual(androidEdges);

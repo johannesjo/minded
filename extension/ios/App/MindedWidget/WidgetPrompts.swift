@@ -179,9 +179,17 @@ enum WidgetPrompts {
     /// repeats - walking the whole pool every `wakingPrompts.count` slots; across
     /// days it advances `dailyStride` so a fixed-time glance covers the whole pool
     /// too (see the `dailyStride` note).
-    static func promptForMoment(epochDay: Int, hour: Int, minute: Int) -> String? {
+    ///
+    /// `isNight` is the moment's own night - pass the same value that picks the
+    /// moon (`WidgetSun`'s real dusk); nil uses the fixed clock's.
+    static func promptForMoment(
+        epochDay: Int,
+        hour: Int,
+        minute: Int,
+        isNight: Bool? = nil
+    ) -> String? {
         let h = ((hour % 24) + 24) % 24
-        guard h >= SunWidgetPhase.dayStart && h < SunWidgetPhase.nightStart else {
+        guard !(isNight ?? SunWidgetPhase.forHour(h).isNight) else {
             return nil
         }
         let m = ((minute % 60) + 60) % 60
@@ -195,13 +203,15 @@ enum WidgetPrompts {
         return wakingPrompts[((index % count) + count) % count]
     }
 
-    /// The line for a moment, read from its local wall clock.
+    /// The line for a moment: the slot from its local wall clock, the night from
+    /// its light (the real sun where the zone has a place).
     static func prompt(at date: Date, calendar: Calendar = .current) -> String? {
         let comps = calendar.dateComponents([.hour, .minute], from: date)
         return promptForMoment(
             epochDay: epochDay(of: date, calendar: calendar),
             hour: comps.hour ?? 0,
-            minute: comps.minute ?? 0
+            minute: comps.minute ?? 0,
+            isNight: WidgetSun.moment(at: date, calendar: calendar).isNight
         )
     }
 
@@ -214,20 +224,20 @@ enum WidgetPrompts {
     }
 
     /// The next instant the card's face changes, strictly after `date` - the
-    /// WidgetKit twin of Kotlin's `minutesUntilNextChange`, returning a Date for
-    /// the timeline instead of minutes for an alarm. By day the line steps on
-    /// every quarter-hour edge (which contains the sky's whole-hour steps and the
-    /// 19:00 phase flip by construction); across the wordless night nothing
-    /// changes until the first line reappears at dayStart, so one entry spans the
-    /// night. DST/timezone-safe via `Calendar`; landing exactly on an edge
-    /// schedules the next one, never an immediate re-fire.
+    /// WidgetKit twin of Kotlin's `nextChangeMillis`, timed to the real sun. By
+    /// day: the next quarter-hour line step or the dusk flip, whichever comes
+    /// first (the real sun's flips land on any minute, not a slot edge); across
+    /// the wordless night nothing changes until the dawn that brings the first
+    /// line back, so one entry spans the night. The sky's face steps ride the
+    /// quarter-hour day cadence. If the sun never flips within two days (polar
+    /// night), it re-checks after a day rather than never. DST/timezone-safe via
+    /// `Calendar`; never returns `date` itself.
     static func nextChange(after date: Date, calendar: Calendar = .current) -> Date? {
-        if SunWidgetPhase.phase(at: date, calendar: calendar).isNight {
-            // From anywhere in the night the next phase boundary *is* the next
-            // dayStart, so reuse the shipped v1 boundary walk as-is.
-            return SunWidgetPhase.nextBoundary(after: date, calendar: calendar)
+        let flip = WidgetSun.nextNightFlip(after: date, calendar: calendar)
+        if WidgetSun.moment(at: date, calendar: calendar).isNight {
+            return flip ?? date.addingTimeInterval(24 * 3600)
         }
-        return stride(from: 0, to: 60, by: slotMinutes)
+        let nextSlot = stride(from: 0, to: 60, by: slotMinutes)
             .compactMap { minute in
                 calendar.nextDate(
                     after: date,
@@ -236,5 +246,6 @@ enum WidgetPrompts {
                 )
             }
             .min()
+        return [flip, nextSlot].compactMap { $0 }.min()
     }
 }

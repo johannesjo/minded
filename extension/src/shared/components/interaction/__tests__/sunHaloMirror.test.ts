@@ -222,8 +222,17 @@ describe("the widget sun's halo mirrors the rule (Android ↔ iOS)", () => {
       "private fun PromptCard(",
       "private fun skyFor(",
     );
-    expect(androidCard).toMatch(/drawableFor\(phase,\s*onOwnSky\s*=\s*true\)/);
+    // Both faces pick their image through sunImage (tonight's phased moon or
+    // the vector face), which must hand onOwnSky through to the drawable.
+    expect(androidCard).toMatch(/sunImage\([^)]*onOwnSky\s*=\s*true\)/);
     expect(androidBare).not.toMatch(/onOwnSky/);
+    expect(
+      sliceBetween(
+        kotlin,
+        "private fun sunImage(",
+        "private fun descriptionFor(",
+      ),
+    ).toMatch(/drawableFor\(phase,\s*onOwnSky\)/);
 
     // iOS: same split, between the systemMedium card and the systemSmall sun.
     const swift = read(IOS_WIDGET);
