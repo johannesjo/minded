@@ -157,11 +157,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     screenStateHandler.postDelayed({
                         restoreOverlayAfterUnlock()
                     }, SCREEN_ON_CHECK_DELAY_MS)
-                    screenStateHandler.removeCallbacks(maybeRingBell)
-                    screenStateHandler.postDelayed(maybeRingBell, BELL_AFTER_UNLOCK_DELAY_MS)
+                    scheduleBellCheck()
                 }
             }
         }
+    }
+
+    /**
+     * Check the bell once the unlock has settled. Idempotent: both this
+     * service's receiver and MyAccessibilityService report the same unlock
+     * (see [onUnlockSeen]), and the second report just restarts the delay.
+     */
+    private fun scheduleBellCheck() {
+        screenStateHandler.removeCallbacks(maybeRingBell)
+        screenStateHandler.postDelayed(maybeRingBell, BELL_AFTER_UNLOCK_DELAY_MS)
     }
 
     private val maybeRingBell = Runnable {
@@ -399,6 +408,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             return START_STICKY
         }
         
+        if (intent.getBooleanExtra(INTENT_EXTRA_UNLOCKED, false)) {
+            scheduleBellCheck()
+            return START_STICKY
+        }
+
         // Check if this is a hide overlay request from accessibility service
         if (intent.getBooleanExtra(MyAccessibilityService.INTENT_EXTRA_HIDE_OVERLAY, false)) {
             Log.v(logTag, "onStartCommand() - hiding all overlays due to app backgrounding")
@@ -1217,6 +1231,28 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         const val INTENT_EXTRA_APP_NAME = "INTENT_EXTRA_APP_NAME"
         const val INTENT_EXTRA_COMMAND_SHOW_OVERLAY = "INTENT_EXTRA_COMMAND_SHOW_OVERLAY"
         const val INTENT_EXTRA_COMMAND_HIDE_OVERLAY = "INTENT_EXTRA_COMMAND_HIDE_OVERLAY"
+        private const val INTENT_EXTRA_UNLOCKED = "INTENT_EXTRA_UNLOCKED"
+
+        /**
+         * An unlock as MyAccessibilityService saw it. This service's own
+         * USER_PRESENT receiver only hears unlocks while it is running, and
+         * nothing guarantees that between interventions - so the always-on
+         * accessibility service reports them too, starting this service when
+         * it isn't up, so the bell never silently misses an unlock. Main thread.
+         */
+        internal fun onUnlockSeen(context: Context) {
+            instance?.let {
+                it.scheduleBellCheck()
+                return
+            }
+            val intent = Intent(context, OverlayControllerService::class.java)
+                .putExtra(INTENT_EXTRA_UNLOCKED, true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
 
         public enum class OverlayName {
             INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY, SLEEP_WIND_DOWN_OVERLAY, MINDFULNESS_BELL_OVERLAY

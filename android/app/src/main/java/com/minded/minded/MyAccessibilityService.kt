@@ -356,6 +356,13 @@ class MyAccessibilityService : AccessibilityService() {
             if (keyguard?.isKeyguardLocked == true) return
             Log.d(TAG, "Screen on/unlock (device unlocked) - triggering polling burst")
             hybridDetector?.triggerPollingBurst()
+            if (intent?.action == Intent.ACTION_USER_PRESENT) {
+                try {
+                    OverlayControllerService.onUnlockSeen(this@MyAccessibilityService)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
+                }
+            }
         }
     }
 

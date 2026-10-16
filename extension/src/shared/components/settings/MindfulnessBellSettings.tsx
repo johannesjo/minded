@@ -1,4 +1,4 @@
-import { createSignal, JSX, Show } from "solid-js";
+import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import type { MindfulnessBellPerDay } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
@@ -12,7 +12,10 @@ import {
   bellLastCheckLabel,
   bellLastUnlockLabel,
 } from "./mindfulnessBellLastCheck";
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
+import {
+  ANDROID_EV_RESUME,
+  androidInterface,
+} from "@src/dataInterface/android/androidInterface";
 import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import styles from "./SoundSettings.module.scss";
 import bellStyles from "./MindfulnessBellSettings.module.scss";
@@ -33,13 +36,29 @@ export const MindfulnessBellSettings = (props: {
     props.initialPerDay ?? DEFAULT_BELL_PER_DAY,
   );
   // What the last due bell did, so a bell that's never heard can be understood.
-  const lastCheck = IS_ANDROID
-    ? bellLastCheckLabel(androidInterface.getMindfulnessBellLastCheck?.())
-    : undefined;
+  const readLastCheck = () =>
+    IS_ANDROID
+      ? bellLastCheckLabel(androidInterface.getMindfulnessBellLastCheck?.())
+      : undefined;
   // And what it made of the last unlock, so "never reached" shows too.
-  const lastUnlock = IS_ANDROID
-    ? bellLastUnlockLabel(androidInterface.getMindfulnessBellLastUnlock?.())
-    : undefined;
+  const readLastUnlock = () =>
+    IS_ANDROID
+      ? bellLastUnlockLabel(androidInterface.getMindfulnessBellLastUnlock?.())
+      : undefined;
+  const [lastCheck, setLastCheck] = createSignal(readLastCheck());
+  const [lastUnlock, setLastUnlock] = createSignal(readLastUnlock());
+
+  // Unlocks happen while the app is away: re-read on return, or a settings
+  // page left open across a lock/unlock keeps showing what it saw on mount.
+  onMount(() => {
+    if (!IS_ANDROID) return;
+    const refresh = () => {
+      setLastCheck(readLastCheck());
+      setLastUnlock(readLastUnlock());
+    };
+    window.addEventListener(ANDROID_EV_RESUME, refresh);
+    onCleanup(() => window.removeEventListener(ANDROID_EV_RESUME, refresh));
+  });
 
   const toggle = async () => {
     const newValue = !enabled();
@@ -80,11 +99,11 @@ export const MindfulnessBellSettings = (props: {
             aria-label="How often the bell rings"
           />
           <span>{bellPerDayLabel(perDay())}</span>
-          <Show when={lastCheck}>
-            <span class={bellStyles.lastCheck}>{lastCheck}</span>
+          <Show when={lastCheck()}>
+            <span class={bellStyles.lastCheck}>{lastCheck()}</span>
           </Show>
-          <Show when={lastUnlock}>
-            <span class={bellStyles.lastCheck}>{lastUnlock}</span>
+          <Show when={lastUnlock()}>
+            <span class={bellStyles.lastCheck}>{lastUnlock()}</span>
           </Show>
         </div>
       </Show>
