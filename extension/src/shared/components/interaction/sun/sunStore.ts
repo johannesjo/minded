@@ -191,7 +191,22 @@ export const isShellSunInteractive = (
   isHandoffInFlight: boolean,
 ): boolean => role === "interactive" && !isHandoffInFlight;
 
+/**
+ * Where the home-screen widget's sun stood when it was tapped, as an arriving
+ * settle (sunArriveSettleAt: viewport fractions + the widget disc's size). Set
+ * once, on a widget cold start, so the shell disc's first paint is *on the
+ * widget's sun* and the rise into the interaction glides from there - one sun
+ * moving from the home screen into the app, not the widget sun vanishing and a
+ * second one rising from the bottom bar. Only ever read while the role is still
+ * "companion" (the beat before the interaction claims the disc), and cleared as
+ * soon as the role moves on, so the companion's own rest is never displaced.
+ */
+const [getWidgetArrivalSettle, setWidgetArrivalSettle] =
+  createSignal<SunSettle | null>(null);
+
 export {
+  getWidgetArrivalSettle,
+  setWidgetArrivalSettle,
   getSunRole,
   setSunRole,
   getIsSunHandoffInFlight,
@@ -225,6 +240,12 @@ export {
  */
 export const getSunSettleForCurrentRole = (): SunSettle | null => {
   const role = getSunRole();
+  // A widget cold start: rest on the widget's sun until the interaction lifts
+  // it (see getWidgetArrivalSettle).
+  if (role === "companion") {
+    const arrival = getWidgetArrivalSettle();
+    if (arrival) return arrival;
+  }
   // The daily-questions answering phase rests exactly where the companion does
   // (the bottom bar), so entering the flow from the dashboard moves nothing -
   // only the orbit dots fade in. It leaves that rest on success, below.

@@ -58,9 +58,17 @@ an unknown line falls through to the normal open.
   user's wallpaper. See `docs/sun-halo.md`.
 - `SunWidgetPhase.swift` - the pure, clock-driven day/night decision (the Swift twin
   of the Android `SunWidgetPhase.kt`): the sun by day, the moon by night, by the real
-  local hour - **not** the system colour scheme.
-- `WidgetSky.swift` - the card's time-of-day sky for a local hour (the Swift twin of
-  `WidgetSky.kt`), stepping through the app's ambient keyframes on whole hours.
+  sun (`WidgetSun`; the local hour only as the no-location fallback) - **not** the
+  system colour scheme.
+- `WidgetSky.swift` - the card's time-of-day sky (the Swift twin of `WidgetSky.kt`),
+  stepping through the app's ambient keyframes as the real sun moves.
+- `WidgetSun.swift` - the true sky: the Swift port of the app's `solarSky.ts`, so the
+  moon, the dark sky and the wordless card arrive at the real dusk, like the app.
+  `WidgetTimeZones.swift` is its generated time zone → place table (regenerate with
+  `extension/scripts/generate-timezone-coordinates.mjs`; `widgetSolarMirror.test.ts`
+  pins both to the TS).
+- `Newsreader-Regular.ttf` - the app's serif voice, pinned to a static Regular from
+  the web font by `scripts/gen_widget_font.py`, registered via `UIAppFonts`.
 - `WidgetPrompts.swift` - the curated waking-hours prompt pool and the deterministic
   15-minute-slot rotation (the Swift twin of `WidgetPrompts.kt`; the jest parity test
   `widgetPromptsMirror.test.ts` pins both to the TS pools and to each other).
@@ -129,32 +137,39 @@ link, it shares no data with the app.
    shell into the iOS app).
 2. Run the app once so the widget extension installs.
 3. Long-press the Home Screen ▸ **+** ▸ search "minded" ▸ add the small sun and the
-   medium card. (Home Screen only - see the Lock Screen note below.)
+   medium card; and on the Lock Screen (Customize ▸ add widget) the circular sun.
 4. **Tap the sun** → the app opens and the sun interaction begins, exactly like
    tapping the in-app dashboard sun. Tap again while the app is already open (warm
    start) → it should re-open the overlay too.
 5. **Tap the card** → the interaction opens on the exact line the card was showing
    (a NOTICE cue → that NOTICE screen, a "How about…" line → that ACTION_ADVICE),
    on both cold and warm starts.
-6. Confirm day/night tracks the **clock, not the theme**: set the device time past a
-   boundary (e.g. 12:00 → 23:00) and check the sun gives way to the moon and back -
-   and that the card's sky steps with the hour and goes wordless at night.
-   Toggling system Dark Mode alone must _not_ change any of it.
-7. On iOS 18+, check the card under a **tinted/dark Home Screen** (long-press ▸
-   Edit ▸ Customize): the system re-renders widgets in those modes and may darken
-   the container - make sure the near-black line doesn't land on a darkened sky.
+6. Confirm day/night tracks the **real sun, not the theme**: set the device time
+   past today's dusk (in a placed time zone, e.g. Europe/Berlin - in June that's
+   ~22:00, in December ~16:30) and check the sun gives way to the moon and back,
+   in step with the app - and that the card's sky steps through the day and goes
+   wordless at night. Toggling system Dark Mode alone must _not_ change any of it.
+   Wait across a quarter hour with the card visible: the line should cross-fade.
+7. On iOS 18+, check both faces under a **tinted and a clear Home Screen**
+   (long-press ▸ Edit ▸ Customize): there the sky is dropped and the sun becomes the
+   monochrome `SunGlyph` (a solid disc by day, a hollow one at night), with the line
+   in the system's tint. Check StandBy (landscape, charging) with the small sun too.
+8. The card's line should be set in **Newsreader** (the app's serif), not New York -
+   if it isn't, the font didn't register (`UIAppFonts` / the target's resources).
 
 You can validate the _shared_ trigger with zero native build in the browser
 extension: `npm start`, then load `#/?sun=open`.
 
-## Lock Screen (deferred)
+## Lock Screen, tinted and clear Home Screens: the glyph
 
-The widget ships Home Screen families only (`systemSmall`, `systemMedium`). A
-Lock Screen `accessoryCircular` variant was deliberately left out: accessory widgets render in the system's
-_vibrant_ mode, which discards colour and rebuilds the view from its **alpha
-channel**. Our near-opaque white disc + low-alpha bloom would collapse to a flat
-tinted blob, not a sun. A good Lock Screen sun needs a purpose-built alpha glyph
-designed for vibrant mode - worth doing later, not worth shipping looking broken.
+Accessory widgets (the Lock Screen's `accessoryCircular`) render in the system's
+_vibrant_ mode, and a tinted or clear Home Screen (iOS 18) in _accented_ mode. Both
+discard colour and rebuild the view from its **alpha channel** - the colour sun's
+near-opaque disc + low-alpha bloom would collapse to a flat tinted blob. So those
+modes draw `SunGlyph` instead: a solid disc inside a faint ring by day, a hollow,
+faintly filled disc at night - the one shift everyone reads as the world, at the
+same 2/3-of-the-tile size as the colour sun. The card keeps its line over the
+glyph, without the sky (the system removes it there anyway).
 
 ## Cold-start open + the launch fade
 

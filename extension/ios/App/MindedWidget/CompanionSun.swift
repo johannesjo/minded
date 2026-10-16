@@ -46,6 +46,9 @@ struct CompanionSun: View {
     /// announce itself. Behind the card is our own sky, so there it glows white,
     /// exactly as it does in app. The moon ignores this: it never warms.
     var onOwnSky: Bool = false
+    /// Tonight's lit lune (`WidgetMoon.luneOutline`, disc units 0..100) - the
+    /// moon's night side is everything else on the disc. Nil: a full moon.
+    var moonOutline: [CGPoint]? = nil
 
     var body: some View {
         GeometryReader { geo in
@@ -163,11 +166,38 @@ struct CompanionSun: View {
                     .position(x: m.cx * diameter, y: m.cy * diameter)
             }
         }
+        .overlay(moonShadow(diameter: diameter))
         .frame(width: diameter, height: diameter)
         // The maria fall to zero inside the rim by construction, but clip anyway:
         // .position on a scaled child is the one place a rounding slip would paint
         // outside the disc, and on a transparent widget that would be visible.
         .clipShape(Circle())
+    }
+
+    // The moon's night side, the app's way (moonShadow.ts): everything but the
+    // lit lune, in a dim cool earthshine that leaves the dark limb and maria
+    // faintly readable, with a soft terminator. Inside the disc clip (above),
+    // so it never touches the halo.
+    @ViewBuilder
+    private func moonShadow(diameter: CGFloat) -> some View {
+        if let outline = moonOutline {
+            let unit = diameter / 100
+            Path { path in
+                path.addRect(CGRect(x: -20 * unit, y: -20 * unit, width: 140 * unit, height: 140 * unit))
+                path.addLines(outline.map { CGPoint(x: $0.x * unit, y: $0.y * unit) })
+                path.closeSubpath()
+            }
+            .fill(
+                rgb(
+                    Double(WidgetMoon.earthshineRGB.r),
+                    Double(WidgetMoon.earthshineRGB.g),
+                    Double(WidgetMoon.earthshineRGB.b),
+                    WidgetMoon.earthshineOpacity
+                ),
+                style: FillStyle(eoFill: true)
+            )
+            .blur(radius: WidgetMoon.blurStdDeviation * unit)
+        }
     }
 
     // The day sun's soft bloom / halo: gentle, low-alpha, fading to nothing at the

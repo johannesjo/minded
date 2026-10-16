@@ -902,10 +902,14 @@ export const Sun: Component<SunProps> = (props) => {
     // This anchor is now the disc's rest, so a drag release snaps back here
     // (the interactive shell sun rests on its placeholder, not the base).
     setRestOffset(target);
-    // The rise out of the companion (dashboard → intervention) glides slower.
-    const duration = shouldResetTerminalStateForSettle(fromSettle)
-      ? COMPANION_GLIDE_MS
-      : GLIDE_DURATION_MS;
+    // The rise out of the companion glides slower; an arrival from outside the
+    // app (discPx without warmth: the widget's sun) slowest, like exitSettle's.
+    const duration =
+      fromSettle?.discPx != null && !fromSettle.warmth
+        ? ARRIVE_FROM_CORNER_MS
+        : shouldResetTerminalStateForSettle(fromSettle)
+          ? COMPANION_GLIDE_MS
+          : GLIDE_DURATION_MS;
 
     const onSettled = () => {
       // The glide has landed; the disc is grabbable again (the breath loop that

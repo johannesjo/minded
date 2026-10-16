@@ -302,34 +302,36 @@ Everything extends what exists; nothing new is invented.
   undersample the dither and re-band; these also cut the launcher-side
   decode ~5×). Like the app's ambient background the sky moves through the
   day: one render per `AMBIENT_SKY_KEYFRAMES` entry (`skyTimeline.ts`),
-  stepped on whole hours by `WidgetSky.kt` (dawn 06 → morning 09 → midday 13
-  → afternoon 17 → dusk 18 → the dark night sky at 19). Text is 15sp
-  platform serif (widgets can't embed Newsreader; the serif register
-  carries), colored `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) - only
-  ever drawn on the light pastel day skies, by construction (see below).
-  `cornerRadius(24dp)` on API 31+ (square below). Sky follows the clock via
+  stepped by `WidgetSky.kt` along the app's sun-timed palette clock
+  (`WidgetSun`, the port of `solarSky.ts`: dawn → morning → midday →
+  afternoon → dusk → the dark night sky at the real dusk; the fixed 06/09/13/
+  17/18/19 hours only without a place). Text is platform serif on Android
+  (Glance can't embed Newsreader; the serif register carries) and the bundled
+  Newsreader on iOS, 15sp on the smallest card growing to 19sp on a large one,
+  colored `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) - only ever drawn
+  on the light pastel day skies, by construction (see below). The launcher's
+  own widget corner radius on API 31+ (square below). Sky follows the sun via
   `WidgetSky`/`SunWidgetPhase`, never the system theme.
 - **`WidgetPrompts.kt`** (new, `widget/` package): the curated waking-hours
   pool (`WAKING_PROMPTS`), plus pure `promptForMoment(epochDay, hour, minute)`,
-  `minutesUntilNextChange`, and `isWidgetSafeLine` (the tap's allow-list) -
+  `nextChangeMillis`, and `isWidgetSafeLine` (the tap's allow-list) -
   R-free, JVM-unit-tested like `SunWidgetPhase` (`WidgetPromptsTest`). The
-  wordless-night window is built from `SunWidgetPhase`'s own
-  `DAY_START`/`NIGHT_START` constants, so it *is* the moon's window and can't
-  drift. Tests enforce the guardrails mechanically: determinism, ≤70 chars,
+  wordless-night window is the same `isNight` that picks the moon (the real
+  sun's, `WidgetSun`), so it *is* the moon's window and can't drift. Tests
+  enforce the guardrails mechanically: determinism, ≤70 chars,
   full-pool one-step-per-15-min-slot rotation with no adjacent repeats, the
   15-minute day cadence with a single night-spanning alarm, night returns
   `null`, text-iff-light-sky, and the allow-list. `WidgetSky` and
-  `SunWidgetPhase` are pure `forHour` lookups (the receiver refreshes on the
-  prompt's cadence, which subsumes their whole-hour steps, so neither needs a
-  schedule of its own); the wrap-around boundary walk in `clockBoundaries.kt`
-  is used only for that night-spanning alarm.
+  `SunWidgetPhase` are pure lookups on `WidgetSun`'s moment (the receiver
+  refreshes on the prompt's cadence or the real dusk/dawn, whichever comes
+  first, so neither needs a schedule of its own).
 - **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact,
-  non-wake alarm now arms at the next 15-minute prompt step - the finest
-  cadence, which contains the sky steps and the sun's phase flips by
-  construction - and a single alarm spans the wordless night. Non-wake (RTC)
-  means it only fires while the device is already awake, i.e. right when
-  someone's looking. Same pattern, same permissions (none). DST drift (±1h
-  twice a year, self-correcting) is documented and accepted.
+  non-wake alarm now arms at the next 15-minute prompt step or the real
+  dusk, whichever comes first (`nextChangeMillis`), and a single alarm spans
+  the wordless night to the real dawn. Non-wake (RTC) means it only fires
+  while the device is already awake, i.e. right when someone's looking. Same
+  pattern, same permissions (none). The trigger is absolute time from the
+  zone's rules, so DST no longer lands it an hour off.
 - **`app_widget_info.xml`**: target 3×2 on API 31+, and `minWidth/minHeight`
   170×110dp so pre-31 launchers also default to a 3×2 drop; `minResize`
   40dp keeps 1×1 reachable and already-placed widgets keep their spans.

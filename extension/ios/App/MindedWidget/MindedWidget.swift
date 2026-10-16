@@ -33,6 +33,7 @@
 
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - Timeline (one entry per face change)
 
@@ -41,15 +42,26 @@ struct SunEntry: TimelineEntry {
     let phase: SunWidgetPhase
     let sky: WidgetSky
     let prompt: String?
+    /// Tonight's lit lune (`WidgetMoon`), nil by day and at (near) full moon.
+    let moonOutline: [CGPoint]?
 }
 
 private func sunEntry(at date: Date) -> SunEntry {
-    let hour = Calendar.current.component(.hour, from: date)
+    // One read of the light drives the sun/moon, the sky, and whether the card
+    // carries words, so the three can never disagree (`WidgetSun`: the real sun,
+    // like the app; the fixed clock only for a zone with no place).
+    let moment = WidgetSun.moment(at: date)
     return SunEntry(
         date: date,
-        phase: SunWidgetPhase.forHour(hour),
-        sky: WidgetSky.forHour(hour),
-        prompt: WidgetPrompts.prompt(at: date)
+        phase: SunWidgetPhase.forMoment(moment),
+        sky: WidgetSky.forMoment(moment),
+        prompt: WidgetPrompts.prompt(at: date),
+        moonOutline: moment.isNight
+            ? WidgetMoon.luneOutline(
+                WidgetMoon.phase(at: date),
+                isSouthernHemisphere: moment.isSouthernHemisphere
+            )
+            : nil
     )
 }
 
@@ -90,29 +102,50 @@ struct SunProvider: TimelineProvider {
 
 struct MindedWidgetEntryView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
     var entry: SunProvider.Entry
 
     var body: some View {
-        // Day/night and the sky come from the entry's clock-derived values, not
+        // Day/night and the sky come from the entry's light (the real sun), not
         // the system colour scheme - so the moon shows at actual night, not
         // whenever the phone happens to be in dark mode (matches Android).
         switch family {
+        case .accessoryCircular:
+            // The Lock Screen: always drawn in the system's vibrant mode, which
+            // keeps only alpha - so the purpose-built glyph, never the colour sun.
+            SunGlyphWidget(entry: entry)
         case .systemMedium:
-            PromptCard(entry: entry)
+            if renderingMode == .fullColor {
+                PromptCard(entry: entry)
+            } else {
+                // A tinted / clear Home Screen strips the sky and recolours
+                // everything from its alpha: the gradient sun would collapse to a
+                // flat blob, so the card keeps its words over the glyph instead.
+                PromptCard(entry: entry, glyph: true)
+            }
         default:
-            SunOnly(entry: entry)
+            if renderingMode == .fullColor {
+                SunOnly(entry: entry)
+            } else {
+                SunGlyphWidget(entry: entry)
+            }
         }
     }
 }
 
-/// The wordless floating sun (`systemSmall`) - unchanged from v1.
+/// The wordless floating sun (`systemSmall`).
 private struct SunOnly: View {
     var entry: SunEntry
 
     var body: some View {
-        CompanionSun(isNight: entry.phase.isNight)
-            // A little breathing room so the soft bloom isn't clipped by the tile.
-            .padding(12)
+        CompanionSun(isNight: entry.phase.isNight, moonOutline: entry.moonOutline)
+            .id(entry.phase.isNight)
+            .softWidgetTransition()
+            // The sun claims three quarters of the tile, like Android's bare sun
+            // (SUN_ONLY_FRACTION) - the bloom fades to nothing at that edge, so
+            // nothing clips. With the system content margins disabled (see the
+            // configuration) this is the same on every iOS version.
+            .padding(20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // The whole widget is the tap target - open the shared sun flag.
             .widgetURL(openSunURL(line: nil))
@@ -125,37 +158,120 @@ private struct SunOnly: View {
 /// the intervention layout (the WidgetKit twin of Android's PromptCard).
 private struct PromptCard: View {
     var entry: SunEntry
+    /// A tinted / clear Home Screen: no sky, no colour - the glyph sun, and the
+    /// line in the system's own (tinted) foreground.
+    var glyph: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
             if let prompt = entry.prompt {
                 Text(prompt)
-                    // The app's question voice is a serif (Newsreader); widgets
-                    // can't ship web fonts, so the platform serif (New York)
-                    // carries the same register - like Android's platform serif.
-                    .font(.system(size: 15, design: .serif))
+                    // The app's own serif voice (Newsreader - displayVoice()),
+                    // bundled with the widget as a static Regular
+                    // (scripts/gen_widget_font.py).
+                    .font(promptFont)
                     // --c-fg-full-emphasis (light theme): rgba(0,0,0,.85). Only
                     // ever rendered on the light pastel day skies - night has no
                     // text, by construction (see WidgetPrompts) - and pinned so
-                    // system dark mode can't invert it off its sky.
-                    .foregroundColor(Color.black.opacity(0.85))
+                    // system dark mode can't invert it off its sky. Tinted, the
+                    // system recolours it, so leave it the primary style there.
+                    .foregroundStyle(
+                        glyph
+                            ? AnyShapeStyle(HierarchicalShapeStyle.primary)
+                            : AnyShapeStyle(Color.black.opacity(0.85))
+                    )
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
+                    // A new line every quarter hour - let it cross-fade in, the
+                    // way every in-app text change softens (iOS 17+).
+                    .contentTransition(.opacity)
+                    .id(prompt)
+                    .softWidgetTransition()
             }
-            // On our own sky the sun's halo is white, not amber (THE HALO RULE -
-            // see CompanionSun's `onOwnSky`); the amber is for the small widget,
-            // which floats on the user's wallpaper.
-            CompanionSun(isNight: entry.phase.isNight, onOwnSky: true)
-                .frame(width: 54, height: 54)
+            Group {
+                if glyph {
+                    SunGlyph(isNight: entry.phase.isNight)
+                } else {
+                    // On our own sky the sun's halo is white, not amber (THE HALO
+                    // RULE - see CompanionSun's `onOwnSky`); the amber is for the
+                    // small widget, which floats on the user's wallpaper.
+                    CompanionSun(
+                        isNight: entry.phase.isNight,
+                        onOwnSky: true,
+                        moonOutline: entry.moonOutline
+                    )
+                }
+            }
+            .id(entry.phase.isNight)
+            .softWidgetTransition()
+            .frame(width: 54, height: 54)
         }
-        .padding(8)
+        // Matches Android's card padding (12dp); the system content margins are
+        // disabled on the configuration so this is the whole inset.
+        .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // Carry the exact line being shown so the tap lands on that same
         // interaction (nil at night → a plain sun-open).
         .widgetURL(openSunURL(line: entry.prompt))
-        .widgetSkyBackground(skyImageName(entry.sky))
+        .widgetSkyBackground(glyph ? nil : skyImageName(entry.sky))
     }
 }
+
+/// The sun as a glyph, for every surface where the system keeps only alpha -
+/// the Lock Screen (vibrant), and a tinted or clear Home Screen (accented). The
+/// colour sun's soft gradients would flatten into a blob there; this keeps the
+/// one shift everyone reads as the world: a solid disc by day, a hollow, faintly
+/// filled one by night. Same 2/3-of-the-tile disc as the colour sun, so the two
+/// occupy the same slot.
+private struct SunGlyph: View {
+    let isNight: Bool
+
+    var body: some View {
+        GeometryReader { geo in
+            let side = min(geo.size.width, geo.size.height)
+            let disc = side * 0.667
+            ZStack {
+                if isNight {
+                    Circle().fill(Color.white.opacity(0.35))
+                    Circle().strokeBorder(Color.white, lineWidth: max(1.5, disc * 0.07))
+                } else {
+                    // A faint ring of light around the disc - the glyph's halo.
+                    Circle()
+                        .strokeBorder(Color.white.opacity(0.35), lineWidth: max(1, side * 0.04))
+                        .frame(width: side * 0.86, height: side * 0.86)
+                    Circle().fill(Color.white).frame(width: disc, height: disc)
+                }
+            }
+            .frame(width: isNight ? disc : side, height: isNight ? disc : side)
+            .frame(width: geo.size.width, height: geo.size.height)
+            .widgetAccentable()
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+}
+
+/// The small widget and the Lock Screen circle when only the glyph can show.
+private struct SunGlyphWidget: View {
+    @Environment(\.widgetFamily) private var family
+    var entry: SunEntry
+
+    var body: some View {
+        SunGlyph(isNight: entry.phase.isNight)
+            .id(entry.phase.isNight)
+            .softWidgetTransition()
+            .padding(family == .accessoryCircular ? 4 : 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .widgetURL(openSunURL(line: nil))
+            .widgetTransparentContainerBackground()
+    }
+}
+
+/// The card's line in Newsreader, the app's serif voice. Should the bundled font
+/// ever fail to register, keep the register with the platform serif (New York)
+/// rather than dropping to the system sans.
+private let promptFont: Font = UIFont(name: "Newsreader-Regular", size: 16) != nil
+    ? .custom("Newsreader-Regular", size: 16)
+    : .system(size: 15, design: .serif)
 
 /// Asset-catalog name for a sky face (same names as the Android drawables; the
 /// PNGs are generated together by android/tools/gen_loading_sky.py).
@@ -203,12 +319,15 @@ struct MindedSunWidget: Widget {
         }
         .configurationDisplayName("minded – the sun")
         .description("Open the sun for a mindful moment.")
-        // Home Screen only. A Lock Screen (`accessoryCircular`) variant
-        // would render in the system's *vibrant* mode, which discards colour and
-        // rebuilds the view from its alpha - our near-opaque white disc + low-alpha
-        // bloom would collapse to a flat tinted blob, not a sun. That wants a
-        // purpose-built alpha glyph; deferred rather than shipped looking broken.
-        .supportedFamilies([.systemSmall, .systemMedium])
+        // The faces lay out their own insets, matching Android - without this,
+        // iOS 17+ adds ~16pt system margins on top and the sun shrinks by a
+        // different amount on each OS version.
+        .contentMarginsDisabled()
+        // Home Screen faces, plus the Lock Screen circle. The Lock Screen renders
+        // in the system's vibrant mode, which keeps only alpha - so it draws the
+        // purpose-built `SunGlyph`, never the colour sun (which would collapse to
+        // a flat blob there).
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular])
     }
 }
 
@@ -230,15 +349,27 @@ private extension View {
     /// The card's sky, edge to edge. The renders are vertical-only gradients, so
     /// stretching to the widget's aspect is the look (exactly how Android fills
     /// the card with FillBounds); the system's own shape mask rounds the corners
-    /// on both OS generations.
+    /// on both OS generations. Nil (a tinted / clear Home Screen) is no sky.
     @ViewBuilder
-    func widgetSkyBackground(_ imageName: String) -> some View {
-        if #available(iOSApplicationExtension 17.0, *) {
-            self.containerBackground(for: .widget) {
-                Image(imageName).resizable()
+    func widgetSkyBackground(_ imageName: String?) -> some View {
+        if let imageName = imageName {
+            if #available(iOSApplicationExtension 17.0, *) {
+                self.containerBackground(for: .widget) {
+                    Image(imageName).resizable()
+                }
+            } else {
+                self.background { Image(imageName).resizable() }
             }
         } else {
-            self.background { Image(imageName).resizable() }
+            widgetTransparentContainerBackground()
         }
+    }
+
+    /// Softness for face changes between timeline entries: iOS 17+ animates
+    /// from one entry to the next, and an opacity cross-fade is the in-app way
+    /// every surface changes - never a hard cut. Earlier iOS swaps snapshots
+    /// without animation, so this is simply inert there.
+    func softWidgetTransition() -> some View {
+        transition(.opacity)
     }
 }

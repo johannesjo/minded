@@ -139,29 +139,67 @@ class WidgetPromptsTest {
         assertFalse(WidgetPrompts.isWidgetSafeLine("/?sun=open"))
     }
 
+    // The fixed-clock fallback (a zone with no place): the same one schedule.
+    private val utc = java.time.ZoneId.of("UTC")
+    private fun utcAt(h: Int, m: Int): Long =
+        java.time.ZonedDateTime.of(2026, 6, 21, h, m, 0, 0, utc).toInstant().toEpochMilli()
+    private fun minutesUntilNextChange(h: Int, m: Int): Int =
+        ((WidgetPrompts.nextChangeMillis(utcAt(h, m), utc) - utcAt(h, m)) / 60_000L).toInt()
+
     @Test
     fun `by day the schedule steps to the next 15-minute slot`() {
-        assertEquals(15, WidgetPrompts.minutesUntilNextChange(9, 0))
-        assertEquals(8, WidgetPrompts.minutesUntilNextChange(9, 7))
-        assertEquals(1, WidgetPrompts.minutesUntilNextChange(9, 14))
+        assertEquals(15, minutesUntilNextChange(9, 0))
+        assertEquals(8, minutesUntilNextChange(9, 7))
+        assertEquals(1, minutesUntilNextChange(9, 14))
         // The last day slot steps onto night (the moon) at 19:00.
-        assertEquals(10, WidgetPrompts.minutesUntilNextChange(18, 50))
+        assertEquals(10, minutesUntilNextChange(18, 50))
     }
 
     @Test
     fun `across the night a single alarm spans to the first line of day`() {
         // 05:30 -> first line at day-start 06:00.
-        assertEquals(30, WidgetPrompts.minutesUntilNextChange(5, 30))
+        assertEquals(30, minutesUntilNextChange(5, 30))
         // 22:00 -> day-start 06:00 next day = 8 hours.
-        assertEquals(8 * 60, WidgetPrompts.minutesUntilNextChange(22, 0))
+        assertEquals(8 * 60, minutesUntilNextChange(22, 0))
         // 19:00 (night start) -> day-start 06:00 next day = 11 hours.
-        assertEquals(11 * 60, WidgetPrompts.minutesUntilNextChange(19, 0))
+        assertEquals(11 * 60, minutesUntilNextChange(19, 0))
     }
 
     @Test
     fun `landing exactly on a slot edge schedules the next one, never zero`() {
         // On a quarter-hour by day -> the following slot, 15 minutes out.
-        assertEquals(15, WidgetPrompts.minutesUntilNextChange(6, 0))
-        assertEquals(15, WidgetPrompts.minutesUntilNextChange(10, 30))
+        assertEquals(15, minutesUntilNextChange(6, 0))
+        assertEquals(15, minutesUntilNextChange(10, 30))
+    }
+
+    @Test
+    fun `the card goes wordless exactly when the real sun says night`() {
+        // The caller passes the moment's own night (WidgetSun), so the text
+        // window is the moon's window even when dusk isn't 19:00.
+        assertNull(WidgetPrompts.promptForMoment(day, 17, 30, isNight = true))
+        assertTrue(WidgetPrompts.promptForMoment(day, 20, 30, isNight = false) in WidgetPrompts.WAKING_PROMPTS)
+    }
+
+    @Test
+    fun `by day the next change is the next slot, or the real dusk if sooner`() {
+        val berlin = java.time.ZoneId.of("Europe/Berlin")
+        val at = { h: Int, m: Int ->
+            java.time.ZonedDateTime.of(2026, 12, 21, h, m, 0, 0, berlin).toInstant().toEpochMilli()
+        }
+        // Midday: the next quarter-hour.
+        assertEquals(at(12, 15), WidgetPrompts.nextChangeMillis(at(12, 7), berlin))
+        // Just before a Berlin December dusk (~16:25): the flip comes first.
+        val dusk = WidgetSun.nextNightFlip(at(16, 17), berlin)!!
+        assertEquals(dusk, WidgetPrompts.nextChangeMillis(at(16, 17), berlin))
+        assertTrue(dusk < at(16, 30))
+    }
+
+    @Test
+    fun `across the night a single alarm spans to the real dawn`() {
+        val berlin = java.time.ZoneId.of("Europe/Berlin")
+        val night = java.time.ZonedDateTime.of(2026, 12, 21, 22, 0, 0, 0, berlin).toInstant().toEpochMilli()
+        val next = WidgetPrompts.nextChangeMillis(night, berlin)
+        assertEquals(WidgetSun.nextNightFlip(night, berlin), next)
+        assertFalse(WidgetSun.momentAt(next, berlin).isNight)
     }
 }

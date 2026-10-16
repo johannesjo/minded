@@ -1,5 +1,8 @@
 package com.minded.minded.widget
 
+import java.time.Instant
+import java.time.ZoneId
+
 /**
  * The single quiet line the card-sized companion widget carries above the sun.
  * See docs/widget-prompts-concept.md for the full rationale; the load-bearing
@@ -29,9 +32,10 @@ package com.minded.minded.widget
  *   advances one extra step ([DAILY_STRIDE]) so a habitual same-time-of-day
  *   glance walks the whole pool across days, not a fraction of it.
  * - At night: no words. The moon, alone. A line at 2 a.m. reads as a nudge.
- *   The no-text window is the moon's window *by construction* - it is gated by
- *   [SunWidgetPhase]'s own DAY_START/NIGHT_START, so the near-black text can
- *   never meet the dark sky.
+ *   The no-text window is the moon's window *by construction* - the caller
+ *   passes the same `isNight` that picks the moon and the dark sky (the real
+ *   sun's, WidgetSun; [SunWidgetPhase]'s clock only as the fallback), so the
+ *   near-black text can never meet the dark sky.
  *
  * The lines are copied verbatim from the app's own interaction content
  * (NOTICE_CUES in notice.const.ts, ACTION_ADVICES in actionAdvices.ts), curated
@@ -186,12 +190,18 @@ object WidgetPrompts {
      * [WAKING_PROMPTS].size slots (so no line recurs within a session); at each
      * day boundary it advances [DAILY_STRIDE] so a fixed-time-of-day glance covers
      * the whole pool across days too (see the [DAILY_STRIDE] note).
+     *
+     * [isNight] is the moment's own night - pass the same value that picks the
+     * moon (WidgetSun's real dusk); it defaults to the fixed clock's.
      */
-    fun promptForMoment(epochDay: Long, hour: Int, minute: Int): String? {
+    fun promptForMoment(
+        epochDay: Long,
+        hour: Int,
+        minute: Int,
+        isNight: Boolean = SunWidgetPhase.forHour(hour) == SunWidgetPhase.NIGHT,
+    ): String? {
+        if (isNight) return null
         val h = hour.mod(24)
-        if (h !in SunWidgetPhase.DAY_START until SunWidgetPhase.NIGHT_START) {
-            return null
-        }
         val slotOfDay = (h * 60 + minute.mod(60)) / SLOT_MINUTES
         // Continuous slot count, but advancing DAILY_STRIDE (not SLOTS_PER_DAY)
         // per day so a habitual same-time glance walks the whole pool - see the
@@ -209,20 +219,26 @@ object WidgetPrompts {
     fun isWidgetSafeLine(line: String): Boolean = line in WAKING_PROMPTS
 
     /**
-     * Minutes from the given local time until the displayed line next changes.
-     * By day the line steps every [SLOT_MINUTES]; across the wordless night
-     * nothing changes until the first line reappears at [SunWidgetPhase.DAY_START],
-     * so one alarm spans the night. The day steps are quarter-hour-aligned and
-     * every sky/phase flip lands on a whole hour, so the receiver arms its single
-     * alarm off this schedule alone and still catches them (containment guarded by
-     * WidgetPromptsTest). Always strictly positive - landing exactly on a slot
-     * edge schedules the next one, never an immediate re-fire.
+     * When the card's face next changes after [nowMillis] (epoch ms), timed to
+     * the real sun: by day the next 15-minute line step or the dusk flip,
+     * whichever is first; across the wordless night the dawn that brings the
+     * first line back. The real sun's flips land on any minute, not a slot edge,
+     * so they come from WidgetSun (which is also the fixed clock's, for a zone
+     * with no place - one schedule either way). The sky's
+     * steps between faces ride the 15-minute day cadence (at most one slot late,
+     * on a surface that only repaints offscreen anyway). Always strictly after
+     * [nowMillis]; if the sun never flips within two days (polar night) it
+     * re-checks after a day rather than never.
      */
-    fun minutesUntilNextChange(hour: Int, minute: Int): Int {
-        val h = hour.mod(24)
-        if (h !in SunWidgetPhase.DAY_START until SunWidgetPhase.NIGHT_START) {
-            return minutesUntilNext(intArrayOf(SunWidgetPhase.DAY_START), h, minute)
+    fun nextChangeMillis(nowMillis: Long, zone: ZoneId): Long {
+        val flip = WidgetSun.nextNightFlip(nowMillis, zone)
+        if (WidgetSun.momentAt(nowMillis, zone).isNight) {
+            return flip ?: (nowMillis + 24 * 3_600_000L)
         }
-        return SLOT_MINUTES - minute.mod(SLOT_MINUTES)
+        val local = Instant.ofEpochMilli(nowMillis).atZone(zone)
+        val nextSlot = local.withSecond(0).withNano(0)
+            .plusMinutes((SLOT_MINUTES - local.minute.mod(SLOT_MINUTES)).toLong())
+            .toInstant().toEpochMilli()
+        return if (flip != null) minOf(flip, nextSlot) else nextSlot
     }
 }

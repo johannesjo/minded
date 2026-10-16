@@ -34,13 +34,44 @@ reflects the real hour turns that glance into a tiny re-grounding in the present
 It passes the product's bar cleanly: it states the **present moment, never a
 stale timestamp** (it reads the live local hour), it reflects an **observed fact,
 never an inferred feeling** (the time of day, not "you seem tired"), and it
-carries no count, streak, or budget. The phase is decided from the local hour in
-`SunWidgetPhase` (the sun 6–19, the moon otherwise, matching the app's own
-skyTimeline day/night boundary); the shared receiver refreshes
-with one inexact, non-wake alarm. The card face steps its line every 15 minutes by
-day (`docs/widget-prompts-concept.md`), so that is the schedule it arms; a sun-only
-placement rides along - its own phase still flips just twice a day - and only ever
+carries no count, streak, or budget. The phase follows the **real sun**, exactly
+as the app's does: `WidgetSun` (Kotlin and Swift) ports the app's `solarSky.ts`, so
+night - the moon, the dark sky, the wordless card - begins when the sun is 4° below
+the horizon at the time zone's principal place (the same generated table the app
+reads, `WidgetTimeZones`), and the card's sky steps along the same sun-timed
+palette clock. There is only one sun, so the widget and the app can't disagree
+about whether it's up - a Berlin June evening is still day at 21:00 on both. A
+zone with no place (UTC, Etc/…) falls back to the fixed 06–19 clock, again like the
+app. The shared receiver refreshes with one inexact, non-wake alarm: the next
+15-minute line step by day, or the real dusk/dawn if that comes first
+(`docs/widget-prompts-concept.md`); a sun-only placement rides along and only ever
 repaints while the screen is already on.
+
+### Tonight's moon, not a full one
+
+The app's night companion is tonight's moon - a crescent or a gibbous, its night
+side veiled by earthshine (`lunarPhase.ts`, `moonShadow.ts`). The widget used to
+draw a full moon every night, which made it a second, different moon. `WidgetMoon`
+(Kotlin and Swift) ports the phase and the terminator - the lit lune's outline,
+everything else on the disc in the same `#141e3d @ .7` earthshine under the same
+σ=3 blur, mirrored for the southern sky - so the home screen shows the app's moon.
+Android rasterises it over the moon vector at the size it's shown
+(`WidgetMoonBitmap`; at full moon the plain vector stays); iOS overlays it in
+`CompanionSun`. The glyph faces (Lock Screen, tinted) stay a plain hollow disc.
+
+### The tap is the sun's morph, not a cut
+
+The widget's sun and the app's sun are the same sun, so a tap hands one to the
+other. On Android the tile is marked `appWidgetBackground()`, so the launcher
+expands *that tile* into the app (API 31+), and the widget records where its sun
+sits in the tile (`WidgetSunSpot`); `MainActivity` pairs that with the launcher's
+`Intent.sourceBounds` and passes the sun's on-screen centre and size as
+`&sunFrom=x,y,d`. On a cold start the shell disc's first paint is *on the widget's
+sun* (`widgetArrival.ts` → an arriving settle, white halo - it's arriving onto our
+own sky), and the rise into the interaction glides from there at the slow
+arrival pace. A warm re-tap, or any malformed value, rises from the bottom bar as
+before. iOS gives the app no source rect, so there the system's own widget
+launch zoom carries the hand-off.
 
 It is **presence and invitation**, never an interrupt. It does not detect
 anything, block anything, or fire on its own. You reach for it; it never reaches
@@ -139,7 +170,7 @@ Mirrors the Android shape; only the shell differs. See the folder's `README.md`
 for the one manual Xcode step (creating the Widget Extension target) and how to
 verify.
 
-- **WidgetKit widget** (SwiftUI), Home Screen. `systemSmall` is the pure sun,
+- **WidgetKit widget** (SwiftUI), Home Screen + Lock Screen. `systemSmall` is the pure sun,
   whose day face is drawn with SwiftUI radial gradients (`CompanionSun.swift`),
   colours ported 1:1 from the Android day vector; its night face is the **same
   drawn moon as Android and the in-app `.moon`**
@@ -149,17 +180,19 @@ verify.
   line + the same sun or moon, but passed `onOwnSky: true` so its bloom is white
   - the card paints the app's own sky, so the in-app halo rule applies; see
   `docs/sun-halo.md` and `docs/widget-prompts-concept.md`). Day/night
-  follows the **local clock** (`SunWidgetPhase.swift`, the Swift twin of the
-  Android phase logic), with the timeline pre-placing every face change so the
-  card steps and the sun or moon flips on time - not the system colour scheme.
+  follows the **real sun** (`WidgetSun.swift`, the twin of the Android port),
+  with the timeline pre-placing every face change so the card steps and the sun
+  or moon flips on time - not the system colour scheme. Entries cross-fade
+  (iOS 17+), and the card's line is set in the app's own Newsreader, bundled as
+  a static Regular.
   `.widgetURL(URL("minded://sun"))` is the tap target (the card appends
   `?line=…`). No special entitlement, no App Group - the widget only carries a
   deep link.
-  - **Lock Screen (`accessoryCircular`) deferred:** accessory widgets render in
-    the system's *vibrant* mode, which discards colour and rebuilds the view from
-    its alpha channel - the near-opaque disc + soft bloom collapse to a flat tinted
-    blob. A Lock Screen variant needs a purpose-built alpha glyph, not the colour
-    sun; left for later rather than shipped looking broken.
+  - **Lock Screen (`accessoryCircular`) and tinted/clear Home Screens:** these
+    render in *vibrant*/*accented* mode, which discards colour and rebuilds the
+    view from its alpha channel - the colour sun's near-opaque disc + soft bloom
+    would collapse to a flat tinted blob. So they draw `SunGlyph`, a purpose-built
+    alpha glyph: a solid disc in a faint ring by day, a hollow one at night.
 - **Deep link → `?sun=open`.** The `minded://` URL scheme is already registered
   (`App/Info.plist`). On a **warm** re-tap `AppDelegate.application(open:)`
   intercepts `minded://sun`, posts an `OPEN_SUN` notification, and

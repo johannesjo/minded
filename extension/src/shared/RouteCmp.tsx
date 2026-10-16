@@ -36,7 +36,9 @@ import {
   setBreathStartedAt,
   setCompanionBottomYPx,
   setSunRole,
+  setWidgetArrivalSettle,
 } from "@src/shared/components/interaction/sun/sunStore";
+import { parseWidgetSunFrom } from "@src/shared/components/interaction/sun/widgetArrival";
 import { readCompanionBottomPx } from "@src/shared/components/interaction/sun/companionAnchor";
 import { QuestionCategoryView } from "@src/shared/components/questionCategoryView/QuestionCategoryView";
 
@@ -79,6 +81,14 @@ const MainWrapper = (props: RouteSectionProps) => {
       ? searchParams.widgetLine
       : undefined;
 
+  // Where the widget's sun stood (`&sunFrom=`), so the shell disc's first paint
+  // is on it and the rise into the interaction glides from the home screen in -
+  // one sun, never the widget's vanishing and a second rising from the bar. Set
+  // before the first render (Sun snaps to its mount settle); cold start only - a
+  // warm re-tap finds the disc already resting on the bar and rises from there.
+  if (openedFromWidgetAtLaunch) {
+    setWidgetArrivalSettle(parseWidgetSunFrom(searchParams.sunFrom));
+  }
   const [getIsShowQuestionOverlay, setIsShowQuestionOverlay] =
     createSignal<boolean>(openedFromWidgetAtLaunch);
   // The widget line to open on, held past the URL-param clear below so the overlay
@@ -202,9 +212,16 @@ const MainWrapper = (props: RouteSectionProps) => {
       setIsShowQuestionOverlay(true);
     }
     setSearchParams(
-      { sun: undefined, widgetLine: undefined },
+      { sun: undefined, widgetLine: undefined, sunFrom: undefined },
       { replace: true },
     );
+  });
+
+  // The widget arrival is a one-shot first paint: once the interaction claims
+  // the disc (or anything else moves it off the companion role), drop it so the
+  // companion's own rest on the bar is never displaced.
+  createEffect(() => {
+    if (getSunRole() !== "companion") setWidgetArrivalSettle(null);
   });
 
   onMount(() => {
@@ -435,7 +452,9 @@ const MainWrapper = (props: RouteSectionProps) => {
           }}
           onHideInteraction={() => {
             // The overlay (sky + choices) is gone; send the same disc gliding
-            // back to its companion rest in the top bar.
+            // back to its companion rest in the top bar (never to the widget
+            // spot it may have arrived from).
+            setWidgetArrivalSettle(null);
             setSunRole("companion");
             // Drop any breath origin so the next pause starts from a fresh clock.
             setBreathStartedAt(undefined);

@@ -143,6 +143,8 @@ transition in CSS.
 | Mindfulness bell, Android native overlay (`BellSun.kt`) | the Little Sun's disc and amber glow (`SunDisc`), at the Little Sun's rest spot; at the strike the same amber halo swells once and fades over the bell's decay — never a second colour. Night: the moon's cool halo. When the Little Sun or the widget's sun is already in view, the bell brings no disc: the swell rises as a ring from that sun's rim instead (one sun) |
 | Small widget, Android | `ic_sun_widget_day.xml` — white disc, faint gold rim, amber bloom `@ .28`; transparent on the wallpaper |
 | Small widget, iOS | `CompanionSun` with `onOwnSky: false` — same disc, amber bloom `255,214,115 @ .28`; clear container background |
+| Night moon, both widgets | tonight's phase (`WidgetMoon`): the drawn moon with its night side veiled by the app's earthshine (`#141e3d @ .7`, blurred); the cool halo is untouched by the phase, exactly as in app |
+| Lock Screen + tinted/clear Home Screen, iOS | `SunGlyph` — no colour at all: the system keeps only alpha there and paints its own tint, so a solid disc in a faint ring by day, a hollow one at night; the halo rule has nothing to decide |
 
 Note there are *two* Little Suns on Android: the native Compose overlay
 (`LittleSun.kt`, 30dp, white disc) and the CSS one the WebView draws
