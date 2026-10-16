@@ -423,12 +423,14 @@ class SyncDataSerializationTest {
         assertNull(absent.cfg.mindfulnessBell)
         assertEquals(false, JSONObject(syncDataToJson(absent)).getJSONObject("cfg").has("mindfulnessBell"))
 
-        // How often it rings round trips too; a value outside the choices is ignored.
+        // How often it rings round trips too; a value outside the range is ignored.
         val three = parse(",\n\"mindfulnessBellPerDay\": 3")
         assertEquals(3, three.cfg.mindfulnessBellPerDay)
         assertEquals(3, parseSyncData(syncDataToJson(three)).cfg.mindfulnessBellPerDay)
 
-        assertNull(parse(",\n\"mindfulnessBellPerDay\": 7").cfg.mindfulnessBellPerDay)
+        assertNull(parse(",\n\"mindfulnessBellPerDay\": 0").cfg.mindfulnessBellPerDay)
+        val tooMany = MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE.last + 1
+        assertNull(parse(",\n\"mindfulnessBellPerDay\": $tooMany").cfg.mindfulnessBellPerDay)
         assertNull(parse("").cfg.mindfulnessBellPerDay)
     }
 }

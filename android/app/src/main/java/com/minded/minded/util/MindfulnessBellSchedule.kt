@@ -17,8 +17,8 @@ import kotlin.random.Random
  *   per-install salt, so the same day always has the same slots (no re-roll on
  *   a service restart) while two installs never share them.
  * - A slot doesn't fire at its time - nothing wakes the phone. It rings at the
- *   first unlock *after* it, if that unlock comes within
- *   [SLOT_FIRE_WINDOW_MINUTES]. Otherwise it is dropped, with no catch-up. The
+ *   first unlock *after* it, if that unlock comes within [fireWindowFor]
+ *   ([SLOT_FIRE_WINDOW_MINUTES] for up to three). Otherwise it is dropped, with no catch-up. The
  *   bell meets the moment the phone is picked up, never pulls anyone out of a
  *   pocket, and adapts by itself: a light phone user simply hears it less.
  *   That is how "a few times a day" happens without a counter.
@@ -60,11 +60,19 @@ object MindfulnessBellSchedule {
         if (count <= SPACIOUS_SLOTS) MIN_RING_GAP_MINUTES else minSlotGapFor(count) / 2
 
     /**
+     * How long after its time a slot may still ring - [SLOT_FIRE_WINDOW_MINUTES],
+     * or the slot gap for many slots, so an old slot never rings late into the
+     * next one's turn.
+     */
+    fun fireWindowFor(count: Int): Int =
+        if (count <= SPACIOUS_SLOTS) SLOT_FIRE_WINDOW_MINUTES else minSlotGapFor(count)
+
+    /**
      * The day's [count] slots as minutes of the local day, ascending. Drawn
      * uniformly over every set that keeps [minSlotGapFor] apart: draw the
      * points in the span with the gaps taken out, then put the gaps back.
-     * Changing [count] re-rolls the day; the ring gap in [dueSlot] still keeps
-     * a re-roll from ringing twice in a row.
+     * Changing [count] re-rolls the day; the rung count and ring gap in
+     * [dueSlot] still keep a re-roll from ringing extra or back to back.
      */
     fun slotsFor(epochDay: Long, salt: Long, count: Int = DEFAULT_SLOTS_PER_DAY): List<Int> {
         val n = count.coerceIn(SLOTS_PER_DAY_RANGE)
@@ -97,7 +105,7 @@ object MindfulnessBellSchedule {
         return slots.indices.firstOrNull { i ->
             rungMask and (1 shl i) == 0 &&
                 minuteOfDay >= slots[i] &&
-                minuteOfDay < slots[i] + SLOT_FIRE_WINDOW_MINUTES
+                minuteOfDay < slots[i] + fireWindowFor(slots.size)
         }
     }
 }

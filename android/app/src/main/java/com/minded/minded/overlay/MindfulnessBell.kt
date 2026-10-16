@@ -22,6 +22,7 @@ import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
+import com.minded.minded.util.UserCfg
 import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import com.minded.minded.widget.MyAppWidgetReceiver
@@ -62,30 +63,22 @@ class MindfulnessBell(
         isBlockedPackage: (String) -> Boolean,
         show: (decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
     ) {
-        // The schedule first: it only reads a few small prefs, so the common
-        // unlock - nothing due - never parses the whole sync blob. The chosen
-        // count lives in that blob, so the cheap check asks whether a slot
-        // would be due under *any* count; only then is the real one read.
+        // Most unlocks have nothing due: the cfg is cached (see currentCfg), so
+        // they never parse the sync blob, and a bell that's off stops here.
+        val cfg = currentCfg()
+        if (cfg.mindfulnessBell != true) return
         val now = LocalDateTime.now()
         val epochDay = now.toLocalDate().toEpochDay()
         val minute = now.hour * 60 + now.minute
-        val salt = prefs.getMindfulnessBellSalt()
         val (rungMask, lastRung) = prefs.getMindfulnessBellDay(epochDay)
-        fun dueFor(count: Int) = MindfulnessBellSchedule.dueSlot(
-            minute,
-            MindfulnessBellSchedule.slotsFor(epochDay, salt, count),
-            rungMask,
-            lastRung,
+        val slots = MindfulnessBellSchedule.slotsFor(
+            epochDay,
+            prefs.getMindfulnessBellSalt(),
+            cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY,
         )
-        if (MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE.none { dueFor(it) != null }) return
+        val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
 
-        val syncData = prefs.getSyncData()
-        if (syncData.cfg.mindfulnessBell != true) return
-        val slot = dueFor(
-            syncData.cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY
-        ) ?: return
-
-        val skipReason = skipReason(syncData.cfg, isAnyOverlayShown, isBlockedPackage)
+        val skipReason = skipReason(cfg, isAnyOverlayShown, isBlockedPackage)
         if (skipReason != null) {
             // The slot stays open - a later unlock inside its window may still ring.
             Log.d(logTag, "Bell due (slot $slot) but skipped: $skipReason")
@@ -93,7 +86,7 @@ class MindfulnessBell(
         }
 
         prefs.markMindfulnessBellRung(epochDay, slot, minute)
-        val voice = currentVoice(syncData.cfg.soundEnabled != false)
+        val voice = currentVoice(cfg.soundEnabled != false)
         val sound = if (voice == BellVoice.SOUND) prepareSound() else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
         Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice)")
@@ -113,6 +106,23 @@ class MindfulnessBell(
                 if (sound != null && player === sound && !sound.isPlaying) release()
             },
         )
+    }
+
+    private var cachedRaw: String? = null
+    private var cachedCfg: UserCfg? = null
+
+    /**
+     * The user's cfg, parsed only when the stored blob changed. SharedPreferences
+     * hands back the same String instance until the next save, so identity is
+     * a free "unchanged" check.
+     */
+    private fun currentCfg(): UserCfg {
+        val raw = prefs.retrieveDataString()
+        cachedCfg?.let { if (raw === cachedRaw) return it }
+        return prefs.getSyncData().cfg.also {
+            cachedRaw = raw
+            cachedCfg = it
+        }
     }
 
     private fun startSafely(mp: MediaPlayer) {
@@ -162,7 +172,7 @@ class MindfulnessBell(
     }
 
     private fun skipReason(
-        cfg: com.minded.minded.util.UserCfg,
+        cfg: UserCfg,
         isAnyOverlayShown: () -> Boolean,
         isBlockedPackage: (String) -> Boolean,
     ): String? {

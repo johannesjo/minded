@@ -5,6 +5,7 @@ import com.minded.minded.util.MindfulnessBellSchedule.LATEST_RING_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.LATEST_SLOT_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_RING_GAP_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_SLOT_GAP_MINUTES
+import com.minded.minded.util.MindfulnessBellSchedule.fireWindowFor
 import com.minded.minded.util.MindfulnessBellSchedule.minRingGapFor
 import com.minded.minded.util.MindfulnessBellSchedule.minSlotGapFor
 import com.minded.minded.util.MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE
@@ -43,9 +44,17 @@ class MindfulnessBellScheduleTest {
         for (count in 1..3) {
             assertEquals(MIN_SLOT_GAP_MINUTES, minSlotGapFor(count))
             assertEquals(MIN_RING_GAP_MINUTES, minRingGapFor(count))
+            assertEquals(SLOT_FIRE_WINDOW_MINUTES, fireWindowFor(count))
         }
         assertTrue(minSlotGapFor(SLOTS_PER_DAY_RANGE.last) in 1 until MIN_SLOT_GAP_MINUTES)
         assertTrue(minRingGapFor(SLOTS_PER_DAY_RANGE.last) >= 1)
+    }
+
+    @Test
+    fun `with many slots an old slot never rings into the next one's turn`() {
+        val slots = slotsFor(19_000L, 7L, count = 20)
+        assertEquals(0, dueSlot(slots[0], slots, 0, null))
+        assertNotEquals(0, dueSlot(slots[0] + fireWindowFor(20), slots, 0, null))
     }
 
     @Test
