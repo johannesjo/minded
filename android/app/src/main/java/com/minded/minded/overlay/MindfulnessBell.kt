@@ -26,6 +26,7 @@ import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import org.json.JSONObject
 import java.time.LocalDateTime
+import kotlin.math.abs
 
 /**
  * The mindfulness bell (#298): a few times a day (the user picks how
@@ -240,6 +241,11 @@ class MindfulnessBell(
         // stays quiet - a guess could put a second sun next to it.
         val widgetSuns = visibleWidgetSuns() ?: return Moment.Skip("couldn't read the home screen")
         val sun = widgetSuns.firstOrNull() ?: return Moment.Ring(null)
+        // Bounds come clipped to the screen: a lopsided box is a widget half
+        // swiped away, whose centre and size would be wrong - and it's leaving.
+        if (abs(sun.width() - sun.height()) > maxOf(sun.width(), sun.height()) / 5) {
+            return Moment.Skip("the sun widget was only partly in view")
+        }
         return Moment.Ring(
             BellHost(sun.centerX(), sun.centerY(), minOf(sun.width(), sun.height()), BellHost.Kind.WIDGET),
         )
@@ -306,7 +312,7 @@ class MindfulnessBell(
         }
     }
 
-    private fun homePackage(): String? = try {
+    internal fun homePackage(): String? = try {
         context.packageManager.resolveActivity(
             Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
             PackageManager.MATCH_DEFAULT_ONLY,

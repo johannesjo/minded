@@ -412,6 +412,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (currentPackage != null) {
             // Opening minded itself ends a ringing bell: its own sun is there.
             if (currentPackage == packageName) takeOverFromBell()
+            // Leaving the home screen takes the widget's sun - and the ring
+            // around it - out of view.
+            else if (currentPackage != mindfulnessBell.homePackage()) {
+                onBellHostLeaving(BellHost.Kind.WIDGET)
+            }
             val detectionTimestampMs = intent.getLongExtra(
                 MyAccessibilityService.INTENT_EXTRA_DETECTION_TIMESTAMP, 0L
             )
@@ -588,6 +593,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
      * (fading) rather than leave its light where the sun was.
      */
     internal fun onBellHostLeaving(kind: BellHost.Kind) {
+        // Cheap and safe to call often (drags, teardown): nothing to do unless
+        // a bell rings through this kind of sun.
+        if (!::bellSunOverlayWindow.isInitialized || bellSunOverlayWindow.host?.kind != kind) return
         // Hides can come from the WebView's JS-bridge thread.
         screenStateHandler.post {
             if (bellSunOverlayWindow.host?.kind == kind) takeOverFromBell()

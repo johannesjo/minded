@@ -153,7 +153,8 @@ class SharedPreferenceService(context: Context) {
 
     /**
      * The last time a bell was due and what came of it - rang, or the reason it
-     * stayed quiet - as JSON `{"atMs":…,"rang":…,"reason":…}`. Only so the
+     * stayed quiet - as JSON `{"atMs":…,"rang":…,"reason":…,"through":…}`
+     * (through: the sun it rang through, if one was already there). Only so the
      * settings can show why a bell hasn't been heard; overwritten each time,
      * never a history. Local only, like the rest of the bell's bookkeeping.
      */

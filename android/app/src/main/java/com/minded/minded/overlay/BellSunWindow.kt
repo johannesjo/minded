@@ -199,6 +199,11 @@ class BellSunWindow(
             gravity = Gravity.TOP or Gravity.START
             x = discX
             y = discY
+            // Hosted, this window draws nothing - it only keeps the strike's
+            // timing. Fully transparent, it is exempt from Android 12+'s
+            // block on touches through another app's overlay, so a tap on the
+            // widget's sun beneath still lands.
+            if (host != null) alpha = 0f
         }
     }
 
