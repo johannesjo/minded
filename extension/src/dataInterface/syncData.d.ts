@@ -153,7 +153,8 @@ export interface PatternInsightState {
   };
 }
 
-export type MindfulnessBellPerDay = 1 | 2 | 3;
+/** BELL_PER_DAY_MIN..BELL_PER_DAY_MAX (mindfulnessBell.const.ts). */
+export type MindfulnessBellPerDay = number;
 
 /**
  * The week the user chose from the skip check-in (see skipCheckIn.ts).

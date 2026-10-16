@@ -1,6 +1,13 @@
 .options {
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--space-sm);
   justify-content: var(--settings-options-justify, center);
   margin-top: var(--space-md);
+}
+
+.slider {
+  max-width: 280px;
+  width: 100%;
 }

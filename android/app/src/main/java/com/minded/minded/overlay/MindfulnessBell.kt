@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
+import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
 import com.minded.minded.data.SharedPreferenceService
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
@@ -27,8 +28,8 @@ import com.minded.minded.widget.MyAppWidgetReceiver
 import java.time.LocalDateTime
 
 /**
- * The mindfulness bell (#298): a few times a day (the user picks one to
- * three), triggered by nothing the user did, the sun rings over whatever
+ * The mindfulness bell (#298): a few times a day (the user picks how
+ * many), triggered by nothing the user did, the sun rings over whatever
  * they're doing. It is opt-in (off by
  * default) because it is the one surface that reaches for the user unprompted
  * - every other overlay answers an app they chose to guard. What keeps that
@@ -189,13 +190,17 @@ class MindfulnessBell(
             AudioManager.MODE_RINGTONE -> return "in a call"
         }
 
-        val foreground = when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
-            is ForegroundAppResult.Success -> r.packageName
-            is ForegroundAppResult.Stale -> r.packageName
-            // Unknown is a "no": a wrong guess here rings over minded itself
-            // or a guarded app.
-            else -> return "foreground app unknown"
-        }
+        // The accessibility service's live focused window first: it is always
+        // there when minded runs, while usage access is optional - relying on
+        // it alone silenced the bell for everyone who skipped that permission.
+        val foreground = MyAccessibilityService.focusedAppWindowPackage()
+            ?: when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
+                is ForegroundAppResult.Success -> r.packageName
+                is ForegroundAppResult.Stale -> r.packageName
+                // Unknown is a "no": a wrong guess here rings over minded
+                // itself or a guarded app.
+                else -> return "foreground app unknown"
+            }
         if (foreground == context.packageName) return "minded is open"
         if (isBlockedPackage(foreground)) return "a guarded app is open"
         // The companion widget may be on the home screen - two suns.
