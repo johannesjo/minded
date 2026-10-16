@@ -1,4 +1,6 @@
+import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 import {
+  getQuestionForSyncData,
   getQuestionSmart,
   getQuestionSemiSmart,
   isCategoryWithinTimeConstraints,
@@ -255,13 +257,29 @@ describe("getQuestionSmart", () => {
         expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
       });
 
-      it("rotates toward the question answered least", () => {
+      it("leaves out the question answered last", () => {
+        const older = { ...answerTo("CQ_test2"), ts: 1 };
+        const latest = { ...answerTo("CQ_test1"), ts: 2 };
+        const result = getQuestionSmart([older, latest], twoQuestions, true);
+        expect(result.id).toBe("CQ_test2");
+      });
+
+      it("still asks the only question there is, answered or not", () => {
         const result = getQuestionSmart(
           [answerTo("CQ_test1")],
-          twoQuestions,
+          customQuestions,
           true,
         );
-        expect(result.id).toBe("CQ_test2");
+        expect(result.id).toBe("CQ_test1");
+      });
+
+      it("reads the choice from the stored settings", () => {
+        const result = getQuestionForSyncData({
+          answers: [],
+          customQuestions: twoQuestions,
+          cfg: { ...DEFAULT_SYNC_DATA.cfg, isOnlyOwnQuestions: true },
+        });
+        expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
       });
 
       it("falls back to the built-in pool while none are written", () => {

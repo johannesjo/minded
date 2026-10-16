@@ -95,7 +95,7 @@ export const getQuestionSmart = (
   // The user chose to hear only their own questions. With none written there
   // is nothing to honour that with, so the built-in pool quietly stands in.
   if (isOnlyOwnQuestions && customPrompts.length) {
-    return getLeastAnsweredQuestion(customPrompts, answers);
+    return getQuestionAvoidingLastAnswered(customPrompts, answers);
   }
 
   const questionPool = [...QUESTIONS_FOR_DEVICE, ...customPrompts];
@@ -265,19 +265,25 @@ export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
 };
 
 /**
- * The question answered least so far, ties broken at random - so a handful of
- * questions rotate instead of the same one coming back while others wait.
+ * A random one of the user's questions, minus the one they answered last - so
+ * a handful rotate without the same one coming straight back. Deliberately no
+ * counting: an all-time tally would park the sun on a question the user keeps
+ * skipping, or on one just written, for weeks.
  */
-const getLeastAnsweredQuestion = (
+const getQuestionAvoidingLastAnswered = (
   questions: QuestionForPrompt[],
   answers: Answer[],
 ): QuestionForPrompt => {
-  const countFor = (question: QuestionForPrompt): number =>
-    answers.filter((answer) => answer.qid === question.id).length;
-  const fewest = Math.min(...questions.map(countFor));
-  return getRndQuestionConsideringMain(
-    questions.filter((question) => countFor(question) === fewest),
+  const ids = new Set(questions.map((question) => question.id));
+  const lastAnswered = answers
+    .filter((answer) => answer.qid !== null && ids.has(answer.qid))
+    .reduce<
+      Answer | undefined
+    >((latest, answer) => (!latest || answer.ts > latest.ts ? answer : latest), undefined);
+  const fresh = questions.filter(
+    (question) => question.id !== lastAnswered?.qid,
   );
+  return getRndQuestionConsideringMain(fresh.length ? fresh : questions);
 };
 
 const getRndQuestionConsideringMain = (
