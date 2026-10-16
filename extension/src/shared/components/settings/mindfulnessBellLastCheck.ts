@@ -5,12 +5,19 @@ interface BellLastCheck {
   atMs: number;
   rang: boolean;
   reason: string | null;
+  /** The sun it rang through when one was already there, e.g. "the Little Sun". */
+  through: string | null;
 }
 
 const parse = (raw: string | null | undefined): BellLastCheck | undefined => {
   const v = raw ? safeJsonParse<Partial<BellLastCheck>>(raw) : undefined;
   return v && typeof v.atMs === "number" && typeof v.rang === "boolean"
-    ? { atMs: v.atMs, rang: v.rang, reason: v.reason ?? null }
+    ? {
+        atMs: v.atMs,
+        rang: v.rang,
+        reason: v.reason ?? null,
+        through: v.through ?? null,
+      }
     : undefined;
 };
 
@@ -35,6 +42,6 @@ export const bellLastCheckLabel = (
       ? `today ${time}`
       : `${at.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`;
   return check.rang
-    ? `Last bell: ${when}, rang`
+    ? `Last bell: ${when}, rang${check.through ? ` through ${check.through}` : ""}`
     : `Last bell: ${when}, stayed quiet - ${check.reason ?? "the moment wasn't right"}`;
 };

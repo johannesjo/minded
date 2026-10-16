@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -51,16 +52,21 @@ class MindfulnessBell(
     private val handler = Handler(Looper.getMainLooper())
 
     /**
-     * Decide at an unlock whether to ring. [isAnyOverlayShown] guards the
-     * one-sun rule: never while the Little Sun, an intervention, or any other
-     * minded surface is up. [isBlockedPackage] keeps the bell off guarded apps,
-     * which belong to the interventions. [show] presents the window, given the
-     * strike's decay, the strike callback, and a callback for when it's gone.
+     * Decide at an unlock whether to ring. [isOtherOverlayShown] guards the
+     * one-sun rule: never while an intervention or any other minded surface
+     * is up. [littleSun] is the Little Sun, if it's showing: then the bell
+     * rings *through* it rather than bringing a second sun - as it does through
+     * the home-screen widget's sun when that's in view. [isBlockedPackage]
+     * keeps the bell off guarded apps, which belong to the interventions (unless
+     * the Little Sun is already there with the user). [show] presents the
+     * window, given the sun it rings through (null: its own), the strike's
+     * decay, the strike callback, and a callback for when it's gone.
      */
     fun onUnlock(
-        isAnyOverlayShown: () -> Boolean,
+        isOtherOverlayShown: () -> Boolean,
+        littleSun: () -> BellHost?,
         isBlockedPackage: (String) -> Boolean,
-        show: (decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
+        show: (host: BellHost?, decayMs: Int, onStrike: () -> Unit, onGone: () -> Unit) -> Unit,
     ) {
         // Most unlocks have nothing due: the cfg is cached (see currentCfg), so
         // they never parse the sync blob, and a bell that's off stops here.
@@ -77,20 +83,22 @@ class MindfulnessBell(
         )
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
 
-        val skipReason = skipReason(cfg, isAnyOverlayShown, isBlockedPackage)
-        recordCheck(skipReason)
-        if (skipReason != null) {
+        val moment = moment(cfg, isOtherOverlayShown, littleSun, isBlockedPackage)
+        recordCheck(moment)
+        if (moment is Moment.Skip) {
             // The slot stays open - a later unlock inside its window may still ring.
-            Log.d(logTag, "Bell due (slot $slot) but skipped: $skipReason")
+            Log.d(logTag, "Bell due (slot $slot) but skipped: ${moment.reason}")
             return
         }
+        val host = (moment as Moment.Ring).host
 
         prefs.markMindfulnessBellRung(epochDay, slot, minute)
         val voice = currentVoice(cfg.soundEnabled != false)
         val sound = if (voice == BellVoice.SOUND) prepareSound() else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
-        Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice)")
+        Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice, host=${host?.kind})")
         show(
+            host,
             decayMs,
             {
                 when {
@@ -108,14 +116,26 @@ class MindfulnessBell(
         )
     }
 
+    /** Whether a due bell rings - and through which sun - or why it stays quiet. */
+    private sealed class Moment {
+        class Ring(val host: BellHost?) : Moment()
+        class Skip(val reason: String) : Moment()
+    }
+
     /** Keep the outcome of a due bell for the settings' "last bell" line. */
-    private fun recordCheck(skipReason: String?) {
+    private fun recordCheck(moment: Moment) {
         try {
+            val through = when ((moment as? Moment.Ring)?.host?.kind) {
+                BellHost.Kind.LITTLE_SUN -> "the Little Sun"
+                BellHost.Kind.WIDGET -> "the sun widget"
+                null -> null
+            }
             prefs.setMindfulnessBellLastCheck(
                 JSONObject()
                     .put("atMs", System.currentTimeMillis())
-                    .put("rang", skipReason == null)
-                    .put("reason", skipReason ?: JSONObject.NULL)
+                    .put("rang", moment is Moment.Ring)
+                    .put("reason", (moment as? Moment.Skip)?.reason ?: JSONObject.NULL)
+                    .put("through", through ?: JSONObject.NULL)
                     .toString(),
             )
         } catch (e: Exception) {
@@ -186,12 +206,48 @@ class MindfulnessBell(
         player = null
     }
 
-    private fun skipReason(
+    private fun moment(
         cfg: UserCfg,
-        isAnyOverlayShown: () -> Boolean,
+        isOtherOverlayShown: () -> Boolean,
+        littleSun: () -> BellHost?,
         isBlockedPackage: (String) -> Boolean,
-    ): String? {
-        if (isAnyOverlayShown()) return "another minded sun was showing"
+    ): Moment {
+        val reason = skipReason(cfg, isOtherOverlayShown)
+        if (reason != null) return Moment.Skip(reason)
+
+        // The Little Sun is already with the user (over the app they chose to
+        // stay in): it becomes the bell - no second sun, and no guarded-app
+        // "no", since nothing here interrupts that choice.
+        littleSun()?.let { return Moment.Ring(it) }
+
+        // The accessibility service's live focused window first: it is always
+        // there when minded runs, while usage access is optional - relying on
+        // it alone silenced the bell for everyone who skipped that permission.
+        val foreground = MyAccessibilityService.focusedAppWindowPackage()
+            ?: when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
+                is ForegroundAppResult.Success -> r.packageName
+                is ForegroundAppResult.Stale -> r.packageName
+                // Unknown is a "no": a wrong guess here rings over minded
+                // itself or a guarded app.
+                else -> return Moment.Skip("couldn't tell which app was open")
+            }
+        if (foreground == context.packageName) return Moment.Skip("minded was open")
+        if (isBlockedPackage(foreground)) return Moment.Skip("a guarded app was open")
+        if (foreground != homePackage()) return Moment.Ring(null)
+
+        // On the home screen the companion widget's sun, if it's in view, is
+        // the bell: it rings through that sun rather than beside it. Unreadable
+        // stays quiet - a guess could put a second sun next to it.
+        val widgetSuns = visibleWidgetSuns() ?: return Moment.Skip("couldn't read the home screen")
+        val sun = widgetSuns.firstOrNull() ?: return Moment.Ring(null)
+        return Moment.Ring(
+            BellHost(sun.centerX(), sun.centerY(), minOf(sun.width(), sun.height()), BellHost.Kind.WIDGET),
+        )
+    }
+
+    /** The moments that are wrong for any bell, wherever it would ring. */
+    private fun skipReason(cfg: UserCfg, isOtherOverlayShown: () -> Boolean): String? {
+        if (isOtherOverlayShown()) return "another minded surface was showing"
 
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val keyguard = context.getSystemService(KeyguardManager::class.java)
@@ -213,26 +269,6 @@ class MindfulnessBell(
             AudioManager.MODE_IN_CALL,
             AudioManager.MODE_IN_COMMUNICATION,
             AudioManager.MODE_RINGTONE -> return "a call"
-        }
-
-        // The accessibility service's live focused window first: it is always
-        // there when minded runs, while usage access is optional - relying on
-        // it alone silenced the bell for everyone who skipped that permission.
-        val foreground = MyAccessibilityService.focusedAppWindowPackage()
-            ?: when (val r = getForegroundAppReliable(context, lookbackMs = LOOKBACK_MS, staleThresholdMs = LOOKBACK_MS)) {
-                is ForegroundAppResult.Success -> r.packageName
-                is ForegroundAppResult.Stale -> r.packageName
-                // Unknown is a "no": a wrong guess here rings over minded
-                // itself or a guarded app.
-                else -> return "couldn't tell which app was open"
-            }
-        if (foreground == context.packageName) return "minded was open"
-        if (isBlockedPackage(foreground)) return "a guarded app was open"
-        // Two suns: only when the companion widget is on the home page in
-        // view - a widget on another page doesn't stop the bell. Unreadable
-        // counts as in view.
-        if (foreground == homePackage() && isWidgetOnScreen() != false) {
-            return "the sun widget was on screen"
         }
         return null
     }
@@ -279,9 +315,9 @@ class MindfulnessBell(
         null
     }
 
-    /** Whether the sun widget is visible now, found by its content description; null if unknown. */
-    private fun isWidgetOnScreen(): Boolean? =
-        MyAccessibilityService.isDescribedNodeOnScreen(
+    /** Where the widget's sun is visible now, found by its content description; null if unreadable. */
+    private fun visibleWidgetSuns(): List<Rect>? =
+        MyAccessibilityService.visibleDescribedNodeBounds(
             listOf(
                 R.string.widget_sun_description_day,
                 R.string.widget_sun_description_night,

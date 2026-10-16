@@ -167,9 +167,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val maybeRingBell = Runnable {
         try {
             mindfulnessBell.onUnlock(
-                isAnyOverlayShown = { isAnyWindowShown() },
+                isOtherOverlayShown = {
+                    interactionOverlayWindow.isWindowShown() ||
+                        smallMsgOverlayWindow.isWindowShown() ||
+                        successSunOverlayWindow.isWindowShown() ||
+                        sleepWindDownOverlayWindow.isWindowShown() ||
+                        bellSunOverlayWindow.isWindowShown()
+                },
+                littleSun = { littleSunOverlayWindow.bellHost() },
                 isBlockedPackage = { isBlockedPackage(it) },
-                show = { decayMs, onStrike, onGone ->
+                show = { host, decayMs, onStrike, onGone ->
+                    bellSunOverlayWindow.host = host
                     bellSunOverlayWindow.decayMs = decayMs
                     bellSunOverlayWindow.onStrike = onStrike
                     bellSunOverlayWindow.onGone = onGone
@@ -481,8 +489,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             // the bell drops at once under the opaque shield and the
             // intervention's sun glides out of that same spot. Any other
             // surface simply fades it.
+            // A bell ringing through another sun has no disc to hand over - that
+            // sun does its own hand-off, and the bell's light just fades.
             val morphFromBell = overlayName == OverlayName.INTERACTION_OVERLAY &&
-                bellSunOverlayWindow.isWindowShown()
+                bellSunOverlayWindow.isWindowShown() && bellSunOverlayWindow.host == null
             if (morphFromBell) {
                 bellSunOverlayWindow.hideWindowImmediate()
                 mindfulnessBell.fadeOutAndRelease()
@@ -571,6 +581,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (!bellSunOverlayWindow.isWindowShown()) return
         bellSunOverlayWindow.hideWindow()
         mindfulnessBell.fadeOutAndRelease()
+    }
+
+    /**
+     * The sun a bell rings through is moving or going: the bell goes with it
+     * (fading) rather than leave its light where the sun was.
+     */
+    internal fun onBellHostLeaving(kind: BellHost.Kind) {
+        // Hides can come from the WebView's JS-bridge thread.
+        screenStateHandler.post {
+            if (bellSunOverlayWindow.host?.kind == kind) takeOverFromBell()
+        }
     }
 
     private fun isInputOverlayShown(): Boolean {

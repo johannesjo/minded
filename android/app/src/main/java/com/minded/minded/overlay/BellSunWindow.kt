@@ -8,6 +8,7 @@ import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.compose.ui.unit.dp
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.BELL_SUN_DISC_BOX
@@ -16,6 +17,14 @@ import com.minded.minded.ui.compose.BellSunDisc
 import com.minded.minded.ui.compose.BellSunHalo
 import com.minded.minded.ui.compose.BellSunState
 import kotlin.math.roundToInt
+
+/**
+ * A sun already on screen that the bell rings *through* rather than bringing a
+ * second one (the one-sun rule): its centre and diameter in display pixels.
+ */
+data class BellHost(val centerX: Int, val centerY: Int, val diameterPx: Int, val kind: Kind) {
+    enum class Kind { LITTLE_SUN, WIDGET }
+}
 
 /**
  * The mindfulness bell's windows (#298), centred where the Little Sun rests -
@@ -29,6 +38,10 @@ import kotlin.math.roundToInt
  * the user's app without ever catching a finger meant for it. Neither paints a
  * sky - a sky would cover the app and turn a soft bell into a wall - and
  * neither is focusable, so the keyboard stays with the app underneath.
+ *
+ * With a [host] (the Little Sun, or the widget's sun in view) the bell brings
+ * no disc of its own: the light rises around that sun, and neither window
+ * takes a touch, so the host stays exactly as it was.
  */
 class BellSunWindow(
     private val ctrlSvc: OverlayControllerService,
@@ -46,6 +59,9 @@ class BellSunWindow(
     /** Fired once the bell is gone, however it went (faded, tapped, taken over). */
     var onGone: () -> Unit = {}
 
+    /** The sun this ring goes through, or null for the bell's own. Set per show. */
+    var host: BellHost? = null
+
     private var state = BellSunState()
     private var haloView: ComposeView? = null
     private var discX = 0
@@ -59,6 +75,7 @@ class BellSunWindow(
             onStrike = { onStrike() },
             // The sun has already faded out; the base fade is a no-op by now.
             onGone = { hideWindow() },
+            showDisc = host == null,
         )
     }
 
@@ -88,6 +105,7 @@ class BellSunWindow(
 
     override fun onWindowRemoved() {
         removeHalo()
+        host = null
         onGone()
     }
 
@@ -100,6 +118,13 @@ class BellSunWindow(
     }
 
     private fun initPosition() {
+        val h = host
+        if (h != null) {
+            val disc = (BELL_SUN_DISC_BOX.value * ctrlSvc.resources.displayMetrics.density).roundToInt()
+            discX = h.centerX - disc / 2
+            discY = h.centerY - disc / 2
+            return
+        }
         val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
         val (x, y) = LittleSunPosition.restingTopLeft(ctrlSvc, windowManager, saved)
         discX = x
@@ -109,12 +134,19 @@ class BellSunWindow(
     private fun showHalo() {
         val density = ctrlSvc.resources.displayMetrics.density
         val disc = (BELL_SUN_DISC_BOX.value * density).roundToInt()
-        val halo = (BELL_SUN_HALO_BOX.value * density).roundToInt()
+        // Around a host the light keeps the bell's own proportions to its sun,
+        // so a large widget sun gets a halo that still reaches past its rim.
+        val hostDiameter = host?.diameterPx
+        val halo = maxOf(
+            (BELL_SUN_HALO_BOX.value * density).roundToInt(),
+            ((hostDiameter ?: 0) * BELL_SUN_HALO_BOX.value / BELL_SUN_DISC_BOX.value).roundToInt(),
+        )
+        val hostFraction = hostDiameter?.let { it.toFloat() / halo } ?: 0f
         val view = ComposeView(ctrlSvc).apply {
             setViewTreeLifecycleOwner(ctrlSvc)
             setViewTreeSavedStateRegistryOwner(ctrlSvc)
             setBackgroundColor(0x00000000)
-            setContent { BellSunHalo(state) }
+            setContent { BellSunHalo(state, (halo / density).dp, hostFraction) }
         }
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -159,7 +191,9 @@ class BellSunWindow(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                // Ringing through a host: every touch stays the host's.
+                (if (host != null) WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE else 0),
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START

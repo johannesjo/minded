@@ -1,7 +1,7 @@
 package com.minded.minded.util
 
 import com.minded.minded.util.MindfulnessBellSchedule.EARLIEST_SLOT_MINUTE
-import com.minded.minded.util.MindfulnessBellSchedule.LATEST_SLOT_MINUTE
+import com.minded.minded.util.MindfulnessBellSchedule.latestSlotFor
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_RING_GAP_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_SLOT_GAP_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.fireWindowFor
@@ -25,7 +25,7 @@ class MindfulnessBellScheduleTest {
             val slots = slotsFor(day, salt = 42L, count = count)
             assertEquals(count, slots.size)
             assertEquals(slots.sorted(), slots)
-            slots.forEach { assertTrue(it in EARLIEST_SLOT_MINUTE..LATEST_SLOT_MINUTE, "day $day: $it") }
+            slots.forEach { assertTrue(it in EARLIEST_SLOT_MINUTE..latestSlotFor(count), "day $day: $it") }
             slots.zipWithNext().forEach { (a, b) ->
                 assertTrue(b - a >= minSlotGapFor(count), "day $day: $slots")
             }
@@ -123,9 +123,25 @@ class MindfulnessBellScheduleTest {
 
     @Test
     fun `a slot may ring at any hour - there is no waking-hours cut-off`() {
-        val slots = listOf(30, LATEST_SLOT_MINUTE - 10)
+        val slots = listOf(30, 23 * 60)
         assertEquals(0, dueSlot(30, slots, 0, null))
-        assertEquals(1, dueSlot(LATEST_SLOT_MINUTE, slots, 0b01, lastRungMinute = 30))
+        assertEquals(1, dueSlot(23 * 60 + 30, slots, 0b01, lastRungMinute = 30))
+    }
+
+    @Test
+    fun `a late slot's whole window fits before midnight`() {
+        for (count in SLOTS_PER_DAY_RANGE) for (day in 0L until 200L) {
+            val last = slotsFor(day, salt = 9L, count = count).last()
+            assertTrue(last + fireWindowFor(count) <= 24 * 60, "count $count day $day: $last")
+        }
+    }
+
+    @Test
+    fun `the ring gap holds across midnight`() {
+        // Rang at 23:55 yesterday (-5 in today's minutes); a slot at 00:02.
+        val slots = listOf(2, 12 * 60)
+        assertNull(dueSlot(5, slots, 0, lastRungMinute = -5))
+        assertEquals(0, dueSlot(MIN_RING_GAP_MINUTES - 5, slots, 0, lastRungMinute = -5))
     }
 
     @Test

@@ -19,6 +19,19 @@ describe("bellLastCheckLabel", () => {
     expect(label).toMatch(/^Last bell: today .*, rang$/);
   });
 
+  it("names the sun it rang through", () => {
+    const label = bellLastCheckLabel(
+      JSON.stringify({
+        atMs: at,
+        rang: true,
+        reason: null,
+        through: "the Little Sun",
+      }),
+      now,
+    );
+    expect(label).toMatch(/rang through the Little Sun$/);
+  });
+
   it("says why a bell stayed quiet", () => {
     const label = bellLastCheckLabel(
       JSON.stringify({

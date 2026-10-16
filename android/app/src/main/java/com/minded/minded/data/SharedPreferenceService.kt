@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.minded.minded.BuildConfig
 import com.minded.minded.data.defaultSyncData
+import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
 import com.minded.minded.util.getIsoDate
@@ -121,15 +122,22 @@ class SharedPreferenceService(context: Context) {
 
     /**
      * Which of today's bell slots have rung (bit mask) and the minute of the
-     * last ring - only so a slot never rings twice. Read for another day it is
-     * empty: yesterday's bookkeeping is simply forgotten, never tallied.
+     * last ring - only so a slot never rings twice, nor two rings close
+     * together. The last ring is in minutes of [epochDay]: negative when it
+     * was yesterday, so the ring gap holds across midnight. Older bookkeeping
+     * is simply forgotten, never tallied.
      */
     @Synchronized
     fun getMindfulnessBellDay(epochDay: Long): Pair<Int, Int?> {
-        if (sharedPreferences.getLong(BELL_DAY_KEY, -1L) != epochDay) return 0 to null
-        val mask = sharedPreferences.getInt(BELL_RUNG_MASK_KEY, 0)
+        val day = sharedPreferences.getLong(BELL_DAY_KEY, -1L)
         val last = sharedPreferences.getInt(BELL_LAST_RUNG_MINUTE_KEY, -1)
-        return mask to last.takeIf { it >= 0 }
+            .takeIf { it >= 0 && day >= 0 }
+            ?.let { (day - epochDay).toInt() * MindfulnessBellSchedule.DAY_MINUTES + it }
+        return when (day) {
+            epochDay -> sharedPreferences.getInt(BELL_RUNG_MASK_KEY, 0) to last
+            epochDay - 1 -> 0 to last
+            else -> 0 to null
+        }
     }
 
     @Synchronized
