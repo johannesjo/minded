@@ -87,6 +87,12 @@ interface InteractionWindowJavaScriptInterface {
    * Optional: older native builds won't have it - guard with `?.()`.
    */
   getMindfulnessBellLastCheck?: () => string;
+  /**
+   * The last unlock the mindfulness bell saw, due or not, as JSON
+   * `{"atMs":number,"enabled":boolean,"nextAtMs":number|null}`, or "" if none yet.
+   * Optional: older native builds won't have it - guard with `?.()`.
+   */
+  getMindfulnessBellLastUnlock?: () => string;
   test: () => void;
 }
 

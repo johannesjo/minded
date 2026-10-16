@@ -26,7 +26,9 @@ import kotlin.random.Random
  *   to three), even if a late first slot and an early second one would allow it.
  * - No waking-hours cut-off: a slot at 3 a.m. simply passes unheard unless the
  *   phone is picked up then. The night is kept by the moment checks instead
- *   (Do Not Disturb, the bedtime wind-down - see MindfulnessBell.skipReason).
+ *   (Do Not Disturb - see MindfulnessBell.skipReason). The bedtime wind-down
+ *   window doesn't silence it: a bell then is one more invitation to put
+ *   the phone down.
  *
  * Nothing about the user's response is recorded anywhere: which slots have
  * rung today is bookkeeping for "don't ring twice", forgotten the next day.
@@ -113,6 +115,20 @@ object MindfulnessBellSchedule {
                 minuteOfDay >= slots[i] &&
                 minuteOfDay < slots[i] + fireWindowFor(slots.size)
         }
+    }
+
+    /**
+     * The minute today's next bell window opens - or [minuteOfDay] itself if
+     * one is open now - or null if none is left today. Only for the settings'
+     * "next bell" hint; [dueSlot] alone decides a ring.
+     */
+    fun nextWindowMinute(minuteOfDay: Int, slots: List<Int>, rungMask: Int): Int? {
+        if (rungMask.countOneBits() >= slots.size) return null
+        return slots.indices
+            .firstOrNull { i ->
+                rungMask and (1 shl i) == 0 && minuteOfDay < slots[i] + fireWindowFor(slots.size)
+            }
+            ?.let { maxOf(slots[it], minuteOfDay) }
     }
 }
 

@@ -16,7 +16,6 @@ import android.util.Log
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
 import com.minded.minded.data.SharedPreferenceService
-import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
@@ -26,6 +25,7 @@ import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import org.json.JSONObject
 import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.math.abs
 
 /**
@@ -42,7 +42,9 @@ import kotlin.math.abs
  * reaches into a pocket. When the schedule says no, or the moment is wrong,
  * nothing happens - only the last due bell's outcome is kept, so the settings
  * can say why one wasn't heard; a slot whose window passes without a good
- * moment is simply dropped.
+ * moment is simply dropped. Every unlock is kept too (just the last one), so
+ * the settings can tell an unlock that never reached the bell from one that
+ * simply fell outside a bell's window.
  */
 class MindfulnessBell(
     private val context: Context,
@@ -72,7 +74,10 @@ class MindfulnessBell(
         // Most unlocks have nothing due: the cfg is cached (see currentCfg), so
         // they never parse the sync blob, and a bell that's off stops here.
         val cfg = currentCfg()
-        if (cfg.mindfulnessBell != true) return
+        if (cfg.mindfulnessBell != true) {
+            recordUnlock(enabled = false, nextAtMs = null)
+            return
+        }
         val now = LocalDateTime.now()
         val epochDay = now.toLocalDate().toEpochDay()
         val minute = now.hour * 60 + now.minute
@@ -82,9 +87,17 @@ class MindfulnessBell(
             prefs.getMindfulnessBellSalt(),
             cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY,
         )
+        val next = MindfulnessBellSchedule.nextWindowMinute(minute, slots, rungMask)
+        recordUnlock(
+            enabled = true,
+            nextAtMs = next?.let {
+                now.toLocalDate().atStartOfDay(ZoneId.systemDefault())
+                    .plusMinutes(it.toLong()).toInstant().toEpochMilli()
+            },
+        )
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
 
-        val moment = moment(cfg, isOtherOverlayShown, littleSun, isBlockedPackage)
+        val moment = moment(isOtherOverlayShown, littleSun, isBlockedPackage)
         recordCheck(moment)
         if (moment is Moment.Skip) {
             // The slot stays open - a later unlock inside its window may still ring.
@@ -141,6 +154,21 @@ class MindfulnessBell(
             )
         } catch (e: Exception) {
             Log.e(logTag, "Failed to record bell check", e)
+        }
+    }
+
+    /** Keep every unlock the bell saw, so the settings can tell "never reached" from "not due". */
+    private fun recordUnlock(enabled: Boolean, nextAtMs: Long?) {
+        try {
+            prefs.setMindfulnessBellLastUnlock(
+                JSONObject()
+                    .put("atMs", System.currentTimeMillis())
+                    .put("enabled", enabled)
+                    .put("nextAtMs", nextAtMs ?: JSONObject.NULL)
+                    .toString(),
+            )
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to record bell unlock", e)
         }
     }
 
@@ -208,12 +236,11 @@ class MindfulnessBell(
     }
 
     private fun moment(
-        cfg: UserCfg,
         isOtherOverlayShown: () -> Boolean,
         littleSun: () -> BellHost?,
         isBlockedPackage: (String) -> Boolean,
     ): Moment {
-        val reason = skipReason(cfg, isOtherOverlayShown)
+        val reason = skipReason(isOtherOverlayShown)
         if (reason != null) return Moment.Skip(reason)
 
         // The Little Sun is already with the user (over the app they chose to
@@ -252,15 +279,15 @@ class MindfulnessBell(
     }
 
     /** The moments that are wrong for any bell, wherever it would ring. */
-    private fun skipReason(cfg: UserCfg, isOtherOverlayShown: () -> Boolean): String? {
+    private fun skipReason(isOtherOverlayShown: () -> Boolean): String? {
         if (isOtherOverlayShown()) return "another minded surface was showing"
 
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val keyguard = context.getSystemService(KeyguardManager::class.java)
         if (!power.isInteractive || keyguard?.isKeyguardLocked == true) return "the phone was locked again"
 
-        // Bedtime belongs to the wind-down.
-        if (SleepWindDownWindow.resolveNightId(cfg) != null) return "bedtime wind-down"
+        // Bedtime rings too: the wind-down's own sun, when it's up, is caught
+        // by isOtherOverlayShown, so the bell never brings a second one.
 
         // Do Not Disturb is an explicit "not now" - for the light as much as
         // the sound.

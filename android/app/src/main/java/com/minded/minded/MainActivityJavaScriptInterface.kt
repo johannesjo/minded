@@ -132,6 +132,15 @@ open class MainActivityJavaScriptInterface(
     }
 
     /**
+     * The last unlock the mindfulness bell saw (JSON, see
+     * SharedPreferenceService.getMindfulnessBellLastUnlock), or "" if none yet.
+     */
+    @JavascriptInterface
+    fun getMindfulnessBellLastUnlock(): String {
+        return SharedPreferenceService(context).getMindfulnessBellLastUnlock() ?: ""
+    }
+
+    /**
      * Whether the home-screen sun widget is currently placed on any launcher
      * surface. The web setup surfaces stay truthful with this: "your home
      * screen" reads as a chosen place only once the widget really exists, and

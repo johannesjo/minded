@@ -26,22 +26,47 @@ const parse = (raw: string | null | undefined): BellLastCheck | undefined => {
  * so a bell that's never heard can be understood. Undefined when no bell has
  * been due yet (or the native build can't tell).
  */
+const timeOf = (at: Date): string =>
+  at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+const whenOf = (atMs: number, now: Date): string => {
+  const at = new Date(atMs);
+  return at.toDateString() === now.toDateString()
+    ? `today ${timeOf(at)}`
+    : `${at.toLocaleDateString([], { month: "short", day: "numeric" })} ${timeOf(at)}`;
+};
+
 export const bellLastCheckLabel = (
   raw: string | null | undefined,
   now: Date = new Date(),
 ): string | undefined => {
   const check = parse(raw);
   if (!check) return undefined;
-  const at = new Date(check.atMs);
-  const time = at.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const when =
-    at.toDateString() === now.toDateString()
-      ? `today ${time}`
-      : `${at.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`;
+  const when = whenOf(check.atMs, now);
   return check.rang
     ? `Last bell: ${when}, rang${check.through ? ` through ${check.through}` : ""}`
     : `Last bell: ${when}, stayed quiet - ${check.reason ?? "the moment wasn't right"}`;
+};
+
+/**
+ * One line saying what the bell made of the last unlock - so "no unlock ever
+ * reached the bell" can be told from "none fell inside a bell's window".
+ * Undefined when the native build can't tell (raw undefined).
+ */
+export const bellLastUnlockLabel = (
+  raw: string | null | undefined,
+  now: Date = new Date(),
+): string | undefined => {
+  if (raw === undefined) return undefined;
+  const v = raw
+    ? safeJsonParse<{ atMs?: unknown; enabled?: unknown; nextAtMs?: unknown }>(
+        raw,
+      )
+    : undefined;
+  if (!v || typeof v.atMs !== "number") return "No unlock seen yet";
+  const when = whenOf(v.atMs, now);
+  if (v.enabled !== true) return `Last unlock: ${when}, the bell was off`;
+  return typeof v.nextAtMs === "number"
+    ? `Last unlock: ${when}, next bell from ${timeOf(new Date(v.nextAtMs))}`
+    : `Last unlock: ${when}, no bell left today`;
 };
