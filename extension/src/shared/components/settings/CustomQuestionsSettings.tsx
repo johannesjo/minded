@@ -3,6 +3,7 @@ import {
   getSyncData,
   removeCustomQuestion,
   saveCustomQuestion,
+  updateUserCfg,
 } from "@src/dataInterface/commonSyncDataInterface";
 import type { CustomQuestion } from "@src/dataInterface/syncData";
 import {
@@ -12,6 +13,7 @@ import {
 import Btn from "@src/shared/components/ui/Btn";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { TextInput } from "@src/shared/components/ui/TextInput";
+import { Toggle } from "@src/shared/components/ui/Toggle";
 import styles from "./CustomQuestionsSettings.module.scss";
 
 /**
@@ -95,17 +97,25 @@ const QuestionRow = (props: {
 
 /**
  * Questions in the user's own words. The sun asks them alongside the built-in
- * pool, and their answers gather on the dashboard like any other reflection.
+ * pool - or, if the user prefers, instead of it - and their answers gather on
+ * the dashboard like any other reflection.
  * Nothing here counts or scores; it is only the list, editable. Rewording a
  * question keeps its id, so the reflections already given to it stay attached;
  * removing one keeps its answers too - they are the user's, not the question's.
  */
 export const CustomQuestionsSettings = (props: {
   initialCustomQuestions?: CustomQuestion[];
+  initialIsOnlyOwnQuestions?: boolean;
 }): JSX.Element => {
   const [getQuestions, setQuestions] = createSignal<CustomQuestion[]>(
     props.initialCustomQuestions ?? [],
   );
+  const [getIsOnlyOwn, setIsOnlyOwn] = createSignal(
+    props.initialIsOnlyOwnQuestions ?? false,
+  );
+  // The choice only holds while there is a question to ask; with none, the sun
+  // falls back to its own (getQuestionSmart), and the description says so.
+  const isOnlyOwnInEffect = () => getIsOnlyOwn() && getQuestions().length > 0;
   // The just-removed entry, so an accidental delete can be undone in place -
   // the same quiet safety net the alternatives and answer lists carry.
   const [getRemoved, setRemoved] = createSignal<CustomQuestion | null>(null);
@@ -117,7 +127,10 @@ export const CustomQuestionsSettings = (props: {
 
   const readFromStorage = () =>
     getSyncData().then(
-      (syncData) => setQuestions(sortCustomQuestions(syncData.customQuestions)),
+      (syncData) => {
+        setQuestions(sortCustomQuestions(syncData.customQuestions));
+        setIsOnlyOwn(syncData.cfg.isOnlyOwnQuestions ?? false);
+      },
       (error: unknown) => {
         console.error("Could not read the custom questions", error);
       },
@@ -178,6 +191,12 @@ export const CustomQuestionsSettings = (props: {
     write(() => removeCustomQuestion(question.id));
   };
 
+  const toggleOnlyOwn = (isOnlyOwn: boolean) => {
+    setIsSaveFailed(false);
+    setIsOnlyOwn(isOnlyOwn);
+    write(() => updateUserCfg({ isOnlyOwnQuestions: isOnlyOwn }));
+  };
+
   const undoRemove = () => {
     const removed = getRemoved();
     if (!removed) return;
@@ -195,8 +214,11 @@ export const CustomQuestionsSettings = (props: {
         <h3 class="h3">Your own questions</h3>
       </div>
       <p class={styles.description}>
-        The sun asks these now and then, alongside its own. Questions that open
-        something up tend to work better than ones that keep score.
+        {isOnlyOwnInEffect()
+          ? "The sun asks only these."
+          : "The sun asks these now and then, alongside its own."}{" "}
+        Questions that open something up tend to work better than ones that keep
+        score.
       </p>
 
       <div class={styles.list}>
@@ -256,6 +278,16 @@ export const CustomQuestionsSettings = (props: {
           <Ico name="add" /> Add
         </Btn>
       </div>
+
+      <Show when={getQuestions().length > 0}>
+        <div class={styles.onlyOwn}>
+          <Toggle
+            checked={getIsOnlyOwn()}
+            onChange={toggleOnlyOwn}
+            label="Only ask my questions"
+          />
+        </div>
+      </Show>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Answer, CustomQuestion } from "@src/dataInterface/syncData";
+import { Answer, CustomQuestion, SyncData } from "@src/dataInterface/syncData";
 import { customQuestionsToPrompts } from "@src/shared/data/customQuestions";
 import {
   filterSpecialWidgets,
@@ -81,6 +81,7 @@ What do I want to achieve?
 export const getQuestionSmart = (
   answers: Answer[],
   customQuestions?: CustomQuestion[],
+  isOnlyOwnQuestions = false,
 ): QuestionForPrompt => {
   const now = new Date();
   const isWorkDayToday = isWorkDay(now);
@@ -90,6 +91,13 @@ export const getQuestionSmart = (
   // MyQuestions category; their count feeds the same scoring the static
   // categories get. With none written, the category simply never scores.
   const customPrompts = customQuestionsToPrompts(customQuestions);
+
+  // The user chose to hear only their own questions. With none written there
+  // is nothing to honour that with, so the built-in pool quietly stands in.
+  if (isOnlyOwnQuestions && customPrompts.length) {
+    return getLeastAnsweredQuestion(customPrompts, answers);
+  }
+
   const questionPool = [...QUESTIONS_FOR_DEVICE, ...customPrompts];
   const questionCountFor = (categoryId: QuestionCategoryId): number =>
     categoryId === QuestionCategoryId.MyQuestions
@@ -239,11 +247,37 @@ export const getQuestionSmart = (
   return getRndQuestionConsideringMain(questionsForCategory);
 };
 
+/** The pick for an intervention, read straight off stored data and settings. */
+export const getQuestionForSyncData = (
+  syncData: Pick<SyncData, "answers" | "customQuestions" | "cfg">,
+): QuestionForPrompt =>
+  getQuestionSmart(
+    syncData.answers,
+    syncData.customQuestions,
+    syncData.cfg.isOnlyOwnQuestions,
+  );
+
 export const getQuestionSemiSmart = (now = new Date()): QuestionForPrompt => {
   const questionsToUse = QUESTIONS_FOR_DEVICE.filter((q) =>
     isCategoryWithinTimeConstraints(QUESTION_CATEGORIES[q.categoryId], now),
   );
   return getRndQuestionConsideringMain(questionsToUse);
+};
+
+/**
+ * The question answered least so far, ties broken at random - so a handful of
+ * questions rotate instead of the same one coming back while others wait.
+ */
+const getLeastAnsweredQuestion = (
+  questions: QuestionForPrompt[],
+  answers: Answer[],
+): QuestionForPrompt => {
+  const countFor = (question: QuestionForPrompt): number =>
+    answers.filter((answer) => answer.qid === question.id).length;
+  const fewest = Math.min(...questions.map(countFor));
+  return getRndQuestionConsideringMain(
+    questions.filter((question) => countFor(question) === fewest),
+  );
 };
 
 const getRndQuestionConsideringMain = (

@@ -93,7 +93,7 @@ import { isMain } from "@src/shared/isMain.const";
 import { displayTargetName } from "@src/util/displayTargetName";
 import {
   getQuestionSemiSmart,
-  getQuestionSmart,
+  getQuestionForSyncData,
 } from "@src/util/getQuestionSmart";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
@@ -1435,10 +1435,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           setFrictionLevel("normal");
           setModeWithoutReplacement(forcedFromWidget.mode);
         } else {
-          const question = getQuestionSmart(
-            syncData.answers,
-            syncData.customQuestions,
-          );
+          const question = getQuestionForSyncData(syncData);
           const modeDecision = getInteractionModeDecision(syncData, {
             target: props.interactionTarget,
             platform: props.interactionPlatform,

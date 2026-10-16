@@ -227,6 +227,48 @@ describe("getQuestionSmart", () => {
       expect(result).toBeDefined();
       expect(result.categoryId).not.toBe(QuestionCategoryId.MyQuestions);
     });
+
+    describe("only own questions", () => {
+      const twoQuestions: CustomQuestion[] = [
+        ...customQuestions,
+        { id: "CQ_test2", t: "What am I avoiding?", createdTS: 2 },
+      ];
+      const answerTo = (qid: string): Answer => ({
+        ...createAnswer(QuestionCategoryId.MyQuestions),
+        id: `${qid}-answer`,
+        qid: qid as Answer["qid"],
+      });
+
+      it("asks only the user's questions, even with no answers yet", () => {
+        const result = getQuestionSmart([], twoQuestions, true);
+        expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
+        const pool = mockedGetRndEntry.mock.calls[0][0] as { id: string }[];
+        expect(pool.map((q) => q.id)).toEqual(["CQ_test1", "CQ_test2"]);
+      });
+
+      it("ignores the built-in categories whatever their score", () => {
+        const answers = [
+          createAnswer(QuestionCategoryId.HealthierBrowsingHabits),
+          createAnswer(QuestionCategoryId.WhyReduceBrowsing),
+        ];
+        const result = getQuestionSmart(answers, twoQuestions, true);
+        expect(result.categoryId).toBe(QuestionCategoryId.MyQuestions);
+      });
+
+      it("rotates toward the question answered least", () => {
+        const result = getQuestionSmart(
+          [answerTo("CQ_test1")],
+          twoQuestions,
+          true,
+        );
+        expect(result.id).toBe("CQ_test2");
+      });
+
+      it("falls back to the built-in pool while none are written", () => {
+        const result = getQuestionSmart([], [], true);
+        expect(result.categoryId).not.toBe(QuestionCategoryId.MyQuestions);
+      });
+    });
   });
 
   describe("40% alternate category chance", () => {
