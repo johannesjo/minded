@@ -16,7 +16,6 @@ import android.util.Log
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
 import com.minded.minded.data.SharedPreferenceService
-import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import com.minded.minded.util.BellVoice
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
@@ -98,7 +97,7 @@ class MindfulnessBell(
         )
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
 
-        val moment = moment(cfg, isOtherOverlayShown, littleSun, isBlockedPackage)
+        val moment = moment(isOtherOverlayShown, littleSun, isBlockedPackage)
         recordCheck(moment)
         if (moment is Moment.Skip) {
             // The slot stays open - a later unlock inside its window may still ring.
@@ -237,12 +236,11 @@ class MindfulnessBell(
     }
 
     private fun moment(
-        cfg: UserCfg,
         isOtherOverlayShown: () -> Boolean,
         littleSun: () -> BellHost?,
         isBlockedPackage: (String) -> Boolean,
     ): Moment {
-        val reason = skipReason(cfg, isOtherOverlayShown)
+        val reason = skipReason(isOtherOverlayShown)
         if (reason != null) return Moment.Skip(reason)
 
         // The Little Sun is already with the user (over the app they chose to
@@ -281,15 +279,15 @@ class MindfulnessBell(
     }
 
     /** The moments that are wrong for any bell, wherever it would ring. */
-    private fun skipReason(cfg: UserCfg, isOtherOverlayShown: () -> Boolean): String? {
+    private fun skipReason(isOtherOverlayShown: () -> Boolean): String? {
         if (isOtherOverlayShown()) return "another minded surface was showing"
 
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val keyguard = context.getSystemService(KeyguardManager::class.java)
         if (!power.isInteractive || keyguard?.isKeyguardLocked == true) return "the phone was locked again"
 
-        // Bedtime belongs to the wind-down.
-        if (SleepWindDownWindow.resolveNightId(cfg) != null) return "bedtime wind-down"
+        // Bedtime rings too: the wind-down's own sun, when it's up, is caught
+        // by isOtherOverlayShown, so the bell never brings a second one.
 
         // Do Not Disturb is an explicit "not now" - for the light as much as
         // the sound.
