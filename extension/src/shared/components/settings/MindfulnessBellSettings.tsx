@@ -8,6 +8,9 @@ import {
   bellPerDayLabel,
   DEFAULT_BELL_PER_DAY,
 } from "./mindfulnessBell.const";
+import { bellLastCheckLabel } from "./mindfulnessBellLastCheck";
+import { androidInterface } from "@src/dataInterface/android/androidInterface";
+import { IS_ANDROID } from "@src/dataInterface/commonSyncDataInterface";
 import styles from "./SoundSettings.module.scss";
 import bellStyles from "./MindfulnessBellSettings.module.scss";
 
@@ -26,6 +29,10 @@ export const MindfulnessBellSettings = (props: {
   const [perDay, setPerDay] = createSignal(
     props.initialPerDay ?? DEFAULT_BELL_PER_DAY,
   );
+  // What the last due bell did, so a bell that's never heard can be understood.
+  const lastCheck = IS_ANDROID
+    ? bellLastCheckLabel(androidInterface.getMindfulnessBellLastCheck?.())
+    : undefined;
 
   const toggle = async () => {
     const newValue = !enabled();
@@ -66,6 +73,9 @@ export const MindfulnessBellSettings = (props: {
             aria-label="How often the bell rings"
           />
           <span>{bellPerDayLabel(perDay())}</span>
+          <Show when={lastCheck}>
+            <span class={bellStyles.lastCheck}>{lastCheck}</span>
+          </Show>
         </div>
       </Show>
     </div>

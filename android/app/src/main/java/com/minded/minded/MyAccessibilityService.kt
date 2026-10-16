@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Rect
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -140,6 +141,31 @@ class MyAccessibilityService : AccessibilityService() {
                 ?.root?.packageName?.toString()
         } catch (e: Exception) {
             Log.w(TAG, "Failed to read focused window for the bell", e)
+            null
+        }
+
+        /**
+         * Screen bounds of the nodes described by one of [descriptions] that are
+         * visible right now in the focused app window - e.g. the sun widget on
+         * the launcher page the user is looking at. Widgets on other home pages
+         * aren't visible to the user, so they don't count. Null when the window
+         * can't be read; empty when nothing matches.
+         */
+        fun visibleDescribedNodeBounds(descriptions: List<String>): List<Rect>? = try {
+            val root = connected?.windows
+                ?.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused }
+                ?.root
+            root?.let {
+                descriptions.flatMap { description ->
+                    it.findAccessibilityNodeInfosByText(description)
+                        .filter { node ->
+                            node.isVisibleToUser && node.contentDescription?.toString() == description
+                        }
+                        .map { node -> Rect().also(node::getBoundsInScreen) }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to look for a node on screen", e)
             null
         }
 

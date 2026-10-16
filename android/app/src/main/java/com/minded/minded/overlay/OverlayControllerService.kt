@@ -167,9 +167,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private val maybeRingBell = Runnable {
         try {
             mindfulnessBell.onUnlock(
-                isAnyOverlayShown = { isAnyWindowShown() },
+                isOtherOverlayShown = {
+                    interactionOverlayWindow.isWindowShown() ||
+                        smallMsgOverlayWindow.isWindowShown() ||
+                        successSunOverlayWindow.isWindowShown() ||
+                        sleepWindDownOverlayWindow.isWindowShown() ||
+                        bellSunOverlayWindow.isWindowShown()
+                },
+                littleSun = { littleSunOverlayWindow.bellHost() },
                 isBlockedPackage = { isBlockedPackage(it) },
-                show = { decayMs, onStrike, onGone ->
+                show = { host, decayMs, onStrike, onGone ->
+                    bellSunOverlayWindow.host = host
                     bellSunOverlayWindow.decayMs = decayMs
                     bellSunOverlayWindow.onStrike = onStrike
                     bellSunOverlayWindow.onGone = onGone
@@ -404,6 +412,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (currentPackage != null) {
             // Opening minded itself ends a ringing bell: its own sun is there.
             if (currentPackage == packageName) takeOverFromBell()
+            // Leaving the home screen takes the widget's sun - and the ring
+            // around it - out of view.
+            else if (currentPackage != mindfulnessBell.homePackage()) {
+                onBellHostLeaving(BellHost.Kind.WIDGET)
+            }
             val detectionTimestampMs = intent.getLongExtra(
                 MyAccessibilityService.INTENT_EXTRA_DETECTION_TIMESTAMP, 0L
             )
@@ -481,8 +494,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             // the bell drops at once under the opaque shield and the
             // intervention's sun glides out of that same spot. Any other
             // surface simply fades it.
+            // A bell ringing through another sun has no disc to hand over - that
+            // sun does its own hand-off, and the bell's light just fades.
             val morphFromBell = overlayName == OverlayName.INTERACTION_OVERLAY &&
-                bellSunOverlayWindow.isWindowShown()
+                bellSunOverlayWindow.isWindowShown() && bellSunOverlayWindow.host == null
             if (morphFromBell) {
                 bellSunOverlayWindow.hideWindowImmediate()
                 mindfulnessBell.fadeOutAndRelease()
@@ -571,6 +586,20 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (!bellSunOverlayWindow.isWindowShown()) return
         bellSunOverlayWindow.hideWindow()
         mindfulnessBell.fadeOutAndRelease()
+    }
+
+    /**
+     * The sun a bell rings through is moving or going: the bell goes with it
+     * (fading) rather than leave its light where the sun was.
+     */
+    internal fun onBellHostLeaving(kind: BellHost.Kind) {
+        // Cheap and safe to call often (drags, teardown): nothing to do unless
+        // a bell rings through this kind of sun.
+        if (!::bellSunOverlayWindow.isInitialized || bellSunOverlayWindow.host?.kind != kind) return
+        // Hides can come from the WebView's JS-bridge thread.
+        screenStateHandler.post {
+            if (bellSunOverlayWindow.host?.kind == kind) takeOverFromBell()
+        }
     }
 
     private fun isInputOverlayShown(): Boolean {

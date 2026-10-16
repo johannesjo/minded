@@ -140,7 +140,7 @@ transition in CSS.
 | Little Sun, Android native overlay (`LittleSun.kt`) | **white** disc (`SUN_COLOR = Color.White`) + amber radial glow `#ffd673`, 30dp. Night: `#eef2ff` disc, `#bed2ff` glow |
 | Little Sun, in the WebView (`--little-sun-bg`) | amber gradient face `#ffe487→#ffb24f→#f2823c` + `--little-sun-shadow` amber halo, 40px |
 | Little Sun, web extension | the same CSS one, but the face is pinned to `#fff` — it reads fine as a pale disc on a web page, where the Android overlay over arbitrary app content did not |
-| Mindfulness bell, Android native overlay (`BellSun.kt`) | the Little Sun's disc and amber glow (`SunDisc`), at the Little Sun's rest spot; at the strike the same amber halo swells once and fades over the bell's decay — never a second colour. Night: the moon's cool halo |
+| Mindfulness bell, Android native overlay (`BellSun.kt`) | the Little Sun's disc and amber glow (`SunDisc`), at the Little Sun's rest spot; at the strike the same amber halo swells once and fades over the bell's decay — never a second colour. Night: the moon's cool halo. When the Little Sun or the widget's sun is already in view, the bell brings no disc: the swell rises as a ring from that sun's rim instead (one sun) |
 | Small widget, Android | `ic_sun_widget_day.xml` — white disc, faint gold rim, amber bloom `@ .28`; transparent on the wallpaper |
 | Small widget, iOS | `CompanionSun` with `onOwnSky: false` — same disc, amber bloom `255,214,115 @ .28`; clear container background |
 

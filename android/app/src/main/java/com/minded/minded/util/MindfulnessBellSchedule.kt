@@ -11,8 +11,8 @@ import kotlin.random.Random
  * within a week - but it is random *within structure*, never dice all day:
  *
  * - Each day has the user's chosen number of slots ([SLOTS_PER_DAY_RANGE],
- *   [DEFAULT_SLOTS_PER_DAY] unless set), drawn at random within
- *   [EARLIEST_SLOT_MINUTE]..[LATEST_SLOT_MINUTE] and at least
+ *   [DEFAULT_SLOTS_PER_DAY] unless set), drawn at random across the whole
+ *   day ([EARLIEST_SLOT_MINUTE]..[latestSlotFor]) and at least
  *   [minSlotGapFor] apart ([MIN_SLOT_GAP_MINUTES] for up to three). The draw is a pure function of the day and a
  *   per-install salt, so the same day always has the same slots (no re-roll on
  *   a service restart) while two installs never share them.
@@ -23,10 +23,10 @@ import kotlin.random.Random
  *   pocket, and adapts by itself: a light phone user simply hears it less.
  *   That is how "a few times a day" happens without a counter.
  * - Never two rings within [minRingGapFor] ([MIN_RING_GAP_MINUTES] for up
- *   to three), even if a late first slot
- *   and an early second one would allow it, and never at or after
- *   [LATEST_RING_MINUTE] - the same waking-hours end the in-intervention bell
- *   uses (ACTION_ADVICES_MAX_HOUR in actionAdvices.ts).
+ *   to three), even if a late first slot and an early second one would allow it.
+ * - No waking-hours cut-off: a slot at 3 a.m. simply passes unheard unless the
+ *   phone is picked up then. The night is kept by the moment checks instead
+ *   (Do Not Disturb, the bedtime wind-down - see MindfulnessBell.skipReason).
  *
  * Nothing about the user's response is recorded anywhere: which slots have
  * rung today is bookkeeping for "don't ring twice", forgotten the next day.
@@ -36,12 +36,11 @@ object MindfulnessBellSchedule {
     // Wide for now so the bell can be tried out often; the everyday choices
     // are one to three.
     val SLOTS_PER_DAY_RANGE = 1..30
-    const val EARLIEST_SLOT_MINUTE = 9 * 60
-    const val LATEST_SLOT_MINUTE = 20 * 60
+    const val EARLIEST_SLOT_MINUTE = 0
+    const val DAY_MINUTES = 24 * 60
     const val MIN_SLOT_GAP_MINUTES = 3 * 60
     const val SLOT_FIRE_WINDOW_MINUTES = 2 * 60
     const val MIN_RING_GAP_MINUTES = 90
-    const val LATEST_RING_MINUTE = 22 * 60
 
     /** Up to this many slots keep the full [MIN_SLOT_GAP_MINUTES]/[MIN_RING_GAP_MINUTES]. */
     private const val SPACIOUS_SLOTS = 3
@@ -49,11 +48,18 @@ object MindfulnessBellSchedule {
     /**
      * How far apart a day of [count] slots must be. One to three keep the
      * full [MIN_SLOT_GAP_MINUTES]; more shrink it so they still fit, leaving
-     * half the waking span free to land at random.
+     * about half the day free to land at random.
      */
     fun minSlotGapFor(count: Int): Int =
         if (count <= SPACIOUS_SLOTS) MIN_SLOT_GAP_MINUTES
-        else (LATEST_SLOT_MINUTE - EARLIEST_SLOT_MINUTE) / (2 * (count - 1))
+        else minOf(MIN_SLOT_GAP_MINUTES, DAY_MINUTES / (2 * count - 1))
+
+    /**
+     * The latest a slot may fall: its whole [fireWindowFor] still inside the
+     * day, so a late slot's window is never cut short at midnight (the next
+     * day draws its own slots and forgets this one's).
+     */
+    fun latestSlotFor(count: Int): Int = DAY_MINUTES - fireWindowFor(count)
 
     /** The least time between two rings - [MIN_RING_GAP_MINUTES], or half the slot gap for many slots. */
     fun minRingGapFor(count: Int): Int =
@@ -77,7 +83,7 @@ object MindfulnessBellSchedule {
     fun slotsFor(epochDay: Long, salt: Long, count: Int = DEFAULT_SLOTS_PER_DAY): List<Int> {
         val n = count.coerceIn(SLOTS_PER_DAY_RANGE)
         val gap = minSlotGapFor(n)
-        val free = LATEST_SLOT_MINUTE - EARLIEST_SLOT_MINUTE - (n - 1) * gap
+        val free = latestSlotFor(n) - EARLIEST_SLOT_MINUTE - (n - 1) * gap
         val random = Random(epochDay * 1_000_003L + salt)
         return List(n) { random.nextInt(0, free + 1) }
             .sorted()
@@ -86,8 +92,9 @@ object MindfulnessBellSchedule {
 
     /**
      * The slot an unlock at [minuteOfDay] should ring for, or null. [rungMask]
-     * has bit i set once slot i has rung today; [lastRungMinute] is today's last
-     * ring (null if none yet).
+     * has bit i set once slot i has rung today; [lastRungMinute] is the last
+     * ring in minutes of today - negative if it was yesterday evening, so the
+     * ring gap holds across midnight (null if none since yesterday).
      */
     fun dueSlot(
         minuteOfDay: Int,
@@ -95,7 +102,6 @@ object MindfulnessBellSchedule {
         rungMask: Int,
         lastRungMinute: Int?,
     ): Int? {
-        if (minuteOfDay >= LATEST_RING_MINUTE) return null
         // The mask counts rings by slot index; a count changed mid-day re-rolls
         // the slots under it, so cap by how many have rung, not which.
         if (rungMask.countOneBits() >= slots.size) return null

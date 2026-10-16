@@ -123,6 +123,15 @@ open class MainActivityJavaScriptInterface(
     }
 
     /**
+     * The last time the mindfulness bell was due and what came of it (JSON, see
+     * SharedPreferenceService.getMindfulnessBellLastCheck), or "" if never.
+     */
+    @JavascriptInterface
+    fun getMindfulnessBellLastCheck(): String {
+        return SharedPreferenceService(context).getMindfulnessBellLastCheck() ?: ""
+    }
+
+    /**
      * Whether the home-screen sun widget is currently placed on any launcher
      * surface. The web setup surfaces stay truthful with this: "your home
      * screen" reads as a chosen place only once the widget really exists, and

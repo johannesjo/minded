@@ -293,7 +293,17 @@ class LittleSunWindow(
         }
     }
 
+    /** The bubble as a sun the mindfulness bell can ring through, while it's shown. */
+    fun bellHost(): BellHost? {
+        if (!isWindowShown()) return null
+        val size = LittleSunPosition.bubbleSizePx(ctrlSvc.resources.displayMetrics.density)
+        return BellHost(posX + size / 2, posY + size / 2, size, BellHost.Kind.LITTLE_SUN)
+    }
+
     private fun onDragStart() {
+        // A bell ringing through the bubble stays where it rang - let it go
+        // rather than leave its light behind as the sun moves.
+        ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         // Resolve the zone geometry fresh - insets/orientation may have changed
         // since the last drag.
         val density = ctrlSvc.resources.displayMetrics.density
@@ -493,6 +503,7 @@ class LittleSunWindow(
     }
 
     override fun hideWindow() {
+        ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         stopTimer()
         // A hide can land mid-drag (timer expiry, re-validation) - never leave
         // the horizon glow orphaned on screen. During a committed set the zone
@@ -502,6 +513,7 @@ class LittleSunWindow(
     }
 
     override fun hideWindowImmediate() {
+        ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         if (!isLeaveCommitted) removeZoneImmediate()
         super.hideWindowImmediate()
     }
