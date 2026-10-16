@@ -143,6 +143,28 @@ class MyAccessibilityService : AccessibilityService() {
             null
         }
 
+        /**
+         * Whether a node described by one of [descriptions] is visible right now
+         * in the focused app window - e.g. the sun widget on the launcher page
+         * the user is looking at. Widgets on other home pages aren't visible to
+         * the user, so they don't count. Null when the window can't be read.
+         */
+        fun isDescribedNodeOnScreen(descriptions: List<String>): Boolean? = try {
+            val root = connected?.windows
+                ?.firstOrNull { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.isFocused }
+                ?.root
+            root?.let {
+                descriptions.any { description ->
+                    it.findAccessibilityNodeInfosByText(description).any { node ->
+                        node.isVisibleToUser && node.contentDescription?.toString() == description
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to look for a node on screen", e)
+            null
+        }
+
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         const val INTENT_EXTRA_DETECTION_TIMESTAMP = "INTENT_EXTRA_DETECTION_TIMESTAMP"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"

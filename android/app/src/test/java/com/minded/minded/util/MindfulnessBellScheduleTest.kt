@@ -1,7 +1,6 @@
 package com.minded.minded.util
 
 import com.minded.minded.util.MindfulnessBellSchedule.EARLIEST_SLOT_MINUTE
-import com.minded.minded.util.MindfulnessBellSchedule.LATEST_RING_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.LATEST_SLOT_MINUTE
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_RING_GAP_MINUTES
 import com.minded.minded.util.MindfulnessBellSchedule.MIN_SLOT_GAP_MINUTES
@@ -21,7 +20,7 @@ import kotlin.test.assertTrue
 class MindfulnessBellScheduleTest {
 
     @Test
-    fun `every day's slots stay in waking hours and keep their gap`() {
+    fun `every day's slots stay within the day and keep their gap`() {
         for (count in SLOTS_PER_DAY_RANGE) for (day in 0L until 2000L) {
             val slots = slotsFor(day, salt = 42L, count = count)
             assertEquals(count, slots.size)
@@ -123,10 +122,17 @@ class MindfulnessBellScheduleTest {
     }
 
     @Test
-    fun `nothing rings late in the evening`() {
-        val slots = listOf(LATEST_SLOT_MINUTE - 200, LATEST_SLOT_MINUTE)
-        assertEquals(1, dueSlot(LATEST_RING_MINUTE - 1, slots, 0b01, null))
-        assertNull(dueSlot(LATEST_RING_MINUTE, slots, 0b01, null))
+    fun `a slot may ring at any hour - there is no waking-hours cut-off`() {
+        val slots = listOf(30, LATEST_SLOT_MINUTE - 10)
+        assertEquals(0, dueSlot(30, slots, 0, null))
+        assertEquals(1, dueSlot(LATEST_SLOT_MINUTE, slots, 0b01, lastRungMinute = 30))
+    }
+
+    @Test
+    fun `slots spread across the whole day, not just its middle`() {
+        val all = (0L until 500L).flatMap { slotsFor(it, salt = 3L, count = 3) }
+        assertTrue(all.any { it < 9 * 60 }, "some slot before 9:00")
+        assertTrue(all.any { it > 20 * 60 }, "some slot after 20:00")
     }
 
     private fun voice(

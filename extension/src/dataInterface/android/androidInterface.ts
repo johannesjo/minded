@@ -81,6 +81,12 @@ interface InteractionWindowJavaScriptInterface {
    * or no overlay at all. Optional: guard with `?.` like the others.
    */
   continueAfterInterventionPause?: () => void;
+  /**
+   * The last time the mindfulness bell was due and what came of it, as JSON
+   * `{"atMs":number,"rang":boolean,"reason":string|null}`, or "" if never.
+   * Optional: older native builds won't have it - guard with `?.()`.
+   */
+  getMindfulnessBellLastCheck?: () => string;
   test: () => void;
 }
 

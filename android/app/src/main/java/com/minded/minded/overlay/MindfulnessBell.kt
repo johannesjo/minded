@@ -2,8 +2,6 @@ package com.minded.minded.overlay
 
 import android.app.KeyguardManager
 import android.app.NotificationManager
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,7 +23,7 @@ import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.UserCfg
 import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
-import com.minded.minded.widget.MyAppWidgetReceiver
+import org.json.JSONObject
 import java.time.LocalDateTime
 
 /**
@@ -40,8 +38,9 @@ import java.time.LocalDateTime
  * [onUnlock] is the only entry point: the bell rides an unlock (USER_PRESENT),
  * so it never wakes the phone, needs no alarm or notification, and never
  * reaches into a pocket. When the schedule says no, or the moment is wrong,
- * nothing happens and nothing is recorded; a slot whose window passes without
- * a good moment is simply dropped.
+ * nothing happens - only the last due bell's outcome is kept, so the settings
+ * can say why one wasn't heard; a slot whose window passes without a good
+ * moment is simply dropped.
  */
 class MindfulnessBell(
     private val context: Context,
@@ -79,6 +78,7 @@ class MindfulnessBell(
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
 
         val skipReason = skipReason(cfg, isAnyOverlayShown, isBlockedPackage)
+        recordCheck(skipReason)
         if (skipReason != null) {
             // The slot stays open - a later unlock inside its window may still ring.
             Log.d(logTag, "Bell due (slot $slot) but skipped: $skipReason")
@@ -106,6 +106,21 @@ class MindfulnessBell(
                 if (sound != null && player === sound && !sound.isPlaying) release()
             },
         )
+    }
+
+    /** Keep the outcome of a due bell for the settings' "last bell" line. */
+    private fun recordCheck(skipReason: String?) {
+        try {
+            prefs.setMindfulnessBellLastCheck(
+                JSONObject()
+                    .put("atMs", System.currentTimeMillis())
+                    .put("rang", skipReason == null)
+                    .put("reason", skipReason ?: JSONObject.NULL)
+                    .toString(),
+            )
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to record bell check", e)
+        }
     }
 
     private var cachedRaw: String? = null
@@ -176,14 +191,14 @@ class MindfulnessBell(
         isAnyOverlayShown: () -> Boolean,
         isBlockedPackage: (String) -> Boolean,
     ): String? {
-        if (isAnyOverlayShown()) return "a minded surface is showing"
+        if (isAnyOverlayShown()) return "another minded sun was showing"
 
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val keyguard = context.getSystemService(KeyguardManager::class.java)
-        if (!power.isInteractive || keyguard?.isKeyguardLocked == true) return "not unlocked"
+        if (!power.isInteractive || keyguard?.isKeyguardLocked == true) return "the phone was locked again"
 
         // Bedtime belongs to the wind-down.
-        if (SleepWindDownWindow.resolveNightId(cfg) != null) return "bedtime window"
+        if (SleepWindDownWindow.resolveNightId(cfg) != null) return "bedtime wind-down"
 
         // Do Not Disturb is an explicit "not now" - for the light as much as
         // the sound.
@@ -193,11 +208,11 @@ class MindfulnessBell(
         }
 
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (audio.isMusicActive) return "media is playing"
+        if (audio.isMusicActive) return "media was playing"
         when (audio.mode) {
             AudioManager.MODE_IN_CALL,
             AudioManager.MODE_IN_COMMUNICATION,
-            AudioManager.MODE_RINGTONE -> return "in a call"
+            AudioManager.MODE_RINGTONE -> return "a call"
         }
 
         // The accessibility service's live focused window first: it is always
@@ -209,12 +224,16 @@ class MindfulnessBell(
                 is ForegroundAppResult.Stale -> r.packageName
                 // Unknown is a "no": a wrong guess here rings over minded
                 // itself or a guarded app.
-                else -> return "foreground app unknown"
+                else -> return "couldn't tell which app was open"
             }
-        if (foreground == context.packageName) return "minded is open"
-        if (isBlockedPackage(foreground)) return "a guarded app is open"
-        // The companion widget may be on the home screen - two suns.
-        if (foreground == homePackage() && isWidgetPlaced()) return "home screen with the sun widget"
+        if (foreground == context.packageName) return "minded was open"
+        if (isBlockedPackage(foreground)) return "a guarded app was open"
+        // Two suns: only when the companion widget is on the home page in
+        // view - a widget on another page doesn't stop the bell. Unreadable
+        // counts as in view.
+        if (foreground == homePackage() && isWidgetOnScreen() != false) {
+            return "the sun widget was on screen"
+        }
         return null
     }
 
@@ -260,14 +279,14 @@ class MindfulnessBell(
         null
     }
 
-    private fun isWidgetPlaced(): Boolean = try {
-        AppWidgetManager.getInstance(context)
-            .getAppWidgetIds(ComponentName(context, MyAppWidgetReceiver::class.java))
-            .isNotEmpty()
-    } catch (e: Exception) {
-        // Unknown: assume it might be there rather than risk two suns.
-        true
-    }
+    /** Whether the sun widget is visible now, found by its content description; null if unknown. */
+    private fun isWidgetOnScreen(): Boolean? =
+        MyAccessibilityService.isDescribedNodeOnScreen(
+            listOf(
+                R.string.widget_sun_description_day,
+                R.string.widget_sun_description_night,
+            ).map { context.getString(it) },
+        )
 
     companion object {
         // Whatever resumed last is still in front after an unlock, however long
