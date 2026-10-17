@@ -53,19 +53,42 @@ struct CompanionSun: View {
     var body: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
+            // Both faces are always drawn, so a day↔night entry change turns
+            // the one disc instead of swapping two (the in-app turn, Sun.scss):
+            // the incoming face fades in *over* a disc that stays opaque, and
+            // the halos ease across on the same beat. Fading both discs at once
+            // dipped it translucent mid-turn - the sun briefly dissolving.
             ZStack {
-                if isNight {
-                    moon(side: side)
-                } else {
-                    glow(side: side)
-                    disc(side: side)
-                }
+                glow(side: side)
+                    .opacity(isNight ? 0 : 1)
+                    .animation(Self.turn, value: isNight)
+                // The sun's disc never fades: at night it simply rests, a hair
+                // smaller, under the moon's opaque body, so neither direction
+                // of the turn needs a delayed swap (which WidgetKit's archived
+                // animations can't be relied on to honour).
+                disc(side: side)
+                    .scaleEffect(isNight ? Self.discUnderMoon : 1)
+                    .animation(Self.turn, value: isNight)
+                moon(side: side)
+                    .opacity(isNight ? 1 : 0)
+                    .animation(Self.turn, value: isNight)
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
         // Keep the disc perfectly round regardless of the widget's aspect ratio.
         .aspectRatio(1, contentMode: .fit)
     }
+
+    /// The sun ↔ moon turn between timeline entries (iOS 17+ animates entry
+    /// changes; earlier iOS swaps snapshots and this is inert). Slow and
+    /// symmetric, in the spirit of the app's turn (its face crossfade is
+    /// --dur-sky-turn, 1.2 s, inside a 2.4 s sky turn), and well inside
+    /// WidgetKit's two-second ceiling on widget animations.
+    static let turn: Animation = .easeInOut(duration: 1.6)
+
+    /// How far the sun's disc shrinks under the moon at night: just enough that
+    /// its antialiased rim can't show past the moon's (same-size) body.
+    private static let discUnderMoon: CGFloat = 0.96
 
     // The night moon. Mirrors the day's glow + disc split at the same radii, so
     // sun and moon occupy the same slot; only the face beneath differs.

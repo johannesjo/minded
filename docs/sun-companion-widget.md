@@ -39,12 +39,16 @@ as the app's does: `WidgetSun` (Kotlin and Swift) ports the app's `solarSky.ts`,
 night - the moon, the dark sky, the wordless card - begins when the sun is 4° below
 the horizon at the time zone's principal place (the same generated table the app
 reads, `WidgetTimeZones`), and the card's sky steps along the same sun-timed
-palette clock. There is only one sun, so the widget and the app can't disagree
+palette clock. Night opens on a **nightfall** face rather than straight on
+deep night: the dark sky still holding the sunset's warm horizon, baked from
+the app's own afterglow layers, while the real afterglow (ported with the sun)
+is ≥ 0.35 - about the first hour after dusk - so the card goes dusk → moon over
+the last warm light → deep night, as the app's sky does. There is only one sun, so the widget and the app can't disagree
 about whether it's up - a Berlin June evening is still day at 21:00 on both. A
 zone with no place (UTC, Etc/…) falls back to the fixed 06–19 clock, again like the
 app. The shared receiver refreshes with one inexact, non-wake alarm: the next
-15-minute line step by day, or the real dusk/dawn if that comes first
-(`docs/widget-prompts-concept.md`); a sun-only placement rides along and only ever
+15-minute line step by day, or the real dusk/dawn if that comes first, and at
+night the end of nightfall, then the dawn (`docs/widget-prompts-concept.md`); a sun-only placement rides along and only ever
 repaints while the screen is already on.
 
 ### Tonight's moon, not a full one
@@ -183,8 +187,12 @@ verify.
   follows the **real sun** (`WidgetSun.swift`, the twin of the Android port),
   with the timeline pre-placing every face change so the card steps and the sun
   or moon flips on time - not the system colour scheme. Entries cross-fade
-  (iOS 17+), and the card's line is set in the app's own Newsreader, bundled as
-  a static Regular.
+  (iOS 17+). The day↔night change is the app's one-disc turn, not a swap:
+  `CompanionSun` always draws both faces, the moon fades in over a sun disc
+  that stays opaque until it is covered, and the halos ease across on the same
+  1.6 s beat. Android widgets can't animate a repaint at all (RemoteViews have
+  no animation), so there the flip is a plain step. The card's line is set in
+  the app's own Newsreader, bundled as a static Regular.
   `.widgetURL(URL("minded://sun"))` is the tap target (the card appends
   `?line=…`). No special entitlement, no App Group - the widget only carries a
   deep link.

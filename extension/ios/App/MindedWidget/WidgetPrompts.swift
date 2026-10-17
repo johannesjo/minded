@@ -228,14 +228,18 @@ enum WidgetPrompts {
     /// day: the next quarter-hour line step or the dusk flip, whichever comes
     /// first (the real sun's flips land on any minute, not a slot edge); across
     /// the wordless night nothing changes until the dawn that brings the first
-    /// line back, so one entry spans the night. The sky's face steps ride the
+    /// line back - except, early in the night, the card's nightfall face giving
+    /// way to the deep night one as the afterglow drains - so two entries span
+    /// the night (one, after the nightfall). The sky's face steps ride the
     /// quarter-hour day cadence. If the sun never flips within two days (polar
     /// night), it re-checks after a day rather than never. DST/timezone-safe via
     /// `Calendar`; never returns `date` itself.
     static func nextChange(after date: Date, calendar: Calendar = .current) -> Date? {
         let flip = WidgetSun.nextNightFlip(after: date, calendar: calendar)
         if WidgetSun.moment(at: date, calendar: calendar).isNight {
-            return flip ?? date.addingTimeInterval(24 * 3600)
+            let nightfall = WidgetSun.nextNightfallFlip(after: date, calendar: calendar)
+            return [flip, nightfall].compactMap { $0 }.min()
+                ?? date.addingTimeInterval(24 * 3600)
         }
         let nextSlot = stride(from: 0, to: 60, by: slotMinutes)
             .compactMap { minute in

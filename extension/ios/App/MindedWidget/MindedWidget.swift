@@ -21,12 +21,16 @@
 //    carries the exact shown line (`minded://sun?line=…`) so the interaction
 //    opens on that same NOTICE/ACTION_ADVICE. See docs/widget-prompts-concept.md.
 //
-//  The sun never animates, but it *is* alive to the day: instead of one static
+//  The sun can't run the app's living motion, but it *is* alive to the day -
+//  and turns sun ↔ moon as one disc between entries (iOS 17+, CompanionSun /
+//  SunGlyph). Instead of one static
 //  `.never` snapshot, the provider pre-places every face change as a timeline
 //  entry - 15-minute prompt steps by day (which contain the sky's whole-hour
-//  steps and the day/night flips by construction), one wordless entry spanning
-//  the night. Entries are deterministic, so nothing regenerates on unlock and
-//  there is no refresh-budget pressure; `.atEnd` requests the next batch once
+//  steps and the day/night flips by construction), and two wordless entries
+//  across the night - the nightfall face (the sunset's afterglow still on the
+//  horizon, as in the app), then the deep night from when it drains.
+//  Entries are deterministic, so nothing regenerates on unlock and there is no
+//  refresh-budget pressure; `.atEnd` requests the next batch once
 //  they're consumed. Day/night and sky are decided here by the clock, **not**
 //  by the system colour scheme at render time.
 //
@@ -42,7 +46,10 @@ struct SunEntry: TimelineEntry {
     let phase: SunWidgetPhase
     let sky: WidgetSky
     let prompt: String?
-    /// Tonight's lit lune (`WidgetMoon`), nil by day and at (near) full moon.
+    /// The moon's lit lune for this date (`WidgetMoon`), nil at (near) full
+    /// moon. Kept by day too, though the moon is hidden then: the colour sun
+    /// draws both faces so it can turn, and at dawn the leaving moon has to
+    /// keep its phase all the way out instead of snapping full.
     let moonOutline: [CGPoint]?
 }
 
@@ -56,12 +63,10 @@ private func sunEntry(at date: Date) -> SunEntry {
         phase: SunWidgetPhase.forMoment(moment),
         sky: WidgetSky.forMoment(moment),
         prompt: WidgetPrompts.prompt(at: date),
-        moonOutline: moment.isNight
-            ? WidgetMoon.luneOutline(
-                WidgetMoon.phase(at: date),
-                isSouthernHemisphere: moment.isSouthernHemisphere
-            )
-            : nil
+        moonOutline: WidgetMoon.luneOutline(
+            WidgetMoon.phase(at: date),
+            isSouthernHemisphere: moment.isSouthernHemisphere
+        )
     )
 }
 
@@ -77,8 +82,8 @@ struct SunProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<SunEntry>) -> Void) {
         let now = Date()
         var entries: [SunEntry] = [sunEntry(at: now)]
-        // Pre-place the upcoming face changes: quarter-hour prompt steps by day, a
-        // single wordless entry across the night. 64 changes span a full waking
+        // Pre-place the upcoming face changes: quarter-hour prompt steps by day,
+        // the nightfall and deep-night entries across the night. 64 changes span a full waking
         // day (~16h) - well within a timeline batch; `.atEnd` refills after that.
         var cursor = now
         for _ in 0..<64 {
@@ -138,9 +143,9 @@ private struct SunOnly: View {
     var entry: SunEntry
 
     var body: some View {
+        // One view across the day↔night change (no `.id` swap): CompanionSun
+        // turns its own faces, the way the in-app disc does.
         CompanionSun(isNight: entry.phase.isNight, moonOutline: entry.moonOutline)
-            .id(entry.phase.isNight)
-            .softWidgetTransition()
             // The sun claims three quarters of the tile, like Android's bare sun
             // (SUN_ONLY_FRACTION) - the bloom fades to nothing at that edge, so
             // nothing clips. With the system content margins disabled (see the
@@ -194,7 +199,8 @@ private struct PromptCard: View {
                 } else {
                     // On our own sky the sun's halo is white, not amber (THE HALO
                     // RULE - see CompanionSun's `onOwnSky`); the amber is for the
-                    // small widget, which floats on the user's wallpaper.
+                    // small widget, which floats on the user's wallpaper. One view
+                    // across the day↔night change: it turns its own faces.
                     CompanionSun(
                         isNight: entry.phase.isNight,
                         onOwnSky: true,
@@ -202,8 +208,6 @@ private struct PromptCard: View {
                     )
                 }
             }
-            .id(entry.phase.isNight)
-            .softWidgetTransition()
             .frame(width: 54, height: 54)
         }
         // Matches Android's card padding (12dp); the system content margins are
@@ -230,19 +234,27 @@ private struct SunGlyph: View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
             let disc = side * 0.667
+            // Both glyphs are always laid out and the change between them
+            // eases (CompanionSun.turn), so a day↔night entry change turns the
+            // one glyph instead of swapping two views.
             ZStack {
-                if isNight {
+                ZStack {
                     Circle().fill(Color.white.opacity(0.35))
                     Circle().strokeBorder(Color.white, lineWidth: max(1.5, disc * 0.07))
-                } else {
+                }
+                .frame(width: disc, height: disc)
+                .opacity(isNight ? 1 : 0)
+                ZStack {
                     // A faint ring of light around the disc - the glyph's halo.
                     Circle()
                         .strokeBorder(Color.white.opacity(0.35), lineWidth: max(1, side * 0.04))
                         .frame(width: side * 0.86, height: side * 0.86)
                     Circle().fill(Color.white).frame(width: disc, height: disc)
                 }
+                .frame(width: side, height: side)
+                .opacity(isNight ? 0 : 1)
             }
-            .frame(width: isNight ? disc : side, height: isNight ? disc : side)
+            .animation(CompanionSun.turn, value: isNight)
             .frame(width: geo.size.width, height: geo.size.height)
             .widgetAccentable()
         }
@@ -256,9 +268,8 @@ private struct SunGlyphWidget: View {
     var entry: SunEntry
 
     var body: some View {
+        // One glyph across the day↔night change; it turns itself.
         SunGlyph(isNight: entry.phase.isNight)
-            .id(entry.phase.isNight)
-            .softWidgetTransition()
             .padding(family == .accessoryCircular ? 4 : 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .widgetURL(openSunURL(line: nil))
@@ -282,6 +293,7 @@ private func skyImageName(_ sky: WidgetSky) -> String {
     case .midday: return "widget_sky_midday"
     case .afternoon: return "widget_sky_afternoon"
     case .dusk: return "widget_sky_dusk"
+    case .nightfall: return "widget_sky_nightfall"
     case .night: return "widget_sky_dark"
     }
 }

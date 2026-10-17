@@ -22,7 +22,19 @@
 import Foundation
 
 enum WidgetSky {
-    case dawn, morning, midday, afternoon, dusk, night
+    case dawn, morning, midday, afternoon, dusk, nightfall, night
+
+    /// The afterglow (`WidgetSun.Moment.afterglow`) down to which the card keeps
+    /// its nightfall face - the dark sky still holding the sunset's warm horizon,
+    /// baked at NIGHTFALL_AFTERGLOW_LEVEL (0.65) in gen_loading_sky.py - before
+    /// it settles to the deep night one. Two stills stand in for the app's smooth
+    /// 1 → 0 drain; bake at ~2/3 and switch at ~1/3, and neither is ever more than
+    /// ~1/3 off the live sky. The Kotlin twin's NIGHTFALL_MIN_AFTERGLOW
+    /// (widgetSolarMirror.test.ts keeps them equal).
+    static let nightfallMinAfterglow = 0.35
+
+    /// One of the two dark skies - the moon's, never under text.
+    var isNight: Bool { self == .nightfall || self == .night }
 
     /// The sky for a given local hour-of-day (0–23; other values wrap). The
     /// steps are the app's ambient keyframes (skyTimeline.ts) on whole hours:
@@ -33,16 +45,24 @@ enum WidgetSky {
     /// all turn over together, in step with the app (and with Android).
     static func forHour(_ hour: Int) -> WidgetSky {
         let h = ((hour % 24) + 24) % 24
-        return SunWidgetPhase.forHour(h).isNight ? .night : forSkyHour(Double(h))
+        return SunWidgetPhase.forHour(h).isNight
+            ? forAfterglow(WidgetSun.nightAfterglow(atHour: Double(h)))
+            : forSkyHour(Double(h))
     }
 
     /// The sky for a moment of light. By day `skyHour` is the palette clock's
     /// hour - timed to the real sun, so a winter afternoon reaches the dusk face
     /// early, just as the app's sky does - bucketed onto the same faces as
     /// `forHour`. Night is the moment's own, so the dark sky, the moon and the
-    /// wordless card still turn over together.
+    /// wordless card still turn over together - and the night's first stretch
+    /// keeps the sunset's afterglow, like the app's.
     static func forMoment(_ moment: WidgetSun.Moment) -> WidgetSky {
-        moment.isNight ? .night : forSkyHour(moment.skyHour)
+        moment.isNight ? forAfterglow(moment.afterglow) : forSkyHour(moment.skyHour)
+    }
+
+    /// The dark face for a night's afterglow: nightfall, then deep night.
+    static func forAfterglow(_ afterglow: Double) -> WidgetSky {
+        afterglow >= nightfallMinAfterglow ? .nightfall : .night
     }
 
     /// The light-sky face for a palette-clock hour (the day buckets only).

@@ -122,14 +122,59 @@ The departing moon dims to 1.0 + snug like the sun, but stays cool.
 
 ### The day↔night flip
 
-The theme can flip under a live sun (an Android resume across the threshold).
-It is one disc turning, never a swap: the moon face fades in *over* the sun face
+The theme can flip under a live sun: an app resume across the threshold, or -
+on the dashboard shell, which follows the clock live (`followDayNight`) - the
+real dusk or dawn arriving while the app is open. Neither turns under an open
+pause (parts of it read the theme once): the theme stays as it was, and the
+turn plays on the minute after the pause closes.
+
+The sky turns the way the real one does (`sky/skyTurn.ts`, played as a View
+Transition by `turnTheSky` in `addWrapperClasses.ts`, since a gradient can't
+transition in CSS), over `SKY_TURN_MS` (2.4 s):
+
+- **Nightfall:** the dark comes down from the zenith on a soft, half-screen
+  front, so the horizon holds the last light longest.
+- **Daybreak:** a broad dome of day rises from the bottom centre, the sky's
+  sunrise point, until it holds the whole sky.
+
+Ahead of the front the old sky is already going - it dims toward the night, or
+lifts toward the day - so the half of the screen still waiting reads as dusk
+deepening, not a still picture about to be wiped.
+
+The sun is never part of that sweep. Each disc on screen gets its own capture
+layer (played by a small injected stylesheet - `skyTurnStylesheet` - with the
+`-webkit-mask` twins older WebViews need) and stays one disc turning: the moon face fades in *over* the sun face
 (the face underneath stays opaque, so the disc never goes translucent mid-flip),
-and for that same `--dur-gentle` beat the halo and the moon's cool pool ease on
-it too (`sunVariantMorph.ts`) instead of jumping ahead on the quick bloom ease.
-The horizon reflection fades with it, and in the apps the sky itself crossfades
-(a View Transition in `setIsDarkModeIfApplies`), since a gradient can't
-transition in CSS.
+over `--dur-sky-turn`, and the halo, the moon's cool pool and the light it
+casts on the sky (`.sun-light`) ease with it (`sunVariantMorph.ts`, Sun.scss)
+instead of changing ahead of the disc. Each
+disc's turn waits for the sky's front to reach it (`--sky-turn-delay`). So the
+companion on the bar turns late at nightfall, when the night reaches the
+horizon, and at once at daybreak, rising with the first light. An intervention
+sun mid-screen turns halfway through.
+
+A capture paints above the whole page and drops its ancestors' opacity, so a
+disc is lifted only when it is plainly there: nothing fading it, nothing
+painted over its centre. A sun under a sheet or mid-fade stays part of the page
+and turns inside the sweep instead of popping through what covers it.
+
+A tap, key or scroll during the turn lands on the transition, not the page, so
+it hurries the rest of the turn - the sky and the disc's own delayed turn alike
+- to a close in ~0.3 s instead, and the next one reaches the sun. The disc's
+slow turn beat ends the moment the turn lands (`SKY_TURN_SETTLED_EV`), so the
+next glide never drags a slow halo. Reduced motion, a hidden page
+(a resume lands on the new sky) and WebViews without View Transitions get the
+plain flip; a runtime without masks gets the two skies dissolving on the
+turn's beat.
+
+On the widget card, night opens on the **nightfall** face (`widget_sky_nightfall`):
+the dark sky with the app's own afterglow layers baked in at `--night-afterglow`
+0.65. It shows while the real afterglow (`WidgetSun.Moment.afterglow`, ported from
+`solarSky.ts`) is ≥ 0.35 (`WidgetSky.NIGHTFALL_MIN_AFTERGLOW`), then the plain
+dark face takes over - so the card steps dusk → nightfall → deep night with the
+app's sky instead of jumping straight to the deep night. The moon on it is
+unchanged: cool, never warmed. The warmth is the sky's (the sunset's afterglow),
+not a halo.
 
 ## Outside the app
 

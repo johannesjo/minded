@@ -161,8 +161,11 @@ class WidgetPromptsTest {
         assertEquals(30, minutesUntilNextChange(5, 30))
         // 22:00 -> day-start 06:00 next day = 8 hours.
         assertEquals(8 * 60, minutesUntilNextChange(22, 0))
-        // 19:00 (night start) -> day-start 06:00 next day = 11 hours.
-        assertEquals(11 * 60, minutesUntilNextChange(19, 0))
+        // 19:00 (night start) -> the nightfall face first gives way to deep night
+        // as the clock's afterglow drains past the threshold (~20:18).
+        assertTrue(minutesUntilNextChange(19, 0) in 78..80)
+        // ...and from deep night, one alarm to the 06:00 day-start.
+        assertEquals((6 + 24 - 21) * 60, minutesUntilNextChange(21, 0))
     }
 
     @Test
@@ -201,5 +204,16 @@ class WidgetPromptsTest {
         val next = WidgetPrompts.nextChangeMillis(night, berlin)
         assertEquals(WidgetSun.nextNightFlip(night, berlin), next)
         assertFalse(WidgetSun.momentAt(next, berlin).isNight)
+    }
+
+    @Test
+    fun `early in the night the next change is the end of nightfall`() {
+        val berlin = java.time.ZoneId.of("Europe/Berlin")
+        val dusk = java.time.ZonedDateTime.of(2026, 10, 17, 18, 45, 0, 0, berlin).toInstant().toEpochMilli()
+        val next = WidgetPrompts.nextChangeMillis(dusk, berlin)
+        assertEquals(WidgetSun.nextNightfallFlip(dusk, berlin), next)
+        // Still night, now the deep night sky - the dawn comes later.
+        assertTrue(WidgetSun.momentAt(next, berlin).isNight)
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forMoment(WidgetSun.momentAt(next, berlin)))
     }
 }

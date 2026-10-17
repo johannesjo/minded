@@ -186,10 +186,21 @@
   // A sun↔moon flip (Sun.tsx getIsVariantMorphing): the moon's cool pool grows
   // in / dissolves on the face's gentle beat rather than the quick one, so the
   // light turns with the disc instead of ahead of it.
+  // The light it casts turns with it too: the moonlight dims in (or the
+  // sunlight comes back) on the face's beat and delay, not the sky beat that
+  // had the light change before the disc had. !important because the pool's
+  // everyday transition is inline (sunLight.ts sunLightTransition).
+  &.is-variant-morphing > .sun-light {
+    transition: opacity var(--dur-sky-turn) var(--ease-sky-turn)
+      var(--sky-turn-delay, 0ms) !important;
+  }
+
   &.is-variant-morphing::after {
     transition:
-      opacity var(--dur-gentle) var(--ease-out),
-      box-shadow var(--dur-gentle) var(--ease-out);
+      opacity var(--dur-sky-turn) var(--ease-sky-turn)
+        var(--sky-turn-delay, 0ms),
+      box-shadow var(--dur-sky-turn) var(--ease-sky-turn)
+        var(--sky-turn-delay, 0ms);
   }
 
   &.dragging {
@@ -281,7 +292,11 @@
         #b6bfd4 100%
       );
     opacity: 0;
-    transition: opacity var(--dur-gentle) var(--ease-out);
+    // The day↔night turn: the moon face only ever fades on a flip, so it
+    // rides the turn's own beat, held by --sky-turn-delay until the sky's
+    // front reaches this disc (addWrapperClasses' turnTheSky; 0 otherwise).
+    transition: opacity var(--dur-sky-turn) var(--ease-sky-turn)
+      var(--sky-turn-delay, 0ms);
   }
 
   // The moon's phase: its night side, veiled by earthshine rather than cut
@@ -307,16 +322,35 @@
   // faded in (the delay), going to day it is back at full opacity the instant
   // the moon face starts fading out. Fading both layers at once dipped the
   // disc's coverage to ~75% mid-flip - for a beat the sky showed through a
-  // translucent disc, reading as the sun briefly dissolving.
+  // translucent disc, reading as the sun briefly dissolving. Going to day the
+  // sun face is back instantly, but under the still-opaque moon face - which
+  // holds through --sky-turn-delay before it starts to fade.
   &.moon .sun-face {
     opacity: 0;
     transition:
-      opacity 0s var(--dur-gentle),
+      opacity 0s calc(var(--sky-turn-delay, 0ms) + var(--dur-sky-turn)),
       --minded-sun-face-edge var(--dur-gentle) var(--ease-out);
   }
 
   &.moon .moon-face {
     opacity: 1;
+  }
+
+  // On a turn the warm rim (the companion's --minded-sun-face-edge) goes with
+  // the face too, not ahead of it on its everyday gentle beat - it whitened a
+  // second before the night reached the disc.
+  &.is-variant-morphing .sun-face {
+    transition:
+      opacity 0s,
+      --minded-sun-face-edge var(--dur-sky-turn) var(--ease-sky-turn)
+        var(--sky-turn-delay, 0ms);
+  }
+
+  &.is-variant-morphing.moon .sun-face {
+    transition:
+      opacity 0s calc(var(--sky-turn-delay, 0ms) + var(--dur-sky-turn)),
+      --minded-sun-face-edge var(--dur-sky-turn) var(--ease-sky-turn)
+        var(--sky-turn-delay, 0ms);
   }
 
   &.moon {

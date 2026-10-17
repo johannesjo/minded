@@ -226,6 +226,7 @@ class MyAppWidget : GlanceAppWidget() {
         WidgetSky.MIDDAY -> R.drawable.widget_sky_midday
         WidgetSky.AFTERNOON -> R.drawable.widget_sky_afternoon
         WidgetSky.DUSK -> R.drawable.widget_sky_dusk
+        WidgetSky.NIGHTFALL -> R.drawable.widget_sky_nightfall
         WidgetSky.NIGHT -> R.drawable.widget_sky_dark
     }
 

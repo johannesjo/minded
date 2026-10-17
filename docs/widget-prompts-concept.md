@@ -283,7 +283,8 @@ Everything extends what exists; nothing new is invented.
                             EXTRA_WIDGET_LINE = the shown line)  ← lands on that line
       |
   MyAppWidgetReceiver alarm: next 15-min prompt step (the finest cadence,
-   ⊇ the sky steps ⊇ the phase flips); one alarm spans the night
+   ⊇ the sky steps ⊇ the phase flips); at night, the end of nightfall, then
+   one alarm to the dawn
    (~60 inexact, non-wake wakeups per waking day - only while the screen's on)
 ```
 
@@ -304,8 +305,19 @@ Everything extends what exists; nothing new is invented.
   day: one render per `AMBIENT_SKY_KEYFRAMES` entry (`skyTimeline.ts`),
   stepped by `WidgetSky.kt` along the app's sun-timed palette clock
   (`WidgetSun`, the port of `solarSky.ts`: dawn → morning → midday →
-  afternoon → dusk → the dark night sky at the real dusk; the fixed 06/09/13/
-  17/18/19 hours only without a place). Text is platform serif on Android
+  afternoon → dusk → nightfall at the real dusk → the deep night sky; the
+  fixed 06/09/13/17/18/19/20:18 hours only without a place). **Nightfall** is
+  the one face that isn't a day keyframe: the dark sky with the app's own
+  early-night afterglow baked in (the night composite's warm horizon glow and
+  band from `_variables.scss`, at `--night-afterglow` 0.65 -
+  `NIGHTFALL_AFTERGLOW_LEVEL`), shown while the real afterglow
+  (`WidgetSun.Moment.afterglow`, the port of the app's) is ≥ 0.35
+  (`WidgetSky.NIGHTFALL_MIN_AFTERGLOW`) - about the first hour of night at mid
+  latitudes. The app's horizon drains smoothly 1 → 0; the card has two stills
+  for it, and baking at ~2/3 with the switch at ~1/3 keeps each within ~1/3 of
+  the live sky all night. So the moon rises over the same warm horizon the app
+  shows, instead of the card jumping from dusk straight to deep night. The
+  afterglow is the sunset's, so dawn needs no twin. Text is platform serif on Android
   (Glance can't embed Newsreader; the serif register carries) and the bundled
   Newsreader on iOS, 15sp on the smallest card growing to 19sp on a large one,
   colored `--c-fg-full-emphasis` light (`rgba(0,0,0,.85)`) - only ever drawn
@@ -320,15 +332,19 @@ Everything extends what exists; nothing new is invented.
   sun's, `WidgetSun`), so it *is* the moon's window and can't drift. Tests
   enforce the guardrails mechanically: determinism, ≤70 chars,
   full-pool one-step-per-15-min-slot rotation with no adjacent repeats, the
-  15-minute day cadence with a single night-spanning alarm, night returns
+  15-minute day cadence with the night's two alarms (end of nightfall, then
+  the dawn), night returns
   `null`, text-iff-light-sky, and the allow-list. `WidgetSky` and
   `SunWidgetPhase` are pure lookups on `WidgetSun`'s moment (the receiver
   refreshes on the prompt's cadence or the real dusk/dawn, whichever comes
-  first, so neither needs a schedule of its own).
+  first, plus the end of nightfall at night, so neither needs a schedule of
+  its own).
 - **`MyAppWidgetReceiver.kt`**: the existing self-rescheduling inexact,
   non-wake alarm now arms at the next 15-minute prompt step or the real
-  dusk, whichever comes first (`nextChangeMillis`), and a single alarm spans
-  the wordless night to the real dawn. Non-wake (RTC) means it only fires
+  dusk, whichever comes first (`nextChangeMillis`); at night one alarm for
+  the end of nightfall (`WidgetSun.nextNightfallFlip`, the afterglow draining
+  past the threshold, to the minute), then a single alarm across the wordless
+  night to the real dawn. Non-wake (RTC) means it only fires
   while the device is already awake, i.e. right when someone's looking. Same
   pattern, same permissions (none). The trigger is absolute time from the
   zone's rules, so DST no longer lands it an hour off.
@@ -394,8 +410,9 @@ The shape mapped cleanly to WidgetKit, arguably more naturally than Android:
   WidgetKit analogue of Android's responsive size fallback).
 - The timeline pre-places every face change as an entry - quarter-hour prompt
   steps by day (which contain the sky's whole-hour steps and the phase flips by
-  construction, exactly like the Android alarm cadence), one wordless entry
-  spanning the night - **no App Group, no refresh budget pressure** (the
+  construction, exactly like the Android alarm cadence), and two wordless
+  entries across the night (nightfall, then deep night from when its afterglow
+  drains) - **no App Group, no refresh budget pressure** (the
   entries are deterministic, so nothing regenerates on unlock), **no
   entitlement**. This is exactly why the iOS shape fits: WidgetKit can't fire
   *on* unlock, but a dense pre-placed timeline renders the current slot's line

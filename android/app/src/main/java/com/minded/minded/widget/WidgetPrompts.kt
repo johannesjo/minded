@@ -222,7 +222,10 @@ object WidgetPrompts {
      * When the card's face next changes after [nowMillis] (epoch ms), timed to
      * the real sun: by day the next 15-minute line step or the dusk flip,
      * whichever is first; across the wordless night the dawn that brings the
-     * first line back. The real sun's flips land on any minute, not a slot edge,
+     * first line back - or, early in the night, the end of the card's nightfall
+     * face (the afterglow draining, WidgetSky.NIGHTFALL) if that is sooner, so
+     * the warm horizon doesn't outstay the app's by a whole night. The real
+     * sun's flips land on any minute, not a slot edge,
      * so they come from WidgetSun (which is also the fixed clock's, for a zone
      * with no place - one schedule either way). The sky's
      * steps between faces ride the 15-minute day cadence (at most one slot late,
@@ -233,7 +236,8 @@ object WidgetPrompts {
     fun nextChangeMillis(nowMillis: Long, zone: ZoneId): Long {
         val flip = WidgetSun.nextNightFlip(nowMillis, zone)
         if (WidgetSun.momentAt(nowMillis, zone).isNight) {
-            return flip ?: (nowMillis + 24 * 3_600_000L)
+            val nightfall = WidgetSun.nextNightfallFlip(nowMillis, zone)
+            return listOfNotNull(flip, nightfall).minOrNull() ?: (nowMillis + 24 * 3_600_000L)
         }
         val local = Instant.ofEpochMilli(nowMillis).atZone(zone)
         val nextSlot = local.withSecond(0).withNano(0)
