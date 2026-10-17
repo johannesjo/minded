@@ -27,6 +27,7 @@ import {
   skyTurnFaceDelayMs,
   skyTurnMaskFrames,
   skyTurnOldSkyFilters,
+  type SkyTurnDirection,
 } from "@src/shared/sky/skyTurn";
 
 const getWrapperEl = (shadowRoot?: ShadowRoot): HTMLElement | null =>
@@ -218,6 +219,56 @@ const hurryAnimation = (animation: Animation, ms: number) => {
 };
 
 /**
+ * Start the turn's own animations on the transition's pseudo-elements: the
+ * mask that reveals the new sky, the old sky going ahead of it, and each sun
+ * shown only as its live self (its snapshot of the old disc is never seen;
+ * nothing moves - the disc stays where it is).
+ */
+const playSkyTurn = (
+  root: HTMLElement,
+  direction: SkyTurnDirection,
+  sunCount: number,
+  viewportW: number,
+  viewportH: number,
+) => {
+  const timing: KeyframeAnimationOptions = {
+    duration: SKY_TURN_MS,
+    easing: SKY_TURN_EASING,
+    fill: "both",
+  };
+  const [from, to] = skyTurnMaskFrames(direction, viewportW, viewportH);
+  root.animate(
+    [
+      { ...from, mixBlendMode: "normal" },
+      { ...to, mixBlendMode: "normal" },
+    ],
+    { ...timing, pseudoElement: "::view-transition-new(root)" },
+  );
+  const [lightFrom, lightTo] = skyTurnOldSkyFilters(direction);
+  root.animate(
+    [
+      { filter: lightFrom, mixBlendMode: "normal" },
+      { filter: lightTo, mixBlendMode: "normal" },
+    ],
+    { ...timing, pseudoElement: "::view-transition-old(root)" },
+  );
+  for (let i = 0; i < sunCount; i++) {
+    const name = `${SKY_TURN_SUN_NAME}-${i}`;
+    root.animate([{ opacity: 0 }, { opacity: 0 }], {
+      ...timing,
+      pseudoElement: `::view-transition-old(${name})`,
+    });
+    root.animate(
+      [
+        { opacity: 1, mixBlendMode: "normal" },
+        { opacity: 1, mixBlendMode: "normal" },
+      ],
+      { ...timing, pseudoElement: `::view-transition-new(${name})` },
+    );
+  }
+};
+
+/**
  * Night falls / day breaks over the page instead of the page cutting over (see
  * sky/skyTurn.ts for the shape of each). A View Transition holds the old sky
  * as a snapshot and reveals the new one through a moving soft-edged mask - the
@@ -295,47 +346,24 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
       // Replace the UA's whole-page dissolve: the old sky stays fully there,
       // the new one is revealed over it by the mask alone (and plainly
       // composited - the dissolve's plus-lighter would bleach the overlap).
-      for (const animation of viewTransitionAnimations(root)) {
-        animation.cancel();
+      // The dissolve is only cancelled once the turn is actually playing: a
+      // runtime that refuses any part of it keeps the dissolve, slowed to the
+      // turn's beat, rather than cutting to the new sky.
+      const dissolve = viewTransitionAnimations(root);
+      try {
+        playSkyTurn(root, direction, suns.length, viewportW, viewportH);
+        for (const animation of dissolve) animation.cancel();
+      } catch {
+        for (const animation of viewTransitionAnimations(root)) {
+          if (!dissolve.includes(animation)) animation.cancel();
+        }
+        for (const animation of dissolve) {
+          animation.effect?.updateTiming({
+            duration: SKY_TURN_MS,
+            easing: SKY_TURN_EASING,
+          });
+        }
       }
-      const timing: KeyframeAnimationOptions = {
-        duration: SKY_TURN_MS,
-        easing: SKY_TURN_EASING,
-        fill: "both",
-      };
-      const [from, to] = skyTurnMaskFrames(direction, viewportW, viewportH);
-      root.animate(
-        [
-          { ...from, mixBlendMode: "normal" },
-          { ...to, mixBlendMode: "normal" },
-        ],
-        { ...timing, pseudoElement: "::view-transition-new(root)" },
-      );
-      const [lightFrom, lightTo] = skyTurnOldSkyFilters(direction);
-      root.animate(
-        [
-          { filter: lightFrom, mixBlendMode: "normal" },
-          { filter: lightTo, mixBlendMode: "normal" },
-        ],
-        { ...timing, pseudoElement: "::view-transition-old(root)" },
-      );
-      // Each sun shows only its live self, turning on its own faces; its
-      // snapshot of the old disc is never seen. Nothing to move - the disc
-      // stays where it is.
-      suns.forEach((_, i) => {
-        const name = `${SKY_TURN_SUN_NAME}-${i}`;
-        root.animate([{ opacity: 0 }, { opacity: 0 }], {
-          ...timing,
-          pseudoElement: `::view-transition-old(${name})`,
-        });
-        root.animate(
-          [
-            { opacity: 1, mixBlendMode: "normal" },
-            { opacity: 1, mixBlendMode: "normal" },
-          ],
-          { ...timing, pseudoElement: `::view-transition-new(${name})` },
-        );
-      });
       document.addEventListener("pointerdown", hurry, {
         capture: true,
         once: true,
