@@ -2,9 +2,11 @@ package com.minded.minded.overlay
 
 import android.app.KeyguardManager
 import android.app.NotificationManager
+import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.media.AudioAttributes
 import android.media.AudioManager
@@ -21,6 +23,7 @@ import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.UserCfg
+import com.minded.minded.util.bellPlayerVolume
 import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import org.json.JSONObject
@@ -95,11 +98,13 @@ class MindfulnessBell(
                     .plusMinutes(it.toLong()).toInstant().toEpochMilli()
             },
         )
-        // TEMPORARY test aid: an armed test bell rings now, schedule or not,
-        // and leaves the day's slots untouched.
-        val isTest = prefs.isMindfulnessBellTestArmed()
+        // The first bell after it's switched on rings at the next good unlock,
+        // schedule or not, leaving the day's slots untouched: otherwise someone
+        // who just asked for it waits hours, wondering if it works, and then
+        // meets a wordless light they don't recognise.
+        val isFirstRing = prefs.isMindfulnessBellFirstRingArmed()
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung)
-        if (slot == null && !isTest) return
+        if (slot == null && !isFirstRing) return
 
         val moment = moment(isOtherOverlayShown, littleSun, isBlockedPackage)
         recordCheck(moment)
@@ -111,9 +116,10 @@ class MindfulnessBell(
         val host = (moment as Moment.Ring).host
 
         if (slot != null) prefs.markMindfulnessBellRung(epochDay, slot, minute)
-        if (isTest) prefs.setMindfulnessBellTestArmed(false)
-        val voice = currentVoice(cfg.soundEnabled != false)
-        val sound = if (voice == BellVoice.SOUND) prepareSound() else null
+        if (isFirstRing) prefs.setMindfulnessBellFirstRingArmed(false)
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val voice = currentVoice(audio, cfg.soundEnabled != false)
+        val sound = if (voice == BellVoice.SOUND) prepareSound(audio) else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
         Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice, host=${host?.kind})")
         show(
@@ -294,6 +300,12 @@ class MindfulnessBell(
         // Bedtime rings too: the wind-down's own sun, when it's up, is caught
         // by isOtherOverlayShown, so the bell never brings a second one.
 
+        // Driving: dimming a navigation app's screen is the one moment the bell
+        // could do harm. (Navigation is often silent between directions, so
+        // the media check below doesn't catch it.)
+        val uiMode = context.getSystemService(UiModeManager::class.java)
+        if (uiMode?.currentModeType == Configuration.UI_MODE_TYPE_CAR) return "the phone was in car mode"
+
         // Do Not Disturb is an explicit "not now" - for the light as much as
         // the sound.
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -311,19 +323,22 @@ class MindfulnessBell(
         return null
     }
 
-    private fun currentVoice(soundEnabled: Boolean): BellVoice {
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        return bellVoice(
+    private fun currentVoice(audio: AudioManager, soundEnabled: Boolean): BellVoice =
+        bellVoice(
             soundEnabled = soundEnabled,
             ringerNormal = audio.ringerMode == AudioManager.RINGER_MODE_NORMAL,
             ringerVibrate = audio.ringerMode == AudioManager.RINGER_MODE_VIBRATE,
             mediaVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC),
+            notificationVolume = audio.getStreamVolume(AudioManager.STREAM_NOTIFICATION),
         )
+
+    private fun streamFraction(audio: AudioManager, stream: Int): Float {
+        val max = audio.getStreamMaxVolume(stream)
+        return if (max > 0) audio.getStreamVolume(stream).toFloat() / max else 0f
     }
 
     /** A prepared player for the strike, or null if it can't be loaded. */
-    private fun prepareSound(): MediaPlayer? {
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private fun prepareSound(audio: AudioManager): MediaPlayer? {
         release()
         return try {
             MediaPlayer.create(
@@ -335,6 +350,14 @@ class MindfulnessBell(
                     .build(),
                 audio.generateAudioSessionId(),
             )?.also { mp ->
+                // It plays on the media stream (see bellVoice), but it reaches
+                // for the user unprompted, so it rings about as loud as their
+                // notifications - not at whatever a video last left media at.
+                val volume = bellPlayerVolume(
+                    mediaFraction = streamFraction(audio, AudioManager.STREAM_MUSIC),
+                    notificationFraction = streamFraction(audio, AudioManager.STREAM_NOTIFICATION),
+                )
+                mp.setVolume(volume, volume)
                 mp.setOnCompletionListener { release() }
                 player = mp
             }

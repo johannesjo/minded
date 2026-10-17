@@ -155,13 +155,25 @@ class MindfulnessBellScheduleTest {
         soundEnabled: Boolean = true,
         ringer: String = "normal",
         mediaVolume: Int = 7,
-    ) = bellVoice(soundEnabled, ringer == "normal", ringer == "vibrate", mediaVolume)
+        notificationVolume: Int = 5,
+    ) = bellVoice(soundEnabled, ringer == "normal", ringer == "vibrate", mediaVolume, notificationVolume)
 
     @Test
     fun `the strike is heard only when the phone may make a sound`() {
         assertEquals(BellVoice.SOUND, voice())
         assertEquals(BellVoice.SILENT, voice(mediaVolume = 0))
+        assertEquals(BellVoice.SILENT, voice(notificationVolume = 0))
         assertEquals(BellVoice.SILENT, voice(soundEnabled = false))
+    }
+
+    @Test
+    fun `the strike rings at notification loudness, never above media`() {
+        // A video left media at full: the bell is turned down to notifications.
+        assertEquals(0.4f, bellPlayerVolume(mediaFraction = 1f, notificationFraction = 0.4f), 0.001f)
+        // Media quieter than notifications: it can't be turned up past media.
+        assertEquals(1f, bellPlayerVolume(mediaFraction = 0.3f, notificationFraction = 0.8f), 0.001f)
+        assertEquals(0f, bellPlayerVolume(mediaFraction = 0f, notificationFraction = 0.8f), 0.001f)
+        assertEquals(0f, bellPlayerVolume(mediaFraction = 0.5f, notificationFraction = 0f), 0.001f)
     }
 
     @Test

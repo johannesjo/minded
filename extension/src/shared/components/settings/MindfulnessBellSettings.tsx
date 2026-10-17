@@ -2,7 +2,6 @@ import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import type { MindfulnessBellPerDay } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
-import Btn from "@src/shared/components/ui/Btn";
 import {
   BELL_PER_DAY_MAX,
   BELL_PER_DAY_MIN,
@@ -53,14 +52,12 @@ export const MindfulnessBellSettings = (props: {
       ? bellTraceLabel(androidInterface.getMindfulnessBellTrace?.())
       : undefined;
   const [trace, setTrace] = createSignal(readTrace());
-  // TEMPORARY test aid: ring at the next unlock instead of waiting for a window.
-  const readTestArmed = () =>
-    IS_ANDROID && !!androidInterface.isMindfulnessBellTestArmed?.();
-  const [testArmed, setTestArmed] = createSignal(readTestArmed());
-  const armTest = () => {
-    androidInterface.armMindfulnessBellTest?.();
-    setTestArmed(readTestArmed());
-  };
+  // Switched on, the first bell rings at the next unlock rather than hours
+  // later at a random window - so it is met while it's still expected.
+  const readFirstRingArmed = () =>
+    IS_ANDROID && !!androidInterface.isMindfulnessBellFirstRingArmed?.();
+  const [firstRingArmed, setFirstRingArmed] =
+    createSignal(readFirstRingArmed());
   const [lastCheck, setLastCheck] = createSignal(readLastCheck());
   const [lastUnlock, setLastUnlock] = createSignal(readLastUnlock());
 
@@ -72,7 +69,7 @@ export const MindfulnessBellSettings = (props: {
       setLastCheck(readLastCheck());
       setLastUnlock(readLastUnlock());
       setTrace(readTrace());
-      setTestArmed(readTestArmed());
+      setFirstRingArmed(readFirstRingArmed());
     };
     window.addEventListener(ANDROID_EV_RESUME, refresh);
     onCleanup(() => window.removeEventListener(ANDROID_EV_RESUME, refresh));
@@ -82,6 +79,10 @@ export const MindfulnessBellSettings = (props: {
     const newValue = !enabled();
     setEnabled(newValue);
     await updateUserCfg({ mindfulnessBell: newValue });
+    if (newValue && IS_ANDROID) {
+      androidInterface.armMindfulnessBellFirstRing?.();
+      setFirstRingArmed(readFirstRingArmed());
+    }
   };
 
   const choosePerDay = async (value: MindfulnessBellPerDay) => {
@@ -126,12 +127,10 @@ export const MindfulnessBellSettings = (props: {
           <Show when={trace()}>
             <span class={bellStyles.lastCheck}>{trace()}</span>
           </Show>
-          <Show when={IS_ANDROID && androidInterface.armMindfulnessBellTest}>
-            <Btn outline disabled={testArmed()} onClick={armTest}>
-              {testArmed()
-                ? "Rings at your next unlock"
-                : "Ring at next unlock (test)"}
-            </Btn>
+          <Show when={firstRingArmed()}>
+            <span class={bellStyles.lastCheck}>
+              The first bell comes at your next unlock outside minded.
+            </span>
           </Show>
         </div>
       </Show>

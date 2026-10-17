@@ -27,7 +27,7 @@ class SharedPreferenceService(context: Context) {
     private val BELL_LAST_CHECK_KEY = "mindfulnessBellLastCheck"
     private val BELL_LAST_UNLOCK_KEY = "mindfulnessBellLastUnlock"
     private val BELL_TRACE_KEY = "mindfulnessBellTrace"
-    private val BELL_TEST_ARMED_KEY = "mindfulnessBellTestArmed"
+    private val BELL_FIRST_RING_KEY = "mindfulnessBellFirstRing"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
 
@@ -202,15 +202,16 @@ class SharedPreferenceService(context: Context) {
     }
 
     /**
-     * TEMPORARY test aid: ring at the next unlock regardless of the schedule
-     * (the moment checks still apply). Cleared once that bell rings.
+     * The first bell after the bell is switched on: it rings at the next good
+     * unlock regardless of the schedule (the moment checks still apply).
+     * Cleared once that bell rings.
      */
-    fun setMindfulnessBellTestArmed(armed: Boolean) {
-        sharedPreferences.edit().putBoolean(BELL_TEST_ARMED_KEY, armed).apply()
+    fun setMindfulnessBellFirstRingArmed(armed: Boolean) {
+        sharedPreferences.edit().putBoolean(BELL_FIRST_RING_KEY, armed).apply()
     }
 
-    fun isMindfulnessBellTestArmed(): Boolean =
-        sharedPreferences.getBoolean(BELL_TEST_ARMED_KEY, false)
+    fun isMindfulnessBellFirstRingArmed(): Boolean =
+        sharedPreferences.getBoolean(BELL_FIRST_RING_KEY, false)
 
     fun getMindfulnessBellTrace(): String? =
         sharedPreferences.getString(BELL_TRACE_KEY, null)

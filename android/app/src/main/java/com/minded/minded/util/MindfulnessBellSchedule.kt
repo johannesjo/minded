@@ -140,7 +140,9 @@ enum class BellVoice { SOUND, VIBRATION, SILENT }
  * bell; sound and touch only join it when the user's own settings say they
  * may. The silent and vibrate switches don't mute the media stream minded
  * plays on, so they are honoured explicitly here - a "silent" phone must never
- * ring out loud. (Under Do Not Disturb the bell doesn't come at all - see
+ * ring out loud. Nor does a phone whose notifications are turned all the way
+ * down: the bell rings at notification loudness (see [bellPlayerVolume]).
+ * (Under Do Not Disturb the bell doesn't come at all - see
  * MindfulnessBell.skipReason.)
  */
 fun bellVoice(
@@ -148,8 +150,21 @@ fun bellVoice(
     ringerNormal: Boolean,
     ringerVibrate: Boolean,
     mediaVolume: Int,
+    notificationVolume: Int,
 ): BellVoice = when {
-    ringerNormal && soundEnabled && mediaVolume > 0 -> BellVoice.SOUND
+    ringerNormal && soundEnabled && mediaVolume > 0 && notificationVolume > 0 -> BellVoice.SOUND
     ringerVibrate -> BellVoice.VIBRATION
     else -> BellVoice.SILENT
 }
+
+/**
+ * The strike's player volume (0..1, on top of the media stream it plays on),
+ * from each stream's level as a fraction of its maximum. The bell reaches for
+ * the user unprompted, so it should sound as loud as their notifications do -
+ * not at whatever a video last left the media volume at. It can only be
+ * turned down from the media level, never up past it, so when media is the
+ * quieter of the two, media is what it gets.
+ */
+fun bellPlayerVolume(mediaFraction: Float, notificationFraction: Float): Float =
+    if (mediaFraction <= 0f) 0f
+    else (notificationFraction / mediaFraction).coerceIn(0f, 1f)
