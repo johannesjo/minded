@@ -25,6 +25,7 @@ import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
 import com.minded.minded.detection.PreinstalledUserApps
+import com.minded.minded.util.registerUserPresentReceiver
 import com.minded.minded.util.ForegroundStateHolder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -333,7 +334,6 @@ class MyAccessibilityService : AccessibilityService() {
         // Burst-poll UsageStats right after unlock - an app launch is likely
         // and slow-starting apps (splash screens) emit no accessibility events
         val unlockFilter = IntentFilter().apply {
-            addAction(Intent.ACTION_USER_PRESENT)
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
         }
@@ -342,6 +342,8 @@ class MyAccessibilityService : AccessibilityService() {
         } else {
             registerReceiver(unlockReceiver, unlockFilter)
         }
+        // The unlock needs an exported receiver of its own - see registerUserPresentReceiver.
+        registerUserPresentReceiver(this, userPresentReceiver)
     }
 
     private val packageChangeReceiver = object : BroadcastReceiver() {
@@ -353,11 +355,11 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * The keyguard is up and no unlock has been seen yet.
-     * USER_PRESENT alone can't be trusted to mark the unlock - some phones
-     * never deliver it (the bell's on-device trace showed neither receiver
-     * ever hearing one) - so while this is set, the first accessibility event
-     * that finds the keyguard gone counts as the unlock ([onAccessibilityEvent]).
+     * The keyguard is up and no unlock has been seen yet. USER_PRESENT is the
+     * primary unlock signal, but as a fallback (it once never arrived at all -
+     * see registerUserPresentReceiver), while this is set the first
+     * accessibility event or re-check that finds the keyguard gone counts as
+     * the unlock ([onAccessibilityEvent], [unlockRecheck]).
      */
     private var isAwaitingUnlock = false
 
@@ -435,6 +437,13 @@ class MyAccessibilityService : AccessibilityService() {
     private fun traceBell(stage: String, error: Throwable? = null) =
         SharedPreferenceService(this).traceMindfulnessBell(stage, error)
 
+    // USER_PRESENT, handled with the screen events above but registered apart.
+    private val userPresentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            unlockReceiver.onReceive(context, intent)
+        }
+    }
+
     private val homeActionReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.d(TAG, "Received ACTION_GO_HOME broadcast")
@@ -499,6 +508,11 @@ class MyAccessibilityService : AccessibilityService() {
             unregisterReceiver(unlockReceiver)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to unregister unlockReceiver", e)
+        }
+        try {
+            unregisterReceiver(userPresentReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister userPresentReceiver", e)
         }
     }
 
