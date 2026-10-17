@@ -625,17 +625,18 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         override fun run() {
             if (!bellSunOverlayWindow.isWindowShown()) return
             if (mindfulnessBell.isCallActive()) {
-                takeOverFromBell()
+                takeOverFromBell(MindfulnessBell.CALL_FADE_MS)
                 return
             }
             screenStateHandler.postDelayed(this, BELL_CALL_WATCH_MS)
         }
     }
 
-    private fun takeOverFromBell() {
+    private fun takeOverFromBell(soundFadeMs: Long? = null) {
         if (!bellSunOverlayWindow.isWindowShown()) return
         bellSunOverlayWindow.hideWindow()
-        mindfulnessBell.fadeOutAndRelease()
+        if (soundFadeMs != null) mindfulnessBell.fadeOutAndRelease(soundFadeMs)
+        else mindfulnessBell.fadeOutAndRelease()
     }
 
     /**

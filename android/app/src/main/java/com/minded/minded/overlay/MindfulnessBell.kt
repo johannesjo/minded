@@ -196,7 +196,7 @@ class MindfulnessBell(
      * Another minded surface took over mid-ring: let the strike fade out over a
      * moment rather than ringing on over a pause - or cutting off mid-tone.
      */
-    fun fadeOutAndRelease() {
+    fun fadeOutAndRelease(fadeMs: Long = TAKEOVER_FADE_MS) {
         val mp = player ?: return
         val steps = 10
         var step = 0
@@ -211,7 +211,7 @@ class MindfulnessBell(
                     release()
                     return
                 }
-                if (step < steps) handler.postDelayed(this, TAKEOVER_FADE_MS / steps) else release()
+                if (step < steps) handler.postDelayed(this, fadeMs / steps) else release()
             }
         }
         handler.post(tick)
@@ -256,7 +256,7 @@ class MindfulnessBell(
         if (foreground == context.packageName) return Moment.Skip("minded was open")
         // The phone app in front is a call being made or about to be, even
         // before the audio mode says so.
-        if (foreground == dialerPackage()) return Moment.Skip("a call")
+        if (foreground == dialerPackage()) return Moment.Skip("the phone app was open")
         if (isBlockedPackage(foreground)) return Moment.Skip("a guarded app was open")
         if (foreground != homePackage()) return Moment.Ring(null)
 
@@ -399,6 +399,8 @@ class MindfulnessBell(
         // ago it opened - so look back generously and accept an old read.
         private const val LOOKBACK_MS = 30 * 60 * 1000L
         private const val TAKEOVER_FADE_MS = 400L
+        // A call coming in: out of the ringtone's way faster, still no click.
+        const val CALL_FADE_MS = 150L
         private const val MIN_HOST_SUN_PX = 8
     }
 }
