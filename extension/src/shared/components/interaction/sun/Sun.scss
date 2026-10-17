@@ -186,6 +186,15 @@
   // A sun↔moon flip (Sun.tsx getIsVariantMorphing): the moon's cool pool grows
   // in / dissolves on the face's gentle beat rather than the quick one, so the
   // light turns with the disc instead of ahead of it.
+  // The light it casts turns with it too: the moonlight dims in (or the
+  // sunlight comes back) on the face's beat and delay, not the sky beat that
+  // had the light change before the disc had. !important because the pool's
+  // everyday transition is inline (sunLight.ts sunLightTransition).
+  &.is-variant-morphing > .sun-light {
+    transition: opacity var(--dur-sky-turn) var(--ease-sky-turn)
+      var(--sky-turn-delay, 0ms) !important;
+  }
+
   &.is-variant-morphing::after {
     transition:
       opacity var(--dur-sky-turn) var(--ease-sky-turn)

@@ -26,6 +26,7 @@ import {
   skyTurnDirectionFor,
   skyTurnFaceDelayMs,
   skyTurnMaskFrames,
+  skyTurnOldSkyFilters,
 } from "@src/shared/sky/skyTurn";
 
 const getWrapperEl = (shadowRoot?: ShadowRoot): HTMLElement | null =>
@@ -192,14 +193,42 @@ const SKY_TURN_SUN_NAME = "minded-sky-turn-sun";
 // next touch reaches the sun.
 const SKY_TURN_HURRY_MS = 280;
 
+// The turn in flight, so a newer one can tell an older one's cleanup to keep
+// its hands off the discs it has just claimed (starting a view transition
+// skips the running one, whose `finished` then settles a beat later).
+let currentSkyTurn = 0;
+
+/** The running animations of the view transition's pseudo-elements. */
+const viewTransitionAnimations = (root: HTMLElement): Animation[] =>
+  root
+    .getAnimations({ subtree: true })
+    .filter((animation) =>
+      (animation.effect as KeyframeEffect | null)?.pseudoElement?.startsWith(
+        "::view-transition",
+      ),
+    );
+
+/** Speed `animation` up so it lands within `ms`, wherever it is now. */
+const hurryAnimation = (animation: Animation, ms: number) => {
+  const end = Number(animation.effect?.getComputedTiming().endTime ?? 0);
+  const remaining = end - Number(animation.currentTime ?? 0);
+  if (remaining > ms) {
+    animation.updatePlaybackRate((remaining / ms) * animation.playbackRate);
+  }
+};
+
 /**
  * Night falls / day breaks over the page instead of the page cutting over (see
  * sky/skyTurn.ts for the shape of each). A View Transition holds the old sky
  * as a snapshot and reveals the new one through a moving soft-edged mask - the
- * one way to animate a whole-page gradient, which CSS can't transition. Each
- * sun on screen is lifted out of the sweep into its own live layer, so it stays
- * one disc turning sun ↔ moon on its own faces (Sun.scss) instead of being
- * wiped across by the front; its turn is delayed to the moment the front
+ * one way to animate a whole-page gradient, which CSS can't transition. Ahead
+ * of the front the old sky is already going: it dims toward the night (or
+ * lifts toward the day), so the light left on screen reads as dusk deepening,
+ * not a still picture waiting to be wiped.
+ *
+ * Each sun on screen is lifted out of the sweep into its own live layer, so it
+ * stays one disc turning sun ↔ moon on its own faces (Sun.scss) instead of
+ * being wiped across by the front; its turn is delayed to the moment the front
  * crosses it (--sky-turn-delay).
  *
  * Falls back to a plain update where View Transitions aren't available (older
@@ -221,6 +250,7 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
     return;
   }
 
+  const turn = ++currentSkyTurn;
   const direction = skyTurnDirectionFor(isDark);
   const viewportW = window.innerWidth;
   const viewportH = window.innerHeight;
@@ -237,6 +267,8 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
     sun.style.setProperty("view-transition-name", `${SKY_TURN_SUN_NAME}-${i}`);
   });
   const release = () => {
+    // A newer turn has re-claimed these discs (same names, its own delays).
+    if (turn !== currentSkyTurn) return;
     for (const sun of suns) {
       sun.style.removeProperty("view-transition-name");
       sun.style.removeProperty("--sky-turn-delay");
@@ -246,13 +278,15 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
   const transition = doc.startViewTransition.call(doc, update);
   const root = document.documentElement;
   const hurry = () => {
-    for (const animation of root.getAnimations({ subtree: true })) {
-      const effect = animation.effect as KeyframeEffect | null;
-      if (!effect?.pseudoElement?.startsWith("::view-transition")) continue;
-      const end = Number(effect.getComputedTiming().endTime ?? 0);
-      const remaining = end - Number(animation.currentTime ?? 0);
-      if (remaining > SKY_TURN_HURRY_MS) {
-        animation.updatePlaybackRate(remaining / SKY_TURN_HURRY_MS);
+    for (const animation of viewTransitionAnimations(root)) {
+      hurryAnimation(animation, SKY_TURN_HURRY_MS);
+    }
+    // The discs' own turn too - their faces and halo are plain CSS
+    // transitions, still waiting out --sky-turn-delay - or the sky would land
+    // on night while the disc it ends on is still the sun.
+    for (const sun of suns) {
+      for (const animation of sun.getAnimations({ subtree: true })) {
+        hurryAnimation(animation, SKY_TURN_HURRY_MS);
       }
     }
   };
@@ -261,24 +295,29 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
       // Replace the UA's whole-page dissolve: the old sky stays fully there,
       // the new one is revealed over it by the mask alone (and plainly
       // composited - the dissolve's plus-lighter would bleach the overlap).
-      for (const animation of root.getAnimations({ subtree: true })) {
-        const effect = animation.effect as KeyframeEffect | null;
-        if (effect?.pseudoElement?.startsWith("::view-transition")) {
-          animation.cancel();
-        }
+      for (const animation of viewTransitionAnimations(root)) {
+        animation.cancel();
       }
+      const timing: KeyframeAnimationOptions = {
+        duration: SKY_TURN_MS,
+        easing: SKY_TURN_EASING,
+        fill: "both",
+      };
       const [from, to] = skyTurnMaskFrames(direction, viewportW, viewportH);
       root.animate(
         [
           { ...from, mixBlendMode: "normal" },
           { ...to, mixBlendMode: "normal" },
         ],
-        {
-          duration: SKY_TURN_MS,
-          easing: SKY_TURN_EASING,
-          fill: "both",
-          pseudoElement: "::view-transition-new(root)",
-        },
+        { ...timing, pseudoElement: "::view-transition-new(root)" },
+      );
+      const [lightFrom, lightTo] = skyTurnOldSkyFilters(direction);
+      root.animate(
+        [
+          { filter: lightFrom, mixBlendMode: "normal" },
+          { filter: lightTo, mixBlendMode: "normal" },
+        ],
+        { ...timing, pseudoElement: "::view-transition-old(root)" },
       );
       // Each sun shows only its live self, turning on its own faces; its
       // snapshot of the old disc is never seen. Nothing to move - the disc
@@ -286,8 +325,7 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
       suns.forEach((_, i) => {
         const name = `${SKY_TURN_SUN_NAME}-${i}`;
         root.animate([{ opacity: 0 }, { opacity: 0 }], {
-          duration: SKY_TURN_MS,
-          fill: "both",
+          ...timing,
           pseudoElement: `::view-transition-old(${name})`,
         });
         root.animate(
@@ -295,11 +333,7 @@ const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
             { opacity: 1, mixBlendMode: "normal" },
             { opacity: 1, mixBlendMode: "normal" },
           ],
-          {
-            duration: SKY_TURN_MS,
-            fill: "both",
-            pseudoElement: `::view-transition-new(${name})`,
-          },
+          { ...timing, pseudoElement: `::view-transition-new(${name})` },
         );
       });
       document.addEventListener("pointerdown", hurry, {
@@ -470,15 +504,15 @@ export const applySkyForNow = (shadowRoot?: ShadowRoot) =>
  * falls (or day breaks) right there, through the same sky turn a resume plays
  * - instead of the old theme staying put until the next resume or reload.
  *
- * Only the shell opts in (RouteCmp, which mirrors the class onto its sun). The
- * interaction surfaces read the theme once when they open, so turning the sky
- * under a pause would leave them half in the old theme; they are short-lived,
- * and the next one opens on the right sky anyway. Never a content script - its
- * shadow overlay has no live sky to turn.
+ * Only the shell opts in (RouteCmp, which mirrors the class onto its sun), and
+ * only while `isReady` says so: the interaction surfaces read parts of the
+ * theme once when they open, so turning the sky under a pause would leave it
+ * half in the old theme. The turn simply waits for the tick after it closes.
+ * Never a content script - its shadow overlay has no live sky to turn.
  */
-let followsDayNight = false;
-export const followDayNight = () => {
-  followsDayNight = true;
+let canTurnLive: (() => boolean) | null = null;
+export const followDayNight = (isReady: () => boolean = () => true) => {
+  canTurnLive = isReady;
 };
 
 const isThemeStale = (el: HTMLElement): boolean =>
@@ -503,7 +537,7 @@ const ensureSkyTicker = (shadowRoot?: ShadowRoot) => {
       isSkyTickerStarted = false;
       return;
     }
-    if (followsDayNight && !shadowRoot && el && isThemeStale(el)) {
+    if (canTurnLive?.() && !shadowRoot && el && isThemeStale(el)) {
       // setIsDarkModeIfApplies applies this minute's sky inside the turn; the
       // night-window cache simply catches up on the next tick.
       setIsDarkModeIfApplies(el);

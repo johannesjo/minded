@@ -129,6 +129,25 @@ export const skyTurnMaskFrames = (
 
 const round = (n: number) => Math.round(n * 10) / 10;
 
+// How far the old sky goes ahead of the front: down toward the night (the
+// light still on screen deepens as dusk does) or up toward the day (the night
+// thins before the dome arrives). Gentle - the front carries the change, this
+// only keeps the waiting half of the screen from standing still.
+const NIGHTFALL_OLD_SKY_BRIGHTNESS = 0.8;
+const DAYBREAK_OLD_SKY_BRIGHTNESS = 1.2;
+
+/** The old sky's filter at the start and end of the turn. */
+export const skyTurnOldSkyFilters = (
+  direction: SkyTurnDirection,
+): [string, string] => [
+  "brightness(1)",
+  `brightness(${
+    direction === "nightfall"
+      ? NIGHTFALL_OLD_SKY_BRIGHTNESS
+      : DAYBREAK_OLD_SKY_BRIGHTNESS
+  })`,
+];
+
 /**
  * How far through the turn (0..1 of its eased progress) the front reaches a
  * point at `yFraction` of a `width` × `height` viewport (0 top, 1 bottom).

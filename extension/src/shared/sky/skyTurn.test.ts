@@ -135,3 +135,27 @@ describe("the face beat mirrors the stylesheet", () => {
     expect(scss).toMatch(/--dur-sky-turn:\s*0ms;/);
   });
 });
+
+describe("the disc turns as one with the sky", () => {
+  const sunScss = fs.readFileSync(
+    path.join(__dirname, "../components/interaction/sun/Sun.scss"),
+    "utf8",
+  );
+
+  it.each([
+    [
+      "the moon face",
+      /\.moon-face \{[^}]*transition: opacity var\(--dur-sky-turn\) var\(--ease-sky-turn\)\s+var\(--sky-turn-delay, 0ms\)/,
+    ],
+    [
+      "the moon's pool",
+      /&\.is-variant-morphing::after \{[^}]*var\(--sky-turn-delay, 0ms\)/,
+    ],
+    [
+      "the light on the sky",
+      /&\.is-variant-morphing > \.sun-light \{[^}]*var\(--sky-turn-delay, 0ms\)/,
+    ],
+  ])("%s waits for the front (--sky-turn-delay)", (_, rule) => {
+    expect(sunScss).toMatch(rule);
+  });
+});

@@ -124,7 +124,9 @@ The departing moon dims to 1.0 + snug like the sun, but stays cool.
 
 The theme can flip under a live sun: an app resume across the threshold, or -
 on the dashboard shell, which follows the clock live (`followDayNight`) - the
-real dusk or dawn arriving while the app is open.
+real dusk or dawn arriving while the app is open. A live turn waits while a
+pause is open (parts of it read the theme once) and plays on the minute after
+it closes.
 
 The sky turns the way the real one does (`sky/skyTurn.ts`, played as a View
 Transition by `turnTheSky` in `addWrapperClasses.ts`, since a gradient can't
@@ -135,18 +137,24 @@ transition in CSS), over `SKY_TURN_MS` (2.4 s):
 - **Daybreak:** a broad dome of day rises from the bottom centre, the sky's
   sunrise point, until it holds the whole sky.
 
+Ahead of the front the old sky is already going - it dims toward the night, or
+lifts toward the day - so the half of the screen still waiting reads as dusk
+deepening, not a still picture about to be wiped.
+
 The sun is never part of that sweep. Each disc on screen gets its own capture
 layer and stays one disc turning: the moon face fades in *over* the sun face
 (the face underneath stays opaque, so the disc never goes translucent mid-flip),
-over `--dur-sky-turn`, and the halo and the moon's cool pool ease with it
-(`sunVariantMorph.ts`) instead of jumping ahead on the quick bloom ease. Each
+over `--dur-sky-turn`, and the halo, the moon's cool pool and the light it
+casts on the sky (`.sun-light`) ease with it (`sunVariantMorph.ts`, Sun.scss)
+instead of changing ahead of the disc. Each
 disc's turn waits for the sky's front to reach it (`--sky-turn-delay`). So the
 companion on the bar turns late at nightfall, when the night reaches the
 horizon, and at once at daybreak, rising with the first light. An intervention
 sun mid-screen turns halfway through.
 
 A tap during the turn lands on the transition, not the page, so it hurries the
-rest of the turn to a close in ~0.3 s instead. Reduced motion, a hidden page
+rest of the turn - the sky and the disc's own delayed turn alike - to a close in
+~0.3 s instead, and the next touch reaches the sun. Reduced motion, a hidden page
 (a resume lands on the new sky) and WebViews without View Transitions get the
 plain flip.
 

@@ -228,8 +228,12 @@ const MainWrapper = (props: RouteSectionProps) => {
   onMount(() => {
     addWrapperClasses();
     // The shell's sky turns at the real dusk/dawn while it's open, and the sun
-    // below follows the class it flips.
-    followDayNight();
+    // below follows the class it flips - but only while the sun rests as the
+    // companion: a pause reads parts of its theme once, so dusk waits until
+    // it has closed and turns on the next minute after.
+    followDayNight(
+      () => getSunRole() === "companion" && !getIsShowQuestionOverlay(),
+    );
     // addWrapperClasses just set (or cleared) the dark class - read the real
     // value so the sun matches the wrapper exactly, then keep mirroring it: the
     // class can flip later without a reload (Android resume across the day/night
