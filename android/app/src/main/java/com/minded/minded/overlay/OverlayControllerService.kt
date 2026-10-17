@@ -110,6 +110,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     // the accessibility detector) time to claim the screen first - the bell
     // only rings into a moment nothing else wants.
     private val BELL_AFTER_UNLOCK_DELAY_MS = 2500L
+    // How often a ringing bell checks for a call coming in.
+    private val BELL_CALL_WATCH_MS = 250L
 
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -199,6 +201,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     bellSunOverlayWindow.onStrike = onStrike
                     bellSunOverlayWindow.onGone = onGone
                     showOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
+                    watchBellForCall()
                 },
             )
         } catch (e: Throwable) {
@@ -605,6 +608,27 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 morphInFromCorner,
                 littleSunPauseAtSessionS
             )
+        }
+    }
+
+    /**
+     * Never a bell during a call: one that comes in mid-ring takes the bell
+     * away (fading, light and sound). Polled - the bell is up for a few
+     * seconds, and the audio mode's change listener is Android 12+ only.
+     */
+    private fun watchBellForCall() {
+        screenStateHandler.removeCallbacks(bellCallWatch)
+        screenStateHandler.postDelayed(bellCallWatch, BELL_CALL_WATCH_MS)
+    }
+
+    private val bellCallWatch = object : Runnable {
+        override fun run() {
+            if (!bellSunOverlayWindow.isWindowShown()) return
+            if (mindfulnessBell.isCallActive()) {
+                takeOverFromBell()
+                return
+            }
+            screenStateHandler.postDelayed(this, BELL_CALL_WATCH_MS)
         }
     }
 

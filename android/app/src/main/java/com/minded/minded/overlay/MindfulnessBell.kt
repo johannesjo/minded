@@ -15,6 +15,7 @@ import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.telecom.TelecomManager
 import android.util.Log
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
@@ -119,7 +120,10 @@ class MindfulnessBell(
         show(
             host,
             decayMs,
-            {
+            strike@{
+                // A call came in while the sun was arriving: no strike over it
+                // (the controller's call watch takes the sun away).
+                if (isCallActive()) return@strike
                 when {
                     // Only the live player: a screen-off may have freed it.
                     sound != null && player === sound -> startSafely(sound)
@@ -250,6 +254,9 @@ class MindfulnessBell(
                 else -> return Moment.Skip("couldn't tell which app was open")
             }
         if (foreground == context.packageName) return Moment.Skip("minded was open")
+        // The phone app in front is a call being made or about to be, even
+        // before the audio mode says so.
+        if (foreground == dialerPackage()) return Moment.Skip("a call")
         if (isBlockedPackage(foreground)) return Moment.Skip("a guarded app was open")
         if (foreground != homePackage()) return Moment.Ring(null)
 
@@ -300,12 +307,21 @@ class MindfulnessBell(
 
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (audio.isMusicActive) return "media was playing"
-        when (audio.mode) {
-            AudioManager.MODE_IN_CALL,
-            AudioManager.MODE_IN_COMMUNICATION,
-            AudioManager.MODE_RINGTONE -> return "a call"
-        }
+        if (isCallActive()) return "a call"
         return null
+    }
+
+    /**
+     * A call is ringing, live, being screened or redirected - phone or VoIP.
+     * Any audio mode but normal is one of those (ringtone, in call, in
+     * communication, call screening, the redirect modes), so this covers modes
+     * added in later Android versions too, and needs no phone-state permission.
+     * Checked before the bell rings and again while it shows: a call that
+     * comes in mid-ring ends it (see OverlayControllerService.watchBellForCall).
+     */
+    fun isCallActive(): Boolean {
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        return audio.mode > AudioManager.MODE_NORMAL
     }
 
     private fun currentVoice(audio: AudioManager, soundEnabled: Boolean): BellVoice =
@@ -352,6 +368,12 @@ class MindfulnessBell(
             Log.e(logTag, "Failed to prepare bell sound", e)
             null
         }
+    }
+
+    private fun dialerPackage(): String? = try {
+        context.getSystemService(TelecomManager::class.java)?.defaultDialerPackage
+    } catch (e: Exception) {
+        null
     }
 
     internal fun homePackage(): String? = try {
