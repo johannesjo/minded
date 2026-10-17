@@ -9,6 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,14 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.minded.minded.util.isDarkModeNow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.hypot
 
 /** The disc's window: exactly the Little Sun bubble (disc + its own glow). */
 val BELL_SUN_DISC_BOX = 60.dp
@@ -157,47 +159,86 @@ fun BellSunDisc(
 }
 
 /**
- * The strike's light, spreading from the disc's own halo outward.
+ * The bell's light, over the whole screen: a light dim that comes and goes
+ * with the sun ([BellSunState.presence]) - the world quiets while the bell
+ * rings - with a clear circle around the sun, and the strike's halo spreading
+ * from it.
  *
- * [hostFraction] > 0 when the bell rings through a sun already on screen, as
- * that sun's diameter over [box]: the light then starts at its rim. The halo's
- * window sits above that sun (the widget's launcher always lies beneath every
- * overlay), so a light filling the middle would wash the sun out.
+ * [center] is the ringing sun's centre and [sunRadiusPx] its radius, in this
+ * window's pixels; [haloRadiusPx] is how far the swell reaches. [isHosted]
+ * when the bell rings through a sun already on screen (the Little Sun, the
+ * widget's sun): the light then starts at that sun's rim. This window sits
+ * above that sun (the widget's launcher always lies beneath every overlay), so
+ * a light filling the middle would wash the sun out.
+ *
+ * Drawn through a window held at 0.8 alpha so touches pass through
+ * (BellSunWindow.HALO_WINDOW_ALPHA); the alphas below are set for that.
  */
 @Composable
-fun BellSunHalo(state: BellSunState, box: Dp = BELL_SUN_HALO_BOX, hostFraction: Float = 0f) {
+fun BellSunHalo(
+    state: BellSunState,
+    center: Offset,
+    haloRadiusPx: Float,
+    sunRadiusPx: Float,
+    isHosted: Boolean = false,
+) {
     val glowColor = if (isDarkModeNow()) GLOW_COLOR_NIGHT else GLOW_COLOR
-    Canvas(
-        modifier = Modifier
-            .size(box)
-            .alpha(state.presence.value),
-    ) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val p = state.presence.value
+        if (p <= 0f) return@Canvas
+
+        // The dim: clear over the sun and just past it, easing to its full
+        // depth a little further out, so the sun and its light stay bright.
+        val farthest = hypot(
+            maxOf(center.x, size.width - center.x),
+            maxOf(center.y, size.height - center.y),
+        )
+        val clearEnd = (sunRadiusPx * DIM_CLEAR_RADII / farthest).coerceIn(0f, 0.9f)
+        val fullAt = (sunRadiusPx * DIM_FULL_RADII / farthest).coerceIn(clearEnd + 0.01f, 1f)
+        val dim = DIM_COLOR.copy(alpha = DIM_ALPHA * p)
+        drawRect(
+            Brush.radialGradient(
+                0f to Color.Transparent,
+                clearEnd to Color.Transparent,
+                fullAt to dim,
+                1f to dim,
+                center = center,
+                radius = farthest,
+            ),
+        )
+
         val s = state.swell.value
         if (s <= 0f) return@Canvas
-        val radius = size.minDimension / 2f * (0.55f + 0.45f * s)
-        // Feathered to transparent well inside the window, so its bounds
-        // never cut the light. Its window is held at 0.8 alpha so touches pass
-        // through (BellSunWindow.HALO_WINDOW_ALPHA); these stops are set to
-        // read as 0.75 / 0.35 through it.
-        val stops = if (hostFraction <= 0f) {
+        val radius = haloRadiusPx * (0.55f + 0.45f * s)
+        // Feathered to transparent well inside its reach, so nothing cuts the
+        // light; these stops read as 0.75 / 0.35 through the window's alpha.
+        val stops = if (!isHosted) {
             arrayOf(
-                0.2f to glowColor.copy(alpha = 0.94f * s),
-                0.5f to glowColor.copy(alpha = 0.44f * s),
+                0.2f to glowColor.copy(alpha = 0.94f * s * p),
+                0.5f to glowColor.copy(alpha = 0.44f * s * p),
                 1f to Color.Transparent,
             )
         } else {
-            val rim = (hostFraction * size.minDimension / 2f / radius).coerceIn(0.05f, 0.9f)
+            val rim = (sunRadiusPx / radius).coerceIn(0.05f, 0.9f)
             arrayOf(
                 0f to Color.Transparent,
                 rim * 0.85f to Color.Transparent,
-                rim to glowColor.copy(alpha = 0.94f * s),
-                (rim + (1f - rim) * 0.4f) to glowColor.copy(alpha = 0.44f * s),
+                rim to glowColor.copy(alpha = 0.94f * s * p),
+                (rim + (1f - rim) * 0.4f) to glowColor.copy(alpha = 0.44f * s * p),
                 1f to Color.Transparent,
             )
         }
         drawCircle(
-            Brush.radialGradient(colorStops = stops, radius = radius),
-            radius = size.minDimension / 2f,
+            Brush.radialGradient(colorStops = stops, center = center, radius = radius),
+            radius = radius,
+            center = center,
         )
     }
 }
+
+// The dim's depth as seen (0.35) through the light window's 0.8 alpha.
+private const val DIM_ALPHA = 0.44f
+private val DIM_COLOR = Color.Black
+// The dim is clear out to this many sun radii, and full from this many.
+private const val DIM_CLEAR_RADII = 1.4f
+private const val DIM_FULL_RADII = 4f

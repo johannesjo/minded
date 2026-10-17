@@ -518,11 +518,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
 
         try {
-            // Only ever one sun. The bell rests where the Little Sun rests, so
-            // an intervention takes it over exactly like a Little Sun hand-off:
-            // the bell drops at once under the opaque shield and the
-            // intervention's sun glides out of that same spot. Any other
-            // surface simply fades it.
+            // Only ever one sun. The bell rings at the centre of the screen -
+            // exactly where an intervention's fresh-arrival sun first appears -
+            // so an intervention takes it over in place: the bell drops at
+            // once under the opaque shield and the intervention's sun rises
+            // from that same spot. Any other surface simply fades it.
             // A bell ringing through another sun has no disc to hand over - that
             // sun does its own hand-off, and the bell's light just fades.
             val morphFromBell = overlayName == OverlayName.INTERACTION_OVERLAY &&
@@ -550,7 +550,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                     // when whe show the question, we likely want to update the current app usage
                     sharedOverlayViewModel.updateLastAppUsage()
-                    interactionOverlayWindow.morphInFromCorner = morphInFromCorner || morphFromBell
+                    interactionOverlayWindow.morphInFromCorner = morphInFromCorner
                     interactionOverlayWindow.showWindow()
 
                     // we hide others only after to avoid lifecycle complications
