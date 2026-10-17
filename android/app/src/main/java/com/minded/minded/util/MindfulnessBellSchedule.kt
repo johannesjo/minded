@@ -1,5 +1,6 @@
 package com.minded.minded.util
 
+import kotlin.math.pow
 import kotlin.random.Random
 
 /**
@@ -144,13 +145,17 @@ fun bellVoice(
 }
 
 /**
- * The strike's player volume (0..1, on top of the media stream it plays on),
- * from each stream's level as a fraction of its maximum. The bell reaches for
- * the user unprompted, so it should sound as loud as their notifications do -
- * not at whatever a video last left the media volume at. It can only be
- * turned down from the media level, never up past it, so when media is the
- * quieter of the two, media is what it gets.
+ * The strike's player gain (0..1, linear, on top of the media stream it plays
+ * on), from each stream's current loudness in dB. The bell reaches for the
+ * user unprompted, so it should sound as loud as their notifications do - not
+ * at whatever a video last left the media volume at. It can only be turned
+ * down from the media level, never up past it, so when media is the quieter
+ * of the two, media is what it gets. dB, not volume steps: the steps sit on a
+ * curve, so a step ratio as a gain would ring far above notification level.
  */
-fun bellPlayerVolume(mediaFraction: Float, notificationFraction: Float): Float =
-    if (mediaFraction <= 0f) 0f
-    else (notificationFraction / mediaFraction).coerceIn(0f, 1f)
+fun bellPlayerVolume(mediaDb: Float, notificationDb: Float): Float = when {
+    notificationDb.isNaN() || mediaDb.isNaN() -> 0f
+    notificationDb == Float.NEGATIVE_INFINITY -> 0f
+    notificationDb >= mediaDb -> 1f
+    else -> 10f.pow((notificationDb - mediaDb) / 20f).coerceIn(0f, 1f)
+}

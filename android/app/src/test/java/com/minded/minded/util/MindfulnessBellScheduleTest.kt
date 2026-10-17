@@ -172,12 +172,14 @@ class MindfulnessBellScheduleTest {
 
     @Test
     fun `the strike rings at notification loudness, never above media`() {
-        // A video left media at full: the bell is turned down to notifications.
-        assertEquals(0.4f, bellPlayerVolume(mediaFraction = 1f, notificationFraction = 0.4f), 0.001f)
+        // A video left media at full (0 dB), notifications sit 20 dB lower:
+        // the bell is turned down by those 20 dB - a tenth of the amplitude.
+        assertEquals(0.1f, bellPlayerVolume(mediaDb = 0f, notificationDb = -20f), 0.001f)
         // Media quieter than notifications: it can't be turned up past media.
-        assertEquals(1f, bellPlayerVolume(mediaFraction = 0.3f, notificationFraction = 0.8f), 0.001f)
-        assertEquals(0f, bellPlayerVolume(mediaFraction = 0f, notificationFraction = 0.8f), 0.001f)
-        assertEquals(0f, bellPlayerVolume(mediaFraction = 0.5f, notificationFraction = 0f), 0.001f)
+        assertEquals(1f, bellPlayerVolume(mediaDb = -30f, notificationDb = -10f), 0.001f)
+        // Notifications muted: nothing.
+        assertEquals(0f, bellPlayerVolume(mediaDb = 0f, notificationDb = Float.NEGATIVE_INFINITY), 0.001f)
+        assertEquals(0f, bellPlayerVolume(mediaDb = Float.NaN, notificationDb = -10f), 0.001f)
     }
 
     @Test

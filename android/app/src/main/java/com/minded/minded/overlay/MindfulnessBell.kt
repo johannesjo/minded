@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Handler
@@ -74,7 +75,12 @@ class MindfulnessBell(
         // Most unlocks have nothing due: the cfg is cached (see currentCfg), so
         // they never parse the sync blob, and a bell that's off stops here.
         val cfg = currentCfg()
-        if (cfg.mindfulnessBell != true) return
+        if (cfg.mindfulnessBell != true) {
+            // Switched off before its first bell came: don't let a later
+            // switch-on that bypasses the toggle (a sync, an import) ring at once.
+            if (prefs.isMindfulnessBellFirstRingArmed()) prefs.setMindfulnessBellFirstRingArmed(false)
+            return
+        }
         val now = LocalDateTime.now()
         val epochDay = now.toLocalDate().toEpochDay()
         val minute = now.hour * 60 + now.minute
@@ -101,7 +107,9 @@ class MindfulnessBell(
         }
         val host = (moment as Moment.Ring).host
 
-        if (slot != null) prefs.markMindfulnessBellRung(epochDay, slot, minute)
+        // Even a first ring with no slot due: a slot opening minutes later
+        // must still keep the ring gap from it.
+        prefs.markMindfulnessBellRung(epochDay, slot, minute)
         if (isFirstRing) prefs.setMindfulnessBellFirstRingArmed(false)
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val voice = currentVoice(audio, cfg.soundEnabled != false)
@@ -250,6 +258,12 @@ class MindfulnessBell(
         // stays quiet - a guess could put a second sun next to it.
         val widgetSuns = visibleWidgetSuns() ?: return Moment.Skip("couldn't read the home screen")
         val sun = widgetSuns.firstOrNull() ?: return Moment.Ring(null)
+        // An empty box is a widget sun the accessibility tree reports but that
+        // isn't drawn yet - nothing to ring through, and a light sized from it
+        // would have no radius.
+        if (sun.width() < MIN_HOST_SUN_PX || sun.height() < MIN_HOST_SUN_PX) {
+            return Moment.Skip("couldn't read the home screen")
+        }
         // Bounds come clipped to the screen: a lopsided box is a widget half
         // swiped away, whose centre and size would be wrong - and it's leaving.
         if (abs(sun.width() - sun.height()) > maxOf(sun.width(), sun.height()) / 5) {
@@ -303,9 +317,11 @@ class MindfulnessBell(
             notificationVolume = audio.getStreamVolume(AudioManager.STREAM_NOTIFICATION),
         )
 
-    private fun streamFraction(audio: AudioManager, stream: Int): Float {
-        val max = audio.getStreamMaxVolume(stream)
-        return if (max > 0) audio.getStreamVolume(stream).toFloat() / max else 0f
+    /** A stream's current loudness in dB on the speaker (volume steps aren't linear). */
+    private fun streamDb(audio: AudioManager, stream: Int): Float = try {
+        audio.getStreamVolumeDb(stream, audio.getStreamVolume(stream), AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+    } catch (e: IllegalArgumentException) {
+        Float.NEGATIVE_INFINITY
     }
 
     /** A prepared player for the strike, or null if it can't be loaded. */
@@ -325,8 +341,8 @@ class MindfulnessBell(
                 // for the user unprompted, so it rings about as loud as their
                 // notifications - not at whatever a video last left media at.
                 val volume = bellPlayerVolume(
-                    mediaFraction = streamFraction(audio, AudioManager.STREAM_MUSIC),
-                    notificationFraction = streamFraction(audio, AudioManager.STREAM_NOTIFICATION),
+                    mediaDb = streamDb(audio, AudioManager.STREAM_MUSIC),
+                    notificationDb = streamDb(audio, AudioManager.STREAM_NOTIFICATION),
                 )
                 mp.setVolume(volume, volume)
                 mp.setOnCompletionListener { release() }
@@ -361,5 +377,6 @@ class MindfulnessBell(
         // ago it opened - so look back generously and accept an old read.
         private const val LOOKBACK_MS = 30 * 60 * 1000L
         private const val TAKEOVER_FADE_MS = 400L
+        private const val MIN_HOST_SUN_PX = 8
     }
 }

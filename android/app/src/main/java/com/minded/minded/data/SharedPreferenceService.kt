@@ -142,11 +142,12 @@ class SharedPreferenceService(context: Context) {
     }
 
     @Synchronized
-    fun markMindfulnessBellRung(epochDay: Long, slot: Int, minuteOfDay: Int) {
+    fun markMindfulnessBellRung(epochDay: Long, slot: Int?, minuteOfDay: Int) {
+        // A ring for no slot (the first ring) still counts toward the ring gap.
         val (mask, _) = getMindfulnessBellDay(epochDay)
         with(sharedPreferences.edit()) {
             putLong(BELL_DAY_KEY, epochDay)
-            putInt(BELL_RUNG_MASK_KEY, mask or (1 shl slot))
+            putInt(BELL_RUNG_MASK_KEY, if (slot != null) mask or (1 shl slot) else mask)
             putInt(BELL_LAST_RUNG_MINUTE_KEY, minuteOfDay)
             apply()
         }
