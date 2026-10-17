@@ -43,6 +43,7 @@ import com.minded.minded.detection.OverlayDecisionEngine
 import com.minded.minded.detection.OverlayState
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
+import com.minded.minded.util.registerUserPresentReceiver
 import com.minded.minded.util.ActiveTimer
 import com.minded.minded.util.SessionIntent
 import com.minded.minded.util.SessionTarget
@@ -172,6 +173,13 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     private fun scheduleBellCheck() {
         screenStateHandler.removeCallbacks(maybeRingBell)
         screenStateHandler.postDelayed(maybeRingBell, BELL_AFTER_UNLOCK_DELAY_MS)
+    }
+
+    // USER_PRESENT, handled with the screen events above but registered apart.
+    private val userPresentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            screenStateReceiver.onReceive(context, intent)
+        }
     }
 
     private val maybeRingBell = Runnable {
@@ -318,13 +326,14 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         val screenFilter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_USER_PRESENT)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(screenStateReceiver, screenFilter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(screenStateReceiver, screenFilter)
         }
+        // The unlock needs an exported receiver of its own - see registerUserPresentReceiver.
+        registerUserPresentReceiver(this, userPresentReceiver)
         Log.d(logTag, "Screen state receiver registered")
 
         // Publish after windows are initialized (isInputOverlayVisible reads them)
@@ -980,6 +989,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             unregisterReceiver(screenStateReceiver)
         } catch (e: Exception) {
             Log.e(logTag, "Failed to unregister screen state receiver", e)
+        }
+        try {
+            unregisterReceiver(userPresentReceiver)
+        } catch (e: Exception) {
+            Log.e(logTag, "Failed to unregister user present receiver", e)
         }
 
         // Cancel any pending retry attempts

@@ -25,6 +25,7 @@ import com.minded.minded.detection.HybridAppDetector
 import com.minded.minded.detection.ConfidenceLevel
 import com.minded.minded.detection.DetectionConfidence
 import com.minded.minded.detection.PreinstalledUserApps
+import com.minded.minded.util.registerUserPresentReceiver
 import com.minded.minded.util.ForegroundStateHolder
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -172,6 +173,10 @@ class MyAccessibilityService : AccessibilityService() {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         const val INTENT_EXTRA_DETECTION_TIMESTAMP = "INTENT_EXTRA_DETECTION_TIMESTAMP"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
+
+        // Unlock fallback re-checks: ~2s after the last sign of the keyguard.
+        private const val UNLOCK_RECHECK_MS = 400L
+        private const val UNLOCK_RECHECKS = 5
         private const val TAG = "MindedAccessibility"
         private const val HEALTH_NOTIFICATION_CHANNEL_ID = "minded_health_alerts"
         private const val HEALTH_NOTIFICATION_ID = 1002
@@ -329,14 +334,16 @@ class MyAccessibilityService : AccessibilityService() {
         // Burst-poll UsageStats right after unlock - an app launch is likely
         // and slow-starting apps (splash screens) emit no accessibility events
         val unlockFilter = IntentFilter().apply {
-            addAction(Intent.ACTION_USER_PRESENT)
             addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(unlockReceiver, unlockFilter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(unlockReceiver, unlockFilter)
         }
+        // The unlock needs an exported receiver of its own - see registerUserPresentReceiver.
+        registerUserPresentReceiver(this, userPresentReceiver)
     }
 
     private val packageChangeReceiver = object : BroadcastReceiver() {
@@ -347,29 +354,93 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * The keyguard is up and no unlock has been seen yet. USER_PRESENT is the
+     * primary unlock signal, but as a fallback (it once never arrived at all -
+     * see registerUserPresentReceiver), while this is set the first
+     * accessibility event or re-check that finds the keyguard gone counts as
+     * the unlock ([onAccessibilityEvent], [unlockRecheck]).
+     */
+    private var isAwaitingUnlock = false
+
+    // The keyguard can still read locked for the last window change of its
+    // going-away animation, after which nothing may change until the user
+    // opens an app. So while armed, re-check a few times after each event
+    // rather than waiting for the next one.
+    private val unlockRecheckHandler = Handler(Looper.getMainLooper())
+    private var unlockRechecksLeft = 0
+    private fun armUnlockFallback() {
+        isAwaitingUnlock = true
+        unlockRechecksLeft = UNLOCK_RECHECKS
+        unlockRecheckHandler.removeCallbacks(unlockRecheck)
+        unlockRecheckHandler.postDelayed(unlockRecheck, UNLOCK_RECHECK_MS)
+    }
+
+    private val unlockRecheck = object : Runnable {
+        override fun run() {
+            if (!isAwaitingUnlock) return
+            if (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == false) {
+                traceBell("a11yEvent")
+                onDeviceUnlocked()
+            } else if (--unlockRechecksLeft > 0) {
+                unlockRecheckHandler.postDelayed(this, UNLOCK_RECHECK_MS)
+            }
+        }
+    }
+
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val isUnlock = intent?.action == Intent.ACTION_USER_PRESENT
-            if (isUnlock) SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("a11y")
+            when (intent?.action) {
+                Intent.ACTION_SCREEN_OFF -> {
+                    isAwaitingUnlock = false
+                    unlockRecheckHandler.removeCallbacks(unlockRecheck)
+                    return
+                }
+                Intent.ACTION_SCREEN_ON -> traceBell("screenOn")
+                Intent.ACTION_USER_PRESENT -> traceBell("a11y")
+            }
             // ACTION_SCREEN_ON also fires at the lock screen, where no app launch
             // is possible yet. Only burst once the device is actually usable so
             // we don't spend battery fast-polling against the keyguard.
             val keyguard = getSystemService(KeyguardManager::class.java)
             if (keyguard?.isKeyguardLocked == true) {
-                if (isUnlock) SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("a11yLocked")
+                if (intent?.action == Intent.ACTION_USER_PRESENT) traceBell("a11yLocked")
+                armUnlockFallback()
                 return
             }
-            Log.d(TAG, "Screen on/unlock (device unlocked) - triggering polling burst")
-            hybridDetector?.triggerPollingBurst()
-            if (isUnlock) {
-                try {
-                    OverlayControllerService.onUnlockSeen(this@MyAccessibilityService)
-                    SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("handOff")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
-                    SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("handOff", e)
-                }
-            }
+            // Screen on with no keyguard (or the keyguard already gone) is an
+            // unlock too: that's how a phone without a lock screen wakes.
+            onDeviceUnlocked()
+        }
+    }
+
+    /**
+     * The device just became usable. A wake can be reported twice (USER_PRESENT
+     * and the accessibility fallback both see it where USER_PRESENT works);
+     * that's harmless - the bell's check just restarts its delay and the
+     * polling burst is rate-limited.
+     */
+    private fun onDeviceUnlocked() {
+        isAwaitingUnlock = false
+        unlockRecheckHandler.removeCallbacks(unlockRecheck)
+        Log.d(TAG, "Device unlocked - triggering polling burst")
+        hybridDetector?.triggerPollingBurst()
+        try {
+            OverlayControllerService.onUnlockSeen(this)
+            traceBell("handOff")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
+            traceBell("handOff", e)
+        }
+    }
+
+    private fun traceBell(stage: String, error: Throwable? = null) =
+        SharedPreferenceService(this).traceMindfulnessBell(stage, error)
+
+    // USER_PRESENT, handled with the screen events above but registered apart.
+    private val userPresentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            unlockReceiver.onReceive(context, intent)
         }
     }
 
@@ -432,10 +503,16 @@ class MyAccessibilityService : AccessibilityService() {
             Log.e(TAG, "Failed to unregister packageChangeReceiver", e)
         }
 
+        unlockRecheckHandler.removeCallbacks(unlockRecheck)
         try {
             unregisterReceiver(unlockReceiver)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to unregister unlockReceiver", e)
+        }
+        try {
+            unregisterReceiver(userPresentReceiver)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unregister userPresentReceiver", e)
         }
     }
 
@@ -937,6 +1014,20 @@ class MyAccessibilityService : AccessibilityService() {
 
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        // Unlock fallback (see isAwaitingUnlock): a window change on the
+        // keyguard arms it even if no screen broadcast arrived, and the first
+        // event after the keyguard is gone is the unlock. Window changes only,
+        // until armed - the keyguard read is a binder call.
+        if (isAwaitingUnlock || event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            when (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked) {
+                true -> armUnlockFallback()
+                false -> if (isAwaitingUnlock) {
+                    traceBell("a11yEvent")
+                    onDeviceUnlocked()
+                }
+                null -> {}
+            }
+        }
         try {
             val packageName = event.packageName?.toString() ?: return
             val currentTime = System.currentTimeMillis()
