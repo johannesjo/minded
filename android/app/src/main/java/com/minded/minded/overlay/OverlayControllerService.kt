@@ -152,6 +152,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                 }
                 Intent.ACTION_USER_PRESENT -> {
+                    sharedPreferenceService.traceMindfulnessBell("service")
                     Log.d(logTag, "User unlocked device - restoring overlay if needed")
                     // Delay slightly to let the foreground app detection settle
                     screenStateHandler.postDelayed({
@@ -174,6 +175,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private val maybeRingBell = Runnable {
+        sharedPreferenceService.traceMindfulnessBell("check")
         try {
             mindfulnessBell.onUnlock(
                 isOtherOverlayShown = {
@@ -193,8 +195,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     showOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
                 },
             )
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(logTag, "Mindfulness bell check failed", e)
+            sharedPreferenceService.traceMindfulnessBell("failed", e)
+            if (e !is Exception) throw e
         }
     }
 
@@ -304,6 +308,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             SleepWindDownOverlayWindow(this, sharedOverlayViewModel, windowManager)
         bellSunOverlayWindow = BellSunWindow(this, sharedOverlayViewModel, windowManager)
         mindfulnessBell = MindfulnessBell(this, sharedPreferenceService)
+        sharedPreferenceService.traceMindfulnessBell("serviceUp")
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -409,6 +414,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
         
         if (intent.getBooleanExtra(INTENT_EXTRA_UNLOCKED, false)) {
+            sharedPreferenceService.traceMindfulnessBell("started")
             scheduleBellCheck()
             return START_STICKY
         }

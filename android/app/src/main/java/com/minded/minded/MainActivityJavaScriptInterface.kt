@@ -140,6 +140,12 @@ open class MainActivityJavaScriptInterface(
         return SharedPreferenceService(context).getMindfulnessBellLastUnlock() ?: ""
     }
 
+    /** TEMPORARY: the bell's unlock trace (see SharedPreferenceService.traceMindfulnessBell), or "". */
+    @JavascriptInterface
+    fun getMindfulnessBellTrace(): String {
+        return SharedPreferenceService(context).getMindfulnessBellTrace() ?: ""
+    }
+
     /**
      * Whether the home-screen sun widget is currently placed on any launcher
      * surface. The web setup surfaces stay truthful with this: "your home

@@ -349,18 +349,25 @@ class MyAccessibilityService : AccessibilityService() {
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            val isUnlock = intent?.action == Intent.ACTION_USER_PRESENT
+            if (isUnlock) SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("a11y")
             // ACTION_SCREEN_ON also fires at the lock screen, where no app launch
             // is possible yet. Only burst once the device is actually usable so
             // we don't spend battery fast-polling against the keyguard.
             val keyguard = getSystemService(KeyguardManager::class.java)
-            if (keyguard?.isKeyguardLocked == true) return
+            if (keyguard?.isKeyguardLocked == true) {
+                if (isUnlock) SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("a11yLocked")
+                return
+            }
             Log.d(TAG, "Screen on/unlock (device unlocked) - triggering polling burst")
             hybridDetector?.triggerPollingBurst()
-            if (intent?.action == Intent.ACTION_USER_PRESENT) {
+            if (isUnlock) {
                 try {
                     OverlayControllerService.onUnlockSeen(this@MyAccessibilityService)
+                    SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("handOff")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
+                    SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("handOff", e)
                 }
             }
         }

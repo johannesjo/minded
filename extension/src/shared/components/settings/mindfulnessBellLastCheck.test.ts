@@ -1,6 +1,7 @@
 import {
   bellLastCheckLabel,
   bellLastUnlockLabel,
+  bellTraceLabel,
 } from "./mindfulnessBellLastCheck";
 
 describe("bellLastCheckLabel", () => {
@@ -95,5 +96,29 @@ describe("bellLastUnlockLabel", () => {
         now,
       ),
     ).toMatch(/no bell left today$/);
+  });
+});
+
+describe("bellTraceLabel", () => {
+  const now = new Date(2026, 9, 16, 18, 0);
+  const at = new Date(2026, 9, 16, 14, 5).getTime();
+
+  it("is empty when the native build can't trace", () => {
+    expect(bellTraceLabel(undefined, now)).toBeUndefined();
+  });
+
+  it("says when nothing has been traced", () => {
+    expect(bellTraceLabel("", now)).toBe("Trace: nothing yet");
+  });
+
+  it("lists each step, with a dash for steps that never ran, and the error", () => {
+    const label = bellTraceLabel(
+      JSON.stringify({ a11y: at, handOff: at, error: "check: Boom: no" }),
+      now,
+    );
+    expect(label).toMatch(/a11y today /);
+    expect(label).toMatch(/handOff today /);
+    expect(label).toMatch(/check -/);
+    expect(label).toMatch(/error: check: Boom: no$/);
   });
 });

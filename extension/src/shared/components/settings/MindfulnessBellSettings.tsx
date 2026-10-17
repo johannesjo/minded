@@ -11,6 +11,7 @@ import {
 import {
   bellLastCheckLabel,
   bellLastUnlockLabel,
+  bellTraceLabel,
 } from "./mindfulnessBellLastCheck";
 import {
   ANDROID_EV_RESUME,
@@ -45,6 +46,12 @@ export const MindfulnessBellSettings = (props: {
     IS_ANDROID
       ? bellLastUnlockLabel(androidInterface.getMindfulnessBellLastUnlock?.())
       : undefined;
+  // TEMPORARY: how far the last unlock got, while the unlock path is debugged.
+  const readTrace = () =>
+    IS_ANDROID
+      ? bellTraceLabel(androidInterface.getMindfulnessBellTrace?.())
+      : undefined;
+  const [trace, setTrace] = createSignal(readTrace());
   const [lastCheck, setLastCheck] = createSignal(readLastCheck());
   const [lastUnlock, setLastUnlock] = createSignal(readLastUnlock());
 
@@ -55,6 +62,7 @@ export const MindfulnessBellSettings = (props: {
     const refresh = () => {
       setLastCheck(readLastCheck());
       setLastUnlock(readLastUnlock());
+      setTrace(readTrace());
     };
     window.addEventListener(ANDROID_EV_RESUME, refresh);
     onCleanup(() => window.removeEventListener(ANDROID_EV_RESUME, refresh));
@@ -104,6 +112,9 @@ export const MindfulnessBellSettings = (props: {
           </Show>
           <Show when={lastUnlock()}>
             <span class={bellStyles.lastCheck}>{lastUnlock()}</span>
+          </Show>
+          <Show when={trace()}>
+            <span class={bellStyles.lastCheck}>{trace()}</span>
           </Show>
         </div>
       </Show>
