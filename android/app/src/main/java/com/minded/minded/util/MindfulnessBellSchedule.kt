@@ -35,9 +35,9 @@ import kotlin.random.Random
  */
 object MindfulnessBellSchedule {
     const val DEFAULT_SLOTS_PER_DAY = 2
-    // Wide for now so the bell can be tried out often; the everyday choices
-    // are one to three.
-    val SLOTS_PER_DAY_RANGE = 1..30
+    // The gap functions below hold for any count; the offered range is
+    // what keeps the bell rare.
+    val SLOTS_PER_DAY_RANGE = 1..3
     const val EARLIEST_SLOT_MINUTE = 0
     const val DAY_MINUTES = 24 * 60
     const val MIN_SLOT_GAP_MINUTES = 3 * 60
@@ -115,20 +115,6 @@ object MindfulnessBellSchedule {
                 minuteOfDay >= slots[i] &&
                 minuteOfDay < slots[i] + fireWindowFor(slots.size)
         }
-    }
-
-    /**
-     * The minute today's next bell window opens - or [minuteOfDay] itself if
-     * one is open now - or null if none is left today. Only for the settings'
-     * "next bell" hint; [dueSlot] alone decides a ring.
-     */
-    fun nextWindowMinute(minuteOfDay: Int, slots: List<Int>, rungMask: Int): Int? {
-        if (rungMask.countOneBits() >= slots.size) return null
-        return slots.indices
-            .firstOrNull { i ->
-                rungMask and (1 shl i) == 0 && minuteOfDay < slots[i] + fireWindowFor(slots.size)
-            }
-            ?.let { maxOf(slots[it], minuteOfDay) }
     }
 }
 

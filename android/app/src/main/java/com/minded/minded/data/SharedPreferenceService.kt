@@ -25,8 +25,6 @@ class SharedPreferenceService(context: Context) {
     private val BELL_RUNG_MASK_KEY = "mindfulnessBellRungMask"
     private val BELL_LAST_RUNG_MINUTE_KEY = "mindfulnessBellLastRungMinute"
     private val BELL_LAST_CHECK_KEY = "mindfulnessBellLastCheck"
-    private val BELL_LAST_UNLOCK_KEY = "mindfulnessBellLastUnlock"
-    private val BELL_TRACE_KEY = "mindfulnessBellTrace"
     private val BELL_FIRST_RING_KEY = "mindfulnessBellFirstRing"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
@@ -169,39 +167,6 @@ class SharedPreferenceService(context: Context) {
         sharedPreferences.getString(BELL_LAST_CHECK_KEY, null)
 
     /**
-     * The last unlock the bell saw, due or not, as JSON
-     * `{"atMs":…,"enabled":…,"nextAtMs":…}` (nextAtMs: when today's next bell
-     * window opens, null if none is left). Lets the settings tell "no unlock
-     * reached the bell" from "none fell in a bell's window". Overwritten each
-     * unlock, never a history.
-     */
-    fun setMindfulnessBellLastUnlock(json: String) {
-        sharedPreferences.edit().putString(BELL_LAST_UNLOCK_KEY, json).apply()
-    }
-
-    fun getMindfulnessBellLastUnlock(): String? =
-        sharedPreferences.getString(BELL_LAST_UNLOCK_KEY, null)
-
-    /**
-     * TEMPORARY diagnostic: when each step of an unlock's way to the bell last
-     * ran, as JSON `{"<stage>":atMs,…,"error":"…"}`, so a bell that never hears
-     * an unlock can be traced on the phone alone (no adb). Remove once the
-     * unlock path is known to work.
-     */
-    @Synchronized
-    fun traceMindfulnessBell(stage: String, error: Throwable? = null) {
-        try {
-            val trace = sharedPreferences.getString(BELL_TRACE_KEY, null)
-                ?.let { org.json.JSONObject(it) } ?: org.json.JSONObject()
-            trace.put(stage, System.currentTimeMillis())
-            if (error != null) trace.put("error", "$stage: ${error.javaClass.simpleName}: ${error.message}")
-            sharedPreferences.edit().putString(BELL_TRACE_KEY, trace.toString()).apply()
-        } catch (e: Exception) {
-            Log.e(logTag, "Failed to trace bell stage $stage", e)
-        }
-    }
-
-    /**
      * The first bell after the bell is switched on: it rings at the next good
      * unlock regardless of the schedule (the moment checks still apply).
      * Cleared once that bell rings.
@@ -212,9 +177,6 @@ class SharedPreferenceService(context: Context) {
 
     fun isMindfulnessBellFirstRingArmed(): Boolean =
         sharedPreferences.getBoolean(BELL_FIRST_RING_KEY, false)
-
-    fun getMindfulnessBellTrace(): String? =
-        sharedPreferences.getString(BELL_TRACE_KEY, null)
 
     fun getBlockedApps(): List<String> {
         val syncData = getSyncData()

@@ -153,7 +153,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                 }
                 Intent.ACTION_USER_PRESENT -> {
-                    sharedPreferenceService.traceMindfulnessBell("service")
                     Log.d(logTag, "User unlocked device - restoring overlay if needed")
                     // Delay slightly to let the foreground app detection settle
                     screenStateHandler.postDelayed({
@@ -183,7 +182,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private val maybeRingBell = Runnable {
-        sharedPreferenceService.traceMindfulnessBell("check")
         try {
             mindfulnessBell.onUnlock(
                 isOtherOverlayShown = {
@@ -205,7 +203,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             )
         } catch (e: Throwable) {
             Log.e(logTag, "Mindfulness bell check failed", e)
-            sharedPreferenceService.traceMindfulnessBell("failed", e)
             if (e !is Exception) throw e
         }
     }
@@ -316,7 +313,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             SleepWindDownOverlayWindow(this, sharedOverlayViewModel, windowManager)
         bellSunOverlayWindow = BellSunWindow(this, sharedOverlayViewModel, windowManager)
         mindfulnessBell = MindfulnessBell(this, sharedPreferenceService)
-        sharedPreferenceService.traceMindfulnessBell("serviceUp")
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -423,7 +419,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
         
         if (intent.getBooleanExtra(INTENT_EXTRA_UNLOCKED, false)) {
-            sharedPreferenceService.traceMindfulnessBell("started")
             scheduleBellCheck()
             return START_STICKY
         }
@@ -615,19 +610,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private fun takeOverFromBell() {
         if (!bellSunOverlayWindow.isWindowShown()) return
-        traceBellCut()
         bellSunOverlayWindow.hideWindow()
         mindfulnessBell.fadeOutAndRelease()
-    }
-
-    /**
-     * TEMPORARY (with the bell trace): which path ended a ringing bell from
-     * outside, as the trace's error line - e.g. "cut: hideAllBut<-onStartCommand".
-     */
-    private fun traceBellCut() {
-        val path = Throwable().stackTrace.drop(1).take(3)
-            .joinToString("<-") { it.methodName }
-        sharedPreferenceService.traceMindfulnessBell("cut", RuntimeException(path))
     }
 
     /**
@@ -692,10 +676,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.LITTLE_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
             OverlayName.SLEEP_WIND_DOWN_OVERLAY -> sleepWindDownOverlayWindow.hideWindow()
-            OverlayName.MINDFULNESS_BELL_OVERLAY -> {
-                if (bellSunOverlayWindow.isWindowShown()) traceBellCut()
-                bellSunOverlayWindow.hideWindow()
-            }
+            OverlayName.MINDFULNESS_BELL_OVERLAY -> bellSunOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")

@@ -8,11 +8,7 @@ import {
   bellPerDayLabel,
   DEFAULT_BELL_PER_DAY,
 } from "./mindfulnessBell.const";
-import {
-  bellLastCheckLabel,
-  bellLastUnlockLabel,
-  bellTraceLabel,
-} from "./mindfulnessBellLastCheck";
+import { bellLastCheckLabel } from "./mindfulnessBellLastCheck";
 import {
   ANDROID_EV_RESUME,
   androidInterface,
@@ -33,25 +29,21 @@ export const MindfulnessBellSettings = (props: {
   initialPerDay?: MindfulnessBellPerDay;
 }): JSX.Element => {
   const [enabled, setEnabled] = createSignal(props.initialEnabled);
+  // A count outside the offered range (left from a wider test build) reads
+  // as the default natively, so show it as that here too.
+  const initialPerDay = props.initialPerDay;
   const [perDay, setPerDay] = createSignal(
-    props.initialPerDay ?? DEFAULT_BELL_PER_DAY,
+    initialPerDay !== undefined &&
+      initialPerDay >= BELL_PER_DAY_MIN &&
+      initialPerDay <= BELL_PER_DAY_MAX
+      ? initialPerDay
+      : DEFAULT_BELL_PER_DAY,
   );
   // What the last due bell did, so a bell that's never heard can be understood.
   const readLastCheck = () =>
     IS_ANDROID
       ? bellLastCheckLabel(androidInterface.getMindfulnessBellLastCheck?.())
       : undefined;
-  // And what it made of the last unlock, so "never reached" shows too.
-  const readLastUnlock = () =>
-    IS_ANDROID
-      ? bellLastUnlockLabel(androidInterface.getMindfulnessBellLastUnlock?.())
-      : undefined;
-  // TEMPORARY: how far the last unlock got, while the unlock path is debugged.
-  const readTrace = () =>
-    IS_ANDROID
-      ? bellTraceLabel(androidInterface.getMindfulnessBellTrace?.())
-      : undefined;
-  const [trace, setTrace] = createSignal(readTrace());
   // Switched on, the first bell rings at the next unlock rather than hours
   // later at a random window - so it is met while it's still expected.
   const readFirstRingArmed = () =>
@@ -59,7 +51,6 @@ export const MindfulnessBellSettings = (props: {
   const [firstRingArmed, setFirstRingArmed] =
     createSignal(readFirstRingArmed());
   const [lastCheck, setLastCheck] = createSignal(readLastCheck());
-  const [lastUnlock, setLastUnlock] = createSignal(readLastUnlock());
 
   // Unlocks happen while the app is away: re-read on return, or a settings
   // page left open across a lock/unlock keeps showing what it saw on mount.
@@ -67,8 +58,6 @@ export const MindfulnessBellSettings = (props: {
     if (!IS_ANDROID) return;
     const refresh = () => {
       setLastCheck(readLastCheck());
-      setLastUnlock(readLastUnlock());
-      setTrace(readTrace());
       setFirstRingArmed(readFirstRingArmed());
     };
     window.addEventListener(ANDROID_EV_RESUME, refresh);
@@ -120,12 +109,6 @@ export const MindfulnessBellSettings = (props: {
           <span>{bellPerDayLabel(perDay())}</span>
           <Show when={lastCheck()}>
             <span class={bellStyles.lastCheck}>{lastCheck()}</span>
-          </Show>
-          <Show when={lastUnlock()}>
-            <span class={bellStyles.lastCheck}>{lastUnlock()}</span>
-          </Show>
-          <Show when={trace()}>
-            <span class={bellStyles.lastCheck}>{trace()}</span>
           </Show>
           <Show when={firstRingArmed()}>
             <span class={bellStyles.lastCheck}>
