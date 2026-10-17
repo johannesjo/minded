@@ -24,8 +24,9 @@ import java.time.ZoneId
  * mini-intervention (WidgetPrompts): it steps every 15 minutes through the day so
  * a glance on return finds a fresh invitation, then rests wordless through the
  * night. So rather than polling, we arm a single inexact, *non-wake* alarm for
- * the next 15-minute step and re-arm each time it fires - one alarm spans the
- * whole night. Non-wake (RTC) means it only fires while the device is already
+ * the next 15-minute step and re-arm each time it fires - at night one for the
+ * end of nightfall (the card's sky letting go of the sunset's afterglow), then
+ * one across the rest of the night. Non-wake (RTC) means it only fires while the device is already
  * awake: a busy day is ~60-odd cheap piggybacked repaints, a sleeping phone
  * schedules nothing until it wakes. What to show is decided in
  * MyAppWidget.provideGlance from the local time. See docs/sun-companion-widget.md.
@@ -107,7 +108,8 @@ class MyAppWidgetReceiver : GlanceAppWidgetReceiver() {
         // The line's 15-minute day cadence is the finest of the three surfaces;
         // the day/night flip rides the real sun (WidgetSun) and lands on any
         // minute, so nextChangeMillis takes whichever comes first. The sky's
-        // face steps ride the day cadence.
+        // day face steps ride the day cadence; the night's one (nightfall →
+        // deep night) is in nextChangeMillis too.
         val now = System.currentTimeMillis()
         val triggerAt = WidgetPrompts.nextChangeMillis(now, ZoneId.systemDefault())
         // Inexact + allow-while-idle: no SCHEDULE_EXACT_ALARM permission, and a few

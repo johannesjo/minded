@@ -158,6 +158,15 @@ rest of the turn - the sky and the disc's own delayed turn alike - to a close in
 (a resume lands on the new sky) and WebViews without View Transitions get the
 plain flip.
 
+On the widget card, night opens on the **nightfall** face (`widget_sky_nightfall`):
+the dark sky with the app's own afterglow layers baked in at `--night-afterglow`
+0.65. It shows while the real afterglow (`WidgetSun.Moment.afterglow`, ported from
+`solarSky.ts`) is ≥ 0.35 (`WidgetSky.NIGHTFALL_MIN_AFTERGLOW`), then the plain
+dark face takes over - so the card steps dusk → nightfall → deep night with the
+app's sky instead of jumping straight to the deep night. The moon on it is
+unchanged: cool, never warmed. The warmth is the sky's (the sunset's afterglow),
+not a halo.
+
 ## Outside the app
 
 ### On a background we don't control — amber

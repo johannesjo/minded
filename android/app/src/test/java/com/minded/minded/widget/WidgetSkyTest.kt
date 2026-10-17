@@ -16,8 +16,10 @@ class WidgetSkyTest {
         assertEquals(WidgetSky.MIDDAY, WidgetSky.forHour(16))
         assertEquals(WidgetSky.AFTERNOON, WidgetSky.forHour(17))
         assertEquals(WidgetSky.DUSK, WidgetSky.forHour(18)) // last light before night
-        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(19)) // moon, in step with the app
-        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(20))
+        // Moon, in step with the app - over the sunset's afterglow at first.
+        assertEquals(WidgetSky.NIGHTFALL, WidgetSky.forHour(19))
+        assertEquals(WidgetSky.NIGHTFALL, WidgetSky.forHour(20)) // afterglow 0.5
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(21))
         assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(0))
         assertEquals(WidgetSky.NIGHT, WidgetSky.forHour(4))
     }
@@ -38,9 +40,17 @@ class WidgetSkyTest {
         for (hour in 0..23) {
             assertEquals(
                 SunWidgetPhase.forHour(hour) == SunWidgetPhase.NIGHT,
-                WidgetSky.forHour(hour) == WidgetSky.NIGHT,
+                WidgetSky.forHour(hour).isNight,
                 "hour $hour",
             )
         }
+    }
+
+    @Test
+    fun `nightfall holds while the afterglow is at or above the threshold`() {
+        assertEquals(WidgetSky.NIGHTFALL, WidgetSky.forAfterglow(1.0))
+        assertEquals(WidgetSky.NIGHTFALL, WidgetSky.forAfterglow(WidgetSky.NIGHTFALL_MIN_AFTERGLOW))
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forAfterglow(WidgetSky.NIGHTFALL_MIN_AFTERGLOW - 0.01))
+        assertEquals(WidgetSky.NIGHT, WidgetSky.forAfterglow(0.0))
     }
 }

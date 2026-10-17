@@ -1,7 +1,14 @@
-import { readdirSync, readFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync } from "fs";
 import { resolve } from "path";
-import { AMBIENT_SKY_KEYFRAMES } from "@src/shared/skyTimeline";
-import { NIGHT_ELEVATION, skyMomentAt } from "@src/shared/sky/solarSky";
+import {
+  AMBIENT_SKY_KEYFRAMES,
+  NIGHT_AFTERGLOW_END_HOUR,
+} from "@src/shared/skyTimeline";
+import {
+  NIGHT_ELEVATION,
+  skyMomentAt,
+  TRUE_NIGHT_ELEVATION,
+} from "@src/shared/sky/solarSky";
 import { TIME_ZONE_COORDINATES_PACKED } from "@src/shared/sky/timeZoneCoordinates";
 import { locationForTimeZone } from "@src/shared/sky/timeZoneLocation";
 import { moonPhaseAt, SYNODIC_MONTH_DAYS } from "@src/shared/sky/lunarPhase";
@@ -14,12 +21,14 @@ import { moonPhaseAt, SYNODIC_MONTH_DAYS } from "@src/shared/sky/lunarPhase";
  * this keeps the ports from drifting from it:
  *
  * - the generated tables are verbatim copies of the TS one,
- * - the night elevation and keyframe hours match the TS constants,
+ * - the night elevation, keyframe hours and afterglow constants match the TS,
  * - every fixture in the JVM WidgetSunTest is what the TS computes for that
  *   instant, so the Kotlin port is checked against the app on each jest run
  *   (the JVM test then checks Kotlin against those same rows),
  * - every Swift source and resource is actually wired into the widget target
- *   (it's added programmatically on CI; a file left out fails the archive).
+ *   (it's added programmatically on CI; a file left out fails the archive),
+ * - the card's nightfall face bakes the app's own afterglow layers, and every
+ *   card face has its render on both platforms.
  *
  * Sibling to widgetClockMirror.test.ts (the fixed-clock fallback) and
  * widgetPromptsMirror.test.ts. jest runs with cwd = extension/.
@@ -43,8 +52,9 @@ const packedIn = (source: string, name: string): string => {
 
 /** The number assigned to `<name>` in a Kotlin/Swift source. */
 const nativeNumber = (source: string, name: string): number => {
+  // \b so NIGHT_ELEVATION can't match inside TRUE_NIGHT_ELEVATION.
   const match = source.match(
-    new RegExp(`${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`),
+    new RegExp(`\\b${name}\\s*=\\s*(-?\\d+(?:\\.\\d+)?)`),
   );
   if (!match) throw new Error(`could not find ${name}`);
   return Number(match[1]);
@@ -97,15 +107,45 @@ describe("the widgets' true sky mirrors solarSky (native ports ↔ TS)", () => {
     },
   );
 
+  it.each([
+    [
+      "Kotlin",
+      `${ANDROID_WIDGET}/WidgetSun.kt`,
+      [
+        "TRUE_NIGHT_ELEVATION",
+        "AFTERGLOW_EASE_DEG",
+        "NIGHT_AFTERGLOW_END_HOUR",
+      ],
+    ],
+    [
+      "Swift",
+      `${IOS_WIDGET}/WidgetSun.swift`,
+      ["trueNightElevation", "afterglowEaseDeg", "nightAfterglowEndHour"],
+    ],
+  ])("%s: the afterglow's constants match", (_, path, [deep, ease, end]) => {
+    const source = read(path);
+    const easeTs = read("src/shared/sky/solarSky.ts").match(
+      /const AFTERGLOW_EASE_DEG = (\d+);/,
+    );
+    expect(easeTs).not.toBeNull();
+    expect(nativeNumber(source, deep)).toBe(TRUE_NIGHT_ELEVATION);
+    expect(nativeNumber(source, ease)).toBe(Number(easeTs![1]));
+    expect(nativeNumber(source, end)).toBe(NIGHT_AFTERGLOW_END_HOUR);
+  });
+
   it("every JVM fixture is what the app's own sky computes", () => {
     const source = read(`${ANDROID_TEST}/WidgetSunTest.kt`);
     const rows = [
       ...source.matchAll(
-        /Fixture\("([^"]+)", (\d+)L, (true|false), (-?\d+\.\d+)\)/g,
+        /Fixture\("([^"]+)", (\d+)L, (true|false), (-?\d+\.\d+), (-?\d+\.\d+)\)/g,
       ),
     ];
     expect(rows.length).toBeGreaterThanOrEqual(5);
-    for (const [, zone, ms, isNight, skyHour] of rows) {
+    // At least one row each side of the nightfall threshold, so the
+    // afterglow port is exercised where it picks a face.
+    expect(rows.some((r) => Number(r[5]) >= 0.35)).toBe(true);
+    expect(rows.some((r) => r[3] === "true" && Number(r[5]) < 0.35)).toBe(true);
+    for (const [, zone, ms, isNight, skyHour, afterglow] of rows) {
       const location = locationForTimeZone(zone);
       expect(location).not.toBeNull();
       const moment = skyMomentAt(new Date(Number(ms)), location);
@@ -115,6 +155,7 @@ describe("the widgets' true sky mirrors solarSky (native ports ↔ TS)", () => {
         isNight: isNight === "true",
       });
       expect(moment.hour).toBeCloseTo(Number(skyHour), 3);
+      expect(moment.afterglow).toBeCloseTo(Number(afterglow), 3);
     }
   });
 
@@ -181,6 +222,138 @@ describe("the widgets' true sky mirrors solarSky (native ports ↔ TS)", () => {
     for (const font of fonts) {
       expect(resources).toContain(font);
       expect(plist).toContain(`<string>${font}</string>`);
+    }
+  });
+});
+
+describe("the widget card's nightfall face (gen_loading_sky.py ↔ the app's sky)", () => {
+  const GEN = "../android/tools/gen_loading_sky.py";
+
+  /** A `NAME = <number>` from the generator. */
+  const pyNumber = (source: string, name: string): number => {
+    const match = source.match(
+      new RegExp(`^${name} = (\\d+(?:\\.\\d+)?)$`, "m"),
+    );
+    if (!match) throw new Error(`no ${name} in gen_loading_sky.py`);
+    return Number(match[1]);
+  };
+
+  it("bakes the night composite's own warm layers (_variables.scss)", () => {
+    const gen = read(GEN);
+    const scss = read("src/styles/_variables.scss");
+    const glow = gen.match(/^AFTERGLOW_GLOW = \[(.+)\]$/m);
+    expect(glow).not.toBeNull();
+    const stops = [
+      ...glow![1].matchAll(
+        /\(\((\d+), (\d+), (\d+)\), (\d+(?:\.\d+)?), (\d+(?:\.\d+)?)\)/g,
+      ),
+    ];
+    expect(stops).toHaveLength(2);
+    for (const [, r, g, b, alpha, at] of stops) {
+      expect(scss).toContain(
+        `rgba(${r}, ${g}, ${b}, calc(${alpha} * var(--night-afterglow))) ${
+          Number(at) * 100
+        }%`,
+      );
+    }
+    const pct = (name: string) => Math.round(pyNumber(gen, name) * 100);
+    expect(scss).toContain(`transparent ${pct("AFTERGLOW_GLOW_END")}%`);
+    expect(scss).toContain(
+      `ellipse ${pct("AFTERGLOW_GLOW_RX_VMIN")}vmin ${pct(
+        "AFTERGLOW_GLOW_RY_VMIN",
+      )}vmin at 50% ${pct("AFTERGLOW_GLOW_CY")}%`,
+    );
+    const band = gen.match(
+      /^AFTERGLOW_BAND = \(\((\d+), (\d+), (\d+)\), (\d+(?:\.\d+)?)\)$/m,
+    );
+    expect(band).not.toBeNull();
+    const [, r, g, b, alpha] = band!;
+    expect(scss).toContain(`transparent ${pct("AFTERGLOW_BAND_START")}%`);
+    expect(scss).toContain(
+      `rgba(${r}, ${g}, ${b}, calc(${alpha} * var(--night-afterglow))) 100%`,
+    );
+  });
+
+  it("both platforms switch at the same afterglow, balanced on the bake", () => {
+    const kotlin = nativeNumber(
+      read(`${ANDROID_WIDGET}/WidgetSky.kt`),
+      "NIGHTFALL_MIN_AFTERGLOW",
+    );
+    const swift = nativeNumber(
+      read(`${IOS_WIDGET}/WidgetSky.swift`),
+      "nightfallMinAfterglow",
+    );
+    expect(swift).toBe(kotlin);
+    // Two stills for a smooth 1 → 0 drain: the baked level sits inside the
+    // window it covers, and neither still is ever more than ~1/3 off the live
+    // afterglow (nightfall over [threshold, 1], deep night (0) below it).
+    const level = pyNumber(read(GEN), "NIGHTFALL_AFTERGLOW_LEVEL");
+    expect(level).toBeGreaterThan(kotlin);
+    expect(level).toBeLessThan(1);
+    expect(Math.max(1 - level, level - kotlin, kotlin)).toBeLessThanOrEqual(
+      0.35,
+    );
+  });
+
+  it("both nights' schedules wake for the end of nightfall", () => {
+    // Swift has no test target: pin that its night branch, like Kotlin's
+    // (WidgetPromptsTest), takes the nightfall flip into account.
+    for (const path of [
+      `${ANDROID_WIDGET}/WidgetPrompts.kt`,
+      `${IOS_WIDGET}/WidgetPrompts.swift`,
+    ]) {
+      expect(read(path)).toMatch(/nextNightfallFlip\(/);
+    }
+  });
+
+  it("every card face has its render on both platforms", () => {
+    const androidSky = read(`${ANDROID_WIDGET}/WidgetSky.kt`);
+    const faces = androidSky
+      .match(/enum class WidgetSky\s*\{\s*([^;]+);/)![1]
+      .split(",")
+      .map((f) => f.trim());
+    const kotlinMap = new Map(
+      [
+        ...read(`${ANDROID_WIDGET}/MyAppWidget.kt`).matchAll(
+          /WidgetSky\.(\w+) -> R\.drawable\.(\w+)/g,
+        ),
+      ].map(([, face, drawable]) => [face, drawable]),
+    );
+    const swiftMap = new Map(
+      [
+        ...read(`${IOS_WIDGET}/MindedWidget.swift`).matchAll(
+          /case \.(\w+): return "(widget_sky_\w+)"/g,
+        ),
+      ].map(([, face, name]) => [face.toUpperCase(), name]),
+    );
+    const gen = read(GEN);
+    for (const face of faces) {
+      const drawable = kotlinMap.get(face);
+      expect({ face, drawable }).toEqual({
+        face,
+        drawable: expect.any(String),
+      });
+      // One generator list feeds both platforms: same name, both renders.
+      expect(swiftMap.get(face)).toBe(drawable);
+      // The day faces are "widget_sky_" + their keyframe's name there.
+      const day = `"${drawable!.replace("widget_sky_", "")}": [`;
+      expect(gen.includes(`"${drawable}"`) || gen.includes(day)).toBe(true);
+      expect(
+        existsSync(
+          resolve(
+            process.cwd(),
+            `../android/app/src/main/res/drawable-nodpi/${drawable}.png`,
+          ),
+        ),
+      ).toBe(true);
+      expect(
+        existsSync(
+          resolve(
+            process.cwd(),
+            `${IOS_WIDGET}/Assets.xcassets/${drawable}.imageset/${drawable}.png`,
+          ),
+        ),
+      ).toBe(true);
     }
   });
 });

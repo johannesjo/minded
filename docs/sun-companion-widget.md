@@ -39,12 +39,16 @@ as the app's does: `WidgetSun` (Kotlin and Swift) ports the app's `solarSky.ts`,
 night - the moon, the dark sky, the wordless card - begins when the sun is 4° below
 the horizon at the time zone's principal place (the same generated table the app
 reads, `WidgetTimeZones`), and the card's sky steps along the same sun-timed
-palette clock. There is only one sun, so the widget and the app can't disagree
+palette clock. Night opens on a **nightfall** face rather than straight on
+deep night: the dark sky still holding the sunset's warm horizon, baked from
+the app's own afterglow layers, while the real afterglow (ported with the sun)
+is ≥ 0.35 - about the first hour after dusk - so the card goes dusk → moon over
+the last warm light → deep night, as the app's sky does. There is only one sun, so the widget and the app can't disagree
 about whether it's up - a Berlin June evening is still day at 21:00 on both. A
 zone with no place (UTC, Etc/…) falls back to the fixed 06–19 clock, again like the
 app. The shared receiver refreshes with one inexact, non-wake alarm: the next
-15-minute line step by day, or the real dusk/dawn if that comes first
-(`docs/widget-prompts-concept.md`); a sun-only placement rides along and only ever
+15-minute line step by day, or the real dusk/dawn if that comes first, and at
+night the end of nightfall, then the dawn (`docs/widget-prompts-concept.md`); a sun-only placement rides along and only ever
 repaints while the screen is already on.
 
 ### Tonight's moon, not a full one

@@ -24,8 +24,9 @@
 //  The sun never animates, but it *is* alive to the day: instead of one static
 //  `.never` snapshot, the provider pre-places every face change as a timeline
 //  entry - 15-minute prompt steps by day (which contain the sky's whole-hour
-//  steps and the day/night flips by construction), one wordless entry spanning
-//  the night. Entries are deterministic, so nothing regenerates on unlock and
+//  steps and the day/night flips by construction), and two wordless entries
+//  across the night - the nightfall face (the sunset's afterglow still on the
+//  horizon, as in the app), then the deep night from when it drains. Entries are deterministic, so nothing regenerates on unlock and
 //  there is no refresh-budget pressure; `.atEnd` requests the next batch once
 //  they're consumed. Day/night and sky are decided here by the clock, **not**
 //  by the system colour scheme at render time.
@@ -77,8 +78,8 @@ struct SunProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<SunEntry>) -> Void) {
         let now = Date()
         var entries: [SunEntry] = [sunEntry(at: now)]
-        // Pre-place the upcoming face changes: quarter-hour prompt steps by day, a
-        // single wordless entry across the night. 64 changes span a full waking
+        // Pre-place the upcoming face changes: quarter-hour prompt steps by day,
+        // the nightfall and deep-night entries across the night. 64 changes span a full waking
         // day (~16h) - well within a timeline batch; `.atEnd` refills after that.
         var cursor = now
         for _ in 0..<64 {
@@ -283,6 +284,7 @@ private func skyImageName(_ sky: WidgetSky) -> String {
     case .midday: return "widget_sky_midday"
     case .afternoon: return "widget_sky_afternoon"
     case .dusk: return "widget_sky_dusk"
+    case .nightfall: return "widget_sky_nightfall"
     case .night: return "widget_sky_dark"
     }
 }
