@@ -613,8 +613,19 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
     private fun takeOverFromBell() {
         if (!bellSunOverlayWindow.isWindowShown()) return
+        traceBellCut()
         bellSunOverlayWindow.hideWindow()
         mindfulnessBell.fadeOutAndRelease()
+    }
+
+    /**
+     * TEMPORARY (with the bell trace): which path ended a ringing bell from
+     * outside, as the trace's error line - e.g. "cut: hideAllBut<-onStartCommand".
+     */
+    private fun traceBellCut() {
+        val path = Throwable().stackTrace.drop(1).take(3)
+            .joinToString("<-") { it.methodName }
+        sharedPreferenceService.traceMindfulnessBell("cut", RuntimeException(path))
     }
 
     /**
@@ -679,7 +690,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.LITTLE_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
             OverlayName.SLEEP_WIND_DOWN_OVERLAY -> sleepWindDownOverlayWindow.hideWindow()
-            OverlayName.MINDFULNESS_BELL_OVERLAY -> bellSunOverlayWindow.hideWindow()
+            OverlayName.MINDFULNESS_BELL_OVERLAY -> {
+                if (bellSunOverlayWindow.isWindowShown()) traceBellCut()
+                bellSunOverlayWindow.hideWindow()
+            }
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")
@@ -961,7 +975,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         if (exclude != OverlayName.SMALL_MSG_OVERLAY) hideOverlay(OverlayName.SMALL_MSG_OVERLAY);
         if (exclude != OverlayName.LITTLE_SUN_OVERLAY) hideOverlay(OverlayName.LITTLE_SUN_OVERLAY);
         if (exclude != OverlayName.SLEEP_WIND_DOWN_OVERLAY) hideOverlay(OverlayName.SLEEP_WIND_DOWN_OVERLAY);
-        if (exclude != OverlayName.MINDFULNESS_BELL_OVERLAY) hideOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY);
+        // A plain "hide everything" is about the app in front (it went to the
+        // background, isn't guarded, the session ended) - and the bell belongs
+        // to no app. It used to go too, which cut a fresh bell off within a
+        // second (likely: its own windows read as minded in front, so the next
+        // window change looked like leaving minded). The bell ends on its own
+        // (decay, tap, screen off) or when another surface takes over.
+        if (exclude != null && exclude != OverlayName.MINDFULNESS_BELL_OVERLAY) {
+            hideOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
+        }
     }
 
 
@@ -1002,6 +1024,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
         // Hide all overlays before destruction
         hideAllBut()
+        hideOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
 
         super.onDestroy()
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
