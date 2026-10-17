@@ -75,8 +75,10 @@ export const bellLastUnlockLabel = (
 // order - see SharedPreferenceService.traceMindfulnessBell. Remove with it.
 const TRACE_STAGES = [
   "serviceUp",
+  "screenOn",
   "a11y",
   "a11yLocked",
+  "a11yEvent",
   "handOff",
   "started",
   "service",

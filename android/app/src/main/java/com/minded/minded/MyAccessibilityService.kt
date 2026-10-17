@@ -331,6 +331,7 @@ class MyAccessibilityService : AccessibilityService() {
         val unlockFilter = IntentFilter().apply {
             addAction(Intent.ACTION_USER_PRESENT)
             addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(unlockReceiver, unlockFilter, Context.RECEIVER_NOT_EXPORTED)
@@ -347,31 +348,62 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * The keyguard is up and no unlock has been seen yet.
+     * USER_PRESENT alone can't be trusted to mark the unlock - some phones
+     * never deliver it (the bell's on-device trace showed neither receiver
+     * ever hearing one) - so while this is set, the first accessibility event
+     * that finds the keyguard gone counts as the unlock ([onAccessibilityEvent]).
+     */
+    private var isAwaitingUnlock = false
+
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val isUnlock = intent?.action == Intent.ACTION_USER_PRESENT
-            if (isUnlock) SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("a11y")
+            when (intent?.action) {
+                Intent.ACTION_SCREEN_OFF -> {
+                    isAwaitingUnlock = false
+                    return
+                }
+                Intent.ACTION_SCREEN_ON -> traceBell("screenOn")
+                Intent.ACTION_USER_PRESENT -> traceBell("a11y")
+            }
             // ACTION_SCREEN_ON also fires at the lock screen, where no app launch
             // is possible yet. Only burst once the device is actually usable so
             // we don't spend battery fast-polling against the keyguard.
             val keyguard = getSystemService(KeyguardManager::class.java)
             if (keyguard?.isKeyguardLocked == true) {
-                if (isUnlock) SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("a11yLocked")
+                if (intent?.action == Intent.ACTION_USER_PRESENT) traceBell("a11yLocked")
+                isAwaitingUnlock = true
                 return
             }
-            Log.d(TAG, "Screen on/unlock (device unlocked) - triggering polling burst")
-            hybridDetector?.triggerPollingBurst()
-            if (isUnlock) {
-                try {
-                    OverlayControllerService.onUnlockSeen(this@MyAccessibilityService)
-                    SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("handOff")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
-                    SharedPreferenceService(this@MyAccessibilityService).traceMindfulnessBell("handOff", e)
-                }
-            }
+            // Screen on with no keyguard (or the keyguard already gone) is an
+            // unlock too: that's how a phone without a lock screen wakes.
+            onDeviceUnlocked()
         }
     }
+
+    /**
+     * The device just became usable. Each wake is handed to the bell once:
+     * the receiver and the accessibility-event fallback can both see it, and
+     * [isAwaitingUnlock] (or the screen-on that clears it) keeps them from
+     * both firing for a locked wake. A duplicate would be harmless anyway -
+     * the bell's check just restarts its delay.
+     */
+    private fun onDeviceUnlocked() {
+        isAwaitingUnlock = false
+        Log.d(TAG, "Device unlocked - triggering polling burst")
+        hybridDetector?.triggerPollingBurst()
+        try {
+            OverlayControllerService.onUnlockSeen(this)
+            traceBell("handOff")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
+            traceBell("handOff", e)
+        }
+    }
+
+    private fun traceBell(stage: String, error: Throwable? = null) =
+        SharedPreferenceService(this).traceMindfulnessBell(stage, error)
 
     private val homeActionReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -937,6 +969,20 @@ class MyAccessibilityService : AccessibilityService() {
 
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        // Unlock fallback (see isAwaitingUnlock): a window change on the
+        // keyguard arms it even if no screen broadcast arrived, and the first
+        // event after the keyguard is gone is the unlock. Window changes only,
+        // until armed - the keyguard read is a binder call.
+        if (isAwaitingUnlock || event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            when (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked) {
+                true -> isAwaitingUnlock = true
+                false -> if (isAwaitingUnlock) {
+                    traceBell("a11yEvent")
+                    onDeviceUnlocked()
+                }
+                null -> {}
+            }
+        }
         try {
             val packageName = event.packageName?.toString() ?: return
             val currentTime = System.currentTimeMillis()
