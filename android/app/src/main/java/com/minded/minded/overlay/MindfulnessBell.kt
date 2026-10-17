@@ -17,6 +17,7 @@ import android.os.Looper
 import android.os.PowerManager
 import android.telecom.TelecomManager
 import android.util.Log
+import com.minded.minded.MainActivity
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
 import com.minded.minded.data.SharedPreferenceService
@@ -236,6 +237,10 @@ class MindfulnessBell(
     ): Moment {
         val reason = skipReason(isOtherOverlayShown)
         if (reason != null) return Moment.Skip(reason)
+        // minded on screen has its own sun. Asked of minded itself: the focused
+        // window and UsageStats below can still name the app that was in
+        // front a moment ago while minded opens.
+        if (MainActivity.isVisible) return Moment.Skip("minded was open")
 
         // The Little Sun is already with the user (over the app they chose to
         // stay in): it becomes the bell - no second sun, and no guarded-app

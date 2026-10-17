@@ -135,6 +135,16 @@ class MainActivity : AppCompatActivity() {
         private var lastRenderProcessGoneAt = 0L
         private const val RENDER_GONE_LOOP_WINDOW_MS = 10_000L
 
+        /**
+         * minded is on screen (between onStart and onStop). The mindfulness bell
+         * reads it rather than the focused window or UsageStats, which can
+         * still name the previous app while minded opens - and a bell over
+         * minded is a second sun next to its own.
+         */
+        @Volatile
+        var isVisible = false
+            private set
+
         /** Intent extra naming a hash route to open on launch (allow-listed below). */
         const val EXTRA_LAUNCH_ROUTE = "launch_route"
         /**
@@ -534,6 +544,9 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.v(logTag, "onStart()")
+        isVisible = true
+        // Opening minded ends a ringing bell: its own sun is here now.
+        OverlayControllerService.onMindedShown()
         if (isRecreatePendingForRenderGone) {
             isRecreatePendingForRenderGone = false
             recreate()
@@ -552,6 +565,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         Log.v(logTag, "onStop()")
+        isVisible = false
         // The activity is now genuinely *hidden* (not merely unfocused). This is
         // the safe moment to change offscreen UI the user must never watch swap -
         // the dashboard re-greets here so a fresh tile is already in place, unseen,
