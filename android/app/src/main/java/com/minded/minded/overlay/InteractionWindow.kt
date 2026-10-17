@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebView
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -36,8 +37,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.minded.minded.overlay.data.SharedOverlayViewModel
+import com.minded.minded.ui.compose.BELL_SUN_BODY
 import com.minded.minded.ui.compose.SunDisc
 import com.minded.minded.util.ForwardSafeAreaInsetsToWebView
 import com.minded.minded.util.SafeAreaInsetsHolder
@@ -227,10 +230,17 @@ class InteractionWindow(
     // plain fresh intervention), so it never goes stale between shows.
     var morphInFromCorner: Boolean = false
 
+    // Set by the controller, like morphInFromCorner, when this intervention
+    // takes over a ringing mindfulness bell. The bell's sun sits exactly where
+    // the fresh-arrival sun first appears (the centre), so instead of popping
+    // to full size there the fresh sun grows out of the bell's.
+    var morphInFromBell: Boolean = false
+
     // Snapshot the requested mode only after this window has accepted a show.
     // The controller can update morphInFromCorner before a duplicate show call;
     // that rejected request must not change callbacks belonging to the live view.
     private var activeMorphInFromCorner: Boolean = false
+    private var activeMorphInFromBell: Boolean = false
 
     // Read once per show (like activeMorphInFromCorner): whether this
     // intervention will open on the skip check-in.
@@ -494,6 +504,15 @@ class InteractionWindow(
             ) { state ->
                 state?.let { maxWidth * it.widthFraction } ?: 80.dp
             }
+            // Taking over a bell: start at the bell sun's size and grow, so the
+            // one sun carries on in place rather than jumping to full size.
+            val growFromBell = remember {
+                Animatable(if (activeMorphInFromBell) 0f else 1f)
+            }
+            LaunchedEffect(Unit) {
+                growFromBell.animateTo(1f, tween(FRESH_SUN_MORPH_MS, easing = FastOutSlowInEasing))
+            }
+            val shownDiscSize = lerp(BELL_SUN_BODY, discSize, growFromBell.value)
             val placeholderAlpha by animateFloatAsState(
                 targetValue = if (showFreshPlaceholder.value) 1f else 0f,
                 animationSpec = tween(FRESH_SUN_CROSSFADE_MS.toInt()),
@@ -534,7 +553,7 @@ class InteractionWindow(
                 // close to the calmer web moon it cross-fades into - the smaller the
                 // glow delta across the hand-off, the less the glow reads as
                 // vanishing when the native disc dissolves out.
-                val glowSize = discSize * 1.5f
+                val glowSize = shownDiscSize * 1.5f
                 val isEscapeEnabled = shouldEnableFreshArrivalSunEscape(
                     isCornerArrival = activeMorphInFromCorner,
                     isFreshPlaceholderVisible = showFreshPlaceholder.value,
@@ -570,7 +589,7 @@ class InteractionWindow(
                     // the colour lands with the position, no cut at the swap.
                     SunDisc(
                         glowSize = glowSize,
-                        discSize = discSize,
+                        discSize = shownDiscSize,
                         onOwnSky = escapeStep == FreshArrivalEscapeStep.NONE,
                         glowMorphMs = FRESH_SUN_MORPH_MS,
                     )
@@ -774,6 +793,7 @@ class InteractionWindow(
             if (isWindowShown()) return
 
             activeMorphInFromCorner = morphInFromCorner
+            activeMorphInFromBell = morphInFromBell && !morphInFromCorner
             isSkipCheckInDue.value = ctrlSvc.isSkipCheckInDueNow()
             resetArrivalState()
             showCornerPlaceholder.value = activeMorphInFromCorner
