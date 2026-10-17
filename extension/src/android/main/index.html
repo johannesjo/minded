@@ -34,6 +34,14 @@
         }
       }
       html {
+        /*
+          A root background is sized to the <html> box, and before the bundle
+          mounts that box is only the empty body's height (~16px). The sky
+          then repeats down the screen as thin orange/turquoise stripes - not
+          banding, which is why dithering never touched it. Stretch the box to
+          the viewport so the gradient is painted once.
+        */
+        min-height: 100%;
         background: linear-gradient(
           to bottom var(--sky-interpolation,),
           #cfe4f5 0%,
