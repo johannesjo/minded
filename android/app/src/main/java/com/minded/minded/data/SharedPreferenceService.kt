@@ -27,6 +27,7 @@ class SharedPreferenceService(context: Context) {
     private val BELL_LAST_CHECK_KEY = "mindfulnessBellLastCheck"
     private val BELL_LAST_UNLOCK_KEY = "mindfulnessBellLastUnlock"
     private val BELL_TRACE_KEY = "mindfulnessBellTrace"
+    private val BELL_TEST_ARMED_KEY = "mindfulnessBellTestArmed"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
 
@@ -199,6 +200,17 @@ class SharedPreferenceService(context: Context) {
             Log.e(logTag, "Failed to trace bell stage $stage", e)
         }
     }
+
+    /**
+     * TEMPORARY test aid: ring at the next unlock regardless of the schedule
+     * (the moment checks still apply). Cleared once that bell rings.
+     */
+    fun setMindfulnessBellTestArmed(armed: Boolean) {
+        sharedPreferences.edit().putBoolean(BELL_TEST_ARMED_KEY, armed).apply()
+    }
+
+    fun isMindfulnessBellTestArmed(): Boolean =
+        sharedPreferences.getBoolean(BELL_TEST_ARMED_KEY, false)
 
     fun getMindfulnessBellTrace(): String? =
         sharedPreferences.getString(BELL_TRACE_KEY, null)

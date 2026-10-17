@@ -2,6 +2,7 @@ import { createSignal, JSX, onCleanup, onMount, Show } from "solid-js";
 import { updateUserCfg } from "@src/dataInterface/commonSyncDataInterface";
 import type { MindfulnessBellPerDay } from "@src/dataInterface/syncData";
 import { Toggle } from "@src/shared/components/ui/Toggle";
+import Btn from "@src/shared/components/ui/Btn";
 import {
   BELL_PER_DAY_MAX,
   BELL_PER_DAY_MIN,
@@ -52,6 +53,14 @@ export const MindfulnessBellSettings = (props: {
       ? bellTraceLabel(androidInterface.getMindfulnessBellTrace?.())
       : undefined;
   const [trace, setTrace] = createSignal(readTrace());
+  // TEMPORARY test aid: ring at the next unlock instead of waiting for a window.
+  const readTestArmed = () =>
+    IS_ANDROID && !!androidInterface.isMindfulnessBellTestArmed?.();
+  const [testArmed, setTestArmed] = createSignal(readTestArmed());
+  const armTest = () => {
+    androidInterface.armMindfulnessBellTest?.();
+    setTestArmed(readTestArmed());
+  };
   const [lastCheck, setLastCheck] = createSignal(readLastCheck());
   const [lastUnlock, setLastUnlock] = createSignal(readLastUnlock());
 
@@ -63,6 +72,7 @@ export const MindfulnessBellSettings = (props: {
       setLastCheck(readLastCheck());
       setLastUnlock(readLastUnlock());
       setTrace(readTrace());
+      setTestArmed(readTestArmed());
     };
     window.addEventListener(ANDROID_EV_RESUME, refresh);
     onCleanup(() => window.removeEventListener(ANDROID_EV_RESUME, refresh));
@@ -115,6 +125,13 @@ export const MindfulnessBellSettings = (props: {
           </Show>
           <Show when={trace()}>
             <span class={bellStyles.lastCheck}>{trace()}</span>
+          </Show>
+          <Show when={IS_ANDROID && androidInterface.armMindfulnessBellTest}>
+            <Btn outline disabled={testArmed()} onClick={armTest}>
+              {testArmed()
+                ? "Rings at your next unlock"
+                : "Ring at next unlock (test)"}
+            </Btn>
           </Show>
         </div>
       </Show>

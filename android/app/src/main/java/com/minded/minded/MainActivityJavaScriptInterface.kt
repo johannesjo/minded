@@ -140,6 +140,18 @@ open class MainActivityJavaScriptInterface(
         return SharedPreferenceService(context).getMindfulnessBellLastUnlock() ?: ""
     }
 
+    /** TEMPORARY test aid: ring the bell at the next unlock (see setMindfulnessBellTestArmed). */
+    @JavascriptInterface
+    fun armMindfulnessBellTest() {
+        SharedPreferenceService(context).setMindfulnessBellTestArmed(true)
+    }
+
+    /** TEMPORARY: whether a test bell is waiting for the next unlock. */
+    @JavascriptInterface
+    fun isMindfulnessBellTestArmed(): Boolean {
+        return SharedPreferenceService(context).isMindfulnessBellTestArmed()
+    }
+
     /** TEMPORARY: the bell's unlock trace (see SharedPreferenceService.traceMindfulnessBell), or "". */
     @JavascriptInterface
     fun getMindfulnessBellTrace(): String {
