@@ -99,6 +99,10 @@ interface InteractionWindowJavaScriptInterface {
    * Optional: guard with `?.()`.
    */
   getMindfulnessBellTrace?: () => string;
+  /** TEMPORARY test aid: ring the bell at the next unlock, schedule or not. */
+  armMindfulnessBellTest?: () => void;
+  /** TEMPORARY: whether a test bell is waiting for the next unlock. */
+  isMindfulnessBellTestArmed?: () => boolean;
   test: () => void;
 }
 

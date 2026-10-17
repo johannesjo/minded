@@ -95,7 +95,11 @@ class MindfulnessBell(
                     .plusMinutes(it.toLong()).toInstant().toEpochMilli()
             },
         )
-        val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung) ?: return
+        // TEMPORARY test aid: an armed test bell rings now, schedule or not,
+        // and leaves the day's slots untouched.
+        val isTest = prefs.isMindfulnessBellTestArmed()
+        val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung)
+        if (slot == null && !isTest) return
 
         val moment = moment(isOtherOverlayShown, littleSun, isBlockedPackage)
         recordCheck(moment)
@@ -106,7 +110,8 @@ class MindfulnessBell(
         }
         val host = (moment as Moment.Ring).host
 
-        prefs.markMindfulnessBellRung(epochDay, slot, minute)
+        if (slot != null) prefs.markMindfulnessBellRung(epochDay, slot, minute)
+        if (isTest) prefs.setMindfulnessBellTestArmed(false)
         val voice = currentVoice(cfg.soundEnabled != false)
         val sound = if (voice == BellVoice.SOUND) prepareSound() else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
