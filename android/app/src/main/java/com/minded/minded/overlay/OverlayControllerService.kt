@@ -1305,6 +1305,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             }
         }
 
+        /** minded came on screen: a ringing bell gives way to its sun. Main thread. */
+        internal fun onMindedShown() {
+            instance?.takeOverFromBell()
+        }
+
         public enum class OverlayName {
             INTERACTION_OVERLAY, LITTLE_SUN_OVERLAY, SMALL_MSG_OVERLAY, SUCCESS_SUN_OVERLAY, SLEEP_WIND_DOWN_OVERLAY, MINDFULNESS_BELL_OVERLAY
         }
