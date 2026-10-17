@@ -5,8 +5,13 @@ import {
   SKY_TURN_MS,
   skyTurnDirectionFor,
   skyTurnFaceDelayMs,
+  SKY_TURN_CLASS,
+  SKY_TURN_EASING,
+  SKY_TURN_SWEEP_CLASS,
   skyTurnFrontReach,
-  skyTurnMaskFrames,
+  skyTurnMask,
+  skyTurnStylesheet,
+  skyTurnVars,
   timeForEasedProgress,
 } from "./skyTurn";
 
@@ -16,26 +21,22 @@ const H = 844;
 
 const px = (value: string) => value.split(" ").map((v) => parseFloat(v));
 
-describe("skyTurnMaskFrames", () => {
+describe("skyTurnMask", () => {
   it("nightfall slides the tall mask from all-old to all-new", () => {
-    const [from, to] = skyTurnMaskFrames("nightfall", 400, 800);
-    expect(from.maskImage).toBe(to.maskImage);
-    expect(from.maskImage).toMatch(/^linear-gradient\(to bottom/);
-    expect(from.maskPosition).toBe("0% 100%");
-    expect(to.maskPosition).toBe("0% 0%");
-    // The -webkit- twins carry the same frame (older WebKit / WebView).
-    expect(from.webkitMaskPosition).toBe(from.maskPosition);
-    expect(to.webkitMaskImage).toBe(to.maskImage);
+    const mask = skyTurnMask("nightfall", 400, 800);
+    expect(mask.image).toMatch(/^linear-gradient\(to bottom/);
+    expect(mask.from.position).toBe("0% 100%");
+    expect(mask.to.position).toBe("0% 0%");
   });
 
   it("daybreak grows a dome pinned to the bottom centre", () => {
     const width = 400;
     const height = 800;
-    const [from, to] = skyTurnMaskFrames("daybreak", width, height);
-    expect(px(from.maskSize)).toEqual([0, 0]);
-    for (const frame of [from, to]) {
-      const [w, h] = px(frame.maskSize);
-      const [left, top] = px(frame.maskPosition);
+    const mask = skyTurnMask("daybreak", width, height);
+    expect(px(mask.from.size)).toEqual([0, 0]);
+    for (const frame of [mask.from, mask.to]) {
+      const [w, h] = px(frame.size);
+      const [left, top] = px(frame.position);
       expect(left + w / 2).toBeCloseTo(width / 2, 0);
       expect(top + h / 2).toBeCloseTo(height, 0);
     }
@@ -47,16 +48,92 @@ describe("skyTurnMaskFrames", () => {
   ])(
     "daybreak's core covers the far top corners when it lands (%i×%i)",
     (width, height) => {
-      const [, to] = skyTurnMaskFrames("daybreak", width, height);
-      const [w, h] = px(to.maskSize);
+      const mask = skyTurnMask("daybreak", width, height);
+      const [w, h] = px(mask.to.size);
       // Normalised ellipse distance of a top corner from the dome's centre.
       const r = Math.hypot(width / 2 / (w / 2), height / (h / 2));
-      const core = parseFloat(/#000 ([\d.]+)%/.exec(to.maskImage)![1]) / 100;
+      const core = parseFloat(/#000 ([\d.]+)%/.exec(mask.image)![1]) / 100;
       expect(r).toBeLessThan(core);
       // A broad arc, not a tall flame - even on a portrait phone.
       expect(w).toBeGreaterThan(h);
     },
   );
+});
+
+/** The two stops of a mask gradient: opaque up to `core`, clear from `edge`. */
+const stops = (image: string) => {
+  const [core, edge] = [...image.matchAll(/([\d.]+)%/g)].map(
+    (m) => parseFloat(m[1]) / 100,
+  );
+  return { core, edge };
+};
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+describe("the front the delay maths assumes is the mask's own", () => {
+  it.each([0.1, 0.5, 0.93])(
+    "nightfall's feather midpoint sits at y=%f when the reach says so",
+    (y) => {
+      const mask = skyTurnMask("nightfall", W, H);
+      const e = skyTurnFrontReach("nightfall", y, W, H);
+      const maskH = parseFloat(mask.from.size.split(" ")[1]) / 100; // in H
+      // A percentage position offsets the mask by (1 - maskH) * p.
+      const p = lerp(1, 0, e);
+      const top = (1 - maskH) * p;
+      const { core, edge } = stops(mask.image);
+      expect(top + ((core + edge) / 2) * maskH).toBeCloseTo(y, 5);
+    },
+  );
+
+  it.each([0.2, 0.5, 0.93])(
+    "daybreak's feather midpoint reaches y=%f when the reach says so",
+    (y) => {
+      const mask = skyTurnMask("daybreak", W, H);
+      const e = skyTurnFrontReach("daybreak", y, W, H);
+      const ry = (px(mask.to.size)[1] / 2) * e;
+      const { core, edge } = stops(mask.image);
+      expect(H - ((core + edge) / 2) * ry).toBeCloseTo(y * H, 0);
+    },
+  );
+});
+
+describe("skyTurnVars + skyTurnStylesheet", () => {
+  const css = skyTurnStylesheet();
+  const vars = skyTurnVars("daybreak", W, H);
+
+  it("feeds every variable the stylesheet reads", () => {
+    const read = new Set(
+      [...css.matchAll(/var\((--sky-turn-[\w-]+)\)/g)].map((m) => m[1]),
+    );
+    expect([...read].sort()).toEqual(Object.keys(vars).sort());
+  });
+
+  it("carries the -webkit-mask twins (WebViews with only the prefixed mask)", () => {
+    for (const prop of ["image", "repeat", "size", "position"]) {
+      expect(css).toContain(`-webkit-mask-${prop}:`);
+      expect(css).toMatch(new RegExp(`[^-]mask-${prop}:`));
+    }
+  });
+
+  it("turns off every capture's UA animation and hides old suns", () => {
+    expect(css).toContain(
+      `html.${SKY_TURN_CLASS}::view-transition-group(*) { animation: none; }`,
+    );
+    expect(css).toMatch(
+      /::view-transition-old\(\*\) \{ animation: none; opacity: 0; \}/,
+    );
+    // ...but the old sky itself stays whole under the sweep.
+    expect(css).toMatch(
+      new RegExp(
+        `html\\.${SKY_TURN_CLASS}\\.${SKY_TURN_SWEEP_CLASS}::view-transition-old\\(root\\) \\{ opacity: 1;`,
+      ),
+    );
+  });
+
+  it("dissolves on the turn's beat where it can't mask", () => {
+    expect(css).toMatch(
+      /:not\(\.minded-sky-turn-sweep\)::view-transition-new\(root\)[^}]*minded-sky-turn-fade-in/,
+    );
+  });
 });
 
 describe("skyTurnFrontReach", () => {
@@ -124,6 +201,14 @@ describe("skyTurnDirectionFor", () => {
 });
 
 describe("the face beat mirrors the stylesheet", () => {
+  it("--ease-sky-turn is SKY_TURN_EASING", () => {
+    const scss = fs.readFileSync(
+      path.join(__dirname, "../../styles/_variables.scss"),
+      "utf8",
+    );
+    expect(scss).toContain(`--ease-sky-turn: ${SKY_TURN_EASING};`);
+  });
+
   it("--dur-sky-turn is SKY_TURN_FACE_MS", () => {
     const scss = fs.readFileSync(
       path.join(__dirname, "../../styles/_variables.scss"),
@@ -157,5 +242,28 @@ describe("the disc turns as one with the sky", () => {
     ],
   ])("%s waits for the front (--sky-turn-delay)", (_, rule) => {
     expect(sunScss).toMatch(rule);
+  });
+});
+
+describe("the disc never goes translucent mid-turn", () => {
+  const sunScss = fs.readFileSync(
+    path.join(__dirname, "../components/interaction/sun/Sun.scss"),
+    "utf8",
+  );
+
+  it("holds the sun face opaque until the moon face has fully covered it", () => {
+    // Every `.moon .sun-face` rule swaps its opacity only after the moon
+    // face's whole (delayed) fade - never fading the two layers together.
+    const rules = [
+      ...sunScss.matchAll(
+        /&(?:\.is-variant-morphing)?\.moon \.sun-face \{([^}]*)\}/g,
+      ),
+    ];
+    expect(rules.length).toBeGreaterThanOrEqual(2);
+    for (const [, body] of rules) {
+      expect(body).toMatch(
+        /opacity 0s calc\(var\(--sky-turn-delay, 0ms\) \+ var\(--dur-sky-turn\)\)/,
+      );
+    }
   });
 });

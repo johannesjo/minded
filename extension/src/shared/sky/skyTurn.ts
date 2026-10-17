@@ -69,62 +69,50 @@ const domeRadii = (width: number, height: number) => {
   return { rx: ry * DOME_ASPECT, ry };
 };
 
-/** One frame of the mask, for both the standard and the -webkit- properties. */
-export type SkyTurnMaskFrame = {
-  maskImage: string;
-  maskSize: string;
-  maskPosition: string;
-  maskRepeat: string;
-  webkitMaskImage: string;
-  webkitMaskSize: string;
-  webkitMaskPosition: string;
-  webkitMaskRepeat: string;
+/** One frame of the mask: its size and position (the image never changes). */
+export type SkyTurnMaskFrame = { size: string; position: string };
+
+/** The mask that reveals the *new* sky over the old one. Opaque = new sky. */
+export type SkyTurnMask = {
+  image: string;
+  from: SkyTurnMaskFrame;
+  to: SkyTurnMaskFrame;
 };
 
-const maskFrame = (image: string, size: string, position: string) => ({
-  maskImage: image,
-  maskSize: size,
-  maskPosition: position,
-  maskRepeat: "no-repeat",
-  webkitMaskImage: image,
-  webkitMaskSize: size,
-  webkitMaskPosition: position,
-  webkitMaskRepeat: "no-repeat",
-});
-
-/**
- * The start and end of the mask that reveals the *new* sky over the old one,
- * for a viewport of `width` × `height` px. Opaque mask = new sky.
- */
-export const skyTurnMaskFrames = (
+/** The reveal mask for a viewport of `width` × `height` px. */
+export const skyTurnMask = (
   direction: SkyTurnDirection,
   width: number,
   height: number,
-): [SkyTurnMaskFrame, SkyTurnMaskFrame] => {
+): SkyTurnMask => {
   if (direction === "nightfall") {
-    const image =
-      `linear-gradient(to bottom, #000 ${NIGHTFALL_FEATHER_FROM * 100}%, ` +
-      `transparent ${NIGHTFALL_FEATHER_TO * 100}%)`;
     const size = `100% ${NIGHTFALL_MASK_HEIGHT * 100}%`;
     // A percentage position slides the tall mask through the viewport: at
     // 100% its clear tail fills the screen (all old sky), at 0% its opaque
     // head does (all new).
-    return [maskFrame(image, size, "0% 100%"), maskFrame(image, size, "0% 0%")];
+    return {
+      image:
+        `linear-gradient(to bottom, #000 ${NIGHTFALL_FEATHER_FROM * 100}%, ` +
+        `transparent ${NIGHTFALL_FEATHER_TO * 100}%)`,
+      from: { size, position: "0% 100%" },
+      to: { size, position: "0% 0%" },
+    };
   }
-  const image =
-    `radial-gradient(closest-side, #000 ${DOME_CORE * 100}%, ` +
-    "transparent 100%)";
   const { rx, ry } = domeRadii(width, height);
   // Pixel boxes, so size and position interpolate together and the dome's
   // centre stays pinned on the bottom edge the whole way: left = (W - w) / 2,
   // top = H - h / 2, both linear in the growing size.
-  const at = (w: number, h: number) =>
-    maskFrame(
-      image,
-      `${round(w)}px ${round(h)}px`,
-      `${round((width - w) / 2)}px ${round(height - h / 2)}px`,
-    );
-  return [at(0, 0), at(rx * 2, ry * 2)];
+  const at = (w: number, h: number): SkyTurnMaskFrame => ({
+    size: `${round(w)}px ${round(h)}px`,
+    position: `${round((width - w) / 2)}px ${round(height - h / 2)}px`,
+  });
+  return {
+    image:
+      `radial-gradient(closest-side, #000 ${DOME_CORE * 100}%, ` +
+      "transparent 100%)",
+    from: at(0, 0),
+    to: at(rx * 2, ry * 2),
+  };
 };
 
 const round = (n: number) => Math.round(n * 10) / 10;
@@ -136,17 +124,87 @@ const round = (n: number) => Math.round(n * 10) / 10;
 const NIGHTFALL_OLD_SKY_BRIGHTNESS = 0.8;
 const DAYBREAK_OLD_SKY_BRIGHTNESS = 1.2;
 
-/** The old sky's filter at the start and end of the turn. */
-export const skyTurnOldSkyFilters = (
-  direction: SkyTurnDirection,
-): [string, string] => [
-  "brightness(1)",
+/** Where the old sky's brightness ends up by the close of the turn. */
+export const skyTurnOldSkyFilter = (direction: SkyTurnDirection): string =>
   `brightness(${
     direction === "nightfall"
       ? NIGHTFALL_OLD_SKY_BRIGHTNESS
       : DAYBREAK_OLD_SKY_BRIGHTNESS
-  })`,
-];
+  })`;
+
+/**
+ * Fired on window when a turn has fully landed (or been hurried to a close), so
+ * the discs drop their slow turn beat for the everyday quick one at once rather
+ * than holding it for the whole SKY_TURN_MS (sunVariantMorph.ts).
+ */
+export const SKY_TURN_SETTLED_EV = "minded-sky-turn-settled";
+
+/** The class on <html> while a turn plays; the stylesheet below keys off it. */
+export const SKY_TURN_CLASS = "minded-sky-turning";
+/** Added with it when the runtime can mask - the sweep, not the dissolve. */
+export const SKY_TURN_SWEEP_CLASS = "minded-sky-turn-sweep";
+
+/**
+ * The inline custom properties on <html> that drive the stylesheet for one
+ * turn: its length and curve, the mask and the old sky's end filter. The view
+ * transition's pseudo-elements inherit them from <html>.
+ */
+export const skyTurnVars = (
+  direction: SkyTurnDirection,
+  width: number,
+  height: number,
+): Record<string, string> => {
+  const mask = skyTurnMask(direction, width, height);
+  return {
+    "--sky-turn-ms": `${SKY_TURN_MS}ms`,
+    "--sky-turn-ease": SKY_TURN_EASING,
+    "--sky-turn-mask-image": mask.image,
+    "--sky-turn-mask-size-from": mask.from.size,
+    "--sky-turn-mask-size-to": mask.to.size,
+    "--sky-turn-mask-position-from": mask.from.position,
+    "--sky-turn-mask-position-to": mask.to.position,
+    "--sky-turn-old-filter": skyTurnOldSkyFilter(direction),
+  };
+};
+
+/**
+ * The turn as a stylesheet, injected once into the page (turnTheSky). Plain
+ * CSS rather than script-driven animations: it replaces the UA's own animations
+ * outright (no need for the runtime to hand them to script to be cancelled),
+ * and it can carry the -webkit-mask twins, which WAAPI silently drops - the
+ * WebViews that have View Transitions but only the prefixed mask need them.
+ *
+ * - Every capture's UA animation is off: a sun's group doesn't move (the disc
+ *   stays where it is), its old snapshot is never seen, its live self shows -
+ *   turning on its own faces.
+ * - Sweep: the old sky stays whole and goes ahead of the front; the new one is
+ *   revealed over it through the moving mask.
+ * - Without masks: the old and new sky dissolve, slowed to the turn's beat.
+ */
+export const skyTurnStylesheet = (): string => {
+  const on = `html.${SKY_TURN_CLASS}`;
+  const sweep = `html.${SKY_TURN_CLASS}.${SKY_TURN_SWEEP_CLASS}`;
+  const fade = `html.${SKY_TURN_CLASS}:not(.${SKY_TURN_SWEEP_CLASS})`;
+  const run = (name: string) =>
+    `animation: ${name} var(--sky-turn-ms) var(--sky-turn-ease) both;`;
+  const mask = (prop: string, value: string) =>
+    `-webkit-mask-${prop}: ${value}; mask-${prop}: ${value};`;
+  return [
+    `${on}::view-transition-group(*) { animation: none; }`,
+    `${on}::view-transition-old(*) { animation: none; opacity: 0; }`,
+    `${on}::view-transition-new(*) { animation: none; opacity: 1; mix-blend-mode: normal; }`,
+    `${sweep}::view-transition-old(root) { opacity: 1; mix-blend-mode: normal; ${run("minded-sky-turn-old")} }`,
+    `${sweep}::view-transition-new(root) { ${mask("image", "var(--sky-turn-mask-image)")} ${mask("repeat", "no-repeat")} ${run("minded-sky-turn-reveal")} }`,
+    `${fade}::view-transition-old(root) { mix-blend-mode: plus-lighter; ${run("minded-sky-turn-fade-out")} }`,
+    `${fade}::view-transition-new(root) { mix-blend-mode: plus-lighter; ${run("minded-sky-turn-fade-in")} }`,
+    "@keyframes minded-sky-turn-reveal {" +
+      ` from { ${mask("size", "var(--sky-turn-mask-size-from)")} ${mask("position", "var(--sky-turn-mask-position-from)")} }` +
+      ` to { ${mask("size", "var(--sky-turn-mask-size-to)")} ${mask("position", "var(--sky-turn-mask-position-to)")} } }`,
+    "@keyframes minded-sky-turn-old { from { filter: brightness(1); } to { filter: var(--sky-turn-old-filter); } }",
+    "@keyframes minded-sky-turn-fade-out { from { opacity: 1; } to { opacity: 0; } }",
+    "@keyframes minded-sky-turn-fade-in { from { opacity: 0; } to { opacity: 1; } }",
+  ].join("\n");
+};
 
 /**
  * How far through the turn (0..1 of its eased progress) the front reaches a

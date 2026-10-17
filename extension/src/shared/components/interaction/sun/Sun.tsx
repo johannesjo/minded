@@ -274,8 +274,8 @@ export const Sun: Component<SunProps> = (props) => {
   // when no reveal ramp is running - the reach then follows the settle as usual.
   const [getRevealReach, setRevealReach] = createSignal<number | null>(null);
   const [getColorTemp, setColorTemp] = createSignal(0); // -1 = cool (up), 0 = neutral (down/none)
-  // Holds for one gentle beat after a sun↔moon flip, so the halo turns with
-  // the face instead of ahead of it (see sunVariantMorph.ts).
+  // Holds while a sun↔moon flip turns the disc, so the halo turns with the
+  // face instead of ahead of it (see sunVariantMorph.ts).
   const getIsVariantMorphing = createVariantMorph(() => props.variant);
   const isTapEnabled = () => props.isTapEnabled ?? true;
   const isDragEnabled = () => props.isDragEnabled ?? true;

@@ -336,6 +336,23 @@
     opacity: 1;
   }
 
+  // On a turn the warm rim (the companion's --minded-sun-face-edge) goes with
+  // the face too, not ahead of it on its everyday gentle beat - it whitened a
+  // second before the night reached the disc.
+  &.is-variant-morphing .sun-face {
+    transition:
+      opacity 0s,
+      --minded-sun-face-edge var(--dur-sky-turn) var(--ease-sky-turn)
+        var(--sky-turn-delay, 0ms);
+  }
+
+  &.is-variant-morphing.moon .sun-face {
+    transition:
+      opacity 0s calc(var(--sky-turn-delay, 0ms) + var(--dur-sky-turn)),
+      --minded-sun-face-edge var(--dur-sky-turn) var(--ease-sky-turn)
+        var(--sky-turn-delay, 0ms);
+  }
+
   &.moon {
     // Like the sun's halo, only the outermost (far) bloom collapses with
     // --glow-reach: at the snug hand-off reach the crisp edge + near 18/13px
