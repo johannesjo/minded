@@ -363,9 +363,11 @@
     // At --night-afterglow: 1 the pair reproduces the old warm horizon
     // (bottom edge #49313b), just spread a little softer up the band.
     // The 0 fallback is load-bearing: the static skies that copy this gradient
-    // with no JS behind it (the loading <style> blocks, the baked widget/
-    // loading PNGs) get the plain deep-night sky, the same way they omit the
-    // stars.
+    // with no JS behind it (the loading <style> blocks, the baked loading PNGs
+    // and the widget's deep-night face) get the plain deep-night sky, the same
+    // way they omit the stars. The widget card's one exception is its nightfall
+    // face, which bakes these two layers at a fixed afterglow
+    // (gen_loading_sky.py NIGHTFALL_AFTERGLOW_LEVEL) - keep them in step.
     //
     // Layer order (top → bottom): horizon glow, warm horizon band, stars,
     // night gradient - so any low star sits under the warm layers rather than

@@ -72,11 +72,16 @@ const SKY_CARDS: SkyCard[] = [
   // On the fixed clock; with a place both ride the real sun (WidgetSky).
   {
     label: "nightfall",
-    hours: "19–20",
+    hours: "19–20:18",
     gradient: WIDGET_NIGHTFALL_SKY,
     isNight: true,
   },
-  { label: "night", hours: "20–06", gradient: WIDGET_NIGHT_SKY, isNight: true },
+  {
+    label: "night",
+    hours: "20:18–06",
+    gradient: WIDGET_NIGHT_SKY,
+    isNight: true,
+  },
 ];
 
 const SunWidgetSkyGallery = (): JSX.Element => (

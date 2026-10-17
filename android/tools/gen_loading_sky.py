@@ -176,8 +176,10 @@ def afterglow_layers(img, afterglow):
     The glow's `vmin` is the card's own shorter side, not a phone's: the card
     is a landscape surface, so this is the app's sky as it would paint in a
     viewport of the card's shape - the glow pooled on the horizon, as on a
-    landscape screen. (On a portrait phone that ellipse sits almost wholly below
-    the screen and the band carries the warmth; on the card both read.)
+    landscape screen. (On a portrait phone, ~2:1 or taller, that ellipse sits
+    wholly below the screen and the band carries the warmth alone. On the card
+    the glow adds only a few code values over the band at the bottom centre -
+    faithful, if faint.)
     """
     height, width, _ = img.shape
     ys = (np.arange(height) + 0.5) / height

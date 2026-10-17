@@ -62,15 +62,13 @@ struct CompanionSun: View {
                 glow(side: side)
                     .opacity(isNight ? 0 : 1)
                     .animation(Self.turn, value: isNight)
+                // The sun's disc never fades: at night it simply rests, a hair
+                // smaller, under the moon's opaque body, so neither direction
+                // of the turn needs a delayed swap (which WidgetKit's archived
+                // animations can't be relied on to honour).
                 disc(side: side)
-                    .opacity(isNight ? 0 : 1)
-                    // To night the sun holds until the moon covers it, then
-                    // goes; to day it is back at once, under the still-opaque
-                    // moon, which then fades off it.
-                    .animation(
-                        isNight ? Animation.linear(duration: 0.01).delay(Self.turnSeconds) : nil,
-                        value: isNight
-                    )
+                    .scaleEffect(isNight ? Self.discUnderMoon : 1)
+                    .animation(Self.turn, value: isNight)
                 moon(side: side)
                     .opacity(isNight ? 1 : 0)
                     .animation(Self.turn, value: isNight)
@@ -83,10 +81,14 @@ struct CompanionSun: View {
 
     /// The sun ↔ moon turn between timeline entries (iOS 17+ animates entry
     /// changes; earlier iOS swaps snapshots and this is inert). Slow and
-    /// symmetric like the app's --dur-sky-turn, and well inside WidgetKit's
-    /// two-second ceiling on widget animations.
-    static let turnSeconds: Double = 1.6
-    private static let turn: Animation = .easeInOut(duration: turnSeconds)
+    /// symmetric, in the spirit of the app's turn (its face crossfade is
+    /// --dur-sky-turn, 1.2 s, inside a 2.4 s sky turn), and well inside
+    /// WidgetKit's two-second ceiling on widget animations.
+    static let turn: Animation = .easeInOut(duration: 1.6)
+
+    /// How far the sun's disc shrinks under the moon at night: just enough that
+    /// its antialiased rim can't show past the moon's (same-size) body.
+    private static let discUnderMoon: CGFloat = 0.96
 
     // The night moon. Mirrors the day's glow + disc split at the same radii, so
     // sun and moon occupy the same slot; only the face beneath differs.

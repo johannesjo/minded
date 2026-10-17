@@ -30,7 +30,7 @@ enum WidgetSky {
     /// it settles to the deep night one. Two stills stand in for the app's smooth
     /// 1 → 0 drain; bake at ~2/3 and switch at ~1/3, and neither is ever more than
     /// ~1/3 off the live sky. The Kotlin twin's NIGHTFALL_MIN_AFTERGLOW
-    /// (widgetClockMirror.test.ts keeps them equal).
+    /// (widgetSolarMirror.test.ts keeps them equal).
     static let nightfallMinAfterglow = 0.35
 
     /// One of the two dark skies - the moon's, never under text.

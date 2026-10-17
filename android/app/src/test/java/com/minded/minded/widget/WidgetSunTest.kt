@@ -121,7 +121,7 @@ class WidgetSunTest {
     }
 
     @Test
-    fun `the sky face follows the moment, and night is always the dark sky`() {
+    fun `the sky face follows the moment, and night is always one of the dark skies`() {
         assertEquals(WidgetSky.NIGHT, WidgetSky.forMoment(WidgetSun.Moment(true, 12.0, true)))
         assertEquals(
             WidgetSky.NIGHTFALL,

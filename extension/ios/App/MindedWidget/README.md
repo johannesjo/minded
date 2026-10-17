@@ -47,12 +47,15 @@ an unknown line falls through to the normal open.
 
 - `MindedWidget.swift` - the `@main` widget bundle, `StaticConfiguration`, timeline
   provider (every face change pre-placed as an entry with `.atEnd`: quarter-hour
-  prompt steps by day, one wordless entry spanning the night), the two faces
+  prompt steps by day, two wordless entries across the night - nightfall, then
+  deep night), the two faces
   (`SunOnly`, `PromptCard`), and the `minded://sun` `widgetURL`.
 - `CompanionSun.swift` - the SwiftUI sun/moon. The day sun is drawn with radial
   gradients ported 1:1 from the two Android day vectors
   (`ic_sun_widget_day{,_on_sky}.xml`); the night moon is drawn the same way from
-  `ic_sun_widget_night.xml`. It renders whichever it's told via `isNight`, and `onOwnSky` picks the
+  `ic_sun_widget_night.xml`. It draws both faces and turns between them on
+  `isNight` (the moon fades in over the opaque sun - one disc, never two), and
+  `onOwnSky` picks the
   bloom's colour: white on the prompt card (the app paints its own sky there, so
   the in-app halo rule applies) and amber on the small widget, which floats on the
   user's wallpaper. See `docs/sun-halo.md`.
@@ -72,7 +75,8 @@ an unknown line falls through to the normal open.
 - `WidgetPrompts.swift` - the curated waking-hours prompt pool and the deterministic
   15-minute-slot rotation (the Swift twin of `WidgetPrompts.kt`; the jest parity test
   `widgetPromptsMirror.test.ts` pins both to the TS pools and to each other).
-- `Assets.xcassets` - the six card-sized sky renders, generated (dithered at target
+- `Assets.xcassets` - the seven card-sized sky renders (dawn → dusk, nightfall,
+  night), generated (dithered at target
   size, same colours as the app and Android) by `android/tools/gen_loading_sky.py`.
 - `Info.plist` - the WidgetKit extension Info.plist.
 
@@ -150,10 +154,17 @@ link, it shares no data with the app.
    in step with the app - and that the card's sky steps through the day and goes
    wordless at night. Toggling system Dark Mode alone must _not_ change any of it.
    Wait across a quarter hour with the card visible: the line should cross-fade.
+   Watch the dusk (and dawn) entry change with both widgets on screen: the sun
+   must turn into the moon as **one disc** over ~1.6 s - the moon fading in over a
+   sun that stays solid, never two discs dissolving through each other or a
+   translucent dip - and the leaving moon keeps its phase as it fades at dawn.
+   About an hour after dusk the card's warm nightfall horizon gives way to the
+   deep night sky.
 7. On iOS 18+, check both faces under a **tinted and a clear Home Screen**
    (long-press ▸ Edit ▸ Customize): there the sky is dropped and the sun becomes the
    monochrome `SunGlyph` (a solid disc by day, a hollow one at night), with the line
-   in the system's tint. Check StandBy (landscape, charging) with the small sun too.
+   in the system's tint; at the dusk/dawn change the glyph turns too, one glyph
+   easing into the other. Check StandBy (landscape, charging) with the small sun too.
 8. The card's line should be set in **Newsreader** (the app's serif), not New York -
    if it isn't, the font didn't register (`UIAppFonts` / the target's resources).
 
