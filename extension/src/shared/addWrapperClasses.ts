@@ -20,6 +20,13 @@ import {
 import { nightStarsLayerAt } from "@src/shared/sky/nightStarField";
 import { moonShadowLayerFor } from "@src/shared/sky/moonShadow";
 import { writeSkyNightCache } from "@src/shared/sky/skyNightCache";
+import {
+  SKY_TURN_EASING,
+  SKY_TURN_MS,
+  skyTurnDirectionFor,
+  skyTurnFaceDelayMs,
+  skyTurnMaskFrames,
+} from "@src/shared/sky/skyTurn";
 
 const getWrapperEl = (shadowRoot?: ShadowRoot): HTMLElement | null =>
   shadowRoot
@@ -167,30 +174,43 @@ export const createCompanionWord = (): Accessor<"sun" | "moon"> => {
 // paint and must land instantly.
 const themedWrappers = new WeakSet<HTMLElement>();
 
-// How long the day↔night sky crossfade takes - the same gentle beat
-// (--dur-gentle) as the sun↔moon face crossfade it carries (Sun.scss), so the
-// sky and the disc turn together.
-const THEME_FLIP_CROSSFADE_MS = 700;
-
-type ViewTransitionDocument = Document & {
-  startViewTransition?: (update: () => void) => {
-    ready: Promise<void>;
-  };
+type ViewTransition = {
+  ready: Promise<void>;
+  finished: Promise<void>;
 };
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => void) => ViewTransition;
+};
+
+// The sun's own capture group during a turn. One name per disc on screen (a
+// view-transition-name must be unique, and the styleguide shows several).
+const SKY_TURN_SUN_NAME = "minded-sky-turn-sun";
+
+// A tap during the turn lands on the transition, not the page - so instead of
+// eating it, hurry the rest of the turn to a close on this short beat, and the
+// next touch reaches the sun.
+const SKY_TURN_HURRY_MS = 280;
+
 /**
- * Crossfade the whole page from its current look into the one `update`
- * produces. The sky is a gradient, which CSS can't transition, so without this
- * a day↔night flip cut the whole sky over in one frame while the sun was still
- * gently turning into the moon on top of it. Falls back to a plain update where
- * View Transitions aren't available (older WebViews, Firefox) or when the user
- * asked for reduced motion.
+ * Night falls / day breaks over the page instead of the page cutting over (see
+ * sky/skyTurn.ts for the shape of each). A View Transition holds the old sky
+ * as a snapshot and reveals the new one through a moving soft-edged mask - the
+ * one way to animate a whole-page gradient, which CSS can't transition. Each
+ * sun on screen is lifted out of the sweep into its own live layer, so it stays
+ * one disc turning sun ↔ moon on its own faces (Sun.scss) instead of being
+ * wiped across by the front; its turn is delayed to the moment the front
+ * crosses it (--sky-turn-delay).
+ *
+ * Falls back to a plain update where View Transitions aren't available (older
+ * WebViews), when the page is hidden (a resume lands on the new sky - nobody
+ * was watching), or under reduced motion.
  */
-const crossfadeThemeFlip = (el: HTMLElement, update: () => void) => {
+const turnTheSky = (el: HTMLElement, isDark: boolean, update: () => void) => {
   const doc = document as ViewTransitionDocument;
   // A view transition snapshots the whole document - only use it when the
   // wrapper *is* the page (the apps), never for the content script's shadow
-  // overlay, where it would crossfade the host page too.
+  // overlay, where it would sweep the host page too.
   if (
     typeof doc.startViewTransition !== "function" ||
     el.getRootNode() !== document ||
@@ -200,24 +220,104 @@ const crossfadeThemeFlip = (el: HTMLElement, update: () => void) => {
     update();
     return;
   }
+
+  const direction = skyTurnDirectionFor(isDark);
+  const viewportW = window.innerWidth;
+  const viewportH = window.innerHeight;
+  const suns = Array.from(el.querySelectorAll<HTMLElement>(".minded-sun"))
+    // Only discs that are actually rendered get a capture of their own.
+    .filter((sun) => sun.getClientRects().length > 0);
+  suns.forEach((sun, i) => {
+    const rect = sun.getBoundingClientRect();
+    const yFraction = (rect.top + rect.height / 2) / (viewportH || 1);
+    sun.style.setProperty(
+      "--sky-turn-delay",
+      `${skyTurnFaceDelayMs(direction, yFraction, viewportW, viewportH)}ms`,
+    );
+    sun.style.setProperty("view-transition-name", `${SKY_TURN_SUN_NAME}-${i}`);
+  });
+  const release = () => {
+    for (const sun of suns) {
+      sun.style.removeProperty("view-transition-name");
+      sun.style.removeProperty("--sky-turn-delay");
+    }
+  };
+
   const transition = doc.startViewTransition.call(doc, update);
+  const root = document.documentElement;
+  const hurry = () => {
+    for (const animation of root.getAnimations({ subtree: true })) {
+      const effect = animation.effect as KeyframeEffect | null;
+      if (!effect?.pseudoElement?.startsWith("::view-transition")) continue;
+      const end = Number(effect.getComputedTiming().endTime ?? 0);
+      const remaining = end - Number(animation.currentTime ?? 0);
+      if (remaining > SKY_TURN_HURRY_MS) {
+        animation.updatePlaybackRate(remaining / SKY_TURN_HURRY_MS);
+      }
+    }
+  };
   transition.ready
     .then(() => {
-      for (const animation of document.documentElement.getAnimations({
-        subtree: true,
-      })) {
+      // Replace the UA's whole-page dissolve: the old sky stays fully there,
+      // the new one is revealed over it by the mask alone (and plainly
+      // composited - the dissolve's plus-lighter would bleach the overlap).
+      for (const animation of root.getAnimations({ subtree: true })) {
         const effect = animation.effect as KeyframeEffect | null;
         if (effect?.pseudoElement?.startsWith("::view-transition")) {
-          effect.updateTiming({
-            duration: THEME_FLIP_CROSSFADE_MS,
-            easing: "cubic-bezier(0.22, 1, 0.36, 1)", // --ease-out
-          });
+          animation.cancel();
         }
       }
+      const [from, to] = skyTurnMaskFrames(direction, viewportW, viewportH);
+      root.animate(
+        [
+          { ...from, mixBlendMode: "normal" },
+          { ...to, mixBlendMode: "normal" },
+        ],
+        {
+          duration: SKY_TURN_MS,
+          easing: SKY_TURN_EASING,
+          fill: "both",
+          pseudoElement: "::view-transition-new(root)",
+        },
+      );
+      // Each sun shows only its live self, turning on its own faces; its
+      // snapshot of the old disc is never seen. Nothing to move - the disc
+      // stays where it is.
+      suns.forEach((_, i) => {
+        const name = `${SKY_TURN_SUN_NAME}-${i}`;
+        root.animate([{ opacity: 0 }, { opacity: 0 }], {
+          duration: SKY_TURN_MS,
+          fill: "both",
+          pseudoElement: `::view-transition-old(${name})`,
+        });
+        root.animate(
+          [
+            { opacity: 1, mixBlendMode: "normal" },
+            { opacity: 1, mixBlendMode: "normal" },
+          ],
+          {
+            duration: SKY_TURN_MS,
+            fill: "both",
+            pseudoElement: `::view-transition-new(${name})`,
+          },
+        );
+      });
+      document.addEventListener("pointerdown", hurry, {
+        capture: true,
+        once: true,
+      });
     })
-    // A skipped transition (e.g. the page hid mid-flip) already applied the
+    // A skipped transition (e.g. the page hid mid-turn) already applied the
     // update; nothing left to soften.
     .catch(() => undefined);
+  transition.finished
+    .catch(() => undefined)
+    .then(() => {
+      document.removeEventListener("pointerdown", hurry, { capture: true });
+      // The faces' own turn may still be finishing - their transition already
+      // started with its delay, which clearing the var doesn't touch.
+      release();
+    });
 };
 
 export const setIsDarkModeIfApplies = (
@@ -242,7 +342,7 @@ export const setIsDarkModeIfApplies = (
     el.classList.contains("minded-6622-dark") !== isDark;
   themedWrappers.add(el);
   if (isFlip) {
-    crossfadeThemeFlip(el, apply);
+    turnTheSky(el, isDark, apply);
   } else {
     apply();
   }
@@ -364,9 +464,31 @@ const applySkyNow = (el: HTMLElement | null, shadowRoot?: ShadowRoot) => {
 export const applySkyForNow = (shadowRoot?: ShadowRoot) =>
   applySkyNow(getWrapperEl(shadowRoot), shadowRoot);
 
+/**
+ * Opt the page's own wrapper into turning day↔night *live*: when the minute
+ * tick finds the real dusk (or dawn) has arrived under an open page, night
+ * falls (or day breaks) right there, through the same sky turn a resume plays
+ * - instead of the old theme staying put until the next resume or reload.
+ *
+ * Only the shell opts in (RouteCmp, which mirrors the class onto its sun). The
+ * interaction surfaces read the theme once when they open, so turning the sky
+ * under a pause would leave them half in the old theme; they are short-lived,
+ * and the next one opens on the right sky anyway. Never a content script - its
+ * shadow overlay has no live sky to turn.
+ */
+let followsDayNight = false;
+export const followDayNight = () => {
+  followsDayNight = true;
+};
+
+const isThemeStale = (el: HTMLElement): boolean =>
+  themedWrappers.has(el) &&
+  el.classList.contains("minded-6622-dark") !== isDarkModeNow();
+
 // One interval per JS context, re-resolving the wrapper each tick.
 // Per-minute steps are sub-perceptual by design - the sky is ambient state,
-// not animation.
+// not animation. The one exception is the day↔night turn itself (see
+// followDayNight), which is an event, so it gets its moment.
 let isSkyTickerStarted = false;
 const ensureSkyTicker = (shadowRoot?: ShadowRoot) => {
   if (isSkyTickerStarted) return;
@@ -379,6 +501,12 @@ const ensureSkyTicker = (shadowRoot?: ShadowRoot) => {
     if (el && !el.isConnected) {
       clearInterval(intervalId);
       isSkyTickerStarted = false;
+      return;
+    }
+    if (followsDayNight && !shadowRoot && el && isThemeStale(el)) {
+      // setIsDarkModeIfApplies applies this minute's sky inside the turn; the
+      // night-window cache simply catches up on the next tick.
+      setIsDarkModeIfApplies(el);
       return;
     }
     applySkyNow(el, shadowRoot);

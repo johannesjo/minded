@@ -20,6 +20,7 @@ import {
 } from "solid-js";
 import {
   addWrapperClasses,
+  followDayNight,
   isDarkModeNow,
 } from "@src/shared/addWrapperClasses";
 import Sun from "@src/shared/components/interaction/sun/Sun";
@@ -226,6 +227,9 @@ const MainWrapper = (props: RouteSectionProps) => {
 
   onMount(() => {
     addWrapperClasses();
+    // The shell's sky turns at the real dusk/dawn while it's open, and the sun
+    // below follows the class it flips.
+    followDayNight();
     // addWrapperClasses just set (or cleared) the dark class - read the real
     // value so the sun matches the wrapper exactly, then keep mirroring it: the
     // class can flip later without a reload (Android resume across the day/night

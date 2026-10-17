@@ -54,6 +54,13 @@
   // ahead of the sky it protects (it did, by 300ms, and the tail of every
   // departure played on an undithered gradient).
   --dur-sky: 1000ms;
+  // The sun ↔ moon face turn inside a day↔night flip (Sun.scss), and its
+  // halo. Slower than the gentle beat - it rides the sky turning around it
+  // (sky/skyTurn.ts SKY_TURN_FACE_MS mirrors it) - on a symmetric in-out, so
+  // the moon gathers in rather than popping. --sky-turn-delay (set inline per
+  // disc for the flip) times it to the front of the sky passing over the disc.
+  --dur-sky-turn: 1200ms;
+  --ease-sky-turn: cubic-bezier(0.45, 0, 0.55, 1);
 
   // Dither/grain tile - breaks the 8-bit quantisation of the full-screen sky
   // gradients into noise so they can't band into visible horizontal stripes,
@@ -520,5 +527,6 @@
     --dur-soft: 0ms;
     --dur-gentle: 0ms;
     --dur-sky: 0ms;
+    --dur-sky-turn: 0ms;
   }
 }

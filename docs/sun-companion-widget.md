@@ -183,8 +183,12 @@ verify.
   follows the **real sun** (`WidgetSun.swift`, the twin of the Android port),
   with the timeline pre-placing every face change so the card steps and the sun
   or moon flips on time - not the system colour scheme. Entries cross-fade
-  (iOS 17+), and the card's line is set in the app's own Newsreader, bundled as
-  a static Regular.
+  (iOS 17+). The day↔night change is the app's one-disc turn, not a swap:
+  `CompanionSun` always draws both faces, the moon fades in over a sun disc
+  that stays opaque until it is covered, and the halos ease across on the same
+  1.6 s beat. Android widgets can't animate a repaint at all (RemoteViews have
+  no animation), so there the flip is a plain step. The card's line is set in
+  the app's own Newsreader, bundled as a static Regular.
   `.widgetURL(URL("minded://sun"))` is the tap target (the card appends
   `?line=…`). No special entitlement, no App Group - the widget only carries a
   deep link.

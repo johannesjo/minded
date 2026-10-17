@@ -122,14 +122,33 @@ The departing moon dims to 1.0 + snug like the sun, but stays cool.
 
 ### The day↔night flip
 
-The theme can flip under a live sun (an Android resume across the threshold).
-It is one disc turning, never a swap: the moon face fades in *over* the sun face
+The theme can flip under a live sun: an app resume across the threshold, or -
+on the dashboard shell, which follows the clock live (`followDayNight`) - the
+real dusk or dawn arriving while the app is open.
+
+The sky turns the way the real one does (`sky/skyTurn.ts`, played as a View
+Transition by `turnTheSky` in `addWrapperClasses.ts`, since a gradient can't
+transition in CSS), over `SKY_TURN_MS` (2.4 s):
+
+- **Nightfall:** the dark comes down from the zenith on a soft, half-screen
+  front, so the horizon holds the last light longest.
+- **Daybreak:** a broad dome of day rises from the bottom centre, the sky's
+  sunrise point, until it holds the whole sky.
+
+The sun is never part of that sweep. Each disc on screen gets its own capture
+layer and stays one disc turning: the moon face fades in *over* the sun face
 (the face underneath stays opaque, so the disc never goes translucent mid-flip),
-and for that same `--dur-gentle` beat the halo and the moon's cool pool ease on
-it too (`sunVariantMorph.ts`) instead of jumping ahead on the quick bloom ease.
-The horizon reflection fades with it, and in the apps the sky itself crossfades
-(a View Transition in `setIsDarkModeIfApplies`), since a gradient can't
-transition in CSS.
+over `--dur-sky-turn`, and the halo and the moon's cool pool ease with it
+(`sunVariantMorph.ts`) instead of jumping ahead on the quick bloom ease. Each
+disc's turn waits for the sky's front to reach it (`--sky-turn-delay`). So the
+companion on the bar turns late at nightfall, when the night reaches the
+horizon, and at once at daybreak, rising with the first light. An intervention
+sun mid-screen turns halfway through.
+
+A tap during the turn lands on the transition, not the page, so it hurries the
+rest of the turn to a close in ~0.3 s instead. Reduced motion, a hidden page
+(a resume lands on the new sky) and WebViews without View Transitions get the
+plain flip.
 
 ## Outside the app
 

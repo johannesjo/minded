@@ -1,0 +1,207 @@
+/**
+ * The day↔night turn: how the sky changes over when night falls or day breaks
+ * under a live page (a resume across the threshold, or the dusk/dawn minute
+ * arriving while the app is open).
+ *
+ * It is not a crossfade. A whole-page dissolve reads as a screen changing; the
+ * sky turning reads as the world doing it, so each direction moves the way the
+ * real one does:
+ *
+ * - **Nightfall** - the dark comes down from the zenith. A soft-edged front
+ *   sweeps top → bottom, so the horizon holds the last light longest, exactly
+ *   where the night sky's afterglow then carries it on.
+ * - **Daybreak** - the light comes up from the horizon. A soft dome of day
+ *   grows from the bottom centre - the sky's own sunrise point - until it
+ *   holds the whole sky.
+ *
+ * The sun is never part of the sweep: it stays one disc, turning sun ↔ moon on
+ * its own faces (Sun.scss), timed to the moment the front passes over it
+ * (`skyTurnFaceDelayMs`) - so the moon arrives with the night around it, and
+ * the morning sun rises with the first light at the horizon.
+ *
+ * Pure geometry and timing only; the View Transition wiring that plays it lives
+ * in addWrapperClasses.ts (`turnTheSky`).
+ */
+
+export type SkyTurnDirection = "nightfall" | "daybreak";
+
+/** The whole turn: long enough to be watched, short enough never to wait on. */
+export const SKY_TURN_MS = 2400;
+
+/**
+ * The sun↔moon face crossfade inside the turn. Mirrors --dur-sky-turn
+ * (_variables.scss) - the face's own transition length - so the delay maths
+ * below centres the very crossfade the stylesheet plays.
+ */
+export const SKY_TURN_FACE_MS = 1200;
+
+/**
+ * A slow, symmetric in-out: the front gathers, crosses, and settles - no
+ * front-loaded snap the way the quick UI ease would have it.
+ */
+export const SKY_TURN_EASING = "cubic-bezier(0.45, 0, 0.55, 1)";
+const EASING_POINTS = [0.45, 0, 0.55, 1] as const;
+
+// Nightfall's mask: a vertical gradient 2.5 viewports tall - opaque (the new,
+// night sky) over its top 40%, a half-viewport feathered edge, then clear.
+// Sliding it down the viewport carries the soft front from just above the top
+// edge to just below the bottom one.
+const NIGHTFALL_MASK_HEIGHT = 2.5; // in viewport heights
+const NIGHTFALL_FEATHER_FROM = 0.4; // of the mask height
+const NIGHTFALL_FEATHER_TO = 0.6;
+
+// Daybreak's dome: an ellipse centred on the bottom edge, wider than it is
+// tall (DOME_ASPECT) whatever the screen's shape - a broad arc of light, never
+// a tall flame on a portrait phone. It grows from nothing until its opaque
+// core (DOME_CORE of the radius) covers even the far top corners, with a
+// little margin, so the turn ends on the new sky everywhere - no last-frame
+// cut. The feather runs from the core to the rim.
+const DOME_ASPECT = 1.4; // horizontal radius / vertical radius
+const DOME_CORE = 0.6; // of the ellipse's radius
+const DOME_MARGIN = 1.05;
+
+/** The dome's landed radii in px for a `width` × `height` viewport. */
+const domeRadii = (width: number, height: number) => {
+  // The top corners sit (width / 2, height) from the centre; solve for the
+  // vertical radius that puts them on the core: (x/rx)² + (y/ry)² = core².
+  const ry =
+    (Math.hypot(width / 2 / DOME_ASPECT, height) / DOME_CORE) * DOME_MARGIN;
+  return { rx: ry * DOME_ASPECT, ry };
+};
+
+/** One frame of the mask, for both the standard and the -webkit- properties. */
+export type SkyTurnMaskFrame = {
+  maskImage: string;
+  maskSize: string;
+  maskPosition: string;
+  maskRepeat: string;
+  webkitMaskImage: string;
+  webkitMaskSize: string;
+  webkitMaskPosition: string;
+  webkitMaskRepeat: string;
+};
+
+const maskFrame = (image: string, size: string, position: string) => ({
+  maskImage: image,
+  maskSize: size,
+  maskPosition: position,
+  maskRepeat: "no-repeat",
+  webkitMaskImage: image,
+  webkitMaskSize: size,
+  webkitMaskPosition: position,
+  webkitMaskRepeat: "no-repeat",
+});
+
+/**
+ * The start and end of the mask that reveals the *new* sky over the old one,
+ * for a viewport of `width` × `height` px. Opaque mask = new sky.
+ */
+export const skyTurnMaskFrames = (
+  direction: SkyTurnDirection,
+  width: number,
+  height: number,
+): [SkyTurnMaskFrame, SkyTurnMaskFrame] => {
+  if (direction === "nightfall") {
+    const image =
+      `linear-gradient(to bottom, #000 ${NIGHTFALL_FEATHER_FROM * 100}%, ` +
+      `transparent ${NIGHTFALL_FEATHER_TO * 100}%)`;
+    const size = `100% ${NIGHTFALL_MASK_HEIGHT * 100}%`;
+    // A percentage position slides the tall mask through the viewport: at
+    // 100% its clear tail fills the screen (all old sky), at 0% its opaque
+    // head does (all new).
+    return [maskFrame(image, size, "0% 100%"), maskFrame(image, size, "0% 0%")];
+  }
+  const image =
+    `radial-gradient(closest-side, #000 ${DOME_CORE * 100}%, ` +
+    "transparent 100%)";
+  const { rx, ry } = domeRadii(width, height);
+  // Pixel boxes, so size and position interpolate together and the dome's
+  // centre stays pinned on the bottom edge the whole way: left = (W - w) / 2,
+  // top = H - h / 2, both linear in the growing size.
+  const at = (w: number, h: number) =>
+    maskFrame(
+      image,
+      `${round(w)}px ${round(h)}px`,
+      `${round((width - w) / 2)}px ${round(height - h / 2)}px`,
+    );
+  return [at(0, 0), at(rx * 2, ry * 2)];
+};
+
+const round = (n: number) => Math.round(n * 10) / 10;
+
+/**
+ * How far through the turn (0..1 of its eased progress) the front reaches a
+ * point at `yFraction` of a `width` × `height` viewport (0 top, 1 bottom).
+ */
+export const skyTurnFrontReach = (
+  direction: SkyTurnDirection,
+  yFraction: number,
+  width: number,
+  height: number,
+): number => {
+  const y = clamp01(yFraction);
+  if (direction === "nightfall") {
+    // In viewport heights: the feather's midpoint sits `mid` below the mask's
+    // top edge, and the mask slides down by `travel` - so the front runs from
+    // -0.25 (just above the top) to 1.25 (just below the bottom).
+    const mid =
+      ((NIGHTFALL_FEATHER_FROM + NIGHTFALL_FEATHER_TO) / 2) *
+      NIGHTFALL_MASK_HEIGHT;
+    const travel = NIGHTFALL_MASK_HEIGHT - 1;
+    return clamp01((y - (mid - travel)) / travel);
+  }
+  // The dome's front - midway through its feather - climbs straight up from
+  // the bottom edge as the dome grows.
+  const frontRadius = ((DOME_CORE + 1) / 2) * domeRadii(width, height).ry;
+  return clamp01(((1 - y) * height) / frontRadius);
+};
+
+/**
+ * When the disc's own sun↔moon crossfade should start so it is centred on the
+ * front passing over it: a companion resting on the bottom bar turns late at
+ * nightfall (the night reaches the horizon last) and early at daybreak (the
+ * light starts there), an intervention sun mid-screen turns mid-turn. Kept
+ * inside the turn so the face always lands with the sky.
+ */
+export const skyTurnFaceDelayMs = (
+  direction: SkyTurnDirection,
+  yFraction: number,
+  width: number,
+  height: number,
+): number => {
+  const at =
+    timeForEasedProgress(
+      skyTurnFrontReach(direction, yFraction, width, height),
+    ) * SKY_TURN_MS;
+  const delay = at - SKY_TURN_FACE_MS / 2;
+  return Math.round(
+    Math.min(Math.max(delay, 0), SKY_TURN_MS - SKY_TURN_FACE_MS),
+  );
+};
+
+/** The direction of a flip into `isDark`. */
+export const skyTurnDirectionFor = (isDark: boolean): SkyTurnDirection =>
+  isDark ? "nightfall" : "daybreak";
+
+/**
+ * The inverse of SKY_TURN_EASING: the time fraction (0..1) at which the eased
+ * progress reaches `progress`. The masks move on eased progress, the face's
+ * delay is wall-clock time, so the delay has to go back through the curve.
+ */
+export const timeForEasedProgress = (progress: number): number => {
+  const [x1, y1, x2, y2] = EASING_POINTS;
+  const bezier = (a: number, b: number, s: number) =>
+    3 * a * s * (1 - s) ** 2 + 3 * b * s ** 2 * (1 - s) + s ** 3;
+  const target = clamp01(progress);
+  // y(s) is monotonic for this curve, so bisection on s is exact enough.
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if (bezier(y1, y2, mid) < target) lo = mid;
+    else hi = mid;
+  }
+  return bezier(x1, x2, (lo + hi) / 2);
+};
+
+const clamp01 = (n: number) => Math.min(Math.max(n, 0), 1);

@@ -138,9 +138,9 @@ private struct SunOnly: View {
     var entry: SunEntry
 
     var body: some View {
+        // One view across the day↔night change (no `.id` swap): CompanionSun
+        // turns its own faces, the way the in-app disc does.
         CompanionSun(isNight: entry.phase.isNight, moonOutline: entry.moonOutline)
-            .id(entry.phase.isNight)
-            .softWidgetTransition()
             // The sun claims three quarters of the tile, like Android's bare sun
             // (SUN_ONLY_FRACTION) - the bloom fades to nothing at that edge, so
             // nothing clips. With the system content margins disabled (see the
@@ -191,10 +191,13 @@ private struct PromptCard: View {
             Group {
                 if glyph {
                     SunGlyph(isNight: entry.phase.isNight)
+                        .id(entry.phase.isNight)
+                        .softWidgetTransition()
                 } else {
                     // On our own sky the sun's halo is white, not amber (THE HALO
                     // RULE - see CompanionSun's `onOwnSky`); the amber is for the
-                    // small widget, which floats on the user's wallpaper.
+                    // small widget, which floats on the user's wallpaper. One view
+                    // across the day↔night change: it turns its own faces.
                     CompanionSun(
                         isNight: entry.phase.isNight,
                         onOwnSky: true,
@@ -202,8 +205,6 @@ private struct PromptCard: View {
                     )
                 }
             }
-            .id(entry.phase.isNight)
-            .softWidgetTransition()
             .frame(width: 54, height: 54)
         }
         // Matches Android's card padding (12dp); the system content margins are

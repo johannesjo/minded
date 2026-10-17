@@ -53,19 +53,40 @@ struct CompanionSun: View {
     var body: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
+            // Both faces are always drawn, so a day↔night entry change turns
+            // the one disc instead of swapping two (the in-app turn, Sun.scss):
+            // the incoming face fades in *over* a disc that stays opaque, and
+            // the halos ease across on the same beat. Fading both discs at once
+            // dipped it translucent mid-turn - the sun briefly dissolving.
             ZStack {
-                if isNight {
-                    moon(side: side)
-                } else {
-                    glow(side: side)
-                    disc(side: side)
-                }
+                glow(side: side)
+                    .opacity(isNight ? 0 : 1)
+                    .animation(Self.turn, value: isNight)
+                disc(side: side)
+                    .opacity(isNight ? 0 : 1)
+                    // To night the sun holds until the moon covers it, then
+                    // goes; to day it is back at once, under the still-opaque
+                    // moon, which then fades off it.
+                    .animation(
+                        isNight ? Animation.linear(duration: 0.01).delay(Self.turnSeconds) : nil,
+                        value: isNight
+                    )
+                moon(side: side)
+                    .opacity(isNight ? 1 : 0)
+                    .animation(Self.turn, value: isNight)
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
         // Keep the disc perfectly round regardless of the widget's aspect ratio.
         .aspectRatio(1, contentMode: .fit)
     }
+
+    /// The sun ↔ moon turn between timeline entries (iOS 17+ animates entry
+    /// changes; earlier iOS swaps snapshots and this is inert). Slow and
+    /// symmetric like the app's --dur-sky-turn, and well inside WidgetKit's
+    /// two-second ceiling on widget animations.
+    static let turnSeconds: Double = 1.6
+    private static let turn: Animation = .easeInOut(duration: turnSeconds)
 
     // The night moon. Mirrors the day's glow + disc split at the same radii, so
     // sun and moon occupy the same slot; only the face beneath differs.
