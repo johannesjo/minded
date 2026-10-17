@@ -84,6 +84,7 @@ const TRACE_STAGES = [
   "service",
   "check",
   "failed",
+  "cut",
 ] as const;
 
 /** One line listing when each traced step last ran, plus the last error. */
