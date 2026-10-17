@@ -87,22 +87,10 @@ interface InteractionWindowJavaScriptInterface {
    * Optional: older native builds won't have it - guard with `?.()`.
    */
   getMindfulnessBellLastCheck?: () => string;
-  /**
-   * The last unlock the mindfulness bell saw, due or not, as JSON
-   * `{"atMs":number,"enabled":boolean,"nextAtMs":number|null}`, or "" if none yet.
-   * Optional: older native builds won't have it - guard with `?.()`.
-   */
-  getMindfulnessBellLastUnlock?: () => string;
-  /**
-   * TEMPORARY diagnostic: when each step of an unlock's way to the bell last
-   * ran, as JSON `{"<stage>":atMs,…,"error":string}`, or "" if none yet.
-   * Optional: guard with `?.()`.
-   */
-  getMindfulnessBellTrace?: () => string;
-  /** TEMPORARY test aid: ring the bell at the next unlock, schedule or not. */
-  armMindfulnessBellTest?: () => void;
-  /** TEMPORARY: whether a test bell is waiting for the next unlock. */
-  isMindfulnessBellTestArmed?: () => boolean;
+  /** The bell was just switched on: ring its first bell at the next unlock, schedule or not. */
+  armMindfulnessBellFirstRing?: () => void;
+  /** Whether that first bell is still waiting for an unlock. */
+  isMindfulnessBellFirstRingArmed?: () => boolean;
   test: () => void;
 }
 

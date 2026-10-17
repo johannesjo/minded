@@ -110,6 +110,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     // the accessibility detector) time to claim the screen first - the bell
     // only rings into a moment nothing else wants.
     private val BELL_AFTER_UNLOCK_DELAY_MS = 2500L
+    // How often a ringing bell checks for a call coming in.
+    private val BELL_CALL_WATCH_MS = 250L
 
     private val screenStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -153,7 +155,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     }
                 }
                 Intent.ACTION_USER_PRESENT -> {
-                    sharedPreferenceService.traceMindfulnessBell("service")
                     Log.d(logTag, "User unlocked device - restoring overlay if needed")
                     // Delay slightly to let the foreground app detection settle
                     screenStateHandler.postDelayed({
@@ -183,7 +184,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
     }
 
     private val maybeRingBell = Runnable {
-        sharedPreferenceService.traceMindfulnessBell("check")
         try {
             mindfulnessBell.onUnlock(
                 isOtherOverlayShown = {
@@ -201,11 +201,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                     bellSunOverlayWindow.onStrike = onStrike
                     bellSunOverlayWindow.onGone = onGone
                     showOverlay(OverlayName.MINDFULNESS_BELL_OVERLAY)
+                    watchBellForCall()
                 },
             )
         } catch (e: Throwable) {
             Log.e(logTag, "Mindfulness bell check failed", e)
-            sharedPreferenceService.traceMindfulnessBell("failed", e)
             if (e !is Exception) throw e
         }
     }
@@ -316,7 +316,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             SleepWindDownOverlayWindow(this, sharedOverlayViewModel, windowManager)
         bellSunOverlayWindow = BellSunWindow(this, sharedOverlayViewModel, windowManager)
         mindfulnessBell = MindfulnessBell(this, sharedPreferenceService)
-        sharedPreferenceService.traceMindfulnessBell("serviceUp")
 
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -423,7 +422,6 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
         
         if (intent.getBooleanExtra(INTENT_EXTRA_UNLOCKED, false)) {
-            sharedPreferenceService.traceMindfulnessBell("started")
             scheduleBellCheck()
             return START_STICKY
         }
@@ -613,21 +611,32 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
     }
 
-    private fun takeOverFromBell() {
-        if (!bellSunOverlayWindow.isWindowShown()) return
-        traceBellCut()
-        bellSunOverlayWindow.hideWindow()
-        mindfulnessBell.fadeOutAndRelease()
+    /**
+     * Never a bell during a call: one that comes in mid-ring takes the bell
+     * away (fading, light and sound). Polled - the bell is up for a few
+     * seconds, and the audio mode's change listener is Android 12+ only.
+     */
+    private fun watchBellForCall() {
+        screenStateHandler.removeCallbacks(bellCallWatch)
+        screenStateHandler.postDelayed(bellCallWatch, BELL_CALL_WATCH_MS)
     }
 
-    /**
-     * TEMPORARY (with the bell trace): which path ended a ringing bell from
-     * outside, as the trace's error line - e.g. "cut: hideAllBut<-onStartCommand".
-     */
-    private fun traceBellCut() {
-        val path = Throwable().stackTrace.drop(1).take(3)
-            .joinToString("<-") { it.methodName }
-        sharedPreferenceService.traceMindfulnessBell("cut", RuntimeException(path))
+    private val bellCallWatch = object : Runnable {
+        override fun run() {
+            if (!bellSunOverlayWindow.isWindowShown()) return
+            if (mindfulnessBell.isCallActive()) {
+                takeOverFromBell(MindfulnessBell.CALL_FADE_MS)
+                return
+            }
+            screenStateHandler.postDelayed(this, BELL_CALL_WATCH_MS)
+        }
+    }
+
+    private fun takeOverFromBell(soundFadeMs: Long? = null) {
+        if (!bellSunOverlayWindow.isWindowShown()) return
+        bellSunOverlayWindow.hideWindow()
+        if (soundFadeMs != null) mindfulnessBell.fadeOutAndRelease(soundFadeMs)
+        else mindfulnessBell.fadeOutAndRelease()
     }
 
     /**
@@ -692,10 +701,7 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayName.LITTLE_SUN_OVERLAY -> littleSunOverlayWindow.hideWindow()
             OverlayName.SMALL_MSG_OVERLAY -> smallMsgOverlayWindow.hideWindow()
             OverlayName.SLEEP_WIND_DOWN_OVERLAY -> sleepWindDownOverlayWindow.hideWindow()
-            OverlayName.MINDFULNESS_BELL_OVERLAY -> {
-                if (bellSunOverlayWindow.isWindowShown()) traceBellCut()
-                bellSunOverlayWindow.hideWindow()
-            }
+            OverlayName.MINDFULNESS_BELL_OVERLAY -> bellSunOverlayWindow.hideWindow()
         }
         if (isNoWindowShown() && !wasNoOverlaysBefore) {
             Log.v(logTag, "hideOverlay() - ON_STOP")

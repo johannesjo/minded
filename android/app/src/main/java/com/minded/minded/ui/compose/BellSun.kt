@@ -156,7 +156,8 @@ fun BellSun(
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val p = state.presence.value
-            if (p <= 0f) return@Canvas
+            // No radius, no light: a gradient of radius 0 would throw.
+            if (p <= 0f || sunRadiusPx <= 0f) return@Canvas
 
             // The dim: clear over the sun and just past it, easing to its full
             // depth a little further out, so the sun and its light stay bright.

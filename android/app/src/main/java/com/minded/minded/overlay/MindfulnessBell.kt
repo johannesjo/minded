@@ -2,16 +2,20 @@ package com.minded.minded.overlay
 
 import android.app.KeyguardManager
 import android.app.NotificationManager
+import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.telecom.TelecomManager
 import android.util.Log
 import com.minded.minded.MyAccessibilityService
 import com.minded.minded.R
@@ -21,11 +25,11 @@ import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.UserCfg
+import com.minded.minded.util.bellPlayerVolume
 import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
 import org.json.JSONObject
 import java.time.LocalDateTime
-import java.time.ZoneId
 import kotlin.math.abs
 
 /**
@@ -42,9 +46,7 @@ import kotlin.math.abs
  * reaches into a pocket. When the schedule says no, or the moment is wrong,
  * nothing happens - only the last due bell's outcome is kept, so the settings
  * can say why one wasn't heard; a slot whose window passes without a good
- * moment is simply dropped. Every unlock is kept too (just the last one), so
- * the settings can tell an unlock that never reached the bell from one that
- * simply fell outside a bell's window.
+ * moment is simply dropped.
  */
 class MindfulnessBell(
     private val context: Context,
@@ -75,7 +77,9 @@ class MindfulnessBell(
         // they never parse the sync blob, and a bell that's off stops here.
         val cfg = currentCfg()
         if (cfg.mindfulnessBell != true) {
-            recordUnlock(enabled = false, nextAtMs = null)
+            // Switched off before its first bell came: don't let a later
+            // switch-on that bypasses the toggle (a sync, an import) ring at once.
+            if (prefs.isMindfulnessBellFirstRingArmed()) prefs.setMindfulnessBellFirstRingArmed(false)
             return
         }
         val now = LocalDateTime.now()
@@ -87,19 +91,13 @@ class MindfulnessBell(
             prefs.getMindfulnessBellSalt(),
             cfg.mindfulnessBellPerDay ?: MindfulnessBellSchedule.DEFAULT_SLOTS_PER_DAY,
         )
-        val next = MindfulnessBellSchedule.nextWindowMinute(minute, slots, rungMask)
-        recordUnlock(
-            enabled = true,
-            nextAtMs = next?.let {
-                now.toLocalDate().atStartOfDay(ZoneId.systemDefault())
-                    .plusMinutes(it.toLong()).toInstant().toEpochMilli()
-            },
-        )
-        // TEMPORARY test aid: an armed test bell rings now, schedule or not,
-        // and leaves the day's slots untouched.
-        val isTest = prefs.isMindfulnessBellTestArmed()
+        // The first bell after it's switched on rings at the next good unlock,
+        // schedule or not, leaving the day's slots untouched: otherwise someone
+        // who just asked for it waits hours, wondering if it works, and then
+        // meets a wordless light they don't recognise.
+        val isFirstRing = prefs.isMindfulnessBellFirstRingArmed()
         val slot = MindfulnessBellSchedule.dueSlot(minute, slots, rungMask, lastRung)
-        if (slot == null && !isTest) return
+        if (slot == null && !isFirstRing) return
 
         val moment = moment(isOtherOverlayShown, littleSun, isBlockedPackage)
         recordCheck(moment)
@@ -110,16 +108,22 @@ class MindfulnessBell(
         }
         val host = (moment as Moment.Ring).host
 
-        if (slot != null) prefs.markMindfulnessBellRung(epochDay, slot, minute)
-        if (isTest) prefs.setMindfulnessBellTestArmed(false)
-        val voice = currentVoice(cfg.soundEnabled != false)
-        val sound = if (voice == BellVoice.SOUND) prepareSound() else null
+        // Even a first ring with no slot due: a slot opening minutes later
+        // must still keep the ring gap from it.
+        prefs.markMindfulnessBellRung(epochDay, slot, minute)
+        if (isFirstRing) prefs.setMindfulnessBellFirstRingArmed(false)
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val voice = currentVoice(audio, cfg.soundEnabled != false)
+        val sound = if (voice == BellVoice.SOUND) prepareSound(audio) else null
         val decayMs = sound?.duration?.takeIf { it > 0 } ?: BellSunWindow.DEFAULT_DECAY_MS
         Log.d(logTag, "Ringing the bell (slot $slot, voice=$voice, host=${host?.kind})")
         show(
             host,
             decayMs,
-            {
+            strike@{
+                // A call came in while the sun was arriving: no strike over it
+                // (the controller's call watch takes the sun away).
+                if (isCallActive()) return@strike
                 when {
                     // Only the live player: a screen-off may have freed it.
                     sound != null && player === sound -> startSafely(sound)
@@ -162,21 +166,6 @@ class MindfulnessBell(
         }
     }
 
-    /** Keep every unlock the bell saw, so the settings can tell "never reached" from "not due". */
-    private fun recordUnlock(enabled: Boolean, nextAtMs: Long?) {
-        try {
-            prefs.setMindfulnessBellLastUnlock(
-                JSONObject()
-                    .put("atMs", System.currentTimeMillis())
-                    .put("enabled", enabled)
-                    .put("nextAtMs", nextAtMs ?: JSONObject.NULL)
-                    .toString(),
-            )
-        } catch (e: Exception) {
-            Log.e(logTag, "Failed to record bell unlock", e)
-        }
-    }
-
     private var cachedRaw: String? = null
     private var cachedCfg: UserCfg? = null
 
@@ -207,7 +196,7 @@ class MindfulnessBell(
      * Another minded surface took over mid-ring: let the strike fade out over a
      * moment rather than ringing on over a pause - or cutting off mid-tone.
      */
-    fun fadeOutAndRelease() {
+    fun fadeOutAndRelease(fadeMs: Long = TAKEOVER_FADE_MS) {
         val mp = player ?: return
         val steps = 10
         var step = 0
@@ -222,7 +211,7 @@ class MindfulnessBell(
                     release()
                     return
                 }
-                if (step < steps) handler.postDelayed(this, TAKEOVER_FADE_MS / steps) else release()
+                if (step < steps) handler.postDelayed(this, fadeMs / steps) else release()
             }
         }
         handler.post(tick)
@@ -265,6 +254,9 @@ class MindfulnessBell(
                 else -> return Moment.Skip("couldn't tell which app was open")
             }
         if (foreground == context.packageName) return Moment.Skip("minded was open")
+        // The phone app in front is a call being made or about to be, even
+        // before the audio mode says so.
+        if (foreground == dialerPackage()) return Moment.Skip("the phone app was open")
         if (isBlockedPackage(foreground)) return Moment.Skip("a guarded app was open")
         if (foreground != homePackage()) return Moment.Ring(null)
 
@@ -273,6 +265,12 @@ class MindfulnessBell(
         // stays quiet - a guess could put a second sun next to it.
         val widgetSuns = visibleWidgetSuns() ?: return Moment.Skip("couldn't read the home screen")
         val sun = widgetSuns.firstOrNull() ?: return Moment.Ring(null)
+        // An empty box is a widget sun the accessibility tree reports but that
+        // isn't drawn yet - nothing to ring through, and a light sized from it
+        // would have no radius.
+        if (sun.width() < MIN_HOST_SUN_PX || sun.height() < MIN_HOST_SUN_PX) {
+            return Moment.Skip("couldn't read the home screen")
+        }
         // Bounds come clipped to the screen: a lopsided box is a widget half
         // swiped away, whose centre and size would be wrong - and it's leaving.
         if (abs(sun.width() - sun.height()) > maxOf(sun.width(), sun.height()) / 5) {
@@ -294,6 +292,12 @@ class MindfulnessBell(
         // Bedtime rings too: the wind-down's own sun, when it's up, is caught
         // by isOtherOverlayShown, so the bell never brings a second one.
 
+        // Driving: dimming a navigation app's screen is the one moment the bell
+        // could do harm. (Navigation is often silent between directions, so
+        // the media check below doesn't catch it.)
+        val uiMode = context.getSystemService(UiModeManager::class.java)
+        if (uiMode?.currentModeType == Configuration.UI_MODE_TYPE_CAR) return "the phone was in car mode"
+
         // Do Not Disturb is an explicit "not now" - for the light as much as
         // the sound.
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -303,27 +307,41 @@ class MindfulnessBell(
 
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (audio.isMusicActive) return "media was playing"
-        when (audio.mode) {
-            AudioManager.MODE_IN_CALL,
-            AudioManager.MODE_IN_COMMUNICATION,
-            AudioManager.MODE_RINGTONE -> return "a call"
-        }
+        if (isCallActive()) return "a call"
         return null
     }
 
-    private fun currentVoice(soundEnabled: Boolean): BellVoice {
+    /**
+     * A call is ringing, live, being screened or redirected - phone or VoIP.
+     * Any audio mode but normal is one of those (ringtone, in call, in
+     * communication, call screening, the redirect modes), so this covers modes
+     * added in later Android versions too, and needs no phone-state permission.
+     * Checked before the bell rings and again while it shows: a call that
+     * comes in mid-ring ends it (see OverlayControllerService.watchBellForCall).
+     */
+    fun isCallActive(): Boolean {
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        return bellVoice(
+        return audio.mode > AudioManager.MODE_NORMAL
+    }
+
+    private fun currentVoice(audio: AudioManager, soundEnabled: Boolean): BellVoice =
+        bellVoice(
             soundEnabled = soundEnabled,
             ringerNormal = audio.ringerMode == AudioManager.RINGER_MODE_NORMAL,
             ringerVibrate = audio.ringerMode == AudioManager.RINGER_MODE_VIBRATE,
             mediaVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC),
+            notificationVolume = audio.getStreamVolume(AudioManager.STREAM_NOTIFICATION),
         )
+
+    /** A stream's current loudness in dB on the speaker (volume steps aren't linear). */
+    private fun streamDb(audio: AudioManager, stream: Int): Float = try {
+        audio.getStreamVolumeDb(stream, audio.getStreamVolume(stream), AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+    } catch (e: IllegalArgumentException) {
+        Float.NEGATIVE_INFINITY
     }
 
     /** A prepared player for the strike, or null if it can't be loaded. */
-    private fun prepareSound(): MediaPlayer? {
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private fun prepareSound(audio: AudioManager): MediaPlayer? {
         release()
         return try {
             MediaPlayer.create(
@@ -335,6 +353,14 @@ class MindfulnessBell(
                     .build(),
                 audio.generateAudioSessionId(),
             )?.also { mp ->
+                // It plays on the media stream (see bellVoice), but it reaches
+                // for the user unprompted, so it rings about as loud as their
+                // notifications - not at whatever a video last left media at.
+                val volume = bellPlayerVolume(
+                    mediaDb = streamDb(audio, AudioManager.STREAM_MUSIC),
+                    notificationDb = streamDb(audio, AudioManager.STREAM_NOTIFICATION),
+                )
+                mp.setVolume(volume, volume)
                 mp.setOnCompletionListener { release() }
                 player = mp
             }
@@ -342,6 +368,12 @@ class MindfulnessBell(
             Log.e(logTag, "Failed to prepare bell sound", e)
             null
         }
+    }
+
+    private fun dialerPackage(): String? = try {
+        context.getSystemService(TelecomManager::class.java)?.defaultDialerPackage
+    } catch (e: Exception) {
+        null
     }
 
     internal fun homePackage(): String? = try {
@@ -367,5 +399,8 @@ class MindfulnessBell(
         // ago it opened - so look back generously and accept an old read.
         private const val LOOKBACK_MS = 30 * 60 * 1000L
         private const val TAKEOVER_FADE_MS = 400L
+        // A call coming in: out of the ringtone's way faster, still no click.
+        const val CALL_FADE_MS = 150L
+        private const val MIN_HOST_SUN_PX = 8
     }
 }

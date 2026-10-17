@@ -132,30 +132,18 @@ open class MainActivityJavaScriptInterface(
     }
 
     /**
-     * The last unlock the mindfulness bell saw (JSON, see
-     * SharedPreferenceService.getMindfulnessBellLastUnlock), or "" if none yet.
+     * The bell was just switched on: its first bell rings at the next good
+     * unlock (see SharedPreferenceService.setMindfulnessBellFirstRingArmed).
      */
     @JavascriptInterface
-    fun getMindfulnessBellLastUnlock(): String {
-        return SharedPreferenceService(context).getMindfulnessBellLastUnlock() ?: ""
+    fun armMindfulnessBellFirstRing() {
+        SharedPreferenceService(context).setMindfulnessBellFirstRingArmed(true)
     }
 
-    /** TEMPORARY test aid: ring the bell at the next unlock (see setMindfulnessBellTestArmed). */
+    /** Whether that first bell is still waiting for an unlock. */
     @JavascriptInterface
-    fun armMindfulnessBellTest() {
-        SharedPreferenceService(context).setMindfulnessBellTestArmed(true)
-    }
-
-    /** TEMPORARY: whether a test bell is waiting for the next unlock. */
-    @JavascriptInterface
-    fun isMindfulnessBellTestArmed(): Boolean {
-        return SharedPreferenceService(context).isMindfulnessBellTestArmed()
-    }
-
-    /** TEMPORARY: the bell's unlock trace (see SharedPreferenceService.traceMindfulnessBell), or "". */
-    @JavascriptInterface
-    fun getMindfulnessBellTrace(): String {
-        return SharedPreferenceService(context).getMindfulnessBellTrace() ?: ""
+    fun isMindfulnessBellFirstRingArmed(): Boolean {
+        return SharedPreferenceService(context).isMindfulnessBellFirstRingArmed()
     }
 
     /**

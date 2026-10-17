@@ -380,7 +380,6 @@ class MyAccessibilityService : AccessibilityService() {
         override fun run() {
             if (!isAwaitingUnlock) return
             if (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == false) {
-                traceBell("a11yEvent")
                 onDeviceUnlocked()
             } else if (--unlockRechecksLeft > 0) {
                 unlockRecheckHandler.postDelayed(this, UNLOCK_RECHECK_MS)
@@ -396,15 +395,12 @@ class MyAccessibilityService : AccessibilityService() {
                     unlockRecheckHandler.removeCallbacks(unlockRecheck)
                     return
                 }
-                Intent.ACTION_SCREEN_ON -> traceBell("screenOn")
-                Intent.ACTION_USER_PRESENT -> traceBell("a11y")
             }
             // ACTION_SCREEN_ON also fires at the lock screen, where no app launch
             // is possible yet. Only burst once the device is actually usable so
             // we don't spend battery fast-polling against the keyguard.
             val keyguard = getSystemService(KeyguardManager::class.java)
             if (keyguard?.isKeyguardLocked == true) {
-                if (intent?.action == Intent.ACTION_USER_PRESENT) traceBell("a11yLocked")
                 armUnlockFallback()
                 return
             }
@@ -427,15 +423,10 @@ class MyAccessibilityService : AccessibilityService() {
         hybridDetector?.triggerPollingBurst()
         try {
             OverlayControllerService.onUnlockSeen(this)
-            traceBell("handOff")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to hand unlock to the mindfulness bell", e)
-            traceBell("handOff", e)
         }
     }
-
-    private fun traceBell(stage: String, error: Throwable? = null) =
-        SharedPreferenceService(this).traceMindfulnessBell(stage, error)
 
     // USER_PRESENT, handled with the screen events above but registered apart.
     private val userPresentReceiver = object : BroadcastReceiver() {
@@ -1022,7 +1013,6 @@ class MyAccessibilityService : AccessibilityService() {
             when (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked) {
                 true -> armUnlockFallback()
                 false -> if (isAwaitingUnlock) {
-                    traceBell("a11yEvent")
                     onDeviceUnlocked()
                 }
                 null -> {}

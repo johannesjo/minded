@@ -137,7 +137,8 @@ object Haptics {
 
     /**
      * The mindfulness bell's strike, felt instead of heard on a phone set to
-     * vibrate: one gentle click. Unlike every other haptic here it answers no
+     * vibrate: a soft thump with a fading tail (one gentle click on motors
+     * without amplitude control). Unlike every other haptic here it answers no
      * touch - the bell arrives unprompted - so it is not touch feedback: on API
      * 33+ it is tagged [VibrationAttributes.USAGE_NOTIFICATION], following the
      * user's notification-vibration intensity, and the touch-feedback switch
@@ -150,20 +151,30 @@ object Haptics {
             try {
                 val vibrator = vibrator(appContext)
                 if (!vibrator.hasVibrator()) return@Thread
-                val click = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                val effect = if (vibrator.hasAmplitudeControl()) {
+                    VibrationEffect.createWaveform(BELL_TIMINGS_MS, BELL_AMPLITUDES, -1)
+                } else {
+                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     vibrator.vibrate(
-                        click,
+                        effect,
                         VibrationAttributes.createForUsage(VibrationAttributes.USAGE_NOTIFICATION),
                     )
                 } else {
-                    vibrator.vibrate(click)
+                    vibrator.vibrate(effect)
                 }
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "Failed to trigger bell haptic", e)
             }
         }.start()
     }
+
+    // The bell's strike as touch: a soft thump, then a tail that fades out over
+    // about 0.65s - the felt shape of the struck tone and its travelling light.
+    // A plain click is a key press; it doesn't read as a bell.
+    private val BELL_TIMINGS_MS = longArrayOf(40, 80, 120, 160, 250)
+    private val BELL_AMPLITUDES = intArrayOf(180, 110, 65, 35, 15)
 
     // The system-wide touch-feedback switch. (Deprecated on newer SDKs in favour
     // of USAGE_TOUCH alone, which we also set there; still honoured, and the only

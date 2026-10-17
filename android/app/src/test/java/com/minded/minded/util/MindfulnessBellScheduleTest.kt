@@ -39,26 +39,30 @@ class MindfulnessBellScheduleTest {
     }
 
     @Test
-    fun `the everyday counts keep the full gaps, more slots shrink them`() {
-        for (count in 1..3) {
+    fun `the offered counts keep the full gaps, more slots would shrink them`() {
+        for (count in SLOTS_PER_DAY_RANGE) {
             assertEquals(MIN_SLOT_GAP_MINUTES, minSlotGapFor(count))
             assertEquals(MIN_RING_GAP_MINUTES, minRingGapFor(count))
             assertEquals(SLOT_FIRE_WINDOW_MINUTES, fireWindowFor(count))
         }
-        assertTrue(minSlotGapFor(SLOTS_PER_DAY_RANGE.last) in 1 until MIN_SLOT_GAP_MINUTES)
-        assertTrue(minRingGapFor(SLOTS_PER_DAY_RANGE.last) >= 1)
+        assertTrue(minSlotGapFor(20) in 1 until MIN_SLOT_GAP_MINUTES)
+        assertTrue(minRingGapFor(20) >= 1)
     }
+
+    // Twenty slots, as many a day would draw them (slotsFor itself now holds
+    // the count to the offered range).
+    private val manySlots = List(20) { it * minSlotGapFor(20) + 5 }
 
     @Test
     fun `with many slots an old slot never rings into the next one's turn`() {
-        val slots = slotsFor(19_000L, 7L, count = 20)
+        val slots = manySlots
         assertEquals(0, dueSlot(slots[0], slots, 0, null))
         assertNotEquals(0, dueSlot(slots[0] + fireWindowFor(20), slots, 0, null))
     }
 
     @Test
     fun `many slots ring closer together, never at once`() {
-        val slots = slotsFor(19_000L, 7L, count = 20)
+        val slots = manySlots
         val ring = slots[0]
         val gap = minRingGapFor(20)
         assertNull(dueSlot(slots[1], slots, 0b1, lastRungMinute = slots[1] - gap + 1))
@@ -155,13 +159,27 @@ class MindfulnessBellScheduleTest {
         soundEnabled: Boolean = true,
         ringer: String = "normal",
         mediaVolume: Int = 7,
-    ) = bellVoice(soundEnabled, ringer == "normal", ringer == "vibrate", mediaVolume)
+        notificationVolume: Int = 5,
+    ) = bellVoice(soundEnabled, ringer == "normal", ringer == "vibrate", mediaVolume, notificationVolume)
 
     @Test
     fun `the strike is heard only when the phone may make a sound`() {
         assertEquals(BellVoice.SOUND, voice())
         assertEquals(BellVoice.SILENT, voice(mediaVolume = 0))
+        assertEquals(BellVoice.SILENT, voice(notificationVolume = 0))
         assertEquals(BellVoice.SILENT, voice(soundEnabled = false))
+    }
+
+    @Test
+    fun `the strike rings at notification loudness, never above media`() {
+        // A video left media at full (0 dB), notifications sit 20 dB lower:
+        // the bell is turned down by those 20 dB - a tenth of the amplitude.
+        assertEquals(0.1f, bellPlayerVolume(mediaDb = 0f, notificationDb = -20f), 0.001f)
+        // Media quieter than notifications: it can't be turned up past media.
+        assertEquals(1f, bellPlayerVolume(mediaDb = -30f, notificationDb = -10f), 0.001f)
+        // Notifications muted: nothing.
+        assertEquals(0f, bellPlayerVolume(mediaDb = 0f, notificationDb = Float.NEGATIVE_INFINITY), 0.001f)
+        assertEquals(0f, bellPlayerVolume(mediaDb = Float.NaN, notificationDb = -10f), 0.001f)
     }
 
     @Test
@@ -169,19 +187,5 @@ class MindfulnessBellScheduleTest {
         assertEquals(BellVoice.VIBRATION, voice(ringer = "vibrate"))
         assertEquals(BellVoice.SILENT, voice(ringer = "silent"))
         assertEquals(BellVoice.SILENT, voice(ringer = "silent", soundEnabled = true, mediaVolume = 15))
-    }
-
-    @Test
-    fun nextWindowMinute_findsTheNextUnrungWindow() {
-        val slots = listOf(100, 400, 800)
-        val w = MindfulnessBellSchedule.fireWindowFor(slots.size)
-        assertEquals(100, MindfulnessBellSchedule.nextWindowMinute(50, slots, 0))
-        // Inside an open window: now.
-        assertEquals(110, MindfulnessBellSchedule.nextWindowMinute(110, slots, 0))
-        // That window rang: the next one.
-        assertEquals(400, MindfulnessBellSchedule.nextWindowMinute(110, slots, 0b001))
-        // Past the last window, or all rung: none left.
-        assertEquals(null, MindfulnessBellSchedule.nextWindowMinute(800 + w, slots, 0))
-        assertEquals(null, MindfulnessBellSchedule.nextWindowMinute(50, slots, 0b111))
     }
 }

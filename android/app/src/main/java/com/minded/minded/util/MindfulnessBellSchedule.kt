@@ -1,5 +1,6 @@
 package com.minded.minded.util
 
+import kotlin.math.pow
 import kotlin.random.Random
 
 /**
@@ -35,9 +36,9 @@ import kotlin.random.Random
  */
 object MindfulnessBellSchedule {
     const val DEFAULT_SLOTS_PER_DAY = 2
-    // Wide for now so the bell can be tried out often; the everyday choices
-    // are one to three.
-    val SLOTS_PER_DAY_RANGE = 1..30
+    // The gap functions below hold for any count; the offered range is
+    // what keeps the bell rare.
+    val SLOTS_PER_DAY_RANGE = 1..3
     const val EARLIEST_SLOT_MINUTE = 0
     const val DAY_MINUTES = 24 * 60
     const val MIN_SLOT_GAP_MINUTES = 3 * 60
@@ -116,20 +117,6 @@ object MindfulnessBellSchedule {
                 minuteOfDay < slots[i] + fireWindowFor(slots.size)
         }
     }
-
-    /**
-     * The minute today's next bell window opens - or [minuteOfDay] itself if
-     * one is open now - or null if none is left today. Only for the settings'
-     * "next bell" hint; [dueSlot] alone decides a ring.
-     */
-    fun nextWindowMinute(minuteOfDay: Int, slots: List<Int>, rungMask: Int): Int? {
-        if (rungMask.countOneBits() >= slots.size) return null
-        return slots.indices
-            .firstOrNull { i ->
-                rungMask and (1 shl i) == 0 && minuteOfDay < slots[i] + fireWindowFor(slots.size)
-            }
-            ?.let { maxOf(slots[it], minuteOfDay) }
-    }
 }
 
 /** How the bell's strike reaches the user - see [bellVoice]. */
@@ -140,7 +127,9 @@ enum class BellVoice { SOUND, VIBRATION, SILENT }
  * bell; sound and touch only join it when the user's own settings say they
  * may. The silent and vibrate switches don't mute the media stream minded
  * plays on, so they are honoured explicitly here - a "silent" phone must never
- * ring out loud. (Under Do Not Disturb the bell doesn't come at all - see
+ * ring out loud. Nor does a phone whose notifications are turned all the way
+ * down: the bell rings at notification loudness (see [bellPlayerVolume]).
+ * (Under Do Not Disturb the bell doesn't come at all - see
  * MindfulnessBell.skipReason.)
  */
 fun bellVoice(
@@ -148,8 +137,25 @@ fun bellVoice(
     ringerNormal: Boolean,
     ringerVibrate: Boolean,
     mediaVolume: Int,
+    notificationVolume: Int,
 ): BellVoice = when {
-    ringerNormal && soundEnabled && mediaVolume > 0 -> BellVoice.SOUND
+    ringerNormal && soundEnabled && mediaVolume > 0 && notificationVolume > 0 -> BellVoice.SOUND
     ringerVibrate -> BellVoice.VIBRATION
     else -> BellVoice.SILENT
+}
+
+/**
+ * The strike's player gain (0..1, linear, on top of the media stream it plays
+ * on), from each stream's current loudness in dB. The bell reaches for the
+ * user unprompted, so it should sound as loud as their notifications do - not
+ * at whatever a video last left the media volume at. It can only be turned
+ * down from the media level, never up past it, so when media is the quieter
+ * of the two, media is what it gets. dB, not volume steps: the steps sit on a
+ * curve, so a step ratio as a gain would ring far above notification level.
+ */
+fun bellPlayerVolume(mediaDb: Float, notificationDb: Float): Float = when {
+    notificationDb.isNaN() || mediaDb.isNaN() -> 0f
+    notificationDb == Float.NEGATIVE_INFINITY -> 0f
+    notificationDb >= mediaDb -> 1f
+    else -> 10f.pow((notificationDb - mediaDb) / 20f).coerceIn(0f, 1f)
 }
