@@ -70,3 +70,32 @@ export const bellLastUnlockLabel = (
     ? `Last unlock: ${when}, next bell from ${timeOf(new Date(v.nextAtMs))}`
     : `Last unlock: ${when}, no bell left today`;
 };
+
+// TEMPORARY diagnostic (no adb on hand): the unlock's way to the bell, in
+// order - see SharedPreferenceService.traceMindfulnessBell. Remove with it.
+const TRACE_STAGES = [
+  "serviceUp",
+  "a11y",
+  "a11yLocked",
+  "handOff",
+  "started",
+  "service",
+  "check",
+  "failed",
+] as const;
+
+/** One line listing when each traced step last ran, plus the last error. */
+export const bellTraceLabel = (
+  raw: string | null | undefined,
+  now: Date = new Date(),
+): string | undefined => {
+  if (raw === undefined) return undefined;
+  const v = raw ? safeJsonParse<Record<string, unknown>>(raw) : undefined;
+  if (!v) return "Trace: nothing yet";
+  const steps = TRACE_STAGES.map((stage) => {
+    const at = v[stage];
+    return `${stage} ${typeof at === "number" ? whenOf(at, now) : "-"}`;
+  });
+  const error = typeof v.error === "string" ? ` · error: ${v.error}` : "";
+  return `Trace: ${steps.join(" · ")}${error}`;
+};

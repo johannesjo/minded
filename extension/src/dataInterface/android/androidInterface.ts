@@ -93,6 +93,12 @@ interface InteractionWindowJavaScriptInterface {
    * Optional: older native builds won't have it - guard with `?.()`.
    */
   getMindfulnessBellLastUnlock?: () => string;
+  /**
+   * TEMPORARY diagnostic: when each step of an unlock's way to the bell last
+   * ran, as JSON `{"<stage>":atMs,…,"error":string}`, or "" if none yet.
+   * Optional: guard with `?.()`.
+   */
+  getMindfulnessBellTrace?: () => string;
   test: () => void;
 }
 
