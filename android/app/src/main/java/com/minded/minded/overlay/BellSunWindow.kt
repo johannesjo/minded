@@ -6,9 +6,9 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.compose.ui.unit.dp
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.ui.compose.BELL_SUN_DISC_BOX
@@ -27,21 +27,24 @@ data class BellHost(val centerX: Int, val centerY: Int, val diameterPx: Int, val
 }
 
 /**
- * The mindfulness bell's windows (#298), centred where the Little Sun rests -
- * the one place a sun already lives outside minded - so the bell never invents
- * a new spot on screen.
+ * The mindfulness bell's windows (#298), at the centre of the screen - where
+ * the eyes already are after an unlock, and where an intervention's own sun
+ * first appears, so a takeover hands off in place. (It used to rest at the
+ * Little Sun's corner; among a home screen's icons it read as one more icon.)
  *
  * Two windows, like the Little Sun and its leave zone: this window holds only
  * the disc, exactly the Little Sun bubble's size, and is the only part that
- * takes a touch (a tap lets the sun go sooner). The spreading halo lives in a
- * second window beneath it that is never touchable, so the light can sit over
- * the user's app without ever catching a finger meant for it. Neither paints a
- * sky - a sky would cover the app and turn a soft bell into a wall - and
- * neither is focusable, so the keyboard stays with the app underneath.
+ * takes a touch (a tap lets the sun go sooner). The light lives in a second,
+ * full-screen window beneath it that is never touchable: the spreading halo,
+ * and a light dim over the rest of the screen that comes and goes with the
+ * sun - the world quiets for as long as the bell rings. The dim is no sky: it
+ * is see-through, takes no touch, and leaves a clear circle around the sun,
+ * so the app beneath is quieted, never covered. Neither window is focusable,
+ * so the keyboard stays with the app underneath.
  *
  * With a [host] (the Little Sun, or the widget's sun in view) the bell brings
- * no disc of its own: the light rises around that sun, and neither window
- * takes a touch, so the host stays exactly as it was.
+ * no disc of its own: the light rises around that sun, the clear circle sits
+ * on it, and neither window takes a touch, so the host stays as it was.
  */
 class BellSunWindow(
     private val ctrlSvc: OverlayControllerService,
@@ -125,10 +128,9 @@ class BellSunWindow(
             discY = h.centerY - disc / 2
             return
         }
-        val saved = ctrlSvc.getSharedPreferenceService().getLittleSunPosition()
-        val (x, y) = LittleSunPosition.restingTopLeft(ctrlSvc, windowManager, saved)
-        discX = x
-        discY = y
+        val disc = LittleSunPosition.bubbleSizePx(ctrlSvc.resources.displayMetrics.density)
+        discX = LittleSunPosition.displayWidthPx(ctrlSvc, windowManager) / 2 - disc / 2
+        discY = LittleSunPosition.displayHeightPx(ctrlSvc, windowManager) / 2 - disc / 2
     }
 
     private fun showHalo() {
@@ -141,16 +143,21 @@ class BellSunWindow(
             (BELL_SUN_HALO_BOX.value * density).roundToInt(),
             ((hostDiameter ?: 0) * BELL_SUN_HALO_BOX.value / BELL_SUN_DISC_BOX.value).roundToInt(),
         )
-        val hostFraction = hostDiameter?.let { it.toFloat() / halo } ?: 0f
+        // The light's window covers the whole display (same coordinate space
+        // as the disc's), so the dim reaches every edge.
+        val center = Offset((discX + disc / 2).toFloat(), (discY + disc / 2).toFloat())
+        val sunRadius = (hostDiameter ?: disc) / 2f
         val view = ComposeView(ctrlSvc).apply {
             setViewTreeLifecycleOwner(ctrlSvc)
             setViewTreeSavedStateRegistryOwner(ctrlSvc)
             setBackgroundColor(0x00000000)
-            setContent { BellSunHalo(state, (halo / density).dp, hostFraction) }
+            setContent {
+                BellSunHalo(state, center, halo / 2f, sunRadius, isHosted = hostDiameter != null)
+            }
         }
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
+            LittleSunPosition.displayWidthPx(ctrlSvc, windowManager),
+            LittleSunPosition.displayHeightPx(ctrlSvc, windowManager),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
@@ -158,8 +165,8 @@ class BellSunWindow(
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = discX + disc / 2 - halo / 2
-            y = discY + disc / 2 - halo / 2
+            x = 0
+            y = 0
             // Android 12+ blocks touches beneath another app's overlay - even a
             // not-touchable one - whose window alpha is above the maximum
             // obscuring opacity (0.8). At exactly that, taps on the app under
